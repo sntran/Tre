@@ -16,6 +16,9 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
 - The titles and their meanings (keys `title.*`). The order of the five titles in the game is not the historical order. See `QUESTIONS.md`, question 5.
 - Science facts in the hand-written questions (keys `q.*`), for example: a spider has 8 legs, the Moon pulls the tides, most fresh water is ice.
 
+- Names for Era 1: the text says "nhà làng" (village hall) and "thầy giáo" (teacher), because đình and thầy đồ are from much later times. Check these names (see `QUESTIONS.md`, question 24).
+- The art must be correct for the time of each chapter (see `docs/ART.md`, section 7). A history reviewer checks the clothes, the hair, the houses on stilts, the boats, and the tools of Era 1.
+
 ## 2. Sensitivity checks
 
 - The game names "quân Ân" (the Ân army) and "tướng quân Ân" (the Ân general) as the legend does. It never names a people of today. Check each text in section 4.
@@ -32,7 +35,7 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
 | `battle.scouts.note` | Vào đời Hùng Vương thứ sáu, quân Ân kéo đến nước Văn Lang. Lính trinh sát đi trước để dò đường. | In the time of the sixth Hùng King, the Ân army came to the land of Văn Lang. Scouts went first to look at the roads. |
 | `battle.soldier.note` | Lính quân Ân làm theo lệnh của vua và tướng. Nhiều người lính cũng nhớ nhà. | The Ân soldiers followed the orders of their king and generals. Many soldiers also missed their homes. |
 | `battle.boss.note` | Trận đánh ở chân núi Trâu Sơn. Ngày nay, hội Gióng ở Phù Đổng và Sóc Sơn nhớ ơn Thánh Gióng. Năm 2010, UNESCO ghi danh hội Gióng là di sản văn hóa phi vật thể. | The battle was at the foot of Trâu Sơn mountain. Today, the Gióng festival at Phù Đổng and Sóc Sơn remembers Thánh Gióng. In 2010, UNESCO listed the Gióng festival as intangible cultural heritage. |
-| `vanmieu.note` | Lịch sử: Văn Miếu ở Thăng Long được xây năm 1070. Năm 1076, Quốc Tử Giám, trường đại học đầu tiên của Việt Nam, mở ở đây. Từ năm 1484, tên các tiến sĩ được khắc trên bia đá đặt trên lưng rùa. Trong trò chơi, em đi đến Văn Miếu để thi, dù truyện Thánh Gióng xảy ra từ rất lâu trước đó. | History: Văn Miếu in Thăng Long was built in 1070. In 1076, Quốc Tử Giám, the first university of Vietnam, opened here. From 1484, the names of the doctors were carved on stone steles on the backs of stone turtles. In the game, you travel to Văn Miếu for exams, but the story of Thánh Gióng is from much earlier. |
+| `vanmieu.note` | Văn Miếu ở Thăng Long được xây năm 1070. Năm 1076, Quốc Tử Giám, trường đại học đầu tiên của Việt Nam, mở ở đây. Từ năm 1484, tên các tiến sĩ được khắc trên bia đá đặt trên lưng rùa. Trong trò chơi, em đi đến Văn Miếu để thi, dù truyện Thánh Gióng xảy ra từ rất lâu trước đó. | Văn Miếu in Thăng Long was built in 1070. In 1076, Quốc Tử Giám, the first university of Vietnam, opened here. From 1484, the names of the doctors were carved on stone steles on the backs of stone turtles. In the game, you travel to Văn Miếu for exams, but the story of Thánh Gióng is from much earlier. |
 
 ## 4. Enemies and battle texts
 
@@ -120,7 +123,7 @@ Short meanings of names in English mode (the first time a name shows):
 | `gloss.giong.meaning` | Thánh Gióng | Saint Gióng, a hero of legend |
 | `gloss.hungvuong.meaning` | Hùng Vương | a Hùng King, one of the first kings of Vietnam in legend |
 | `gloss.thanglong.meaning` | Thăng Long | the old name of Hà Nội |
-| `gloss.dinh.meaning` | đình làng | the village communal house |
+| `gloss.dinh.meaning` | nhà làng | the big house on stilts where the village meets |
 | `gloss.tutai.meaning` | Tú tài | the first scholar title |
 | `gloss.song.meaning` | Sóng | Wave |
 | `gloss.tre.meaning` | tre | bamboo |

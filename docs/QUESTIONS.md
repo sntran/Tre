@@ -44,3 +44,7 @@ This list has the questions that the design does not answer, and the choice that
 21. **Hero faces.** The four faces have four skin tones and four expressions. Should the skin tone be a separate choice?
 22. **Parent questions.** A parent question shows when the child practices its skill with the teacher, in the language of the question. Should parent questions also show in battles?
 23. **The river serpent.** The "small river creature" is a thuồng luồng from folk tales. Is this a good choice for young children, or is a crab or a fish better?
+24. **Names of Era 1.** The art must be correct for the time of the Hùng Kings. So the text now says "nhà làng" (village hall) in place of "đình", and "thầy giáo" in place of "thầy đồ". Both đình and thầy đồ are from much later times. Is this acceptable?
+25. **Coins in Era 1.** The game gives coins (tiền đồng) as rewards. Round bronze coins came to Vietnam much later than the time of the Hùng Kings. Should Era 1 use another reward, for example cowrie shells or bronze tools?
+26. **Iron in Era 1.** The legend says that Gióng had an iron horse, iron armor, and an iron staff. The Đông Sơn culture used mostly bronze. The game keeps iron, as the legend says. A history note could tell this.
+27. **The Măng non stage.** The style has a larger-size mode (`data-stage="mang-non"` on the `<html>` element) for Pre-K and K. The game does not set it yet, because the grades in the game are 1 to 5. Which setting turns it on?

@@ -36,7 +36,8 @@ npm test
 | `data/` | Skill graph, maps, enemies, items, quests, dialogue, and questions as JSON. |
 | `data/config/learning.json` | All values of the learning model. |
 | `i18n/` | All text by key, in Vietnamese (`vi.json`) and English (`en.json`). |
-| `art/` | Original SVG art. All art is a placeholder. |
+| `art/` | Original SVG art in the style of Đông Hồ woodblock prints. All art is a placeholder. |
+| `fonts/` | The two fonts (Alegreya and Be Vietnam Pro), under the SIL Open Font License. |
 | `audio/` | Recorded voice files by language (optional). |
 | `tests/` | Unit tests. |
 | `docs/` | Design, open questions, and review lists. |
@@ -44,6 +45,7 @@ npm test
 ## Documents
 
 - [Game design](docs/DESIGN.md)
+- [Art and UI style guide](docs/ART.md)
 - [Open questions](docs/QUESTIONS.md)
 - [Text and history review](docs/REVIEW.md)
 - [How to contribute](CONTRIBUTING.md)
@@ -52,4 +54,5 @@ npm test
 
 - Code: [AGPL-3.0](LICENSE).
 - Stories, art, music, and text: [CC BY-NC-SA 4.0](content/README.md).
+- Fonts: SIL Open Font License 1.1. Refer to [fonts/README.md](fonts/README.md).
 - The name "Tre" and its logo: reserved. Refer to [TRADEMARK.md](TRADEMARK.md).
