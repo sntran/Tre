@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from '../src/core/codec.js';
 import { createProfile, addItem, takeItems, applyLoss, lossLevel, addFriend, giveTitle } from '../src/core/profile.js';
 import {
-  serialize, deserialize, exportCode, importCode, migrate, wrap, SaveError, SAVE_VERSION, SAVE_FORMAT,
+  serialize, deserialize, exportCode, importCode, migrate, wrap, SaveError, SAVE_VERSION, SAVE_FORMAT, validate, replacedBy, LIMITS,
 } from '../src/core/save.js';
 import { createRng } from '../src/core/rng.js';
 import { readFileSync } from 'node:fs';
@@ -148,4 +148,96 @@ test('profile items, friends, titles, and loss rules', () => {
   assert.equal(lossLevel(g1), 'none');
   g1.settings.loss = 'normal';
   assert.equal(lossLevel(g1), 'normal');
+});
+
+// A profile with each kind of data: learning entries, exams, and parent questions with pictures.
+function fullProfile() {
+  const p = sample();
+  p.learning.skills['math.add.10'] = { p: 0.97, r: 1100, n: 12, c: 11, streak: 5, box: 2, due: 5, last: 4, top: 3, recent: '1111101111', mastered: true };
+  p.learning.items['math.add.10#3'] = 950.5;
+  p.learning.exams.push({ kind: 'era1', at: 3, ability: 1012, asked: 12, correct: 9, passed: true });
+  p.learning.recent = ['q.states.boil'];
+  p.settings.questions.push(
+    { id: 'parent-1', skill: 'math.add.10', lang: 'vi', type: 'numeric', text: '3 + 4 = ?', answer: 7, parent: true, visual: { type: 'dots', groups: [3, 4] } },
+    { id: 'parent-2', skill: 'math.shapes', lang: 'en', type: 'choice', text: 'Which one?', choices: ['a', 'b', 'c'], answer: 0, parent: true, visual: { type: 'fractions', values: [[1, 2], [1, 4]] } },
+  );
+  return p;
+}
+
+test('the import checks the type of each value of the profile', () => {
+  assert.equal(validate(fullProfile()), true);
+  assert.deepEqual(importCode(exportCode(fullProfile())), fullProfile());
+  const bad = [
+    (p) => { p.learning.skills['math.add.10'].p = 'high'; },
+    (p) => { p.learning.skills['math.add.10'].p = 2; },
+    (p) => { p.learning.skills['math.add.10'].n = -1; },
+    (p) => { p.learning.skills['math.add.10'].c = 99; },
+    (p) => { p.learning.skills['math.add.10'].recent = '11x'; },
+    (p) => { p.learning.skills['math.add.10'].mastered = 'yes'; },
+    (p) => { p.learning.items['math.add.10#3'] = 'x'; },
+    (p) => { p.learning.exams[0].ability = null; },
+    (p) => { p.settings.lang = 'fr'; },
+    (p) => { p.settings.timeLimit = -5; },
+    (p) => { p.settings.sound = 'on'; },
+    (p) => { p.settings.loss = 'all'; },
+    (p) => { p.settings.questions = 'none'; },
+    (p) => { p.settings.questions[0].text = ''; },
+    (p) => { p.settings.questions[0].text = 'x'.repeat(LIMITS.questionChars + 1); },
+    (p) => { p.settings.questions[0].answer = 'seven'; },
+    (p) => { p.settings.questions[1].choices = ['only one']; },
+    (p) => { p.settings.questions[1].answer = 5; },
+    (p) => { p.settings.questions[1].type = 'essay'; },
+    (p) => { p.settings.questions[0].lang = 'xx'; },
+    (p) => { p.hero.gender = 'dragon'; },
+    (p) => { p.hero.name = 'x'.repeat(LIMITS.nameChars + 1); },
+    (p) => { p.inventory.coin = -3; },
+    (p) => { p.inventory.coin = 1.5; },
+    (p) => { p.flags.x = { deep: true }; },
+    (p) => { p.titles = [42]; },
+    (p) => { p.time.usedMs = 'long'; },
+  ];
+  bad.forEach((change, i) => {
+    const p = fullProfile();
+    change(p);
+    assert.throws(() => validate(p), (e) => e.reason === 'shape', `case ${i}`);
+  });
+});
+
+test('the pictures of parent questions have a size limit', () => {
+  const tooBig = [
+    { type: 'array', rows: 1000, cols: 1000 },
+    { type: 'dots', groups: [500] },
+    { type: 'dots', groups: [1, 1, 1, 1, 1] },
+    { type: 'rect', w: 5, h: 999 },
+    { type: 'rect', w: '<b>5</b>', h: 2 },
+    { type: 'fractions', values: [[1, 1000]] },
+    { type: 'fractions', values: [[3, 2]] },
+    { type: 'shape', shape: 'star' },
+    { type: 'image', src: 'x.png' },
+  ];
+  for (const visual of tooBig) {
+    const p = fullProfile();
+    p.settings.questions[0].visual = visual;
+    assert.throws(() => validate(p), (e) => e.reason === 'shape', JSON.stringify(visual));
+  }
+  const ok = fullProfile();
+  ok.settings.questions[0].visual = { type: 'array', rows: LIMITS.visual.arrayCells, cols: 3 };
+  assert.equal(validate(ok), true);
+});
+
+test('a code that is too long does not load', () => {
+  assert.throws(() => importCode(`TRE1-${'A'.repeat(LIMITS.codeChars)}-00000000`), (e) => e.reason === 'size');
+  assert.throws(() => deserialize('x'.repeat(LIMITS.jsonChars + 1)), (e) => e.reason === 'size');
+});
+
+test('the import finds the profile on this device that it replaces', () => {
+  const here = [{ id: 'p1', name: 'Tí' }, { id: 'p2', name: 'Tèo' }];
+  assert.equal(replacedBy({ id: 'p2' }, here).name, 'Tèo');
+  assert.equal(replacedBy({ id: 'p3' }, here), null);
+});
+
+test('the decompressed data has a size limit', () => {
+  const packed = compress(utf8Encode('a'.repeat(5000)));
+  assert.equal(decompress(packed).length, 5000);
+  assert.throws(() => decompress(packed, 1000));
 });

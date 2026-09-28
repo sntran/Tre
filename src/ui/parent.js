@@ -2,11 +2,11 @@
 // editor, and the export code. The area opens only after a parent holds a
 // button for 3 seconds and answers a question for adults.
 import { makeGateQuestion, checkGateAnswer, holdProgress } from '../core/parentgate.js';
-import { exportCode, importCode, SaveError } from '../core/save.js';
+import { exportCode, importCode, SaveError, replacedBy } from '../core/save.js';
 import { gradeIds, gradeName } from '../core/grades.js';
 import { extendTime, remainingMs } from '../core/timelimit.js';
 import { registerModal } from './registry.js';
-import { saveProfile, deleteProfile } from './storage.js';
+import { saveProfile, deleteProfile, listProfiles } from './storage.js';
 import { h, img, button } from './dom.js';
 import { t, lang } from './i18n.js';
 import { formatNumber } from '../core/i18n.js';
@@ -338,7 +338,12 @@ async function parentArea(ctx) {
         button(t('parent.code.load'), async () => {
           try {
             const profile = importCode(input.value, { grades: data.game.grades });
-            if (!window.confirm(t('parent.code.confirm', { name: profile.hero.name }))) return;
+            // Warn when the import replaces a profile with the same id on this device.
+            const old = replacedBy(profile, await listProfiles());
+            const question = old
+              ? t('parent.code.replace', { old: old.name ?? old.id, name: profile.hero.name })
+              : t('parent.code.confirm', { name: profile.hero.name });
+            if (!window.confirm(question)) return;
             await saveProfile(profile);
             layer.remove();
             resolve();

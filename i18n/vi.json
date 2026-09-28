@@ -1019,5 +1019,7 @@
   "dlg.river.friends.n5.c1": "Chào mừng bạn! Mình gọi bạn là [[song]] nhé.",
   "dlg.river.friends.n5.c2": "Bạn hãy ở lại với dòng sông nhé.",
   "dlg.river.friends.n6": "[[song]] cũng trở thành bạn của {name}. Trong trận đấu, [[song]] làm một tấm khiên nước. Lần sai đầu tiên sẽ không mất tim.",
-  "dlg.river.friends.n7": "[[song]] vẫy đuôi rồi bơi về với dòng sông."
+  "dlg.river.friends.n7": "[[song]] vẫy đuôi rồi bơi về với dòng sông.",
+  "parent.code.error.size": "Mã quá dài.",
+  "parent.code.replace": "Máy này đã có hồ sơ của cùng người chơi ({old}). Nhập mã sẽ thay hồ sơ đó bằng hồ sơ của {name}, và tiến độ trên máy này sẽ mất. Tiếp tục không?"
 }

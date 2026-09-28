@@ -1019,5 +1019,7 @@
   "dlg.river.friends.n5.c1": "Welcome! I will call you [[song]].",
   "dlg.river.friends.n5.c2": "Please stay with your river.",
   "dlg.river.friends.n6": "[[song]] is also the friend of {name}. In battles, [[song]] makes a shield of water. Your first mistake does not cost a heart.",
-  "dlg.river.friends.n7": "[[song]] waves its tail and swims back to the river."
+  "dlg.river.friends.n7": "[[song]] waves its tail and swims back to the river.",
+  "parent.code.error.size": "The code is too long.",
+  "parent.code.replace": "This device already has a profile of the same player ({old}). The import replaces it with the profile of {name}, and the progress on this device is lost. Continue?"
 }

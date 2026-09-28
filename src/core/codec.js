@@ -53,10 +53,11 @@ export function compress(bytes) {
   return Uint8Array.from(out);
 }
 
-export function decompress(data) {
+// maxLength: the largest output in bytes. A longer output is an error.
+export function decompress(data, maxLength = 50_000_000) {
   if (data.length < 4) throw new Error('Data is too short');
   const n = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
-  if (n < 0 || n > 50_000_000) throw new Error('Bad length');
+  if (n < 0 || n > maxLength) throw new Error('Bad length');
   const out = new Uint8Array(n);
   if (n === 0) return out;
 
