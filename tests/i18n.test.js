@@ -35,6 +35,21 @@ test('translate replaces parameters and nested keys', () => {
   assert.equal(i.t('missing.key'), 'missing.key');
 });
 
+test('a parameter at the start of a sentence starts with a capital letter', () => {
+  const i = createI18n({
+    calm: '{name} is calm now.',
+    call: 'Everybody! Gióng spoke! {name}, come here!',
+    mid: 'Help {name} now. {who}? {what}… {x}',
+    num: '{n} apples.',
+    dot: 'Mai · {grade}',
+  }, 'vi');
+  assert.equal(i.t('calm', { name: 'lính trinh sát' }), 'Lính trinh sát is calm now.');
+  assert.equal(i.t('call', { name: 'mai' }), 'Everybody! Gióng spoke! Mai, come here!');
+  assert.equal(i.t('mid', { name: 'the smith', who: 'đứa bé', what: 'ánh sáng', x: 'ừ' }), 'Help the smith now. Đứa bé? Ánh sáng… Ừ');
+  assert.equal(i.t('num', { n: 3 }), '3 apples.');
+  assert.equal(i.t('dot', { grade: 'lớp 2' }), 'Mai · lớp 2', 'a dot in the middle is not the end of a sentence');
+});
+
 test('glossary shows the meaning the first time in English only', () => {
   const dict = { 'gloss.vm.name': 'Văn Miếu', 'gloss.vm.meaning': 'the Temple of Literature' };
   const en1 = createI18n(dict, 'en');

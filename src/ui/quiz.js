@@ -15,7 +15,7 @@ import { createSeen, otherLevels } from '../core/fresh.js';
 //         record: true, header: element, onEach(result) }
 // A quiz never shows the same question twice. When the usual way gives no new question,
 // the quiz uses the alternatives, and then other levels of the skill.
-// Return a Promise of { correct, total, stopped }.
+// Return a Promise of { correct, total, stopped, skills } (skills: the skills of the questions shown).
 export function runQuiz(ctx, opts) {
   return new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
@@ -149,7 +149,7 @@ export function runQuiz(ctx, opts) {
       current?.destroy();
       layer.remove();
       ctx.save('quiz');
-      resolve({ correct, total: asked, stopped });
+      resolve({ correct, total: asked, stopped, skills: seen.skills() });
     }
 
     show(fresh(opts.next));

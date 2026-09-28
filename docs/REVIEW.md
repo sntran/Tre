@@ -10,7 +10,7 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
 ## 1. Facts to check
 
 - The legend of Thánh Gióng: the time of the sixth Hùng King (Hùng Vương thứ sáu), the village of Phù Đổng, the Ân army (quân Ân), the land of Văn Lang, the battle at the foot of Trâu Sơn mountain, Gióng rides to Sóc Sơn and rises to the sky, the golden bamboo (tre đằng ngà).
-- In 2010, UNESCO listed the Gióng festival of Phù Đổng and Sóc temples as intangible cultural heritage (key `battle.boss.note`).
+- In 2010, UNESCO listed the Gióng festival of Phù Đổng and Sóc temples as intangible cultural heritage (key `battle.boss.history`, with the History seal).
 - Văn Miếu was built in 1070. Quốc Tử Giám opened in 1076. The stone steles of the doctors (tiến sĩ) are from 1484 (key `vanmieu.note`).
 - The mentors of the callings: Chu Văn An (teacher, 14th century), Yết Kiêu (diver, 13th century), Tuệ Tĩnh (physician, 14th century), Thạch Sanh (folk tale). They are from later times than Era 1; they only show on the calling cards.
 - The titles and their meanings (keys `title.*`). The order of the five titles in the game is not the historical order. See `QUESTIONS.md`, question 5.
@@ -34,7 +34,8 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
 | `battle.river.note` | Thuồng luồng là loài vật sống dưới sông trong truyện dân gian Việt Nam. | The thuồng luồng is a river creature in Vietnamese folk tales. |
 | `battle.scouts.note` | Vào đời Hùng Vương thứ sáu, quân Ân kéo đến nước Văn Lang. Lính trinh sát đi trước để dò đường. | In the time of the sixth Hùng King, the Ân army came to the land of Văn Lang. Scouts went first to look at the roads. |
 | `battle.soldier.note` | Lính quân Ân làm theo lệnh của vua và tướng. Nhiều người lính cũng nhớ nhà. | The Ân soldiers followed the orders of their king and generals. Many soldiers also missed their homes. |
-| `battle.boss.note` | Trận đánh ở chân núi Trâu Sơn. Ngày nay, hội Gióng ở Phù Đổng và Sóc Sơn nhớ ơn Thánh Gióng. Năm 2010, UNESCO ghi danh hội Gióng là di sản văn hóa phi vật thể. | The battle was at the foot of Trâu Sơn mountain. Today, the Gióng festival at Phù Đổng and Sóc Sơn remembers Thánh Gióng. In 2010, UNESCO listed the Gióng festival as intangible cultural heritage. |
+| `battle.boss.note` (Legend) | Trận đánh ở chân núi Trâu Sơn. Ngày nay, hội Gióng ở Phù Đổng và Sóc Sơn nhớ ơn Thánh Gióng. | The battle was at the foot of Trâu Sơn mountain. Today, the Gióng festival at Phù Đổng and Sóc Sơn remembers Thánh Gióng. |
+| `battle.boss.history` (History) | Năm 2010, UNESCO ghi danh hội Gióng là di sản văn hóa phi vật thể. | In 2010, UNESCO listed the Gióng festival as intangible cultural heritage. |
 | `vanmieu.note` | Văn Miếu ở Thăng Long được xây năm 1070. Năm 1076, Quốc Tử Giám, trường đại học đầu tiên của Việt Nam, mở ở đây. Từ năm 1484, tên các tiến sĩ được khắc trên bia đá đặt trên lưng rùa. Trong trò chơi, em đi đến Văn Miếu để thi, dù truyện Thánh Gióng xảy ra từ rất lâu trước đó. | Văn Miếu in Thăng Long was built in 1070. In 1076, Quốc Tử Giám, the first university of Vietnam, opened here. From 1484, the names of the doctors were carved on stone steles on the backs of stone turtles. In the game, you travel to Văn Miếu for exams, but the story of Thánh Gióng is from much earlier. |
 
 ## 4. Enemies and battle texts
@@ -215,3 +216,12 @@ All other keys in `i18n/vi.json` also need a language review. The table shows th
 | `vanmieu.*` | 5 | Văn Miếu |
 
 Total: 996 texts in each language.
+
+## 8. Texts changed after the audit of the first slice
+
+- `dlg.elder.intro.n1`: "năm người tài giỏi" in place of "năm người thợ giỏi", because the teacher is not a worker (thợ).
+- `trial.*.done`: the end text of each trial names the topics of the questions that the player answered (param `{topics}`, the names of the skills).
+- `dlg.river.friends.*`: the young buffalo Nghé comes with the hero after the river battle. Sóng can come too, or stay with the river.
+- `quest.*`: shorter quest texts for the quest bar.
+- `grade.*`: the names of the grades, with "lớp Chồi" (Pre-K) and "lớp Lá" (K).
+

@@ -22,6 +22,18 @@ export function formatNumber(value, lang) {
   return (negative ? '-' : '') + grouped + (part ? point + part : '');
 }
 
+// Is the text at this offset the start of a sentence?
+export function startsSentence(text, offset) {
+  const before = text.slice(0, offset).trimEnd();
+  return before === '' || /[.!?…]$/.test(before);
+}
+
+// The text with a capital first letter. Glossary marks and numbers stay the same.
+export function capitalize(text) {
+  if (!text || text.startsWith('[[')) return text;
+  return text.charAt(0).toLocaleUpperCase() + text.slice(1);
+}
+
 export function createI18n(dict, lang, fallback = null) {
   function has(key) {
     return Object.prototype.hasOwnProperty.call(dict, key) ||
@@ -43,12 +55,17 @@ export function createI18n(dict, lang, fallback = null) {
 
   // Translate a key. Return the key itself when the text is missing,
   // so that a missing key is easy to see.
+  // A parameter at the start of a sentence (at the start of the text, or after ".", "!",
+  // "?", or "…") starts with a capital letter, for example "{name} is calm." -> "The scout is calm."
   function t(key, params) {
     params = params ?? {};
     const text = raw(key);
     if (text === null) return key;
-    return text.replace(PARAM, (all, name) =>
-      Object.prototype.hasOwnProperty.call(params, name) ? value(params[name]) : all);
+    return text.replace(PARAM, (all, name, offset) => {
+      if (!Object.prototype.hasOwnProperty.call(params, name)) return all;
+      const v = value(params[name]);
+      return startsSentence(text, offset) ? capitalize(v) : v;
+    });
   }
 
   // Replace glossary marks. "seen" is a Set of ids that the player saw before.

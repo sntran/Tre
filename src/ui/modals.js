@@ -27,7 +27,7 @@ registerModal('trial', async (ctx, cmd) => {
   };
   // Other skills of the trial, when a skill has no new question.
   const alternatives = () => skills.map((id) => () => ctx.learner.problem(id, { level: levelOf(ctx.graph.get(id)) }));
-  await runQuiz(ctx, {
+  const result = await runQuiz(ctx, {
     title: t('trial.title', { who: { key: `npc.${trial.npc}.name` } }),
     speaker: trial.npc,
     count: ctx.data.game.trials.questions,
@@ -38,7 +38,9 @@ registerModal('trial', async (ctx, cmd) => {
   applyEffects(ctx.profile, [{ set: trial.flag }, { give: trial.reward }]);
   await ctx.save('trial');
   const calling = ctx.data.callings.callings.find((c) => c.id === trial.calling);
-  await showMessage(ctx, { speaker: trial.npc, textKey: trial.doneKey, art: calling.art, rewards: trial.reward });
+  // The end text names the topics of the questions that the player answered.
+  const topics = result.skills.map((id) => t(`skill.${id}`)).join(t('ui.list.sep'));
+  await showMessage(ctx, { speaker: trial.npc, textKey: trial.doneKey, params: { topics }, art: calling.art, rewards: trial.reward });
 });
 
 // A short lesson of the mentor, with a fixed skill.

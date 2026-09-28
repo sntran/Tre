@@ -12,10 +12,17 @@ export function problemKey(p) {
 
 export function createSeen() {
   const keys = new Set();
+  const skills = [];
+  const remember = (p) => {
+    keys.add(problemKey(p));
+    if (!skills.includes(p.skill)) skills.push(p.skill);
+  };
   return {
     has: (p) => keys.has(problemKey(p)),
-    add: (p) => keys.add(problemKey(p)),
+    add: remember,
     get size() { return keys.size; },
+    // The skills of the questions that were shown, in order, each one time.
+    skills: () => [...skills],
     // Make a problem that was not shown. makers: functions that make a problem, in the order
     // of preference. Return null when no maker gives a new problem.
     fresh(makers, tries = 12) {
@@ -23,9 +30,8 @@ export function createSeen() {
         for (let i = 0; i < tries; i++) {
           const p = make();
           if (!p) break;
-          const key = problemKey(p);
-          if (!keys.has(key)) {
-            keys.add(key);
+          if (!keys.has(problemKey(p))) {
+            remember(p);
             return p;
           }
         }

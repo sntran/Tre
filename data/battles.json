@@ -1,5 +1,5 @@
 {
-  "_about": "Battles. states: the element states that the battle allows; the battle uses each of them. win: flags, items, and dialogues after a win. note: a short, fair note with the mark Legend or History. repeat: the battle can happen again.",
+  "_about": "Battles. states: the element states that the battle allows; the battle uses each of them. win: flags, items, and dialogues after a win. note: a short, fair note with the mark Legend or History. historyKey: a fact of history, with its own History seal. repeat: the battle can happen again.",
   "battles": {
     "river": { "bg": "battle/bg-river", "enemies": ["river-serpent", "river-serpent"], "states": ["ice", "water"], "introKey": "battle.river.intro",
       "mark": "legend", "noteKey": "battle.river.note",
@@ -14,7 +14,7 @@
       "mark": "legend", "noteKey": "battle.soldier.note",
       "win": { "set": ["soldier2.won"], "give": { "coin": 3, "iron": 1 } } },
     "boss": { "bg": "battle/bg-field", "enemies": ["general"], "states": ["fire", "ice", "water"], "introKey": "battle.boss.intro", "boss": true,
-      "mark": "legend", "noteKey": "battle.boss.note",
+      "mark": "legend", "noteKey": "battle.boss.note", "historyKey": "battle.boss.history",
       "companion": { "id": "giong", "art": "npc/giong-hero", "bambooArt": "npc/giong-bamboo", "strike": 1 },
       "events": [{ "id": "staff", "atSpirit": 5, "breaks": true, "dialogue": "staff.breaks", "puzzle": "bamboo", "after": "bamboo.found", "then": { "weapon": "bamboo" } }],
       "win": { "set": ["era1.boss.won"], "give": { "coin": 10 }, "after": ["giong.farewell"] } },

@@ -737,11 +737,11 @@
   "item.bamboo.name": "Bamboo",
   "item.rice.name": "Rice",
   "trial.title": "The trial of the {who}",
-  "trial.scholar.done": "Well done! You think fast and with care. A person who loves numbers and books is a Scholar.",
-  "trial.smith.done": "Thank you! You understand fire and iron. A person who works with iron and fire is a Smith.",
-  "trial.fisher.done": "Very good! You understand the water. A person who lives with the river is a Fisher.",
-  "trial.healer.done": "You are so caring! A person who takes care of plants and people is a Healer.",
-  "trial.woodcutter.done": "Great! You understand the sky, the land, and the forest. A person of the forest is a Woodcutter.",
+  "trial.scholar.done": "Well done! You did well on these topics: {topics}. A person who loves numbers and books is a Scholar.",
+  "trial.smith.done": "Thank you! You did well on these topics: {topics}. A person who works with iron and fire is a Smith.",
+  "trial.fisher.done": "Very good! You did well on these topics: {topics}. A person who lives with the river is a Fisher.",
+  "trial.healer.done": "You are so caring! You did well on these topics: {topics}. A person who takes care of plants and people is a Healer.",
+  "trial.woodcutter.done": "Great! You did well on these topics: {topics}. A person of the forest is a Woodcutter.",
   "trial.reward": "You get:",
   "calling.scholar.name": "Scholar",
   "calling.smith.name": "Smith",
@@ -802,7 +802,7 @@
   "battle.river.note": "The thuồng luồng is a river creature in Vietnamese folk tales.",
   "battle.scouts.note": "In the time of the sixth Hùng King, the Ân army came to the land of Văn Lang. Scouts went first to look at the roads.",
   "battle.soldier.note": "The Ân soldiers followed the orders of their king and generals. Many soldiers also missed their homes.",
-  "battle.boss.note": "The battle was at the foot of Trâu Sơn mountain. Today, the Gióng festival at Phù Đổng and Sóc Sơn remembers Thánh Gióng. In 2010, UNESCO listed the Gióng festival as intangible cultural heritage.",
+  "battle.boss.note": "The battle was at the foot of Trâu Sơn mountain. Today, the Gióng festival at Phù Đổng and Sóc Sơn remembers Thánh Gióng.",
   "battle.fight": "Start!",
   "battle.later": "Not now",
   "battle.target": "Choose",
@@ -1021,5 +1021,6 @@
   "dlg.river.friends.n6": "[[song]] is also the friend of {name}. In battles, [[song]] makes a shield of water. Your first mistake does not cost a heart.",
   "dlg.river.friends.n7": "[[song]] waves its tail and swims back to the river.",
   "parent.code.error.size": "The code is too long.",
-  "parent.code.replace": "This device already has a profile of the same player ({old}). The import replaces it with the profile of {name}, and the progress on this device is lost. Continue?"
+  "parent.code.replace": "This device already has a profile of the same player ({old}). The import replaces it with the profile of {name}, and the progress on this device is lost. Continue?",
+  "battle.boss.history": "In 2010, UNESCO listed the Gióng festival as intangible cultural heritage."
 }

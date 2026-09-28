@@ -9,8 +9,8 @@ import { lossLevel, applyLoss, eraComplete, setFlag } from '../core/profile.js';
 import { applyEffects } from '../core/game.js';
 import { createBattleRenderer } from '../render/battle.js';
 import { h, img, button, wait } from './dom.js';
-import { t, tg, lang } from './i18n.js';
-import { speak } from './speak.js';
+import { t, tg, lang, say } from './i18n.js';
+import { speak, speakText } from './speak.js';
 import { renderCards } from './cards.js';
 import { renderQuestion, feedbackLine, textOf, answerText } from './question.js';
 import { runDialogue } from './dialogue.js';
@@ -74,11 +74,15 @@ async function mountBattle(ctx, params) {
   const note = h('button', { class: 'battle-note', type: 'button' }, [
     def.mark ? h('strong', { class: 'note-mark', text: t(`mark.${def.mark}`) }) : null,
     h('span', { class: 'note-text', text: tg(def.noteKey) }),
+    // A fact of history has its own History seal, apart from the legend.
+    def.historyKey ? h('strong', { class: 'note-mark', text: t('mark.history') }) : null,
+    def.historyKey ? h('span', { class: 'note-text', text: tg(def.historyKey) }) : null,
   ]);
   // On a phone, the note shows 2 lines. A tap shows all of it, and reads it aloud.
   note.addEventListener('click', () => {
     note.classList.toggle('open');
-    speak(def.noteKey, null, { force: true });
+    if (def.historyKey) speakText(`${say(def.noteKey)} ${t('mark.history')}: ${say(def.historyKey)}`);
+    else speak(def.noteKey, null, { force: true });
   });
   const top = h('div', { class: 'battle-top' }, [hearts, note]);
   const panel = h('div', { class: 'battle-panel' });

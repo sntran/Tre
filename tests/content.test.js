@@ -137,3 +137,28 @@ test('the quest bar text is short: 44 characters or fewer, so it fits in 2 lines
     }
   }
 });
+
+test('facts of history in battle notes have the History seal', () => {
+  const en = load('i18n/en.json');
+  const battles = load('data/battles.json').battles;
+  for (const [id, b] of Object.entries(battles)) {
+    // A note with the Legend seal does not tell a modern fact (a year, UNESCO).
+    if (b.mark === 'legend') {
+      for (const text of [vi[b.noteKey], en[b.noteKey]]) {
+        assert.ok(!/UNESCO|\b(1[0-9]{3}|20[0-9]{2})\b/.test(text), `${id}: "${text}" needs the History seal`);
+      }
+    }
+    if (b.historyKey) assert.ok(b.historyKey in vi && b.historyKey in en, `${id}: history text`);
+  }
+  assert.ok(/UNESCO/.test(en[battles.boss.historyKey]));
+});
+
+test('the end text of each trial names the topics of the questions', () => {
+  const en = load('i18n/en.json');
+  for (const tr of trials) {
+    for (const table of [vi, en]) assert.ok(table[tr.doneKey].includes('{topics}'), `${tr.doneKey}`);
+  }
+  // No text calls the five skilled people "thợ" (workers), because the teacher is not a worker.
+  assert.ok(!vi['dlg.elder.intro.n1'].includes('thợ giỏi'));
+  assert.ok(vi['dlg.elder.intro.n1'].includes('năm người tài giỏi'));
+});

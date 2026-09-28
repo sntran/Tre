@@ -419,6 +419,8 @@ test('a quiz never shows the same question twice: another skill, then another le
     if (i === 1) assert.equal(p.skill, flow.id, 'the second question comes from the other skill');
   }
   assert.equal(new Set(keys).size, keys.length, 'no question comes twice');
+  // The skills of the shown questions, for the end text of a trial.
+  assert.deepEqual(seen.skills(), [float.id, flow.id]);
   // When all questions of both skills were shown, there is no new question.
   assert.equal(seen.fresh(makers), null);
 
