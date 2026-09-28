@@ -44,7 +44,7 @@ function runExam(ctx, kind) {
     layer.append(panel);
     ctx.ui.append(layer);
     let q = null;
-    const seen = createSeen();
+    const seen = createSeen(ctx.seen);
 
     const ask = () => {
       const item = exam.next();

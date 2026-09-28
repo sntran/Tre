@@ -2,6 +2,7 @@
 import { setLanguage as loadLanguage, t, useSeenGloss, seenGlossList, setGlobalParams } from './i18n.js';
 import { loadRecordedKeys, setVoiceEnabled, setVoiceProfiles, speak } from './speak.js';
 import { loadData } from './data.js';
+import { createSeen } from '../core/fresh.js';
 import { saveProfile, loadProfile, isMemoryOnly, getMeta, setMeta } from './storage.js';
 import { h, button } from './dom.js';
 import { createBus } from '../core/events.js';
@@ -128,6 +129,8 @@ export async function startApp(root) {
 
     async startProfile(profile, isNew = false) {
       ctx.profile = profile;
+      // The questions of this play session: quizzes, battles, and exams avoid repeats.
+      ctx.seen = createSeen();
       setGlobalParams({ name: profile.hero.name });
       useSeenGloss(profile.seenGloss);
       await ctx.setLanguage(profile.settings.lang);

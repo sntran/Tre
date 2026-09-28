@@ -43,21 +43,23 @@ export function runQuiz(ctx, opts) {
     let problem = null;
     let mistakes = 0;
     let recorded = false;
-    const seen = createSeen();
+    const seen = createSeen(ctx.seen);
 
     // A new problem: the first maker, then the alternatives, then other levels of the skill.
     function fresh(make) {
-      let last = null;
+      // The skill and the level of the usual problem give the other levels to try.
+      const sample = make();
+      const skill = sample && ctx.graph.get(sample.skill);
+      const levels = skill ? otherLevels(ctx.learner, skill, sample.level) : [];
+      let used = false;
       const first = () => {
-        last = make();
-        return last;
+        if (!used) {
+          used = true;
+          return sample;
+        }
+        return make();
       };
-      const levels = () => {
-        const skill = last && ctx.graph.get(last.skill);
-        return skill ? otherLevels(ctx.learner, skill, last.level) : [];
-      };
-      const p = seen.fresh([first, ...(opts.alternatives?.() ?? [])]);
-      return p ?? seen.fresh(levels());
+      return seen.fresh([first, ...(opts.alternatives?.() ?? []), ...levels]);
     }
 
     function show(p) {

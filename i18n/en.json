@@ -1022,5 +1022,6 @@
   "dlg.river.friends.n7": "[[song]] waves its tail and swims back to the river.",
   "parent.code.error.size": "The code is too long.",
   "parent.code.replace": "This device already has a profile of the same player ({old}). The import replaces it with the profile of {name}, and the progress on this device is lost. Continue?",
-  "battle.boss.history": "In 2010, UNESCO listed the Gióng festival as intangible cultural heritage."
+  "battle.boss.history": "In 2010, UNESCO listed the Gióng festival as intangible cultural heritage.",
+  "battle.guard.shield": "{name} raises a number shield! Answer right to break it."
 }

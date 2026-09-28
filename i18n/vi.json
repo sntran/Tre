@@ -1022,5 +1022,6 @@
   "dlg.river.friends.n7": "[[song]] vẫy đuôi rồi bơi về với dòng sông.",
   "parent.code.error.size": "Mã quá dài.",
   "parent.code.replace": "Máy này đã có hồ sơ của cùng người chơi ({old}). Nhập mã sẽ thay hồ sơ đó bằng hồ sơ của {name}, và tiến độ trên máy này sẽ mất. Tiếp tục không?",
-  "battle.boss.history": "Năm 2010, UNESCO ghi danh hội Gióng là di sản văn hóa phi vật thể."
+  "battle.boss.history": "Năm 2010, UNESCO ghi danh hội Gióng là di sản văn hóa phi vật thể.",
+  "battle.guard.shield": "{name} giơ khiên số lên! Trả lời đúng để phá khiên."
 }

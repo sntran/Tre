@@ -544,6 +544,7 @@ p { line-height: 1.45; margin: 0.4em 0; }
   cursor: pointer;
 }
 .note-mark { font-size: var(--text-small); flex: none; }
+.guard-line { margin: 0 0 6px; text-align: center; font-weight: 600; color: var(--vermilion); }
 .battle-bottom {
   display: flex;
   flex-direction: column;

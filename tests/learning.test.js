@@ -449,6 +449,28 @@ test('a quiz never shows the same question twice: another skill, then another le
   assert.equal(p.level, 2, 'the nearest other level first');
 });
 
+test('a quiz avoids the questions of the play session, and never repeats its own', () => {
+  const { learner } = learnerFor(2);
+  const session = createSeen();
+  const float = graph.get('sci.water.float');
+  const makers = [() => learner.problem(float.id, { level: 1 }), ...otherLevels(learner, float, 1)];
+  // A first quiz shows the 3 questions of the skill.
+  const first = createSeen(session);
+  const shown = [first.fresh(makers), first.fresh(makers), first.fresh(makers)].map(problemKey);
+  assert.equal(new Set(shown).size, 3);
+  assert.equal(first.fresh(makers), null, 'no fourth question in the same quiz');
+  // A second quiz of the session: no new question, so it repeats one, but not twice in itself.
+  const second = createSeen(session);
+  const again = [second.fresh(makers), second.fresh(makers), second.fresh(makers)].map(problemKey);
+  assert.equal(new Set(again).size, 3);
+  assert.equal(second.fresh(makers), null);
+  // With another skill, the second quiz takes the new questions first.
+  const flow = graph.get('sci.water.flow');
+  const third = createSeen(session);
+  const p = third.fresh([...makers, () => learner.problem(flow.id, { level: 1 })]);
+  assert.equal(p.skill, flow.id, 'a question that the session did not show comes first');
+});
+
 test('a quiz of many questions from one skill has no repeated question', () => {
   const { learner } = learnerFor(1);
   const seen = createSeen();

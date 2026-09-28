@@ -4,13 +4,14 @@ import { createBattle } from '../core/battle.js';
 import { createElementRules } from '../core/elements.js';
 import { hasCards } from '../core/generators.js';
 import { feedbackFor, battleSkills } from '../core/learner.js';
+import { createSeen, otherLevels } from '../core/fresh.js';
 import { checkAnswer } from '../core/solver.js';
 import { lossLevel, applyLoss, eraComplete, setFlag } from '../core/profile.js';
 import { applyEffects } from '../core/game.js';
 import { createBattleRenderer } from '../render/battle.js';
 import { h, img, button, wait } from './dom.js';
 import { t, tg, lang, say } from './i18n.js';
-import { speak, speakText } from './speak.js';
+import { speak, speakText, whenQuiet } from './speak.js';
 import { renderCards } from './cards.js';
 import { renderQuestion, feedbackLine, textOf, answerText } from './question.js';
 import { runDialogue } from './dialogue.js';
@@ -23,16 +24,24 @@ export function battleSkillFilter() {
   return battleSkills;
 }
 
-function makeShieldFactory(ctx) {
+// Number shields. The battle avoids questions that the session showed before
+// (and never repeats one in the same battle). When no new question comes, it repeats one.
+function makeShieldFactory(ctx, seen) {
   const { learner, graph } = ctx;
+  const make = (id, level, extraCards) => (hasCards(graph.get(id), level)
+    ? learner.problem(id, { level, cards: true, extraCards })
+    : learner.problem(id, { level }));
   return (enemy, similarTo, { extraCards = 0 } = {}) => {
     if (similarTo) {
-      return learner.problem(similarTo.skill, { level: similarTo.level, cards: similarTo.kind === 'cards', extraCards });
+      const again = () => make(similarTo.skill, similarTo.level, extraCards);
+      return seen.fresh([again, ...otherLevels(learner, graph.get(similarTo.skill), similarTo.level)]) ?? again();
     }
-    const id = learner.pickSkill({ filter: battleSkillFilter() });
-    const level = learner.levelFor(id);
-    const skill = graph.get(id);
-    return hasCards(skill, level) ? learner.problem(id, { level, cards: true, extraCards }) : learner.problem(id, { level });
+    const pick = () => {
+      const id = learner.pickSkill({ filter: battleSkillFilter() });
+      return make(id, learner.levelFor(id), extraCards);
+    };
+    const first = pick();
+    return seen.fresh([() => first, pick]) ?? first;
   };
 }
 
@@ -52,7 +61,7 @@ async function mountBattle(ctx, params) {
     config: data.game.battle,
     feedback: data.learning.feedback,
     party: { shieldBlocks, extraHealth, bonuses: calling?.bonus ?? {}, companion: def.companion ?? null },
-    makeShield: makeShieldFactory(ctx),
+    makeShield: makeShieldFactory(ctx, createSeen(ctx.seen)),
     rng: ctx.rng,
   });
   const renderer = await createBattleRenderer({
@@ -131,6 +140,10 @@ async function mountBattle(ctx, params) {
       return;
     }
     const problem = guard.problem;
+    // A line tells that the enemy has a number shield, so a math problem after an attack is clear.
+    const guardParams = { name: enemyName(enemy) };
+    panel.append(h('p', { class: 'guard-line', text: t('battle.guard.shield', guardParams) }));
+    speak('battle.guard.shield', guardParams);
     if (problem.kind === 'cards') {
       panel.append(h('div', { class: 'prompt-row' }, [
         h('p', { class: 'prompt', text: t('battle.shield', { target: problem.target }) }),
@@ -138,10 +151,11 @@ async function mountBattle(ctx, params) {
       ]));
       widget = renderCards(problem, { onSubmit: (moves) => act(() => battle.answer(moves)) });
       panel.append(widget.el, h('div', { class: 'battle-actions' }, [hintButton()]));
-      speak('battle.shield', { target: problem.target });
+      speak('battle.shield', { target: problem.target }, { queue: true });
     } else {
-      widget = renderQuestion(problem, { onAnswer: (r) => act(() => battle.answer(r)) });
+      widget = renderQuestion(problem, { onAnswer: (r) => act(() => battle.answer(r)), autoSpeak: false });
       panel.append(widget.el, h('div', { class: 'battle-actions' }, [hintButton()]));
+      if (problem.prompt?.key) speak(problem.prompt.key, problem.prompt.params, { queue: true });
     }
     ctx.activeProblem = problem;
   }
@@ -168,9 +182,24 @@ async function mountBattle(ctx, params) {
       return;
     }
     await showEvents(result.events);
-    busy = false;
     if (!alive) return;
-    if (battle.phase === 'player') renderPanel();
+    const next = result.events.some((e) => e.type === 'newGuard' || e.type === 'target');
+    if (battle.phase === 'player' && next) {
+      // Let the voice finish (for example "Fire meets water...") before the next guard speaks.
+      // Then the old message goes away, so that two messages do not show together.
+      await whenQuiet(6000);
+      if (!alive) return;
+      if (!result.events.some((e) => e.type === 'newGuard' && e.similar)) feedback.clear();
+      busy = false;
+      renderPanel();
+      return;
+    }
+    busy = false;
+    // A mistake: the same guard stays. Keep the hint on the screen, and let the player try again.
+    if (battle.phase === 'player') {
+      widget?.unlock?.();
+      panel.querySelector('.battle-actions .btn.small')?.replaceWith(hintButton());
+    }
   }
 
   async function showEvents(events) {
@@ -352,7 +381,8 @@ async function mountBattle(ctx, params) {
   // The intro text, then the first guard.
   root.hidden = true;
   queueMicrotask(async () => {
-    await showMessage(ctx, { title: t(data.enemies.enemies[def.enemies[0]].nameKey), textKey: def.introKey });
+    // The confirm panel before the battle already showed and spoke the intro.
+    if (!params.introShown) await showMessage(ctx, { title: t(data.enemies.enemies[def.enemies[0]].nameKey), textKey: def.introKey });
     root.hidden = false;
     renderPanel();
   });
@@ -465,7 +495,7 @@ registerModal('confirmBattle', (ctx, { id }) => new Promise((resolve) => {
       h('p', { class: 'prompt', text: tg(def.introKey) }),
       h('div', { class: 'row' }, [
         button(t('battle.later'), close, { cls: 'btn paper' }),
-        button(t('battle.fight'), () => { layer.remove(); resolve(); ctx.go('battle', { id }); }, { cls: 'btn big red' }),
+        button(t('battle.fight'), () => { layer.remove(); resolve(); ctx.go('battle', { id, introShown: true }); }, { cls: 'btn big red' }),
       ]),
     ]),
   ]));
