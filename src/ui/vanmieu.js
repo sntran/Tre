@@ -1,6 +1,6 @@
 // Văn Miếu, the Temple of Literature: the adaptive exams, the first title,
 // the stone stele on the turtle, and the choice of a calling.
-import { buildLadder, createExam, skillsToPractice } from '../core/exam.js';
+import { buildLadder, createExam, skillsToPractice, examSkills } from '../core/exam.js';
 import { gradeBase } from '../core/rating.js';
 import { gradeIds, gradeName } from '../core/grades.js';
 import { createSeen } from '../core/fresh.js';
@@ -14,9 +14,10 @@ import { portrait } from './dialogue.js';
 import { renderQuestion, feedbackLine } from './question.js';
 import { showMessage } from './quiz.js';
 
-// The ladder of an exam: the math skills of Era 1, or all math skills for placement.
+// The ladder of an exam: the skills of the era of its title, or all skills for placement.
 function ladderFor(ctx, kind) {
-  const skills = ctx.graph.filter((s) => s.subject === 'math' && (kind === 'era1' ? s.era === 1 : true));
+  const { titles } = ctx.data;
+  const skills = examSkills(ctx.graph, titles.exams[kind], titles.titles);
   return buildLadder(skills, ctx.data.learning.rating);
 }
 

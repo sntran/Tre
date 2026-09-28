@@ -7,7 +7,7 @@ import { expected, updateRatings, chooseLevel, itemStartRating, gradeBase } from
 import { startReview, recordReview, isDue, DAY_MS } from '../src/core/review.js';
 import { createLearner, feedbackFor, battleSkills } from '../src/core/learner.js';
 import { gradeIds, byGrade, gradeName } from '../src/core/grades.js';
-import { createExam, buildLadder, skillsToPractice, maxLikelihood, simulateExams } from '../src/core/exam.js';
+import { createExam, buildLadder, skillsToPractice, maxLikelihood, simulateExams, examSkills } from '../src/core/exam.js';
 import { skillsData, learningConfig as cfg, bank, load } from './helpers.js';
 import { createSeen, problemKey, otherLevels } from '../src/core/fresh.js';
 
@@ -300,7 +300,8 @@ test('placement sets the level of each skill from the ability', () => {
 
 // Adaptive exam
 
-const era1Ladder = buildLadder(graph.filter((s) => s.era === 1 && s.subject === 'math'), cfg.rating);
+const titlesData = load('data/titles.json');
+const era1Ladder = buildLadder(examSkills(graph, titlesData.exams.era1, titlesData.titles), cfg.rating);
 const allLadder = buildLadder(graph.filter((s) => s.subject === 'math'), cfg.rating);
 const settings = cfg.exam.subject;
 
@@ -368,6 +369,20 @@ test('the exam ability is the maximum likelihood value of all answers', () => {
   const high = allLadder[allLadder.length - 1].rating + 200;
   assert.equal(exam.ability, result.ability);
   assert.ok(result.ability >= low && result.ability <= high);
+});
+
+test('the exam of a title uses the skills of the era of that title', () => {
+  const titles = load('data/titles.json');
+  const era1 = examSkills(graph, titles.exams.era1, titles.titles);
+  assert.ok(era1.length > 0);
+  assert.ok(era1.every((s) => s.subject === 'math' && s.era === 1));
+  // The era comes from the title, not from a fixed number.
+  const moved = titles.titles.map((x) => (x.id === 'tu-tai' ? { ...x, era: 2 } : x));
+  const era2 = examSkills(graph, titles.exams.era1, moved);
+  assert.ok(era2.length > 0 && era2.every((s) => s.era === 2));
+  // The placement exam has no title: all math skills.
+  assert.equal(examSkills(graph, titles.exams.placement, titles.titles).length, graph.filter((s) => s.subject === 'math').length);
+  assert.throws(() => examSkills(graph, { subject: 'math', title: 'nobody' }, titles.titles));
 });
 
 test('the placement exam starts near the grade of the player', () => {

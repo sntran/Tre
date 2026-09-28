@@ -1,5 +1,5 @@
 {
-  "_about": "Scholar titles, based on the old exam system (thi Hương, thi Hội, thi Đình). A pass of the exam of an era gives the title of that era. Trạng nguyên needs a pass in all five eras.",
+  "_about": "Scholar titles, based on the old exam system (thi Hương, thi Hội, thi Đình). A pass of the exam of an era gives the title of that era. Trạng nguyên needs a pass in all five eras. An exam with a title uses the skills of the era of that title.",
   "titles": [
     { "id": "tu-tai", "era": 1, "nameKey": "title.tu-tai.name", "aboutKey": "title.tu-tai.about" },
     { "id": "cu-nhan", "era": 2, "nameKey": "title.cu-nhan.name", "aboutKey": "title.cu-nhan.about" },
@@ -8,7 +8,7 @@
     { "id": "trang-nguyen", "era": 5, "needsAll": true, "nameKey": "title.trang-nguyen.name", "aboutKey": "title.trang-nguyen.about" }
   ],
   "exams": {
-    "era1": { "titleKey": "exam.era1.title", "subject": "math", "era": 1, "title": "tu-tai", "flag": "exam.era1.passed" },
+    "era1": { "titleKey": "exam.era1.title", "subject": "math", "title": "tu-tai", "flag": "exam.era1.passed" },
     "placement": { "titleKey": "exam.placement.title", "subject": "math", "flag": "placement.done" }
   }
 }

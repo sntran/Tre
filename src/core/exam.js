@@ -18,6 +18,15 @@ export function buildLadder(skills, ratingCfg, ratingOf = null) {
   return items.sort((a, b) => a.rating - b.rating || a.skill.localeCompare(b.skill));
 }
 
+// The skills of an exam. examDef: an exam of titles.json ({ subject, title }).
+// An exam that gives a title uses the skills of the era of that title (the "era" field of
+// the title). An exam with no title (placement) uses all skills of the subject.
+export function examSkills(graph, examDef, titles) {
+  const title = examDef.title ? titles.find((x) => x.id === examDef.title) : null;
+  if (examDef.title && !title) throw new Error(`Unknown title ${examDef.title}`);
+  return graph.filter((s) => s.subject === examDef.subject && (!title || s.era === title.era));
+}
+
 // The maximum likelihood ability for answers [{ rating, correct }], in the range [lo, hi],
 // rounded to a whole number. With only correct answers, it is hi. With only wrong answers, it is lo.
 // The log likelihood has one top (it is concave), so a ternary search finds it.
