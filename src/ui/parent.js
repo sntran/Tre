@@ -4,7 +4,6 @@
 import { makeGateQuestion, checkGateAnswer, holdProgress } from '../core/parentgate.js';
 import { exportCode, importCode, SaveError } from '../core/save.js';
 import { extendTime, remainingMs } from '../core/timelimit.js';
-import { masteryState } from '../core/mastery.js';
 import { registerModal } from './registry.js';
 import { saveProfile, deleteProfile } from './storage.js';
 import { h, img, button } from './dom.js';

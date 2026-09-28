@@ -80,6 +80,21 @@ test('migrations change an old save into the current version', () => {
   assert.throws(() => migrate(old, { migrations: { 1: migrations[1] }, version: 3 }), (e) => e.reason === 'migration');
 });
 
+test('the version 2 migration keeps mastery and gives the hero a skin tone', () => {
+  const v1 = sample();
+  delete v1.hero.skin;
+  v1.hero.face = 3;
+  v1.learning.skills['math.add.10'] = { p: 0.97, r: 1100, n: 6, c: 6 };
+  const done = migrate({ format: SAVE_FORMAT, version: 1, savedAt: 0, profile: v1 });
+  assert.equal(done.version, SAVE_VERSION);
+  const skills = done.profile.learning.skills;
+  assert.equal(skills['math.add.10'].mastered, true);
+  assert.equal(skills['math.add.20'].mastered, false);
+  assert.equal(skills['math.add.20'].top, 0);
+  assert.equal(skills['math.add.20'].recent, '');
+  assert.equal(done.profile.hero.skin, 3);
+});
+
 test('the export code loads on another device', () => {
   const p = sample();
   const code = exportCode(p, 99);

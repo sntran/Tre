@@ -5,7 +5,9 @@ This list has the questions that the design does not answer, and the choice that
 ## Questions from the design
 
 1. **How many correct answers in a row move a skill up, and how many mistakes give more practice?**
-   - Choice: the mastery model (Bayesian Knowledge Tracing) decides. With the values in `learning.json` (start 0.2, learn 0.08, slip 0.12, guess 0.3), about 4 or 5 correct answers in a row move a new skill of the grade of the player to "mastered" (0.95). Two or three mistakes move it back to "learning". The difficulty rating (Elo) moves the level of problems in a skill up after correct answers.
+   - Choice: the mastery model (Bayesian Knowledge Tracing) decides, with extra rules. The values are in `learning.json` (start 0.2, learn 0.03, slip 0.1, guess 0.2). A skill is "mastered" only when all these are true: p is 0.95 or more, the player gave 8 answers or more, 2 or more correct answers were at the highest level, and the last 10 answers have 1 mistake or fewer (no mistake in fewer than 10 answers). Near mastery, the problems use the highest level. A mastered skill stays mastered until p falls below 0.7 ("almost"). So one mistake does not remove the mastery.
+   - Simulation (400 learners for each value, see `tests/learning.test.js`): a learner who is always right needs 8 answers. A learner who is right 80 percent of the time needs about 14 answers (median). A learner who is right 60 percent of the time needs about 60 answers (median), and few get mastery in 20 answers.
+   - The difficulty rating (Elo) chooses the level: the hardest level with an expected success from 75 to 85 percent (`targetLow`, `targetHigh`).
 2. **How much health does one mistake cost, and how many hints does a battle give?**
    - Choice: the hero has 5 hearts. One mistake costs 1 heart. Each battle gives 2 hints with no cost. After each mistake, the game also gives a hint, then a worked example, then a similar problem.
 3. **Which small items can a player lose, and how many?**

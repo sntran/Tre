@@ -4,12 +4,27 @@
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
 
 export const SAVE_FORMAT = 'tre-save';
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 export const CODE_PREFIX = 'TRE1';
 
 // MIGRATIONS[n] changes a save of version n into version n + 1.
 // Add a function here each time the profile shape changes. Never remove one.
-export const MIGRATIONS = {};
+export const MIGRATIONS = {
+  // Version 2: each skill entry keeps a "mastered" state and a count of correct answers
+  // at the highest level ("top"), and the results of the last answers ("recent"). The hero has a skin tone apart from the face.
+  1: (profile) => {
+    const out = structuredClone(profile);
+    for (const e of Object.values(out.learning?.skills ?? {})) {
+      if (!e || typeof e !== 'object') continue;
+      // 0.95 was the "mastered" value of version 1.
+      e.mastered = typeof e.p === 'number' && e.p >= 0.95;
+      e.top ??= 0;
+      e.recent ??= '';
+    }
+    if (out.hero && typeof out.hero === 'object') out.hero.skin ??= out.hero.face ?? 1;
+    return out;
+  },
+};
 
 export class SaveError extends Error {
   constructor(reason, message) {

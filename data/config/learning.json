@@ -3,14 +3,19 @@
   "mastery": {
     "_about": "Bayesian Knowledge Tracing. p is the chance that the player knows the skill.",
     "pInit": 0.2,
-    "pTransit": 0.08,
-    "pSlip": 0.12,
-    "pGuess": 0.3,
+    "pTransit": 0.03,
+    "pSlip": 0.1,
+    "pGuess": 0.2,
     "almost": 0.7,
     "mastered": 0.95,
     "priorBelowGrade": 0.95,
     "priorAtGrade": 0.2,
-    "priorAboveGrade": 0.1
+    "priorAboveGrade": 0.1,
+    "minAnswers": 8,
+    "minTopCorrect": 2,
+    "recentAnswers": 10,
+    "recentMistakes": 1,
+    "_rulesAbout": "A skill becomes mastered only when p >= mastered, after at least minAnswers answers, with at least minTopCorrect correct answers at the highest level, and with at most recentMistakes wrong answers in the last recentAnswers answers (fewer mistakes when there are fewer answers). It stays mastered until p falls below almost. Near mastery (p >= almost), the problems use the highest level."
   },
   "rating": {
     "_about": "Elo-style ratings for the player (one for each skill) and for each problem item (skill and level).",

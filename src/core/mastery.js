@@ -32,3 +32,41 @@ export function answersToMaster(p, cfg, limit = 50) {
   }
   return n;
 }
+
+// Decide the mastery of a skill entry and keep it in entry.mastered.
+// entry: { p, n (answers), top (correct answers at the highest level), mastered }.
+// A skill becomes mastered when p is high enough, after enough answers, with enough
+// correct answers at the highest level. It stays mastered until p falls below "almost",
+// so that the state does not flap between two answers.
+export function decideMastery(entry, cfg) {
+  if (entry.mastered) {
+    if (entry.p < cfg.almost) entry.mastered = false;
+  } else if (entry.p >= cfg.mastered
+    && entry.n >= (cfg.minAnswers ?? 0)
+    && (entry.top ?? 0) >= (cfg.minTopCorrect ?? 0)
+    && recentMistakes(entry) <= allowedMistakes(entry, cfg)) {
+    entry.mastered = true;
+  }
+  return entryState(entry, cfg);
+}
+
+// Keep the results of the last answers as a text of "1" (correct) and "0" (wrong).
+export function pushRecent(entry, correct, size) {
+  entry.recent = ((entry.recent ?? '') + (correct ? '1' : '0')).slice(-size);
+}
+
+// The mistakes that the last answers can have. With fewer answers than recentAnswers,
+// the number is smaller in proportion (for example no mistake in 8 answers).
+function allowedMistakes(entry, cfg) {
+  if (cfg.recentMistakes == null || !cfg.recentAnswers) return Infinity;
+  return Math.floor((cfg.recentMistakes * (entry.recent ?? '').length) / cfg.recentAnswers);
+}
+
+export function recentMistakes(entry) {
+  return [...(entry.recent ?? '')].filter((c) => c === '0').length;
+}
+
+export function entryState(entry, cfg) {
+  if (entry.mastered) return 'mastered';
+  return entry.p >= cfg.almost ? 'almost' : 'learning';
+}

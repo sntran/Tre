@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRng } from '../src/core/rng.js';
 import { createSkillGraph } from '../src/core/skills.js';
-import { bktUpdate, masteryState, answersToMaster, pCorrect } from '../src/core/mastery.js';
+import { bktUpdate, masteryState, answersToMaster, pCorrect, decideMastery } from '../src/core/mastery.js';
 import { expected, updateRatings, chooseLevel, itemStartRating } from '../src/core/rating.js';
 import { startReview, recordReview, isDue, DAY_MS } from '../src/core/review.js';
 import { createLearner, feedbackFor } from '../src/core/learner.js';
@@ -65,6 +65,70 @@ test('BKT: some correct answers in a row give mastery', () => {
   assert.equal(masteryState(0.2, m), 'learning');
 });
 
+// Answers to mastery of a simulated learner who is right with a fixed chance.
+// The learner practices one skill with the normal choice of levels.
+function answersToMastery(rate, runs, skillId = 'math.add.10', max = 400) {
+  const counts = [];
+  for (let s = 0; s < runs; s++) {
+    const learning = { skills: {}, items: {}, exams: [] };
+    const learner = createLearner({ graph, config: cfg, learning, grade: 1, rng: createRng(`sim${s}`), clock: () => 0 });
+    const rng = createRng(`answers${s}`);
+    let n = 0;
+    let done = false;
+    while (!done && n < max) {
+      n += 1;
+      done = learner.record(learner.problem(skillId), rng.chance(rate)).newlyMastered;
+    }
+    counts.push(done ? n : Infinity);
+  }
+  counts.sort((a, b) => a - b);
+  return { counts, median: counts[Math.floor(runs / 2)], within: (k) => counts.filter((c) => c <= k).length / runs };
+}
+
+test('mastery: simulated learners who are right 100, 80, and 60 percent of the time', () => {
+  // Expected (from 400 runs): 100% -> 8 answers; 80% -> median about 14; 60% -> median about 60.
+  const all = answersToMastery(1, 50);
+  assert.ok(all.counts.every((c) => c === cfg.mastery.minAnswers), 'a learner who is always right needs exactly minAnswers');
+  const good = answersToMastery(0.8, 400);
+  assert.ok(good.median >= 10 && good.median <= 20, `80%: median ${good.median}`);
+  assert.ok(good.within(40) >= 0.9, '80%: most learners get mastery in 40 answers');
+  const weak = answersToMastery(0.6, 400);
+  assert.ok(weak.median >= 40, `60%: median ${weak.median}`);
+  assert.ok(weak.within(20) <= 0.2, `60%: ${weak.within(20)} get mastery in 20 answers`);
+});
+
+test('mastery needs 8 answers and 2 correct answers at the highest level', () => {
+  const { learner } = learnerFor(1);
+  const skill = graph.get('math.add.10');
+  // Correct answers at level 1 only: p is high, but the skill is not mastered.
+  for (let i = 0; i < 12; i++) learner.record({ skill: skill.id, level: 1 }, true);
+  assert.ok(learner.entry(skill.id).p >= cfg.mastery.mastered);
+  assert.equal(learner.status(skill.id), 'almost');
+  // Near mastery, the next problem uses the highest level.
+  assert.equal(learner.levelFor(skill.id), skill.levels.length);
+  learner.record({ skill: skill.id, level: skill.levels.length }, true);
+  assert.equal(learner.status(skill.id), 'almost');
+  assert.equal(learner.record({ skill: skill.id, level: skill.levels.length }, true).newlyMastered, true);
+  // Fewer than 8 answers never give mastery.
+  const e = { p: 0.99, n: 7, top: 5, recent: '1111111', mastered: false };
+  assert.equal(decideMastery(e, cfg.mastery), 'almost');
+});
+
+test('mastery does not flap: one mistake keeps a mastered skill, a fall below "almost" removes it', () => {
+  const m = cfg.mastery;
+  const e = { p: 0.97, n: 20, top: 4, recent: '1111111111', mastered: true };
+  e.p = bktUpdate(e.p, false, m);
+  assert.ok(e.p < m.mastered && e.p >= m.almost, `p ${e.p}`);
+  assert.equal(decideMastery(e, m), 'mastered');
+  e.p = bktUpdate(e.p, false, m);
+  assert.ok(e.p < m.almost);
+  assert.equal(decideMastery(e, m), 'learning');
+  // It comes back only with the full rule.
+  e.p = 0.96;
+  e.recent = '0011111111';
+  assert.equal(decideMastery(e, m), 'almost');
+});
+
 // Difficulty (Elo)
 
 test('Elo: the expected chance and the update', () => {
@@ -75,12 +139,21 @@ test('Elo: the expected chance and the update', () => {
   assert.equal(r.item, 992);
 });
 
-test('Elo: the chosen level is the one nearest to 80 percent correct', () => {
+test('Elo: the chosen level has an expected success from targetLow to targetHigh', () => {
   const rc = cfg.rating;
-  // Levels at 800, 870, 940. A player at 1110 has 0.83 on level 2.
-  assert.equal(chooseLevel(1110, [800, 870, 940], rc), 2);
-  assert.equal(chooseLevel(700, [800, 870, 940], rc), 1);
-  assert.equal(chooseLevel(1400, [800, 870, 940], rc), 3);
+  const levels = [800, 870, 940];
+  const chances = (p) => levels.map((r) => expected(p, r, rc.scale));
+  // A player at 1110: 0.86, 0.80, 0.72. Only level 2 is in the range.
+  assert.equal(chooseLevel(1110, levels, rc), 2);
+  // A player at 1150: 0.89, 0.84, 0.77. Levels 2 and 3 are in the range. The harder one wins.
+  assert.deepEqual(chances(1150).map((c) => c >= rc.targetLow && c <= rc.targetHigh), [false, true, true]);
+  assert.equal(chooseLevel(1150, levels, rc), 3);
+  // No level is in the range: the nearest level.
+  assert.equal(chooseLevel(700, levels, rc), 1);
+  assert.equal(chooseLevel(1400, levels, rc), 3);
+  // The range comes from the configuration.
+  assert.equal(chooseLevel(1110, levels, { ...rc, targetLow: 0.6, targetHigh: 0.75 }), 3);
+  assert.equal(chooseLevel(1110, levels, { ...rc, targetLow: 0.85, targetHigh: 0.95 }), 1);
 });
 
 test('Elo: a simulated player gets about 75 to 85 percent correct', () => {

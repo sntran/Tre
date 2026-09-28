@@ -28,16 +28,21 @@ export function playerStartRating(grade, cfg) {
   return cfg.gradeBase[String(grade)] + cfg.playerStartOffset;
 }
 
-// Pick the level whose chance of a correct answer is nearest to the target.
-// itemRatings: the rating of each level, in level order. Return a level (1, 2, ...).
+// Choose the level for the next problem. The target is an expected success between
+// targetLow and targetHigh (for example 75 to 85 percent). If some levels are in that range,
+// use the hardest of them. If no level is in the range, use the level nearest to the range.
 export function chooseLevel(playerRating, itemRatings, cfg) {
+  const low = cfg.targetLow ?? cfg.target;
+  const high = cfg.targetHigh ?? cfg.target;
   let best = 1;
-  let bestGap = Infinity;
+  let bestDistance = Infinity;
   itemRatings.forEach((r, i) => {
-    const gap = Math.abs(expected(playerRating, r, cfg.scale) - cfg.target);
-    if (gap < bestGap - 1e-9) {
+    const e = expected(playerRating, r, cfg.scale);
+    const distance = e < low ? low - e : e > high ? e - high : 0;
+    // Levels are in order from easy to hard, so a later level in the range wins.
+    if (distance < bestDistance - 1e-9 || (distance === 0 && bestDistance === 0)) {
       best = i + 1;
-      bestGap = gap;
+      bestDistance = distance;
     }
   });
   return best;

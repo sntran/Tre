@@ -14,12 +14,12 @@ export const DEFAULT_SETTINGS = Object.freeze({
   questions: [], // questions from the parent editor
 });
 
-export function createProfile({ id, name, gender = 'boy', face = 1, hair = 1, clothes = 1, grade = 1, lang = 'vi', now = 0, seed = 1 }) {
+export function createProfile({ id, name, gender = 'boy', skin = 1, face = 1, hair = 1, clothes = 1, grade = 1, lang = 'vi', now = 0, seed = 1 }) {
   return {
     id,
     createdAt: now,
     updatedAt: now,
-    hero: { name, gender, face, hair, clothes },
+    hero: { name, gender, skin, face, hair, clothes },
     grade,
     era: 1,
     calling: null,

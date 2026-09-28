@@ -1,7 +1,7 @@
 // The learner model of one player. It joins the skill graph, the mastery model
 // (BKT), the difficulty rating (Elo), the spaced review (Leitner boxes), and the
 // problem generators. The state is a plain object in the profile (profile.learning).
-import { bktUpdate, masteryState } from './mastery.js';
+import { bktUpdate, decideMastery, entryState, pushRecent } from './mastery.js';
 import { chooseLevel, itemStartRating, playerStartRating, updateRatings, expected } from './rating.js';
 import { startReview, recordReview, isDue } from './review.js';
 import { generate, generateShield, hasCards } from './generators.js';
@@ -35,9 +35,11 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
     if (!e) {
       const skill = graph.get(id);
       if (!skill) throw new Error(`Unknown skill ${id}`);
-      e = { p: prior(skill), r: playerStartRating(grade, r), n: 0, c: 0, streak: 0, box: 0, due: 0, last: 0 };
+      e = { p: prior(skill), r: playerStartRating(grade, r), n: 0, c: 0, streak: 0, box: 0, due: 0, last: 0, top: 0, recent: '', mastered: false };
       learning.skills[id] = e;
       if (e.p >= m.mastered) {
+        // A skill below the grade of the player starts as mastered.
+        e.mastered = true;
         // A skill below the grade of the player goes into review now, to check it soon.
         e.box = 1;
         e.due = clock();
@@ -46,7 +48,7 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
     return e;
   }
 
-  const status = (id) => masteryState(entry(id).p, m);
+  const status = (id) => entryState(entry(id), m);
   const isMastered = (id) => status(id) === 'mastered';
   const unlocked = (id) => graph.isUnlocked(id, isMastered);
 
@@ -57,8 +59,11 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
 
   function levelFor(id) {
     const skill = graph.get(id);
+    const e = entry(id);
+    // Near mastery, check the highest level: mastery needs correct answers at that level.
+    if (!e.mastered && e.p >= m.almost && (e.top ?? 0) < (m.minTopCorrect ?? 0)) return skill.levels.length;
     const ratings = skill.levels.map((_, i) => itemRating(skill, i + 1));
-    return chooseLevel(entry(id).r, ratings, r);
+    return chooseLevel(e.r, ratings, r);
   }
 
   // Make a problem for a skill. opts: { level, cards, extraCards }
@@ -115,20 +120,23 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
     const now = clock();
     const skill = graph.get(prob.skill);
     const e = entry(prob.skill);
-    const before = masteryState(e.p, m);
+    const before = entryState(e, m);
     const wasMastered = before === 'mastered';
+    const level = prob.level ?? 1;
     e.n += 1;
+    // Correct answers at the highest level of the skill. Mastery needs some of them.
+    if (correct && level >= skill.levels.length) e.top = (e.top ?? 0) + 1;
     e.c += correct ? 1 : 0;
     e.streak = correct ? e.streak + 1 : 0;
+    pushRecent(e, correct, m.recentAnswers ?? 10);
     e.last = now;
     e.p = bktUpdate(e.p, correct, m);
     const k = e.n <= r.newAnswers ? r.kPlayerNew : r.kPlayer;
-    const level = prob.level ?? 1;
     const result = updateRatings(e.r, itemRating(skill, level), correct, { kPlayer: k, kItem: r.kItem, scale: r.scale });
     e.r = result.player;
     learning.items[`${skill.id}#${level}`] = result.item;
     if (wasMastered) recordReview(e, correct, now, config.review);
-    const after = masteryState(e.p, m);
+    const after = decideMastery(e, m);
     if (after === 'mastered' && !wasMastered) startReview(e, now, config.review);
     return { skill: skill.id, before, after, p: e.p, newlyMastered: after === 'mastered' && !wasMastered };
   }
@@ -140,13 +148,14 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
       .filter((s) => learning.skills[s.id])
       .filter((s) => {
         const e = learning.skills[s.id];
-        return (e.n > 0 && masteryState(e.p, m) !== 'mastered') || isDue(e, now) && e.n > 0;
+        return (e.n > 0 && entryState(e, m) !== 'mastered') || isDue(e, now) && e.n > 0;
       })
       .sort((a, b) => learning.skills[a.id].p - learning.skills[b.id].p)
       .map((s) => s.id);
   }
 
   // Use the result of a placement exam. ability is a rating.
+  // The placement can raise a skill. It never lowers a skill that the player has mastered.
   function applyPlacement(ability, ids, cfg) {
     const now = clock();
     for (const id of ids) {
@@ -154,16 +163,21 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
       const e = entry(id);
       const top = itemRating(skill, skill.levels.length);
       const chance = expected(ability, top, r.scale);
+      const keep = e.mastered;
       // The ability is on the scale of the items, so the player rating is the ability.
-      e.r = ability;
+      if (!keep || ability > e.r) e.r = ability;
+      if (keep) continue;
       if (chance >= cfg.masteredAt) {
         e.p = Math.max(e.p, cfg.masteredP);
+        e.mastered = true;
         if (!e.box) { e.box = 1; e.due = now; }
       } else if (chance >= cfg.almostAt) {
-        e.p = cfg.almostP;
+        e.p = Math.max(e.n > 0 ? e.p : 0, cfg.almostP);
+        e.mastered = false;
         e.box = 0;
-      } else {
+      } else if (e.n === 0) {
         e.p = Math.min(e.p, m.priorAtGrade);
+        e.mastered = false;
         e.box = 0;
       }
     }
@@ -176,7 +190,7 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
         id: s.id,
         subject: s.subject,
         grade: s.grade,
-        status: e ? masteryState(e.p, m) : 'new',
+        status: e ? entryState(e, m) : 'new',
         p: e?.p ?? null,
         answers: e?.n ?? 0,
         correct: e?.c ?? 0,
