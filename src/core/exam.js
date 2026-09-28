@@ -1,6 +1,8 @@
-// The adaptive Văn Miếu exam. It starts easy and gets harder until the player
-// makes a few mistakes. It has "min" to "max" questions.
+// The adaptive Văn Miếu exam. It starts easy (or near the grade of the player) and gets
+// harder until the player makes a few mistakes. It has "min" to "max" questions.
 // The ability estimate is a rating on the same scale as the problem items.
+// Until the player has both a correct and a wrong answer, the estimate moves in steps.
+// After that, and for the result, the estimate is the maximum likelihood value of all answers.
 import { expected, itemStartRating } from './rating.js';
 
 // A ladder of exam items (skill and level), from easy to hard.
@@ -16,11 +18,33 @@ export function buildLadder(skills, ratingCfg, ratingOf = null) {
   return items.sort((a, b) => a.rating - b.rating || a.skill.localeCompare(b.skill));
 }
 
+// The maximum likelihood ability for answers [{ rating, correct }], in the range [lo, hi].
+// With only correct answers, it is hi. With only wrong answers, it is lo.
+export function maxLikelihood(answers, lo, hi, scale = 400) {
+  let best = lo;
+  let bestLog = -Infinity;
+  for (let a = Math.floor(lo); a <= hi; a += 1) {
+    let log = 0;
+    for (const it of answers) {
+      const e = expected(a, it.rating, scale);
+      log += Math.log(it.correct ? e : 1 - e);
+    }
+    if (log > bestLog) {
+      best = a;
+      bestLog = log;
+    }
+  }
+  return best;
+}
+
 // settings: { min, max, maxMistakes, kStart, kAfterMistake, kMin, window, startOffset }
+// start: the first ability estimate (for example near the grade of the player).
 export function createExam({ ladder, settings, rng, scale = 400, start = null }) {
   if (ladder.length === 0) throw new Error('The exam has no items');
   const low = ladder[0].rating;
   const high = ladder[ladder.length - 1].rating;
+  const lo = low - 200;
+  const hi = high + 200;
   const state = {
     ability: start ?? low + (settings.startOffset ?? 0),
     asked: [],
@@ -50,14 +74,17 @@ export function createExam({ ladder, settings, rng, scale = 400, start = null })
     return state.current;
   }
 
+  const mixed = () => state.asked.some((a) => a.correct) && state.asked.some((a) => !a.correct);
+
   function answer(correct) {
     const item = state.current;
     if (!item || state.done) throw new Error('No open question');
     const e = expected(state.ability, item.rating, scale);
-    state.ability += k() * ((correct ? 1 : 0) - e);
-    state.ability = Math.max(low - 200, Math.min(high + 200, state.ability));
     if (!correct) state.mistakes += 1;
     state.asked.push({ ...item, correct });
+    state.ability = mixed()
+      ? maxLikelihood(state.asked, lo, hi, scale)
+      : Math.max(lo, Math.min(hi, state.ability + k() * ((correct ? 1 : 0) - e)));
     state.current = null;
     const n = state.asked.length;
     if (n >= settings.max || (n >= settings.min && state.mistakes >= settings.maxMistakes)) state.done = true;
@@ -72,7 +99,7 @@ export function createExam({ ladder, settings, rng, scale = 400, start = null })
       perSkill[a.skill].correct += a.correct ? 1 : 0;
     }
     return {
-      ability: state.ability,
+      ability: maxLikelihood(state.asked, lo, hi, scale),
       asked: state.asked.length,
       correct: state.asked.filter((a) => a.correct).length,
       mistakes: state.mistakes,
@@ -97,4 +124,20 @@ export function skillsToPractice(result, ladder) {
   for (const [id, s] of Object.entries(result.perSkill)) if (s.correct < s.asked) out.add(id);
   for (const item of ladder) if (item.level === 1 && item.rating > result.ability) out.add(item.skill);
   return [...out];
+}
+
+// Run many exams with a simulated player of a known ability. Return the sorted results.
+// The game uses this to set a pass mark: at the pass ability, about half of the players pass.
+export function simulateExams({ ladder, settings, ability, runs, seed = 'sim', scale = 400, start = null, rngOf }) {
+  const out = [];
+  for (let i = 0; i < runs; i++) {
+    const answers = rngOf(`${seed}:answers:${ability}:${i}`);
+    const exam = createExam({ ladder, settings, rng: rngOf(`${seed}:exam:${i}`), scale, start });
+    while (!exam.done) {
+      const item = exam.next();
+      exam.answer(answers.chance(expected(ability, item.rating, scale)));
+    }
+    out.push(exam.result().ability);
+  }
+  return out.sort((a, b) => a - b);
 }

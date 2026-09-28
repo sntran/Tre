@@ -75,9 +75,15 @@
       "startOffset": 0
     },
     "era1": {
-      "pass": 1000
+      "_about": "The pass mark comes from a simulation: at passAbility, about half of the players pass. Run the test \"the Era 1 pass mark comes from the simulation\" after a change, and copy the new value to pass.",
+      "passAbility": 1000,
+      "pass": 998,
+      "simulationRuns": 4000,
+      "simulationSeed": "passmark"
     },
     "placement": {
+      "_about": "The placement exam starts near the grade of the player: the base rating of the grade plus startOffset. It never lowers a mastered skill.",
+      "startOffset": -100,
       "masteredAt": 0.85,
       "almostAt": 0.6,
       "masteredP": 0.96,

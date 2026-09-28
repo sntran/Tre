@@ -1,6 +1,7 @@
 // Văn Miếu, the Temple of Literature: the adaptive exams, the first title,
 // the stone stele on the turtle, and the choice of a calling.
 import { buildLadder, createExam, skillsToPractice } from '../core/exam.js';
+import { gradeBase } from '../core/rating.js';
 import { checkAnswer } from '../core/solver.js';
 import { giveTitle, eraComplete, setFlag } from '../core/profile.js';
 import { registerScene, registerModal } from './registry.js';
@@ -21,7 +22,10 @@ function ladderFor(ctx, kind) {
 function runExam(ctx, kind) {
   const def = ctx.data.titles.exams[kind];
   const ladder = ladderFor(ctx, kind);
-  const exam = createExam({ ladder, settings: ctx.data.learning.exam.subject, rng: ctx.rng, scale: ctx.data.learning.rating.scale });
+  const cfg = ctx.data.learning;
+  // The placement exam starts near the grade of the player. The Era 1 exam starts easy.
+  const start = kind === 'placement' ? gradeBase(ctx.profile.grade, cfg.rating) + cfg.exam.placement.startOffset : null;
+  const exam = createExam({ ladder, settings: cfg.exam.subject, rng: ctx.rng, scale: cfg.rating.scale, start });
   return new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
     const panel = h('div', { class: 'panel quiz' });

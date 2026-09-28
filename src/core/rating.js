@@ -16,16 +16,38 @@ export function updateRatings(playerRating, itemRating, correct, { kPlayer, kIte
   };
 }
 
+// The base rating of a grade. A grade with no value in cfg.gradeBase gets a value on the
+// line through the nearest grades with values, so the result is never NaN.
+export function gradeBase(grade, cfg) {
+  const own = cfg.gradeBase[String(grade)];
+  if (typeof own === 'number') return own;
+  const known = Object.entries(cfg.gradeBase)
+    .map(([g, r]) => [Number(g), r])
+    .filter(([g, r]) => Number.isFinite(g) && typeof r === 'number')
+    .sort((x, y) => x[0] - y[0]);
+  const step = cfg.gradeStep ?? 200;
+  const g = Number(grade);
+  if (known.length === 0) return 1000 + (Number.isFinite(g) ? g : 0) * step;
+  if (!Number.isFinite(g)) return known[0][1];
+  if (known.length === 1) return known[0][1] + (g - known[0][0]) * step;
+  // Two grades around g, or the two grades at the nearest end.
+  let i = known.findIndex(([kg]) => kg > g);
+  if (i <= 0) i = i === 0 ? 1 : known.length - 1;
+  const [g0, r0] = known[i - 1];
+  const [g1, r1] = known[i];
+  return r0 + ((g - g0) * (r1 - r0)) / (g1 - g0);
+}
+
 // The first rating of an item: the base of its grade plus a step for each level.
 export function itemStartRating(skill, level, cfg) {
   const own = skill.levels[level - 1]?.rating;
   if (typeof own === 'number') return own;
-  return cfg.gradeBase[String(skill.grade)] + (level - 1) * cfg.levelStep;
+  return gradeBase(skill.grade, cfg) + (level - 1) * cfg.levelStep;
 }
 
 // The first rating of a player for any skill, from the grade of the player.
 export function playerStartRating(grade, cfg) {
-  return cfg.gradeBase[String(grade)] + cfg.playerStartOffset;
+  return gradeBase(grade, cfg) + cfg.playerStartOffset;
 }
 
 // Choose the level for the next problem. The target is an expected success between

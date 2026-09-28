@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { createRng } from '../src/core/rng.js';
 import { createSkillGraph } from '../src/core/skills.js';
 import { bktUpdate, masteryState, answersToMaster, pCorrect, decideMastery } from '../src/core/mastery.js';
-import { expected, updateRatings, chooseLevel, itemStartRating } from '../src/core/rating.js';
+import { expected, updateRatings, chooseLevel, itemStartRating, gradeBase } from '../src/core/rating.js';
 import { startReview, recordReview, isDue, DAY_MS } from '../src/core/review.js';
 import { createLearner, feedbackFor } from '../src/core/learner.js';
-import { createExam, buildLadder, skillsToPractice } from '../src/core/exam.js';
+import { createExam, buildLadder, skillsToPractice, maxLikelihood, simulateExams } from '../src/core/exam.js';
 import { skillsData, learningConfig as cfg, bank } from './helpers.js';
 
 const graph = createSkillGraph(skillsData);
@@ -270,6 +270,23 @@ test('feedback after mistakes: hint, then example, then a similar problem', () =
   assert.equal(feedbackFor(3, f), 'similar');
 });
 
+test('placement never lowers a mastered skill', () => {
+  const { learner } = learnerFor(2);
+  // A skill that the player mastered in practice.
+  for (let i = 0; i < 12; i++) learner.record({ skill: 'math.add.20', level: 3 }, true);
+  assert.equal(learner.status('math.add.20'), 'mastered');
+  const before = { ...learner.entry('math.add.20') };
+  // A very low placement result.
+  learner.applyPlacement(500, ['math.add.20', 'math.add.10', 'math.mul.10'], cfg.exam.placement);
+  assert.equal(learner.status('math.add.20'), 'mastered');
+  assert.equal(learner.entry('math.add.20').p, before.p);
+  assert.equal(learner.entry('math.add.20').r, before.r, 'the rating does not go down');
+  assert.equal(learner.status('math.add.10'), 'mastered', 'a skill below the grade stays mastered');
+  // A high result raises a skill that is not mastered.
+  learner.applyPlacement(2000, ['math.mul.10'], cfg.exam.placement);
+  assert.equal(learner.status('math.mul.10'), 'mastered');
+});
+
 test('placement sets the level of each skill from the ability', () => {
   const { learner } = learnerFor(4);
   const ids = graph.filter((s) => s.subject === 'math').map((s) => s.id);
@@ -334,6 +351,53 @@ test('the Era 1 exam: a strong player passes and a weak player does not', () => 
   assert.ok(weak.ability < pass);
   const practice = skillsToPractice(weak, era1Ladder);
   assert.ok(practice.length > 0);
+});
+
+test('the exam ability is the maximum likelihood value of all answers', () => {
+  // One correct and one wrong answer at the same rating: the ability is that rating.
+  assert.equal(maxLikelihood([{ rating: 1000, correct: true }, { rating: 1000, correct: false }], 600, 1400), 1000);
+  // Only correct answers: the top of the range. Only wrong answers: the bottom.
+  assert.equal(maxLikelihood([{ rating: 1000, correct: true }], 600, 1400), 1400);
+  assert.equal(maxLikelihood([{ rating: 1000, correct: false }], 600, 1400), 600);
+  const rng = createRng('mle');
+  const { exam, result } = runExam(allLadder, () => rng.chance(0.6), 'mle');
+  assert.ok(result.correct > 0 && result.mistakes > 0);
+  const low = allLadder[0].rating - 200;
+  const high = allLadder[allLadder.length - 1].rating + 200;
+  assert.equal(exam.ability, result.ability);
+  assert.ok(result.ability >= low && result.ability <= high);
+});
+
+test('the placement exam starts near the grade of the player', () => {
+  for (const grade of [3, 4, 5]) {
+    const start = gradeBase(grade, cfg.rating) + cfg.exam.placement.startOffset;
+    const exam = createExam({ ladder: allLadder, settings, rng: createRng(`p${grade}`), start });
+    const first = exam.next();
+    assert.ok(Math.abs(first.rating - start) <= settings.window, `grade ${grade}: first item ${first.rating}, start ${start}`);
+  }
+  // Simulation: grade 4 players find their ability.
+  for (const truth of [1250, 1450, 1650]) {
+    const start = gradeBase(4, cfg.rating) + cfg.exam.placement.startOffset;
+    const results = simulateExams({ ladder: allLadder, settings, ability: truth, runs: 200, seed: 'place', start, rngOf: createRng });
+    const error = results.reduce((sum, r) => sum + Math.abs(r - truth), 0) / results.length;
+    assert.ok(error < 150, `mean error ${Math.round(error)} at ${truth}`);
+  }
+});
+
+test('the Era 1 pass mark comes from the simulation: about half pass at the pass ability', () => {
+  const era1 = cfg.exam.era1;
+  const results = simulateExams({ ladder: era1Ladder, settings, ability: era1.passAbility, runs: era1.simulationRuns, seed: era1.simulationSeed, rngOf: createRng });
+  const median = results[Math.floor(results.length / 2)];
+  assert.equal(era1.pass, median, 'copy the median to exam.era1.pass in learning.json');
+  const passRate = (ability) => {
+    const r = simulateExams({ ladder: era1Ladder, settings, ability, runs: 1000, seed: 'check', rngOf: createRng });
+    return r.filter((a) => a >= era1.pass).length / r.length;
+  };
+  // Expected (from 1000 runs): about 50% at the pass ability, about 80% at +100, about 20% at -100.
+  const atPass = passRate(era1.passAbility);
+  assert.ok(atPass >= 0.45 && atPass <= 0.55, `pass rate ${atPass} at the pass ability`);
+  assert.ok(passRate(era1.passAbility + 100) >= 0.7);
+  assert.ok(passRate(era1.passAbility - 100) <= 0.3);
 });
 
 test('parent questions come up for their skill and language', () => {
