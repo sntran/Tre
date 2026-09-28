@@ -6,9 +6,13 @@ import { C } from '../render/palette.js';
 const INK = C.ink;
 const COLORS = [C.vermilion, C.indigo, C.green, C.yellow];
 
+// The width and the height give the picture its size. With a viewBox only,
+// the picture has no size in a centered column, and it does not show.
 function svg(w, h, children) {
   const el = document.createElementNS(NS, 'svg');
   el.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  el.setAttribute('width', String(w));
+  el.setAttribute('height', String(h));
   el.setAttribute('aria-hidden', 'true');
   el.innerHTML = children;
   return el;

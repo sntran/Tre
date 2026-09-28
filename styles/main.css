@@ -473,7 +473,7 @@ p { line-height: 1.45; margin: 0.4em 0; }
 }
 .prompt-row { display: flex; align-items: center; gap: 10px; width: 100%; justify-content: center; }
 .prompt { margin: 0; font-size: var(--text-big); font-weight: 700; text-align: center; }
-.visual { max-width: 100%; }
+.visual { display: flex; justify-content: center; width: 100%; max-width: 100%; }
 .visual svg { max-width: min(420px, 100%); height: auto; display: block; }
 .answer-box {
   min-width: 4em;
