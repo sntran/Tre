@@ -1,0 +1,40 @@
+{
+  "_about": "The Five Trials of the prologue. One trial for each calling. skills: the skills for each grade that the player gives. The problems match that grade.",
+  "trials": [
+    { "id": "scholar", "npc": "teacher", "calling": "scholar", "flag": "trial.scholar.done", "reward": { "coin": 3 },
+      "doneKey": "trial.scholar.done", "skills": {
+        "1": ["math.count.120", "math.compare.100", "math.add.10", "math.sub.10", "math.shapes"],
+        "2": ["math.add.20", "math.sub.20", "math.addsub.100", "math.place.1000"],
+        "3": ["math.addsub.1000", "math.mul.10", "math.div.10", "math.frac.unit", "math.area"],
+        "4": ["math.mul.multi", "math.frac.equiv", "math.frac.add"],
+        "5": ["math.decimal", "math.frac.unlike", "math.mul.fluent"] } },
+    { "id": "smith", "npc": "smith", "calling": "smith", "flag": "trial.smith.done", "reward": { "coin": 3 },
+      "doneKey": "trial.smith.done", "skills": {
+        "1": ["sci.matter.states", "sci.matter.materials"],
+        "2": ["sci.matter.states", "sci.matter.materials"],
+        "3": ["sci.forces", "sci.matter.materials"],
+        "4": ["sci.energy", "sci.forces"],
+        "5": ["sci.matter.particles", "sci.energy"] } },
+    { "id": "fisher", "npc": "fisher", "calling": "fisher", "flag": "trial.fisher.done", "reward": { "coin": 3 },
+      "doneKey": "trial.fisher.done", "skills": {
+        "1": ["sci.water.flow"],
+        "2": ["sci.water.flow", "sci.matter.states"],
+        "3": ["sci.water.float", "sci.water.flow"],
+        "4": ["sci.water.float", "sci.water.flow"],
+        "5": ["sci.water.earth", "sci.water.float"] } },
+    { "id": "healer", "npc": "healer", "calling": "healer", "flag": "trial.healer.done", "reward": { "coin": 3 },
+      "doneKey": "trial.healer.done", "skills": {
+        "1": ["sci.life.needs", "sci.life.animals"],
+        "2": ["sci.life.needs", "sci.life.animals"],
+        "3": ["sci.life.habitat", "sci.life.needs"],
+        "4": ["sci.life.body", "sci.life.habitat"],
+        "5": ["sci.life.foodchain", "sci.life.body"] } },
+    { "id": "woodcutter", "npc": "woodcutter", "calling": "woodcutter", "flag": "trial.woodcutter.done", "reward": { "coin": 3 },
+      "doneKey": "trial.woodcutter.done", "skills": {
+        "1": ["sci.earth.weather"],
+        "2": ["sci.earth.land", "sci.earth.weather"],
+        "3": ["sci.earth.climate", "sci.forces"],
+        "4": ["sci.earth.erosion", "sci.earth.climate"],
+        "5": ["sci.earth.space", "sci.earth.erosion"] } }
+  ]
+}
