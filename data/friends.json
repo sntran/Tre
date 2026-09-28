@@ -1,6 +1,9 @@
 {
-  "_about": "Creature friends. help: what the friend does in a battle. The player never loses a friend.",
+  "_about": "Creature friends. help: what the friend does in a battle (type shield: blocks the health loss of mistakes; type heart: more hearts in each battle). The player never loses a friend.",
+  "_rideAbout": "ride: optional, for later eras. A friend with a ride block can carry the hero on the map. speed: a factor for the walk speed. over: the kinds of tiles that the friend can cross. Era 1 does not use it yet.",
   "friends": {
+    "nghe": { "art": "friend/nghe", "nameKey": "npc.nghe.name", "element": "earth", "help": { "type": "heart", "amount": 1 }, "helpKey": "friend.nghe.help",
+      "ride": { "speed": 1.25, "over": ["grass", "field", "mud"] } },
     "song": { "art": "friend/song", "nameKey": "npc.song.name", "element": "water", "help": { "type": "shield", "amount": 1 }, "helpKey": "friend.song.help" }
   }
 }

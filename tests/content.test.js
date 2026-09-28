@@ -96,3 +96,29 @@ test('notes do not repeat the Legend or History label that the seal shows', () =
     }
   }
 });
+
+test('the Era 1 friend is Nghé; Sóng is a second friend that the player can choose', () => {
+  const friends = load('data/friends.json').friends;
+  const battles = load('data/battles.json').battles;
+  for (const [id, f] of Object.entries(friends)) {
+    assert.ok(['shield', 'heart'].includes(f.help.type), `${id}: help type`);
+    assert.ok(f.nameKey in vi && f.helpKey in vi, `${id}: text`);
+    if (f.ride !== undefined) {
+      assert.equal(typeof f.ride.speed, 'number', `${id}: ride speed`);
+      assert.ok(Array.isArray(f.ride.over), `${id}: ride over`);
+    }
+  }
+  assert.ok(friends.nghe.ride, 'Nghé has a ride block for later');
+  const after = battles.river.win.after[0];
+  const d = byId.get(after);
+  const choices = Object.values(d.nodes).flatMap((n) => n.choices ?? []);
+  const gives = (c, id) => (c.effects ?? []).some((e) => e.friend === id);
+  // The first friend of the dialogue is Nghé, with no other choice.
+  const first = d.nodes[d.start];
+  const firstChoiceNode = Object.values(d.nodes).find((n) => n.choices);
+  assert.ok(first && firstChoiceNode.choices.every((c) => gives(c, 'nghe')));
+  // Sóng: one choice gives Sóng, and one choice does not.
+  const songNode = Object.values(d.nodes).find((n) => n.choices?.some((c) => gives(c, 'song')));
+  assert.ok(songNode.choices.some((c) => !gives(c, 'song')), 'Sóng is optional');
+  assert.ok(choices.some((c) => gives(c, 'nghe')));
+});

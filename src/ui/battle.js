@@ -42,14 +42,16 @@ async function mountBattle(ctx, params) {
   const rules = createElementRules(data.elements);
   const friends = profile.party.map((id) => ({ id, ...data.friends.friends[id] })).filter((f) => f.art);
   const calling = data.callings.callings.find((c) => c.id === profile.calling) ?? null;
-  const shieldBlocks = friends.filter((f) => f.help?.type === 'shield').reduce((a, f) => a + (f.help.amount ?? 1), 0);
+  const help = (type) => friends.filter((f) => f.help?.type === type).reduce((a, f) => a + (f.help.amount ?? 1), 0);
+  const shieldBlocks = help('shield');
+  const extraHealth = help('heart');
   const battle = createBattle({
     def,
     enemyTypes: data.enemies.enemies,
     rules,
     config: data.game.battle,
     feedback: data.learning.feedback,
-    party: { shieldBlocks, bonuses: calling?.bonus ?? {}, companion: def.companion ?? null },
+    party: { shieldBlocks, extraHealth, bonuses: calling?.bonus ?? {}, companion: def.companion ?? null },
     makeShield: makeShieldFactory(ctx),
     rng: ctx.rng,
   });
@@ -216,7 +218,7 @@ async function mountBattle(ctx, params) {
           drawHearts();
           const problem = battle.target?.guard?.problem;
           if (e.blockedBy) {
-            const key = e.blockedBy === 'steam' ? 'battle.blocked.steam' : friends.length ? 'battle.blocked.shield' : 'battle.blocked.calling';
+            const key = e.blockedBy === 'steam' ? 'battle.blocked.steam' : shieldBlocks > 0 ? 'battle.blocked.shield' : 'battle.blocked.calling';
             feedback.show('good', tg(key), { key });
             await wait(1400);
           }

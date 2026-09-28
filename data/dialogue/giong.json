@@ -161,20 +161,48 @@
    "mark": "legend"
   },
   {
-   "id": "song.friend",
+   "id": "river.friends",
    "start": "n1",
    "nodes": {
     "n1": {
      "speaker": "narrator",
-     "textKey": "dlg.song.friend.n1",
+     "textKey": "dlg.river.friends.n1",
      "next": "n2"
     },
     "n2": {
-     "speaker": "song",
-     "textKey": "dlg.song.friend.n2",
+     "speaker": "nghe",
+     "textKey": "dlg.river.friends.n2",
      "choices": [
       {
-       "textKey": "dlg.song.friend.n2.c1",
+       "textKey": "dlg.river.friends.n2.c1",
+       "effects": [
+        {
+         "friend": "nghe"
+        },
+        {
+         "set": "friend.nghe"
+        }
+       ],
+       "next": "n3"
+      }
+     ]
+    },
+    "n3": {
+     "speaker": "narrator",
+     "textKey": "dlg.river.friends.n3",
+     "next": "n4"
+    },
+    "n4": {
+     "speaker": "narrator",
+     "textKey": "dlg.river.friends.n4",
+     "next": "n5"
+    },
+    "n5": {
+     "speaker": "song",
+     "textKey": "dlg.river.friends.n5",
+     "choices": [
+      {
+       "textKey": "dlg.river.friends.n5.c1",
        "effects": [
         {
          "friend": "song"
@@ -182,13 +210,22 @@
         {
          "set": "friend.song"
         }
-       ]
+       ],
+       "next": "n6"
+      },
+      {
+       "textKey": "dlg.river.friends.n5.c2",
+       "next": "n7"
       }
      ]
     },
-    "n3": {
+    "n6": {
      "speaker": "narrator",
-     "textKey": "dlg.song.friend.n3"
+     "textKey": "dlg.river.friends.n6"
+    },
+    "n7": {
+     "speaker": "narrator",
+     "textKey": "dlg.river.friends.n7"
     }
    }
   },

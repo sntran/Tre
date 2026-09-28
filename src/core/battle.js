@@ -17,7 +17,7 @@ import { feedbackFor } from './learner.js';
 //   rules: the element rules (elements.js)
 //   config: { heroHealth, mistakeCost, hintsPerBattle }
 //   feedback: { hintAt, exampleAt, similarAt }
-//   party: { shieldBlocks, bonuses: { extraCards, damage: { shield, fire, water }, heal, shieldBlock }, companion: { id, strike } }
+//   party: { shieldBlocks, extraHealth, bonuses: { extraCards, damage: { shield, fire, water }, heal, shieldBlock }, companion: { id, strike } }
 //   makeShield(enemy, similarTo): a problem for a number shield (cards, numeric, or choice)
 export function createBattle(opts) {
   const { def, enemyTypes, rules, config, feedback, makeShield, rng = null } = opts;
@@ -42,7 +42,8 @@ export function createBattle(opts) {
   const party = opts.party ?? {};
   const bonus = party.bonuses ?? {};
   const damageBonus = bonus.damage ?? {};
-  const maxHealth = config.heroHealth + (bonus.heal ?? 0);
+  // More hearts from the calling (heal) and from friends (for example Nghé).
+  const maxHealth = config.heroHealth + (bonus.heal ?? 0) + (party.extraHealth ?? 0);
 
   const s = {
     hero: { health: maxHealth, max: maxHealth },

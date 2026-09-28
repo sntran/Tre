@@ -220,6 +220,12 @@ test('an element guard: a method question first, then an example with another st
   assert.notEqual(example.key, 'element.example.water', 'the example uses another state');
 });
 
+test('a friend with heart help gives one more heart', () => {
+  const b = battle(['scout'], { party: { extraHealth: 1 } });
+  assert.equal(b.state.hero.health, gameConfig.battle.heroHealth + 1);
+  assert.equal(b.state.hero.max, gameConfig.battle.heroHealth + 1);
+});
+
 test('the target moves to the next enemy when one is done', () => {
   const b = battle(['scout', 'scout']);
   b.answer(RIGHT);

@@ -23,7 +23,8 @@ export function portrait(ctx, speaker) {
 
 export function speakerArt(ctx, speaker) {
   if (speaker === 'giong') return ctx.profile.flags['giong.grown'] ? 'npc/giong-hero' : 'npc/giong-boy';
-  if (speaker === 'song') return 'friend/song';
+  const friend = ctx.data.friends.friends[speaker];
+  if (friend) return friend.art;
   if (speaker === 'examiner') return 'npc/examiner';
   return ctx.data.npcs.npcs[speaker]?.art ?? null;
 }

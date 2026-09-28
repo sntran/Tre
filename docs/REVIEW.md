@@ -131,6 +131,7 @@ Short meanings of names in English mode (the first time a name shows):
 | `gloss.nghe.meaning` | nghề | a calling, the work of your life |
 | `gloss.an.meaning` | quân Ân | the army of the Ân kingdom in the legend |
 | `gloss.thuongluong.meaning` | thuồng luồng | a river serpent of Vietnamese folk tales |
+| `gloss.nghecalf.meaning` | Nghé | a young water buffalo |
 
 ## 7. Questions about the legend
 

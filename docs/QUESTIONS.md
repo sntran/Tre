@@ -13,7 +13,8 @@ This list has the questions that the design does not answer, and the choice that
 3. **Which small items can a player lose, and how many?**
    - Choice: coins and bamboo only. "Small" loss: 10 percent, at least 1, at most 3 of each. "Normal" loss: 25 percent, at most 10. Grade 1 has no loss unless the parent changes the setting. Iron is not in the list, because the iron horse quest needs it.
 4. **Which creature friends go in each era?**
-   - Choice for Era 1: Sóng, a calm little river serpent (thuồng luồng). Help: a water shield that blocks the health loss of the first mistake in each battle.
+   - Choice for Era 1: Nghé, a young water buffalo. It hid in the reeds from the river creatures, and it comes with the hero after the river battle. Help: one more heart in each battle. Nghé has a "ride" block in `data/friends.json` for later eras (it is not used yet).
+   - Second friend (optional): Sóng, a calm little river serpent (thuồng luồng). After the river battle, the player can take Sóng or let it stay with the river. Help: a water shield that blocks the health loss of the first mistake in each battle.
 5. **Does the game use all six old exam titles (with Thám hoa and Hoàng giáp), or the simple list of five?**
    - Choice: the simple list of five (Tú tài, Cử nhân, Tiến sĩ, Bảng nhãn, Trạng nguyên), one for each era. Note: in the real exam system, Bảng nhãn was the second place of the palace exam, and Tiến sĩ was the general degree. The order in the game is not the historical order. A history reviewer must decide.
 6. **Which ranks of Common Core and NGSS skills go into Era 1?**
