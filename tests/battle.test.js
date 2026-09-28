@@ -197,3 +197,39 @@ test('the target moves to the next enemy when one is done', () => {
   assert.deepEqual(r.events.find((e) => e.type === 'target'), { type: 'target', enemy: 1 });
   assert.equal(b.phase, 'player');
 });
+
+// Crafting
+
+import { createCraft } from '../src/core/craft.js';
+
+const horse = load('data/crafts.json').crafts['iron-horse'];
+
+test('crafting: the iron horse needs fire, the parts in the right slots, and water', () => {
+  const c = createCraft(horse, rules);
+  assert.equal(c.step.id, 'heat');
+  assert.equal(c.useElement('water').ok, false, 'water does not make iron soft');
+  assert.equal(c.useElement('fire').ok, true);
+  assert.equal(c.state.material, 'hot-iron');
+  assert.equal(c.step.id, 'shape');
+  assert.equal(c.finishProblems(), true);
+  assert.equal(c.step.id, 'build');
+  const legId = c.state.tray.find((x) => x.part === 'leg').id;
+  const r = c.place(legId, 'head');
+  assert.equal(r.ok, false);
+  assert.equal(r.reason, 'wrong-slot');
+  // Put each part in a free slot of its kind.
+  for (const item of c.state.tray) {
+    const slot = c.freeSlotFor(item.part);
+    if (slot) c.place(item.id, slot.id);
+  }
+  assert.equal(c.step.id, 'cool', 'all slots are full; one leg is left over');
+  assert.equal(c.state.tray.filter((x) => !x.used).length, 1);
+  assert.equal(c.useElement('fire').ok, false, 'fire does not cool hot iron');
+  assert.equal(c.useElement('water').ok, true);
+  assert.equal(c.done, true);
+});
+
+test('crafting: the Smith calling skips the problems step', () => {
+  const c = createCraft(horse, rules, { bonuses: { craftFast: true } });
+  assert.ok(!c.steps.some((s) => s.id === 'shape'));
+});

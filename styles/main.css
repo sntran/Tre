@@ -628,6 +628,7 @@ p { line-height: 1.4; margin: 0.4em 0; }
 /* Crafting */
 
 .craft { display: flex; flex-direction: column; align-items: center; gap: var(--gap); }
+.craft .panel-head, .craft .feedback, .craft .quiz-top { align-self: stretch; }
 .forge-scene { display: flex; align-items: flex-end; justify-content: center; gap: var(--gap); flex-wrap: wrap; }
 .forge-scene img { height: min(22vmin, 150px); }
 .horse-board { position: relative; width: min(80vw, 460px); aspect-ratio: 18 / 15; border: var(--line); border-radius: var(--radius); background: var(--paper); }
