@@ -39,8 +39,9 @@ export async function mountTitle(ctx) {
     return b;
   }));
 
+  // One picture only: the bamboo, which grows with the progress of the player.
+  // The seal logo is the icon of the app.
   text.append(
-    img('logo', 'title-logo'),
     h('h1', { class: 'game-name', text: t('app.name') }),
     h('p', { class: 'tagline', text: t('app.tagline') }),
   );

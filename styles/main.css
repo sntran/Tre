@@ -382,7 +382,6 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .bamboo-grow { display: flex; flex-direction: column; align-items: center; }
 .bamboo-grow img { width: min(20vmin, 130px); display: block; margin-top: -1px; }
 .title-text { display: flex; flex-direction: column; align-items: center; gap: var(--gap); text-align: center; }
-.title-logo { width: min(18vmin, 112px); }
 .game-name { margin: 0; font-size: clamp(64px, 14vmin, 136px); line-height: 1; color: var(--ink); letter-spacing: 0.03em; }
 .tagline { margin: 0; font-family: var(--display); font-size: var(--text-big); }
 .profiles { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap); }
