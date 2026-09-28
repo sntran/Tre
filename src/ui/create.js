@@ -89,8 +89,14 @@ export async function mountCreate(ctx) {
     } else if (name === 'look') {
       stage.append(title('create.look'));
       const layer = (p) => img(p);
-      stage.append(choiceRow(opts.faces, () => hero.face, (v) => layer(`hero/face-${v}`), (v) => { hero.face = v; }, 'create.face'));
-      stage.append(choiceRow(opts.hairs, () => hero.hair, (v) => layer(`hero/hair-${v}`), (v) => { hero.hair = v; }, 'create.hair'));
+      stage.append(choiceRow(opts.faces, () => hero.face, (v) => h('span', { class: 'stack head' }, [img(`hero/face-${v}`)]), (v) => {
+        hero.face = v;
+        // The hair buttons show the new face too.
+        for (const el of stage.querySelectorAll('.hair-tile img:first-child')) el.src = `art/hero/face-${v}.svg`;
+      }, 'create.face'));
+      // Show each hair on the face that the player chose.
+      const withFace = (v) => h('span', { class: 'stack head hair-tile' }, [img(`hero/face-${hero.face}`), img(`hero/hair-${v}`)]);
+      stage.append(choiceRow(opts.hairs, () => hero.hair, withFace, (v) => { hero.hair = v; }, 'create.hair'));
       stage.append(choiceRow(opts.clothes, () => hero.clothes, (v) => layer(`hero/clothes-${hero.gender}-${v}`), (v) => { hero.clothes = v; }, 'create.clothes'));
       stage.append(button(t('ui.next'), () => show(3), { cls: 'btn big red' }));
     } else if (name === 'grade') {

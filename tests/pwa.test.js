@@ -15,7 +15,7 @@ function shipped() {
       else if (!name.endsWith('.md')) out.push(rel);
     }
   };
-  for (const dir of ['src', 'data', 'i18n', 'art', 'audio', 'styles']) walk(dir);
+  for (const dir of ['src', 'data', 'i18n', 'art', 'audio', 'styles', 'fonts']) walk(dir);
   return out.sort();
 }
 

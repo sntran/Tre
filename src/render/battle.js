@@ -42,7 +42,7 @@ export async function createBattleRenderer({ bg, hero, friends, companion, enemi
     const { w, h } = sizeOf(bmp, scale);
     ctx.save();
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = 'rgba(29, 26, 23, 0.25)';
+    ctx.fillStyle = 'rgba(31, 27, 23, 0.22)';
     ctx.beginPath();
     ctx.ellipse(x + dx, y + 2, w * 0.33, 8, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -150,8 +150,10 @@ export async function createBattleRenderer({ bg, hero, friends, companion, enemi
       const g = e.guard;
       if (g?.kind === 'element') {
         if (g.state === 'fire') {
-          const s = 70 + Math.sin(t * 8) * 6;
-          ctx.drawImage(art.fx.fire, box.x - 10, box.y - 10, s, s);
+          // The fire shows at the torch or near the hand (enemy data "fireAt").
+          const [fx, fy] = e.type.fireAt ?? [0.27, 0.3];
+          const s = 56 + Math.sin(t * 8) * 5;
+          ctx.drawImage(art.fx.fire, box.x + fx * box.w - s / 2, box.y + fy * box.h - s * 0.75, s, s);
         } else if (g.state === 'ice') {
           ctx.globalAlpha = 0.8;
           ctx.drawImage(art.fx.ice, box.x - 20, box.y - 10, box.w + 40, box.h + 20);
@@ -169,10 +171,10 @@ export async function createBattleRenderer({ bg, hero, friends, companion, enemi
         if (!breaking) {
           ctx.drawImage(art.fx.shield, sx - size / 2, sy - size / 2, size, size);
           const label = g.problem.kind === 'cards' ? String(g.problem.target) : '?';
-          ctx.font = `800 ${label.length > 3 ? 26 : 34}px system-ui, sans-serif`;
+          ctx.font = `700 ${label.length > 3 ? 28 : 36}px Alegreya, Georgia, serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillStyle = C.black;
+          ctx.fillStyle = C.ink;
           ctx.fillText(label, sx, sy + 2);
         }
       }
@@ -181,10 +183,10 @@ export async function createBattleRenderer({ bg, hero, friends, companion, enemi
       for (let k = 0; k < e.max; k++) {
         ctx.beginPath();
         ctx.arc(box.x + box.w / 2 - ((e.max - 1) * pip) / 2 + k * pip, box.y - 18, pip * 0.38, 0, Math.PI * 2);
-        ctx.fillStyle = k < e.spirit ? C.yellow : C.white;
+        ctx.fillStyle = k < e.spirit ? C.vermilion : C.diep;
         ctx.fill();
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = C.black;
+        ctx.lineWidth = 1.6;
+        ctx.strokeStyle = C.ink;
         ctx.stroke();
       }
       if (state.target === i && n > 1) {

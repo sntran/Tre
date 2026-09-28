@@ -1,1 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><g stroke="#1d1a17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M60,14.5 L91.7,20.5 L105.7,47.9 L112.3,78.1 L89.4,100.4 L60,112.3 L31.2,99.7 L8.6,77.9 L12.4,47.3 L29.4,22Z" fill="#bfe0f0" fill-opacity="0.7"/><path d="M69.3,35.4 L91.7,20.5 M69.3,35.4 L90,62 M90,62 L112.3,78.1 M90,62 L69.3,88.6 M69.3,88.6 L60,112.3 M69.3,88.6 L35.7,78.5 M35.7,78.5 L8.6,77.9 M35.7,78.5 L35.7,45.5 M35.7,45.5 L29.4,22 M35.7,45.5 L69.3,35.4 " fill="none" stroke="#fbf7ec" stroke-width="2.4" opacity="0.9"/><path d="M26,40 L36,28 M22,52 L25,47" fill="none" stroke="#fbf7ec" stroke-width="4"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><g stroke="#1f1b17" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+<path d="M60,8 L92,18 L60,30Z" fill="#7d93ad" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M92,18 L86,48 L60,30Z" fill="#f7f0df" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M92,18 L110,44 L86,48Z" fill="#7d93ad" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M110,44 L112,78 L86,48Z" fill="#7d93ad" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M112,78 L80,82 L86,48Z" fill="#f7f0df" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M112,78 L90,104 L80,82Z" fill="#7d93ad" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M90,104 L60,113 L80,82Z" fill="#7d93ad" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M60,113 L40,82 L80,82Z" fill="#f7f0df" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M60,113 L30,104 L40,82Z" fill="#7d93ad" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M30,104 L8,78 L40,82Z" fill="#7d93ad" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M8,78 L34,48 L40,82Z" fill="#f7f0df" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M8,78 L10,44 L34,48Z" fill="#7d93ad" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M10,44 L28,18 L34,48Z" fill="#7d93ad" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M28,18 L60,30 L34,48Z" fill="#f7f0df" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M28,18 L60,8 L60,30Z" fill="#7d93ad" fill-opacity="0.65" stroke-width="1.6"/>
+<path d="M60,30 L86,48 L80,82 L40,82 L34,48Z" fill="#f7f0df" fill-opacity="0.4" stroke-width="1.6"/>
+<path d="M60,8 L92,18 L110,44 L112,78 L90,104 L60,113 L30,104 L8,78 L10,44 L28,18Z" fill="none" stroke-width="2.6"/>
+<path d="M22,40 L30,26 M18,52 L20,47" fill="none" stroke="#f7f0df" stroke-width="3"/>
+</g></svg>

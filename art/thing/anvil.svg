@@ -1,1 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 70"><g stroke="#1d1a17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="22" y="58" width="56" height="10" rx="3" fill="#8a5a3b"/><path d="M6,14 Q24,16 34,12 L88,12 L88,28 L72,30 L64,44 L74,50 L74,58 L26,58 L26,50 L36,44 L32,30 Q14,28 6,14Z" fill="#5f6468"/><path d="M36,15 L85,15 L85,19 L36,19Z" fill="#9aa0a3" stroke="none"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 70"><g stroke="#1f1b17" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">
+<path d="M26,40 L26,64 C26,68 74,68 74,64 L74,40Z" fill="#6e4a2c"/>
+<ellipse cx="50" cy="40" rx="24" ry="5" fill="#a97835"/>
+<path d="M36,46 L36,64 M50,47 L50,66 M63,46 L63,64" fill="none" stroke="#a97835" stroke-width="1.4"/>
+<ellipse cx="50" cy="40" rx="12" ry="2.4" fill="none" stroke="#6e4a2c" stroke-width="1.2"/>
+<path d="M14,18 L22,8 L76,7 L88,16 L84,38 L62,42 L22,41 L16,32Z" fill="#a79f90"/>
+<path d="M76,16 L88,16 L84,38 L62,42 L70,40 L76,16Z" fill="#6f685d" stroke="none"/>
+<path d="M14,18 L22,8 L76,7 L88,16 L84,38 L62,42 L22,41 L16,32Z" fill="none"/>
+<path d="M14,18 L76,16 L76,40" fill="none" stroke-width="1.5"/>
+<path d="M26,12 L62,11" fill="none" stroke="#f7f0df" stroke-width="1.6"/>
+<path d="M30,28 L34,26 M44,32 L47,33" fill="none" stroke="#6f685d" stroke-width="1.4"/>
+</g></svg>

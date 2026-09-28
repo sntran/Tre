@@ -1,8 +1,10 @@
 // Small SVG pictures for problems: dots, arrays, shapes, rectangles, and fractions.
 // They have numbers only, and no words.
 const NS = 'http://www.w3.org/2000/svg';
-const INK = '#1d1a17';
-const COLORS = ['#b8412c', '#2e4a7d', '#4f7a3a', '#e5b53a'];
+import { C } from '../render/palette.js';
+
+const INK = C.ink;
+const COLORS = [C.vermilion, C.indigo, C.green, C.yellow];
 
 function svg(w, h, children) {
   const el = document.createElementNS(NS, 'svg');
@@ -25,7 +27,7 @@ function dots(groups, crossed = 0) {
       const row = Math.floor(i / 5);
       const cx = x + col * gap + r;
       const cy = 20 + row * gap + r;
-      out += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${COLORS[gi % 4]}" stroke="${INK}" stroke-width="3"/>`;
+      out += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${COLORS[gi % 4]}" stroke="${INK}" stroke-width="2.2"/>`;
       if (index >= total - crossed) out += `<path d="M${cx - 12} ${cy - 12} L${cx + 12} ${cy + 12}" stroke="${INK}" stroke-width="4"/>`;
       index++;
     }
@@ -47,7 +49,7 @@ function array(rows, cols) {
 }
 
 export function shapeSvg(shape) {
-  const S = 'fill="#e5b53a" stroke="#1d1a17" stroke-width="5" stroke-linejoin="round"';
+  const S = `fill="${C.yellow}" stroke="${C.ink}" stroke-width="4" stroke-linejoin="round"`;
   const poly = (n, r = 44, rot = -Math.PI / 2) => Array.from({ length: n }, (_, i) => {
     const a = rot + (i * 2 * Math.PI) / n;
     return `${(60 + r * Math.cos(a)).toFixed(1)},${(60 + r * Math.sin(a)).toFixed(1)}`;
@@ -68,12 +70,12 @@ function rect(w, h, grid) {
   let out = '';
   if (grid) {
     for (let x = 0; x < w; x++) for (let y = 0; y < h; y++) {
-      out += `<rect x="${30 + x * u}" y="${10 + y * u}" width="${u}" height="${u}" fill="#f1d27a" stroke="${INK}" stroke-width="1.5"/>`;
+      out += `<rect x="${30 + x * u}" y="${10 + y * u}" width="${u}" height="${u}" fill="${C.yellowPale}" stroke="${INK}" stroke-width="1.2"/>`;
     }
   }
-  out += `<rect x="30" y="10" width="${w * u}" height="${h * u}" fill="${grid ? 'none' : '#f1d27a'}" stroke="${INK}" stroke-width="4"/>`;
-  out += `<text x="${30 + (w * u) / 2}" y="${h * u + 36}" font-size="22" font-weight="700" text-anchor="middle" fill="${INK}">${w}</text>`;
-  out += `<text x="18" y="${10 + (h * u) / 2 + 8}" font-size="22" font-weight="700" text-anchor="middle" fill="${INK}">${h}</text>`;
+  out += `<rect x="30" y="10" width="${w * u}" height="${h * u}" fill="${grid ? 'none' : C.yellowPale}" stroke="${INK}" stroke-width="3"/>`;
+  out += `<text x="${30 + (w * u) / 2}" y="${h * u + 36}" font-size="22" font-weight="700" font-family="Be Vietnam Pro, sans-serif" text-anchor="middle" fill="${INK}">${w}</text>`;
+  out += `<text x="18" y="${10 + (h * u) / 2 + 8}" font-size="22" font-weight="700" font-family="Be Vietnam Pro, sans-serif" text-anchor="middle" fill="${INK}">${h}</text>`;
   return svg(w * u + 50, h * u + 46, out);
 }
 
@@ -83,7 +85,7 @@ function fractions(values) {
   values.forEach(([n, d], i) => {
     const y = 10 + i * 56;
     for (let k = 0; k < d; k++) {
-      out += `<rect x="${10 + (k * width) / d}" y="${y}" width="${width / d}" height="40" fill="${k < n ? COLORS[i % 2] : '#fbf7ec'}" stroke="${INK}" stroke-width="3"/>`;
+      out += `<rect x="${10 + (k * width) / d}" y="${y}" width="${width / d}" height="40" fill="${k < n ? COLORS[i % 2] : C.diep}" stroke="${INK}" stroke-width="2.5"/>`;
     }
   });
   return svg(width + 20, values.length * 56 + 6, out);

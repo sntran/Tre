@@ -40,6 +40,12 @@ export async function startApp(root) {
   const bar = ui.querySelector('.progress-bar span');
 
   const data = await loadData((f) => { bar.style.width = `${Math.round(5 + f * 90)}%`; });
+  // Load the two fonts before the first screen, so that the Canvas can use them too.
+  await Promise.all([
+    document.fonts?.load('700 20px Alegreya'),
+    document.fonts?.load('400 16px "Be Vietnam Pro"'),
+    document.fonts?.load('700 16px "Be Vietnam Pro"'),
+  ]).catch(() => {});
   const graph = createSkillGraph(data.skills);
   const surface = createSurface(canvas);
   window.addEventListener('resize', () => surface.resize());

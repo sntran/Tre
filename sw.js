@@ -2,7 +2,7 @@
 // It keeps a copy of all game files. When the network works, it gets the newest file
 // first (so that updates arrive at once); without a network, it uses the copy.
 
-const CACHE = 'tre-v1';
+const CACHE = 'tre-v2';
 
 // All game files. A test checks that this list has each file that the site ships.
 const FILES = [
@@ -92,7 +92,11 @@ const FILES = [
   'art/npc/smith.svg',
   'art/npc/teacher.svg',
   'art/npc/woodcutter.svg',
+  'art/palette.json',
   'art/paper.svg',
+  'art/pattern/clouds.svg',
+  'art/pattern/flowers.svg',
+  'art/pattern/waves.svg',
   'art/thing/anvil.svg',
   'art/thing/bamboo-stalk.svg',
   'art/thing/forge-fire.svg',
@@ -118,6 +122,7 @@ const FILES = [
   'art/ui/lock.svg',
   'art/ui/menu.svg',
   'art/ui/quest.svg',
+  'art/ui/seal.svg',
   'art/ui/speak.svg',
   'art/ui/star.svg',
   'art/ui/water.svg',
@@ -145,6 +150,12 @@ const FILES = [
   'data/tiles.json',
   'data/titles.json',
   'data/trials.json',
+  'fonts/Alegreya-Bold.woff2',
+  'fonts/BeVietnamPro-Bold.woff2',
+  'fonts/BeVietnamPro-Regular.woff2',
+  'fonts/BeVietnamPro-SemiBold.woff2',
+  'fonts/OFL-Alegreya.txt',
+  'fonts/OFL-BeVietnamPro.txt',
   'i18n/en.json',
   'i18n/vi.json',
   'index.html',
@@ -205,6 +216,7 @@ const FILES = [
   'src/ui/village.js',
   'src/ui/visuals.js',
   'styles/main.css',
+  'styles/palette.css',
 ];
 
 self.addEventListener('install', (event) => {

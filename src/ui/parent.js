@@ -10,6 +10,7 @@ import { saveProfile, deleteProfile } from './storage.js';
 import { h, img, button } from './dom.js';
 import { t, lang } from './i18n.js';
 import { formatNumber } from '../core/i18n.js';
+import { C } from '../render/palette.js';
 import { setVoiceEnabled } from './speak.js';
 
 // The gate. Return true when the parent passes it.
@@ -29,7 +30,7 @@ function gate(ctx) {
       const ring = document.createElementNS(NS, 'svg');
       ring.setAttribute('viewBox', '0 0 100 100');
       ring.setAttribute('class', 'hold-ring');
-      ring.innerHTML = '<circle cx="50" cy="50" r="42" fill="#fbf7ec" stroke="#1d1a17" stroke-width="4"/><circle class="arc" cx="50" cy="50" r="42" fill="none" stroke="#b8412c" stroke-width="10" stroke-dasharray="0 264" transform="rotate(-90 50 50)"/>';
+      ring.innerHTML = `<circle cx="50" cy="50" r="42" fill="${C.diep}" stroke="${C.ink}" stroke-width="3"/><circle class="arc" cx="50" cy="50" r="42" fill="none" stroke="${C.vermilion}" stroke-width="10" stroke-dasharray="0 264" transform="rotate(-90 50 50)"/>`;
       const lock = img('ui/lock');
       lock.style.cssText = 'position:absolute;inset:0;margin:auto;width:56px;height:56px;pointer-events:none';
       const holder = h('button', { class: 'btn paper', type: 'button', style: { position: 'relative', width: '170px', height: '170px', borderRadius: '50%', padding: '0' }, 'aria-label': t('parent.gate.hold') }, [ring, lock]);

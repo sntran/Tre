@@ -1,1 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 160"><g stroke="#1d1a17" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><g transform="translate(20,76) rotate(-14)"><path d="M-6,-64 Q0,-68 6,-64 L6,0 L2,-4 L-1,2 L-4,-3 L-6,1Z" fill="#5f6468"/><rect x="-2.5" y="-58" width="3" height="50" rx="1.5" fill="#9aa0a3" stroke="none"/><rect x="-8" y="-54" width="16" height="9" rx="3" fill="#e5b53a"/></g><g transform="translate(40,90) rotate(12)"><path d="M-6,64 Q0,68 6,64 L6,0 L3,4 L0,-2 L-3,3 L-6,-1Z" fill="#5f6468"/><rect x="-2.5" y="10" width="3" height="48" rx="1.5" fill="#9aa0a3" stroke="none"/><rect x="-8" y="46" width="16" height="9" rx="3" fill="#e5b53a"/></g><path d="M30,69 L32.5,77.7 L41.3,75.5 L35,82 L41.3,88.5 L32.5,86.3 L30,95 L27.5,86.3 L18.7,88.5 L25,82 L18.7,75.5 L27.5,77.7Z" fill="#e5b53a" stroke-width="2"/><circle cx="30" cy="82" r="3" fill="#f1d27a" stroke="none"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 160"><g stroke="#1f1b17" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+<g transform="translate(26,74) rotate(-13)">
+<path d="M-6,-64 Q0,-70 6,-64 L6,-2 L3,-6 L0,1 L-3,-4 L-6,0Z" fill="#a79f90"/>
+<path d="M2,-62 L2,-6" fill="none" stroke="#6f685d" stroke-width="3"/>
+<rect x="-7.5" y="-56" width="15" height="9" rx="3" fill="#6f685d" stroke-width="2"/>
+</g>
+<g transform="translate(37,92) rotate(12)">
+<path d="M-6,64 Q0,70 6,64 L6,2 L3,5 L0,-2 L-3,4 L-6,0Z" fill="#a79f90"/>
+<path d="M2,62 L2,6" fill="none" stroke="#6f685d" stroke-width="3"/>
+<rect x="-7.5" y="46" width="15" height="9" rx="3" fill="#6f685d" stroke-width="2"/>
+</g>
+<g stroke-width="1.3"><path d="M34.0,83.0 L38.0,84.8 L42.0,83.0 L38.0,81.2Z" fill="#deae3c"/><path d="M31.0,86.0 L29.2,90.0 L31.0,94.0 L32.8,90.0Z" fill="#deae3c"/><path d="M28.0,83.0 L24.0,81.2 L20.0,83.0 L24.0,84.8Z" fill="#deae3c"/><path d="M31.0,80.0 L32.8,76.0 L31.0,72.0 L29.2,76.0Z" fill="#deae3c"/><path d="M33.8,85.8 L34.5,88.7 L37.4,89.4 L36.7,86.5Z" fill="#b3412a"/><path d="M28.2,85.8 L25.3,86.5 L24.6,89.4 L27.5,88.7Z" fill="#b3412a"/><path d="M28.2,80.2 L27.5,77.3 L24.6,76.6 L25.3,79.5Z" fill="#b3412a"/><path d="M33.8,80.2 L36.7,79.5 L37.4,76.6 L34.5,77.3Z" fill="#b3412a"/></g>
+</g></svg>

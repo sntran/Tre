@@ -1,0 +1,24 @@
+:root {
+  /* The palette of Tre. The same values are in art/palette.json and src/render/palette.js. */
+  --ink: #1f1b17;
+  --ash: #6f685d;
+  --ash-light: #a79f90;
+  --paper: #efe3c8;
+  --paper-deep: #dfcca6;
+  --diep: #f7f0df;
+  --vermilion: #b3412a;
+  --vermilion-pale: #d4826a;
+  --ochre: #a97835;
+  --wood: #6e4a2c;
+  --yellow: #deae3c;
+  --yellow-pale: #ecd08a;
+  --green: #56793f;
+  --green-deep: #3b5a2e;
+  --green-pale: #98ad6b;
+  --indigo: #2f4668;
+  --indigo-pale: #7d93ad;
+  --skin-1: #f0d6b0;
+  --skin-2: #deb68a;
+  --skin-3: #b98859;
+  --skin-4: #8a5f3d;
+}
