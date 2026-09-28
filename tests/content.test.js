@@ -162,3 +162,13 @@ test('the end text of each trial names the topics of the questions', () => {
   assert.ok(!vi['dlg.elder.intro.n1'].includes('thợ giỏi'));
   assert.ok(vi['dlg.elder.intro.n1'].includes('năm người tài giỏi'));
 });
+
+test('the enemies of a battle leave the map after the player wins it', () => {
+  const battles = load('data/battles.json').battles;
+  for (const e of village.encounters) {
+    const b = battles[e.battle];
+    if (b.repeat) continue;
+    const wins = b.win.set ?? [];
+    assert.ok((e.when.notFlags ?? []).some((f) => wins.includes(f)), `${e.id}: leaves after one of ${wins.join(', ')}`);
+  }
+});
