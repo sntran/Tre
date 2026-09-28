@@ -18,23 +18,26 @@ export function buildLadder(skills, ratingCfg, ratingOf = null) {
   return items.sort((a, b) => a.rating - b.rating || a.skill.localeCompare(b.skill));
 }
 
-// The maximum likelihood ability for answers [{ rating, correct }], in the range [lo, hi].
-// With only correct answers, it is hi. With only wrong answers, it is lo.
+// The maximum likelihood ability for answers [{ rating, correct }], in the range [lo, hi],
+// rounded to a whole number. With only correct answers, it is hi. With only wrong answers, it is lo.
+// The log likelihood has one top (it is concave), so a ternary search finds it.
 export function maxLikelihood(answers, lo, hi, scale = 400) {
-  let best = lo;
-  let bestLog = -Infinity;
-  for (let a = Math.floor(lo); a <= hi; a += 1) {
-    let log = 0;
-    for (const it of answers) {
-      const e = expected(a, it.rating, scale);
-      log += Math.log(it.correct ? e : 1 - e);
-    }
-    if (log > bestLog) {
-      best = a;
-      bestLog = log;
-    }
+  if (answers.length === 0) return lo;
+  if (answers.every((a) => a.correct)) return hi;
+  if (answers.every((a) => !a.correct)) return lo;
+  const log = (x) => answers.reduce((sum, it) => {
+    const e = expected(x, it.rating, scale);
+    return sum + Math.log(it.correct ? e : 1 - e);
+  }, 0);
+  let a = lo;
+  let b = hi;
+  while (b - a > 0.5) {
+    const m1 = a + (b - a) / 3;
+    const m2 = b - (b - a) / 3;
+    if (log(m1) < log(m2)) a = m1;
+    else b = m2;
   }
-  return best;
+  return Math.round((a + b) / 2);
 }
 
 // settings: { min, max, maxMistakes, kStart, kAfterMistake, kMin, window, startOffset }
