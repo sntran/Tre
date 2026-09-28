@@ -85,3 +85,14 @@ test('the Five Trials have skills for each grade at or below that grade', () => 
     }
   }
 });
+
+test('notes do not repeat the Legend or History label that the seal shows', () => {
+  const en = load('i18n/en.json');
+  const marks = [vi['mark.legend'], vi['mark.history'], en['mark.legend'], en['mark.history']];
+  const notes = Object.keys(vi).filter((k) => k.endsWith('.note'));
+  for (const key of notes) {
+    for (const text of [vi[key], en[key]]) {
+      for (const mark of marks) assert.ok(!text.startsWith(`${mark}:`), `${key} starts with "${mark}:"`);
+    }
+  }
+});
