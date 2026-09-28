@@ -134,14 +134,19 @@ export function validate(profile, { grades = null } = {}) {
   }
   if (profile.era !== undefined) int(profile.era, 'era', 1, 100);
   if (profile.calling !== undefined && profile.calling !== null) str(profile.calling, 'calling');
-  for (const [, v] of entries(profile.flags, 'flags')) {
-    if (!['boolean', 'number', 'string'].includes(typeof v)) fail('flags value');
-    if (typeof v === 'number' && !Number.isFinite(v)) fail('flags value');
-    if (typeof v === 'string' && v.length > LIMITS.idChars) fail('flags value');
-  }
-  entries(profile.quests, 'quests');
+  // Flags and quest data have short values only: a boolean, a number, or a short text.
+  const short = (value, what) => {
+    if (typeof value === 'boolean') return;
+    if (typeof value === 'number') num(value, what);
+    else str(value, what);
+  };
+  for (const [, x] of entries(profile.flags, 'flags')) short(x, 'flags value');
+  for (const [, x] of entries(profile.quests, 'quests')) short(x, 'quests value');
   for (const [, v] of entries(profile.inventory, 'inventory')) int(v, 'inventory count', 0, 1e9);
-  if (profile.machines !== undefined) list(profile.machines, 'machines');
+  if (profile.machines !== undefined) {
+    list(profile.machines, 'machines');
+    profile.machines.forEach((x) => str(x, 'machines', LIMITS.idChars, 1));
+  }
   if (profile.seenGloss !== undefined) {
     list(profile.seenGloss, 'seenGloss');
     profile.seenGloss.forEach((x) => str(x, 'seenGloss'));

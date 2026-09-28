@@ -177,6 +177,8 @@ function fullProfile() {
   p.learning.items['math.add.10#3'] = 950.5;
   p.learning.exams.push({ kind: 'era1', at: 3, ability: 1012, asked: 12, correct: 9, passed: true });
   p.learning.recent = ['q.states.boil'];
+  p.quests.trials = 'five';
+  p.machines = ['iron-horse'];
   p.settings.questions.push(
     { id: 'parent-1', skill: 'math.add.10', lang: 'vi', type: 'numeric', text: '3 + 4 = ?', answer: 7, parent: true, visual: { type: 'dots', groups: [3, 4] } },
     { id: 'parent-2', skill: 'math.shapes', lang: 'en', type: 'choice', text: 'Which one?', choices: ['a', 'b', 'c'], answer: 0, parent: true, visual: { type: 'fractions', values: [[1, 2], [1, 4]] } },
@@ -215,6 +217,14 @@ test('the import checks the type of each value of the profile', () => {
     (p) => { p.flags.x = { deep: true }; },
     (p) => { p.titles = [42]; },
     (p) => { p.time.usedMs = 'long'; },
+    (p) => { p.quests.trials = { step: 2 }; },
+    (p) => { p.quests.trials = 'x'.repeat(LIMITS.idChars + 1); },
+    (p) => { p.quests.trials = Infinity; },
+    (p) => { p.quests = []; },
+    (p) => { p.machines = 'horse'; },
+    (p) => { p.machines = [7]; },
+    (p) => { p.machines = ['']; },
+    (p) => { p.machines = Array(LIMITS.listItems + 1).fill('horse'); },
   ];
   bad.forEach((change, i) => {
     const p = fullProfile();
