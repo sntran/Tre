@@ -1,0 +1,259 @@
+// The service worker: the game works offline after the first visit.
+// It keeps a copy of all game files. When the network works, it gets the newest file
+// first (so that updates arrive at once); without a network, it uses the copy.
+
+const CACHE = 'tre-v1';
+
+// All game files. A test checks that this list has each file that the site ships.
+const FILES = [
+  './',
+  'LICENSE',
+  'art/battle/bg-field.svg',
+  'art/battle/bg-river.svg',
+  'art/battle/bg-village.svg',
+  'art/calling/fisher.svg',
+  'art/calling/healer.svg',
+  'art/calling/scholar.svg',
+  'art/calling/smith.svg',
+  'art/calling/woodcutter.svg',
+  'art/enemy/general.svg',
+  'art/enemy/retreat.svg',
+  'art/enemy/river-serpent-calm.svg',
+  'art/enemy/river-serpent.svg',
+  'art/enemy/scout.svg',
+  'art/enemy/soldier.svg',
+  'art/friend/song.svg',
+  'art/fx/bubble.svg',
+  'art/fx/fire.svg',
+  'art/fx/ice.svg',
+  'art/fx/shield.svg',
+  'art/fx/spark.svg',
+  'art/fx/steam.svg',
+  'art/fx/water.svg',
+  'art/hero/clothes-boy-1.svg',
+  'art/hero/clothes-boy-2.svg',
+  'art/hero/clothes-boy-3.svg',
+  'art/hero/clothes-boy-4.svg',
+  'art/hero/clothes-girl-1.svg',
+  'art/hero/clothes-girl-2.svg',
+  'art/hero/clothes-girl-3.svg',
+  'art/hero/clothes-girl-4.svg',
+  'art/hero/face-1.svg',
+  'art/hero/face-2.svg',
+  'art/hero/face-3.svg',
+  'art/hero/face-4.svg',
+  'art/hero/hair-1.svg',
+  'art/hero/hair-2.svg',
+  'art/hero/hair-3.svg',
+  'art/hero/hair-4.svg',
+  'art/hero/hair-5.svg',
+  'art/hero/hair-6.svg',
+  'art/icon-180.png',
+  'art/icon-192.png',
+  'art/icon-512.png',
+  'art/item/bamboo.svg',
+  'art/item/coin.svg',
+  'art/item/horse-part-body.svg',
+  'art/item/horse-part-head.svg',
+  'art/item/horse-part-leg.svg',
+  'art/item/horse-part-tail.svg',
+  'art/item/iron.svg',
+  'art/item/ore.svg',
+  'art/item/rice.svg',
+  'art/logo.svg',
+  'art/map/bamboo.svg',
+  'art/map/banyan.svg',
+  'art/map/boat.svg',
+  'art/map/dinh.svg',
+  'art/map/forge.svg',
+  'art/map/gate.svg',
+  'art/map/giong-house.svg',
+  'art/map/haystack.svg',
+  'art/map/herbs.svg',
+  'art/map/house.svg',
+  'art/map/mountain.svg',
+  'art/map/ore.svg',
+  'art/map/pot.svg',
+  'art/map/rock.svg',
+  'art/map/school.svg',
+  'art/map/signpost.svg',
+  'art/map/tree.svg',
+  'art/map/well.svg',
+  'art/npc/elder.svg',
+  'art/npc/examiner.svg',
+  'art/npc/fisher.svg',
+  'art/npc/giong-bamboo.svg',
+  'art/npc/giong-boy.svg',
+  'art/npc/giong-hero.svg',
+  'art/npc/grandma.svg',
+  'art/npc/healer.svg',
+  'art/npc/messenger.svg',
+  'art/npc/mother.svg',
+  'art/npc/smith.svg',
+  'art/npc/teacher.svg',
+  'art/npc/woodcutter.svg',
+  'art/paper.svg',
+  'art/thing/anvil.svg',
+  'art/thing/bamboo-stalk.svg',
+  'art/thing/forge-fire.svg',
+  'art/thing/iron-horse.svg',
+  'art/thing/iron-staff-broken.svg',
+  'art/thing/iron-staff.svg',
+  'art/thing/stele-turtle.svg',
+  'art/thing/vanmieu-gate.svg',
+  'art/title/bamboo-section.svg',
+  'art/title/bamboo-shoot.svg',
+  'art/title/bamboo-top.svg',
+  'art/ui/back.svg',
+  'art/ui/bag.svg',
+  'art/ui/check.svg',
+  'art/ui/clear.svg',
+  'art/ui/close.svg',
+  'art/ui/fire.svg',
+  'art/ui/friends.svg',
+  'art/ui/heart-empty.svg',
+  'art/ui/heart.svg',
+  'art/ui/hint.svg',
+  'art/ui/home.svg',
+  'art/ui/lock.svg',
+  'art/ui/menu.svg',
+  'art/ui/quest.svg',
+  'art/ui/speak.svg',
+  'art/ui/star.svg',
+  'art/ui/water.svg',
+  'audio/en/index.json',
+  'audio/vi/index.json',
+  'content/LICENSE',
+  'data/battles.json',
+  'data/callings.json',
+  'data/config/game.json',
+  'data/config/learning.json',
+  'data/crafts.json',
+  'data/dialogue/giong.json',
+  'data/dialogue/prologue.json',
+  'data/dialogue/village.json',
+  'data/elements.json',
+  'data/enemies.json',
+  'data/friends.json',
+  'data/hero.json',
+  'data/items.json',
+  'data/maps/phu-dong.json',
+  'data/npcs.json',
+  'data/questions/science.json',
+  'data/quests.json',
+  'data/skills.json',
+  'data/tiles.json',
+  'data/titles.json',
+  'data/trials.json',
+  'i18n/en.json',
+  'i18n/vi.json',
+  'index.html',
+  'manifest.webmanifest',
+  'src/core/battle.js',
+  'src/core/codec.js',
+  'src/core/conditions.js',
+  'src/core/craft.js',
+  'src/core/dialogue.js',
+  'src/core/elements.js',
+  'src/core/events.js',
+  'src/core/exam.js',
+  'src/core/fsm.js',
+  'src/core/game.js',
+  'src/core/generators.js',
+  'src/core/i18n.js',
+  'src/core/learner.js',
+  'src/core/mastery.js',
+  'src/core/parentgate.js',
+  'src/core/profile.js',
+  'src/core/quests.js',
+  'src/core/rating.js',
+  'src/core/review.js',
+  'src/core/rng.js',
+  'src/core/save.js',
+  'src/core/skills.js',
+  'src/core/solver.js',
+  'src/core/tilemap.js',
+  'src/core/timelimit.js',
+  'src/core/triggers.js',
+  'src/main.js',
+  'src/render/assets.js',
+  'src/render/battle.js',
+  'src/render/camera.js',
+  'src/render/palette.js',
+  'src/render/surface.js',
+  'src/render/village.js',
+  'src/ui/app.js',
+  'src/ui/audio.js',
+  'src/ui/battle.js',
+  'src/ui/cards.js',
+  'src/ui/craft.js',
+  'src/ui/create.js',
+  'src/ui/data.js',
+  'src/ui/dialogue.js',
+  'src/ui/dom.js',
+  'src/ui/i18n.js',
+  'src/ui/modals.js',
+  'src/ui/parent.js',
+  'src/ui/question.js',
+  'src/ui/quiz.js',
+  'src/ui/registry.js',
+  'src/ui/rest.js',
+  'src/ui/speak.js',
+  'src/ui/storage.js',
+  'src/ui/title.js',
+  'src/ui/vanmieu.js',
+  'src/ui/village.js',
+  'src/ui/visuals.js',
+  'styles/main.css',
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE)
+      .then((cache) => cache.addAll(FILES.map((f) => new Request(f, { cache: 'reload' }))))
+      .then(() => self.skipWaiting()),
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('tre-') && k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim()),
+  );
+});
+
+// Wait for the network for some time only. Then use the copy.
+function fromNetwork(request, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('timeout')), ms);
+    fetch(request).then((response) => {
+      clearTimeout(timer);
+      resolve(response);
+    }, (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
+}
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    try {
+      const response = await fromNetwork(request, 4000);
+      if (response.ok && response.type === 'basic') cache.put(request, response.clone());
+      return response;
+    } catch {
+      const copy = await cache.match(request, { ignoreSearch: true });
+      if (copy) return copy;
+      if (request.mode === 'navigate') {
+        const page = await cache.match('index.html');
+        if (page) return page;
+      }
+      return new Response('', { status: 504 });
+    }
+  })());
+});

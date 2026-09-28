@@ -1,0 +1,17 @@
+{
+  "name": "Tre",
+  "short_name": "Tre",
+  "description": "Anh hùng nào cũng bắt đầu từ nhỏ. / Every hero starts small.",
+  "lang": "vi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3e9d2",
+  "theme_color": "#b8412c",
+  "icons": [
+    { "src": "art/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "art/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "art/logo.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

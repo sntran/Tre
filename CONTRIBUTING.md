@@ -38,6 +38,7 @@ Write all text in ASD-STE100 Simplified Technical English. This rule applies to 
 - Put all values of the learning model in `data/config/learning.json`.
 - Use only relative paths. The game must work at `/Tre/` on GitHub Pages and on a local static server.
 - Do not send requests to other sites. Do not add ads, analytics, cookies, or accounts.
+- When you add or remove a game file, change the list `FILES` in `sw.js`. The service worker uses the list for offline play. A test fails when the list and the files are not the same.
 
 ## Art
 
