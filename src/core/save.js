@@ -12,7 +12,8 @@ export const CODE_PREFIX = 'TRE1';
 // Add a function here each time the profile shape changes. Never remove one.
 export const MIGRATIONS = {
   // Version 2: each skill entry keeps a "mastered" state and a count of correct answers
-  // at the highest level ("top"), and the results of the last answers ("recent"). The hero has a skin tone apart from the face.
+  // at the highest level ("top"), and the results of the last answers ("recent"). The hero has
+  // a skin tone apart from the face. Nghé joins the party after the river battle.
   1: (profile) => {
     const out = structuredClone(profile);
     for (const e of Object.values(out.learning?.skills ?? {})) {
@@ -23,6 +24,12 @@ export const MIGRATIONS = {
       e.recent ??= '';
     }
     if (out.hero && typeof out.hero === 'object') out.hero.skin ??= out.hero.face ?? 1;
+    // Nghé comes after the river battle. A player who won that battle in version 1 gets Nghé too.
+    if (out.flags?.['river.calmed'] && Array.isArray(out.party) && !out.party.includes('nghe')) {
+      if (Array.isArray(out.friends) && !out.friends.includes('nghe')) out.friends.unshift('nghe');
+      out.party.unshift('nghe');
+      out.flags['friend.nghe'] = true;
+    }
     return out;
   },
 };

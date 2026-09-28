@@ -108,6 +108,26 @@ test('the grade of a save comes from the grade configuration', () => {
   assert.throws(() => importCode(exportCode(half)), (e) => e.reason === 'shape');
 });
 
+test('the version 2 migration gives Nghé to a player who calmed the river', () => {
+  const v1 = sample();
+  v1.flags['river.calmed'] = true;
+  v1.friends = ['song'];
+  v1.party = ['song'];
+  const done = migrate({ format: SAVE_FORMAT, version: 1, savedAt: 0, profile: v1 }).profile;
+  assert.deepEqual(done.party, ['nghe', 'song']);
+  assert.deepEqual(done.friends, ['nghe', 'song']);
+  assert.equal(done.flags['friend.nghe'], true);
+  // No river win: no Nghé.
+  const before = migrate({ format: SAVE_FORMAT, version: 1, savedAt: 0, profile: sample() }).profile;
+  assert.deepEqual(before.party, []);
+  // Nghé already in the party: no second copy.
+  const has = sample();
+  has.flags['river.calmed'] = true;
+  has.friends = ['nghe'];
+  has.party = ['nghe'];
+  assert.deepEqual(migrate({ format: SAVE_FORMAT, version: 1, savedAt: 0, profile: has }).profile.party, ['nghe']);
+});
+
 test('the export code loads on another device', () => {
   const p = sample();
   const code = exportCode(p, 99);
