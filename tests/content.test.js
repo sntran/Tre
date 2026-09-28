@@ -172,3 +172,21 @@ test('the enemies of a battle leave the map after the player wins it', () => {
     assert.ok((e.when.notFlags ?? []).some((f) => wins.includes(f)), `${e.id}: leaves after one of ${wins.join(', ')}`);
   }
 });
+
+test('the player is the hero: the narrator speaks to the player, not about the player', () => {
+  const en = load('i18n/en.json');
+  for (const d of dialogues) {
+    for (const n of Object.values(d.nodes)) {
+      if (n.speaker !== 'narrator') continue;
+      // Only the first line tells the name of the player, in the second person.
+      if (n.textKey === 'dlg.grandma.intro.n1') {
+        assert.ok(vi[n.textKey].includes('Tên em là {name}') && en[n.textKey].includes('Your name is {name}'));
+        continue;
+      }
+      assert.ok(!vi[n.textKey].includes('{name}') && !en[n.textKey].includes('{name}'), `${n.textKey} speaks about the player`);
+    }
+  }
+  for (const key of ['title.new', 'create.look']) {
+    assert.ok(!/anh hùng/i.test(vi[key]) && !/hero/i.test(en[key]), `${key} speaks of a hero apart from the player`);
+  }
+});
