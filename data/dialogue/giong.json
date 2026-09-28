@@ -161,7 +161,7 @@
    "mark": "legend"
   },
   {
-   "id": "river.friends",
+   "id": "river.nghe",
    "start": "n1",
    "nodes": {
     "n1": {
@@ -181,12 +181,21 @@
         },
         {
          "set": "friend.nghe"
+        },
+        {
+         "open": "nameFriend",
+         "id": "nghe"
         }
-       ],
-       "next": "n3"
+       ]
       }
      ]
-    },
+    }
+   }
+  },
+  {
+   "id": "river.song",
+   "start": "n3",
+   "nodes": {
     "n3": {
      "speaker": "narrator",
      "textKey": "dlg.river.friends.n3",
@@ -209,9 +218,12 @@
         },
         {
          "set": "friend.song"
+        },
+        {
+         "open": "nameFriend",
+         "id": "song"
         }
-       ],
-       "next": "n6"
+       ]
       },
       {
        "textKey": "dlg.river.friends.n5.c2",
@@ -219,13 +231,27 @@
       }
      ]
     },
-    "n6": {
-     "speaker": "narrator",
-     "textKey": "dlg.river.friends.n6"
-    },
     "n7": {
      "speaker": "narrator",
      "textKey": "dlg.river.friends.n7"
+    }
+   }
+  },
+  {
+   "id": "river.song.after",
+   "start": "a",
+   "nodes": {
+    "a": {
+     "if": {
+      "flags": [
+       "friend.song"
+      ]
+     },
+     "then": "n6"
+    },
+    "n6": {
+     "speaker": "narrator",
+     "textKey": "dlg.river.friends.n6"
     }
    }
   },

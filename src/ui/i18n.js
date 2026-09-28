@@ -43,19 +43,25 @@ export function has(key) {
 
 // Text with glossary marks. In English, the first mark also shows the meaning.
 export function tg(key, params) {
-  return active.gloss(t(key, params), seenGloss);
+  return active.gloss(t(key, params), seenGloss, chosenNames);
+}
+
+// Names that the player chose for friends, by glossary id (for example { nghecalf: 'Mít' }).
+let chosenNames = {};
+export function setChosenNames(names) {
+  chosenNames = { ...(names ?? {}) };
 }
 
 // Short text with the glossary names only, with no meaning (for example for the quest bar).
 export function tn(key, params) {
-  return active.plain(t(key, params));
+  return active.plain(t(key, params), chosenNames);
 }
 
 // Text for the voice.
 export function say(key, params) {
   const sayKey = `${key}.say`;
   const text = active.has(sayKey) ? t(sayKey, params) : t(key, params);
-  return active.plain(text);
+  return active.plain(text, chosenNames);
 }
 
 // Set the glossary ids that the player saw before (from the profile).

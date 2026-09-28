@@ -64,6 +64,13 @@ test('no word comes two times at a glossary mark (for example "quân [[an]]" wit
   assert.equal(i.gloss(i.t('won')), 'Quân Ân rút lui. Sau đó quân Ân về nhà.');
 });
 
+test('a name that the player chose replaces the glossary name', () => {
+  const i = createI18n({ 'gloss.nghecalf.name': 'Nghé', 'gloss.nghecalf.meaning': 'a young water buffalo', a: '[[nghecalf]] is your friend.' }, 'en');
+  assert.equal(i.gloss(i.t('a'), new Set(), { nghecalf: 'Mít' }), 'Mít (a young water buffalo) is your friend.');
+  assert.equal(i.plain(i.t('a'), { nghecalf: 'Mít' }), 'Mít is your friend.');
+  assert.equal(i.plain(i.t('a')), 'Nghé is your friend.');
+});
+
 test('glossary shows the meaning the first time in English only', () => {
   const dict = { 'gloss.vm.name': 'Văn Miếu', 'gloss.vm.meaning': 'the Temple of Literature' };
   const en1 = createI18n(dict, 'en');

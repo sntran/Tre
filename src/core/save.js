@@ -143,6 +143,9 @@ export function validate(profile, { grades = null } = {}) {
   for (const [, x] of entries(profile.flags, 'flags')) short(x, 'flags value');
   for (const [, x] of entries(profile.quests, 'quests')) short(x, 'quests value');
   for (const [, v] of entries(profile.inventory, 'inventory')) int(v, 'inventory count', 0, 1e9);
+  if (profile.friendNames !== undefined) {
+    for (const [, x] of entries(profile.friendNames, 'friendNames')) str(x, 'friendNames value', LIMITS.nameChars, 1);
+  }
   if (profile.machines !== undefined) {
     list(profile.machines, 'machines');
     profile.machines.forEach((x) => str(x, 'machines', LIMITS.idChars, 1));

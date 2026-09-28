@@ -1012,16 +1012,18 @@
   "friend.nghe.help": "Buffalo strength: one more heart in each battle.",
   "dlg.river.friends.n1": "The two little [[thuongluong]] are calm now. A young buffalo comes out of the reeds. It was afraid of the river creatures, so it hid there.",
   "dlg.river.friends.n2": "Moo! Thank you. I am not afraid now. Can I come with you?",
-  "dlg.river.friends.n2.c1": "Of course! I will call you [[nghecalf]].",
+  "dlg.river.friends.n2.c1": "Of course! Let me give you a name.",
   "dlg.river.friends.n3": "[[nghecalf]] is now your friend. In battles, [[nghecalf]] is strong and calm: you get one more heart.",
   "dlg.river.friends.n4": "The smallest [[thuongluong]] stays and looks at you.",
   "dlg.river.friends.n5": "Thank you for melting my cold shell of ice. I want to come with you too!",
-  "dlg.river.friends.n5.c1": "Welcome! I will call you [[song]].",
+  "dlg.river.friends.n5.c1": "Welcome! Let me give you a name.",
   "dlg.river.friends.n5.c2": "Please stay with your river.",
   "dlg.river.friends.n6": "[[song]] is also your friend. In battles, [[song]] makes a shield of water. Your first mistake does not cost a heart.",
   "dlg.river.friends.n7": "[[song]] waves its tail and swims back to the river.",
   "parent.code.error.size": "The code is too long.",
   "parent.code.replace": "This device already has a profile of the same player ({old}). The import replaces it with the profile of {name}, and the progress on this device is lost. Continue?",
   "battle.boss.history": "In 2010, UNESCO listed the Gióng festival as intangible cultural heritage.",
-  "battle.guard.shield": "{name} raises a number shield! Answer right to break it."
+  "battle.guard.shield": "{name} raises a number shield! Answer right to break it.",
+  "friend.name.title": "Name your new friend",
+  "friend.name.note": "You can keep the name {usual}, or give another name."
 }

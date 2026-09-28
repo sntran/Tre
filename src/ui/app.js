@@ -1,5 +1,6 @@
 // The app: load the data, keep the current profile, switch scenes, and save.
-import { setLanguage as loadLanguage, t, useSeenGloss, seenGlossList, setGlobalParams } from './i18n.js';
+import { setLanguage as loadLanguage, t, useSeenGloss, seenGlossList, setGlobalParams, setChosenNames } from './i18n.js';
+import { chosenGlossNames } from '../core/profile.js';
 import { loadRecordedKeys, setVoiceEnabled, setVoiceProfiles, speak } from './speak.js';
 import { loadData } from './data.js';
 import { createSeen } from '../core/fresh.js';
@@ -132,6 +133,7 @@ export async function startApp(root) {
       // The questions of this play session: quizzes, battles, and exams avoid repeats.
       ctx.seen = createSeen();
       setGlobalParams({ name: profile.hero.name });
+      setChosenNames(chosenGlossNames(profile, data.friends.friends));
       useSeenGloss(profile.seenGloss);
       await ctx.setLanguage(profile.settings.lang);
       setVoiceEnabled(profile.settings.voice);

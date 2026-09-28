@@ -226,4 +226,6 @@ Total: 996 texts in each language.
 - `grade.*`: the names of the grades, with "lớp Chồi" (Pre-K) and "lớp Lá" (K).
 - `battle.won.retreat`, `battle.boss.intro`, `dlg.giong.boss.n1`, `dlg.giong.farewell.n1`: the glossary name of `[[an]]` is "quân Ân", so the text says "Tướng [[an]]" ("Tướng quân Ân") and "[[an]] rút lui" ("Quân Ân rút lui"), with no word two times.
 - `title.new`, `create.look`, `dlg.grandma.intro.n1`, `dlg.grandma.intro.n2`, `dlg.giong.silent.n1`, `dlg.river.friends.n3`, `dlg.river.friends.n4`, `dlg.river.friends.n6`: the player is the hero. The narrator speaks to the player as "em" (English: "you").
+- `friend.name.title`, `friend.name.note`, `dlg.river.friends.n2.c1`, `dlg.river.friends.n5.c1`: the player gives a name to Nghé and Sóng.
+- `battle.guard.shield`: the line that tells that an enemy raises a number shield.
 

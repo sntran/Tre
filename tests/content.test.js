@@ -36,7 +36,7 @@ test('each talk rule names a known dialogue', () => {
 });
 
 test('dialogue effects open only known screens', () => {
-  const screens = new Set(['trial', 'practice', 'lesson', 'rice', 'home', 'craft', 'battle', 'vanmieu']);
+  const screens = new Set(['trial', 'practice', 'lesson', 'rice', 'home', 'craft', 'battle', 'vanmieu', 'nameFriend']);
   for (const d of dialogues) {
     for (const n of Object.values(d.nodes)) {
       const effects = [...(n.effects ?? []), ...(n.choices ?? []).flatMap((c) => c.effects ?? [])];
@@ -109,18 +109,22 @@ test('the Era 1 friend is Nghé; Sóng is a second friend that the player can ch
     }
   }
   assert.ok(friends.nghe.ride, 'Nghé has a ride block for later');
-  const after = battles.river.win.after[0];
-  const d = byId.get(after);
-  const choices = Object.values(d.nodes).flatMap((n) => n.choices ?? []);
+  const after = battles.river.win.after.map((id) => byId.get(id));
+  assert.ok(after.every(Boolean), 'the dialogues after the river battle exist');
+  const choices = after.flatMap((d) => Object.values(d.nodes).flatMap((n) => n.choices ?? []));
   const gives = (c, id) => (c.effects ?? []).some((e) => e.friend === id);
-  // The first friend of the dialogue is Nghé, with no other choice.
-  const first = d.nodes[d.start];
-  const firstChoiceNode = Object.values(d.nodes).find((n) => n.choices);
-  assert.ok(first && firstChoiceNode.choices.every((c) => gives(c, 'nghe')));
+  // The first dialogue gives Nghé, with no other choice.
+  const firstChoices = Object.values(after[0].nodes).flatMap((n) => n.choices ?? []);
+  assert.ok(firstChoices.length > 0 && firstChoices.every((c) => gives(c, 'nghe')));
   // Sóng: one choice gives Sóng, and one choice does not.
-  const songNode = Object.values(d.nodes).find((n) => n.choices?.some((c) => gives(c, 'song')));
+  const songNode = after.flatMap((d) => Object.values(d.nodes)).find((n) => n.choices?.some((c) => gives(c, 'song')));
   assert.ok(songNode.choices.some((c) => !gives(c, 'song')), 'Sóng is optional');
-  assert.ok(choices.some((c) => gives(c, 'nghe')));
+  // The player names each new friend.
+  for (const c of choices.filter((x) => gives(x, 'nghe') || gives(x, 'song'))) {
+    const friend = c.effects.find((e) => e.friend).friend;
+    assert.ok(c.effects.some((e) => e.open === 'nameFriend' && e.id === friend), `a name for ${friend}`);
+    assert.ok(friends[friend].gloss, `${friend} has a glossary id for its name`);
+  }
 });
 
 test('the quest bar text is short: 44 characters or fewer, so it fits in 2 lines on a phone', () => {

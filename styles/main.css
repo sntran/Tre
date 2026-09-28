@@ -721,6 +721,7 @@ p { line-height: 1.45; margin: 0.4em 0; }
 
 .friend-card { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border: var(--line); border-radius: var(--corner); background: var(--diep); box-shadow: var(--frame); }
 .friend-card img { width: 72px; height: 72px; }
+.friend-name-art { width: auto; height: min(24vh, 160px); }
 
 @media (max-width: 640px) {
   .hud-name { display: none; }

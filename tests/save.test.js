@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from '../src/core/codec.js';
-import { createProfile, addItem, takeItems, applyLoss, lossLevel, addFriend, giveTitle } from '../src/core/profile.js';
+import { createProfile, addItem, takeItems, applyLoss, lossLevel, addFriend, giveTitle, setFriendName, chosenGlossNames } from '../src/core/profile.js';
 import {
   serialize, deserialize, exportCode, importCode, migrate, wrap, SaveError, SAVE_VERSION, SAVE_FORMAT, validate, replacedBy, LIMITS,
 } from '../src/core/save.js';
@@ -270,4 +270,19 @@ test('the decompressed data has a size limit', () => {
   const packed = compress(utf8Encode('a'.repeat(5000)));
   assert.equal(decompress(packed).length, 5000);
   assert.throws(() => decompress(packed, 1000));
+});
+
+test('the player names a friend; the texts use the chosen name', () => {
+  const p = createProfile({ id: 'n', name: 'Mai' });
+  const friends = { nghe: { gloss: 'nghecalf' }, song: { gloss: 'song' } };
+  assert.equal(setFriendName(p, 'nghe', '  Mít   con  ', 12), 'Mít con');
+  assert.equal(setFriendName(p, 'song', 'x'.repeat(30), 12), 'x'.repeat(12));
+  assert.deepEqual(chosenGlossNames(p, friends), { nghecalf: 'Mít con', song: 'x'.repeat(12) });
+  // An empty name keeps the usual name.
+  assert.equal(setFriendName(p, 'song', '   '), null);
+  assert.deepEqual(chosenGlossNames(p, friends), { nghecalf: 'Mít con' });
+  assert.equal(importCode(exportCode(p)).friendNames.nghe, 'Mít con');
+  const bad = createProfile({ id: 'n', name: 'Mai' });
+  bad.friendNames = { nghe: 42 };
+  assert.throws(() => importCode(exportCode(bad)), (e) => e.reason === 'shape');
 });

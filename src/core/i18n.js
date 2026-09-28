@@ -68,12 +68,15 @@ export function createI18n(dict, lang, fallback = null) {
     });
   }
 
+  // The name of a glossary id. names: names that the player chose (for example for a friend).
+  const nameOf = (id, names) => names?.[id] || raw(`gloss.${id}.name`) || id;
+
   // Replace glossary marks. "seen" is a Set of ids that the player saw before.
   // The function adds new ids to "seen".
-  function gloss(text, seen = null) {
+  function gloss(text, seen = null, names = null) {
     return text.replace(GLOSS, (all, id, offset) => {
       // A name at the start of a sentence starts with a capital letter.
-      const own = raw(`gloss.${id}.name`) ?? id;
+      const own = nameOf(id, names);
       const name = startsSentence(text, offset) ? capitalize(own) : own;
       if (lang !== 'en' || seen === null || seen.has(id)) return name;
       seen.add(id);
@@ -83,9 +86,9 @@ export function createI18n(dict, lang, fallback = null) {
   }
 
   // Text for the voice: the names only, with no glossary marks.
-  function plain(text) {
+  function plain(text, names = null) {
     return text.replace(GLOSS, (all, id, offset) => {
-      const own = raw(`gloss.${id}.name`) ?? id;
+      const own = nameOf(id, names);
       return startsSentence(text, offset) ? capitalize(own) : own;
     });
   }

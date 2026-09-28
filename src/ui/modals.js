@@ -1,10 +1,11 @@
 // The screens that open over the village: trials, practice, lessons, and more.
 import { registerModal } from './registry.js';
 import { runQuiz, showMessage } from './quiz.js';
-import { h, button } from './dom.js';
-import { t } from './i18n.js';
+import { h, img, button } from './dom.js';
+import { speak } from './speak.js';
+import { t, setChosenNames } from './i18n.js';
 import { applyEffects } from '../core/game.js';
-import { addItem } from '../core/profile.js';
+import { addItem, setFriendName, chosenGlossNames } from '../core/profile.js';
 import { byGrade } from '../core/grades.js';
 
 function similar(ctx) {
@@ -106,3 +107,34 @@ registerModal('rice', async (ctx, _cmd, extra) => {
   extra.village?.refresh();
   await extra.village?.talk('giong.grown');
 });
+
+// The player gives a name to a new friend. The usual name is ready in the box.
+registerModal('nameFriend', (ctx, cmd) => new Promise((resolve) => {
+  const f = ctx.data.friends.friends[cmd.id];
+  const usual = ctx.profile.friendNames?.[cmd.id] ?? t(f.nameKey);
+  const max = ctx.data.hero.nameMax;
+  const layer = h('div', { class: 'modal-layer' });
+  const input = h('input', { class: 'name-input', type: 'text', maxlength: String(max), autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', 'aria-label': t('friend.name.title') });
+  input.value = usual;
+  const done = async () => {
+    setFriendName(ctx.profile, cmd.id, input.value || usual, max);
+    setChosenNames(chosenGlossNames(ctx.profile, ctx.data.friends.friends));
+    await ctx.save('friend-name');
+    layer.remove();
+    resolve();
+  };
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') done(); });
+  layer.append(h('div', { class: 'panel', style: { width: 'min(520px, 100%)' } }, [
+    h('div', { class: 'panel-head' }, [h('h2', { text: t('friend.name.title') })]),
+    h('div', { class: 'col', style: { alignItems: 'center' } }, [
+      img(f.art, 'friend-name-art'),
+      h('p', { class: 'center', text: t('friend.name.note', { usual: t(f.nameKey) }) }),
+      input,
+      button(t('ui.ok'), done, { cls: 'btn big red' }),
+    ]),
+  ]));
+  ctx.ui.append(layer);
+  speak('friend.name.title');
+  input.focus();
+  input.select();
+}));

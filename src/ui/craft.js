@@ -158,7 +158,7 @@ registerModal('home', async (ctx) => {
         const inParty = profile.party.includes(id);
         friendsList.append(h('div', { class: 'friend-card' }, [
           img(f.art),
-          h('div', { class: 'col', style: { flex: '1', gap: '2px' } }, [h('strong', { text: t(f.nameKey) }), h('small', { text: tg(f.helpKey) })]),
+          h('div', { class: 'col', style: { flex: '1', gap: '2px' } }, [h('strong', { text: profile.friendNames?.[id] ?? t(f.nameKey) }), h('small', { text: tg(f.helpKey) })]),
           button(t(inParty ? 'home.party.out' : 'home.party.in'), () => {
             if (inParty) profile.party = profile.party.filter((x) => x !== id);
             else if (profile.party.length < data.game.battle.maxParty) profile.party.push(id);

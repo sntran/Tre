@@ -43,6 +43,8 @@ export function speakerArt(ctx, speaker) {
 export function speakerName(ctx, speaker) {
   if (!speaker || speaker === 'narrator') return '';
   if (speaker === 'hero') return ctx.profile.hero.name;
+  // A friend with a name that the player chose.
+  if (ctx.profile.friendNames?.[speaker]) return ctx.profile.friendNames[speaker];
   return t(`npc.${speaker}.name`);
 }
 

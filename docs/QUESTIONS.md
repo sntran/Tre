@@ -15,6 +15,7 @@ This list has the questions that the design does not answer, and the choice that
    - Choice: coins and bamboo only. "Small" loss: 10 percent, at least 1, at most 3 of each. "Normal" loss: 25 percent, at most 10. Grade 1 has no loss unless the parent changes the setting. Iron is not in the list, because the iron horse quest needs it.
 4. **Which creature friends go in each era?**
    - Choice for Era 1: Nghé, a young water buffalo. It hid in the reeds from the river creatures, and it comes with the hero after the river battle. Help: one more heart in each battle. Nghé has a "ride" block in `data/friends.json` for later eras (it is not used yet).
+   - The player gives a name to each new friend (the usual name is ready in the box). The texts use the chosen name.
    - Second friend (optional): Sóng, a calm little river serpent (thuồng luồng). After the river battle, the player can take Sóng or let it stay with the river. Help: a water shield that blocks the health loss of the first mistake in each battle.
 5. **Does the game use all six old exam titles (with Thám hoa and Hoàng giáp), or the simple list of five?**
    - Choice: the simple list of five (Tú tài, Cử nhân, Tiến sĩ, Bảng nhãn, Trạng nguyên), one for each era. Note: in the real exam system, Bảng nhãn was the second place of the palace exam, and Tiến sĩ was the general degree. The order in the game is not the historical order. A history reviewer must decide.
@@ -24,6 +25,7 @@ This list has the questions that the design does not answer, and the choice that
    - Open. The list for the reviewer is in `docs/REVIEW.md`.
 8. **Do we record voice for the story parts, or use the browser voice only?**
    - Choice: the browser voice now. `speak(key)` plays `audio/<lang>/<key>.mp3` first when the key is in `audio/<lang>/index.json`. So recordings can replace the browser voice key by key, with no code change.
+   - Each kind of person has a voice profile in `data/config/game.json` ("voices"): man, woman, boy, girl, elder man, elder woman, and creature. The profiles change the pitch and the speed of the browser voice, and they choose a male or a female browser voice when the device has one. Many devices have only one Vietnamese voice, so the pitch makes most of the difference. Recorded voices are better for the story parts.
 9. **Do two players share a party, or does each player have a hero in the battle?**
    - Not in the first slice. The battle rules keep the party as data, and the random numbers can fork for a second player (`rng.fork`), so a second hero can come later.
 

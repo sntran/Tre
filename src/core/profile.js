@@ -28,6 +28,7 @@ export function createProfile({ id, name, gender = 'boy', skin = 1, face = 1, ha
     quests: {},
     inventory: {},
     friends: [],
+    friendNames: {}, // names that the player chose for friends, by friend id
     party: [],
     machines: [],
     place: { map: 'phu-dong', x: null, y: null },
@@ -80,6 +81,25 @@ export function addFriend(profile, friendId, maxParty = 3) {
   profile.friends.push(friendId);
   if (profile.party.length < maxParty) profile.party.push(friendId);
   return true;
+}
+
+// A name that the player chose for a friend. An empty name keeps the usual name.
+export function setFriendName(profile, id, name, maxChars = 12) {
+  const clean = String(name ?? '').replace(/\s+/g, ' ').trim().slice(0, maxChars);
+  profile.friendNames ??= {};
+  if (clean) profile.friendNames[id] = clean;
+  else delete profile.friendNames[id];
+  return clean || null;
+}
+
+// The chosen names by glossary id, for the texts: { nghecalf: 'Mít' }.
+export function chosenGlossNames(profile, friends) {
+  const out = {};
+  for (const [id, name] of Object.entries(profile.friendNames ?? {})) {
+    const gloss = friends[id]?.gloss;
+    if (gloss && name) out[gloss] = name;
+  }
+  return out;
 }
 
 export function setParty(profile, ids, maxParty = 3) {

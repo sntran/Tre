@@ -1012,16 +1012,18 @@
   "friend.nghe.help": "Sức trâu: thêm một tim trong mỗi trận.",
   "dlg.river.friends.n1": "Hai con [[thuongluong]] con đã bình tĩnh lại. Một chú trâu con bước ra từ bụi lau. Chú sợ con vật dưới sông nên đã trốn ở đó.",
   "dlg.river.friends.n2": "Ùm bò! Cảm ơn bạn. Mình hết sợ rồi. Cho mình đi cùng bạn nhé?",
-  "dlg.river.friends.n2.c1": "Tất nhiên rồi! Mình gọi bạn là [[nghecalf]] nhé.",
+  "dlg.river.friends.n2.c1": "Tất nhiên rồi! Mình đặt tên cho bạn nhé.",
   "dlg.river.friends.n3": "[[nghecalf]] trở thành bạn của em. Trong trận đấu, [[nghecalf]] khỏe và bình tĩnh: em có thêm một tim.",
   "dlg.river.friends.n4": "Con [[thuongluong]] nhỏ nhất vẫn ở lại, nhìn em.",
   "dlg.river.friends.n5": "Cảm ơn bạn đã làm tan vỏ băng lạnh ngắt. Mình cũng muốn đi cùng bạn!",
-  "dlg.river.friends.n5.c1": "Chào mừng bạn! Mình gọi bạn là [[song]] nhé.",
+  "dlg.river.friends.n5.c1": "Chào mừng bạn! Mình đặt tên cho bạn nhé.",
   "dlg.river.friends.n5.c2": "Bạn hãy ở lại với dòng sông nhé.",
   "dlg.river.friends.n6": "[[song]] cũng trở thành bạn của em. Trong trận đấu, [[song]] làm một tấm khiên nước. Lần sai đầu tiên sẽ không mất tim.",
   "dlg.river.friends.n7": "[[song]] vẫy đuôi rồi bơi về với dòng sông.",
   "parent.code.error.size": "Mã quá dài.",
   "parent.code.replace": "Máy này đã có hồ sơ của cùng người chơi ({old}). Nhập mã sẽ thay hồ sơ đó bằng hồ sơ của {name}, và tiến độ trên máy này sẽ mất. Tiếp tục không?",
   "battle.boss.history": "Năm 2010, UNESCO ghi danh hội Gióng là di sản văn hóa phi vật thể.",
-  "battle.guard.shield": "{name} giơ khiên số lên! Trả lời đúng để phá khiên."
+  "battle.guard.shield": "{name} giơ khiên số lên! Trả lời đúng để phá khiên.",
+  "friend.name.title": "Đặt tên cho bạn mới",
+  "friend.name.note": "Em có thể giữ tên {usual}, hoặc đặt một tên khác."
 }
