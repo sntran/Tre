@@ -8,6 +8,7 @@ import { startReview, recordReview, isDue, DAY_MS } from '../src/core/review.js'
 import { createLearner, feedbackFor } from '../src/core/learner.js';
 import { createExam, buildLadder, skillsToPractice, maxLikelihood, simulateExams } from '../src/core/exam.js';
 import { skillsData, learningConfig as cfg, bank } from './helpers.js';
+import { createSeen, problemKey, otherLevels } from '../src/core/fresh.js';
 
 const graph = createSkillGraph(skillsData);
 
@@ -398,6 +399,48 @@ test('the Era 1 pass mark comes from the simulation: about half pass at the pass
   assert.ok(atPass >= 0.45 && atPass <= 0.55, `pass rate ${atPass} at the pass ability`);
   assert.ok(passRate(era1.passAbility + 100) >= 0.7);
   assert.ok(passRate(era1.passAbility - 100) <= 0.3);
+});
+
+test('a quiz never shows the same question twice: another skill, then another level', () => {
+  const { learner } = learnerFor(2);
+  const seen = createSeen();
+  // "sci.water.float" has 3 questions, one at each level. The trial has another skill.
+  const float = graph.get('sci.water.float');
+  const flow = graph.get('sci.water.flow');
+  const make = () => learner.problem(float.id, { level: 1 });
+  const other = () => learner.problem(flow.id, { level: 1 });
+  const makers = [make, other, ...otherLevels(learner, float, 1), ...otherLevels(learner, flow, 1)];
+  const keys = [];
+  for (let i = 0; i < 7; i++) {
+    const p = seen.fresh(makers);
+    assert.ok(p, `question ${i + 1}`);
+    keys.push(problemKey(p));
+    if (i === 1) assert.equal(p.skill, flow.id, 'the second question comes from the other skill');
+  }
+  assert.equal(new Set(keys).size, keys.length, 'no question comes twice');
+  // When all questions of both skills were shown, there is no new question.
+  assert.equal(seen.fresh(makers), null);
+
+  // A math skill: a maker that always gives the same question moves to another level.
+  const skill = graph.get('math.add.10');
+  const same = learner.problem(skill.id, { level: 1 });
+  const s2 = createSeen();
+  s2.add(same);
+  const p = s2.fresh([() => same, ...otherLevels(learner, skill, 1)]);
+  assert.notEqual(problemKey(p), problemKey(same));
+  assert.equal(p.level, 2, 'the nearest other level first');
+});
+
+test('a quiz of many questions from one skill has no repeated question', () => {
+  const { learner } = learnerFor(1);
+  const seen = createSeen();
+  const skill = graph.get('math.count.120');
+  const keys = new Set();
+  for (let i = 0; i < 40; i++) {
+    const p = seen.fresh([() => learner.problem(skill.id, { level: 1 }), ...otherLevels(learner, skill, 1)]);
+    assert.ok(!keys.has(problemKey(p)));
+    keys.add(problemKey(p));
+  }
 });
 
 test('parent questions come up for their skill and language', () => {

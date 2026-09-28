@@ -16,20 +16,23 @@ registerModal('trial', async (ctx, cmd) => {
   const grade = String(ctx.profile.grade);
   const skills = trial.skills[grade];
   let i = 0;
+  // Use a middle level for skills of the grade, and level 1 for skills of a higher grade.
+  const levelOf = (skill) => Math.min(skill.levels.length,
+    skill.grade === ctx.profile.grade ? 2 : skill.grade > ctx.profile.grade ? 1 : 3);
   const next = () => {
     const id = skills[i % skills.length];
     i += 1;
-    const skill = ctx.graph.get(id);
-    // Use a middle level for skills of the grade, and level 1 for skills of a higher grade.
-    const level = skill.grade === ctx.profile.grade ? 2 : skill.grade > ctx.profile.grade ? 1 : 3;
-    return ctx.learner.problem(id, { level });
+    return ctx.learner.problem(id, { level: levelOf(ctx.graph.get(id)) });
   };
+  // Other skills of the trial, when a skill has no new question.
+  const alternatives = () => skills.map((id) => () => ctx.learner.problem(id, { level: levelOf(ctx.graph.get(id)) }));
   await runQuiz(ctx, {
     title: t('trial.title', { who: { key: `npc.${trial.npc}.name` } }),
     speaker: trial.npc,
     count: ctx.data.game.trials.questions,
     next,
     similar: similar(ctx),
+    alternatives,
   });
   applyEffects(ctx.profile, [{ set: trial.flag }, { give: trial.reward }]);
   await ctx.save('trial');

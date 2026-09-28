@@ -173,6 +173,7 @@ const FILES = [
   'src/core/elements.js',
   'src/core/events.js',
   'src/core/exam.js',
+  'src/core/fresh.js',
   'src/core/fsm.js',
   'src/core/game.js',
   'src/core/generators.js',

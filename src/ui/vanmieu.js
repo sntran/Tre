@@ -2,6 +2,7 @@
 // the stone stele on the turtle, and the choice of a calling.
 import { buildLadder, createExam, skillsToPractice } from '../core/exam.js';
 import { gradeBase } from '../core/rating.js';
+import { createSeen } from '../core/fresh.js';
 import { checkAnswer } from '../core/solver.js';
 import { giveTitle, eraComplete, setFlag } from '../core/profile.js';
 import { registerScene, registerModal } from './registry.js';
@@ -41,10 +42,13 @@ function runExam(ctx, kind) {
     layer.append(panel);
     ctx.ui.append(layer);
     let q = null;
+    const seen = createSeen();
 
     const ask = () => {
       const item = exam.next();
-      const problem = ctx.learner.problem(item.skill, { level: item.level });
+      // The exam item sets the skill and the level. Do not show the same question twice.
+      const make = () => ctx.learner.problem(item.skill, { level: item.level });
+      const problem = seen.fresh([make], 40) ?? make();
       ctx.activeProblem = problem;
       counter.textContent = t('exam.question', { n: exam.count + 1 });
       feedback.clear();

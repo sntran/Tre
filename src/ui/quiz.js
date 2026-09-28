@@ -8,9 +8,13 @@ import { renderQuestion, feedbackLine, textOf, answerText } from './question.js'
 import { portrait } from './dialogue.js';
 import { checkAnswer } from '../core/solver.js';
 import { feedbackFor } from '../core/learner.js';
+import { createSeen, otherLevels } from '../core/fresh.js';
 
 // opts: { title, speaker, count (null = no end), next(): problem, similar(problem): problem,
+//         alternatives(): [makers] (other ways to make a problem, for example other skills of a trial),
 //         record: true, header: element, onEach(result) }
+// A quiz never shows the same question twice. When the usual way gives no new question,
+// the quiz uses the alternatives, and then other levels of the skill.
 // Return a Promise of { correct, total, stopped }.
 export function runQuiz(ctx, opts) {
   return new Promise((resolve) => {
@@ -39,8 +43,28 @@ export function runQuiz(ctx, opts) {
     let problem = null;
     let mistakes = 0;
     let recorded = false;
+    const seen = createSeen();
+
+    // A new problem: the first maker, then the alternatives, then other levels of the skill.
+    function fresh(make) {
+      let last = null;
+      const first = () => {
+        last = make();
+        return last;
+      };
+      const levels = () => {
+        const skill = last && ctx.graph.get(last.skill);
+        return skill ? otherLevels(ctx.learner, skill, last.level) : [];
+      };
+      const p = seen.fresh([first, ...(opts.alternatives?.() ?? [])]);
+      return p ?? seen.fresh(levels());
+    }
 
     function show(p) {
+      if (!p) {
+        finish(false);
+        return;
+      }
       problem = p;
       // The current problem, for automatic tests of the whole game.
       ctx.activeProblem = p;
@@ -107,7 +131,7 @@ export function runQuiz(ctx, opts) {
           return;
         }
         asked -= 1;
-        show(opts.similar ? opts.similar(problem) : opts.next());
+        show(fresh(opts.similar ? () => opts.similar(problem) : opts.next));
       }
     }
 
@@ -116,7 +140,7 @@ export function runQuiz(ctx, opts) {
         finish(false);
         return;
       }
-      show(opts.next());
+      show(fresh(opts.next));
     }
 
     function finish(stopped) {
@@ -128,7 +152,7 @@ export function runQuiz(ctx, opts) {
       resolve({ correct, total: asked, stopped });
     }
 
-    show(opts.next());
+    show(fresh(opts.next));
   });
 }
 
