@@ -1,0 +1,10 @@
+{
+  "_about": "Items and materials. loss: the item can be lost after a lost battle (see config/game.json).",
+  "items": {
+    "coin": { "art": "item/coin", "nameKey": "item.coin.name" },
+    "iron": { "art": "item/iron", "nameKey": "item.iron.name" },
+    "bamboo": { "art": "item/bamboo", "nameKey": "item.bamboo.name" },
+    "rice": { "art": "item/rice", "nameKey": "item.rice.name" }
+  },
+  "hud": ["coin", "iron", "bamboo"]
+}

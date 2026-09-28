@@ -1,0 +1,284 @@
+{
+ "_about": "Quests. The state of each quest comes from the story flags. The first open quest that is not done is the goal of the player.",
+ "quests": [
+  {
+   "id": "trials",
+   "titleKey": "quest.trials.title",
+   "steps": [
+    {
+     "id": "meet",
+     "goalKey": "quest.trials.meet",
+     "done": {
+      "flags": [
+       "prologue.started"
+      ]
+     },
+     "target": "elder"
+    },
+    {
+     "id": "five",
+     "goalKey": "quest.trials.five",
+     "done": {
+      "flags": [
+       "trial.scholar.done",
+       "trial.smith.done",
+       "trial.fisher.done",
+       "trial.healer.done",
+       "trial.woodcutter.done"
+      ]
+     },
+     "progress": [
+      "trial.scholar.done",
+      "trial.smith.done",
+      "trial.fisher.done",
+      "trial.healer.done",
+      "trial.woodcutter.done"
+     ],
+     "targets": [
+      {
+       "npc": "teacher",
+       "unless": "trial.scholar.done"
+      },
+      {
+       "npc": "smith",
+       "unless": "trial.smith.done"
+      },
+      {
+       "npc": "fisher",
+       "unless": "trial.fisher.done"
+      },
+      {
+       "npc": "healer",
+       "unless": "trial.healer.done"
+      },
+      {
+       "npc": "woodcutter",
+       "unless": "trial.woodcutter.done"
+      }
+     ]
+    },
+    {
+     "id": "back",
+     "goalKey": "quest.trials.back",
+     "done": {
+      "flags": [
+       "prologue.done"
+      ]
+     },
+     "target": "elder"
+    }
+   ]
+  },
+  {
+   "id": "placement",
+   "titleKey": "quest.placement.title",
+   "when": {
+    "flags": [
+     "prologue.done"
+    ],
+    "grade": {
+     "min": 3
+    }
+   },
+   "steps": [
+    {
+     "id": "exam",
+     "goalKey": "quest.placement.exam",
+     "done": {
+      "flags": [
+       "placement.done"
+      ]
+     },
+     "place": {
+      "x": 16,
+      "y": 25
+     }
+    }
+   ]
+  },
+  {
+   "id": "giong",
+   "titleKey": "quest.giong.title",
+   "when": {
+    "flags": [
+     "prologue.done"
+    ],
+    "any": [
+     {
+      "grade": {
+       "max": 2
+      }
+     },
+     {
+      "flags": [
+       "placement.done"
+      ]
+     }
+    ]
+   },
+   "steps": [
+    {
+     "id": "messenger",
+     "goalKey": "quest.giong.messenger",
+     "done": {
+      "flags": [
+       "giong.messenger"
+      ]
+     },
+     "target": "messenger"
+    },
+    {
+     "id": "speak",
+     "goalKey": "quest.giong.speak",
+     "done": {
+      "flags": [
+       "giong.spoke"
+      ]
+     },
+     "target": "mother"
+    }
+   ]
+  },
+  {
+   "id": "horse",
+   "titleKey": "quest.horse.title",
+   "when": {
+    "flags": [
+     "giong.spoke"
+    ]
+   },
+   "steps": [
+    {
+     "id": "iron",
+     "goalKey": "quest.horse.iron",
+     "done": {
+      "any": [
+       {
+        "items": {
+         "iron": 6
+        }
+       },
+       {
+        "flags": [
+         "horse.forged"
+        ]
+       }
+      ]
+     },
+     "count": {
+      "item": "iron",
+      "need": 6
+     },
+     "targets": [
+      {
+       "object": "ore1",
+       "unless": "horse.ore1"
+      },
+      {
+       "encounter": "river"
+      },
+      {
+       "object": "ore2",
+       "unless": "horse.ore2",
+       "if": "river.calmed"
+      },
+      {
+       "encounter": "scouts"
+      }
+     ]
+    },
+    {
+     "id": "forge",
+     "goalKey": "quest.horse.forge",
+     "done": {
+      "flags": [
+       "horse.forged"
+      ]
+     },
+     "target": "smith"
+    },
+    {
+     "id": "rice",
+     "goalKey": "quest.horse.rice",
+     "done": {
+      "flags": [
+       "giong.grown"
+      ]
+     },
+     "target": "mother"
+    }
+   ]
+  },
+  {
+   "id": "defend",
+   "titleKey": "quest.defend.title",
+   "when": {
+    "flags": [
+     "giong.grown"
+    ]
+   },
+   "steps": [
+    {
+     "id": "soldiers",
+     "goalKey": "quest.defend.soldiers",
+     "done": {
+      "flags": [
+       "soldier1.won",
+       "soldier2.won"
+      ]
+     },
+     "progress": [
+      "soldier1.won",
+      "soldier2.won"
+     ],
+     "targets": [
+      {
+       "encounter": "soldier1"
+      },
+      {
+       "encounter": "soldier2"
+      }
+     ]
+    },
+    {
+     "id": "boss",
+     "goalKey": "quest.defend.boss",
+     "done": {
+      "flags": [
+       "era1.boss.won"
+      ]
+     },
+     "targets": [
+      {
+       "encounter": "boss"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "exam",
+   "titleKey": "quest.exam.title",
+   "when": {
+    "flags": [
+     "giong.farewell"
+    ]
+   },
+   "steps": [
+    {
+     "id": "exam",
+     "goalKey": "quest.exam.go",
+     "done": {
+      "flags": [
+       "exam.era1.passed"
+      ]
+     },
+     "place": {
+      "x": 16,
+      "y": 25
+     }
+    }
+   ]
+  }
+ ]
+}

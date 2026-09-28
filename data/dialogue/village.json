@@ -1,0 +1,298 @@
+{
+ "dialogues": [
+  {
+   "id": "teacher.wait",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "teacher",
+     "textKey": "dlg.teacher.wait.n1"
+    }
+   }
+  },
+  {
+   "id": "teacher.trial",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "teacher",
+     "textKey": "dlg.teacher.trial.n1",
+     "effects": [
+      {
+       "open": "trial",
+       "id": "scholar"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "smith.wait",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "smith",
+     "textKey": "dlg.smith.wait.n1"
+    }
+   }
+  },
+  {
+   "id": "smith.trial",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "smith",
+     "textKey": "dlg.smith.trial.n1",
+     "effects": [
+      {
+       "open": "trial",
+       "id": "smith"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "fisher.wait",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "fisher",
+     "textKey": "dlg.fisher.wait.n1"
+    }
+   }
+  },
+  {
+   "id": "fisher.trial",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "fisher",
+     "textKey": "dlg.fisher.trial.n1",
+     "effects": [
+      {
+       "open": "trial",
+       "id": "fisher"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "healer.wait",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "healer",
+     "textKey": "dlg.healer.wait.n1"
+    }
+   }
+  },
+  {
+   "id": "healer.trial",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "healer",
+     "textKey": "dlg.healer.trial.n1",
+     "effects": [
+      {
+       "open": "trial",
+       "id": "healer"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "woodcutter.wait",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "woodcutter",
+     "textKey": "dlg.woodcutter.wait.n1"
+    }
+   }
+  },
+  {
+   "id": "woodcutter.trial",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "woodcutter",
+     "textKey": "dlg.woodcutter.trial.n1",
+     "effects": [
+      {
+       "open": "trial",
+       "id": "woodcutter"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "teacher.practice",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "teacher",
+     "textKey": "dlg.teacher.practice.n1",
+     "choices": [
+      {
+       "textKey": "dlg.teacher.practice.n1.c1",
+       "effects": [
+        {
+         "open": "practice"
+        }
+       ]
+      },
+      {
+       "textKey": "dlg.teacher.practice.n1.c2"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "smith.need.iron",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "smith",
+     "textKey": "dlg.smith.need.iron.n1"
+    }
+   }
+  },
+  {
+   "id": "smith.forge",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "smith",
+     "textKey": "dlg.smith.forge.n1",
+     "effects": [
+      {
+       "open": "craft",
+       "id": "iron-horse"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "smith.idle",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "smith",
+     "textKey": "dlg.smith.idle.n1"
+    }
+   }
+  },
+  {
+   "id": "fisher.idle",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "fisher",
+     "textKey": "dlg.fisher.idle.n1"
+    }
+   }
+  },
+  {
+   "id": "fisher.river",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "fisher",
+     "textKey": "dlg.fisher.river.n1"
+    }
+   }
+  },
+  {
+   "id": "healer.idle",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "healer",
+     "textKey": "dlg.healer.idle.n1"
+    }
+   }
+  },
+  {
+   "id": "woodcutter.idle",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "woodcutter",
+     "textKey": "dlg.woodcutter.idle.n1"
+    }
+   }
+  },
+  {
+   "id": "woodcutter.ore",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "woodcutter",
+     "textKey": "dlg.woodcutter.ore.n1"
+    }
+   }
+  },
+  {
+   "id": "grandma.home",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "grandma",
+     "textKey": "dlg.grandma.home.n1",
+     "effects": [
+      {
+       "open": "home"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "mother.worry",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "mother",
+     "textKey": "dlg.mother.worry.n1"
+    }
+   }
+  },
+  {
+   "id": "mother.idle",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "mother",
+     "textKey": "dlg.mother.idle.n1"
+    }
+   }
+  },
+  {
+   "id": "giong.silent",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "narrator",
+     "textKey": "dlg.giong.silent.n1"
+    }
+   }
+  },
+  {
+   "id": "giong.wait",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "giong",
+     "textKey": "dlg.giong.wait.n1"
+    }
+   }
+  }
+ ]
+}

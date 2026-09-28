@@ -1,0 +1,15 @@
+{
+  "_about": "Ground tile types of the maps. walk: the hero can walk on the tile.",
+  "types": {
+    "grass": { "walk": true },
+    "flowers": { "walk": true },
+    "path": { "walk": true },
+    "yard": { "walk": true },
+    "sand": { "walk": true },
+    "bridge": { "walk": true },
+    "water": { "walk": false },
+    "field": { "walk": false },
+    "hedge": { "walk": false },
+    "trees": { "walk": false }
+  }
+}

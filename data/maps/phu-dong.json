@@ -1,0 +1,796 @@
+{
+ "_about": "The village of Phù Đổng. ground: one letter for each tile (see legend). Objects block their tiles unless solid is false.",
+ "id": "phu-dong",
+ "nameKey": "place.phudong",
+ "tileSize": 48,
+ "width": 40,
+ "height": 26,
+ "legend": {
+  ".": "grass",
+  ",": "flowers",
+  "=": "path",
+  "y": "yard",
+  "_": "sand",
+  "B": "bridge",
+  "~": "water",
+  "f": "field",
+  "b": "hedge",
+  "t": "trees"
+ },
+ "ground": [
+  "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "b...........................bfffffffffff",
+  "b.....,.....................bfffffffffff",
+  "b...........................bfffffffffff",
+  "b...........................bffff======f",
+  "b.yyy...yyy.....==.yyyy.....bffff======f",
+  "b...............==.yyyy.....bffff==fffff",
+  "b,.....,........==........,.bffff==fffff",
+  "b...............==..........bffff==fffff",
+  "b........,......==..........bffff==fffff",
+  "b...........yyyy==..........bffff==fffff",
+  "b=====================yyy===============",
+  "b=======================================",
+  "b...............==..........bffff==fffff",
+  "b..........,....==..,.......bffff==fffff",
+  "b............,..==......,...bffff==fffff",
+  "b..,............==..........bffff==fffff",
+  "btttttttt.......==..........bffff==fffff",
+  "b_______________==__________b___________",
+  "~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~~",
+  "~~~~~~~~~~~~~~~~BB~~~~~~~~~~~~~~~~~~~~~~",
+  "................==......................",
+  "................==......................",
+  "................==......................"
+ ],
+ "spawn": {
+  "x": 4,
+  "y": 7
+ },
+ "home": {
+  "x": 3,
+  "y": 7
+ },
+ "objects": [
+  {
+   "id": "home",
+   "art": "map/house",
+   "x": 2,
+   "y": 3,
+   "w": 3,
+   "h": 3
+  },
+  {
+   "id": "giong-house",
+   "art": "map/giong-house",
+   "x": 8,
+   "y": 3,
+   "w": 3,
+   "h": 3
+  },
+  {
+   "id": "school",
+   "art": "map/school",
+   "x": 19,
+   "y": 3,
+   "w": 4,
+   "h": 3
+  },
+  {
+   "id": "dinh",
+   "art": "map/dinh",
+   "x": 12,
+   "y": 8,
+   "w": 4,
+   "h": 3
+  },
+  {
+   "id": "forge",
+   "art": "map/forge",
+   "x": 22,
+   "y": 9,
+   "w": 3,
+   "h": 3
+  },
+  {
+   "id": "banyan",
+   "art": "map/banyan",
+   "x": 4,
+   "y": 9,
+   "w": 3,
+   "h": 3,
+   "solid": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     2
+    ]
+   ]
+  },
+  {
+   "id": "well",
+   "art": "map/well",
+   "x": 18,
+   "y": 10,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "herbs1",
+   "art": "map/herbs",
+   "x": 3,
+   "y": 15,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "herbs2",
+   "art": "map/herbs",
+   "x": 4,
+   "y": 15,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "herbs3",
+   "art": "map/herbs",
+   "x": 5,
+   "y": 15,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "boat",
+   "art": "map/boat",
+   "x": 11,
+   "y": 20,
+   "w": 2,
+   "h": 1,
+   "solid": false
+  },
+  {
+   "id": "ore1",
+   "art": "map/ore",
+   "x": 26,
+   "y": 3,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "ore2",
+   "art": "map/ore",
+   "x": 1,
+   "y": 19,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "mountain",
+   "art": "map/mountain",
+   "x": 35,
+   "y": 2,
+   "w": 4,
+   "h": 3
+  },
+  {
+   "id": "gate",
+   "art": "map/gate",
+   "x": 27,
+   "y": 10,
+   "w": 3,
+   "h": 2,
+   "solid": false
+  },
+  {
+   "id": "sign",
+   "art": "map/signpost",
+   "x": 18,
+   "y": 24,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "hay1",
+   "art": "map/haystack",
+   "x": 6,
+   "y": 5,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "pot1",
+   "art": "map/pot",
+   "x": 11,
+   "y": 5,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "pot2",
+   "art": "map/pot",
+   "x": 25,
+   "y": 11,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "rock1",
+   "art": "map/rock",
+   "x": 10,
+   "y": 17,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "rock2",
+   "art": "map/rock",
+   "x": 38,
+   "y": 24,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree1",
+   "art": "map/tree",
+   "x": 2,
+   "y": 2,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree2",
+   "art": "map/tree",
+   "x": 7,
+   "y": 2,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree3",
+   "art": "map/tree",
+   "x": 13,
+   "y": 2,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree4",
+   "art": "map/tree",
+   "x": 17,
+   "y": 3,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree5",
+   "art": "map/tree",
+   "x": 24,
+   "y": 2,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree6",
+   "art": "map/tree",
+   "x": 27,
+   "y": 5,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree7",
+   "art": "map/tree",
+   "x": 25,
+   "y": 7,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree8",
+   "art": "map/tree",
+   "x": 8,
+   "y": 8,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree9",
+   "art": "map/tree",
+   "x": 10,
+   "y": 15,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree10",
+   "art": "map/tree",
+   "x": 22,
+   "y": 16,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree11",
+   "art": "map/tree",
+   "x": 26,
+   "y": 17,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree12",
+   "art": "map/tree",
+   "x": 1,
+   "y": 6,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree13",
+   "art": "map/tree",
+   "x": 19,
+   "y": 17,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree14",
+   "art": "map/tree",
+   "x": 13,
+   "y": 14,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree15",
+   "art": "map/tree",
+   "x": 5,
+   "y": 23,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree16",
+   "art": "map/tree",
+   "x": 9,
+   "y": 24,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree17",
+   "art": "map/tree",
+   "x": 24,
+   "y": 24,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree18",
+   "art": "map/tree",
+   "x": 30,
+   "y": 24,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "tree19",
+   "art": "map/tree",
+   "x": 35,
+   "y": 23,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "bamboo1",
+   "art": "map/bamboo",
+   "x": 3,
+   "y": 1,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "bamboo2",
+   "art": "map/bamboo",
+   "x": 11,
+   "y": 1,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "bamboo3",
+   "art": "map/bamboo",
+   "x": 20,
+   "y": 1,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "bamboo4",
+   "art": "map/bamboo",
+   "x": 27,
+   "y": 1,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "bamboo5",
+   "art": "map/bamboo",
+   "x": 0,
+   "y": 10,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "bamboo6",
+   "art": "map/bamboo",
+   "x": 0,
+   "y": 16,
+   "w": 1,
+   "h": 1
+  }
+ ],
+ "npcs": [
+  {
+   "id": "grandma",
+   "x": 5,
+   "y": 6
+  },
+  {
+   "id": "mother",
+   "x": 11,
+   "y": 6
+  },
+  {
+   "id": "giong-boy",
+   "x": 9,
+   "y": 6
+  },
+  {
+   "id": "teacher",
+   "x": 20,
+   "y": 7
+  },
+  {
+   "id": "elder",
+   "x": 13,
+   "y": 11
+  },
+  {
+   "id": "messenger",
+   "x": 15,
+   "y": 11
+  },
+  {
+   "id": "smith",
+   "x": 23,
+   "y": 12
+  },
+  {
+   "id": "healer",
+   "x": 6,
+   "y": 16
+  },
+  {
+   "id": "woodcutter",
+   "x": 25,
+   "y": 4
+  },
+  {
+   "id": "fisher",
+   "x": 12,
+   "y": 19
+  },
+  {
+   "id": "giong-hero",
+   "x": 26,
+   "y": 14
+  }
+ ],
+ "encounters": [
+  {
+   "id": "river",
+   "battle": "river",
+   "x": 4,
+   "y": 19,
+   "art": "enemy/river-serpent",
+   "when": {
+    "flags": [
+     "giong.spoke"
+    ],
+    "notFlags": [
+     "river.calmed"
+    ]
+   }
+  },
+  {
+   "id": "scouts",
+   "battle": "scouts",
+   "x": 31,
+   "y": 12,
+   "art": "enemy/scout",
+   "when": {
+    "flags": [
+     "giong.spoke"
+    ],
+    "notFlags": [
+     "horse.forged"
+    ]
+   }
+  },
+  {
+   "id": "soldier1",
+   "battle": "soldier1",
+   "x": 33,
+   "y": 8,
+   "art": "enemy/soldier",
+   "when": {
+    "flags": [
+     "giong.grown"
+    ],
+    "notFlags": [
+     "soldier1.won"
+    ]
+   }
+  },
+  {
+   "id": "soldier2",
+   "battle": "soldier2",
+   "x": 34,
+   "y": 16,
+   "art": "enemy/soldier",
+   "when": {
+    "flags": [
+     "giong.grown"
+    ],
+    "notFlags": [
+     "soldier2.won"
+    ]
+   }
+  },
+  {
+   "id": "boss",
+   "battle": "boss",
+   "x": 37,
+   "y": 6,
+   "art": "enemy/general",
+   "when": {
+    "flags": [
+     "soldier1.won",
+     "soldier2.won"
+    ],
+    "notFlags": [
+     "era1.boss.won"
+    ]
+   }
+  },
+  {
+   "id": "patrol",
+   "battle": "patrol",
+   "x": 31,
+   "y": 12,
+   "art": "enemy/scout",
+   "when": {
+    "flags": [
+     "giong.farewell"
+    ]
+   }
+  }
+ ],
+ "triggers": [
+  {
+   "id": "ore1",
+   "x": 26,
+   "y": 3,
+   "on": "tap",
+   "when": {
+    "flags": [
+     "giong.spoke"
+    ],
+    "notFlags": [
+     "horse.ore1"
+    ]
+   },
+   "action": {
+    "pickup": {
+     "iron": 2
+    },
+    "set": "horse.ore1",
+    "textKey": "map.ore.found"
+   }
+  },
+  {
+   "id": "ore1-early",
+   "x": 26,
+   "y": 3,
+   "on": "tap",
+   "action": {
+    "textKey": "map.ore.look"
+   }
+  },
+  {
+   "id": "ore2",
+   "x": 1,
+   "y": 19,
+   "on": "tap",
+   "when": {
+    "flags": [
+     "giong.spoke"
+    ],
+    "notFlags": [
+     "horse.ore2"
+    ]
+   },
+   "action": {
+    "pickup": {
+     "iron": 2
+    },
+    "set": "horse.ore2",
+    "textKey": "map.ore.found"
+   }
+  },
+  {
+   "id": "ore2-early",
+   "x": 1,
+   "y": 19,
+   "on": "tap",
+   "action": {
+    "textKey": "map.ore.look"
+   }
+  },
+  {
+   "id": "vanmieu",
+   "x": 16,
+   "y": 25,
+   "w": 2,
+   "h": 1,
+   "on": "enter",
+   "when": {
+    "flags": [
+     "prologue.done"
+    ]
+   },
+   "action": {
+    "open": "vanmieu"
+   }
+  },
+  {
+   "id": "vanmieu-early",
+   "x": 16,
+   "y": 25,
+   "w": 2,
+   "h": 1,
+   "on": "enter",
+   "action": {
+    "textKey": "map.road.early"
+   }
+  },
+  {
+   "id": "sign",
+   "x": 18,
+   "y": 24,
+   "on": "tap",
+   "action": {
+    "textKey": "map.sign.vanmieu"
+   }
+  },
+  {
+   "id": "well",
+   "x": 18,
+   "y": 10,
+   "on": "tap",
+   "action": {
+    "textKey": "map.well"
+   }
+  },
+  {
+   "id": "banyan",
+   "x": 4,
+   "y": 9,
+   "w": 3,
+   "h": 3,
+   "on": "tap",
+   "action": {
+    "textKey": "map.banyan"
+   }
+  },
+  {
+   "id": "home",
+   "x": 2,
+   "y": 3,
+   "w": 3,
+   "h": 3,
+   "on": "tap",
+   "action": {
+    "talk": "grandma"
+   }
+  },
+  {
+   "id": "school",
+   "x": 19,
+   "y": 3,
+   "w": 4,
+   "h": 3,
+   "on": "tap",
+   "action": {
+    "talk": "teacher"
+   }
+  },
+  {
+   "id": "forge",
+   "x": 22,
+   "y": 9,
+   "w": 3,
+   "h": 3,
+   "on": "tap",
+   "action": {
+    "talk": "smith"
+   }
+  },
+  {
+   "id": "dinh",
+   "x": 12,
+   "y": 8,
+   "w": 4,
+   "h": 3,
+   "on": "tap",
+   "action": {
+    "talk": "elder"
+   }
+  },
+  {
+   "id": "giong-house",
+   "x": 8,
+   "y": 3,
+   "w": 3,
+   "h": 3,
+   "on": "tap",
+   "action": {
+    "talk": "mother"
+   }
+  },
+  {
+   "id": "field",
+   "x": 29,
+   "y": 2,
+   "w": 11,
+   "h": 17,
+   "on": "tap",
+   "action": {
+    "textKey": "map.field"
+   }
+  },
+  {
+   "id": "river",
+   "x": 0,
+   "y": 20,
+   "w": 40,
+   "h": 3,
+   "on": "tap",
+   "action": {
+    "textKey": "map.river"
+   }
+  }
+ ]
+}

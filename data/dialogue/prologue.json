@@ -1,0 +1,168 @@
+{
+ "dialogues": [
+  {
+   "id": "grandma.intro",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "narrator",
+     "textKey": "dlg.grandma.intro.n1",
+     "next": "n2"
+    },
+    "n2": {
+     "speaker": "narrator",
+     "textKey": "dlg.grandma.intro.n2",
+     "next": "n3"
+    },
+    "n3": {
+     "speaker": "grandma",
+     "textKey": "dlg.grandma.intro.n3",
+     "next": "n4"
+    },
+    "n4": {
+     "speaker": "grandma",
+     "textKey": "dlg.grandma.intro.n4",
+     "effects": [
+      {
+       "set": "intro.seen"
+      }
+     ]
+    }
+   },
+   "mark": "legend"
+  },
+  {
+   "id": "elder.intro",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.intro.n1",
+     "next": "n2"
+    },
+    "n2": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.intro.n2",
+     "next": "n3"
+    },
+    "n3": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.intro.n3",
+     "next": "n4"
+    },
+    "n4": {
+     "speaker": "hero",
+     "textKey": "dlg.elder.intro.n4",
+     "effects": [
+      {
+       "set": "prologue.started"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "elder.trials.wait",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.trials.wait.n1"
+    }
+   }
+  },
+  {
+   "id": "elder.trials.done",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.trials.done.n1",
+     "effects": [
+      {
+       "set": "prologue.done"
+      }
+     ],
+     "next": "n2"
+    },
+    "n2": {
+     "if": {
+      "grade": {
+       "min": 3
+      }
+     },
+     "then": "placement",
+     "else": "drum"
+    },
+    "placement": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.trials.done.placement"
+    },
+    "drum": {
+     "speaker": "narrator",
+     "textKey": "dlg.elder.trials.done.drum",
+     "effects": [
+      {
+       "sound": "drum"
+      }
+     ],
+     "next": "n5"
+    },
+    "n5": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.trials.done.n5"
+    }
+   }
+  },
+  {
+   "id": "elder.placement.wait",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.placement.wait.n1"
+    }
+   }
+  },
+  {
+   "id": "elder.drum",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.drum.n1"
+    }
+   }
+  },
+  {
+   "id": "elder.go.exam",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.go.exam.n1"
+    }
+   }
+  },
+  {
+   "id": "elder.idle",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.idle.n1"
+    }
+   }
+  },
+  {
+   "id": "elder.busy",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.busy.n1"
+    }
+   }
+  }
+ ]
+}
