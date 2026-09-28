@@ -3,7 +3,7 @@
 import { createBattle } from '../core/battle.js';
 import { createElementRules } from '../core/elements.js';
 import { hasCards } from '../core/generators.js';
-import { feedbackFor } from '../core/learner.js';
+import { feedbackFor, battleSkills } from '../core/learner.js';
 import { checkAnswer } from '../core/solver.js';
 import { lossLevel, applyLoss, eraComplete, setFlag } from '../core/profile.js';
 import { applyEffects } from '../core/game.js';
@@ -18,19 +18,18 @@ import { showMessage } from './quiz.js';
 import { registerScene, registerModal } from './registry.js';
 import { formatNumber } from '../core/i18n.js';
 
-// A filter for the math skills of battles. Players of grades 1 and 2 get Era 1 skills.
-// Players of higher grades get problems at their own level.
-export function battleSkillFilter(profile) {
-  return (s) => s.subject === 'math' && (profile.grade <= 2 ? s.era === 1 : s.grade <= profile.grade);
+// The skills of battles, crafting, and puzzles: the math skills that the learner model picks.
+export function battleSkillFilter() {
+  return battleSkills;
 }
 
 function makeShieldFactory(ctx) {
-  const { learner, graph, profile } = ctx;
+  const { learner, graph } = ctx;
   return (enemy, similarTo, { extraCards = 0 } = {}) => {
     if (similarTo) {
       return learner.problem(similarTo.skill, { level: similarTo.level, cards: similarTo.kind === 'cards', extraCards });
     }
-    const id = learner.pickSkill({ filter: battleSkillFilter(profile) });
+    const id = learner.pickSkill({ filter: battleSkillFilter() });
     const level = learner.levelFor(id);
     const skill = graph.get(id);
     return hasCards(skill, level) ? learner.problem(id, { level, cards: true, extraCards }) : learner.problem(id, { level });
@@ -362,10 +361,10 @@ async function mountBattle(ctx, params) {
 // The bamboo puzzle: find the bamboo with the right number of sections.
 // After a mistake: a hint, then a worked example, then the answer and a similar problem.
 function bambooPuzzle(ctx) {
-  const { learner, profile } = ctx;
+  const { learner } = ctx;
   // Only problems with a number answer, or with number choices, fit on the bamboo.
   const numberAnswer = (s) => !['shapes', 'bank', 'fracCompare'].includes(s.generator);
-  let problem = learner.next({ filter: (s) => battleSkillFilter(profile)(s) && numberAnswer(s) });
+  let problem = learner.next({ filter: (s) => battleSkillFilter()(s) && numberAnswer(s) });
   const values = () => {
     if (problem.kind === 'choice' && problem.choices.every((c) => c.value !== undefined)) return problem.choices.map((c) => c.value);
     const a = problem.answer;

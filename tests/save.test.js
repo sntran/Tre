@@ -6,6 +6,7 @@ import {
   serialize, deserialize, exportCode, importCode, migrate, wrap, SaveError, SAVE_VERSION, SAVE_FORMAT,
 } from '../src/core/save.js';
 import { createRng } from '../src/core/rng.js';
+import { readFileSync } from 'node:fs';
 
 function sample() {
   const p = createProfile({ id: 'p1', name: 'Tí Sún', gender: 'girl', grade: 2, now: 1000 });
@@ -51,7 +52,7 @@ test('a bad save does not load', () => {
   const newer = wrap(sample());
   newer.version = SAVE_VERSION + 1;
   assert.throws(() => deserialize(JSON.stringify(newer)), (e) => e.reason === 'newer');
-  const broken = wrap({ ...sample(), grade: 9 });
+  const broken = wrap({ ...sample(), grade: 'nine' });
   assert.throws(() => deserialize(JSON.stringify(broken)), (e) => e.reason === 'shape');
 });
 
@@ -93,6 +94,18 @@ test('the version 2 migration keeps mastery and gives the hero a skin tone', () 
   assert.equal(skills['math.add.20'].top, 0);
   assert.equal(skills['math.add.20'].recent, '');
   assert.equal(done.profile.hero.skin, 3);
+});
+
+test('the grade of a save comes from the grade configuration', () => {
+  const grades = JSON.parse(readFileSync(new URL('../data/config/game.json', import.meta.url), 'utf8')).grades;
+  for (const grade of [-1, 0, 1, 12]) {
+    const p = createProfile({ id: 'g', name: 'A', grade });
+    assert.equal(importCode(exportCode(p), { grades }).grade, grade);
+  }
+  const bad = createProfile({ id: 'g', name: 'A', grade: 13 });
+  assert.throws(() => importCode(exportCode(bad), { grades }), (e) => e.reason === 'shape');
+  const half = createProfile({ id: 'g', name: 'A', grade: 2.5 });
+  assert.throws(() => importCode(exportCode(half)), (e) => e.reason === 'shape');
 });
 
 test('the export code loads on another device', () => {

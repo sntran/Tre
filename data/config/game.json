@@ -1,6 +1,58 @@
 {
   "_about": "Values of the game rules (battles, losses, time). The learning model is in learning.json.",
   "maxProfiles": 1,
+  "grades": {
+    "_about": "The grades that a player or a parent can choose. -1 is Pre-K, 0 is K. A grade with no \"name\" uses the text key grade.name with the number.",
+    "default": 1,
+    "list": [
+      {
+        "id": -1,
+        "name": "grade.name.prek",
+        "short": "grade.short.prek"
+      },
+      {
+        "id": 0,
+        "name": "grade.name.k",
+        "short": "grade.short.k"
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 3
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 5
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 7
+      },
+      {
+        "id": 8
+      },
+      {
+        "id": 9
+      },
+      {
+        "id": 10
+      },
+      {
+        "id": 11
+      },
+      {
+        "id": 12
+      }
+    ]
+  },
   "_maxProfilesAbout": "The first version has one profile. The code and the saves support more.",
   "battle": {
     "heroHealth": 5,

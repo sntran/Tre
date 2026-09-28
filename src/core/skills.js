@@ -1,5 +1,6 @@
 // The skill graph. Each skill has the skills that come before it (pre).
 // The game offers a new skill only when the skills before it are mastered.
+import { isGrade } from './grades.js';
 
 export function createSkillGraph(data) {
   const list = data.skills;
@@ -10,14 +11,15 @@ export function createSkillGraph(data) {
   }
 
   // Return a list of problems in the graph. An empty list means the graph is good.
-  function check() {
+  // grades: the grade configuration. With it, the grade of each skill must be in the list.
+  function check(grades = null) {
     const problems = [];
     const ids = new Set();
     for (const skill of list) {
       if (ids.has(skill.id)) problems.push(`duplicate id ${skill.id}`);
       ids.add(skill.id);
       if (!data.subjects.includes(skill.subject)) problems.push(`${skill.id}: unknown subject ${skill.subject}`);
-      if (!Number.isInteger(skill.grade) || skill.grade < 1 || skill.grade > 5) problems.push(`${skill.id}: bad grade`);
+      if (!Number.isInteger(skill.grade) || (grades && !isGrade(skill.grade, grades))) problems.push(`${skill.id}: bad grade`);
       if (!Array.isArray(skill.levels) || skill.levels.length === 0) problems.push(`${skill.id}: no levels`);
       for (const pre of skill.pre) {
         const p = byId.get(pre);

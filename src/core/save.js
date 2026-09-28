@@ -1,6 +1,7 @@
 // The save format. Each save has a format name and a version number.
 // Old saves go through the migrations, so that they work after updates.
 // The export code is compressed text with a checksum. A bad code does not load.
+import { isGrade } from './grades.js';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
 
 export const SAVE_FORMAT = 'tre-save';
@@ -38,7 +39,9 @@ export function wrap(profile, now = 0) {
 }
 
 // Bring a save of any older version to the current version.
-export function migrate(save, { migrations = MIGRATIONS, version = SAVE_VERSION } = {}) {
+// options: { migrations, version, grades } (grades: the grade configuration, to check the grade).
+export function migrate(save, options = {}) {
+  const { migrations = MIGRATIONS, version = SAVE_VERSION } = options;
   if (!save || typeof save !== 'object' || save.format !== SAVE_FORMAT) {
     throw new SaveError('format', 'This is not a Tre save');
   }
@@ -50,17 +53,18 @@ export function migrate(save, { migrations = MIGRATIONS, version = SAVE_VERSION 
     if (!step) throw new SaveError('migration', `No migration from version ${current.version}`);
     current = { ...current, profile: step(current.profile), version: current.version + 1 };
   }
-  validate(current.profile);
+  validate(current.profile, options);
   return current;
 }
 
-// Check the basic shape of a profile.
-export function validate(profile) {
+// Check the basic shape of a profile. With options.grades, the grade must be in the list.
+export function validate(profile, { grades = null } = {}) {
   const fail = (what) => { throw new SaveError('shape', `Bad profile: ${what}`); };
   if (!profile || typeof profile !== 'object') fail('not an object');
   if (typeof profile.id !== 'string' || profile.id === '') fail('id');
   if (!profile.hero || typeof profile.hero.name !== 'string') fail('hero');
-  if (!Number.isInteger(profile.grade) || profile.grade < 1 || profile.grade > 5) fail('grade');
+  if (!Number.isInteger(profile.grade)) fail('grade');
+  if (grades && !isGrade(profile.grade, grades)) fail('grade');
   for (const key of ['flags', 'quests', 'inventory', 'learning', 'settings', 'time']) {
     if (!profile[key] || typeof profile[key] !== 'object') fail(key);
   }

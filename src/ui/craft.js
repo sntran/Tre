@@ -77,7 +77,7 @@ registerModal('craft', async (ctx, cmd, extra) => {
             title: t(recipe.nameKey),
             speaker: recipe.speaker,
             count: step.count,
-            next: () => ctx.learner.next({ filter: battleSkillFilter(ctx.profile) }),
+            next: () => ctx.learner.next({ filter: battleSkillFilter() }),
             similar: (p) => ctx.learner.problem(p.skill, { level: p.level }),
           });
           layer.hidden = false;

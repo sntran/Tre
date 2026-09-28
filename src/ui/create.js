@@ -3,12 +3,14 @@ import { h, img, button } from './dom.js';
 import { t, lang } from './i18n.js';
 import { speak } from './speak.js';
 import { createProfile } from '../core/profile.js';
+import { gradeIds, gradeShort } from '../core/grades.js';
 import { heroLayers } from '../render/assets.js';
 
 export async function mountCreate(ctx) {
   const opts = ctx.data.hero;
   const hero = { name: '', gender: 'boy', skin: 1, face: 1, hair: 1, clothes: 1 };
-  let grade = 1;
+  const grades = ctx.data.game.grades;
+  let grade = grades.default ?? gradeIds(grades)[0];
   let step = 0;
   const steps = ['lang', 'name', 'look', 'grade'];
 
@@ -106,7 +108,7 @@ export async function mountCreate(ctx) {
       stage.append(button(t('ui.next'), () => show(3), { cls: 'btn big red' }));
     } else if (name === 'grade') {
       stage.append(title('create.grade'));
-      stage.append(choiceRow([1, 2, 3, 4, 5], () => grade, (v) => h('span', { text: String(v) }), (v) => { grade = v; }, 'create.grade.label'));
+      stage.append(choiceRow(gradeIds(grades), () => grade, (v) => h('span', { text: t(gradeShort(v, grades).key, gradeShort(v, grades).params) }), (v) => { grade = v; }, 'create.grade.label'));
       stage.append(h('p', { class: 'center muted', text: t('create.grade.note') }));
       stage.append(button(t('create.start'), finish, { cls: 'btn big red' }));
     }

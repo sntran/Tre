@@ -2,6 +2,7 @@
 // the stone stele on the turtle, and the choice of a calling.
 import { buildLadder, createExam, skillsToPractice } from '../core/exam.js';
 import { gradeBase } from '../core/rating.js';
+import { gradeIds, gradeName } from '../core/grades.js';
 import { createSeen } from '../core/fresh.js';
 import { checkAnswer } from '../core/solver.js';
 import { giveTitle, eraComplete, setFlag } from '../core/profile.js';
@@ -82,10 +83,10 @@ function runExam(ctx, kind) {
 
 // The grade level of an ability: the highest grade whose base rating is at or below it.
 function gradeOf(ctx, ability) {
-  const base = ctx.data.learning.rating.gradeBase;
-  let g = 1;
-  for (const [grade, rating] of Object.entries(base)) if (ability >= rating) g = Math.max(g, Number(grade));
-  return g;
+  const ids = gradeIds(ctx.data.game.grades);
+  let g = ids[0];
+  for (const grade of ids) if (ability >= gradeBase(grade, ctx.data.learning.rating)) g = grade;
+  return gradeName(g, ctx.data.game.grades);
 }
 
 async function afterExam(ctx, kind, result) {
@@ -181,7 +182,7 @@ async function mountVanMieu(ctx) {
     const names = profile.stele.map((s) => h('span', { text: t('vanmieu.stele.row', { name: s.name, title: { key: `title.${s.title}.name` } }) }));
     const stele = h('div', { class: 'stele' }, [img('thing/stele-turtle'), h('div', { class: 'stele-names' }, names)]);
     const actions = h('div', { class: 'row' });
-    const needPlacement = profile.grade >= 3 && !profile.flags['placement.done'];
+    const needPlacement = profile.grade >= ctx.data.learning.exam.placement.fromGrade && !profile.flags['placement.done'];
     if (needPlacement) {
       actions.append(button(t('exam.placement.start'), async () => {
         const r = await runExam(ctx, 'placement');

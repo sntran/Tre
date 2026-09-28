@@ -5,6 +5,7 @@ import { h, button } from './dom.js';
 import { t } from './i18n.js';
 import { applyEffects } from '../core/game.js';
 import { addItem } from '../core/profile.js';
+import { byGrade } from '../core/grades.js';
 
 function similar(ctx) {
   return (p) => ctx.learner.problem(p.skill, { level: p.level });
@@ -13,8 +14,8 @@ function similar(ctx) {
 // A trial of the prologue. The problems match the grade that the player gave.
 registerModal('trial', async (ctx, cmd) => {
   const trial = ctx.data.trials.trials.find((x) => x.id === cmd.id);
-  const grade = String(ctx.profile.grade);
-  const skills = trial.skills[grade];
+  // A grade with no list of skills uses the list of the nearest grade.
+  const skills = byGrade(trial.skills, ctx.profile.grade);
   let i = 0;
   // Use a middle level for skills of the grade, and level 1 for skills of a higher grade.
   const levelOf = (skill) => Math.min(skill.levels.length,

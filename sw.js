@@ -177,6 +177,7 @@ const FILES = [
   'src/core/fsm.js',
   'src/core/game.js',
   'src/core/generators.js',
+  'src/core/grades.js',
   'src/core/i18n.js',
   'src/core/learner.js',
   'src/core/mastery.js',

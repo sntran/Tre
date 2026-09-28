@@ -1,7 +1,6 @@
 // The profile of one child: hero, progress, skills, and settings.
 // The profile is a plain data object, so that it is easy to save.
 
-export const GRADES = [1, 2, 3, 4, 5];
 export const GENDERS = ['boy', 'girl'];
 
 export const DEFAULT_SETTINGS = Object.freeze({

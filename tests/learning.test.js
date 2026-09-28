@@ -5,9 +5,10 @@ import { createSkillGraph } from '../src/core/skills.js';
 import { bktUpdate, masteryState, answersToMaster, pCorrect, decideMastery } from '../src/core/mastery.js';
 import { expected, updateRatings, chooseLevel, itemStartRating, gradeBase } from '../src/core/rating.js';
 import { startReview, recordReview, isDue, DAY_MS } from '../src/core/review.js';
-import { createLearner, feedbackFor } from '../src/core/learner.js';
+import { createLearner, feedbackFor, battleSkills } from '../src/core/learner.js';
+import { gradeIds, byGrade, gradeName } from '../src/core/grades.js';
 import { createExam, buildLadder, skillsToPractice, maxLikelihood, simulateExams } from '../src/core/exam.js';
-import { skillsData, learningConfig as cfg, bank } from './helpers.js';
+import { skillsData, learningConfig as cfg, bank, load } from './helpers.js';
 import { createSeen, problemKey, otherLevels } from '../src/core/fresh.js';
 
 const graph = createSkillGraph(skillsData);
@@ -440,6 +441,67 @@ test('a quiz of many questions from one skill has no repeated question', () => {
     const p = seen.fresh([() => learner.problem(skill.id, { level: 1 }), ...otherLevels(learner, skill, 1)]);
     assert.ok(!keys.has(problemKey(p)));
     keys.add(problemKey(p));
+  }
+});
+
+const gradesCfg = load('data/config/game.json').grades;
+
+test('the grades come from the configuration: Pre-K, K, and 1 to 12', () => {
+  const ids = gradeIds(gradesCfg);
+  assert.deepEqual(ids, [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  assert.deepEqual(gradeName(-1, gradesCfg), { key: 'grade.name.prek', params: {} });
+  assert.deepEqual(gradeName(7, gradesCfg), { key: 'grade.name', params: { n: 7 } });
+  assert.deepEqual(graph.check(gradesCfg), []);
+  // A trial has skill lists for grades 1 to 5. Other grades use the nearest list.
+  const table = { 1: 'a', 2: 'b', 5: 'e' };
+  assert.equal(byGrade(table, -1), 'a');
+  assert.equal(byGrade(table, 0), 'a');
+  assert.equal(byGrade(table, 3), 'b');
+  assert.equal(byGrade(table, 12), 'e');
+});
+
+test('each grade gets finite start ratings and a working learner (no NaN)', () => {
+  let last = -Infinity;
+  for (const grade of gradeIds(gradesCfg)) {
+    const base = gradeBase(grade, cfg.rating);
+    assert.ok(Number.isFinite(base), `grade ${grade}: ${base}`);
+    assert.ok(base > last, 'the base goes up with the grade');
+    last = base;
+    const { learner } = learnerFor(grade);
+    for (let i = 0; i < 20; i++) {
+      const pr = learner.next({ filter: battleSkills });
+      assert.ok(Number.isFinite(learner.entry(pr.skill).r), `grade ${grade}: player rating`);
+      assert.ok(Number.isFinite(learner.itemRating(graph.get(pr.skill), pr.level)));
+      learner.record(pr, true);
+    }
+  }
+  // A skill of a grade with no base value.
+  const skill = { id: 'x', grade: 9, levels: [{}, {}] };
+  assert.ok(Number.isFinite(itemStartRating(skill, 2, cfg.rating)));
+  assert.ok(Number.isFinite(gradeBase(3, { ...cfg.rating, gradeBase: { 2: 1000 } })));
+  assert.ok(Number.isFinite(gradeBase(3, { ...cfg.rating, gradeBase: {} })));
+});
+
+test('battle skills come from the open skills of the learner, not from the era', () => {
+  // A grade 2 player who mastered the Era 1 skills gets open skills of later eras.
+  const { learner } = learnerFor(2);
+  for (const id of ['math.add.20', 'math.sub.20', 'math.count.120']) {
+    for (let i = 0; i < 12; i++) learner.record({ skill: id, level: 3 }, true);
+  }
+  const eras = new Set();
+  for (let i = 0; i < 300; i++) {
+    const id = learner.pickSkill({ filter: battleSkills });
+    const skill = graph.get(id);
+    assert.equal(skill.subject, 'math');
+    assert.ok(learner.unlocked(id) || learner.isMastered(id), `${id} is open`);
+    eras.add(skill.era);
+  }
+  assert.ok([...eras].some((e) => e > 1), `eras ${[...eras]}`);
+  // A grade 5 player never gets a skill whose pre skills are not mastered.
+  const { learner: five } = learnerFor(5);
+  for (let i = 0; i < 200; i++) {
+    const id = five.pickSkill({ filter: battleSkills });
+    assert.ok(five.unlocked(id), `${id} is open`);
   }
 });
 

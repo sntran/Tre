@@ -83,6 +83,7 @@
     },
     "placement": {
       "_about": "The placement exam starts near the grade of the player: the base rating of the grade plus startOffset. It never lowers a mastered skill.",
+      "fromGrade": 3,
       "startOffset": -100,
       "masteredAt": 0.85,
       "almostAt": 0.6,

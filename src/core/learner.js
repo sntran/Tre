@@ -17,6 +17,11 @@ export function feedbackFor(mistakes, cfg) {
   return null;
 }
 
+// Battles, crafting, and puzzles use the math skills of the learner. pickSkill takes the open
+// skills (the skills before them are mastered), due reviews, and mixed practice.
+// The era is only for the story. It does not limit the skills.
+export const battleSkills = (s) => s.subject === 'math';
+
 export function createLearner({ graph, config, learning, grade, rng, bank = [], lang = 'vi', clock = () => Date.now() }) {
   learning.skills ??= {};
   learning.items ??= {};

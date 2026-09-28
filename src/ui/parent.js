@@ -3,6 +3,7 @@
 // button for 3 seconds and answers a question for adults.
 import { makeGateQuestion, checkGateAnswer, holdProgress } from '../core/parentgate.js';
 import { exportCode, importCode, SaveError } from '../core/save.js';
+import { gradeIds, gradeName } from '../core/grades.js';
 import { extendTime, remainingMs } from '../core/timelimit.js';
 import { registerModal } from './registry.js';
 import { saveProfile, deleteProfile } from './storage.js';
@@ -153,7 +154,7 @@ async function parentArea(ctx) {
       const left = remainingMs(p.time, p.settings.timeLimit, Date.now());
       body.append(
         h('p', { text: t('parent.summary', {
-          name: p.hero.name, grade: p.grade,
+          name: p.hero.name, grade: gradeName(p.grade, data.game.grades),
           calling: calling ? t(calling.nameKey) : t('ui.none'),
           titles: p.titles.map((id) => t(`title.${id}.name`)).join(t('ui.list.sep')) || t('ui.none'),
           minutes: Math.round((p.time.usedMs ?? 0) / 60000),
@@ -206,7 +207,7 @@ async function parentArea(ctx) {
           drawTabs();
           draw();
         }),
-        selectField(t('parent.grade'), [1, 2, 3, 4, 5].map((g) => [g, String(g)]), p.grade, (v) => {
+        selectField(t('parent.grade'), gradeIds(data.game.grades).map((g) => [g, capital(t(gradeName(g, data.game.grades).key, gradeName(g, data.game.grades).params))]), p.grade, (v) => {
           p.grade = Number(v);
           ctx.makeLearner();
           save();
@@ -336,7 +337,7 @@ async function parentArea(ctx) {
         msg,
         button(t('parent.code.load'), async () => {
           try {
-            const profile = importCode(input.value);
+            const profile = importCode(input.value, { grades: data.game.grades });
             if (!window.confirm(t('parent.code.confirm', { name: profile.hero.name }))) return;
             await saveProfile(profile);
             layer.remove();
@@ -367,3 +368,8 @@ async function parentArea(ctx) {
 registerModal('parent', async (ctx) => {
   if (await gate(ctx)) await parentArea(ctx);
 });
+
+// The text with a capital first letter, for a list of choices.
+function capital(text) {
+  return text.charAt(0).toLocaleUpperCase() + text.slice(1);
+}
