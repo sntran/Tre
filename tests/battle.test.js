@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createElementRules } from '../src/core/elements.js';
 import { createBattle } from '../src/core/battle.js';
 import { load, learningConfig } from './helpers.js';
+import { createRng } from '../src/core/rng.js';
 
 const elementData = load('data/elements.json');
 const rules = createElementRules(elementData);
@@ -261,4 +262,45 @@ test('crafting: the iron horse needs fire, the parts in the right slots, and wat
 test('crafting: the Smith calling skips the problems step', () => {
   const c = createCraft(horse, rules, { bonuses: { craftFast: true } });
   assert.ok(!c.steps.some((s) => s.id === 'shape'));
+});
+
+test('element guards: a random order, and each state that the battle allows', () => {
+  const enemyData = load('data/enemies.json').enemies;
+  const battles = load('data/battles.json').battles;
+  const firstKinds = new Set();
+  for (const [id, def] of Object.entries(battles)) {
+    // The battle data: known states, and each state has a counter magic.
+    for (const st of def.states) assert.ok(rules.counter(st), `${id}: ${st} has a counter`);
+    const magic = new Set();
+    for (let seed = 0; seed < 30; seed++) {
+      const b = createBattle({
+        def: { ...def, events: [] }, enemyTypes: enemyData, rules, config: { ...gameConfig.battle, heroHealth: 99 },
+        feedback: learningConfig.feedback, makeShield: () => shield(), rng: createRng(`${id}:${seed}`),
+      });
+      b.start();
+      firstKinds.add(b.state.enemies[0].guard.kind === 'shield' ? 'shield' : b.state.enemies[0].guard.state);
+      const seen = [];
+      while (b.phase === 'player') {
+        const g = b.target.guard;
+        if (g.kind === 'shield') b.answer(RIGHT);
+        else {
+          seen.push(g.state);
+          const el = rules.counter(g.state);
+          magic.add(el);
+          assert.equal(b.cast(el).ok, true);
+        }
+      }
+      assert.equal(b.phase, 'won');
+      for (const st of seen) assert.ok(def.states.includes(st), `${id}: ${st} is allowed`);
+      // The states come from a deck: each allowed state comes before a state comes again.
+      // So the numbers of the states differ by 1 or less.
+      const counts = def.states.map((st) => seen.filter((x) => x === st).length);
+      assert.ok(Math.max(...counts) - Math.min(...counts) <= 1, `${id}: ${seen.join(', ')}`);
+      if (seen.length >= def.states.length) assert.deepEqual([...new Set(seen)].sort(), [...def.states].sort());
+    }
+    // Over many battles, each magic that counters an allowed state wins.
+    const need = [...new Set(def.states.map((st) => rules.counter(st)))].sort();
+    assert.deepEqual([...magic].sort(), need, `${id}: magics`);
+  }
+  assert.ok(firstKinds.size >= 3, `the first guard changes: ${[...firstKinds]}`);
 });

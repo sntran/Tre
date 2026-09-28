@@ -7,15 +7,38 @@ import { checkAnswer } from './solver.js';
 import { feedbackFor } from './learner.js';
 
 // opts:
-//   def: the battle data ({ enemies, events, elementSkill })
-//   enemyTypes: { id: { spirit, guards: ['shield', 'fire', ...], kind: 'creature' | 'soldier' } }
+//   def: the battle data ({ enemies, events, elementSkill, states: ['fire', 'ice', 'water'] })
+//   enemyTypes: { id: { spirit, guards: ['shield', 'element', ...], kind: 'creature' | 'soldier' } }
+//     "element" is an element guard. Its state comes from def.states.
+//     A state name (for example 'fire') is also an element guard.
+//   rng: with a random generator, the order of the guards of each enemy and the element states
+//     are random. The states come from a shuffled deck of def.states, so each state that the
+//     battle allows comes up before a state comes again. With no rng, the order is the data order.
 //   rules: the element rules (elements.js)
 //   config: { heroHealth, mistakeCost, hintsPerBattle }
 //   feedback: { hintAt, exampleAt, similarAt }
 //   party: { shieldBlocks, bonuses: { extraCards, damage: { shield, fire, water }, heal, shieldBlock }, companion: { id, strike } }
 //   makeShield(enemy, similarTo): a problem for a number shield (cards, numeric, or choice)
 export function createBattle(opts) {
-  const { def, enemyTypes, rules, config, feedback, makeShield } = opts;
+  const { def, enemyTypes, rules, config, feedback, makeShield, rng = null } = opts;
+  const STATES = ['fire', 'ice', 'water'];
+  const allowed = def.states ?? STATES;
+  let deck = [];
+
+  // The next element state from the deck.
+  function drawState() {
+    if (deck.length === 0) deck = rng ? rng.shuffle([...allowed]) : [...allowed];
+    return deck.shift();
+  }
+
+  // The next guard kind of an enemy: 'shield' or an element state.
+  function nextGuardKind(enemy) {
+    if (enemy.queue.length === 0) enemy.queue = rng ? rng.shuffle([...enemy.type.guards]) : [...enemy.type.guards];
+    const token = enemy.queue.shift();
+    if (token === 'shield') return 'shield';
+    // With rng, each element guard gets a state from the deck. With no rng, a state name stays.
+    return token === 'element' || rng ? drawState() : token;
+  }
   const party = opts.party ?? {};
   const bonus = party.bonuses ?? {};
   const damageBonus = bonus.damage ?? {};
@@ -26,7 +49,7 @@ export function createBattle(opts) {
     enemies: def.enemies.map((typeId, i) => {
       const type = enemyTypes[typeId];
       if (!type) throw new Error(`Unknown enemy ${typeId}`);
-      return { index: i, typeId, type, spirit: type.spirit, max: type.spirit, guardIndex: 0, guard: null, statuses: [], done: false, outcome: null };
+      return { index: i, typeId, type, spirit: type.spirit, max: type.spirit, guardIndex: 0, queue: [], guard: null, statuses: [], done: false, outcome: null };
     }),
     target: 0,
     hidden: false,
@@ -64,7 +87,7 @@ export function createBattle(opts) {
   }
 
   function newGuard(enemy, similarTo = null) {
-    const kind = enemy.type.guards[enemy.guardIndex % enemy.type.guards.length];
+    const kind = nextGuardKind(enemy);
     s.mistakes = 0;
     s.firstTry = true;
     s.hinted = false;

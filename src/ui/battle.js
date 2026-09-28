@@ -52,6 +52,7 @@ async function mountBattle(ctx, params) {
     feedback: data.learning.feedback,
     party: { shieldBlocks, bonuses: calling?.bonus ?? {}, companion: def.companion ?? null },
     makeShield: makeShieldFactory(ctx),
+    rng: ctx.rng,
   });
   const renderer = await createBattleRenderer({
     bg: def.bg,

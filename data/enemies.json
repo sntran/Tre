@@ -1,5 +1,5 @@
 {
-  "_about": "Enemy types. kind: creature (becomes calm) or soldier (retreats). guards: the order of guards; 'shield' is a number shield, and 'fire', 'ice', 'water' are element states. spirit: the number of hits.",
+  "_about": "Enemy types. kind: creature (becomes calm) or soldier (retreats). guards: the guards of the enemy; 'shield' is a number shield, and 'element' is an element guard. The battle shuffles the order, and the state of each element guard comes from the states of the battle (battles.json). spirit: the number of hits.",
   "enemies": {
     "river-serpent": {
       "art": "enemy/river-serpent",
@@ -8,9 +8,9 @@
       "kind": "creature",
       "spirit": 3,
       "guards": [
-        "ice",
+        "element",
         "shield",
-        "water"
+        "element"
       ],
       "size": 0.9
     },
@@ -21,7 +21,7 @@
       "kind": "soldier",
       "spirit": 2,
       "guards": [
-        "fire",
+        "element",
         "shield"
       ],
       "size": 1,
@@ -38,7 +38,7 @@
       "spirit": 3,
       "guards": [
         "shield",
-        "fire",
+        "element",
         "shield"
       ],
       "size": 1
@@ -51,10 +51,10 @@
       "spirit": 10,
       "guards": [
         "shield",
-        "fire",
+        "element",
         "shield",
         "shield",
-        "fire",
+        "element",
         "shield"
       ],
       "size": 1.35
