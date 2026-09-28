@@ -122,3 +122,18 @@ test('the Era 1 friend is Nghé; Sóng is a second friend that the player can ch
   assert.ok(songNode.choices.some((c) => !gives(c, 'song')), 'Sóng is optional');
   assert.ok(choices.some((c) => gives(c, 'nghe')));
 });
+
+test('the quest bar text is short: 44 characters or fewer, so it fits in 2 lines on a phone', () => {
+  const en = load('i18n/en.json');
+  const goalKeys = [...quests.flatMap((q) => q.steps.map((st) => st.goalKey)), 'quest.free'];
+  for (const table of [vi, en]) {
+    for (const key of goalKeys) {
+      assert.ok(key in table, key);
+      // The quest bar shows the glossary names only, and numbers such as 10/10.
+      const text = table[key]
+        .replace(/\[\[(\w+)\]\]/g, (all, id) => table[`gloss.${id}.name`] ?? id)
+        .replace(/\{\w+\}/g, '10');
+      assert.ok(text.length <= 44, `${key}: "${text}" has ${text.length} characters`);
+    }
+  }
+});

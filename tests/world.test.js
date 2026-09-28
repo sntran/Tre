@@ -8,6 +8,10 @@ import { questState, currentGoal } from '../src/core/quests.js';
 import { applyEffects, pickTalk, isPresent } from '../src/core/game.js';
 import { createProfile } from '../src/core/profile.js';
 import { load } from './helpers.js';
+import { spriteAt, edgeMarker } from '../src/core/hit.js';
+import { figureScale } from '../src/core/figures.js';
+import { heroLayers } from '../src/render/assets.js';
+import { readFileSync, existsSync } from 'node:fs';
 
 const tiles = load('data/tiles.json').types;
 
@@ -179,4 +183,72 @@ test('the village map is valid, and each person and place can be reached', () =>
   assert.ok(pathNextTo(map, start, ore2), 'after the battle the path is open');
   // The exit to Văn Miếu.
   assert.ok(findPath(map, start, { x: 16, y: 25 }));
+});
+
+test('a tap on the head, body, or feet of a person selects the person', () => {
+  // A person with feet at (100, 200): the picture is 52 wide and 78 tall.
+  const sprites = [{ id: 'elder', x: 100, y: 200, w: 52, h: 78 }, { id: 'smith', x: 140, y: 230, w: 52, h: 78 }];
+  assert.equal(spriteAt(sprites, 100, 130)?.id, 'elder', 'head');
+  assert.equal(spriteAt(sprites, 80, 170)?.id, 'elder', 'body');
+  assert.equal(spriteAt(sprites, 100, 199)?.id, 'elder', 'feet');
+  assert.equal(spriteAt(sprites, 200, 130), null, 'next to the person');
+  // Where two pictures overlap, the person in front (lower on the screen) wins.
+  assert.equal(spriteAt(sprites, 120, 190)?.id, 'smith');
+  // Some extra space helps small fingers.
+  assert.equal(spriteAt(sprites, 128, 130), null);
+  assert.equal(spriteAt(sprites, 128, 130, 4)?.id, 'elder');
+});
+
+test('a quest target out of view gets an arrow at the edge of the screen', () => {
+  const view = { x: 0, y: 0, w: 400, h: 300 };
+  assert.equal(edgeMarker(view, { x: 200, y: 150 }), null, 'in view: no arrow');
+  const right = edgeMarker(view, { x: 1000, y: 150 });
+  assert.equal(right.x, 400);
+  assert.equal(right.y, 150);
+  assert.equal(right.angle, 0, 'the arrow points right');
+  const up = edgeMarker(view, { x: 200, y: -500 }, { top: 60 });
+  assert.ok(Math.abs(up.y - 60) < 1e-9, `the arrow stays below the top bar: ${up.y}`);
+  assert.ok(Math.abs(up.angle + Math.PI / 2) < 1e-9, 'the arrow points up');
+  const corner = edgeMarker(view, { x: 900, y: 900 });
+  assert.ok(corner.x <= 400 && corner.y <= 300 && (corner.x === 400 || corner.y === 300));
+  // A target under the top bar is out of view too.
+  assert.ok(edgeMarker(view, { x: 200, y: 20 }, { top: 60 }));
+});
+
+test('children are drawn smaller than adults, on the map and in battles', () => {
+  const game = load('data/config/game.json');
+  const fig = game.figures;
+  const npcs = load('data/npcs.json').npcs;
+  for (const place of ['map', 'battle']) {
+    const adult = figureScale({}, place, fig);
+    const child = figureScale({ child: true }, place, fig);
+    assert.ok(child < adult, place);
+    assert.ok(child >= adult * 0.7 && child <= adult * 0.9, `${place}: a child is about 4/5 of an adult`);
+  }
+  assert.equal(npcs['giong-boy'].child, true, 'Gióng as a boy is a child');
+  assert.equal(figureScale(npcs['giong-hero'], 'map', fig), npcs['giong-hero'].scale, 'Gióng as a hero has his own size');
+});
+
+test('the hero has a skin tone apart from the face, and girls wear a long skirt', () => {
+  const opts = load('data/hero.json');
+  assert.deepEqual(opts.skins, [1, 2, 3, 4]);
+  const layers = heroLayers({ gender: 'girl', skin: 3, face: 1, hair: 2, clothes: 4 });
+  assert.deepEqual(layers, ['hero/skin-3', 'hero/clothes-girl-4', 'hero/face-1', 'hero/hair-2']);
+  for (const g of opts.genders) for (const s of opts.skins) for (const f of opts.faces) for (const c of opts.clothes) {
+    for (const layer of heroLayers({ gender: g, skin: s, face: f, hair: 1, clothes: c })) {
+      assert.ok(existsSync(new URL(`../art/${layer}.svg`, import.meta.url)), layer);
+    }
+  }
+  // The face layer has only the features: no skin colors.
+  const skins = ['#f0d6b0', '#deb68a', '#b98859', '#8a5f3d'];
+  for (const f of opts.faces) {
+    const svg = readFileSync(new URL(`../art/hero/face-${f}.svg`, import.meta.url), 'utf8').toLowerCase();
+    for (const c of skins) assert.ok(!svg.includes(c), `face-${f} has no skin color ${c}`);
+  }
+  // The skirt of the girl clothes goes down to the ankles (y 130 or more in the 150-unit picture).
+  for (const c of opts.clothes) {
+    const svg = readFileSync(new URL(`../art/hero/clothes-girl-${c}.svg`, import.meta.url), 'utf8');
+    const ys = [...svg.matchAll(/[ ,LlMmCcQq](\d+(?:\.\d+)?)/g)].map((m) => Number(m[1])).filter((y) => y <= 150);
+    assert.ok(Math.max(...ys) >= 130, `clothes-girl-${c} reaches y ${Math.max(...ys)}`);
+  }
 });

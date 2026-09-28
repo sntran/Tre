@@ -1,13 +1,15 @@
 // Draw a battle in side view on the canvas: the background, the party on the left,
 // the enemies on the right, the guards (number shields and element states), and effects.
 import { bitmap, heroLayers } from './assets.js';
+import { figureScale } from '../core/figures.js';
 import { C } from './palette.js';
 
 const W = 960;
 const H = 540;
 const GROUND = 445;
 
-export async function createBattleRenderer({ bg, hero, friends, companion, enemies }) {
+export async function createBattleRenderer({ bg, hero, friends, companion, enemies, figures = { battle: 1.05, child: 0.8 } }) {
+  const heroScale = figureScale({ child: true }, 'battle', figures);
   const art = {
     bg: await bitmap(bg, 1.5),
     hero: await bitmap(heroLayers(hero), 2),
@@ -54,7 +56,7 @@ export async function createBattleRenderer({ bg, hero, friends, companion, enemi
   }
 
   function enemyScale(e) {
-    return 1.05 * (e.type.size ?? 1) * (e.type.kind === 'creature' ? 1.1 : 1);
+    return figures.battle * (e.type.size ?? 1) * (e.type.kind === 'creature' ? 1.1 : 1);
   }
 
   // The rectangle of each enemy on the screen, for taps.
@@ -118,7 +120,8 @@ export async function createBattleRenderer({ bg, hero, friends, companion, enemi
     const hurtDx = hurt ? Math.sin(progress(hurt) * Math.PI * 6) * 10 : 0;
     const cast = active('cast');
     const castDx = cast ? Math.sin(progress(cast) * Math.PI) * 30 : 0;
-    drawSprite(ctx, art.hero, heroPos.x, heroPos.y, 1.05, { dx: hurtDx + castDx, dy: Math.abs(Math.sin(t * 2)) * -3 });
+    // The hero is a child, so the hero is smaller than the adult soldiers.
+    drawSprite(ctx, art.hero, heroPos.x, heroPos.y, heroScale, { dx: hurtDx + castDx, dy: Math.abs(Math.sin(t * 2)) * -3 });
     if (state.hidden) {
       ctx.globalAlpha = 0.85;
       ctx.drawImage(art.fx.steam, heroPos.x - 150, heroPos.y - 210, 240, 170);

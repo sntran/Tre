@@ -53,6 +53,12 @@
       }
     ]
   },
+  "figures": {
+    "_about": "The sizes of people. map and battle: the scale of an adult picture. child: the size of a child as a share of an adult (the hero and Gióng as a boy are children).",
+    "map": 0.52,
+    "battle": 1.05,
+    "child": 0.8
+  },
   "_maxProfilesAbout": "The first version has one profile. The code and the saves support more.",
   "battle": {
     "heroHealth": 5,

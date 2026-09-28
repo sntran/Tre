@@ -61,6 +61,7 @@ async function mountBattle(ctx, params) {
     friends,
     companion: def.companion ?? null,
     enemies: def.enemies.map((id) => data.enemies.enemies[id]),
+    figures: data.game.figures,
   });
   const surface = ctx.surface;
   surface.canvas.hidden = false;
@@ -72,9 +73,13 @@ async function mountBattle(ctx, params) {
   const hearts = h('div', { class: 'hearts', 'aria-live': 'polite' });
   const note = h('button', { class: 'battle-note', type: 'button' }, [
     def.mark ? h('strong', { class: 'note-mark', text: t(`mark.${def.mark}`) }) : null,
-    h('span', { text: tg(def.noteKey) }),
+    h('span', { class: 'note-text', text: tg(def.noteKey) }),
   ]);
-  note.addEventListener('click', () => speak(def.noteKey, null, { force: true }));
+  // On a phone, the note shows 2 lines. A tap shows all of it, and reads it aloud.
+  note.addEventListener('click', () => {
+    note.classList.toggle('open');
+    speak(def.noteKey, null, { force: true });
+  });
   const top = h('div', { class: 'battle-top' }, [hearts, note]);
   const panel = h('div', { class: 'battle-panel' });
   const feedback = feedbackLine();

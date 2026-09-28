@@ -7,8 +7,10 @@ import { pickTalk, isPresent, applyEffects, conditionState } from '../core/game.
 import { createVillageRenderer } from '../render/village.js';
 import { createCamera } from '../render/camera.js';
 import { bitmap, heroLayers } from '../render/assets.js';
+import { spriteAt } from '../core/hit.js';
+import { figureScale } from '../core/figures.js';
 import { h, img, button } from './dom.js';
-import { t, tg } from './i18n.js';
+import { t, tn } from './i18n.js';
 import { speak } from './speak.js';
 import { runDialogue, say } from './dialogue.js';
 
@@ -101,7 +103,8 @@ export async function mountVillage(ctx, params = {}) {
       goalKey = 'quest.free';
       goalParams = {};
     }
-    goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), h('span', { text: tg(goalKey, goalParams) }));
+    // The quest bar has short text only. The dialogues give the long explanations.
+    goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), h('span', { class: 'goal-text', text: tn(goalKey, goalParams) }));
     counts.replaceChildren(...data.items.hud.map((item) => h('span', { class: 'count' }, [
       img(data.items.items[item].art, 'count-icon'),
       h('span', { text: String(profile.inventory[item] ?? 0) }),
@@ -137,6 +140,27 @@ export async function mountVillage(ctx, params = {}) {
     return out;
   }
 
+  // The sizes of people and enemies on the map. A child is smaller than an adult.
+  const fig = data.game.figures;
+  const personScale = (def) => figureScale(def, 'map', fig);
+  const encounterScale = (e) => (e.art.includes('serpent') || e.art.includes('general') ? fig.map * 0.96 : fig.map);
+
+  // The picture rectangles of people and enemies, for taps.
+  function hitBoxes() {
+    const boxes = [];
+    for (const p of people) {
+      const bmp = npcBmps.get(p.id);
+      const sc = personScale(p.def);
+      boxes.push({ who: { kind: 'npc', id: p.id }, tx: p.x, ty: p.y, x: (p.x + 0.5) * T, y: (p.y + 1) * T - 4, w: bmp.unitW * sc, h: bmp.unitH * sc });
+    }
+    for (const e of encounters) {
+      const bmp = encBmps.get(e.id);
+      const sc = encounterScale(e);
+      boxes.push({ who: { kind: 'encounter', id: e.id }, tx: e.x, ty: e.y, x: (e.x + 0.5) * T, y: (e.y + 1) * T - 4, w: bmp.unitW * sc, h: bmp.unitH * sc });
+    }
+    return boxes;
+  }
+
   // Input: tap to move.
   function onPointer(e) {
     if (busy || !alive) return;
@@ -147,8 +171,14 @@ export async function mountVillage(ctx, params = {}) {
     if (!tileMap.inside(tx, ty)) return;
     ctx.bus.emit('sound', 'tap');
     tapFx = { x: w.x, y: w.y, age: 0 };
-    const who = tileMap.whoAt(tx, ty);
+    // A tap on the picture of a person or an enemy (not only on the tile of the feet).
+    const hitSprite = spriteAt(hitBoxes(), w.x, w.y, 4);
+    const who = hitSprite?.who ?? tileMap.whoAt(tx, ty);
     const from = { x: hero.x, y: hero.y };
+    if (hitSprite) {
+      goTo(pathNextTo(tileMap, from, { x: hitSprite.tx, y: hitSprite.ty }), () => interact(hitSprite.who, hitSprite.tx, hitSprite.ty));
+      return;
+    }
     if (who) {
       goTo(pathNextTo(tileMap, from, { x: tx, y: ty }), () => interact(who, tx, ty));
       return;
@@ -298,10 +328,10 @@ export async function mountVillage(ctx, params = {}) {
     const sprites = [];
     for (const p of people) {
       const bmp = npcBmps.get(p.id);
-      sprites.push({ bmp, x: (p.x + 0.5) * T, y: (p.y + 1) * T - 4, scale: p.def.scale ?? 0.52, flip: p.x > hero.x });
+      sprites.push({ bmp, x: (p.x + 0.5) * T, y: (p.y + 1) * T - 4, scale: personScale(p.def), flip: p.x > hero.x });
     }
     for (const e of encounters) {
-      sprites.push({ bmp: encBmps.get(e.id), x: (e.x + 0.5) * T, y: (e.y + 1) * T - 4, scale: e.art.includes('serpent') ? 0.5 : e.art.includes('general') ? 0.5 : 0.52, flip: true });
+      sprites.push({ bmp: encBmps.get(e.id), x: (e.x + 0.5) * T, y: (e.y + 1) * T - 4, scale: encounterScale(e), flip: true });
     }
     const friendId = profile.party[0];
     if (friendId && friendBmps.has(friendId) && (follower.x !== hero.x || follower.y !== hero.y || hero.walking)) {
@@ -309,8 +339,12 @@ export async function mountVillage(ctx, params = {}) {
     } else if (friendId && friendBmps.has(friendId)) {
       sprites.push({ bmp: friendBmps.get(friendId), x: hero.px + (hero.flip ? 26 : -26), y: hero.py, scale: 0.36, flip: hero.flip });
     }
-    sprites.push({ bmp: heroBmp, x: hero.px, y: hero.py, scale: 0.52, flip: hero.flip, walking: hero.walking });
-    renderer.draw(surface, { camera, sprites, markers: markers(), tap: tapFx }, time);
+    sprites.push({ bmp: heroBmp, x: hero.px, y: hero.py, scale: figureScale({ child: true }, 'map', fig), flip: hero.flip, walking: hero.walking });
+    // Keep the edge arrows away from the top bar.
+    const hudRect = hud.getBoundingClientRect();
+    const canvasRect = surface.canvas.getBoundingClientRect();
+    const inset = { top: Math.max(0, hudRect.bottom - canvasRect.top) + 8, right: 12, bottom: 12, left: 12 };
+    renderer.draw(surface, { camera, sprites, markers: markers(), tap: tapFx, inset }, time);
   }
 
   const api = {

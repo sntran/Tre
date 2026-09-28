@@ -3,6 +3,7 @@
 import { C } from './palette.js';
 import { bitmap } from './assets.js';
 import { createRng } from '../core/rng.js';
+import { edgeMarker } from '../core/hit.js';
 
 const GROUND = {
   grass: C.greenPale,
@@ -231,6 +232,46 @@ export async function createVillageRenderer(mapData, tileMap) {
       const bob = Math.sin(t * 4) * 4;
       ctx.drawImage(star, m.x - 14, m.y - 30 + bob, 28, 28);
     }
+    ctx.restore();
+
+    // A marker out of view: an arrow at the edge of the screen that points to it.
+    const inset = scene.inset ?? {};
+    const toWorld = (px) => px / cam.zoom;
+    const worldInset = { top: toWorld(inset.top ?? 0), right: toWorld(inset.right ?? 0), bottom: toWorld(inset.bottom ?? 0), left: toWorld(inset.left ?? 0) };
+    for (const m of scene.markers) {
+      const edge = edgeMarker(v, { x: m.x, y: m.y - 16 }, worldInset);
+      if (edge) drawEdgeArrow(ctx, cam.toScreen(edge.x, edge.y), edge.angle, t);
+    }
+  }
+
+  // An arrow in screen units: a vermilion point with an ink keyline, and a star behind it.
+  function drawEdgeArrow(ctx, at, angle, t) {
+    const pulse = Math.sin(t * 5) * 3;
+    ctx.save();
+    ctx.translate(at.x, at.y);
+    ctx.rotate(angle);
+    ctx.translate(-22 + pulse, 0);
+    ctx.fillStyle = C.paper;
+    ctx.strokeStyle = C.ink;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(-14, 0, 17, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    // The star stays upright in the middle of the circle.
+    ctx.save();
+    ctx.translate(-14, 0);
+    ctx.rotate(-angle);
+    ctx.drawImage(star, -12, -12, 24, 24);
+    ctx.restore();
+    ctx.fillStyle = C.vermilion;
+    ctx.beginPath();
+    ctx.moveTo(22, 0);
+    ctx.lineTo(4, -11);
+    ctx.lineTo(4, 11);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
     ctx.restore();
   }
 

@@ -301,6 +301,7 @@
   },
   "giong-boy": {
    "art": "npc/giong-boy",
+   "child": true,
    "when": {
     "notFlags": [
      "giong.grown"

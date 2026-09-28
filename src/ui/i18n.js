@@ -46,6 +46,11 @@ export function tg(key, params) {
   return active.gloss(t(key, params), seenGloss);
 }
 
+// Short text with the glossary names only, with no meaning (for example for the quest bar).
+export function tn(key, params) {
+  return active.plain(t(key, params));
+}
+
 // Text for the voice.
 export function say(key, params) {
   const sayKey = `${key}.say`;
