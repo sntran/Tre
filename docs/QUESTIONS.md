@@ -43,7 +43,7 @@ This list has the questions that the design does not answer, and the choice that
     - Healer: one more heart in each battle.
     - Woodcutter: fire magic does one more point of damage (later: shots with a bow).
 20. **The rice for Gióng.** The legend says that the whole village fed Gióng. The slice adds a short counting task for this. Is this acceptable?
-21. **Hero faces.** The four faces have four skin tones and four expressions. Should the skin tone be a separate choice?
+21. **Hero faces and skin.** Choice: the skin tone is a separate choice (4 tones). The four faces have four expressions.
 22. **Parent questions.** A parent question shows when the child practices its skill with the teacher, in the language of the question. Should parent questions also show in battles?
 23. **The river serpent.** The "small river creature" is a thuồng luồng from folk tales. Is this a good choice for young children, or is a crab or a fish better?
 24. **Names of Era 1.** The art must be correct for the time of the Hùng Kings. So the text now says "nhà làng" (village hall) in place of "đình", and "thầy giáo" in place of "thầy đồ". Both đình and thầy đồ are from much later times. Is this acceptable?

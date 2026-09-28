@@ -114,6 +114,11 @@
   "pattern/waves.svg": "0 0 64 64",
   "pattern/clouds.svg": "0 0 64 64",
   "pattern/flowers.svg": "0 0 64 64",
-  "ui/seal.svg": "0 0 64 64"
+  "ui/seal.svg": "0 0 64 64",
+  "hero/skin-1.svg": "0 0 100 150",
+  "hero/skin-2.svg": "0 0 100 150",
+  "hero/skin-3.svg": "0 0 100 150",
+  "hero/skin-4.svg": "0 0 100 150",
+  "friend/nghe.svg": "0 0 100 100"
  }
 }

@@ -1,12 +1,13 @@
-// Hero creation: language, name, boy or girl, face, hair, clothes, and grade.
+// Hero creation: language, name, boy or girl, skin, face, hair, clothes, and grade.
 import { h, img, button } from './dom.js';
 import { t, lang } from './i18n.js';
 import { speak } from './speak.js';
 import { createProfile } from '../core/profile.js';
+import { heroLayers } from '../render/assets.js';
 
 export async function mountCreate(ctx) {
   const opts = ctx.data.hero;
-  const hero = { name: '', gender: 'boy', face: 1, hair: 1, clothes: 1 };
+  const hero = { name: '', gender: 'boy', skin: 1, face: 1, hair: 1, clothes: 1 };
   let grade = 1;
   let step = 0;
   const steps = ['lang', 'name', 'look', 'grade'];
@@ -21,11 +22,7 @@ export async function mountCreate(ctx) {
   ctx.ui.append(screen);
 
   function drawPreview() {
-    preview.replaceChildren(
-      img(`hero/face-${hero.face}`, 'layer'),
-      img(`hero/clothes-${hero.gender}-${hero.clothes}`, 'layer'),
-      img(`hero/hair-${hero.hair}`, 'layer'),
-    );
+    preview.replaceChildren(...heroLayers(hero).map((l) => img(l, 'layer')));
   }
 
   function dots() {
@@ -89,13 +86,21 @@ export async function mountCreate(ctx) {
     } else if (name === 'look') {
       stage.append(title('create.look'));
       const layer = (p) => img(p);
-      stage.append(choiceRow(opts.faces, () => hero.face, (v) => h('span', { class: 'stack head' }, [img(`hero/face-${v}`)]), (v) => {
+      // The face and hair buttons show the skin and the face that the player chose.
+      const refresh = () => {
+        for (const el of stage.querySelectorAll('.with-skin')) el.src = `art/hero/skin-${hero.skin}.svg`;
+        for (const el of stage.querySelectorAll('.with-face')) el.src = `art/hero/face-${hero.face}.svg`;
+      };
+      const skinImg = () => img(`hero/skin-${hero.skin}`, 'with-skin');
+      stage.append(choiceRow(opts.skins, () => hero.skin, (v) => h('span', { class: 'stack head' }, [img(`hero/skin-${v}`)]), (v) => {
+        hero.skin = v;
+        refresh();
+      }, 'create.skin'));
+      stage.append(choiceRow(opts.faces, () => hero.face, (v) => h('span', { class: 'stack head' }, [skinImg(), img(`hero/face-${v}`)]), (v) => {
         hero.face = v;
-        // The hair buttons show the new face too.
-        for (const el of stage.querySelectorAll('.hair-tile img:first-child')) el.src = `art/hero/face-${v}.svg`;
+        refresh();
       }, 'create.face'));
-      // Show each hair on the face that the player chose.
-      const withFace = (v) => h('span', { class: 'stack head hair-tile' }, [img(`hero/face-${hero.face}`), img(`hero/hair-${v}`)]);
+      const withFace = (v) => h('span', { class: 'stack head hair-tile' }, [skinImg(), img(`hero/face-${hero.face}`, 'with-face'), img(`hero/hair-${v}`)]);
       stage.append(choiceRow(opts.hairs, () => hero.hair, withFace, (v) => { hero.hair = v; }, 'create.hair'));
       stage.append(choiceRow(opts.clothes, () => hero.clothes, (v) => layer(`hero/clothes-${hero.gender}-${v}`), (v) => { hero.clothes = v; }, 'create.clothes'));
       stage.append(button(t('ui.next'), () => show(3), { cls: 'btn big red' }));

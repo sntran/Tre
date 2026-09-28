@@ -1,6 +1,7 @@
 {
   "_about": "Options for hero creation. Each option is an art layer in art/hero/.",
   "genders": ["boy", "girl"],
+  "skins": [1, 2, 3, 4],
   "faces": [1, 2, 3, 4],
   "hairs": [1, 2, 3, 4, 5, 6],
   "clothes": [1, 2, 3, 4],

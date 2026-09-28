@@ -5,6 +5,7 @@ import { applyEffects, conditionState } from '../core/game.js';
 import { h, img, button } from './dom.js';
 import { t, tg } from './i18n.js';
 import { speak, stop } from './speak.js';
+import { heroLayers } from '../render/assets.js';
 
 // The art of a speaker. "hero" uses the layers of the hero.
 export function portrait(ctx, speaker) {
@@ -12,11 +13,7 @@ export function portrait(ctx, speaker) {
   if (!speaker || speaker === 'narrator') return null;
   if (speaker === 'hero') {
     const hero = ctx.profile.hero;
-    box.append(
-      img(`hero/face-${hero.face}`, 'layer'),
-      img(`hero/clothes-${hero.gender}-${hero.clothes}`, 'layer'),
-      img(`hero/hair-${hero.hair}`, 'layer'),
-    );
+    box.append(...heroLayers(hero).map((l) => img(l, 'layer')));
     return box;
   }
   const art = speakerArt(ctx, speaker);

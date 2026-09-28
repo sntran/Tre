@@ -89,14 +89,15 @@ The code draws people from the bottom center of the picture. Keep these sizes:
 | Adult villager | `0 0 100 150` | Feet at y = 146, top of head at about y = 12, about 23 units per head |
 | Tall adult (Thánh Gióng, the general) | `0 0 140 200` | Feet at y = 196, about 30 units per head |
 
-Hero layers (`art/hero/`) are drawn in this order: `face-*`, `clothes-*`, `hair-*`. They must line up:
+Hero layers (`art/hero/`) are drawn in this order: `skin-*`, `clothes-*`, `face-*`, `hair-*`. They must line up:
 
 - Head: center (50, 30), about 22 units wide and 30 units tall. Neck from y = 44 to y = 50.
 - Shoulders at y = 52, from x = 36 to x = 64. Body from y = 50 to y = 92.
 - Arms down the sides. Hands at about (33, 90) and (67, 90).
 - Legs from y = 92 to y = 140. Feet from y = 140 to y = 146, at about x = 44 and x = 56.
-- The `face-*` layer has the skin of the head, the ears, the neck, the arms, the hands, the legs, and the feet, and the features of the face. Faces 1 to 4 use `skin-1` to `skin-4`, and the expressions calm, serious, surprised, and a small smile.
-- The `clothes-*` layer covers the body and parts of the arms and legs.
+- The `skin-*` layer has the skin of the head, the ears, the neck, the body, the arms, the hands, the legs, and the feet. Skins 1 to 4 use the colors `skin-1` to `skin-4`. The player chooses the skin tone apart from the face.
+- The `face-*` layer has only the features of the face, in `ink`: brows, eyes, nose, and mouth. Faces 1 to 4 have the expressions calm, serious, surprised, and a small smile.
+- The `clothes-*` layer covers the body and parts of the arms and legs. The girl clothes of Era 1 are a yếm and a long wrap skirt (váy) to the ankles.
 - The `hair-*` layer covers only the top and back of the head. It must not cover the eyes (at about y = 31).
 
 ## 6. Creatures

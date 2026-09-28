@@ -75,9 +75,14 @@ export async function loadBitmaps(paths, scale) {
   return out;
 }
 
-// The hero art: the layers face, clothes, and hair.
+// The hero art: the layers skin, clothes, face, and hair, in this order.
 export function heroLayers(hero) {
-  return [`hero/face-${hero.face}`, `hero/clothes-${hero.gender}-${hero.clothes}`, `hero/hair-${hero.hair}`];
+  return [
+    `hero/skin-${hero.skin ?? hero.face ?? 1}`,
+    `hero/clothes-${hero.gender}-${hero.clothes}`,
+    `hero/face-${hero.face}`,
+    `hero/hair-${hero.hair}`,
+  ];
 }
 
 export function artUrl(path) {
