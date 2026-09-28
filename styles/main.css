@@ -1,0 +1,40 @@
+:root {
+  --red: #b8412c;
+  --red-light: #d9765f;
+  --yellow: #e5b53a;
+  --yellow-light: #f1d27a;
+  --green: #4f7a3a;
+  --green-light: #8fb069;
+  --indigo: #2e4a7d;
+  --indigo-light: #6f8fbf;
+  --black: #1d1a17;
+  --paper: #f3e9d2;
+  --paper-dark: #e3d3b0;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--paper);
+  color: var(--black);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+#world {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+#ui {
+  position: absolute;
+  inset: 0;
+}
