@@ -1,0 +1,9 @@
+{
+  "_about": "Enemy types. kind: creature (becomes calm) or soldier (retreats). guards: the order of guards; 'shield' is a number shield, and 'fire', 'ice', 'water' are element states. spirit: the number of hits.",
+  "enemies": {
+    "river-serpent": { "art": "enemy/river-serpent", "doneArt": "enemy/river-serpent-calm", "nameKey": "enemy.river.name", "kind": "creature", "spirit": 3, "guards": ["ice", "shield", "water"], "size": 0.9 },
+    "scout": { "art": "enemy/scout", "doneArt": "enemy/retreat", "nameKey": "enemy.scout.name", "kind": "soldier", "spirit": 2, "guards": ["fire", "shield"], "size": 1 },
+    "soldier": { "art": "enemy/soldier", "doneArt": "enemy/retreat", "nameKey": "enemy.soldier.name", "kind": "soldier", "spirit": 3, "guards": ["shield", "fire", "shield"], "size": 1 },
+    "general": { "art": "enemy/general", "doneArt": "enemy/retreat", "nameKey": "enemy.general.name", "kind": "soldier", "spirit": 10, "guards": ["shield", "fire", "shield", "shield", "fire", "shield"], "size": 1.35 }
+  }
+}

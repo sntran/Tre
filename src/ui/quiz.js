@@ -127,7 +127,7 @@ export function runQuiz(ctx, opts) {
 }
 
 // A short panel that shows a message, an optional picture, and rewards.
-export function showMessage(ctx, { title, textKey, params = {}, art = null, rewards = null, speaker = null }) {
+export function showMessage(ctx, { title, textKey, params = {}, art = null, rewards = null, speaker = null, rewardsKey = 'trial.reward', noteKey = null }) {
   return new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
     const close = () => { layer.remove(); resolve(); };
@@ -136,11 +136,12 @@ export function showMessage(ctx, { title, textKey, params = {}, art = null, rewa
       art ? img(art, '', '') : null,
       h('p', { class: 'prompt', text: tg(textKey, params) }),
       rewards && Object.keys(rewards).length ? h('div', { class: 'col', style: { alignItems: 'center' } }, [
-        h('p', { text: t('trial.reward') }),
+        h('p', { text: t(rewardsKey) }),
         h('div', { class: 'reward' }, Object.entries(rewards).map(([item, n]) => h('span', { class: 'count' }, [
-          img(ctx.data.items.items[item]?.art ?? 'ui/star', 'count-icon'), h('span', { text: `+${n}` }),
+          img(ctx.data.items.items[item]?.art ?? 'ui/star', 'count-icon'), h('span', { text: n > 0 ? `+${n}` : `${n}` }),
         ]))),
       ]) : null,
+      noteKey ? h('p', { text: t(noteKey) }) : null,
       button(t('ui.ok'), close, { cls: 'btn big red' }),
     ]);
     if (art) body.querySelector('img:not(.layer)')?.setAttribute('style', 'width:min(30vmin,160px)');

@@ -11,6 +11,7 @@ import { createSkillGraph } from '../core/skills.js';
 import { createLearner } from '../core/learner.js';
 import { createSurface } from '../render/surface.js';
 import { mountTitle } from './title.js';
+import { connectAudio } from './audio.js';
 import { mountCreate } from './create.js';
 import { mountVillage } from './village.js';
 
@@ -53,6 +54,7 @@ export async function startApp(root) {
   const surface = createSurface(canvas);
   window.addEventListener('resize', () => surface.resize());
   const bus = createBus();
+  connectAudio(bus);
 
   const machine = createMachine({
     initial: 'boot',

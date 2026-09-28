@@ -1,0 +1,6 @@
+{
+  "_about": "Creature friends. help: what the friend does in a battle. The player never loses a friend.",
+  "friends": {
+    "song": { "art": "friend/song", "nameKey": "npc.song.name", "element": "water", "help": { "type": "shield", "amount": 1 }, "helpKey": "friend.song.help" }
+  }
+}

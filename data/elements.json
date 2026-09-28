@@ -1,0 +1,19 @@
+{
+  "_about": "The element rule table. A rule tells what an attack element does to a target state. New combinations are data, not code. The battle and the forge use this table.",
+  "elements": ["fire", "water", "lightning"],
+  "available": ["fire", "water"],
+  "rules": [
+    { "attack": "water", "target": "fire", "effect": "extinguish", "damage": 1, "clears": true, "textKey": "element.extinguish" },
+    { "attack": "fire", "target": "ice", "effect": "melt", "damage": 1, "clears": true, "addStatus": "wet", "textKey": "element.melt" },
+    { "attack": "fire", "target": "water", "effect": "steam", "damage": 1, "clears": true, "partyStatus": "hidden", "textKey": "element.steam" },
+    { "attack": "fire", "target": "fire", "effect": "none", "mistake": true, "hintKey": "element.hint.fire" },
+    { "attack": "water", "target": "water", "effect": "none", "mistake": true, "hintKey": "element.hint.water" },
+    { "attack": "water", "target": "ice", "effect": "freeze", "mistake": true, "hintKey": "element.hint.ice" },
+    { "attack": "lightning", "target": "water", "effect": "shock", "damage": 1, "clears": true, "spread": "wet", "textKey": "element.shock" },
+    { "attack": "lightning", "target": "wet", "effect": "shock", "damage": 1, "spread": "wet", "textKey": "element.shock" },
+    { "attack": "fire", "target": "iron", "effect": "soften", "result": "hot-iron", "textKey": "element.soften" },
+    { "attack": "water", "target": "iron", "effect": "none", "mistake": true, "hintKey": "element.hint.iron" },
+    { "attack": "water", "target": "hot-iron", "effect": "harden", "result": "hard-iron", "partyStatus": "steam", "textKey": "element.harden" },
+    { "attack": "fire", "target": "hot-iron", "effect": "none", "mistake": true, "hintKey": "element.hint.hot" }
+  ]
+}
