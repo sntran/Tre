@@ -182,12 +182,41 @@ test('calling bonuses: more damage, more health, more cards, and a shield', () =
   assert.equal(b.state.enemies[0].spirit, 4);
 });
 
-test('hints: a card of the solution, the right element, and a limit', () => {
+test('hints tell a method, never the answer or a card; a limit of hints', () => {
   const b = battle(['scout']);
-  assert.deepEqual(b.useHint(), { kind: 'cards', index: 0 });
+  const cardHint = b.useHint();
+  assert.deepEqual(cardHint, { kind: 'text', hint: shield().hint });
+  assert.equal(JSON.stringify(cardHint).includes('index'), false, 'no card to use');
   b.answer(RIGHT);
-  assert.deepEqual(b.useHint(), { kind: 'element', element: 'water' });
+  const elementHint = b.useHint();
+  assert.deepEqual(elementHint, { kind: 'text', hint: { key: 'element.ask.fire', params: {} } });
+  assert.equal(JSON.stringify(elementHint).includes('water'), false, 'no element to use');
   assert.equal(b.useHint(), null, 'no more hints');
+});
+
+test('a problem solved after a hint is not correct on the first try', () => {
+  const b = battle(['general']);
+  let r = b.answer(RIGHT);
+  assert.equal(r.events[0].credit, true, 'no hint: the learner gets the credit');
+  b.useHint();
+  r = b.answer(RIGHT);
+  assert.equal(r.events[0].first, true);
+  assert.equal(r.events[0].credit, false, 'after a hint: not correct on the first try');
+  r = b.answer(RIGHT);
+  assert.equal(r.events[0].credit, true, 'the next guard starts again with no hint');
+});
+
+test('an element guard: a method question first, then an example with another state', () => {
+  const b = battle(['serpent']);
+  let r = b.cast('water');
+  const m = r.events.find((e) => e.type === 'mistake');
+  assert.equal(m.feedback, 'hint');
+  assert.equal(m.hint.key, 'element.hint.water');
+  r = b.cast('water');
+  assert.equal(r.events.find((e) => e.type === 'mistake').feedback, 'example');
+  const example = b.target.guard.problem.example;
+  assert.ok(example.key.startsWith('element.example.'));
+  assert.notEqual(example.key, 'element.example.water', 'the example uses another state');
 });
 
 test('the target moves to the next enemy when one is done', () => {

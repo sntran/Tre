@@ -96,9 +96,11 @@ export function runQuiz(ctx, opts) {
         // Show the answer, then give a similar problem.
         current.lock();
         const answer = answerText(problem);
-        feedback.show('example', t('quiz.answer.is', { answer }), { key: 'quiz.answer.is', params: { answer } });
+        // The explanation of a hand-written question tells the answer, so it comes only now.
+        const explain = problem.explain ? ` ${textOf(problem.explain)}` : '';
+        feedback.show('example', t('quiz.answer.is', { answer }) + explain, { key: 'quiz.answer.is', params: { answer } });
         asked += 1;
-        await wait(2600);
+        await wait(explain ? 4000 : 2600);
         if (closed) return;
         if (opts.count && asked >= opts.count) {
           finish(false);

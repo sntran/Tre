@@ -34,6 +34,7 @@ export function createBattle(opts) {
     hints: config.hintsPerBattle,
     mistakes: 0,
     firstTry: true,
+    hinted: false,
     companion: party.companion ? { ...party.companion, weapon: party.companion.weapon ?? 'staff' } : null,
     fired: [],
     event: null,
@@ -50,15 +51,23 @@ export function createBattle(opts) {
     },
   });
 
+  // An element guard is a problem too. The hint is a question about the method.
+  // The worked example shows the rule for another state, so it does not give the answer.
   function elementProblem(state) {
     const skill = def.elementSkill ?? 'sci.matter.states';
-    return { skill, level: 1, item: `${skill}#1`, kind: 'element', state };
+    const other = ['fire', 'ice', 'water'].find((x) => x !== state);
+    return {
+      skill, level: 1, item: `${skill}#1`, kind: 'element', state,
+      hint: { key: `element.ask.${state}`, params: {} },
+      example: { key: `element.example.${other}`, params: {} },
+    };
   }
 
   function newGuard(enemy, similarTo = null) {
     const kind = enemy.type.guards[enemy.guardIndex % enemy.type.guards.length];
     s.mistakes = 0;
     s.firstTry = true;
+    s.hinted = false;
     if (kind === 'shield') enemy.guard = { kind: 'shield', problem: makeShield(enemy, similarTo, { extraCards: bonus.extraCards ?? 0 }) };
     else enemy.guard = { kind: 'element', state: kind, problem: elementProblem(kind) };
   }
@@ -77,8 +86,9 @@ export function createBattle(opts) {
     return s.target;
   }
 
+  // "credit" is what the learner model records: correct on the first try, with no hint.
   function answerEvent(problem, ok) {
-    const e = { type: 'answer', problem, ok, first: s.firstTry };
+    const e = { type: 'answer', problem, ok, first: s.firstTry, credit: ok && !s.hinted };
     s.firstTry = false;
     return e;
   }
@@ -210,20 +220,16 @@ export function createBattle(opts) {
   }
 
   // A hint with no health cost. The number of hints is limited.
+  // The hint tells a method. It never tells the answer or the card to use.
+  // A problem solved after a hint does not count as correct on the first try.
   function useHint() {
     if (s.hints <= 0 || !machine.is('player')) return null;
     const enemy = current();
     const guard = enemy?.guard;
     if (!guard) return null;
     s.hints -= 1;
-    if (guard.kind === 'element') return { kind: 'element', element: rules.counter(guard.state) };
-    const p = guard.problem;
-    if (p.kind === 'cards') return { kind: 'cards', index: p.solution[0].index };
-    if (p.kind === 'choice') {
-      const wrong = p.choices.map((_, i) => i).filter((i) => i !== p.answer);
-      return { kind: 'choice', remove: wrong[0] };
-    }
-    return { kind: 'text', hint: p.hint };
+    s.hinted = true;
+    return { kind: 'text', hint: guard.problem.hint ?? null };
   }
 
   // Go on after a story event (for example: the player found bamboo).

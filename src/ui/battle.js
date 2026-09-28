@@ -3,6 +3,7 @@
 import { createBattle } from '../core/battle.js';
 import { createElementRules } from '../core/elements.js';
 import { hasCards } from '../core/generators.js';
+import { feedbackFor } from '../core/learner.js';
 import { checkAnswer } from '../core/solver.js';
 import { lossLevel, applyLoss, eraComplete, setFlag } from '../core/profile.js';
 import { applyEffects } from '../core/game.js';
@@ -140,19 +141,7 @@ async function mountBattle(ctx, params) {
       feedback.show('hint', t('battle.hint.none'));
       return;
     }
-    if (hint.kind === 'element') {
-      const params = { element: { key: `element.${hint.element}` } };
-      feedback.show('hint', t('battle.hint.element', params), { key: 'battle.hint.element', params });
-    } else if (hint.kind === 'cards') {
-      widget?.highlight(hint.index);
-      feedback.show('hint', t('battle.hint.card'), { key: 'battle.hint.card' });
-    } else if (hint.kind === 'choice') {
-      const btn = panel.querySelectorAll('.choice-grid .btn')[hint.remove];
-      if (btn) btn.style.visibility = 'hidden';
-      feedback.show('hint', t('battle.hint.choice'), { key: 'battle.hint.choice' });
-    } else {
-      feedback.show('hint', textOf(hint.hint), hint.hint?.key ? hint.hint : null);
-    }
+    feedback.show('hint', hint.hint ? textOf(hint.hint) : t('hint.bank'), hint.hint?.key ? hint.hint : { key: 'hint.bank' });
     panel.querySelector('.battle-actions .btn.small')?.replaceWith(hintButton());
   }
 
@@ -179,7 +168,7 @@ async function mountBattle(ctx, params) {
       switch (e.type) {
         case 'answer':
           if (e.first) {
-            learner.record(e.problem, e.ok);
+            learner.record(e.problem, e.credit);
             profile.stats[e.ok ? 'correct' : 'mistakes'] += 1;
           }
           break;
@@ -248,7 +237,8 @@ async function mountBattle(ctx, params) {
             feedback.show('example', t('battle.hint.element', { element: { key: `element.${el}` } }));
           } else {
             const answer = p.kind === 'cards' ? p.solution.map((m, i) => (i ? ` ${m.op === '-' ? '−' : m.op} ` : '') + formatNumber(p.cards[m.index], lang())).join('') : answerText(p);
-            feedback.show('example', t('quiz.answer.was', { answer }), { key: 'quiz.answer.was', params: { answer } });
+            const explain = p.explain ? ` ${textOf(p.explain)}` : '';
+            feedback.show('example', t('quiz.answer.was', { answer }) + explain, { key: 'quiz.answer.was', params: { answer } });
           }
           await wait(2200);
           break;
@@ -369,11 +359,12 @@ async function mountBattle(ctx, params) {
 }
 
 // The bamboo puzzle: find the bamboo with the right number of sections.
+// After a mistake: a hint, then a worked example, then the answer and a similar problem.
 function bambooPuzzle(ctx) {
   const { learner, profile } = ctx;
   // Only problems with a number answer, or with number choices, fit on the bamboo.
   const numberAnswer = (s) => !['shapes', 'bank', 'fracCompare'].includes(s.generator);
-  const problem = learner.next({ filter: (s) => battleSkillFilter(profile)(s) && numberAnswer(s) });
+  let problem = learner.next({ filter: (s) => battleSkillFilter(profile)(s) && numberAnswer(s) });
   const values = () => {
     if (problem.kind === 'choice' && problem.choices.every((c) => c.value !== undefined)) return problem.choices.map((c) => c.value);
     const a = problem.answer;
@@ -390,26 +381,46 @@ function bambooPuzzle(ctx) {
     const panel = h('div', { class: 'panel quiz' });
     const feedback = feedbackLine();
     let first = true;
+    let mistakes = 0;
+    let busy = false;
     const show = () => {
       const vals = values();
       const grid = h('div', { class: 'choice-grid' });
       vals.forEach((v) => {
         const b = h('button', { class: 'btn bamboo-choice', type: 'button' }, [img('thing/bamboo-stalk'), h('span', { text: formatNumber(v, lang()) })]);
         b.addEventListener('click', async () => {
+          if (busy) return;
           const ok = problem.kind === 'choice' ? v === problem.choices[problem.answer].value : checkAnswer(problem, v);
           if (first) {
             learner.record(problem, ok);
             first = false;
           }
           if (ok) {
+            busy = true;
             ctx.bus.emit('sound', 'correct');
             b.classList.add('pop');
             await wait(700);
             layer.remove();
             resolve();
+            return;
+          }
+          ctx.bus.emit('sound', 'wrong');
+          b.style.visibility = 'hidden';
+          mistakes += 1;
+          const step = feedbackFor(mistakes, ctx.data.learning.feedback);
+          if (step === 'example' && problem.example) {
+            feedback.show('example', textOf(problem.example), problem.example.key ? problem.example : null);
+          } else if (step === 'similar') {
+            busy = true;
+            const answer = answerText(problem);
+            feedback.show('example', t('quiz.answer.is', { answer }), { key: 'quiz.answer.is', params: { answer } });
+            await wait(2600);
+            problem = learner.problem(problem.skill, { level: problem.level });
+            first = true;
+            mistakes = 0;
+            busy = false;
+            show();
           } else {
-            ctx.bus.emit('sound', 'wrong');
-            b.style.visibility = 'hidden';
             feedback.show('hint', textOf(problem.hint), problem.hint?.key ? problem.hint : null);
           }
         });

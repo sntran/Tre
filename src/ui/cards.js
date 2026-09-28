@@ -70,13 +70,6 @@ export function renderCards(problem, { onSubmit }) {
     el,
     lock() { locked = true; },
     unlock() { locked = false; moves = []; render(); },
-    highlight(index) {
-      const c = cardsRow.children[index];
-      if (c) {
-        c.style.background = 'var(--yellow)';
-        c.classList.add('pop');
-      }
-    },
     destroy() { el.remove(); },
   };
 }

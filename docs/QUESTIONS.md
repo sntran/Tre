@@ -9,7 +9,7 @@ This list has the questions that the design does not answer, and the choice that
    - Simulation (400 learners for each value, see `tests/learning.test.js`): a learner who is always right needs 8 answers. A learner who is right 80 percent of the time needs about 14 answers (median). A learner who is right 60 percent of the time needs about 60 answers (median), and few get mastery in 20 answers.
    - The difficulty rating (Elo) chooses the level: the hardest level with an expected success from 75 to 85 percent (`targetLow`, `targetHigh`).
 2. **How much health does one mistake cost, and how many hints does a battle give?**
-   - Choice: the hero has 5 hearts. One mistake costs 1 heart. Each battle gives 2 hints with no cost. After each mistake, the game also gives a hint, then a worked example, then a similar problem.
+   - Choice: the hero has 5 hearts. One mistake costs 1 heart. Each battle gives 2 hints with no cost. After each mistake, the game also gives a hint, then a worked example, then a similar problem. A hint tells a method. It never tells the answer or the card to use. A worked example uses other numbers. A problem solved after a hint does not count as correct on the first try.
 3. **Which small items can a player lose, and how many?**
    - Choice: coins and bamboo only. "Small" loss: 10 percent, at least 1, at most 3 of each. "Normal" loss: 25 percent, at most 10. Grade 1 has no loss unless the parent changes the setting. Iron is not in the list, because the iron horse quest needs it.
 4. **Which creature friends go in each era?**

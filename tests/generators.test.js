@@ -181,6 +181,81 @@ test('each number shield has a solution with the correct operations', () => {
   }
 });
 
+// The param of each worked example that has the result of the example.
+const EXAMPLE_RESULT = {
+  'ex.count.after': 'm1', 'ex.count.before': 'm1', 'ex.count.ten': 'm10', 'ex.add': 'z', 'ex.add.missing': 'y',
+  'ex.sub': 'z', 'ex.split.add': 'z', 'ex.split.sub': 'z', 'ex.place.expanded': 'm', 'ex.place': 'd',
+  'ex.mul': 'z', 'ex.div': 'x', 'ex.frac.equiv': 'ak', 'ex.frac.add': 's', 'ex.frac.unlike': 's',
+  'ex.area': 'z', 'ex.perimeter': 'z', 'ex.mul.multi': 'z', 'ex.decimal.add': 'z', 'ex.decimal.sub': 'z', 'ex.shape.sides': 'n',
+};
+const numbersOf = (params) => Object.values(params ?? {}).filter((v) => typeof v === 'number');
+
+test('worked examples use other numbers and never show the answer', () => {
+  for (const skill of graph.all()) {
+    skill.levels.forEach((_, i) => {
+      for (let run = 0; run < RUNS; run++) {
+        const pr = generate(skill, i + 1, createRng(`ex:${skill.id}:${i}:${run}`), { bank, lang: 'vi' });
+        if (skill.generator === 'bank') {
+          assert.equal(pr.example, null, 'the explanation comes only with the answer');
+          continue;
+        }
+        assert.ok(pr.example?.key, `${skill.id}: an example`);
+        const ex = pr.example.params;
+        const own = numbersOf(pr.prompt.params);
+        const exNumbers = numbersOf(ex);
+        if (own.length) {
+          assert.ok(!own.every((n) => exNumbers.includes(n)) || exNumbers.length === 0,
+            `${skill.id}: the example ${JSON.stringify(ex)} uses the numbers of the problem ${JSON.stringify(pr.prompt.params)}`);
+        }
+        if (pr.kind === 'numeric') {
+          const key = EXAMPLE_RESULT[pr.example.key];
+          assert.ok(key, `${pr.example.key}: the result param is known`);
+          assert.notEqual(ex[key], pr.answer, `${skill.id}: the example result is not the answer`);
+        }
+        if (skill.generator === 'compare') {
+          assert.ok(!pr.expr.values.includes(ex.big) && !pr.expr.values.includes(ex.small));
+        }
+        if (skill.generator === 'fracCompare') {
+          const dens = pr.expr.values.map((f) => f[1]);
+          assert.ok(!dens.includes(ex.x) && !dens.includes(ex.y));
+        }
+      }
+    });
+  }
+});
+
+test('number card hints name no card, and the example uses other cards', () => {
+  for (const skill of graph.all()) {
+    skill.levels.forEach((_, i) => {
+      if (!hasCards(skill, i + 1)) return;
+      for (let run = 0; run < RUNS; run++) {
+        const sh = generateShield(skill, i + 1, createRng(`hint:${skill.id}:${i}:${run}`));
+        assert.deepEqual(Object.keys(sh.hint.params), ['target']);
+        assert.notEqual(sh.example.params.target, sh.target, 'the example has another target');
+        assert.ok(!sh.example.params.expr.includes('undefined'));
+      }
+    });
+  }
+});
+
+test('number shields follow the "regroup" value of the level', () => {
+  const carry = (a, b) => String(a).split('').reverse().some((d, i) => Number(d) + Number(String(b).split('').reverse()[i] ?? 0) >= 10);
+  const borrow = (a, b) => String(a).split('').reverse().some((d, i) => Number(d) < Number(String(b).split('').reverse()[i] ?? 0));
+  for (const skill of graph.all().filter((s) => s.generator === 'addsub')) {
+    skill.levels.forEach((params, i) => {
+      if (!params.cards) return;
+      for (let run = 0; run < RUNS; run++) {
+        const sh = generateShield(skill, i + 1, createRng(`regroup:${skill.id}:${i}:${run}`));
+        const [m1, m2] = sh.solution;
+        const a = sh.cards[m1.index];
+        const b = sh.cards[m2.index];
+        const regroup = m2.op === '-' ? borrow(a, b) : carry(a, b);
+        assert.equal(regroup, Boolean(params.regroup), `${skill.id} L${i + 1}: ${a} ${m2.op} ${b}`);
+      }
+    });
+  }
+});
+
 test('extra cards give more cards', () => {
   const sh = generateShield(graph.get('math.add.20'), 1, createRng(3), { extraCards: 1 });
   assert.equal(sh.cards.length, 5);
