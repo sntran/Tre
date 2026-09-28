@@ -1,0 +1,1030 @@
+{
+ "_about": "Hand-written questions. Each text is a key in i18n. The first choice is the correct one (answer 0); the game shuffles the choices.",
+ "questions": [
+  {
+   "id": "states.ice.sun",
+   "skill": "sci.matter.states",
+   "level": 1,
+   "promptKey": "q.states.ice.sun.prompt",
+   "hintKey": "q.states.ice.sun.hint",
+   "explainKey": "q.states.ice.sun.explain",
+   "type": "choice",
+   "choices": [
+    "q.states.ice.sun.c1",
+    "q.states.ice.sun.c2",
+    "q.states.ice.sun.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "states.fire.out",
+   "skill": "sci.matter.states",
+   "level": 1,
+   "promptKey": "q.states.fire.out.prompt",
+   "hintKey": "q.states.fire.out.hint",
+   "explainKey": "q.states.fire.out.explain",
+   "type": "choice",
+   "choices": [
+    "q.states.fire.out.c1",
+    "q.states.fire.out.c2",
+    "q.states.fire.out.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "states.boil",
+   "skill": "sci.matter.states",
+   "level": 2,
+   "promptKey": "q.states.boil.prompt",
+   "hintKey": "q.states.boil.hint",
+   "explainKey": "q.states.boil.explain",
+   "type": "choice",
+   "choices": [
+    "q.states.boil.c1",
+    "q.states.boil.c2",
+    "q.states.boil.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "states.freeze",
+   "skill": "sci.matter.states",
+   "level": 2,
+   "promptKey": "q.states.freeze.prompt",
+   "hintKey": "q.states.freeze.hint",
+   "explainKey": "q.states.freeze.explain",
+   "type": "choice",
+   "choices": [
+    "q.states.freeze.c1",
+    "q.states.freeze.c2",
+    "q.states.freeze.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "states.back",
+   "skill": "sci.matter.states",
+   "level": 3,
+   "promptKey": "q.states.back.prompt",
+   "hintKey": "q.states.back.hint",
+   "explainKey": "q.states.back.explain",
+   "type": "choice",
+   "choices": [
+    "q.states.back.c1",
+    "q.states.back.c2",
+    "q.states.back.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "states.ash",
+   "skill": "sci.matter.states",
+   "level": 3,
+   "promptKey": "q.states.ash.prompt",
+   "hintKey": "q.states.ash.hint",
+   "explainKey": "q.states.ash.explain",
+   "type": "choice",
+   "choices": [
+    "q.states.ash.c1",
+    "q.states.ash.c2",
+    "q.states.ash.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "mat.iron",
+   "skill": "sci.matter.materials",
+   "level": 1,
+   "promptKey": "q.mat.iron.prompt",
+   "hintKey": "q.mat.iron.hint",
+   "explainKey": "q.mat.iron.explain",
+   "type": "choice",
+   "choices": [
+    "q.mat.iron.c1",
+    "q.mat.iron.c2",
+    "q.mat.iron.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "mat.hard",
+   "skill": "sci.matter.materials",
+   "level": 1,
+   "promptKey": "q.mat.hard.prompt",
+   "hintKey": "q.mat.hard.hint",
+   "explainKey": "q.mat.hard.explain",
+   "type": "choice",
+   "choices": [
+    "q.mat.hard.c1",
+    "q.mat.hard.c2",
+    "q.mat.hard.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "mat.heat",
+   "skill": "sci.matter.materials",
+   "level": 2,
+   "promptKey": "q.mat.heat.prompt",
+   "hintKey": "q.mat.heat.hint",
+   "explainKey": "q.mat.heat.explain",
+   "type": "choice",
+   "choices": [
+    "q.mat.heat.c1",
+    "q.mat.heat.c2",
+    "q.mat.heat.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "mat.float",
+   "skill": "sci.matter.materials",
+   "level": 2,
+   "promptKey": "q.mat.float.prompt",
+   "hintKey": "q.mat.float.hint",
+   "explainKey": "q.mat.float.explain",
+   "type": "choice",
+   "choices": [
+    "q.mat.float.c1",
+    "q.mat.float.c2",
+    "q.mat.float.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "mat.pot",
+   "skill": "sci.matter.materials",
+   "level": 3,
+   "promptKey": "q.mat.pot.prompt",
+   "hintKey": "q.mat.pot.hint",
+   "explainKey": "q.mat.pot.explain",
+   "type": "choice",
+   "choices": [
+    "q.mat.pot.c1",
+    "q.mat.pot.c2",
+    "q.mat.pot.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "water.down",
+   "skill": "sci.water.flow",
+   "level": 1,
+   "promptKey": "q.water.down.prompt",
+   "hintKey": "q.water.down.hint",
+   "explainKey": "q.water.down.explain",
+   "type": "choice",
+   "choices": [
+    "q.water.down.c1",
+    "q.water.down.c2",
+    "q.water.down.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "water.rain",
+   "skill": "sci.water.flow",
+   "level": 1,
+   "promptKey": "q.water.rain.prompt",
+   "hintKey": "q.water.rain.hint",
+   "explainKey": "q.water.rain.explain",
+   "type": "choice",
+   "choices": [
+    "q.water.rain.c1",
+    "q.water.rain.c2",
+    "q.water.rain.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "water.sea",
+   "skill": "sci.water.flow",
+   "level": 2,
+   "promptKey": "q.water.sea.prompt",
+   "hintKey": "q.water.sea.hint",
+   "explainKey": "q.water.sea.explain",
+   "type": "choice",
+   "choices": [
+    "q.water.sea.c1",
+    "q.water.sea.c2",
+    "q.water.sea.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "water.canal",
+   "skill": "sci.water.flow",
+   "level": 3,
+   "promptKey": "q.water.canal.prompt",
+   "hintKey": "q.water.canal.hint",
+   "explainKey": "q.water.canal.explain",
+   "type": "choice",
+   "choices": [
+    "q.water.canal.c1",
+    "q.water.canal.c2",
+    "q.water.canal.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "float.boat",
+   "skill": "sci.water.float",
+   "level": 1,
+   "promptKey": "q.float.boat.prompt",
+   "hintKey": "q.float.boat.hint",
+   "explainKey": "q.float.boat.explain",
+   "type": "choice",
+   "choices": [
+    "q.float.boat.c1",
+    "q.float.boat.c2",
+    "q.float.boat.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "float.sink",
+   "skill": "sci.water.float",
+   "level": 2,
+   "promptKey": "q.float.sink.prompt",
+   "hintKey": "q.float.sink.hint",
+   "explainKey": "q.float.sink.explain",
+   "type": "choice",
+   "choices": [
+    "q.float.sink.c1",
+    "q.float.sink.c2",
+    "q.float.sink.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "float.raft",
+   "skill": "sci.water.float",
+   "level": 3,
+   "promptKey": "q.float.raft.prompt",
+   "hintKey": "q.float.raft.hint",
+   "explainKey": "q.float.raft.explain",
+   "type": "choice",
+   "choices": [
+    "q.float.raft.c1",
+    "q.float.raft.c2",
+    "q.float.raft.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "earth.ocean",
+   "skill": "sci.water.earth",
+   "level": 1,
+   "promptKey": "q.earth.ocean.prompt",
+   "hintKey": "q.earth.ocean.hint",
+   "explainKey": "q.earth.ocean.explain",
+   "type": "choice",
+   "choices": [
+    "q.earth.ocean.c1",
+    "q.earth.ocean.c2",
+    "q.earth.ocean.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "earth.tide",
+   "skill": "sci.water.earth",
+   "level": 2,
+   "promptKey": "q.earth.tide.prompt",
+   "hintKey": "q.earth.tide.hint",
+   "explainKey": "q.earth.tide.explain",
+   "type": "choice",
+   "choices": [
+    "q.earth.tide.c1",
+    "q.earth.tide.c2",
+    "q.earth.tide.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "earth.fresh",
+   "skill": "sci.water.earth",
+   "level": 3,
+   "promptKey": "q.earth.fresh.prompt",
+   "hintKey": "q.earth.fresh.hint",
+   "explainKey": "q.earth.fresh.explain",
+   "type": "choice",
+   "choices": [
+    "q.earth.fresh.c1",
+    "q.earth.fresh.c2",
+    "q.earth.fresh.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "needs.plant",
+   "skill": "sci.life.needs",
+   "level": 1,
+   "promptKey": "q.needs.plant.prompt",
+   "hintKey": "q.needs.plant.hint",
+   "explainKey": "q.needs.plant.explain",
+   "type": "choice",
+   "choices": [
+    "q.needs.plant.c1",
+    "q.needs.plant.c2",
+    "q.needs.plant.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "needs.buffalo",
+   "skill": "sci.life.needs",
+   "level": 1,
+   "promptKey": "q.needs.buffalo.prompt",
+   "hintKey": "q.needs.buffalo.hint",
+   "explainKey": "q.needs.buffalo.explain",
+   "type": "choice",
+   "choices": [
+    "q.needs.buffalo.c1",
+    "q.needs.buffalo.c2",
+    "q.needs.buffalo.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "needs.dark",
+   "skill": "sci.life.needs",
+   "level": 2,
+   "promptKey": "q.needs.dark.prompt",
+   "hintKey": "q.needs.dark.hint",
+   "explainKey": "q.needs.dark.explain",
+   "type": "choice",
+   "choices": [
+    "q.needs.dark.c1",
+    "q.needs.dark.c2",
+    "q.needs.dark.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "needs.bee",
+   "skill": "sci.life.needs",
+   "level": 3,
+   "promptKey": "q.needs.bee.prompt",
+   "hintKey": "q.needs.bee.hint",
+   "explainKey": "q.needs.bee.explain",
+   "type": "choice",
+   "choices": [
+    "q.needs.bee.c1",
+    "q.needs.bee.c2",
+    "q.needs.bee.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "animals.chicken",
+   "skill": "sci.life.animals",
+   "level": 1,
+   "promptKey": "q.animals.chicken.prompt",
+   "hintKey": "q.animals.chicken.hint",
+   "explainKey": "q.animals.chicken.explain",
+   "type": "numeric",
+   "answer": 2
+  },
+  {
+   "id": "animals.fish",
+   "skill": "sci.life.animals",
+   "level": 1,
+   "promptKey": "q.animals.fish.prompt",
+   "hintKey": "q.animals.fish.hint",
+   "explainKey": "q.animals.fish.explain",
+   "type": "choice",
+   "choices": [
+    "q.animals.fish.c1",
+    "q.animals.fish.c2",
+    "q.animals.fish.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "animals.spider",
+   "skill": "sci.life.animals",
+   "level": 2,
+   "promptKey": "q.animals.spider.prompt",
+   "hintKey": "q.animals.spider.hint",
+   "explainKey": "q.animals.spider.explain",
+   "type": "numeric",
+   "answer": 8
+  },
+  {
+   "id": "animals.turtle",
+   "skill": "sci.life.animals",
+   "level": 2,
+   "promptKey": "q.animals.turtle.prompt",
+   "hintKey": "q.animals.turtle.hint",
+   "explainKey": "q.animals.turtle.explain",
+   "type": "choice",
+   "choices": [
+    "q.animals.turtle.c1",
+    "q.animals.turtle.c2",
+    "q.animals.turtle.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "animals.duck",
+   "skill": "sci.life.animals",
+   "level": 3,
+   "promptKey": "q.animals.duck.prompt",
+   "hintKey": "q.animals.duck.hint",
+   "explainKey": "q.animals.duck.explain",
+   "type": "choice",
+   "choices": [
+    "q.animals.duck.c1",
+    "q.animals.duck.c2",
+    "q.animals.duck.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "habitat.lotus",
+   "skill": "sci.life.habitat",
+   "level": 1,
+   "promptKey": "q.habitat.lotus.prompt",
+   "hintKey": "q.habitat.lotus.hint",
+   "explainKey": "q.habitat.lotus.explain",
+   "type": "choice",
+   "choices": [
+    "q.habitat.lotus.c1",
+    "q.habitat.lotus.c2",
+    "q.habitat.lotus.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "habitat.frog",
+   "skill": "sci.life.habitat",
+   "level": 2,
+   "promptKey": "q.habitat.frog.prompt",
+   "hintKey": "q.habitat.frog.hint",
+   "explainKey": "q.habitat.frog.explain",
+   "type": "choice",
+   "choices": [
+    "q.habitat.frog.c1",
+    "q.habitat.frog.c2",
+    "q.habitat.frog.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "habitat.birds",
+   "skill": "sci.life.habitat",
+   "level": 3,
+   "promptKey": "q.habitat.birds.prompt",
+   "hintKey": "q.habitat.birds.hint",
+   "explainKey": "q.habitat.birds.explain",
+   "type": "choice",
+   "choices": [
+    "q.habitat.birds.c1",
+    "q.habitat.birds.c2",
+    "q.habitat.birds.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "body.heart",
+   "skill": "sci.life.body",
+   "level": 1,
+   "promptKey": "q.body.heart.prompt",
+   "hintKey": "q.body.heart.hint",
+   "explainKey": "q.body.heart.explain",
+   "type": "choice",
+   "choices": [
+    "q.body.heart.c1",
+    "q.body.heart.c2",
+    "q.body.heart.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "body.roots",
+   "skill": "sci.life.body",
+   "level": 2,
+   "promptKey": "q.body.roots.prompt",
+   "hintKey": "q.body.roots.hint",
+   "explainKey": "q.body.roots.explain",
+   "type": "choice",
+   "choices": [
+    "q.body.roots.c1",
+    "q.body.roots.c2",
+    "q.body.roots.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "body.lungs",
+   "skill": "sci.life.body",
+   "level": 3,
+   "promptKey": "q.body.lungs.prompt",
+   "hintKey": "q.body.lungs.hint",
+   "explainKey": "q.body.lungs.explain",
+   "type": "choice",
+   "choices": [
+    "q.body.lungs.c1",
+    "q.body.lungs.c2",
+    "q.body.lungs.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "chain.sun",
+   "skill": "sci.life.foodchain",
+   "level": 1,
+   "promptKey": "q.chain.sun.prompt",
+   "hintKey": "q.chain.sun.hint",
+   "explainKey": "q.chain.sun.explain",
+   "type": "choice",
+   "choices": [
+    "q.chain.sun.c1",
+    "q.chain.sun.c2",
+    "q.chain.sun.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "chain.producer",
+   "skill": "sci.life.foodchain",
+   "level": 2,
+   "promptKey": "q.chain.producer.prompt",
+   "hintKey": "q.chain.producer.hint",
+   "explainKey": "q.chain.producer.explain",
+   "type": "choice",
+   "choices": [
+    "q.chain.producer.c1",
+    "q.chain.producer.c2",
+    "q.chain.producer.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "chain.decompose",
+   "skill": "sci.life.foodchain",
+   "level": 3,
+   "promptKey": "q.chain.decompose.prompt",
+   "hintKey": "q.chain.decompose.hint",
+   "explainKey": "q.chain.decompose.explain",
+   "type": "choice",
+   "choices": [
+    "q.chain.decompose.c1",
+    "q.chain.decompose.c2",
+    "q.chain.decompose.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "weather.clouds",
+   "skill": "sci.earth.weather",
+   "level": 1,
+   "promptKey": "q.weather.clouds.prompt",
+   "hintKey": "q.weather.clouds.hint",
+   "explainKey": "q.weather.clouds.explain",
+   "type": "choice",
+   "choices": [
+    "q.weather.clouds.c1",
+    "q.weather.clouds.c2",
+    "q.weather.clouds.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "weather.cold",
+   "skill": "sci.earth.weather",
+   "level": 1,
+   "promptKey": "q.weather.cold.prompt",
+   "hintKey": "q.weather.cold.hint",
+   "explainKey": "q.weather.cold.explain",
+   "type": "choice",
+   "choices": [
+    "q.weather.cold.c1",
+    "q.weather.cold.c2",
+    "q.weather.cold.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "weather.rainbow",
+   "skill": "sci.earth.weather",
+   "level": 2,
+   "promptKey": "q.weather.rainbow.prompt",
+   "hintKey": "q.weather.rainbow.hint",
+   "explainKey": "q.weather.rainbow.explain",
+   "type": "choice",
+   "choices": [
+    "q.weather.rainbow.c1",
+    "q.weather.rainbow.c2",
+    "q.weather.rainbow.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "weather.season",
+   "skill": "sci.earth.weather",
+   "level": 3,
+   "promptKey": "q.weather.season.prompt",
+   "hintKey": "q.weather.season.hint",
+   "explainKey": "q.weather.season.explain",
+   "type": "choice",
+   "choices": [
+    "q.weather.season.c1",
+    "q.weather.season.c2",
+    "q.weather.season.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "land.mountain",
+   "skill": "sci.earth.land",
+   "level": 1,
+   "promptKey": "q.land.mountain.prompt",
+   "hintKey": "q.land.mountain.hint",
+   "explainKey": "q.land.mountain.explain",
+   "type": "choice",
+   "choices": [
+    "q.land.mountain.c1",
+    "q.land.mountain.c2",
+    "q.land.mountain.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "land.map",
+   "skill": "sci.earth.land",
+   "level": 2,
+   "promptKey": "q.land.map.prompt",
+   "hintKey": "q.land.map.hint",
+   "explainKey": "q.land.map.explain",
+   "type": "choice",
+   "choices": [
+    "q.land.map.c1",
+    "q.land.map.c2",
+    "q.land.map.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "land.slow",
+   "skill": "sci.earth.land",
+   "level": 3,
+   "promptKey": "q.land.slow.prompt",
+   "hintKey": "q.land.slow.hint",
+   "explainKey": "q.land.slow.explain",
+   "type": "choice",
+   "choices": [
+    "q.land.slow.c1",
+    "q.land.slow.c2",
+    "q.land.slow.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "climate.diff",
+   "skill": "sci.earth.climate",
+   "level": 1,
+   "promptKey": "q.climate.diff.prompt",
+   "hintKey": "q.climate.diff.hint",
+   "explainKey": "q.climate.diff.explain",
+   "type": "choice",
+   "choices": [
+    "q.climate.diff.c1",
+    "q.climate.diff.c2",
+    "q.climate.diff.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "climate.stilts",
+   "skill": "sci.earth.climate",
+   "level": 2,
+   "promptKey": "q.climate.stilts.prompt",
+   "hintKey": "q.climate.stilts.hint",
+   "explainKey": "q.climate.stilts.explain",
+   "type": "choice",
+   "choices": [
+    "q.climate.stilts.c1",
+    "q.climate.stilts.c2",
+    "q.climate.stilts.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "climate.hot",
+   "skill": "sci.earth.climate",
+   "level": 3,
+   "promptKey": "q.climate.hot.prompt",
+   "hintKey": "q.climate.hot.hint",
+   "explainKey": "q.climate.hot.explain",
+   "type": "choice",
+   "choices": [
+    "q.climate.hot.c1",
+    "q.climate.hot.c2",
+    "q.climate.hot.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "erosion.valley",
+   "skill": "sci.earth.erosion",
+   "level": 1,
+   "promptKey": "q.erosion.valley.prompt",
+   "hintKey": "q.erosion.valley.hint",
+   "explainKey": "q.erosion.valley.explain",
+   "type": "choice",
+   "choices": [
+    "q.erosion.valley.c1",
+    "q.erosion.valley.c2",
+    "q.erosion.valley.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "erosion.trees",
+   "skill": "sci.earth.erosion",
+   "level": 2,
+   "promptKey": "q.erosion.trees.prompt",
+   "hintKey": "q.erosion.trees.hint",
+   "explainKey": "q.erosion.trees.explain",
+   "type": "choice",
+   "choices": [
+    "q.erosion.trees.c1",
+    "q.erosion.trees.c2",
+    "q.erosion.trees.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "erosion.layers",
+   "skill": "sci.earth.erosion",
+   "level": 3,
+   "promptKey": "q.erosion.layers.prompt",
+   "hintKey": "q.erosion.layers.hint",
+   "explainKey": "q.erosion.layers.explain",
+   "type": "choice",
+   "choices": [
+    "q.erosion.layers.c1",
+    "q.erosion.layers.c2",
+    "q.erosion.layers.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "space.day",
+   "skill": "sci.earth.space",
+   "level": 1,
+   "promptKey": "q.space.day.prompt",
+   "hintKey": "q.space.day.hint",
+   "explainKey": "q.space.day.explain",
+   "type": "choice",
+   "choices": [
+    "q.space.day.c1",
+    "q.space.day.c2",
+    "q.space.day.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "space.shadow",
+   "skill": "sci.earth.space",
+   "level": 2,
+   "promptKey": "q.space.shadow.prompt",
+   "hintKey": "q.space.shadow.hint",
+   "explainKey": "q.space.shadow.explain",
+   "type": "choice",
+   "choices": [
+    "q.space.shadow.c1",
+    "q.space.shadow.c2",
+    "q.space.shadow.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "space.sun",
+   "skill": "sci.earth.space",
+   "level": 3,
+   "promptKey": "q.space.sun.prompt",
+   "hintKey": "q.space.sun.hint",
+   "explainKey": "q.space.sun.explain",
+   "type": "choice",
+   "choices": [
+    "q.space.sun.c1",
+    "q.space.sun.c2",
+    "q.space.sun.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "forces.cart",
+   "skill": "sci.forces",
+   "level": 1,
+   "promptKey": "q.forces.cart.prompt",
+   "hintKey": "q.forces.cart.hint",
+   "explainKey": "q.forces.cart.explain",
+   "type": "choice",
+   "choices": [
+    "q.forces.cart.c1",
+    "q.forces.cart.c2",
+    "q.forces.cart.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "forces.friction",
+   "skill": "sci.forces",
+   "level": 2,
+   "promptKey": "q.forces.friction.prompt",
+   "hintKey": "q.forces.friction.hint",
+   "explainKey": "q.forces.friction.explain",
+   "type": "choice",
+   "choices": [
+    "q.forces.friction.c1",
+    "q.forces.friction.c2",
+    "q.forces.friction.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "forces.balanced",
+   "skill": "sci.forces",
+   "level": 3,
+   "promptKey": "q.forces.balanced.prompt",
+   "hintKey": "q.forces.balanced.hint",
+   "explainKey": "q.forces.balanced.explain",
+   "type": "choice",
+   "choices": [
+    "q.forces.balanced.c1",
+    "q.forces.balanced.c2",
+    "q.forces.balanced.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "energy.spoon",
+   "skill": "sci.energy",
+   "level": 1,
+   "promptKey": "q.energy.spoon.prompt",
+   "hintKey": "q.energy.spoon.hint",
+   "explainKey": "q.energy.spoon.explain",
+   "type": "choice",
+   "choices": [
+    "q.energy.spoon.c1",
+    "q.energy.spoon.c2",
+    "q.energy.spoon.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "energy.drum",
+   "skill": "sci.energy",
+   "level": 2,
+   "promptKey": "q.energy.drum.prompt",
+   "hintKey": "q.energy.drum.hint",
+   "explainKey": "q.energy.drum.explain",
+   "type": "choice",
+   "choices": [
+    "q.energy.drum.c1",
+    "q.energy.drum.c2",
+    "q.energy.drum.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "energy.fire",
+   "skill": "sci.energy",
+   "level": 3,
+   "promptKey": "q.energy.fire.prompt",
+   "hintKey": "q.energy.fire.hint",
+   "explainKey": "q.energy.fire.explain",
+   "type": "choice",
+   "choices": [
+    "q.energy.fire.c1",
+    "q.energy.fire.c2",
+    "q.energy.fire.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "particles.sugar",
+   "skill": "sci.matter.particles",
+   "level": 1,
+   "promptKey": "q.particles.sugar.prompt",
+   "hintKey": "q.particles.sugar.hint",
+   "explainKey": "q.particles.sugar.explain",
+   "type": "choice",
+   "choices": [
+    "q.particles.sugar.c1",
+    "q.particles.sugar.c2",
+    "q.particles.sugar.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "particles.balloon",
+   "skill": "sci.matter.particles",
+   "level": 2,
+   "promptKey": "q.particles.balloon.prompt",
+   "hintKey": "q.particles.balloon.hint",
+   "explainKey": "q.particles.balloon.explain",
+   "type": "choice",
+   "choices": [
+    "q.particles.balloon.c1",
+    "q.particles.balloon.c2",
+    "q.particles.balloon.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "particles.sand",
+   "skill": "sci.matter.particles",
+   "level": 3,
+   "promptKey": "q.particles.sand.prompt",
+   "hintKey": "q.particles.sand.hint",
+   "explainKey": "q.particles.sand.explain",
+   "type": "choice",
+   "choices": [
+    "q.particles.sand.c1",
+    "q.particles.sand.c2",
+    "q.particles.sand.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "legend.bamboo",
+   "skill": "hist.era1.legends",
+   "level": 1,
+   "promptKey": "q.legend.bamboo.prompt",
+   "hintKey": "q.legend.bamboo.hint",
+   "explainKey": "q.legend.bamboo.explain",
+   "type": "choice",
+   "choices": [
+    "q.legend.bamboo.c1",
+    "q.legend.bamboo.c2",
+    "q.legend.bamboo.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "legend.smiths",
+   "skill": "hist.era1.legends",
+   "level": 1,
+   "promptKey": "q.legend.smiths.prompt",
+   "hintKey": "q.legend.smiths.hint",
+   "explainKey": "q.legend.smiths.explain",
+   "type": "choice",
+   "choices": [
+    "q.legend.smiths.c1",
+    "q.legend.smiths.c2",
+    "q.legend.smiths.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "legend.village",
+   "skill": "hist.era1.legends",
+   "level": 2,
+   "promptKey": "q.legend.village.prompt",
+   "hintKey": "q.legend.village.hint",
+   "explainKey": "q.legend.village.explain",
+   "type": "choice",
+   "choices": [
+    "q.legend.village.c1",
+    "q.legend.village.c2",
+    "q.legend.village.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "legend.storm",
+   "skill": "hist.era1.legends",
+   "level": 2,
+   "promptKey": "q.legend.storm.prompt",
+   "hintKey": "q.legend.storm.hint",
+   "explainKey": "q.legend.storm.explain",
+   "type": "choice",
+   "choices": [
+    "q.legend.storm.c1",
+    "q.legend.storm.c2",
+    "q.legend.storm.c3"
+   ],
+   "answer": 0
+  },
+  {
+   "id": "legend.rice",
+   "skill": "hist.era1.legends",
+   "level": 3,
+   "promptKey": "q.legend.rice.prompt",
+   "hintKey": "q.legend.rice.hint",
+   "explainKey": "q.legend.rice.explain",
+   "type": "choice",
+   "choices": [
+    "q.legend.rice.c1",
+    "q.legend.rice.c2",
+    "q.legend.rice.c3"
+   ],
+   "answer": 0
+  }
+ ]
+}

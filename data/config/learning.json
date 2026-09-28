@@ -1,0 +1,65 @@
+{
+  "_about": "All values of the learning model. Change the values here, not in the code.",
+  "mastery": {
+    "_about": "Bayesian Knowledge Tracing. p is the chance that the player knows the skill.",
+    "pInit": 0.2,
+    "pTransit": 0.15,
+    "pSlip": 0.1,
+    "pGuess": 0.2,
+    "almost": 0.7,
+    "mastered": 0.95,
+    "priorBelowGrade": 0.95,
+    "priorAtGrade": 0.3,
+    "priorAboveGrade": 0.1
+  },
+  "rating": {
+    "_about": "Elo-style ratings for the player (one for each skill) and for each problem item (skill and level).",
+    "scale": 400,
+    "gradeBase": { "1": 800, "2": 1000, "3": 1200, "4": 1400, "5": 1600 },
+    "levelStep": 70,
+    "playerStartOffset": 240,
+    "kPlayer": 32,
+    "kPlayerNew": 64,
+    "newAnswers": 10,
+    "kItem": 12,
+    "target": 0.8,
+    "targetLow": 0.75,
+    "targetHigh": 0.85
+  },
+  "review": {
+    "_about": "Spaced review with Leitner boxes. Box n waits intervalsDays[n - 1] days.",
+    "intervalsDays": [1, 2, 4, 8, 16, 32],
+    "share": 0.3
+  },
+  "practice": {
+    "_about": "Mixed practice: the share of problems from other learned skills.",
+    "mixShare": 0.25,
+    "frontierWeightDrop": 0.5
+  },
+  "feedback": {
+    "_about": "Feedback after mistakes on one problem: first a hint, then a worked example, then a similar problem.",
+    "hintAt": 1,
+    "exampleAt": 2,
+    "similarAt": 3
+  },
+  "exam": {
+    "subject": {
+      "_about": "The adaptive subject exam. It starts easy and gets harder until the player makes a few mistakes.",
+      "min": 10,
+      "max": 15,
+      "maxMistakes": 3,
+      "kStart": 200,
+      "kAfterMistake": 100,
+      "kMin": 60,
+      "window": 60,
+      "startOffset": 0
+    },
+    "era1": { "pass": 1000 },
+    "placement": {
+      "masteredAt": 0.85,
+      "almostAt": 0.6,
+      "masteredP": 0.96,
+      "almostP": 0.8
+    }
+  }
+}

@@ -1,0 +1,499 @@
+// Problem generators. Code makes a new problem each time, from the skill,
+// the level, and a seeded random generator. Each problem has an "expr"
+// that the solver (solver.js) uses to check the answer.
+// All text is a key with params. There is no text in this file.
+import { SHAPE_SIDES, solveCards, lcm, evaluate } from './solver.js';
+
+const k = (key, params = {}) => ({ key, params });
+const range = (n) => Array.from({ length: n }, (_, i) => i);
+
+// A short list of numbers for a worked example, for example "9, 10, 11".
+function countSeq(from, steps, dir) {
+  return range(steps).map((i) => from + dir * (i + 1)).join(', ');
+}
+
+// Split a number into its highest place part and the rest: 347 -> 300 and 47.
+function split(n) {
+  if (n < 10) return [n, 0];
+  const place = 10 ** Math.floor(Math.log10(n));
+  const big = Math.floor(n / place) * place;
+  return [big, n - big];
+}
+
+function hasCarry(a, b) {
+  while (a > 0 || b > 0) {
+    if ((a % 10) + (b % 10) >= 10) return true;
+    a = Math.floor(a / 10);
+    b = Math.floor(b / 10);
+  }
+  return false;
+}
+
+function hasBorrow(a, b) {
+  while (b > 0) {
+    if (a % 10 < b % 10) return true;
+    a = Math.floor(a / 10);
+    b = Math.floor(b / 10);
+  }
+  return false;
+}
+
+// Try a maker until the test passes.
+function retry(make, test, tries = 500) {
+  for (let i = 0; i < tries; i++) {
+    const v = make();
+    if (test(v)) return v;
+  }
+  throw new Error('The generator could not make a problem');
+}
+
+const GENERATORS = {
+  count(p, rng) {
+    const modes = p.tens ? ['next', 'prev', 'plus10'] : ['next', 'prev'];
+    const op = rng.pick(modes);
+    const n = op === 'next' ? rng.int(0, p.max - 1) : op === 'prev' ? rng.int(1, p.max) : rng.int(1, p.max - 10);
+    const m = Math.max(1, Math.min(p.max - 10, (n + 7) % p.max));
+    const promptKey = { next: 'prob.count.after', prev: 'prob.count.before', plus10: 'prob.count.ten' }[op];
+    const example = op === 'plus10'
+      ? k('ex.count.ten', { m, m10: m + 10 })
+      : op === 'next' ? k('ex.count.after', { m, m1: m + 1 }) : k('ex.count.before', { m: m + 1, m1: m });
+    return {
+      kind: 'numeric',
+      prompt: k(promptKey, { n }),
+      expr: { op, n },
+      hint: k(`hint.count.${op}`, { n }),
+      example,
+    };
+  },
+
+  compare(p, rng) {
+    const [a, b] = retry(() => [rng.int(0, p.max), rng.int(0, p.max)], ([x, y]) => x !== y);
+    const op = p.smaller && rng.chance(0.5) ? 'min' : 'max';
+    const [x, y] = retry(() => [rng.int(10, 99), rng.int(10, 99)],
+      ([s, t]) => Math.floor(s / 10) !== Math.floor(t / 10));
+    const big = Math.max(x, y);
+    const small = Math.min(x, y);
+    return {
+      kind: 'choice',
+      prompt: k(op === 'max' ? 'prob.compare.bigger' : 'prob.compare.smaller'),
+      expr: { op, values: [a, b] },
+      choices: [{ value: a }, { value: b }],
+      hint: k('hint.compare'),
+      example: k('ex.compare', { big, small, bt: Math.floor(big / 10), st: Math.floor(small / 10) }),
+    };
+  },
+
+  add(p, rng) {
+    const s = rng.int(p.min, p.max);
+    const a = rng.int(1, s - 1);
+    const b = s - a;
+    const x = rng.int(2, 9);
+    const y = rng.int(1, 4);
+    const missing = p.missing && rng.chance(0.4);
+    const visual = p.max <= 10 ? { type: 'dots', groups: [a, b] } : null;
+    if (missing) {
+      return {
+        kind: 'numeric',
+        prompt: k('prob.add.missing', { a, s }),
+        expr: { op: 'sub', a: s, b: a },
+        visual: null,
+        hint: k('hint.add.missing', { a, s }),
+        example: k('ex.add.missing', { x, y, z: x + y, seq: countSeq(x, y, 1) }),
+      };
+    }
+    return {
+      kind: 'numeric',
+      prompt: k('prob.add', { a, b }),
+      expr: { op: 'add', a, b },
+      visual,
+      hint: k('hint.add', { a, b }),
+      example: k('ex.add', { x, y, z: x + y, seq: countSeq(x, y, 1) }),
+    };
+  },
+
+  sub(p, rng) {
+    const a = rng.int(p.minA, p.maxA);
+    const b = rng.int(1, a - 1);
+    const x = rng.int(6, 12);
+    const y = rng.int(1, 4);
+    return {
+      kind: 'numeric',
+      prompt: k('prob.sub', { a, b }),
+      expr: { op: 'sub', a, b },
+      visual: p.maxA <= 10 ? { type: 'dots', groups: [a], crossed: b } : null,
+      hint: k('hint.sub', { a, b }),
+      example: k('ex.sub', { x, y, z: x - y, seq: countSeq(x, y, -1) }),
+    };
+  },
+
+  addsub(p, rng) {
+    const minOp = p.minOperand ?? 1;
+    const add = rng.chance(0.5);
+    const [a, b] = retry(() => {
+      if (add) {
+        const x = rng.int(minOp, p.max - minOp);
+        return [x, rng.int(minOp, p.max - x)];
+      }
+      const x = rng.int(minOp * 2, p.max);
+      return [x, rng.int(minOp, x - minOp)];
+    }, ([x, y]) => {
+      const regroup = add ? hasCarry(x, y) : hasBorrow(x, y);
+      return x >= minOp && y >= minOp && (add ? x + y <= p.max : x - y >= 0) && regroup === Boolean(p.regroup);
+    });
+    const [big, rest] = split(b);
+    const mid = add ? a + big : a - big;
+    const z = add ? a + b : a - b;
+    return {
+      kind: 'numeric',
+      prompt: k(add ? 'prob.add' : 'prob.sub', { a, b }),
+      expr: { op: add ? 'add' : 'sub', a, b },
+      hint: k(add ? 'hint.addsub.add' : 'hint.addsub.sub'),
+      example: k(add ? 'ex.split.add' : 'ex.split.sub', { x: a, y: b, big, rest, mid, z }),
+      reveal: true,
+    };
+  },
+
+  place(p, rng) {
+    const lo = 10 ** (p.digits - 1);
+    const n = rng.int(lo, 10 ** p.digits - 1);
+    if (p.expanded) {
+      const h = Math.floor(n / 100) * 100;
+      const t = Math.floor((n % 100) / 10) * 10;
+      const o = n % 10;
+      const m = rng.int(100, 999);
+      return {
+        kind: 'numeric',
+        prompt: k('prob.place.expanded', { h, t, o }),
+        expr: { op: 'sum', values: [h, t, o] },
+        hint: k('hint.place.expanded'),
+        example: k('ex.place.expanded', { h: Math.floor(m / 100) * 100, t: Math.floor((m % 100) / 10) * 10, o: m % 10, m }),
+      };
+    }
+    const place = rng.int(0, p.digits - 1);
+    const names = ['place.ones', 'place.tens', 'place.hundreds'];
+    const m = rng.int(lo, 10 ** p.digits - 1);
+    return {
+      kind: 'numeric',
+      prompt: k('prob.place.digit', { n, place: k(names[place]) }),
+      expr: { op: 'digit', n, place },
+      hint: k('hint.place'),
+      example: k('ex.place', { m, place: k(names[place]), d: Math.floor(m / 10 ** place) % 10 }),
+    };
+  },
+
+  mul(p, rng) {
+    const a = rng.int(p.minA, p.maxA);
+    const b = rng.int(p.minB, p.maxB);
+    const x = rng.int(2, 5);
+    const y = rng.int(2, 4);
+    return {
+      kind: 'numeric',
+      prompt: k('prob.mul', { a, b }),
+      expr: { op: 'mul', a, b },
+      visual: a <= 5 && b <= 5 ? { type: 'array', rows: b, cols: a } : null,
+      hint: k('hint.mul', { a, b }),
+      example: k('ex.mul', { x, y, seq: range(y).map(() => x).join(' + '), z: x * y }),
+    };
+  },
+
+  div(p, rng) {
+    const a = rng.int(p.minA, p.maxA);
+    const b = rng.int(Math.max(1, p.minB), p.maxB);
+    const x = rng.int(2, 6);
+    const y = rng.int(2, 5);
+    return {
+      kind: 'numeric',
+      prompt: k('prob.div', { a: a * b, b }),
+      expr: { op: 'div', a: a * b, b },
+      hint: k('hint.div', { p: a * b, b }),
+      example: k('ex.div', { p: x * y, y, x }),
+    };
+  },
+
+  fracCompare(p, rng) {
+    const [d1, d2] = retry(() => [rng.int(2, p.maxDen), rng.int(2, p.maxDen)], ([x, y]) => x !== y);
+    const n = p.sameNum ? rng.int(1, Math.min(d1, d2) - 1) : 1;
+    const values = [[n, d1], [n, d2]];
+    return {
+      kind: 'choice',
+      prompt: k('prob.frac.bigger'),
+      expr: { op: 'fracMax', values },
+      choices: values.map((f) => ({ fraction: f })),
+      visual: { type: 'fractions', values },
+      hint: k(p.sameNum ? 'hint.frac.samenum' : 'hint.frac.unit'),
+      example: k('ex.frac.unit', { x: 2, y: 4 }),
+    };
+  },
+
+  fracEquiv(p, rng) {
+    const d = rng.int(2, p.maxDen);
+    const n = rng.int(1, d - 1);
+    const f = rng.int(2, p.maxK);
+    const D = d * f;
+    return {
+      kind: 'numeric',
+      prompt: k('prob.frac.equiv', { a: n, b: d, c: D }),
+      expr: { op: 'fracEquiv', n, d, D },
+      visual: { type: 'fractions', values: [[n, d]] },
+      hint: k('hint.frac.equiv', { b: d, c: D }),
+      example: k('ex.frac.equiv', { a: 1, b: 3, k: 2, ak: 2, bk: 6 }),
+    };
+  },
+
+  fracAdd(p, rng) {
+    const d = rng.int(3, p.maxDen);
+    const limit = p.maxSum * d - (p.maxSum > 1 ? 1 : 0);
+    const [a, b] = retry(() => [rng.int(1, d - 1), rng.int(1, d - 1)], ([x, y]) => x + y <= limit);
+    return {
+      kind: 'numeric',
+      prompt: k('prob.frac.add', { a, b, d }),
+      expr: { op: 'fracAdd', a, b, d },
+      hint: k('hint.frac.add'),
+      example: k('ex.frac.add', { a: 1, b: 2, d: 5, s: 3 }),
+    };
+  },
+
+  fracUnlike(p, rng) {
+    const [d1, d2] = rng.pick(p.pairs);
+    const D = lcm(d1, d2);
+    const a = rng.int(1, d1 - 1);
+    const b = rng.int(1, d2 - 1);
+    return {
+      kind: 'numeric',
+      prompt: k('prob.frac.unlike', { a, d1, b, d2, D }),
+      expr: { op: 'fracUnlike', a, d1, b, d2, D },
+      hint: k('hint.frac.unlike', { D }),
+      example: k('ex.frac.unlike', { a: 1, d1: 2, b: 1, d2: 4, a2: 2, b2: 1, D: 4, s: 3 }),
+    };
+  },
+
+  area(p, rng) {
+    const w = rng.int(2, p.max);
+    const h = rng.int(2, p.max);
+    const ask = p.ask === 'mixed' ? rng.pick(['area', 'perimeter']) : p.ask;
+    const x = 3;
+    const y = 2;
+    return {
+      kind: 'numeric',
+      prompt: k(ask === 'area' ? 'prob.area' : 'prob.perimeter', { w, h }),
+      expr: { op: ask, w, h },
+      visual: { type: 'rect', w, h, grid: ask === 'area' },
+      hint: k(ask === 'area' ? 'hint.area' : 'hint.perimeter'),
+      example: ask === 'area' ? k('ex.area', { w: x, h: y, z: x * y }) : k('ex.perimeter', { w: x, h: y, z: 2 * (x + y) }),
+    };
+  },
+
+  mulMulti(p, rng) {
+    const a = rng.int(p.minA, p.maxA);
+    const b = rng.int(p.minB, p.maxB);
+    const x = rng.int(12, 48);
+    const y = rng.int(3, 9);
+    const [big, rest] = split(x);
+    return {
+      kind: 'numeric',
+      prompt: k('prob.mul', { a, b }),
+      expr: { op: 'mul', a, b },
+      hint: k('hint.mul.multi'),
+      example: k('ex.mul.multi', { x, y, big, rest, p1: big * y, p2: rest * y, z: x * y }),
+      reveal: true,
+    };
+  },
+
+  decimal(p, rng) {
+    const unit = 10 ** p.places;
+    const sub = p.sub && rng.chance(0.5);
+    const [a, b] = retry(() => [rng.int(1, p.max * unit - 1), rng.int(1, p.max * unit - 1)],
+      ([x, y]) => (sub ? x > y : x + y <= p.max * unit) && x % unit !== 0 && y % unit !== 0);
+    const va = a / unit;
+    const vb = b / unit;
+    return {
+      kind: 'numeric',
+      decimals: p.places,
+      prompt: k(sub ? 'prob.sub' : 'prob.add', { a: va, b: vb }),
+      expr: { op: 'decimal', a, b, places: p.places, sub },
+      hint: k('hint.decimal'),
+      example: k(sub ? 'ex.decimal.sub' : 'ex.decimal.add', { x: 1.5, y: 0.25, z: sub ? 1.25 : 1.75 }),
+    };
+  },
+
+  shapes(p, rng) {
+    if (p.ask === 'sides') {
+      const shape = rng.pick(p.shapes);
+      const other = rng.pick(p.shapes.filter((s) => s !== shape));
+      return {
+        kind: 'numeric',
+        prompt: k('prob.shape.sides'),
+        expr: { op: 'sides', shape },
+        visual: { type: 'shape', shape },
+        hint: k('hint.shape.sides'),
+        example: k('ex.shape.sides', { shape: k(`shape.${other}`), n: SHAPE_SIDES[other] }),
+      };
+    }
+    const shape = rng.pick(p.shapes);
+    const others = rng.shuffle(p.shapes.filter((s) => s !== shape && !(
+      (s === 'square' && shape === 'rectangle') || (s === 'rectangle' && shape === 'square')))).slice(0, 2);
+    const choices = rng.shuffle([shape, ...others]).map((s) => ({ shape: s }));
+    return {
+      kind: 'choice',
+      prompt: k('prob.shape.name', { shape: k(`shape.${shape}`) }),
+      expr: { op: 'shapeIs', shape },
+      choices,
+      hint: k(`hint.shape.${shape}`),
+      example: k('ex.shape.name', { shape: k(`shape.${shape}`) }),
+    };
+  },
+};
+
+// Hand-written questions. ctx.bank is the list of questions for all skills.
+// A question: { id, skill, level, type: 'choice' | 'numeric', promptKey, choices: [keys], answer, hintKey, explainKey, order: 'keep' }
+// Parent questions have "text" in place of keys.
+function bankProblem(skill, level, rng, ctx) {
+  const own = (ctx.bank ?? []).filter((q) => q.skill === skill.id && (!q.lang || q.lang === ctx.lang));
+  if (own.length === 0) throw new Error(`No questions for ${skill.id}`);
+  const best = Math.min(...own.map((q) => Math.abs((q.level ?? 1) - level)));
+  const near = own.filter((q) => Math.abs((q.level ?? 1) - level) === best);
+  const fresh = near.filter((q) => !ctx.recent?.includes(q.id));
+  const q = rng.pick(fresh.length ? fresh : near);
+  const base = {
+    source: q.id,
+    hint: q.hintKey ? k(q.hintKey) : q.hintText ? { text: q.hintText } : k('hint.bank'),
+    example: q.explainKey ? k(q.explainKey) : null,
+    visual: q.visual ?? null,
+  };
+  const prompt = q.promptKey ? k(q.promptKey) : { text: q.text };
+  if (q.type === 'numeric') {
+    return { ...base, kind: 'numeric', prompt, expr: { op: 'bank', answer: q.answer } };
+  }
+  const labels = q.choices.map((c, i) => ({ i, label: typeof c === 'string' && !q.text ? k(c) : { text: String(c) } }));
+  const order = q.order === 'keep' ? labels : rng.shuffle(labels);
+  const answer = order.findIndex((c) => c.i === q.answer);
+  return {
+    ...base,
+    kind: 'choice',
+    prompt,
+    expr: { op: 'bank', answer },
+    choices: order.map((c) => ({ label: c.label })),
+  };
+}
+
+export const GENERATOR_NAMES = [...Object.keys(GENERATORS), 'bank'];
+
+// Make a problem. skill is a skill object from the graph. level starts at 1.
+export function generate(skill, level, rng, ctx = {}) {
+  const lv = Math.max(1, Math.min(level, skill.levels.length));
+  const params = skill.levels[lv - 1];
+  const body = skill.generator === 'bank'
+    ? bankProblem(skill, lv, rng, ctx)
+    : GENERATORS[skill.generator](params, rng, ctx);
+  const problem = { skill: skill.id, level: lv, item: `${skill.id}#${lv}`, visual: null, reveal: false, ...body };
+  problem.answer = problem.kind === 'choice' && problem.expr.op !== 'bank'
+    ? answerIndex(problem)
+    : problem.expr.op === 'bank' ? problem.expr.answer : evaluate(problem.expr);
+  return problem;
+}
+
+function answerIndex(problem) {
+  const { expr, choices } = problem;
+  if (expr.op === 'shapeIs') return choices.findIndex((c) => c.shape === expr.shape);
+  if (expr.op === 'fracMax') {
+    const [f1, f2] = expr.values;
+    return f1[0] * f2[1] > f2[0] * f1[1] ? 0 : 1;
+  }
+  const value = evaluate(expr);
+  return choices.findIndex((c) => c.value === value);
+}
+
+// Does this skill have number cards (number shields) at this level?
+export function hasCards(skill, level = 1) {
+  return Boolean(skill.levels[Math.max(1, Math.min(level, skill.levels.length)) - 1]?.cards);
+}
+
+// Make a number shield: a target number and attack cards.
+// The player must make the target exactly with 2 or more cards.
+// opts.extraCards adds more cards (a bonus of the Scholar calling).
+export function generateShield(skill, level, rng, opts = {}) {
+  const lv = Math.max(1, Math.min(level, skill.levels.length));
+  const p = skill.levels[lv - 1];
+  if (!p.cards) throw new Error(`${skill.id} has no cards`);
+  const count = p.cards.count + (opts.extraCards ?? 0);
+  let target;
+  let parts;
+  let ops;
+  let requireOp = null;
+  const kind = skill.generator;
+  const maxCard = kind === 'add' ? p.max : kind === 'sub' ? p.maxA : kind === 'mul' ? p.maxA : p.max;
+
+  const make = () => {
+    if (kind === 'add') {
+      ops = ['+'];
+      target = rng.int(p.min, p.max);
+      const use = Array.isArray(p.cards.use) ? rng.int(...p.cards.use) : (p.cards.use ?? 2);
+      parts = [];
+      let left = target;
+      for (let i = 0; i < use - 1; i++) {
+        const v = rng.int(1, Math.max(1, left - (use - 1 - i)));
+        parts.push(v);
+        left -= v;
+      }
+      parts.push(left);
+    } else if (kind === 'sub') {
+      ops = ['+', '-'];
+      requireOp = '-';
+      const a = rng.int(p.minA, p.maxA);
+      const b = rng.int(1, a - 1);
+      target = a - b;
+      parts = [a, b];
+    } else if (kind === 'addsub') {
+      ops = ['+', '-'];
+      const a = rng.int(p.minOperand * 2, p.max);
+      const b = rng.int(p.minOperand, a - p.minOperand);
+      const add = a + b <= p.max && rng.chance(0.5);
+      target = add ? a + b : a - b;
+      parts = [a, b];
+      requireOp = add ? null : '-';
+    } else if (kind === 'mul') {
+      ops = ['×'];
+      const a = rng.int(Math.max(2, p.minA), p.maxA);
+      const b = rng.int(Math.max(2, p.minB), p.maxB);
+      target = a * b;
+      parts = [a, b];
+    } else {
+      throw new Error(`No cards for generator ${kind}`);
+    }
+    const cards = [...parts];
+    while (cards.length < count) {
+      const lo = kind === 'mul' ? 2 : 1;
+      cards.push(rng.int(lo, Math.max(lo + 1, maxCard)));
+    }
+    return rng.shuffle(cards);
+  };
+
+  const cards = retry(make, (c) => {
+    if (c.includes(target)) return false;
+    if (parts.some((x) => x <= 0)) return false;
+    // For subtraction practice, adding alone must not reach the target.
+    if (requireOp === '-' && solveCards(c, target, ['+'])) return false;
+    return solveCards(c, target, ops, { requireOp }) !== null;
+  });
+  const solution = solveCards(cards, target, ops, { requireOp });
+  const first = cards[solution[0].index];
+  const hintKey = ops.includes('×') ? 'hint.cards.mul' : requireOp === '-' ? 'hint.cards.sub' : 'hint.cards.add';
+  const exprText = solution.map((m, i) => (i === 0 ? '' : ` ${m.op === '-' ? '−' : m.op} `) + cards[m.index]).join('');
+  return {
+    skill: skill.id,
+    level: lv,
+    item: `${skill.id}#${lv}`,
+    kind: 'cards',
+    prompt: k('prob.cards', { target }),
+    target,
+    cards,
+    ops,
+    solution,
+    answer: target,
+    expr: { op: 'cards' },
+    visual: null,
+    reveal: false,
+    hint: k(hintKey, { target, first, rest: target - first }),
+    example: k('ex.cards', { expr: exprText, target }),
+  };
+}

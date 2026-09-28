@@ -52,3 +52,52 @@ test('numbers use the style of the language', () => {
   assert.equal(formatNumber(12000, 'en'), '12,000');
   assert.equal(formatNumber(1200, 'en'), '1200');
 });
+
+// Keys used in data files: each property whose name ends with "Key" or "Keys",
+// and the "choices" of hand-written questions.
+import { readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+
+function jsonFiles(dir) {
+  const out = [];
+  for (const name of readdirSync(dir)) {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) out.push(...jsonFiles(path));
+    else if (name.endsWith('.json')) out.push(path);
+  }
+  return out;
+}
+
+function collectKeys(value, found, parentName = '') {
+  if (Array.isArray(value)) {
+    for (const v of value) {
+      if (typeof v === 'string' && (parentName.endsWith('Keys') || parentName === 'choices')) found.add(v);
+      else collectKeys(v, found, parentName);
+    }
+  } else if (value && typeof value === 'object') {
+    for (const [name, v] of Object.entries(value)) {
+      if (typeof v === 'string' && name.endsWith('Key')) found.add(v);
+      else collectKeys(v, found, name);
+    }
+  }
+}
+
+test('each key used in data files exists', () => {
+  const dataDir = new URL('../data/', import.meta.url).pathname;
+  const missing = [];
+  for (const file of jsonFiles(dataDir)) {
+    const found = new Set();
+    collectKeys(JSON.parse(readFileSync(file, 'utf8')), found);
+    for (const key of found) if (!(key in vi) || !(key in en)) missing.push(`${file.slice(dataDir.length)}: ${key}`);
+  }
+  assert.deepEqual(missing, []);
+});
+
+test('each skill and subject has a name', () => {
+  const skills = JSON.parse(readFileSync(new URL('../data/skills.json', import.meta.url)));
+  const missing = [
+    ...skills.skills.map((s) => `skill.${s.id}`),
+    ...skills.subjects.map((s) => `subject.${s}`),
+  ].filter((k) => !(k in vi));
+  assert.deepEqual(missing, []);
+});
