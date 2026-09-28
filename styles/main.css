@@ -81,6 +81,12 @@ html, body {
 }
 
 input, textarea, select { user-select: text; -webkit-user-select: text; font: inherit; color: var(--ink); }
+/* Texts to read can be selected (for example to copy or to look up a word). Buttons and the map cannot. */
+.dialogue .line, .dialogue .speaker, .prompt, .feedback span, .battle-note .note-text, .panel p, .quest-text, .goal-text {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
+}
 button { font-family: var(--body); color: var(--ink); }
 
 #app { position: fixed; inset: 0; overflow: hidden; }
