@@ -127,7 +127,8 @@ export function runQuiz(ctx, opts) {
 }
 
 // A short panel that shows a message, an optional picture, and rewards.
-export function showMessage(ctx, { title, textKey, params = {}, art = null, rewards = null, speaker = null, rewardsKey = 'trial.reward', noteKey = null }) {
+export function showMessage(ctx, { title, textKey, params: own = {}, art = null, rewards = null, speaker = null, rewardsKey = 'trial.reward', noteKey = null }) {
+  const params = { ...ctx.textParams(), ...own };
   return new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
     const close = () => { layer.remove(); resolve(); };

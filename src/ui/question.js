@@ -35,6 +35,8 @@ export function choiceText(c) {
 
 // Show a problem. onAnswer(response) gets a number (as text) or a choice index.
 export function renderQuestion(problem, { onAnswer, autoSpeak = true } = {}) {
+  // A button under the question must not keep the keyboard focus.
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   const el = h('div', { class: 'question' });
   const promptText = textOf(problem.prompt);
   const promptRow = h('div', { class: 'prompt-row' }, [
@@ -91,10 +93,15 @@ export function renderQuestion(problem, { onAnswer, autoSpeak = true } = {}) {
     el.append(box, pad);
     // The keyboard of a laptop also works.
     const onKey = (e) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      let handled = true;
       if (/^[0-9]$/.test(e.key)) press(e.key);
       else if (e.key === 'Backspace') press('del');
       else if (e.key === 'Enter') press('ok');
       else if ((e.key === '.' || e.key === ',') && problem.decimals) press('point');
+      else handled = false;
+      // Stop the key from also pressing a button that has the focus.
+      if (handled) e.preventDefault();
     };
     window.addEventListener('keydown', onKey);
     cleanup = () => window.removeEventListener('keydown', onKey);

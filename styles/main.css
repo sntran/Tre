@@ -125,12 +125,15 @@ img { -webkit-user-drag: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: calc(var(--gap) + var(--safe-top)) var(--gap) calc(var(--gap) + var(--safe-bottom));
   background: var(--paper) url("../art/paper.svg") repeat;
   background-size: 256px;
   overflow: auto;
 }
+/* Center the content, but let it scroll from the top when it is too tall. */
+.screen > .title-wrap, .screen > .create, .screen > .vanmieu, .screen > .loading-box { margin: auto 0; }
+.panel > .mark { top: 10px; left: auto; right: 14px; }
 
 .modal-layer {
   position: absolute;
@@ -528,9 +531,11 @@ p { line-height: 1.4; margin: 0.4em 0; }
 
 /* Văn Miếu */
 
-.vanmieu { display: flex; flex-direction: column; align-items: center; gap: var(--gap); }
-.vanmieu-gate { width: min(70vmin, 460px); }
-.stele { position: relative; width: min(52vmin, 340px); }
+.vanmieu { display: flex; flex-direction: column; align-items: center; gap: var(--gap); width: min(1000px, 100%); }
+.vanmieu-gate { width: min(46vmin, 320px); }
+.vanmieu-row { display: flex; gap: var(--gap); align-items: center; justify-content: center; flex-wrap: wrap; width: 100%; }
+.vanmieu-row .panel { flex: 1 1 420px; }
+.stele { position: relative; width: min(38vmin, 250px); flex: none; }
 .stele img { width: 100%; display: block; }
 .stele-names {
   position: absolute;

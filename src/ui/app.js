@@ -1,5 +1,5 @@
 // The app: load the data, keep the current profile, switch scenes, and save.
-import { setLanguage as loadLanguage, t, useSeenGloss, seenGlossList } from './i18n.js';
+import { setLanguage as loadLanguage, t, useSeenGloss, seenGlossList, setGlobalParams } from './i18n.js';
 import { loadRecordedKeys, setVoiceEnabled, speak } from './speak.js';
 import { loadData } from './data.js';
 import { saveProfile, loadProfile, isMemoryOnly, getMeta, setMeta } from './storage.js';
@@ -122,6 +122,7 @@ export async function startApp(root) {
 
     async startProfile(profile, isNew = false) {
       ctx.profile = profile;
+      setGlobalParams({ name: profile.hero.name });
       useSeenGloss(profile.seenGloss);
       await ctx.setLanguage(profile.settings.lang);
       setVoiceEnabled(profile.settings.voice);

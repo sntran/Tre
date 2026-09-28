@@ -4,6 +4,12 @@ import { createI18n } from '../core/i18n.js';
 const dicts = {};
 let active = createI18n({}, 'vi');
 const seenGloss = new Set();
+// Values that all texts can use, for example the name of the hero.
+let globals = {};
+
+export function setGlobalParams(values) {
+  globals = { ...values };
+}
 
 async function loadDict(lang) {
   if (!dicts[lang]) {
@@ -28,7 +34,7 @@ export function lang() {
 }
 
 export function t(key, params) {
-  return active.t(key, params);
+  return active.t(key, { ...globals, ...(params ?? {}) });
 }
 
 export function has(key) {
@@ -37,13 +43,13 @@ export function has(key) {
 
 // Text with glossary marks. In English, the first mark also shows the meaning.
 export function tg(key, params) {
-  return active.gloss(active.t(key, params), seenGloss);
+  return active.gloss(t(key, params), seenGloss);
 }
 
 // Text for the voice.
 export function say(key, params) {
   const sayKey = `${key}.say`;
-  const text = active.has(sayKey) ? active.t(sayKey, params) : active.t(key, params);
+  const text = active.has(sayKey) ? t(sayKey, params) : t(key, params);
   return active.plain(text);
 }
 

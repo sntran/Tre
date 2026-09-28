@@ -43,7 +43,8 @@ export function createI18n(dict, lang, fallback = null) {
 
   // Translate a key. Return the key itself when the text is missing,
   // so that a missing key is easy to see.
-  function t(key, params = {}) {
+  function t(key, params) {
+    params = params ?? {};
     const text = raw(key);
     if (text === null) return key;
     return text.replace(PARAM, (all, name) =>
