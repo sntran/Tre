@@ -1,5 +1,5 @@
 // The screens that open over the village: trials, practice, lessons, and more.
-import { registerModal } from './app.js';
+import { registerModal } from './registry.js';
 import { runQuiz, showMessage } from './quiz.js';
 import { h, button } from './dom.js';
 import { t } from './i18n.js';

@@ -2,7 +2,7 @@
 import { createCraft } from '../core/craft.js';
 import { createElementRules } from '../core/elements.js';
 import { takeItems, setFlag } from '../core/profile.js';
-import { registerModal } from './app.js';
+import { registerModal } from './registry.js';
 import { runQuiz, showMessage } from './quiz.js';
 import { battleSkillFilter } from './battle.js';
 import { h, img, button, wait } from './dom.js';

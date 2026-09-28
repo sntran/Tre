@@ -14,7 +14,7 @@ import { renderCards } from './cards.js';
 import { renderQuestion, feedbackLine, textOf, answerText } from './question.js';
 import { runDialogue } from './dialogue.js';
 import { showMessage } from './quiz.js';
-import { registerScene, registerModal } from './app.js';
+import { registerScene, registerModal } from './registry.js';
 import { formatNumber } from '../core/i18n.js';
 
 // A filter for the math skills of battles. Players of grades 1 and 2 get Era 1 skills.

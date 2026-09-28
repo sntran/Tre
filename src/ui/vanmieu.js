@@ -3,7 +3,7 @@
 import { buildLadder, createExam, skillsToPractice } from '../core/exam.js';
 import { checkAnswer } from '../core/solver.js';
 import { giveTitle, eraComplete, setFlag } from '../core/profile.js';
-import { registerScene, registerModal } from './app.js';
+import { registerScene, registerModal } from './registry.js';
 import { h, img, button, wait } from './dom.js';
 import { t, tg } from './i18n.js';
 import { speak } from './speak.js';

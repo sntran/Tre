@@ -12,36 +12,26 @@ import { createLearner } from '../core/learner.js';
 import { createSurface } from '../render/surface.js';
 import { mountTitle } from './title.js';
 import { connectAudio } from './audio.js';
+import { startTimer, isTimeOver } from './rest.js';
+import { scenes, modals, registerScene, registerModal } from './registry.js';
 import { mountCreate } from './create.js';
 import { mountVillage } from './village.js';
 
 // Scenes and the scenes that can come after each one.
 const SCENES = {
   boot: ['title'],
-  title: ['create', 'village', 'title'],
+  title: ['create', 'village', 'title', 'rest'],
   create: ['village', 'title'],
   village: ['battle', 'vanmieu', 'title', 'rest', 'village'],
   battle: ['village'],
   vanmieu: ['village'],
-  rest: ['title'],
+  rest: ['title', 'village'],
 };
 
-const MOUNT = {
-  title: mountTitle,
-  create: mountCreate,
-  village: mountVillage,
-};
-
-export function registerScene(name, mount) {
-  MOUNT[name] = mount;
-}
-
-const modals = {};
-
-// A modal opens over the current scene. It returns a Promise.
-export function registerModal(name, open) {
-  modals[name] = open;
-}
+registerScene('title', mountTitle);
+registerScene('create', mountCreate);
+registerScene('village', mountVillage);
+const MOUNT = scenes;
 
 export async function startApp(root) {
   const ui = root.querySelector('#ui');
@@ -130,7 +120,7 @@ export async function startApp(root) {
       ctx.makeLearner();
       if (isNew) await ctx.save('new');
       if (isMemoryOnly()) ctx.toast('ui.memory.only');
-      await ctx.go('village');
+      await ctx.go(isTimeOver(ctx) ? 'rest' : 'village');
     },
 
     async playProfile(id) {
@@ -194,6 +184,7 @@ export async function startApp(root) {
     if (document.visibilityState === 'hidden') ctx.save('hidden');
   });
 
+  startTimer(ctx);
   window.tre = ctx;
   const saved = await getMeta('lang').catch(() => null);
   const browser = navigator.language?.toLowerCase().startsWith('vi') ? 'vi' : 'en';

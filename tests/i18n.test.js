@@ -101,3 +101,34 @@ test('each skill and subject has a name', () => {
   ].filter((k) => !(k in vi));
   assert.deepEqual(missing, []);
 });
+
+test('each fixed key used in the code exists', () => {
+  const srcDir = new URL('../src/', import.meta.url).pathname;
+  const files = [];
+  const walk = (dir) => {
+    for (const name of readdirSync(dir)) {
+      const path = join(dir, name);
+      if (statSync(path).isDirectory()) walk(path);
+      else if (name.endsWith('.js')) files.push(path);
+    }
+  };
+  walk(srcDir);
+  const pattern = /(?:\b(?:t|tg|speak|say|toast)\(\s*|\bkey:\s*|Key:\s*|textKey\s*=\s*)'([a-z][A-Za-z0-9_-]*(?:\.[A-Za-z0-9_-]+)+)'/g;
+  const missing = [];
+  let count = 0;
+  for (const file of files) {
+    const text = readFileSync(file, 'utf8');
+    for (const m of text.matchAll(pattern)) {
+      count++;
+      if (!(m[1] in vi) || !(m[1] in en)) missing.push(`${file.slice(srcDir.length)}: ${m[1]}`);
+    }
+  }
+  assert.ok(count > 50, `found ${count} keys`);
+  assert.deepEqual(missing, []);
+});
+
+test('each save error has a message for parents', () => {
+  for (const reason of ['prefix', 'characters', 'checksum', 'data', 'json', 'format', 'version', 'newer', 'migration', 'shape']) {
+    assert.ok(`parent.code.error.${reason}` in vi, reason);
+  }
+});
