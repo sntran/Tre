@@ -538,6 +538,8 @@ export function generateShield(skill, level, rng, opts = {}) {
     const cards = retry(make, (c) => {
       if (target === avoid) return false;
       if (c.includes(target)) return false;
+      // No number comes on three or more cards of one set.
+      if (c.some((x) => c.filter((y) => y === x).length >= 3)) return false;
       if (parts.some((x) => x <= 0)) return false;
       // For subtraction practice, adding alone must not reach the target.
       if (requireOp === '-' && solveCards(c, target, ['+'])) return false;

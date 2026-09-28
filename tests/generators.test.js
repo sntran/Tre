@@ -256,6 +256,24 @@ test('number shields follow the "regroup" value of the level', () => {
   }
 });
 
+test('a set of number cards never has three or more identical cards', () => {
+  for (const skill of graph.all()) {
+    skill.levels.forEach((_, i) => {
+      if (!hasCards(skill, i + 1)) return;
+      for (const extraCards of [0, 1, 2]) {
+        for (let run = 0; run < RUNS; run++) {
+          const sh = generateShield(skill, i + 1, createRng(`same:${skill.id}:${i}:${extraCards}:${run}`), { extraCards });
+          for (const v of sh.cards) {
+            assert.ok(sh.cards.filter((x) => x === v).length <= 2, `${skill.id} L${i + 1}: ${sh.cards.join(', ')}`);
+          }
+          const exampleCards = sh.example.params.cards.split(', ').map(Number);
+          for (const v of exampleCards) assert.ok(exampleCards.filter((x) => x === v).length <= 2, 'example cards');
+        }
+      }
+    });
+  }
+});
+
 test('extra cards give more cards', () => {
   const sh = generateShield(graph.get('math.add.20'), 1, createRng(3), { extraCards: 1 });
   assert.equal(sh.cards.length, 5);
