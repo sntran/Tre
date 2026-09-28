@@ -50,6 +50,20 @@ test('a parameter at the start of a sentence starts with a capital letter', () =
   assert.equal(i.t('dot', { grade: 'lớp 2' }), 'Mai · lớp 2', 'a dot in the middle is not the end of a sentence');
 });
 
+test('no word comes two times at a glossary mark (for example "quân [[an]]" with the name "quân Ân")', () => {
+  for (const table of [vi, en]) {
+    for (const [key, text] of Object.entries(table)) {
+      for (const m of text.matchAll(/(\S+)\s+\[\[(\w+)\]\]/g)) {
+        const name = table[`gloss.${m[2]}.name`] ?? '';
+        const first = name.split(' ')[0].toLowerCase();
+        assert.notEqual(m[1].toLowerCase(), first, `${key}: "${m[0]}" gives "${m[1]} ${name}"`);
+      }
+    }
+  }
+  const i = createI18n({ 'gloss.an.name': 'quân Ân', won: '[[an]] rút lui. Sau đó [[an]] về nhà.' }, 'vi');
+  assert.equal(i.gloss(i.t('won')), 'Quân Ân rút lui. Sau đó quân Ân về nhà.');
+});
+
 test('glossary shows the meaning the first time in English only', () => {
   const dict = { 'gloss.vm.name': 'Văn Miếu', 'gloss.vm.meaning': 'the Temple of Literature' };
   const en1 = createI18n(dict, 'en');

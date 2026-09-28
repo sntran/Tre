@@ -2,7 +2,7 @@
 // It keeps a copy of all game files. When the network works, it gets the newest file
 // first (so that updates arrive at once); without a network, it uses the copy.
 
-const CACHE = 'tre-v2';
+const CACHE = 'tre-v3';
 
 // All game files. A test checks that this list has each file that the site ships.
 const FILES = [

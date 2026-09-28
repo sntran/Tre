@@ -46,13 +46,13 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
 | `enemy.scout.name` | Lính trinh sát quân Ân | Ân army scout |
 | `enemy.soldier.name` | Lính quân Ân | Ân army soldier |
 | `enemy.general.name` | Tướng quân Ân | Ân army general |
-| `battle.won.retreat` | Quân [[an]] rút lui. Làng được bình yên. | The Ân soldiers retreat. The village is safe. |
+| `battle.won.retreat` | [[an]] rút lui. Làng được bình yên. | The Ân soldiers retreat. The village is safe. |
 | `battle.retreat` | {name} rút lui. | {name} retreats. |
 | `battle.calm` | {name} đã bình tĩnh lại. | {name} is calm now. |
 | `battle.river.intro` | Hai con [[thuongluong]] con đang quậy phá bờ sông. Hãy làm chúng bình tĩnh lại! | Two little [[thuongluong]] make trouble on the river bank. Help them calm down! |
 | `battle.scouts.intro` | Hai người lính trinh sát [[an]] cầm đuốc đứng ngoài cổng làng. | Two Ân scouts with torches stand outside the village gate. |
 | `battle.soldier.intro` | Một người lính [[an]] chặn đường ở cánh đồng. | A soldier of the Ân army blocks the path in the field. |
-| `battle.boss.intro` | Tướng quân [[an]] đứng ở chân núi Trâu Sơn. Gióng cưỡi ngựa sắt đến bên em. | The Ân general stands at the foot of Trâu Sơn mountain. Gióng rides the iron horse to your side. |
+| `battle.boss.intro` | Tướng [[an]] đứng ở chân núi Trâu Sơn. Gióng cưỡi ngựa sắt đến bên em. | The Ân general stands at the foot of Trâu Sơn mountain. Gióng rides the iron horse to your side. |
 | `battle.patrol.intro` | Một người lính trinh sát [[an]] quay lại dò đường. | An Ân scout came back to look around. |
 
 ## 5. Legend dialogues (mark: Legend)
@@ -83,11 +83,11 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
 | `dlg.giong.grown.n2.c1` | Có! Mình đi cùng bạn. | Yes! I will come with you. |
 | `dlg.giong.grown.n3` | Hai người lính [[an]] đang ở cánh đồng phía đông, ngoài cổng làng. Ta cùng đẩy lùi họ nhé. | Two soldiers of [[an]] are in the fields to the east, outside the village gate. Let us push them back together. |
 | `dlg.giong.ready.n1` | Hai người lính [[an]] ở ngoài cánh đồng phía đông. Chạm vào họ để bắt đầu. Mình đi cùng bạn! | Two soldiers of [[an]] are in the fields to the east. Tap them to start. I am with you! |
-| `dlg.giong.boss.n1` | Tướng quân [[an]] đang ở chân núi Trâu Sơn, phía đông bắc. Ta cùng đến đó! | The general of [[an]] is at the foot of Trâu Sơn mountain, to the northeast. Let us go there together! |
+| `dlg.giong.boss.n1` | Tướng [[an]] đang ở chân núi Trâu Sơn, phía đông bắc. Ta cùng đến đó! | The general of [[an]] is at the foot of Trâu Sơn mountain, to the northeast. Let us go there together! |
 | `dlg.staff.breaks.n1` | Rắc! Cây gậy sắt gãy làm đôi! | Crack! The iron staff breaks in two! |
 | `dlg.staff.breaks.n2` | {name} ơi, tìm cho mình một cây tre thật chắc! | {name}, find me a strong bamboo! |
 | `dlg.bamboo.found.n1` | Gióng nhổ bụi tre bên đường. Cây tre dẻo dai, không gãy! | Gióng pulls up the bamboo by the road. The bamboo bends, but it does not break! |
-| `dlg.giong.farewell.n1` | Tướng quân [[an]] và quân lính rút về nước. Họ cũng mong được về nhà với gia đình. | The Ân general and his soldiers went back to their own land. They also wanted to go home to their families. |
+| `dlg.giong.farewell.n1` | Tướng [[an]] và quân lính rút về nước. Họ cũng mong được về nhà với gia đình. | The Ân general and his soldiers went back to their own land. They also wanted to go home to their families. |
 | `dlg.giong.farewell.n2` | Cảm ơn {name}. Bạn đã giúp mình bằng cả trí óc và sức mạnh. | Thank you, {name}. You helped me with your mind and your strength. |
 | `dlg.giong.farewell.n3` | Gióng cưỡi ngựa sắt lên đỉnh núi Sóc Sơn, rồi bay lên trời. Dân làng nhớ ơn, gọi Gióng là [[giong]]. | Gióng rode the iron horse to the top of Sóc Sơn mountain, and then he rose into the sky. The people remembered him and called him [[giong]]. |
 | `dlg.giong.farewell.n4` | Truyền thuyết kể rằng lửa từ miệng ngựa sắt làm vàng những bụi tre bên đường. Đó là tre đằng ngà. | The legend says that the fire of the iron horse turned the bamboo by the road yellow. People call it tre đằng ngà, golden bamboo. |
@@ -224,4 +224,4 @@ Total: 996 texts in each language.
 - `dlg.river.friends.*`: the young buffalo Nghé comes with the hero after the river battle. Sóng can come too, or stay with the river.
 - `quest.*`: shorter quest texts for the quest bar.
 - `grade.*`: the names of the grades, with "lớp Chồi" (Pre-K) and "lớp Lá" (K).
-
+- `battle.won.retreat`, `battle.boss.intro`, `dlg.giong.boss.n1`, `dlg.giong.farewell.n1`: the glossary name of `[[an]]` is "quân Ân", so the text says "Tướng [[an]]" ("Tướng quân Ân") and "[[an]] rút lui" ("Quân Ân rút lui"), with no word two times.
