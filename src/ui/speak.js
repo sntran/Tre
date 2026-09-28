@@ -1,6 +1,7 @@
 // Voice. speak(key) plays a recorded file from audio/<lang>/ when it exists.
 // If no file exists, it uses the Web Speech API.
 import { lang, say } from './i18n.js';
+import { chooseVoice } from '../core/voices.js';
 
 const recorded = {};
 let enabled = true;
@@ -60,33 +61,55 @@ export function stop() {
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 }
 
-function pickVoice(code) {
-  const tag = code === 'vi' ? 'vi' : 'en';
-  return voices.find((v) => v.lang?.toLowerCase().startsWith(tag) && v.localService) ??
-    voices.find((v) => v.lang?.toLowerCase().startsWith(tag)) ?? null;
+// The voice profiles (data/config/game.json, "voices"). The app sets them after it loads the data.
+let profiles = {};
+export function setVoiceProfiles(value) {
+  profiles = value ?? {};
 }
 
 // Speak a text key. Params are only for the synthetic voice:
 // a recorded file is used only for a key with no params.
-export function speak(key, params = null, { force = false } = {}) {
+// opts: { force (speak also when the voice is off), queue (wait for the current speech;
+// do not stop it), voice (a profile name, for example 'elderMan') }
+export function speak(key, params = null, { force = false, queue = false, voice = 'narrator' } = {}) {
   if (!enabled && !force) return;
-  stop();
+  if (!queue) stop();
   const code = lang();
   const hasParams = params && Object.keys(params).length > 0;
-  if (!hasParams && recorded[code]?.has(key)) {
+  if (!hasParams && recorded[code]?.has(key) && !queue) {
     player = new Audio(`audio/${code}/${key}.mp3`);
-    player.play().catch(() => speakText(say(key, params), code));
+    player.play().catch(() => speakText(say(key, params), code, { voice, force: true }));
     return;
   }
-  speakText(say(key, params), code);
+  speakText(say(key, params), code, { queue: true, voice, force: true });
 }
 
-export function speakText(text, code = lang()) {
+// Speak a text. With queue: false, stop the current speech first.
+export function speakText(text, code = lang(), { queue = false, voice = 'narrator', force = false } = {}) {
   if (!('speechSynthesis' in window) || !text) return;
+  if (!enabled && !force) return;
+  if (!queue) stop();
+  const profile = profiles[voice] ?? profiles.narrator ?? {};
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = code === 'vi' ? 'vi-VN' : 'en-US';
-  const voice = pickVoice(code);
-  if (voice) utterance.voice = voice;
-  utterance.rate = 0.9;
+  const chosen = chooseVoice(voices, code, profile.gender ?? null);
+  if (chosen) utterance.voice = chosen;
+  utterance.rate = profile.rate ?? 0.9;
+  utterance.pitch = profile.pitch ?? 1;
   window.speechSynthesis.speak(utterance);
+}
+
+// Wait until the voice is quiet, or until maxMs.
+export function whenQuiet(maxMs = 6000) {
+  const start = Date.now();
+  return new Promise((resolve) => {
+    const check = () => {
+      const talking = (player && !player.paused && !player.ended) ||
+        ('speechSynthesis' in window && (window.speechSynthesis.speaking || window.speechSynthesis.pending));
+      if (!talking || Date.now() - start >= maxMs) resolve();
+      else setTimeout(check, 100);
+    };
+    // Wait a moment, so that a speech that starts now is seen.
+    setTimeout(check, 150);
+  });
 }

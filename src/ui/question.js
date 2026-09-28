@@ -2,7 +2,7 @@
 // (a number pad or choice buttons). The number cards of battles are in cards.js.
 import { h, img, button } from './dom.js';
 import { t, tg, lang } from './i18n.js';
-import { speak } from './speak.js';
+import { speak, speakText } from './speak.js';
 import { renderVisual, shapeSvg } from './visuals.js';
 import { formatNumber } from '../core/i18n.js';
 
@@ -58,6 +58,8 @@ export function renderQuestion(problem, { onAnswer, autoSpeak = true } = {}) {
       else b.append(h('span', { text: choiceText(c) }));
       b.addEventListener('click', () => {
         if (locked) return;
+        // Say the answer that the player chose. The feedback comes after it.
+        speakText(choiceText(c));
         onAnswer(i, b);
       });
       grid.append(b);
@@ -71,7 +73,10 @@ export function renderQuestion(problem, { onAnswer, autoSpeak = true } = {}) {
       if (locked) return;
       if (k === 'del') value = value.slice(0, -1);
       else if (k === 'ok') {
-        if (value !== '') onAnswer(value);
+        if (value !== '') {
+          speakText(value);
+          onAnswer(value);
+        }
         return;
       } else if (k === 'point') {
         if (!value.includes(t('quiz.point'))) value = (value || '0') + t('quiz.point');
@@ -126,7 +131,8 @@ export function feedbackLine() {
     show(kind, text, speakKey = null) {
       el.className = `feedback ${kind}`;
       el.replaceChildren(img(kind === 'good' ? 'ui/star' : kind === 'example' ? 'ui/quest' : 'ui/hint'), h('span', { text }));
-      if (speakKey) speak(speakKey.key, speakKey.params, { force: true });
+      // The feedback waits for the voice (for example the answer that the player chose).
+      if (speakKey) speak(speakKey.key, speakKey.params, { queue: true });
     },
     clear() {
       el.className = 'feedback';

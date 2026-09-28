@@ -1,6 +1,6 @@
 // The app: load the data, keep the current profile, switch scenes, and save.
 import { setLanguage as loadLanguage, t, useSeenGloss, seenGlossList, setGlobalParams } from './i18n.js';
-import { loadRecordedKeys, setVoiceEnabled, speak } from './speak.js';
+import { loadRecordedKeys, setVoiceEnabled, setVoiceProfiles, speak } from './speak.js';
 import { loadData } from './data.js';
 import { saveProfile, loadProfile, isMemoryOnly, getMeta, setMeta } from './storage.js';
 import { h, button } from './dom.js';
@@ -40,6 +40,7 @@ export async function startApp(root) {
   const bar = ui.querySelector('.progress-bar span');
 
   const data = await loadData((f) => { bar.style.width = `${Math.round(5 + f * 90)}%`; });
+  setVoiceProfiles(data.game.voices);
   // Load the two fonts before the first screen, so that the Canvas can use them too.
   await Promise.all([
     document.fonts?.load('700 20px Alegreya'),

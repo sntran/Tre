@@ -5,6 +5,17 @@ import { applyEffects, conditionState } from '../core/game.js';
 import { h, img, button } from './dom.js';
 import { t, tg } from './i18n.js';
 import { speak, stop } from './speak.js';
+import { voiceOf } from '../core/voices.js';
+
+// The data for the voice of a speaker.
+function voiceData(ctx) {
+  return { npcs: ctx.data.npcs.npcs, friends: ctx.data.friends.friends, voices: ctx.data.game.voices };
+}
+
+// True while the player selects text: then a tap does not go to the next line.
+function selecting() {
+  return String(window.getSelection?.() ?? '').length > 0;
+}
 import { heroLayers } from '../render/assets.js';
 
 // The art of a speaker. "hero" uses the layers of the hero.
@@ -89,7 +100,7 @@ export function runDialogue(ctx, id) {
       ]);
       box.append(body);
       const tools = h('div', { class: 'dialogue-tools' }, [
-        button(null, () => speak(view.textKey, params, { force: true }), { cls: 'icon-btn', icon: 'ui/speak', aria: t('ui.listen') }),
+        button(null, () => speak(view.textKey, params, { force: true, voice: voiceOf(view.speaker, voiceData(ctx), ctx.profile) }), { cls: 'icon-btn', icon: 'ui/speak', aria: t('ui.listen') }),
       ]);
       box.append(tools);
       if (view.choices.length) {
@@ -101,11 +112,11 @@ export function runDialogue(ctx, id) {
       } else {
         tools.append(button(null, () => { if (!early()) show(runner.next()); }, { cls: 'icon-btn next', icon: 'ui/back', aria: t('ui.next') }));
         box.onclick = (e) => {
-          if (e.target.closest('button') || early()) return;
+          if (e.target.closest('button') || early() || selecting()) return;
           show(runner.next());
         };
       }
-      speak(view.textKey, params);
+      speak(view.textKey, params, { voice: voiceOf(view.speaker, voiceData(ctx), ctx.profile) });
     };
 
     show(runner.view());
@@ -133,12 +144,12 @@ export function say(ctx, textKey, params = {}, speaker = 'narrator') {
       resolve();
     };
     box.append(h('div', { class: 'dialogue-tools' }, [
-      button(null, () => speak(textKey, all, { force: true }), { cls: 'icon-btn', icon: 'ui/speak', aria: t('ui.listen') }),
+      button(null, () => speak(textKey, all, { force: true, voice: voiceOf(speaker, voiceData(ctx), ctx.profile) }), { cls: 'icon-btn', icon: 'ui/speak', aria: t('ui.listen') }),
       button(null, close, { cls: 'icon-btn next', icon: 'ui/back', aria: t('ui.next') }),
     ]));
-    box.onclick = (e) => { if (!e.target.closest('button')) close(); };
+    box.onclick = (e) => { if (!e.target.closest('button') && !selecting()) close(); };
     layer.append(box);
     ctx.ui.append(layer);
-    speak(textKey, all);
+    speak(textKey, all, { voice: voiceOf(speaker, voiceData(ctx), ctx.profile) });
   });
 }

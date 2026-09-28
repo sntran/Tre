@@ -81,7 +81,7 @@ async function mountBattle(ctx, params) {
   // On a phone, the note shows 2 lines. A tap shows all of it, and reads it aloud.
   note.addEventListener('click', () => {
     note.classList.toggle('open');
-    if (def.historyKey) speakText(`${say(def.noteKey)} ${t('mark.history')}: ${say(def.historyKey)}`);
+    if (def.historyKey) speakText(`${say(def.noteKey)} ${t('mark.history')}: ${say(def.historyKey)}`, lang(), { force: true });
     else speak(def.noteKey, null, { force: true });
   });
   const top = h('div', { class: 'battle-top' }, [hearts, note]);

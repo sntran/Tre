@@ -59,6 +59,50 @@
     "battle": 1.05,
     "child": 0.8
   },
+  "voices": {
+    "_about": "Voice profiles. pitch and rate change the browser voice. gender chooses a male or a female voice when the device has one. Each person in npcs.json and friends.json has a voice profile.",
+    "narrator": {
+      "pitch": 1,
+      "rate": 0.9
+    },
+    "man": {
+      "pitch": 0.85,
+      "rate": 0.9,
+      "gender": "male"
+    },
+    "woman": {
+      "pitch": 1.1,
+      "rate": 0.92,
+      "gender": "female"
+    },
+    "boy": {
+      "pitch": 1.35,
+      "rate": 0.98,
+      "gender": "male"
+    },
+    "girl": {
+      "pitch": 1.5,
+      "rate": 1,
+      "gender": "female"
+    },
+    "elderMan": {
+      "pitch": 0.7,
+      "rate": 0.8,
+      "gender": "male"
+    },
+    "elderWoman": {
+      "pitch": 1,
+      "rate": 0.8,
+      "gender": "female"
+    },
+    "creature": {
+      "pitch": 1.7,
+      "rate": 1.05
+    },
+    "speakers": {
+      "examiner": "elderMan"
+    }
+  },
   "_maxProfilesAbout": "The first version has one profile. The code and the saves support more.",
   "battle": {
     "heroHealth": 5,

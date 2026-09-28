@@ -3,7 +3,7 @@
 // Trials, practice, lessons, and the rice counting use it.
 import { h, img, button, wait } from './dom.js';
 import { t, tg } from './i18n.js';
-import { speak } from './speak.js';
+import { speak, whenQuiet } from './speak.js';
 import { renderQuestion, feedbackLine, textOf, answerText } from './question.js';
 import { portrait } from './dialogue.js';
 import { checkAnswer } from '../core/solver.js';
@@ -98,6 +98,8 @@ export function runQuiz(ctx, opts) {
         const praise = `praise.${1 + Math.floor(Math.random() * 5)}`;
         feedback.show('good', t(praise), { key: praise });
         await wait(1100);
+        // Let the voice finish the answer and the praise before the next question.
+        await whenQuiet(3000);
         if (!closed) next();
         return;
       }

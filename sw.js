@@ -195,6 +195,7 @@ const FILES = [
   'src/core/tilemap.js',
   'src/core/timelimit.js',
   'src/core/triggers.js',
+  'src/core/voices.js',
   'src/main.js',
   'src/render/assets.js',
   'src/render/battle.js',
