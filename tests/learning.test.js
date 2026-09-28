@@ -50,9 +50,9 @@ test('BKT: a correct answer raises p and a wrong answer lowers p', () => {
   const down = bktUpdate(p0, false, m);
   assert.ok(up > p0);
   assert.ok(down < up);
-  // Hand calculation: known = 0.3*0.9 / (0.3*0.9 + 0.7*0.2) = 0.6585; then + (1 - 0.6585) * 0.15.
-  const known = (0.3 * 0.9) / (0.3 * 0.9 + 0.7 * 0.2);
-  assert.ok(Math.abs(up - (known + (1 - known) * 0.15)) < 1e-9);
+  // Hand calculation: known = p (1 - slip) / (p (1 - slip) + (1 - p) guess); then + (1 - known) transit.
+  const known = (p0 * (1 - m.pSlip)) / (p0 * (1 - m.pSlip) + (1 - p0) * m.pGuess);
+  assert.ok(Math.abs(up - (known + (1 - known) * m.pTransit)) < 1e-9);
   assert.ok(pCorrect(0.9, m) > pCorrect(0.2, m));
 });
 
@@ -261,4 +261,15 @@ test('the Era 1 exam: a strong player passes and a weak player does not', () => 
   assert.ok(weak.ability < pass);
   const practice = skillsToPractice(weak, era1Ladder);
   assert.ok(practice.length > 0);
+});
+
+test('parent questions come up for their skill and language', () => {
+  const learning = { skills: {}, items: {}, exams: [] };
+  const parentQ = { id: 'parent-1', skill: 'math.add.10', lang: 'en', type: 'numeric', text: '2 + 2 on the school sheet?', answer: 4, level: 1, parent: true };
+  const learner = createLearner({ graph, config: cfg, learning, grade: 1, rng: createRng('pq'), bank: [...bank, parentQ], lang: 'en' });
+  let seen = 0;
+  for (let i = 0; i < 40; i++) if (learner.problem('math.add.10').source === 'parent-1') seen++;
+  assert.ok(seen > 5 && seen < 35, `seen ${seen}`);
+  const vietnamese = createLearner({ graph, config: cfg, learning: { skills: {}, items: {} }, grade: 1, rng: createRng('pq'), bank: [...bank, parentQ], lang: 'vi' });
+  for (let i = 0; i < 20; i++) assert.notEqual(vietnamese.problem('math.add.10').source, 'parent-1');
 });

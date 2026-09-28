@@ -65,7 +65,9 @@ export async function createBattleRenderer({ bg, hero, friends, companion, enemi
     const { ctx } = surface;
     // Show the band of the stage from y = 140 to y = 480, where the people stand,
     // and the width from x = 70 to x = 890.
-    const scale = Math.max(0.4, Math.min((stage.height - 40) / 340, stage.width / 820));
+    // On a wide screen, fill the width, but keep the people (y = 250 to 480) in view.
+    const fit = Math.min((stage.height - 40) / 340, stage.width / 820);
+    const scale = Math.max(0.4, Math.min(Math.max(fit, stage.width / W), (stage.height - 30) / 230));
     const ox = (surface.width - W * scale) / 2;
     const oy = stage.height - 480 * scale;
     view = { scale, ox, oy };

@@ -14,13 +14,17 @@ import { runDialogue, say } from './dialogue.js';
 
 const SPEED = 5; // tiles each second
 
+// The map bitmap takes some time to make, so the scene keeps it for the next visit.
+const rendererCache = new Map();
+
 export async function mountVillage(ctx, params = {}) {
   const { data, profile } = ctx;
   const mapData = data.village;
   const T = mapData.tileSize;
   const tileMap = createTileMap(mapData, data.tiles.types);
   const triggers = createTriggers(mapData.triggers);
-  const renderer = await createVillageRenderer(mapData, tileMap);
+  if (!rendererCache.has(mapData.id)) rendererCache.set(mapData.id, createVillageRenderer(mapData, tileMap));
+  const renderer = await rendererCache.get(mapData.id);
   const camera = createCamera(T);
   const surface = ctx.surface;
   surface.canvas.hidden = false;
@@ -314,10 +318,19 @@ export async function mountVillage(ctx, params = {}) {
     talk,
     heroTile: () => ({ x: hero.x, y: hero.y }),
     placeHero,
+    // The screen point of the middle of a tile, for automatic tests of the whole game.
+    screenOf: (x, y) => camera.toScreen((x + 0.5) * T, (y + 0.5) * T),
   };
+  ctx.activeVillage = api;
 
   refreshPeople();
   requestAnimationFrame(frame);
+  // Show the new language in the top bar after a change in the parent area.
+  const offLang = ctx.bus.on('lang', () => {
+    heroFace.setAttribute('aria-label', t('ui.home'));
+    menuBtn.setAttribute('aria-label', t('ui.menu'));
+    updateHud();
+  });
 
   // Events after the scene starts (for example the story after a battle).
   queueMicrotask(async () => {
@@ -328,8 +341,10 @@ export async function mountVillage(ctx, params = {}) {
   return {
     unmount() {
       alive = false;
+      if (ctx.activeVillage === api) ctx.activeVillage = null;
       profile.place = { map: mapData.id, x: hero.x, y: hero.y };
       surface.canvas.removeEventListener('pointerdown', onPointer);
+      offLang();
       hud.remove();
     },
     api,

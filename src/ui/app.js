@@ -25,7 +25,7 @@ const SCENES = {
   village: ['battle', 'vanmieu', 'title', 'rest', 'village'],
   battle: ['village'],
   vanmieu: ['village'],
-  rest: ['title', 'village'],
+  rest: ['title', 'village', 'rest'],
 };
 
 registerScene('title', mountTitle);
@@ -52,6 +52,7 @@ export async function startApp(root) {
   });
 
   let current = null;
+  let going = false;
   let saving = Promise.resolve();
 
   const ctx = {
@@ -69,15 +70,23 @@ export async function startApp(root) {
       await loadRecordedKeys(code);
       if (ctx.profile) ctx.profile.settings.lang = code;
       setMeta('lang', code).catch(() => {});
+      bus.emit('lang', code);
     },
 
     // Change the scene. Unknown changes are errors, so the game never goes to a strange state.
     async go(name, params = {}) {
+      // A second change while a scene starts (for example a double tap) does nothing.
+      if (going) return null;
       if (!machine.send(name)) throw new Error(`No scene change from ${machine.state} to ${name}`);
-      if (current) current.unmount();
-      current = null;
-      ui.replaceChildren();
-      current = await MOUNT[name](ctx, params);
+      going = true;
+      try {
+        if (current) current.unmount();
+        current = null;
+        ui.replaceChildren();
+        current = await MOUNT[name](ctx, params);
+      } finally {
+        going = false;
+      }
       bus.emit('scene', name);
       return current;
     },
@@ -106,7 +115,7 @@ export async function startApp(root) {
     makeLearner() {
       const p = ctx.profile;
       ctx.rng = createRng(`${p.seed}:${Date.now()}`);
-      const bank = [...data.questions.questions, ...(p.settings.questions ?? []).map((q) => ({ ...q, level: 1 }))];
+      const bank = [...data.questions.questions, ...(p.settings.questions ?? []).map((q) => ({ ...q, level: 1, parent: true }))];
       ctx.learner = createLearner({ graph, config: data.learning, learning: p.learning, grade: p.grade, rng: ctx.rng, bank, lang: p.settings.lang });
     },
 
@@ -119,8 +128,8 @@ export async function startApp(root) {
       bus.emit('settings', profile.settings);
       ctx.makeLearner();
       if (isNew) await ctx.save('new');
-      if (isMemoryOnly()) ctx.toast('ui.memory.only');
       await ctx.go(isTimeOver(ctx) ? 'rest' : 'village');
+      if (isMemoryOnly()) ctx.toast('ui.memory.only');
     },
 
     async playProfile(id) {
@@ -185,6 +194,7 @@ export async function startApp(root) {
   });
 
   startTimer(ctx);
+  // The game context, for automatic tests of the whole game in a browser.
   window.tre = ctx;
   const saved = await getMeta('lang').catch(() => null);
   const browser = navigator.language?.toLowerCase().startsWith('vi') ? 'vi' : 'en';

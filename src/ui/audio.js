@@ -1,3 +1,5 @@
+import { unlockSpeech } from './speak.js';
+
 // Sound with the Web Audio API: short sound effects and simple music.
 // The sounds are made in code, so the game needs no sound files.
 // The music uses a five-note scale, like the sáo trúc (bamboo flute) and the trống (drum).
@@ -29,7 +31,8 @@ function audio() {
 // Browsers start sound only after a tap.
 export function unlockAudio() {
   const a = audio();
-  if (a && a.state === 'suspended') a.resume();
+  // Safari can also be in the state 'interrupted' after the app was in the background.
+  if (a && a.state !== 'running') a.resume().catch(() => {});
 }
 
 function tone(freq, start, length, { type = 'sine', volume = 0.3, glide = null, dest = null } = {}) {
@@ -104,9 +107,15 @@ const MELODY = {
 
 function musicTick() {
   const a = audio();
-  if (!a || a.state !== 'running' || !musicOn || !musicMode) return;
-  const line = MELODY[musicMode];
+  if (!musicOn || !musicMode) return;
   const beat = musicMode === 'battle' ? 0.22 : 0.42;
+  if (!a || a.state !== 'running') {
+    // Wait until a tap starts the sound.
+    clearTimeout(musicTimer);
+    musicTimer = setTimeout(musicTick, 500);
+    return;
+  }
+  const line = MELODY[musicMode];
   const t = a.currentTime + 0.05;
   const note = line[musicStep % line.length];
   if (note >= 0) {
@@ -158,7 +167,12 @@ export function connectAudio(bus) {
   bus.on('sound', play);
   bus.on('settings', (s) => setSoundOptions(s));
   bus.on('scene', (name) => setMusic(name === 'village' ? 'village' : name === 'battle' ? 'battle' : null));
-  const unlock = () => unlockAudio();
-  window.addEventListener('pointerdown', unlock, { passive: true });
-  window.addEventListener('keydown', unlock);
+  // iOS starts sound only in a tap that ends (touchend, pointerup, or click).
+  const unlock = () => {
+    unlockAudio();
+    unlockSpeech();
+  };
+  for (const type of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) {
+    window.addEventListener(type, unlock, { passive: true });
+  }
 }

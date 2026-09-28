@@ -53,12 +53,13 @@ registerModal('craft', async (ctx, cmd, extra) => {
         const row = h('div', { class: 'battle-actions' });
         for (const el of rules.available) {
           row.append(button(t(`element.${el}`), async () => {
+            const firstTry = craft.state.mistakes === 0;
             const r = craft.useElement(el);
             ctx.bus.emit('sound', el);
             if (r.ok) {
               ctx.bus.emit('sound', r.rule.effect === 'harden' ? 'steam' : 'correct');
               feedback.show('good', t(r.rule.textKey), { key: r.rule.textKey });
-              ctx.learner.record({ skill: 'sci.matter.materials', level: 1 }, craft.state.mistakes === 0);
+              ctx.learner.record({ skill: 'sci.matter.materials', level: 1 }, firstTry);
               await wait(1800);
               show();
             } else if (!r.ignored) {
@@ -167,7 +168,7 @@ registerModal('home', async (ctx) => {
         ]));
       }
       const calling = data.callings.callings.find((c) => c.id === profile.calling);
-      const titles = profile.titles.map((id) => t(`title.${id}.name`)).join(', ');
+      const titles = profile.titles.map((id) => t(`title.${id}.name`)).join(t('ui.list.sep'));
       panel.replaceChildren(
         h('div', { class: 'panel-head' }, [h('h2', { text: t('home.title') }), button(null, close, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') })]),
         h('div', { class: 'row', style: { justifyContent: 'flex-start' } }, [portrait(ctx, 'grandma'), h('p', { class: 'prompt', style: { flex: '1', textAlign: 'left' }, text: tg('home.hello') })]),

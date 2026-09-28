@@ -3,19 +3,25 @@
   "mastery": {
     "_about": "Bayesian Knowledge Tracing. p is the chance that the player knows the skill.",
     "pInit": 0.2,
-    "pTransit": 0.15,
-    "pSlip": 0.1,
-    "pGuess": 0.2,
+    "pTransit": 0.08,
+    "pSlip": 0.12,
+    "pGuess": 0.3,
     "almost": 0.7,
     "mastered": 0.95,
     "priorBelowGrade": 0.95,
-    "priorAtGrade": 0.3,
+    "priorAtGrade": 0.2,
     "priorAboveGrade": 0.1
   },
   "rating": {
     "_about": "Elo-style ratings for the player (one for each skill) and for each problem item (skill and level).",
     "scale": 400,
-    "gradeBase": { "1": 800, "2": 1000, "3": 1200, "4": 1400, "5": 1600 },
+    "gradeBase": {
+      "1": 800,
+      "2": 1000,
+      "3": 1200,
+      "4": 1400,
+      "5": 1600
+    },
     "levelStep": 70,
     "playerStartOffset": 240,
     "kPlayer": 32,
@@ -28,13 +34,22 @@
   },
   "review": {
     "_about": "Spaced review with Leitner boxes. Box n waits intervalsDays[n - 1] days.",
-    "intervalsDays": [1, 2, 4, 8, 16, 32],
+    "intervalsDays": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32
+    ],
     "share": 0.3
   },
   "practice": {
     "_about": "Mixed practice: the share of problems from other learned skills.",
     "mixShare": 0.25,
-    "frontierWeightDrop": 0.5
+    "frontierWeightDrop": 0.5,
+    "parentShare": 0.5,
+    "_parentShareAbout": "The share of problems from the parent editor, for a skill that has parent questions."
   },
   "feedback": {
     "_about": "Feedback after mistakes on one problem: first a hint, then a worked example, then a similar problem.",
@@ -54,7 +69,9 @@
       "window": 60,
       "startOffset": 0
     },
-    "era1": { "pass": 1000 },
+    "era1": {
+      "pass": 1000
+    },
     "placement": {
       "masteredAt": 0.85,
       "almostAt": 0.6,

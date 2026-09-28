@@ -29,6 +29,20 @@ export async function loadRecordedKeys(code) {
   }
 }
 
+// iOS lets a page speak only after it speaks once in a tap. Speak an empty text in the first tap.
+let speechUnlocked = false;
+export function unlockSpeech() {
+  if (speechUnlocked || !('speechSynthesis' in window)) return;
+  speechUnlocked = true;
+  try {
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    window.speechSynthesis.speak(u);
+  } catch {
+    speechUnlocked = false;
+  }
+}
+
 export function setVoiceEnabled(value) {
   enabled = value;
   if (!value) stop();

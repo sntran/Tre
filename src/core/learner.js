@@ -66,6 +66,12 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
     const skill = graph.get(id);
     const level = opts.level ?? levelFor(id);
     if (opts.cards && hasCards(skill, level)) return generateShield(skill, level, rng, opts);
+    // Questions from the parent editor come up for their skill, in their language, for any kind of skill.
+    const parent = bank.filter((q) => q.parent && q.skill === id && (!q.lang || q.lang === lang));
+    if (parent.length && skill.generator !== 'bank' && rng.chance(config.practice.parentShare ?? 0.5)) {
+      const p = generate({ ...skill, generator: 'bank' }, 1, rng, { bank: parent, lang, recent: learning.recent });
+      return { ...p, level };
+    }
     const p = generate(skill, level, rng, { bank, lang, recent: learning.recent });
     if (p.source) {
       learning.recent.push(p.source);
@@ -148,7 +154,8 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
       const e = entry(id);
       const top = itemRating(skill, skill.levels.length);
       const chance = expected(ability, top, r.scale);
-      e.r = ability + r.playerStartOffset;
+      // The ability is on the scale of the items, so the player rating is the ability.
+      e.r = ability;
       if (chance >= cfg.masteredAt) {
         e.p = Math.max(e.p, cfg.masteredP);
         if (!e.box) { e.box = 1; e.due = now; }

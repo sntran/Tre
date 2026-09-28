@@ -102,7 +102,7 @@ async function afterExam(ctx, kind, result) {
     if (profile.flags[`vvst.era${title.era}`]) await showMessage(ctx, { textKey: 'exam.vanvo', art: 'title/bamboo-section' });
   } else {
     await ctx.save('exam');
-    const names = result.practice.map((id) => t(`skill.${id}`)).join(', ');
+    const names = result.practice.map((id) => t(`skill.${id}`)).join(t('ui.list.sep'));
     await showMessage(ctx, { speaker: 'examiner', textKey: 'exam.not.yet', params: { skills: names } });
     return;
   }
@@ -170,7 +170,7 @@ async function mountVanMieu(ctx) {
   ctx.ui.append(screen);
 
   const draw = () => {
-    const names = profile.stele.map((s) => h('span', { text: `${s.name} · ${t(`title.${s.title}.name`)}` }));
+    const names = profile.stele.map((s) => h('span', { text: t('vanmieu.stele.row', { name: s.name, title: { key: `title.${s.title}.name` } }) }));
     const stele = h('div', { class: 'stele' }, [img('thing/stele-turtle'), h('div', { class: 'stele-names' }, names)]);
     const actions = h('div', { class: 'row' });
     const needPlacement = profile.grade >= 3 && !profile.flags['placement.done'];

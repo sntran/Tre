@@ -101,7 +101,10 @@ export async function mountCreate(ctx) {
     }
   }
 
+  let started = false;
   async function finish() {
+    if (started) return;
+    started = true;
     const now = Date.now();
     const id = `p${now.toString(36)}`;
     const profile = createProfile({ id, ...hero, grade, lang: lang(), now, seed: now >>> 0 });

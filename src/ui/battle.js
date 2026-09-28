@@ -68,7 +68,7 @@ async function mountBattle(ctx, params) {
   const root = h('div', { class: 'battle-ui' });
   const hearts = h('div', { class: 'hearts', 'aria-live': 'polite' });
   const note = h('button', { class: 'battle-note', type: 'button' }, [
-    def.mark ? h('strong', { text: `${t(`mark.${def.mark}`)}: ` }) : null,
+    def.mark ? h('strong', { class: 'note-mark', text: t(`mark.${def.mark}`) }) : null,
     h('span', { text: tg(def.noteKey) }),
   ]);
   note.addEventListener('click', () => speak(def.noteKey, null, { force: true }));
@@ -371,7 +371,9 @@ async function mountBattle(ctx, params) {
 // The bamboo puzzle: find the bamboo with the right number of sections.
 function bambooPuzzle(ctx) {
   const { learner, profile } = ctx;
-  let problem = learner.next({ filter: (s) => battleSkillFilter(profile)(s) && s.generator !== 'shapes' && s.generator !== 'bank' });
+  // Only problems with a number answer, or with number choices, fit on the bamboo.
+  const numberAnswer = (s) => !['shapes', 'bank', 'fracCompare'].includes(s.generator);
+  const problem = learner.next({ filter: (s) => battleSkillFilter(profile)(s) && numberAnswer(s) });
   const values = () => {
     if (problem.kind === 'choice' && problem.choices.every((c) => c.value !== undefined)) return problem.choices.map((c) => c.value);
     const a = problem.answer;

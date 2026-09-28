@@ -34,6 +34,7 @@ export function runQuiz(ctx, opts) {
 
     let correct = 0;
     let asked = 0;
+    let closed = false;
     let current = null;
     let problem = null;
     let mistakes = 0;
@@ -73,7 +74,7 @@ export function runQuiz(ctx, opts) {
         const praise = `praise.${1 + Math.floor(Math.random() * 5)}`;
         feedback.show('good', t(praise), { key: praise });
         await wait(1100);
-        next();
+        if (!closed) next();
         return;
       }
       record(false);
@@ -98,6 +99,7 @@ export function runQuiz(ctx, opts) {
         feedback.show('example', t('quiz.answer.is', { answer }), { key: 'quiz.answer.is', params: { answer } });
         asked += 1;
         await wait(2600);
+        if (closed) return;
         if (opts.count && asked >= opts.count) {
           finish(false);
           return;
@@ -116,6 +118,8 @@ export function runQuiz(ctx, opts) {
     }
 
     function finish(stopped) {
+      if (closed) return;
+      closed = true;
       current?.destroy();
       layer.remove();
       ctx.save('quiz');

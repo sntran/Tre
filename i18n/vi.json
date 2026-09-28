@@ -405,7 +405,7 @@
   "q.legend.storm.c3": "Biến thành sắt",
   "q.legend.rice.prompt": "Cả làng nấu cơm cho Gióng ăn. Vì sao?",
   "q.legend.rice.hint": "Mọi người cùng góp sức.",
-  "q.legend.rice.explain": "Theo truyền thuyết, cả làng góp gạo nuôi Gióng lớn lên để đánh giặc giữ làng.",
+  "q.legend.rice.explain": "Theo truyền thuyết, cả làng góp gạo nuôi Gióng lớn lên để bảo vệ làng.",
   "q.legend.rice.c1": "Để Gióng lớn nhanh, bảo vệ làng",
   "q.legend.rice.c2": "Chỉ để ăn Tết",
   "q.legend.rice.c3": "Để bán lấy tiền",
@@ -994,5 +994,9 @@
   "parent.code.error.shape": "Hồ sơ trong mã không đúng.",
   "parent.delete": "Xóa hồ sơ",
   "parent.delete.button": "Xóa hồ sơ của {name}",
-  "parent.delete.confirm": "Xóa hẳn hồ sơ của {name}? Hãy xuất mã trước nếu muốn giữ lại."
+  "parent.delete.confirm": "Xóa hẳn hồ sơ của {name}? Hãy xuất mã trước nếu muốn giữ lại.",
+  "ui.none": "—",
+  "ui.list.sep": ", ",
+  "parent.q.row": "{text} → {answer} ({skill}, {lang})",
+  "vanmieu.stele.row": "{name} · {title}"
 }

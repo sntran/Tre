@@ -47,6 +47,7 @@ The style comes from Đông Hồ folk paintings. All art is original. It does no
 | `ui/` | Icons | 48 × 48 |
 | `calling/` | Emblems of the five callings | 96 × 96 |
 | `title/` | Parts of the bamboo on the title screen | 120 wide |
+| `icon-*.png` | App icons, made from `logo.svg` | 180, 192, 512 |
 
 ## License
 

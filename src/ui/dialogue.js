@@ -51,6 +51,9 @@ export function runDialogue(ctx, id) {
   return new Promise((resolve) => {
     const layer = h('div', { class: 'dialogue-layer' });
     const box = h('div', { class: 'dialogue', role: 'dialog', 'aria-live': 'polite' });
+    // The tap that opened the box can also send a click to the box. Ignore that click.
+    const openedAt = performance.now();
+    const early = () => performance.now() - openedAt < 400;
     layer.append(box);
     ctx.ui.append(layer);
 
@@ -98,9 +101,9 @@ export function runDialogue(ctx, id) {
         });
         body.append(list);
       } else {
-        tools.append(button(null, () => show(runner.next()), { cls: 'icon-btn next', icon: 'ui/back', aria: t('ui.next') }));
+        tools.append(button(null, () => { if (!early()) show(runner.next()); }, { cls: 'icon-btn next', icon: 'ui/back', aria: t('ui.next') }));
         box.onclick = (e) => {
-          if (e.target.closest('button')) return;
+          if (e.target.closest('button') || early()) return;
           show(runner.next());
         };
       }
@@ -123,7 +126,10 @@ export function say(ctx, textKey, params = {}, speaker = 'narrator') {
       speaker && speaker !== 'narrator' ? h('div', { class: 'speaker', text: speakerName(ctx, speaker) }) : null,
       h('p', { class: speaker === 'narrator' ? 'line narrator' : 'line', text: tg(textKey, all) }),
     ]));
+    const openedAt = performance.now();
     const close = () => {
+      // The tap that opened the box can also send a click to the box. Ignore that click.
+      if (performance.now() - openedAt < 400) return;
       stop();
       layer.remove();
       resolve();

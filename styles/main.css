@@ -65,6 +65,8 @@ input, textarea, select { user-select: text; -webkit-user-select: text; font: in
 
 #ui { position: absolute; inset: 0; pointer-events: none; }
 #ui > * { pointer-events: auto; }
+/* These layers cover the canvas, but taps between their parts must reach the canvas. */
+#ui > .battle-ui, #ui > .hud { pointer-events: none; }
 
 img { -webkit-user-drag: none; }
 
@@ -475,6 +477,7 @@ p { line-height: 1.4; margin: 0.4em 0; }
 .battle-top { display: flex; align-items: flex-start; gap: 8px; padding: calc(8px + var(--safe-top)) 8px 0; }
 .hearts { display: flex; gap: 2px; padding: 6px 12px; border: var(--line); border-radius: 999px; background: var(--white); box-shadow: 0 3px 0 var(--black); }
 .hearts img { width: 34px; height: 34px; }
+.note-mark { margin-right: 0.5em; padding: 0 8px; border: 2px solid var(--black); border-radius: 999px; background: var(--white); }
 .battle-note {
   flex: 1;
   padding: 6px 12px;

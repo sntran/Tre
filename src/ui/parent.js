@@ -9,6 +9,7 @@ import { registerModal } from './registry.js';
 import { saveProfile, deleteProfile } from './storage.js';
 import { h, img, button } from './dom.js';
 import { t, lang } from './i18n.js';
+import { formatNumber } from '../core/i18n.js';
 import { setVoiceEnabled } from './speak.js';
 
 // The gate. Return true when the parent passes it.
@@ -153,14 +154,14 @@ async function parentArea(ctx) {
       body.append(
         h('p', { text: t('parent.summary', {
           name: p.hero.name, grade: p.grade,
-          calling: calling ? t(calling.nameKey) : '—',
-          titles: p.titles.map((id) => t(`title.${id}.name`)).join(', ') || '—',
+          calling: calling ? t(calling.nameKey) : t('ui.none'),
+          titles: p.titles.map((id) => t(`title.${id}.name`)).join(t('ui.list.sep')) || t('ui.none'),
           minutes: Math.round((p.time.usedMs ?? 0) / 60000),
         }) }),
         p.settings.timeLimit ? h('p', { text: t('parent.time.left', { minutes: Math.max(0, Math.round(left / 60000)) }) }) : null,
       );
       const practice = learner.toPractice();
-      body.append(h('h3', { text: t('parent.practice') }), h('p', { text: practice.length ? practice.map((id) => t(`skill.${id}`)).join(', ') : t('parent.practice.none') }));
+      body.append(h('h3', { text: t('parent.practice') }), h('p', { text: practice.length ? practice.map((id) => t(`skill.${id}`)).join(t('ui.list.sep')) : t('parent.practice.none') }));
       body.append(h('h3', { text: t('parent.exams') }));
       if (!p.learning.exams.length) body.append(h('p', { class: 'muted', text: t('parent.exams.none') }));
       else {
@@ -186,7 +187,7 @@ async function parentArea(ctx) {
             h('td', { text: t(`skill.${r.id}`) }),
             h('td', { text: String(r.grade) }),
             h('td', {}, [h('span', { class: `chip ${r.status}`, text: t(`mastery.${r.status}`) })]),
-            h('td', { text: r.answers ? `${r.correct}/${r.answers}` : '—' }),
+            h('td', { text: r.answers ? `${r.correct}/${r.answers}` : t('ui.none') }),
           ]));
         }
         body.append(table);
@@ -235,7 +236,12 @@ async function parentArea(ctx) {
       body.append(h('p', { text: t('parent.q.note') }));
       for (const q of list) {
         body.append(h('div', { class: 'switch-row' }, [
-          h('span', { text: `${q.text} → ${q.type === 'numeric' ? q.answer : q.choices[0]} (${t(`skill.${q.skill}`)}, ${t(`lang.${q.lang}`)})` }),
+          h('span', { text: t('parent.q.row', {
+            text: q.text,
+            answer: q.type === 'numeric' ? formatNumber(q.answer, lang()) : q.choices[0],
+            skill: { key: `skill.${q.skill}` },
+            lang: { key: `lang.${q.lang}` },
+          }) }),
           button(t('parent.q.delete'), () => {
             p.settings.questions = list.filter((x) => x !== q);
             ctx.makeLearner();
