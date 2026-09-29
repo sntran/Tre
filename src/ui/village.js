@@ -10,6 +10,7 @@ import { createIsoCamera } from '../iso/camera.js';
 import { toScreen, toMap, pickTileZ, mapBounds, STEP } from '../iso/grid.js';
 import { stepBody, moveCircle, worldFor, keysToScreenDir, stickToScreenDir, inputToward, createFollower, stepFollower, MOVE } from '../world/movement.js';
 import { figureScale } from '../core/figures.js';
+import { createClock, advance } from '../world/clock.js';
 import { h, img, button } from './dom.js';
 import { t, tn } from './i18n.js';
 import { speak } from './speak.js';
@@ -75,6 +76,11 @@ export async function mountVillage(ctx, params = {}) {
   let alive = true;
   let still = 0; // how long the hero has not moved on a route
   let leaving = false; // true after the hero walks into an exit
+  // The game clock, and the state of this map in the save.
+  profile.clock ??= createClock();
+  profile.maps ??= {};
+  const visit = (profile.maps[mapData.id] ??= { first: Math.round(profile.clock.minutes), things: {} });
+  visit.last = Math.round(profile.clock.minutes);
 
   // People and encounters. They block their tiles for the paths of taps.
   let people = [];
@@ -524,6 +530,7 @@ export async function mountVillage(ctx, params = {}) {
 
   function step(dt) {
     if (tapFx) tapFx.age += dt;
+    if (!busy) advance(profile.clock, dt);
     const before = { x: hero.x, y: hero.y };
     const input = currentInput();
     stepBody(hero, input, dt, worldFor(tileMap, hero.x, hero.y));
@@ -624,6 +631,8 @@ export async function mountVillage(ctx, params = {}) {
       alive = false;
       if (ctx.activeVillage === api) ctx.activeVillage = null;
       profile.place = place();
+      visit.at = { x: profile.place.x, y: profile.place.y };
+      visit.last = Math.round(profile.clock.minutes);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);

@@ -32,6 +32,10 @@ export function createProfile({ id, name, gender = 'boy', skin = 1, face = 1, ha
     party: [],
     machines: [],
     place: { map: 'phu-dong', x: null, y: null },
+    // The game clock (game minutes from the start), and the state of each map that the hero
+    // has visited: { first, last } (game minutes), at (the last position), things (changes).
+    clock: { minutes: 7 * 60 },
+    maps: {},
     learning: { skills: {}, items: {}, exams: [] },
     settings: { ...DEFAULT_SETTINGS, lang, questions: [] },
     time: { day: null, usedMs: 0, extraMs: 0 },

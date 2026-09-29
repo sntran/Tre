@@ -246,6 +246,7 @@ const FILES = [
   'src/ui/vanmieu.js',
   'src/ui/village.js',
   'src/ui/visuals.js',
+  'src/world/clock.js',
   'src/world/movement.js',
   'src/world/regions.js',
   'styles/main.css',

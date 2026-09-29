@@ -140,6 +140,28 @@ test('the version 3 migration moves the hero home on the new isometric map', () 
   assert.deepEqual(importCode(exportCode(p)).place, p.place);
 });
 
+test('the version 4 migration adds the game clock and the state of each map', () => {
+  const v3 = sample();
+  delete v3.clock;
+  delete v3.maps;
+  v3.place = { map: 'phu-dong', x: 22.5, y: 40.2 };
+  const done = migrate({ format: SAVE_FORMAT, version: 3, savedAt: 0, profile: v3 }).profile;
+  assert.deepEqual(done.clock, { minutes: 420 });
+  assert.deepEqual(done.maps, {});
+  assert.deepEqual(done.place, { map: 'phu-dong', x: null, y: null });
+  // The state of visited maps goes through the export code; bad values do not load.
+  const p = sample();
+  p.clock = { minutes: 5000.5 };
+  p.maps = { 'phu-dong': { first: 420, last: 900, at: { x: 5.5, y: 13.3 }, things: { pot1: 'broken', plank: 3 } } };
+  assert.deepEqual(importCode(exportCode(p)).maps, p.maps);
+  const bad = sample();
+  bad.maps = { 'phu-dong': { at: { x: 'far', y: 1 } } };
+  assert.throws(() => importCode(exportCode(bad)), (e) => e.reason === 'shape');
+  const badClock = sample();
+  badClock.clock = { minutes: -5 };
+  assert.throws(() => importCode(exportCode(badClock)), (e) => e.reason === 'shape');
+});
+
 test('the export code loads on another device', () => {
   const p = sample();
   const code = exportCode(p, 99);

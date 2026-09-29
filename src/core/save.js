@@ -5,7 +5,7 @@ import { isGrade } from './grades.js';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
 
 export const SAVE_FORMAT = 'tre-save';
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 export const CODE_PREFIX = 'TRE1';
 
 // MIGRATIONS[n] changes a save of version n into version n + 1.
@@ -37,6 +37,16 @@ export const MIGRATIONS = {
   2: (profile) => {
     const out = structuredClone(profile);
     if (out.place && typeof out.place === 'object') out.place = { map: out.place.map ?? 'phu-dong', x: null, y: null };
+    return out;
+  },
+  // Version 4: the world has regions of maps. The game has a clock, and the save keeps the
+  // state of each map that the hero has visited. The village map changed again, so the hero
+  // starts at home.
+  3: (profile) => {
+    const out = structuredClone(profile);
+    out.clock ??= { minutes: 7 * 60 };
+    out.maps ??= {};
+    if (out.place && typeof out.place === 'object') out.place = { map: 'phu-dong', x: null, y: null };
     return out;
   },
 };
@@ -165,6 +175,21 @@ export function validate(profile, { grades = null } = {}) {
     if (!isObj(profile.place)) fail('place');
     str(profile.place.map, 'place.map');
     for (const k of ['x', 'y']) if (profile.place[k] !== null) num(profile.place[k], `place.${k}`, 0, 10000);
+  }
+  if (profile.clock !== undefined) {
+    if (!isObj(profile.clock)) fail('clock');
+    num(profile.clock.minutes, 'clock.minutes', 0, 1e9);
+  }
+  if (profile.maps !== undefined) {
+    for (const [id, m] of entries(profile.maps, 'maps', 200)) {
+      if (!isObj(m)) fail(`maps ${id}`);
+      for (const k of ['first', 'last']) if (m[k] !== undefined) num(m[k], `maps ${id}.${k}`, 0, 1e9);
+      if (m.at !== undefined) {
+        if (!isObj(m.at)) fail(`maps ${id}.at`);
+        for (const k of ['x', 'y']) num(m.at[k], `maps ${id}.at.${k}`, 0, 10000);
+      }
+      if (m.things !== undefined) for (const [, x] of entries(m.things, `maps ${id}.things`)) short(x, `maps ${id}.things value`);
+    }
   }
   if (profile.stats !== undefined) for (const [, v] of entries(profile.stats, 'stats')) int(v, 'stats value', 0, 1e9);
   // Time
