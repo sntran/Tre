@@ -18,8 +18,8 @@ export function tree(ctx, o, opts = {}) {
       for (let dx = -rad; dx <= rad; dx++) {
         const d = (dx * dx + dy * dy * 1.8 + dz * dz) / (rad * rad);
         if (d >= 1 - r.next() * 0.18) continue;
-        const light = dy >= rad * 0.45 && r.chance(0.55);
-        ctx.set(x + dx, cy + dy, z + dz, light ? 'greenPale' : leaf);
+        // The top of the crown is in the light: whole layers, so that the ink stays calm.
+        ctx.set(x + dx, cy + dy, z + dz, dy >= Math.ceil(rad * 0.5) ? 'greenPale' : leaf);
       }
     }
   }
@@ -60,11 +60,13 @@ export function bamboo(ctx, o, opts = {}) {
     const g = ctx.ground(bx, bz);
     const h = (opts.height ?? 18) + r.int(0, 8);
     for (let y = g; y < g + h; y++) ctx.set(bx, y, bz, (y - g) % 5 === 4 ? 'greenDeep' : 'green');
-    for (let k = 0; k < 22; k++) {
-      const lx = bx + r.int(-3, 3);
-      const lz = bz + r.int(-3, 3);
-      const ly = g + h - 1 - r.int(0, 8);
-      ctx.add(lx, ly, lz, r.chance(0.6) ? 'greenDeep' : 'greenPale');
+    // Leaves near the top of the stem, in one color for each stem.
+    const leaf = r.chance(0.5) ? 'greenDeep' : 'green';
+    for (let k = 0; k < 14; k++) {
+      const lx = bx + r.int(-2, 2);
+      const lz = bz + r.int(-2, 2);
+      const ly = g + h - 1 - r.int(0, 6);
+      ctx.add(lx, ly, lz, leaf);
     }
   }
   ctx.shadowDisc(x, z, 2, 4);

@@ -233,13 +233,13 @@ test('Era 1 has the real layout: the Đuống south of Phù Đổng, and the way
   const gap = m.layers.zones.find((z) => z.id === 'bridge-gap');
   assert.ok(map.isBlocked(gap.x, gap.y));
   const west = m.layers.exits.find((e) => e.id === 'west-road');
-  const path = findPath(map, { x: 5, y: 13 }, { x: west.x, y: west.y });
+  const path = findPath(map, { x: 10, y: 26 }, { x: west.x, y: west.y });
   assert.ok(path, 'the road south-west');
   assert.ok(path.some((p) => map.groundAt(p.x, p.y) === 'shallow'), 'the road goes through the ford');
   // The exits: north to Sóc Sơn, east to Núi Trâu, south-west to Thăng Long.
   const to = Object.fromEntries(m.layers.exits.map((e) => [e.to.map, e]));
   assert.ok(to['soc-son'].y === 0, 'Sóc Sơn is north');
-  assert.ok(to['trau-son'].x === m.width - 1, 'Núi Trâu is east');
+  assert.ok(to['trau-son'].x + to['trau-son'].w === m.width, 'Núi Trâu is east');
   assert.ok(to['road-thanglong'].x === 0 && to['road-thanglong'].y > gap.y, 'Thăng Long is south-west, across the river');
   // Each map has its real center and the direction of north; north is map -y.
   for (const [id, mm] of maps) {
@@ -267,10 +267,10 @@ test('the ground of the maps has depth: river steps, sunken paddies, the dinh mo
   }
   // The river bank drops two steps to the water: ground 2, sand 1, water 0.
   const river = at('phu-dong');
-  assert.deepEqual([30, 31, 34].map((y) => [river.groundAt(15, y), river.heightAt(15, y)]), [['grass', 2], ['sand', 1], ['water', 0]]);
+  assert.deepEqual([60, 62, 68].map((y) => [river.groundAt(30, y), river.heightAt(30, y)]), [['grass', 2], ['sand', 1], ['water', 0]]);
   // The road and the bridge stay high over the bank, as a causeway.
-  assert.equal(river.heightAt(22, 31), 2);
-  assert.equal(river.heightAt(22, 33), 2);
+  assert.equal(river.heightAt(44, 62), 2);
+  assert.equal(river.heightAt(44, 66), 2);
   // The paddies are one step lower than the dikes and roads around them.
   for (const [id, m] of maps) {
     const map = at(id);
@@ -286,9 +286,9 @@ test('the ground of the maps has depth: river steps, sunken paddies, the dinh mo
   // The dinh stands on a mound.
   const village = at('phu-dong');
   const dinh = maps.get('phu-dong').layers.objects.find((o) => o.id === 'dinh');
-  assert.ok(village.heightAt(dinh.x, dinh.y) > village.heightAt(dinh.x, dinh.y + dinh.h + 1));
+  assert.ok(village.heightAt(dinh.x, dinh.y) > village.heightAt(dinh.x, dinh.y + dinh.h + 2));
   // The edges of a map rise in terraces (roads and water go through).
-  assert.ok(village.heightAt(0, 0) >= 4 && village.heightAt(1, 5) === 3);
+  assert.ok(village.heightAt(0, 0) >= 4 && village.heightAt(2, 10) === 3);
 });
 
 test('the ducks swim on water or on a paddy', () => {

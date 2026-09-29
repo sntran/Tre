@@ -91,7 +91,7 @@ button { font-family: var(--body); color: var(--ink); }
 
 #app { position: fixed; inset: 0; overflow: hidden; }
 
-#world {
+#world, #voxel {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -103,7 +103,7 @@ button { font-family: var(--body); color: var(--ink); }
 #ui { position: absolute; inset: 0; pointer-events: none; }
 #ui > * { pointer-events: auto; }
 /* These layers cover the canvas, but taps between their parts must reach the canvas. */
-#ui > .battle-ui, #ui > .hud, #ui > .map-fade, #ui > .map-name { pointer-events: none; }
+#ui > .battle-ui, #ui > .hud, #ui > .map-fade, #ui > .map-name, #ui > .world-paper, #ui > .world-marks, #ui > .turns { pointer-events: none; }
 
 img { -webkit-user-drag: none; }
 
@@ -809,3 +809,93 @@ p { line-height: 1.45; margin: 0.4em 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* The voxel world: the paper of the print over it, the marks on it, and its controls. */
+
+.world-paper {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(31, 27, 23, 0.22) 100%),
+    var(--paper-texture);
+  background-size: 100% 100%, 256px;
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+.world-marks { position: absolute; inset: 0; overflow: hidden; }
+.world-marks > * { position: absolute; left: 0; top: 0; will-change: transform; }
+.world-star { width: 30px; height: 30px; filter: drop-shadow(0 1px 0 var(--ink)); }
+.edge-arrow {
+  width: 44px;
+  height: 34px;
+  margin: -17px 0 0 -22px;
+}
+.edge-arrow::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 6px;
+  border: 11px solid transparent;
+  border-left: 18px solid var(--vermilion);
+  border-right: 0;
+  filter: drop-shadow(1px 0 0 var(--ink));
+}
+.edge-star {
+  position: absolute;
+  left: -6px;
+  top: -1px;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+}
+.tap-ring {
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border: 3px solid var(--vermilion);
+  border-radius: 50%;
+}
+.stick {
+  width: 112px;
+  height: 112px;
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  opacity: 0.45;
+}
+.stick.on { opacity: 0.8; }
+.stick-knob {
+  position: absolute;
+  left: 32px;
+  top: 32px;
+  width: 47px;
+  height: 47px;
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--vermilion);
+}
+.turns {
+  position: absolute;
+  right: calc(12px + var(--safe-right, 0px));
+  bottom: calc(12px + var(--safe-bottom, 0px));
+  display: flex;
+  gap: 8px;
+}
+.turn-btn {
+  pointer-events: auto;
+  width: var(--touch);
+  height: var(--touch);
+  border: var(--line);
+  border-radius: 50%;
+  background: var(--paper) var(--paper-texture);
+  background-size: 256px;
+  box-shadow: var(--frame);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+.no-webgl { display: grid; place-items: center; padding: 16px; }
+.no-webgl .panel { max-width: 460px; text-align: center; }

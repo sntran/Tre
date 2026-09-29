@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const root = new URL('../', import.meta.url).pathname;
 
@@ -51,5 +52,25 @@ test('the code sends no requests to other sites', () => {
     assert.ok(!/(fetch|import)\(\s*['"`]https?:/.test(text), `${f} fetches another site`);
     assert.ok(!/url\(\s*['"]?https?:/.test(text), `${f} loads a file from another site`);
     assert.ok(!/document\.cookie/.test(text), `${f} uses cookies`);
+  }
+});
+
+test('three.js is the one file from another site, at a fixed version, and the service worker keeps a copy', () => {
+  const html = readFileSync(join(root, 'index.html'), 'utf8');
+  const sw = readFileSync(join(root, 'sw.js'), 'utf8');
+  const url = 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js';
+  const map = html.match(/<script type="importmap">([^<]*)<\/script>/);
+  assert.ok(map, 'the page has an import map');
+  assert.deepEqual(JSON.parse(map[1]), { imports: { three: url } });
+  assert.ok(html.indexOf('type="importmap"') < html.indexOf('type="module"'), 'the import map comes before the first module');
+  assert.deepEqual([...new Set(html.match(/https:\/\/[^\s"';]+/g))].sort(), ['https://cdn.jsdelivr.net', url].sort());
+  assert.ok(sw.includes(`const THREE = '${url}';`));
+  // The policy of the page permits the import map by its hash only.
+  const hash = createHash('sha256').update(map[1]).digest('base64');
+  assert.ok(html.includes(`'sha256-${hash}'`), 'the policy has the hash of the import map');
+  // Only the drawing code imports three.js.
+  for (const f of shipped().filter((x) => x.endsWith('.js'))) {
+    const text = readFileSync(join(root, f), 'utf8');
+    if (/from 'three'/.test(text)) assert.ok(f.startsWith('src/render/'), `${f} imports three.js`);
   }
 });

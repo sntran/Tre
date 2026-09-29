@@ -96,19 +96,19 @@ A.npcs = [
     {'id': 'fisher', 'x': 14.6, 'y': 31.6},
 ]
 A.encounters = [
-    {'id': 'river', 'battle': 'river', 'x': 5.5, 'y': 31.3, 'art': 'enemy/river-serpent',
+    {'id': 'river', 'battle': 'river', 'x': 5.5, 'y': 31.3, 'figure': 'river-serpent',
      'when': {'flags': ['giong.spoke'], 'notFlags': ['river.calmed']}},
-    {'id': 'scouts', 'battle': 'scouts', 'x': 34.3, 'y': 14.6, 'art': 'enemy/scout',
+    {'id': 'scouts', 'battle': 'scouts', 'x': 34.3, 'y': 14.6, 'figure': 'scout',
      'when': {'flags': ['giong.spoke'], 'notFlags': ['scouts.won']}},
-    {'id': 'patrol', 'battle': 'patrol', 'x': 34.3, 'y': 14.6, 'art': 'enemy/scout',
+    {'id': 'patrol', 'battle': 'patrol', 'x': 34.3, 'y': 14.6, 'figure': 'scout',
      'when': {'flags': ['giong.farewell']}},
 ]
 A.collision = [{'x': 22, 'y': 34, 'w': 2, 'h': 2, 'block': True, 'note': 'the broken part of the bridge'}]
 A.zones = [{'id': 'bridge-gap', 'x': 22, 'y': 34, 'w': 2, 'h': 2, 'accepts': 'plank', 'span': 12}]
-A.decor = [{'art': 'iso/duck', 'x': 5.6, 'y': 20.5}, {'art': 'iso/duck', 'x': 8.4, 'y': 23.5, 'flip': True},
-           {'art': 'iso/duck', 'x': 15.5, 'y': 34.4}, {'art': 'iso/duck', 'x': 16.3, 'y': 34.9, 'flip': True},
-           {'art': 'iso/duck', 'x': 31.6, 'y': 35.3}, {'art': 'iso/duck', 'x': 28.4, 'y': 40.2, 'flip': True},
-           {'art': 'iso/duck', 'x': 36.5, 'y': 6.5}]
+A.decor = [{'figure': 'duck', 'x': 5.6, 'y': 20.5}, {'figure': 'duck', 'x': 8.4, 'y': 23.5, 'flip': True},
+           {'figure': 'duck', 'x': 15.5, 'y': 34.4}, {'figure': 'duck', 'x': 16.3, 'y': 34.9, 'flip': True},
+           {'figure': 'duck', 'x': 31.6, 'y': 35.3}, {'figure': 'duck', 'x': 28.4, 'y': 40.8, 'flip': True},
+           {'figure': 'duck', 'x': 36.5, 'y': 6.5}]
 ore_triggers(A, 'ore1', 25, 2)
 ore_triggers(A, 'ore2', 3, 31)
 A.triggers += [
@@ -156,7 +156,7 @@ B.npcs = [
     {'id': 'giong-sky', 'x': 16.0, 'y': 6.2},
     {'id': 'socson-elder', 'x': 10.6, 'y': 21.6},
 ]
-B.decor = [{'art': 'iso/duck', 'x': 6.5, 'y': 26.2}]
+B.decor = [{'figure': 'duck', 'x': 6.5, 'y': 26.2}]
 B.triggers = [
     {'id': 'field', 'x': 4, 'y': 25, 'w': 6, 'h': 5, 'on': 'tap', 'action': {'textKey': 'map.field'}},
 ]
@@ -186,15 +186,15 @@ C.many('banana', 'banana', [(27, 17), (6, 30)])
 C.many('bamboo', 'bamboo', [(29, 9), (31, 0), (18, 29), (25, 22)])
 C.spawn = {'x': 1.5, 'y': 14.8}
 C.encounters = [
-    {'id': 'soldier1', 'battle': 'soldier1', 'x': 12.5, 'y': 9.5, 'art': 'enemy/soldier',
+    {'id': 'soldier1', 'battle': 'soldier1', 'x': 12.5, 'y': 9.5, 'figure': 'soldier',
      'when': {'flags': ['giong.grown'], 'notFlags': ['soldier1.won']}},
-    {'id': 'soldier2', 'battle': 'soldier2', 'x': 12.5, 'y': 21.5, 'art': 'enemy/soldier',
+    {'id': 'soldier2', 'battle': 'soldier2', 'x': 12.5, 'y': 21.5, 'figure': 'soldier',
      'when': {'flags': ['giong.grown'], 'notFlags': ['soldier2.won']}},
-    {'id': 'boss', 'battle': 'boss', 'x': 24.5, 'y': 8.2, 'art': 'enemy/general',
+    {'id': 'boss', 'battle': 'boss', 'x': 24.5, 'y': 8.2, 'figure': 'general',
      'when': {'flags': ['soldier1.won', 'soldier2.won'], 'notFlags': ['era1.boss.won']}},
 ]
-C.decor = [{'art': 'iso/duck', 'x': 5.5, 'y': 5.5}, {'art': 'iso/duck', 'x': 6.3, 'y': 5.9, 'flip': True},
-           {'art': 'iso/duck', 'x': 17.4, 'y': 20.6}, {'art': 'iso/duck', 'x': 8.3, 'y': 24.4, 'flip': True}]
+C.decor = [{'figure': 'duck', 'x': 5.5, 'y': 5.5}, {'figure': 'duck', 'x': 6.3, 'y': 5.9, 'flip': True},
+           {'figure': 'duck', 'x': 17.4, 'y': 20.6}, {'figure': 'duck', 'x': 8.3, 'y': 24.4, 'flip': True}]
 C.triggers = [
     {'id': 'field', 'x': 2, 'y': 2, 'w': 22, 'h': 11, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-south', 'x': 2, 'y': 17, 'w': 22, 'h': 11, 'on': 'tap', 'action': {'textKey': 'map.field'}},
@@ -235,8 +235,8 @@ D.many('tree', 'tree', [(11, 1), (1, 9), (11, 16), (29, 13), (38, 10), (38, 22),
 D.many('bamboo', 'bamboo', [(28, 1), (39, 1), (10, 9), (28, 20)])
 D.many('banana', 'banana', [(9, 14), (33, 12)])
 D.spawn = {'x': 38.5, 'y': 12.0}
-D.decor = [{'art': 'iso/duck', 'x': 19.5, 'y': 5.5}, {'art': 'iso/duck', 'x': 20.3, 'y': 6.1, 'flip': True},
-           {'art': 'iso/duck', 'x': 22.5, 'y': 18.5}]
+D.decor = [{'figure': 'duck', 'x': 19.5, 'y': 5.5}, {'figure': 'duck', 'x': 20.3, 'y': 6.1, 'flip': True},
+           {'figure': 'duck', 'x': 22.5, 'y': 18.5}]
 D.triggers = [
     {'id': 'ferry-east', 'x': 27, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'move': {'x': 12.4, 'y': 12.0}, 'textKey': 'map.ferry'}},
     {'id': 'ferry-west', 'x': 13, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'move': {'x': 28.6, 'y': 12.0}, 'textKey': 'map.ferry.back'}},

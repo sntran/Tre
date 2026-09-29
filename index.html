@@ -8,7 +8,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src 'self'; worker-src 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'sha256-mPI/Eg6Ea8jS5Iq3TsUhZ14M32IbLoYs/WxyLV6+Wb0='; connect-src 'self'; worker-src 'self'">
   <title>Tre</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="art/logo.svg" type="image/svg+xml">
@@ -17,11 +17,13 @@
   <link rel="preload" href="fonts/Alegreya-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles/palette.css">
   <link rel="stylesheet" href="styles/main.css">
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" } }</script>
   <script type="module" src="src/main.js"></script>
 </head>
 <body>
   <div id="app">
     <canvas id="world"></canvas>
+    <canvas id="voxel" hidden></canvas>
     <div id="ui"></div>
   </div>
 </body>

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { worldFor, MOVE, collides, moveCircle, keysToScreenDir, stickToScreenDir, stepBody, inputToward, createFollower, stepFollower } from '../src/world/movement.js';
+import { worldFor, screenToMap, faceOf, MOVE, collides, moveCircle, keysToScreenDir, stickToScreenDir, stepBody, inputToward, createFollower, stepFollower } from '../src/world/movement.js';
 
 // A small world: a wall of blocked tiles at x = 5, a gap at y = 3, shallow water at x = 2.
 const blocked = new Set(['5,0', '5,1', '5,2', '5,4', '5,5', '5,6']);
@@ -23,28 +23,42 @@ test('collision: a circle touches a blocked tile only when it overlaps it', () =
 });
 
 test('movement: the hero stops at a wall and slides along it', () => {
-  const p = moveCircle({ x: 4, y: 1.5 }, 3, 0, MOVE.radius, world.isBlocked);
-  assert.ok(p.x <= 5 - MOVE.radius + 1e-6 && p.x > 4.6, `stops at the wall: ${p.x}`);
-  const slide = moveCircle({ x: 4.6, y: 1.5 }, 1, 1, MOVE.radius, world.isBlocked);
-  assert.ok(slide.y > 2.4 && slide.x < 5 - MOVE.radius + 1e-6, 'slides down the wall');
-  // Through the gap of one tile.
+  const R = 0.28;
+  const p = moveCircle({ x: 4, y: 1.5 }, 3, 0, R, world.isBlocked);
+  assert.ok(p.x <= 5 - R + 1e-6 && p.x > 4.6, `stops at the wall: ${p.x}`);
+  const slide = moveCircle({ x: 4.6, y: 1.5 }, 1, 1, R, world.isBlocked);
+  assert.ok(slide.y > 2.4 && slide.x < 5 - R + 1e-6, 'slides down the wall');
+  // Through a gap of one cell, also with the radius of the hero.
   const through = moveCircle({ x: 4, y: 3.5 }, 3, 0, MOVE.radius, world.isBlocked);
   assert.ok(through.x > 6.9, 'walks through the gap');
   // A fast move does not jump over a thin wall.
-  const fast = moveCircle({ x: 4.5, y: 0.5 }, 5, 0, MOVE.radius, world.isBlocked);
+  const fast = moveCircle({ x: 4.5, y: 0.5 }, 5, 0, R, world.isBlocked);
   assert.ok(fast.x < 5);
+});
+
+test('the screen direction turns with the camera: up on the screen is away from the camera', () => {
+  const close = (a, b) => Math.abs(a.x - b.x) < 1e-9 && Math.abs(a.y - b.y) < 1e-9;
+  // The camera on the +y side (south): up is north (-y), right is east (+x).
+  assert.ok(close(screenToMap(0, -1, 0), { x: 0, y: -1 }));
+  assert.ok(close(screenToMap(1, 0, 0), { x: 1, y: 0 }));
+  // The camera on the +x side (east): up is west (-x).
+  assert.ok(close(screenToMap(0, -1, Math.PI / 2), { x: -1, y: 0 }));
+  // The camera at the south-east (the start view): up is north-west.
+  const d = screenToMap(0, -1, Math.PI / 4);
+  assert.ok(close(d, { x: -Math.SQRT1_2, y: -Math.SQRT1_2 }));
+  assert.equal(faceOf(0, 1), 0);
 });
 
 test('movement: walk, run, stop, and slower in shallow water', () => {
   const walk = run({ x: 7, y: 7.5 }, { dx: 0, dy: -1 }, 0.1);
   assert.ok(walk.moving);
-  const a = run({ x: 7.5, y: 8.5 }, { dx: 1, dy: 0.5, strength: 1 }, 0.5);
-  const b = run({ x: 7.5, y: 8.5 }, { dx: 1, dy: 0.5, strength: 1, run: true }, 0.5);
-  assert.ok(Math.hypot(b.x - 7.5, b.y - 8.5) > Math.hypot(a.x - 7.5, a.y - 8.5) * 1.4, 'running is faster');
-  // Up on the screen is north on the map.
+  const a = run({ x: 7.5, y: 9.5 }, { dx: 0, dy: -1, strength: 1 }, 0.5);
+  const b = run({ x: 7.5, y: 9.5 }, { dx: 0, dy: -1, strength: 1, run: true }, 0.5);
+  assert.ok(9.5 - b.y > (9.5 - a.y) * 1.4, 'running is faster');
+  // The input is a map direction; the face turns to the direction of the walk.
   const north = run({ x: 7, y: 7 }, { dx: 0, dy: -1 }, 0.3);
-  assert.ok(north.x < 7 && north.y < 7);
-  assert.equal(north.facing ?? 1, 1);
+  assert.ok(north.x === 7 && north.y < 7);
+  assert.ok(Math.abs(Math.abs(north.facing) - Math.PI) < 1e-6, 'looks north');
   // Let go: the hero stops soon.
   run(north, { dx: 0, dy: 0 }, 0.5);
   assert.equal(north.moving, false);
@@ -77,8 +91,8 @@ test('Nghé follows the hero with a lag, keeps a gap, and jumps when far', () =>
     stepFollower(nghe, hero, 1 / 60, world);
   }
   const d = Math.hypot(hero.x - nghe.x, hero.y - nghe.y);
-  assert.ok(d > 0.8 && d < 3, `gap ${d}`);
-  assert.ok(nghe.x < 7.5, 'Nghé moved behind the hero');
+  assert.ok(d > 1.5 && d < 4.5, `gap ${d}`);
+  assert.ok(nghe.y > hero.y, 'Nghé walks behind the hero');
   // The hero stops: Nghé stops too, near the hero, and starts to count idle time.
   for (let i = 0; i < 120; i++) {
     stepBody(hero, { dx: 0, dy: 0 }, 1 / 60, world);

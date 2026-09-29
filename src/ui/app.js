@@ -38,6 +38,8 @@ const MOUNT = scenes;
 export async function startApp(root) {
   const ui = root.querySelector('#ui');
   const canvas = root.querySelector('#world');
+  // The canvas of the voxel world (WebGL). The other canvas is for the battles.
+  const voxel = root.querySelector('#voxel');
   ui.replaceChildren(h('div', { class: 'screen loading' }, [h('div', { class: 'progress-bar' }, [h('span', { style: { width: '5%' } })])]));
   const bar = ui.querySelector('.progress-bar span');
 
@@ -69,6 +71,7 @@ export async function startApp(root) {
     graph,
     ui,
     surface,
+    voxel,
     bus,
     profile: null,
     learner: null,
@@ -92,6 +95,7 @@ export async function startApp(root) {
         if (current) current.unmount();
         current = null;
         ui.replaceChildren();
+        if (voxel) voxel.hidden = true;
         current = await MOUNT[name](ctx, params);
       } finally {
         going = false;

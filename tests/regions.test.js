@@ -50,12 +50,12 @@ test('each map of a region can be reached from each other map, through the exits
 
 test('an exit sends the hero to the next map, and keeps the position along the edge', () => {
   const w = createWorld(world, maps);
-  const north = w.exitAt('phu-dong', 22, 0, { flags: {} });
+  const north = w.exitAt('phu-dong', 45, 0, { flags: {} });
   assert.equal(north.to.map, 'soc-son');
-  assert.deepEqual(w.arrival(north, 22.5, 0.2), { map: 'soc-son', x: 15.5, y: 29.6 });
-  const east = w.exitAt('phu-dong', 39, 14, { flags: {} });
-  assert.deepEqual(w.arrival(east, 39.3, 14.6), { map: 'trau-son', x: 1.3, y: 14.6 });
-  assert.equal(w.exitAt('phu-dong', 10, 10, { flags: {} }), null);
+  assert.deepEqual(w.arrival(north, 45, 0.4), { map: 'soc-son', x: 31, y: 59.2 });
+  const east = w.exitAt('phu-dong', 79, 28, { flags: {} });
+  assert.deepEqual(w.arrival(east, 78.6, 29.2), { map: 'trau-son', x: 2.6, y: 29.2 });
+  assert.equal(w.exitAt('phu-dong', 20, 20, { flags: {} }), null);
   // An exit with a condition opens only when the condition is true.
   const gated = createWorld(world, new Map([['a', { layers: { exits: [{ id: 'x', x: 0, y: 0, w: 1, h: 1, when: { flags: ['open'] }, to: { map: 'b', x: 1, y: 1 } }] } }]]));
   assert.equal(gated.exitAt('a', 0, 0, { flags: {} }), null);

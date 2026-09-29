@@ -1,16 +1,17 @@
 {
- "_about": "Ground tile types of the maps. walk: the hero can walk on the tile. art: the pictures of the tile (the game picks one for each tile). sprite: a tall picture that stands on each tile of this type (hedge-low: a low bamboo hedge on the sides of a map that face the camera, so that it does not cover the play area). slow: the speed factor on the tile. color: the top color of the tile (a palette name); the side faces of a raised tile use its shades.",
+ "_about": "Ground types of the maps. walk: the hero can walk on it. color: the color of the top block (a palette name). under: the color of the block under the top. slow: the speed factor on it. grows: a prop that grows on every second cell of this type (the bamboo of the hedge).",
  "types": {
-  "grass": { "walk": true, "art": ["iso/tile-grass", "iso/tile-grass", "iso/tile-grass-2"], "color": "green-pale" },
-  "flowers": { "walk": true, "art": ["iso/tile-flowers"], "color": "green-pale" },
-  "path": { "walk": true, "art": ["iso/tile-path"], "color": "paper-deep" },
-  "yard": { "walk": true, "art": ["iso/tile-yard"], "color": "paper" },
-  "sand": { "walk": true, "art": ["iso/tile-sand"], "color": "yellow-pale" },
-  "bridge": { "walk": true, "art": ["iso/tile-bridge"], "color": "ochre" },
-  "shallow": { "walk": true, "slow": 0.55, "art": ["iso/tile-shallow"], "color": "indigo-pale" },
-  "water": { "walk": false, "art": ["iso/tile-water"], "color": "indigo-pale" },
-  "field": { "walk": false, "art": ["iso/tile-field"], "color": "green-pale" },
-  "hedge": { "walk": false, "art": ["iso/tile-grass"], "sprite": "iso/bamboo", "color": "green-pale" },
-  "hedge-low": { "walk": false, "art": ["iso/tile-grass"], "sprite": "iso/hedge-low", "color": "green-pale" }
+  "grass": { "walk": true, "color": "green-pale", "under": "green" },
+  "flowers": { "walk": true, "color": "green-pale", "under": "green" },
+  "path": { "walk": true, "color": "paper-deep", "under": "ochre" },
+  "yard": { "walk": true, "color": "paper", "under": "ochre" },
+  "sand": { "walk": true, "color": "yellow-pale", "under": "ochre" },
+  "bridge": { "walk": true, "color": "ochre", "under": "wood" },
+  "shallow": { "walk": true, "slow": 0.55, "color": "yellow-pale", "under": "ochre" },
+  "water": { "walk": false, "color": "yellow-pale", "under": "ochre" },
+  "field": { "walk": false, "color": "wood", "under": "wood" },
+  "dike": { "walk": true, "color": "green-pale", "under": "green" },
+  "hedge": { "walk": false, "color": "green-pale", "under": "green", "grows": "bamboo" },
+  "hedge-low": { "walk": false, "color": "green-pale", "under": "green", "grows": "bush" }
  }
 }

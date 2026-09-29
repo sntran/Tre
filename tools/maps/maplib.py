@@ -1,20 +1,26 @@
 # Shared parts of the map scripts: a map with ground letters, heights, objects, people, and
 # the other layers, and the JSON writer. Map x goes to the screen right-down, map y goes to the
 # screen left-down.
-import json, random, sys, os
+import json, random, sys, os, zlib
 
 LEGEND = {'.': 'grass', ',': 'flowers', '=': 'path', 'y': 'yard', '_': 'sand', 'B': 'bridge',
-          '~': 'water', 's': 'shallow', 'f': 'field', 'h': 'hedge', 'l': 'hedge-low'}
-ABOUT = ('A map on an isometric grid. Map x goes to the screen right-down, map y goes to the screen left-down. '
-         'layers.ground: one letter for each tile (see legend). layers.height: one digit for each tile, the height '
-         'of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2). The hero steps up or down one '
-         'step; a higher step is a cliff. layers.objects stand on a footprint of w x h tiles and block it (solid: a list of '
-         '[dx, dy], or false). layers.collision: rectangles that block (block: true) or open (block: false) tiles. '
-         'layers.zones: placement zones. layers.paths: walk lines in tile units. layers.exits: when the hero walks '
-         'into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the position). '
-         'layers.decor: small living things (ducks) at map points; they do not block. '
+          '~': 'water', 's': 'shallow', 'f': 'field', 'd': 'dike', 'h': 'hedge', 'l': 'hedge-low'}
+# The scripts place things on tiles; the maps have S x S cells for each tile. One cell is one
+# ground block of the voxel world.
+S = 2
+# A dike (bờ) crosses the paddies every DIKE cells.
+DIKE = 5
+ABOUT = ('A map of the voxel world. Map x is east, map y is south (world z). One cell is one ground block. '
+         'layers.ground: one letter for each cell (see legend). layers.height: one digit for each cell, the height '
+         'of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2); the top of a column is the digit + 1 '
+         'blocks. The hero steps up or down one step; a higher step is a cliff. layers.objects: props that the code '
+         'builds from blocks (prop: the kind, seed: the variation), on a footprint of w x h cells that they block '
+         '(solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open '
+         '(block: false) cells. layers.zones: placement zones. layers.paths: walk lines in cells. layers.exits: when the '
+         'hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the '
+         'position). layers.decor: small living things (ducks) at map points; they do not block. figure: the look of a person, an enemy, or an animal in data/figures.json. '
          'geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). '
-         'Positions of people are tile units and can have a fraction.')
+         'The maps are made by tools/maps/era1.py; do not change them by hand.')
 
 
 class M:
@@ -80,7 +86,9 @@ class M:
         for dy in range(h):
             for dx in range(w):
                 assert self.g[y + dy][x + dx] not in ('hl' if water else 'hl~'), (self.id, id, x + dx, y + dy)
-        self.objects.append({'id': id, 'art': f'iso/{art}', 'x': x, 'y': y, 'w': w, 'h': h, **kw})
+        kw.pop('depth', None)
+        seed = zlib.crc32(f'{self.id}:{id}'.encode()) & 0x7fffffff
+        self.objects.append({'id': id, 'prop': art, 'x': x, 'y': y, 'w': w, 'h': h, 'seed': seed, **({'float': True} if water else {}), **kw})
 
     def many(self, prefix, art, points):
         for i, (x, y) in enumerate(points, 1):
@@ -91,29 +99,67 @@ class M:
         return {'x': o['x'], 'y': o['y'], 'w': o['w'], 'h': o['h']}
 
     def data(self, region):
+        k = S
+        sc = lambda v: round(v * k, 3)
+        def rect(r):
+            out = dict(r)
+            for key in ('x', 'y'):
+                if key in out: out[key] = out[key] * k
+            out['w'] = r.get('w', 1) * k
+            out['h'] = r.get('h', 1) * k
+            return out
+        def point(p):
+            return {**p, 'x': sc(p['x']), 'y': sc(p['y'])}
+        ground = [''.join(ch * k for ch in row) for row in self.g for _ in range(k)]
+        heights = [''.join(str(v) * k for v in row) for row in self.heights() for _ in range(k)]
+        # Dikes between the paddies: walkable, at the height of the ground.
+        ground = [list(r) for r in ground]
+        heights = [list(r) for r in heights]
+        for z, row in enumerate(ground):
+            for x, ch in enumerate(row):
+                if ch == 'f' and (x % DIKE == 0 or z % DIKE == 0):
+                    row[x] = 'd'
+                    heights[z][x] = str(int(heights[z][x]) + 1)
+        objects = []
+        for o in self.objects:
+            n = {**o, 'x': o['x'] * k, 'y': o['y'] * k, 'w': o['w'] * k, 'h': o['h'] * k}
+            if isinstance(o.get('solid'), list):
+                n['solid'] = [[dx * k + i, dy * k + j] for dx, dy in o['solid'] for i in range(k) for j in range(k)]
+            objects.append(n)
+        triggers = []
+        for t in self.triggers:
+            n = rect(t)
+            if 'move' in t.get('action', {}):
+                n['action'] = {**t['action'], 'move': point(t['action']['move'])}
+            triggers.append(n)
+        exits = []
+        for e in self.exits:
+            n = rect(e)
+            n['to'] = {key: (sc(v) if key in ('x', 'y', 'dx', 'dy') else v) for key, v in e['to'].items()}
+            exits.append(n)
         return {
             '_about': ABOUT,
             'id': self.id,
             'region': region,
             'nameKey': self.name_key,
             'geo': self.geo,
-            'width': self.w,
-            'height': self.h,
+            'width': self.w * k,
+            'height': self.h * k,
             'legend': LEGEND,
-            'spawn': self.spawn,
+            'spawn': point(self.spawn),
             'layers': {
-                'ground': [''.join(r) for r in self.g],
-                'height': [''.join(str(v) for v in r) for r in self.heights()],
-                'objects': self.objects,
-                'collision': self.collision,
-                'zones': self.zones,
-                'paths': self.paths,
-                'exits': self.exits,
-                'decor': self.decor,
-                'triggers': self.triggers,
+                'ground': [''.join(r) for r in ground],
+                'height': [''.join(r) for r in heights],
+                'objects': objects,
+                'collision': [rect(c) for c in self.collision],
+                'zones': [rect(zz) for zz in self.zones],
+                'paths': {key: [[sc(x), sc(y)] for x, y in line] for key, line in self.paths.items()},
+                'exits': exits,
+                'decor': [point(d) for d in self.decor],
+                'triggers': triggers,
             },
-            'npcs': self.npcs,
-            'encounters': self.encounters,
+            'npcs': [point(n) for n in self.npcs],
+            'encounters': [point(e) for e in self.encounters],
         }
 
 

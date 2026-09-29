@@ -2,7 +2,9 @@
 // It keeps a copy of all game files. When the network works, it gets the newest file
 // first (so that updates arrive at once); without a network, it uses the copy.
 
-const CACHE = 'tre-v5';
+const CACHE = 'tre-v6';
+// three.js, the one file from another site, at a fixed version (see the import map in index.html).
+const THREE = 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js';
 
 // All game files. A test checks that this list has each file that the site ships.
 const FILES = [
@@ -56,39 +58,6 @@ const FILES = [
   'art/icon-180.png',
   'art/icon-192.png',
   'art/icon-512.png',
-  'art/iso/bamboo.svg',
-  'art/iso/banana.svg',
-  'art/iso/banyan.svg',
-  'art/iso/boat.svg',
-  'art/iso/dinh.svg',
-  'art/iso/duck.svg',
-  'art/iso/fence.svg',
-  'art/iso/forge.svg',
-  'art/iso/gate.svg',
-  'art/iso/giong-house.svg',
-  'art/iso/haystack.svg',
-  'art/iso/hedge-low.svg',
-  'art/iso/herbs.svg',
-  'art/iso/house.svg',
-  'art/iso/mountain.svg',
-  'art/iso/ore.svg',
-  'art/iso/pot.svg',
-  'art/iso/rice-stack.svg',
-  'art/iso/rock.svg',
-  'art/iso/school.svg',
-  'art/iso/signpost.svg',
-  'art/iso/tile-bridge.svg',
-  'art/iso/tile-field.svg',
-  'art/iso/tile-flowers.svg',
-  'art/iso/tile-grass-2.svg',
-  'art/iso/tile-grass.svg',
-  'art/iso/tile-path.svg',
-  'art/iso/tile-sand.svg',
-  'art/iso/tile-shallow.svg',
-  'art/iso/tile-water.svg',
-  'art/iso/tile-yard.svg',
-  'art/iso/tree.svg',
-  'art/iso/well.svg',
   'art/item/bamboo.svg',
   'art/item/coin.svg',
   'art/item/horse-part-body.svg',
@@ -160,6 +129,7 @@ const FILES = [
   'data/dialogue/village.json',
   'data/elements.json',
   'data/enemies.json',
+  'data/figures.json',
   'data/friends.json',
   'data/geo/vietnam.json',
   'data/hero.json',
@@ -219,15 +189,13 @@ const FILES = [
   'src/core/timelimit.js',
   'src/core/triggers.js',
   'src/core/voices.js',
-  'src/iso/camera.js',
-  'src/iso/depth.js',
-  'src/iso/grid.js',
   'src/main.js',
   'src/render/assets.js',
   'src/render/battle.js',
+  'src/render/figure3d.js',
   'src/render/palette.js',
   'src/render/surface.js',
-  'src/render/world.js',
+  'src/render/voxel.js',
   'src/ui/app.js',
   'src/ui/audio.js',
   'src/ui/battle.js',
@@ -263,6 +231,7 @@ const FILES = [
   'src/world/props/plants.js',
   'src/world/props/things.js',
   'src/world/regions.js',
+  'src/world/terrain.js',
   'src/world/travel.js',
   'src/world/voxel.js',
   'styles/main.css',
@@ -272,7 +241,7 @@ const FILES = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      .then((cache) => cache.addAll(FILES.map((f) => new Request(f, { cache: 'reload' }))))
+      .then((cache) => cache.addAll([...FILES.map((f) => new Request(f, { cache: 'reload' })), new Request(THREE, { mode: 'cors' })]))
       .then(() => self.skipWaiting()),
   );
 });
@@ -301,6 +270,18 @@ function fromNetwork(request, ms) {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  // three.js never changes at a fixed version: use the copy first.
+  if (request.method === 'GET' && request.url === THREE) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      const copy = await cache.match(THREE);
+      if (copy) return copy;
+      const response = await fetch(request);
+      if (response.ok) cache.put(THREE, response.clone());
+      return response;
+    })());
+    return;
+  }
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);

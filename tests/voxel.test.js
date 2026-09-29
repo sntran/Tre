@@ -163,3 +163,21 @@ test('the animation: legs and arms swing in turn, four legs move on the diagonal
   for (let i = 0; i < 40; i++) pose = animate(q, { speed: 0, dt: 0.1 });
   assert.equal(pose.state, 'graze', 'Nghé eats grass when the hero stops');
 });
+
+test('each person, enemy, friend, and duck of the maps has a look, and each look builds', () => {
+  const looks = load('data/figures.json').figures;
+  const regions = load('data/world/regions.json');
+  const npcs = load('data/npcs.json').npcs;
+  for (const id of Object.keys(npcs)) assert.ok(looks[id], `a look for ${id}`);
+  assert.ok(looks.nghe, 'a look for Nghé');
+  for (const id of regions.regions.flatMap((r) => r.maps)) {
+    const m = load(`data/maps/${id}.json`);
+    for (const e of m.encounters) assert.ok(looks[e.figure], `${id}: a look for ${e.id}`);
+    for (const d of m.layers.decor) assert.ok(looks[d.figure], `${id}: a look for ${d.figure}`);
+  }
+  for (const [id, look] of Object.entries(looks)) {
+    const fig = figureOf(look);
+    assert.ok(fig.parts.length > 2 && fig.height > 0, id);
+    for (const p of fig.parts) if (p.color) colorIndex(p.color);
+  }
+});
