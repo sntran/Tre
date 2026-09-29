@@ -273,6 +273,18 @@ test('the ground of the maps has depth: river steps, sunken paddies, the dinh mo
   assert.ok(village.heightAt(0, 0) >= 4 && village.heightAt(1, 5) === 3);
 });
 
+test('the ducks swim on water or on a paddy', () => {
+  let count = 0;
+  for (const [id, m] of maps) {
+    const map = createTileMap(m, tiles);
+    for (const d of m.layers.decor ?? []) {
+      count += 1;
+      assert.ok(['water', 'shallow', 'field'].includes(map.groundAt(Math.floor(d.x), Math.floor(d.y))), `${id}: duck at ${d.x},${d.y}`);
+    }
+  }
+  assert.ok(count >= 5, 'a few ducks');
+});
+
 test('a tap on the head, body, or feet of a person selects the person', () => {
   // A person with feet at (100, 200): the picture is 52 wide and 78 tall.
   const sprites = [{ id: 'elder', x: 100, y: 200, w: 52, h: 78 }, { id: 'smith', x: 140, y: 230, w: 52, h: 78 }];

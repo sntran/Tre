@@ -11,6 +11,12 @@ import { edgeMarker } from '../core/hit.js';
 // Groups of ground types. A keyline shows where two groups meet.
 const GROUP = { grass: 'g', flowers: 'g', hedge: 'g', path: 'p', yard: 'y', sand: 's', bridge: 'b', water: 'w', shallow: 'w', field: 'f' };
 const CHUNK = 512; // the size of one ground piece, in world units
+// Shadows: one light from the front-left, so a shadow falls to the back-right (map -y).
+// All shadows are one flat, thin ink color; overlaps do not get darker.
+const SHADOW = 'rgba(31, 27, 23, 0.2)';
+const SHADOW_LENGTH = 0.55; // shadow length in tiles for each tile (32 units) of height
+const HOUSES = new Set(['iso/house', 'iso/giong-house', 'iso/dinh', 'iso/school', 'iso/forge']);
+const NO_SHADOW = new Set(['iso/herbs', 'iso/fence', 'iso/mountain']);
 
 export async function createWorldRenderer(mapData, tileMap, tileTypes) {
   const W = mapData.width;
@@ -33,6 +39,24 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
     }
   }
   const paper = await bitmap('paper', 1);
+
+  // Ruts of cart wheels along a road that is two tiles wide: 'x' (along map x), 'y', or null.
+  const isRoad = (x, y) => x >= 0 && y >= 0 && x < W && y < H && tileMap.type(x, y) === 'path';
+  const run = (x, y, dx, dy) => {
+    let n = 1;
+    for (let k = 1; isRoad(x + dx * k, y + dy * k); k++) n++;
+    for (let k = 1; isRoad(x - dx * k, y - dy * k); k++) n++;
+    return n;
+  };
+  const ruts = [];
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (!isRoad(x, y)) { ruts.push(null); continue; }
+      const along = run(x, y, 1, 0);
+      const across = run(x, y, 0, 1);
+      ruts.push(along >= 3 && across === 2 ? 'x' : across >= 3 && along === 2 ? 'y' : null);
+    }
+  }
 
   // The ground pieces. Each piece is made when it first comes into view.
   const scale = Math.min(2, window.devicePixelRatio || 1) >= 2 ? 1.5 : 1;
@@ -109,6 +133,21 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
       g.fillStyle = C[colorOf(type)] ?? C.greenPale;
       g.fill();
     }
+    const rut = ruts[y * W + x];
+    if (rut) {
+      // Two thin wheel tracks along the road, in the dark tone of the road.
+      g.strokeStyle = SHADES.paperDeep[1];
+      g.lineWidth = 1.4;
+      g.beginPath();
+      for (const off of [0.3, 0.7]) {
+        const p = rut === 'x' ? corner(x + 0.04, y + off, z) : corner(x + off, y + 0.04, z);
+        const q = rut === 'x' ? corner(x + 0.96, y + off, z) : corner(x + off, y + 0.96, z);
+        g.moveTo(p.x, p.y);
+        g.lineTo(q.x, q.y);
+      }
+      g.stroke();
+      g.strokeStyle = C.ink;
+    }
     // Keylines: where two ground groups meet on the same height, and on the top edge of each step.
     const a = GROUP[type];
     g.lineWidth = 2;
@@ -127,6 +166,8 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
     g.fillRect(left, top, width, height);
     g.lineCap = 'round';
     tilesIn(left, top, width, height, (x, y) => drawTile(g, x, y));
+    g.fillStyle = SHADOW;
+    g.fill(staticShadows);
     // The dó paper texture over the ground.
     g.save();
     g.globalAlpha = 0.3;
@@ -165,6 +206,44 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
   }
   const star = await bitmap('ui/star', 2);
 
+  // A shape on the ground, from map points, into a path (clockwise on the screen).
+  function mapShape(path, pts, z) {
+    pts.forEach(([mx, my], i) => {
+      const p = toScreen(mx, my, z);
+      if (i) path.lineTo(p.x, p.y);
+      else path.moveTo(p.x, p.y);
+    });
+    path.closePath();
+  }
+  const mapEllipse = (path, cx, cy, ax, ay, z) => mapShape(path, Array.from({ length: 20 }, (_, i) => {
+    const a = (i / 20) * Math.PI * 2;
+    return [cx + Math.cos(a) * ax, cy + Math.sin(a) * ay];
+  }), z);
+  // The shadows of the things that do not move: a house casts a long block, and also darkens
+  // the ground under its floor; a tree or a haystack casts an oval.
+  const staticShadows = new Path2D();
+  for (const o of mapData.layers.objects) {
+    if (NO_SHADOW.has(o.art)) continue;
+    const st = statics.find((x) => x.id === o.id);
+    const tall = Math.max(0, st.bmp.unitH - (o.w + o.h) * 16);
+    const len = (tall / 32) * SHADOW_LENGTH;
+    const z = zOf(o.x, o.y) * STEP;
+    if (HOUSES.has(o.art)) {
+      mapShape(staticShadows, [[o.x + 0.05, o.y - len * 0.7], [o.x + o.w - 0.05, o.y - len * 0.7], [o.x + o.w - 0.05, o.y + o.h - 0.05], [o.x + 0.05, o.y + o.h - 0.05]], z);
+    } else {
+      mapEllipse(staticShadows, o.x + o.w / 2, o.y + o.h / 2 - len / 2, o.w * 0.42, len / 2 + o.h * 0.35, z);
+    }
+  }
+  for (const st of statics) {
+    if (st.id) continue;
+    const len = ((st.bmp.unitH - 32) / 32) * SHADOW_LENGTH;
+    mapEllipse(staticShadows, st.x0 + 0.5, st.y0 + 0.5 - len / 2, 0.42, len / 2 + 0.35, zOf(st.x0, st.y0) * STEP);
+  }
+
+  // Small things that live on the map (ducks): they bob on the water.
+  const decor = [];
+  for (const d of mapData.layers.decor ?? []) decor.push({ ...d, bmp: await bitmap(d.art, 2) });
+
   const overlaps = (r, v) => r.left < v.left + v.width && r.left + r.width > v.left && r.top < v.top + v.height && r.top + r.height > v.top;
 
   // A person: feet at the map point (x, y). The picture stands up from the feet.
@@ -174,10 +253,6 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
     const h = s.bmp.unitH * s.scale;
     const bob = s.walking ? Math.abs(Math.sin(t * 12)) * 3 : 0;
     const sink = s.sink ?? 0;
-    ctx.fillStyle = 'rgba(31, 27, 23, 0.22)';
-    ctx.beginPath();
-    ctx.ellipse(p.x, p.y, w * 0.3, w * 0.15, 0, 0, Math.PI * 2);
-    ctx.fill();
     ctx.save();
     if (sink) {
       // In the water: hide the feet.
@@ -235,6 +310,31 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
       if (!overlaps(s.rect, v)) continue;
       items.push({ ...s, draw: () => ctx.drawImage(s.bmp, s.rect.left, s.rect.top, s.rect.width, s.rect.height) });
     }
+    // The shadows of people: one path, one fill.
+    const shadows = new Path2D();
+    for (const s of scene.people) {
+      if (s.sink) continue;
+      const tall = (s.bmp.unitH * s.scale) / 32;
+      mapEllipse(shadows, s.x, s.y - tall * SHADOW_LENGTH * 0.4, 0.2 * (s.bmp.unitW * s.scale) / 50, tall * SHADOW_LENGTH * 0.45 + 0.12, s.z ?? 0);
+    }
+    ctx.fillStyle = SHADOW;
+    ctx.fill(shadows);
+    decor.forEach((d, i) => {
+      const p = toScreen(d.x, d.y, zOf(Math.floor(d.x), Math.floor(d.y)) * STEP);
+      const w = d.bmp.unitW * (d.scale ?? 0.9);
+      const h = d.bmp.unitH * (d.scale ?? 0.9);
+      const rect = { left: p.x - w / 2, top: p.y - h, width: w, height: h };
+      if (!overlaps(rect, v)) return;
+      const bob = Math.sin(t * 2 + i * 1.7) * 1.2;
+      items.push({ id: null, kind: 'decor', rect, x0: d.x - 0.15, y0: d.y - 0.15, x1: d.x + 0.15, y1: d.y + 0.15, draw: () => {
+        ctx.save();
+        ctx.translate(p.x, p.y + bob);
+        if (d.flip) ctx.scale(-1, 1);
+        // The point (20, 24) of the picture is on the water.
+        ctx.drawImage(d.bmp, -w / 2, -h * (24 / 28), w, h);
+        ctx.restore();
+      } });
+    });
     for (const s of scene.people) {
       const p = toScreen(s.x, s.y, s.z ?? 0);
       const w = s.bmp.unitW * s.scale;

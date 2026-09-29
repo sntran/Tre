@@ -1,5 +1,5 @@
 {
- "_about": "A map on an isometric grid. Map x goes to the screen right-down, map y goes to the screen left-down. layers.ground: one letter for each tile (see legend). layers.height: one digit for each tile, the height of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2). The hero steps up or down one step; a higher step is a cliff. layers.objects stand on a footprint of w x h tiles and block it (solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open (block: false) tiles. layers.zones: placement zones. layers.paths: walk lines in tile units. layers.exits: when the hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the position). Positions of people are tile units and can have a fraction.",
+ "_about": "A map on an isometric grid. Map x goes to the screen right-down, map y goes to the screen left-down. layers.ground: one letter for each tile (see legend). layers.height: one digit for each tile, the height of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2). The hero steps up or down one step; a higher step is a cliff. layers.objects stand on a footprint of w x h tiles and block it (solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open (block: false) tiles. layers.zones: placement zones. layers.paths: walk lines in tile units. layers.exits: when the hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the position). layers.decor: small living things (ducks) at map points; they do not block. Positions of people are tile units and can have a fraction.",
  "id": "fields-river",
  "region": "giong",
  "nameKey": "place.fieldsriver",
@@ -110,6 +110,13 @@
   "exits": [
    {"id": "north", "kind": "edge", "x": 0, "y": 0, "w": 36, "h": 1, "to": {"map": "phu-dong", "dx": 0, "y": 29.2}},
    {"id": "south-road", "kind": "road", "x": 22, "y": 23, "w": 2, "h": 1, "to": {"map": "road-vanmieu", "dx": -13, "y": 1.3}}
+  ],
+  "decor": [
+   {"art": "iso/duck", "x": 15.5, "y": 5.4},
+   {"art": "iso/duck", "x": 16.3, "y": 5.9, "flip": true},
+   {"art": "iso/duck", "x": 30.6, "y": 6.3},
+   {"art": "iso/duck", "x": 28.4, "y": 13.4, "flip": true},
+   {"art": "iso/duck", "x": 4.5, "y": 19.6}
   ],
   "triggers": [
    {"id": "ore2", "x": 3, "y": 3, "on": "tap", "when": {"flags": ["giong.spoke"], "notFlags": ["horse.ore2"]}, "action": {"pickup": {"iron": 2}, "set": "horse.ore2", "textKey": "map.ore.found"}},
