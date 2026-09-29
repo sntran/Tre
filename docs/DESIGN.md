@@ -4,7 +4,7 @@ Sep 28, 2026 · @Son Tran-Nguyen
 
 ## Summary and goal
 
-Tre is a web RPG for grades 1 to 5. An ordinary child grows into a hero of Vietnamese history and legend with the mind and the body.
+Tre is a web RPG from Pre-K to grade 12. The first release covers grades 1 to 5. An ordinary child grows into a hero of Vietnamese history and legend with the mind and the body.
 
 - **Tagline:** Every hero starts small.
 - **Name:** *tre* means bamboo. Bamboo is the most ordinary plant in a Vietnamese village. It grows fast, bends in a storm, and does not break. Thánh Gióng fought with bamboo when his iron staff broke.
@@ -15,7 +15,7 @@ Tre is a web RPG for grades 1 to 5. An ordinary child grows into a hero of Vietn
 
 ## Players and audience
 
-The game is for all students from grade 1 to grade 5 (about age 6 to 11). The first player is a 7-year-old boy in grade 1 or 2.
+The game is for all children from Pre-K to grade 12 (about age 3 to 18). Pre-K and K play the Măng non stage. The first release covers grades 1 to 5 (about age 6 to 11). The first player is a 7-year-old boy in grade 1 or 2.
 
 - A player can start at grade 1 and move up. A player can also take a Văn Miếu placement exam after the prologue to go directly to the correct level.
 - Several children can have profiles on one device.
@@ -23,19 +23,29 @@ The game is for all students from grade 1 to grade 5 (about age 6 to 11). The fi
 - Players can choose Vietnamese or English for the full game.
 - The player does not need to know Vietnamese history before they play.
 
-## World and eras
+## World and story chapters
 
-The player travels through five eras of Vietnamese legend and history. Each era is a grade band, a region of the map, and a set of skills.
+The player travels through 13 story chapters of Vietnamese legend and history, in history order. The story and the grade are separate: the problems in every chapter follow the player's own skill levels. A 2nd grader and a 10th grader can play the same chapter, and each gets problems at their own level.
 
-| Era | Grades | Story | Math | Science and other subjects |
+| # | Chapter | Time | Ordinary person who became a hero | Science and math idea |
 | --- | --- | --- | --- | --- |
-| 1. Legends | 1–2 | Hùng Kings, Sơn Tinh and Thủy Tinh, Thánh Gióng, Lạc Long Quân and Âu Cơ | Count to 120, add and subtract to 20, shapes, compare | Water and weather, plants, animals, metals and fire |
-| 2. Hai Bà Trưng | 2–3 | The Trưng sisters and their elephants | Place value, add and subtract to 1000, multiply as groups, measure length | Animals and habitats, forces (push and pull) |
-| 3. Ngô Quyền at Bạch Đằng | 3–4 | Wooden stakes in the river and the tide | Multiply and divide, fractions, time | Tides, floating and sinking, force and motion |
-| 4. Lê Lợi and Hồ Gươm | 4–5 | The farmer who became king, and the sword and the golden turtle | Multi-digit math, area and perimeter, angles | Simple machines, metals, light and sound |
-| 5. Quang Trung | 5 and more | The fast march in the Tết season | Decimals, speed, distance, and time, coordinates | Energy, maps and geography, Earth and space |
+| 1 | Lạc Long Quân and Âu Cơ | Legend | The hundred children | Counting, groups, sea and mountains |
+| 2 | Hùng Kings | Legend | Lang Liêu (bánh chưng), Mai An Tiêm (the watermelon island), Chử Đồng Tử (a poor fisher) | Plants, food, survival on an island |
+| 3 | Thánh Gióng | Legend | A boy who did not speak | Iron and fire |
+| 4 | An Dương Vương and Cổ Loa | 3rd century BC, partly legend | Cao Lỗ, maker of the crossbow | The spiral citadel, crossbow force |
+| 5 | Hai Bà Trưng and Bà Triệu | 40–43 and 248 AD | Two sisters, and a young woman from a village | Elephants, weight, measuring |
+| 6 | Ngô Quyền and Đinh Bộ Lĩnh | 938 and 968 | Đinh Bộ Lĩnh played war games with reed flags as a buffalo boy | Tides, floating and sinking |
+| 7 | Lý dynasty | 1010–1077 | Lý Công Uẩn moves the capital. Văn Miếu opens. Lý Thường Kiệt | City planning, maps, the first exams |
+| 8 | Trần dynasty | 1258–1288 | Trần Quốc Toản, a teenager. Yết Kiêu, a fisher and diver | Strategy, supply, river currents |
+| 9 | Hồ reforms | about 1396–1407 | Hồ Nguyên Trừng, the cannon maker | Paper money, stone citadel, early chemistry |
+| 10 | Lê Lợi and Nguyễn Trãi | 1418–1427 | Lê Lợi, a farmer | Supply, persuasion, writing |
+| 11 | Lê Thánh Tông | 1460–1497 | Lương Thế Vinh, a mathematician from a village | Mathematics, maps, law |
+| 12 | Tây Sơn | 1771–1789 | Three brothers from a village. Bùi Thị Xuân, a woman general | Speed, distance, and time |
+| 13 | Scholars and healers | 18th–19th century | Lê Quý Đôn (encyclopedia), Hải Thượng Lãn Ông (medicine) | Medicine, biology, knowledge of the world |
 
-The grade bands follow the US Common Core for math and NGSS for science. Each era also teaches the history and geography of its place and time.
+**Modern times:** the story chapters stop at the 19th century. The colonial period and the wars of the 20th century are painful and divided memories for many families. Modern Vietnam comes into the game through service projects instead: bridges for children in the mountains, homes after a typhoon, and clean water for far villages (see Hero's path and guilds).
+
+The skill map follows the US Common Core for math and NGSS for science. Each chapter also teaches the history and geography of its place and time. All dates and history notes need a check by a person who knows Vietnamese history.
 
 ## Core loop and session
 
@@ -45,27 +55,57 @@ In each era, the player goes around the same loop many times. When the player is
 
 A lost battle also goes back to the village, with a small loss of items. One play session is one quest or one battle. The parent sets the time limit.
 
+## Motivation and orientation
+
+These four parts give the child a reason to look forward and a way to find their place. They add no questions.
+
+- **The world map:** one map of all 13 chapters, drawn as an old Vietnamese map on dó paper, with a red seal on each chapter. Locked chapters are visible. The child sees Phù Đổng, then the mist over Cổ Loa and the river of Bạch Đằng, and wants to get there. A minimap in the corner shows the near places.
+- **A thing to build near the start:** the bridge in Phù Đổng starts broken. Each of the Five Trials gives one part of it (planks from the woodcutter, rope from the fisher, and so on). The child sees the bridge grow, and crosses it to reach Văn Miếu. A concrete goal beats "meet the elder."
+- **Growth on the hero:** a bamboo in the HUD grows one section for each hero level. Experience comes from battles, quests, and projects, not from questions.
+- **The notebook (Sổ tay):** a collection of prints that fills in as the child plays. Each skill, legend, creature, and place gets a small Đông Hồ print when the child meets it. Skills that are mastered get a red seal. The child sees the gaps and wants to fill them. Parents can read the same notebook to see progress.
+
 ## Battles
 
-Battles are turn-based, so the player has time to think. Puzzles and travel have action parts. Each attack uses a skill.
+The math is the input of the battle, never a question. The child does an action, and the action needs number sense to do well. This follows Ring Fit Adventure, where the exercise is the way you move, and the game never says "now exercise."
 
-**Battle types**
+**The five rules**
 
-- **Number shields:** an enemy has a shield with a number, for example 12. The player has attack cards, for example 5, 4, 7, and 3. The player must make exactly 12 to break the shield. Higher levels use subtraction, multiplication, fractions ("cut the armor in half"), and decimals.
-- **Element magic:** fire melts ice, water puts out fire, and water carries lightning to all wet enemies. Fire and water make a steam cloud that hides the party. This teaches states of matter and cause and effect.
-- **Physics shots:** the player sets the angle and the power of a stone, an arrow, or a catapult. The shot follows real gravity.
-- **Machines:** levers lift gates, pulleys lift heavy things, and ramps move rocks. The player builds them from parts.
-- **Nature:** the food chain decides which creature friend helps. Magnets pull metal enemies. Plants grow with light and water.
+1. **No question mark on the battle screen.** A screen with a question and an answer field is a quiz. Questions live only with the teacher (practice) and at Văn Miếu (exams), where a test is part of the story.
+2. **Failure is physical.** A stone falls short, a stick breaks, the ice does not melt. The world shows what happened, and the child tries again. There is no red X.
+3. **The game watches, the child does not know.** Each action is a skill event for the mastery model. A shot that lands at 13 when the target is at 13 is a correct "number line to 20." The model is the same; only the input changes.
+4. **The hint is a helper, not a text.** Nghé points at a distance marker, or Gióng says "a little farther." Worked examples stay in practice with the teacher.
+5. **Difficulty rises in the world.** Enemies stand farther away, in bigger groups, behind walls that need a higher arc. The child feels a harder fight, not a harder problem.
 
-**View:** travel and villages use a 2D top-down view. Battles and physics puzzles use a 2D side view, so that gravity goes down the screen.
+**Battle actions**
 
-**Mistakes:** a wrong answer costs health. After a mistake, the game gives a short hint, so the player learns and does not only guess.
+| Action | What the child does | The math inside | Grows into |
+| --- | --- | --- | --- |
+| Slingshot and bow (main attack) | Pulls back and shoots. The shot follows gravity. Distance markers 5, 10, 15, 20 stand along the ground. The enemy stands at 13 | Number line, estimate and correct, add and subtract | Angles, speed, vectors, trigonometry, projectile equations |
+| Ranks of soldiers | Throws stones at a row of 5, sees at a glance that 2 remain. Later rows of 4 × 3 | Counting, subtraction, then multiplication as rows | Area, arrays, factors |
+| Element flow | Drags fire from a torch onto ice. The ice melts, and the water runs downhill into the river. Drags lightning into the water, and every soldier in the wet zone jumps | Cause and effect, states of matter | Energy, chemistry, circuits |
+| Cutting bamboo | Slashes a stem at a mark. A stem of 12 cut into 3 equal sticks gives 3 staffs. A wrong cut gives a short stick that breaks | Equal parts, fractions | Ratios, measurement |
+| Feeding Gióng | Carries rice bowls from the field. Gióng grows one head each 10 bowls. Chooses 3 bowls fast or 5 bowls slow | Counting in groups, place value | Rates, time and distance |
+| Sharing loot | Drags 12 coins to the hero, Nghé, and Gióng. A fair share makes them happy, and Nghé sulks at an unfair share | Division, remainders | Ratios, percent |
+| Guard | Raises a bamboo shield before the enemy strikes. The enemy shows its move with a count over its head: 3, 2, 1 | Compare, timing | Probability, reading patterns |
+| Call Nghé | Once per battle, Nghé charges | None. It is a rescue and a reward | Nghé becomes a mount |
+
+**The enemy acts.** Enemies attack on a visible count, change state (a scout lights a torch, a serpent dives and cannot be hit until it surfaces), react to the child's move (after fire, a soldier raises a wet shield), and have a tell before a big blow.
+
+**The child feels the hit.** Damage numbers pop up. A shield cracks with a sound. A wrong move bounces off with a dull sound. Nghé lowers her horns when the hero is hurt.
+
+**Battles are short and have a story.** A small enemy takes 3 to 4 turns. Bosses have phases: the general sends soldiers, then fights himself, then the iron staff breaks and Gióng pulls bamboo for a special strike. The world changes after a win: the scouts drop a map that shows the ore, the river opens a new path.
+
+**View:** travel and villages use a 2D top-down view. Battles use a 2D side view, so that gravity goes down the screen.
+
+**Mistakes:** a failed action costs health. The helper gives a physical hint after the first failure.
 
 **Defeated enemies:** soldiers retreat or surrender. Creatures become calm, and some become friends. The game shows no blood and no deaths.
 
 **Lost battle:** the player goes back to the village and loses some small items, for example coins or materials. The player never loses a creature friend, a crafted machine, or a title. Grade 1 battles have no item loss. A parent can make losses harder in the settings.
 
-**Two players:** the players take turns in the same battle. Each player gets problems at their own level.
+**Two players:** the players take turns in the same battle. Each player gets actions at their own level.
+
+**First prototype:** the slingshot battle alone, on one screen, with no story: a row of scouts at different distances, distance markers, gravity, a combo when one stone hits two, health, damage numbers, sound, and Nghé as the hint. Play it with the first player for ten minutes. If the child asks to play again, build the other actions from the same pattern.
 
 ## Learning system
 
@@ -92,7 +132,7 @@ The player takes exams at Văn Miếu, the Temple of Literature, as scholars did
 - **Subject exam:** moves one subject up. A new player can take it at the start to find the correct level. It is adaptive: it starts easy and gets harder until the player makes a few mistakes. It has 10 to 15 questions.
 - **Era exam:** mixes all subjects of an era. A pass gives a scholar title and puts the player's name on a stone stele on a turtle in the game.
 
-**Titles**, based on the old exam system (thi Hương, thi Hội, thi Đình): Tú tài, Cử nhân, Tiến sĩ, Bảng nhãn, Trạng nguyên. The final title, Trạng nguyên, needs a pass in all five eras.
+**Titles**, based on the old exam system (thi Hương, thi Hội, thi Đình): Tú tài, Cử nhân, Tiến sĩ, Bảng nhãn, Trạng nguyên. The final title, Trạng nguyên, needs a pass in all story chapters.
 
 **No shame:** a player who does not pass keeps their level. The game shows the skills to practice, and the player can try again later.
 
@@ -110,6 +150,43 @@ The player takes exams at Văn Miếu, the Temple of Literature, as scholars did
 **Creature friends:** calm creatures can become friends, for example a golden turtle, a Lạc bird, a water buffalo, or a small dragon. Each friend has an element and a special help, for example a hint, a shield, or a stronger element attack. The player keeps them in a collection and chooses up to 3 for each battle.
 
 **Crafting:** the player collects materials in travel and battles: bamboo, wood, stone, iron, rope. The player builds tools and machines from parts: a raft, a lever, a pulley, a catapult, a water wheel. A machine only works if the player builds it correctly, for example the lever needs the correct place for the fulcrum.
+
+## Măng non stage (Pre-K and K)
+
+Children from 3 to 5 years old play Tre as *Măng non*, "young shoot." The saying *tre già măng mọc*, "old bamboo, new shoots grow," is about the young generation growing up behind the old one. The child stays in one small, safe village and learns through village life. Coi Nè stays a separate game.
+
+**Rules for this stage:**
+
+- No battles, no health, no timers, and no reading. A voice speaks all instructions.
+- Very large touch targets. A wrong answer gets a kind "Thử lại nhé."
+- The village has 6 to 8 places. The child taps a place or a person, and the child walks there.
+
+**Activities in the village:**
+
+| Place or person | Activity | Skill |
+| --- | --- | --- |
+| The painter | Color folk prints, as in the real Đông Hồ printing village | Colors, fine motor control |
+| The dock and the market stall | Count boats, fish, and fruit | Counting to 10, then to 20 |
+| The weaver | Weave a mat or a basket: red, blue, red, blue | Patterns |
+| The builder | Make a house, a boat, or a lantern from shapes | Shapes |
+| The market | Sort rice, beans, and fruit | Color, shape, and size |
+| The old scholar at Tết (*ông đồ*) | Find and trace letters | First letters and sounds |
+| The Trung Thu festival | Turn over lanterns to find pairs | Memory |
+| The banyan tree | Ô ăn quan, Tập tầm vông, Oẳn tù tì, Chơi chuyền with village children | Counting, turns, rules |
+| The fields | Fly a kite, feed the buffalo, plant rice | Wind, animals, plants |
+
+**Nghé, the buffalo calf:** Nghé is the child's friend in the village, and it grows up with the child through all stages.
+
+| Stage | Nghé | What Nghé does |
+| --- | --- | --- |
+| Măng non | A small, round calf | Follows the child, points to places, and celebrates each success |
+| Village child (grades 1–5) | A young buffalo, the first creature friend | Carries items, crosses rivers, and gives hints |
+| Team leader (grades 6–8) | A strong buffalo | A vehicle in battle: carries the hero, charges through gates and shields, and pulls machines |
+| Builder (grades 9–12) | A great work buffalo | Pulls logs and stones, and turns mills. This teaches force, work, and energy |
+
+**Growing up:** the Măng non skills (count to 10, shapes, colors, patterns, first letters) are the first skills in the Tre skill graph. When the child is ready, the parent or the game opens the Five Trials. The bamboo shoot on the title screen grows its first section, and the same village becomes the start of the hero's story.
+
+**Siblings together:** a younger child in Măng non and an older sibling on quests share one village. For example, the younger child counts the boats that bring bamboo for the older child's bridge.
 
 ## Prologue and callings
 
@@ -143,6 +220,61 @@ All players start with the same village prologue, the Five Trials. After their f
 
 - All earlier eras stay open. A player can go back for the story, the legends, and the creature friends. The problems match the player's own level.
 - The player gets a starter kit with the basic items and machines of the earlier eras, so crafting in the later era still works.
+
+## Hero's path and guilds
+
+The hero grows from a village child who fights into a builder who helps a whole region. Vietnamese has a saying for this: *lá lành đùm lá rách*, "the whole leaf wraps the torn leaf."
+
+| Stage | Grades | Role | Main play |
+| --- | --- | --- | --- |
+| Village child | 1–5 | Hero | Battles, quests, and small machines |
+| Team leader | 6–8 | Leads a small group | Quests that mix battle and building, for example defend the village and then repair the gate |
+| Builder and planner | 9–12 | Member of a guild | Large projects: dikes, bridges, water systems, clinics, and schools |
+
+Battles stay open at all stages. An older player can fight, build, or do both.
+
+**Guilds:** the five callings grow into guilds (*phường*) at higher grades.
+
+| Calling | Guild | Projects |
+| --- | --- | --- |
+| Scholar | The Academy (Quốc Tử Giám) | Schools, teaching younger villagers, maps and records |
+| Smith | Builders' guild | Bridges, water wheels, tools, and buildings |
+| Fisher | River office (Hà đê) | Dikes, canals, flood defense, and harbors. The Trần dynasty made a real office for dikes in 1248 |
+| Healer | House of healing | Clinics, clean water, and herb gardens |
+| Woodcutter | Mapmakers and foresters | Mountain roads, forest care, and surveys |
+
+**Projects and what they teach:**
+
+| Project | Math | Science |
+| --- | --- | --- |
+| Rebuild after a flood | Rain and water data, graphs, averages, probability | Water cycle, weather, soil |
+| Dike for a village | Volume of earth, slopes, budget with equations | Water pressure, erosion |
+| Bridge for mountain children | Lengths, angles, trigonometry, vectors | Forces, loads, materials |
+| Water wheel and canal | Rates, ratios, functions | Energy, flow |
+| Village clinic | Ratios, percentages, statistics | Biology, clean water, chemistry of filters |
+| Market and trade | Percent, interest, supply and demand | — |
+| School | Planning and schedules | The player writes problems for younger villagers. Teaching helps them learn |
+
+**How a project plays:**
+
+1. **Survey:** measure the river, count the families, and collect data.
+2. **Design:** choose materials and sizes, and make the numbers work within a budget.
+3. **Build:** the team works over several days. The player manages people and time.
+4. **Test:** the storm or the flood comes, and the simulation shows the result.
+5. **Improve:** if the design fails, people move to high ground and are safe. The player finds the reason and builds again.
+
+**Mechanics grow with the player:**
+
+| Mechanic | Elementary | Middle school | High school |
+| --- | --- | --- | --- |
+| Number shields | Add, subtract, multiply | Fractions, negative numbers, ratios | Solve for x, systems of equations, functions |
+| Element magic | Fire melts ice | States of matter, energy | Reactions and balanced equations |
+| Physics shots | Angle and power | Speed, force, energy | Vectors, trigonometry, projectile equations |
+| Machines | Levers, ramps | Pulleys, gears, circuits | Programming machines with logic |
+| Creature friends | Food chains | Habitats, cells | Genetics: traits pass on in simple patterns |
+| Trade in markets | Coins and counting | Percent, profit | Supply, demand, interest |
+
+**Siblings together:** in two-player mode, an older and a younger player share one world. The older player builds the bridge, and the younger player's hero crosses it to reach the next quest. Each player gets problems at their own level.
 
 ## Art, sound, and language
 
@@ -291,3 +423,7 @@ The slice is ready when the first player plays it three times in one week withou
 - [ ] Who checks the history notes and the Vietnamese text?
 - [ ] Do we record voice for the story parts, or use the browser voice only?
 - [ ] Do two players share a party, or does each player have a hero in the battle?
+
+* [ ] Is the Măng non village the same as Phù Đổng, or a separate home village?
+* [ ] Which chapters and projects go into each release after grades 1 to 5?
+* [ ] How does the art style change for older players, if at all?
