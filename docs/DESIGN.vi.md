@@ -102,6 +102,7 @@ Tre là một thế giới isometric sống động duy nhất. Trẻ đi lại,
 - **Bí mật.** Một lối đi sau bụi tre, một hang động, một sinh vật chỉ xuất hiện ban đêm. Tò mò là lý do trẻ em chơi.
 - **Thời gian.** Ngày và đêm, mưa, các mùa, và Tết. Sông dâng khi mưa, nên con đê là quan trọng. Một số sinh vật ra ngoài vào ban đêm. Lúc hoàng hôn làng đi ngủ: dân làng đi về nhà, leo thang và vào trong; gà về chuồng và nằm xuống; vịt nằm yên trên bờ; Nghé nằm xuống bên cạnh nhân vật. Lúc bình minh tất cả lại ra ngoài. Trẻ thấy một ngôi làng có đời sống riêng, và học được rằng ban đêm là để nghỉ ngơi.
 - **Một nơi của riêng mình.** Một mảnh đất để trồng trọt, một ngôi nhà để trang trí, và cuốn sổ tay tranh in.
+- **Thế giới thở.** Khi trẻ không làm gì, thế giới vẫn chuyển động: sông chảy, lá cây lay trong làn gió lướt qua ruộng lúa thành một làn sóng, khói bếp bay lên vào giờ cơm, chim bay ngang lúc bình minh và hoàng hôn, quần áo phơi và lá cờ ở đình đung đưa. Những niềm vui nhỏ chờ đứa trẻ biết nhìn: con trâu ngáy trong bóng râm, đàn vịt con đi theo, con ếch nhảy, cầu vồng sau mưa, sao băng, con bói cá hai mươi ngày mới gặp một lần, Tết mỗi năm một lần. Không có gì ở đây dạy dỗ, đếm điểm hay thưởng. Nó ở đó vì đứa trẻ đã nhìn.
 
 **Hành động và toán bên trong**
 

@@ -102,6 +102,7 @@ Tre is one living isometric world. The child walks, builds, and defends in the s
 - **Secrets.** A path behind the bamboo, a cave, a creature that only comes at night. Curiosity is the reason children play.
 - **Time.** Day and night, rain, seasons, and Tết. The river rises in the rain, so the dyke matters. Some creatures come out at night. At dusk the village goes to sleep: villagers walk home, climb their ladders, and go in; chickens go to their coop and sit; ducks settle on the bank; Nghé lies down beside the hero. At dawn they all come out again. The child sees a village with its own life, and learns that night is for rest.
 - **A place of their own.** A plot to farm, a house to decorate, and the notebook of prints.
+- **The world breathes.** When the child does nothing, the world still moves: the river flows, leaves sway in a wind that crosses the paddies as a wave, smoke rises from a kitchen at meal times, birds cross at dawn and dusk, laundry and the đình flag move. Small joys wait for the child who looks: a buffalo that snores in the shade, ducklings that follow, a frog that jumps, a rainbow after the rain, a shooting star, a kingfisher one day in twenty, Tết once a year. Nothing here teaches, counts, or rewards. It is there because the child looked.
 
 **Actions and the math inside them**
 
