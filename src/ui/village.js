@@ -116,7 +116,11 @@ export async function mountVillage(ctx, params = {}) {
   ]);
   heroFace.addEventListener('click', () => walkToPerson('grandma'));
   const menuBtn = button(null, () => ctx.openMenu(), { cls: 'icon-btn', icon: 'ui/menu', aria: t('ui.menu') });
-  hud.append(heroFace, goalBtn, counts, menuBtn);
+  // The country map. The world waits while it is open.
+  const mapBtn = button(null, () => {
+    if (!busy && !leaving) handleCommands([{ open: 'worldmap' }]);
+  }, { cls: 'icon-btn map-btn', icon: 'ui/map', aria: t('ui.worldmap') });
+  hud.append(heroFace, goalBtn, counts, mapBtn, menuBtn);
   // A dark layer for the change of map, and the name of the new map.
   const fade = h('div', { class: params.arrive ? 'map-fade on' : 'map-fade' });
   const banner = params.arrive ? h('div', { class: 'map-name', text: t(mapData.nameKey) }) : null;
@@ -617,6 +621,7 @@ export async function mountVillage(ctx, params = {}) {
   const offLang = ctx.bus.on('lang', () => {
     heroFace.setAttribute('aria-label', t('ui.home'));
     menuBtn.setAttribute('aria-label', t('ui.menu'));
+    mapBtn.setAttribute('aria-label', t('ui.worldmap'));
     updateHud();
   });
 

@@ -700,6 +700,48 @@ p { line-height: 1.45; margin: 0.4em 0; }
   100% { opacity: 0; }
 }
 
+/* The country map */
+
+.panel.worldmap { width: min(1000px, 100%); height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+.world-time { font-weight: 700; white-space: nowrap; }
+.worldmap-body { flex: 1; min-height: 0; display: flex; gap: var(--gap); align-items: flex-start; overflow-y: auto; }
+/* The map is never shorter than 560 px: on a short screen it scrolls. The seals grow with the map. */
+.country { position: relative; height: max(100%, 560px); aspect-ratio: 600 / 1000; flex: none; margin: 0 auto; container-type: size; }
+.country svg { display: block; width: 100%; height: 100%; }
+.country path[id^="region-"] { cursor: pointer; }
+.country path[id^="region-"].selected { stroke: var(--vermilion); stroke-width: 5; }
+.region-info { position: sticky; top: 0; align-self: center; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: var(--gap); }
+.region-info h3 { margin: 0; font-family: var(--display); font-size: var(--text-big); }
+.region-info p { margin: 0; }
+.region-chapter { font-weight: 700; color: var(--vermilion); }
+.seal {
+  position: absolute;
+  width: max(32px, 8cqh);
+  height: max(32px, 8cqh);
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: var(--line);
+  border-radius: 50%;
+  background: var(--diep);
+  box-shadow: 0 2px 0 var(--ink);
+  font-family: var(--display);
+  font-weight: 700;
+  cursor: pointer;
+}
+.seal.locked { border-radius: 4px; background: var(--vermilion); box-shadow: inset 0 0 0 3px var(--vermilion), inset 0 0 0 4px var(--diep), 0 2px 0 var(--ink); }
+.seal.locked .seal-icon { width: 60%; height: 60%; }
+.seal.here .mini-portrait { width: 84%; height: 84%; border-radius: 50%; border: none; }
+.seal-num { font-size: max(14px, 3.4cqh); }
+.seal.selected { outline: 3px solid var(--yellow); outline-offset: 2px; }
+@media (orientation: portrait) {
+  .worldmap-body { flex-direction: column; }
+  .country { height: auto; width: min(100%, 52vh); }
+  .region-info { position: static; align-self: stretch; }
+}
+
 /* Messages */
 
 .toast {
@@ -762,7 +804,8 @@ p { line-height: 1.45; margin: 0.4em 0; }
   /* Phone: the counters stay on the first row. The quest bar is a full-width second row. */
   .hud { flex-wrap: wrap; }
   .hud .counts { margin-left: auto; }
-  .hud .goal { order: 3; flex: 1 1 100%; }
+  .hud .goal { order: 3; flex: 1 1 calc(100% - var(--touch) - var(--gap)); }
+  .hud .map-btn { order: 4; }
   /* Phone: the battle note is a full-width row under the hearts, with 2 lines until a tap. */
   .battle-top { flex-wrap: wrap; }
   .battle-note { flex: 1 1 100%; }

@@ -7,6 +7,7 @@ const FILES = {
   game: 'data/config/game.json',
   tiles: 'data/tiles.json',
   regions: 'data/world/regions.json',
+  roadEvents: 'data/world/road-events.json',
   npcs: 'data/npcs.json',
   quests: 'data/quests.json',
   questions: 'data/questions/science.json',
