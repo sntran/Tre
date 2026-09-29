@@ -184,9 +184,11 @@ The country map is drawn by the code from real map data (`data/geo/vietnam.json`
 
 - **Sea:** the wave pattern (`art/pattern/waves.svg`) on `indigo-pale`.
 - **Land:** the land around Vietnam is `paper-deep`. The land of Vietnam in the era of the story has the areas of the regions in `green-pale`, `yellow-pale`, `paper`, and `vermilion-pale`, with ink borders. The land to the south of the era is faint (`diep`, with `ash-light` borders), and it has no names.
-- **Mountains:** three flat tones of ink (6, 12, and 18 %) for the heights above 300, 800, and 1500 m, and small ink hill marks on high land. No gradients.
+- **Mountains:** three flat bands of ink at 7 % each (so 7, 14, and 21 % where they stack) for the heights above 300, 800, and 1500 m, with smooth edges, and small ink hill marks on high land. No gradients.
 - **Water:** rivers are `indigo` lines (the Hồng and the Mê Kông are wider). Lakes are `indigo-pale`.
 - **Islands:** each small island of Hoàng Sa and Trường Sa is a small dot with an ink line, so that it shows at every size. The names Hoàng Sa and Trường Sa are on the map.
 - **Seals:** each region has a seal at its center place: the face of the hero on the region of the hero, the chapter number on an open region, and a red square seal with a lock on a region that is not open yet. Seals that are near each other move apart, and a thin ink line goes to the real place.
 - **Names:** the names of the places of the open regions, in the display font, with a thin paper edge.
+- **Roads and river ways of travel:** roads are dashes in `wood`, river ways are short dashes in `indigo`. The way to the chosen region is a thick `vermilion` line.
+- **The hero:** a small `vermilion` diamond at the real place of the map of the hero.
 - **Lines** keep the same width on the screen at every zoom.
