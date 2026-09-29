@@ -64,13 +64,15 @@ A.obj('herbs3', 'herbs', 16, 19)
 A.obj('ore1', 'ore', 25, 2)
 # The gate: two posts, open in the middle. The depth box is the middle line.
 A.obj('gate', 'gate', 31, 13, 1, 3, solid=[[0, 0], [0, 2]], depth=[0.5, 0, 0.5, 3])
-# Small houses of the villagers who have no other house, and the coops of the yards.
+# Small houses of the villagers who have no other house, and the coops of the yards. Each hut
+# stands next to the work of its owner: the smith by the forge, the fisher on the river bank, the
+# teacher by the school, the healer by the herbs, and the woodcutter by the bamboo hedge.
 A.obj('hut-elder', 'hut', 5, 5, 3, 3)
-A.obj('hut-teacher', 'hut', 13, 4, 3, 3)
-A.obj('hut-woodcutter', 'hut', 25, 4, 3, 3)
-A.obj('hut-smith', 'hut', 19, 21, 3, 3)
+A.obj('hut-teacher', 'hut', 26, 5, 3, 3)
+A.obj('hut-woodcutter', 'hut', 9, 2, 3, 3)
+A.obj('hut-smith', 'hut', 28, 17, 3, 3)
 A.obj('hut-healer', 'hut', 15, 23, 3, 3)
-A.obj('hut-fisher', 'hut', 11, 23, 3, 3)
+A.obj('hut-fisher', 'hut', 17, 29, 3, 3)
 A.obj('coop1', 'coop', 7, 12)
 A.obj('coop2', 'coop', 29, 12)
 A.obj('hay1', 'haystack', 7, 10)

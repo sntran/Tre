@@ -1,23 +1,104 @@
 {
-  "_about": "The day of each person of the villages (src/core/world/systems/schedule.js). plans: a list of steps; each step starts at an hour (from) and says where the person goes (at): spot (the place of the person on the map), home (the house: the person walks to the ladder, climbs, and goes in), or a named place of the map (layers.places). people: the house (the id of a house on the map) and the plan of each person. A person with no house, or a person who is part of the quest at night, stays out with a lantern.",
+  "_about": "The day of each person of the villages (src/core/world/systems/schedule.js). plans: a list of steps; each step starts at an hour (from) and says where the person goes (at): spot (the place of the person on the map), home (the house: the person walks to the ladder, climbs, and goes in), or a named place of the map (layers.places). people: the house (the id of a house on the map) and the plan of each person. A person with no house, or a person who is part of the quest at night, stays out with a lantern. mends: in the morning this person sets a new pot for each pot that the hero broke.",
   "plans": {
-    "keeper": [{ "from": 6, "at": "spot" }, { "from": 18.5, "at": "home" }],
-    "well": [{ "from": 6, "at": "spot" }, { "from": 11.5, "at": "well" }, { "from": 12.5, "at": "spot" }, { "from": 18.5, "at": "home" }],
-    "early": [{ "from": 5.5, "at": "spot" }, { "from": 18, "at": "home" }],
-    "late": [{ "from": 6.5, "at": "spot" }, { "from": 19, "at": "home" }]
+    "keeper": [
+      {
+        "from": 6,
+        "at": "spot"
+      },
+      {
+        "from": 18.5,
+        "at": "home"
+      }
+    ],
+    "well": [
+      {
+        "from": 6,
+        "at": "spot"
+      },
+      {
+        "from": 11.5,
+        "at": "well"
+      },
+      {
+        "from": 12.5,
+        "at": "spot"
+      },
+      {
+        "from": 18.5,
+        "at": "home"
+      }
+    ],
+    "early": [
+      {
+        "from": 5.5,
+        "at": "spot"
+      },
+      {
+        "from": 18,
+        "at": "home"
+      }
+    ],
+    "late": [
+      {
+        "from": 6.5,
+        "at": "spot"
+      },
+      {
+        "from": 19,
+        "at": "home"
+      }
+    ]
   },
   "people": {
-    "grandma": { "home": "home", "plan": "keeper" },
-    "mother": { "home": "giong-house", "plan": "well" },
-    "giong-boy": { "home": "giong-house", "plan": "early" },
-    "giong-hero": { "home": "giong-house", "plan": "keeper" },
-    "teacher": { "home": "hut-teacher", "plan": "late" },
-    "elder": { "home": "hut-elder", "plan": "keeper" },
-    "messenger": { "home": "dinh", "plan": "well" },
-    "smith": { "home": "hut-smith", "plan": "late" },
-    "healer": { "home": "hut-healer", "plan": "well" },
-    "woodcutter": { "home": "hut-woodcutter", "plan": "early" },
-    "fisher": { "home": "hut-fisher", "plan": "early" }
+    "grandma": {
+      "home": "home",
+      "plan": "keeper",
+      "mends": true
+    },
+    "mother": {
+      "home": "giong-house",
+      "plan": "well"
+    },
+    "giong-boy": {
+      "home": "giong-house",
+      "plan": "early"
+    },
+    "giong-hero": {
+      "home": "giong-house",
+      "plan": "keeper"
+    },
+    "teacher": {
+      "home": "hut-teacher",
+      "plan": "late"
+    },
+    "elder": {
+      "home": "hut-elder",
+      "plan": "keeper"
+    },
+    "messenger": {
+      "home": "dinh",
+      "plan": "well"
+    },
+    "smith": {
+      "home": "hut-smith",
+      "plan": "late"
+    },
+    "healer": {
+      "home": "hut-healer",
+      "plan": "well"
+    },
+    "woodcutter": {
+      "home": "hut-woodcutter",
+      "plan": "early"
+    },
+    "fisher": {
+      "home": "hut-fisher",
+      "plan": "early"
+    }
   },
-  "default": { "home": null, "plan": "keeper" }
+  "default": {
+    "home": null,
+    "plan": "keeper"
+  }
 }

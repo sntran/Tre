@@ -70,7 +70,7 @@ test('the day of the village: who is where at each hour, and the night routine',
   assert.ok(people.length >= 10);
   // 10 in the morning: each person is at the place of the person on the map.
   runTo(w, 10);
-  for (const e of people) assert.ok(near(e, e.schedule.spot, 3), `${e.id} is at the spot at 10:00`);
+  for (const e of people) assert.ok(near(e, e.schedule.spot, 3), `${e.id} is at the spot at 10:00 (${e.position.x.toFixed(1)},${e.position.z.toFixed(1)} spot ${JSON.stringify(e.schedule.spot)} hidden ${e.hidden} climb ${e.climb} down ${e.schedule.down} way ${JSON.stringify(e.schedule.way)})`);
   // Noon: the people of the plan "well" are at the well.
   runTo(w, 12.2);
   const well = env.places.well;
@@ -118,4 +118,48 @@ test('a person of the quest stays out at night with a lantern', () => {
   assert.ok(!elder.hidden);
   assert.equal(elder.carry, 'lantern');
   assert.ok(near(elder, elder.schedule.spot, 3));
+});
+
+test('a knock at a lit house at night: the lantern flickers and a soft sound comes from inside', async () => {
+  const { command } = await import('../src/core/world/state.js');
+  const w = village(21 * 60);
+  runTo(w, 22);
+  command(w, { type: 'knock', home: 'home' });
+  step(w, STEP, env);
+  const ev = w.events.find((e) => e.type === 'inside');
+  assert.ok(ev && ['cough', 'baby', 'clatter'].includes(ev.sound));
+  assert.ok(getEntity(w, 'lantern:home').lantern.flicker > 0);
+  assert.ok(query(w, 'person').every((p) => p.person.ref !== 'grandma' || p.hidden), 'the house stays closed');
+  // By day, or at a dark house, a knock does nothing.
+  const day = village(10 * 60);
+  command(day, { type: 'knock', home: 'home' });
+  step(day, STEP, env);
+  assert.equal(day.events.filter((e) => e.type === 'inside').length, 0);
+});
+
+test('in the morning grandma sets a new pot for the pot that the hero broke, with a small sigh', () => {
+  const w = village(10 * 60);
+  const pot = query(w, 'kind').find((e) => e.kind === 'pot' && Math.hypot(e.position.x - 26.4, e.position.z - 46.4) < 1);
+  const hero = getEntity(w, 'hero');
+  Object.assign(hero.position, { x: pot.position.x + 1, z: pot.position.z });
+  step(w, STEP, env);
+  assert.equal(pot.look, 'pot-broken');
+  Object.assign(hero.position, { x: 80, z: 160 });
+  // The same day: still broken.
+  runTo(w, 16);
+  assert.equal(pot.look, 'pot-broken');
+  // The next morning grandma comes and sets a new pot.
+  let mend = null;
+  const end = w.clock.minutes + 26 * 60;
+  while (w.clock.minutes < end && !mend) {
+    step(w, STEP, env);
+    mend = w.events.find((e) => e.type === 'mend');
+  }
+  assert.ok(mend, 'a new pot');
+  assert.equal(mend.sound, 'sigh');
+  assert.equal(pot.look, 'pot');
+  const hour = (w.clock.minutes % 1440) / 60;
+  assert.ok(hour > 6 && hour < 12, `in the morning (${hour.toFixed(1)})`);
+  const grandma = getEntity(w, 'npc:grandma');
+  assert.ok(Math.hypot(grandma.position.x - pot.position.x, grandma.position.z - pot.position.z) < 3, 'grandma is at the pot');
 });

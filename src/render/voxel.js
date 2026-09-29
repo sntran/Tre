@@ -51,9 +51,9 @@ function flatMaterial(uniforms, transparent) {
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }`,
     fragmentShader: `
-      uniform float uNight; varying vec3 vColor; varying float vFade;
+      varying vec3 vColor; varying float vFade;
       void main() {
-        vec3 c = mix(vColor, vColor * vec3(0.55, 0.6, 0.85), uNight);
+        vec3 c = vColor;
         gl_FragColor = vec4(c, 1.0 - vFade * 0.85);
       }`,
   });
@@ -281,14 +281,7 @@ function waveTexture() {
 }
 
 function nightMaterial(params) {
-  const m = new THREE.MeshBasicMaterial(params);
-  m.onBeforeCompile = (sh) => {
-    sh.uniforms.uNight = night;
-    sh.fragmentShader = sh.fragmentShader
-      .replace('void main() {', 'uniform float uNight;\nvoid main() {')
-      .replace('#include <dithering_fragment>', '#include <dithering_fragment>\n gl_FragColor.rgb = mix(gl_FragColor.rgb, gl_FragColor.rgb * vec3(0.55, 0.6, 0.85), uNight);');
-  };
-  return m;
+  return new THREE.MeshBasicMaterial(params);
 }
 
 // Build the scene of one map. terrain: from src/world/terrain.js.

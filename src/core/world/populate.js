@@ -60,7 +60,7 @@ export function syncPeople(world, map, env, present, people = {}, days = null) {
       ...(look === 'river-serpent' || !people.react ? {} : { react: structuredClone(people.react) }),
       ...(day && people.steer ? {
         steer: { ...structuredClone(people.steer), goal: null, arrived: false, flee: null, bias: null, wander: null },
-        schedule: { plan: structuredClone(days.plans[day.plan]), home: env.homes[day.home] ? day.home : null, spot, offset: offsetOf(id) },
+        schedule: { plan: structuredClone(days.plans[day.plan]), home: env.homes[day.home] ? day.home : null, spot, offset: offsetOf(id), ...(day.mends ? { mends: true } : {}) },
       } : {}),
       look,
     });

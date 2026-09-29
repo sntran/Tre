@@ -21,6 +21,8 @@ import { speak } from './speak.js';
 import { runDialogue, say } from './dialogue.js';
 
 const STICK_R = 56; // the radius of the virtual stick, in screen pixels
+// The color of the dusk wash at full night: the hue of indigo (#2f4668) in the palette.
+const DUSK = Object.freeze({ hue: 215, saturation: 45, lightness: 42 });
 const HOLD_MS = 220; // a press this long is a hold (walk toward the finger), not a tap
 const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyQ', 'KeyE']);
 
@@ -172,6 +174,12 @@ export async function mountVillage(ctx, params = {}) {
   const paper = h('div', { class: 'world-paper' });
   // The dusk over the world: an indigo wash with warm pools around the lanterns, and the rain.
   const duskLayer = h('canvas', { class: 'world-dusk' });
+  // The hue of the dusk: a layer in the indigo of the palette with the blend mode "color", so that
+  // the yellow paper turns blue as the light goes (a multiply alone makes it gray on the way).
+  const duskTint = h('div', { class: 'world-dusk-tint' });
+  // The warm light of the lanterns on top (blend mode "screen": it adds light to the indigo).
+  const glowLayer = h('canvas', { class: 'world-glow' });
+  const glow = glowLayer.getContext('2d');
   const dusk = duskLayer.getContext('2d');
   const drops = Array.from({ length: 140 }, (_, i) => ({ x: (i * 97) % 1000 / 1000, y: (i * 61) % 1000 / 1000, s: 0.7 + ((i * 13) % 10) / 20 }));
   // The layer of the marks on the world: the quest stars, the arrows at the edge, the tap ring.
@@ -182,7 +190,7 @@ export async function mountVillage(ctx, params = {}) {
   // A dark layer for the change of map, and the name of the new map.
   const fade = h('div', { class: params.arrive ? 'map-fade on' : 'map-fade' });
   const banner = params.arrive ? h('div', { class: 'map-name', text: t(mapData.nameKey) }) : null;
-  ctx.ui.append(duskLayer, paper, marks, hud, turns, fade, ...(banner ? [banner] : []));
+  ctx.ui.append(duskTint, duskLayer, glowLayer, paper, marks, hud, turns, fade, ...(banner ? [banner] : []));
   if (params.arrive) {
     requestAnimationFrame(() => requestAnimationFrame(() => fade.classList.remove('on')));
     setTimeout(() => banner?.remove(), 2600);
@@ -190,6 +198,7 @@ export async function mountVillage(ctx, params = {}) {
 
   let goalKey = null;
   let goalParams = {};
+  const flying = {}; // items on their way to the counters of the HUD
   function updateHud() {
     const goal = currentGoal(data.quests.quests, conditionState(profile));
     if (goal) {
@@ -201,9 +210,10 @@ export async function mountVillage(ctx, params = {}) {
     }
     // The quest bar has short text only. The dialogues give the long explanations.
     goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), h('span', { class: 'goal-text', text: tn(goalKey, goalParams) }));
-    counts.replaceChildren(...data.items.hud.map((item) => h('span', { class: 'count' }, [
+    // A coin on its way to the bag is not in the count yet: the count ticks up when it lands.
+    counts.replaceChildren(...data.items.hud.map((item) => h('span', { class: 'count', dataset: { item } }, [
       img(data.items.items[item].art, 'count-icon'),
-      h('span', { text: String(profile.inventory[item] ?? 0) }),
+      h('span', { text: String((profile.inventory[item] ?? 0) - (flying[item] ?? 0)) }),
     ])));
   }
   goalBtn.addEventListener('click', () => speak(goalKey, goalParams, { force: true }));
@@ -276,7 +286,8 @@ export async function mountVillage(ctx, params = {}) {
 
   function walkToPerson(id) {
     const p = persons().find((x) => x.kind === 'npc' && x.ref === id);
-    if (!p || busy) return;
+    // A person who sleeps in the house is not there to talk to.
+    if (!p || busy || getEntity(state, p.entity)?.hidden) return;
     walkToThing(p, () => interact({ kind: 'npc', id }, p));
   }
 
@@ -531,6 +542,13 @@ export async function mountVillage(ctx, params = {}) {
     const from = { x: Math.floor(c.x), y: Math.floor(c.y) };
     // A thing with a tap zone.
     const thing = hit.who ? terrain.objects.find((o) => o.who === hit.who) : null;
+    // A house at night, with its family in: a knock. The lantern flickers and a soft sound comes
+    // from inside; the house does not open (the village sleeps).
+    if (thing?.id && getEntity(state, `lantern:${thing.id}`)?.look === 'lantern-lit') {
+      showTap(hit.x, hit.y, hit.h);
+      command(state, { type: 'knock', home: thing.id });
+      return;
+    }
     const o = thing?.id ? mapData.layers.objects.find((x) => x.id === thing.id) : null;
     const zone = o ? triggers.fire('tap', o.x, o.y, cond) : null;
     if (zone) {
@@ -662,6 +680,43 @@ export async function mountVillage(ctx, params = {}) {
     marks.append(el);
     bubbles.push({ id, el, age: 0 });
   }
+  // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
+  // up when it lands.
+  function flyToCounter(fromId, item, delay) {
+    const f = figures.placeOf(fromId);
+    const counter = counts.querySelector(`[data-item="${item}"]`);
+    if (!f || !counter || !data.items.items[item]) return;
+    flying[item] = (flying[item] ?? 0) + 1;
+    updateHud();
+    const start = view.project(f.x, f.y + 1.2, f.z);
+    const el = img(data.items.items[item].art, 'flying-item');
+    marks.append(el);
+    const t0 = performance.now() + delay * 1000;
+    const tick = (now) => {
+      const box = counts.querySelector(`[data-item="${item}"] .count-icon`)?.getBoundingClientRect();
+      const base = canvas.getBoundingClientRect();
+      const end = box ? { x: box.left + box.width / 2 - base.left, y: box.top + box.height / 2 - base.top } : { x: start.x, y: 0 };
+      const k = Math.max(0, Math.min(1, (now - t0) / 700));
+      const e = k * k * (3 - 2 * k);
+      const x = start.x + (end.x - start.x) * e;
+      const y = start.y + (end.y - start.y) * e - Math.sin(k * Math.PI) * 80;
+      el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${1 - k * 0.3})`;
+      if (k < 1 && alive) {
+        requestAnimationFrame(tick);
+        return;
+      }
+      el.remove();
+      flying[item] = Math.max(0, (flying[item] ?? 1) - 1);
+      if (!alive) return;
+      updateHud();
+      ctx.bus.emit('sound', 'pickup');
+      const c = counts.querySelector(`[data-item="${item}"]`);
+      c?.classList.add('tick');
+      setTimeout(() => c?.classList.remove('tick'), 300);
+    };
+    requestAnimationFrame(tick);
+  }
+
   // What the world did in a step: sounds, greetings, and gifts.
   function worldEvent(ev) {
     if (ev.sound) ctx.bus.emit('sound', ev.sound);
@@ -672,10 +727,12 @@ export async function mountVillage(ctx, params = {}) {
     }
     if (ev.type === 'petted') showBubble(ev.id, '♥');
     if (ev.type === 'break' && ev.give) {
+      // The gift flies from the pot to its counter in the HUD; no number is written in the world.
       applyEffects(profile, [{ give: ev.give }]);
-      showBubble(ev.id, `+${Object.values(ev.give)[0]}`);
-      updateHud();
       ctx.save('pot');
+      for (const [item, n] of Object.entries(ev.give)) {
+        for (let i = 0; i < n; i++) flyToCounter(ev.id, item, i * 0.15);
+      }
     }
   }
 
@@ -802,32 +859,44 @@ export async function mountVillage(ctx, params = {}) {
     const rain = state.sky?.rain ?? 0;
     const w = size.width;
     const hh = size.height;
-    if (duskLayer.width !== w || duskLayer.height !== hh) {
-      duskLayer.width = w;
-      duskLayer.height = hh;
+    for (const c of [duskLayer, glowLayer]) {
+      if (c.width !== w || c.height !== hh) {
+        c.width = w;
+        c.height = hh;
+      }
     }
     dusk.clearRect(0, 0, w, hh);
+    glow.clearRect(0, 0, w, hh);
     duskLayer.hidden = night < 0.01 && rain < 0.01;
+    glowLayer.hidden = night < 0.05;
+    duskTint.style.opacity = String(Math.min(0.5, Math.sqrt(night) * 0.5 + rain * 0.15));
     if (duskLayer.hidden) return;
+    // The multiply layer in the indigo of the palette makes the frame darker as the light goes.
     const k = Math.min(1, night * 0.9 + rain * 0.25);
     dusk.globalCompositeOperation = 'source-over';
-    dusk.fillStyle = `rgb(${Math.round(255 - (255 - 0x4a) * k)}, ${Math.round(255 - (255 - 0x58) * k)}, ${Math.round(255 - (255 - 0x86) * k)})`;
+    dusk.fillStyle = `hsl(${DUSK.hue}, ${DUSK.saturation}%, ${100 - (100 - DUSK.lightness) * k}%)`;
     dusk.fillRect(0, 0, w, hh);
     if (night > 0.05) {
-      // The lanterns cut warm holes in the wash.
+      // Each lit lantern: a hole in the wash (lighter), and a warm pool on the glow layer.
       dusk.globalCompositeOperation = 'lighter';
       const lights = state.entities.filter((e) => e.look === 'lantern-lit' || e.carry === 'lantern');
       for (const e of lights) {
         const f = figures.placeOf(e.id);
         if (!f) continue;
         const q = view.project(f.x + (e.lantern ? 0.8 : 0), f.y + (e.lantern ? 1 : 0.6), f.z);
-        const r = (view.state.level ? 70 : 100) * (0.95 + Math.sin(time * 6 + q.x) * 0.05);
-        const g = dusk.createRadialGradient(q.x, q.y, 0, q.x, q.y, r);
-        g.addColorStop(0, `rgba(190, 150, 80, ${0.9 * night})`);
-        g.addColorStop(0.5, `rgba(150, 110, 50, ${0.45 * night})`);
-        g.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        dusk.fillStyle = g;
+        const flicker = e.lantern?.flicker ? 0.7 + Math.abs(Math.sin(time * 40)) * 0.5 : 1;
+        const r = (view.state.level ? 70 : 100) * (0.95 + Math.sin(time * 6 + q.x) * 0.05) * flicker;
+        const hole = dusk.createRadialGradient(q.x, q.y, 0, q.x, q.y, r);
+        hole.addColorStop(0, `rgba(160, 140, 110, ${0.8 * night})`);
+        hole.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        dusk.fillStyle = hole;
         dusk.fillRect(q.x - r, q.y - r, r * 2, r * 2);
+        const warm = glow.createRadialGradient(q.x, q.y, 0, q.x, q.y, r * 0.8);
+        warm.addColorStop(0, `rgba(222, 150, 60, ${0.55 * night * flicker})`);
+        warm.addColorStop(0.6, `rgba(170, 100, 40, ${0.25 * night})`);
+        warm.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        glow.fillStyle = warm;
+        glow.fillRect(q.x - r, q.y - r, r * 2, r * 2);
       }
     }
     if (rain > 0.01) {
@@ -926,7 +995,7 @@ export async function mountVillage(ctx, params = {}) {
       window.removeEventListener('keyup', onKey);
       offLang();
       figures.dispose();
-      for (const el of [duskLayer, paper, marks, hud, turns, fade, banner, meter]) el?.remove();
+      for (const el of [duskTint, duskLayer, glowLayer, paper, marks, hud, turns, fade, banner, meter]) el?.remove();
     },
     api,
   };

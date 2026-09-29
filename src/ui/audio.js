@@ -98,9 +98,14 @@ const SOUNDS = {
   quack: (t) => { tone(330, t, 0.12, { type: 'sawtooth', volume: 0.06, glide: 260 }); tone(330, t + 0.18, 0.1, { type: 'sawtooth', volume: 0.05, glide: 250 }); },
   bark: (t) => { tone(260, t, 0.09, { type: 'sawtooth', volume: 0.08, glide: 180 }); tone(260, t + 0.16, 0.09, { type: 'sawtooth', volume: 0.08, glide: 170 }); },
   moo: (t) => tone(140, t, 0.6, { type: 'triangle', volume: 0.18, glide: 110 }),
-  pot: (t) => { noise(t, 0.25, { volume: 0.35, filter: 2500, q: 0.6 }); tone(700, t, 0.08, { type: 'triangle', volume: 0.12, glide: 300 }); SOUNDS.pickup(t + 0.25); },
+  pot: (t) => { noise(t, 0.25, { volume: 0.35, filter: 2500, q: 0.6 }); tone(700, t, 0.08, { type: 'triangle', volume: 0.12, glide: 300 }); },
   rustle: (t) => noise(t, 0.3, { volume: 0.08, filter: 3500, sweep: 2000, q: 0.5 }),
   greet: (t) => { tone(PENTA[1], t, 0.12, { volume: 0.08 }); tone(PENTA[3], t + 0.12, 0.16, { volume: 0.08 }); },
+  // Soft sounds from inside a house at night, and a sigh for a new pot.
+  cough: (t) => { noise(t, 0.12, { volume: 0.12, filter: 500, q: 1.2 }); noise(t + 0.2, 0.1, { volume: 0.09, filter: 450, q: 1.2 }); },
+  baby: (t) => tone(520, t, 0.5, { type: 'triangle', volume: 0.05, glide: 640 }),
+  clatter: (t) => { for (let i = 0; i < 3; i++) tone(900 - i * 120, t + i * 0.07, 0.06, { type: 'triangle', volume: 0.06 }); },
+  sigh: (t) => noise(t, 0.7, { volume: 0.1, filter: 700, sweep: 350, q: 0.7 }),
   lantern: (t) => [3, 4, 5].forEach((n, i) => tone(PENTA[n] * 2, t + i * 0.15, 0.5, { volume: 0.05 })),
 };
 

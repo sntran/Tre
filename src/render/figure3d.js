@@ -16,6 +16,8 @@ const MAX_PARTS = 4096;
 const MAX_FIGURES = 512;
 const MAX_PUFFS = 64;
 const RIDER = 0.35; // world units: the seat of a rider over the ground
+// The night (0 to 1): the ink is softer at night. The color of the dusk is one multiply layer over
+// the frame (see the village scene), not a tint in the shaders.
 export const night = { value: 0 };
 
 // A box of size 1 with the tone of each face (+x, -x, +y, -y, +z, -z) as an attribute.
@@ -32,7 +34,7 @@ function unitBox() {
 function partsMaterial() {
   const ink = new THREE.Color(C.ink);
   return new THREE.ShaderMaterial({
-    uniforms: { uNight: night, uInk: { value: new THREE.Vector3(ink.r, ink.g, ink.b) } },
+    uniforms: { uInk: { value: new THREE.Vector3(ink.r, ink.g, ink.b) } },
     vertexShader: `
       attribute float faceTone; attribute float plain;
       uniform vec3 uInk;
@@ -43,8 +45,8 @@ function partsMaterial() {
         gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
       }`,
     fragmentShader: `
-      uniform float uNight; varying vec3 vColor;
-      void main() { gl_FragColor = vec4(mix(vColor, vColor * vec3(0.55, 0.6, 0.85), uNight), 1.0); }`,
+      varying vec3 vColor;
+      void main() { gl_FragColor = vec4(vColor, 1.0); }`,
   });
 }
 

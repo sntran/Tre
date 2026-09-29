@@ -3,8 +3,9 @@
 // person walks to the foot of the ladder, climbs, and goes in (hidden); in the morning the person
 // comes out and climbs down. A person with no house, or a person who is part of the quest at night
 // (schedule.stay), stays out with a lantern. Chickens go to their coop and sit, ducks sit on the
-// bank, the owl comes at night, and the birds fly at dusk.
-export const WRITES = ['schedule', 'steer', 'position', 'hidden', 'act', 'carry', 'events'];
+// bank, the owl comes at night, and the birds fly at dusk. In the day the mender (schedule.mends)
+// walks to each pot that waits to be made whole, and sets a new one.
+export const WRITES = ['schedule', 'steer', 'position', 'hidden', 'act', 'carry', 'broken', 'events'];
 
 import { query } from '../state.js';
 import { DAY_MINUTES } from '../clock.js';
@@ -51,6 +52,11 @@ export function schedule(world, dt, rng, env) {
       }
       continue;
     }
+    // The plan changed in the middle of a climb up: climb down again from there.
+    if (sc.climb > 0 && !e.hidden) {
+      sc.down = sc.climb;
+      sc.climb = 0;
+    }
     if (sc.home && (e.hidden || sc.down > 0)) {
       // Morning: out of the door and down the ladder.
       if (e.hidden) {
@@ -77,6 +83,17 @@ export function schedule(world, dt, rng, env) {
     }
     let target = null;
     if (at !== 'bed') delete sc.bank;
+    // The mender goes to a broken pot first.
+    if (sc.mends && at === 'spot' && night < 0.5) {
+      const pot = query(world, 'broken', 'position').find((p) => p.broken.due);
+      if (pot) {
+        if (Math.hypot(pot.position.x - e.position.x, pot.position.z - e.position.z) < 2.6) pot.broken.mended = true;
+        else {
+          goTo(e, pot.position, env);
+          continue;
+        }
+      }
+    }
     if (at === 'spot') target = sc.spot;
     else if (at === 'bed' && e.steer.medium === 'water') target = (sc.bank ??= env.bankNear(e.position.x, e.position.z));
     else if (at === 'bed') target = sc.bed;

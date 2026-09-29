@@ -3,8 +3,8 @@
 //   flee: chickens run from a hero who runs at them; ducks and fish swim away from the hero.
 //   greet: people turn to the hero, wave, and greet, then wait some time before the next greeting.
 //   follow: the dog follows the hero for a while, and then goes home.
-//   break: a pot breaks when the hero walks into it, and gives a coin. It is whole again the
-//     next day. A broken pot is a change of the player, so the save keeps it.
+//   break: a pot breaks when the hero walks into it, and gives a coin. The next morning the
+//     mender (grandma) sets a new pot. A broken pot is a change of the player, so the save keeps it.
 //   bend: tall grass bends away from the hero and rustles.
 // The sounds and the story (a greeting, a coin) go out as events.
 export const WRITES = ['react', 'steer', 'position', 'look', 'broken', 'keep', 'solid', 'events'];
@@ -22,6 +22,7 @@ export function react(world, dt) {
   const h = hero.position;
   const running = (hero.motion?.speed ?? 0) > RUN_SPEED;
   const today = Math.floor(world.clock.minutes / DAY_MINUTES);
+  const menders = query(world, 'schedule').some((m) => m.schedule.mends);
   for (const e of query(world, 'react', 'position')) {
     if (e.hidden) continue;
     const r = e.react;
@@ -70,12 +71,17 @@ export function react(world, dt) {
         }
       }
     } else if (r.kind === 'break') {
-      if (e.broken && today > e.broken.day) {
-        // A new day: the family has a new pot.
+      if (e.broken && (e.broken.mended || (today > e.broken.day && !menders))) {
+        // A new pot: the mender set it (with a small sigh), or, on a map with no mender, the
+        // family set it in the night.
+        if (e.broken.mended) say('mend', { sound: 'sigh' });
         delete e.broken;
         e.look = r.whole ?? e.look;
         e.keep = false;
         e.solid = r.solid ?? e.solid;
+      } else if (e.broken && today > e.broken.day) {
+        // A new day: the pot waits for the mender (see the schedule system).
+        e.broken.due = true;
       } else if (!e.broken && d < r.radius) {
         r.whole = e.look;
         r.solid = e.solid;

@@ -2,8 +2,11 @@
 // Commands: move (a map direction from the stick or the keys), walk (a route of points), stop,
 // place (put an entity at a point), face (turn to a point), pause (a dialogue opens or closes),
 // stay (a person of the quest stays out at night), pet (a friend is happy), ride (the hero gets on
-// the back of a friend, or gets off).
-export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'events'];
+// the back of a friend, or gets off), knock (a tap on a house at night: if the family is in, the
+// lantern flickers and a soft sound comes from inside).
+export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'events'];
+
+export const INSIDE_SOUNDS = Object.freeze(['cough', 'baby', 'clatter']);
 
 import { getEntity, query } from '../state.js';
 import { faceOf } from '../move.js';
@@ -12,6 +15,14 @@ export function input(world, dt, rng, env) {
   for (const c of world.commands) {
     if (c.type === 'pause') {
       world.paused = Boolean(c.on);
+      continue;
+    }
+    if (c.type === 'knock') {
+      const lamp = getEntity(world, `lantern:${c.home}`);
+      if (lamp?.look === 'lantern-lit') {
+        lamp.lantern.flicker = 1.2;
+        world.events.push({ type: 'inside', id: lamp.id, home: c.home, sound: rng.pick(INSIDE_SOUNDS) });
+      }
       continue;
     }
     const e = getEntity(world, c.id);

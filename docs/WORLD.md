@@ -58,10 +58,10 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 
 `step(world, dt, env)` in `src/core/world/step.js` runs the systems in this order, 30 times a second:
 
-1. **input**: the commands go into the entities before anything moves (move, walk, stop, place, face, pause, stay, pet, ride).
+1. **input**: the commands go into the entities before anything moves (move, walk, stop, place, face, pause, stay, pet, ride, knock).
 2. **sky**: the light and the rain of this hour, and the river in the rain, so that the plans and the lanterns read them. It sends `dawn` and `dusk`.
-3. **schedule**: the plan of the hour sets the goals of the people and the animals before anything moves: the spot, the well, the coop, the bank, and home (to the foot of the ladder, up, and in). The walk goes around houses and water on a path of cells.
-4. **lights**: after the plans, so that a lantern lights in the step when its family goes in.
+3. **schedule**: the plan of the hour sets the goals of the people and the animals before anything moves: the spot, the well, the coop, the bank, and home (to the foot of the ladder, up, and in). The walk goes around houses and water on a path of cells. In the morning the mender (grandma) walks to each pot that the hero broke and sets a new one.
+4. **lights**: after the plans, so that a lantern lights in the step when its family goes in. A knock at a lit house makes its lantern flicker.
 5. **route**: a route turns into an intent, so that movement reads one kind of input. The end of a route sends the event `arrived`; a route that cannot go on sends `stuck`.
 6. **move**: the hero walks or runs from its intent, with collision against blocked cells, cliffs, and solid people. Nothing walks while the world waits.
 7. **follow**: after the hero moves, so that Nghé follows the new position without a step of lag. Nghé carries the hero who rides, steps back from a fire, is happy after a pet, and lies down beside the hero who rests at night.
