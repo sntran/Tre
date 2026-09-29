@@ -2,6 +2,8 @@
 
 Sep 28, 2026 · @Son Tran-Nguyen
 
+A Vietnamese version is in `DESIGN.vi.md`. This English file is the source; when the two differ, this file applies.
+
 ## Summary and goal
 
 Tre is a web RPG from Pre-K to grade 12. The first release covers grades 1 to 5. An ordinary child grows into a hero of Vietnamese history and legend with the mind and the body.
