@@ -12,7 +12,7 @@ import { createRng } from '../core/rng.js';
 import { heroLayers } from '../render/assets.js';
 import { C } from '../render/palette.js';
 import { planTravel, applyTravel } from '../world/travel.js';
-import { timeOfDay } from '../world/clock.js';
+import { timeOfDay } from '../core/world/clock.js';
 import { createProjection, regionAreas, layoutSeals, heightBand } from '../world/geo.js';
 
 const NS = 'http://www.w3.org/2000/svg';

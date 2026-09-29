@@ -1,5 +1,5 @@
-// Free movement in the isometric world. Pure functions, no DOM.
-// A person is a circle on the map (tile units). Blocked tiles are squares.
+// The helpers of free movement for the systems in systems/. Pure functions, no DOM.
+// A person is a circle on the map (units: map cells). Blocked cells are squares.
 // The circle slides along walls, so that the child does not get stuck on a corner.
 
 export const MOVE = Object.freeze({

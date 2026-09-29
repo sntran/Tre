@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createWorld } from '../src/world/regions.js';
 import { planTravel, applyTravel, TRAVEL } from '../src/world/travel.js';
-import { createClock } from '../src/world/clock.js';
+import { createClock } from '../src/core/world/clock.js';
 import { createRng } from '../src/core/rng.js';
 import { load } from './helpers.js';
 

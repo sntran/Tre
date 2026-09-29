@@ -1,6 +1,6 @@
 // Travel between regions on the country map. Pure functions, no DOM.
 // A travel takes game hours on the roads, and has a few simple road events.
-import { addHours } from './clock.js';
+import { addHours } from '../core/world/clock.js';
 import { lineKm } from './geo.js';
 
 // The roads and rivers between places. routes: data/world/routes.json.

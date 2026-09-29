@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createClock, advance, addHours, timeOfDay, DAY_MINUTES, CLOCK } from '../src/world/clock.js';
+import { createClock, advance, addHours, timeOfDay, DAY_MINUTES, CLOCK } from '../src/core/world/clock.js';
 
 test('a game day passes in about 8 minutes of play', () => {
   const c = createClock();

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { worldFor, screenToMap, faceOf, MOVE, collides, moveCircle, keysToScreenDir, stickToScreenDir, stepBody, inputToward, createFollower, stepFollower } from '../src/world/movement.js';
+import { worldFor, screenToMap, faceOf, MOVE, collides, moveCircle, keysToScreenDir, stickToScreenDir, stepBody, inputToward, createFollower, stepFollower } from '../src/core/world/move.js';
 
 // A small world: a wall of blocked tiles at x = 5, a gap at y = 3, shallow water at x = 2.
 const blocked = new Set(['5,0', '5,1', '5,2', '5,4', '5,5', '5,6']);
