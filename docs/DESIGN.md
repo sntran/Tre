@@ -207,9 +207,84 @@ The game keeps a separate level for each skill. A player can be at grade 3 in ma
 - **Written by hand:** facts for science, history, and geography are in data files, in Vietnamese and English.
 - **Parent editor:** parents can add their own questions, for example words from school this week. A parent picks the skill, the language, and the answer type.
 
-**Level changes:** the game moves a skill up after the player is correct many times in a row. It gives more practice when the player makes many mistakes. The exact numbers are in the open questions.
+**The mastery model:** for each skill the game keeps the chance that the child knows it (Bayesian Knowledge Tracing), with hand-set parameters inside the standard bounds (prior 0.1 to 0.4, learn 0.1 to 0.3, guess 0.05 to 0.15, slip at or below 0.1, mastery above 0.95). The evidence comes from actions in the world first, from the teacher's practice and the exams second. An Elo-style ability picks the next task for 75 to 85 percent success, and a forgetting term with growing intervals (1, 3, 7, 14, 30 days) brings a skill back into the quests when it is due. The rules for this are in "Learning by doing: the rules from the evidence".
 
 **Teachers in the village:** a player can practice a skill with a village teacher before a battle. Practice has no health loss.
+
+## Learning by doing: the rules from the evidence
+
+The research report in `docs/research/learning-by-doing.md` collects the evidence behind the rule of the world. These rules come from it. Each rule names its strongest source in short form; the report has the full citations and the numbers.
+
+**The task**
+
+1. **The concept is the only route to the goal.** A task must be unsolvable without the operation. A physics engine with a goal that does not need the concept teaches nothing (Angry Birds studies). The same math as an action instead of as a quiz gave 58 percent against 41 percent on a delayed test, and children chose to play the action version seven times longer (Zombie Division).
+2. **One operation, one gesture.** Drag a plank to compose a length. Deal coins to divide. Turn a gear to multiply. Every math game with a positive controlled study does this (DragonBox, Slice Fractions, Wuzzit Trouble, Motion Math).
+3. **The shape of the action is the shape of the idea.** Lengths lie on a straight line with equal spacing. Groups are rows. A linear board game taught number sense to 4-year-olds; the same game on a circle did not (Siegler and Ramani).
+4. **Predict, then commit.** Before the commit, the child points where the arrow will land or how many planks it will take. Then the child acts. A prediction turns a physics toy into a lesson (Angry Birds with epistemic goals; the "place your bets" pattern).
+5. **A free sandbox before the scored commit.** The child can try, undo, and try again at no cost. Only the committed action ("cross the bridge") is scored. Exploration is never scored as error.
+6. **Tight constraints for grades 1 to 3, wider walls with grade.** Few parts, one variable, a first success that is easy. Struggle before help works for older students and reverses for grades 2 to 5 (Sinha and Kapur; Karpicke).
+7. **New content comes in a short explore-then-show cycle.** The child tries a new task for about a minute. Then Nghé or a villager demonstrates on a different instance, at counting pace. Then the child does the original (DeCaro and Rittle-Johnson; worked examples were the favorite support in Physics Playground).
+8. **Fade the representation inside each skill.** Start with bowls and planks. Add tick marks and numerals beside them. End with numerals alone, with the old picture one tap away. Concreteness fading beat every other order for transfer (Fyfe, McNeil and Borjas).
+9. **The content object is plain; the village is rich.** Put the Đông Hồ detail on houses and trees, not on the plank, the bowl, or the coin. Perceptually rich manipulatives lower accuracy (McNeil).
+10. **The same concept lives in several devices.** The lever is in the đòn gánh, the gàu sòng, the cối giã gạo, and the cầu khỉ. Multiple embodiment is what makes a concept portable (Dienes; fluency across many levels in Physics Playground).
+11. **One new part for each region.** A new device, a new plank size, or a new rule, never two at once (Baba Is You; PhET).
+
+**Feedback and failure**
+
+12. **The world shows the result within one second, and shows why.** The bridge shows which plank fell short. The arrow shows where it landed. Feedback about the task and the process has twice the effect of a right-or-wrong mark (Wisniewski, Zierer and Hattie); immediate feedback beats delayed feedback for novices (Shute).
+13. **The world speaks, never a grader.** No "wrong", no red X, no praise, no comparison with other children. Feedback about the self made one third of feedback interventions harmful (Kluger and DeNisi).
+14. **Failure is cheap, private, and instant.** Undo is free. A retry is one tap and under two seconds. Attempt counts are hidden. A defeat message names what to change, never the child (Celeste; Zoombinis).
+
+**Difficulty, rewards, and story**
+
+15. **Target 80 to 90 percent first-try success on skill tasks.** Let the child choose a harder version for pride; never force it. The highest success rate gave the most practice and the largest gains (Jansen); the inverted U of difficulty appears only when the player chooses (Lomas).
+16. **Reward with information and surprise, never with a contract.** "You used three planks; last week you used five" is safe. A gift after the fact is safe. A star bar shown before the task is a contract, and expected rewards lower children's interest more than adults' (Deci, Koestner and Ryan).
+17. **The legend poses the problem.** A story beat must need the action to resolve. Cut a legend detail the task does not use. Story the child must use helps; story the child only watches is load (Crystal Island; seductive details).
+18. **Two players each get a role the task needs.** The older child makes the quantity decision; the younger counts, sorts, or taps. Hand the older child the hint to give (joint media engagement principles).
+
+**The model**
+
+19. **Efficient first-try success is the mastery signal.** Record "solved" and "solved with the minimum parts on the first commit". The second carries most of the evidence weight (Physics Playground's gold trophies, reliability 0.87).
+20. **Design tasks so that chance success is rare.** A target that one obvious move cannot reach, several sizes on offer. Then set the guess parameter low (0.05 to 0.15) and slip at or below 0.1.
+21. **Hand-set the model and check it.** Prior 0.1 to 0.4 for a new skill, learn 0.1 to 0.3, mastery at P(L) above 0.95. P(L) must rise after every clean success, and ten clean successes must reach mastery. Do not fit parameters from data (Baker, Corbett and Aleven).
+22. **Mashing is no evidence, not an error.** Signs: action latency too short for counting, monotone sweeps of sizes, no pause after a failure. Do not punish it. Simplify the task or let the companion demonstrate (Baker; Aleven).
+23. **Difficulty comes from design parameters; Elo updates only the child.** Gap length, number of sizes, group size, and target distance define the difficulty of a task. Pick the next task a little below the child's ability for 75 to 85 percent success. Item calibration needs crowds that Tre does not have (Brinkhuis; Pelánek).
+24. **Review comes from forgetting, not from a review screen.** Decay P(L) toward the prior each day. Grow the interval after each clean success (1, 3, 7, 14, 30 days). When a skill is due, raise its weight in the quest generator so that the next task needs it (Khajah, Lindsey and Mozer; Cepeda). The interval constants are convention.
+25. **Scaffolds come just in time and fade with P(L).** The ladder: an environmental cue, a ghost preview, the companion places one part, the companion demonstrates on a different instance. Never end with the answer to the same instance (Aleven; Shute).
+
+**Questions, parents, and sessions**
+
+26. **Questions stay with the teacher and the Văn Miếu, cued and spaced.** Ask only about skills with P(L) above 0.5. Give a partial cue for grades 1 to 3. Follow every answer with the correct answer and a one-line reason. Interleave skills (Karpicke; Rohrer; Agarwal).
+27. **Report to parents by skill, in words, with an artifact.** Three states: exploring, getting there, confident. Show what the child built. Give the parent a way to nudge the level. No composite score.
+28. **A session ends in the fiction, at a natural stop, by the device.** One quest, one chapter, one raid; the sun sets. Tell the child the plan up front. No countdown (Hiniker; evidence from under-6s, so treat as plausible).
+29. **Many short sessions with an adult nearby.** Ten minutes three times a week was enough for measured gains (Wuzzit Trouble); gains in the meta-analyses appear with several sessions and some instruction (Wouters).
+30. **Build the bridge from action to notation.** In-game mastery is not paper mastery. The teacher's practice is where the child's own action gets its symbol, after the action is habitual (DragonBox teacher materials).
+
+## World tasks from village technology
+
+Each task follows one template. The legend poses a need. The child predicts. The child changes one thing and commits. The world shows the result and why. The child repeats freely. The model scores only the committed action. These tasks are the source for the placement tasks of Era 1 and the later eras. The lever appears five times in five devices, and time and rate appear three times, which gives the multiple embodiment that rule 10 asks for.
+
+| Task | Concept | The child | The world | The model observes |
+| --- | --- | --- | --- | --- |
+| Cầu khỉ (monkey bridge) across a gap of N | Composition of length; addition; later multiplication and division of length | Drags bamboo poles of sizes 2, 3, 5 (later others) onto a straight line with tick marks to reach the far bank exactly | A short bridge drops the hero into the water at the gap. A long pole overhangs and tips. The tick marks show the shortfall | Solved; solved with the minimum poles on the first commit; resets; latency for each placement; monotone sweep flag |
+| Chia chiến lợi phẩm (sharing loot) among K villagers | Division with and without remainder; equal groups | Deals coins or rice sacks into K bowls by drag; commits with "chia xong" | A villager with less holds out an empty hand. Leftover coins stay on the mat. Equal bowls settle level | Clean equal deal on the first commit; re-deals; one-by-one or grouped dealing; remainder handled or ignored |
+| Gánh nước theo nhóm (carrying in groups) | Skip counting; multiplication; grouping | Loads the baskets of a đòn gánh with bowls in equal groups to meet the total the village asks for | The pole levels when both sides match and tips when they do not. The count that the villagers speak stops where the load stops | Correct total on the first commit; group size chosen; time to commit; equal groups or ones |
+| Đòn gánh (carrying pole) with unequal loads | Balance of moments; a lever with a moving fulcrum | Slides the shoulder point along the pole under two different loads | The pole tilts toward the heavy side until the shoulder point is right, then levels, and the hero walks | Distance from the correct point on the first commit; slides; direction of the first correction |
+| Gàu sòng (tripod water scoop) | Class-1 lever; pendulum; trade of force and distance | Moves the rope knot along the handle; chooses where to hold; swings | The scoop lifts easily, or dips and spills, or does not rise. The water in the paddy rises with each swing | Knot position error; swings for each unit of water; time to the first full scoop |
+| Gàu dai (two-person rope scoop, two players) | Period; synchronization; counting rhythm | Two players pull on a shared beat; each holds two ropes | In rhythm the scoop fills and the paddy floods. Out of rhythm it slaps the water and spills | Fraction of swings in phase; recovery after a miss; the timing error of each player |
+| Cối giã gạo đạp (foot-lever rice pounder) | Lever arm; weight times distance; timing | Sets the pestle weight and the pivot position; presses on the beat | Too light and the grain stays whole. Too heavy and the beam does not rise. Right and the husks fly | Weight and pivot chosen; strokes to husk a measure; latency pattern |
+| Cối giã gạo nước (water-powered pounder) | Rate; fill time; period of a self-tipping lever | Opens the bamboo channel wider or narrower; sets the trough size | The pounder strikes faster or slower. The husked rice for each canh rises | Predicted strokes for each canh against actual; changes toward the target |
+| Cọn nước (bamboo water wheel) | Energy from flow; angle; volume lifted | Opens or closes a weir; tilts the tubes; adds blades | The wheel turns faster or stalls. Tubes spill early or reach the máng. The field turns green as water arrives | Tube tilt chosen; water delivered for each turn; changes before the commit |
+| Thuyền thúng (basket boat) loading | Buoyancy; capacity; sealing | Loads one đấu of rice at a time; chooses to seal with dầu rái or not | The waterline rises with each đấu. One too many and the rim dips and the boat swamps. An unsealed hull fills slowly | Predicted safe load against actual; sealing chosen; loads to swamping |
+| Nỏ thần Cổ Loa (crossbow) | Projectile; angle and range; energy shared among arrows | Sets the draw length and the angle; chooses one or five arrows; predicts the landing point by pointing | The arrow arcs and lands. A marker shows the landing against the prediction. Five arrows fly shorter than one | Prediction error; shots to hit; direction and size of each correction |
+| Đánh trận đúng canh (timing a raid) | Time; rate; the incense and water clock | Cuts an incense stick to a length, or sets the hole of the gáo, so that the signal comes at the target canh | The stick burns down. The gáo sinks. The drum sounds early, late, or on time. The scouts arrive or are caught | Predicted length against needed; error in canh; test burns before the real raid |
+| Diều sáo (kite with flutes) | Pitch and tube length; lift and angle | Shortens or lengthens a bamboo tube; moves the bridle knot | The flute plays higher or lower. The kite climbs, stalls, or dives. A chord sounds when the set is right | Tube-length order correct; bridle position error; trials to a stable climb |
+| Trống đồng Đông Sơn | Pitch and size; resonance | Chooses among drums of different sizes; strikes the face or the body; sets on the ground or hangs | The tone changes with size, strike point, and mounting. Distant villages answer when the right drum sounds | Order of drums by pitch correct; strike choices; trials to the answer |
+| Đong lúa (measuring rice with đấu, thưng, thúng) | Units; ratios; repeated filling; base 10 and base 16 | Fills a thúng with đấu and counts; converts cân to lạng for the market | The thúng fills to the rim at the right count. The merchant's scale balances only at the right conversion | Count on the first fill; conversion error; use of the larger unit when available |
+| Đo ruộng (measuring a paddy in sào and mẫu) | Area as length times width; units | Walks the field with a thước rod; lays a grid of seedlings | The grid fills the paddy exactly, or leaves a bare strip, or runs over the dike | Rows and columns chosen; leftover area; time to commit |
+| Nón lá (conical hat) rings | Circles of increasing radius; sequence; a cone from a sector | Chooses the ring spacing and count; cuts a leaf sector | Rings that do not fit bulge or gap. A wider sector gives a flatter hat that catches rain | Ring sequence correct; sector angle chosen; rebuilds |
+| Ô ăn quan | Counting; modular arithmetic; planning one move ahead; value exchange | Points to the predicted landing square, then sows | The stones land where they land. A capture happens or does not | Prediction correct; captures for each game; comparison of left and right sowing before the choice |
+| Bè tre và thuyền thúng (raft against basket boat) | Displacement; comparison | Loads the same cargo on a raft and on a thúng; predicts which sits lower | The two hulls settle at different waterlines side by side | Prediction correct; loads compared; both tested or not |
 
 ## Văn Miếu exams and titles
 
@@ -400,7 +475,7 @@ The game names historical armies as history books do, with a short and fair note
 
 ## Profiles, saves, and parent settings
 
-All data stays on the device. There are no accounts, no server, no ads, and no data collection.
+All data stays on the device. There are no accounts, no server, no ads, and no analytics. Nothing leaves the device unless a parent exports a profile or shares a learning summary (see "Learning measurement").
 
 - **Profiles:** each child has a profile with a hero, a save, and skill levels.
 - **Save:** the game saves after each battle, exam, and quest step, in IndexedDB.
@@ -409,6 +484,40 @@ All data stays on the device. There are no accounts, no server, no ads, and no d
 - **Parent settings:** language, time limit per day, sound and music, difficulty of losses, and the parent question editor.
 - **Time limit:** when the time is over, the hero goes home to rest. The game saves and ends at a calm point, never in the middle of a battle.
 - **Parent page:** shows the level of each skill, the exams passed, and the skills to practice.
+
+## Learning measurement: how Tre finds out what works
+
+The rules above come from research on other games. Tre must find out whether they work in Tre, for these children, and change what does not. The measurement must follow the same rules as the game: nothing leaves the device by itself, nothing identifies a child, and nothing is scored in front of the child.
+
+**The learning log.** The game keeps a log on the device, next to the save, in the profile. It is data that the game already has; the log only keeps it in a form that can be read later.
+
+- *A task attempt:* the time, the map, the task, the skill, the phase (explore or commit), success, efficient success (minimum parts on the first commit), the parts used, the resets, the latency of each action, the hint level shown, P(L) before and after, and the variant of the experiment (below).
+- *A session:* the start, the end, who ended it (the device at a natural stop, the parent limit, or the child), the quests done, and where the child was when it ended.
+- *A review:* the skill, when it was due, and the result of the world task that carried it.
+- *An exam item:* the skill, correct or not, and P(L) at that time. This is the transfer check: does mastery from actions predict answers to questions?
+- *A prediction:* what the child pointed to before the commit, and what happened.
+
+The log holds counts, times, and numbers only. No name, no free text, no picture. It is rolled up each day into small aggregates for each skill and each variant, and the raw events of the day are dropped after the roll-up, so that the log stays small.
+
+**What "good" means.** Each rule has a measure that the log can answer:
+
+| Question | Measure from the log |
+| --- | --- |
+| Does the child learn? | Time of play to mastery for each skill; first-try success rate over the last ten commits; the shape of the learning curve |
+| Does it stay? | Success on a review task after 7, 14, and 30 days |
+| Does it transfer? | The correlation of P(L) with the Văn Miếu exam items of the same skill (rule 30) |
+| Is the difficulty right? | First-try success rate on skill tasks against the 80 to 90 percent band (rule 15); how often the child chose the harder version |
+| Do predictions help? | Prediction error over trials; mastery speed with and without the prediction gesture (rule 4) |
+| Do hints help or replace? | Success after each hint level; hints viewed under one second; mastery speed at each hint gating (rule 25) |
+| Is the child playing or mashing? | Share of commits flagged as mashing (rule 22); what happened after the flag |
+| Does the child want to come back? | Sessions each week; voluntary retries after success; sessions that the child continued after the quest ended; where sessions stop |
+| Is the session length right? | Session length; who ended it; the first action of the next session |
+
+**Experiments.** A small file `data/config/experiments.json` names the rules that can be switched, with at most one experiment active in a release. Examples: the prediction gesture on or off; the explore phase of one minute or none; hint levels three and four gated by P(L) or always available; the target success rate 80 or 85 percent; the review intervals. A profile gets its variant from its seed, so that a child stays in one variant, and the parent page shows the variant and lets the parent change it. The roll-ups are kept for each variant. With two children in one family the numbers are small, so the game compares within a child over time (before and after a switch) and across the families that choose to share.
+
+**Sharing, only by a parent.** Nothing is sent anywhere by the game. The parent page has "Share a learning summary": it makes a small file of the roll-ups (rates, counts, and times, rounded; the grade, not the age; no name, no device information), shows it to the parent in full, and lets the parent save it or paste it into a GitHub discussion of the project. A later release may add an optional address to send the summary to, behind a parent switch that is off by default; there is still no third-party analytics and no account. The project publishes what it learns from the shared summaries in `docs/research/`.
+
+**The researcher view.** The parent page has a plain view of the roll-ups of this device: one small chart for each question above, in words and simple bars, in Vietnamese and English. The first users of this view are the parents of the first players.
 
 ## Technology
 
