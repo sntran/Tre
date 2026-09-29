@@ -397,10 +397,11 @@ export async function mountVillage(ctx, params = {}) {
     if (!tileMap.inside(tile.x, tile.y)) return;
     tapFx = { x: m.x, y: m.y, age: 0 };
     const from = { x: Math.floor(hero.x), y: Math.floor(hero.y) };
-    const zone = triggers.fire('tap', tile.x, tile.y, state);
+    // A tap zone on the ground is a thing that the hero cannot walk on (water, a field).
+    // A tap on a free tile of the zone (the ford, a path in the field) is a walk.
+    const zone = tileMap.isBlocked(tile.x, tile.y) ? triggers.fire('tap', tile.x, tile.y, state) : null;
     if (zone) {
-      const path = tileMap.walkable(tile.x, tile.y) ? findPath(tileMap, from, tile) : pathNextTo(tileMap, from, tile);
-      walkPath(path, null, () => doAction(zone), { x: m.x, y: m.y, d: 1.3 });
+      walkPath(pathNextTo(tileMap, from, tile), null, () => doAction(zone), { x: m.x, y: m.y, d: 1.3 });
       return;
     }
     if (tileMap.walkable(tile.x, tile.y)) walkPath(findPath(tileMap, from, tile)?.slice(0, -1), { x: m.x, y: m.y }, null);
