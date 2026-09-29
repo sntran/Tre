@@ -92,6 +92,14 @@ const SOUNDS = {
   title: (t) => { tone(PENTA[0], t, 0.3); tone(PENTA[3], t + 0.2, 0.5); },
 };
 
+// Add more sound recipes, for example for a prototype screen.
+// recipes: { name: (time, { tone, noise, PENTA }) => {} }. A name that exists stays the same.
+export function addSounds(recipes) {
+  for (const [name, recipe] of Object.entries(recipes)) {
+    if (!SOUNDS[name]) SOUNDS[name] = (t) => recipe(t, { tone, noise, PENTA });
+  }
+}
+
 export function play(name) {
   if (!soundOn) return;
   const a = audio();
