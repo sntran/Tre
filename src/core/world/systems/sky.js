@@ -1,12 +1,13 @@
 // The sky: the light of the day from the clock (0 by day, 1 at night, soft at dusk and dawn),
 // the rain of some days (from the seed and the day), and the river that rises one block in the
-// rain and goes down after it. The events dawn and dusk go to the story and the sound.
+// rain and goes down after it (then the ford is closed). The events dawn and dusk go to the story
+// and the sound.
 export const WRITES = ['sky', 'events'];
 
 import { createRng, hashSeed } from '../../rng.js';
 import { DAY_MINUTES } from '../clock.js';
 
-export const DEFAULT_DAY = Object.freeze({ dusk: [17, 19], dawn: [5, 7], rain: { chance: 0.3, start: [11, 15], hours: [1.5, 3.5], rise: 1, fall: 3 } });
+export const DEFAULT_DAY = Object.freeze({ dusk: [17, 19], dawn: [5, 7], rain: { chance: 0.3, start: [11, 15], hours: [1.5, 3.5], rise: 1, fall: 1 } });
 
 const ramp = (h, [a, b]) => Math.min(1, Math.max(0, (h - a) / (b - a)));
 
@@ -40,6 +41,9 @@ export function sky(world, dt, rng, env) {
   const hours = Math.min(6, Math.max(0, (minutes - (s.last ?? minutes)) / 60));
   s.last = minutes;
   s.rain += (raining - s.rain) * Math.min(1, hours * 4);
-  // The river rises in the rain and goes down after it.
+  // The river rises in the rain and goes down after it. While it is high (in the rain and until
+  // it is down again, about one hour after the rain), the ford stones are under the water and the
+  // ford is closed (see the ground system).
   s.flood = raining ? Math.min(1, s.flood + hours / day.rain.rise) : Math.max(0, s.flood - hours / day.rain.fall);
+  s.high = Boolean(raining) || s.flood > 0;
 }

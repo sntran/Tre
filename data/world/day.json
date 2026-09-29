@@ -1,6 +1,6 @@
 {
-  "_about": "The day and the weather (src/core/world/systems/sky.js). Hours of the game clock (a day is about 8 minutes of play). dusk: the light goes from day to night between these two hours; dawn: from night to day. rain: chance (the part of the days with rain), start (the earliest and latest hour when it starts), hours (the shortest and longest rain), rise and fall (game hours for the river to rise one block and to go down again).",
+  "_about": "The day and the weather (src/core/world/systems/sky.js). Hours of the game clock (a day is about 8 minutes of play). dusk: the light goes from day to night between these two hours; dawn: from night to day. rain: chance (the part of the days with rain), start (the earliest and latest hour when it starts), hours (the shortest and longest rain), rise and fall (game hours for the river to rise one block and to go down again). While the river is high, the ford is closed.",
   "dusk": [17, 19],
   "dawn": [5, 7],
-  "rain": { "chance": 0.3, "start": [11, 15], "hours": [1.5, 3.5], "rise": 1, "fall": 3 }
+  "rain": { "chance": 0.3, "start": [11, 15], "hours": [1.5, 3.5], "rise": 1, "fall": 1 }
 }
