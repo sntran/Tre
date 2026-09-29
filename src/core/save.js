@@ -5,7 +5,7 @@ import { isGrade } from './grades.js';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
 
 export const SAVE_FORMAT = 'tre-save';
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 export const CODE_PREFIX = 'TRE1';
 
 // MIGRATIONS[n] changes a save of version n into version n + 1.
@@ -47,6 +47,14 @@ export const MIGRATIONS = {
     out.clock ??= { minutes: 7 * 60 };
     out.maps ??= {};
     if (out.place && typeof out.place === 'object') out.place = { map: 'phu-dong', x: null, y: null };
+    return out;
+  },
+  // Version 5: Nghé is the friend of the hero from the start, in every save.
+  4: (profile) => {
+    const out = structuredClone(profile);
+    if (Array.isArray(out.friends) && !out.friends.includes('nghe')) out.friends.unshift('nghe');
+    if (Array.isArray(out.party) && !out.party.includes('nghe')) out.party.unshift('nghe');
+    if (out.flags && typeof out.flags === 'object') out.flags['friend.nghe'] = true;
     return out;
   },
 };

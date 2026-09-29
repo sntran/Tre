@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { checkDialogue } from '../src/core/dialogue.js';
 import { createSkillGraph } from '../src/core/skills.js';
 import { load, skillsData } from './helpers.js';
+import { createProfile } from '../src/core/profile.js';
 
 const vi = load('i18n/vi.json');
 const graph = createSkillGraph(skillsData);
@@ -102,7 +103,7 @@ test('notes do not repeat the Legend or History label that the seal shows', () =
   }
 });
 
-test('the Era 1 friend is Nghé; Sóng is a second friend that the player can choose', () => {
+test('Nghé is the friend of the hero from the start; Sóng is the friend of the river battle', () => {
   const friends = load('data/friends.json').friends;
   const battles = load('data/battles.json').battles;
   for (const [id, f] of Object.entries(friends)) {
@@ -114,22 +115,25 @@ test('the Era 1 friend is Nghé; Sóng is a second friend that the player can ch
     }
   }
   assert.ok(friends.nghe.ride, 'Nghé has a ride block for later');
+  // A new hero has Nghé in the party, and names Nghé in the first dialogue.
+  const p = createProfile({ id: 'n', name: 'An' });
+  assert.deepEqual(p.party, ['nghe']);
+  assert.equal(p.flags['friend.nghe'], true);
+  const intro = byId.get('grandma.intro');
+  const introChoices = Object.values(intro.nodes).flatMap((n) => n.choices ?? []);
+  assert.ok(introChoices.some((c) => (c.effects ?? []).some((e) => e.open === 'nameFriend' && e.id === 'nghe')), 'the player names Nghé');
+  // After the river battle: Sóng can join, and the player can say no.
   const after = battles.river.win.after.map((id) => byId.get(id));
   assert.ok(after.every(Boolean), 'the dialogues after the river battle exist');
   const choices = after.flatMap((d) => Object.values(d.nodes).flatMap((n) => n.choices ?? []));
   const gives = (c, id) => (c.effects ?? []).some((e) => e.friend === id);
-  // The first dialogue gives Nghé, with no other choice.
-  const firstChoices = Object.values(after[0].nodes).flatMap((n) => n.choices ?? []);
-  assert.ok(firstChoices.length > 0 && firstChoices.every((c) => gives(c, 'nghe')));
-  // Sóng: one choice gives Sóng, and one choice does not.
+  assert.ok(!choices.some((c) => gives(c, 'nghe')), 'the river does not give Nghé');
   const songNode = after.flatMap((d) => Object.values(d.nodes)).find((n) => n.choices?.some((c) => gives(c, 'song')));
   assert.ok(songNode.choices.some((c) => !gives(c, 'song')), 'Sóng is optional');
-  // The player names each new friend.
-  for (const c of choices.filter((x) => gives(x, 'nghe') || gives(x, 'song'))) {
-    const friend = c.effects.find((e) => e.friend).friend;
-    assert.ok(c.effects.some((e) => e.open === 'nameFriend' && e.id === friend), `a name for ${friend}`);
-    assert.ok(friends[friend].gloss, `${friend} has a glossary id for its name`);
+  for (const c of choices.filter((x) => gives(x, 'song'))) {
+    assert.ok(c.effects.some((e) => e.open === 'nameFriend' && e.id === 'song'), 'a name for Sóng');
   }
+  for (const f of ['nghe', 'song']) assert.ok(friends[f].gloss, `${f} has a glossary id for its name`);
 });
 
 test('the quest bar text is short: 44 characters or fewer, so it fits in 2 lines on a phone', () => {

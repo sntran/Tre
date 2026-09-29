@@ -161,44 +161,12 @@
    "mark": "legend"
   },
   {
-   "id": "river.nghe",
+   "id": "river.song",
    "start": "n1",
    "nodes": {
     "n1": {
      "speaker": "narrator",
      "textKey": "dlg.river.friends.n1",
-     "next": "n2"
-    },
-    "n2": {
-     "speaker": "nghe",
-     "textKey": "dlg.river.friends.n2",
-     "choices": [
-      {
-       "textKey": "dlg.river.friends.n2.c1",
-       "effects": [
-        {
-         "friend": "nghe"
-        },
-        {
-         "set": "friend.nghe"
-        },
-        {
-         "open": "nameFriend",
-         "id": "nghe"
-        }
-       ]
-      }
-     ]
-    }
-   }
-  },
-  {
-   "id": "river.song",
-   "start": "n3",
-   "nodes": {
-    "n3": {
-     "speaker": "narrator",
-     "textKey": "dlg.river.friends.n3",
      "next": "n4"
     },
     "n4": {

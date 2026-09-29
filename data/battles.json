@@ -3,7 +3,7 @@
   "battles": {
     "river": { "bg": "battle/bg-river", "enemies": ["river-serpent", "river-serpent"], "states": ["ice", "water"], "introKey": "battle.river.intro",
       "mark": "legend", "noteKey": "battle.river.note",
-      "win": { "set": ["river.calmed"], "give": { "coin": 2 }, "after": ["river.nghe", "river.song", "river.song.after"] } },
+      "win": { "set": ["river.calmed"], "give": { "coin": 2 }, "after": ["river.song", "river.song.after"] } },
     "scouts": { "bg": "battle/bg-village", "enemies": ["scout", "scout"], "states": ["fire", "ice", "water"], "introKey": "battle.scouts.intro",
       "mark": "legend", "noteKey": "battle.scouts.note",
       "win": { "set": ["scouts.won"], "give": { "iron": 2, "coin": 2 }, "after": ["scouts.won"] } },

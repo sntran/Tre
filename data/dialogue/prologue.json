@@ -17,7 +17,7 @@
     "n3": {
      "speaker": "grandma",
      "textKey": "dlg.grandma.intro.n3",
-     "next": "n4"
+     "next": "nghe1"
     },
     "n4": {
      "speaker": "grandma",
@@ -25,6 +25,27 @@
      "effects": [
       {
        "set": "intro.seen"
+      }
+     ]
+    },
+    "nghe1": {
+     "speaker": "grandma",
+     "textKey": "dlg.grandma.intro.nghe1",
+     "next": "nghe2"
+    },
+    "nghe2": {
+     "speaker": "nghe",
+     "textKey": "dlg.grandma.intro.nghe2",
+     "choices": [
+      {
+       "textKey": "dlg.grandma.intro.nghe2.c1",
+       "effects": [
+        {
+         "open": "nameFriend",
+         "id": "nghe"
+        }
+       ],
+       "next": "n4"
       }
      ]
     }

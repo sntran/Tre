@@ -24,12 +24,13 @@ export function createProfile({ id, name, gender = 'boy', skin = 1, face = 1, ha
     calling: null,
     titles: [],
     stele: [],
-    flags: {},
+    // Nghé, the buffalo calf, is the friend of the hero from the first minute.
+    flags: { 'friend.nghe': true },
     quests: {},
     inventory: {},
-    friends: [],
+    friends: ['nghe'],
     friendNames: {}, // names that the player chose for friends, by friend id
-    party: [],
+    party: ['nghe'],
     machines: [],
     place: { map: 'phu-dong', x: null, y: null },
     // The game clock (game minutes from the start), and the state of each map that the hero

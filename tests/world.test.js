@@ -132,7 +132,7 @@ test('effects change the profile and give commands', () => {
   ]);
   assert.equal(p.flags['giong.spoke'], true);
   assert.equal(p.inventory.iron, 2, 'a take with too few items does nothing');
-  assert.deepEqual(p.friends, ['song']);
+  assert.deepEqual(p.friends, ['nghe', 'song']);
   assert.deepEqual(commands, [{ open: 'battle', id: 'river' }]);
   assert.equal(changes.items.iron, 2);
 });

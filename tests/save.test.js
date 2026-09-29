@@ -108,24 +108,27 @@ test('the grade of a save comes from the grade configuration', () => {
   assert.throws(() => importCode(exportCode(half)), (e) => e.reason === 'shape');
 });
 
-test('the version 2 migration gives Nghé to a player who calmed the river', () => {
+test('the migrations give Nghé to every player: at version 2 after the river, at version 5 always', () => {
   const v1 = sample();
-  v1.flags['river.calmed'] = true;
+  v1.flags = { 'river.calmed': true };
   v1.friends = ['song'];
   v1.party = ['song'];
   const done = migrate({ format: SAVE_FORMAT, version: 1, savedAt: 0, profile: v1 }).profile;
   assert.deepEqual(done.party, ['nghe', 'song']);
   assert.deepEqual(done.friends, ['nghe', 'song']);
   assert.equal(done.flags['friend.nghe'], true);
-  // No river win: no Nghé.
-  const before = migrate({ format: SAVE_FORMAT, version: 1, savedAt: 0, profile: sample() }).profile;
-  assert.deepEqual(before.party, []);
+  // A save of version 4 with no Nghé gets Nghé first in the party.
+  const v4 = sample();
+  v4.flags = {};
+  v4.friends = [];
+  v4.party = [];
+  const now = migrate({ format: SAVE_FORMAT, version: 4, savedAt: 0, profile: v4 }).profile;
+  assert.deepEqual(now.party, ['nghe']);
+  assert.deepEqual(now.friends, ['nghe']);
+  assert.equal(now.flags['friend.nghe'], true);
   // Nghé already in the party: no second copy.
   const has = sample();
-  has.flags['river.calmed'] = true;
-  has.friends = ['nghe'];
-  has.party = ['nghe'];
-  assert.deepEqual(migrate({ format: SAVE_FORMAT, version: 1, savedAt: 0, profile: has }).profile.party, ['nghe']);
+  assert.deepEqual(migrate({ format: SAVE_FORMAT, version: 4, savedAt: 0, profile: has }).profile.party, ['nghe']);
 });
 
 test('the version 3 migration moves the hero home on the new isometric map', () => {
@@ -187,7 +190,7 @@ test('profile items, friends, titles, and loss rules', () => {
   assert.equal(p.inventory.coin, 10);
   assert.equal(addFriend(p, 'song'), true);
   assert.equal(addFriend(p, 'song'), false);
-  assert.deepEqual(p.party, ['song']);
+  assert.deepEqual(p.party, ['nghe', 'song'], 'Nghé is always the first friend');
   assert.equal(giveTitle(p, 'tu-tai', 1, 5), true);
   assert.equal(p.stele[0].name, 'Tí Sún');
 
@@ -195,7 +198,7 @@ test('profile items, friends, titles, and loss rules', () => {
   assert.equal(lossLevel(p), 'small');
   const lost = applyLoss(p, 'small', rules, ['coin', 'iron']);
   assert.deepEqual(lost, { coin: 1 });
-  assert.deepEqual(p.friends, ['song']);
+  assert.deepEqual(p.friends, ['nghe', 'song']);
   assert.deepEqual(p.titles, ['tu-tai']);
 
   const g1 = createProfile({ id: 'g1', name: 'An', grade: 1 });
