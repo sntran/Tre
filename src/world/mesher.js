@@ -20,8 +20,11 @@ const FACES = [
 //   shade(x, y, z): a factor for the color of the top face (for shadows), 1 for none,
 //   ink: false to make no ink lines,
 // }
-// Return { positions, colors, owners, indices, segments, faces }. Each segment is six numbers:
-// the two ends of an ink line.
+// Return { positions, colors, owners, indices, segments, segOwners, segOuter, faces }. Each segment
+// is six numbers: the two ends of an ink line. segOwners has the owner of each line, and segOuter
+// is 1 for a line on the outline of its owner (the edge meets empty space or another owner) and 0
+// for a line inside it (where two colors of the same owner meet, or a fold). A faded object keeps
+// only a faint outline.
 export function meshGrid(grid, opts = {}) {
   const s = opts.scale ?? 1;
   const x0 = opts.x0 ?? 0;
@@ -38,16 +41,25 @@ export function meshGrid(grid, opts = {}) {
   const owners = [];
   const indices = [];
   const segments = [];
-  const seen = new Set();
+  const segOwners = [];
+  const segOuter = [];
+  const seen = new Map();
   let n = 0;
   let faces = 0;
-  const addSeg = (a, b) => {
+  const addSeg = (a, b, who, outer) => {
     const k1 = `${a[0]},${a[1]},${a[2]}|${b[0]},${b[1]},${b[2]}`;
     const k2 = `${b[0]},${b[1]},${b[2]}|${a[0]},${a[1]},${a[2]}`;
-    if (seen.has(k1) || seen.has(k2)) return;
-    seen.add(k1);
+    const i = seen.get(k1) ?? seen.get(k2);
+    if (i !== undefined) {
+      if (outer) segOuter[i] = 1;
+      return;
+    }
+    seen.set(k1, segOwners.length);
     segments.push(a[0] * s, a[1] * s, a[2] * s, b[0] * s, b[1] * s, b[2] * s);
+    segOwners.push(who);
+    segOuter.push(outer ? 1 : 0);
   };
+  const ownerAt = (x, y, z) => (at(x, y, z) > 0 ? grid.ownerAt(x, y, z) : -1);
   for (let y = 0; y < grid.sy; y++) {
     for (let z = z0; z < z1; z++) {
       for (let x = x0; x < x1; x++) {
@@ -84,14 +96,14 @@ export function meshGrid(grid, opts = {}) {
               a[t] += side;
               const b = [...a];
               b[u] += 1;
-              addSeg(a, b);
+              addSeg(a, b, who, ownerAt(w[0], w[1], w[2]) !== who);
             }
           }
         }
       }
     }
   }
-  return { positions, colors, owners, indices, segments, faces };
+  return { positions, colors, owners, indices, segments, segOwners, segOuter, faces };
 }
 
 // The chunks of a grid: the parts of `size` blocks in x and z.

@@ -59,6 +59,19 @@ test('the mesher shows only the faces that can be seen, and draws ink only where
   };
   assert.ok(topColors(shaded).length > 0);
   assert.ok(topColors(shaded).every((c, i) => c < topColors(lit)[i] || c === 0), 'the top is darker in the shadow');
+  // Each line knows its owner, and if it is on the outline of the owner. The ring between the two
+  // colors of one owner is inside; the other lines are its outline.
+  const o = createGrid(4, 3, 3, { owners: true });
+  o.set(1, 1, 1, 'green', 4);
+  o.set(2, 1, 1, 'yellow', 4);
+  const inked = meshGrid(o);
+  assert.equal(inked.segOwners.length, inked.segments.length / 6);
+  assert.ok(inked.segOwners.every((w) => w === 4));
+  assert.equal(inked.segOuter.filter((v) => v === 0).length, 4, 'the ring where the colors meet is inside');
+  assert.equal(inked.segOuter.filter((v) => v === 1).length, 16, 'the outline of the box');
+  // With another owner, the ring is an outline too.
+  o.set(2, 1, 1, 'yellow', 5);
+  assert.equal(meshGrid(o).segOuter.filter((v) => v === 0).length, 0);
   // Chunks cover the grid.
   const big = createGrid(40, 2, 20);
   const chunks = chunksOf(big, 16);

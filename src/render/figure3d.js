@@ -11,7 +11,8 @@ export const FIGURE_UNIT = 0.5;
 const TONES = [FACE_TONES.px, FACE_TONES.nx, FACE_TONES.py, FACE_TONES.ny, FACE_TONES.pz, FACE_TONES.nz];
 
 const shadowGeometry = new THREE.CircleGeometry(1, 20).rotateX(-Math.PI / 2);
-const shadowMaterial = new THREE.MeshBasicMaterial({ color: INK, transparent: true, opacity: 0.2, depthWrite: false });
+// A flat, dark disc under each figure, so that the child finds the hero in a busy frame.
+const shadowMaterial = new THREE.MeshBasicMaterial({ color: INK, transparent: true, opacity: 0.32, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
 const hullMaterial = new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide });
 const markMaterials = new Map();
 const faceMaterials = new Map();
@@ -73,8 +74,9 @@ export function buildFigure(figure) {
   // A soft shadow on the ground, a little to the back right (the light is at the front left).
   if (figure.shadow) {
     const disc = new THREE.Mesh(shadowGeometry, shadowMaterial);
-    disc.scale.setScalar(figure.shadow * figure.scale * FIGURE_UNIT * 1.6);
-    disc.position.set(0.12, 0.03, -0.12);
+    disc.scale.setScalar(Math.max(0.8, figure.shadow * figure.scale * FIGURE_UNIT * 1.6));
+    disc.position.set(0, 0.04, 0);
+    disc.renderOrder = 1;
     root.add(disc);
   }
   return { root, body, parts, figure, height: figure.height * figure.scale * FIGURE_UNIT };

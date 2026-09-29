@@ -75,8 +75,9 @@ function geometryOf(m, offset) {
   return g;
 }
 
-// The ink lines as quads that turn to the camera in the vertex shader. segs: flat list of
-// [ax, ay, az, bx, by, bz] (world units), width: the width of the lines.
+// The ink lines as quads that turn to the camera in the vertex shader. A group: { segs (flat list
+// of [ax, ay, az, bx, by, bz] in world units), w (the width of the lines), owners, outer (one value
+// for each line; see meshGrid) }.
 function inkGeometry(groups) {
   let count = 0;
   for (const { segs } of groups) count += segs.length / 6;
@@ -84,18 +85,25 @@ function inkGeometry(groups) {
   const other = new Float32Array(count * 12);
   const side = new Float32Array(count * 4);
   const width = new Float32Array(count * 4);
+  const owner = new Float32Array(count * 4);
+  const outer = new Float32Array(count * 4);
   const idx = new Uint32Array(count * 6);
   let n = 0;
-  for (const { segs, w } of groups) {
+  for (const g of groups) {
+    const { segs, w } = g;
     for (let i = 0; i < segs.length; i += 6) {
       const a = [segs[i], segs[i + 1], segs[i + 2]];
       const b = [segs[i + 3], segs[i + 4], segs[i + 5]];
       const verts = [[a, b, 1], [a, b, -1], [b, a, 1], [b, a, -1]];
+      const who = g.owners?.[i / 6] ?? 0;
+      const out = g.outer?.[i / 6] ?? 1;
       verts.forEach(([p, o, sd], k) => {
         pos.set(p, (n * 4 + k) * 3);
         other.set(o, (n * 4 + k) * 3);
         side[n * 4 + k] = sd;
         width[n * 4 + k] = w;
+        owner[n * 4 + k] = who;
+        outer[n * 4 + k] = out;
       });
       idx.set([n * 4, n * 4 + 1, n * 4 + 2, n * 4, n * 4 + 2, n * 4 + 3], n * 6);
       n += 1;
@@ -106,26 +114,37 @@ function inkGeometry(groups) {
   g.setAttribute('other', new THREE.BufferAttribute(other, 3));
   g.setAttribute('side', new THREE.BufferAttribute(side, 1));
   g.setAttribute('width', new THREE.BufferAttribute(width, 1));
+  g.setAttribute('owner', new THREE.BufferAttribute(owner, 1));
+  g.setAttribute('outer', new THREE.BufferAttribute(outer, 1));
   g.setIndex(new THREE.BufferAttribute(idx, 1));
   g.computeBoundingSphere();
   return g;
 }
 
+// The ink of a faded object goes with it: the lines inside it go, and its outline stays at about
+// one third.
 function inkMaterial(uniforms) {
   return new THREE.ShaderMaterial({
     uniforms,
     side: THREE.DoubleSide,
+    transparent: true,
     vertexShader: `
-      attribute vec3 other; attribute float side; attribute float width;
-      uniform vec3 uView;
+      attribute vec3 other; attribute float side; attribute float width; attribute float owner; attribute float outer;
+      uniform vec3 uView; uniform sampler2D uFade; uniform float uFadeSize;
+      varying float vAlpha;
       void main() {
+        float fade = owner > 0.5 ? texture2D(uFade, vec2((owner + 0.5) / uFadeSize, 0.5)).r : 0.0;
+        vAlpha = 1.0 - fade * (outer > 0.5 ? 0.67 : 1.0);
         vec3 d = normalize(other - position);
         vec3 p = normalize(cross(d, uView)) * width * 0.5 * side;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position + p - d * width * 0.5, 1.0);
       }`,
     fragmentShader: `
-      uniform float uNight;
-      void main() { gl_FragColor = vec4(mix(vec3(0.122, 0.106, 0.09), vec3(0.2, 0.2, 0.26), uNight * 0.5), 1.0); }`,
+      uniform float uNight; varying float vAlpha;
+      void main() {
+        if (vAlpha < 0.02) discard;
+        gl_FragColor = vec4(mix(vec3(0.122, 0.106, 0.09), vec3(0.2, 0.2, 0.26), uNight * 0.5), vAlpha);
+      }`,
   });
 }
 
@@ -148,8 +167,10 @@ function roofMesh(r, material) {
   const segs = [];
   const base = colorIndex(r.color);
   const ridge = colorIndex(r.ridge);
-  const ridgeY = (t) => y + hd + 1.1 * Math.abs(t) ** 3.2 * hd;
-  const eaveY = (t) => y + 0.9 * Math.abs(t) ** 4 * hd * 0.5;
+  // The ends of the ridge rise by `sweep` ground blocks (one on a house, two on the đình).
+  const sweep = r.sweep ?? 1;
+  const ridgeY = (t) => y + hd + sweep * Math.abs(t) ** 3.2;
+  const eaveY = (t) => y + 0.5 * sweep * Math.abs(t) ** 4;
   let n = 0;
   const quad = (pts, c, tone, flip) => {
     const rgb = toneRgb(c, tone);
@@ -162,7 +183,11 @@ function roofMesh(r, material) {
     else idx.push(n, n + 1, n + 2, n, n + 2, n + 3);
     n += pts.length;
   };
-  const line = (a, b) => segs.push(a[0], a[1], a[2], b[0], b[1], b[2]);
+  const outer = [];
+  const line = (a, b, out = 1) => {
+    segs.push(a[0], a[1], a[2], b[0], b[1], b[2]);
+    outer.push(out);
+  };
   for (const sideZ of [-1, 1]) {
     for (let i = 0; i < seg; i++) {
       const ta = (i / seg) * 2 - 1;
@@ -173,7 +198,7 @@ function roofMesh(r, material) {
       const pts = [[xa, ridgeY(ta), zc], [xb, ridgeY(tb), zc], [xb, eaveY(tb), ez], [xa, eaveY(ta), ez]];
       quad(pts, base, sideZ < 0 ? 0.86 : 0.98, sideZ > 0);
       line(pts[3], pts[2]);
-      if (i % 2 === 0) line(pts[0], pts[3]);
+      if (i % 2 === 0) line(pts[0], pts[3], 0);
     }
   }
   for (let i = 0; i < seg; i++) {
@@ -223,7 +248,7 @@ function roofMesh(r, material) {
       add(0.5, 0.2, 0.2, 'vermilion', x + dir * 0.95, by + 1.2);
     }
   }
-  return { mesh, segs, extras };
+  return { mesh, segs, outer, owners: outer.map(() => r.who ?? 0), extras };
 }
 
 // The wave pattern of the prints, for the river.
@@ -297,7 +322,7 @@ export function createVoxelWorld(canvas, terrain) {
     const m = meshGrid(g, { ...c, scale: 1, shade: terrain.shade });
     if (!m.indices.length) continue;
     scene.add(new THREE.Mesh(track(geometryOf(m, [0, 0, 0])), solidMat));
-    inkGroups.push({ segs: m.segments, w: 0.14 });
+    inkGroups.push({ segs: m.segments, w: 0.14, owners: m.segOwners, outer: m.segOuter });
   }
   // Props: half-size blocks. A face that touches the ground is hidden.
   const underGround = (x, y, z) => g.get(x >> 1, y >> 1, z >> 1) > 0;
@@ -307,7 +332,7 @@ export function createVoxelWorld(canvas, terrain) {
     const mesh = new THREE.Mesh(track(geometryOf(m, [0, 0, 0])), ghostMat);
     scene.add(mesh);
     thingMeshes.push(mesh);
-    inkGroups.push({ segs: m.segments, w: 0.1 });
+    inkGroups.push({ segs: m.segments, w: 0.1, owners: m.segOwners, outer: m.segOuter });
   }
   // Roofs.
   for (const r of terrain.roofs) {
@@ -315,7 +340,7 @@ export function createVoxelWorld(canvas, terrain) {
     track(roof.mesh.geometry);
     scene.add(roof.mesh, ...roof.extras);
     thingMeshes.push(roof.mesh);
-    inkGroups.push({ segs: roof.segs, w: 0.11 });
+    inkGroups.push({ segs: roof.segs, w: 0.11, owners: roof.owners, outer: roof.outer });
   }
   scene.add(new THREE.Mesh(track(inkGeometry(inkGroups)), track(inkMaterial(uniforms))));
 
@@ -414,7 +439,15 @@ export function createVoxelWorld(canvas, terrain) {
   function updateFades(hero, dt) {
     toCam.copy(view).negate();
     let changed = false;
-    const points = [{ x: hero.x, y: hero.y + 0.8, z: hero.z }, { x: hero.x, y: hero.y + 2.4, z: hero.z }];
+    // The feet, the head, and the two sides of the hero: a thing near the line of sight fades too.
+    const rx = Math.cos(state.az) * 0.9;
+    const rz = -Math.sin(state.az) * 0.9;
+    const points = [
+      { x: hero.x, y: hero.y + 0.4, z: hero.z },
+      { x: hero.x, y: hero.y + 2.4, z: hero.z },
+      { x: hero.x + rx, y: hero.y + 1.2, z: hero.z + rz },
+      { x: hero.x - rx, y: hero.y + 1.2, z: hero.z - rz },
+    ];
     for (const o of boxes) {
       const hit = points.some((p) => rayHits(o.b, p, toCam));
       const next = o.fade + ((hit ? 1 : 0) - o.fade) * Math.min(1, dt * 8);
@@ -450,9 +483,11 @@ export function createVoxelWorld(canvas, terrain) {
     },
     // One frame: turn, follow, fade, and draw.
     render(dt, hero, t) {
+      const turning = state.az !== state.azTarget;
       state.az += (state.azTarget - state.az) * Math.min(1, dt * 7);
       if (Math.abs(state.azTarget - state.az) < 0.01) state.az = state.azTarget;
-      const k = Math.min(1, dt * VIEW.lag);
+      // While the view turns, it turns around the hero, so that the hero stays in the middle.
+      const k = turning ? 1 : Math.min(1, dt * VIEW.lag);
       focus.x += (hero.x - focus.x) * k;
       focus.y += (hero.y + 1.5 - focus.y) * k;
       focus.z += (hero.z - focus.z) * k;
