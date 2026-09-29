@@ -88,6 +88,7 @@ export function createWorld(world, maps) {
   return {
     start: world.start,
     home,
+    eraLand: world.eraLand ?? null,
     regions: world.regions,
     region: (id) => regions.get(id) ?? null,
     regionOf: (mapId) => regionOf.get(mapId) ?? null,

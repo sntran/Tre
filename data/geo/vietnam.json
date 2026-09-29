@@ -352,7 +352,6 @@
    "id": "phu-dong",
    "name": "Phù Đổng",
    "at": [105.953,21.059],
-   "region": "giong",
    "note": "Đền Phù Đổng (Đền Gióng), on the north bank of the Đuống"
   },
   {
@@ -379,21 +378,18 @@
    "id": "thang-long",
    "name": "Thăng Long",
    "at": [105.84,21.035],
-   "region": "thang-long",
    "note": "Hoàng thành Thăng Long"
   },
   {
    "id": "nghia-linh",
    "name": "Nghĩa Lĩnh",
    "at": [105.322,21.369],
-   "region": "van-lang",
    "note": "Đền Hùng on núi Nghĩa Lĩnh, Phú Thọ"
   },
   {
    "id": "tay-bac",
    "name": "Tây Bắc",
    "at": [103.9,21.33],
-   "region": "lac-long",
    "note": "The high mountains of the north-west (Sơn La)",
    "check": true
   },
@@ -401,14 +397,12 @@
    "id": "co-loa",
    "name": "Cổ Loa",
    "at": [105.873,21.116],
-   "region": "co-loa",
    "note": "The citadel of Cổ Loa, Đông Anh"
   },
   {
    "id": "me-linh",
    "name": "Mê Linh",
    "at": [105.72,21.18],
-   "region": "me-linh",
    "note": "Đền Hai Bà Trưng at Hạ Lôi",
    "check": true
   },
@@ -416,7 +410,6 @@
    "id": "bach-dang",
    "name": "Bạch Đằng",
    "at": [106.83,20.93],
-   "region": "bach-dang",
    "note": "The stake fields of the Bạch Đằng near Quảng Yên",
    "check": true
   },
@@ -430,7 +423,6 @@
    "id": "thien-truong",
    "name": "Thiên Trường",
    "at": [106.179,20.441],
-   "region": "thien-truong",
    "note": "Đền Trần, Nam Định",
    "check": true
   },
@@ -438,14 +430,12 @@
    "id": "tay-do",
    "name": "Tây Đô",
    "at": [105.605,20.078],
-   "region": "tay-do",
    "note": "Thành nhà Hồ, Thanh Hóa"
   },
   {
    "id": "lam-son",
    "name": "Lam Sơn",
    "at": [105.4,19.948],
-   "region": "lam-son",
    "note": "Lam Kinh, Thanh Hóa",
    "check": true
   },
@@ -453,7 +443,6 @@
    "id": "phu-xuan",
    "name": "Phú Xuân",
    "at": [107.58,16.47],
-   "region": "thuan-quang",
    "note": "Huế"
   },
   {
@@ -472,7 +461,6 @@
    "id": "tay-son",
    "name": "Tây Sơn",
    "at": [108.917,13.905],
-   "region": "tay-son",
    "note": "Phú Phong, Bình Định",
    "check": true
   },
@@ -480,7 +468,6 @@
    "id": "gia-dinh",
    "name": "Gia Định",
    "at": [106.7,10.776],
-   "region": "gia-dinh",
    "note": "Sài Gòn"
   },
   {

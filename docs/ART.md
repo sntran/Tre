@@ -180,4 +180,13 @@ The village is an isometric map: a 2:1 dimetric grid, drawn on Canvas 2D. The ar
 
 ## 12. The country map
 
-The country map (`art/world/country.svg`, viewBox `0 0 600 1000`) is an old map of Vietnam on dó paper, not to scale: the north is larger, so that each small region has room. It has one closed path for each of the 13 story regions, with the id `region-N` (N is the chapter number). Regions next to each other have different fills. The sea has wave scales, and the islands of Hoàng Sa and Trường Sa are on the map, as on every map of Vietnam. The code puts a round seal on each region, at the point `seal` in `data/world/regions.json`: the hero on the region of the hero, the chapter number on an open region, and a red seal with a lock on a region that is not open yet.
+The country map is drawn by the code from real map data (`data/geo/vietnam.json`, made by `tools/geo/build.mjs`), in the style of an old map on dó paper:
+
+- **Sea:** the wave pattern (`art/pattern/waves.svg`) on `indigo-pale`.
+- **Land:** the land around Vietnam is `paper-deep`. The land of Vietnam in the era of the story has the areas of the regions in `green-pale`, `yellow-pale`, `paper`, and `vermilion-pale`, with ink borders. The land to the south of the era is faint (`diep`, with `ash-light` borders), and it has no names.
+- **Mountains:** three flat tones of ink (6, 12, and 18 %) for the heights above 300, 800, and 1500 m, and small ink hill marks on high land. No gradients.
+- **Water:** rivers are `indigo` lines (the Hồng and the Mê Kông are wider). Lakes are `indigo-pale`.
+- **Islands:** each small island of Hoàng Sa and Trường Sa is a small dot with an ink line, so that it shows at every size. The names Hoàng Sa and Trường Sa are on the map.
+- **Seals:** each region has a seal at its center place: the face of the hero on the region of the hero, the chapter number on an open region, and a red square seal with a lock on a region that is not open yet. Seals that are near each other move apart, and a thin ink line goes to the real place.
+- **Names:** the names of the places of the open regions, in the display font, with a thin paper edge.
+- **Lines** keep the same width on the screen at every zoom.

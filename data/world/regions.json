@@ -1,22 +1,26 @@
 {
- "_about": "The world of Tre: the whole of Vietnam as regions, one for each story chapter, in history order. Each region has 3 to 6 maps (files in data/maps/). A region with no maps is a locked area on the country map. when: the condition that opens the region (see src/core/conditions.js). entry: the map and the place where the hero arrives after a travel. links: the roads between regions, with the travel time in game hours. seal: the place of the seal on the country map (art/world/country.svg), in the units of its viewBox.",
+ "_about": "The world of Tre: the whole of Vietnam as regions, one for each story chapter, in history order. Each region has 3 to 6 maps (files in data/maps/). A region with no maps is a locked area on the country map. when: the condition that opens the region (see src/core/conditions.js). entry: the map and the place where the hero arrives after a travel. links: the roads between regions, with the travel time in game hours. places: the story places of the region, with names on the map when the region is open. seeds: more points ([longitude, latitude]) of the land of the region, so that the area of the region on the map follows the real land; the area of a region is the land that is nearer to its place or seeds than to those of other regions. place: the story place at the center of the region (see data/geo/vietnam.json); the seal of the region is there on the country map.",
  "start": { "region": "giong", "map": "phu-dong" },
  "regions": [
-  { "id": "lac-long", "chapter": 1, "seal": [268, 118], "nameKey": "region.lac-long", "maps": [] },
-  { "id": "van-lang", "chapter": 2, "seal": [148, 338], "nameKey": "region.van-lang", "maps": [] },
-  { "id": "giong", "chapter": 3, "seal": [434, 258], "nameKey": "region.giong", "maps": ["phu-dong", "fields-river", "road-vanmieu", "trau-son"],
+  { "id": "lac-long", "place": "tay-bac", "chapter": 1, "seeds": [[103.2,22.0],[104.3,21.0],[104.9,22.7],[106.2,22.6],[105.7,22.2],[106.7,21.9]], "nameKey": "region.lac-long", "maps": [] },
+  { "id": "van-lang", "place": "nghia-linh", "chapter": 2, "seeds": [[105.1,21.6],[105.3,22.0]], "nameKey": "region.van-lang", "maps": [] },
+  { "id": "giong", "place": "phu-dong", "chapter": 3, "nameKey": "region.giong", "maps": ["phu-dong", "fields-river", "road-vanmieu", "trau-son"], "places": ["phu-dong", "soc-son", "nui-trau", "van-mieu"],
     "entry": { "map": "phu-dong", "x": 5.5, "y": 13.3 } },
-  { "id": "co-loa", "chapter": 4, "seal": [330, 246], "nameKey": "region.co-loa", "maps": [] },
-  { "id": "me-linh", "chapter": 5, "seal": [238, 244], "nameKey": "region.me-linh", "maps": [] },
-  { "id": "bach-dang", "chapter": 6, "seal": [538, 262], "nameKey": "region.bach-dang", "maps": [] },
-  { "id": "thang-long", "chapter": 7, "seal": [286, 350], "nameKey": "region.thang-long", "maps": [] },
-  { "id": "thien-truong", "chapter": 8, "seal": [446, 394], "nameKey": "region.thien-truong", "maps": [] },
-  { "id": "tay-do", "chapter": 9, "seal": [424, 506], "nameKey": "region.tay-do", "maps": [] },
-  { "id": "lam-son", "chapter": 10, "seal": [250, 486], "nameKey": "region.lam-son", "maps": [] },
-  { "id": "thuan-quang", "chapter": 11, "seal": [406, 628], "nameKey": "region.thuan-quang", "maps": [] },
-  { "id": "tay-son", "chapter": 12, "seal": [474, 818], "nameKey": "region.tay-son", "maps": [] },
-  { "id": "gia-dinh", "chapter": 13, "seal": [296, 926], "nameKey": "region.gia-dinh", "maps": [] }
+  { "id": "co-loa", "place": "co-loa", "chapter": 4, "nameKey": "region.co-loa", "maps": [] },
+  { "id": "me-linh", "place": "me-linh", "chapter": 5, "nameKey": "region.me-linh", "maps": [] },
+  { "id": "bach-dang", "place": "bach-dang", "chapter": 6, "seeds": [[107.1,21.0],[107.4,21.3],[106.6,20.8]], "nameKey": "region.bach-dang", "maps": [] },
+  { "id": "thang-long", "place": "thang-long", "chapter": 7, "nameKey": "region.thang-long", "maps": [] },
+  { "id": "thien-truong", "place": "thien-truong", "chapter": 8, "seeds": [[106.4,20.3],[106.0,20.1]], "nameKey": "region.thien-truong", "maps": [] },
+  { "id": "tay-do", "place": "tay-do", "chapter": 9, "seeds": [[105.8,19.7],[105.9,19.3]], "nameKey": "region.tay-do", "maps": [] },
+  { "id": "lam-son", "place": "lam-son", "chapter": 10, "seeds": [[105.0,19.9],[104.8,19.2],[104.6,19.6]], "nameKey": "region.lam-son", "maps": [] },
+  { "id": "thuan-quang", "place": "phu-xuan", "chapter": 11, "seeds": [[105.9,18.3],[106.5,17.5],[107.2,16.8],[108.2,15.6],[107.6,15.8]], "nameKey": "region.thuan-quang", "maps": [] },
+  { "id": "tay-son", "place": "tay-son", "chapter": 12, "seeds": [[108.9,14.9],[108.0,14.0],[108.3,12.7],[109.1,12.3],[108.6,11.3]], "nameKey": "region.tay-son", "maps": [] },
+  { "id": "gia-dinh", "place": "gia-dinh", "chapter": 13, "seeds": [[105.8,10.0],[105.1,9.3],[107.1,11.4],[106.2,11.1],[106.6,10.3]], "nameKey": "region.gia-dinh", "maps": [] }
  ],
+ "eraLand": {
+  "_about": "The land of each era on the country map: the land north of this latitude (degrees) is the land of the chapter. The land to the south is drawn faint and has no names. The values follow the south border of the country in each time, and need a check.",
+  "byChapter": { "1": 18.0, "2": 18.0, "3": 18.0, "4": 18.0, "5": 18.0, "6": 18.0, "7": 18.0, "8": 16.2, "9": 15.4, "10": 15.4, "11": 13.6, "12": 8.4, "13": 8.4 }
+ },
  "links": [
   ["lac-long", "van-lang", 10],
   ["van-lang", "me-linh", 6],

@@ -558,6 +558,8 @@
   "place.roadvanmieu": "The road to Văn Miếu",
   "place.trauson": "The foot of Trâu Sơn",
   "ui.worldmap": "Map of the land",
+  "world.zoomin": "Zoom in",
+  "world.zoomout": "Zoom out",
   "world.here": "You are here.",
   "world.locked": "This land opens later in the story.",
   "world.travel": "Travel ({hours} hours)",

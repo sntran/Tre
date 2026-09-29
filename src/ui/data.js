@@ -8,6 +8,7 @@ const FILES = {
   tiles: 'data/tiles.json',
   regions: 'data/world/regions.json',
   roadEvents: 'data/world/road-events.json',
+  geo: 'data/geo/vietnam.json',
   npcs: 'data/npcs.json',
   quests: 'data/quests.json',
   questions: 'data/questions/science.json',

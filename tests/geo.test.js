@@ -44,8 +44,8 @@ test('the islands of Hoàng Sa and Trường Sa are part of Vietnam on the map, 
 test('every story place has real coordinates, and every region has a center place', () => {
   const world = load('data/world/regions.json');
   for (const p of geo.places) assert.ok(inBox(p.at, geo.bbox) && p.name, p.id);
-  const centers = new Map(geo.places.filter((p) => p.region).map((p) => [p.region, p]));
-  for (const r of world.regions) assert.ok(centers.has(r.id), `a center for ${r.id}`);
+  const ids = new Set(geo.places.map((p) => p.id));
+  for (const r of world.regions) assert.ok(ids.has(r.place), `a center place for ${r.id}`);
   // Era 1 is real: Sóc Sơn is north of Phù Đổng, Núi Trâu is east, and Văn Miếu is south-west.
   const at = Object.fromEntries(geo.places.map((p) => [p.id, p.at]));
   assert.ok(at['soc-son'][1] > at['phu-dong'][1]);
