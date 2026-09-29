@@ -314,7 +314,7 @@ export async function mountVillage(ctx, params = {}) {
     }
     if (e.pointerType !== 'mouse') stick.show = true;
     if (e.pointerType !== 'mouse' && inStickZone(p)) {
-      Object.assign(stick, { active: true, id: e.pointerId, x: p.x, y: p.y, kx: 0, ky: 0 });
+      Object.assign(stick, { active: true, id: e.pointerId, x: p.x, y: p.y, kx: 0, ky: 0, since: performance.now(), far: 0 });
       route = null;
       return;
     }
@@ -339,6 +339,7 @@ export async function mountVillage(ctx, params = {}) {
       if (len > STICK_R) { kx *= STICK_R / len; ky *= STICK_R / len; }
       stick.kx = kx;
       stick.ky = ky;
+      stick.far = Math.max(stick.far, Math.hypot(kx, ky));
       return;
     }
     if (hold && hold.id === e.pointerId) {
@@ -360,6 +361,8 @@ export async function mountVillage(ctx, params = {}) {
       stick.active = false;
       stick.kx = 0;
       stick.ky = 0;
+      // A short tap with no push in the stick area is a tap on the world there.
+      if (e.type === 'pointerup' && !busy && stick.far < 12 && performance.now() - stick.since < HOLD_MS) onTap(p);
       return;
     }
     if (hold && hold.id === e.pointerId) {
