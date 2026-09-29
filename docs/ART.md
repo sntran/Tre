@@ -160,3 +160,15 @@ Bamboo is the symbol of the game. Draw it correctly:
 - Use SVG with a `viewBox` and no `width` or `height`.
 - Do not use `<text>`, `<script>`, `<image>`, links to other files, filters, or gradients.
 - Keep files small (most files under 6 KB).
+
+## 11. The isometric world
+
+The village is an isometric map: a 2:1 dimetric grid, drawn on Canvas 2D. The art for it is in `art/iso/`.
+
+- **The grid:** one map tile is a diamond 64 units wide and 32 units tall. Map x goes to the screen right and down. Map y goes to the screen left and down. The north corner of the map is at the top of the screen.
+- **Light:** the light comes from the upper left. A face that looks to the screen left is a light tone. A face that looks to the screen right is a darker tone of the same color family (for example `yellow` and `ochre` for thatch, `ochre` and `wood` for wood, `green-pale` and `green` for leaves). Do not draw shadows on the ground; the code draws one soft shadow under each person.
+- **Ground tiles** (`tile-*.svg`, viewBox `0 0 64 32`): fill the full diamond with the base color. Keep all details 3 units or more inside the edge, so that the tiles repeat with no seams. Do not draw a keyline on the edge. The code draws the keyline where two kinds of ground meet (for example grass and path, sand and water).
+- **Objects** stand on a footprint of w × h tiles (w along map x, h along map y). The viewBox is `0 0 W H`, where W = (w + h) × 32 and H is the height that the object needs. The footprint diamond is at the bottom of the picture, with the corners west (0, H − w × 16), south (w × 32, H), east (W, H − h × 16), and north (h × 32, H − (w + h) × 16). Nothing goes below the south corner or outside 0 to W. Draw the object as a solid volume, seen from the south.
+- **Tall things on the ground:** a ground type can have a sprite that stands on each of its tiles. The hedge uses `iso/bamboo`.
+- **People** keep the front view of section 5. The code puts the middle of the feet on the map point of the person, and turns the picture to the left or the right. An adult is about 1.4 tiles tall on the screen (`figures.world` in `data/config/game.json`). A child is smaller.
+- **Depth:** the code draws the things from the back (north) to the front (south), so that a person walks behind and in front of houses and trees. An object can give a smaller depth box in the map data (for example the gate, which is open in the middle).

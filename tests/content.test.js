@@ -58,7 +58,7 @@ test('quests use known people, encounters, and objects', () => {
       for (const t of targets) {
         if (t.npc) assert.ok(npcs[t.npc], `${q.id}.${s.id}: ${t.npc}`);
         if (t.encounter) assert.ok(village.encounters.some((e) => e.id === t.encounter), t.encounter);
-        if (t.object) assert.ok(village.objects.some((o) => o.id === t.object), t.object);
+        if (t.object) assert.ok(village.layers.objects.some((o) => o.id === t.object), t.object);
       }
     }
   }

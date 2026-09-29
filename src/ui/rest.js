@@ -48,7 +48,7 @@ registerScene('rest', async (ctx) => {
   await ctx.save('rest');
   const screen = h('div', { class: 'screen' });
   const box = h('div', { class: 'vanmieu' }, [
-    img('map/house', 'vanmieu-gate'),
+    img('iso/house', 'vanmieu-gate'),
     h('div', { class: 'panel' }, [
       h('div', { class: 'row', style: { flexWrap: 'nowrap', alignItems: 'flex-end' } }, [
         portrait(ctx, 'grandma'),

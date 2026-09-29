@@ -16,7 +16,7 @@ import { readFileSync, existsSync } from 'node:fs';
 const tiles = load('data/tiles.json').types;
 
 function small(rows) {
-  return createTileMap({ width: rows[0].length, height: rows.length, ground: rows, legend: { '.': 'grass', '#': 'hedge', '~': 'water' } }, tiles);
+  return createTileMap({ width: rows[0].length, height: rows.length, layers: { ground: rows }, legend: { '.': 'grass', '#': 'hedge', '~': 'water' } }, tiles);
 }
 
 test('A* finds the shortest path around walls', () => {
@@ -59,11 +59,21 @@ test('people block tiles, and the hero walks next to a person', () => {
 test('objects block their footprint', () => {
   assert.equal(footprint({ w: 2, h: 2 }).length, 4);
   assert.deepEqual(footprint({ w: 2, h: 1, solid: false }), []);
-  const map = createTileMap({ width: 4, height: 4, ground: ['....', '....', '....', '....'], legend: { '.': 'grass' },
-    objects: [{ x: 1, y: 1, w: 2, h: 2 }] }, tiles);
+  const map = createTileMap({ width: 4, height: 4, legend: { '.': 'grass', '~': 'water' }, layers: {
+    ground: ['....', '....', '....', '...~'],
+    objects: [{ x: 1, y: 1, w: 2, h: 2 }],
+    collision: [{ x: 0, y: 3, block: true }, { x: 3, y: 3, block: false }],
+  } }, tiles);
   assert.equal(map.walkable(1, 1), false);
   assert.equal(map.walkable(2, 2), false);
-  assert.equal(map.walkable(3, 3), true);
+  assert.equal(map.walkable(3, 2), true);
+  // The collision layer blocks a grass tile and opens a water tile.
+  assert.equal(map.isBlocked(0, 3), true);
+  assert.equal(map.isBlocked(3, 3), false);
+  assert.equal(map.groundAt(3, 3), 'water');
+  assert.equal(map.isBlocked(-1, 0), true, 'the edge of the map blocks');
+  map.setSolid(0, 3, false);
+  assert.equal(map.isBlocked(0, 3), false);
 });
 
 test('trigger zones fire on enter or tap, with conditions and "once"', () => {
@@ -161,28 +171,39 @@ const village = load('data/maps/phu-dong.json');
 
 test('the village map is valid, and each person and place can be reached', () => {
   const map = createTileMap(village, tiles);
-  const start = village.spawn;
+  const L = village.layers;
+  const tile = (p) => ({ x: Math.floor(p.x), y: Math.floor(p.y) });
+  const start = tile(village.spawn);
   assert.ok(map.walkable(start.x, start.y));
-  for (const row of village.ground) assert.equal(row.length, village.width);
-  assert.equal(village.ground.length, village.height);
+  assert.ok(village.width >= 40 && village.height >= 40, 'about 48 x 48 tiles');
+  for (const row of L.ground) assert.equal(row.length, village.width);
+  assert.equal(L.ground.length, village.height);
+  for (const key of ['ground', 'objects', 'collision', 'zones', 'paths', 'triggers']) assert.ok(L[key], `layer ${key}`);
+  for (const o of L.objects) {
+    assert.ok(o.x >= 0 && o.y >= 0 && o.x + o.w <= village.width && o.y + o.h <= village.height, `${o.id} is on the map`);
+  }
   const targets = [
     ...village.npcs.map((n) => ({ ...n, what: `npc ${n.id}` })),
     ...village.encounters.map((e) => ({ ...e, what: `encounter ${e.id}` })),
   ];
   for (const t of targets) {
-    assert.ok(!map.solidAt(t.x, t.y), `${t.what} stands on a free tile`);
+    assert.ok(!map.isBlocked(Math.floor(t.x), Math.floor(t.y)), `${t.what} stands on a free tile`);
+    assert.ok(pathNextTo(map, start, tile(t)), `${t.what} can be reached`);
   }
-  for (const n of targets) map.occupy(n.x, n.y, n.id);
-  for (const t of targets) {
-    assert.ok(pathNextTo(map, start, t), `${t.what} can be reached`);
+  for (const id of ['ore1', 'ore2', 'well', 'sign']) {
+    assert.ok(pathNextTo(map, start, L.objects.find((o) => o.id === id)), `${id} can be reached`);
   }
-  // The ore by the river is behind the river creatures.
-  const ore2 = village.objects.find((o) => o.id === 'ore2');
-  assert.equal(pathNextTo(map, start, ore2), null, 'the river creatures block the path');
-  map.free(4, 19);
-  assert.ok(pathNextTo(map, start, ore2), 'after the battle the path is open');
-  // The exit to Văn Miếu.
-  assert.ok(findPath(map, start, { x: 16, y: 25 }));
+  // The bridge is broken: the only way over the river is the ford (shallow water).
+  const gap = L.zones.find((z) => z.id === 'bridge-gap');
+  assert.ok(map.isBlocked(gap.x, gap.y));
+  const vanmieu = L.triggers.find((z) => z.id === 'vanmieu');
+  const path = findPath(map, start, { x: vanmieu.x, y: vanmieu.y });
+  assert.ok(path, 'the road to Văn Miếu');
+  assert.ok(path.some((p) => map.groundAt(p.x, p.y) === 'shallow'), 'the road goes through the ford');
+  // The people walk on paths in the layer "paths", on free tiles.
+  for (const [id, line] of Object.entries(L.paths)) {
+    for (const [x, y] of line) assert.ok(!map.isBlocked(Math.floor(x), Math.floor(y)), `path ${id} at ${x},${y}`);
+  }
 });
 
 test('a tap on the head, body, or feet of a person selects the person', () => {

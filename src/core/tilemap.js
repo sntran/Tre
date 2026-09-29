@@ -1,11 +1,14 @@
-// A square tile map with a collision grid and A* pathfinding.
-// The hero moves in four directions (up, down, left, right).
+// A tile map with layers, a collision grid, and A* pathfinding.
+// data: { width, height, legend, layers: { ground: [rows], objects, collision } }.
+// Ground rows have one letter for each tile (see legend). Objects block their footprint.
+// Collision rectangles block tiles (block: true) or open them (block: false).
 
 export function createTileMap(data, tileTypes) {
   const { width, height } = data;
+  const layers = data.layers ?? {};
   const types = [];
   for (let y = 0; y < height; y++) {
-    const row = data.ground[y] ?? '';
+    const row = layers.ground?.[y] ?? '';
     for (let x = 0; x < width; x++) {
       const ch = row[x] ?? data.fill ?? '.';
       const type = data.legend[ch];
@@ -13,20 +16,22 @@ export function createTileMap(data, tileTypes) {
       types.push(type);
     }
   }
+  const inside = (x, y) => x >= 0 && y >= 0 && x < width && y < height;
+  const index = (x, y) => y * width + x;
   const solid = new Uint8Array(width * height);
   for (let i = 0; i < types.length; i++) solid[i] = tileTypes[types[i]]?.walk ? 0 : 1;
-  for (const obj of data.objects ?? []) {
+  for (const obj of layers.objects ?? []) {
     for (const [dx, dy] of footprint(obj)) {
-      const x = obj.x + dx;
-      const y = obj.y + dy;
-      if (x >= 0 && y >= 0 && x < width && y < height) solid[y * width + x] = 1;
+      if (inside(obj.x + dx, obj.y + dy)) solid[index(obj.x + dx, obj.y + dy)] = 1;
+    }
+  }
+  for (const r of layers.collision ?? []) {
+    for (let y = r.y; y < r.y + (r.h ?? 1); y++) {
+      for (let x = r.x; x < r.x + (r.w ?? 1); x++) if (inside(x, y)) solid[index(x, y)] = r.block === false ? 0 : 1;
     }
   }
   // Tiles that people or enemies stand on. They change during play.
   const occupied = new Map();
-
-  const inside = (x, y) => x >= 0 && y >= 0 && x < width && y < height;
-  const index = (x, y) => y * width + x;
 
   return {
     width,
@@ -36,6 +41,11 @@ export function createTileMap(data, tileTypes) {
     // A tile is walkable when the ground is walkable, no object is on it, and nobody stands on it.
     walkable: (x, y) => inside(x, y) && !solid[index(x, y)] && !occupied.has(index(x, y)),
     solidAt: (x, y) => !inside(x, y) || solid[index(x, y)] === 1,
+    // For free movement: people do not block here, because they are circles, not tiles.
+    isBlocked: (x, y) => !inside(x, y) || solid[index(x, y)] === 1,
+    groundAt: (x, y) => (inside(x, y) ? types[index(x, y)] : null),
+    // The world can change: for example a finished bridge opens its tiles.
+    setSolid: (x, y, on) => { if (inside(x, y)) solid[index(x, y)] = on ? 1 : 0; },
     occupy: (x, y, who) => occupied.set(index(x, y), who),
     free: (x, y) => occupied.delete(index(x, y)),
     whoAt: (x, y) => occupied.get(index(x, y)) ?? null,

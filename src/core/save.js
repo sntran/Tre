@@ -5,7 +5,7 @@ import { isGrade } from './grades.js';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
 
 export const SAVE_FORMAT = 'tre-save';
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 export const CODE_PREFIX = 'TRE1';
 
 // MIGRATIONS[n] changes a save of version n into version n + 1.
@@ -30,6 +30,13 @@ export const MIGRATIONS = {
       out.party.unshift('nghe');
       out.flags['friend.nghe'] = true;
     }
+    return out;
+  },
+  // Version 3: the village is an isometric map of a new size. A place on the old map does not
+  // match the new map, so the hero starts at the home again. Positions can have a fraction.
+  2: (profile) => {
+    const out = structuredClone(profile);
+    if (out.place && typeof out.place === 'object') out.place = { map: out.place.map ?? 'phu-dong', x: null, y: null };
     return out;
   },
 };
@@ -157,7 +164,7 @@ export function validate(profile, { grades = null } = {}) {
   if (profile.place !== undefined) {
     if (!isObj(profile.place)) fail('place');
     str(profile.place.map, 'place.map');
-    for (const k of ['x', 'y']) if (profile.place[k] !== null) int(profile.place[k], `place.${k}`, 0, 10000);
+    for (const k of ['x', 'y']) if (profile.place[k] !== null) num(profile.place[k], `place.${k}`, 0, 10000);
   }
   if (profile.stats !== undefined) for (const [, v] of entries(profile.stats, 'stats')) int(v, 'stats value', 0, 1e9);
   // Time

@@ -1,15 +1,15 @@
 {
-  "_about": "Ground tile types of the maps. walk: the hero can walk on the tile.",
-  "types": {
-    "grass": { "walk": true },
-    "flowers": { "walk": true },
-    "path": { "walk": true },
-    "yard": { "walk": true },
-    "sand": { "walk": true },
-    "bridge": { "walk": true },
-    "water": { "walk": false },
-    "field": { "walk": false },
-    "hedge": { "walk": false },
-    "trees": { "walk": false }
-  }
+ "_about": "Ground tile types of the maps. walk: the hero can walk on the tile. art: the pictures of the tile (the game picks one for each tile). sprite: a tall picture that stands on each tile of this type. slow: the speed factor on the tile.",
+ "types": {
+  "grass": { "walk": true, "art": ["iso/tile-grass", "iso/tile-grass", "iso/tile-grass-2"] },
+  "flowers": { "walk": true, "art": ["iso/tile-flowers"] },
+  "path": { "walk": true, "art": ["iso/tile-path"] },
+  "yard": { "walk": true, "art": ["iso/tile-yard"] },
+  "sand": { "walk": true, "art": ["iso/tile-sand"] },
+  "bridge": { "walk": true, "art": ["iso/tile-bridge"] },
+  "shallow": { "walk": true, "slow": 0.55, "art": ["iso/tile-shallow"] },
+  "water": { "walk": false, "art": ["iso/tile-water"] },
+  "field": { "walk": false, "art": ["iso/tile-field"] },
+  "hedge": { "walk": false, "art": ["iso/tile-grass"], "sprite": "iso/bamboo" }
+ }
 }

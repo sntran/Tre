@@ -128,6 +128,18 @@ test('the version 2 migration gives Nghé to a player who calmed the river', () 
   assert.deepEqual(migrate({ format: SAVE_FORMAT, version: 1, savedAt: 0, profile: has }).profile.party, ['nghe']);
 });
 
+test('the version 3 migration moves the hero home on the new isometric map', () => {
+  const v2 = sample();
+  v2.place = { map: 'phu-dong', x: 16, y: 25 };
+  const done = migrate({ format: SAVE_FORMAT, version: 2, savedAt: 0, profile: v2 }).profile;
+  assert.deepEqual(done.place, { map: 'phu-dong', x: null, y: null });
+  assert.equal(done.flags['trial.smith.done'], true, 'the story stays');
+  // A place on the new map can have a fraction.
+  const p = sample();
+  p.place = { map: 'phu-dong', x: 5.5, y: 13.25 };
+  assert.deepEqual(importCode(exportCode(p)).place, p.place);
+});
+
 test('the export code loads on another device', () => {
   const p = sample();
   const code = exportCode(p, 99);
