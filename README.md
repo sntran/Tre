@@ -47,7 +47,8 @@ npm test
 
 ## Documents
 
-- [Game design](docs/DESIGN.md)
+- [Game design](docs/DESIGN.md) ([tiếng Việt](docs/DESIGN.vi.md))
+- [Research: learning by doing in games](docs/research/learning-by-doing.md) ([tiếng Việt](docs/research/learning-by-doing.vi.md))
 - [Art and UI style guide](docs/ART.md)
 - [Open questions](docs/QUESTIONS.md)
 - [Text and history review](docs/REVIEW.md)
