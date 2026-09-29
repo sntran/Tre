@@ -7,8 +7,8 @@ import { pickTalk, isPresent, applyEffects, conditionState } from '../core/game.
 import { createWorldRenderer } from '../render/world.js';
 import { bitmap, heroLayers } from '../render/assets.js';
 import { createIsoCamera } from '../iso/camera.js';
-import { toScreen, toMap, mapBounds } from '../iso/grid.js';
-import { stepBody, moveCircle, keysToScreenDir, stickToScreenDir, inputToward, createFollower, stepFollower, MOVE } from '../world/movement.js';
+import { toScreen, toMap, pickTileZ, mapBounds, STEP } from '../iso/grid.js';
+import { stepBody, moveCircle, worldFor, keysToScreenDir, stickToScreenDir, inputToward, createFollower, stepFollower, MOVE } from '../world/movement.js';
 import { figureScale } from '../core/figures.js';
 import { h, img, button } from './dom.js';
 import { t, tn } from './i18n.js';
@@ -35,7 +35,7 @@ export async function mountVillage(ctx, params = {}) {
   const renderer = await rendererCache.get(mapData.id);
   const camera = createIsoCamera({ zooms: [1, 0.62] });
   const b = mapBounds(mapData.width, mapData.height);
-  camera.bounds = { left: b.left, right: b.right, top: b.top - 120, bottom: b.bottom + 16 };
+  camera.bounds = { left: b.left, right: b.right, top: b.top - 120 - 6 * STEP, bottom: b.bottom + 16 };
   const surface = ctx.surface;
   surface.canvas.hidden = false;
 
@@ -56,10 +56,17 @@ export async function mountVillage(ctx, params = {}) {
   const friendScale = 0.36 * grow;
 
   // The hero.
-  const world = { isBlocked: tileMap.isBlocked, groundAt: tileMap.groundAt };
+  // The height of the ground under a map point, in screen units.
+  const groundZ = (x, y) => tileMap.heightAt(Math.floor(x), Math.floor(y)) * STEP;
+  // The map point under a screen point of the world, on the ground with its heights.
+  const pickGround = (w) => {
+    const hit = pickTileZ(w.x, w.y, tileMap.heightAt, mapData.width, mapData.height, STEP);
+    return hit ? { x: hit.mx, y: hit.my, z: hit.z * STEP } : { ...toMap(w.x, w.y), z: 0 };
+  };
   const saved = profile.place?.map === mapData.id && profile.place.x !== null ? profile.place : null;
   const start = freeSpot(tileMap, params.at ?? saved ?? mapData.spawn) ?? mapData.spawn;
   const hero = { x: start.x, y: start.y, vx: 0, vy: 0, facing: params.facing ?? 1, moving: false };
+  hero.z = groundZ(hero.x, hero.y);
   let nghe = createFollower(hero.x - 0.8, hero.y + 0.3);
   let heroTile = { x: Math.floor(hero.x), y: Math.floor(hero.y) };
   let route = null; // a walk to a tapped point: { points, onArrive, near }
@@ -88,7 +95,9 @@ export async function mountVillage(ctx, params = {}) {
     heroTile = { x: Math.floor(x), y: Math.floor(y) };
     route = null;
     nghe = createFollower(x - 0.8, y + 0.3);
-    camera.jump(toScreen(x, y).x, toScreen(x, y).y - 40);
+    hero.z = groundZ(x, y);
+    const p = toScreen(x, y, hero.z + 40);
+    camera.jump(p.x, p.y);
   }
 
   // HUD
@@ -140,32 +149,32 @@ export async function mountVillage(ctx, params = {}) {
     const flags = profile.flags;
     const list = step.targets ?? (step.target ? [{ npc: step.target }] : []);
     // A target on another map: the marker is on the exit that leads there.
-    const toMap = (mapId) => {
+    const markExit = (mapId) => {
       const exit = mapId && mapId !== mapData.id ? worldMap.firstExit(mapData.id, mapId) : null;
-      if (exit && !out.some((m) => m.exit === exit.id)) out.push({ exit: exit.id, x: exit.x + exit.w / 2, y: exit.y + exit.h / 2, z: 30 });
+      if (exit && !out.some((m) => m.exit === exit.id)) out.push({ exit: exit.id, x: exit.x + exit.w / 2, y: exit.y + exit.h / 2, z: 30 + groundZ(exit.x, exit.y) });
     };
     for (const tg of list) {
       if (tg.unless && flags[tg.unless]) continue;
       if (tg.if && !flags[tg.if]) continue;
       for (const kind of ['npc', 'encounter', 'object']) {
-        if (tg[kind]) toMap(worldMap.whereIs(kind, tg[kind]));
+        if (tg[kind]) markExit(worldMap.whereIs(kind, tg[kind]));
       }
       if (tg.npc) {
         const p = people.find((x) => x.id === tg.npc);
-        if (p) out.push({ x: p.x, y: p.y, z: npcBmps.get(p.id).unitH * personScale(p.def) + 14 });
+        if (p) out.push({ x: p.x, y: p.y, z: npcBmps.get(p.id).unitH * personScale(p.def) + 14 + groundZ(p.x, p.y) });
       }
       if (tg.encounter) {
         const e = encounters.find((x) => x.id === tg.encounter);
-        if (e) out.push({ x: e.x, y: e.y, z: encBmps.get(e.id).unitH * encounterScale(e) + 14 });
+        if (e) out.push({ x: e.x, y: e.y, z: encBmps.get(e.id).unitH * encounterScale(e) + 14 + groundZ(e.x, e.y) });
       }
       if (tg.object) {
         const o = mapData.layers.objects.find((x) => x.id === tg.object);
         const s = renderer.statics.find((x) => x.id === tg.object);
-        if (o) out.push({ x: o.x + o.w / 2, y: o.y + o.h / 2, z: (s?.rect.height ?? 60) * 0.8 });
+        if (o) out.push({ x: o.x + o.w / 2, y: o.y + o.h / 2, z: (s?.rect.height ?? 60) * 0.8 + groundZ(o.x, o.y) });
       }
     }
-    if (step.place && (step.place.map ?? mapData.id) === mapData.id) out.push({ x: step.place.x + 1, y: step.place.y + 0.5, z: 40 });
-    else if (step.place) toMap(step.place.map);
+    if (step.place && (step.place.map ?? mapData.id) === mapData.id) out.push({ x: step.place.x + 1, y: step.place.y + 0.5, z: 40 + groundZ(step.place.x, step.place.y) });
+    else if (step.place) markExit(step.place.map);
     return out;
   }
 
@@ -386,13 +395,13 @@ export async function mountVillage(ctx, params = {}) {
       if (w.x < r.left - pad || w.x > r.left + r.width + pad || w.y < r.top - pad || w.y > r.top + r.height + pad) continue;
       if (it.kind === 'npc') {
         const person = people.find((x) => x.id === it.id);
-        tapFx = { x: person.x, y: person.y, age: 0 };
+        tapFx = { x: person.x, y: person.y, z: groundZ(person.x, person.y), age: 0 };
         walkToThing(person, () => interact({ kind: 'npc', id: person.id }, person));
         return;
       }
       if (it.kind === 'encounter') {
         const enc = encounters.find((x) => x.id === it.id);
-        tapFx = { x: enc.x, y: enc.y, age: 0 };
+        tapFx = { x: enc.x, y: enc.y, z: groundZ(enc.x, enc.y), age: 0 };
         walkToThing(enc, () => interact({ kind: 'encounter', id: enc.id }, enc));
         return;
       }
@@ -401,7 +410,7 @@ export async function mountVillage(ctx, params = {}) {
         const zone = triggers.fire('tap', o.x, o.y, state);
         if (zone) {
           const at = { x: o.x + o.w / 2, y: o.y + o.h / 2 };
-          tapFx = { ...at, age: 0 };
+          tapFx = { ...at, z: groundZ(at.x, at.y), age: 0 };
           const from = { x: Math.floor(hero.x), y: Math.floor(hero.y) };
           walkPath(pathNextTo(tileMap, from, { x: o.x + Math.floor(o.w / 2), y: o.y + o.h - 1 }) ?? pathNextTo(tileMap, from, o), null, () => doAction(zone),
             { x: at.x, y: at.y, d: Math.max(o.w, o.h) / 2 + 1 });
@@ -410,10 +419,10 @@ export async function mountVillage(ctx, params = {}) {
       }
     }
     // The ground.
-    const m = toMap(w.x, w.y);
+    const m = pickGround(w);
     const tile = { x: Math.floor(m.x), y: Math.floor(m.y) };
     if (!tileMap.inside(tile.x, tile.y)) return;
-    tapFx = { x: m.x, y: m.y, age: 0 };
+    tapFx = { x: m.x, y: m.y, z: m.z, age: 0 };
     const from = { x: Math.floor(hero.x), y: Math.floor(hero.y) };
     // A tap zone on the ground is a thing that the hero cannot walk on (water, a field).
     // A tap on a free tile of the zone (the ford, a path in the field) is a walk.
@@ -475,7 +484,7 @@ export async function mountVillage(ctx, params = {}) {
     if (hold && !hold.held && performance.now() - hold.since > HOLD_MS) startHold();
     if (hold?.held) {
       const w = camera.toWorld(hold.vx, hold.vy);
-      const m = toMap(w.x, w.y);
+      const m = pickGround(w);
       const far = Math.hypot(m.x - hero.x, m.y - hero.y) > 4;
       return inputToward(hero, m, { run: far, stop: 0.3 });
     }
@@ -507,7 +516,7 @@ export async function mountVillage(ctx, params = {}) {
       const d = Math.hypot(dx, dy);
       if (d >= PERSON_R || d < 1e-6) continue;
       const k = (PERSON_R - d) / d;
-      const out = moveCircle(hero, dx * k, dy * k, MOVE.radius, tileMap.isBlocked);
+      const out = moveCircle(hero, dx * k, dy * k, MOVE.radius, worldFor(tileMap, hero.x, hero.y).isBlocked);
       hero.x = out.x;
       hero.y = out.y;
     }
@@ -517,7 +526,7 @@ export async function mountVillage(ctx, params = {}) {
     if (tapFx) tapFx.age += dt;
     const before = { x: hero.x, y: hero.y };
     const input = currentInput();
-    stepBody(hero, input, dt, world);
+    stepBody(hero, input, dt, worldFor(tileMap, hero.x, hero.y));
     pushFromPeople();
     if (route) {
       still = Math.hypot(hero.x - before.x, hero.y - before.y) < 1e-3 ? still + dt : 0;
@@ -542,8 +551,12 @@ export async function mountVillage(ctx, params = {}) {
         doAction(zone);
       }
     }
-    if (profile.party[0]) stepFollower(nghe, hero, dt, world);
-    const head = toScreen(hero.x, hero.y, 40);
+    if (profile.party[0]) stepFollower(nghe, hero, dt, worldFor(tileMap, nghe.x, nghe.y));
+    // A step up or down is smooth.
+    const ease = Math.min(1, dt * 14);
+    hero.z += (groundZ(hero.x, hero.y) - hero.z) * ease;
+    nghe.z = (nghe.z ?? groundZ(nghe.x, nghe.y)) + (groundZ(nghe.x, nghe.y) - (nghe.z ?? 0)) * ease;
+    const head = toScreen(hero.x, hero.y, 40 + hero.z);
     camera.follow(head.x, head.y, dt);
   }
 
@@ -552,17 +565,17 @@ export async function mountVillage(ctx, params = {}) {
     const list = [];
     for (const p of people) {
       const sx = p.x - p.y;
-      list.push({ id: p.id, kind: 'npc', bmp: npcBmps.get(p.id), x: p.x, y: p.y, scale: personScale(p.def), flip: sx > hero.x - hero.y });
+      list.push({ id: p.id, kind: 'npc', bmp: npcBmps.get(p.id), x: p.x, y: p.y, z: groundZ(p.x, p.y), scale: personScale(p.def), flip: sx > hero.x - hero.y });
     }
     for (const e of encounters) {
-      list.push({ id: e.id, kind: 'encounter', bmp: encBmps.get(e.id), x: e.x, y: e.y, scale: encounterScale(e), flip: true });
+      list.push({ id: e.id, kind: 'encounter', bmp: encBmps.get(e.id), x: e.x, y: e.y, z: groundZ(e.x, e.y), scale: encounterScale(e), flip: true });
     }
     const friendId = profile.party[0];
     if (friendId && friendBmps.has(friendId)) {
       const sink = tileMap.groundAt(Math.floor(nghe.x), Math.floor(nghe.y)) === 'shallow' ? 10 : 0;
-      list.push({ id: friendId, kind: 'friend', bmp: friendBmps.get(friendId), x: nghe.x, y: nghe.y, scale: friendScale, flip: nghe.facing < 0, walking: nghe.moving, sink });
+      list.push({ id: friendId, kind: 'friend', bmp: friendBmps.get(friendId), x: nghe.x, y: nghe.y, z: nghe.z ?? 0, scale: friendScale, flip: nghe.facing < 0, walking: nghe.moving, sink });
     }
-    list.push({ id: 'hero', kind: 'hero', bmp: heroBmp, x: hero.x, y: hero.y, scale: heroScale, flip: hero.facing < 0, walking: hero.moving, sink: hero.shallow ? 12 : 0 });
+    list.push({ id: 'hero', kind: 'hero', bmp: heroBmp, x: hero.x, y: hero.y, z: hero.z, scale: heroScale, flip: hero.facing < 0, walking: hero.moving, sink: hero.shallow ? 12 : 0 });
     // Keep the edge arrows away from the top bar.
     const hudRect = hud.getBoundingClientRect();
     const canvasRect = surface.canvas.getBoundingClientRect();
@@ -582,7 +595,7 @@ export async function mountVillage(ctx, params = {}) {
     goMap: (id, x, y) => ctx.go('village', { map: id, at: { x, y } }),
     // The screen point of the middle of a tile, for automatic tests of the whole game.
     screenOf: (x, y) => {
-      const p = toScreen(x + 0.5, y + 0.5);
+      const p = toScreen(x + 0.5, y + 0.5, groundZ(x + 0.5, y + 0.5));
       return camera.toView(p.x, p.y);
     },
   };
@@ -590,7 +603,8 @@ export async function mountVillage(ctx, params = {}) {
 
   refreshPeople();
   camera.resize(surface.width, surface.height, Math.max(0.75, Math.min(1.6, surface.height / 560)));
-  camera.jump(toScreen(hero.x, hero.y).x, toScreen(hero.x, hero.y).y - 40);
+  const head0 = toScreen(hero.x, hero.y, hero.z + 40);
+  camera.jump(head0.x, head0.y);
   requestAnimationFrame(frame);
   // Show the new language in the top bar after a change in the parent area.
   const offLang = ctx.bus.on('lang', () => {

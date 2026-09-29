@@ -22,3 +22,16 @@ export const C = Object.freeze({
   skin3: '#b98859',
   skin4: '#8a5f3d',
 });
+
+// The side faces of raised ground: [lit, dark] tones of a top color (see art/palette.json).
+export const SHADES = Object.freeze({
+  greenPale: ['#82935c', '#6c784d'],
+  green: ['#4c6838', '#425731'],
+  paper: ['#cabfa8', '#a49b88'],
+  paperDeep: ['#bcac8c', '#9a8c73'],
+  yellowPale: ['#c7af75', '#a28f61'],
+  ochre: ['#906730', '#77572a'],
+  wood: ['#604228', '#523924'],
+  indigoPale: ['#6c7d92', '#5b6877'],
+  ashLight: ['#8f877a', '#766f64'],
+});

@@ -1,26 +1,65 @@
 {
-  "_about": "The art palette of Tre: flat colors from the natural pigments of Đông Hồ prints. All SVG art and all UI colors use only these colors. styles/palette.css and src/render/palette.js have the same values; a test checks this.",
-  "colors": {
-    "ink": "#1f1b17",
-    "ash": "#6f685d",
-    "ash-light": "#a79f90",
-    "paper": "#efe3c8",
-    "paper-deep": "#dfcca6",
-    "diep": "#f7f0df",
-    "vermilion": "#b3412a",
-    "vermilion-pale": "#d4826a",
-    "ochre": "#a97835",
-    "wood": "#6e4a2c",
-    "yellow": "#deae3c",
-    "yellow-pale": "#ecd08a",
-    "green": "#56793f",
-    "green-deep": "#3b5a2e",
-    "green-pale": "#98ad6b",
-    "indigo": "#2f4668",
-    "indigo-pale": "#7d93ad",
-    "skin-1": "#f0d6b0",
-    "skin-2": "#deb68a",
-    "skin-3": "#b98859",
-    "skin-4": "#8a5f3d"
-  }
+ "_about": "The art palette of Tre: flat colors from the natural pigments of Đông Hồ prints. All SVG art and all UI colors use only these colors. styles/palette.css and src/render/palette.js have the same values; a test checks this.",
+ "colors": {
+  "ink": "#1f1b17",
+  "ash": "#6f685d",
+  "ash-light": "#a79f90",
+  "paper": "#efe3c8",
+  "paper-deep": "#dfcca6",
+  "diep": "#f7f0df",
+  "vermilion": "#b3412a",
+  "vermilion-pale": "#d4826a",
+  "ochre": "#a97835",
+  "wood": "#6e4a2c",
+  "yellow": "#deae3c",
+  "yellow-pale": "#ecd08a",
+  "green": "#56793f",
+  "green-deep": "#3b5a2e",
+  "green-pale": "#98ad6b",
+  "indigo": "#2f4668",
+  "indigo-pale": "#7d93ad",
+  "skin-1": "#f0d6b0",
+  "skin-2": "#deb68a",
+  "skin-3": "#b98859",
+  "skin-4": "#8a5f3d"
+ },
+ "_shadesAbout": "The side faces of raised ground, for the code only: for a top color, a lit tone (the face that looks to the screen left) and a dark tone (the face that looks to the screen right). Each is the top color mixed with ink (18 and 36 percent). Three flat tones for each color, no gradients.",
+ "shades": {
+  "green-pale": [
+   "#82935c",
+   "#6c784d"
+  ],
+  "green": [
+   "#4c6838",
+   "#425731"
+  ],
+  "paper": [
+   "#cabfa8",
+   "#a49b88"
+  ],
+  "paper-deep": [
+   "#bcac8c",
+   "#9a8c73"
+  ],
+  "yellow-pale": [
+   "#c7af75",
+   "#a28f61"
+  ],
+  "ochre": [
+   "#906730",
+   "#77572a"
+  ],
+  "wood": [
+   "#604228",
+   "#523924"
+  ],
+  "indigo-pale": [
+   "#6c7d92",
+   "#5b6877"
+  ],
+  "ash-light": [
+   "#8f877a",
+   "#766f64"
+  ]
+ }
 }

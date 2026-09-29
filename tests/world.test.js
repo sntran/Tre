@@ -232,6 +232,47 @@ test('the bridge is broken, and the way south to Văn Miếu goes through the fo
   assert.ok(vanmieu, 'the road ends at Văn Miếu');
 });
 
+test('the hero steps up or down one step; a higher step is a cliff', () => {
+  const map = createTileMap({ width: 4, height: 1, legend: { '.': 'grass' }, layers: { ground: ['....'], height: ['2314'] } }, tiles);
+  assert.equal(map.heightAt(1, 0), 3);
+  assert.equal(map.canStep(0, 0, 1, 0), true);
+  assert.equal(map.canStep(1, 0, 2, 0), false, 'two steps down');
+  assert.equal(findPath(map, { x: 0, y: 0 }, { x: 1, y: 0 }).length, 1);
+  assert.equal(findPath(map, { x: 0, y: 0 }, { x: 3, y: 0 }), null, 'a cliff on the way');
+});
+
+test('the ground of the maps has depth: river steps, sunken paddies, the dinh mound, and terraces', () => {
+  const at = (id) => createTileMap(maps.get(id), tiles);
+  for (const [id, m] of maps) {
+    assert.equal(m.layers.height.length, m.height, id);
+    for (const row of m.layers.height) assert.match(row, new RegExp(`^[0-9]{${m.width}}$`), id);
+  }
+  // The river bank drops two steps to the water: ground 2, sand 1, water 0.
+  const river = at('fields-river');
+  assert.deepEqual([1, 2, 5].map((y) => [river.groundAt(15, y), river.heightAt(15, y)]), [['grass', 2], ['sand', 1], ['water', 0]]);
+  // The road and the bridge stay high over the bank, as a causeway.
+  assert.equal(river.heightAt(22, 2), 2);
+  assert.equal(river.heightAt(22, 4), 2);
+  // The paddies are one step lower than the dikes and roads around them.
+  for (const [id, m] of maps) {
+    const map = at(id);
+    for (let y = 0; y < m.height; y++) {
+      for (let x = 0; x < m.width; x++) {
+        if (map.groundAt(x, y) !== 'field') continue;
+        for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
+          if (map.groundAt(nx, ny) === 'path') assert.ok(map.heightAt(nx, ny) > map.heightAt(x, y), `${id}: paddy ${x},${y}`);
+        }
+      }
+    }
+  }
+  // The dinh stands on a mound.
+  const village = at('phu-dong');
+  const dinh = maps.get('phu-dong').layers.objects.find((o) => o.id === 'dinh');
+  assert.ok(village.heightAt(dinh.x, dinh.y) > village.heightAt(dinh.x, dinh.y + dinh.h + 1));
+  // The edges of a map rise in terraces (roads and water go through).
+  assert.ok(village.heightAt(0, 0) >= 4 && village.heightAt(1, 5) === 3);
+});
+
 test('a tap on the head, body, or feet of a person selects the person', () => {
   // A person with feet at (100, 200): the picture is 52 wide and 78 tall.
   const sprites = [{ id: 'elder', x: 100, y: 200, w: 52, h: 78 }, { id: 'smith', x: 140, y: 230, w: 52, h: 78 }];

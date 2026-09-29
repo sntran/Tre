@@ -157,3 +157,13 @@ export function stepFollower(f, leader, dt, world, cfg = FOLLOW, move = MOVE) {
   f.y = next.y;
   return f;
 }
+
+// The world as a body at (x, y) sees it: a tile is blocked when the tile map blocks it, or when
+// it is more than one step higher or lower than the tile under the body (a cliff).
+export function worldFor(tileMap, x, y) {
+  const here = tileMap.heightAt?.(Math.floor(x), Math.floor(y)) ?? 0;
+  return {
+    isBlocked: (tx, ty) => tileMap.isBlocked(tx, ty) || Math.abs((tileMap.heightAt?.(tx, ty) ?? 0) - here) > 1,
+    groundAt: tileMap.groundAt,
+  };
+}

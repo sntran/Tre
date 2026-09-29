@@ -3,6 +3,8 @@
 // "Screen" here means world pixels at zoom 1, before the camera moves and scales them.
 // A position (x, y) is a point on the map in tile units: the tile (3, 5) covers 3 <= x < 4, 5 <= y < 6.
 
+// STEP: the height of one step of ground, in screen units.
+export const STEP = 8;
 export const TILE_W = 64;
 export const TILE_H = 32;
 const HW = TILE_W / 2;
@@ -52,4 +54,19 @@ export function screenDirToMap(dx, dy) {
 // The screen box of the whole map (width × height tiles), for the camera limits.
 export function mapBounds(width, height) {
   return { left: -height * HW, right: width * HW, top: 0, bottom: (width + height) * HH };
+}
+
+// The tile under a screen point on ground with heights. heightAt(x, y) is the height of a tile
+// in steps, and step is the height of one step in screen units. A raised tile moves up on the
+// screen, so the point can be on a tile in front of the flat tile under it. The front tile wins.
+export function pickTileZ(sx, sy, heightAt, width, height, step, maxHeight = 9) {
+  let best = null;
+  for (let z = maxHeight; z >= 0; z--) {
+    const m = toMap(sx, sy + z * step);
+    const x = Math.floor(m.x);
+    const y = Math.floor(m.y);
+    if (x < 0 || y < 0 || x >= width || y >= height || heightAt(x, y) !== z) continue;
+    if (!best || x + y > best.x + best.y) best = { x, y, z, mx: m.x, my: m.y };
+  }
+  return best;
 }

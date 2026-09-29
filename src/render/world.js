@@ -1,9 +1,9 @@
 // Draw the isometric world on the canvas: the ground (made into bitmap pieces once),
 // then objects, people, and the hero in depth order, then markers.
 // World units are the screen units of grid.js: one tile is 64 wide and 32 tall.
-import { C } from './palette.js';
+import { C, SHADES } from './palette.js';
 import { bitmap } from './assets.js';
-import { toScreen, spriteBox, mapBounds, TILE_W, TILE_H } from '../iso/grid.js';
+import { toScreen, spriteBox, mapBounds, TILE_W, TILE_H, STEP } from '../iso/grid.js';
 import { depthSort } from '../iso/depth.js';
 import { createRng } from '../core/rng.js';
 import { edgeMarker } from '../core/hit.js';
@@ -15,6 +15,9 @@ const CHUNK = 512; // the size of one ground piece, in world units
 export async function createWorldRenderer(mapData, tileMap, tileTypes) {
   const W = mapData.width;
   const H = mapData.height;
+  const zOf = (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? -1 : tileMap.heightAt(x, y));
+  const camel = (name) => name.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+  const colorOf = (type) => camel(tileTypes[type]?.color ?? 'green-pale');
   const bounds = mapBounds(W, H);
   const rng = createRng(mapData.id);
 
@@ -55,59 +58,75 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
       x: (sx / 32 + sy / 16) / 2,
       y: (sy / 16 - sx / 32) / 2,
     }));
-    const x0 = Math.max(0, Math.floor(Math.min(...pts.map((p) => p.x))) - 1);
-    const x1 = Math.min(W - 1, Math.ceil(Math.max(...pts.map((p) => p.x))) + 1);
-    const y0 = Math.max(0, Math.floor(Math.min(...pts.map((p) => p.y))) - 1);
-    const y1 = Math.min(H - 1, Math.ceil(Math.max(...pts.map((p) => p.y))) + 1);
-    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) fn(x, y);
+    // Raised tiles and their faces reach a few tiles out of the rectangle.
+    const x0 = Math.max(0, Math.floor(Math.min(...pts.map((p) => p.x))) - 3);
+    const x1 = Math.min(W - 1, Math.ceil(Math.max(...pts.map((p) => p.x))) + 3);
+    const y0 = Math.max(0, Math.floor(Math.min(...pts.map((p) => p.y))) - 3);
+    const y1 = Math.min(H - 1, Math.ceil(Math.max(...pts.map((p) => p.y))) + 3);
+    // From the back to the front (the sum x + y), so that a tile in front covers the tiles behind it.
+    for (let d = x0 + y0; d <= x1 + y1; d++) {
+      for (let x = Math.max(x0, d - y1); x <= Math.min(x1, d - y0); x++) fn(x, d - x);
+    }
   }
 
-  function diamondPath(g, x, y) {
-    const n = toScreen(x, y);
-    g.moveTo(n.x, n.y);
-    g.lineTo(n.x + TILE_W / 2, n.y + TILE_H / 2);
-    g.lineTo(n.x, n.y + TILE_H);
-    g.lineTo(n.x - TILE_W / 2, n.y + TILE_H / 2);
+  // A corner of a tile at a height (in steps).
+  const corner = (x, y, z) => toScreen(x, y, z * STEP);
+
+  function fillPoly(g, pts, fill) {
+    g.beginPath();
+    g.moveTo(pts[0].x, pts[0].y);
+    for (const p of pts.slice(1)) g.lineTo(p.x, p.y);
     g.closePath();
+    g.fillStyle = fill;
+    g.fill();
+    g.stroke();
+  }
+
+  // One tile: the side faces down to the lower neighbors (left face lit, right face dark), then the top.
+  function drawTile(g, x, y) {
+    const type = tileMap.type(x, y);
+    const z = zOf(x, y);
+    const [lit, dark] = SHADES[colorOf(type)] ?? SHADES.greenPale;
+    g.strokeStyle = C.ink;
+    g.lineWidth = 1.6;
+    g.lineJoin = 'round';
+    const zl = zOf(x, y + 1);
+    if (zl < z) fillPoly(g, [corner(x, y + 1, z), corner(x + 1, y + 1, z), corner(x + 1, y + 1, zl), corner(x, y + 1, zl)], lit);
+    const zr = zOf(x + 1, y);
+    if (zr < z) fillPoly(g, [corner(x + 1, y + 1, z), corner(x + 1, y, z), corner(x + 1, y, zr), corner(x + 1, y + 1, zr)], dark);
+    const n = corner(x, y, z);
+    const art = pick[y * W + x];
+    if (art) {
+      // A little overlap hides the thin seams between tiles.
+      g.drawImage(art, n.x - TILE_W / 2 - 0.5, n.y - 0.5, TILE_W + 1, TILE_H + 1);
+    } else {
+      g.beginPath();
+      g.moveTo(n.x, n.y);
+      g.lineTo(n.x + TILE_W / 2, n.y + TILE_H / 2);
+      g.lineTo(n.x, n.y + TILE_H);
+      g.lineTo(n.x - TILE_W / 2, n.y + TILE_H / 2);
+      g.closePath();
+      g.fillStyle = C[colorOf(type)] ?? C.greenPale;
+      g.fill();
+    }
+    // Keylines: where two ground groups meet on the same height, and on the top edge of each step.
+    const a = GROUP[type];
+    g.lineWidth = 2;
+    g.beginPath();
+    const edge = (p, q) => { g.moveTo(p.x, p.y); g.lineTo(q.x, q.y); };
+    if (zr < z || (x + 1 < W && zr === z && a !== GROUP[tileMap.type(x + 1, y)])) edge(corner(x + 1, y, z), corner(x + 1, y + 1, z));
+    if (zl < z || (y + 1 < H && zl === z && a !== GROUP[tileMap.type(x, y + 1)])) edge(corner(x, y + 1, z), corner(x + 1, y + 1, z));
+    // The back edges of a tile that is lower than the tile behind it.
+    if (zOf(x - 1, y) > z) edge(corner(x, y, z), corner(x, y + 1, z));
+    if (zOf(x, y - 1) > z) edge(corner(x, y, z), corner(x + 1, y, z));
+    g.stroke();
   }
 
   function drawGround(g, left, top, width, height) {
     g.fillStyle = C.greenDeep;
     g.fillRect(left, top, width, height);
-    tilesIn(left, top, width, height, (x, y) => {
-      const n = toScreen(x, y);
-      const art = pick[y * W + x];
-      if (art) {
-        // A little overlap hides the thin seams between tiles.
-        g.drawImage(art, n.x - TILE_W / 2 - 0.5, n.y - 0.5, TILE_W + 1, TILE_H + 1);
-      } else {
-        g.fillStyle = C.greenPale;
-        g.beginPath();
-        diamondPath(g, x, y);
-        g.fill();
-      }
-    });
-    // Keylines where two ground groups meet: on the south-east and the south-west edge of a tile.
-    g.strokeStyle = C.ink;
-    g.lineWidth = 2;
     g.lineCap = 'round';
-    g.beginPath();
-    tilesIn(left, top, width, height, (x, y) => {
-      const a = GROUP[tileMap.type(x, y)];
-      if (x + 1 < W && a !== GROUP[tileMap.type(x + 1, y)]) {
-        const p = toScreen(x + 1, y);
-        const q = toScreen(x + 1, y + 1);
-        g.moveTo(p.x, p.y);
-        g.lineTo(q.x, q.y);
-      }
-      if (y + 1 < H && a !== GROUP[tileMap.type(x, y + 1)]) {
-        const p = toScreen(x, y + 1);
-        const q = toScreen(x + 1, y + 1);
-        g.moveTo(p.x, p.y);
-        g.lineTo(q.x, q.y);
-      }
-    });
-    g.stroke();
+    tilesIn(left, top, width, height, (x, y) => drawTile(g, x, y));
     // The dó paper texture over the ground.
     g.save();
     g.globalAlpha = 0.3;
@@ -123,7 +142,10 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
   for (const o of mapData.layers.objects) {
     const bmp = await bitmap(o.art, 2);
     const d = o.depth ?? [0, 0, o.w, o.h];
+    let z = 0;
+    for (let y = o.y; y < o.y + o.h; y++) for (let x = o.x; x < o.x + o.w; x++) z = Math.max(z, zOf(x, y));
     const box = spriteBox(o.x, o.y, o.w, o.h, bmp.unitH);
+    box.top -= z * STEP;
     statics.push({
       id: o.id, bmp, rect: box,
       x0: o.x + d[0], y0: o.y + d[1], x1: o.x + d[2], y1: o.y + d[3],
@@ -136,7 +158,9 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
       if (!art) continue;
       if (!spriteArt.has(art)) spriteArt.set(art, await bitmap(art, 2));
       const bmp = spriteArt.get(art);
-      statics.push({ id: null, bmp, rect: spriteBox(x, y, 1, 1, bmp.unitH), x0: x, y0: y, x1: x + 1, y1: y + 1 });
+      const rect = spriteBox(x, y, 1, 1, bmp.unitH);
+      rect.top -= zOf(x, y) * STEP;
+      statics.push({ id: null, bmp, rect, x0: x, y0: y, x1: x + 1, y1: y + 1 });
     }
   }
   const star = await bitmap('ui/star', 2);
@@ -145,7 +169,7 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
 
   // A person: feet at the map point (x, y). The picture stands up from the feet.
   function drawPerson(ctx, s, t) {
-    const p = toScreen(s.x, s.y);
+    const p = toScreen(s.x, s.y, s.z ?? 0);
     const w = s.bmp.unitW * s.scale;
     const h = s.bmp.unitH * s.scale;
     const bob = s.walking ? Math.abs(Math.sin(t * 12)) * 3 : 0;
@@ -196,7 +220,7 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
     }
 
     if (scene.tap && scene.tap.age < 0.5) {
-      const p = toScreen(scene.tap.x, scene.tap.y);
+      const p = toScreen(scene.tap.x, scene.tap.y, scene.tap.z ?? 0);
       const r = 1 + scene.tap.age * 2;
       ctx.strokeStyle = C.yellow;
       ctx.lineWidth = 3;
@@ -212,7 +236,7 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
       items.push({ ...s, draw: () => ctx.drawImage(s.bmp, s.rect.left, s.rect.top, s.rect.width, s.rect.height) });
     }
     for (const s of scene.people) {
-      const p = toScreen(s.x, s.y);
+      const p = toScreen(s.x, s.y, s.z ?? 0);
       const w = s.bmp.unitW * s.scale;
       const h = s.bmp.unitH * s.scale;
       const rect = { left: p.x - w / 2, top: p.y - h, width: w, height: h };

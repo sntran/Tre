@@ -105,3 +105,19 @@ test('camera: a soft lag, two zoom levels, and limits', () => {
   const view = cam.view();
   assert.ok(near(view.left, cam.bounds.left) && near(view.top, cam.bounds.top));
 });
+
+test('a tap on raised ground picks the raised tile in front, not the flat tile under the point', async () => {
+  const { pickTileZ, toScreen, STEP } = await import('../src/iso/grid.js');
+  // A 4 x 4 map. The tile (2, 2) is 3 steps high.
+  const heightAt = (x, y) => (x === 2 && y === 2 ? 3 : 0);
+  const top = toScreen(2.5, 2.5, 3 * STEP);
+  assert.deepEqual(({ ...pickTileZ(top.x, top.y, heightAt, 4, 4, STEP) }).x, 2);
+  assert.equal(pickTileZ(top.x, top.y, heightAt, 4, 4, STEP).y, 2);
+  assert.equal(pickTileZ(top.x, top.y, heightAt, 4, 4, STEP).z, 3);
+  // A flat tile far from the raised tile.
+  const flat = toScreen(0.5, 3.5);
+  const hit = pickTileZ(flat.x, flat.y, heightAt, 4, 4, STEP);
+  assert.deepEqual([hit.x, hit.y, hit.z], [0, 3, 0]);
+  // Outside the map: nothing.
+  assert.equal(pickTileZ(-500, -500, heightAt, 4, 4, STEP), null);
+});

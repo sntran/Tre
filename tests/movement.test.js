@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { MOVE, collides, moveCircle, keysToScreenDir, stickToScreenDir, stepBody, inputToward, createFollower, stepFollower } from '../src/world/movement.js';
+import { worldFor, MOVE, collides, moveCircle, keysToScreenDir, stickToScreenDir, stepBody, inputToward, createFollower, stepFollower } from '../src/world/movement.js';
 
 // A small world: a wall of blocked tiles at x = 5, a gap at y = 3, shallow water at x = 2.
 const blocked = new Set(['5,0', '5,1', '5,2', '5,4', '5,5', '5,6']);
@@ -91,4 +91,17 @@ test('Nghé follows the hero with a lag, keeps a gap, and jumps when far', () =>
   hero.y = 1.5;
   stepFollower(nghe, hero, 1 / 60, world);
   assert.ok(Math.hypot(hero.x - nghe.x, hero.y - nghe.y) < 3);
+});
+
+test('a body sees a cliff as a wall: a tile two steps higher or lower blocks it', () => {
+  const heights = [[2, 2, 4], [2, 3, 2]];
+  const tileMap = {
+    isBlocked: (x, y) => x < 0 || y < 0 || x > 2 || y > 1,
+    heightAt: (x, y) => heights[y]?.[x] ?? 0,
+    groundAt: () => 'grass',
+  };
+  const w = worldFor(tileMap, 0.5, 0.5);
+  assert.equal(w.isBlocked(1, 1), false, 'one step up');
+  assert.equal(w.isBlocked(2, 0), true, 'two steps up');
+  assert.equal(worldFor(tileMap, 1.5, 1.5).isBlocked(2, 0), false, 'from one step higher');
 });

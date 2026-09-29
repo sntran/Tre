@@ -1,6 +1,8 @@
 // A tile map with layers, a collision grid, and A* pathfinding.
-// data: { width, height, legend, layers: { ground: [rows], objects, collision } }.
-// Ground rows have one letter for each tile (see legend). Objects block their footprint.
+// data: { width, height, legend, layers: { ground: [rows], height: [rows], objects, collision } }.
+// Ground rows have one letter for each tile (see legend). Height rows have one digit for each
+// tile: the height of the ground in steps. Objects block their footprint.
+// The hero can step up or down one step. A higher step is a cliff.
 // Collision rectangles block tiles (block: true) or open them (block: false).
 
 export function createTileMap(data, tileTypes) {
@@ -15,6 +17,11 @@ export function createTileMap(data, tileTypes) {
       if (!type) throw new Error(`Unknown tile "${ch}" at ${x},${y}`);
       types.push(type);
     }
+  }
+  const heights = new Uint8Array(width * height);
+  for (let y = 0; y < height; y++) {
+    const row = layers.height?.[y] ?? '';
+    for (let x = 0; x < width; x++) heights[y * width + x] = Number(row[x] ?? 0) || 0;
   }
   const inside = (x, y) => x >= 0 && y >= 0 && x < width && y < height;
   const index = (x, y) => y * width + x;
@@ -44,6 +51,9 @@ export function createTileMap(data, tileTypes) {
     // For free movement: people do not block here, because they are circles, not tiles.
     isBlocked: (x, y) => !inside(x, y) || solid[index(x, y)] === 1,
     groundAt: (x, y) => (inside(x, y) ? types[index(x, y)] : null),
+    heightAt: (x, y) => (inside(x, y) ? heights[index(x, y)] : 0),
+    // Can a person walk from one tile to the next? Only up or down one step.
+    canStep: (ax, ay, bx, by) => Math.abs(heights[index(ax, ay)] - heights[index(bx, by)]) <= 1,
     // The world can change: for example a finished bridge opens its tiles.
     setSolid: (x, y, on) => { if (inside(x, y)) solid[index(x, y)] = on ? 1 : 0; },
     occupy: (x, y, who) => occupied.set(index(x, y), who),
@@ -134,6 +144,7 @@ export function findPath(map, start, goal, { maxNodes = 5000 } = {}) {
       const nx = node.x + dx;
       const ny = node.y + dy;
       if (!map.walkable(nx, ny)) continue;
+      if (map.canStep && map.inside(node.x, node.y) && !map.canStep(node.x, node.y, nx, ny)) continue;
       const nk = key(nx, ny);
       if (closed.has(nk)) continue;
       const ng = g.get(k) + 1;
