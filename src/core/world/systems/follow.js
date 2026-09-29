@@ -5,7 +5,7 @@
 // system), Nghé walks to that point, looks to `face`, and takes the pose `act` there: at the near
 // end of the planks it stretches its neck toward the gap (a hint), beside the plank outlines it
 // looks at the hero, and at the edge of the water it pulls the hero out. At a closed ford Nghé stops at the
-// edge and shakes its head.
+// edge and shakes its head. After a skip of the prediction, Nghé glances once at the outlines.
 export const WRITES = ['position', 'motion', 'follow', 'act'];
 
 import { query, getEntity } from '../state.js';
@@ -83,6 +83,12 @@ export function follow(world, dt, rng, env) {
     if (!atFord) delete e.follow.shook;
     e.follow.shake = Math.max(0, (e.follow.shake ?? 0) - dt);
     if (!e.follow.shake) delete e.follow.shake;
+    // A glance: Nghé turns its head to a point for a moment (the plank outlines after a skip).
+    if (e.follow.glance) {
+      p.facing = faceOf(e.follow.glance.x - p.x, e.follow.glance.z - p.z);
+      e.follow.glance.t -= dt;
+      if (e.follow.glance.t <= 0) delete e.follow.glance;
+    }
     if (rest) e.act = 'rest';
     else if (e.follow.shake) e.act = 'shake';
     else if (e.follow.happy > 0) e.act = 'happy';

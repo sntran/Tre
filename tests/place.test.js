@@ -6,7 +6,7 @@ import { step, STEP } from '../src/core/world/step.js';
 import { envFor, placesOf } from '../src/core/world/env.js';
 import { addHero, addFriend, addZones } from '../src/core/world/populate.js';
 import { saveWorld, loadWorld, setHeroPlace } from '../src/core/world/save.js';
-import { skillEvents, judge, minParts, isMashing, hasSweep } from '../src/core/world/zones.js';
+import { skillEvents, judge, minParts, isMashing, hasSweep, learnerRecord } from '../src/core/world/zones.js';
 import { DAY_MINUTES } from '../src/core/world/clock.js';
 import { load } from './helpers.js';
 
@@ -106,6 +106,14 @@ test('the zone rules: a sum against the gap, the fewest planks, and the flags of
   assert.equal(skillEvents({ ...zone, commits: 2 }, def, [4, 4, 4], { solved: true, mashing: false })[0].efficient, false);
   // Mashing: no evidence.
   assert.equal(skillEvents(zone, def, [4, 4], { solved: false, mashing: true })[0].evidence, false);
+});
+
+test('what a commit gives the learner: efficient at the gap level, a long plan at the lowest level, a miss at the gap level', () => {
+  const ev = (x) => ({ level: 3, evidence: true, solved: false, efficient: false, ...x });
+  assert.deepEqual(learnerRecord(ev({ solved: true, efficient: true })), { level: 3, correct: true });
+  assert.deepEqual(learnerRecord(ev({ solved: true })), { level: 1, correct: true });
+  assert.deepEqual(learnerRecord(ev({})), { level: 3, correct: false });
+  assert.equal(learnerRecord(ev({ evidence: false, solved: true, efficient: true })), null);
 });
 
 test('the signs of mashing: choices too fast to count, a sweep of sizes, no pause after a failure', () => {
@@ -335,9 +343,17 @@ test('predict, then commit: the plank outlines lie on the bank, Nghé looks at t
   assert.deepEqual([pr.guess, pr.used, pr.solved, pr.gap], [3, 3, true, 12]);
 });
 
-test('a child who builds before the prediction skips it', () => {
+test('a child who builds before the prediction skips it, and Nghé glances once at the outlines', () => {
   const w = world();
+  const z = gap(w);
+  command(w, { type: 'place', id: 'hero', x: z.lane, z: z.from - 6 });
+  run(w, 0.2);
+  assert.equal(query(w, 'guess').length, 6);
   lay(w, 4);
+  const nghe = getEntity(w, 'friend:nghe');
+  assert.ok(nghe.follow.glance, 'a glance at the row');
+  run(w, 2);
+  assert.equal(nghe.follow.glance, undefined, 'only once, for a moment');
   assert.equal(gap(w).guess, null);
   assert.equal(query(w, 'guess').length, 0);
   lay(w, 4);

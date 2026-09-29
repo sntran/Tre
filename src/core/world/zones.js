@@ -187,6 +187,18 @@ export function skillEvents(zone, def, parts, { solved, mashing }) {
   return out;
 }
 
+// What a skill event gives the learner: { level, correct }, or null when the commit is no
+// evidence (the signs of mashing). An efficient success is correct at the level of the gap; a
+// success with more planks than needed (or on a later commit) is correct at the lowest level, so
+// that a right sum with a long plan is not wrong; a commit that is not solved is not correct at
+// the level of the gap.
+export function learnerRecord(ev) {
+  if (!ev.evidence) return null;
+  if (ev.efficient) return { level: ev.level, correct: true };
+  if (ev.solved) return { level: 1, correct: true };
+  return { level: ev.level, correct: false };
+}
+
 // The signs of mashing in an attempt (rule 22 of the design): the choices come faster than a
 // child can count (the middle think time is short), the sizes at one place go through the sizes
 // in turn (a sweep), or there was no pause after a failure. attempt: { thinks: [seconds],

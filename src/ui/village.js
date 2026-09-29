@@ -13,7 +13,7 @@ import { step, STEP } from '../core/world/step.js';
 import { envFor, placesOf } from '../core/world/env.js';
 import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns, addZones } from '../core/world/populate.js';
 import { ground } from '../core/world/systems/ground.js';
-import { REACH } from '../core/world/zones.js';
+import { REACH, learnerRecord } from '../core/world/zones.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from '../core/world/save.js';
 import { buildTerrain, columnTop } from '../world/terrain.js';
 import { heroLook } from '../world/figures.js';
@@ -942,16 +942,11 @@ export async function mountVillage(ctx, params = {}) {
         for (let i = 0; i < n; i++) flyToCounter(ev.at, item, 0.5 + i * 0.15);
       }
     }
-    // A commit at a placement: a skill event for the learner. The child never sees it; with
-    // ?debug=1 in the address, a small panel shows it. A commit with the signs of mashing is no
-    // evidence. The first commit on a gap counts at the level of the gap, and only an efficient
-    // success (the fewest planks) counts as correct: it carries most of the evidence. A later
-    // commit on the same gap counts at the lowest level, with the plain result.
+    // A commit at a placement: a skill event for the learner (see learnerRecord). The child never
+    // sees it; with ?debug=1 in the address, a small panel shows it.
     if (ev.type === 'skill') {
-      if (ev.evidence) {
-        if (ev.first) ctx.learner?.record({ skill: ev.skill, level: ev.level }, ev.efficient);
-        else ctx.learner?.record({ skill: ev.skill, level: 1 }, ev.solved);
-      }
+      const rec = learnerRecord(ev);
+      if (rec) ctx.learner?.record({ skill: ev.skill, level: rec.level }, rec.correct);
       logSkill(ev);
     }
     // The prediction before the first commit on a gap, and the result, in the profile until the

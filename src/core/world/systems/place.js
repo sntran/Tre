@@ -31,6 +31,7 @@ const TIP = 0.3; // seconds: the last plank dips under the hero
 const DROP = 0.35; // seconds: the hero falls into the water
 const PULL = 0.8; // seconds: Nghé pulls the hero to the edge
 const SLIDE = 0.8; // seconds: a plank that is too long slides back into the water
+const GLANCE = 1.2; // seconds: Nghé glances at the outlines when the child skips the prediction
 
 export function place(world, dt, rng, env) {
   tidy(world, env);
@@ -201,6 +202,12 @@ function guess(world, zoneEnt, n, env) {
 
 function endGuess(world, zoneEnt, n) {
   zoneEnt.zone.guess = n;
+  // A skip: Nghé glances once at the row of outlines, with no text, before it goes.
+  const row = query(world, 'guess').filter((g) => g.guess.zone === zoneEnt.zone.id);
+  if (n === null && row.length) {
+    const mid = row[Math.floor(row.length / 2)].position;
+    for (const f of query(world, 'follow')) f.follow.glance = { x: mid.x, z: mid.z + 2, t: GLANCE };
+  }
   for (const g of query(world, 'guess')) {
     if (g.guess.zone !== zoneEnt.zone.id) continue;
     if (n !== null && g.guess.n <= n) {
