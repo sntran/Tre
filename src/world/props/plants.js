@@ -48,24 +48,25 @@ export function banyan(ctx, o) {
   ctx.set(x + 2, g + 2, z + 3, 'vermilion');
 }
 
-// A clump of bamboo: straight stems with joints, and narrow leaves near the top.
+// A clump of bamboo: two or three thin, tall stems with joints, and a few narrow leaves only in
+// the top third, so that the paper shows through the clump.
 export function bamboo(ctx, o, opts = {}) {
   const r = ctx.rng;
   const { x, z } = center(o);
-  const stems = opts.stems ?? 3 + r.int(0, 2);
+  const stems = opts.stems ?? 2 + r.int(0, 1);
   const spread = Math.max(1, Math.floor(Math.min(o.fw, o.fd) / 2) - 1);
   for (let i = 0; i < stems; i++) {
     const bx = x + r.int(-spread, spread);
     const bz = z + r.int(-spread, spread);
     const g = ctx.ground(bx, bz);
-    const h = (opts.height ?? 18) + r.int(0, 8);
+    const h = (opts.height ?? 24) + r.int(0, 8);
     for (let y = g; y < g + h; y++) ctx.set(bx, y, bz, (y - g) % 5 === 4 ? 'greenDeep' : 'green');
-    // Leaves near the top of the stem, in one color for each stem.
+    // Leaves in the top third of the stem, in one color for each stem.
     const leaf = r.chance(0.5) ? 'greenDeep' : 'green';
-    for (let k = 0; k < 14; k++) {
+    for (let k = 0; k < 8; k++) {
       const lx = bx + r.int(-2, 2);
       const lz = bz + r.int(-2, 2);
-      const ly = g + h - 1 - r.int(0, 6);
+      const ly = g + h - 1 - r.int(0, Math.floor(h / 3));
       ctx.add(lx, ly, lz, leaf);
     }
   }

@@ -127,12 +127,14 @@ export function buildTerrain(map, tileTypes, tileMap) {
   for (const o of L.objects) {
     add({ ...o, kind: o.prop, fx: o.x * 2, fz: o.y * 2, fw: o.w * 2, fd: o.h * 2, seed: o.seed ?? hashSeed(o.id) }, o.id, o.solid !== false);
   }
-  // Plants that grow on the ground: bamboo on the hedge, low bushes on the low hedge.
+  // Plants that grow on the ground: bamboo on the hedge, low bushes on the low hedge. A clump
+  // stands on every fourth cell of every third row (the rows move by two in turn), so that the ground shows
+  // between the clumps.
   for (let z = 0; z < H; z++) {
     for (let x = 0; x < W; x++) {
       const grows = tileTypes[typeAt(x, z)]?.grows;
-      if (!grows || x % 2 || z % 2) continue;
-      add({ kind: grows, fx: x * 2 - 1, fz: z * 2 - 1, fw: 4, fd: 4, seed: hashSeed(`${map.id}:${x}:${z}`), stems: 2 }, null);
+      if (!grows || z % 3 || (x + (z % 6 ? 2 : 0)) % 4) continue;
+      add({ kind: grows, fx: x * 2, fz: z * 2, fw: 2, fd: 2, seed: hashSeed(`${map.id}:${x}:${z}`) }, null);
     }
   }
   // Flowers and small stones on open grass, by a seeded rule (never in a grid).
