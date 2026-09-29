@@ -1,8 +1,9 @@
 // Input: the commands of the last frames go into the components of the entities.
 // Commands: move (a map direction from the stick or the keys), walk (a route of points), stop,
 // place (put an entity at a point), face (turn to a point), pause (a dialogue opens or closes),
-// stay (a person of the quest stays out at night).
-export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'events'];
+// stay (a person of the quest stays out at night), pet (a friend is happy), ride (the hero gets on
+// the back of a friend, or gets off).
+export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'events'];
 
 import { getEntity, query } from '../state.js';
 import { faceOf } from '../move.js';
@@ -44,6 +45,19 @@ export function input(world, dt, rng, env) {
         f.position.y = env.groundY(f.position.x / 2, f.position.z / 2);
       }
       world.events.push({ type: 'placed', id: e.id });
+    } else if (c.type === 'pet' && e.follow) {
+      e.follow.happy = 2.5;
+      world.events.push({ type: 'petted', id: e.id, sound: 'moo' });
+    } else if (c.type === 'ride') {
+      const mount = getEntity(world, c.mount);
+      if (e.riding || !mount) {
+        delete e.riding;
+        world.events.push({ type: 'dismount', id: e.id });
+      } else {
+        e.riding = mount.id;
+        Object.assign(e.position, { x: mount.position.x, z: mount.position.z });
+        world.events.push({ type: 'mount', id: e.id, sound: 'moo' });
+      }
     } else if (c.type === 'stay' && e.schedule) {
       e.schedule.stay = Boolean(c.on);
     } else if (c.type === 'face' && e.position) {

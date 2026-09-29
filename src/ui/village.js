@@ -386,7 +386,20 @@ export async function mountVillage(ctx, params = {}) {
       arrivals.clear();
       return;
     }
-    hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false };
+    hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false, friend: friendAt(p) };
+  }
+
+  // Nghé (or the hero on the back of Nghé) under a screen point: a tap pets, a hold rides.
+  function friendAt(p) {
+    const friend = query(state, 'follow')[0];
+    if (!friend) return null;
+    for (const id of [friend.id, ...(hero().riding ? ['hero'] : [])]) {
+      const f = figures.placeOf(id);
+      if (!f) continue;
+      const b = view.screenBox({ x0: f.x - 0.8, x1: f.x + 0.8, y0: f.y, y1: f.y + f.height + 0.2, z0: f.z - 0.8, z1: f.z + 0.8 });
+      if (p.x >= b.x0 - 8 && p.x <= b.x1 + 8 && p.y >= b.y0 - 8 && p.y <= b.y1 + 8) return friend.id;
+    }
+    return null;
   }
 
   function onMove(e) {
@@ -435,14 +448,25 @@ export async function mountVillage(ctx, params = {}) {
     }
     if (hold && hold.id === e.pointerId) {
       const wasHeld = hold.held;
+      const friend = hold.friend;
       hold = null;
-      if (!wasHeld && e.type === 'pointerup' && !busy) onTap(p);
+      if (wasHeld || e.type !== 'pointerup' || busy) return;
+      if (friend) {
+        ctx.bus.emit('sound', 'tap');
+        command(state, { type: 'pet', id: friend });
+      } else onTap(p);
     }
   }
 
   function startHold() {
     hold.held = true;
     arrivals.clear();
+    // A hold on Nghé: get on its back, or get off.
+    if (hold.friend) {
+      command(state, { type: 'ride', id: 'hero', mount: hold.friend });
+      hold.friend = null;
+      hold.done = true;
+    }
   }
 
   function onWheel(e) {
@@ -550,7 +574,7 @@ export async function mountVillage(ctx, params = {}) {
     else if (keys.size) dir = toMap(keysToScreenDir(keys));
     else {
       if (hold && !hold.held && performance.now() - hold.since > HOLD_MS) startHold();
-      const m = hold?.held ? view.pick(hold.vx, hold.vy) : null;
+      const m = hold?.held && !hold.done ? view.pick(hold.vx, hold.vy) : null;
       if (m) {
         const c = heroCell();
         const i = inputToward(c, m, { run: Math.hypot(m.x - c.x, m.y - c.y) > 6, stop: 0.3 });
@@ -637,6 +661,7 @@ export async function mountVillage(ctx, params = {}) {
       const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
       showBubble(ev.id, t(lines[n % lines.length], { name: profile.hero.name }));
     }
+    if (ev.type === 'petted') showBubble(ev.id, '♥');
     if (ev.type === 'break' && ev.give) {
       applyEffects(profile, [{ give: ev.give }]);
       showBubble(ev.id, `+${Object.values(ev.give)[0]}`);

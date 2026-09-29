@@ -14,6 +14,8 @@ export const FIGURE_UNIT = 0.5;
 const HULL = 0.14; // the ink outline around each part, in figure units
 const MAX_PARTS = 4096;
 const MAX_FIGURES = 512;
+const MAX_PUFFS = 64;
+const RIDER = 0.35; // world units: the seat of a rider over the ground
 export const night = { value: 0 };
 
 // A box of size 1 with the tone of each face (+x, -x, +y, -y, +z, -z) as an attribute.
@@ -65,6 +67,12 @@ export function createFigureLayer(scene, lookOf) {
     scene.add(m);
   }
   shadows.renderOrder = 1;
+  // Dust puffs: small pale boxes behind a running hero.
+  const dust = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.paperDeep), transparent: true, opacity: 0.7, depthWrite: false }), MAX_PUFFS);
+  dust.frustumCulled = false;
+  dust.count = 0;
+  scene.add(dust);
+  const puffs = [];
 
   const figures = new Map(); // entity id -> figure
   const m4 = new THREE.Matrix4();
@@ -127,9 +135,13 @@ export function createFigureLayer(scene, lookOf) {
           f.prev = { ...f.curr };
           f.shownY = f.curr.y;
         }
-        f.speed = (e.motion?.speed ?? 0) / 2;
-        // The pose that the state asks for: a wave, and the bend of grass.
-        f.want = e.act === 'sit' || e.act === 'rest' ? 'rest' : e.react?.waving > 0 ? 'wave' : null;
+        f.speed = e.riding ? 0 : (e.motion?.speed ?? 0) / 2;
+        f.control = Boolean(e.control);
+        f.running = (e.motion?.speed ?? 0) > 11;
+        // A rider sits on the back of Nghé; a swimmer at the ford is a little lower in the water.
+        f.offset = (e.riding ? RIDER : 0) - (e.motion?.shallow && !e.control ? 0.3 : 0);
+        // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
+        f.want = e.riding ? 'ride' : e.act === 'sit' || e.act === 'rest' ? 'rest' : e.act === 'happy' ? 'happy' : e.react?.waving > 0 ? 'wave' : null;
         f.bend = e.react?.bend ?? null;
       }
       for (const id of [...figures.keys()]) if (!seen.has(id)) figures.delete(id);
@@ -144,7 +156,15 @@ export function createFigureLayer(scene, lookOf) {
         const x = a.x + (b.x - a.x) * t;
         const z = a.z + (b.z - a.z) * t;
         // A step up or down is smooth.
-        f.shownY += (b.y - f.shownY) * Math.min(1, dt * 14);
+        f.shownY += (b.y + f.offset * 2 - f.shownY) * Math.min(1, dt * 14);
+        // Dust behind a running hero.
+        if (f.control && f.running) {
+          f.dust = (f.dust ?? 0) - dt;
+          if (f.dust <= 0) {
+            f.dust = 0.07;
+            puffs.push({ x: x / 2 - Math.sin(b.facing) * 0.4, y: b.y / 2, z: z / 2 - Math.cos(b.facing) * 0.4, age: 0 });
+          }
+        }
         f.at = { x: x / 2, y: f.shownY / 2, z: z / 2 };
         f.root.position.set(f.at.x, f.at.y, f.at.z);
         f.root.rotation.y = lerpAngle(a.facing, b.facing, t);
@@ -175,6 +195,20 @@ export function createFigureLayer(scene, lookOf) {
           shadows.setMatrixAt(s++, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.04, f.at.z));
         }
       }
+      // The dust puffs rise, grow, and go.
+      let q = 0;
+      for (let i = puffs.length - 1; i >= 0; i--) {
+        const d = puffs[i];
+        d.age += dt;
+        if (d.age > 0.5 || q >= MAX_PUFFS) {
+          puffs.splice(i, 1);
+          continue;
+        }
+        const k = 0.25 + d.age * 0.9;
+        dust.setMatrixAt(q++, tmp.makeScale(k, k, k).setPosition(d.x, d.y + 0.15 + d.age * 0.6, d.z));
+      }
+      dust.count = q;
+      dust.instanceMatrix.needsUpdate = true;
       parts.count = n;
       hulls.count = n;
       shadows.count = s;
@@ -188,7 +222,7 @@ export function createFigureLayer(scene, lookOf) {
       return f?.at ? { ...f.at, height: f.height } : null;
     },
     dispose() {
-      for (const m of [parts, hulls, shadows]) {
+      for (const m of [parts, hulls, shadows, dust]) {
         scene.remove(m);
         m.material.dispose();
         m.dispose();

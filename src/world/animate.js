@@ -20,6 +20,8 @@ export function animate(a, input) {
   a.idle = moving ? 0 : a.idle + dt;
   const k = (t) => Math.min(1, dt * t);
   const wantRest = input.want === 'rest' && !moving;
+  const riding = input.want === 'ride';
+  const happy = input.want === 'happy';
   a.rest += ((wantRest ? 1 : 0) - a.rest) * k(wantRest ? 1.5 : 4);
   a.wave += ((input.want === 'wave' && !moving ? 1 : 0) - a.wave) * k(6);
   const grazing = a.kind === 'quadruped' && !moving && a.idle > GAIT.graze && !wantRest;
@@ -37,8 +39,9 @@ export function animate(a, input) {
   let sink = 0;
   if (a.kind === 'biped') {
     const sw = Math.sin(a.phase) * 0.75 * s;
-    rot.legL = [sw - a.rest * 1.4, 0, 0];
-    rot.legR = [-sw - a.rest * 1.4, 0, 0];
+    // On the back of Nghé the legs go to the sides and stay still.
+    rot.legL = riding ? [-0.6, 0, -0.5] : [sw - a.rest * 1.4, 0, 0];
+    rot.legR = riding ? [-0.6, 0, 0.5] : [-sw - a.rest * 1.4, 0, 0];
     rot.armL = [-sw * 0.8, 0, 0];
     rot.armR = [sw * 0.8 - a.wave * 0.2, 0, -a.wave * (1.9 + Math.sin(a.time * 8) * 0.35)];
     lift = Math.abs(Math.cos(a.phase)) * 0.18 * s;
@@ -55,8 +58,10 @@ export function animate(a, input) {
     rot.legFR = [-sw + bend, 0, 0];
     rot.legBL = [-sw + bend, 0, 0];
     rot.head = [a.graze * 0.75 + a.rest * 0.35 + Math.sin(a.time * 2.2) * 0.04, 0, 0];
-    rot.tail = [0.3, 0, Math.sin(a.time * 3.1) * 0.35];
-    lift = Math.abs(Math.sin(a.phase)) * 0.12 * s;
+    // Happy (after a pet): the tail wags fast, the head goes up, and a small hop.
+    rot.tail = [0.3, 0, Math.sin(a.time * (happy ? 16 : 3.1)) * (happy ? 0.7 : 0.35)];
+    if (happy) rot.head = [-0.3 + Math.sin(a.time * 8) * 0.1, 0, 0];
+    lift = Math.abs(Math.sin(a.phase)) * 0.12 * s + (happy ? Math.abs(Math.sin(a.time * 7)) * 0.3 : 0);
     sink = a.rest * 1.15;
   } else if (a.kind === 'fowl') {
     // Quick small steps; the wings flap when it runs; it pecks at the ground when it stands.

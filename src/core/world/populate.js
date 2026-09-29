@@ -104,7 +104,7 @@ export function addLife(world, env, life, kind, at, extra = {}) {
     position: { x: at.x, y, z: at.z, facing: at.facing ?? 0 },
     motion: { vx: 0, vz: 0, speed: 0 },
     ...(s ? { steer: { ...structuredClone(s), goal: null, arrived: false, flee: null, bias: null, wander: null } } : {}),
-    look: def.looks[0],
+    ...(def.looks.length ? { look: def.looks[0] } : {}),
     ...extra,
   });
 }
@@ -141,10 +141,12 @@ export function addLifeLayer(world, map, env, life) {
       addLife(world, env, life, g.kind, { ...(g.spot ? spot : at), facing }, {
         id: `life:${gi}:${i}`,
         ...(def.plan ? { schedule: { plan: structuredClone(def.plan), spot, bed: bed ? { x: bed.x + (i % 3) - 1, z: bed.z + Math.floor(i / 3) - 0.5 } : null } } : {}),
-        look: def.looks[i % def.looks.length],
+        ...(def.looks.length ? { look: def.looks[i % def.looks.length] } : {}),
         ...(def.flock ? { flock: { id: `${map.id}:${gi}`, ...def.flock } } : {}),
         ...(def.react ? { react: structuredClone(def.react) } : {}),
         ...(def.solid ? { solid: { r: def.solid } } : {}),
+        ...(def.pushable ? { pushable: { r: def.pushable } } : {}),
+        ...(def.hot ? { hot: { r: def.hot } } : {}),
         range: { x: cx, z: cz, r: Math.max(4, r * (def.range ?? 2)) },
       });
     }

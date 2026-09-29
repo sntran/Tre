@@ -1,10 +1,13 @@
 // Movement: an entity with an intent walks or runs in that direction, with collision against
 // blocked cells and cliffs, and stands on the ground. People and enemies (solid) push it away a
-// little, like round walls. While the world waits (a dialogue), nothing walks.
+// little, like round walls. While the world waits (a dialogue), nothing walks. On the back of
+// Nghé (riding) the hero is faster. motion.idle counts the seconds that the hero stands still.
 export const WRITES = ['position', 'motion'];
 
 import { query } from '../state.js';
 import { stepBody, moveCircle, MOVE } from '../move.js';
+
+export const RIDE_SPEED = 1.35; // the speed factor on the back of Nghé
 
 export function move(world, dt, rng, env) {
   const solids = query(world, 'solid', 'position');
@@ -14,10 +17,10 @@ export function move(world, dt, rng, env) {
     const m = e.motion;
     const i = world.paused ? null : e.intent;
     // The helpers work in map cells: one cell is 2 half blocks.
-    const body = { x: p.x / 2, y: p.z / 2, vx: m.vx / 2, vy: m.vz / 2, facing: p.facing };
+    const body = { x: p.x / 2, y: p.z / 2, vx: m.vx / 2, vy: m.vz / 2, facing: p.facing, speedFactor: e.riding ? RIDE_SPEED : 1 };
     stepBody(body, i ? { dx: i.dx, dy: i.dz, strength: i.strength, run: i.run } : { dx: 0, dy: 0, strength: 0 }, dt, env.near(body.x, body.y));
     for (const s of solids) {
-      if (s === e) continue;
+      if (s === e || (e.riding && s.pushable)) continue;
       const dx = body.x - s.position.x / 2;
       const dy = body.y - s.position.z / 2;
       const d = Math.hypot(dx, dy);
@@ -36,5 +39,6 @@ export function move(world, dt, rng, env) {
     m.vz = body.vy * 2;
     m.speed = body.speed * 2;
     m.shallow = Boolean(body.shallow);
+    m.idle = m.speed < 0.2 ? (m.idle ?? 0) + dt : 0;
   }
 }

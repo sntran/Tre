@@ -8,6 +8,7 @@ import { react } from './systems/react.js';
 import { sky } from './systems/sky.js';
 import { schedule } from './systems/schedule.js';
 import { lights } from './systems/lights.js';
+import { push } from './systems/push.js';
 import { flock } from './systems/flock.js';
 import { steer } from './systems/steer.js';
 import { clock } from './systems/clock.js';
@@ -22,6 +23,7 @@ export const SYSTEMS = [
   route, //  a route turns into an intent (a direction), so that movement reads one kind of input.
   move, //   the hero and other walkers move with collision, from their intents.
   follow, // after the hero moves, so that Nghé follows the new position without a step of lag.
+  push, //   after the hero moves: a cart moves out of the way of the hero on the back of Nghé.
   react, //  after the hero moves, so that things react to where the hero is now; before steering, so that a flight starts in this step.
   flock, //  the pull of each flock goes into the steering before the animals move.
   steer, //  animals and people that move by themselves.

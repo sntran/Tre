@@ -282,6 +282,24 @@ export function lantern(lit = false) {
   return { kind: 'still', parts, scale: 1, height: 3, shadow: 0 };
 }
 
+// A wooden cart with two wheels and two shafts. The shafts point to the front (+z).
+export function cart() {
+  const parts = [
+    P('bed', [3, 0.4, 4], 'wood', [0, 1.9, 0]),
+    P('sideL', [0.3, 0.9, 4], 'ochre', [-1.35, 2.5, 0]),
+    P('sideR', [0.3, 0.9, 4], 'ochre', [1.35, 2.5, 0]),
+    P('back', [3, 0.9, 0.3], 'ochre', [0, 2.5, -1.85]),
+    P('load', [2.2, 0.8, 2.6], 'yellow', [0, 2.5, -0.3]),
+    P('wheelL', [0.4, 2.2, 2.2], 'wood', [-1.75, 1.1, 0]),
+    P('wheelR', [0.4, 2.2, 2.2], 'wood', [1.75, 1.1, 0]),
+    P('hubL', [0.5, 0.6, 0.6], 'ink', [-1.8, 1.1, 0]),
+    P('hubR', [0.5, 0.6, 0.6], 'ink', [1.8, 1.1, 0]),
+    P('shaftL', [0.25, 0.25, 3], 'wood', [-0.9, 1.9, 3.3]),
+    P('shaftR', [0.25, 0.25, 3], 'wood', [0.9, 1.9, 3.3]),
+  ];
+  return { kind: 'still', parts, scale: 0.7, height: 3, shadow: 1.8 };
+}
+
 // The figure of a look from data/figures.json.
 export function figureOf(look) {
   if (look.kind === 'nghe') return nghe();
@@ -294,6 +312,7 @@ export function figureOf(look) {
   if (look.kind === 'pot') return pot(Boolean(look.broken));
   if (look.kind === 'grass') return grass();
   if (look.kind === 'owl') return owl();
+  if (look.kind === 'cart') return cart();
   if (look.kind === 'bird') return bird();
   if (look.kind === 'lantern') return lantern(Boolean(look.lit));
   return person(look);

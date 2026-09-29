@@ -45,6 +45,9 @@ Positions are on the half-block grid: x to the east, z to the south (map y), y u
 | `act` | `sit`: the pose that a plan asks for (a hen in its coop) | schedule |
 | `carry` | `lantern`: a thing in the hand at night | schedule |
 | `lantern` | `{ home, always }`: the lantern at the door of a house | lights |
+| `riding` | the id of the friend under the hero | input, move, follow, push |
+| `pushable` | `{ r }`: the hero on the back of Nghé can push it (the cart) | push |
+| `hot` | `{ r }`: Nghé steps back within this distance (the fire of the forge) | follow |
 | `keep` | `true`: the save keeps this entity | save |
 
 Helpers: `addEntity`, `removeEntity`, `getEntity`, `query(world, ...components)`, and `command(world, cmd)`. A few hundred entities do not need an index.
@@ -55,17 +58,18 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 
 `step(world, dt, env)` in `src/core/world/step.js` runs the systems in this order, 30 times a second:
 
-1. **input**: the commands go into the entities before anything moves (move, walk, stop, place, face, pause, stay).
+1. **input**: the commands go into the entities before anything moves (move, walk, stop, place, face, pause, stay, pet, ride).
 2. **sky**: the light and the rain of this hour, and the river in the rain, so that the plans and the lanterns read them. It sends `dawn` and `dusk`.
 3. **schedule**: the plan of the hour sets the goals of the people and the animals before anything moves: the spot, the well, the coop, the bank, and home (to the foot of the ladder, up, and in). The walk goes around houses and water on a path of cells.
 4. **lights**: after the plans, so that a lantern lights in the step when its family goes in.
 5. **route**: a route turns into an intent, so that movement reads one kind of input. The end of a route sends the event `arrived`; a route that cannot go on sends `stuck`.
 6. **move**: the hero walks or runs from its intent, with collision against blocked cells, cliffs, and solid people. Nothing walks while the world waits.
-7. **follow**: after the hero moves, so that Nghé follows the new position without a step of lag.
-8. **react**: after the hero moves, so that things react to where the hero is now, and before steering, so that a flight starts in the same step. Chickens flee a running hero, ducks and fish swim away, people turn, wave, and greet, the dog follows for a while, pots break and give a coin, and tall grass bends.
-9. **flock**: the pull of each flock (alignment with the near neighbors, cohesion to the middle of the flock, and the range of its place) goes into `steer.bias` before the animals move.
-10. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance).
-11. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits.
+7. **follow**: after the hero moves, so that Nghé follows the new position without a step of lag. Nghé carries the hero who rides, steps back from a fire, is happy after a pet, and lies down beside the hero who rests at night.
+8. **push**: after the hero moves: on the back of Nghé the hero pushes the cart out of the way.
+9. **react**: after the hero moves, so that things react to where the hero is now, and before steering, so that a flight starts in the same step. Chickens flee a running hero, ducks and fish swim away, people turn, wave, and greet, the dog follows for a while, pots break and give a coin, and tall grass bends.
+10. **flock**: the pull of each flock (alignment with the near neighbors, cohesion to the middle of the flock, and the range of its place) goes into `steer.bias` before the animals move.
+11. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance).
+12. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits.
 
 Randomness comes only from the `rng` of the step. The same seed and the same commands give the same world.
 
