@@ -335,9 +335,37 @@ export function deck(n, w = 8) {
   return { kind: 'still', parts, scale: 1, height: 1, shadow: 0 };
 }
 
+// The outline of a plank for the prediction (a frame of four thin bars, 2 by 4 units), or the same
+// plank filled with pale wood when the child chose it. It shows no numeral.
+export function plankGhost(on = false) {
+  const parts = on
+    ? [0, 1, 2, 3].map((i) => P(`unit${i}`, [2, 0.5, 1], 'yellowPale', [0, 0.25, i + 0.5]))
+    : [
+      P('sideL', [0.25, 0.3, 4], 'diep', [-0.9, 0.15, 2]),
+      P('sideR', [0.25, 0.3, 4], 'diep', [0.9, 0.15, 2]),
+      P('endN', [2, 0.3, 0.25], 'diep', [0, 0.15, 0.12]),
+      P('endS', [2, 0.3, 0.25], 'diep', [0, 0.15, 3.88]),
+    ];
+  return { kind: 'still', parts, scale: 1, height: 0.5, shadow: 0 };
+}
+
+// The marks of the empty part of a gap after a fall: n pale frames of one unit each, over the
+// water at the height of the deck, so that the child sees how many units were missing.
+export function gapMarks(n) {
+  const parts = [];
+  for (let i = 0; i < n; i++) {
+    parts.push(P(`l${i}`, [0.2, 0.2, 0.8], 'diep', [-0.8, 0, i + 0.5]));
+    parts.push(P(`r${i}`, [0.2, 0.2, 0.8], 'diep', [0.8, 0, i + 0.5]));
+    parts.push(P(`e${i}`, [1.8, 0.2, 0.2], 'diep', [0, 0, i + 0.9]));
+  }
+  return { kind: 'still', parts, scale: 1, height: 0.2, shadow: 0 };
+}
+
 // The figure of a look from data/figures.json.
 export function figureOf(look) {
   if (look.kind === 'plank') return plank(look.n);
+  if (look.kind === 'plank-ghost') return plankGhost(Boolean(look.on));
+  if (look.kind === 'gap') return gapMarks(look.n);
   if (look.kind === 'deck') return deck(look.n, look.w);
   if (look.kind === 'nghe') return nghe();
   if (look.kind === 'duck') return duck();

@@ -25,6 +25,7 @@ import { runDialogue, say } from './dialogue.js';
 const STICK_R = 56; // the radius of the virtual stick, in screen pixels
 // The color of the dusk wash at full night: the hue of indigo (#2f4668) in the palette.
 const DUSK = Object.freeze({ hue: 215, saturation: 45, lightness: 42 });
+const PREDICTIONS = 200; // the predictions that the profile keeps
 const HOLD_MS = 220; // a press this long is a hold (walk toward the finger), not a tap
 const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyQ', 'KeyE', 'Space']);
 
@@ -140,12 +141,6 @@ export async function mountVillage(ctx, params = {}) {
     const goal = currentGoal(data.quests.quests, conditionState(profile));
     const wanted = new Set((goal?.step.targets ?? (goal?.step.target ? [{ npc: goal.step.target }] : [])).map((tg) => tg.npc).filter(Boolean));
     for (const p of persons()) if (p.kind === 'npc') command(state, { type: 'stay', id: p.entity, on: wanted.has(p.ref) });
-    // The person who watches a placement zone goes there when the story lets the person go.
-    for (const z of query(state, 'zone')) {
-      const w = data.zones[z.zone.task]?.watch;
-      const p = w && persons().find((x) => x.kind === 'npc' && x.ref === w.who);
-      if (p) command(state, { type: 'watch', id: p.entity, on: isPresent(w, profile) });
-    }
     // The friend walks behind the hero.
     const friendId = profile.party[0];
     for (const f of query(state, 'follow')) if (f.id !== `friend:${friendId}`) state.entities.splice(state.entities.indexOf(f), 1);
@@ -578,6 +573,21 @@ export async function mountVillage(ctx, params = {}) {
     }
     return best?.e ?? null;
   }
+  // The plank outline of the prediction under a screen point (the row lies on the bank).
+  function guessAt(p) {
+    let best = null;
+    for (const g of query(state, 'guess', 'position')) {
+      if (g.guess.left !== undefined) continue;
+      const q = g.position;
+      const b = view.screenBox({ x0: q.x / 2 - 0.6, x1: q.x / 2 + 0.6, y0: q.y / 2, y1: q.y / 2 + 0.3, z0: q.z / 2, z1: q.z / 2 + 2 });
+      if (p.x < b.x0 - 4 || p.x > b.x1 + 4 || p.y < b.y0 - 4 || p.y > b.y1 + 4) continue;
+      // The outlines stand close together: the one whose middle is nearest to the finger.
+      const c = view.project(q.x / 2, q.y / 2 + 0.1, q.z / 2 + 1);
+      const d = Math.hypot(p.x - c.x, p.y - c.y);
+      if (!best || d < best.d) best = { g, d };
+    }
+    return best?.g ?? null;
+  }
   // The span that has this cell, if it is not solid yet.
   const spanAt = (x, y) => spans().find(({ zone: z }) => !z.set && x >= z.x0 && x <= z.x1 && y >= z.start / 2 && y < z.end / 2);
   // The pile of the task of a thing.
@@ -628,6 +638,8 @@ export async function mountVillage(ctx, params = {}) {
     const pick = () => command(state, { type: 'pick', id: 'hero', item: thing.id });
     const target = { x: m.x / 2, y: m.z / 2 };
     const held = getEntity(state, holding());
+    // The child chose this plank now (the time to choose is a sign for the model); the hero walks.
+    command(state, { type: 'aim', id: 'hero', item: thing.id });
     if (!held) return walkToThing(target, pick);
     if (held.id === thing.id) return;
     // The hands are full: put that plank back on its pile (or down), then take this one.
@@ -679,6 +691,12 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     const cond = conditionState(profile);
+    // The prediction: a tap on the n-th plank outline says that the bridge takes n planks.
+    const ghost = guessAt(p);
+    if (ghost) {
+      command(state, { type: 'guess', id: 'hero', zone: ghost.guess.zone, n: ghost.guess.n });
+      return;
+    }
     const plank = thingAt(p);
     if (plank) {
       tapThing(plank);
@@ -789,7 +807,8 @@ export async function mountVillage(ctx, params = {}) {
   const skillLog = [];
   function logSkill(ev) {
     if (!debugPanel) return;
-    skillLog.unshift(`${ev.skill} · L${ev.level} · ${ev.correct ? 'yes' : 'no'} · ${ev.parts.join(' ')} / ${ev.target}`);
+    const flags = [ev.solved ? 'solved' : 'not solved', ev.efficient ? 'efficient' : null, ev.first ? 'first' : null, ev.mashing ? 'mashing: no evidence' : null].filter(Boolean);
+    skillLog.unshift(`${ev.skill} · L${ev.level} · ${flags.join(', ')} · ${ev.parts.join(' ')} / ${ev.target}`);
     skillLog.length = Math.min(skillLog.length, 8);
     debugPanel.replaceChildren(h('b', { text: 'skill events' }), ...skillLog.map((line) => h('div', { text: line })));
   }
@@ -905,13 +924,12 @@ export async function mountVillage(ctx, params = {}) {
       showBubble(ev.id, t(lines[n % lines.length], { name: profile.hero.name }));
     }
     if (ev.type === 'petted') showBubble(ev.id, '♥');
-    // The elder calls out when a plank is wasted.
+    // The fisher calls out when a plank is too long.
     if (ev.type === 'call' && !busy) showBubble(ev.id, t(ev.key));
-    // The bridge takes solid form: the coins fly from the last plank to the bag.
     // A plank falls into the river: a splash. The bridge takes solid form: dust along the deck.
-    if (ev.type === 'wasted' || ev.type === 'tip' || ev.type === 'crack') {
-      const q = getEntity(state, ev.item)?.position ?? getEntity(state, ev.id)?.position;
-      if (q) figures.burst(q.x / 2, 1.6, q.z / 2 + 1.5, 'splash', 12);
+    if (ev.type === 'float' || ev.type === 'crack') {
+      const q = ev.at ?? getEntity(state, ev.id)?.position;
+      if (q) figures.burst(q.x / 2, 1.6, q.z / 2, 'splash', 12);
     }
     if (ev.type === 'solid') {
       const z = getEntity(state, ev.id)?.zone;
@@ -924,11 +942,25 @@ export async function mountVillage(ctx, params = {}) {
         for (let i = 0; i < n; i++) flyToCounter(ev.at, item, 0.5 + i * 0.15);
       }
     }
-    // A try at a placement: a skill event for the learner. The child never sees it; with
-    // ?debug=1 in the address, a small panel shows it.
+    // A commit at a placement: a skill event for the learner. The child never sees it; with
+    // ?debug=1 in the address, a small panel shows it. A commit with the signs of mashing is no
+    // evidence. The first commit on a gap counts at the level of the gap, and only an efficient
+    // success (the fewest planks) counts as correct: it carries most of the evidence. A later
+    // commit on the same gap counts at the lowest level, with the plain result.
     if (ev.type === 'skill') {
-      ctx.learner?.record({ skill: ev.skill, level: ev.level }, ev.correct);
+      if (ev.evidence) {
+        if (ev.first) ctx.learner?.record({ skill: ev.skill, level: ev.level }, ev.efficient);
+        else ctx.learner?.record({ skill: ev.skill, level: 1 }, ev.solved);
+      }
       logSkill(ev);
+    }
+    // The prediction before the first commit on a gap, and the result, in the profile until the
+    // learning log has a place for them.
+    if (ev.type === 'prediction') {
+      profile.predictions ??= [];
+      profile.predictions.push({ at: Math.round(state.clock.minutes), task: ev.task, gap: ev.gap, guess: ev.guess, used: ev.used, solved: ev.solved });
+      if (profile.predictions.length > PREDICTIONS) profile.predictions.splice(0, profile.predictions.length - PREDICTIONS);
+      ctx.save('prediction');
     }
     if (ev.type === 'break' && ev.give) {
       // The gift flies from the pot to its counter in the HUD; no number is written in the world.
@@ -1162,6 +1194,11 @@ export async function mountVillage(ctx, params = {}) {
       if (!e?.position) return null;
       const m = e.item ? middleOf(e) : e.position;
       return view.project(m.x / 2, e.position.y / 2 + 0.3, m.z / 2);
+    },
+    // The screen point of the n-th plank outline of the prediction, for automatic tests.
+    screenOfGuess: (n) => {
+      const g = query(state, 'guess').find((x) => x.guess.n === n);
+      return g ? view.project(g.position.x / 2, g.position.y / 2 + 0.1, g.position.z / 2 + 1) : null;
     },
     // The plank under a screen point, for automatic tests.
     thingAt: (x, y) => thingAt({ x, y })?.id ?? null,

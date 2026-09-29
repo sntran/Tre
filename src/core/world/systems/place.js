@@ -2,34 +2,46 @@
 // ground, and picks it up again. A thing snaps to the half-block grid. Each zone says what fits
 // and what a placement means (src/core/world/zones.js and data/world/zones.json).
 //
-// A span (the broken bridge) answers each try with the world, never with a text:
+// A span (the broken bridge) is a free place to try: to put planks and to take them back is
+// exploration and is never an error. The commit is the step of the hero on the last plank. Then
+// the world answers, never with a text:
 //   exact: the span becomes solid, a drum sounds, and coins come.
-//   long: the last thing sticks out past the far end and wobbles, a person calls out, and then it
-//     falls into the water and is lost.
-//   short: when the hero steps on the last thing, it tips, and the hero falls into the water.
-//     The friend (Nghé) comes to the edge and pulls the hero out. The thing floats back to the pile.
-// After some failures in a round, Nghé walks to the end of the things and looks at the gap.
-// The next round opens at the next dawn; after the last round, the rain of a later day breaks
-// the span again. Each try sends skill events for the learner (the child never sees them).
-export const WRITES = ['hands', 'item', 'zone', 'position', 'hidden', 'look', 'tilt', 'carry', 'fall', 'follow', 'intent', 'route', 'motion', 'riding', 'keep', 'deck', 'events'];
+//   short: the last plank dips, and the hero falls into the water. The planks and the marks of the
+//     empty part of the gap stay for some seconds, so that the child sees how much was missing.
+//     Nghé comes to the edge and pulls the hero out. The last plank floats back to the pile.
+// A plank that is too long answers at once: it sticks out past the far end and wobbles, the fisher
+// calls out, and it slides back into the water and floats back to the pile. Nothing is lost, so
+// that the two failures cost the same.
+// Before the first commit on a new gap, a row of plank outlines lies on the bank, Nghé looks at the
+// hero, and the child taps how many planks the bridge will take (a prediction, no numeral).
+// After some failures, or after a commit with the signs of mashing, Nghé stands at the near end
+// of the planks and stretches its neck toward the gap. The next round opens at the next dawn;
+// after the last round, the rain of a later day breaks one or two planks. Each commit sends skill
+// events for the learner (the child never sees them).
+export const WRITES = ['hands', 'item', 'zone', 'position', 'hidden', 'look', 'tilt', 'carry', 'fall', 'follow', 'intent', 'route', 'motion', 'riding', 'keep', 'deck', 'guess', 'why', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { DAY_MINUTES } from '../clock.js';
+import { faceOf } from '../move.js';
 import {
-  REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, canMake, sizesOf, sum, openRound, reachOf, oldDeck,
+  REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, isMashing, sizesOf, sum, openRound, openGap, reachOf, oldDeck,
 } from '../zones.js';
 
-const TIP = 0.9; // seconds: the last plank tips and falls
+const TIP = 0.3; // seconds: the last plank dips under the hero
 const DROP = 0.35; // seconds: the hero falls into the water
 const PULL = 0.8; // seconds: Nghé pulls the hero to the edge
-const SINK = 0.6; // seconds: a wasted plank sinks
+const SLIDE = 0.8; // seconds: a plank that is too long slides back into the water
 
 export function place(world, dt, rng, env) {
   tidy(world, env);
-  for (const e of query(world, 'hands', 'position')) if (e.hands.want) act(world, e, env);
+  for (const e of query(world, 'hands', 'position')) if (e.hands.want) act(world, e, env, dt);
   for (const z of query(world, 'zone')) if (z.zone.rule === 'span') tickSpan(world, z, dt, env, rng);
   for (const e of query(world, 'fall', 'position')) tickFall(world, e, dt, env);
 }
+
+const defOf = (env, zone) => env.zones?.[zone.task];
+const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+const say = (world, type, id, extra = {}) => world.events.push({ type, id, ...extra });
 
 // Hands and things that lost each other (the hero went to another map with a plank): the hands
 // are empty, and the thing goes back to the pile of its zone.
@@ -44,18 +56,9 @@ function tidy(world, env) {
     if (!t.item.held || getEntity(world, t.item.held)?.hands?.holds === t.id) continue;
     t.item.held = null;
     t.hidden = false;
-    const task = getEntity(world, `zone:${t.item.task}`);
-    const pile = task ? getEntity(world, `zone:${defOf(env, task.zone)?.pile}`) : null;
-    if (!pile) continue;
-    t.item.zone = pile.zone.id;
-    pile.zone.items.push(t.id);
-    packPile(world, pile.zone);
+    toPile(world, env, t);
   }
 }
-
-const defOf = (env, zone) => env.zones?.[zone.task];
-const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
-const say = (world, type, id, extra = {}) => world.events.push({ type, id, ...extra });
 
 // The middle of a thing that lies somewhere (a plank lies along its facing from its position).
 function middleOf(e) {
@@ -64,25 +67,56 @@ function middleOf(e) {
   return { x: e.position.x + Math.sin(f) * h, z: e.position.z + Math.cos(f) * h };
 }
 
-// The wish of the hands of an entity: pick, put, or drop.
-function act(world, e, env) {
+// A thing goes back to the pile of the zone that owns it (it floats to the bank).
+function toPile(world, env, thing) {
+  const task = getEntity(world, `zone:${thing.item.task}`);
+  const pile = task ? getEntity(world, `zone:${defOf(env, task.zone)?.pile}`) : null;
+  delete thing.tilt;
+  thing.item.zone = pile ? pile.zone.id : null;
+  if (!pile) return;
+  if (!pile.zone.items.includes(thing.id)) pile.zone.items.push(thing.id);
+  packPile(world, pile.zone);
+}
+
+// The attempt on a gap since the last commit: the think times, the sizes at each place, and the
+// pause after a failure (for the signs of mashing). `last` is the step of the last action.
+function attemptOf(world, zone) {
+  zone.attempt ??= { last: world.tick, thinks: [], tries: [], pause: null, failed: false };
+  return zone.attempt;
+}
+
+// The wish of the hands of an entity: aim (the child chose a plank; the hero walks to it), pick,
+// put, drop, or guess (the prediction).
+function act(world, e, env, dt) {
   const want = e.hands.want;
   delete e.hands.want;
   if (e.fall) return;
-  if (want.do === 'pick') pick(world, e, getEntity(world, want.item), env);
+  if (want.do === 'aim') e.hands.aim = world.tick;
+  else if (want.do === 'pick') pick(world, e, getEntity(world, want.item), env, dt);
   else if (want.do === 'put') put(world, e, getEntity(world, `zone:${want.zone}`), env);
   else if (want.do === 'drop') drop(world, e, env);
+  else if (want.do === 'guess') guess(world, getEntity(world, `zone:${want.zone}`), want.n, env);
 }
 
-function pick(world, e, thing, env) {
+function pick(world, e, thing, env, dt) {
   if (!thing?.item || thing.item.held || thing.item.set || e.hands.holds) return;
   const zoneEnt = thing.item.zone ? getEntity(world, `zone:${thing.item.zone}`) : null;
   if (zoneEnt && !canTake(zoneEnt.zone, thing.id)) return;
   const at = zoneEnt?.zone.rule === 'span' ? zoneEnt.position : middleOf(thing);
   if (dist(e.position, at) > REACH + (thing.item.size ?? 0) / 2) return say(world, 'far', e.id);
+  // The time that the child took to choose this plank, from the last action on its gap.
+  const task = getEntity(world, `zone:${thing.item.task}`);
+  if (task?.zone.rule === 'span' && zoneEnt?.zone.rule !== 'span') {
+    const a = attemptOf(world, task.zone);
+    const think = Math.max(0, ((e.hands.aim ?? world.tick) - a.last) * dt);
+    a.thinks.push(Math.round(think * 100) / 100);
+    if (a.failed && a.pause === null) a.pause = Math.round(think * 100) / 100;
+  }
+  delete e.hands.aim;
   if (zoneEnt) {
     zoneEnt.zone.items = zoneEnt.zone.items.filter((id) => id !== thing.id);
     if (zoneEnt.zone.rule === 'pile') packPile(world, zoneEnt.zone);
+    else attemptOf(world, zoneEnt.zone).last = world.tick;
   }
   thing.item.zone = null;
   thing.item.held = e.id;
@@ -90,7 +124,7 @@ function pick(world, e, thing, env) {
   delete thing.tilt;
   e.hands.holds = thing.id;
   e.carry = thing.look;
-  stopHint(world, env);
+  stopHint(world);
   say(world, 'pick', e.id, { item: thing.id, sound: 'plank-up' });
 }
 
@@ -105,26 +139,26 @@ function put(world, e, zoneEnt, env) {
   release(e, thing);
   thing.item.zone = zone.id;
   zone.items.push(thing.id);
-  stopHint(world, env);
+  stopHint(world);
   if (zone.rule === 'pile') {
     packPile(world, zone);
     return say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: 'plank-down' });
   }
   const before = sum(sizesOf(world, zone.items.slice(0, -1)));
   thing.position = spanSlot(zone, before, thing.item.size);
-  const def = defOf(env, zone);
-  const total = before + thing.item.size;
-  const result = judge(total, zone.gap);
-  if (result === 'open') return say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: 'plank-down' });
-  const sizes = sizesOf(world, zone.items);
-  if (result === 'exact') return setSpan(world, zoneEnt, def, sizes);
-  // Too long: the plank sticks out past the far end and wobbles. The person who watches calls out.
-  const out = def.outcomes.long;
+  const a = attemptOf(world, zone);
+  a.last = world.tick;
+  a.tries.push({ slot: zone.items.length - 1, size: thing.item.size });
+  // The first plank on a new gap: the row of outlines for the prediction goes away.
+  if (zone.guess === 'pending') endGuess(world, zoneEnt, null);
+  if (judge(before + thing.item.size, zone.gap) !== 'long') return say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: 'plank-down' });
+  // Too long: the plank sticks out past the far end and wobbles, and the fisher calls out. The
+  // world shows the failure, but it is not a commit: it sends no skill event.
+  const out = defOf(env, zone).outcomes.long;
   zone.fails += 1;
   zone.effect = { kind: 'wobble', id: thing.id, t: 0, time: out.wobble };
   say(world, 'long', zoneEnt.id, { item: thing.id, sound: out.sound });
   if (out.call) say(world, 'call', `npc:${out.call.who}`, { key: out.call.key });
-  for (const s of skillEvents(def, zone.round, sizes, false)) say(world, 'skill', zoneEnt.id, s);
 }
 
 // Put a thing on the ground in front of the entity, on the half-block grid, square to the grid.
@@ -153,23 +187,85 @@ function release(e, thing) {
   delete e.carry;
 }
 
+// The prediction: the child tapped the n-th outline. The outlines up to n fill, and then the row
+// goes away. No numeral is shown.
+function guess(world, zoneEnt, n, env) {
+  if (!zoneEnt || zoneEnt.zone.guess !== 'pending') return;
+  const max = defOf(env, zoneEnt.zone)?.predict?.max ?? 6;
+  endGuess(world, zoneEnt, Math.max(1, Math.min(max, Math.round(n))));
+  say(world, 'guess', zoneEnt.id, { n: zoneEnt.zone.guess, sound: 'plank-up' });
+}
+
+function endGuess(world, zoneEnt, n) {
+  zoneEnt.zone.guess = n;
+  for (const g of query(world, 'guess')) {
+    if (g.guess.zone !== zoneEnt.zone.id) continue;
+    if (n !== null && g.guess.n <= n) {
+      g.look = 'plank-ghost-on';
+      g.guess.left = 1.2;
+    } else removeEntity(world, g.id);
+  }
+  for (const f of query(world, 'follow')) if (f.follow.goal?.guess) delete f.follow.goal;
+}
+
+// The commit: the hero steps on the last plank. The span is exact (solid) or short (the plank
+// dips). Either way the skill events go out, and the prediction with the result on the first
+// commit on a gap.
+function commit(world, zoneEnt, def, hero) {
+  const zone = zoneEnt.zone;
+  const parts = sizesOf(world, zone.items);
+  const solved = sum(parts) === zone.gap;
+  zone.commits += 1;
+  const mashing = isMashing(attemptOf(world, zone), def.mash);
+  if (zone.guess === 'pending') endGuess(world, zoneEnt, null);
+  if (zone.commits === 1) say(world, 'prediction', zoneEnt.id, { task: zone.task, gap: zone.gap, guess: zone.guess, used: parts.length, solved });
+  const events = skillEvents(zone, def, parts, { solved, mashing });
+  zone.attempt = { last: world.tick, thinks: [], tries: [], pause: null, failed: !solved };
+  if (solved) setSpan(world, zoneEnt, def);
+  else {
+    zone.fails += 1;
+    // A commit with the signs of mashing is no evidence and never an error: Nghé shows the gap.
+    if (mashing) zone.hintNext = true;
+    tip(world, zoneEnt, def, hero);
+  }
+  for (const s of events) say(world, 'skill', zoneEnt.id, s);
+}
+
 // The span becomes solid: the planks turn into deck, a drum sounds, and coins come.
-function setSpan(world, zoneEnt, def, sizes) {
+function setSpan(world, zoneEnt, def) {
   const zone = zoneEnt.zone;
   const out = def.outcomes.exact;
   zone.set = true;
-  zone.fails = 0;
   zone.hint = 0;
   zone.day = Math.floor(world.clock.minutes / DAY_MINUTES);
-  zone.done = zone.round === def.rounds.length - 1;
+  zone.done = zone.repair || zone.round === def.rounds.length - 1;
   for (const id of zone.items) {
     const p = getEntity(world, id);
     p.item.set = true;
     p.look = `deck-${p.item.size}`;
     p.position = { x: zone.cx, y: zone.deckY - 1, z: p.position.z, facing: 0 };
   }
+  stopHint(world);
   say(world, 'solid', zoneEnt.id, { sound: out.sound, give: out.give, at: zone.items[zone.items.length - 1] });
-  for (const s of skillEvents(def, zone.round, sizes, true)) say(world, 'skill', zoneEnt.id, s);
+}
+
+// Too short: the last plank dips, and the hero falls into the water. Marks show the empty part.
+function tip(world, zoneEnt, def, h) {
+  const zone = zoneEnt.zone;
+  const lastId = zone.items[zone.items.length - 1];
+  const p = h.position;
+  const covered = sum(sizesOf(world, zone.items));
+  zone.effect = { kind: 'tip', id: lastId, t: 0, time: def.outcomes.short.show ?? 2 };
+  delete h.riding;
+  delete h.intent;
+  delete h.route;
+  if (h.motion) Object.assign(h.motion, { vx: 0, vz: 0, speed: 0 });
+  h.fall = { t: 0, x: p.x, z: p.z, y: p.y, water: 2, time: def.outcomes.short.fall, out: { x: zone.lane, z: zone.from - 1.5 }, zone: zoneEnt.id };
+  const missing = zone.gap - covered;
+  const whyId = `why:${zone.id}`;
+  if (getEntity(world, whyId)) removeEntity(world, whyId);
+  addEntity(world, { id: whyId, why: { zone: zone.id }, position: { x: zone.lane, y: zone.deckY - 0.2, z: zone.from + covered, facing: 0 }, look: `gap-${missing}` });
+  say(world, 'tip', zoneEnt.id, { item: lastId, sound: def.outcomes.short.sound });
 }
 
 // Is an entity on the span (between the ends of the zone)?
@@ -181,80 +277,94 @@ function tickSpan(world, zoneEnt, dt, env, rng) {
   if (!def) return;
   decks(world, zoneEnt);
   zoneEnt.position = reachOf(zone);
+  for (const g of query(world, 'guess')) {
+    if (g.guess.left === undefined) continue;
+    g.guess.left -= dt;
+    if (g.guess.left <= 0) removeEntity(world, g.id);
+  }
   const heroes = query(world, 'control', 'position');
   const today = Math.floor(world.clock.minutes / DAY_MINUTES);
   const clear = heroes.every((h) => !onSpan(zone, h.position));
   // A new day after a set round: the river took the old planks in the night, and a new pile lies
-  // on the bank. After the last round, the rain of a later day breaks the span.
+  // on the bank. After the last round, the rain of a later day breaks one or two planks.
   const day = (world.sky?.night ?? 0) < 0.5;
-  if (zone.set && !zone.done && today > zone.day && day && clear) return nextRound(world, zoneEnt, def, zone.round + 1, 'round');
-  if (zone.set && zone.done && today > zone.day && (world.sky?.rain ?? 0) > 0.5 && clear) {
-    zone.done = false;
-    return nextRound(world, zoneEnt, def, rng.int(0, def.rounds.length - 1), 'crack');
-  }
+  if (zone.set && !zone.done && today > zone.day && day && clear) return nextRound(world, zoneEnt, def, zone.round + 1);
+  if (zone.set && zone.done && def.repair && today > zone.day && (world.sky?.rain ?? 0) > 0.5 && clear) return breakSpan(world, zoneEnt, def, rng);
   const fx = zone.effect;
   if (fx) {
     fx.t += dt;
     const thing = getEntity(world, fx.id);
-    if (fx.kind === 'wobble' && thing) {
+    if (!thing) zone.effect = null;
+    else if (fx.kind === 'wobble') {
       thing.tilt = Math.sin(fx.t * 18) * 0.12 * Math.max(0, 1 - fx.t / fx.time);
-      if (fx.t >= fx.time) zone.effect = { kind: 'sink', id: fx.id, t: 0 };
-    } else if (fx.kind === 'sink' && thing) {
-      thing.tilt = -Math.min(1, fx.t * 3);
-      thing.position.y -= dt * 8;
-      if (fx.t >= SINK) {
-        // The plank is lost in the river. If the rest cannot make the gap now, new planks come.
-        zone.items = zone.items.filter((id) => id !== fx.id);
-        removeEntity(world, fx.id);
-        zone.effect = null;
-        say(world, 'wasted', zoneEnt.id, { sound: 'splash' });
-        refill(world, zoneEnt, def);
-        maybeHint(world, zoneEnt, def, env);
+      if (fx.t >= fx.time) zone.effect = { kind: 'slide', id: fx.id, t: 0 };
+    } else if (fx.kind === 'slide') {
+      // The plank slides back and down into the water.
+      thing.tilt = -Math.min(0.6, fx.t * 1.5);
+      thing.position.z -= dt * 4;
+      thing.position.y -= dt * 7;
+      if (fx.t >= SLIDE) afterFailure(world, zoneEnt, def, thing, env);
+    } else if (fx.kind === 'tip') {
+      // The last plank dips under the hero and stays there with the marks of the empty part of
+      // the gap, for some seconds. Then it floats back to the pile.
+      thing.tilt = Math.min(0.35, (fx.t / TIP) * 0.35);
+      if (fx.t >= fx.time) {
+        if (getEntity(world, `why:${zone.id}`)) removeEntity(world, `why:${zone.id}`);
+        afterFailure(world, zoneEnt, def, thing, env);
       }
-    } else if (fx.kind === 'tip' && thing) {
-      thing.tilt = Math.min(1.3, fx.t * 3);
-      if (fx.t > 0.4) thing.position.y -= dt * 10;
-      if (fx.t >= TIP) {
-        // The plank floats back to the bank, to the pile.
-        zone.items = zone.items.filter((id) => id !== fx.id);
-        delete thing.tilt;
-        const pile = getEntity(world, `zone:${def.pile}`);
-        thing.item.zone = pile ? pile.zone.id : null;
-        if (pile) {
-          pile.zone.items.push(thing.id);
-          packPile(world, pile.zone);
-        }
-        zone.effect = null;
-      }
-    } else {
-      zone.effect = null;
-    }
+    } else zone.effect = null;
     return;
   }
-  // The hero steps on the last plank of a short span: it tips.
-  if (zone.set || !zone.items.length) return;
-  const lastId = zone.items[zone.items.length - 1];
-  const last = getEntity(world, lastId);
-  for (const h of heroes) {
-    if (h.fall) continue;
-    const p = h.position;
-    if (Math.abs(p.x - zone.lane) > 1.6 || p.z <= last.position.z + 0.4 || p.z > last.position.z + last.item.size + 0.5) continue;
-    const sizes = sizesOf(world, zone.items);
-    zone.fails += 1;
-    zone.effect = { kind: 'tip', id: lastId, t: 0 };
-    delete h.riding;
-    delete h.intent;
-    delete h.route;
-    if (h.motion) Object.assign(h.motion, { vx: 0, vz: 0, speed: 0 });
-    h.fall = { t: 0, x: p.x, z: p.z, y: p.y, water: 2, time: def.outcomes.short.fall, out: { x: zone.lane, z: zone.from - 1.5 }, zone: zoneEnt.id };
-    say(world, 'tip', zoneEnt.id, { item: lastId, sound: def.outcomes.short.sound });
-    for (const s of skillEvents(def, zone.round, sizes, false)) say(world, 'skill', zoneEnt.id, s);
-    return;
+  // The prediction: when the hero comes near a new gap, the plank outlines lie on the bank and
+  // Nghé looks at the hero.
+  if (zone.guess === 'pending' && !zone.set && def.predict && heroes.some((h) => dist(h.position, zoneEnt.position) < def.predict.near)) showGuess(world, zoneEnt, def, env, heroes[0]);
+  // The commit: the hero steps on the last plank.
+  if (!zone.set && zone.items.length) {
+    const last = getEntity(world, zone.items[zone.items.length - 1]);
+    const hero = heroes.find((h) => !h.fall && Math.abs(h.position.x - zone.lane) <= 1.6
+      && h.position.z > last.position.z + 0.4 && h.position.z <= last.position.z + last.item.size + 0.5);
+    if (hero) return commit(world, zoneEnt, def, hero);
   }
   if (zone.hint > 0) {
     zone.hint -= dt;
-    if (zone.hint <= 0) stopHint(world, env);
+    if (zone.hint <= 0) stopHint(world);
   }
+}
+
+// After a failure (a plank slid back, or a plank dipped under the hero): the plank floats back to
+// the pile, and the hint comes when it is time for it.
+function afterFailure(world, zoneEnt, def, thing, env) {
+  const zone = zoneEnt.zone;
+  const at = { x: thing.position.x, z: thing.position.z + thing.item.size / 2 };
+  zone.items = zone.items.filter((id) => id !== thing.id);
+  zone.effect = null;
+  toPile(world, env, thing);
+  const a = attemptOf(world, zone);
+  a.last = world.tick;
+  a.failed = true;
+  say(world, 'float', zoneEnt.id, { item: thing.id, at, sound: 'splash' });
+  if (!query(world, 'fall').length) maybeHint(world, zoneEnt, def);
+}
+
+function showGuess(world, zoneEnt, def, env, hero) {
+  const zone = zoneEnt.zone;
+  const at = env.places[def.predict.at];
+  if (!at || query(world, 'guess').some((g) => g.guess.zone === zone.id)) return;
+  for (let n = 1; n <= def.predict.max; n++) {
+    addEntity(world, {
+      id: `guess:${zone.id}:${n}`,
+      guess: { zone: zone.id, n },
+      position: { x: Math.round(at.x + (n - 1) * 2.5), y: at.y, z: Math.round(at.z), facing: 0 },
+      look: 'plank-ghost',
+    });
+  }
+  // Nghé goes beside the outlines and looks at the hero.
+  const friend = query(world, 'follow')[0];
+  if (friend && !friend.follow.goal && hero) {
+    const spot = { x: at.x - 2.5, z: at.z + 2 };
+    friend.follow.goal = { x: spot.x, z: spot.z, face: faceOf(hero.position.x - spot.x, hero.position.z - spot.z), guess: true };
+  }
+  say(world, 'predict', zoneEnt.id);
 }
 
 // The hero in the water: down with a splash, a moment in the water, and then Nghé pulls the
@@ -287,51 +397,68 @@ function tickFall(world, e, dt, env) {
   if (friend) delete friend.follow.goal;
   say(world, 'pulled', e.id, { sound: 'moo' });
   const zoneEnt = getEntity(world, f.zone);
-  if (zoneEnt) maybeHint(world, zoneEnt, env.zones?.[zoneEnt.zone.task], env);
+  if (zoneEnt && !zoneEnt.zone.effect) maybeHint(world, zoneEnt, defOf(env, zoneEnt.zone));
 }
 
-// After enough failures in a round, Nghé walks to the end of the planks and looks at the gap.
-function maybeHint(world, zoneEnt, def, env) {
+// After enough failures on a gap, or after a commit with the signs of mashing, Nghé stands on the
+// bank at the near end of the planks and stretches its neck toward the gap. Nghé never says a
+// number, and never stands on the planks.
+function maybeHint(world, zoneEnt, def) {
   const zone = zoneEnt.zone;
-  if (!def?.hint || zone.fails < def.hint.after || zone.set) return;
+  const due = zone.hintNext || (def?.hint && zone.fails >= def.hint.after);
+  delete zone.hintNext;
+  if (!due || zone.set) return;
   const friend = query(world, 'follow')[0];
   if (!friend) return;
-  const covered = sum(sizesOf(world, zone.items));
-  zone.hint = def.hint.time;
-  friend.follow.goal = { x: zone.lane, z: zone.from + Math.max(0, covered - 1.2), face: 0, via: { x: zone.lane, z: zone.from - 1 } };
+  zone.hint = def?.hint?.time ?? 10;
+  friend.follow.goal = { x: zone.lane + 3, z: zone.from - 1.5, face: 0, act: 'stretch' };
   say(world, 'hint', friend.id);
 }
 
-function stopHint(world, env) {
+function stopHint(world) {
   for (const z of query(world, 'zone')) if (z.zone.hint > 0) z.zone.hint = 0;
-  for (const f of query(world, 'follow')) if (f.follow.goal && !query(world, 'fall').length) delete f.follow.goal;
-}
-
-// New planks come when the planks that are left cannot make the gap.
-function refill(world, zoneEnt, def) {
-  const zone = zoneEnt.zone;
-  const mine = query(world, 'item').filter((e) => e.item.task === zone.id && !e.item.set);
-  if (canMake(zone.gap, mine.map((e) => e.item.size))) return;
-  const want = [...def.rounds[zone.round].pile];
-  for (const e of mine) {
-    const i = want.indexOf(e.item.size);
-    if (i >= 0) want.splice(i, 1);
-  }
-  addPlanks(world, zoneEnt, def, want);
-  say(world, 'refill', zoneEnt.id, { sound: 'clatter' });
+  if (query(world, 'fall').length) return;
+  for (const f of query(world, 'follow')) if (f.follow.goal?.act === 'stretch') delete f.follow.goal;
 }
 
 // A new round: the old planks go, the gap has its new length, and a new pile lies on the bank.
-function nextRound(world, zoneEnt, def, round, why) {
+function nextRound(world, zoneEnt, def, round) {
   const zone = zoneEnt.zone;
-  for (const e of query(world, 'item')) if (e.item.task === zone.id && !e.item.held) removeEntity(world, e.id);
-  const pile = getEntity(world, `zone:${def.pile}`);
-  if (pile) pile.zone.items = pile.zone.items.filter((id) => getEntity(world, id));
-  zone.items = [];
+  clearTask(world, zone);
   openRound(zone, def, round);
   zoneEnt.position = reachOf(zone);
   addPlanks(world, zoneEnt, def, def.rounds[round].pile);
-  say(world, why, zoneEnt.id, { sound: why === 'crack' ? 'crack' : 'clatter' });
+  say(world, 'round', zoneEnt.id, { sound: 'clatter' });
+}
+
+// The rain breaks one or two planks of the solid bridge, and they fall into the river. The repair
+// is a new task: the child sees the gap that is left and finds the missing planks. The rest of
+// the bridge stays solid (it is the old deck now).
+function breakSpan(world, zoneEnt, def, rng) {
+  const zone = zoneEnt.zone;
+  const r = def.repair;
+  const set = zone.items.map((id) => getEntity(world, id)).filter(Boolean);
+  if (!set.length) return;
+  const n = Math.min(set.length, rng.int(r.planks[0], r.planks[1]));
+  const i = rng.int(0, set.length - n);
+  const broken = set.slice(i, i + n);
+  const from = broken[0].position.z;
+  const gap = sum(broken.map((p) => p.item.size));
+  clearTask(world, zone);
+  zone.repair = true;
+  zone.done = false;
+  openGap(zone, from, gap, r.pile, r.levels);
+  zoneEnt.position = reachOf(zone);
+  addPlanks(world, zoneEnt, def, r.pile);
+  say(world, 'crack', zoneEnt.id, { sound: 'crack', at: { x: zone.lane, z: from + gap / 2 } });
+}
+
+// Remove the planks of a task (on the span and on the pile; not a plank in the hands).
+function clearTask(world, zone) {
+  for (const e of query(world, 'item')) if (e.item.task === zone.id && !e.item.held) removeEntity(world, e.id);
+  for (const p of query(world, 'zone')) if (p.zone.rule === 'pile') p.zone.items = p.zone.items.filter((id) => getEntity(world, id));
+  for (const g of query(world, 'guess')) if (g.guess.zone === zone.id) removeEntity(world, g.id);
+  zone.items = [];
 }
 
 // New planks of these sizes on the pile of the zone.
@@ -352,7 +479,8 @@ export function addPlanks(world, zoneEnt, def, sizes) {
   if (pile) packPile(world, pile.zone);
 }
 
-// The old deck of the bridge at both ends of the gap, as two things of the world.
+// The old deck of the bridge at both ends of the gap, as two things of the world. While the
+// span is solid, its set planks fill the gap.
 function decks(world, zoneEnt) {
   const zone = zoneEnt.zone;
   const d = oldDeck(zone);

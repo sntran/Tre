@@ -3,7 +3,7 @@
 //
 // States: idle, walk, run, graze (four legs, after some idle time), rest (sit or lie down),
 // wave (a person waves an arm), swim (a float or a serpent in the water). want 'shake': Nghé
-// shakes its head (no).
+// shakes its head (no); 'stretch': Nghé stretches its neck toward something.
 
 export const GAIT = Object.freeze({ walk: 0.4, run: 5.5, graze: 1.6 });
 
@@ -63,6 +63,11 @@ export function animate(a, input) {
     rot.tail = [0.3, 0, Math.sin(a.time * (happy ? 16 : 3.1)) * (happy ? 0.7 : 0.35)];
     if (happy) rot.head = [-0.3 + Math.sin(a.time * 8) * 0.1, 0, 0];
     if (input.want === 'shake') rot.head = [0.15, Math.sin(a.time * 14) * 0.45, 0];
+    // Stretch: the neck goes long and low toward something (the gap of the bridge, as a hint).
+    if (input.want === 'stretch') {
+      rot.head = [0.55 + Math.sin(a.time * 3) * 0.05, 0, 0];
+      lean = 0.12;
+    }
     lift = Math.abs(Math.sin(a.phase)) * 0.12 * s + (happy ? Math.abs(Math.sin(a.time * 7)) * 0.3 : 0);
     sink = a.rest * 1.15;
   } else if (a.kind === 'fowl') {

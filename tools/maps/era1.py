@@ -97,9 +97,10 @@ A.places = {
     'coop1': {'x': 7.5, 'y': 13.4},
     'coop2': {'x': 29.5, 'y': 13.4},
     'banyan-top': {'x': 18.5, 'y': 4.5, 'h': 17},
-    # The planks for the bridge lie on the bank in rows; the elder watches the work from the road.
+    # The planks for the bridge lie on the bank in rows; the plank outlines for the prediction
+    # lie on the sand to the west of the bridge.
     'bridge-pile': {'x': 24.5, 'y': 31.25},
-    'bridge-watch': {'x': 21.2, 'y': 30.4},
+    'bridge-guess': {'x': 18.5, 'y': 32},
 }
 A.npcs = [
     {'id': 'grandma', 'x': 4.5, 'y': 12.7},

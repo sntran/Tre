@@ -1,27 +1,136 @@
 {
-  "_about": "The placement zones of the maps (src/core/world/zones.js and src/core/world/systems/place.js). A zone of a map (layers.zones) names its kind here (task). rule: pile (things lie in rows, one row for each size) or span (things go end to end across a gap, from the near end). accepts: the kind of item that fits. Units: half blocks (one map cell is 2) and seconds. pile: the named place of the map where the pile of the zone lies. lane: the column of cells in the zone where the items go (0 is the west column). rounds: the gap of each round (gap: its length; from: where it starts after the near end of the zone), the pile of the round (the size of each item), and the level of each skill. After a round the next one starts at the next dawn; after the last round, the rain of a later day breaks the span and a round opens again. skills: sum (the sum of the items against the gap) and groups (the same items, at least groupsMin of them). outcomes: how each end looks and sounds. exact: the span becomes solid (sound, give). long: the last item sticks out and wobbles (wobble: seconds), a person calls out (call: who and the key of the line), and then the item falls into the water and is lost. short: the last item tips when the hero steps on it, the hero falls into the water (fall: seconds in the water), and the friend pulls the hero out. The item floats back to the pile. hint: after this many failures in a round, the friend walks to the end of the items and looks at the gap for some seconds. watch: the person who watches the work by day while the zone is open, the place where the person stands, and when (the story flags: the elder first waits at the village hall, where the quest sends the child).",
+  "_about": "The placement zones of the maps (src/core/world/zones.js and src/core/world/systems/place.js). A zone of a map (layers.zones) names its kind here (task). rule: pile (things lie in rows, one row for each size) or span (things go end to end across a gap, from the near end). accepts: the kind of item that fits. Units: half blocks (one map cell is 2) and seconds. pile: the named place of the map where the pile of the zone lies. lane: the column of cells in the zone where the items go (0 is the west column). rounds: the gap of each round (gap: its length; from: where it starts after the near end of the zone), the pile of the round (the size of each item), and the level of each skill. After a round the next one starts at the next dawn. repair: after the last round, the rain of a later day breaks one or two planks (planks: the fewest and the most), and a new pile lies on the bank for the repair. skills: sum (the sum of the items against the gap) and groups (the same items, at least groupsMin of them). A skill event comes only at the commit: the hero steps on the last plank. outcomes: how each end looks and sounds. exact (at the commit): the span becomes solid (sound, give). long (at once, because the plank sticks out past the far end): the last item wobbles (wobble: seconds), a person calls out (call: who and the key of the line), and then it slides back into the water and floats back to the pile; nothing is lost. short (at the commit): the last item tips, the hero falls into the water (fall: seconds in the water), and the friend pulls the hero out; the planks and the marks of the empty part of the gap stay for show seconds, and then the last item floats back to the pile. hint: after this many failures on a gap, the friend stands on the bank at the near end of the planks and stretches its neck toward the gap for some seconds. mash: the signs of guessing without thought (rule 22 of the design): think (a middle time in seconds from one action to the choice of the next plank, shorter is too fast to count) and pause (the seconds of the first choice after a failure); a commit with these signs is no evidence for the model, and the friend gives the hint. predict: before the first commit on a new gap, a row of plank outlines lies at this place (at), max of them; when the hero comes this near (near) to the gap, the friend looks at the hero, and the child taps how many planks the bridge will take. No numeral.",
   "bridge": {
     "rule": "span",
     "accepts": "plank",
     "pile": "bridge-pile",
     "lane": 1,
     "rounds": [
-      { "gap": 12, "from": 4, "pile": [3, 3, 3, 4, 4, 4, 5, 5, 5], "levels": { "math.add.20": 1, "math.mul.10": 1 } },
-      { "gap": 15, "from": 2, "pile": [3, 3, 3, 3, 3, 4, 4, 5, 5, 5], "levels": { "math.add.20": 2, "math.mul.10": 1 } },
-      { "gap": 18, "from": 0, "pile": [3, 3, 3, 3, 3, 3, 5, 5, 5, 5], "levels": { "math.add.20": 3, "math.mul.10": 2 } }
+      {
+        "gap": 12,
+        "from": 4,
+        "pile": [
+          3,
+          3,
+          3,
+          4,
+          4,
+          4,
+          5,
+          5,
+          5
+        ],
+        "levels": {
+          "math.add.20": 1,
+          "math.mul.10": 1
+        }
+      },
+      {
+        "gap": 15,
+        "from": 2,
+        "pile": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          4,
+          4,
+          5,
+          5,
+          5
+        ],
+        "levels": {
+          "math.add.20": 2,
+          "math.mul.10": 1
+        }
+      },
+      {
+        "gap": 18,
+        "from": 0,
+        "pile": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          5,
+          5,
+          5,
+          5
+        ],
+        "levels": {
+          "math.add.20": 3,
+          "math.mul.10": 2
+        }
+      }
     ],
-    "skills": { "sum": "math.add.20", "groups": "math.mul.10", "groupsMin": 3 },
-    "outcomes": {
-      "exact": { "sound": "drum", "give": { "coin": 3 } },
-      "long": { "sound": "creak", "wobble": 2.5, "call": { "who": "elder", "key": "world.bridge.wasted" } },
-      "short": { "sound": "creak", "fall": 1.2 }
+    "skills": {
+      "sum": "math.add.20",
+      "groups": "math.mul.10",
+      "groupsMin": 3
     },
-    "hint": { "after": 2, "time": 10 },
-    "watch": { "who": "elder", "at": "bridge-watch", "when": { "flags": ["prologue.started"] } }
+    "outcomes": {
+      "exact": {
+        "sound": "drum",
+        "give": {
+          "coin": 3
+        }
+      },
+      "long": {
+        "sound": "creak",
+        "wobble": 2.5,
+        "call": {
+          "who": "fisher",
+          "key": "world.bridge.long"
+        }
+      },
+      "short": {
+        "sound": "creak",
+        "fall": 1.2,
+        "show": 2
+      }
+    },
+    "hint": {
+      "after": 2,
+      "time": 10
+    },
+    "mash": {
+      "think": 1.2,
+      "pause": 1.5
+    },
+    "predict": {
+      "at": "bridge-guess",
+      "max": 6,
+      "near": 14
+    },
+    "repair": {
+      "planks": [
+        1,
+        2
+      ],
+      "pile": [
+        3,
+        3,
+        4,
+        4,
+        5,
+        5
+      ],
+      "levels": {
+        "math.add.20": 1,
+        "math.mul.10": 1
+      }
+    }
   },
   "bridge-pile": {
     "rule": "pile",
     "accepts": "plank",
-    "sizes": [3, 4, 5]
+    "sizes": [
+      3,
+      4,
+      5
+    ]
   }
 }

@@ -48,6 +48,11 @@ export function heroPlace(saved) {
 export function setHeroPlace(saved, map, x, y) {
   const hero = saved.entities?.find((e) => e.id === 'hero');
   if (map !== saved.map) {
+    // A thing in the hands stays with its map; there it goes back to its pile.
+    if (hero?.hands?.holds) {
+      hero.hands = { holds: null };
+      delete hero.carry;
+    }
     saved.away ??= {};
     const others = (saved.entities ?? []).filter((e) => e.id !== 'hero');
     if (others.length) saved.away[saved.map] = others;

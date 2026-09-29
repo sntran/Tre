@@ -775,7 +775,7 @@
   "world.greet.1": "Hello, {name}!",
   "world.greet.2": "Good day to you!",
   "world.greet.3": "Hello, child!",
-  "world.bridge.wasted": "Oh no, that plank is wasted!",
+  "world.bridge.long": "Too long! It sticks out over there.",
   "ui.parents": "For parents",
   "ui.loading": "Loading...",
   "ui.saved": "Saved",

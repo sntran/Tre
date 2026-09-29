@@ -120,6 +120,7 @@ export const LIMITS = Object.freeze({
   choices: 6,
   recentChars: 32,
   worldEntities: 2000, // kept entities of the world state
+  predictions: 200, // the predictions before a commit that the profile keeps
   worldValues: 200000, // all the values in the components of the kept entities
   visual: { groups: 4, dots: 20, arrayCells: 12, rectSide: 20, fractions: 3, denominator: 24 },
 });
@@ -199,6 +200,19 @@ export function validate(profile, { grades = null } = {}) {
     profile.seenGloss.forEach((x) => str(x, 'seenGloss'));
   }
   if (profile.world !== undefined) validateWorld(profile.world, { fail, num, int, str, list, isObj });
+  // The predictions before the first commit on a gap, with their results (until the learning log).
+  if (profile.predictions !== undefined) {
+    list(profile.predictions, 'predictions', LIMITS.predictions);
+    for (const p of profile.predictions) {
+      if (!isObj(p)) fail('prediction');
+      num(p.at, 'prediction.at', 0, 1e9);
+      str(p.task, 'prediction.task');
+      int(p.gap, 'prediction.gap', 0, 1000);
+      if (p.guess !== null) int(p.guess, 'prediction.guess', 0, 100);
+      int(p.used, 'prediction.used', 0, 100);
+      bool(p.solved, 'prediction.solved');
+    }
+  }
   if (profile.maps !== undefined) {
     for (const [id, m] of entries(profile.maps, 'maps', 200)) {
       if (!isObj(m)) fail(`maps ${id}`);

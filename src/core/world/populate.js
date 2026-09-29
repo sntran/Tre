@@ -2,7 +2,7 @@
 // and the ducks. The map data is in map cells; the entities are on the half-block grid.
 import { addEntity, removeEntity, getEntity, query, HALF } from './state.js';
 import { createRng, hashSeed } from '../rng.js';
-import { makeSpan, makePile } from './zones.js';
+import { makeSpan, makePile, upgradeSpan } from './zones.js';
 import { addPlanks } from './systems/place.js';
 
 // The hero, controlled by the player. keep: the save keeps this entity.
@@ -167,7 +167,11 @@ export function addZones(world, map, env) {
     const pileDef = defs[def.pile];
     const place = env.places[def.pile];
     if (pileDef && place && !getEntity(world, `zone:${def.pile}`)) addEntity(world, makePile(def.pile, pileDef, place));
-    if (getEntity(world, `zone:${rect.id}`)) continue;
+    const kept = getEntity(world, `zone:${rect.id}`);
+    if (kept) {
+      upgradeSpan(kept.zone, def);
+      continue;
+    }
     const zone = addEntity(world, makeSpan(rect, def, rect.task, env));
     addPlanks(world, zone, def, def.rounds[0].pile);
   }

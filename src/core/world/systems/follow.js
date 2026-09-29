@@ -2,8 +2,9 @@
 // jumps behind the hero when it is too far away (for example after a ferry). Nghé steps back from
 // a fire (hot), carries the hero when the hero rides, is happy for a while after a pet, and lies
 // down beside the hero when the hero rests at night. With a goal (follow.goal, from the place
-// system), Nghé walks to that point and looks to `face`: to the end of the planks of the bridge
-// as a hint, or to the edge of the water to pull the hero out. At a closed ford Nghé stops at the
+// system), Nghé walks to that point, looks to `face`, and takes the pose `act` there: at the near
+// end of the planks it stretches its neck toward the gap (a hint), beside the plank outlines it
+// looks at the hero, and at the edge of the water it pulls the hero out. At a closed ford Nghé stops at the
 // edge and shakes its head.
 export const WRITES = ['position', 'motion', 'follow', 'act'];
 
@@ -32,13 +33,12 @@ export function follow(world, dt, rng, env) {
       continue;
     }
     if (e.follow.goal) {
-      // A goal can have a point on the way (the near end of the bridge, then out on the planks).
       const g = e.follow.goal;
-      if (g.via && Math.hypot(g.via.x - p.x, g.via.z - p.z) < 0.6) delete g.via;
-      goTo(e, g.via ?? g, dt, env);
+      goTo(e, g, dt, env);
       // A short trail from Nghé to the hero, so that Nghé walks back after the goal (and does not jump).
       e.follow.trail = [[p.x, p.z], [leader.position.x, leader.position.z]];
-      delete e.act;
+      if (g.act && Math.hypot(g.x - p.x, g.z - p.z) < 0.5) e.act = g.act;
+      else delete e.act;
       continue;
     }
     const f = {
