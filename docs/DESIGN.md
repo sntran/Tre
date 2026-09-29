@@ -70,28 +70,6 @@ Tre is one living isometric world. The child walks, builds, and defends in the s
 
 **View:** isometric (2:1 dimetric grid) on Canvas 2D, in the Đông Hồ style: flat colors and black keylines, as in Monument Valley. Isometric makes places feel like places, shows what the child builds, and puts battles in the world. It works on every phone.
 
-**A world of regions:** the game world is the whole of Vietnam as a set of connected regions, one for each story chapter. Each region has 3 to 6 hand-built maps with its own landscape, plants, houses, and boats. The hero walks from one map to the next at the edge of a map or at the end of a road. Between regions, the hero travels on the country map: an old map on dó paper with all 13 regions. A region that is not open yet has a red seal. A travel takes game hours on the roads (a game day is about 8 minutes of play), and has a few simple road events: a merchant shares rice, rain stops the travel for a while, a ferry crosses a river. The save keeps the state of each map that the hero visited. The data is in `data/world/regions.json` and `data/maps/`.
-
-| # | Region | Place on the country map | Maps now |
-| --- | --- | --- | --- |
-| 1 | Mountains and sea | The high mountains of the north (Tây Bắc, Việt Bắc) | Locked |
-| 2 | Văn Lang | The midlands west of the delta, Phong Châu (Phú Thọ) | Locked |
-| 3 | The land of Thánh Gióng | Phù Đổng and Sóc Sơn, north-east of Hà Nội | The village of Phù Đổng; the fields and the river; the road to Văn Miếu; the foot of Trâu Sơn |
-| 4 | Cổ Loa | North of Hà Nội | Locked |
-| 5 | Mê Linh | North-west of Hà Nội | Locked |
-| 6 | Bạch Đằng | The north-east coast: Hải Phòng and Quảng Ninh | Locked |
-| 7 | Thăng Long | Hà Nội, on the Red River | Locked |
-| 8 | Thiên Trường | The south of the delta: Nam Định, Thái Bình, Ninh Bình | Locked |
-| 9 | Tây Đô | The coast plain of Thanh Hóa | Locked |
-| 10 | Lam Sơn | The mountains west of Thanh Hóa and Nghệ An | Locked |
-| 11 | Thuận Quảng | The central coast, Hà Tĩnh to Quảng Nam | Locked |
-| 12 | Tây Sơn | The south-central coast and the central highlands | Locked |
-| 13 | Gia Định | The south and the Mekong delta | Locked |
-
-The places follow the story of each chapter. Some chapters happen in more than one place (for example Bà Triệu in Thanh Hóa, and Hải Thượng Lãn Ông in Hà Tĩnh); the region is the main place of the chapter. A person who knows Vietnamese history must check this table.
-
-**Depth:** the ground has heights. The river bank drops two steps to the water, the rice paddies are sunken water with dikes, the road is one step above the fields, the đình stands on a mound, and the edges of a map rise in terraces. One light from the front-left makes each tall thing cast a flat shadow to the back-right. The rules are in docs/ART.md, section 11.
-
 **The five rules**
 
 1. **No question mark in the world.** A screen with a question and an answer field is a quiz. Questions live only with the teacher (practice) and at Văn Miếu (exams), where a test is part of the story.
@@ -136,6 +114,25 @@ Battles are light real-time tactics on the village map, like a gentle tower defe
 - **Two players** play at the same time on the same map, each with their own hero, each at their own level.
 
 **First prototype:** one isometric village, free movement, Nghé who follows, the world that reacts (chickens, grass, pots), the broken bridge with the plank placement task, and one small raid of scouts at the gate with traps and the slingshot. No story text beyond one line from the elder. Play it with the first player for ten minutes and watch what he does in the first two minutes without help. The prototype tests three things: does the world feel real, does placement feel like play, and does the child want to protect what he built?
+
+## Geography: the whole country, real
+
+The world is Vietnam with its real geography: real coast, rivers, mountains, and places. The player travels it, and learns the shape of the country by walking it.
+
+**Two scales**
+
+- **The country map** is the real map of Vietnam, drawn as an old map on dó paper. It is made from open data: coastline, borders, and rivers from Natural Earth (public domain), and terrain from NASA SRTM elevation data (public domain). The data is simplified once with a script and kept in the repository. The player travels on it along real roads and rivers, with travel time on the game clock and events on the road.
+- **Region maps** are hand-built isometric maps at human scale, placed at their real location on the country map. The main features of each region come from the real place: rivers, hills, and the direction from one place to another.
+
+**Era 1 is real.** Phù Đổng stands on the bank of the Đuống River. Núi Trâu (Trâu Sơn), where the legend puts the battle, is to the east in Bắc Ninh. Sóc Sơn, where Gióng rode to the sky, is to the north. Thăng Long and Văn Miếu are to the southwest, across the Đuống and the Red River.
+
+**Later regions follow the real land:** Cổ Loa north of the Red River, the Bạch Đằng estuary and its tides near Hạ Long, the limestone karst of Ninh Bình, the mountains of Lam Sơn in Thanh Hóa, the central coast and Phú Xuân (Huế), the Tây Sơn highlands, and the Mekong delta.
+
+**The country grows with history.** The country map shows the land of each era. In the time of the Hùng Kings, Văn Lang is only the north. The land grows south chapter by chapter, and the map shows the older peoples of the center and the south, such as Champa and the Khmer, with respect, as neighbors with their own history. Today's full shape shows at the end.
+
+**Islands.** Vietnamese maps show Hoàng Sa and Trường Sa as part of Vietnam, and other countries also claim them. The owner decides how the country map shows them.
+
+**Landscapes teach geography:** the Red River delta, limestone karst, the central coast, the Trường Sơn mountains, the highlands, and the Mekong delta each have their own ground, plants, houses, boats, and weather.
 
 ## Learning system
 
