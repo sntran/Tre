@@ -235,5 +235,5 @@ Total: 996 texts in each language.
 - `title.new`, `create.look`, `dlg.grandma.intro.n1`, `dlg.grandma.intro.n2`, `dlg.giong.silent.n1`, `dlg.river.friends.n3`, `dlg.river.friends.n4`, `dlg.river.friends.n6`: the player is the hero. The narrator speaks to the player as "em" (English: "you").
 - `friend.name.title`, `friend.name.note`, `dlg.river.friends.n2.c1`, `dlg.river.friends.n5.c1`: the player gives a name to Nghé and Sóng.
 - `battle.guard.shield`: the line that tells that an enemy raises a number shield.
-- `world.bridge.wasted`: the elder calls out when a plank is too long and falls into the river. The line must not name a number or a math operation.
+- `world.bridge.long`: the fisher calls out when a plank is too long and sticks out past the far end of the bridge. The line must not name a number or a math operation.
 
