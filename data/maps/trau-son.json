@@ -15,7 +15,8 @@
   "~": "water",
   "s": "shallow",
   "f": "field",
-  "h": "hedge"
+  "h": "hedge",
+  "l": "hedge-low"
  },
  "spawn": {
   "x": 1.5,

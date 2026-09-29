@@ -67,6 +67,7 @@ const FILES = [
   'art/iso/gate.svg',
   'art/iso/giong-house.svg',
   'art/iso/haystack.svg',
+  'art/iso/hedge-low.svg',
   'art/iso/herbs.svg',
   'art/iso/house.svg',
   'art/iso/mountain.svg',

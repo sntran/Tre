@@ -9,7 +9,7 @@ import { createRng } from '../core/rng.js';
 import { edgeMarker } from '../core/hit.js';
 
 // Groups of ground types. A keyline shows where two groups meet.
-const GROUP = { grass: 'g', flowers: 'g', hedge: 'g', path: 'p', yard: 'y', sand: 's', bridge: 'b', water: 'w', shallow: 'w', field: 'f' };
+const GROUP = { grass: 'g', flowers: 'g', hedge: 'g', 'hedge-low': 'g', path: 'p', yard: 'y', sand: 's', bridge: 'b', water: 'w', shallow: 'w', field: 'f' };
 const CHUNK = 512; // the size of one ground piece, in world units
 // Shadows: one light from the front-left, so a shadow falls to the back-right (map -y).
 // All shadows are one flat, thin ink color; overlaps do not get darker.
