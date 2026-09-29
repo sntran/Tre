@@ -113,9 +113,6 @@ export function inputToward(body, target, { run = false, stop = 0.25 } = {}) {
 // Nghé follows the hero with a soft lag, on the path that the hero walked (a trail).
 export const FOLLOW = Object.freeze({ gap: 2.6, trailStep: 0.35, trailMax: 80, teleport: 18, jump: 4, speed: 1.08 });
 
-export function createFollower(x, y) {
-  return { x, y, vx: 0, vy: 0, facing: 0, speed: 0, moving: false, idle: 0, trail: [] };
-}
 
 // leader: { x, y }. The follower walks to the point on the trail about "gap" tiles behind the leader.
 export function stepFollower(f, leader, dt, world, cfg = FOLLOW, move = MOVE) {

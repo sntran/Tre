@@ -76,6 +76,7 @@ export async function startApp(root) {
     profile: null,
     learner: null,
     rng: createRng(Date.now() >>> 0),
+    syncWorld: null, // set by the village: puts the world state into the profile
 
     async setLanguage(code) {
       await loadLanguage(code);
@@ -111,6 +112,8 @@ export async function startApp(root) {
     // Save the profile. Saves run one after the other.
     save(reason = '') {
       if (!ctx.profile) return saving;
+      // The open village puts its world state into the profile first.
+      ctx.syncWorld?.();
       ctx.profile.seenGloss = seenGlossList();
       const snapshot = ctx.profile;
       saving = saving.then(() => saveProfile(snapshot)).catch((e) => console.error('Save failed', reason, e));

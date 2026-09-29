@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { worldFor, screenToMap, faceOf, MOVE, collides, moveCircle, keysToScreenDir, stickToScreenDir, stepBody, inputToward, createFollower, stepFollower } from '../src/core/world/move.js';
+import { worldFor, screenToMap, faceOf, MOVE, collides, moveCircle, keysToScreenDir, stickToScreenDir, stepBody, inputToward, stepFollower } from '../src/core/world/move.js';
 
 // A small world: a wall of blocked tiles at x = 5, a gap at y = 3, shallow water at x = 2.
 const blocked = new Set(['5,0', '5,1', '5,2', '5,4', '5,5', '5,6']);
@@ -85,7 +85,7 @@ test('input: keys, the stick, and a walk toward a point', () => {
 
 test('Nghé follows the hero with a lag, keeps a gap, and jumps when far', () => {
   const hero = { x: 7.5, y: 8.5 };
-  const nghe = createFollower(7.5, 8.5);
+  const nghe = { x: 7.5, y: 8.5, vx: 0, vy: 0, facing: 0, speed: 0, moving: false, idle: 0, trail: [] };
   for (let i = 0; i < 180; i++) {
     stepBody(hero, { dx: 0, dy: -1 }, 1 / 60, world);
     stepFollower(nghe, hero, 1 / 60, world);

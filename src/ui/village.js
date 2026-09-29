@@ -1,17 +1,20 @@
-// The village scene: the voxel world in three.js, free movement (stick, keys, tap and hold),
-// trigger zones, people, encounters, the quest goal, and the HUD.
+// The village scene. The world is plain data (src/core/world/): the systems move it in fixed
+// steps, the renderer draws it, and the input goes into it as commands. This file connects them
+// with the story: trigger zones, people, encounters, the quest goal, and the HUD.
 import { createTileMap, findPath, pathNextTo } from '../core/tilemap.js';
 import { createTriggers } from '../core/triggers.js';
 import { currentGoal } from '../core/quests.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from '../core/game.js';
 import { edgeMarker } from '../core/hit.js';
 import { heroLayers } from '../render/assets.js';
-import { stepBody, moveCircle, worldFor, keysToScreenDir, stickToScreenDir, screenToMap, inputToward, createFollower, stepFollower, faceOf, MOVE } from '../core/world/move.js';
-import { buildTerrain, columnTop, WATER } from '../world/terrain.js';
-import { figureOf, heroLook } from '../world/figures.js';
-import { createAnimator, animate } from '../world/animate.js';
-import { advance } from '../core/world/clock.js';
-import { heroPlace, setHeroPlace } from '../core/world/save.js';
+import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../core/world/move.js';
+import { createWorldState, getEntity, query, command } from '../core/world/state.js';
+import { step, STEP } from '../core/world/step.js';
+import { envFor } from '../core/world/env.js';
+import { addHero, addFriend, syncPeople, addDucks } from '../core/world/populate.js';
+import { loadWorld, saveWorld, heroPlace, setHeroPlace } from '../core/world/save.js';
+import { buildTerrain, columnTop } from '../world/terrain.js';
+import { heroLook } from '../world/figures.js';
 import { h, img, button } from './dom.js';
 import { t, tn } from './i18n.js';
 import { speak } from './speak.js';
@@ -19,8 +22,6 @@ import { runDialogue, say } from './dialogue.js';
 
 const STICK_R = 56; // the radius of the virtual stick, in screen pixels
 const HOLD_MS = 220; // a press this long is a hold (walk toward the finger), not a tap
-const PERSON_R = 0.9; // the hero keeps this distance (in cells) from people
-const LOOK_R = 4; // people turn to the hero when the hero is this near (in cells)
 const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyQ', 'KeyE']);
 
 // three.js and the drawing code load only when the village opens, so that the other screens
@@ -60,6 +61,7 @@ export async function mountVillage(ctx, params = {}) {
   const tileTypes = data.tiles.types;
   const tileMap = createTileMap(mapData, tileTypes);
   const triggers = createTriggers(mapData.layers.triggers);
+  const env = envFor(tileMap);
   const canvas = ctx.voxel;
   ctx.surface.canvas.hidden = true;
 
@@ -76,107 +78,68 @@ export async function mountVillage(ctx, params = {}) {
   if (!terrains.has(mapData.id)) terrains.set(mapData.id, buildTerrain(mapData, tileTypes, tileMap));
   const terrain = terrains.get(mapData.id);
   if (!worlds.has(mapData.id)) worlds.set(mapData.id, D.createVoxelWorld(canvas, terrain));
-  const world = worlds.get(mapData.id);
+  const view = worlds.get(mapData.id);
   const looks = data.figures.figures;
+  const figures = D.createFigureLayer(view.scene, (key) => (key === 'hero' ? heroLook(profile.hero) : looks[key] ?? {}));
 
   // The height of the ground under a map point (world units).
   const groundY = (x, y) => columnTop(tileMap.heightAt(Math.floor(x), Math.floor(y)));
 
-  // Figures: the hero, the friend, the people, the enemies, and the ducks.
-  const figures = [];
-  function addFigure(look, at) {
-    const f = D.buildFigure(figureOf(look));
-    f.anim = createAnimator(f.figure.kind);
-    f.at = at;
-    f.y = at.float ? at.float : groundY(at.x, at.y);
-    world.scene.add(f.root);
-    figures.push(f);
-    return f;
-  }
-  function removeFigure(f) {
-    world.scene.remove(f.root);
-    D.disposeFigure(f);
-    figures.splice(figures.indexOf(f), 1);
-  }
-
-  const saved = savedPlace.map === mapData.id && savedPlace.x !== null ? savedPlace : null;
+  // The world state of this map. The save keeps the hero; the rest comes from the map and the seed.
+  const onThisMap = profile.world.map === mapData.id;
+  const state = onThisMap ? loadWorld(profile.world) : createWorldState({ seed: profile.world.seed, map: mapData.id, clock: profile.world.clock });
+  state.clock = profile.world.clock; // one clock: a travel on the country map moves it too
+  const saved = onThisMap && savedPlace.x !== null ? savedPlace : null;
   const start = freeSpot(tileMap, params.at ?? saved ?? mapData.spawn) ?? mapData.spawn;
-  const hero = { x: start.x, y: start.y, vx: 0, vy: 0, facing: params.facing ?? 0, moving: false, speed: 0 };
-  const heroFig = addFigure(heroLook(profile.hero), hero);
-  let nghe = createFollower(hero.x - 1.6, hero.y + 0.6);
-  let friendFig = null;
-  let heroTile = { x: Math.floor(hero.x), y: Math.floor(hero.y) };
-  let route = null; // a walk to a tapped point: { points, onArrive, near }
+  const heroAt = getEntity(state, 'hero');
+  if (heroAt && !params.at && saved) {
+    heroAt.position.y = env.groundY(start.x, start.y);
+  } else {
+    if (heroAt) state.entities.splice(state.entities.indexOf(heroAt), 1);
+    addHero(state, env, { x: start.x, y: start.y, facing: params.facing ?? 0 });
+  }
+  addDucks(state, mapData, env);
+  const hero = () => getEntity(state, 'hero');
+  const heroCell = () => ({ x: hero().position.x / 2, y: hero().position.z / 2 });
+
+  let heroTile = { x: Math.floor(start.x), y: Math.floor(start.y) };
   let tapFx = null;
   let busy = false; // true while a dialogue or a panel is open
   let alive = true;
-  let still = 0; // how long the hero has not moved on a route
   let leaving = false; // true after the hero walks into an exit
-  let talkingTo = null; // the person in a dialogue turns to the hero
-  // The game clock, and the state of this map in the save.
+  const arrivals = new Map(); // the token of a walk -> what to do at its end
+  let nextToken = 1;
+  // The state of this map in the save.
   profile.maps ??= {};
-  const visit = (profile.maps[mapData.id] ??= { first: Math.round(profile.world.clock.minutes), things: {} });
-  visit.last = Math.round(profile.world.clock.minutes);
+  const visit = (profile.maps[mapData.id] ??= { first: Math.round(state.clock.minutes), things: {} });
+  visit.last = Math.round(state.clock.minutes);
 
-  // Ducks on the water: each one swims in a small circle around its point.
-  for (const d of mapData.layers.decor) {
-    if (!d.figure || !looks[d.figure]) continue;
-    const at = { x: d.x, y: d.y, float: columnTop(tileMap.heightAt(Math.floor(d.x), Math.floor(d.y))) + WATER.river - 0.05 };
-    const f = addFigure(looks[d.figure], at);
-    f.swim = { cx: d.x, cy: d.y, r: 0.6 + (d.x % 1) * 0.6, a: d.y * 3, dir: d.flip ? -1 : 1 };
+  // Put the world into the save. When the hero went to another map (an exit, a travel), the save
+  // already has the new place.
+  function syncSave() {
+    if (profile.world.map !== state.map) return;
+    profile.world.entities = saveWorld(state).entities;
   }
+  ctx.syncWorld = syncSave;
 
   // People and encounters. They block their cells for the paths of taps.
-  let people = [];
-  let encounters = [];
-  const shown = new Map(); // id -> figure
+  const persons = () => query(state, 'person').map((e) => ({ ...e.person, x: e.position.x / 2, y: e.position.z / 2, entity: e.id }));
   function refreshPeople() {
+    syncPeople(state, mapData, env, (kind, item) => (kind === 'npc' ? Boolean(data.npcs.npcs[item.id]) && isPresent(data.npcs.npcs[item.id], profile) : isPresent(item, profile)));
     tileMap.clearOccupied();
-    people = mapData.npcs
-      .filter((n) => data.npcs.npcs[n.id] && isPresent(data.npcs.npcs[n.id], profile))
-      .map((n) => ({ ...n, def: data.npcs.npcs[n.id], kind: 'npc' }));
-    encounters = mapData.encounters.filter((e) => isPresent(e, profile)).map((e) => ({ ...e, kind: 'encounter' }));
-    const want = new Set();
-    for (const p of [...people, ...encounters]) {
-      tileMap.occupy(Math.floor(p.x), Math.floor(p.y), { kind: p.kind, id: p.id });
-      const key = `${p.kind}:${p.id}`;
-      want.add(key);
-      if (!shown.has(key)) {
-        const look = looks[p.kind === 'npc' ? p.id : p.figure] ?? looks.villager ?? {};
-        const f = addFigure(look, p);
-        f.person = p;
-        f.facing = faceOf(hero.x - p.x, hero.y - p.y);
-        shown.set(key, f);
-      } else {
-        shown.get(key).person = p;
-      }
-    }
-    for (const [key, f] of shown) {
-      if (want.has(key)) continue;
-      removeFigure(f);
-      shown.delete(key);
-    }
+    for (const p of persons()) tileMap.occupy(Math.floor(p.x), Math.floor(p.y), { kind: p.kind, id: p.ref });
     // The friend walks behind the hero.
     const friendId = profile.party[0];
-    if (friendFig && friendFig.id !== friendId) {
-      removeFigure(friendFig);
-      friendFig = null;
-    }
-    if (friendId && !friendFig && looks[friendId]) {
-      friendFig = addFigure(looks[friendId], nghe);
-      friendFig.id = friendId;
-    }
+    for (const f of query(state, 'follow')) if (f.id !== `friend:${friendId}`) state.entities.splice(state.entities.indexOf(f), 1);
+    if (friendId && looks[friendId] && !getEntity(state, `friend:${friendId}`)) addFriend(state, env, friendId);
+    figures.sync(state);
     updateHud();
   }
 
   function placeHero(x, y) {
-    Object.assign(hero, { x, y, vx: 0, vy: 0, moving: false, speed: 0 });
+    command(state, { type: 'place', id: 'hero', x: x * 2, z: y * 2 });
     heroTile = { x: Math.floor(x), y: Math.floor(y) };
-    route = null;
-    nghe = createFollower(x - 1.6, y + 0.6);
-    if (friendFig) friendFig.at = nghe;
-    heroFig.y = groundY(x, y);
-    world.jump(x, heroFig.y + 1.5, y);
+    arrivals.clear();
   }
 
   // HUD
@@ -197,8 +160,8 @@ export async function mountVillage(ctx, params = {}) {
   // Buttons that turn the view in steps of 90°.
   const turnLeft = h('button', { class: 'turn-btn', type: 'button', 'aria-label': t('ui.turn.left'), title: t('ui.turn.left'), text: '⟲' });
   const turnRight = h('button', { class: 'turn-btn', type: 'button', 'aria-label': t('ui.turn.right'), title: t('ui.turn.right'), text: '⟳' });
-  turnLeft.addEventListener('click', () => world.turn(-1));
-  turnRight.addEventListener('click', () => world.turn(1));
+  turnLeft.addEventListener('click', () => view.turn(-1));
+  turnRight.addEventListener('click', () => view.turn(1));
   const turns = h('div', { class: 'turns' }, [turnLeft, turnRight]);
   // The paper of the print over the world: grain and a soft vignette.
   const paper = h('div', { class: 'world-paper' });
@@ -236,9 +199,9 @@ export async function mountVillage(ctx, params = {}) {
   }
   goalBtn.addEventListener('click', () => speak(goalKey, goalParams, { force: true }));
 
-  // The top of a figure or a thing, for its quest star (world units).
-  const figureTop = (key) => {
-    const f = shown.get(key);
+  // The top of a figure, for its quest star (world units).
+  const figureTop = (id) => {
+    const f = figures.placeOf(id);
     return f ? f.y + f.height + 0.6 : null;
   };
   const objectOf = (id) => terrain.objects.find((o) => o.id === id);
@@ -247,10 +210,11 @@ export async function mountVillage(ctx, params = {}) {
   function markers() {
     const goal = currentGoal(data.quests.quests, conditionState(profile));
     if (!goal) return [];
-    const step = goal.step;
+    const stepGoal = goal.step;
     const out = [];
     const flags = profile.flags;
-    const list = step.targets ?? (step.target ? [{ npc: step.target }] : []);
+    const list = stepGoal.targets ?? (stepGoal.target ? [{ npc: stepGoal.target }] : []);
+    const here = persons();
     // A target on another map: the marker is on the exit that leads there.
     const markExit = (mapId) => {
       const exit = mapId && mapId !== mapData.id ? worldMap.firstExit(mapData.id, mapId) : null;
@@ -266,13 +230,10 @@ export async function mountVillage(ctx, params = {}) {
       for (const kind of ['npc', 'encounter', 'object']) {
         if (tg[kind]) markExit(worldMap.whereIs(kind, tg[kind]));
       }
-      if (tg.npc) {
-        const p = people.find((x) => x.id === tg.npc);
-        if (p) out.push({ x: p.x, y: p.y, h: figureTop(`npc:${p.id}`) });
-      }
-      if (tg.encounter) {
-        const e = encounters.find((x) => x.id === tg.encounter);
-        if (e) out.push({ x: e.x, y: e.y, h: figureTop(`encounter:${e.id}`) });
+      for (const kind of ['npc', 'encounter']) {
+        const p = tg[kind] ? here.find((x) => x.kind === kind && x.ref === tg[kind]) : null;
+        const top = p ? figureTop(p.entity) : null;
+        if (top !== null) out.push({ x: p.x, y: p.y, h: top });
       }
       if (tg.object) {
         const o = mapData.layers.objects.find((x) => x.id === tg.object);
@@ -280,51 +241,52 @@ export async function mountVillage(ctx, params = {}) {
         if (o) out.push({ x: o.x + o.w / 2, y: o.y + o.h / 2, h: (thing ? terrain.boxOf(thing).y1 : groundY(o.x, o.y) + 2) + 0.8 });
       }
     }
-    if (step.place && (step.place.map ?? mapData.id) === mapData.id) out.push({ x: step.place.x + 1, y: step.place.y + 0.5, h: groundY(step.place.x, step.place.y) + 3 });
-    else if (step.place) markExit(step.place.map);
+    if (stepGoal.place && (stepGoal.place.map ?? mapData.id) === mapData.id) out.push({ x: stepGoal.place.x + 1, y: stepGoal.place.y + 0.5, h: groundY(stepGoal.place.x, stepGoal.place.y) + 3 });
+    else if (stepGoal.place) markExit(stepGoal.place.map);
     return out;
   }
 
-  // Walks to a point or a person, on a path of cells around houses and water.
+  // Walks to a point or a person, on a path of cells around houses and water. The world sends
+  // the event "arrived" at the end of the walk.
   function walkPath(path, end, onArrive, near = null) {
     if (!path) return;
-    const points = path.map((p) => ({ x: p.x + 0.5, y: p.y + 0.5 }));
-    if (end) points.push(end);
-    route = { points, onArrive, near };
-    still = 0;
-    if (!points.length) arrive();
-  }
-
-  function arrive() {
-    const fn = route?.onArrive;
-    route = null;
-    fn?.();
+    const points = path.map((p) => ({ x: (p.x + 0.5) * 2, z: (p.y + 0.5) * 2 }));
+    if (end) points.push({ x: end.x * 2, z: end.y * 2 });
+    const token = nextToken++;
+    arrivals.clear();
+    if (onArrive) arrivals.set(token, onArrive);
+    command(state, { type: 'walk', id: 'hero', points, token, near: near ? { x: near.x * 2, z: near.y * 2, d: near.d * 2 } : null });
   }
 
   function walkToThing(target, onArrive) {
-    const from = { x: Math.floor(hero.x), y: Math.floor(hero.y) };
+    const c = heroCell();
+    const from = { x: Math.floor(c.x), y: Math.floor(c.y) };
     const tile = { x: Math.floor(target.x), y: Math.floor(target.y) };
     walkPath(pathNextTo(tileMap, from, tile), null, onArrive, { x: target.x, y: target.y, d: 2.2 });
   }
 
   function walkToPerson(id) {
-    const p = people.find((x) => x.id === id);
+    const p = persons().find((x) => x.kind === 'npc' && x.ref === id);
     if (!p || busy) return;
     walkToThing(p, () => interact({ kind: 'npc', id }, p));
   }
 
   async function withBusy(fn) {
     busy = true;
-    route = null;
     hold = null;
     stick.active = false;
     keys.clear();
+    arrivals.clear();
+    command(state, { type: 'stop', id: 'hero' });
+    command(state, { type: 'pause', on: true });
     try {
       return await fn();
     } finally {
       busy = false;
-      talkingTo = null;
-      if (alive) refreshPeople();
+      if (alive) {
+        command(state, { type: 'pause', on: false });
+        refreshPeople();
+      }
     }
   }
 
@@ -334,27 +296,19 @@ export async function mountVillage(ctx, params = {}) {
     await handleCommands(commands);
   }
 
-  const place = () => ({ map: mapData.id, x: Math.round(hero.x * 100) / 100, y: Math.round(hero.y * 100) / 100 });
-  const savePlace = () => {
-    const p = place();
-    setHeroPlace(profile.world, p.map, p.x, p.y);
-    return p;
-  };
-
   // Open the screens that a dialogue asks for, one after the other.
   // ctx.open() returns false when the village scene closes (for example for a battle).
   async function handleCommands(commands) {
     for (const c of commands) {
       if (!c.open || !alive) continue;
-      savePlace();
+      syncSave();
       const stay = await withBusy(() => ctx.open(c, { village: api }));
       if (!stay) return;
     }
   }
 
   async function interact(who, at) {
-    if (Math.hypot(at.x - hero.x, at.y - hero.y) > 0.05) hero.facing = faceOf(at.x - hero.x, at.y - hero.y);
-    talkingTo = shown.get(`${who.kind}:${who.id}`) ?? null;
+    command(state, { type: 'face', id: 'hero', x: at.x * 2, z: at.y * 2 });
     if (who.kind === 'npc') {
       const npc = data.npcs.npcs[who.id];
       await talk(pickTalk(npc, profile));
@@ -395,14 +349,14 @@ export async function mountVillage(ctx, params = {}) {
   let hold = null; // { id, vx, vy, since, held }
   const pointers = new Map();
   let pinch = null;
-  let view = { width: 1, height: 1 };
+  let size = { width: 1, height: 1 };
 
   const local = (e) => {
     const rect = canvas.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
-  const stickHome = () => ({ x: 24 + STICK_R, y: view.height - 24 - STICK_R });
-  const inStickZone = (p) => p.x < Math.min(280, view.width * 0.4) && p.y > view.height * 0.45;
+  const stickHome = () => ({ x: 24 + STICK_R, y: size.height - 24 - STICK_R });
+  const inStickZone = (p) => p.x < Math.min(280, size.width * 0.4) && p.y > size.height * 0.45;
 
   function onDown(e) {
     if (busy || !alive) return;
@@ -424,7 +378,7 @@ export async function mountVillage(ctx, params = {}) {
     if (e.pointerType !== 'mouse') stick.show = true;
     if (e.pointerType !== 'mouse' && inStickZone(p)) {
       Object.assign(stick, { active: true, id: e.pointerId, x: p.x, y: p.y, kx: 0, ky: 0, since: performance.now(), far: 0 });
-      route = null;
+      arrivals.clear();
       return;
     }
     hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false };
@@ -437,8 +391,8 @@ export async function mountVillage(ctx, params = {}) {
     if (pinch && pointers.size === 2) {
       const [a, c] = [...pointers.values()];
       const d = Math.hypot(a.x - c.x, a.y - c.y);
-      if (d / pinch.d < 0.75) { world.setZoom(1); pinch.d = d; }
-      if (d / pinch.d > 1.33) { world.setZoom(0); pinch.d = d; }
+      if (d / pinch.d < 0.75) { view.setZoom(1); pinch.d = d; }
+      if (d / pinch.d > 1.33) { view.setZoom(0); pinch.d = d; }
       return;
     }
     if (stick.active && stick.id === e.pointerId) {
@@ -483,12 +437,12 @@ export async function mountVillage(ctx, params = {}) {
 
   function startHold() {
     hold.held = true;
-    route = null;
+    arrivals.clear();
   }
 
   function onWheel(e) {
     e.preventDefault();
-    world.setZoom(e.deltaY > 0 ? 1 : 0);
+    view.setZoom(e.deltaY > 0 ? 1 : 0);
   }
 
   function onKey(e) {
@@ -497,12 +451,12 @@ export async function mountVillage(ctx, params = {}) {
     if (e.type === 'keydown') {
       if (busy) return;
       if (e.code === 'KeyQ' || e.code === 'KeyE') {
-        if (!e.repeat) world.turn(e.code === 'KeyQ' ? -1 : 1);
+        if (!e.repeat) view.turn(e.code === 'KeyQ' ? -1 : 1);
         e.preventDefault();
         return;
       }
       keys.add(e.code);
-      route = null;
+      arrivals.clear();
       e.preventDefault();
     } else {
       keys.delete(e.code);
@@ -512,15 +466,16 @@ export async function mountVillage(ctx, params = {}) {
   // The person or enemy under a screen point: the nearest one to the camera.
   function personAt(p) {
     let best = null;
-    for (const f of shown.values()) {
-      const q = f.person;
-      const b = world.screenBox({ x0: q.x - 0.7, x1: q.x + 0.7, y0: f.y, y1: f.y + f.height + 0.2, z0: q.y - 0.7, z1: q.y + 0.7 });
+    for (const q of persons()) {
+      const f = figures.placeOf(q.entity);
+      if (!f) continue;
+      const b = view.screenBox({ x0: f.x - 0.7, x1: f.x + 0.7, y0: f.y, y1: f.y + f.height + 0.2, z0: f.z - 0.7, z1: f.z + 0.7 });
       const pad = 10;
       if (p.x < b.x0 - pad || p.x > b.x1 + pad || p.y < b.y0 - pad || p.y > b.y1 + pad) continue;
-      const near = world.nearness(q.x, f.y, q.y);
-      if (!best || near > best.near) best = { f, near };
+      const near = view.nearness(f.x, f.y, f.z);
+      if (!best || near > best.near) best = { q, near };
     }
-    return best?.f.person ?? null;
+    return best?.q ?? null;
   }
 
   const showTap = (x, y, hh) => {
@@ -530,20 +485,21 @@ export async function mountVillage(ctx, params = {}) {
   // A tap: a person, an enemy, a thing with a trigger zone, or a place on the ground.
   function onTap(p) {
     ctx.bus.emit('sound', 'tap');
-    const state = conditionState(profile);
+    const cond = conditionState(profile);
     const person = personAt(p);
     if (person) {
       showTap(person.x, person.y, groundY(person.x, person.y));
-      walkToThing(person, () => interact({ kind: person.kind, id: person.id }, person));
+      walkToThing(person, () => interact({ kind: person.kind, id: person.ref }, person));
       return;
     }
-    const hit = world.pick(p.x, p.y, { things: true });
+    const hit = view.pick(p.x, p.y, { things: true });
     if (!hit) return;
-    const from = { x: Math.floor(hero.x), y: Math.floor(hero.y) };
+    const c = heroCell();
+    const from = { x: Math.floor(c.x), y: Math.floor(c.y) };
     // A thing with a tap zone.
     const thing = hit.who ? terrain.objects.find((o) => o.who === hit.who) : null;
     const o = thing?.id ? mapData.layers.objects.find((x) => x.id === thing.id) : null;
-    const zone = o ? triggers.fire('tap', o.x, o.y, state) : null;
+    const zone = o ? triggers.fire('tap', o.x, o.y, cond) : null;
     if (zone) {
       const at = { x: o.x + o.w / 2, y: o.y + o.h / 2 };
       showTap(at.x, at.y, groundY(at.x, at.y));
@@ -557,7 +513,7 @@ export async function mountVillage(ctx, params = {}) {
     showTap(hit.x, hit.y, hit.who ? groundY(hit.x, hit.y) : hit.h);
     // A tap zone on the ground is a thing that the hero cannot walk on (water, a field).
     // A tap on a free cell of the zone (the ford, a dike in the field) is a walk.
-    const ground = tileMap.isBlocked(tile.x, tile.y) ? triggers.fire('tap', tile.x, tile.y, state) : null;
+    const ground = tileMap.isBlocked(tile.x, tile.y) ? triggers.fire('tap', tile.x, tile.y, cond) : null;
     if (ground) {
       walkPath(pathNextTo(tileMap, from, tile), null, () => doAction(ground), { x: hit.x, y: hit.y, d: 2.2 });
       return;
@@ -574,10 +530,43 @@ export async function mountVillage(ctx, params = {}) {
   window.addEventListener('keydown', onKey);
   window.addEventListener('keyup', onKey);
 
+  // The input of this frame as a command for the world: a map direction from the stick, the
+  // keys, or a held finger. A tap walk goes in as a "walk" command (see walkPath).
+  let moving = false;
+  function sendInput() {
+    if (busy || leaving) return;
+    const toMap = (s) => {
+      if (!s.dx && !s.dy) return null;
+      const m = screenToMap(s.dx, s.dy, view.angle);
+      return { dx: m.x, dz: m.y, strength: s.strength ?? 1, run: Boolean(s.run) };
+    };
+    let dir = null;
+    if (stick.active) dir = toMap(stickToScreenDir(stick.kx, stick.ky, STICK_R));
+    else if (keys.size) dir = toMap(keysToScreenDir(keys));
+    else {
+      if (hold && !hold.held && performance.now() - hold.since > HOLD_MS) startHold();
+      const m = hold?.held ? view.pick(hold.vx, hold.vy) : null;
+      if (m) {
+        const c = heroCell();
+        const i = inputToward(c, m, { run: Math.hypot(m.x - c.x, m.y - c.y) > 6, stop: 0.3 });
+        dir = i.strength ? { dx: i.dx, dz: i.dy, strength: i.strength, run: i.run } : null;
+      }
+    }
+    if (dir) {
+      command(state, { type: 'move', id: 'hero', ...dir });
+      moving = true;
+    } else if (moving) {
+      // The stick, the keys, or the finger stopped: the hero stops too.
+      command(state, { type: 'move', id: 'hero', dx: 0, dz: 0, strength: 0 });
+      moving = false;
+    }
+  }
+
   // The frame loop -------------------------------------------------------------
 
   let last = performance.now();
   let time = 0;
+  let acc = 0;
   // With ?fps in the address, a small box shows the frames each second and the size of a frame,
   // for tests of the speed on real devices.
   const meter = new URLSearchParams(location.search).has('fps') ? h('div', { class: 'fps-meter' }) : null;
@@ -589,11 +578,19 @@ export async function mountVillage(ctx, params = {}) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     time += dt;
-    step(dt);
-    draw(dt);
+    sendInput();
+    // The world moves in fixed steps; the drawing is smooth between two steps.
+    acc += dt;
+    while (acc >= STEP && alive) {
+      step(state, STEP, env);
+      figures.sync(state);
+      afterStep();
+      acc -= STEP;
+    }
+    draw(dt, acc / STEP);
     frames += 1;
     if (meter && now - since > 1000) {
-      const s = world.stats();
+      const s = view.stats();
       meter.textContent = `${Math.round((frames * 1000) / (now - since))} fps · ${s.calls} calls · ${Math.round(s.triangles / 1000)}k triangles`;
       frames = 0;
       since = now;
@@ -604,133 +601,52 @@ export async function mountVillage(ctx, params = {}) {
   // The hero walks into an exit: the screen goes dark, and the next map opens.
   function goThrough(exit) {
     leaving = true;
-    route = null;
     hold = null;
     stick.active = false;
     keys.clear();
-    const to = worldMap.arrival(exit, hero.x, hero.y);
+    arrivals.clear();
+    command(state, { type: 'stop', id: 'hero' });
+    const c = heroCell();
+    const to = worldMap.arrival(exit, c.x, c.y);
+    syncSave();
     setHeroPlace(profile.world, to.map, to.x, to.y);
     fade.classList.add('on');
     ctx.save('map');
     setTimeout(() => {
-      if (alive) ctx.go('village', { map: to.map, at: { x: to.x, y: to.y }, facing: hero.facing, arrive: true });
+      if (alive) ctx.go('village', { map: to.map, at: { x: to.x, y: to.y }, facing: hero().position.facing, arrive: true });
     }, 260);
   }
 
-  // A screen direction as a map direction, for the angle of the camera now.
-  const toMapInput = (s) => {
-    if (!s.dx && !s.dy) return { dx: 0, dy: 0, strength: 0 };
-    const m = screenToMap(s.dx, s.dy, world.angle);
-    return { dx: m.x, dy: m.y, strength: s.strength ?? 1, run: s.run };
-  };
-
-  function currentInput() {
-    if (busy || leaving) return { dx: 0, dy: 0, strength: 0 };
-    if (stick.active) return toMapInput(stickToScreenDir(stick.kx, stick.ky, STICK_R));
-    if (keys.size) {
-      const k = keysToScreenDir(keys);
-      if (k.dx || k.dy) return toMapInput(k);
-    }
-    if (hold && !hold.held && performance.now() - hold.since > HOLD_MS) startHold();
-    if (hold?.held) {
-      const m = world.pick(hold.vx, hold.vy);
-      if (!m) return { dx: 0, dy: 0, strength: 0 };
-      const far = Math.hypot(m.x - hero.x, m.y - hero.y) > 6;
-      return inputToward(hero, m, { run: far, stop: 0.3 });
-    }
-    if (route) {
-      if (route.near && Math.hypot(route.near.x - hero.x, route.near.y - hero.y) <= route.near.d) {
-        arrive();
-        return { dx: 0, dy: 0, strength: 0 };
-      }
-      let next = route.points[0];
-      while (next && Math.hypot(next.x - hero.x, next.y - hero.y) < 0.3) {
-        route.points.shift();
-        next = route.points[0];
-      }
-      if (!next) {
-        arrive();
-        return { dx: 0, dy: 0, strength: 0 };
-      }
-      const far = route.points.length > 10;
-      return inputToward(hero, next, { run: far, stop: 0.05 });
-    }
-    return { dx: 0, dy: 0, strength: 0 };
-  }
-
-  // The hero keeps a little space from people, like a wall that is round.
-  function pushFromPeople() {
-    for (const p of [...people, ...encounters]) {
-      const dx = hero.x - p.x;
-      const dy = hero.y - p.y;
-      const d = Math.hypot(dx, dy);
-      if (d >= PERSON_R || d < 1e-6) continue;
-      const k = (PERSON_R - d) / d;
-      const out = moveCircle(hero, dx * k, dy * k, MOVE.radius, worldFor(tileMap, hero.x, hero.y).isBlocked);
-      hero.x = out.x;
-      hero.y = out.y;
-    }
-  }
-
-  function step(dt) {
-    if (tapFx) tapFx.age += dt;
-    if (!busy) advance(profile.world.clock, dt);
-    const before = { x: hero.x, y: hero.y };
-    const input = currentInput();
-    stepBody(hero, input, dt, worldFor(tileMap, hero.x, hero.y));
-    pushFromPeople();
-    if (route) {
-      still = Math.hypot(hero.x - before.x, hero.y - before.y) < 1e-3 ? still + dt : 0;
-      // Stuck (for example behind a person): stop the walk.
-      if (still > 0.6) route = null;
-    }
-    const tx = Math.floor(hero.x);
-    const ty = Math.floor(hero.y);
-    if (tx !== heroTile.x || ty !== heroTile.y) {
-      heroTile = { x: tx, y: ty };
-      const exit = busy || leaving ? null : worldMap.exitAt(mapData.id, tx, ty, conditionState(profile));
-      if (exit) {
-        goThrough(exit);
-        return;
-      }
-      const zone = busy || leaving ? null : triggers.fire('enter', tx, ty, conditionState(profile));
-      if (zone) {
-        route = null;
-        hold = null;
-        stick.active = false;
-        keys.clear();
-        doAction(zone);
+  // After each step: the events of the world, the exits, and the trigger zones.
+  function afterStep() {
+    for (const ev of state.events) {
+      if (ev.id !== 'hero') continue;
+      if (ev.type === 'placed') view.jump(hero().position.x / 2, hero().position.y / 2 + 1.5, hero().position.z / 2);
+      if (ev.type === 'arrived' || ev.type === 'stuck') {
+        const fn = arrivals.get(ev.token);
+        arrivals.delete(ev.token);
+        if (ev.type === 'arrived') fn?.();
       }
     }
-    if (friendFig) stepFollower(nghe, hero, dt, worldFor(tileMap, nghe.x, nghe.y));
-  }
-
-  // Put each figure on the ground, turn it, and give it its pose.
-  function poseFigures(dt) {
-    const ease = Math.min(1, dt * 14);
-    for (const f of figures) {
-      const a = f.at;
-      let speed = a.speed ?? 0;
-      let facing = a.facing ?? f.facing ?? 0;
-      if (f.swim) {
-        // A duck swims slowly around its point.
-        const s = f.swim;
-        s.a += dt * 0.35 * s.dir;
-        a.x = s.cx + Math.cos(s.a) * s.r;
-        a.y = s.cy + Math.sin(s.a) * s.r;
-        facing = faceOf(-Math.sin(s.a) * s.dir, Math.cos(s.a) * s.dir);
-        speed = 0.2;
-      } else if (f.person) {
-        // People and enemies turn to the hero when the hero is near, or in a dialogue.
-        const d = Math.hypot(hero.x - a.x, hero.y - a.y);
-        if (f === talkingTo || (d < LOOK_R && f.figure.kind !== 'serpent')) f.facing = turnToward(f.facing ?? 0, faceOf(hero.x - a.x, hero.y - a.y), dt * 5);
-        facing = f.facing;
-      }
-      const target = a.float ?? groundY(a.x, a.y);
-      f.y += (target - f.y) * ease;
-      f.root.position.set(a.x, f.y, a.y);
-      f.root.rotation.y = facing;
-      D.applyPose(f, animate(f.anim, { speed, dt }));
+    const c = heroCell();
+    const tx = Math.floor(c.x);
+    const ty = Math.floor(c.y);
+    if (tx === heroTile.x && ty === heroTile.y) return;
+    heroTile = { x: tx, y: ty };
+    if (busy || leaving) return;
+    const exit = worldMap.exitAt(mapData.id, tx, ty, conditionState(profile));
+    if (exit) {
+      goThrough(exit);
+      return;
+    }
+    const zone = triggers.fire('enter', tx, ty, conditionState(profile));
+    if (zone) {
+      hold = null;
+      stick.active = false;
+      keys.clear();
+      arrivals.clear();
+      command(state, { type: 'stop', id: 'hero' });
+      doAction(zone);
     }
   }
 
@@ -754,13 +670,13 @@ export async function mountVillage(ctx, params = {}) {
     const hudRect = hud.getBoundingClientRect();
     const canvasRect = canvas.getBoundingClientRect();
     const inset = { top: Math.max(0, hudRect.bottom - canvasRect.top) + 8, right: 12, bottom: 12, left: 12 };
-    const screen = { x: 0, y: 0, w: view.width, h: view.height };
+    const screen = { x: 0, y: 0, w: size.width, h: size.height };
     let stars = 0;
     let arrows = 0;
     const edges = [];
     const bob = Math.sin(time * 4) * 4;
     for (const m of busy ? [] : markers()) {
-      const p = world.project(m.x, m.h, m.y);
+      const p = view.project(m.x, m.h, m.y);
       const edge = edgeMarker(screen, p, inset);
       if (!edge) {
         const el = starAt(stars++);
@@ -778,7 +694,7 @@ export async function mountVillage(ctx, params = {}) {
     for (let i = stars; i < starPool.length; i++) starPool[i].hidden = true;
     for (let i = arrows; i < arrowPool.length; i++) arrowPool[i].hidden = true;
     if (tapFx && tapFx.age < 0.6) {
-      const p = world.project(tapFx.x, tapFx.h + 0.05, tapFx.y);
+      const p = view.project(tapFx.x, tapFx.h + 0.05, tapFx.y);
       ring.hidden = false;
       const k = 0.6 + tapFx.age * 1.2;
       ring.style.transform = `translate(${p.x}px, ${p.y}px) scale(${k}, ${k * 0.5})`;
@@ -795,43 +711,48 @@ export async function mountVillage(ctx, params = {}) {
     }
   }
 
-  function draw(dt) {
+  function draw(dt, between) {
+    if (tapFx) tapFx.age += dt;
     const w = canvas.clientWidth || window.innerWidth;
     const hh = canvas.clientHeight || window.innerHeight;
-    if (w !== view.width || hh !== view.height) {
-      view = { width: w, height: hh };
-      world.resize(w, hh);
+    if (w !== size.width || hh !== size.height) {
+      size = { width: w, height: hh };
+      view.resize(w, hh);
     }
-    poseFigures(dt);
-    world.render(dt, { x: hero.x, y: heroFig.y, z: hero.y }, time);
+    figures.draw(between, dt);
+    view.render(dt, figures.placeOf('hero'), time);
     drawMarks();
   }
 
   const api = {
     refresh: () => refreshPeople(),
     talk,
-    heroTile: () => ({ x: Math.floor(hero.x), y: Math.floor(hero.y) }),
+    heroTile: () => ({ x: heroTile.x, y: heroTile.y }),
     placeHero,
     mapId: () => mapData.id,
     // Open another map, for automatic tests of the whole game.
     goMap: (id, x, y) => ctx.go('village', { map: id, at: { x, y } }),
     // The screen point of the middle of a cell, for automatic tests of the whole game.
-    screenOf: (x, y) => world.project(x + 0.5, groundY(x + 0.5, y + 0.5), y + 0.5),
+    screenOf: (x, y) => view.project(x + 0.5, groundY(x + 0.5, y + 0.5), y + 0.5),
     // The screen point of a person or an enemy, for automatic tests of the whole game.
     screenOfPerson: (id) => {
-      const f = [...shown.values()].find((x) => x.person.id === id);
-      return f ? world.project(f.person.x, f.y + f.height * 0.5, f.person.y) : null;
+      const q = persons().find((x) => x.ref === id);
+      const f = q ? figures.placeOf(q.entity) : null;
+      return f ? view.project(f.x, f.y + f.height * 0.5, f.z) : null;
     },
-    turn: (n) => world.turn(n),
-    stats: () => world.stats(),
+    turn: (n) => view.turn(n),
+    stats: () => view.stats(),
+    // The world state, for automatic tests (read only).
+    state: () => state,
   };
   ctx.activeVillage = api;
 
   refreshPeople();
-  view = { width: canvas.clientWidth || window.innerWidth, height: canvas.clientHeight || window.innerHeight };
-  world.resize(view.width, view.height);
-  heroFig.y = groundY(hero.x, hero.y);
-  world.jump(hero.x, heroFig.y + 1.5, hero.y);
+  size = { width: canvas.clientWidth || window.innerWidth, height: canvas.clientHeight || window.innerHeight };
+  view.resize(size.width, size.height);
+  figures.draw(1, 0);
+  const h0 = hero().position;
+  view.jump(h0.x / 2, h0.y / 2 + 1.5, h0.z / 2);
   requestAnimationFrame(frame);
   // Show the new language in the top bar after a change in the parent area.
   const offLang = ctx.bus.on('lang', () => {
@@ -853,10 +774,11 @@ export async function mountVillage(ctx, params = {}) {
     unmount() {
       alive = false;
       if (ctx.activeVillage === api) ctx.activeVillage = null;
-      const p = place();
-      if (!leaving) savePlace();
-      visit.at = { x: p.x, y: p.y };
-      visit.last = Math.round(profile.world.clock.minutes);
+      syncSave();
+      if (ctx.syncWorld === syncSave) ctx.syncWorld = null;
+      const c = heroCell();
+      visit.at = { x: Math.round(c.x * 100) / 100, y: Math.round(c.y * 100) / 100 };
+      visit.last = Math.round(state.clock.minutes);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
@@ -865,18 +787,11 @@ export async function mountVillage(ctx, params = {}) {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('keyup', onKey);
       offLang();
-      for (const f of [...figures]) removeFigure(f);
+      figures.dispose();
       for (const el of [paper, marks, hud, turns, fade, banner, meter]) el?.remove();
     },
     api,
   };
-}
-
-// Turn an angle toward another angle by at most `step` (radians), the short way.
-function turnToward(from, to, step) {
-  let d = ((to - from + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
-  if (Math.abs(d) > step) d = Math.sign(d) * step;
-  return from + d;
 }
 
 // The nearest free cell to a point (the point itself when it is free), or null.
