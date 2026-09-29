@@ -132,6 +132,8 @@
   "iso/signpost.svg": "0 0 64 90",
   "iso/mountain.svg": "0 0 320 300",
   "iso/rice-stack.svg": "0 0 64 60",
-  "iso/fence.svg": "0 0 64 70"
+  "iso/fence.svg": "0 0 64 70",
+  "iso/duck.svg": "0 0 40 28",
+  "world/country.svg": "0 0 600 1000"
  }
 }
