@@ -82,3 +82,11 @@ Randomness comes only from the `rng` of the step. The same seed and the same com
 ## The save
 
 `profile.world` (save version 6) holds the seed, the map, the clock, and the entities with `keep` (now only the hero), without their routes and intents (`src/core/world/save.js`). The people, the animals, and Nghé come again from the map data and the seed. The village puts its world into the profile before each save (`ctx.syncWorld`).
+
+## The numbers in data
+
+- `data/world/life.json`: the kinds of living things (chickens, ducks, fish, buffalo, the dog, birds, the owl, pots, tall grass, the cart, and the heat of the forge), with their steering, flocks, reactions, and plans; and the reaction and steering of the people.
+- `data/world/people.json`: the plans of the day, and the house and plan of each person.
+- `data/world/day.json`: dusk, dawn, and the rain.
+- The maps (`tools/maps/era1.py`): `layers.life` (groups of living things) and `layers.places` (named places for the plans).
+
