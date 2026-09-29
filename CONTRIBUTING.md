@@ -32,12 +32,12 @@ Write all text in ASD-STE100 Simplified Technical English. This rule applies to 
 ## Code rules
 
 - Use plain JavaScript with native ES modules. Do not add a framework, a bundler, a game engine, or a build step.
-- Do not add dependencies. The `package.json` file has only the module type and the test script.
+- Do not add dependencies. The `package.json` file has only the module type and the test script. The one exception is three.js, loaded at a fixed version from a CDN through the import map in `index.html`.
 - Keep all game logic in `src/core/`. Code in `src/core/` must not use the DOM, Canvas, `window`, or `fetch`.
-- Put DOM code in `src/ui/` and Canvas code in `src/render/`.
+- Put DOM code in `src/ui/` and drawing code in `src/render/`.
 - Put all values of the learning model in `data/config/learning.json`.
 - Use only relative paths. The game must work at `/Tre/` on GitHub Pages and on a local static server.
-- Do not send requests to other sites. Do not add ads, analytics, cookies, or accounts.
+- Do not send requests to other sites, except the one request for three.js. Do not add ads, analytics, cookies, or accounts.
 - When you add or remove a game file, change the list `FILES` in `sw.js`. The service worker uses the list for offline play. A test fails when the list and the files are not the same.
 
 ## Art
@@ -53,6 +53,17 @@ npm test
 ```
 
 Add tests for each change to `src/core/`. All tests must pass before we merge a pull request.
+
+## How to pick up work
+
+Work is planned in GitHub issues, grouped in milestones. To pick up work:
+
+1. Open the current milestone. Take the open issue with the lowest number. Issues in a milestone build on each other, so do them in order.
+2. Read `docs/DESIGN.md` first. It is the single source of truth. Do not edit it; put notes in `docs/QUESTIONS.md`, `docs/REVIEW.md`, or a new file in `docs/`.
+3. Open the files in `docs/reference/` that the issue names. They show the target look and feel.
+4. Do the work in small commits. Each commit leaves the game playable and all tests passing.
+5. When the issue is done, comment on it with what changed, and add a screen recording or screenshots when the issue asks for them. Then close the issue.
+6. When the issue has the label `needs-review`, stop after it. Wait for the owner before you start the next issue.
 
 ## Pull requests
 
