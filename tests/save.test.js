@@ -208,7 +208,7 @@ test('the version 6 save keeps the world state: the seed, the map, the clock, an
     if (!w.entities.some((e) => e.id === 'hero')) addHero(w, env, map.spawn);
     addFriend(w, env, 'nghe');
     syncPeople(w, map, env, () => true);
-    addDucks(w, map, env);
+    addDucks(w, map, env, load('data/world/life.json'));
     return w;
   };
   const p = sample();

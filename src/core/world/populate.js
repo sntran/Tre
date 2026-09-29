@@ -1,9 +1,6 @@
 // Fill a world state with the entities of a map: the hero, the friend, the people, the enemies,
 // and the ducks. The map data is in map cells; the entities are on the half-block grid.
 import { addEntity, removeEntity, getEntity, query, HALF } from './state.js';
-import { createRng, hashSeed } from '../rng.js';
-
-const WATER_TOP = 1.2; // half blocks of water over the bed of the river (see src/world/terrain.js)
 
 // The hero, controlled by the player. keep: the save keeps this entity.
 export function addHero(world, env, { x, y, facing = 0 }) {
@@ -67,20 +64,28 @@ export function syncPeople(world, map, env, present) {
   return changed;
 }
 
-// The ducks of the decor layer: each one swims around its point. The seed of the world gives
-// the start of each circle.
-export function addDucks(world, map, env) {
-  const rng = createRng(hashSeed(`${world.seed}:${map.id}:ducks`));
+// A living thing of a kind in data/world/life.json at a map point (map cells).
+export function addLife(world, env, life, kind, at, id = null) {
+  const def = life.kinds[kind];
+  const x = at.x * HALF;
+  const z = at.y * HALF;
+  const ground = env.groundY(at.x, at.y);
+  const s = def.steer;
+  const y = s?.medium === 'water' ? ground + (s.float ?? 1.1) : s?.medium === 'air' ? ground + (s.altitude ?? 12) : ground;
+  return addEntity(world, {
+    ...(id ? { id } : {}),
+    kind,
+    position: { x, y, z, facing: at.facing ?? 0 },
+    motion: { vx: 0, vz: 0, speed: 0 },
+    ...(s ? { steer: { ...structuredClone(s), goal: null, arrived: false, flee: null, bias: null, wander: null } } : {}),
+    look: def.look,
+  });
+}
+
+// The ducks of the decor layer. The seed of the world gives the start of each wander.
+export function addDucks(world, map, env, life) {
   map.layers.decor.forEach((d, i) => {
-    if (!d.figure) return;
-    const cx = d.x * HALF;
-    const cz = d.y * HALF;
-    addEntity(world, {
-      id: `decor:${i}`,
-      position: { x: cx, y: env.groundY(d.x, d.y) + WATER_TOP - 0.1, z: cz, facing: 0 },
-      motion: { vx: 0, vz: 0, speed: 0 },
-      swim: { cx, cz, r: 1.2 + rng.next() * 1.2, a: rng.next() * Math.PI * 2, dir: d.flip ? -1 : 1, speed: 0.35 },
-      look: d.figure,
-    });
+    if (d.figure !== 'duck') return;
+    addLife(world, env, life, 'duck', { x: d.x, y: d.y, facing: d.flip ? Math.PI : 0 }, `decor:${i}`);
   });
 }

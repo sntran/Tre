@@ -27,6 +27,7 @@ const FILES = {
   titles: 'data/titles.json',
   hero: 'data/hero.json',
   figures: 'data/figures.json',
+  life: 'data/world/life.json',
 };
 
 export async function loadData(onProgress = () => {}) {

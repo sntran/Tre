@@ -98,7 +98,7 @@ export async function mountVillage(ctx, params = {}) {
     if (heroAt) state.entities.splice(state.entities.indexOf(heroAt), 1);
     addHero(state, env, { x: start.x, y: start.y, facing: params.facing ?? 0 });
   }
-  addDucks(state, mapData, env);
+  addDucks(state, mapData, env, data.life);
   const hero = () => getEntity(state, 'hero');
   const heroCell = () => ({ x: hero().position.x / 2, y: hero().position.z / 2 });
 

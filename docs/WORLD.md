@@ -25,7 +25,7 @@ Positions are on the half-block grid: x to the east, z to the south (map y), y u
 | Component | Data | Used by |
 | --- | --- | --- |
 | `position` | `{ x, y, z, facing }` | all systems, the renderer |
-| `motion` | `{ vx, vz, speed, shallow }` | move, follow, swim, the renderer (walk cycle) |
+| `motion` | `{ vx, vz, speed, shallow }` | move, follow, steer, the renderer (walk cycle) |
 | `control` | `true`: the player moves it | the hero |
 | `intent` | `{ dx, dz, strength, run }`: the direction to walk now | input, route, move |
 | `route` | `{ points, near, token, still, last }`: a walk to a tapped place | input, route |
@@ -33,7 +33,8 @@ Positions are on the half-block grid: x to the east, z to the south (map y), y u
 | `person` | `{ kind, ref }`: a person or an enemy of the map data | the story (village scene) |
 | `solid` | `{ r }`: others keep this distance | move |
 | `react` | `{ turn }`: turn to the hero within this distance | react |
-| `swim` | `{ cx, cz, r, a, dir, speed }` | swim |
+| `steer` | `{ speed, accel, medium, goal, flee, bias, wander, weights, ... }`: animals and people that move by themselves (numbers in `data/world/life.json`) | steer |
+| `kind` | the kind of a living thing in `data/world/life.json` | populate |
 | `look` | the key of the figure in `data/figures.json` (or `hero`) | the renderer |
 | `keep` | `true`: the save keeps this entity | save |
 
@@ -49,8 +50,8 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 2. **route**: a route turns into an intent, so that movement reads one kind of input. The end of a route sends the event `arrived`; a route that cannot go on sends `stuck`.
 3. **move**: the entities with an intent walk or run, with collision against blocked cells, cliffs, and solid people. Nothing walks while the world waits.
 4. **follow**: after the hero moves, so that Nghé follows the new position without a step of lag.
-5. **react**: after all movement, so that people turn to where the hero is now.
-6. **swim**: the ducks do not depend on the others.
+5. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance), after the hero, so that they react to where the hero is now.
+6. **react**: after all movement, so that people turn to where the hero is now.
 7. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits.
 
 Randomness comes only from the `rng` of the step. The same seed and the same commands give the same world.

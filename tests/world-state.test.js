@@ -19,7 +19,7 @@ function village(seed = 7) {
   addHero(w, env, map.spawn);
   addFriend(w, env, 'nghe');
   syncPeople(w, map, env, () => true);
-  addDucks(w, map, env);
+  addDucks(w, map, env, load('data/world/life.json'));
   return w;
 }
 
@@ -63,7 +63,7 @@ test('the same seed and the same commands give the same world after 1000 steps',
   // Other commands give another world.
   assert.notDeepEqual(run(7, -1).entities, a.entities);
   // Another seed gives other ducks.
-  assert.notDeepEqual(run(8).entities.filter((e) => e.swim), a.entities.filter((e) => e.swim));
+  assert.notDeepEqual(run(8).entities.filter((e) => e.steer), a.entities.filter((e) => e.steer));
 });
 
 test('the hero walks with a command, follows a route to its end, and waits in a dialogue', () => {
@@ -123,7 +123,8 @@ test('a system changes only the components that it names', () => {
   assert.equal(files.length, SYSTEMS.length, 'each system is in the ordered list');
   for (const file of files) {
     const text = readFileSync(new URL(file, dir), 'utf8');
-    assert.match(text.split('\n').slice(0, 5).join('\n'), /export const WRITES = \[/, `${file} names what it writes at the top`);
+    const writes = text.indexOf('export const WRITES = [');
+    assert.ok(writes >= 0 && writes < text.indexOf('import '), `${file} names what it writes at the top, before the imports`);
   }
   return Promise.all(files.map(async (file) => {
     const mod = await import(new URL(file, dir));
