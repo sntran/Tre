@@ -349,14 +349,15 @@ export function plankGhost(on = false) {
   return { kind: 'still', parts, scale: 1, height: 0.5, shadow: 0 };
 }
 
-// The marks of the empty part of a gap after a fall: n pale frames of one unit each, over the
-// water at the height of the deck, so that the child sees how many units were missing.
+// The marks of the empty part of a gap after a fall: n red frames of one unit each (the red of
+// the dots on the planks), over the water at the height of the deck, so that the child sees how
+// many units were missing.
 export function gapMarks(n) {
   const parts = [];
   for (let i = 0; i < n; i++) {
-    parts.push(P(`l${i}`, [0.2, 0.2, 0.8], 'diep', [-0.8, 0, i + 0.5]));
-    parts.push(P(`r${i}`, [0.2, 0.2, 0.8], 'diep', [0.8, 0, i + 0.5]));
-    parts.push(P(`e${i}`, [1.8, 0.2, 0.2], 'diep', [0, 0, i + 0.9]));
+    parts.push(P(`l${i}`, [0.25, 0.3, 0.8], 'vermilion', [-0.8, 0, i + 0.5]));
+    parts.push(P(`r${i}`, [0.25, 0.3, 0.8], 'vermilion', [0.8, 0, i + 0.5]));
+    parts.push(P(`e${i}`, [1.85, 0.3, 0.25], 'vermilion', [0, 0, i + 0.88]));
   }
   return { kind: 'still', parts, scale: 1, height: 0.2, shadow: 0 };
 }
