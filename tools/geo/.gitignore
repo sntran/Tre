@@ -1,0 +1,2 @@
+# The downloaded source data. The build script reads it; the repository keeps only the result.
+raw/

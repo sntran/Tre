@@ -162,6 +162,7 @@ const FILES = [
   'data/elements.json',
   'data/enemies.json',
   'data/friends.json',
+  'data/geo/vietnam.json',
   'data/hero.json',
   'data/items.json',
   'data/maps/fields-river.json',

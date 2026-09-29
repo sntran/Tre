@@ -34,6 +34,7 @@ npm test
 | `src/render/` | Canvas code for the isometric world and the battles. |
 | `src/iso/`, `src/world/` | The isometric grid, depth order, and camera; movement, regions and maps, the game clock, and travel. No DOM. |
 | `src/ui/` | DOM code for dialogue, menus, exams, settings, and the parent page. |
+| `tools/geo/` | The script that makes the map data of the country map from open data. |
 | `data/` | Skill graph, the regions of the world and their maps, enemies, items, quests, dialogue, and questions as JSON. |
 | `data/config/learning.json` | All values of the learning model. |
 | `i18n/` | All text by key, in Vietnamese (`vi.json`) and English (`en.json`). |
@@ -56,4 +57,5 @@ npm test
 - Code: [AGPL-3.0](LICENSE).
 - Stories, art, music, and text: [CC BY-NC-SA 4.0](content/README.md).
 - Fonts: SIL Open Font License 1.1. Refer to [fonts/README.md](fonts/README.md).
+- Map data: Natural Earth and NASA SRTM (public domain), and our own traced rivers and places. Refer to [data/geo/README.md](data/geo/README.md).
 - The name "Tre" and its logo: reserved. Refer to [TRADEMARK.md](TRADEMARK.md).
