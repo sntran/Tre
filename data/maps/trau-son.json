@@ -1,0 +1,107 @@
+{
+ "_about": "A map on an isometric grid. Map x goes to the screen right-down, map y goes to the screen left-down. layers.ground: one letter for each tile (see legend). layers.objects stand on a footprint of w x h tiles and block it (solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open (block: false) tiles. layers.zones: placement zones. layers.paths: walk lines in tile units. layers.exits: when the hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the position). Positions of people are tile units and can have a fraction.",
+ "id": "trau-son",
+ "region": "giong",
+ "nameKey": "place.trauson",
+ "width": 32,
+ "height": 31,
+ "legend": {
+  ".": "grass",
+  ",": "flowers",
+  "=": "path",
+  "y": "yard",
+  "_": "sand",
+  "B": "bridge",
+  "~": "water",
+  "s": "shallow",
+  "f": "field",
+  "h": "hedge"
+ },
+ "spawn": {
+  "x": 1.5,
+  "y": 14.8
+ },
+ "layers": {
+  "ground": [
+   "................................",
+   "....................,...........",
+   "..ffffffffff=ffffff,............",
+   "..ffffffffff=ffffff,.....,......",
+   "..ffffffffff=ffffff.............",
+   "..ffffffffff=ffffff..,..........",
+   "..ffffffffff=ffffff.............",
+   "..ffffffffff========yyyyyyyyy...",
+   "..ffffffffff=fffffffyyyyyyyyy...",
+   "..ffffffffff=fffffffyyyyyyyyy...",
+   "..ffffffffff=fffffffffff........",
+   "..ffffffffff=fffffffffff........",
+   "..ffffffffff=fffffffffff........",
+   "............=...,...............",
+   "=============...................",
+   "=============...................",
+   "............=...................",
+   "..ffffffffff=fffffffffff....,...",
+   "..ffffffffff=fffffffffff...,....",
+   "..ffffffffff=fffffffffff........",
+   "..ffffffffff=fffffffffff........",
+   "..ffffffffff=fffffffffff........",
+   ".,ffffffffff=fffffffffff........",
+   "..ffffffffff=fffffffffff........",
+   "..ffffffffff=fffffffffff........",
+   "..ffffffffff=fffffffffff........",
+   "..ffffffffff=fffffffffff........",
+   "..ffffffffff=fffffffffff......,.",
+   ".....................,..........",
+   "................................",
+   "................................"
+  ],
+  "objects": [
+   {"id": "mountain", "art": "iso/mountain", "x": 22, "y": 1, "w": 5, "h": 5},
+   {"id": "rock1", "art": "iso/rock", "x": 28, "y": 12, "w": 1, "h": 1},
+   {"id": "rock2", "art": "iso/rock", "x": 21, "y": 6, "w": 1, "h": 1},
+   {"id": "hay1", "art": "iso/haystack", "x": 14, "y": 15, "w": 1, "h": 1},
+   {"id": "tree1", "art": "iso/tree", "x": 0, "y": 0, "w": 1, "h": 1},
+   {"id": "tree2", "art": "iso/tree", "x": 19, "y": 3, "w": 1, "h": 1},
+   {"id": "tree3", "art": "iso/tree", "x": 29, "y": 3, "w": 1, "h": 1},
+   {"id": "tree4", "art": "iso/tree", "x": 25, "y": 13, "w": 1, "h": 1},
+   {"id": "tree5", "art": "iso/tree", "x": 30, "y": 20, "w": 1, "h": 1},
+   {"id": "tree6", "art": "iso/tree", "x": 26, "y": 27, "w": 1, "h": 1},
+   {"id": "tree7", "art": "iso/tree", "x": 0, "y": 29, "w": 1, "h": 1},
+   {"id": "tree8", "art": "iso/tree", "x": 14, "y": 29, "w": 1, "h": 1},
+   {"id": "tree9", "art": "iso/tree", "x": 0, "y": 16, "w": 1, "h": 1},
+   {"id": "banana1", "art": "iso/banana", "x": 27, "y": 17, "w": 1, "h": 1},
+   {"id": "banana2", "art": "iso/banana", "x": 6, "y": 30, "w": 1, "h": 1},
+   {"id": "bamboo1", "art": "iso/bamboo", "x": 29, "y": 9, "w": 1, "h": 1},
+   {"id": "bamboo2", "art": "iso/bamboo", "x": 31, "y": 0, "w": 1, "h": 1},
+   {"id": "bamboo3", "art": "iso/bamboo", "x": 18, "y": 29, "w": 1, "h": 1},
+   {"id": "bamboo4", "art": "iso/bamboo", "x": 25, "y": 22, "w": 1, "h": 1}
+  ],
+  "collision": [],
+  "zones": [],
+  "paths": {
+   "field-north": [
+    [12.5, 2.5],
+    [12.5, 13.5],
+    [0.5, 14.5]
+   ],
+   "field-south": [
+    [12.5, 27.5],
+    [12.5, 16.0],
+    [0.5, 14.8]
+   ]
+  },
+  "exits": [
+   {"id": "west-road", "kind": "road", "x": 0, "y": 12, "w": 1, "h": 6, "to": {"map": "phu-dong", "x": 34.2, "dy": 0}}
+  ],
+  "triggers": [
+   {"id": "field", "x": 2, "y": 2, "w": 22, "h": 11, "on": "tap", "action": {"textKey": "map.field"}},
+   {"id": "field-south", "x": 2, "y": 17, "w": 22, "h": 11, "on": "tap", "action": {"textKey": "map.field"}}
+  ]
+ },
+ "npcs": [],
+ "encounters": [
+  {"id": "soldier1", "battle": "soldier1", "x": 12.5, "y": 9.5, "art": "enemy/soldier", "when": {"flags": ["giong.grown"], "notFlags": ["soldier1.won"]}},
+  {"id": "soldier2", "battle": "soldier2", "x": 12.5, "y": 21.5, "art": "enemy/soldier", "when": {"flags": ["giong.grown"], "notFlags": ["soldier2.won"]}},
+  {"id": "boss", "battle": "boss", "x": 24.5, "y": 8.2, "art": "enemy/general", "when": {"flags": ["soldier1.won", "soldier2.won"], "notFlags": ["era1.boss.won"]}}
+ ]
+}

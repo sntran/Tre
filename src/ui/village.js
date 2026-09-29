@@ -25,7 +25,9 @@ const rendererCache = new Map();
 
 export async function mountVillage(ctx, params = {}) {
   const { data, profile } = ctx;
-  const mapData = data.village;
+  const worldMap = data.world;
+  const savedMap = worldMap.map(profile.place?.map) ? profile.place.map : null;
+  const mapData = worldMap.map(params.map ?? savedMap ?? worldMap.start.map);
   const tileTypes = data.tiles.types;
   const tileMap = createTileMap(mapData, tileTypes);
   const triggers = createTriggers(mapData.layers.triggers);
@@ -56,9 +58,8 @@ export async function mountVillage(ctx, params = {}) {
   // The hero.
   const world = { isBlocked: tileMap.isBlocked, groundAt: tileMap.groundAt };
   const saved = profile.place?.map === mapData.id && profile.place.x !== null ? profile.place : null;
-  const start = params.at ?? saved ?? mapData.spawn;
-  const hero = { x: start.x, y: start.y, vx: 0, vy: 0, facing: 1, moving: false };
-  if (tileMap.isBlocked(Math.floor(hero.x), Math.floor(hero.y))) Object.assign(hero, { x: mapData.spawn.x, y: mapData.spawn.y });
+  const start = freeSpot(tileMap, params.at ?? saved ?? mapData.spawn) ?? mapData.spawn;
+  const hero = { x: start.x, y: start.y, vx: 0, vy: 0, facing: params.facing ?? 1, moving: false };
   let nghe = createFollower(hero.x - 0.8, hero.y + 0.3);
   let heroTile = { x: Math.floor(hero.x), y: Math.floor(hero.y) };
   let route = null; // a walk to a tapped point: { points, onArrive, near }
@@ -66,6 +67,7 @@ export async function mountVillage(ctx, params = {}) {
   let busy = false; // true while a dialogue or a panel is open
   let alive = true;
   let still = 0; // how long the hero has not moved on a route
+  let leaving = false; // true after the hero walks into an exit
 
   // People and encounters. They block their tiles for the paths of taps.
   let people = [];
@@ -100,7 +102,14 @@ export async function mountVillage(ctx, params = {}) {
   heroFace.addEventListener('click', () => walkToPerson('grandma'));
   const menuBtn = button(null, () => ctx.openMenu(), { cls: 'icon-btn', icon: 'ui/menu', aria: t('ui.menu') });
   hud.append(heroFace, goalBtn, counts, menuBtn);
-  ctx.ui.append(hud);
+  // A dark layer for the change of map, and the name of the new map.
+  const fade = h('div', { class: params.arrive ? 'map-fade on' : 'map-fade' });
+  const banner = params.arrive ? h('div', { class: 'map-name', text: t(mapData.nameKey) }) : null;
+  ctx.ui.append(hud, fade, ...(banner ? [banner] : []));
+  if (params.arrive) {
+    requestAnimationFrame(() => requestAnimationFrame(() => fade.classList.remove('on')));
+    setTimeout(() => banner?.remove(), 2600);
+  }
 
   let goalKey = null;
   let goalParams = {};
@@ -130,9 +139,17 @@ export async function mountVillage(ctx, params = {}) {
     const out = [];
     const flags = profile.flags;
     const list = step.targets ?? (step.target ? [{ npc: step.target }] : []);
+    // A target on another map: the marker is on the exit that leads there.
+    const toMap = (mapId) => {
+      const exit = mapId && mapId !== mapData.id ? worldMap.firstExit(mapData.id, mapId) : null;
+      if (exit && !out.some((m) => m.exit === exit.id)) out.push({ exit: exit.id, x: exit.x + exit.w / 2, y: exit.y + exit.h / 2, z: 30 });
+    };
     for (const tg of list) {
       if (tg.unless && flags[tg.unless]) continue;
       if (tg.if && !flags[tg.if]) continue;
+      for (const kind of ['npc', 'encounter', 'object']) {
+        if (tg[kind]) toMap(worldMap.whereIs(kind, tg[kind]));
+      }
       if (tg.npc) {
         const p = people.find((x) => x.id === tg.npc);
         if (p) out.push({ x: p.x, y: p.y, z: npcBmps.get(p.id).unitH * personScale(p.def) + 14 });
@@ -147,7 +164,8 @@ export async function mountVillage(ctx, params = {}) {
         if (o) out.push({ x: o.x + o.w / 2, y: o.y + o.h / 2, z: (s?.rect.height ?? 60) * 0.8 });
       }
     }
-    if (step.place) out.push({ x: step.place.x + 1, y: step.place.y + 0.5, z: 40 });
+    if (step.place && (step.place.map ?? mapData.id) === mapData.id) out.push({ x: step.place.x + 1, y: step.place.y + 0.5, z: 40 });
+    else if (step.place) toMap(step.place.map);
     return out;
   }
 
@@ -431,8 +449,24 @@ export async function mountVillage(ctx, params = {}) {
     requestAnimationFrame(frame);
   }
 
+  // The hero walks into an exit: the screen goes dark, and the next map opens.
+  function goThrough(exit) {
+    leaving = true;
+    route = null;
+    hold = null;
+    stick.active = false;
+    keys.clear();
+    const to = worldMap.arrival(exit, hero.x, hero.y);
+    profile.place = { map: to.map, x: to.x, y: to.y };
+    fade.classList.add('on');
+    ctx.save('map');
+    setTimeout(() => {
+      if (alive) ctx.go('village', { map: to.map, at: { x: to.x, y: to.y }, facing: hero.facing, arrive: true });
+    }, 260);
+  }
+
   function currentInput() {
-    if (busy) return { dx: 0, dy: 0, strength: 0 };
+    if (busy || leaving) return { dx: 0, dy: 0, strength: 0 };
     if (stick.active) return stickToScreenDir(stick.kx, stick.ky, STICK_R);
     if (keys.size) {
       const k = keysToScreenDir(keys);
@@ -494,7 +528,12 @@ export async function mountVillage(ctx, params = {}) {
     const ty = Math.floor(hero.y);
     if (tx !== heroTile.x || ty !== heroTile.y) {
       heroTile = { x: tx, y: ty };
-      const zone = busy ? null : triggers.fire('enter', tx, ty, conditionState(profile));
+      const exit = busy || leaving ? null : worldMap.exitAt(mapData.id, tx, ty, conditionState(profile));
+      if (exit) {
+        goThrough(exit);
+        return;
+      }
+      const zone = busy || leaving ? null : triggers.fire('enter', tx, ty, conditionState(profile));
       if (zone) {
         route = null;
         hold = null;
@@ -538,6 +577,9 @@ export async function mountVillage(ctx, params = {}) {
     talk,
     heroTile: () => ({ x: Math.floor(hero.x), y: Math.floor(hero.y) }),
     placeHero,
+    mapId: () => mapData.id,
+    // Open another map, for automatic tests of the whole game.
+    goMap: (id, x, y) => ctx.go('village', { map: id, at: { x, y } }),
     // The screen point of the middle of a tile, for automatic tests of the whole game.
     screenOf: (x, y) => {
       const p = toScreen(x + 0.5, y + 0.5);
@@ -577,7 +619,28 @@ export async function mountVillage(ctx, params = {}) {
       window.removeEventListener('keyup', onKey);
       offLang();
       hud.remove();
+      fade.remove();
+      banner?.remove();
     },
     api,
   };
+}
+
+// The nearest free tile to a point (the point itself when it is free), or null.
+function freeSpot(tileMap, p) {
+  if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return null;
+  const tx = Math.floor(p.x);
+  const ty = Math.floor(p.y);
+  if (tileMap.inside(tx, ty) && !tileMap.isBlocked(tx, ty)) return { x: p.x, y: p.y };
+  for (let r = 1; r < 6; r++) {
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        const x = tx + dx;
+        const y = ty + dy;
+        if (tileMap.inside(x, y) && !tileMap.isBlocked(x, y)) return { x: x + 0.5, y: y + 0.5 };
+      }
+    }
+  }
+  return null;
 }

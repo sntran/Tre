@@ -103,7 +103,7 @@ button { font-family: var(--body); color: var(--ink); }
 #ui { position: absolute; inset: 0; pointer-events: none; }
 #ui > * { pointer-events: auto; }
 /* These layers cover the canvas, but taps between their parts must reach the canvas. */
-#ui > .battle-ui, #ui > .hud { pointer-events: none; }
+#ui > .battle-ui, #ui > .hud, #ui > .map-fade, #ui > .map-name { pointer-events: none; }
 
 img { -webkit-user-drag: none; }
 
@@ -666,6 +666,39 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .switch-row input[type="checkbox"] { accent-color: var(--vermilion); }
 .hold-ring { width: 150px; height: 150px; }
 .gate-question { font-family: var(--display); font-size: var(--text-big); }
+
+/* The change of map: a dark layer, and the name of the new map. */
+
+.map-fade {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 40;
+}
+.map-fade.on { opacity: 1; }
+.map-name {
+  position: absolute;
+  left: 50%;
+  top: calc(84px + var(--safe-top));
+  transform: translateX(-50%);
+  padding: 8px 22px;
+  border: var(--line);
+  border-radius: var(--corner);
+  background: var(--paper);
+  box-shadow: var(--frame);
+  font-family: var(--display);
+  font-size: var(--text-big);
+  pointer-events: none;
+  z-index: 41;
+  animation: map-name 2.6s ease forwards;
+}
+@keyframes map-name {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
 
 /* Messages */
 

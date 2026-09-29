@@ -335,7 +335,8 @@ async function mountBattle(ctx, params) {
     const level = lossLevel(profile);
     const lost = applyLoss(profile, level, data.game.loss, data.game.loss.items);
     profile.stats.battlesLost += 1;
-    profile.place = { map: data.village.id, x: data.village.home.x, y: data.village.home.y };
+    const home = data.world.home();
+    profile.place = { map: home.map, x: home.x, y: home.y };
     await ctx.save('battle');
     root.hidden = true;
     const hasLoss = Object.keys(lost).length > 0;
@@ -346,7 +347,7 @@ async function mountBattle(ctx, params) {
       rewardsKey: hasLoss ? 'battle.lost.items' : null,
       noteKey: hasLoss ? null : 'battle.lost.none',
     });
-    if (alive) ctx.go('village', { at: data.village.home });
+    if (alive) ctx.go('village', { map: home.map, at: { x: home.x, y: home.y } });
   }
 
   // Taps on the canvas choose the target.

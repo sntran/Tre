@@ -1,11 +1,12 @@
 // Load all JSON data files at the start.
+import { createWorld } from '../world/regions.js';
 
 const FILES = {
   skills: 'data/skills.json',
   learning: 'data/config/learning.json',
   game: 'data/config/game.json',
   tiles: 'data/tiles.json',
-  village: 'data/maps/phu-dong.json',
+  regions: 'data/world/regions.json',
   npcs: 'data/npcs.json',
   quests: 'data/quests.json',
   questions: 'data/questions/science.json',
@@ -34,6 +35,14 @@ export async function loadData(onProgress = () => {}) {
     done += 1;
     onProgress(done / names.length);
   }));
+  // The maps of the regions that have maps.
+  out.maps = new Map();
+  const mapIds = out.regions.regions.flatMap((r) => r.maps);
+  await Promise.all(mapIds.map(async (id) => {
+    const response = await fetch(`data/maps/${id}.json`);
+    if (response.ok) out.maps.set(id, await response.json());
+  }));
+  out.world = createWorld(out.regions, out.maps);
   out.dialogues = new Map();
   for (const name of ['dialoguePrologue', 'dialogueVillage', 'dialogueGiong']) {
     for (const d of out[name]?.dialogues ?? []) out.dialogues.set(d.id, d);

@@ -165,45 +165,71 @@ test('talk rules pick the first dialogue whose condition is true', () => {
   assert.equal(isPresent({ when: { notFlags: ['x'] } }, p), false);
 });
 
-// The Phù Đổng map
+// The maps of the Era 1 region
 
-const village = load('data/maps/phu-dong.json');
+const regions = load('data/world/regions.json');
+const mapIds = regions.regions.flatMap((r) => r.maps);
+const maps = new Map(mapIds.map((id) => [id, load(`data/maps/${id}.json`)]));
 
-test('the village map is valid, and each person and place can be reached', () => {
-  const map = createTileMap(village, tiles);
-  const L = village.layers;
-  const tile = (p) => ({ x: Math.floor(p.x), y: Math.floor(p.y) });
-  const start = tile(village.spawn);
-  assert.ok(map.walkable(start.x, start.y));
-  assert.ok(village.width >= 40 && village.height >= 40, 'about 48 x 48 tiles');
-  for (const row of L.ground) assert.equal(row.length, village.width);
-  assert.equal(L.ground.length, village.height);
-  for (const key of ['ground', 'objects', 'collision', 'zones', 'paths', 'triggers']) assert.ok(L[key], `layer ${key}`);
-  for (const o of L.objects) {
-    assert.ok(o.x >= 0 && o.y >= 0 && o.x + o.w <= village.width && o.y + o.h <= village.height, `${o.id} is on the map`);
+test('each map is valid, and each person and place on it can be reached', () => {
+  for (const [id, m] of maps) {
+    const map = createTileMap(m, tiles);
+    const L = m.layers;
+    const tile = (p) => ({ x: Math.floor(p.x), y: Math.floor(p.y) });
+    const start = tile(m.spawn);
+    assert.equal(m.id, id);
+    assert.ok(map.walkable(start.x, start.y), `${id}: spawn`);
+    for (const row of L.ground) assert.equal(row.length, m.width, `${id}: row length`);
+    assert.equal(L.ground.length, m.height);
+    for (const key of ['ground', 'objects', 'collision', 'zones', 'paths', 'exits', 'triggers']) assert.ok(L[key], `${id}: layer ${key}`);
+    for (const o of L.objects) {
+      assert.ok(o.x >= 0 && o.y >= 0 && o.x + o.w <= m.width && o.y + o.h <= m.height, `${id}: ${o.id} is on the map`);
+    }
+    const targets = [
+      ...m.npcs.map((n) => ({ ...n, what: `npc ${n.id}` })),
+      ...m.encounters.map((e) => ({ ...e, what: `encounter ${e.id}` })),
+    ];
+    for (const t of targets) {
+      assert.ok(!map.isBlocked(Math.floor(t.x), Math.floor(t.y)), `${id}: ${t.what} stands on a free tile`);
+      assert.ok(pathNextTo(map, start, tile(t)), `${id}: ${t.what} can be reached`);
+    }
+    for (const t of L.triggers.filter((z) => z.on === 'tap' && z.w === undefined)) {
+      assert.ok(pathNextTo(map, start, t), `${id}: ${t.id} can be reached`);
+    }
+    // Each exit can be reached, and the hero arrives on a free tile that is not an exit.
+    for (const e of L.exits) {
+      const cells = [];
+      for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) if (map.walkable(x, y)) cells.push({ x, y });
+      assert.ok(cells.some((c) => findPath(map, start, c)), `${id}: exit ${e.id} can be reached`);
+      const target = maps.get(e.to.map);
+      assert.ok(target, `${id}: exit ${e.id} goes to a known map`);
+      const tmap = createTileMap(target, tiles);
+      for (const c of cells) {
+        const x = typeof e.to.x === 'number' ? e.to.x : c.x + 0.5 + (e.to.dx ?? 0);
+        const y = typeof e.to.y === 'number' ? e.to.y : c.y + 0.5 + (e.to.dy ?? 0);
+        if (!findPath(map, start, c)) continue;
+        assert.ok(!tmap.isBlocked(Math.floor(x), Math.floor(y)), `${id}: exit ${e.id} at ${c.x},${c.y} lands on a free tile of ${e.to.map}`);
+        assert.ok(!target.layers.exits.some((z) => Math.floor(x) >= z.x && Math.floor(x) < z.x + z.w && Math.floor(y) >= z.y && Math.floor(y) < z.y + z.h),
+          `${id}: exit ${e.id} does not land on an exit`);
+      }
+    }
+    for (const [pid, line] of Object.entries(L.paths)) {
+      for (const [x, y] of line) assert.ok(!map.isBlocked(Math.floor(x), Math.floor(y)), `${id}: path ${pid} at ${x},${y}`);
+    }
   }
-  const targets = [
-    ...village.npcs.map((n) => ({ ...n, what: `npc ${n.id}` })),
-    ...village.encounters.map((e) => ({ ...e, what: `encounter ${e.id}` })),
-  ];
-  for (const t of targets) {
-    assert.ok(!map.isBlocked(Math.floor(t.x), Math.floor(t.y)), `${t.what} stands on a free tile`);
-    assert.ok(pathNextTo(map, start, tile(t)), `${t.what} can be reached`);
-  }
-  for (const id of ['ore1', 'ore2', 'well', 'sign']) {
-    assert.ok(pathNextTo(map, start, L.objects.find((o) => o.id === id)), `${id} can be reached`);
-  }
-  // The bridge is broken: the only way over the river is the ford (shallow water).
-  const gap = L.zones.find((z) => z.id === 'bridge-gap');
+});
+
+test('the bridge is broken, and the way south to Văn Miếu goes through the ford', () => {
+  const m = maps.get('fields-river');
+  const map = createTileMap(m, tiles);
+  const gap = m.layers.zones.find((z) => z.id === 'bridge-gap');
   assert.ok(map.isBlocked(gap.x, gap.y));
-  const vanmieu = L.triggers.find((z) => z.id === 'vanmieu');
-  const path = findPath(map, start, { x: vanmieu.x, y: vanmieu.y });
-  assert.ok(path, 'the road to Văn Miếu');
+  const road = m.layers.exits.find((e) => e.id === 'south-road');
+  const path = findPath(map, { x: 22, y: 1 }, { x: road.x, y: road.y });
+  assert.ok(path, 'the road south');
   assert.ok(path.some((p) => map.groundAt(p.x, p.y) === 'shallow'), 'the road goes through the ford');
-  // The people walk on paths in the layer "paths", on free tiles.
-  for (const [id, line] of Object.entries(L.paths)) {
-    for (const [x, y] of line) assert.ok(!map.isBlocked(Math.floor(x), Math.floor(y)), `path ${id} at ${x},${y}`);
-  }
+  const vanmieu = maps.get('road-vanmieu').layers.triggers.find((z) => z.id === 'vanmieu');
+  assert.ok(vanmieu, 'the road ends at Văn Miếu');
 });
 
 test('a tap on the head, body, or feet of a person selects the person', () => {

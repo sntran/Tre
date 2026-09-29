@@ -10,7 +10,12 @@ const dialogues = ['prologue', 'village', 'giong'].flatMap((f) => load(`data/dia
 const byId = new Map(dialogues.map((d) => [d.id, d]));
 const npcs = load('data/npcs.json').npcs;
 const quests = load('data/quests.json').quests;
-const village = load('data/maps/phu-dong.json');
+const mapList = load('data/world/regions.json').regions.flatMap((r) => r.maps).map((id) => load(`data/maps/${id}.json`));
+const village = {
+  npcs: mapList.flatMap((m) => m.npcs),
+  encounters: mapList.flatMap((m) => m.encounters),
+  layers: { objects: mapList.flatMap((m) => m.layers.objects) },
+};
 const trials = load('data/trials.json').trials;
 const callings = load('data/callings.json').callings;
 
