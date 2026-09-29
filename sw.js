@@ -228,6 +228,7 @@ const FILES = [
   'src/ui/vanmieu.js',
   'src/ui/village.js',
   'src/ui/visuals.js',
+  'src/world/movement.js',
   'styles/main.css',
   'styles/palette.css',
 ];
