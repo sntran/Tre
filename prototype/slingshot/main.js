@@ -78,10 +78,14 @@ async function start() {
   const toS = (x, y) => ({ x: (x - X.left) * k, y: groundY - y * k });
   const toWorld = (sx, sy) => ({ x: sx / k + X.left, y: (groundY - sy) / k });
 
+  // On a long field, the people are drawn a little larger, so that they stay clear on a phone.
+  // This changes only the pictures, not the distances or the hit rules.
+  let big = 1;
   function layout() {
     surface.resize();
     const range = s.field + 2.6 - X.left;
     k = surface.width / range;
+    big = Math.min(1.45, Math.max(1, 34 / k, surface.height / k / 11));
     // Keep room under the ground line for the landing marker and the buttons.
     groundY = surface.height - Math.max(100, surface.height * 0.2);
     background = drawBackground();
@@ -100,10 +104,34 @@ async function start() {
     // Far hills, flat colors with a keyline.
     g.lineWidth = 2;
     g.strokeStyle = C.ink;
+    // Clouds in the style of the prints: round puffs with a keyline and a curl.
+    for (const [cx, cy, r] of [[0.16, 0.16, 1], [0.5, 0.1, 0.8], [0.82, 0.2, 1.1]]) {
+      const x0 = W * cx;
+      const y0 = groundY * cy + 20;
+      const u = Math.max(14, surface.height * 0.03) * r;
+      g.fillStyle = C.diep;
+      g.beginPath();
+      for (const [dx, dy, rr] of [[-2.2, 0.3, 1], [-0.9, -0.5, 1.4], [0.6, -0.3, 1.2], [1.9, 0.3, 0.95]]) {
+        g.moveTo(x0 + dx * u + rr * u, y0 + dy * u);
+        g.arc(x0 + dx * u, y0 + dy * u, rr * u, 0, Math.PI * 2);
+      }
+      g.fill();
+      g.stroke();
+      g.fillRect(x0 - 3.2 * u, y0 + 0.3 * u, 6.1 * u, 1.0 * u);
+      g.beginPath();
+      g.moveTo(x0 - 3.2 * u, y0 + 1.3 * u);
+      g.lineTo(x0 + 2.9 * u, y0 + 1.3 * u);
+      g.stroke();
+      g.beginPath();
+      g.arc(x0 - 0.9 * u, y0 - 0.4 * u, 0.5 * u, Math.PI * 0.2, Math.PI * 1.6);
+      g.stroke();
+    }
+    // Far hills, flat colors with a keyline. They are taller on a tall screen.
+    const hillH = Math.max(surface.height * 0.3, groundY * 0.45);
     for (const [cx, r, color] of [[0.18, 0.28, C.greenPale], [0.55, 0.36, C.green], [0.9, 0.26, C.greenPale]]) {
       g.fillStyle = color;
       g.beginPath();
-      g.ellipse(W * cx, groundY, W * r, surface.height * 0.3, 0, Math.PI, 0);
+      g.ellipse(W * cx, groundY, W * r, hillH, 0, Math.PI, 0);
       g.fill();
       g.stroke();
     }
@@ -167,8 +195,8 @@ async function start() {
   }
 
   // A sprite with its feet at (x, y) in world units, and a height in world units.
-  function sprite(ctx, bmp, x, y, height, { flip = false, alpha = 1, rot = 0, dx = 0, sy = 1 } = {}) {
-    const hh = height * k;
+  function sprite(ctx, bmp, x, y, height, { flip = false, alpha = 1, rot = 0, dx = 0, sy = 1, person = true } = {}) {
+    const hh = height * k * (person ? big : 1);
     const ww = (bmp.unitW / bmp.unitH) * hh;
     const p = toS(x, y);
     ctx.save();
@@ -474,7 +502,7 @@ async function start() {
     // The wall.
     if (s.wall) {
       shadow(ctx, s.wall.x, 0.9);
-      sprite(ctx, art.fence, s.wall.x, 0, s.wall.height);
+      sprite(ctx, art.fence, s.wall.x, 0, s.wall.height, { person: false });
     }
 
     // Enemies.
@@ -501,7 +529,7 @@ async function start() {
       shadow(ctx, e.x, 0.9);
       sprite(ctx, enemyArt[e.kind], e.x, 0, SIZE.adult, { flip: true, dx, sy: squash });
       // Over the head: the hit points, and the count to the next attack.
-      const head = toS(e.x, SIZE.adult * squash + 0.15);
+      const head = toS(e.x, SIZE.adult * big * squash + 0.15);
       const pip = Math.max(4, 0.1 * k);
       for (let i = 0; i < e.maxHp; i++) {
         ctx.fillStyle = i < e.hp ? C.vermilion : C.paper;
@@ -512,6 +540,7 @@ async function start() {
         ctx.fill();
         ctx.stroke();
       }
+      if (s.phase !== 'play') continue;
       const count = battle.countOf(e);
       const danger = count <= 1;
       const r = Math.max(12, 0.3 * k) * (danger ? 1 + 0.12 * Math.sin(clock * 18) : 1);
@@ -552,7 +581,7 @@ async function start() {
     const sit = ended === 'lost';
     shadow(ctx, X.hero, 0.7);
     sprite(ctx, art.hero, X.hero, sit ? -0.35 : 0, SIZE.child, { dx: hurtT < 0.4 ? Math.sin(hurtT * 50) * 0.06 : 0, sy: sit ? 0.78 : 1 });
-    sprite(ctx, art.sling, 0, 0, SIZE.sling);
+    sprite(ctx, art.sling, 0, 0, SIZE.sling, { person: false });
     const prongL = toS(-0.2, 1.08);
     const prongR = toS(0.2, 1.08);
     let pouch = pouchRest();
@@ -622,7 +651,7 @@ async function start() {
         continue;
       }
       const w = (d.small ? 0.8 : 1.3) * (0.7 + u * 0.5);
-      sprite(ctx, art.dust, d.x, 0, w / 2, { alpha: 1 - u });
+      sprite(ctx, art.dust, d.x, 0, w / 2, { alpha: 1 - u, person: false });
     }
 
     // Damage numbers and the "blocked" mark.
