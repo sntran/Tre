@@ -18,6 +18,13 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
 
 - Names for Era 1: the text says "nhà làng" (village hall) and "thầy giáo" (teacher), because đình and thầy đồ are from much later times. Check these names (see `QUESTIONS.md`, question 24).
 - The art must be correct for the time of each chapter (see `docs/ART.md`, section 7). A history reviewer checks the clothes, the hair, the houses on stilts, the boats, and the tools of Era 1.
+- The looks of the people in the voxel world (`data/figures.json`, see `QUESTIONS.md`, question 39). A history reviewer checks each look for the time of the Hùng Kings:
+  - The elder, the elder of Sóc Sơn, and the teacher wear long robes. The elder carries a staff, and the teacher a scroll.
+  - The grandmother, the mother, and the healer wear a skirt; the mother wears a yếm. The grandmother carries a fan, and the healer a basket.
+  - The smith has a bare top and a hammer. The woodcutter has an axe. The fisher has a nón and a net. The messenger has a head band and a drum.
+  - Gióng as a hero wears grey armor with a head band and carries a staff.
+  - The scouts and the soldiers of Ân wear helmets and carry blunt staffs. The general has a plume, a beard, and a staff.
+  - The houses on stilts have thatch roofs with a ridge that curves up at the ends. The đình (nhà làng) has a vermilion ridge and bird-head finials, as on the Đông Sơn bronze drums.
 
 ## 2. Sensitivity checks
 
