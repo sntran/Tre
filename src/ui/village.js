@@ -572,6 +572,12 @@ export async function mountVillage(ctx, params = {}) {
 
   let last = performance.now();
   let time = 0;
+  // With ?fps in the address, a small box shows the frames each second and the size of a frame,
+  // for tests of the speed on real devices.
+  const meter = new URLSearchParams(location.search).has('fps') ? h('div', { class: 'fps-meter' }) : null;
+  if (meter) ctx.ui.append(meter);
+  let frames = 0;
+  let since = last;
   function frame(now) {
     if (!alive) return;
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -579,6 +585,13 @@ export async function mountVillage(ctx, params = {}) {
     time += dt;
     step(dt);
     draw(dt);
+    frames += 1;
+    if (meter && now - since > 1000) {
+      const s = world.stats();
+      meter.textContent = `${Math.round((frames * 1000) / (now - since))} fps · ${s.calls} calls · ${Math.round(s.triangles / 1000)}k triangles`;
+      frames = 0;
+      since = now;
+    }
     requestAnimationFrame(frame);
   }
 
@@ -846,7 +859,7 @@ export async function mountVillage(ctx, params = {}) {
       window.removeEventListener('keyup', onKey);
       offLang();
       for (const f of [...figures]) removeFigure(f);
-      for (const el of [paper, marks, hud, turns, fade, banner]) el?.remove();
+      for (const el of [paper, marks, hud, turns, fade, banner, meter]) el?.remove();
     },
     api,
   };
