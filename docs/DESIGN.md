@@ -70,6 +70,8 @@ Tre is one living isometric world. The child walks, builds, and defends in the s
 
 **View:** isometric (2:1 dimetric grid) on Canvas 2D, in the Đông Hồ style: flat colors and black keylines, as in Monument Valley. Isometric makes places feel like places, shows what the child builds, and puts battles in the world. It works on every phone.
 
+**Depth:** the ground has heights. The river bank drops two steps to the water, the rice paddies are sunken water with dikes, the road is one step above the fields, the đình stands on a mound, and the edges of a map rise in terraces. One light from the front-left makes each tall thing cast a flat shadow to the back-right. The sides of a map that face the camera have a low hedge, so that they do not cover the play area. The rules are in `docs/ART.md`, section 11.
+
 **The five rules**
 
 1. **No question mark in the world.** A screen with a question and an answer field is a quiz. Questions live only with the teacher (practice) and at Văn Miếu (exams), where a test is part of the story.
@@ -128,9 +130,43 @@ The world is Vietnam with its real geography: real coast, rivers, mountains, and
 
 **Later regions follow the real land:** Cổ Loa north of the Red River, the Bạch Đằng estuary and its tides near Hạ Long, the limestone karst of Ninh Bình, the mountains of Lam Sơn in Thanh Hóa, the central coast and Phú Xuân (Huế), the Tây Sơn highlands, and the Mekong delta.
 
+**Regions:** one region for each story chapter. Each region has 3 to 6 hand-built maps. The hero walks from one map to the next at the edge of a map or at the end of a road, and travels between regions on the country map. A game day is about 8 minutes of play. The data is in `data/world/regions.json` and `data/maps/`.
+
+| # | Region | Place on the country map | Maps now |
+| --- | --- | --- | --- |
+| 1 | Mountains and sea | The high mountains of the north (Tây Bắc, Việt Bắc) | Locked |
+| 2 | Văn Lang | The midlands west of the delta, Phong Châu (Phú Thọ) | Locked |
+| 3 | The land of Thánh Gióng | Phù Đổng and Sóc Sơn, north-east of Hà Nội | The village of Phù Đổng; the fields and the river; the road to Văn Miếu; the foot of Trâu Sơn |
+| 4 | Cổ Loa | North of Hà Nội | Locked |
+| 5 | Mê Linh | North-west of Hà Nội | Locked |
+| 6 | Bạch Đằng | The north-east coast: Hải Phòng and Quảng Ninh | Locked |
+| 7 | Thăng Long | Hà Nội, on the Red River | Locked |
+| 8 | Thiên Trường | The south of the delta: Nam Định, Thái Bình, Ninh Bình | Locked |
+| 9 | Tây Đô | The coast plain of Thanh Hóa | Locked |
+| 10 | Lam Sơn | The mountains west of Thanh Hóa and Nghệ An | Locked |
+| 11 | Thuận Quảng | The central coast, Hà Tĩnh to Quảng Nam | Locked |
+| 12 | Tây Sơn | The south-central coast and the central highlands | Locked |
+| 13 | Gia Định | The south and the Mekong delta | Locked |
+
+Some chapters happen in more than one place (for example Bà Triệu in Thanh Hóa, and Hải Thượng Lãn Ông in Hà Tĩnh); the region is the main place of the chapter. A person who knows Vietnamese history must check this table.
+
 **The country grows with history.** The country map shows the land of each era. In the time of the Hùng Kings, Văn Lang is only the north. The land grows south chapter by chapter, and the map shows the older peoples of the center and the south, such as Champa and the Khmer, with respect, as neighbors with their own history. Today's full shape shows at the end.
 
-**Islands.** Vietnamese maps show Hoàng Sa and Trường Sa as part of Vietnam, and other countries also claim them. The owner decides how the country map shows them.
+**Islands.** The country map shows Hoàng Sa and Trường Sa as part of Vietnam, with their Vietnamese names. The game does not argue the dispute. It shows what happened, in the place and time where it happened, spread across chapters, quests, and side quests. It never collects these facts in one place, never sums them up, and never asks the player for a conclusion. What the player does with them is up to the player.
+
+Facts appear where they belong:
+
+- **Chapter 13 (18th–19th century):** Lê Quý Đôn writes about the Hoàng Sa flotilla (đội Hoàng Sa) in *Phủ biên tạp lục* (1776). Families on Lý Sơn send their sons with the flotilla. In 1836, Emperor Minh Mạng sends Phạm Hữu Nhật to the islands to set up markers.
+- **Trade and ports:** in a port such as Hội An, traders from other lands carry their own maps, and the maps do not agree.
+- **Modern service projects:** on Lý Sơn today, families hold the Lễ khao lề thế lính Hoàng Sa. A fishing family works in the waters near the islands. Older people remember the battle of Hoàng Sa in 1974 and the clash at Gạc Ma in 1988. A harbor office has the 2016 ruling of the international tribunal in the case of the Philippines against China, and notes that China rejects it and that Vietnam was not a party.
+
+**Rules for these facts**
+
+1. Each fact is true and has a primary source. A historian checks every date, number, and quote before release.
+2. Facts come from people: talks between the player and people in the world, and talks that the player overhears between them. A fact can come up more than once, from different people who see it in different ways. No screen or notebook page gathers the facts, and the game never sums them up.
+3. The people in the world are not only Vietnamese: a Minh Hương family of Chinese origin in Hội An, Hoa traders in Chợ Lớn, a Cham elder, a Filipino fisherman, a European mapmaker. Each speaks from their own life and their own records, in their own words.
+4. People on every side are shown with dignity. Nothing is graphic. No country or people is mocked.
+5. The game never scores or rewards a view about the islands.
 
 **Landscapes teach geography:** the Red River delta, limestone karst, the central coast, the Trường Sơn mountains, the highlands, and the Mekong delta each have their own ground, plants, houses, boats, and weather.
 
@@ -325,12 +361,19 @@ Battles stay open at all stages. An older player can fight, build, or do both.
 
 The game names historical armies as history books do, with a short and fair note. It speaks of rulers and armies of that time, never of peoples today.
 
-- **Legend or history:** each story shows a clear mark: "Legend" or "History."
-- **Fair notes:** each battle has a short history note with the year, the place, and what happened. Example: "In 938, Ngô Quyền stopped the Southern Han fleet on the Bạch Đằng River."
-- **Focus:** the story shows clever ideas, courage, and knowledge, for example the Bạch Đằng stakes and the tide. It does not show cruelty.
-- **No insults:** the game never uses insults or old hate words for any group. Many families play, including Chinese-American and other families.
-- **Enemies are not evil:** enemy soldiers are people who follow orders. They retreat or surrender. Some notes show that they also wanted to go home.
-- **Check the facts:** a person who knows Vietnamese history checks each history note before release.
+**History is told by somebody.** To understand history, the player hears it from many sides and many people. This rule is for all of Tre, not only the islands.
+
+- **Two kinds of text.** The narrator tells only facts that have a primary source. People in the world tell what they saw, remember, and believe. Their words are theirs, and the narrator never takes a side.
+- **Many voices.** People of other origins live in the world where history put them: the Minh Hương families in Hội An, Hoa families in Chợ Lớn, Cham villages in the center, Khmer villages in the Mekong delta, traders from Japan, China, and Europe in the ports. They are neighbors, not visitors.
+- **People disagree.** Two villagers can see the same event in different ways, and the player can overhear them. Neither is wrong on purpose. Each view is the strongest and most honest version of how a real person on that side would see it.
+- **Examples:** the Ân soldiers who also missed home; a Cham elder who remembers when the center was Champa; a family on the side of the Nguyễn lords and a family on the side of Tây Sơn who tell the same years differently.
+
+* **Legend or history:** each story shows a clear mark: "Legend" or "History."
+* **Fair notes:** each battle has a short history note with the year, the place, and what happened. Example: "In 938, Ngô Quyền stopped the Southern Han fleet on the Bạch Đằng River."
+* **Focus:** the story shows clever ideas, courage, and knowledge, for example the Bạch Đằng stakes and the tide. It does not show cruelty.
+* **No insults:** the game never uses insults or old hate words for any group. Many families play, including Chinese-American and other families.
+* **Enemies are not evil:** enemy soldiers are people who follow orders. They retreat or surrender. Some notes show that they also wanted to go home.
+* **Check the facts:** a person who knows Vietnamese history checks each history note before release.
 
 ## Profiles, saves, and parent settings
 
