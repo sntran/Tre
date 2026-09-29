@@ -1025,5 +1025,12 @@
   "battle.boss.history": "In 2010, UNESCO listed the Gióng festival as intangible cultural heritage.",
   "battle.guard.shield": "{name} raises a number shield! Answer right to break it.",
   "friend.name.title": "Name your new friend",
-  "friend.name.note": "You can keep the name {usual}, or give another name."
+  "friend.name.note": "You can keep the name {usual}, or give another name.",
+  "slingshot.title": "Tre – Slingshot",
+  "slingshot.guard": "Guard",
+  "slingshot.nghe": "Call Nghé",
+  "slingshot.again": "Try again",
+  "slingshot.next": "Next",
+  "slingshot.landed": "landed at {n}",
+  "slingshot.log": "Log of the learning model"
 }

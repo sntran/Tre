@@ -1025,5 +1025,12 @@
   "battle.boss.history": "Năm 2010, UNESCO ghi danh hội Gióng là di sản văn hóa phi vật thể.",
   "battle.guard.shield": "{name} giơ khiên số lên! Trả lời đúng để phá khiên.",
   "friend.name.title": "Đặt tên cho bạn mới",
-  "friend.name.note": "Em có thể giữ tên {usual}, hoặc đặt một tên khác."
+  "friend.name.note": "Em có thể giữ tên {usual}, hoặc đặt một tên khác.",
+  "slingshot.title": "Tre – Bắn ná",
+  "slingshot.guard": "Đỡ",
+  "slingshot.nghe": "Gọi Nghé",
+  "slingshot.again": "Thử lại",
+  "slingshot.next": "Tiếp",
+  "slingshot.landed": "rơi ở {n}",
+  "slingshot.log": "Nhật ký của mô hình học"
 }

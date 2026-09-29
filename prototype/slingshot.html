@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#b3412a">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src 'self'">
+  <!-- The page uses the files of the game (art, i18n, styles, src) from the root of the repository. -->
+  <base href="../">
+  <title>Tre</title>
+  <link rel="icon" href="art/logo.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/BeVietnamPro-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Alegreya-Bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles/palette.css">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="prototype/slingshot/slingshot.css">
+  <script type="module" src="prototype/slingshot/main.js"></script>
+</head>
+<body>
+  <div id="app" class="sling-app">
+    <canvas id="world"></canvas>
+    <div id="ui"></div>
+  </div>
+</body>
+</html>

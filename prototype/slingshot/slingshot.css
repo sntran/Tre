@@ -1,0 +1,64 @@
+/* The slingshot prototype. The colors are the palette variables of styles/palette.css. */
+
+.sling-app { position: fixed; inset: 0; overflow: hidden; background: var(--paper); touch-action: none; }
+.sling-app canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.sling-app #ui { position: absolute; inset: 0; pointer-events: none; }
+.sling-app #ui > * { pointer-events: auto; }
+
+.sling-hearts {
+  position: absolute;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: calc(8px + env(safe-area-inset-left, 0px));
+  display: flex;
+  gap: 2px;
+  padding: 4px 8px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper);
+}
+.sling-hearts img { width: 28px; height: 28px; }
+
+.sling-actions {
+  position: absolute;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  left: calc(10px + env(safe-area-inset-left, 0px));
+  right: calc(10px + env(safe-area-inset-right, 0px));
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none;
+}
+.sling-actions .btn { pointer-events: auto; min-height: 60px; min-width: 120px; }
+.sling-actions .btn .btn-icon { width: 40px; height: 40px; }
+.sling-guard.up { transform: translateY(2px); background: var(--yellow); }
+.sling-actions .btn:disabled { opacity: 0.45; }
+
+.sling-end {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.sling-end .btn { min-width: 180px; min-height: 64px; font-size: 1.3rem; }
+
+.sling-log {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: min(430px, 48vw);
+  max-height: 60vh;
+  overflow: auto;
+  padding: 8px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: var(--diep);
+  font: 12px/1.35 ui-monospace, Menlo, Consolas, monospace;
+  opacity: 0.93;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.sling-log h2 { margin: 0 0 4px; font-size: 13px; }
+.sling-log .ok { color: var(--green-deep); }
+.sling-log .no { color: var(--vermilion); }
