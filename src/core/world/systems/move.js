@@ -2,12 +2,14 @@
 // blocked cells and cliffs, and stands on the ground. People and enemies (solid) push it away a
 // little, like round walls. While the world waits (a dialogue), nothing walks. On the back of
 // Nghé (riding) the hero is faster. motion.idle counts the seconds that the hero stands still.
-export const WRITES = ['position', 'motion'];
+// Each step sends the event "step" with the ground under the foot (grass, wood, or water).
+export const WRITES = ['position', 'motion', 'events'];
 
 import { query } from '../state.js';
 import { stepBody, moveCircle, MOVE } from '../move.js';
 
 export const RIDE_SPEED = 1.35; // the speed factor on the back of Nghé
+const STRIDE = 2.4; // half blocks between two steps
 
 export function move(world, dt, rng, env) {
   const solids = query(world, 'solid', 'position');
@@ -40,5 +42,11 @@ export function move(world, dt, rng, env) {
     m.speed = body.speed * 2;
     m.shallow = Boolean(body.shallow);
     m.idle = m.speed < 0.2 ? (m.idle ?? 0) + dt : 0;
+    m.stride = (m.stride ?? 0) + m.speed * dt;
+    if (m.stride > STRIDE) {
+      m.stride = 0;
+      const ground = env.groundAt?.(p.x, p.z);
+      world.events.push({ type: 'step', id: e.id, sound: ground === 'shallow' || ground === 'water' ? 'step-water' : ground === 'bridge' ? 'step-wood' : 'step-grass' });
+    }
   }
 }

@@ -170,6 +170,10 @@ export async function mountVillage(ctx, params = {}) {
   const turns = h('div', { class: 'turns' }, [turnLeft, turnRight]);
   // The paper of the print over the world: grain and a soft vignette.
   const paper = h('div', { class: 'world-paper' });
+  // The dusk over the world: an indigo wash with warm pools around the lanterns, and the rain.
+  const duskLayer = h('canvas', { class: 'world-dusk' });
+  const dusk = duskLayer.getContext('2d');
+  const drops = Array.from({ length: 140 }, (_, i) => ({ x: (i * 97) % 1000 / 1000, y: (i * 61) % 1000 / 1000, s: 0.7 + ((i * 13) % 10) / 20 }));
   // The layer of the marks on the world: the quest stars, the arrows at the edge, the tap ring.
   const marks = h('div', { class: 'world-marks' });
   const ring = h('div', { class: 'tap-ring', hidden: true });
@@ -178,7 +182,7 @@ export async function mountVillage(ctx, params = {}) {
   // A dark layer for the change of map, and the name of the new map.
   const fade = h('div', { class: params.arrive ? 'map-fade on' : 'map-fade' });
   const banner = params.arrive ? h('div', { class: 'map-name', text: t(mapData.nameKey) }) : null;
-  ctx.ui.append(paper, marks, hud, turns, fade, ...(banner ? [banner] : []));
+  ctx.ui.append(duskLayer, paper, marks, hud, turns, fade, ...(banner ? [banner] : []));
   if (params.arrive) {
     requestAnimationFrame(() => requestAnimationFrame(() => fade.classList.remove('on')));
     setTimeout(() => banner?.remove(), 2600);
@@ -618,6 +622,11 @@ export async function mountVillage(ctx, params = {}) {
     }
     draw(dt, acc / STEP);
     frames += 1;
+    // The sound of the place changes with the light and the rain.
+    if (frames % 30 === 0) {
+      const sk = state.sky ?? { night: 0, rain: 0 };
+      ctx.bus.emit('ambience', busy ? null : { day: 1 - sk.night, night: sk.night, rain: sk.rain });
+    }
     if (meter && now - since > 1000) {
       const s = view.stats();
       meter.textContent = `${Math.round((frames * 1000) / (now - since))} fps · ${s.calls} calls · ${Math.round(s.triangles / 1000)}k triangles`;
@@ -673,10 +682,16 @@ export async function mountVillage(ctx, params = {}) {
   // After each step: the events of the world, the exits, and the trigger zones.
   function afterStep() {
     for (const ev of state.events) {
+      if (ev.id === 'sky') {
+        // The drum of the đình at dawn, and the lanterns at dusk.
+        ctx.bus.emit('sound', ev.type === 'dawn' ? 'drum' : 'lantern');
+        continue;
+      }
       if (ev.id !== 'hero') {
         worldEvent(ev);
         continue;
       }
+      if (ev.sound) ctx.bus.emit('sound', ev.sound);
       if (ev.id !== 'hero') continue;
       if (ev.type === 'placed') view.jump(hero().position.x / 2, hero().position.y / 2 + 1.5, hero().position.z / 2);
       if (ev.type === 'arrived' || ev.type === 'stuck') {
@@ -781,6 +796,56 @@ export async function mountVillage(ctx, params = {}) {
     }
   }
 
+  // The wash of the dusk (multiply), holes of warm light at the lanterns, and the lines of the rain.
+  function drawSky() {
+    const night = state.sky?.night ?? 0;
+    const rain = state.sky?.rain ?? 0;
+    const w = size.width;
+    const hh = size.height;
+    if (duskLayer.width !== w || duskLayer.height !== hh) {
+      duskLayer.width = w;
+      duskLayer.height = hh;
+    }
+    dusk.clearRect(0, 0, w, hh);
+    duskLayer.hidden = night < 0.01 && rain < 0.01;
+    if (duskLayer.hidden) return;
+    const k = Math.min(1, night * 0.9 + rain * 0.25);
+    dusk.globalCompositeOperation = 'source-over';
+    dusk.fillStyle = `rgb(${Math.round(255 - (255 - 0x4a) * k)}, ${Math.round(255 - (255 - 0x58) * k)}, ${Math.round(255 - (255 - 0x86) * k)})`;
+    dusk.fillRect(0, 0, w, hh);
+    if (night > 0.05) {
+      // The lanterns cut warm holes in the wash.
+      dusk.globalCompositeOperation = 'lighter';
+      const lights = state.entities.filter((e) => e.look === 'lantern-lit' || e.carry === 'lantern');
+      for (const e of lights) {
+        const f = figures.placeOf(e.id);
+        if (!f) continue;
+        const q = view.project(f.x + (e.lantern ? 0.8 : 0), f.y + (e.lantern ? 1 : 0.6), f.z);
+        const r = (view.state.level ? 70 : 100) * (0.95 + Math.sin(time * 6 + q.x) * 0.05);
+        const g = dusk.createRadialGradient(q.x, q.y, 0, q.x, q.y, r);
+        g.addColorStop(0, `rgba(190, 150, 80, ${0.9 * night})`);
+        g.addColorStop(0.5, `rgba(150, 110, 50, ${0.45 * night})`);
+        g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        dusk.fillStyle = g;
+        dusk.fillRect(q.x - r, q.y - r, r * 2, r * 2);
+      }
+    }
+    if (rain > 0.01) {
+      // Rain: short slanted lines, in the ink of the print.
+      dusk.globalCompositeOperation = 'source-over';
+      dusk.strokeStyle = `rgba(47, 70, 104, ${0.75 * rain})`;
+      dusk.lineWidth = 2;
+      dusk.beginPath();
+      for (const d of drops) {
+        const x = ((d.x * w + time * 60 * d.s) % (w + 40)) - 20;
+        const y = ((d.y * hh + time * 520 * d.s) % (hh + 40)) - 20;
+        dusk.moveTo(x, y);
+        dusk.lineTo(x - 5, y + 16);
+      }
+      dusk.stroke();
+    }
+  }
+
   function draw(dt, between) {
     if (tapFx) tapFx.age += dt;
     const w = canvas.clientWidth || window.innerWidth;
@@ -792,7 +857,8 @@ export async function mountVillage(ctx, params = {}) {
     figures.draw(between, dt);
     // The light of the hour: the world dims to a cool dusk (softer at 0.8 so that the night stays readable).
     D.night.value = (state.sky?.night ?? 0) * 0.8;
-    view.render(dt, figures.placeOf('hero'), time);
+    view.render(dt, figures.placeOf('hero'), time, state.sky);
+    drawSky();
     drawMarks();
   }
 
@@ -860,7 +926,7 @@ export async function mountVillage(ctx, params = {}) {
       window.removeEventListener('keyup', onKey);
       offLang();
       figures.dispose();
-      for (const el of [paper, marks, hud, turns, fade, banner, meter]) el?.remove();
+      for (const el of [duskLayer, paper, marks, hud, turns, fade, banner, meter]) el?.remove();
     },
     api,
   };

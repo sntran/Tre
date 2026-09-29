@@ -346,6 +346,7 @@ export function createVoxelWorld(canvas, terrain) {
 
   // Water: one mesh for all the water cells, with the wave pattern.
   const waves = track(waveTexture());
+  let riverMesh = null;
   if (terrain.water.length) {
     const pos = [];
     const uv = [];
@@ -361,7 +362,8 @@ export function createVoxelWorld(canvas, terrain) {
     wg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     wg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     wg.setIndex(idx);
-    scene.add(new THREE.Mesh(wg, track(nightMaterial({ map: waves }))));
+    riverMesh = new THREE.Mesh(wg, track(nightMaterial({ map: waves })));
+    scene.add(riverMesh);
   }
   // Paddies: still, pale water, with rows of seedlings.
   if (terrain.paddies.length) {
@@ -390,6 +392,20 @@ export function createVoxelWorld(canvas, terrain) {
     }
     scene.add(seeds);
   }
+
+  // Fireflies over the water at night: small pale boxes that blink and drift.
+  const flyCount = Math.min(80, terrain.water.length);
+  const flyBase = [];
+  for (let i = 0; i < flyCount; i++) {
+    const w = terrain.water[Math.floor(((i * 7919) % terrain.water.length))];
+    flyBase.push({ x: w.x + ((i * 37) % 10) / 10, y: w.y + 0.6 + ((i * 13) % 10) / 8, z: w.z + ((i * 53) % 10) / 10, p: (i * 1.7) % 6.28 });
+  }
+  const flyMat = track(new THREE.MeshBasicMaterial({ color: new THREE.Color(C.yellowPale), transparent: true, opacity: 0, depthWrite: false }));
+  const flyGeo = track(new THREE.BoxGeometry(0.16, 0.16, 0.16));
+  const fireflies = new THREE.InstancedMesh(flyGeo, flyMat, Math.max(1, flyCount));
+  fireflies.frustumCulled = false;
+  scene.add(fireflies);
+  const m4f = new THREE.Matrix4();
 
   // The camera: orthographic, turns in steps of 90°, two zoom levels, a soft follow.
   const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, -500, 500);
@@ -482,7 +498,8 @@ export function createVoxelWorld(canvas, terrain) {
       place();
     },
     // One frame: turn, follow, fade, and draw.
-    render(dt, hero, t) {
+    // sky: { night, flood } from the world state.
+    render(dt, hero, t, sky = null) {
       const turning = state.az !== state.azTarget;
       state.az += (state.azTarget - state.az) * Math.min(1, dt * 7);
       if (Math.abs(state.azTarget - state.az) < 0.01) state.az = state.azTarget;
@@ -494,6 +511,20 @@ export function createVoxelWorld(canvas, terrain) {
       place();
       updateFades(hero, dt);
       waves.offset.y = (t * 0.04) % 1;
+      // In the rain the river rises one block.
+      if (riverMesh) riverMesh.position.y = sky?.flood ?? 0;
+      const night = sky?.night ?? 0;
+      flyMat.opacity = night;
+      fireflies.visible = night > 0.05;
+      if (fireflies.visible) {
+        for (let i = 0; i < flyCount; i++) {
+          const f = flyBase[i];
+          const on = Math.sin(t * 1.7 + f.p * 5) > 0.2 ? 1 : 0;
+          m4f.makeScale(on, on, on).setPosition(f.x + Math.sin(t * 0.7 + f.p) * 1.2, f.y + (sky?.flood ?? 0) + Math.sin(t * 1.3 + f.p) * 0.6, f.z + Math.cos(t * 0.5 + f.p) * 1.2);
+          fireflies.setMatrixAt(i, m4f);
+        }
+        fireflies.instanceMatrix.needsUpdate = true;
+      }
       renderer.render(scene, cam);
     },
     // The map point on the ground under a screen point (px from the top left of the canvas).

@@ -90,7 +90,84 @@ const SOUNDS = {
   hurt: (t) => tone(300, t, 0.2, { type: 'sawtooth', volume: 0.1, glide: 150 }),
   retreat: (t) => [4, 3, 2].forEach((n, i) => tone(PENTA[n], t + i * 0.1, 0.15, { volume: 0.15 })),
   title: (t) => { tone(PENTA[0], t, 0.3); tone(PENTA[3], t + 0.2, 0.5); },
+  // The world.
+  'step-grass': (t) => noise(t, 0.07, { volume: 0.07, filter: 1400, q: 0.8 }),
+  'step-wood': (t) => { tone(180, t, 0.06, { type: 'triangle', volume: 0.1, glide: 140 }); noise(t, 0.04, { volume: 0.05, filter: 900 }); },
+  'step-water': (t) => noise(t, 0.16, { volume: 0.1, filter: 700, sweep: 2200, q: 1.5 }),
+  cluck: (t) => { for (let i = 0; i < 3; i++) tone(620 + i * 40, t + i * 0.09, 0.06, { type: 'square', volume: 0.05, glide: 420 }); },
+  quack: (t) => { tone(330, t, 0.12, { type: 'sawtooth', volume: 0.06, glide: 260 }); tone(330, t + 0.18, 0.1, { type: 'sawtooth', volume: 0.05, glide: 250 }); },
+  bark: (t) => { tone(260, t, 0.09, { type: 'sawtooth', volume: 0.08, glide: 180 }); tone(260, t + 0.16, 0.09, { type: 'sawtooth', volume: 0.08, glide: 170 }); },
+  moo: (t) => tone(140, t, 0.6, { type: 'triangle', volume: 0.18, glide: 110 }),
+  pot: (t) => { noise(t, 0.25, { volume: 0.35, filter: 2500, q: 0.6 }); tone(700, t, 0.08, { type: 'triangle', volume: 0.12, glide: 300 }); SOUNDS.pickup(t + 0.25); },
+  rustle: (t) => noise(t, 0.3, { volume: 0.08, filter: 3500, sweep: 2000, q: 0.5 }),
+  greet: (t) => { tone(PENTA[1], t, 0.12, { volume: 0.08 }); tone(PENTA[3], t + 0.12, 0.16, { volume: 0.08 }); },
+  lantern: (t) => [3, 4, 5].forEach((n, i) => tone(PENTA[n] * 2, t + i * 0.15, 0.5, { volume: 0.05 })),
 };
+
+// The sound of the place: insects by day, frogs by night, and the rain. Three quiet loops.
+let amb = null;
+function ambience() {
+  const a = audio();
+  if (!a) return null;
+  if (amb) return amb;
+  const loop = (filterType, freq, q) => {
+    const size = a.sampleRate * 2;
+    const buffer = a.createBuffer(1, size, a.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < size; i++) data[i] = Math.random() * 2 - 1;
+    const src = a.createBufferSource();
+    src.buffer = buffer;
+    src.loop = true;
+    const f = a.createBiquadFilter();
+    f.type = filterType;
+    f.frequency.value = freq;
+    f.Q.value = q;
+    const g = a.createGain();
+    g.gain.value = 0;
+    src.connect(f).connect(g).connect(master);
+    src.start();
+    return g;
+  };
+  const insects = loop('bandpass', 4800, 6);
+  // Insects sing in pulses.
+  const lfo = a.createOscillator();
+  const depth = a.createGain();
+  lfo.frequency.value = 7;
+  depth.gain.value = 0.5;
+  const pulse = a.createGain();
+  pulse.gain.value = 0.5;
+  lfo.connect(depth).connect(pulse.gain);
+  lfo.start();
+  insects.disconnect();
+  insects.connect(pulse).connect(master);
+  amb = { insects, rain: loop('lowpass', 900, 0.5), frogs: 0, timer: null, level: { day: 0, night: 0, rain: 0 } };
+  return amb;
+}
+
+// level: { day, night, rain } from 0 to 1, or null for silence (away from the world).
+export function setAmbience(level) {
+  const a = audio();
+  if (!a || a.state !== 'running') return;
+  const x = ambience();
+  if (!x) return;
+  const on = soundOn && level;
+  const t = a.currentTime;
+  x.insects.gain.setTargetAtTime(on ? 0.03 * level.day : 0, t, 0.5);
+  x.rain.gain.setTargetAtTime(on ? 0.12 * level.rain : 0, t, 0.5);
+  x.level = on ? level : { day: 0, night: 0, rain: 0 };
+  // Frogs croak now and then at night.
+  if (on && level.night > 0.5 && !x.timer) {
+    const croak = () => {
+      x.timer = null;
+      if (x.level.night <= 0.5) return;
+      const c = audio().currentTime + 0.02;
+      const n = 1 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < n; i++) tone(110 + Math.random() * 40, c + i * 0.18, 0.12, { type: 'square', volume: 0.04 * x.level.night, glide: 80 });
+      x.timer = setTimeout(croak, 700 + Math.random() * 1800);
+    };
+    x.timer = setTimeout(croak, 300);
+  }
+}
 
 export function play(name) {
   if (!soundOn) return;
@@ -166,7 +243,11 @@ export function setSoundOptions({ sound, music }) {
 export function connectAudio(bus) {
   bus.on('sound', play);
   bus.on('settings', (s) => setSoundOptions(s));
-  bus.on('scene', (name) => setMusic(name === 'village' ? 'village' : name === 'battle' ? 'battle' : null));
+  bus.on('scene', (name) => {
+    setMusic(name === 'village' ? 'village' : name === 'battle' ? 'battle' : null);
+    if (name !== 'village') setAmbience(null);
+  });
+  bus.on('ambience', setAmbience);
   // iOS starts sound only in a tap that ends (touchend, pointerup, or click).
   const unlock = () => {
     unlockAudio();
