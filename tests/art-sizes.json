@@ -119,6 +119,11 @@
   "hero/skin-2.svg": "0 0 100 150",
   "hero/skin-3.svg": "0 0 100 150",
   "hero/skin-4.svg": "0 0 100 150",
-  "friend/nghe.svg": "0 0 100 100"
+  "friend/nghe.svg": "0 0 100 100",
+  "thing/slingshot.svg": "0 0 60 100",
+  "thing/stone.svg": "0 0 40 40",
+  "thing/bamboo-fence.svg": "0 0 60 100",
+  "thing/bamboo-shield.svg": "0 0 80 100",
+  "fx/dust.svg": "0 0 120 60"
  }
 }
