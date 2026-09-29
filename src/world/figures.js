@@ -97,9 +97,8 @@ export function person(look) {
   // Something in the hand.
   const item = look.item;
   const hand = [0, -armH, 0.2];
-  if (item === 'staff' || item === 'spear') parts.push(P('item', [0.3, 6, 0.3], item === 'spear' ? 'wood' : 'ash', [hand[0], hand[1] + 1.5, hand[2]], { parent: 'armR' }));
-  if (item === 'spear') parts.push(P('tip', [0.4, 0.8, 0.4], 'ashLight', [0, hand[1] + 4.8, 0.2], { parent: 'armR' }));
-  if (item === 'sword') parts.push(P('item', [0.25, 2.6, 0.5], 'ashLight', [0, hand[1] - 0.8, 0.6], { parent: 'armR' }));
+  // No sharp points or blades (docs/ART.md): soldiers carry blunt staffs.
+  if (item === 'staff') parts.push(P('item', [0.3, 6, 0.3], 'wood', [hand[0], hand[1] + 1.5, hand[2]], { parent: 'armR' }));
   if (item === 'hammer') parts.push(P('item', [0.25, 1.8, 0.25], 'wood', [0, hand[1] - 0.4, 0.3], { parent: 'armR' }), P('head2', [0.9, 0.6, 0.6], 'ash', [0, hand[1] - 1.3, 0.3], { parent: 'armR' }));
   if (item === 'axe') parts.push(P('item', [0.25, 2.2, 0.25], 'wood', [0, hand[1] - 0.5, 0.3], { parent: 'armR' }), P('blade', [0.2, 0.8, 0.8], 'ashLight', [0, hand[1] - 1.4, 0.7], { parent: 'armR' }));
   if (item === 'net') parts.push(P('item', [1.4, 1.4, 0.2], 'paperDeep', [0, hand[1] - 0.6, 0.4], { parent: 'armR' }));

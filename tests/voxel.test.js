@@ -131,7 +131,7 @@ test('the hero is made of parts from the choices at the start', () => {
   assert.ok(girl.parts.some((p) => p.name === 'skirt') && girl.parts.some((p) => p.name === 'yem'));
   assert.ok(girl.parts.some((p) => p.name.startsWith('braid')));
   // Every part hangs on a part that exists, and uses a palette color.
-  for (const fig of [boy, girl, nghe(), figureOf({ kind: 'serpent' }), figureOf({ hat: 'plume', item: 'sword', beard: true })]) {
+  for (const fig of [boy, girl, nghe(), figureOf({ kind: 'serpent' }), figureOf({ hat: 'plume', item: 'staff', beard: true })]) {
     const all = new Set(['body', ...fig.parts.map((p) => p.name)]);
     for (const p of fig.parts) {
       assert.ok(all.has(p.parent), `${p.name} hangs on ${p.parent}`);
