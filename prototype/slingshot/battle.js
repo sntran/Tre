@@ -55,8 +55,9 @@ export function hintFor(misses, enemyX, markers) {
 }
 
 // A shot is a skill event for the learner model.
-// The first shot at an enemy finds a number on the number line: "math.count.120".
-// A next shot at the same enemy corrects the last landing by the gap: "math.add.20".
+// A shot at an enemy finds a number on the number line: "math.count.120".
+// A shot after a miss at the same enemy corrects the last landing by the gap: "math.add.20".
+// (previous: the landing of the last miss at this enemy, or null.)
 // The event is correct when the stone lands within hitRadius of the target.
 export function skillEvent({ landX, target, previous = null }, rules = RULES) {
   const correct = Math.abs(landX - target.x) <= rules.hitRadius;
@@ -166,7 +167,8 @@ export function createBattle({ def, types, rng, rules = RULES }) {
     for (const e of hits.ducks) events.push({ type: 'duck', enemy: e });
     if (target) {
       const ev = skillEvent({ landX: fl.landX, target, previous: target.lastLanding }, rules);
-      target.lastLanding = fl.landX;
+      // Only a miss is a start point for a correction. After a hit, the next shot finds the number again.
+      target.lastLanding = ev.correct ? null : fl.landX;
       events.push({ type: 'skill', event: ev, enemy: target });
     }
     if (hits.primary) {
@@ -200,7 +202,12 @@ export function createBattle({ def, types, rng, rules = RULES }) {
 
   function update(dt) {
     const events = [];
-    if (s.phase !== 'play') return events;
+    if (s.phase !== 'play') {
+      // After the end, the last stone still finishes its bounce.
+      s.time += dt;
+      if (s.stone && s.time >= s.stone.t0 + s.stone.fl.stopT) s.stone = null;
+      return events;
+    }
     s.time += dt;
     if (s.stone) {
       if (!s.stone.landed && s.time >= s.stone.t0 + s.stone.fl.landT) land(events);

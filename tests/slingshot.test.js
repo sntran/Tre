@@ -183,6 +183,15 @@ test('battle: hits, misses, hints, skill events, and a win', () => {
   }
   assert.equal(events.filter((e) => e.type === 'miss').length, 2);
   assert.deepEqual(events.filter((e) => e.type === 'skill').map((e) => e.event.skill), ['math.count.120', 'math.add.20']);
+  // A hit after the misses is a correction. The shot after a hit finds the number again.
+  b.shoot(shotTo(near.x, 50));
+  const hitEvents = run(b, 2);
+  assert.equal(hitEvents.find((e) => e.type === 'skill').event.skill, 'math.add.20');
+  assert.equal(hitEvents.find((e) => e.type === 'skill').event.correct, true);
+  b.shoot(shotTo(near.x, 50));
+  const againEvents = run(b, 2);
+  assert.equal(againEvents.find((e) => e.type === 'skill').event.skill, 'math.count.120');
+  events.push(...hitEvents, ...againEvents);
   assert.equal(events.find((e) => e.type === 'hint').kind, 'point');
   // Hits until both enemies retreat.
   let guard = 0;
