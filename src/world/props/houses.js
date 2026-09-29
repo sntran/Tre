@@ -9,7 +9,8 @@ export function levelOf(ctx, fx, fz, fw, fd) {
   return y;
 }
 
-// A house on stilts. opts: { postH, walls, band, roof, ridge, finials, stairs, door }.
+// A house on stilts. opts: { postH, walls, band, roof, ridge, finials, stairs, door, sweep }.
+// sweep: how high the ends of the ridge rise over its middle, in ground blocks.
 export function stiltHouse(ctx, o, opts = {}) {
   const { fx, fz, fw, fd } = o;
   const r = ctx.rng;
@@ -64,7 +65,7 @@ export function stiltHouse(ctx, o, opts = {}) {
   // The roof: a smooth thatch shape with the curved ridge of the Đông Sơn houses.
   ctx.roof({
     x0: wx0 - 2, x1: wx1 + 3, z0: wz0 - 2, z1: wz1 + 3, y: top + 1,
-    ridgeH: gableH + 2, color: opts.roof ?? 'yellow', ridge: opts.ridge ?? 'yellow', finials: Boolean(opts.finials),
+    ridgeH: gableH + 2, color: opts.roof ?? 'ochre', ridge: opts.ridge ?? 'yellow', finials: Boolean(opts.finials), sweep: opts.sweep ?? 1,
   });
   // The shadow under the floor, and behind the house.
   for (let z = wz0 - 1; z <= wz1 + 2; z++) for (let x = wx0 - 1; x <= wx1 + 1; x++) ctx.shadow(x, z);
@@ -89,7 +90,7 @@ export function giongHouse(ctx, o) {
 
 // The đình (village hall): larger and taller, with a vermilion ridge, bird-head finials, and stairs.
 export function dinh(ctx, o) {
-  stiltHouse(ctx, o, { postH: 7, wallH: 5, band: 'vermilion', ridge: 'vermilion', finials: true, stairs: true });
+  stiltHouse(ctx, o, { postH: 7, wallH: 5, band: 'vermilion', ridge: 'vermilion', finials: true, stairs: true, sweep: 2 });
 }
 
 export function hut(ctx, o) {
@@ -114,7 +115,7 @@ export function school(ctx, o) {
   ctx.box(tx - 2, fy + 2, z0 + 2, tx + 2, fy + 2, z0 + 3, 'wood');
   for (let x = tx - 2; x <= tx + 2; x += 2) ctx.set(x, fy + 3, z0 + 2, 'ink');
   ctx.box(x0, fy + 2, z0, x0, fy + 5, z0, 'paper');
-  ctx.roof({ x0: x0 - 2, x1: x1 + 3, z0: z0 - 2, z1: z1 + 3, y: top + 1, ridgeH: Math.ceil((z1 - z0) / 2) + 1, color: 'yellow', ridge: 'ochre', finials: false });
+  ctx.roof({ x0: x0 - 2, x1: x1 + 3, z0: z0 - 2, z1: z1 + 3, y: top + 1, ridgeH: Math.ceil((z1 - z0) / 2) + 1, color: 'ochre', ridge: 'yellow', finials: false, sweep: 1 });
   for (let z = z0 - 5; z <= z1; z++) for (let x = x0; x <= x1; x++) ctx.shadow(x, z);
   ctx.info = { ground: gy, floor: fy, walls: { x0, x1, z0, z1, top } };
 }
@@ -137,7 +138,7 @@ export function forge(ctx, o) {
   ctx.box(x1 - 4, gy + 2, z1 - 3, x1 - 1, gy + 2, z1 - 2, 'ash');
   ctx.box(x0 + 1, gy, z1 - 1, x0 + 5, gy + 1, z1, 'wood');
   ctx.box(x0 + 2, gy + 1, z1 - 1, x0 + 4, gy + 1, z1, 'indigoPale');
-  ctx.roof({ x0: x0 - 2, x1: x1 + 3, z0: z0 - 2, z1: z1 + 3, y: top + 1, ridgeH: Math.ceil((z1 - z0) / 2) + 1, color: 'yellow', ridge: 'ochre', finials: false });
+  ctx.roof({ x0: x0 - 2, x1: x1 + 3, z0: z0 - 2, z1: z1 + 3, y: top + 1, ridgeH: Math.ceil((z1 - z0) / 2) + 1, color: 'ochre', ridge: 'yellow', finials: false, sweep: 1 });
   for (let z = z0 - 5; z <= z1; z++) for (let x = x0; x <= x1; x++) ctx.shadow(x, z);
   ctx.info = { ground: gy, walls: { x0, x1, z0, z1, top } };
 }
