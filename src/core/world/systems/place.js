@@ -79,9 +79,10 @@ function toPile(world, env, thing) {
 }
 
 // The attempt on a gap since the last commit: the think times, the sizes at each place, and the
-// pause after a failure (for the signs of mashing). `last` is the step of the last action.
+// pause after a failure (for the signs of mashing). `last` is the step of the last action on the
+// gap, or null before the first one (the first choice on a new gap has no think time).
 function attemptOf(world, zone) {
-  zone.attempt ??= { last: world.tick, thinks: [], tries: [], pause: null, failed: false };
+  zone.attempt ??= { last: null, thinks: [], tries: [], pause: null, failed: false };
   return zone.attempt;
 }
 
@@ -108,9 +109,11 @@ function pick(world, e, thing, env, dt) {
   const task = getEntity(world, `zone:${thing.item.task}`);
   if (task?.zone.rule === 'span' && zoneEnt?.zone.rule !== 'span') {
     const a = attemptOf(world, task.zone);
-    const think = Math.max(0, ((e.hands.aim ?? world.tick) - a.last) * dt);
-    a.thinks.push(Math.round(think * 100) / 100);
-    if (a.failed && a.pause === null) a.pause = Math.round(think * 100) / 100;
+    if (a.last !== null) {
+      const think = Math.round(Math.max(0, ((e.hands.aim ?? world.tick) - a.last) * dt) * 100) / 100;
+      a.thinks.push(think);
+      if (a.failed && a.pause === null) a.pause = think;
+    }
   }
   delete e.hands.aim;
   if (zoneEnt) {

@@ -291,12 +291,25 @@ test('a commit with the signs of mashing is no evidence and no error, and Nghé 
   const w = world();
   lay(w, 3, 0);
   lay(w, 3, 0);
+  lay(w, 3, 0);
   const events = cross(w, 1);
   const [ev] = skills(events);
   assert.equal(ev.mashing, true);
   assert.equal(ev.evidence, false);
   const later = run(w, 8);
   assert.ok(later.find((e) => e.type === 'hint'), 'the hint comes at once');
+});
+
+test('a child who thinks before each plank is not mashing, and the first choice on a gap has no think time', () => {
+  const w = world();
+  // The first choice comes at once (the child looked at the gap before); then the child looks.
+  lay(w, 4, 0);
+  lay(w, 4, 2);
+  lay(w, 4, 2);
+  assert.deepEqual(gap(w).attempt.thinks.length, 2);
+  const [ev] = skills(cross(w));
+  assert.equal(ev.mashing, false);
+  assert.equal(ev.efficient, true);
 });
 
 test('predict, then commit: the plank outlines lie on the bank, Nghé looks at the hero, and the child taps how many', () => {
