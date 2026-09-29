@@ -107,8 +107,14 @@ export function createFigureLayer(scene, lookOf) {
         const p = e.position;
         let f = figures.get(e.id);
         const now = { x: p.x, y: p.y, z: p.z, facing: p.facing ?? 0 };
+        // A new look (a pot that breaks): a new figure at the same place.
+        if (f && f.look !== e.look) {
+          figures.delete(e.id);
+          f = null;
+        }
         if (!f) {
           f = build(lookOf(e.look));
+          f.look = e.look;
           f.curr = now;
           f.shownY = p.y;
           figures.set(e.id, f);
@@ -121,6 +127,9 @@ export function createFigureLayer(scene, lookOf) {
           f.shownY = f.curr.y;
         }
         f.speed = (e.motion?.speed ?? 0) / 2;
+        // The pose that the state asks for: a wave, and the bend of grass.
+        f.want = e.react?.waving > 0 ? 'wave' : null;
+        f.bend = e.react?.bend ?? null;
       }
       for (const id of [...figures.keys()]) if (!seen.has(id)) figures.delete(id);
     },
@@ -138,10 +147,17 @@ export function createFigureLayer(scene, lookOf) {
         f.at = { x: x / 2, y: f.shownY / 2, z: z / 2 };
         f.root.position.set(f.at.x, f.at.y, f.at.z);
         f.root.rotation.y = lerpAngle(a.facing, b.facing, t);
-        const pose = animate(f.anim, { speed: f.speed, dt });
+        const pose = animate(f.anim, { speed: f.speed, dt, want: f.want });
         for (const [name, r] of Object.entries(pose.rot)) f.nodes[name]?.rotation.set(r[0], r[1], r[2]);
         f.body.position.y = (pose.lift - pose.sink) * f.figure.scale * FIGURE_UNIT;
         f.body.rotation.x = pose.lean;
+        f.body.rotation.z = 0;
+        if (f.bend) {
+          // Tall grass bends away from the hero (the direction is in the world; the figure turns).
+          const a = f.bend.dir - f.root.rotation.y;
+          f.body.rotation.x = Math.cos(a) * f.bend.amount * 0.9;
+          f.body.rotation.z = -Math.sin(a) * f.bend.amount * 0.9;
+        }
         f.root.updateMatrixWorld(true);
         for (const p of f.parts) {
           if (n >= MAX_PARTS) break;

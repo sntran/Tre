@@ -23,6 +23,10 @@
     "chicken": { "kind": "chicken", "color": "diep" },
     "chicken-brown": { "kind": "chicken", "color": "ochre" },
     "fish": { "kind": "fish" },
-    "buffalo": { "kind": "buffalo" }
+    "buffalo": { "kind": "buffalo" },
+    "dog": { "kind": "dog" },
+    "pot": { "kind": "pot" },
+    "pot-broken": { "kind": "pot", "broken": true },
+    "grass": { "kind": "grass" }
   }
 }

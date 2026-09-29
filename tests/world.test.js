@@ -301,7 +301,7 @@ test('the animals of each map live in their medium: ducks and fish on water or a
       count += g.n;
       const ground = map.groundAt(Math.floor(g.x), Math.floor(g.y));
       const water = ['water', 'shallow', 'field'].includes(ground);
-      assert.equal(water, life.kinds[g.kind].steer.medium === 'water', `${id}: ${g.kind} at ${g.x},${g.y} is on ${ground}`);
+      assert.equal(water, life.kinds[g.kind].steer?.medium === 'water', `${id}: ${g.kind} at ${g.x},${g.y} is on ${ground}`);
     }
   }
   assert.ok(count >= 20, 'a village full of animals');

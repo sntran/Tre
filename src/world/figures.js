@@ -191,6 +191,57 @@ export function buffalo() {
   return { ...calf, parts, scale: 0.85, height: 4.2 };
 }
 
+// A dog of the village: like a small buffalo calf with no horns, ochre, with a tail up.
+export function dog() {
+  const parts = [P('trunk', [1.2, 1.1, 2.4], 'ochre', [0, 1.9, 0])];
+  const legs = [['legFL', -0.4, 0.8], ['legFR', 0.4, 0.8], ['legBL', -0.4, -0.8], ['legBR', 0.4, -0.8]];
+  for (const [name, x, z] of legs) parts.push(P(name, [0.4, 1.4, 0.4], 'wood', [x, 1.4, z], { pivotTop: true }));
+  parts.push(P('head', [0.01, 0.01, 0.01], null, [0, 2.4, 1.2]));
+  parts.push(P('skull', [1, 0.9, 1], 'ochre', [0, 0.1, 0.4], { parent: 'head' }));
+  parts.push(P('muzzle', [0.6, 0.5, 0.6], 'yellowPale', [0, -0.15, 1.1], { parent: 'head' }));
+  parts.push(P('earL', [0.25, 0.5, 0.3], 'wood', [-0.4, 0.7, 0.2], { parent: 'head' }));
+  parts.push(P('earR', [0.25, 0.5, 0.3], 'wood', [0.4, 0.7, 0.2], { parent: 'head' }));
+  for (const ex of [-0.3, 0.3]) parts.push(P(`eye${ex > 0 ? 'R' : 'L'}`, [0.14, 0.16, 0.05], 'ink', [ex, 0.25, 0.92], { parent: 'head', mark: true }));
+  parts.push(P('tail', [0.2, 1, 0.2], 'wood', [0, 2.4, -1.2], { pivotTop: true }));
+  return { kind: 'quadruped', parts, scale: 0.55, height: 3.2, shadow: 1.2 };
+}
+
+// A clay pot of the yard, and the pieces of a broken pot.
+export function pot(broken = false) {
+  if (broken) {
+    return {
+      kind: 'still',
+      parts: [
+        P('shard1', [0.9, 0.4, 0.7], 'vermilionPale', [-0.5, 0.2, 0.2]),
+        P('shard2', [0.7, 0.3, 0.8], 'vermilionPale', [0.5, 0.15, -0.3]),
+        P('shard3', [0.5, 0.5, 0.5], 'ochre', [0.1, 0.25, 0.6]),
+      ],
+      scale: 0.9,
+      height: 0.6,
+      shadow: 0,
+    };
+  }
+  return {
+    kind: 'still',
+    parts: [
+      P('trunk', [1.8, 1.6, 1.8], 'vermilionPale', [0, 1, 0]),
+      P('foot', [1.2, 0.3, 1.2], 'ochre', [0, 0.15, 0]),
+      P('neck', [1.1, 0.4, 1.1], 'vermilionPale', [0, 2, 0]),
+      P('rim', [1.4, 0.2, 1.4], 'ochre', [0, 2.25, 0]),
+    ],
+    scale: 0.9,
+    height: 2.4,
+    shadow: 0.9,
+  };
+}
+
+// A tuft of tall grass: three blades that bend away from the hero.
+export function grass() {
+  const parts = [];
+  for (let b = 0; b < 3; b++) parts.push(P(`blade${b}`, [0.28, 2 + (b % 2) * 0.6, 0.28], b === 1 ? 'green' : 'greenDeep', [(b - 1) * 0.36, (2 + (b % 2) * 0.6) / 2, (b - 1) * 0.12]));
+  return { kind: 'still', parts, scale: 0.9, height: 2.6, shadow: 0 };
+}
+
 // The figure of a look from data/figures.json.
 export function figureOf(look) {
   if (look.kind === 'nghe') return nghe();
@@ -199,5 +250,8 @@ export function figureOf(look) {
   if (look.kind === 'chicken') return chicken(look);
   if (look.kind === 'fish') return fish();
   if (look.kind === 'buffalo') return buffalo();
+  if (look.kind === 'dog') return dog();
+  if (look.kind === 'pot') return pot(Boolean(look.broken));
+  if (look.kind === 'grass') return grass();
   return person(look);
 }

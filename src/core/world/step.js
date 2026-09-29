@@ -16,9 +16,9 @@ export const SYSTEMS = [
   route, //  a route turns into an intent (a direction), so that movement reads one kind of input.
   move, //   the hero and other walkers move with collision, from their intents.
   follow, // after the hero moves, so that Nghé follows the new position without a step of lag.
+  react, //  after the hero moves, so that things react to where the hero is now; before steering, so that a flight starts in this step.
   flock, //  the pull of each flock goes into the steering before the animals move.
-  steer, //  animals and people that move by themselves, after the hero, so that they react to where the hero is now.
-  react, //  after all movement, so that people turn to where the hero is now.
+  steer, //  animals and people that move by themselves.
   clock, //  last: the time of this step passes after all that happened in it.
 ];
 

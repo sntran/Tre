@@ -909,3 +909,13 @@ p { line-height: 1.45; margin: 0.4em 0; }
   font: 12px ui-monospace, Menlo, Consolas, monospace;
   pointer-events: none;
 }
+.world-bubble {
+  padding: 3px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--diep);
+  font-family: var(--display);
+  font-size: 16px;
+  white-space: nowrap;
+  pointer-events: none;
+}

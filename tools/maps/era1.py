@@ -66,9 +66,6 @@ A.obj('ore1', 'ore', 25, 2)
 A.obj('gate', 'gate', 31, 13, 1, 3, solid=[[0, 0], [0, 2]], depth=[0.5, 0, 0.5, 3])
 A.obj('hay1', 'haystack', 7, 10)
 A.obj('hay2', 'haystack', 12, 22)
-A.obj('pot1', 'pot', 13, 11)
-A.obj('pot2', 'pot', 29, 13)
-A.obj('pot3', 'pot', 6, 11)
 A.obj('rice1', 'rice-stack', 11, 18)
 A.many('fence', 'fence', [(3, 18), (4, 18), (5, 18)])
 A.obj('rock1', 'rock', 10, 16)
@@ -114,6 +111,14 @@ A.life = [
     {'kind': 'duck', 'n': 2, 'x': 36.0, 'y': 7.0, 'r': 1.5},
     {'kind': 'fish', 'n': 5, 'x': 9.0, 'y': 34.5, 'r': 1.2},
     {'kind': 'buffalo', 'n': 3, 'x': 36.0, 'y': 16.8, 'r': 1.5},
+    {'kind': 'dog', 'n': 1, 'x': 11.5, 'y': 13.5, 'r': 0},
+    {'kind': 'pot', 'n': 1, 'x': 13.5, 'y': 11.6, 'r': 0},
+    {'kind': 'pot', 'n': 1, 'x': 29.5, 'y': 13.3, 'r': 0},
+    {'kind': 'pot', 'n': 1, 'x': 6.6, 'y': 11.6, 'r': 0},
+    {'kind': 'grass', 'n': 14, 'x': 5.0, 'y': 16.8, 'r': 2.5},
+    {'kind': 'grass', 'n': 12, 'x': 20.0, 'y': 24.0, 'r': 3},
+    {'kind': 'grass', 'n': 10, 'x': 30.0, 'y': 27.0, 'r': 2.5},
+    {'kind': 'grass', 'n': 10, 'x': 12.0, 'y': 29.5, 'r': 2.5},
 ]
 ore_triggers(A, 'ore1', 25, 2)
 ore_triggers(A, 'ore2', 3, 31)

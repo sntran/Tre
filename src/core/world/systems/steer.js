@@ -64,6 +64,16 @@ export function steer(world, dt, rng, env) {
         dz += wa.dz * s.speed * w.wander;
       }
     }
+    // A thing that is not in a flock stays near its place (the flock system does this for flocks).
+    if (e.range && !e.flock && !s.goal && !s.flee) {
+      const rx = e.range.x - p.x;
+      const rz = e.range.z - p.z;
+      const d = Math.hypot(rx, rz);
+      if (d > e.range.r) {
+        dx += (rx / d) * s.speed;
+        dz += (rz / d) * s.speed;
+      }
+    }
     // The pull of the flock.
     if (s.bias) {
       dx += s.bias.x;

@@ -125,7 +125,7 @@ export async function mountVillage(ctx, params = {}) {
   // People and encounters. They block their cells for the paths of taps.
   const persons = () => query(state, 'person').map((e) => ({ ...e.person, x: e.position.x / 2, y: e.position.z / 2, entity: e.id }));
   function refreshPeople() {
-    syncPeople(state, mapData, env, (kind, item) => (kind === 'npc' ? Boolean(data.npcs.npcs[item.id]) && isPresent(data.npcs.npcs[item.id], profile) : isPresent(item, profile)));
+    syncPeople(state, mapData, env, (kind, item) => (kind === 'npc' ? Boolean(data.npcs.npcs[item.id]) && isPresent(data.npcs.npcs[item.id], profile) : isPresent(item, profile)), data.life.people.react);
     tileMap.clearOccupied();
     for (const p of persons()) tileMap.occupy(Math.floor(p.x), Math.floor(p.y), { kind: p.kind, id: p.ref });
     // The friend walks behind the hero.
@@ -617,9 +617,36 @@ export async function mountVillage(ctx, params = {}) {
     }, 260);
   }
 
+  // Greetings over the heads of the people, and the coins of broken pots.
+  const bubbles = [];
+  function showBubble(id, text) {
+    const el = h('div', { class: 'world-bubble', text });
+    marks.append(el);
+    bubbles.push({ id, el, age: 0 });
+  }
+  // What the world did in a step: sounds, greetings, and gifts.
+  function worldEvent(ev) {
+    if (ev.sound) ctx.bus.emit('sound', ev.sound);
+    if (ev.type === 'greet' && !busy) {
+      const lines = ['world.greet.1', 'world.greet.2', 'world.greet.3'];
+      const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
+      showBubble(ev.id, t(lines[n % lines.length], { name: profile.hero.name }));
+    }
+    if (ev.type === 'break' && ev.give) {
+      applyEffects(profile, [{ give: ev.give }]);
+      showBubble(ev.id, `+${Object.values(ev.give)[0]}`);
+      updateHud();
+      ctx.save('pot');
+    }
+  }
+
   // After each step: the events of the world, the exits, and the trigger zones.
   function afterStep() {
     for (const ev of state.events) {
+      if (ev.id !== 'hero') {
+        worldEvent(ev);
+        continue;
+      }
       if (ev.id !== 'hero') continue;
       if (ev.type === 'placed') view.jump(hero().position.x / 2, hero().position.y / 2 + 1.5, hero().position.z / 2);
       if (ev.type === 'arrived' || ev.type === 'stuck') {
@@ -692,6 +719,19 @@ export async function mountVillage(ctx, params = {}) {
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
     }
     for (let i = stars; i < starPool.length; i++) starPool[i].hidden = true;
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i];
+      b.age += 1 / 60;
+      const f = figures.placeOf(b.id);
+      if (!f || b.age > 2.2) {
+        b.el.remove();
+        bubbles.splice(i, 1);
+        continue;
+      }
+      const q = view.project(f.x, f.y + f.height + 0.4, f.z);
+      b.el.style.transform = `translate(${q.x}px, ${q.y - b.age * 10}px) translate(-50%, -100%)`;
+      b.el.style.opacity = String(Math.min(1, (2.2 - b.age) * 2));
+    }
     for (let i = arrows; i < arrowPool.length; i++) arrowPool[i].hidden = true;
     if (tapFx && tapFx.age < 0.6) {
       const p = view.project(tapFx.x, tapFx.h + 0.05, tapFx.y);

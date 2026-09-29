@@ -223,9 +223,6 @@
    {"id": "gate", "prop": "gate", "x": 62, "y": 26, "w": 2, "h": 6, "seed": 449502059, "solid": [[0, 0], [0, 1], [1, 0], [1, 1], [0, 4], [0, 5], [1, 4], [1, 5]]},
    {"id": "hay1", "prop": "haystack", "x": 14, "y": 20, "w": 2, "h": 2, "seed": 453058717},
    {"id": "hay2", "prop": "haystack", "x": 24, "y": 44, "w": 2, "h": 2, "seed": 34107687},
-   {"id": "pot1", "prop": "pot", "x": 26, "y": 22, "w": 2, "h": 2, "seed": 832310442},
-   {"id": "pot2", "prop": "pot", "x": 58, "y": 26, "w": 2, "h": 2, "seed": 680877328},
-   {"id": "pot3", "prop": "pot", "x": 12, "y": 22, "w": 2, "h": 2, "seed": 1603431814},
    {"id": "rice1", "prop": "rice-stack", "x": 22, "y": 36, "w": 2, "h": 2, "seed": 763041876},
    {"id": "fence1", "prop": "fence", "x": 6, "y": 36, "w": 2, "h": 2, "seed": 443584753},
    {"id": "fence2", "prop": "fence", "x": 8, "y": 36, "w": 2, "h": 2, "seed": 58310987},
@@ -295,7 +292,15 @@
    {"kind": "duck", "n": 2, "x": 63.0, "y": 70.0, "r": 4},
    {"kind": "duck", "n": 2, "x": 72.0, "y": 14.0, "r": 3.0},
    {"kind": "fish", "n": 5, "x": 18.0, "y": 69.0, "r": 2.4},
-   {"kind": "buffalo", "n": 3, "x": 72.0, "y": 33.6, "r": 3.0}
+   {"kind": "buffalo", "n": 3, "x": 72.0, "y": 33.6, "r": 3.0},
+   {"kind": "dog", "n": 1, "x": 23.0, "y": 27.0, "r": 0},
+   {"kind": "pot", "n": 1, "x": 27.0, "y": 23.2, "r": 0},
+   {"kind": "pot", "n": 1, "x": 59.0, "y": 26.6, "r": 0},
+   {"kind": "pot", "n": 1, "x": 13.2, "y": 23.2, "r": 0},
+   {"kind": "grass", "n": 14, "x": 10.0, "y": 33.6, "r": 5.0},
+   {"kind": "grass", "n": 12, "x": 40.0, "y": 48.0, "r": 6},
+   {"kind": "grass", "n": 10, "x": 60.0, "y": 54.0, "r": 5.0},
+   {"kind": "grass", "n": 10, "x": 24.0, "y": 59.0, "r": 5.0}
   ],
   "triggers": [
    {"id": "ore1", "x": 50, "y": 4, "on": "tap", "when": {"flags": ["giong.spoke"], "notFlags": ["horse.ore1"]}, "action": {"pickup": {"iron": 2}, "set": "horse.ore1", "textKey": "map.ore.found"}, "w": 2, "h": 2},

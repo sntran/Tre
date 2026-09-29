@@ -75,7 +75,7 @@ export function animate(a, input) {
     for (let i = 0; i < 5; i++) rot[`seg${i}`] = [0, Math.sin(a.time * 2 - i * 0.8) * 0.25, 0];
     rot.head = [Math.sin(a.time * 1.5) * 0.1, Math.sin(a.time * 2 + 0.8) * 0.2, 0];
     lift = Math.sin(a.time * 2) * 0.1;
-  } else {
+  } else if (a.kind !== 'still') {
     lift = Math.sin(a.time * 2) * 0.06;
   }
   return { state: a.state, rot, lift, lean, sink };
