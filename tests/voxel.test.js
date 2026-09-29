@@ -186,7 +186,7 @@ test('each person, enemy, friend, and duck of the maps has a look, and each look
   for (const id of regions.regions.flatMap((r) => r.maps)) {
     const m = load(`data/maps/${id}.json`);
     for (const e of m.encounters) assert.ok(looks[e.figure], `${id}: a look for ${e.id}`);
-    for (const d of m.layers.decor) assert.ok(looks[d.figure], `${id}: a look for ${d.figure}`);
+    for (const g of m.layers.life) for (const look of load('data/world/life.json').kinds[g.kind].looks) assert.ok(looks[look], `${id}: a look for ${look}`);
   }
   for (const [id, look] of Object.entries(looks)) {
     const fig = figureOf(look);

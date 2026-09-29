@@ -105,10 +105,16 @@ A.encounters = [
 ]
 A.collision = [{'x': 22, 'y': 34, 'w': 2, 'h': 2, 'block': True, 'note': 'the broken part of the bridge'}]
 A.zones = [{'id': 'bridge-gap', 'x': 22, 'y': 34, 'w': 2, 'h': 2, 'accepts': 'plank', 'span': 12}]
-A.decor = [{'figure': 'duck', 'x': 5.6, 'y': 20.5}, {'figure': 'duck', 'x': 8.4, 'y': 23.5, 'flip': True},
-           {'figure': 'duck', 'x': 15.5, 'y': 34.4}, {'figure': 'duck', 'x': 16.3, 'y': 34.9, 'flip': True},
-           {'figure': 'duck', 'x': 31.6, 'y': 35.3}, {'figure': 'duck', 'x': 28.4, 'y': 40.8, 'flip': True},
-           {'figure': 'duck', 'x': 36.5, 'y': 6.5}]
+A.life = [
+    {'kind': 'chicken', 'n': 5, 'x': 5.0, 'y': 13.0, 'r': 1.2},
+    {'kind': 'chicken', 'n': 4, 'x': 27.0, 'y': 13.0, 'r': 1.2},
+    {'kind': 'duck', 'n': 3, 'x': 6.5, 'y': 21.5, 'r': 2},
+    {'kind': 'duck', 'n': 3, 'x': 16.0, 'y': 34.6, 'r': 2.5},
+    {'kind': 'duck', 'n': 2, 'x': 31.5, 'y': 35.0, 'r': 2},
+    {'kind': 'duck', 'n': 2, 'x': 36.0, 'y': 7.0, 'r': 1.5},
+    {'kind': 'fish', 'n': 5, 'x': 9.0, 'y': 34.5, 'r': 1.2},
+    {'kind': 'buffalo', 'n': 3, 'x': 36.0, 'y': 16.8, 'r': 1.5},
+]
 ore_triggers(A, 'ore1', 25, 2)
 ore_triggers(A, 'ore2', 3, 31)
 A.triggers += [
@@ -156,7 +162,7 @@ B.npcs = [
     {'id': 'giong-sky', 'x': 16.0, 'y': 6.2},
     {'id': 'socson-elder', 'x': 10.6, 'y': 21.6},
 ]
-B.decor = [{'figure': 'duck', 'x': 6.5, 'y': 26.2}]
+B.life = [{'kind': 'duck', 'n': 2, 'x': 6.5, 'y': 26.5, 'r': 1.5}]
 B.triggers = [
     {'id': 'field', 'x': 4, 'y': 25, 'w': 6, 'h': 5, 'on': 'tap', 'action': {'textKey': 'map.field'}},
 ]
@@ -193,8 +199,11 @@ C.encounters = [
     {'id': 'boss', 'battle': 'boss', 'x': 24.5, 'y': 8.2, 'figure': 'general',
      'when': {'flags': ['soldier1.won', 'soldier2.won'], 'notFlags': ['era1.boss.won']}},
 ]
-C.decor = [{'figure': 'duck', 'x': 5.5, 'y': 5.5}, {'figure': 'duck', 'x': 6.3, 'y': 5.9, 'flip': True},
-           {'figure': 'duck', 'x': 17.4, 'y': 20.6}, {'figure': 'duck', 'x': 8.3, 'y': 24.4, 'flip': True}]
+C.life = [
+    {'kind': 'duck', 'n': 2, 'x': 6.0, 'y': 5.8, 'r': 1.5},
+    {'kind': 'duck', 'n': 2, 'x': 17.4, 'y': 20.6, 'r': 1.5},
+    {'kind': 'duck', 'n': 1, 'x': 8.3, 'y': 24.4, 'r': 1},
+]
 C.triggers = [
     {'id': 'field', 'x': 2, 'y': 2, 'w': 22, 'h': 11, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-south', 'x': 2, 'y': 17, 'w': 22, 'h': 11, 'on': 'tap', 'action': {'textKey': 'map.field'}},
@@ -235,8 +244,10 @@ D.many('tree', 'tree', [(11, 1), (1, 9), (11, 16), (29, 13), (38, 10), (38, 22),
 D.many('bamboo', 'bamboo', [(28, 1), (39, 1), (10, 9), (28, 20)])
 D.many('banana', 'banana', [(9, 14), (33, 12)])
 D.spawn = {'x': 38.5, 'y': 12.0}
-D.decor = [{'figure': 'duck', 'x': 19.5, 'y': 5.5}, {'figure': 'duck', 'x': 20.3, 'y': 6.1, 'flip': True},
-           {'figure': 'duck', 'x': 22.5, 'y': 18.5}]
+D.life = [
+    {'kind': 'duck', 'n': 2, 'x': 20.0, 'y': 5.8, 'r': 1.5},
+    {'kind': 'duck', 'n': 1, 'x': 22.5, 'y': 18.5, 'r': 1},
+]
 D.triggers = [
     {'id': 'ferry-east', 'x': 27, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'move': {'x': 12.4, 'y': 12.0}, 'textKey': 'map.ferry'}},
     {'id': 'ferry-west', 'x': 13, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'move': {'x': 28.6, 'y': 12.0}, 'textKey': 'map.ferry.back'}},

@@ -5,7 +5,7 @@ import { createTileMap } from '../src/core/tilemap.js';
 import { createWorldState, addEntity, removeEntity, getEntity, query, command } from '../src/core/world/state.js';
 import { step, SYSTEMS, STEP } from '../src/core/world/step.js';
 import { envFor } from '../src/core/world/env.js';
-import { addHero, addFriend, syncPeople, addDucks } from '../src/core/world/populate.js';
+import { addHero, addFriend, syncPeople, addLifeLayer } from '../src/core/world/populate.js';
 import { createRng } from '../src/core/rng.js';
 import { load } from './helpers.js';
 
@@ -19,7 +19,7 @@ function village(seed = 7) {
   addHero(w, env, map.spawn);
   addFriend(w, env, 'nghe');
   syncPeople(w, map, env, () => true);
-  addDucks(w, map, env, load('data/world/life.json'));
+  addLifeLayer(w, map, env, load('data/world/life.json'));
   return w;
 }
 

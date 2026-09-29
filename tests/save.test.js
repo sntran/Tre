@@ -197,7 +197,7 @@ test('the save keeps the state of every visited map, and the place on the last m
 test('the version 6 save keeps the world state: the seed, the map, the clock, and the kept entities', async () => {
   const { createTileMap } = await import('../src/core/tilemap.js');
   const { envFor } = await import('../src/core/world/env.js');
-  const { addHero, addFriend, syncPeople, addDucks } = await import('../src/core/world/populate.js');
+  const { addHero, addFriend, syncPeople, addLifeLayer } = await import('../src/core/world/populate.js');
   const { step, STEP } = await import('../src/core/world/step.js');
   const { command } = await import('../src/core/world/state.js');
   const tiles = load('data/tiles.json').types;
@@ -208,7 +208,7 @@ test('the version 6 save keeps the world state: the seed, the map, the clock, an
     if (!w.entities.some((e) => e.id === 'hero')) addHero(w, env, map.spawn);
     addFriend(w, env, 'nghe');
     syncPeople(w, map, env, () => true);
-    addDucks(w, map, env, load('data/world/life.json'));
+    addLifeLayer(w, map, env, load('data/world/life.json'));
     return w;
   };
   const p = sample();

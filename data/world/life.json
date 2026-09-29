@@ -1,9 +1,29 @@
 {
-  "_about": "The living things of the world, and the numbers of their behaviors. kinds: one entry for each kind. look: the figure in data/figures.json. steer: the steering (src/core/world/systems/steer.js): speed (half blocks a second), accel, medium (land, water, air), weights of the behaviors (seek, arrive, flee, wander, separation, avoid), slow (arrive starts to slow down at this distance), radius (separation), boost (speed factor when fleeing), run and pause (the lengths of the runs and stops of wander, in seconds), float (height over the bed for swimmers), altitude (height for fliers). Units: half blocks (one map cell is 2) and seconds.",
+  "_about": "The living things of the world, and the numbers of their behaviors. kinds: one entry for each kind. looks: the figures in data/figures.json (one for each animal, in turn). steer: the steering (src/core/world/systems/steer.js): speed (half blocks a second), accel, medium (land, water, air), weights of the behaviors (seek, arrive, flee, wander, separation, avoid), slow (arrive starts to slow down at this distance), radius (separation), boost (speed factor when fleeing), run and pause (the lengths of the runs and stops of wander, in seconds), float (height over the bed for swimmers), altitude (height for fliers). flock: align and cohere (the pull of the neighbors), radius (who is a neighbor). range: how far a flock goes from its place, as a factor of the r of its group on the map (at least 4 half blocks). Units: half blocks (one map cell is 2) and seconds.",
   "kinds": {
+    "chicken": {
+      "looks": ["chicken", "chicken-brown"],
+      "steer": { "speed": 2.8, "accel": 10, "medium": "land", "weights": { "wander": 1, "separation": 1, "avoid": 2, "flee": 1 }, "radius": 1.2, "boost": 5, "run": [0.4, 1.2], "pause": [0.8, 2.5] },
+      "flock": { "align": 0.2, "cohere": 0.5, "radius": 8 },
+      "range": 2.5
+    },
     "duck": {
-      "look": "duck",
-      "steer": { "speed": 1.2, "accel": 3, "medium": "water", "float": 1.1, "weights": { "wander": 1, "separation": 1, "avoid": 2, "flee": 1 }, "radius": 1.4, "boost": 3, "run": [2, 5], "pause": [1, 3] }
+      "looks": ["duck"],
+      "steer": { "speed": 1.2, "accel": 3, "medium": "water", "float": 1.1, "weights": { "wander": 1, "separation": 1, "avoid": 2, "flee": 1 }, "radius": 1.4, "boost": 3, "run": [2, 5], "pause": [1, 3] },
+      "flock": { "align": 0.4, "cohere": 0.4, "radius": 8 },
+      "range": 2.5
+    },
+    "fish": {
+      "looks": ["fish"],
+      "steer": { "speed": 2, "accel": 6, "medium": "water", "float": 0.5, "weights": { "wander": 1, "separation": 1, "avoid": 3, "flee": 1 }, "radius": 1, "boost": 3, "run": [0.5, 1.5], "pause": [0.3, 1.2] },
+      "flock": { "align": 0.6, "cohere": 0.6, "radius": 5 },
+      "range": 2
+    },
+    "buffalo": {
+      "looks": ["buffalo"],
+      "steer": { "speed": 1.2, "accel": 2, "medium": "land", "weights": { "wander": 1, "separation": 1, "avoid": 2 }, "radius": 3, "run": [1.5, 3], "pause": [4, 9] },
+      "flock": { "align": 0.2, "cohere": 0.3, "radius": 10 },
+      "range": 3
     }
   }
 }

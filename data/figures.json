@@ -19,6 +19,10 @@
     "general": { "skin": "skin2", "top": "vermilion", "bottom": "ink", "sash": "yellow", "topKind": "robe", "bottomKind": "robe", "hair": "short", "beard": "ink", "hat": "plume", "item": "staff", "face": 3, "scale": 0.8 },
     "river-serpent": { "kind": "serpent" },
     "nghe": { "kind": "nghe" },
-    "duck": { "kind": "duck" }
+    "duck": { "kind": "duck" },
+    "chicken": { "kind": "chicken", "color": "diep" },
+    "chicken-brown": { "kind": "chicken", "color": "ochre" },
+    "fish": { "kind": "fish" },
+    "buffalo": { "kind": "buffalo" }
   }
 }

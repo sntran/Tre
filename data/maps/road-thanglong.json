@@ -1,5 +1,5 @@
 {
- "_about": "A map of the voxel world. Map x is east, map y is south (world z). One cell is one ground block. layers.ground: one letter for each cell (see legend). layers.height: one digit for each cell, the height of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2); the top of a column is the digit + 1 blocks. The hero steps up or down one step; a higher step is a cliff. layers.objects: props that the code builds from blocks (prop: the kind, seed: the variation), on a footprint of w x h cells that they block (solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open (block: false) cells. layers.zones: placement zones. layers.paths: walk lines in cells. layers.exits: when the hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the position). layers.decor: small living things (ducks) at map points; they do not block. figure: the look of a person, an enemy, or an animal in data/figures.json. geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). The maps are made by tools/maps/era1.py; do not change them by hand.",
+ "_about": "A map of the voxel world. Map x is east, map y is south (world z). One cell is one ground block. layers.ground: one letter for each cell (see legend). layers.height: one digit for each cell, the height of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2); the top of a column is the digit + 1 blocks. The hero steps up or down one step; a higher step is a cliff. layers.objects: props that the code builds from blocks (prop: the kind, seed: the variation), on a footprint of w x h cells that they block (solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open (block: false) cells. layers.zones: placement zones. layers.paths: walk lines in cells. layers.exits: when the hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the position). layers.life: groups of animals (kind in data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the world. figure: the look of a person or an enemy in data/figures.json. geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). The maps are made by tools/maps/era1.py; do not change them by hand.",
  "id": "road-thanglong",
  "region": "giong",
  "nameKey": "place.roadthanglong",
@@ -159,10 +159,9 @@
   "exits": [
    {"id": "east-road", "kind": "road", "x": 78, "y": 22, "w": 2, "h": 4, "to": {"map": "phu-dong", "x": 2.6, "dy": 56}}
   ],
-  "decor": [
-   {"figure": "duck", "x": 39.0, "y": 11.0},
-   {"figure": "duck", "x": 40.6, "y": 12.2, "flip": true},
-   {"figure": "duck", "x": 45.0, "y": 37.0}
+  "life": [
+   {"kind": "duck", "n": 2, "x": 40.0, "y": 11.6, "r": 3.0},
+   {"kind": "duck", "n": 1, "x": 45.0, "y": 37.0, "r": 2}
   ],
   "triggers": [
    {"id": "ferry-east", "x": 54, "y": 22, "w": 2, "h": 4, "on": "enter", "action": {"move": {"x": 24.8, "y": 24.0}, "textKey": "map.ferry"}},

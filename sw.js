@@ -198,6 +198,7 @@ const FILES = [
   'src/core/world/state.js',
   'src/core/world/step.js',
   'src/core/world/systems/clock.js',
+  'src/core/world/systems/flock.js',
   'src/core/world/systems/follow.js',
   'src/core/world/systems/input.js',
   'src/core/world/systems/move.js',

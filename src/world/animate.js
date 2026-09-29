@@ -58,6 +58,19 @@ export function animate(a, input) {
     rot.tail = [0.3, 0, Math.sin(a.time * 3.1) * 0.35];
     lift = Math.abs(Math.sin(a.phase)) * 0.12 * s;
     sink = a.rest * 1.15;
+  } else if (a.kind === 'fowl') {
+    // Quick small steps; the wings flap when it runs; it pecks at the ground when it stands.
+    const sw = Math.sin(a.phase * 2.2) * 0.7 * Math.min(1, speed / 2);
+    rot.legL = [sw, 0, 0];
+    rot.legR = [-sw, 0, 0];
+    const flap = speed > 6 ? Math.sin(a.time * 40) * 0.9 : 0;
+    rot.wingL = [0, 0, -0.2 - flap];
+    rot.wingR = [0, 0, 0.2 + flap];
+    rot.head = [moving ? 0 : Math.max(0, Math.sin(a.time * 2 + a.idle)) * 0.9, 0, 0];
+    lift = speed > 6 ? Math.abs(Math.sin(a.time * 14)) * 0.8 : 0;
+    sink = a.rest * 0.6;
+  } else if (a.kind === 'fish') {
+    rot.tail = [0, Math.sin(a.time * (moving ? 14 : 5)) * 0.5, 0];
   } else if (a.kind === 'serpent') {
     for (let i = 0; i < 5; i++) rot[`seg${i}`] = [0, Math.sin(a.time * 2 - i * 0.8) * 0.25, 0];
     rot.head = [Math.sin(a.time * 1.5) * 0.1, Math.sin(a.time * 2 + 0.8) * 0.2, 0];

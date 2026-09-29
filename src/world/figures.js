@@ -155,10 +155,49 @@ export function serpent() {
   return { kind: 'serpent', parts, scale: 0.8, height: 3.2, shadow: 0 };
 }
 
+// A chicken: legs that swing, wings that flap when it runs, and a head that pecks.
+export function chicken(look = {}) {
+  const c = look.color ?? 'diep';
+  const parts = [
+    P('legL', [0.25, 0.8, 0.25], 'yellow', [-0.3, 0.8, 0], { pivotTop: true }),
+    P('legR', [0.25, 0.8, 0.25], 'yellow', [0.3, 0.8, 0], { pivotTop: true }),
+    P('trunk', [1.1, 0.9, 1.4], c, [0, 1.2, 0]),
+    P('tailF', [0.7, 0.8, 0.4], c === 'diep' ? 'ashLight' : 'wood', [0, 1.6, -0.7]),
+    P('wingL', [0.2, 0.6, 1], c, [-0.62, 1.3, 0], { pivotTop: true }),
+    P('wingR', [0.2, 0.6, 1], c, [0.62, 1.3, 0], { pivotTop: true }),
+    P('head', [0.01, 0.01, 0.01], null, [0, 1.8, 0.6]),
+    P('skull', [0.6, 0.7, 0.6], c, [0, 0.1, 0], { parent: 'head' }),
+    P('comb', [0.15, 0.3, 0.4], 'vermilion', [0, 0.55, 0], { parent: 'head' }),
+    P('beak', [0.25, 0.2, 0.3], 'yellow', [0, 0, 0.4], { parent: 'head' }),
+  ];
+  for (const ex of [-0.31, 0.31]) parts.push(P(`eye${ex > 0 ? 'R' : 'L'}`, [0.05, 0.14, 0.14], 'ink', [ex, 0.15, 0.12], { parent: 'head', mark: true }));
+  return { kind: 'fowl', parts, scale: 0.7, height: 2.4, shadow: 0.8 };
+}
+
+// A fish at the ford: a body and a tail that wiggles, under the water.
+export function fish() {
+  const parts = [
+    P('trunk', [0.4, 0.5, 1.2], 'ash', [0, 0, 0]),
+    P('tail', [0.1, 0.5, 0.5], 'ashLight', [0, 0, -0.75]),
+    P('fin', [0.08, 0.25, 0.4], 'ashLight', [0, 0.35, 0]),
+  ];
+  return { kind: 'fish', parts, scale: 0.8, height: 0.5, shadow: 0 };
+}
+
+// A buffalo of another family: like Nghé, but grown up and darker.
+export function buffalo() {
+  const calf = nghe();
+  const parts = calf.parts.map((p) => ({ ...p, color: p.color === 'ashLight' ? 'ash' : p.color === 'ash' ? 'ink' : p.color }));
+  return { ...calf, parts, scale: 0.85, height: 4.2 };
+}
+
 // The figure of a look from data/figures.json.
 export function figureOf(look) {
   if (look.kind === 'nghe') return nghe();
   if (look.kind === 'duck') return duck();
   if (look.kind === 'serpent') return serpent();
+  if (look.kind === 'chicken') return chicken(look);
+  if (look.kind === 'fish') return fish();
+  if (look.kind === 'buffalo') return buffalo();
   return person(look);
 }

@@ -104,3 +104,38 @@ test('flee runs away from a point, faster than a walk, and stops after its time'
   assert.equal(c.steer.flee, null);
   assert.ok(c.motion.speed < 0.2);
 });
+
+test('a flock that the hero scatters comes back together after a few seconds', async () => {
+  const { flock } = await import('../src/core/world/systems/flock.js');
+  const life = load('data/world/life.json');
+  const def = life.kinds.chicken;
+  const w = createWorldState({ seed: 1 });
+  const hens = [];
+  for (let i = 0; i < 6; i++) {
+    hens.push(addEntity(w, {
+      id: `hen${i}`,
+      position: { x: 6 + (i % 3) * 1.5, y: 6, z: 18 + Math.floor(i / 3) * 1.5, facing: 0 },
+      motion: { vx: 0, vz: 0, speed: 0 },
+      steer: { ...structuredClone(def.steer), goal: null, flee: null, bias: null, wander: null },
+      flock: { id: 'yard', ...def.flock },
+      range: { x: 8, z: 19, r: 6 },
+    }));
+  }
+  const spread = () => {
+    const cx = hens.reduce((s, h) => s + h.position.x, 0) / hens.length;
+    const cz = hens.reduce((s, h) => s + h.position.z, 0) / hens.length;
+    return Math.max(...hens.map((h) => Math.hypot(h.position.x - cx, h.position.z - cz)));
+  };
+  const rng = createRng(3);
+  const tick = (n) => { for (let i = 0; i < n; i++) { flock(w); steer(w, 1 / 30, rng, env); } };
+  tick(30);
+  const before = spread();
+  // The hero runs into the middle of the flock: each hen flees from it.
+  for (const h of hens) h.steer.flee = { x: 8.2, z: 18.9, time: 1.2 };
+  tick(36);
+  const scattered = spread();
+  assert.ok(scattered > before + 2, `the flock scatters (${before.toFixed(1)} -> ${scattered.toFixed(1)})`);
+  tick(30 * 8);
+  const again = spread();
+  assert.ok(again < scattered * 0.7 && again < 7, `the flock comes back together (${scattered.toFixed(1)} -> ${again.toFixed(1)})`);
+});

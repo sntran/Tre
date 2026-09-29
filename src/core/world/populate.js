@@ -1,6 +1,7 @@
 // Fill a world state with the entities of a map: the hero, the friend, the people, the enemies,
 // and the ducks. The map data is in map cells; the entities are on the half-block grid.
 import { addEntity, removeEntity, getEntity, query, HALF } from './state.js';
+import { createRng, hashSeed } from '../rng.js';
 
 // The hero, controlled by the player. keep: the save keeps this entity.
 export function addHero(world, env, { x, y, facing = 0 }) {
@@ -64,28 +65,50 @@ export function syncPeople(world, map, env, present) {
   return changed;
 }
 
-// A living thing of a kind in data/world/life.json at a map point (map cells).
-export function addLife(world, env, life, kind, at, id = null) {
+// A living thing of a kind in data/world/life.json at a point (half blocks).
+export function addLife(world, env, life, kind, at, extra = {}) {
   const def = life.kinds[kind];
-  const x = at.x * HALF;
-  const z = at.y * HALF;
-  const ground = env.groundY(at.x, at.y);
   const s = def.steer;
+  const ground = env.groundY(at.x / HALF, at.z / HALF);
   const y = s?.medium === 'water' ? ground + (s.float ?? 1.1) : s?.medium === 'air' ? ground + (s.altitude ?? 12) : ground;
   return addEntity(world, {
-    ...(id ? { id } : {}),
     kind,
-    position: { x, y, z, facing: at.facing ?? 0 },
+    position: { x: at.x, y, z: at.z, facing: at.facing ?? 0 },
     motion: { vx: 0, vz: 0, speed: 0 },
     ...(s ? { steer: { ...structuredClone(s), goal: null, arrived: false, flee: null, bias: null, wander: null } } : {}),
-    look: def.look,
+    look: def.looks[0],
+    ...extra,
   });
 }
 
-// The ducks of the decor layer. The seed of the world gives the start of each wander.
-export function addDucks(world, map, env, life) {
-  map.layers.decor.forEach((d, i) => {
-    if (d.figure !== 'duck') return;
-    addLife(world, env, life, 'duck', { x: d.x, y: d.y, facing: d.flip ? Math.PI : 0 }, `decor:${i}`);
+// The groups of animals of the life layer of a map. The seed of the world places them in their
+// medium around the point of the group, and each group is a flock.
+export function addLifeLayer(world, map, env, life) {
+  (map.layers.life ?? []).forEach((g, gi) => {
+    const def = life.kinds[g.kind];
+    if (!def) return;
+    const rng = createRng(hashSeed(`${world.seed}:${map.id}:life:${gi}`));
+    const cx = g.x * HALF;
+    const cz = g.y * HALF;
+    const r = g.r * HALF;
+    const medium = def.steer?.medium ?? 'land';
+    for (let i = 0; i < g.n; i++) {
+      let at = { x: cx, z: cz };
+      for (let k = 0; k < 20; k++) {
+        const a = rng.next() * Math.PI * 2;
+        const d = rng.next() * r;
+        const q = { x: cx + Math.cos(a) * d, z: cz + Math.sin(a) * d };
+        if (env.canEnter(medium, q, q)) {
+          at = q;
+          break;
+        }
+      }
+      addLife(world, env, life, g.kind, { ...at, facing: rng.next() * Math.PI * 2 }, {
+        id: `life:${gi}:${i}`,
+        look: def.looks[i % def.looks.length],
+        ...(def.flock ? { flock: { id: `${map.id}:${gi}`, ...def.flock } } : {}),
+        range: { x: cx, z: cz, r: Math.max(4, r * (def.range ?? 2)) },
+      });
+    }
   });
 }

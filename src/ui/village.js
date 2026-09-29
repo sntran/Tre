@@ -11,7 +11,7 @@ import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../
 import { createWorldState, getEntity, query, command } from '../core/world/state.js';
 import { step, STEP } from '../core/world/step.js';
 import { envFor } from '../core/world/env.js';
-import { addHero, addFriend, syncPeople, addDucks } from '../core/world/populate.js';
+import { addHero, addFriend, syncPeople, addLifeLayer } from '../core/world/populate.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from '../core/world/save.js';
 import { buildTerrain, columnTop } from '../world/terrain.js';
 import { heroLook } from '../world/figures.js';
@@ -98,7 +98,7 @@ export async function mountVillage(ctx, params = {}) {
     if (heroAt) state.entities.splice(state.entities.indexOf(heroAt), 1);
     addHero(state, env, { x: start.x, y: start.y, facing: params.facing ?? 0 });
   }
-  addDucks(state, mapData, env, data.life);
+  addLifeLayer(state, mapData, env, data.life);
   const hero = () => getEntity(state, 'hero');
   const heroCell = () => ({ x: hero().position.x / 2, y: hero().position.z / 2 });
 

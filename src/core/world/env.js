@@ -3,7 +3,7 @@
 // so they are not state.
 import { worldFor } from './move.js';
 
-const WATER = new Set(['water', 'shallow']);
+const WATER = new Set(['water', 'shallow', 'field']); // a paddy is still water too
 
 // extra: { places: { name: { x, z } }, homes: { id: { door, base, top } } } in half blocks.
 export function envFor(tileMap, extra = {}) {

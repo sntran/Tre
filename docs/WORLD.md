@@ -35,6 +35,8 @@ Positions are on the half-block grid: x to the east, z to the south (map y), y u
 | `react` | `{ turn }`: turn to the hero within this distance | react |
 | `steer` | `{ speed, accel, medium, goal, flee, bias, wander, weights, ... }`: animals and people that move by themselves (numbers in `data/world/life.json`) | steer |
 | `kind` | the kind of a living thing in `data/world/life.json` | populate |
+| `flock` | `{ id, align, cohere, radius }` | flock |
+| `range` | `{ x, z, r }`: the place of a flock (a yard, a pond) | flock |
 | `look` | the key of the figure in `data/figures.json` (or `hero`) | the renderer |
 | `keep` | `true`: the save keeps this entity | save |
 
@@ -50,9 +52,10 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 2. **route**: a route turns into an intent, so that movement reads one kind of input. The end of a route sends the event `arrived`; a route that cannot go on sends `stuck`.
 3. **move**: the entities with an intent walk or run, with collision against blocked cells, cliffs, and solid people. Nothing walks while the world waits.
 4. **follow**: after the hero moves, so that Nghé follows the new position without a step of lag.
-5. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance), after the hero, so that they react to where the hero is now.
-6. **react**: after all movement, so that people turn to where the hero is now.
-7. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits.
+5. **flock**: the pull of each flock (alignment with the near neighbors, cohesion to the middle of the flock, and the range of its place) goes into `steer.bias` before the animals move.
+6. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance), after the hero, so that they react to where the hero is now.
+7. **react**: after all movement, so that people turn to where the hero is now.
+8. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits.
 
 Randomness comes only from the `rng` of the step. The same seed and the same commands give the same world.
 
