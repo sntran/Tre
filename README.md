@@ -31,9 +31,10 @@ npm test
 | Folder | Contents |
 | --- | --- |
 | `src/core/` | All game logic. This code does not use the DOM or Canvas. |
-| `src/render/` | Canvas code for the village map and the battles. |
+| `src/render/` | Canvas code for the isometric world and the battles. |
+| `src/iso/`, `src/world/` | The isometric grid, depth order, and camera; movement, regions and maps, the game clock, and travel. No DOM. |
 | `src/ui/` | DOM code for dialogue, menus, exams, settings, and the parent page. |
-| `data/` | Skill graph, maps, enemies, items, quests, dialogue, and questions as JSON. |
+| `data/` | Skill graph, the regions of the world and their maps, enemies, items, quests, dialogue, and questions as JSON. |
 | `data/config/learning.json` | All values of the learning model. |
 | `i18n/` | All text by key, in Vietnamese (`vi.json`) and English (`en.json`). |
 | `art/` | Original SVG art in the style of Đông Hồ woodblock prints. All art is a placeholder. |
