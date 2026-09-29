@@ -17,7 +17,7 @@
       "mark": "legend", "noteKey": "battle.boss.note", "historyKey": "battle.boss.history",
       "companion": { "id": "giong", "art": "npc/giong-hero", "bambooArt": "npc/giong-bamboo", "strike": 1 },
       "events": [{ "id": "staff", "atSpirit": 5, "breaks": true, "dialogue": "staff.breaks", "puzzle": "bamboo", "after": "bamboo.found", "then": { "weapon": "bamboo" } }],
-      "win": { "set": ["era1.boss.won"], "give": { "coin": 10 }, "after": ["giong.farewell"] } },
+      "win": { "set": ["era1.boss.won"], "give": { "coin": 10 }, "after": ["giong.north"] } },
     "patrol": { "bg": "battle/bg-village", "enemies": ["scout"], "states": ["fire", "ice", "water"], "introKey": "battle.patrol.intro", "repeat": true,
       "mark": "legend", "noteKey": "battle.scouts.note",
       "win": { "give": { "coin": 2, "bamboo": 1 } } }

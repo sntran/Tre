@@ -165,6 +165,25 @@ test('the version 4 migration adds the game clock and the state of each map', ()
   assert.throws(() => importCode(exportCode(badClock)), (e) => e.reason === 'shape');
 });
 
+test('the save keeps the state of every visited map, and the place on the last map', () => {
+  const p = sample();
+  p.maps = {
+    'phu-dong': { first: 420, last: 1300, at: { x: 5.5, y: 13.3 }, things: { pot1: 'broken' } },
+    'soc-son': { first: 900, last: 950, at: { x: 16, y: 7.4 }, things: {} },
+    'trau-son': { first: 1000, last: 1100, at: { x: 12.5, y: 10.8 }, things: { trap1: 3 } },
+    'road-thanglong': { first: 1200, last: 1250, at: { x: 1.5, y: 11.5 }, things: { ferry: true } },
+  };
+  p.place = { map: 'road-thanglong', x: 1.5, y: 11.5 };
+  p.clock = { minutes: 1300 };
+  const back = importCode(exportCode(p));
+  assert.deepEqual(back.maps, p.maps);
+  assert.deepEqual(back.place, p.place);
+  assert.equal(back.clock.minutes, 1300);
+  // An old save of version 4 keeps its maps through the migration to the newest version.
+  const old = migrate({ format: SAVE_FORMAT, version: 4, savedAt: 0, profile: p }).profile;
+  assert.deepEqual(old.maps, p.maps);
+});
+
 test('the export code loads on another device', () => {
   const p = sample();
   const code = exportCode(p, 99);

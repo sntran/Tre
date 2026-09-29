@@ -35,6 +35,7 @@ npm test
 | `src/iso/`, `src/world/` | The isometric grid, depth order, and camera; movement, regions and maps, the game clock, and travel. No DOM. |
 | `src/ui/` | DOM code for dialogue, menus, exams, settings, and the parent page. |
 | `tools/geo/` | The script that makes the map data of the country map from open data. |
+| `tools/maps/` | The scripts that make the region maps in `data/maps/`. |
 | `data/` | Skill graph, the regions of the world and their maps, enemies, items, quests, dialogue, and questions as JSON. |
 | `data/config/learning.json` | All values of the learning model. |
 | `i18n/` | All text by key, in Vietnamese (`vi.json`) and English (`en.json`). |

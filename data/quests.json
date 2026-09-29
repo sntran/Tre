@@ -90,9 +90,9 @@
       ]
      },
      "place": {
-      "map": "road-vanmieu",
-      "x": 9,
-      "y": 35
+      "map": "road-thanglong",
+      "x": 0,
+      "y": 11
      }
     }
    ]
@@ -258,6 +258,27 @@
    ]
   },
   {
+   "id": "farewell",
+   "titleKey": "quest.farewell.title",
+   "when": {
+    "flags": [
+     "era1.boss.won"
+    ]
+   },
+   "steps": [
+    {
+     "id": "go",
+     "goalKey": "quest.farewell.go",
+     "done": {
+      "flags": [
+       "giong.farewell"
+      ]
+     },
+     "target": "giong-sky"
+    }
+   ]
+  },
+  {
    "id": "exam",
    "titleKey": "quest.exam.title",
    "when": {
@@ -275,9 +296,9 @@
       ]
      },
      "place": {
-      "map": "road-vanmieu",
-      "x": 9,
-      "y": 35
+      "map": "road-thanglong",
+      "x": 0,
+      "y": 11
      }
     }
    ]

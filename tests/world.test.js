@@ -177,6 +177,9 @@ test('each map is valid, and each person and place on it can be reached', () => 
     const L = m.layers;
     const tile = (p) => ({ x: Math.floor(p.x), y: Math.floor(p.y) });
     const start = tile(m.spawn);
+    // A ferry moves the hero over a river: the places on the other side are reached from its landing.
+    const starts = [start, ...L.triggers.filter((z) => z.action?.move).map((z) => tile(z.action.move))];
+    const reach = (target, fn) => starts.some((st) => fn(st, target));
     assert.equal(m.id, id);
     assert.ok(map.walkable(start.x, start.y), `${id}: spawn`);
     for (const row of L.ground) assert.equal(row.length, m.width, `${id}: row length`);
@@ -191,10 +194,10 @@ test('each map is valid, and each person and place on it can be reached', () => 
     ];
     for (const t of targets) {
       assert.ok(!map.isBlocked(Math.floor(t.x), Math.floor(t.y)), `${id}: ${t.what} stands on a free tile`);
-      assert.ok(pathNextTo(map, start, tile(t)), `${id}: ${t.what} can be reached`);
+      assert.ok(reach(tile(t), (st, g) => pathNextTo(map, st, g)), `${id}: ${t.what} can be reached`);
     }
     for (const t of L.triggers.filter((z) => z.on === 'tap' && z.w === undefined)) {
-      assert.ok(pathNextTo(map, start, t), `${id}: ${t.id} can be reached`);
+      assert.ok(reach(t, (st, g) => pathNextTo(map, st, g)), `${id}: ${t.id} can be reached`);
     }
     // Each exit can be reached, and the hero arrives on a free tile that is not an exit.
     for (const e of L.exits) {
@@ -219,17 +222,32 @@ test('each map is valid, and each person and place on it can be reached', () => 
   }
 });
 
-test('the bridge is broken, and the way south to Văn Miếu goes through the ford', () => {
-  const m = maps.get('fields-river');
+test('Era 1 has the real layout: the Đuống south of Phù Đổng, and the way to Văn Miếu goes south-west', () => {
+  const m = maps.get('phu-dong');
   const map = createTileMap(m, tiles);
+  // The river is on the south side of the village (map +y is south).
+  const home = m.layers.objects.find((o) => o.id === 'home');
+  const riverRows = m.layers.ground.map((row, y) => (row.includes('~') ? y : -1)).filter((y) => y >= 0);
+  assert.ok(Math.min(...riverRows) > home.y + home.h, 'the Đuống is south of the houses');
+  // The bridge is broken: the way over the Đuống goes through the ford.
   const gap = m.layers.zones.find((z) => z.id === 'bridge-gap');
   assert.ok(map.isBlocked(gap.x, gap.y));
-  const road = m.layers.exits.find((e) => e.id === 'south-road');
-  const path = findPath(map, { x: 22, y: 1 }, { x: road.x, y: road.y });
-  assert.ok(path, 'the road south');
+  const west = m.layers.exits.find((e) => e.id === 'west-road');
+  const path = findPath(map, { x: 5, y: 13 }, { x: west.x, y: west.y });
+  assert.ok(path, 'the road south-west');
   assert.ok(path.some((p) => map.groundAt(p.x, p.y) === 'shallow'), 'the road goes through the ford');
-  const vanmieu = maps.get('road-vanmieu').layers.triggers.find((z) => z.id === 'vanmieu');
-  assert.ok(vanmieu, 'the road ends at Văn Miếu');
+  // The exits: north to Sóc Sơn, east to Núi Trâu, south-west to Thăng Long.
+  const to = Object.fromEntries(m.layers.exits.map((e) => [e.to.map, e]));
+  assert.ok(to['soc-son'].y === 0, 'Sóc Sơn is north');
+  assert.ok(to['trau-son'].x === m.width - 1, 'Núi Trâu is east');
+  assert.ok(to['road-thanglong'].x === 0 && to['road-thanglong'].y > gap.y, 'Thăng Long is south-west, across the river');
+  // Each map has its real center and the direction of north; north is map -y.
+  for (const [id, mm] of maps) {
+    assert.equal(mm.geo.at.length, 2, id);
+    assert.deepEqual(mm.geo.north, [0, -1], id);
+  }
+  const vanmieu = maps.get('road-thanglong').layers.triggers.find((z) => z.id === 'vanmieu');
+  assert.ok(vanmieu && vanmieu.x === 0, 'the road ends at Văn Miếu, to the west');
 });
 
 test('the hero steps up or down one step; a higher step is a cliff', () => {
@@ -248,11 +266,11 @@ test('the ground of the maps has depth: river steps, sunken paddies, the dinh mo
     for (const row of m.layers.height) assert.match(row, new RegExp(`^[0-9]{${m.width}}$`), id);
   }
   // The river bank drops two steps to the water: ground 2, sand 1, water 0.
-  const river = at('fields-river');
-  assert.deepEqual([1, 2, 5].map((y) => [river.groundAt(15, y), river.heightAt(15, y)]), [['grass', 2], ['sand', 1], ['water', 0]]);
+  const river = at('phu-dong');
+  assert.deepEqual([30, 31, 34].map((y) => [river.groundAt(15, y), river.heightAt(15, y)]), [['grass', 2], ['sand', 1], ['water', 0]]);
   // The road and the bridge stay high over the bank, as a causeway.
-  assert.equal(river.heightAt(22, 2), 2);
-  assert.equal(river.heightAt(22, 4), 2);
+  assert.equal(river.heightAt(22, 31), 2);
+  assert.equal(river.heightAt(22, 33), 2);
   // The paddies are one step lower than the dikes and roads around them.
   for (const [id, m] of maps) {
     const map = at(id);

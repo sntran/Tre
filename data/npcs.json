@@ -359,7 +359,7 @@
      "giong.grown"
     ],
     "notFlags": [
-     "giong.farewell"
+     "era1.boss.won"
     ]
    },
    "talk": [
@@ -407,6 +407,43 @@
     }
    ],
    "nameKey": "npc.messenger.name"
+  },
+  "giong-sky": {
+   "voice": "man",
+   "art": "npc/giong-hero",
+   "scale": 0.5,
+   "nameKey": "npc.giong-hero.name",
+   "when": {
+    "flags": [
+     "era1.boss.won"
+    ],
+    "notFlags": [
+     "giong.farewell"
+    ]
+   },
+   "talk": [
+    {
+     "dialogue": "giong.farewell"
+    }
+   ]
+  },
+  "socson-elder": {
+   "voice": "elderMan",
+   "art": "npc/elder",
+   "nameKey": "npc.socson-elder.name",
+   "talk": [
+    {
+     "when": {
+      "flags": [
+       "giong.farewell"
+      ]
+     },
+     "dialogue": "socson.elder.legend"
+    },
+    {
+     "dialogue": "socson.elder.wait"
+    }
+   ]
   }
  }
 }

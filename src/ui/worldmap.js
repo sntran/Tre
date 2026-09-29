@@ -236,6 +236,13 @@ registerModal('worldmap', async (ctx) => {
         }
       }
       for (const p of geo.places.filter((x) => x.kind === 'islands')) label(p.at, p.name, true);
+      // The hero: a small red diamond at the real place of the map of the hero.
+      const mapGeo = world.map(hereMap)?.geo;
+      if (mapGeo) {
+        const m = proj.toMap(mapGeo.at);
+        const d = 5 * k;
+        labels.append(el('path', { d: `M${m.x},${m.y - d}L${m.x + d},${m.y}L${m.x},${m.y + d}L${m.x - d},${m.y}Z`, fill: C.vermilion, stroke: C.ink, 'stroke-width': 1.2, 'vector-effect': 'non-scaling-stroke' }));
+      }
 
       const anchors = world.regions.map((r) => ({ id: r.id, ...proj.toMap(base.place[r.place].at) }));
       const sealPx = Math.max(12, Math.min(SEAL_PX, (svg.clientHeight || 600) / 28));

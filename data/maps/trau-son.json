@@ -1,8 +1,12 @@
 {
- "_about": "A map on an isometric grid. Map x goes to the screen right-down, map y goes to the screen left-down. layers.ground: one letter for each tile (see legend). layers.height: one digit for each tile, the height of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2). The hero steps up or down one step; a higher step is a cliff. layers.objects stand on a footprint of w x h tiles and block it (solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open (block: false) tiles. layers.zones: placement zones. layers.paths: walk lines in tile units. layers.exits: when the hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the position). layers.decor: small living things (ducks) at map points; they do not block. Positions of people are tile units and can have a fraction.",
+ "_about": "A map on an isometric grid. Map x goes to the screen right-down, map y goes to the screen left-down. layers.ground: one letter for each tile (see legend). layers.height: one digit for each tile, the height of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2). The hero steps up or down one step; a higher step is a cliff. layers.objects stand on a footprint of w x h tiles and block it (solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open (block: false) tiles. layers.zones: placement zones. layers.paths: walk lines in tile units. layers.exits: when the hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the position). layers.decor: small living things (ducks) at map points; they do not block. geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). Positions of people are tile units and can have a fraction.",
  "id": "trau-son",
  "region": "giong",
  "nameKey": "place.trauson",
+ "geo": {
+  "at": [106.1, 21.13],
+  "north": [0, -1]
+ },
  "width": 32,
  "height": 31,
  "legend": {
@@ -125,7 +129,7 @@
    ]
   },
   "exits": [
-   {"id": "west-road", "kind": "road", "x": 0, "y": 12, "w": 1, "h": 6, "to": {"map": "phu-dong", "x": 34.2, "dy": 0}}
+   {"id": "west-road", "kind": "road", "x": 0, "y": 13, "w": 1, "h": 4, "to": {"map": "phu-dong", "x": 38.2, "dy": 0}}
   ],
   "decor": [
    {"art": "iso/duck", "x": 5.5, "y": 5.5},

@@ -268,6 +268,12 @@ export async function mountVillage(ctx, params = {}) {
       walkToPerson(a.talk);
       return;
     }
+    if (a.move) {
+      // A ferry: the hero and Nghé go to the other side of the river.
+      await withBusy(() => say(ctx, a.textKey));
+      placeHero(a.move.x, a.move.y);
+      return;
+    }
     if (a.pickup || a.set) {
       const { changes } = applyEffects(profile, [{ give: a.pickup, set: a.set }]);
       ctx.bus.emit('sound', 'pickup');

@@ -265,28 +265,18 @@
    "start": "n1",
    "nodes": {
     "n1": {
-     "speaker": "narrator",
-     "textKey": "dlg.giong.farewell.n1",
+     "speaker": "giong",
+     "textKey": "dlg.giong.farewell.n2",
      "next": "n2"
     },
     "n2": {
      "speaker": "giong",
-     "textKey": "dlg.giong.farewell.n2",
+     "textKey": "dlg.giong.farewell.care",
      "next": "n3"
     },
     "n3": {
      "speaker": "narrator",
      "textKey": "dlg.giong.farewell.n3",
-     "next": "n4"
-    },
-    "n4": {
-     "speaker": "narrator",
-     "textKey": "dlg.giong.farewell.n4",
-     "next": "n5"
-    },
-    "n5": {
-     "speaker": "elder",
-     "textKey": "dlg.giong.farewell.n5",
      "effects": [
       {
        "set": "giong.farewell"
@@ -305,6 +295,48 @@
      "textKey": "dlg.patrol.intro.n1"
     }
    }
+  },
+  {
+   "id": "giong.north",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "giong",
+     "textKey": "dlg.giong.north.n1"
+    }
+   },
+   "mark": "legend"
+  },
+  {
+   "id": "socson.elder.wait",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "socson-elder",
+     "textKey": "dlg.socson.elder.wait.n1"
+    }
+   }
+  },
+  {
+   "id": "socson.elder.legend",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "socson-elder",
+     "textKey": "dlg.socson.elder.legend.n1",
+     "next": "n2"
+    },
+    "n2": {
+     "speaker": "socson-elder",
+     "textKey": "dlg.socson.elder.legend.n2",
+     "next": "n3"
+    },
+    "n3": {
+     "speaker": "socson-elder",
+     "textKey": "dlg.socson.elder.legend.n3"
+    }
+   },
+   "mark": "legend"
   }
  ]
 }

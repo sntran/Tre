@@ -42,18 +42,19 @@ test('each map of a region can be reached from each other map, through the exits
       }
     }
   }
-  // The shortest way from the village to the road to Văn Miếu goes south, through the fields and the river.
-  assert.equal(w.firstExit('phu-dong', 'road-vanmieu').to.map, 'fields-river');
+  // From Sóc Sơn to Núi Trâu, the way goes through the village.
+  assert.equal(w.firstExit('soc-son', 'trau-son').to.map, 'phu-dong');
+  assert.equal(w.firstExit('phu-dong', 'road-thanglong').id, 'west-road');
   assert.equal(w.firstExit('phu-dong', 'phu-dong'), null);
 });
 
 test('an exit sends the hero to the next map, and keeps the position along the edge', () => {
   const w = createWorld(world, maps);
-  const south = w.exitAt('phu-dong', 22, 30, { flags: {} });
-  assert.equal(south.to.map, 'fields-river');
-  assert.deepEqual(w.arrival(south, 22.4, 30.2), { map: 'fields-river', x: 22.4, y: 1.3 });
-  const east = w.exitAt('phu-dong', 35, 14, { flags: {} });
-  assert.deepEqual(w.arrival(east, 35.3, 14.6), { map: 'trau-son', x: 1.3, y: 14.6 });
+  const north = w.exitAt('phu-dong', 22, 0, { flags: {} });
+  assert.equal(north.to.map, 'soc-son');
+  assert.deepEqual(w.arrival(north, 22.5, 0.2), { map: 'soc-son', x: 15.5, y: 29.6 });
+  const east = w.exitAt('phu-dong', 39, 14, { flags: {} });
+  assert.deepEqual(w.arrival(east, 39.3, 14.6), { map: 'trau-son', x: 1.3, y: 14.6 });
   assert.equal(w.exitAt('phu-dong', 10, 10, { flags: {} }), null);
   // An exit with a condition opens only when the condition is true.
   const gated = createWorld(world, new Map([['a', { layers: { exits: [{ id: 'x', x: 0, y: 0, w: 1, h: 1, when: { flags: ['open'] }, to: { map: 'b', x: 1, y: 1 } }] } }]]));
@@ -63,7 +64,8 @@ test('an exit sends the hero to the next map, and keeps the position along the e
 
 test('the people, enemies, and things of the story are each on one map', () => {
   const w = createWorld(world, maps);
-  assert.equal(w.whereIs('npc', 'fisher'), 'fields-river');
+  assert.equal(w.whereIs('npc', 'fisher'), 'phu-dong');
+  assert.equal(w.whereIs('npc', 'giong-sky'), 'soc-son');
   assert.equal(w.whereIs('encounter', 'boss'), 'trau-son');
   assert.equal(w.whereIs('object', 'ore1'), 'phu-dong');
   assert.equal(w.whereIs('npc', 'nobody'), null);
