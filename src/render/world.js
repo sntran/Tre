@@ -221,7 +221,24 @@ export async function createWorldRenderer(mapData, tileMap, tileTypes) {
       items.push({ id: s.id, kind: s.kind, rect, x0: s.x - r, y0: s.y - r, x1: s.x + r, y1: s.y + r, z: 1, draw: () => drawPerson(ctx, s, t) });
     }
     const order = depthSort(items);
-    for (const it of order) it.draw();
+    // A tall thing in front of the hero turns thin, so that the child can always see the hero.
+    const heroAt = order.findIndex((it) => it.kind === 'hero');
+    const hero = order[heroAt];
+    for (let i = 0; i < order.length; i++) {
+      const it = order[i];
+      const r = it.rect;
+      const hides = hero && i > heroAt && !it.kind && r.left < hero.rect.left + hero.rect.width * 0.8
+        && r.left + r.width > hero.rect.left + hero.rect.width * 0.2
+        && r.top < hero.rect.top + hero.rect.height * 0.8 && r.top + r.height > hero.rect.top + hero.rect.height * 0.5;
+      if (hides) {
+        ctx.save();
+        ctx.globalAlpha = 0.45;
+        it.draw();
+        ctx.restore();
+      } else {
+        it.draw();
+      }
+    }
 
     // Quest markers: a star that moves up and down over the target.
     for (const m of scene.markers) {
