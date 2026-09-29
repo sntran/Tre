@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createWorld } from '../src/world/regions.js';
 import { planTravel, applyTravel, TRAVEL } from '../src/world/travel.js';
-import { createClock } from '../src/core/world/clock.js';
+import { newWorldSave, setHeroPlace, heroPlace } from '../src/core/world/save.js';
 import { createRng } from '../src/core/rng.js';
 import { load } from './helpers.js';
 
@@ -54,12 +54,12 @@ test('a locked region, or the region of the hero, is not a travel', () => {
 });
 
 test('after a travel, the clock moved on, the gifts are in the bag, and the hero is at the entry', () => {
-  const profile = { clock: createClock(), inventory: { rice: 1 }, place: { map: 'a1', x: 1, y: 1 } };
+  const profile = { world: setHeroPlace(newWorldSave(1, 'a1'), 'a1', 1, 1), inventory: { rice: 1 } };
   const plan = { ok: true, to: 'b', hours: 14, events: [events.find((e) => e.id === 'merchant')], entry: { map: 'b1', x: 2.5, y: 3.5 } };
   applyTravel(profile, plan);
-  assert.equal(profile.clock.minutes, 7 * 60 + 14 * 60);
+  assert.equal(profile.world.clock.minutes, 7 * 60 + 14 * 60);
   assert.equal(profile.inventory.rice, 2);
-  assert.deepEqual(profile.place, { map: 'b1', x: 2.5, y: 3.5 });
+  assert.deepEqual(heroPlace(profile.world), { map: 'b1', x: 2.5, y: 3.5 });
 });
 
 test('each road event has a text in both languages', () => {

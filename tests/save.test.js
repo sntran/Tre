@@ -7,6 +7,8 @@ import {
 } from '../src/core/save.js';
 import { createRng } from '../src/core/rng.js';
 import { readFileSync } from 'node:fs';
+import { heroPlace, setHeroPlace, saveWorld, loadWorld } from '../src/core/world/save.js';
+import { load } from './helpers.js';
 
 function sample() {
   const p = createProfile({ id: 'p1', name: 'Tí Sún', gender: 'girl', grade: 2, now: 1000 });
@@ -135,33 +137,33 @@ test('the version 3 migration moves the hero home on the new isometric map', () 
   const v2 = sample();
   v2.place = { map: 'phu-dong', x: 16, y: 25 };
   const done = migrate({ format: SAVE_FORMAT, version: 2, savedAt: 0, profile: v2 }).profile;
-  assert.deepEqual(done.place, { map: 'phu-dong', x: null, y: null });
+  assert.deepEqual(heroPlace(done.world), { map: 'phu-dong', x: null, y: null });
   assert.equal(done.flags['trial.smith.done'], true, 'the story stays');
   // A place on the new map can have a fraction.
   const p = sample();
-  p.place = { map: 'phu-dong', x: 5.5, y: 13.25 };
-  assert.deepEqual(importCode(exportCode(p)).place, p.place);
+  setHeroPlace(p.world, 'phu-dong', 5.5, 13.25);
+  assert.deepEqual(heroPlace(importCode(exportCode(p)).world), { map: 'phu-dong', x: 5.5, y: 13.25 });
 });
 
 test('the version 4 migration adds the game clock and the state of each map', () => {
   const v3 = sample();
-  delete v3.clock;
+  delete v3.world;
   delete v3.maps;
   v3.place = { map: 'phu-dong', x: 22.5, y: 40.2 };
   const done = migrate({ format: SAVE_FORMAT, version: 3, savedAt: 0, profile: v3 }).profile;
-  assert.deepEqual(done.clock, { minutes: 420 });
+  assert.deepEqual(done.world.clock, { minutes: 420 });
   assert.deepEqual(done.maps, {});
-  assert.deepEqual(done.place, { map: 'phu-dong', x: null, y: null });
+  assert.deepEqual(heroPlace(done.world), { map: 'phu-dong', x: null, y: null });
   // The state of visited maps goes through the export code; bad values do not load.
   const p = sample();
-  p.clock = { minutes: 5000.5 };
+  p.world.clock = { minutes: 5000.5 };
   p.maps = { 'phu-dong': { first: 420, last: 900, at: { x: 5.5, y: 13.3 }, things: { pot1: 'broken', plank: 3 } } };
   assert.deepEqual(importCode(exportCode(p)).maps, p.maps);
   const bad = sample();
   bad.maps = { 'phu-dong': { at: { x: 'far', y: 1 } } };
   assert.throws(() => importCode(exportCode(bad)), (e) => e.reason === 'shape');
   const badClock = sample();
-  badClock.clock = { minutes: -5 };
+  badClock.world.clock = { minutes: -5 };
   assert.throws(() => importCode(exportCode(badClock)), (e) => e.reason === 'shape');
 });
 
@@ -173,15 +175,70 @@ test('the save keeps the state of every visited map, and the place on the last m
     'trau-son': { first: 1000, last: 1100, at: { x: 12.5, y: 10.8 }, things: { trap1: 3 } },
     'road-thanglong': { first: 1200, last: 1250, at: { x: 1.5, y: 11.5 }, things: { ferry: true } },
   };
-  p.place = { map: 'road-thanglong', x: 1.5, y: 11.5 };
-  p.clock = { minutes: 1300 };
+  setHeroPlace(p.world, 'road-thanglong', 1.5, 11.5);
+  p.world.clock = { minutes: 1300 };
   const back = importCode(exportCode(p));
   assert.deepEqual(back.maps, p.maps);
-  assert.deepEqual(back.place, p.place);
-  assert.equal(back.clock.minutes, 1300);
-  // An old save of version 4 keeps its maps through the migration to the newest version.
-  const old = migrate({ format: SAVE_FORMAT, version: 4, savedAt: 0, profile: p }).profile;
+  assert.deepEqual(heroPlace(back.world), { map: 'road-thanglong', x: 1.5, y: 11.5 });
+  assert.equal(back.world.clock.minutes, 1300);
+  // An old save of version 4 keeps its maps, its place, and its clock through the migrations.
+  const v4 = structuredClone(p);
+  delete v4.world;
+  v4.place = { map: 'road-thanglong', x: 1.5, y: 11.5 };
+  v4.clock = { minutes: 1300 };
+  const old = migrate({ format: SAVE_FORMAT, version: 4, savedAt: 0, profile: v4 }).profile;
   assert.deepEqual(old.maps, p.maps);
+  assert.deepEqual(heroPlace(old.world), { map: 'road-thanglong', x: 1.5, y: 11.5 });
+  assert.equal(old.world.clock.minutes, 1300);
+  assert.equal(old.place, undefined);
+  assert.equal(old.clock, undefined);
+});
+
+test('the version 6 save keeps the world state: the seed, the map, the clock, and the kept entities', async () => {
+  const { createTileMap } = await import('../src/core/tilemap.js');
+  const { envFor } = await import('../src/core/world/env.js');
+  const { addHero, addFriend, syncPeople, addDucks } = await import('../src/core/world/populate.js');
+  const { step, STEP } = await import('../src/core/world/step.js');
+  const { command } = await import('../src/core/world/state.js');
+  const tiles = load('data/tiles.json').types;
+  const map = load('data/maps/phu-dong.json');
+  const env = envFor(createTileMap(map, tiles));
+  // Build a world, play it, and save it.
+  const make = (w) => {
+    if (!w.entities.some((e) => e.id === 'hero')) addHero(w, env, map.spawn);
+    addFriend(w, env, 'nghe');
+    syncPeople(w, map, env, () => true);
+    addDucks(w, map, env);
+    return w;
+  };
+  const p = sample();
+  const world = make(loadWorld(p.world));
+  command(world, { type: 'move', id: 'hero', dx: 1, dz: 0.5, strength: 1 });
+  for (let i = 0; i < 60; i++) step(world, STEP, env);
+  command(world, { type: 'walk', id: 'hero', points: [{ x: 10, z: 10 }], token: 'x' });
+  step(world, STEP, env);
+  p.world = saveWorld(world);
+  assert.deepEqual(p.world.entities.map((e) => e.id), ['hero'], 'only the kept entities');
+  assert.equal(p.world.entities[0].route, undefined, 'no route in the save');
+  // Load it again (through the export code): the kept entities and the generated ones are the same.
+  const back = importCode(exportCode(p));
+  const again = make(loadWorld(back.world));
+  const kept = (w) => w.entities.filter((e) => e.keep).map((e) => { const x = structuredClone(e); delete x.route; delete x.intent; return x; });
+  assert.deepEqual(kept(again), kept(world));
+  // The generated entities come again from the map and the seed: the same ids, and the same
+  // start each time.
+  const made = (w) => w.entities.filter((e) => !e.keep);
+  assert.deepEqual(made(again).map((e) => e.id), made(world).map((e) => e.id));
+  assert.deepEqual(made(again), made(make(loadWorld(back.world))));
+  assert.deepEqual(again.clock, world.clock);
+  assert.equal(again.seed, world.seed);
+  // A bad entity does not load.
+  const bad = sample();
+  bad.world.entities.push({ id: 'x', position: { x: 'far', y: 0, z: 0 } });
+  assert.throws(() => importCode(exportCode(bad)), (e) => e.reason === 'shape');
+  const deep = sample();
+  deep.world.entities.push({ id: 'y', a: { b: { c: { d: { e: { f: { g: { h: 1 } } } } } } } });
+  assert.throws(() => importCode(exportCode(deep)), (e) => e.reason === 'shape');
 });
 
 test('the export code loads on another device', () => {

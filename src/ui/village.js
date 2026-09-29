@@ -10,7 +10,8 @@ import { stepBody, moveCircle, worldFor, keysToScreenDir, stickToScreenDir, scre
 import { buildTerrain, columnTop, WATER } from '../world/terrain.js';
 import { figureOf, heroLook } from '../world/figures.js';
 import { createAnimator, animate } from '../world/animate.js';
-import { createClock, advance } from '../core/world/clock.js';
+import { advance } from '../core/world/clock.js';
+import { heroPlace, setHeroPlace } from '../core/world/save.js';
 import { h, img, button } from './dom.js';
 import { t, tn } from './i18n.js';
 import { speak } from './speak.js';
@@ -53,7 +54,8 @@ function noWorld(ctx) {
 export async function mountVillage(ctx, params = {}) {
   const { data, profile } = ctx;
   const worldMap = data.world;
-  const savedMap = worldMap.map(profile.place?.map) ? profile.place.map : null;
+  const savedPlace = heroPlace(profile.world);
+  const savedMap = worldMap.map(savedPlace.map) ? savedPlace.map : null;
   const mapData = worldMap.map(params.map ?? savedMap ?? worldMap.start.map);
   const tileTypes = data.tiles.types;
   const tileMap = createTileMap(mapData, tileTypes);
@@ -97,7 +99,7 @@ export async function mountVillage(ctx, params = {}) {
     figures.splice(figures.indexOf(f), 1);
   }
 
-  const saved = profile.place?.map === mapData.id && profile.place.x !== null ? profile.place : null;
+  const saved = savedPlace.map === mapData.id && savedPlace.x !== null ? savedPlace : null;
   const start = freeSpot(tileMap, params.at ?? saved ?? mapData.spawn) ?? mapData.spawn;
   const hero = { x: start.x, y: start.y, vx: 0, vy: 0, facing: params.facing ?? 0, moving: false, speed: 0 };
   const heroFig = addFigure(heroLook(profile.hero), hero);
@@ -112,10 +114,9 @@ export async function mountVillage(ctx, params = {}) {
   let leaving = false; // true after the hero walks into an exit
   let talkingTo = null; // the person in a dialogue turns to the hero
   // The game clock, and the state of this map in the save.
-  profile.clock ??= createClock();
   profile.maps ??= {};
-  const visit = (profile.maps[mapData.id] ??= { first: Math.round(profile.clock.minutes), things: {} });
-  visit.last = Math.round(profile.clock.minutes);
+  const visit = (profile.maps[mapData.id] ??= { first: Math.round(profile.world.clock.minutes), things: {} });
+  visit.last = Math.round(profile.world.clock.minutes);
 
   // Ducks on the water: each one swims in a small circle around its point.
   for (const d of mapData.layers.decor) {
@@ -334,13 +335,18 @@ export async function mountVillage(ctx, params = {}) {
   }
 
   const place = () => ({ map: mapData.id, x: Math.round(hero.x * 100) / 100, y: Math.round(hero.y * 100) / 100 });
+  const savePlace = () => {
+    const p = place();
+    setHeroPlace(profile.world, p.map, p.x, p.y);
+    return p;
+  };
 
   // Open the screens that a dialogue asks for, one after the other.
   // ctx.open() returns false when the village scene closes (for example for a battle).
   async function handleCommands(commands) {
     for (const c of commands) {
       if (!c.open || !alive) continue;
-      profile.place = place();
+      savePlace();
       const stay = await withBusy(() => ctx.open(c, { village: api }));
       if (!stay) return;
     }
@@ -603,7 +609,7 @@ export async function mountVillage(ctx, params = {}) {
     stick.active = false;
     keys.clear();
     const to = worldMap.arrival(exit, hero.x, hero.y);
-    profile.place = { map: to.map, x: to.x, y: to.y };
+    setHeroPlace(profile.world, to.map, to.x, to.y);
     fade.classList.add('on');
     ctx.save('map');
     setTimeout(() => {
@@ -668,7 +674,7 @@ export async function mountVillage(ctx, params = {}) {
 
   function step(dt) {
     if (tapFx) tapFx.age += dt;
-    if (!busy) advance(profile.clock, dt);
+    if (!busy) advance(profile.world.clock, dt);
     const before = { x: hero.x, y: hero.y };
     const input = currentInput();
     stepBody(hero, input, dt, worldFor(tileMap, hero.x, hero.y));
@@ -847,9 +853,10 @@ export async function mountVillage(ctx, params = {}) {
     unmount() {
       alive = false;
       if (ctx.activeVillage === api) ctx.activeVillage = null;
-      profile.place = place();
-      visit.at = { x: profile.place.x, y: profile.place.y };
-      visit.last = Math.round(profile.clock.minutes);
+      const p = place();
+      if (!leaving) savePlace();
+      visit.at = { x: p.x, y: p.y };
+      visit.last = Math.round(profile.world.clock.minutes);
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);

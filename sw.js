@@ -193,6 +193,7 @@ const FILES = [
   'src/core/world/env.js',
   'src/core/world/move.js',
   'src/core/world/populate.js',
+  'src/core/world/save.js',
   'src/core/world/state.js',
   'src/core/world/step.js',
   'src/core/world/systems/clock.js',

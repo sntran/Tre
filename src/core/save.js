@@ -2,10 +2,11 @@
 // Old saves go through the migrations, so that they work after updates.
 // The export code is compressed text with a checksum. A bad code does not load.
 import { isGrade } from './grades.js';
+import { newWorldSave } from './world/save.js';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
 
 export const SAVE_FORMAT = 'tre-save';
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 export const CODE_PREFIX = 'TRE1';
 
 // MIGRATIONS[n] changes a save of version n into version n + 1.
@@ -57,6 +58,22 @@ export const MIGRATIONS = {
     if (out.flags && typeof out.flags === 'object') out.flags['friend.nghe'] = true;
     return out;
   },
+  // Version 6: the world is a state of entities (src/core/world/). The save keeps the world:
+  // its seed, its map, the clock, and the hero (on the half-block grid, 2 for each map cell).
+  // The fields "place" and "clock" go into the world.
+  5: (profile) => {
+    const out = structuredClone(profile);
+    const place = out.place && typeof out.place === 'object' ? out.place : { map: 'phu-dong', x: null, y: null };
+    const world = newWorldSave(out.seed ?? 1, typeof place.map === 'string' ? place.map : 'phu-dong');
+    if (out.clock && typeof out.clock.minutes === 'number') world.clock = { minutes: out.clock.minutes };
+    if (typeof place.x === 'number' && typeof place.y === 'number') {
+      world.entities.push({ id: 'hero', keep: true, control: true, position: { x: place.x * 2, y: 0, z: place.y * 2, facing: 0 }, motion: { vx: 0, vz: 0, speed: 0 }, look: 'hero' });
+    }
+    out.world = world;
+    delete out.place;
+    delete out.clock;
+    return out;
+  },
 };
 
 export class SaveError extends Error {
@@ -102,6 +119,8 @@ export const LIMITS = Object.freeze({
   choiceChars: 80,
   choices: 6,
   recentChars: 32,
+  worldEntities: 2000, // kept entities of the world state
+  worldValues: 200000, // all the values in the components of the kept entities
   visual: { groups: 4, dots: 20, arrayCells: 12, rectSide: 20, fractions: 3, denominator: 24 },
 });
 
@@ -179,15 +198,7 @@ export function validate(profile, { grades = null } = {}) {
     list(profile.seenGloss, 'seenGloss');
     profile.seenGloss.forEach((x) => str(x, 'seenGloss'));
   }
-  if (profile.place !== undefined) {
-    if (!isObj(profile.place)) fail('place');
-    str(profile.place.map, 'place.map');
-    for (const k of ['x', 'y']) if (profile.place[k] !== null) num(profile.place[k], `place.${k}`, 0, 10000);
-  }
-  if (profile.clock !== undefined) {
-    if (!isObj(profile.clock)) fail('clock');
-    num(profile.clock.minutes, 'clock.minutes', 0, 1e9);
-  }
+  if (profile.world !== undefined) validateWorld(profile.world, { fail, num, int, str, list, isObj });
   if (profile.maps !== undefined) {
     for (const [id, m] of entries(profile.maps, 'maps', 200)) {
       if (!isObj(m)) fail(`maps ${id}`);
@@ -208,6 +219,40 @@ export function validate(profile, { grades = null } = {}) {
   validateLearning(profile.learning, { fail, num, int, str, bool, list, entries, isObj });
   validateSettings(profile.settings, { fail, num, int, str, bool, list, isObj });
   return true;
+}
+
+// The world state: the seed, the map, the clock, and the kept entities. Components are plain
+// data only: numbers, short texts, booleans, lists, and objects, not too deep and not too many.
+function validateWorld(world, v) {
+  const { fail, num, int, str, list, isObj } = v;
+  if (!isObj(world)) fail('world');
+  int(world.seed, 'world.seed', 0, 2 ** 32 - 1);
+  str(world.map, 'world.map');
+  if (!isObj(world.clock)) fail('world.clock');
+  num(world.clock.minutes, 'world.clock.minutes', 0, 1e9);
+  list(world.entities, 'world.entities', LIMITS.worldEntities);
+  let size = 0;
+  const plain = (value, what, depth) => {
+    size += 1;
+    if (size > LIMITS.worldValues || depth > 6) fail(what);
+    if (value === null || typeof value === 'boolean') return;
+    if (typeof value === 'number') return num(value, what);
+    if (typeof value === 'string') return str(value, what);
+    if (Array.isArray(value)) return value.forEach((x) => plain(x, what, depth + 1));
+    if (!isObj(value)) fail(what);
+    for (const [k, x] of Object.entries(value)) {
+      str(k, what);
+      plain(x, `${what}.${k}`, depth + 1);
+    }
+  };
+  for (const e of world.entities) {
+    if (!isObj(e) || (typeof e.id !== 'string' && !Number.isInteger(e.id))) fail('world entity');
+    plain(e, `world entity ${e.id}`, 0);
+    if (e.position !== undefined) {
+      if (!isObj(e.position)) fail('world entity position');
+      for (const k of ['x', 'y', 'z']) num(e.position[k], `world entity ${e.id} position.${k}`, -1000, 100000);
+    }
+  }
 }
 
 function validateLearning(learning, v) {

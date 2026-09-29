@@ -1,6 +1,7 @@
 // Travel between regions on the country map. Pure functions, no DOM.
 // A travel takes game hours on the roads, and has a few simple road events.
 import { addHours } from '../core/world/clock.js';
+import { setHeroPlace } from '../core/world/save.js';
 import { lineKm } from './geo.js';
 
 // The roads and rivers between places. routes: data/world/routes.json.
@@ -77,10 +78,10 @@ export function planTravel(world, from, to, state, rng, events, cfg = TRAVEL) {
 
 // Apply a planned travel to the profile: the clock, the items of the events, and the new place.
 export function applyTravel(profile, plan) {
-  addHours(profile.clock, plan.hours);
+  addHours(profile.world.clock, plan.hours);
   for (const e of plan.events) {
     for (const [item, n] of Object.entries(e.give ?? {})) profile.inventory[item] = (profile.inventory[item] ?? 0) + n;
   }
-  profile.place = { map: plan.entry.map, x: plan.entry.x, y: plan.entry.y };
+  setHeroPlace(profile.world, plan.entry.map, plan.entry.x, plan.entry.y);
   return profile;
 }

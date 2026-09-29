@@ -1,5 +1,6 @@
 // The profile of one child: hero, progress, skills, and settings.
 // The profile is a plain data object, so that it is easy to save.
+import { newWorldSave } from './world/save.js';
 
 export const GENDERS = ['boy', 'girl'];
 
@@ -32,10 +33,11 @@ export function createProfile({ id, name, gender = 'boy', skin = 1, face = 1, ha
     friendNames: {}, // names that the player chose for friends, by friend id
     party: ['nghe'],
     machines: [],
-    place: { map: 'phu-dong', x: null, y: null },
-    // The game clock (game minutes from the start), and the state of each map that the hero
-    // has visited: { first, last } (game minutes), at (the last position), things (changes).
-    clock: { minutes: 7 * 60 },
+    // The world state (src/core/world/save.js): the seed, the map, the game clock (game minutes
+    // from the start), and the entities that the player changed (the hero). The state of each
+    // map that the hero has visited: { first, last } (game minutes), at (the last position),
+    // things (changes).
+    world: newWorldSave(seed),
     maps: {},
     learning: { skills: {}, items: {}, exams: [] },
     settings: { ...DEFAULT_SETTINGS, lang, questions: [] },

@@ -146,11 +146,11 @@ registerModal('worldmap', async (ctx) => {
   const world = data.world;
   const geo = data.geo;
   const state = conditionState(profile);
-  const hereMap = world.map(profile.place?.map) ? profile.place.map : world.start.map;
+  const hereMap = world.map(profile.world?.map) ? profile.world.map : world.start.map;
   const here = world.regionOf(hereMap) ?? world.start.region;
   const chapter = world.region(here).chapter;
   const eraSouth = world.eraLand?.byChapter?.[chapter] ?? geo.bbox.lat0;
-  const time = timeOfDay(profile.clock ?? { minutes: 0 });
+  const time = timeOfDay(profile.world?.clock ?? { minutes: 0 });
   const proj = createProjection(geo.bbox);
   const inEra = (region) => geo.places.find((p) => p.id === region.place).at[1] >= eraSouth;
 
@@ -302,7 +302,7 @@ registerModal('worldmap', async (ctx) => {
       if (open && region.id !== here) {
         const hours = world.travelHours(here, region.id);
         lines.push(button(t('world.travel', { hours }), () => {
-          const rng = createRng(`${profile.seed}:${Math.round(profile.clock.minutes)}:${region.id}`);
+          const rng = createRng(`${profile.seed}:${Math.round(profile.world.clock.minutes)}:${region.id}`);
           const p = planTravel(world, here, region.id, state, rng, data.roadEvents.events);
           if (p.ok) close(p);
         }, { cls: 'btn big red' }));

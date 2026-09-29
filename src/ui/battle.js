@@ -1,6 +1,7 @@
 // The battle scene: the canvas shows the side view, and the DOM shows the hearts,
 // the note, and the panel for the answer (number cards, a question, or element magic).
 import { createBattle } from '../core/battle.js';
+import { setHeroPlace } from '../core/world/save.js';
 import { createElementRules } from '../core/elements.js';
 import { hasCards } from '../core/generators.js';
 import { feedbackFor, battleSkills } from '../core/learner.js';
@@ -336,7 +337,7 @@ async function mountBattle(ctx, params) {
     const lost = applyLoss(profile, level, data.game.loss, data.game.loss.items);
     profile.stats.battlesLost += 1;
     const home = data.world.home();
-    profile.place = { map: home.map, x: home.x, y: home.y };
+    setHeroPlace(profile.world, home.map, home.x, home.y);
     await ctx.save('battle');
     root.hidden = true;
     const hasLoss = Object.keys(lost).length > 0;
