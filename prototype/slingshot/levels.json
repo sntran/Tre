@@ -1,0 +1,12 @@
+{
+  "_about": "Levels of the slingshot prototype. Difficulty comes from the world: more enemies, farther away, faster counts, a wall, an enemy that moves closer. min, max: the distances of the enemies. period: the seconds between the attacks of an enemy. field: the last distance marker.",
+  "enemyTypes": {
+    "scout": { "art": "enemy/scout", "hp": 2 },
+    "soldier": { "art": "enemy/soldier", "hp": 3 }
+  },
+  "levels": {
+    "1": { "kinds": ["scout", "scout"], "min": 5, "max": 10, "period": 6, "field": 15 },
+    "2": { "kinds": ["scout", "soldier", "scout"], "min": 5, "max": 20, "period": 5, "field": 20, "wall": { "height": 1.7, "before": 1.5 } },
+    "3": { "kinds": ["scout", "soldier", "scout", "soldier"], "min": 5, "max": 30, "period": 4, "field": 30, "mover": true }
+  }
+}
