@@ -14,6 +14,16 @@ import { portrait } from './dialogue.js';
 import { renderQuestion, feedbackLine } from './question.js';
 import { showMessage } from './quiz.js';
 
+// Back to the world: the hero stands on the road just east of the door of Văn Miếu (the trigger
+// "vanmieu" on its map), not in the door, so that the door does not open again at once.
+function villageDoor(ctx) {
+  for (const [map, m] of ctx.data.maps) {
+    const door = m.layers.triggers.find((z) => z.id === 'vanmieu');
+    if (door) return { map, at: { x: door.x + door.w + 1.5, y: door.y + door.h / 2 } };
+  }
+  return {};
+}
+
 // The ladder of an exam: the skills of the era of its title, or all skills for placement.
 function ladderFor(ctx, kind) {
   const { titles } = ctx.data;
@@ -175,7 +185,7 @@ async function mountVanMieu(ctx) {
   const content = h('div', { class: 'vanmieu' });
   screen.append(content);
   screen.append(h('div', { class: 'corner-left' }, [
-    button(null, () => ctx.go('village', { at: { x: 16, y: 24 } }), { cls: 'icon-btn', icon: 'ui/back', aria: t('ui.back') }),
+    button(null, () => ctx.go('village', villageDoor(ctx)), { cls: 'icon-btn', icon: 'ui/back', aria: t('ui.back') }),
   ]));
   ctx.ui.append(screen);
 
@@ -198,7 +208,7 @@ async function mountVanMieu(ctx) {
         draw();
       }, { cls: `btn big ${needPlacement ? 'paper' : 'red'}` }));
     }
-    actions.append(button(t('vanmieu.back'), () => ctx.go('village', { at: { x: 16, y: 24 } }), { cls: 'btn paper' }));
+    actions.append(button(t('vanmieu.back'), () => ctx.go('village', villageDoor(ctx)), { cls: 'btn paper' }));
     const introKey = needPlacement ? 'vanmieu.hello.placement' : profile.flags['exam.era1.passed'] ? 'vanmieu.hello.done' : 'vanmieu.hello';
     content.replaceChildren(
       img('thing/vanmieu-gate', 'vanmieu-gate'),
