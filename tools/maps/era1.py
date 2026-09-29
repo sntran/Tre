@@ -64,6 +64,15 @@ A.obj('herbs3', 'herbs', 16, 19)
 A.obj('ore1', 'ore', 25, 2)
 # The gate: two posts, open in the middle. The depth box is the middle line.
 A.obj('gate', 'gate', 31, 13, 1, 3, solid=[[0, 0], [0, 2]], depth=[0.5, 0, 0.5, 3])
+# Small houses of the villagers who have no other house, and the coops of the yards.
+A.obj('hut-elder', 'hut', 5, 5, 3, 3)
+A.obj('hut-teacher', 'hut', 13, 4, 3, 3)
+A.obj('hut-woodcutter', 'hut', 25, 4, 3, 3)
+A.obj('hut-smith', 'hut', 19, 21, 3, 3)
+A.obj('hut-healer', 'hut', 15, 23, 3, 3)
+A.obj('hut-fisher', 'hut', 11, 23, 3, 3)
+A.obj('coop1', 'coop', 7, 12)
+A.obj('coop2', 'coop', 29, 12)
 A.obj('hay1', 'haystack', 7, 10)
 A.obj('hay2', 'haystack', 12, 22)
 A.obj('rice1', 'rice-stack', 11, 18)
@@ -79,6 +88,14 @@ A.many('tree', 'tree', [(3, 3), (6, 4), (12, 5), (14, 3), (21, 6), (28, 4), (29,
 A.many('banana', 'banana', [(8, 3), (10, 6), (20, 20), (2, 11), (28, 27), (34, 29), (24, 42)])
 A.many('bamboo', 'bamboo', [(12, 27), (36, 30), (5, 30), (15, 38), (29, 38)])
 A.spawn = {'x': 5.5, 'y': 13.3}
+# Named places for the plans of the day (data/world/people.json). h: the height over the ground
+# in half blocks.
+A.places = {
+    'well': {'x': 20.5, 'y': 12.6},
+    'coop1': {'x': 7.5, 'y': 13.4},
+    'coop2': {'x': 29.5, 'y': 13.4},
+    'banyan-top': {'x': 18.5, 'y': 4.5, 'h': 17},
+}
 A.npcs = [
     {'id': 'grandma', 'x': 4.5, 'y': 12.7},
     {'id': 'mother', 'x': 11.5, 'y': 12.7},
@@ -103,8 +120,8 @@ A.encounters = [
 A.collision = [{'x': 22, 'y': 34, 'w': 2, 'h': 2, 'block': True, 'note': 'the broken part of the bridge'}]
 A.zones = [{'id': 'bridge-gap', 'x': 22, 'y': 34, 'w': 2, 'h': 2, 'accepts': 'plank', 'span': 12}]
 A.life = [
-    {'kind': 'chicken', 'n': 5, 'x': 5.0, 'y': 13.0, 'r': 1.2},
-    {'kind': 'chicken', 'n': 4, 'x': 27.0, 'y': 13.0, 'r': 1.2},
+    {'kind': 'chicken', 'n': 5, 'x': 5.0, 'y': 13.0, 'r': 1.2, 'bed': 'coop1'},
+    {'kind': 'chicken', 'n': 4, 'x': 27.0, 'y': 13.0, 'r': 1.2, 'bed': 'coop2'},
     {'kind': 'duck', 'n': 3, 'x': 6.5, 'y': 21.5, 'r': 2},
     {'kind': 'duck', 'n': 3, 'x': 16.0, 'y': 34.6, 'r': 2.5},
     {'kind': 'duck', 'n': 2, 'x': 31.5, 'y': 35.0, 'r': 2},
@@ -115,6 +132,8 @@ A.life = [
     {'kind': 'pot', 'n': 1, 'x': 13.5, 'y': 11.6, 'r': 0},
     {'kind': 'pot', 'n': 1, 'x': 29.5, 'y': 13.3, 'r': 0},
     {'kind': 'pot', 'n': 1, 'x': 6.6, 'y': 11.6, 'r': 0},
+    {'kind': 'owl', 'n': 1, 'x': 18.5, 'y': 4.5, 'r': 0, 'spot': 'banyan-top'},
+    {'kind': 'bird', 'n': 7, 'x': 18.5, 'y': 6.5, 'r': 3},
     {'kind': 'grass', 'n': 14, 'x': 5.0, 'y': 16.8, 'r': 2.5},
     {'kind': 'grass', 'n': 12, 'x': 20.0, 'y': 24.0, 'r': 3},
     {'kind': 'grass', 'n': 10, 'x': 30.0, 'y': 27.0, 'r': 2.5},
@@ -158,7 +177,6 @@ B.obj('rock1', 'rock', 13, 5)
 B.obj('rock2', 'rock', 8, 9)
 B.obj('rock3', 'rock', 22, 14)
 B.obj('hut', 'house', 5, 20, 3, 3)
-B.obj('pot1', 'pot', 9, 22)
 B.many('tree', 'tree', [(4, 4), (8, 3), (21, 3), (25, 6), (23, 10), (5, 13), (26, 17), (10, 16), (20, 19), (2, 22), (26, 24), (19, 27), (24, 29)])
 B.many('bamboo', 'bamboo', [(11, 11), (19, 8), (13, 16), (18, 22), (7, 7), (24, 21)])
 B.many('banana', 'banana', [(12, 24), (22, 25)])
@@ -167,7 +185,7 @@ B.npcs = [
     {'id': 'giong-sky', 'x': 16.0, 'y': 6.2},
     {'id': 'socson-elder', 'x': 10.6, 'y': 21.6},
 ]
-B.life = [{'kind': 'duck', 'n': 2, 'x': 6.5, 'y': 26.5, 'r': 1.5}]
+B.life = [{'kind': 'duck', 'n': 2, 'x': 6.5, 'y': 26.5, 'r': 1.5}, {'kind': 'pot', 'n': 1, 'x': 9.5, 'y': 22.6, 'r': 0}]
 B.triggers = [
     {'id': 'field', 'x': 4, 'y': 25, 'w': 6, 'h': 5, 'on': 'tap', 'action': {'textKey': 'map.field'}},
 ]

@@ -1,5 +1,5 @@
 {
- "_about": "A map of the voxel world. Map x is east, map y is south (world z). One cell is one ground block. layers.ground: one letter for each cell (see legend). layers.height: one digit for each cell, the height of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2); the top of a column is the digit + 1 blocks. The hero steps up or down one step; a higher step is a cliff. layers.objects: props that the code builds from blocks (prop: the kind, seed: the variation), on a footprint of w x h cells that they block (solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open (block: false) cells. layers.zones: placement zones. layers.paths: walk lines in cells. layers.exits: when the hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the position). layers.life: groups of animals (kind in data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the world. figure: the look of a person or an enemy in data/figures.json. geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). The maps are made by tools/maps/era1.py; do not change them by hand.",
+ "_about": "A map of the voxel world. Map x is east, map y is south (world z). One cell is one ground block. layers.ground: one letter for each cell (see legend). layers.height: one digit for each cell, the height of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2); the top of a column is the digit + 1 blocks. The hero steps up or down one step; a higher step is a cliff. layers.objects: props that the code builds from blocks (prop: the kind, seed: the variation), on a footprint of w x h cells that they block (solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open (block: false) cells. layers.zones: placement zones. layers.paths: walk lines in cells. layers.exits: when the hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the position). layers.places: named map points for the plans of the day (h: the height over the ground in half blocks). layers.life: groups of animals (kind in data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the world. figure: the look of a person or an enemy in data/figures.json. geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). The maps are made by tools/maps/era1.py; do not change them by hand.",
  "id": "phu-dong",
  "region": "giong",
  "nameKey": "place.phudong",
@@ -221,6 +221,14 @@
    {"id": "herbs3", "prop": "herbs", "x": 32, "y": 38, "w": 2, "h": 2, "seed": 1239525226},
    {"id": "ore1", "prop": "ore", "x": 50, "y": 4, "w": 2, "h": 2, "seed": 2126600272},
    {"id": "gate", "prop": "gate", "x": 62, "y": 26, "w": 2, "h": 6, "seed": 449502059, "solid": [[0, 0], [0, 1], [1, 0], [1, 1], [0, 4], [0, 5], [1, 4], [1, 5]]},
+   {"id": "hut-elder", "prop": "hut", "x": 10, "y": 10, "w": 6, "h": 6, "seed": 2025734685},
+   {"id": "hut-teacher", "prop": "hut", "x": 26, "y": 8, "w": 6, "h": 6, "seed": 444209579},
+   {"id": "hut-woodcutter", "prop": "hut", "x": 50, "y": 8, "w": 6, "h": 6, "seed": 1975333105},
+   {"id": "hut-smith", "prop": "hut", "x": 38, "y": 42, "w": 6, "h": 6, "seed": 163647075},
+   {"id": "hut-healer", "prop": "hut", "x": 30, "y": 46, "w": 6, "h": 6, "seed": 66392962},
+   {"id": "hut-fisher", "prop": "hut", "x": 22, "y": 46, "w": 6, "h": 6, "seed": 18262075},
+   {"id": "coop1", "prop": "coop", "x": 14, "y": 24, "w": 2, "h": 2, "seed": 1799349962},
+   {"id": "coop2", "prop": "coop", "x": 58, "y": 24, "w": 2, "h": 2, "seed": 1916188528},
    {"id": "hay1", "prop": "haystack", "x": 14, "y": 20, "w": 2, "h": 2, "seed": 453058717},
    {"id": "hay2", "prop": "haystack", "x": 24, "y": 44, "w": 2, "h": 2, "seed": 34107687},
    {"id": "rice1", "prop": "rice-stack", "x": 22, "y": 36, "w": 2, "h": 2, "seed": 763041876},
@@ -285,8 +293,8 @@
    {"id": "west-road", "kind": "road", "x": 0, "y": 78, "w": 2, "h": 4, "to": {"map": "road-thanglong", "x": 77.4, "dy": -56}}
   ],
   "life": [
-   {"kind": "chicken", "n": 5, "x": 10.0, "y": 26.0, "r": 2.4},
-   {"kind": "chicken", "n": 4, "x": 54.0, "y": 26.0, "r": 2.4},
+   {"kind": "chicken", "n": 5, "x": 10.0, "y": 26.0, "r": 2.4, "bed": "coop1"},
+   {"kind": "chicken", "n": 4, "x": 54.0, "y": 26.0, "r": 2.4, "bed": "coop2"},
    {"kind": "duck", "n": 3, "x": 13.0, "y": 43.0, "r": 4},
    {"kind": "duck", "n": 3, "x": 32.0, "y": 69.2, "r": 5.0},
    {"kind": "duck", "n": 2, "x": 63.0, "y": 70.0, "r": 4},
@@ -297,11 +305,32 @@
    {"kind": "pot", "n": 1, "x": 27.0, "y": 23.2, "r": 0},
    {"kind": "pot", "n": 1, "x": 59.0, "y": 26.6, "r": 0},
    {"kind": "pot", "n": 1, "x": 13.2, "y": 23.2, "r": 0},
+   {"kind": "owl", "n": 1, "x": 37.0, "y": 9.0, "r": 0, "spot": "banyan-top"},
+   {"kind": "bird", "n": 7, "x": 37.0, "y": 13.0, "r": 6},
    {"kind": "grass", "n": 14, "x": 10.0, "y": 33.6, "r": 5.0},
    {"kind": "grass", "n": 12, "x": 40.0, "y": 48.0, "r": 6},
    {"kind": "grass", "n": 10, "x": 60.0, "y": 54.0, "r": 5.0},
    {"kind": "grass", "n": 10, "x": 24.0, "y": 59.0, "r": 5.0}
   ],
+  "places": {
+   "well": {
+    "x": 41.0,
+    "y": 25.2
+   },
+   "coop1": {
+    "x": 15.0,
+    "y": 26.8
+   },
+   "coop2": {
+    "x": 59.0,
+    "y": 26.8
+   },
+   "banyan-top": {
+    "x": 37.0,
+    "y": 9.0,
+    "h": 17
+   }
+  },
   "triggers": [
    {"id": "ore1", "x": 50, "y": 4, "on": "tap", "when": {"flags": ["giong.spoke"], "notFlags": ["horse.ore1"]}, "action": {"pickup": {"iron": 2}, "set": "horse.ore1", "textKey": "map.ore.found"}, "w": 2, "h": 2},
    {"id": "ore1-early", "x": 50, "y": 4, "on": "tap", "action": {"textKey": "map.ore.look"}, "w": 2, "h": 2},

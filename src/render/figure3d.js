@@ -102,19 +102,20 @@ export function createFigureLayer(scene, lookOf) {
     sync(world) {
       const seen = new Set();
       for (const e of world.entities) {
-        if (!e.position || !e.look) continue;
+        if (!e.position || !e.look || e.hidden) continue;
         seen.add(e.id);
         const p = e.position;
         let f = figures.get(e.id);
         const now = { x: p.x, y: p.y, z: p.z, facing: p.facing ?? 0 };
-        // A new look (a pot that breaks): a new figure at the same place.
-        if (f && f.look !== e.look) {
+        // A new look (a pot that breaks, a lantern in the hand): a new figure at the same place.
+        const key = e.carry ? `${e.look}+${e.carry}` : e.look;
+        if (f && f.look !== key) {
           figures.delete(e.id);
           f = null;
         }
         if (!f) {
-          f = build(lookOf(e.look));
-          f.look = e.look;
+          f = build(lookOf(e.look, e.carry));
+          f.look = key;
           f.curr = now;
           f.shownY = p.y;
           figures.set(e.id, f);
@@ -128,7 +129,7 @@ export function createFigureLayer(scene, lookOf) {
         }
         f.speed = (e.motion?.speed ?? 0) / 2;
         // The pose that the state asks for: a wave, and the bend of grass.
-        f.want = e.react?.waving > 0 ? 'wave' : null;
+        f.want = e.act === 'sit' || e.act === 'rest' ? 'rest' : e.react?.waving > 0 ? 'wave' : null;
         f.bend = e.react?.bend ?? null;
       }
       for (const id of [...figures.keys()]) if (!seen.has(id)) figures.delete(id);

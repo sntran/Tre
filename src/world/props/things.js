@@ -22,6 +22,22 @@ export function well(ctx, o) {
   ctx.shadowDisc(fx + s / 2, fz + s / 2, 2, 2);
 }
 
+// A chicken coop: a low hut of straw on short legs, with a small ramp.
+export function coop(ctx, o) {
+  const { x, z } = center(o);
+  const g = ctx.ground(x, z);
+  ctx.box(x - 2, g, z - 2, x - 2, g, z - 2, 'wood');
+  ctx.box(x + 1, g, z - 2, x + 1, g, z - 2, 'wood');
+  ctx.box(x - 2, g, z + 1, x - 2, g, z + 1, 'wood');
+  ctx.box(x + 1, g, z + 1, x + 1, g, z + 1, 'wood');
+  ctx.box(x - 2, g + 1, z - 2, x + 1, g + 1, z + 1, 'wood');
+  ctx.box(x - 2, g + 2, z - 2, x + 1, g + 3, z + 1, 'yellow');
+  ctx.box(x - 1, g + 4, z - 2, x, g + 4, z + 1, 'ochre');
+  ctx.box(x - 1, g + 2, z + 1, x, g + 3, z + 1, 'ink');
+  ctx.box(x - 1, g, z + 2, x, g, z + 2, 'wood');
+  ctx.shadowDisc(x, z, 2, 1);
+}
+
 export function haystack(ctx, o) {
   const { x, z } = center(o);
   const g = ctx.ground(x, z);
@@ -35,14 +51,6 @@ export function haystack(ctx, o) {
   }
   ctx.box(x, g + layers, z, x, g + layers + 2, z, 'wood');
   ctx.shadowDisc(x, z, Math.ceil(r0), 3);
-}
-
-export function pot(ctx, o) {
-  const { x, z } = center(o);
-  const g = ctx.ground(x, z);
-  ctx.box(x - 1, g, z - 1, x + 1, g + 2, z + 1, 'vermilionPale');
-  ctx.box(x - 1, g + 1, z - 1, x + 1, g + 1, z + 1, 'ochre');
-  ctx.set(x, g + 3, z, 'vermilion');
 }
 
 export function rock(ctx, o, opts = {}) {

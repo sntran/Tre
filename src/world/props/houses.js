@@ -70,7 +70,15 @@ export function stiltHouse(ctx, o, opts = {}) {
   // The shadow under the floor, and behind the house.
   for (let z = wz0 - 1; z <= wz1 + 2; z++) for (let x = wx0 - 1; x <= wx1 + 1; x++) ctx.shadow(x, z);
   for (let z = wz0 - 6; z < wz0; z++) for (let x = wx0; x <= wx1 + 2; x++) ctx.shadow(x, z);
-  ctx.info = { ground: gy, floor: fy, posts: postXs.length * 2, walls: { x0: wx0, x1: wx1, z0: wz0, z1: wz1, top } };
+  // The way in (fine units): the foot of the ladder or the stairs, the top of it on the veranda,
+  // and the door. The people of the house walk to the foot at dusk, climb, and go in.
+  const foot = opts.stairs ? wz1 + 3 + postH : wz1 + 3 + Math.floor(postH * 0.6) + 1;
+  const home = {
+    base: { x: dx + 1, y: gy, z: foot + 1 },
+    top: { x: dx + 1, y: fy + 1, z: wz1 + 2 },
+    door: { x: dx + 1, y: fy + 1, z: wz1 + 1 },
+  };
+  ctx.info = { ground: gy, floor: fy, posts: postXs.length * 2, walls: { x0: wx0, x1: wx1, z0: wz0, z1: wz1, top }, home };
   return { dx, fy, wx0, wx1, wz0, wz1, gy };
 }
 

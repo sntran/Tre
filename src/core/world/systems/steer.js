@@ -32,7 +32,8 @@ export function steer(world, dt, rng, env) {
       const d = Math.hypot(gx, gz);
       if (d < (s.stop ?? 0.4)) s.arrived = true;
       else {
-        const k = w.arrive ? Math.min(1, d / (s.slow ?? 3)) * w.arrive : w.seek ?? 1;
+        // A point on the way (pass) is only passed; the end of the way is reached slowly.
+        const k = w.arrive && !s.pass ? Math.min(1, d / (s.slow ?? 3)) * w.arrive : w.seek ?? 1;
         dx += (gx / d) * s.speed * k;
         dz += (gz / d) * s.speed * k;
       }

@@ -5,6 +5,9 @@ import { route } from './systems/route.js';
 import { move } from './systems/move.js';
 import { follow } from './systems/follow.js';
 import { react } from './systems/react.js';
+import { sky } from './systems/sky.js';
+import { schedule } from './systems/schedule.js';
+import { lights } from './systems/lights.js';
 import { flock } from './systems/flock.js';
 import { steer } from './systems/steer.js';
 import { clock } from './systems/clock.js';
@@ -13,6 +16,9 @@ export const STEP = 1 / 30; // seconds: 30 steps a second
 
 export const SYSTEMS = [
   input, //  first: the commands of the player go into the entities before anything moves.
+  sky, //    the light and the rain of this hour, so that the plans and the lanterns read them.
+  schedule, // the plan of the hour sets the goals of the people and the animals before anything moves.
+  lights, // after the plans, so that a lantern lights in the step when its family goes in.
   route, //  a route turns into an intent (a direction), so that movement reads one kind of input.
   move, //   the hero and other walkers move with collision, from their intents.
   follow, // after the hero moves, so that Nghé follows the new position without a step of lag.

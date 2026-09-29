@@ -105,6 +105,7 @@ export function person(look) {
   if (item === 'basket') parts.push(P('item', [1.3, 1, 1.3], 'ochre', [0, hand[1] - 0.4, 0.4], { parent: 'armR' }));
   if (item === 'scroll') parts.push(P('item', [0.4, 1.4, 0.4], 'paper', [0, hand[1] - 0.3, 0.4], { parent: 'armR' }));
   if (item === 'fan') parts.push(P('item', [1.2, 1.2, 0.15], 'yellowPale', [0, hand[1] - 0.5, 0.4], { parent: 'armR' }));
+  if (item === 'lantern') parts.push(P('item', [0.15, 1, 0.15], 'wood', [0, hand[1] - 0.2, 0.3], { parent: 'armR' }), P('lamp', [0.8, 0.9, 0.8], 'yellow', [0, hand[1] - 1.1, 0.3], { parent: 'armR' }));
   if (item === 'drum') parts.push(P('item', [1.4, 1, 1.4], 'vermilion', [0, hand[1] - 0.2, 0.6], { parent: 'armR' }));
   const top = headY + headS / 2 + (look.hat === 'non' ? 1.1 : look.hat === 'plume' ? 1.7 : 0.8);
   return {
@@ -242,6 +243,45 @@ export function grass() {
   return { kind: 'still', parts, scale: 0.9, height: 2.6, shadow: 0 };
 }
 
+// The owl in the banyan at night.
+export function owl() {
+  const parts = [
+    P('trunk', [1.4, 1.8, 1.2], 'ash', [0, 0.9, 0]),
+    P('belly', [1, 1.2, 0.1], 'ashLight', [0, 0.8, 0.62]),
+    P('head', [0.01, 0.01, 0.01], null, [0, 2.1, 0]),
+    P('skull', [1.3, 1, 1.1], 'ash', [0, 0, 0], { parent: 'head' }),
+    P('earL', [0.3, 0.4, 0.3], 'ash', [-0.45, 0.6, 0], { parent: 'head' }),
+    P('earR', [0.3, 0.4, 0.3], 'ash', [0.45, 0.6, 0], { parent: 'head' }),
+    P('eyeL', [0.35, 0.35, 0.05], 'yellow', [-0.3, 0.05, 0.57], { parent: 'head', mark: true }),
+    P('eyeR', [0.35, 0.35, 0.05], 'yellow', [0.3, 0.05, 0.57], { parent: 'head', mark: true }),
+  ];
+  return { kind: 'still', parts, scale: 0.8, height: 2.8, shadow: 0 };
+}
+
+// A small bird of the dusk: a body and two wings that beat.
+export function bird() {
+  const parts = [
+    P('trunk', [0.5, 0.4, 1], 'ink', [0, 0, 0]),
+    P('wingL', [1, 0.1, 0.5], 'ink', [-0.25, 0.1, 0], { pivotTop: false }),
+    P('wingR', [1, 0.1, 0.5], 'ink', [0.25, 0.1, 0], { pivotTop: false }),
+  ];
+  parts[1].at = [-0.7, 0.1, 0];
+  parts[2].at = [0.7, 0.1, 0];
+  return { kind: 'flyer', parts, scale: 0.7, height: 0.5, shadow: 0 };
+}
+
+// The lantern of a house: dark by day; at night, when the family is in, the lamp is lit and the
+// door is dark. The figure stands at the door.
+export function lantern(lit = false) {
+  const parts = [
+    P('hook', [0.15, 0.8, 0.15], 'wood', [1.6, 2.8, 0.2]),
+    P('lamp', [0.8, 1, 0.8], lit ? 'yellowPale' : 'vermilion', [1.6, 2, 0.2]),
+    P('cap', [1, 0.2, 1], 'wood', [1.6, 2.6, 0.2]),
+  ];
+  if (lit) parts.push(P('door', [1.9, 2.9, 0.1], 'ink', [0, 1.45, 0.08]));
+  return { kind: 'still', parts, scale: 1, height: 3, shadow: 0 };
+}
+
 // The figure of a look from data/figures.json.
 export function figureOf(look) {
   if (look.kind === 'nghe') return nghe();
@@ -253,5 +293,8 @@ export function figureOf(look) {
   if (look.kind === 'dog') return dog();
   if (look.kind === 'pot') return pot(Boolean(look.broken));
   if (look.kind === 'grass') return grass();
+  if (look.kind === 'owl') return owl();
+  if (look.kind === 'bird') return bird();
+  if (look.kind === 'lantern') return lantern(Boolean(look.lit));
   return person(look);
 }

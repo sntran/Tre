@@ -18,7 +18,7 @@ function village(seed = 7) {
   const w = createWorldState({ seed, map: map.id, clock: { minutes: 420 } });
   addHero(w, env, map.spawn);
   addFriend(w, env, 'nghe');
-  syncPeople(w, map, env, () => true);
+  syncPeople(w, map, env, () => true, load('data/world/life.json').people, load('data/world/people.json'));
   addLifeLayer(w, map, env, load('data/world/life.json'));
   return w;
 }

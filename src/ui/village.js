@@ -10,8 +10,8 @@ import { heroLayers } from '../render/assets.js';
 import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../core/world/move.js';
 import { createWorldState, getEntity, query, command } from '../core/world/state.js';
 import { step, STEP } from '../core/world/step.js';
-import { envFor } from '../core/world/env.js';
-import { addHero, addFriend, syncPeople, addLifeLayer } from '../core/world/populate.js';
+import { envFor, placesOf } from '../core/world/env.js';
+import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns } from '../core/world/populate.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from '../core/world/save.js';
 import { buildTerrain, columnTop } from '../world/terrain.js';
 import { heroLook } from '../world/figures.js';
@@ -61,7 +61,6 @@ export async function mountVillage(ctx, params = {}) {
   const tileTypes = data.tiles.types;
   const tileMap = createTileMap(mapData, tileTypes);
   const triggers = createTriggers(mapData.layers.triggers);
-  const env = envFor(tileMap);
   const canvas = ctx.voxel;
   ctx.surface.canvas.hidden = true;
 
@@ -77,10 +76,11 @@ export async function mountVillage(ctx, params = {}) {
 
   if (!terrains.has(mapData.id)) terrains.set(mapData.id, buildTerrain(mapData, tileTypes, tileMap));
   const terrain = terrains.get(mapData.id);
+  const env = envFor(tileMap, { places: placesOf(mapData, tileMap), homes: terrain.homes, day: data.day });
   if (!worlds.has(mapData.id)) worlds.set(mapData.id, D.createVoxelWorld(canvas, terrain));
   const view = worlds.get(mapData.id);
   const looks = data.figures.figures;
-  const figures = D.createFigureLayer(view.scene, (key) => (key === 'hero' ? heroLook(profile.hero) : looks[key] ?? {}));
+  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero) : looks[key] ?? {}), ...(carry ? { item: carry } : {}) }));
 
   // The height of the ground under a map point (world units).
   const groundY = (x, y) => columnTop(tileMap.heightAt(Math.floor(x), Math.floor(y)));
@@ -99,6 +99,7 @@ export async function mountVillage(ctx, params = {}) {
     addHero(state, env, { x: start.x, y: start.y, facing: params.facing ?? 0 });
   }
   addLifeLayer(state, mapData, env, data.life);
+  addLanterns(state, env);
   const hero = () => getEntity(state, 'hero');
   const heroCell = () => ({ x: hero().position.x / 2, y: hero().position.z / 2 });
 
@@ -125,9 +126,13 @@ export async function mountVillage(ctx, params = {}) {
   // People and encounters. They block their cells for the paths of taps.
   const persons = () => query(state, 'person').map((e) => ({ ...e.person, x: e.position.x / 2, y: e.position.z / 2, entity: e.id }));
   function refreshPeople() {
-    syncPeople(state, mapData, env, (kind, item) => (kind === 'npc' ? Boolean(data.npcs.npcs[item.id]) && isPresent(data.npcs.npcs[item.id], profile) : isPresent(item, profile)), data.life.people.react);
+    syncPeople(state, mapData, env, (kind, item) => (kind === 'npc' ? Boolean(data.npcs.npcs[item.id]) && isPresent(data.npcs.npcs[item.id], profile) : isPresent(item, profile)), data.life.people, data.people);
     tileMap.clearOccupied();
     for (const p of persons()) tileMap.occupy(Math.floor(p.x), Math.floor(p.y), { kind: p.kind, id: p.ref });
+    // A person of the quest stays out at night, with a lantern.
+    const goal = currentGoal(data.quests.quests, conditionState(profile));
+    const wanted = new Set((goal?.step.targets ?? (goal?.step.target ? [{ npc: goal.step.target }] : [])).map((tg) => tg.npc).filter(Boolean));
+    for (const p of persons()) if (p.kind === 'npc') command(state, { type: 'stay', id: p.entity, on: wanted.has(p.ref) });
     // The friend walks behind the hero.
     const friendId = profile.party[0];
     for (const f of query(state, 'follow')) if (f.id !== `friend:${friendId}`) state.entities.splice(state.entities.indexOf(f), 1);
@@ -760,6 +765,8 @@ export async function mountVillage(ctx, params = {}) {
       view.resize(w, hh);
     }
     figures.draw(between, dt);
+    // The light of the hour: the world dims to a cool dusk (softer at 0.8 so that the night stays readable).
+    D.night.value = (state.sky?.night ?? 0) * 0.8;
     view.render(dt, figures.placeOf('hero'), time);
     drawMarks();
   }

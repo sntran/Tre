@@ -1,5 +1,5 @@
 {
-  "_about": "The living things of the world, and the numbers of their behaviors. kinds: one entry for each kind. looks: the figures in data/figures.json (one for each animal, in turn). steer: the steering (src/core/world/systems/steer.js): speed (half blocks a second), accel, medium (land, water, air), weights of the behaviors (seek, arrive, flee, wander, separation, avoid), slow (arrive starts to slow down at this distance), radius (separation), boost (speed factor when fleeing), run and pause (the lengths of the runs and stops of wander, in seconds), float (height over the bed for swimmers), altitude (height for fliers). flock: align and cohere (the pull of the neighbors), radius (who is a neighbor). range: how far a flock goes from its place, as a factor of the r of its group on the map (at least 4 half blocks). Units: half blocks (one map cell is 2) and seconds. react: what the thing does when the hero comes near (src/core/world/systems/react.js): flee (radius, when: near or run, time, sound), greet (radius, wave: seconds, cooldown), follow (radius, time, cooldown: the dog follows the hero and then goes home), break (radius, give: the items that the hero gets), bend (radius: tall grass). people: the reaction of the people of the story.",
+  "_about": "The living things of the world, and the numbers of their behaviors. kinds: one entry for each kind. looks: the figures in data/figures.json (one for each animal, in turn). steer: the steering (src/core/world/systems/steer.js): speed (half blocks a second), accel, medium (land, water, air), weights of the behaviors (seek, arrive, flee, wander, separation, avoid), slow (arrive starts to slow down at this distance), radius (separation), boost (speed factor when fleeing), run and pause (the lengths of the runs and stops of wander, in seconds), float (height over the bed for swimmers), altitude (height for fliers). flock: align and cohere (the pull of the neighbors), radius (who is a neighbor). range: how far a flock goes from its place, as a factor of the r of its group on the map (at least 4 half blocks). Units: half blocks (one map cell is 2) and seconds. react: what the thing does when the hero comes near (src/core/world/systems/react.js): flee (radius, when: near or run, time, sound), greet (radius, wave: seconds, cooldown), follow (radius, time, cooldown: the dog follows the hero and then goes home), break (radius, give: the items that the hero gets), bend (radius: tall grass). people: the reaction of the people of the story. plan: the day of an animal (src/core/world/systems/schedule.js): from (an hour) and at: range (it lives near its place), bed (it goes to its bed and sits; the bed of a chicken is its coop, the bed of a duck is the bank), spot (its place on the map), or gone (it is not there: the owl by day, the birds out of the dusk). act: sit.",
   "kinds": {
     "chicken": {
       "looks": [
@@ -39,7 +39,18 @@
         "when": "run",
         "time": 1.2,
         "sound": "cluck"
-      }
+      },
+      "plan": [
+        {
+          "from": 6,
+          "at": "range"
+        },
+        {
+          "from": 18,
+          "at": "bed",
+          "act": "sit"
+        }
+      ]
     },
     "duck": {
       "looks": [
@@ -79,7 +90,18 @@
         "when": "near",
         "time": 2,
         "sound": "quack"
-      }
+      },
+      "plan": [
+        {
+          "from": 6,
+          "at": "range"
+        },
+        {
+          "from": 18.5,
+          "at": "bed",
+          "act": "sit"
+        }
+      ]
     },
     "fish": {
       "looks": [
@@ -148,7 +170,18 @@
         "cohere": 0.3,
         "radius": 10
       },
-      "range": 3
+      "range": 3,
+      "plan": [
+        {
+          "from": 6,
+          "at": "range"
+        },
+        {
+          "from": 19,
+          "at": "bed",
+          "act": "sit"
+        }
+      ]
     },
     "dog": {
       "looks": [
@@ -184,7 +217,18 @@
         "cooldown": 30,
         "sound": "bark"
       },
-      "range": 1.5
+      "range": 1.5,
+      "plan": [
+        {
+          "from": 6,
+          "at": "range"
+        },
+        {
+          "from": 20,
+          "at": "bed",
+          "act": "sit"
+        }
+      ]
     },
     "pot": {
       "looks": [
@@ -210,6 +254,65 @@
         "radius": 2.6,
         "sound": "rustle"
       }
+    },
+    "owl": {
+      "looks": [
+        "owl"
+      ],
+      "plan": [
+        {
+          "from": 5,
+          "at": "gone"
+        },
+        {
+          "from": 19,
+          "at": "spot"
+        }
+      ]
+    },
+    "bird": {
+      "looks": [
+        "bird"
+      ],
+      "steer": {
+        "speed": 7,
+        "accel": 3,
+        "medium": "air",
+        "altitude": 16,
+        "weights": {
+          "wander": 1,
+          "separation": 1
+        },
+        "radius": 2,
+        "run": [
+          2,
+          4
+        ],
+        "pause": [
+          0.5,
+          1
+        ]
+      },
+      "flock": {
+        "align": 0.8,
+        "cohere": 0.6,
+        "radius": 10
+      },
+      "range": 3,
+      "plan": [
+        {
+          "from": 0,
+          "at": "gone"
+        },
+        {
+          "from": 17,
+          "at": "range"
+        },
+        {
+          "from": 19,
+          "at": "gone"
+        }
+      ]
     }
   },
   "people": {
@@ -219,6 +322,20 @@
       "wave": 1.6,
       "cooldown": 25,
       "sound": "greet"
+    },
+    "steer": {
+      "speed": 3.6,
+      "accel": 6,
+      "medium": "land",
+      "weights": {
+        "seek": 1,
+        "arrive": 1,
+        "separation": 1,
+        "avoid": 2
+      },
+      "slow": 2,
+      "stop": 0.5,
+      "radius": 1.6
     }
   }
 }

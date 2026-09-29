@@ -32,8 +32,9 @@ export function addFriend(world, env, id, target = 'hero') {
 
 // People and enemies that are present now. present(kind, item): true when the story shows them.
 // People that come are added, and people that go are removed. Return true when something changed.
-// react: the reaction of the people (life.people.react in data/world/life.json).
-export function syncPeople(world, map, env, present, react = { kind: 'greet', radius: 8, wave: 1.6, cooldown: 25 }) {
+// people: { react, steer } of the people (life.people in data/world/life.json). days: the plans
+// and houses of the people (data/world/people.json).
+export function syncPeople(world, map, env, present, people = {}, days = null) {
   let changed = false;
   const want = new Set();
   const list = [
@@ -47,13 +48,20 @@ export function syncPeople(world, map, env, present, react = { kind: 'greet', ra
     if (getEntity(world, id)) continue;
     const hero = getEntity(world, 'hero');
     const facing = hero ? Math.atan2(hero.position.x - item.x * HALF, hero.position.z - item.y * HALF) : 0;
+    const spot = { x: item.x * HALF, z: item.y * HALF };
+    // The people of the village have a day; the enemies stay at their place.
+    const day = kind === 'npc' && days ? (days.people[item.id] ?? days.default) : null;
     addEntity(world, {
       id,
       person: { kind, ref: item.id },
-      position: { x: item.x * HALF, y: env.groundY(item.x, item.y), z: item.y * HALF, facing },
+      position: { x: spot.x, y: env.groundY(item.x, item.y), z: spot.z, facing },
       motion: { vx: 0, vz: 0, speed: 0 },
       solid: { r: 1.8 },
-      ...(look === 'river-serpent' ? {} : { react: structuredClone(react) }),
+      ...(look === 'river-serpent' || !people.react ? {} : { react: structuredClone(people.react) }),
+      ...(day && people.steer ? {
+        steer: { ...structuredClone(people.steer), goal: null, arrived: false, flee: null, bias: null, wander: null },
+        schedule: { plan: structuredClone(days.plans[day.plan]), home: env.homes[day.home] ? day.home : null, spot, offset: offsetOf(id) },
+      } : {}),
       look,
     });
     changed = true;
@@ -64,6 +72,25 @@ export function syncPeople(world, map, env, present, react = { kind: 'greet', ra
     changed = true;
   }
   return changed;
+}
+
+// A small place near a named place, so that two people at the well do not stand on one point.
+function offsetOf(id) {
+  const a = (hashSeed(String(id)) % 628) / 100;
+  return { x: Math.cos(a) * 1.4, z: Math.sin(a) * 1.4 };
+}
+
+// The lantern at the door of each house (env.homes).
+export function addLanterns(world, env) {
+  for (const [home, way] of Object.entries(env.homes)) {
+    if (getEntity(world, `lantern:${home}`)) continue;
+    addEntity(world, {
+      id: `lantern:${home}`,
+      lantern: { home, always: home === 'dinh' },
+      position: { x: way.door.x, y: way.door.y, z: way.door.z, facing: 0 },
+      look: 'lantern',
+    });
+  }
 }
 
 // A living thing of a kind in data/world/life.json at a point (half blocks).
@@ -107,8 +134,13 @@ export function addLifeLayer(world, map, env, life) {
       const facing = rng.next() * Math.PI * 2;
       // A thing that the player changed (a broken pot) comes from the save, not from the map.
       if (getEntity(world, `life:${gi}:${i}`)) continue;
-      addLife(world, env, life, g.kind, { ...at, facing }, {
+      const place = (name) => (name && env.places[name] ? { ...env.places[name] } : null);
+      const spot = place(g.spot) ?? { x: cx, z: cz };
+      // A swimmer finds its bank at dusk (see the schedule system); the others have a bed here.
+      const bed = medium === 'water' ? null : place(g.bed) ?? { x: cx, z: cz };
+      addLife(world, env, life, g.kind, { ...(g.spot ? spot : at), facing }, {
         id: `life:${gi}:${i}`,
+        ...(def.plan ? { schedule: { plan: structuredClone(def.plan), spot, bed: bed ? { x: bed.x + (i % 3) - 1, z: bed.z + Math.floor(i / 3) - 0.5 } : null } } : {}),
         look: def.looks[i % def.looks.length],
         ...(def.flock ? { flock: { id: `${map.id}:${gi}`, ...def.flock } } : {}),
         ...(def.react ? { react: structuredClone(def.react) } : {}),

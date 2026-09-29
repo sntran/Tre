@@ -69,6 +69,11 @@ export function animate(a, input) {
     rot.head = [moving ? 0 : Math.max(0, Math.sin(a.time * 2 + a.idle)) * 0.9, 0, 0];
     lift = speed > 6 ? Math.abs(Math.sin(a.time * 14)) * 0.8 : 0;
     sink = a.rest * 0.6;
+  } else if (a.kind === 'flyer') {
+    const beat = Math.sin(a.time * 12) * 0.7;
+    rot.wingL = [0, 0, beat];
+    rot.wingR = [0, 0, -beat];
+    lift = Math.sin(a.time * 2) * 0.3;
   } else if (a.kind === 'fish') {
     rot.tail = [0, Math.sin(a.time * (moving ? 14 : 5)) * 0.5, 0];
   } else if (a.kind === 'serpent') {

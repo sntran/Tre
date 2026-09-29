@@ -9,7 +9,7 @@ import { stepBody, moveCircle, MOVE } from '../move.js';
 export function move(world, dt, rng, env) {
   const solids = query(world, 'solid', 'position');
   for (const e of query(world, 'position', 'motion')) {
-    if (e.follow || e.steer) continue;
+    if (e.follow || e.steer || (!e.control && !e.intent)) continue;
     const p = e.position;
     const m = e.motion;
     const i = world.paused ? null : e.intent;

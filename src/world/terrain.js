@@ -113,7 +113,7 @@ export function buildTerrain(map, tileTypes, tileMap) {
     const who = objects.length + 1;
     const r = buildProp(world, prop, who);
     if (!r.box) return;
-    objects.push({ id, who, kind: prop.kind, box: r.box, solid });
+    objects.push({ id, who, kind: prop.kind, box: r.box, solid, ...(r.info?.home ? { home: r.info.home } : {}) });
     roofs.push(...r.roofs);
   };
 
@@ -158,6 +158,8 @@ export function buildTerrain(map, tileTypes, tileMap) {
     width: W, height: H, ground, fine, shade, objects, roofs, water, paddies,
     topAt,
     maxTop,
+    // The ways into the houses (fine units = half blocks), by the id of the house.
+    homes: Object.fromEntries(objects.filter((o) => o.home && o.id).map((o) => [o.id, o.home])),
     // World units: one ground block is 1 unit; a fine block is 0.5.
     boxOf: (o) => ({ x0: o.box.x0 / 2, y0: o.box.y0 / 2, z0: o.box.z0 / 2, x1: o.box.x1 / 2, y1: o.box.y1 / 2, z1: o.box.z1 / 2 }),
   };

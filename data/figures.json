@@ -1,5 +1,5 @@
 {
-  "_about": "The looks of the people, the enemies, and the animals of the world. The code builds each figure from parts (src/world/figures.js). A person: child, skin (skin1 to skin4), top, bottom, sash (palette colors), topKind (shirt, yem, bare, robe), bottomKind (shorts, skirt, trousers, robe), hair (short, topknot, long, braids, bun, tufts, grey, bald), beard (true or a color), hat (non, band, helmet, plume), item (staff, hammer, axe, net, basket, scroll, fan, drum), face (1 to 4), scale. An animal: kind (nghe, duck, serpent). The keys are the ids of people in npcs.json, the figure of an encounter or a decor point on a map, and the ids of friends in friends.json.",
+  "_about": "The looks of the people, the enemies, and the animals of the world. The code builds each figure from parts (src/world/figures.js). A person: child, skin (skin1 to skin4), top, bottom, sash (palette colors), topKind (shirt, yem, bare, robe), bottomKind (shorts, skirt, trousers, robe), hair (short, topknot, long, braids, bun, tufts, grey, bald), beard (true or a color), hat (non, band, helmet, plume), item (staff, lantern, hammer, axe, net, basket, scroll, fan, drum), face (1 to 4), scale. An animal: kind (nghe, duck, serpent). The keys are the ids of people in npcs.json, the figure of an encounter or a decor point on a map, and the ids of friends in friends.json.",
   "figures": {
     "grandma": { "skin": "skin2", "top": "wood", "bottom": "indigo", "sash": "ochre", "topKind": "shirt", "bottomKind": "skirt", "hair": "grey", "item": "fan", "face": 2 },
     "mother": { "skin": "skin2", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "yem", "bottomKind": "skirt", "hair": "bun", "face": 2 },
@@ -27,6 +27,10 @@
     "dog": { "kind": "dog" },
     "pot": { "kind": "pot" },
     "pot-broken": { "kind": "pot", "broken": true },
-    "grass": { "kind": "grass" }
+    "grass": { "kind": "grass" },
+    "owl": { "kind": "owl" },
+    "bird": { "kind": "bird" },
+    "lantern": { "kind": "lantern" },
+    "lantern-lit": { "kind": "lantern", "lit": true }
   }
 }

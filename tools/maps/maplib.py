@@ -18,7 +18,7 @@ ABOUT = ('A map of the voxel world. Map x is east, map y is south (world z). One
          '(solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open '
          '(block: false) cells. layers.zones: placement zones. layers.paths: walk lines in cells. layers.exits: when the '
          'hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the '
-         'position). layers.life: groups of animals (kind in data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the world. figure: the look of a person or an enemy in data/figures.json. '
+         'position). layers.places: named map points for the plans of the day (h: the height over the ground in half blocks). layers.life: groups of animals (kind in data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the world. figure: the look of a person or an enemy in data/figures.json. '
          'geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). '
          'The maps are made by tools/maps/era1.py; do not change them by hand.')
 
@@ -31,6 +31,7 @@ class M:
         self.objects, self.npcs, self.encounters, self.triggers = [], [], [], []
         self.collision, self.zones, self.paths, self.exits = [], [], {}, []
         self.life = []
+        self.places = {}
         self.geo = None
         self.spawn = None
         self.terrace = ''  # the sides with terraces: n, e, s, w (north is y = 0, west is x = 0)
@@ -156,6 +157,7 @@ class M:
                 'paths': {key: [[sc(x), sc(y)] for x, y in line] for key, line in self.paths.items()},
                 'exits': exits,
                 'life': [{**point(g), 'r': sc(g['r'])} for g in self.life],
+                'places': {name: point(p) for name, p in self.places.items()},
                 'triggers': triggers,
             },
             'npcs': [point(n) for n in self.npcs],

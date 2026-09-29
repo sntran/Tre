@@ -1,7 +1,8 @@
 // Input: the commands of the last frames go into the components of the entities.
 // Commands: move (a map direction from the stick or the keys), walk (a route of points), stop,
-// place (put an entity at a point), face (turn to a point), pause (a dialogue opens or closes).
-export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'events'];
+// place (put an entity at a point), face (turn to a point), pause (a dialogue opens or closes),
+// stay (a person of the quest stays out at night).
+export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'events'];
 
 import { getEntity, query } from '../state.js';
 import { faceOf } from '../move.js';
@@ -43,6 +44,8 @@ export function input(world, dt, rng, env) {
         f.position.y = env.groundY(f.position.x / 2, f.position.z / 2);
       }
       world.events.push({ type: 'placed', id: e.id });
+    } else if (c.type === 'stay' && e.schedule) {
+      e.schedule.stay = Boolean(c.on);
     } else if (c.type === 'face' && e.position) {
       const dx = c.x - e.position.x;
       const dz = c.z - e.position.z;

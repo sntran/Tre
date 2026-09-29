@@ -38,8 +38,8 @@ export function flock(world) {
         vx += o.motion.vx;
         vz += o.motion.vz;
       }
-      // Fear is stronger than the flock: while it flees, the pull is small.
-      const k = s.flee ? 0.15 : 1;
+      // Fear and a goal (the way to the coop) are stronger than the flock: the pull is small.
+      const k = s.flee || s.goal ? 0.15 : 1;
       let bx = n ? (vx / n) * f.align * k : 0;
       let bz = n ? (vz / n) * f.align * k : 0;
       const cx = mx - p.x;
@@ -51,7 +51,7 @@ export function flock(world) {
         bz += (cz / d) * pull;
       }
       // The range: back to the yard or the pond.
-      if (e.range && !s.flee) {
+      if (e.range && !s.flee && !s.goal) {
         const rx = e.range.x - p.x;
         const rz = e.range.z - p.z;
         const d = Math.hypot(rx, rz);
