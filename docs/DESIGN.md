@@ -51,7 +51,7 @@ The skill map follows the US Common Core for math and NGSS for science. Each cha
 
 In each era, the player goes around the same loop many times. When the player is ready, a Văn Miếu exam opens the next era.
 
-&#91;embedded content: core loop · one era\]
+Core loop of one era: Village (practice and crafting) → Quest and travel (puzzles and legends) → Battle (math and science skills) → Rewards (friends and materials) → back to the Village. When the player is ready: Văn Miếu exam → Next era (the bamboo grows).
 
 A lost battle also goes back to the village, with a small loss of items. One play session is one quest or one battle. The parent sets the time limit.
 
@@ -68,9 +68,20 @@ These four parts give the child a reason to look forward and a way to find their
 
 Tre is one living isometric world. The child walks, builds, and defends in the same place. There is no separate battle screen and no question screen. The math is the input of every action, never a question. This follows Ring Fit Adventure, where the exercise is the way you move, and the game never says "now exercise."
 
-**View:** isometric (2:1 dimetric grid) on Canvas 2D, in the Đông Hồ style: flat colors and black keylines, as in Monument Valley. Isometric makes places feel like places, shows what the child builds, and puts battles in the world. It works on every phone.
+**View:** a voxel world with an isometric camera, drawn in the Đông Hồ style. The world is made of blocks, so the child can place blocks (planks, earth, stakes), the math is visible (a dike of 3 × 4 × 2 blocks is volume), and depth, height, and shadows come for free. Every house, tree, animal, and person is made in code from blocks and parts, not drawn, so the agent can make many variants and tests can check the world. The camera is orthographic and turns in 90° steps. The reference for the look and the feel is `docs/reference/voxel-village.html` in the repository.
 
-**Depth:** the ground has heights. The river bank drops two steps to the water, the rice paddies are sunken water with dikes, the road is one step above the fields, the đình stands on a mound, and the edges of a map rise in terraces. One light from the front-left makes each tall thing cast a flat shadow to the back-right. The sides of a map that face the camera have a low hedge, so that they do not cover the play area. The rules are in `docs/ART.md`, section 11.
+**The voxel print style** (the rules that make blocks look like a woodblock print, not like Minecraft):
+
+- **Two block sizes.** The ground (terraces, paddies, road, riverbanks) uses full blocks. Buildings, plants, props, and people use half-size blocks. People are about as tall as the posts under a house.
+- **Flat colors from the Tre palette only,** with three flat tones per color: top, left face, right face. No lighting model, no gradients.
+- **Ink lines only where they mean something:** where a face meets another color, an open edge, or a fold. Never around every block. Lines are thinner on the fine blocks.
+- **Roofs are smooth thatch,** not stepped blocks: sloped surfaces with the curved, boat-shaped ridge of the Đông Sơn houses, thatch lines in ink, and bird-head finials on the đình.
+- **Water has the wave pattern** of the prints. Paddies are still water with seedlings in rows.
+- **One light from the front-left.** Every tall thing casts a flat shadow to the back-right on the ground blocks. Houses on stilts cast a shadow under their floor.
+- **A paper grain and a soft vignette** over the whole frame.
+- **The hero is always visible.** Anything between the camera and the hero fades to a ghost: outlines stay, color goes. Whole objects fade, not parts.
+- **Dusk** is an indigo wash over the whole scene, with warm pools of light from the lanterns and fireflies by the water. Ink lines soften a little at night.
+- **Characters are made of parts** (head, body, arms, legs) that rotate, so walk cycles, grazing, waving, and sitting are animation of parts, not new sprites. A walk has legs and arms that swing in turn, a small lean, and a lift on each step. Four-legged animals walk with their diagonal legs together.
 
 **The five rules**
 
@@ -87,7 +98,7 @@ Tre is one living isometric world. The child walks, builds, and defends in the s
 - **Stakes.** The village is the hero's home, and the child made things in it. When the scouts come, they threaten the bridge the child built.
 - **Nghé has a body.** Nghé follows, can be ridden, pushes carts, swims across the river with the child on her back, and is afraid of fire. Nghé is a friend that acts, not a hint button.
 - **Secrets.** A path behind the bamboo, a cave, a creature that only comes at night. Curiosity is the reason children play.
-- **Time.** Day and night, rain, seasons, and Tết. The river rises in the rain, so the dyke matters. Some creatures come out at night.
+- **Time.** Day and night, rain, seasons, and Tết. The river rises in the rain, so the dyke matters. Some creatures come out at night. At dusk the village goes to sleep: villagers walk home, climb their ladders, and go in; chickens go to their coop and sit; ducks settle on the bank; Nghé lies down beside the hero. At dawn they all come out again. The child sees a village with its own life, and learns that night is for rest.
 - **A place of their own.** A plot to farm, a house to decorate, and the notebook of prints.
 
 **Actions and the math inside them**
@@ -116,6 +127,18 @@ Battles are light real-time tactics on the village map, like a gentle tower defe
 - **Two players** play at the same time on the same map, each with their own hero, each at their own level.
 
 **First prototype:** one isometric village, free movement, Nghé who follows, the world that reacts (chickens, grass, pots), the broken bridge with the plank placement task, and one small raid of scouts at the gate with traps and the slingshot. No story text beyond one line from the elder. Play it with the first player for ten minutes and watch what he does in the first two minutes without help. The prototype tests three things: does the world feel real, does placement feel like play, and does the child want to protect what he built?
+
+## Procedural generation
+
+The story places are hand-built and true to history. Around them, rules make the world large and varied without hand work.
+
+- **Land between regions:** made from the real elevation and river data, with seeded noise for detail, so travel between story regions crosses the real hills and rivers.
+- **Scatter:** trees, bamboo, grass, flowers, rocks, and rice terraces placed by rules that follow the height and the water, never in a grid.
+- **Variety from parts:** houses, trees, boats, and villagers built from parts with variations, so no two villages look the same.
+- **Small events each day:** a cart stuck on the road, a flood on a field, a market day, a lost duck. The skill model sets the level of the math in each one.
+- **Places to explore:** caves, forest paths, and small islands that differ from game to game, with a few secrets.
+
+**Two rules:** everything is **seeded** (the same seed gives the same world, so siblings and a parent see the same place, and the save keeps only the seed and what the player changed), and generated places are **never presented as historical places**.
 
 ## Geography: the whole country, real
 
@@ -394,7 +417,7 @@ Tre is built from scratch as a static web site on GitHub Pages, with no build st
 **Platform**
 
 - **Code:** plain JavaScript with native ES modules. No framework, no bundler, no engine.
-- **Drawing:** Canvas 2D for the isometric world (2:1 dimetric grid, painter's depth sort, diamond tile picking). HTML, CSS, and SVG for dialogue, menus, exams, settings, and the parent page, so that Vietnamese text is sharp and easy to translate.
+- **Drawing:** WebGL through three.js (a fixed version from a CDN, with an import map, no build step) for the voxel world: chunked meshes with face culling, vertex colors for the three tones, one ink mesh built from the edges, an orthographic camera. HTML, CSS, and SVG for dialogue, menus, exams, settings, and the parent page, so that Vietnamese text is sharp and easy to translate. If WebGL is missing, the game shows a clear message.
 - **Input:** Pointer Events, the same code for touch and mouse.
 - **Sound:** Web Audio API.
 - **Offline:** a web app manifest and a service worker. Saves in IndexedDB.
@@ -407,7 +430,7 @@ Tre is built from scratch as a static web site on GitHub Pages, with no build st
 | --- | --- | --- |
 | Game flow | State machines for scenes and battle turns | Clear flow with no strange states |
 | Randomness | Seeded random numbers | Tests can repeat a problem. Two players get fair problems |
-| World | Isometric tile map, collision grid, A\* pathfinding, free movement with a stick or tap-and-hold, placement grid, day and night clock | The child walks anywhere, and puts things in the world |
+| World | Voxel grid with heights, collision grid, A\* pathfinding, free movement with a stick or tap-and-hold, placement of blocks, day and night clock with routines for villagers and animals | The child walks anywhere, and puts things in the world |
 | World | Trigger zones | Doors, talks, and quest events start on a tile |
 | Objects | Plain data objects with shared parts, and systems as functions | Data separate from logic, easy to test |
 | Battle | Rule table for element combinations | New combinations are data, not code |
@@ -431,7 +454,7 @@ The learning model is chosen to help the player learn and remember, not only to 
 
 **Not used, and why**
 
-- **Game engine (Godot, Phaser):** the hard parts of Tre (generators, mastery, exams, element rules) are custom in any engine, and an engine adds download size and iPad problems.
+- **Game engine (Godot, Phaser):** the hard parts of Tre (generators, mastery, exams, element rules) are custom in any engine, and an engine adds download size and iPad problems. three.js is a rendering library, not an engine, and the same approach already works in Smashterpiece.
 - **Full ECS:** a scene has only 10 to 50 objects.
 - **Roaring Bitmap:** our largest sets have only a few hundred items. A plain Set or a small bitset is enough.
 - **Hex grid:** a square grid teaches coordinates, area, and perimeter, and children know it from Minecraft.
