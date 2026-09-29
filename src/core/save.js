@@ -245,12 +245,22 @@ function validateWorld(world, v) {
       plain(x, `${what}.${k}`, depth + 1);
     }
   };
-  for (const e of world.entities) {
+  const entity = (e) => {
     if (!isObj(e) || (typeof e.id !== 'string' && !Number.isInteger(e.id))) fail('world entity');
     plain(e, `world entity ${e.id}`, 0);
     if (e.position !== undefined) {
       if (!isObj(e.position)) fail('world entity position');
       for (const k of ['x', 'y', 'z']) num(e.position[k], `world entity ${e.id} position.${k}`, -1000, 100000);
+    }
+  };
+  world.entities.forEach(entity);
+  // The kept entities of the other maps, until the hero comes back there.
+  if (world.away !== undefined) {
+    if (!isObj(world.away)) fail('world.away');
+    for (const [map, kept] of Object.entries(world.away)) {
+      str(map, 'world.away map');
+      list(kept, `world.away ${map}`, LIMITS.worldEntities);
+      kept.forEach(entity);
     }
   }
 }

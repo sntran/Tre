@@ -3,8 +3,9 @@
 // place (put an entity at a point), face (turn to a point), pause (a dialogue opens or closes),
 // stay (a person of the quest stays out at night), pet (a friend is happy), ride (the hero gets on
 // the back of a friend, or gets off), knock (a tap on a house at night: if the family is in, the
-// lantern flickers and a soft sound comes from inside).
-export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'events'];
+// lantern flickers and a soft sound comes from inside), pick (take a thing), put (put the thing in
+// the hands into a zone), drop (put it on the ground). The place system does what the hands want.
+export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'hands', 'events'];
 
 export const INSIDE_SOUNDS = Object.freeze(['cough', 'baby', 'clatter']);
 
@@ -69,6 +70,8 @@ export function input(world, dt, rng, env) {
         Object.assign(e.position, { x: mount.position.x, z: mount.position.z });
         world.events.push({ type: 'mount', id: e.id, sound: 'moo' });
       }
+    } else if (c.type === 'pick' || c.type === 'put' || c.type === 'drop') {
+      e.hands = { holds: e.hands?.holds ?? null, want: { do: c.type, item: c.item ?? null, zone: c.zone ?? null } };
     } else if (c.type === 'stay' && e.schedule) {
       e.schedule.stay = Boolean(c.on);
     } else if (c.type === 'face' && e.position) {

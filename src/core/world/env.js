@@ -1,6 +1,8 @@
 // The facts of a map that the systems read: which cells block, the ground type, the height of
 // the ground, the named places, and the homes. They come from the map and never change in a step,
-// so they are not state.
+// so they are not state. Only the collision of some cells changes in play (a ford under a high
+// river, the deck of a bridge): the ground system sets it from the state in each step (see
+// block), so it is not state either.
 import { worldFor } from './move.js';
 import { findPath } from '../tilemap.js';
 
@@ -17,11 +19,15 @@ export function placesOf(map, tileMap) {
 }
 
 // extra: { places: { name: { x, y, z } }, homes: { id: { base, top, door } } } in half blocks,
-// and day (data/world/day.json).
+// day (data/world/day.json), and zones (the kinds of placement zones, data/world/zones.json).
 export function envFor(tileMap, extra = {}) {
   const cell = (v) => Math.floor(v / 2);
   // The tile map for walks of the world: only the ground and the objects block.
   const ground = { width: tileMap.width, inside: tileMap.inside, walkable: (x, y) => tileMap.inside(x, y) && !tileMap.isBlocked(x, y), canStep: tileMap.canStep };
+  const base = new Map(); // cell index -> the collision of the map, for the cells that changed
+  // The cells of the fords (shallow water that people walk through).
+  const fords = [];
+  for (let y = 0; y < tileMap.height; y++) for (let x = 0; x < tileMap.width; x++) if (tileMap.groundAt(x, y) === 'shallow') fords.push({ x, y });
   const env = {
     // The world as a body at the map point (x, y) sees it (a cliff blocks too).
     near: (x, y) => worldFor(tileMap, x, y),
@@ -64,9 +70,19 @@ export function envFor(tileMap, extra = {}) {
       }
       return { x, z };
     },
+    // Change the collision of a cell in play: true blocks it, false opens it, and null gives the
+    // collision of the map back.
+    block(tx, ty, on) {
+      if (!tileMap.inside(tx, ty)) return;
+      const i = ty * tileMap.width + tx;
+      if (!base.has(i)) base.set(i, tileMap.isBlocked(tx, ty));
+      tileMap.setSolid(tx, ty, on === null ? base.get(i) : on);
+    },
+    fords,
     places: extra.places ?? {},
     homes: extra.homes ?? {},
     day: extra.day ?? null,
+    zones: extra.zones ?? {},
   };
   return env;
 }

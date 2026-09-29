@@ -2,6 +2,8 @@
 // and the ducks. The map data is in map cells; the entities are on the half-block grid.
 import { addEntity, removeEntity, getEntity, query, HALF } from './state.js';
 import { createRng, hashSeed } from '../rng.js';
+import { makeSpan, makePile } from './zones.js';
+import { addPlanks } from './systems/place.js';
 
 // The hero, controlled by the player. keep: the save keeps this entity.
 export function addHero(world, env, { x, y, facing = 0 }) {
@@ -11,6 +13,7 @@ export function addHero(world, env, { x, y, facing = 0 }) {
     control: true,
     position: { x: x * HALF, y: env.groundY(x, y), z: y * HALF, facing },
     motion: { vx: 0, vz: 0, speed: 0 },
+    hands: { holds: null },
     look: 'hero',
   });
 }
@@ -151,4 +154,21 @@ export function addLifeLayer(world, map, env, life) {
       });
     }
   });
+}
+
+// The placement zones of a map (layers.zones with a task in data/world/zones.json), with the pile
+// of each span. A zone and its things come from the save when the player changed them (keep);
+// a new zone starts at its first round with a new pile.
+export function addZones(world, map, env) {
+  const defs = env.zones ?? {};
+  for (const rect of map.layers.zones ?? []) {
+    const def = defs[rect.task];
+    if (!def || def.rule !== 'span') continue;
+    const pileDef = defs[def.pile];
+    const place = env.places[def.pile];
+    if (pileDef && place && !getEntity(world, `zone:${def.pile}`)) addEntity(world, makePile(def.pile, pileDef, place));
+    if (getEntity(world, `zone:${rect.id}`)) continue;
+    const zone = addEntity(world, makeSpan(rect, def, rect.task, env));
+    addPlanks(world, zone, def, def.rounds[0].pile);
+  }
 }

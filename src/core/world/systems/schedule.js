@@ -4,7 +4,8 @@
 // comes out and climbs down. A person with no house, or a person who is part of the quest at night
 // (schedule.stay), stays out with a lantern. Chickens go to their coop and sit, ducks sit on the
 // bank, the owl comes at night, and the birds fly at dusk. In the day the mender (schedule.mends)
-// walks to each pot that waits to be made whole, and sets a new one.
+// walks to each pot that waits to be made whole, and sets a new one. While a placement zone is
+// open (the broken bridge), the person who watches it (data/world/zones.json) stands there by day.
 export const WRITES = ['schedule', 'steer', 'position', 'hidden', 'act', 'carry', 'broken', 'events'];
 
 import { query } from '../state.js';
@@ -23,6 +24,12 @@ export function stepAt(plan, hour) {
 export function schedule(world, dt, rng, env) {
   const hour = (world.clock.minutes % DAY_MINUTES) / 60;
   const night = world.sky?.night ?? 0;
+  // While a zone is open, the person who watches it stands there instead of at the spot.
+  const watch = new Map();
+  for (const z of query(world, 'zone')) {
+    const w = env.zones?.[z.zone.task]?.watch;
+    if (w && !z.zone.done && env.places[w.at]) watch.set(w.who, env.places[w.at]);
+  }
   for (const e of query(world, 'schedule', 'position')) {
     const sc = e.schedule;
     const plan = stepAt(sc.plan, hour);
@@ -94,7 +101,7 @@ export function schedule(world, dt, rng, env) {
         }
       }
     }
-    if (at === 'spot') target = sc.spot;
+    if (at === 'spot') target = watch.get(e.person?.ref) ?? sc.spot;
     else if (at === 'bed' && e.steer.medium === 'water') target = (sc.bank ??= env.bankNear(e.position.x, e.position.z));
     else if (at === 'bed') target = sc.bed;
     else if (at !== 'range' && env.places[at]) target = { x: env.places[at].x + (sc.offset?.x ?? 0), z: env.places[at].z + (sc.offset?.z ?? 0) };

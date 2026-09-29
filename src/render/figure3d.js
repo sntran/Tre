@@ -143,7 +143,7 @@ export function createFigureLayer(scene, lookOf) {
         // A rider sits on the back of Nghé; a swimmer at the ford is a little lower in the water.
         f.offset = (e.riding ? RIDER : 0) - (e.motion?.shallow && !e.control ? 0.3 : 0);
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
-        f.want = e.riding ? 'ride' : e.act === 'sit' || e.act === 'rest' ? 'rest' : e.act === 'happy' ? 'happy' : e.react?.waving > 0 ? 'wave' : null;
+        f.want = e.riding ? 'ride' : e.act === 'sit' || e.act === 'rest' ? 'rest' : e.act === 'happy' ? 'happy' : e.act === 'shake' ? 'shake' : e.react?.waving > 0 ? 'wave' : null;
         f.bend = e.react?.bend ?? null;
       }
       for (const id of [...figures.keys()]) if (!seen.has(id)) figures.delete(id);

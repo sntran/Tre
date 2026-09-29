@@ -30,6 +30,7 @@ const FILES = {
   life: 'data/world/life.json',
   people: 'data/world/people.json',
   day: 'data/world/day.json',
+  zones: 'data/world/zones.json',
 };
 
 export async function loadData(onProgress = () => {}) {

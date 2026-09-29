@@ -238,7 +238,12 @@ test('the version 6 save keeps the world state: the seed, the map, the clock, an
   assert.throws(() => importCode(exportCode(bad)), (e) => e.reason === 'shape');
   const deep = sample();
   deep.world.entities.push({ id: 'y', a: { b: { c: { d: { e: { f: { g: { h: 1 } } } } } } } });
-  assert.throws(() => importCode(exportCode(deep)), (e) => e.reason === 'shape');
+  assert.throws(() => importCode(exportCode(deep)), (e) => e.reason === 'shape');  // The kept entities of another map wait in `away`, and the export code keeps them too.
+  const away = sample();
+  away.world.away = { 'soc-son': [{ id: 'zone:x', keep: true, zone: { items: ['a'] } }] };
+  assert.deepEqual(importCode(exportCode(away)).world.away, away.world.away);
+  away.world.away['soc-son'].push({ id: 'z', position: { x: 'far', y: 0, z: 0 } });
+  assert.throws(() => importCode(exportCode(away)), (e) => e.reason === 'shape');
 });
 
 test('the export code loads on another device', () => {

@@ -2,7 +2,8 @@
 // Pure, no WebGL. The renderer puts the pose on the parts.
 //
 // States: idle, walk, run, graze (four legs, after some idle time), rest (sit or lie down),
-// wave (a person waves an arm), swim (a float or a serpent in the water).
+// wave (a person waves an arm), swim (a float or a serpent in the water). want 'shake': Nghé
+// shakes its head (no).
 
 export const GAIT = Object.freeze({ walk: 0.4, run: 5.5, graze: 1.6 });
 
@@ -61,6 +62,7 @@ export function animate(a, input) {
     // Happy (after a pet): the tail wags fast, the head goes up, and a small hop.
     rot.tail = [0.3, 0, Math.sin(a.time * (happy ? 16 : 3.1)) * (happy ? 0.7 : 0.35)];
     if (happy) rot.head = [-0.3 + Math.sin(a.time * 8) * 0.1, 0, 0];
+    if (input.want === 'shake') rot.head = [0.15, Math.sin(a.time * 14) * 0.45, 0];
     lift = Math.abs(Math.sin(a.phase)) * 0.12 * s + (happy ? Math.abs(Math.sin(a.time * 7)) * 0.3 : 0);
     sink = a.rest * 1.15;
   } else if (a.kind === 'fowl') {

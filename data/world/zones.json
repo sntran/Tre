@@ -1,0 +1,27 @@
+{
+  "_about": "The placement zones of the maps (src/core/world/zones.js and src/core/world/systems/place.js). A zone of a map (layers.zones) names its kind here (task). rule: pile (things lie in rows, one row for each size) or span (things go end to end across a gap, from the near end). accepts: the kind of item that fits. Units: half blocks (one map cell is 2) and seconds. pile: the named place of the map where the pile of the zone lies. lane: the column of cells in the zone where the items go (0 is the west column). rounds: the gap of each round (gap: its length; from: where it starts after the near end of the zone), the pile of the round (the size of each item), and the level of each skill. After a round the next one starts at the next dawn; after the last round, the rain of a later day breaks the span and a round opens again. skills: sum (the sum of the items against the gap) and groups (the same items, at least groupsMin of them). outcomes: how each end looks and sounds. exact: the span becomes solid (sound, give). long: the last item sticks out and wobbles (wobble: seconds), a person calls out (call: who and the key of the line), and then the item falls into the water and is lost. short: the last item tips when the hero steps on it, the hero falls into the water (fall: seconds in the water), and the friend pulls the hero out. The item floats back to the pile. hint: after this many failures in a round, the friend walks to the end of the items and looks at the gap for some seconds. watch: the person who watches the work while the zone is open, and the place where the person stands.",
+  "bridge": {
+    "rule": "span",
+    "accepts": "plank",
+    "pile": "bridge-pile",
+    "lane": 1,
+    "rounds": [
+      { "gap": 12, "from": 4, "pile": [3, 3, 3, 4, 4, 4, 5, 5, 5], "levels": { "math.add.20": 1, "math.mul.10": 1 } },
+      { "gap": 15, "from": 2, "pile": [3, 3, 3, 3, 3, 4, 4, 5, 5, 5], "levels": { "math.add.20": 2, "math.mul.10": 1 } },
+      { "gap": 18, "from": 0, "pile": [3, 3, 3, 3, 3, 3, 5, 5, 5, 5], "levels": { "math.add.20": 3, "math.mul.10": 2 } }
+    ],
+    "skills": { "sum": "math.add.20", "groups": "math.mul.10", "groupsMin": 3 },
+    "outcomes": {
+      "exact": { "sound": "drum", "give": { "coin": 3 } },
+      "long": { "sound": "creak", "wobble": 2.5, "call": { "who": "elder", "key": "world.bridge.wasted" } },
+      "short": { "sound": "creak", "fall": 1.2 }
+    },
+    "hint": { "after": 2, "time": 10 },
+    "watch": { "who": "elder", "at": "bridge-watch" }
+  },
+  "bridge-pile": {
+    "rule": "pile",
+    "accepts": "plank",
+    "sizes": [3, 4, 5]
+  }
+}

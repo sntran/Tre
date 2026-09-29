@@ -2,6 +2,7 @@
 // blocked cells and cliffs, and stands on the ground. People and enemies (solid) push it away a
 // little, like round walls. While the world waits (a dialogue), nothing walks. On the back of
 // Nghé (riding) the hero is faster. motion.idle counts the seconds that the hero stands still.
+// A hero who falls into the water (fall) does not walk: the place system moves the hero.
 // Each step sends the event "step" with the ground under the foot (grass, wood, or water).
 export const WRITES = ['position', 'motion', 'events'];
 
@@ -14,7 +15,7 @@ const STRIDE = 2.4; // half blocks between two steps
 export function move(world, dt, rng, env) {
   const solids = query(world, 'solid', 'position');
   for (const e of query(world, 'position', 'motion')) {
-    if (e.follow || e.steer || (!e.control && !e.intent)) continue;
+    if (e.follow || e.steer || e.fall || (!e.control && !e.intent)) continue;
     const p = e.position;
     const m = e.motion;
     const i = world.paused ? null : e.intent;

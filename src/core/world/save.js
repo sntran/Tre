@@ -42,18 +42,28 @@ export function heroPlace(saved) {
   return { map: saved.map, x: hero ? hero.position.x / 2 : null, y: hero ? hero.position.z / 2 : null };
 }
 
-// Put the hero at a place in a save (after a travel or a lost battle). The things that the
-// player changed on the other map stay in profile.maps; the world of the save is the new map.
+// Put the hero at a place in a save (after a travel or a lost battle). The world of the save is
+// the new map. The other kept entities of the old map (a bridge that the child builds) wait in
+// saved.away until the hero comes back to that map.
 export function setHeroPlace(saved, map, x, y) {
   const hero = saved.entities?.find((e) => e.id === 'hero');
+  if (map !== saved.map) {
+    saved.away ??= {};
+    const others = (saved.entities ?? []).filter((e) => e.id !== 'hero');
+    if (others.length) saved.away[saved.map] = others;
+    else delete saved.away[saved.map];
+    saved.entities = [...(hero ? [hero] : []), ...(saved.away[map] ?? [])];
+    delete saved.away[map];
+  }
   saved.map = map;
-  saved.entities = (saved.entities ?? []).filter((e) => e.id === 'hero');
+  const kept = (saved.entities ?? []).filter((e) => e.id !== 'hero');
+  saved.entities = hero ? [hero, ...kept] : kept;
   if (x === null || y === null) {
-    saved.entities = [];
+    saved.entities = kept;
     return saved;
   }
   const position = { x: x * 2, y: hero?.position.y ?? 0, z: y * 2, facing: hero?.position.facing ?? 0 };
   if (hero) hero.position = position;
-  else saved.entities.push({ id: 'hero', keep: true, control: true, position, motion: { vx: 0, vz: 0, speed: 0 }, look: 'hero' });
+  else saved.entities.unshift({ id: 'hero', keep: true, control: true, position, motion: { vx: 0, vz: 0, speed: 0 }, hands: { holds: null }, look: 'hero' });
   return saved;
 }
