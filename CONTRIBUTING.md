@@ -36,6 +36,7 @@ Write all text in ASD-STE100 Simplified Technical English. This rule applies to 
 - Keep all game logic in `src/core/`. Code in `src/core/` must not use the DOM, Canvas, `window`, or `fetch`.
 - Put DOM code in `src/ui/` and drawing code in `src/render/`.
 - Put all values of the learning model in `data/config/learning.json`.
+- Keep the world state as plain data in `src/core/world/`: entities are plain objects with optional components, and systems are pure functions that change the state in a fixed order (`src/core/world/step.js`). The renderer only reads the state. Do not add an ECS library.
 - Use only relative paths. The game must work at `/Tre/` on GitHub Pages and on a local static server.
 - Do not send requests to other sites, except the one request for three.js. Do not add ads, analytics, cookies, or accounts.
 - When you add or remove a game file, change the list `FILES` in `sw.js`. The service worker uses the list for offline play. A test fails when the list and the files are not the same.
@@ -58,7 +59,7 @@ Add tests for each change to `src/core/`. All tests must pass before we merge a 
 
 Work is planned in GitHub issues, grouped in milestones. To pick up work:
 
-1. Open the current milestone. Take the open issue with the lowest number. Issues in a milestone build on each other, so do them in order.
+1. Open the current milestone. Its description gives the order of work, and each issue starts with a line "Order: step N". Take the first open issue in that order. The issue numbers are not the order. If a milestone gives no order, take the open issue with the lowest number.
 2. Read `docs/DESIGN.md` first. It is the single source of truth. Do not edit it; put notes in `docs/QUESTIONS.md`, `docs/REVIEW.md`, or a new file in `docs/`.
 3. Open the files in `docs/reference/` that the issue names. They show the target look and feel.
 4. Do the work in small commits. Each commit leaves the game playable and all tests passing.
