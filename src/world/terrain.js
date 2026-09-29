@@ -117,8 +117,12 @@ export function buildTerrain(map, tileTypes, tileMap) {
     roofs.push(...r.roofs);
   };
 
-  // Planks of the bridges, and posts at the ends.
+  // Planks of the bridges. The deck in a placement zone (the broken bridge) comes from the world
+  // state, so the terrain leaves it out.
+  const spans = (L.zones ?? []).filter((r) => r.task);
+  const inSpan = (x, z) => spans.some((r) => x >= r.x && x < r.x + r.w && z >= r.y && z < r.y + r.h);
   for (const b of bridges) {
+    if (inSpan(b.x, b.z)) continue;
     const fy = b.y * 2 - 1;
     for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) fine.set(b.x * 2 + dx, fy, b.z * 2 + dz, (b.z * 2 + dz) % 2 ? 'wood' : 'ochre');
   }

@@ -37,6 +37,8 @@ export function createTileMap(data, tileTypes) {
       for (let x = r.x; x < r.x + (r.w ?? 1); x++) if (inside(x, y)) solid[index(x, y)] = r.block === false ? 0 : 1;
     }
   }
+  // The collision of the map, before any change in play.
+  const base = solid.slice();
   // Tiles that people or enemies stand on. They change during play.
   const occupied = new Map();
 
@@ -56,6 +58,8 @@ export function createTileMap(data, tileTypes) {
     canStep: (ax, ay, bx, by) => Math.abs(heights[index(ax, ay)] - heights[index(bx, by)]) <= 1,
     // The world can change: for example a finished bridge opens its tiles.
     setSolid: (x, y, on) => { if (inside(x, y)) solid[index(x, y)] = on ? 1 : 0; },
+    // Give a tile the collision of the map back.
+    resetSolid: (x, y) => { if (inside(x, y)) solid[index(x, y)] = base[index(x, y)]; },
     occupy: (x, y, who) => occupied.set(index(x, y), who),
     free: (x, y) => occupied.delete(index(x, y)),
     whoAt: (x, y) => occupied.get(index(x, y)) ?? null,

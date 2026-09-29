@@ -107,6 +107,13 @@ const SOUNDS = {
   clatter: (t) => { for (let i = 0; i < 3; i++) tone(900 - i * 120, t + i * 0.07, 0.06, { type: 'triangle', volume: 0.06 }); },
   sigh: (t) => noise(t, 0.7, { volume: 0.1, filter: 700, sweep: 350, q: 0.7 }),
   lantern: (t) => [3, 4, 5].forEach((n, i) => tone(PENTA[n] * 2, t + i * 0.15, 0.5, { volume: 0.05 })),
+  // The planks of the bridge: a knock of wood when the hero takes one or puts one down, a creak
+  // when a plank wobbles or tips, a splash in the river, and a crack when the rain breaks the bridge.
+  'plank-up': (t) => tone(300, t, 0.06, { type: 'triangle', volume: 0.12, glide: 360 }),
+  'plank-down': (t) => { tone(180, t, 0.08, { type: 'triangle', volume: 0.2, glide: 120 }); noise(t, 0.06, { volume: 0.12, filter: 900 }); },
+  creak: (t) => tone(210, t, 0.5, { type: 'sawtooth', volume: 0.05, glide: 150 }),
+  splash: (t) => { noise(t, 0.45, { volume: 0.35, filter: 1800, sweep: 500, q: 0.6 }); tone(420, t, 0.12, { volume: 0.08, glide: 900 }); },
+  crack: (t) => { noise(t, 0.12, { volume: 0.4, filter: 2500, q: 0.8 }); tone(160, t + 0.05, 0.3, { type: 'sawtooth', volume: 0.08, glide: 80 }); },
 };
 
 // The sound of the place: insects by day, frogs by night, and the rain. Three quiet loops.

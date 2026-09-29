@@ -107,6 +107,17 @@ export function person(look) {
   if (item === 'fan') parts.push(P('item', [1.2, 1.2, 0.15], 'yellowPale', [0, hand[1] - 0.5, 0.4], { parent: 'armR' }));
   if (item === 'lantern') parts.push(P('item', [0.15, 1, 0.15], 'wood', [0, hand[1] - 0.2, 0.3], { parent: 'armR' }), P('lamp', [0.8, 0.9, 0.8], 'yellow', [0, hand[1] - 1.1, 0.3], { parent: 'armR' }));
   if (item === 'drum') parts.push(P('item', [1.4, 1, 1.4], 'vermilion', [0, hand[1] - 0.2, 0.6], { parent: 'armR' }));
+  // A plank on the right shoulder, along the way the person looks, with its units and dots.
+  const plankOf = /^plank-(\d+)$/.exec(item ?? '');
+  if (plankOf) {
+    const n = Number(plankOf[1]);
+    const u = 1 / (look.scale ?? (child ? 0.6 : 0.66)); // one half block in the units of this figure
+    for (let i = 0; i < n; i++) {
+      const z = (i - n / 2 + 0.5) * u + u * 0.6;
+      parts.push(P(`plank${i}`, [u * 1.2, u * 0.5, u], PLANK_TONES[i % 2], [bodyW / 2 + 0.1, shoulder + 0.5, z]));
+      parts.push(P(`plankDot${i}`, [u * 0.35, 0.04, u * 0.35], 'vermilion', [bodyW / 2 + 0.1, shoulder + 0.5 + u * 0.26, z], { mark: true }));
+    }
+  }
   const top = headY + headS / 2 + (look.hat === 'non' ? 1.1 : look.hat === 'plume' ? 1.7 : 0.8);
   return {
     kind: 'biped',
@@ -300,8 +311,34 @@ export function cart() {
   return { kind: 'still', parts, scale: 0.7, height: 3, shadow: 1.8 };
 }
 
+// A new plank for the bridge, n units long (one unit is one half block). The units are pale and
+// ochre in turn, with a red dot painted on each, so that the child sees the length and can count
+// it. The plank lies along +z from its position; its top is at 0.8.
+export const PLANK_TONES = Object.freeze(['yellowPale', 'ochre']);
+export function plank(n) {
+  const parts = [];
+  for (let i = 0; i < n; i++) {
+    parts.push(P(`unit${i}`, [2, 0.8, 1], PLANK_TONES[i % 2], [0, 0.4, i + 0.5]));
+    parts.push(P(`dot${i}`, [0.45, 0.04, 0.45], 'vermilion', [0, 0.82, i + 0.5], { mark: true }));
+  }
+  return { kind: 'still', parts, scale: 1, height: 0.8, shadow: 0 };
+}
+
+// A part of the deck of the bridge, n units long and w units wide: boards across, dark and
+// ochre in turn, as the deck of the map, on two beams. It lies along +z from its position; its
+// top is at 1.
+export function deck(n, w = 8) {
+  const parts = [];
+  for (let i = 0; i < n; i++) parts.push(P(`board${i}`, [w, 1, 1], i % 2 ? 'wood' : 'ochre', [0, 0.5, i + 0.5]));
+  // Two beams under the boards, near the sides.
+  for (const s of [-1, 1]) parts.push(P(`beam${s}`, [0.6, 0.6, n], 'wood', [s * (w / 2 - 0.8), -0.3, n / 2]));
+  return { kind: 'still', parts, scale: 1, height: 1, shadow: 0 };
+}
+
 // The figure of a look from data/figures.json.
 export function figureOf(look) {
+  if (look.kind === 'plank') return plank(look.n);
+  if (look.kind === 'deck') return deck(look.n, look.w);
   if (look.kind === 'nghe') return nghe();
   if (look.kind === 'duck') return duck();
   if (look.kind === 'serpent') return serpent();

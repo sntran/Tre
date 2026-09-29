@@ -11,7 +11,9 @@ import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../
 import { createWorldState, getEntity, query, command } from '../core/world/state.js';
 import { step, STEP } from '../core/world/step.js';
 import { envFor, placesOf } from '../core/world/env.js';
-import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns } from '../core/world/populate.js';
+import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns, addZones } from '../core/world/populate.js';
+import { ground } from '../core/world/systems/ground.js';
+import { REACH } from '../core/world/zones.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from '../core/world/save.js';
 import { buildTerrain, columnTop } from '../world/terrain.js';
 import { heroLook } from '../world/figures.js';
@@ -24,7 +26,7 @@ const STICK_R = 56; // the radius of the virtual stick, in screen pixels
 // The color of the dusk wash at full night: the hue of indigo (#2f4668) in the palette.
 const DUSK = Object.freeze({ hue: 215, saturation: 45, lightness: 42 });
 const HOLD_MS = 220; // a press this long is a hold (walk toward the finger), not a tap
-const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyQ', 'KeyE']);
+const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyQ', 'KeyE', 'Space']);
 
 // three.js and the drawing code load only when the village opens, so that the other screens
 // work without them. The terrain of a map takes some time to make: keep it for the next visit.
@@ -78,7 +80,7 @@ export async function mountVillage(ctx, params = {}) {
 
   if (!terrains.has(mapData.id)) terrains.set(mapData.id, buildTerrain(mapData, tileTypes, tileMap));
   const terrain = terrains.get(mapData.id);
-  const env = envFor(tileMap, { places: placesOf(mapData, tileMap), homes: terrain.homes, day: data.day });
+  const env = envFor(tileMap, { places: placesOf(mapData, tileMap), homes: terrain.homes, day: data.day, zones: data.zones });
   if (!worlds.has(mapData.id)) worlds.set(mapData.id, D.createVoxelWorld(canvas, terrain));
   const view = worlds.get(mapData.id);
   const looks = data.figures.figures;
@@ -91,6 +93,9 @@ export async function mountVillage(ctx, params = {}) {
   const onThisMap = profile.world.map === mapData.id;
   const state = onThisMap ? loadWorld(profile.world) : createWorldState({ seed: profile.world.seed, map: mapData.id, clock: profile.world.clock });
   state.clock = profile.world.clock; // one clock: a travel on the country map moves it too
+  // The placement zones (the broken bridge) and their cells, before the hero finds a free place.
+  addZones(state, mapData, env);
+  ground(state, 0, null, env);
   const saved = onThisMap && savedPlace.x !== null ? savedPlace : null;
   const start = freeSpot(tileMap, params.at ?? saved ?? mapData.spawn) ?? mapData.spawn;
   const heroAt = getEntity(state, 'hero');
@@ -135,6 +140,12 @@ export async function mountVillage(ctx, params = {}) {
     const goal = currentGoal(data.quests.quests, conditionState(profile));
     const wanted = new Set((goal?.step.targets ?? (goal?.step.target ? [{ npc: goal.step.target }] : [])).map((tg) => tg.npc).filter(Boolean));
     for (const p of persons()) if (p.kind === 'npc') command(state, { type: 'stay', id: p.entity, on: wanted.has(p.ref) });
+    // The person who watches a placement zone goes there when the story lets the person go.
+    for (const z of query(state, 'zone')) {
+      const w = data.zones[z.zone.task]?.watch;
+      const p = w && persons().find((x) => x.kind === 'npc' && x.ref === w.who);
+      if (p) command(state, { type: 'watch', id: p.entity, on: isPresent(w, profile) });
+    }
     // The friend walks behind the hero.
     const friendId = profile.party[0];
     for (const f of query(state, 'follow')) if (f.id !== `friend:${friendId}`) state.entities.splice(state.entities.indexOf(f), 1);
@@ -270,7 +281,7 @@ export async function mountVillage(ctx, params = {}) {
   function walkPath(path, end, onArrive, near = null) {
     if (!path) return;
     const points = path.map((p) => ({ x: (p.x + 0.5) * 2, z: (p.y + 0.5) * 2 }));
-    if (end) points.push({ x: end.x * 2, z: end.y * 2 });
+    for (const e of end ? [].concat(end) : []) points.push({ x: e.x * 2, z: e.y * 2 });
     const token = nextToken++;
     arrivals.clear();
     if (onArrive) arrivals.set(token, onArrive);
@@ -499,6 +510,11 @@ export async function mountVillage(ctx, params = {}) {
         e.preventDefault();
         return;
       }
+      if (e.code === 'Space') {
+        if (!e.repeat && !hero().fall) handsKey();
+        e.preventDefault();
+        return;
+      }
       keys.add(e.code);
       arrivals.clear();
       e.preventDefault();
@@ -526,10 +542,148 @@ export async function mountVillage(ctx, params = {}) {
     tapFx = { x, y, h: hh, age: 0 };
   };
 
+  // Placement: the planks that the hero can carry, the pile, and the broken bridge (a span).
+  // The state is in half blocks; the taps and the paths are in map cells.
+  const holding = () => hero().hands?.holds ?? null;
+  const zoneOf = (id) => (id ? getEntity(state, `zone:${id}`) : null);
+  const spans = () => query(state, 'zone').filter((z) => z.zone.rule === 'span');
+  const distHb = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+  // The middle of a thing that lies along its facing from its position.
+  const middleOf = (e) => ({
+    x: e.position.x + Math.sin(e.position.facing ?? 0) * e.item.size / 2,
+    z: e.position.z + Math.cos(e.position.facing ?? 0) * e.item.size / 2,
+  });
+  // The plank under a screen point: the nearest one to the camera.
+  function thingAt(p) {
+    let best = null;
+    for (const e of query(state, 'item', 'position')) {
+      if (e.hidden || e.item.set) continue;
+      const q = e.position;
+      const end = { x: q.x + Math.sin(q.facing ?? 0) * e.item.size, z: q.z + Math.cos(q.facing ?? 0) * e.item.size };
+      const b = view.screenBox({
+        x0: Math.min(q.x, end.x) / 2 - 0.5, x1: Math.max(q.x, end.x) / 2 + 0.5,
+        y0: q.y / 2, y1: q.y / 2 + 0.5,
+        z0: Math.min(q.z, end.z) / 2 - 0.5, z1: Math.max(q.z, end.z) / 2 + 0.5,
+      });
+      const pad = 6;
+      if (p.x < b.x0 - pad || p.x > b.x1 + pad || p.y < b.y0 - pad || p.y > b.y1 + pad) continue;
+      // The plank whose middle line on the screen is nearest to the finger.
+      const a = view.project(q.x / 2, q.y / 2 + 0.4, q.z / 2);
+      const c = view.project(end.x / 2, q.y / 2 + 0.4, end.z / 2);
+      const dx = c.x - a.x;
+      const dy = c.y - a.y;
+      const k = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
+      const d = Math.hypot(p.x - (a.x + dx * k), p.y - (a.y + dy * k));
+      if (!best || d < best.d) best = { e, d };
+    }
+    return best?.e ?? null;
+  }
+  // The span that has this cell, if it is not solid yet.
+  const spanAt = (x, y) => spans().find(({ zone: z }) => !z.set && x >= z.x0 && x <= z.x1 && y >= z.start / 2 && y < z.end / 2);
+  // The pile of the task of a thing.
+  const pileFor = (thing) => zoneOf(data.zones[zoneOf(thing?.item.task)?.zone.task]?.pile);
+  // Do this after the next step of the world (a second command for the hands).
+  const later = [];
+
+  // Walk to a point (map cells) and then along more points, and then do something.
+  function walkTo(points, onArrive) {
+    const c = heroCell();
+    const [first] = points;
+    const path = findPath(tileMap, { x: Math.floor(c.x), y: Math.floor(c.y) }, { x: Math.floor(first.x), y: Math.floor(first.y) });
+    if (!path) return false;
+    walkPath(path.slice(0, -1), points, onArrive);
+    return true;
+  }
+  const reachCell = (z) => ({ x: z.position.x / 2, y: z.position.z / 2 });
+  // Put the plank in the hands at the end of the planks of a span.
+  function goPut(z) {
+    walkTo([reachCell(z)], () => {
+      command(state, { type: 'face', id: 'hero', x: z.zone.lane, z: z.zone.end });
+      command(state, { type: 'put', id: 'hero', zone: z.zone.id });
+    });
+  }
+  // Walk out on the planks of a span, to the point `to` (half blocks, along the gap).
+  function goOnSpan(z, to) {
+    const pts = [reachCell(z)];
+    if (to > z.zone.from) pts.push({ x: z.zone.lane / 2, y: to / 2 });
+    walkTo(pts, null);
+  }
+  function tapSpan(z) {
+    const covered = z.zone.items.reduce((a, id) => a + (getEntity(state, id)?.item.size ?? 0), 0);
+    if (holding()) goPut(z);
+    else goOnSpan(z, z.zone.from + covered - 0.5);
+  }
+  function tapThing(thing) {
+    const m = middleOf(thing);
+    showTap(m.x / 2, m.z / 2, thing.position.y / 2 + 0.4);
+    const zone = zoneOf(thing.item.zone);
+    if (zone?.zone.rule === 'span') {
+      const last = zone.zone.items[zone.zone.items.length - 1] === thing.id;
+      // At the edge, a tap on the last plank takes it back; from elsewhere the hero walks on it.
+      if (!holding() && last && distHb(hero().position, zone.position) <= REACH) command(state, { type: 'pick', id: 'hero', item: thing.id });
+      else if (holding()) goPut(zone);
+      else goOnSpan(zone, thing.position.z + thing.item.size - 0.5);
+      return;
+    }
+    const pick = () => command(state, { type: 'pick', id: 'hero', item: thing.id });
+    const target = { x: m.x / 2, y: m.z / 2 };
+    const held = getEntity(state, holding());
+    if (!held) return walkToThing(target, pick);
+    if (held.id === thing.id) return;
+    // The hands are full: put that plank back on its pile (or down), then take this one.
+    const pile = pileFor(held);
+    walkToThing(target, () => {
+      if (pile && thing.item.zone === pile.zone.id) command(state, { type: 'put', id: 'hero', zone: pile.zone.id });
+      else command(state, { type: 'drop', id: 'hero' });
+      later.push(pick);
+    });
+  }
+  // The key of the hands (Space): put the plank in reach, or pick up the nearest plank in reach.
+  function handsKey() {
+    const hp = hero().position;
+    const held = getEntity(state, holding());
+    if (held) {
+      const span = spans().find((z) => !z.zone.set && distHb(hp, z.position) <= REACH);
+      const pile = pileFor(held);
+      const nearPile = pile && pile.zone.items.some((id) => { const e = getEntity(state, id); return e && distHb(hp, middleOf(e)) <= REACH + 3; });
+      if (span) command(state, { type: 'put', id: 'hero', zone: span.zone.id });
+      else if (nearPile) command(state, { type: 'put', id: 'hero', zone: pile.zone.id });
+      else command(state, { type: 'drop', id: 'hero' });
+      return;
+    }
+    let best = null;
+    for (const e of query(state, 'item', 'position')) {
+      if (e.hidden || e.item.set) continue;
+      const zone = zoneOf(e.item.zone);
+      const inSpan = zone?.zone.rule === 'span';
+      if (inSpan && zone.zone.items[zone.zone.items.length - 1] !== e.id) continue;
+      const d = inSpan ? distHb(hp, zone.position) : distHb(hp, middleOf(e)) - e.item.size / 2;
+      if (d <= REACH && (!best || d < best.d)) best = { e, d };
+    }
+    if (best) command(state, { type: 'pick', id: 'hero', item: best.e.id });
+  }
+  // Is the hero under a screen point? (A tap on the hero puts the plank down.)
+  function heroUnder(p) {
+    const f = figures.placeOf('hero');
+    if (!f) return false;
+    const b = view.screenBox({ x0: f.x - 0.6, x1: f.x + 0.6, y0: f.y, y1: f.y + f.height, z0: f.z - 0.6, z1: f.z + 0.6 });
+    return p.x >= b.x0 - 4 && p.x <= b.x1 + 4 && p.y >= b.y0 - 4 && p.y <= b.y1 + 4;
+  }
+
   // A tap: a person, an enemy, a thing with a trigger zone, or a place on the ground.
   function onTap(p) {
     ctx.bus.emit('sound', 'tap');
+    if (hero().fall) return;
+    if (holding() && heroUnder(p)) {
+      command(state, { type: 'drop', id: 'hero' });
+      return;
+    }
     const cond = conditionState(profile);
+    const plank = thingAt(p);
+    if (plank) {
+      tapThing(plank);
+      return;
+    }
     const person = personAt(p);
     if (person) {
       showTap(person.x, person.y, groundY(person.x, person.y));
@@ -562,6 +716,12 @@ export async function mountVillage(ctx, params = {}) {
     const tile = { x: Math.floor(hit.x), y: Math.floor(hit.y) };
     if (!tileMap.inside(tile.x, tile.y)) return;
     showTap(hit.x, hit.y, hit.who ? groundY(hit.x, hit.y) : hit.h);
+    // The broken bridge: put the plank there, or walk out on the planks.
+    const span = spanAt(tile.x, tile.y);
+    if (span) {
+      tapSpan(span);
+      return;
+    }
     // A tap zone on the ground is a thing that the hero cannot walk on (water, a field).
     // A tap on a free cell of the zone (the ford, a dike in the field) is a walk.
     const ground = tileMap.isBlocked(tile.x, tile.y) ? triggers.fire('tap', tile.x, tile.y, cond) : null;
@@ -624,6 +784,19 @@ export async function mountVillage(ctx, params = {}) {
   if (meter) ctx.ui.append(meter);
   let frames = 0;
   let since = last;
+  // With ?debug=1 in the address, a small panel shows the skill events of the placements.
+  const debugPanel = new URLSearchParams(location.search).get('debug') === '1' ? h('div', { class: 'debug-events' }) : null;
+  const skillLog = [];
+  function logSkill(ev) {
+    if (!debugPanel) return;
+    skillLog.unshift(`${ev.skill} · L${ev.level} · ${ev.correct ? 'yes' : 'no'} · ${ev.parts.join(' ')} / ${ev.target}`);
+    skillLog.length = Math.min(skillLog.length, 8);
+    debugPanel.replaceChildren(h('b', { text: 'skill events' }), ...skillLog.map((line) => h('div', { text: line })));
+  }
+  if (debugPanel) {
+    ctx.ui.append(debugPanel);
+    debugPanel.replaceChildren(h('b', { text: 'skill events' }));
+  }
   function frame(now) {
     if (!alive) return;
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -683,9 +856,15 @@ export async function mountVillage(ctx, params = {}) {
   // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
   // up when it lands.
   function flyToCounter(fromId, item, delay) {
-    const f = figures.placeOf(fromId);
+    // A figure that is new in this step (a plank that became deck) has no drawn place yet: use
+    // the place of its entity.
+    const q = getEntity(state, fromId)?.position;
+    const f = figures.placeOf(fromId) ?? (q ? { x: q.x / 2, y: q.y / 2, z: q.z / 2 } : null);
     const counter = counts.querySelector(`[data-item="${item}"]`);
-    if (!f || !counter || !data.items.items[item]) return;
+    if (!f || !counter || !data.items.items[item]) {
+      updateHud();
+      return;
+    }
     flying[item] = (flying[item] ?? 0) + 1;
     updateHud();
     const start = view.project(f.x, f.y + 1.2, f.z);
@@ -726,6 +905,31 @@ export async function mountVillage(ctx, params = {}) {
       showBubble(ev.id, t(lines[n % lines.length], { name: profile.hero.name }));
     }
     if (ev.type === 'petted') showBubble(ev.id, '♥');
+    // The elder calls out when a plank is wasted.
+    if (ev.type === 'call' && !busy) showBubble(ev.id, t(ev.key));
+    // The bridge takes solid form: the coins fly from the last plank to the bag.
+    // A plank falls into the river: a splash. The bridge takes solid form: dust along the deck.
+    if (ev.type === 'wasted' || ev.type === 'tip' || ev.type === 'crack') {
+      const q = getEntity(state, ev.item)?.position ?? getEntity(state, ev.id)?.position;
+      if (q) figures.burst(q.x / 2, 1.6, q.z / 2 + 1.5, 'splash', 12);
+    }
+    if (ev.type === 'solid') {
+      const z = getEntity(state, ev.id)?.zone;
+      if (z) for (let k = z.from; k < z.from + z.gap; k += 2) figures.burst(z.cx / 2, z.deckY / 2, k / 2, 'dust', 4);
+    }
+    if (ev.type === 'solid' && ev.give) {
+      applyEffects(profile, [{ give: ev.give }]);
+      ctx.save('bridge');
+      for (const [item, n] of Object.entries(ev.give)) {
+        for (let i = 0; i < n; i++) flyToCounter(ev.at, item, 0.5 + i * 0.15);
+      }
+    }
+    // A try at a placement: a skill event for the learner. The child never sees it; with
+    // ?debug=1 in the address, a small panel shows it.
+    if (ev.type === 'skill') {
+      ctx.learner?.record({ skill: ev.skill, level: ev.level }, ev.correct);
+      logSkill(ev);
+    }
     if (ev.type === 'break' && ev.give) {
       // The gift flies from the pot to its counter in the HUD; no number is written in the world.
       applyEffects(profile, [{ give: ev.give }]);
@@ -738,6 +942,7 @@ export async function mountVillage(ctx, params = {}) {
 
   // After each step: the events of the world, the exits, and the trigger zones.
   function afterStep() {
+    for (const fn of later.splice(0)) fn();
     for (const ev of state.events) {
       if (ev.id === 'sky') {
         // The drum of the đình at dawn, and the lanterns at dusk.
@@ -750,6 +955,10 @@ export async function mountVillage(ctx, params = {}) {
       }
       if (ev.sound) ctx.bus.emit('sound', ev.sound);
       if (ev.id !== 'hero') continue;
+      if (ev.type === 'splash') {
+        const q = hero().position;
+        figures.burst(q.x / 2, q.y / 2 + 0.6, q.z / 2, 'splash', 18);
+      }
       if (ev.type === 'placed') view.jump(hero().position.x / 2, hero().position.y / 2 + 1.5, hero().position.z / 2);
       if (ev.type === 'arrived' || ev.type === 'stuck') {
         const fn = arrivals.get(ev.token);
@@ -947,6 +1156,15 @@ export async function mountVillage(ctx, params = {}) {
       const f = q ? figures.placeOf(q.entity) : null;
       return f ? view.project(f.x, f.y + f.height * 0.5, f.z) : null;
     },
+    // The screen point of the middle of an entity (a plank), for automatic tests.
+    screenOfThing: (id) => {
+      const e = getEntity(state, id);
+      if (!e?.position) return null;
+      const m = e.item ? middleOf(e) : e.position;
+      return view.project(m.x / 2, e.position.y / 2 + 0.3, m.z / 2);
+    },
+    // The plank under a screen point, for automatic tests.
+    thingAt: (x, y) => thingAt({ x, y })?.id ?? null,
     turn: (n) => view.turn(n),
     stats: () => view.stats(),
     // The world state, for automatic tests (read only).
@@ -995,7 +1213,7 @@ export async function mountVillage(ctx, params = {}) {
       window.removeEventListener('keyup', onKey);
       offLang();
       figures.dispose();
-      for (const el of [duskTint, duskLayer, glowLayer, paper, marks, hud, turns, fade, banner, meter]) el?.remove();
+      for (const el of [duskTint, duskLayer, glowLayer, paper, marks, hud, turns, fade, banner, meter, debugPanel]) el?.remove();
     },
     api,
   };

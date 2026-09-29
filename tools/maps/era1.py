@@ -32,17 +32,17 @@ A.fill(33, 2, 6, 10, 'f')
 A.fill(33, 18, 6, 9, 'f')
 A.fill(35, 2, 1, 10, '=')
 A.fill(35, 18, 1, 9, '=')
-# The Đuống: the north bank (sand), the water, the south bank. The ford and the broken bridge.
+# The Đuống: the north bank (sand), the water, the south bank. The ford and the bridge, with a
+# broken part in the middle (the placement zone bridge-gap).
 A.fill(0, 31, 40, 2, '_')
-A.fill(0, 33, 40, 4, '~')
-A.fill(0, 37, 40, 1, '_')
-A.fill(8, 33, 2, 4, 's')
-A.fill(22, 33, 2, 1, 'B')
-A.fill(22, 36, 2, 1, 'B')
+A.fill(0, 33, 40, 5, '~')
+A.fill(0, 38, 40, 1, '_')
+A.fill(8, 33, 2, 5, 's')
+A.fill(22, 33, 2, 5, 'B')
 A.fill(8, 31, 2, 2, '=')
 A.fill(22, 31, 2, 2, '=')
-A.fill(8, 37, 2, 2, '=')
-A.fill(22, 37, 2, 2, '=')
+A.fill(8, 38, 2, 1, '=')
+A.fill(22, 38, 2, 1, '=')
 # The south bank: the road south-west to Thăng Long, and fields.
 A.fill(0, 39, 24, 2, '=')
 A.fill(26, 39, 12, 3, 'f')
@@ -82,13 +82,13 @@ A.many('fence', 'fence', [(3, 18), (4, 18), (5, 18)])
 A.obj('rock1', 'rock', 10, 16)
 A.obj('boat', 'boat', 12, 31, 2, 1)
 A.obj('ore2', 'ore', 3, 31)
-A.obj('rock2', 'rock', 30, 31)
+A.obj('rock2', 'rock', 33, 31)
 A.obj('sign', 'signpost', 20, 41)
 A.many('tree', 'tree', [(3, 3), (6, 4), (12, 5), (14, 3), (21, 6), (28, 4), (29, 7), (2, 16), (20, 17), (29, 23),
                         (26, 25), (6, 26), (14, 25), (18, 23), (33, 13), (37, 16), (3, 27), (16, 30), (27, 30),
                         (12, 42), (19, 42), (38, 38)])
 A.many('banana', 'banana', [(8, 3), (10, 6), (20, 20), (2, 11), (28, 27), (34, 29), (24, 42)])
-A.many('bamboo', 'bamboo', [(12, 27), (36, 30), (5, 30), (15, 38), (29, 38)])
+A.many('bamboo', 'bamboo', [(12, 27), (36, 30), (5, 30), (14, 41), (38, 40)])
 A.spawn = {'x': 5.5, 'y': 13.3}
 # Named places for the plans of the day (data/world/people.json). h: the height over the ground
 # in half blocks.
@@ -97,6 +97,9 @@ A.places = {
     'coop1': {'x': 7.5, 'y': 13.4},
     'coop2': {'x': 29.5, 'y': 13.4},
     'banyan-top': {'x': 18.5, 'y': 4.5, 'h': 17},
+    # The planks for the bridge lie on the bank in rows; the elder watches the work from the road.
+    'bridge-pile': {'x': 24.5, 'y': 31.25},
+    'bridge-watch': {'x': 21.2, 'y': 30.4},
 }
 A.npcs = [
     {'id': 'grandma', 'x': 4.5, 'y': 12.7},
@@ -119,8 +122,10 @@ A.encounters = [
     {'id': 'patrol', 'battle': 'patrol', 'x': 34.3, 'y': 14.6, 'figure': 'scout',
      'when': {'flags': ['giong.farewell']}},
 ]
-A.collision = [{'x': 22, 'y': 34, 'w': 2, 'h': 2, 'block': True, 'note': 'the broken part of the bridge'}]
-A.zones = [{'id': 'bridge-gap', 'x': 22, 'y': 34, 'w': 2, 'h': 2, 'accepts': 'plank', 'span': 12}]
+# The bridge over the water blocks; the ground system opens its deck from the state of the zone
+# (data/world/zones.json, task bridge).
+A.collision = [{'x': 22, 'y': 33, 'w': 2, 'h': 5, 'block': True, 'note': 'the bridge: its deck opens from the state of the zone'}]
+A.zones = [{'id': 'bridge-gap', 'x': 22, 'y': 33, 'w': 2, 'h': 5, 'task': 'bridge'}]
 A.life = [
     {'kind': 'chicken', 'n': 5, 'x': 5.0, 'y': 13.0, 'r': 1.2, 'bed': 'coop1'},
     {'kind': 'chicken', 'n': 4, 'x': 27.0, 'y': 13.0, 'r': 1.2, 'bed': 'coop2'},
@@ -157,7 +162,7 @@ A.triggers += [
     {'id': 'field-home', 'x': 3, 'y': 19, 'w': 8, 'h': 6, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-east', 'x': 33, 'y': 2, 'w': 6, 'h': 25, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-south', 'x': 26, 'y': 39, 'w': 12, 'h': 3, 'on': 'tap', 'action': {'textKey': 'map.field'}},
-    {'id': 'river', 'x': 0, 'y': 33, 'w': 40, 'h': 4, 'on': 'tap', 'action': {'textKey': 'map.river'}},
+    {'id': 'river', 'x': 0, 'y': 33, 'w': 40, 'h': 5, 'on': 'tap', 'action': {'textKey': 'map.river'}},
 ]
 A.paths = {'east-road': [[39.5, 14.8], [32.5, 14.8]]}
 A.exits = [

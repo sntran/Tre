@@ -99,7 +99,9 @@ function put(world, e, zoneEnt, env) {
   if (!thing || !zoneEnt) return;
   const zone = zoneEnt.zone;
   if (!canPut(zone, thing)) return;
-  if (dist(e.position, zoneEnt.position) > REACH) return say(world, 'far', e.id);
+  // A pile is long: the hero must be near the pile or near one of its planks.
+  const near = [zoneEnt.position, ...(zone.rule === 'pile' ? zone.items.map((id) => getEntity(world, id)).filter(Boolean).map(middleOf) : [])];
+  if (Math.min(...near.map((q) => dist(e.position, q))) > REACH + (zone.rule === 'pile' ? 3 : 0)) return say(world, 'far', e.id);
   release(e, thing);
   thing.item.zone = zone.id;
   zone.items.push(thing.id);
@@ -166,7 +168,7 @@ function setSpan(world, zoneEnt, def, sizes) {
     p.look = `deck-${p.item.size}`;
     p.position = { x: zone.cx, y: zone.deckY - 1, z: p.position.z, facing: 0 };
   }
-  say(world, 'solid', zoneEnt.id, { sound: out.sound, give: out.give });
+  say(world, 'solid', zoneEnt.id, { sound: out.sound, give: out.give, at: zone.items[zone.items.length - 1] });
   for (const s of skillEvents(def, zone.round, sizes, true)) say(world, 'skill', zoneEnt.id, s);
 }
 
@@ -296,7 +298,7 @@ function maybeHint(world, zoneEnt, def, env) {
   if (!friend) return;
   const covered = sum(sizesOf(world, zone.items));
   zone.hint = def.hint.time;
-  friend.follow.goal = { x: zone.lane, z: zone.from + Math.max(0, covered - 1.2), face: 0 };
+  friend.follow.goal = { x: zone.lane, z: zone.from + Math.max(0, covered - 1.2), face: 0, via: { x: zone.lane, z: zone.from - 1 } };
   say(world, 'hint', friend.id);
 }
 

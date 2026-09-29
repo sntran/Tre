@@ -925,3 +925,15 @@ p { line-height: 1.45; margin: 0.4em 0; }
 @keyframes count-tick { 50% { transform: scale(1.18); } }
 .world-dusk-tint { position: absolute; inset: 0; background: hsl(215, 55%, 45%); mix-blend-mode: color; opacity: 0; }
 .world-glow { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; }
+.debug-events {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  max-width: 46%;
+  padding: 4px 8px;
+  background: var(--ink);
+  color: var(--diep);
+  font: 12px ui-monospace, Menlo, Consolas, monospace;
+  opacity: 0.85;
+  pointer-events: none;
+}

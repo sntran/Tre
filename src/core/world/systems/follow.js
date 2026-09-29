@@ -32,7 +32,10 @@ export function follow(world, dt, rng, env) {
       continue;
     }
     if (e.follow.goal) {
-      goTo(e, e.follow.goal, dt, env);
+      // A goal can have a point on the way (the near end of the bridge, then out on the planks).
+      const g = e.follow.goal;
+      if (g.via && Math.hypot(g.via.x - p.x, g.via.z - p.z) < 0.6) delete g.via;
+      goTo(e, g.via ?? g, dt, env);
       // A short trail from Nghé to the hero, so that Nghé walks back after the goal (and does not jump).
       e.follow.trail = [[p.x, p.z], [leader.position.x, leader.position.z]];
       delete e.act;
@@ -72,7 +75,7 @@ export function follow(world, dt, rng, env) {
     const near = Math.hypot(leader.position.x - p.x, leader.position.z - p.z) < 7;
     const rest = (world.sky?.night ?? 0) > 0.5 && (leader.motion?.idle ?? 0) > 2 && near && m.speed < 0.2;
     // A closed ford: when the hero stands at its edge, Nghé shakes its head, once for each visit.
-    const atFord = world.sky?.high && fordNear(env, leader.position, 3) && fordNear(env, p, 5);
+    const atFord = world.sky?.high && fordNear(env, leader.position, 3) && fordNear(env, p, 8);
     if (atFord && !e.follow.shook) {
       e.follow.shook = true;
       e.follow.shake = SHAKE;

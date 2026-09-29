@@ -330,7 +330,25 @@ test('the elder watches the bridge while it is open', async () => {
   map.npcs = [{ id: 'elder', x: 20, y: 5 }];
   map.encounters = [];
   syncPeople(w, map, env, () => true, life.people, days);
+  run(w, 5);
+  const elder0 = getEntity(w, 'npc:elder');
+  assert.ok(Math.hypot(elder0.position.x - 40, elder0.position.z - 10) < 3, 'first at the spot (the story has not sent the elder yet)');
+  command(w, { type: 'watch', id: 'npc:elder', on: true });
   run(w, 20);
   const elder = getEntity(w, 'npc:elder');
   assert.ok(Math.hypot(elder.position.x - 18, elder.position.z - 28) < 3, `the elder is at the bridge (${elder.position.x.toFixed(1)}, ${elder.position.z.toFixed(1)})`);
+});
+
+test('each plank and each part of the old deck of the bridge in the map has a look', () => {
+  const looks = load('data/figures.json').figures;
+  const phu = load('data/maps/phu-dong.json');
+  for (const rect of phu.layers.zones.filter((r) => r.task)) {
+    const def = zones[rect.task];
+    const length = rect.h * 2;
+    for (const r of def.rounds) {
+      for (const n of [r.from, length - r.from - r.gap].filter((x) => x > 0)) assert.ok(looks[`deck-${n}`], `deck-${n}`);
+      for (const n of r.pile) assert.ok(looks[`plank-${n}`] && looks[`deck-${n}`], `plank-${n}`);
+      assert.ok(r.from + r.gap <= length, 'the gap is in the zone');
+    }
+  }
 });

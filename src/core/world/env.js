@@ -24,7 +24,6 @@ export function envFor(tileMap, extra = {}) {
   const cell = (v) => Math.floor(v / 2);
   // The tile map for walks of the world: only the ground and the objects block.
   const ground = { width: tileMap.width, inside: tileMap.inside, walkable: (x, y) => tileMap.inside(x, y) && !tileMap.isBlocked(x, y), canStep: tileMap.canStep };
-  const base = new Map(); // cell index -> the collision of the map, for the cells that changed
   // The cells of the fords (shallow water that people walk through).
   const fords = [];
   for (let y = 0; y < tileMap.height; y++) for (let x = 0; x < tileMap.width; x++) if (tileMap.groundAt(x, y) === 'shallow') fords.push({ x, y });
@@ -73,10 +72,8 @@ export function envFor(tileMap, extra = {}) {
     // Change the collision of a cell in play: true blocks it, false opens it, and null gives the
     // collision of the map back.
     block(tx, ty, on) {
-      if (!tileMap.inside(tx, ty)) return;
-      const i = ty * tileMap.width + tx;
-      if (!base.has(i)) base.set(i, tileMap.isBlocked(tx, ty));
-      tileMap.setSolid(tx, ty, on === null ? base.get(i) : on);
+      if (on === null) tileMap.resetSolid(tx, ty);
+      else tileMap.setSolid(tx, ty, on);
     },
     fords,
     places: extra.places ?? {},

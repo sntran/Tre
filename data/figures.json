@@ -1,5 +1,5 @@
 {
-  "_about": "The looks of the people, the enemies, and the animals of the world. The code builds each figure from parts (src/world/figures.js). A person: child, skin (skin1 to skin4), top, bottom, sash (palette colors), topKind (shirt, yem, bare, robe), bottomKind (shorts, skirt, trousers, robe), hair (short, topknot, long, braids, bun, tufts, grey, bald), beard (true or a color), hat (non, band, helmet, plume), item (staff, lantern, hammer, axe, net, basket, scroll, fan, drum), face (1 to 4), scale. An animal: kind (nghe, duck, serpent). The keys are the ids of people in npcs.json, the figure of an encounter or a decor point on a map, and the ids of friends in friends.json.",
+  "_about": "The looks of the people, the enemies, and the animals of the world. The code builds each figure from parts (src/world/figures.js). A person: child, skin (skin1 to skin4), top, bottom, sash (palette colors), topKind (shirt, yem, bare, robe), bottomKind (shorts, skirt, trousers, robe), hair (short, topknot, long, braids, bun, tufts, grey, bald), beard (true or a color), hat (non, band, helmet, plume), item (staff, lantern, hammer, axe, net, basket, scroll, fan, drum, or plank-3 to plank-5 on the shoulder), face (1 to 4), scale. An animal: kind (nghe, duck, serpent). A thing: kind (pot, lantern, cart, plank: a plank of n half blocks with a dot on each, deck: a part of the bridge deck, n half blocks long and w wide). The keys are the ids of people in npcs.json, the figure of an encounter or a decor point on a map, and the ids of friends in friends.json.",
   "figures": {
     "grandma": { "skin": "skin2", "top": "wood", "bottom": "indigo", "sash": "ochre", "topKind": "shirt", "bottomKind": "skirt", "hair": "grey", "item": "fan", "face": 2 },
     "mother": { "skin": "skin2", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "yem", "bottomKind": "skirt", "hair": "bun", "face": 2 },
@@ -32,6 +32,14 @@
     "bird": { "kind": "bird" },
     "lantern": { "kind": "lantern" },
     "lantern-lit": { "kind": "lantern", "lit": true },
-    "cart": { "kind": "cart" }
+    "cart": { "kind": "cart" },
+    "plank-3": { "kind": "plank", "n": 3 },
+    "plank-4": { "kind": "plank", "n": 4 },
+    "plank-5": { "kind": "plank", "n": 5 },
+    "deck-2": { "kind": "deck", "n": 2 },
+    "deck-3": { "kind": "deck", "n": 3 },
+    "deck-4": { "kind": "deck", "n": 4 },
+    "deck-5": { "kind": "deck", "n": 5 },
+    "deck-6": { "kind": "deck", "n": 6 }
   }
 }

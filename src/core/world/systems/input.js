@@ -1,7 +1,8 @@
 // Input: the commands of the last frames go into the components of the entities.
 // Commands: move (a map direction from the stick or the keys), walk (a route of points), stop,
 // place (put an entity at a point), face (turn to a point), pause (a dialogue opens or closes),
-// stay (a person of the quest stays out at night), pet (a friend is happy), ride (the hero gets on
+// stay (a person of the quest stays out at night), watch (a person watches the work at a
+// placement zone by day), pet (a friend is happy), ride (the hero gets on
 // the back of a friend, or gets off), knock (a tap on a house at night: if the family is in, the
 // lantern flickers and a soft sound comes from inside), pick (take a thing), put (put the thing in
 // the hands into a zone), drop (put it on the ground). The place system does what the hands want.
@@ -74,6 +75,8 @@ export function input(world, dt, rng, env) {
       e.hands = { holds: e.hands?.holds ?? null, want: { do: c.type, item: c.item ?? null, zone: c.zone ?? null } };
     } else if (c.type === 'stay' && e.schedule) {
       e.schedule.stay = Boolean(c.on);
+    } else if (c.type === 'watch' && e.schedule) {
+      e.schedule.watch = Boolean(c.on);
     } else if (c.type === 'face' && e.position) {
       const dx = c.x - e.position.x;
       const dz = c.z - e.position.z;

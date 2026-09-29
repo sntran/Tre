@@ -75,6 +75,12 @@ export function createFigureLayer(scene, lookOf) {
   dust.count = 0;
   scene.add(dust);
   const puffs = [];
+  // Drops of a splash: small white boxes that fly up and fall back into the water.
+  const spray = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.diep) }), MAX_PUFFS);
+  spray.frustumCulled = false;
+  spray.count = 0;
+  scene.add(spray);
+  const drops = [];
 
   const figures = new Map(); // entity id -> figure
   const m4 = new THREE.Matrix4();
@@ -145,6 +151,8 @@ export function createFigureLayer(scene, lookOf) {
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
         f.want = e.riding ? 'ride' : e.act === 'sit' || e.act === 'rest' ? 'rest' : e.act === 'happy' ? 'happy' : e.act === 'shake' ? 'shake' : e.react?.waving > 0 ? 'wave' : null;
         f.bend = e.react?.bend ?? null;
+        // A plank that tips or wobbles turns about its near end.
+        f.tilt = e.tilt ?? 0;
       }
       for (const id of [...figures.keys()]) if (!seen.has(id)) figures.delete(id);
     },
@@ -173,7 +181,7 @@ export function createFigureLayer(scene, lookOf) {
         const pose = animate(f.anim, { speed: f.speed, dt, want: f.want });
         for (const [name, r] of Object.entries(pose.rot)) f.nodes[name]?.rotation.set(r[0], r[1], r[2]);
         f.body.position.y = (pose.lift - pose.sink) * f.figure.scale * FIGURE_UNIT;
-        f.body.rotation.x = pose.lean;
+        f.body.rotation.x = pose.lean + f.tilt;
         f.body.rotation.z = 0;
         if (f.bend) {
           // Tall grass bends away from the hero (the direction is in the world; the figure turns).
@@ -211,6 +219,23 @@ export function createFigureLayer(scene, lookOf) {
       }
       dust.count = q;
       dust.instanceMatrix.needsUpdate = true;
+      let r = 0;
+      for (let i = drops.length - 1; i >= 0; i--) {
+        const d = drops[i];
+        d.age += dt;
+        d.vy -= 9.8 * dt;
+        d.x += d.vx * dt;
+        d.y += d.vy * dt;
+        d.z += d.vz * dt;
+        if (d.age > 0.9 || d.y < d.floor || r >= MAX_PUFFS) {
+          drops.splice(i, 1);
+          continue;
+        }
+        const k = d.size * (1 - d.age * 0.6);
+        spray.setMatrixAt(r++, tmp.makeScale(k, k, k).setPosition(d.x, d.y, d.z));
+      }
+      spray.count = r;
+      spray.instanceMatrix.needsUpdate = true;
       parts.count = n;
       hulls.count = n;
       shadows.count = s;
@@ -218,13 +243,26 @@ export function createFigureLayer(scene, lookOf) {
       parts.instanceColor.needsUpdate = true;
       plain.needsUpdate = true;
     },
+    // A burst at a point (world units): 'splash' (drops of water) or 'dust' (a puff of dust, for
+    // example when the bridge takes solid form). n: how many.
+    burst(x, y, z, kind = 'splash', n = 14) {
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 + Math.random() * 0.4;
+        if (kind === 'splash') {
+          const v = 0.8 + Math.random() * 1.2;
+          drops.push({ x, y, z, vx: Math.cos(a) * v, vy: 2.5 + Math.random() * 2, vz: Math.sin(a) * v, age: 0, floor: y - 0.2, size: 0.12 + Math.random() * 0.1 });
+        } else {
+          puffs.push({ x: x + Math.cos(a) * 0.6, y, z: z + Math.sin(a) * 0.6, age: Math.random() * 0.2 });
+        }
+      }
+    },
     // The place of an entity as it is drawn now (world units), and its height.
     placeOf(id) {
       const f = figures.get(id);
       return f?.at ? { ...f.at, height: f.height } : null;
     },
     dispose() {
-      for (const m of [parts, hulls, shadows, dust]) {
+      for (const m of [parts, hulls, shadows, dust, spray]) {
         scene.remove(m);
         m.material.dispose();
         m.dispose();
