@@ -1,0 +1,24 @@
+{
+ "_about": "The roads and river ways between the story places (data/geo/vietnam.json), for travel on the country map. mode: road (on foot) or river (by boat). via: points of the way between the two places, [longitude, latitude]. The ways follow the old roads and the rivers in a simple line; they need a check. speeds: km for each hour. walkHours: the hours of travel in one day; the rest of the day is for sleep and food.",
+ "speeds": { "road": 4, "river": 6 },
+ "walkHours": 8,
+ "routes": [
+  { "from": "phu-dong", "to": "thang-long", "mode": "road", "via": [[105.915, 21.045], [105.875, 21.040]] },
+  { "from": "phu-dong", "to": "nui-trau", "mode": "road", "via": [[106.02, 21.09]] },
+  { "from": "phu-dong", "to": "soc-son", "mode": "road", "via": [[105.90, 21.15], [105.85, 21.22]] },
+  { "from": "phu-dong", "to": "co-loa", "mode": "road", "via": [[105.91, 21.09]] },
+  { "from": "thang-long", "to": "co-loa", "mode": "road", "via": [[105.855, 21.08]] },
+  { "from": "co-loa", "to": "me-linh", "mode": "road", "via": [[105.80, 21.15]] },
+  { "from": "me-linh", "to": "nghia-linh", "mode": "river", "via": [[105.60, 21.22], [105.45, 21.30]] },
+  { "from": "nghia-linh", "to": "tay-bac", "mode": "river", "via": [[105.10, 21.10], [104.60, 21.05], [104.20, 21.20]] },
+  { "from": "phu-dong", "to": "bach-dang", "mode": "river", "via": [[106.04, 21.07], [106.30, 21.115], [106.48, 20.93], [106.69, 21.00], [106.79, 20.95]] },
+  { "from": "thang-long", "to": "thien-truong", "mode": "river", "via": [[105.95, 20.85], [106.05, 20.65]] },
+  { "from": "thang-long", "to": "hoa-lu", "mode": "road", "via": [[105.85, 20.75], [105.90, 20.50]] },
+  { "from": "hoa-lu", "to": "tay-do", "mode": "road", "via": [[105.80, 20.15]] },
+  { "from": "tay-do", "to": "lam-son", "mode": "river", "via": [[105.50, 20.00]] },
+  { "from": "tay-do", "to": "phu-xuan", "mode": "road", "via": [[105.75, 19.30], [105.65, 18.70], [106.15, 18.10], [106.60, 17.45], [107.15, 16.80]] },
+  { "from": "phu-xuan", "to": "hoi-an", "mode": "road", "via": [[108.00, 16.20], [108.20, 16.05]] },
+  { "from": "hoi-an", "to": "tay-son", "mode": "road", "via": [[108.75, 15.20], [108.95, 14.40]] },
+  { "from": "tay-son", "to": "gia-dinh", "mode": "road", "via": [[109.15, 13.00], [109.10, 12.20], [108.60, 11.20], [107.60, 10.95], [107.00, 10.85]] }
+ ]
+}

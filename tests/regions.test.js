@@ -76,12 +76,20 @@ test('the people, enemies, and things of the story are each on one map', () => {
   }
 });
 
-test('the travel time between regions follows the roads', () => {
-  const w = createWorld(world, maps);
+test('the travel time between regions follows the real roads and rivers', () => {
+  const geo = load('data/geo/vietnam.json');
+  const routes = load('data/world/routes.json');
+  const w = createWorld(world, maps, { routes, places: geo.places });
   assert.equal(w.travelHours('giong', 'giong'), 0);
-  assert.equal(w.travelHours('giong', 'thang-long'), 5);
-  // Through Cổ Loa: 4 + 3 = 7 is longer than the direct road of 5.
-  assert.equal(w.travelHours('giong', 'gia-dinh'), 5 + 8 + 12 + 30 + 30 + 36);
-  // Each region can be reached on the roads.
-  for (const r of world.regions) assert.ok(Number.isFinite(w.travelHours('giong', r.id)), r.id);
+  // Phù Đổng to Thăng Long is about 15 km on the road: about 4 hours on foot.
+  const near = w.travelWay('giong', 'thang-long');
+  assert.ok(near.km > 12 && near.km < 25, `${near.km}`);
+  assert.ok(w.travelHours('giong', 'thang-long') >= 3 && w.travelHours('giong', 'thang-long') <= 7);
+  // To the south, the way is long: many days on the road.
+  assert.ok(w.travelHours('giong', 'gia-dinh') > 24 * 20);
+  // Each region can be reached, and the time is the same both ways.
+  for (const r of world.regions) {
+    assert.ok(Number.isFinite(w.travelHours('giong', r.id)), r.id);
+    assert.equal(w.travelHours('giong', r.id), w.travelHours(r.id, 'giong'), r.id);
+  }
 });

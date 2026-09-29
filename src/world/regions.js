@@ -2,9 +2,12 @@
 // A region has maps. A map has exits: when the hero walks into an exit, the hero goes to
 // another map. The links are the roads between regions on the country map.
 import { check } from '../core/conditions.js';
+import { createRoutes } from './travel.js';
 
 // world: data/world/regions.json. maps: a Map from map id to map data.
-export function createWorld(world, maps) {
+// geo: { routes (data/world/routes.json), places (the places of data/geo/vietnam.json) }, for travel.
+export function createWorld(world, maps, geo = null) {
+  const routes = geo ? createRoutes(geo.routes, geo.places) : null;
   const regions = new Map(world.regions.map((r) => [r.id, r]));
   const regionOf = new Map();
   for (const r of world.regions) for (const id of r.maps) regionOf.set(id, r.id);
@@ -61,25 +64,19 @@ export function createWorld(world, maps) {
     return null;
   }
 
-  // The travel time in game hours between two regions, on the roads (links). Infinity when no road.
+  // The way between two regions, from the place of one to the place of the other, or null.
+  function travelWay(from, to) {
+    const a = regions.get(from);
+    const b = regions.get(to);
+    return a && b && routes ? routes.way(a.place, b.place) : null;
+  }
+
+  // The travel time between two regions, in hours on the game clock (with the rest at night).
+  // Infinity when there is no way.
   function travelHours(from, to) {
     if (from === to) return 0;
-    const dist = new Map([[from, 0]]);
-    const open = [from];
-    while (open.length) {
-      open.sort((a, b) => dist.get(a) - dist.get(b));
-      const r = open.shift();
-      for (const [a, b, hours] of world.links) {
-        const next = a === r ? b : b === r ? a : null;
-        if (!next) continue;
-        const d = dist.get(r) + hours;
-        if (d < (dist.get(next) ?? Infinity)) {
-          dist.set(next, d);
-          open.push(next);
-        }
-      }
-    }
-    return dist.get(to) ?? Infinity;
+    const w = travelWay(from, to);
+    return w ? routes.clockHours(w.hours) : Infinity;
   }
 
   // The home of the hero: the start map and its spawn point.
@@ -98,6 +95,7 @@ export function createWorld(world, maps) {
     arrival,
     firstExit,
     whereIs,
+    travelWay,
     travelHours,
   };
 }

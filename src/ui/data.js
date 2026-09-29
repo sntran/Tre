@@ -8,6 +8,7 @@ const FILES = {
   tiles: 'data/tiles.json',
   regions: 'data/world/regions.json',
   roadEvents: 'data/world/road-events.json',
+  routes: 'data/world/routes.json',
   geo: 'data/geo/vietnam.json',
   npcs: 'data/npcs.json',
   quests: 'data/quests.json',
@@ -44,7 +45,7 @@ export async function loadData(onProgress = () => {}) {
     const response = await fetch(`data/maps/${id}.json`);
     if (response.ok) out.maps.set(id, await response.json());
   }));
-  out.world = createWorld(out.regions, out.maps);
+  out.world = createWorld(out.regions, out.maps, { routes: out.routes, places: out.geo.places });
   out.dialogues = new Map();
   for (const name of ['dialoguePrologue', 'dialogueVillage', 'dialogueGiong']) {
     for (const d of out[name]?.dialogues ?? []) out.dialogues.set(d.id, d);

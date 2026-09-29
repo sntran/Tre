@@ -177,6 +177,7 @@ const FILES = [
   'data/trials.json',
   'data/world/regions.json',
   'data/world/road-events.json',
+  'data/world/routes.json',
   'fonts/Alegreya-Bold.woff2',
   'fonts/BeVietnamPro-Bold.woff2',
   'fonts/BeVietnamPro-Regular.woff2',

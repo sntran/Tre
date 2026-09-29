@@ -563,6 +563,7 @@
   "world.here": "You are here.",
   "world.locked": "This land opens later in the story.",
   "world.travel": "Travel ({hours} hours)",
+  "world.way": "The way there: {km} km on roads and rivers, about {days} days.",
   "world.chapter": "Chapter {n}",
   "world.time": "Day {day}, {part}",
   "time.dawn": "dawn",

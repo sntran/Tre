@@ -563,6 +563,7 @@
   "world.here": "Em đang ở đây.",
   "world.locked": "Vùng đất này sẽ mở sau, theo câu chuyện.",
   "world.travel": "Lên đường ({hours} giờ)",
+  "world.way": "Đường đến đó: {km} km đường bộ và đường sông, khoảng {days} ngày.",
   "world.chapter": "Chương {n}",
   "world.time": "Ngày {day}, {part}",
   "time.dawn": "rạng sáng",

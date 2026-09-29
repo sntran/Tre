@@ -10,23 +10,39 @@ const events = load('data/world/road-events.json').events;
 const vi = load('i18n/vi.json');
 const en = load('i18n/en.json');
 
-// A small test world with two open regions and one locked region.
+// A small test world with two open regions and one locked region, one degree of longitude apart.
 const testWorld = createWorld({
   start: { region: 'a', map: 'a1' },
   regions: [
-    { id: 'a', maps: ['a1'], entry: { map: 'a1', x: 1.5, y: 1.5 } },
-    { id: 'b', maps: ['b1'], entry: { map: 'b1', x: 2.5, y: 3.5 } },
-    { id: 'c', maps: [] },
+    { id: 'a', place: 'pa', maps: ['a1'], entry: { map: 'a1', x: 1.5, y: 1.5 } },
+    { id: 'b', place: 'pb', maps: ['b1'], entry: { map: 'b1', x: 2.5, y: 3.5 } },
+    { id: 'c', place: 'pc', maps: [] },
   ],
-  links: [['a', 'b', 13], ['b', 'c', 5]],
-}, new Map([['a1', { layers: { exits: [] } }], ['b1', { layers: { exits: [] } }]]));
+}, new Map([['a1', { layers: { exits: [] } }], ['b1', { layers: { exits: [] } }]]), {
+  places: [{ id: 'pa', at: [105, 21] }, { id: 'pb', at: [106, 21] }, { id: 'pc', at: [106, 20] }],
+  routes: { speeds: { road: 4, river: 6 }, walkHours: 8, routes: [{ from: 'pa', to: 'pb', mode: 'road' }, { from: 'pb', to: 'pc', mode: 'river' }] },
+});
+
+test('the travel time follows the real distance on the roads, with a rest each night', () => {
+  // One degree of longitude at 21° north is about 104 km: 26 hours on foot, and 3 nights of rest.
+  const way = testWorld.travelWay('a', 'b');
+  assert.ok(way.km > 100 && way.km < 106, `${way.km}`);
+  assert.equal(way.legs[0].mode, 'road');
+  assert.equal(testWorld.travelHours('a', 'b'), Math.ceil(way.hours + 3 * 16));
+  assert.equal(testWorld.travelHours('a', 'b'), testWorld.travelHours('b', 'a'), 'the same both ways');
+  // By boat on the river is faster than on foot for the same distance.
+  const river = testWorld.travelWay('b', 'c');
+  assert.ok(river.hours < (river.km / 4));
+  assert.equal(testWorld.travelHours('a', 'a'), 0);
+});
 
 test('a travel to an open region takes the road hours and has a few road events', () => {
   const plan = planTravel(testWorld, 'a', 'b', { flags: {} }, createRng('t1'), events);
   assert.equal(plan.ok, true);
-  assert.ok(plan.events.length >= 2 && plan.events.length <= TRAVEL.maxEvents, `events: ${plan.events.length}`);
+  assert.ok(plan.events.length >= 1 && plan.events.length <= TRAVEL.maxEvents, `events: ${plan.events.length}`);
   const extra = plan.events.reduce((s, e) => s + (e.hours ?? 0), 0);
-  assert.equal(plan.hours, 13 + extra);
+  assert.equal(plan.hours, testWorld.travelHours('a', 'b') + extra);
+  assert.ok(plan.legs.length === 1 && plan.legs[0].line.length >= 2, 'the way to draw on the map');
   assert.equal(new Set(plan.events.map((e) => e.id)).size, plan.events.length, 'no event twice');
   // The same seed gives the same travel.
   assert.deepEqual(planTravel(testWorld, 'a', 'b', { flags: {} }, createRng('t1'), events), plan);

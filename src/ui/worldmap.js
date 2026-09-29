@@ -113,6 +113,20 @@ function drawBase(svg, ctx, proj, eraSouth) {
   }
   svg.append(water);
 
+  // The roads (dashes of wood) and the river ways of travel. In the faint land they are faint too.
+  const lineD = (line) => `M${line.map(toMap).map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join('L')}`;
+  const ways = { road: '', river: '' };
+  const at = Object.fromEntries(geo.places.map((p) => [p.id, p.at]));
+  for (const r of data.routes.routes) {
+    if (at[r.from] && at[r.to]) ways[r.mode] += lineD([at[r.from], ...(r.via ?? []), at[r.to]]);
+  }
+  for (const [clip, faint] of [['era-land', false], ['era-south', true]]) {
+    const g = el('g', { 'clip-path': `url(#${clip})`, 'pointer-events': 'none' });
+    g.append(el('path', { d: ways.road, fill: 'none', stroke: faint ? C.ashLight : C.wood, 'stroke-width': 1.4, 'stroke-dasharray': '5 4', 'vector-effect': 'non-scaling-stroke' }));
+    g.append(el('path', { d: ways.river, fill: 'none', stroke: faint ? C.ashLight : C.indigo, 'stroke-width': 1.4, 'stroke-dasharray': '2 3', 'vector-effect': 'non-scaling-stroke' }));
+    svg.append(g);
+  }
+
   // The islands of Vietnam in the sea: a dot for each small island, so that they show at any size.
   const islands = el('g', { 'pointer-events': 'none' });
   for (const ring of geo.land.VNM) {
@@ -172,6 +186,8 @@ registerModal('worldmap', async (ctx) => {
     ctx.ui.append(layer);
 
     const base = drawBase(svg, ctx, proj, eraSouth);
+    const wayLine = el('path', { fill: 'none', stroke: C.vermilion, 'stroke-width': 3.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' });
+    svg.append(wayLine);
     const labels = el('g', { class: 'country-labels', 'pointer-events': 'none' });
     const seals = el('g', { class: 'country-seals' });
     svg.append(labels, seals);
@@ -270,6 +286,10 @@ registerModal('worldmap', async (ctx) => {
       const named = inEra(region) || open;
       const lines = [h('div', { class: 'region-chapter', text: t('world.chapter', { n: region.chapter }) })];
       if (named) lines.push(h('h3', { text: t(region.nameKey) }));
+      // The way from the region of the hero, drawn in red, with its length and days.
+      const way = region.id === here ? null : world.travelWay(here, region.id);
+      wayLine.setAttribute('d', way ? way.legs.map((l) => `M${l.line.map((c) => proj.toMap(c)).map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join('L')}`).join('') : '');
+      if (way) lines.push(h('p', { class: 'region-way', text: t('world.way', { km: Math.round(way.km), days: Math.max(1, Math.ceil(world.travelHours(here, region.id) / 24)) }) }));
       if (region.id === here) lines.push(h('p', { text: t('world.here') }));
       else if (!open) lines.push(h('p', { text: t('world.locked') }));
       if (open && region.id !== here) {
