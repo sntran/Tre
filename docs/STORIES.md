@@ -120,6 +120,6 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `raid-boss` | The forge of the smith: fire makes the soldiers raise wet shields, lightning into the wet ground shocks them; the general and his blow, the iron staff breaks, and Gióng pulls up the bamboo. The fact of history keeps its year. Then twelve coins, four on each mat, and the farewell of Gióng. |
 | `raid-lost` | The map only pauses the raid, with one line; nobody stops the soldiers; at grade 1 they take nothing, and they come again at the next dawn. |
 | `raid-river` | Rice balls from the same pull: two little river serpents eat two each and swim away calm; the talks of Sóng. |
-| `forge-horse` | The iron horse: five lumps and the fire dies, seven and one rolls back, six and the fire burns high; the iron in the water too early bends, while it glows it becomes the horse. |
+| `forge-horse` | The iron horse: five lumps and the fire dies, seven and one rolls back, six and the fire burns high; the child waits by the anvil for the sound of the glow, and the glowing iron in the water becomes the horse. |
 | `rice-giong` | Rice for Gióng: two trays of five make a ten, and Gióng grows; three trays of three and one more make twelve: he grows again, two bowls stay in the pot. |
 | `staffs-bamboo` | Bamboo staffs: slashes at three, six, and eight break the short piece, and a new stem comes; slashes at three, six, and nine make four equal staffs. |

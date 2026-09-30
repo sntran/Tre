@@ -1,8 +1,8 @@
 {
   "name": "forge-horse",
   "about": {
-    "vi": "Ngựa sắt: mang quặng vào lò rồi bấm ống bễ; năm miếng thì lửa tắt, bảy miếng thì miếng thừa lăn ra, đúng sáu miếng thì lửa bùng lên; nhúng sắt đỏ vào nước đúng lúc thì thành ngựa sắt.",
-    "en": "The iron horse: carry ore into the forge and tap the bellows; with five lumps the fire dies, with seven the extra lump rolls out, and with exactly six the fire burns high; the glowing iron in the water at the right moment becomes the iron horse."
+    "vi": "Ngựa sắt: mang quặng vào lò rồi bấm ống bễ; năm miếng thì lửa tắt, bảy miếng thì miếng thừa lăn ra, đúng sáu miếng thì lửa bùng lên; đứng chờ bên đe đến khi sắt đỏ rực, nhúng sắt vào nước thì thành ngựa sắt.",
+    "en": "The iron horse: carry ore into the forge and tap the bellows; with five lumps the fire dies, with seven the extra lump rolls out, and with exactly six the fire burns high; the child waits by the anvil until the iron glows, and the glowing iron in the water becomes the iron horse."
   },
   "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "items": { "iron": 6 }, "flags": { "intro.seen": true, "prologue.started": true, "trial.smith.done": true, "giong.messenger": true, "giong.spoke": true } },
   "map": "phu-dong",
@@ -34,14 +34,12 @@
     { "tap": { "thing": "bellows:horse" } },
     { "until": { "event": "fire", "timeout": 15 } },
     { "expect": [{ "event": "skill", "with": { "skill": "math.count.120", "solved": true, "parts": [6] } }, { "entity": "iron:horse", "look": "iron-0" }] },
-    { "tap": { "thing": "iron:horse" } },
-    { "until": { "event": "bend", "timeout": 10 } },
-    { "expect": [{ "event": "skill", "with": { "skill": "sci.matter.states", "solved": false, "first": true } }] },
-    { "wait": 4.5 },
+    { "tap": { "cell": [54, 45] } },
+    { "until": { "event": "glow", "timeout": 15 } },
     { "tap": { "thing": "iron:horse" } },
     { "until": { "event": "hiss", "timeout": 10 } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
-    { "expect": [{ "event": "skill", "with": { "skill": "sci.matter.states", "solved": true } }, { "entity": "iron:horse", "look": "iron-horse" }, { "flag": "horse.forged" }, { "text": { "shown": "dlg.smith.horse.n1" } }] },
+    { "expect": [{ "event": "skill", "with": { "skill": "sci.matter.states", "solved": true, "first": true } }, { "entity": "iron:horse", "look": "iron-horse" }, { "flag": "horse.forged" }, { "text": { "shown": "dlg.smith.horse.n1" } }] },
     { "read": true }
   ]
 }

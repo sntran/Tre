@@ -610,6 +610,8 @@ function tickForge(world, tz, dt, env) {
   }
   tz.zone.heat += dt;
   const value = glowAt(tz.zone.heat, task.glow, task.hold);
+  // The iron turns hot: a sound, so that the child hears the moment too.
+  if ((iron.glow ?? 0) < task.glow.hot && quenchResult(value, task.glow)) say(world, 'glow', iron.id, { sound: 'lantern' });
   iron.glow = Math.round(value * 100) / 100;
   iron.look = `iron-${Math.round(value * 3)}`;
 }
