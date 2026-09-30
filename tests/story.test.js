@@ -176,3 +176,40 @@ test('the page of the stories lists each story with its about lines and a link t
     assert.ok(page.includes(story.about.en.replaceAll('&', '&amp;')), `the page has the about line of ${story.name} (run tools/stories.py)`);
   }
 });
+
+test('the tap targets of the trials: a thing, the first thing of a kind, a place on the stem, a place on the line, and a zone of a task', () => {
+  const s = sessionOf({ name: 't', profile: { grade: 1, flags: { 'intro.seen': true, 'prologue.started': true } }, map: 'phu-dong', clock: 540, place: [50, 8] });
+  for (const id of ['scholar', 'fisher', 'woodcutter', 'healer']) s.startTrial(id);
+  s.step();
+  assert.deepEqual(tapTarget(s, { thing: 'band:scholar' }).target, { thing: 'band:scholar' });
+  assert.equal(getEntity(s.state, tapTarget(s, { item: 'rod' }).target.thing).item.kind, 'rod');
+  assert.equal(getEntity(s.state, tapTarget(s, { item: 'herb-rauma' }).target.thing).item.kind, 'herb-rauma');
+  assert.equal(tapTarget(s, { item: 'sticks' }), null, 'no sticks before the cut');
+  assert.deepEqual(tapTarget(s, { stem: 4 }).target, { thing: 'stem:woodcutter', along: 4 });
+  const line = tapTarget(s, { line: 8 });
+  const z = getEntity(s.state, 'zone:line').zone;
+  assert.equal(line.target.ground.x * 2, z.x + 8);
+  const basket = tapTarget(s, { zone: 'basket' }).target.ground;
+  const r = getEntity(s.state, 'zone:basket').zone.rect;
+  assert.ok(basket.x * 2 > r.x0 && basket.x * 2 < r.x1, 'the middle of the zone');
+});
+
+test('the repeat step plays its steps again and again', async () => {
+  let session = null;
+  const story = {
+    name: 'repeat',
+    profile: { grade: 1, flags: { 'intro.seen': true, 'prologue.started': true } },
+    map: 'phu-dong',
+    clock: 540,
+    place: [54, 27],
+    steps: [
+      { do: { type: 'talk', dialogue: 'teacher.trial' } },
+      { read: true },
+      { repeat: 3, steps: [{ tap: { item: 'rod' } }, { until: { event: 'add', timeout: 10 } }] },
+      { expect: [{ event: 'add' }] },
+    ],
+  };
+  const failures = await runHeadless(story, { onSession: (s) => { session = s; } });
+  assert.deepEqual(failures, []);
+  assert.equal(getEntity(session.state, 'zone:mat').zone.items.length, 3);
+});

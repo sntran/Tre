@@ -1,0 +1,40 @@
+{
+  "name": "trial-fisher",
+  "about": {
+    "vi": "Thử thách của chú đánh cá: cắm cọc thành hàng trước khi triều lên; để một khe quá rộng thì cá thoát ra, cắm đủ thì cá ở lại trong đăng.",
+    "en": "The trial of the fisher: stakes in a row before the tide; with a space too wide the fish swim out, and with the full row they stay in the trap."
+  },
+  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [27, 64.5],
+  "steps": [
+    { "tap": { "entity": "npc:fisher" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "dlg.fisher.trial.n1" } }, { "entity": "stake:fisher:b", "look": "stake-set" }] },
+    { "tap": { "item": "stake" } },
+    { "until": { "event": "pick", "timeout": 15 } },
+    { "tap": { "line": 8 } },
+    { "until": { "event": "put", "timeout": 15 } },
+    { "tap": { "item": "stake" } },
+    { "until": { "event": "pick", "timeout": 15 } },
+    { "tap": { "line": 16 } },
+    { "until": { "event": "put", "timeout": 15 } },
+    { "until": { "event": "tide", "timeout": 90 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "math.count.120", "solved": false, "first": true, "parts": [4, 4, 8] } }] },
+    { "until": { "event": "escape", "timeout": 5 } },
+    { "expect": [{ "entity": "fish:fisher", "look": "fish-out" }, { "flag": "trial.fisher.done", "is": false }] },
+    { "wait": 4 },
+    { "tap": { "item": "stake" } },
+    { "until": { "event": "pick", "timeout": 15 } },
+    { "tap": { "line": 12 } },
+    { "until": { "event": "put", "timeout": 15 } },
+    { "until": { "event": "tide", "timeout": 90 } },
+    { "expect": [{ "event": "skill", "with": { "solved": true, "first": false, "parts": [4, 4, 4, 4] } }] },
+    { "until": { "event": "catch", "timeout": 5 } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
+    { "expect": [{ "flag": "trial.fisher.done" }, { "entity": "fish:fisher", "look": "fish-in" }, { "text": { "shown": "dlg.fisher.trial.done.n1" } }] },
+    { "read": true }
+  ]
+}

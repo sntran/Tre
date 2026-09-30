@@ -339,6 +339,66 @@
    "bridge-guess": {
     "x": 37.0,
     "y": 64
+   },
+   "school-rods": {
+    "x": 50.6,
+    "y": 26.1
+   },
+   "school-mat": {
+    "x": 55.2,
+    "y": 26.2
+   },
+   "smith-ore": {
+    "x": 58.2,
+    "y": 40.6
+   },
+   "smith-forge": {
+    "x": 48.6,
+    "y": 40.2
+   },
+   "smith-anvil": {
+    "x": 54.2,
+    "y": 43.0
+   },
+   "smith-trough": {
+    "x": 55.4,
+    "y": 42.6
+   },
+   "well-bucket": {
+    "x": 42.6,
+    "y": 23.6
+   },
+   "fisher-stakes": {
+    "x": 21.0,
+    "y": 63.4
+   },
+   "fisher-line": {
+    "x": 24.0,
+    "y": 66.5
+   },
+   "healer-bed-1": {
+    "x": 26.4,
+    "y": 42.8
+   },
+   "healer-bed-2": {
+    "x": 29.4,
+    "y": 42.8
+   },
+   "healer-bed-3": {
+    "x": 32.4,
+    "y": 42.8
+   },
+   "healer-basket": {
+    "x": 35.2,
+    "y": 41.4
+   },
+   "woodcutter-stem": {
+    "x": 50.0,
+    "y": 6.5
+   },
+   "woodpile": {
+    "x": 52.2,
+    "y": 60.4
    }
   },
   "triggers": [

@@ -101,6 +101,26 @@ A.places = {
     # lie on the sand to the west of the bridge.
     'bridge-pile': {'x': 24.5, 'y': 31.25},
     'bridge-guess': {'x': 18.5, 'y': 32},
+    # The things of the Five Trials (data/trials.json), near each person: the heap of counting
+    # rods and the mat in the school yard; the ore, the forge, the anvil, and the trough in the
+    # yard of the smith, and the bucket at the well; the stakes on the sand and the line of the
+    # fish trap in the river by the fisher; the three herb beds and the basket in the yard of
+    # the healer; the fallen bamboo stem by the woodcutter, and the wood pile by the bridge.
+    'school-rods': {'x': 25.3, 'y': 13.05},
+    'school-mat': {'x': 27.6, 'y': 13.1},
+    'smith-ore': {'x': 29.1, 'y': 20.3},
+    'smith-forge': {'x': 24.3, 'y': 20.1},
+    'smith-anvil': {'x': 27.1, 'y': 21.5},
+    'smith-trough': {'x': 27.7, 'y': 21.3},
+    'well-bucket': {'x': 21.3, 'y': 11.8},
+    'fisher-stakes': {'x': 10.5, 'y': 31.7},
+    'fisher-line': {'x': 12.0, 'y': 33.25},
+    'healer-bed-1': {'x': 13.2, 'y': 21.4},
+    'healer-bed-2': {'x': 14.7, 'y': 21.4},
+    'healer-bed-3': {'x': 16.2, 'y': 21.4},
+    'healer-basket': {'x': 17.6, 'y': 20.7},
+    'woodcutter-stem': {'x': 25.0, 'y': 3.25},
+    'woodpile': {'x': 26.1, 'y': 30.2},
 }
 A.npcs = [
     {'id': 'grandma', 'x': 4.5, 'y': 12.7},

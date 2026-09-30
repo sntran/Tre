@@ -448,7 +448,9 @@ export async function mountVillage(ctx, params = {}) {
   function thingAt(p) {
     let best = null;
     for (const e of query(state, 'item', 'position')) {
-      if (e.hidden || e.item.set) continue;
+      // A thing that is set does not move, but a fixed thing of a trial (a stem, the iron, the
+      // straw rope) answers a tap.
+      if (e.hidden || (e.item.set && !e.item.fixed)) continue;
       const q = e.position;
       const end = { x: q.x + Math.sin(q.facing ?? 0) * e.item.size, z: q.z + Math.cos(q.facing ?? 0) * e.item.size };
       const b = view.screenBox({
@@ -465,9 +467,9 @@ export async function mountVillage(ctx, params = {}) {
       const dy = c.y - a.y;
       const k = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
       const d = Math.hypot(p.x - (a.x + dx * k), p.y - (a.y + dy * k));
-      if (!best || d < best.d) best = { e, d };
+      if (!best || d < best.d) best = { e, d, along: Math.round(k * e.item.size) };
     }
-    return best?.e ?? null;
+    return best ? { ...best.e, along: best.along } : null;
   }
   // The plank outline of the prediction under a screen point (the row lies on the bank).
   function guessAt(p) {
@@ -499,7 +501,7 @@ export async function mountVillage(ctx, params = {}) {
     const ghost = guessAt(p);
     if (ghost) return { guess: { zone: ghost.guess.zone, n: ghost.guess.n } };
     const plank = thingAt(p);
-    if (plank) return { thing: plank.id };
+    if (plank) return plank.item.fixed ? { thing: plank.id, along: plank.along } : { thing: plank.id };
     const person = personAt(p);
     if (person) return { person: person.entity };
     const hit = view.pick(p.x, p.y, { things: true });
@@ -589,6 +591,8 @@ export async function mountVillage(ctx, params = {}) {
     // The world moves in fixed steps; the drawing is smooth between two steps. A story of the
     // storybook can play faster (&speed=4).
     acc += dt * (book?.speed ?? 1);
+    // The finger of the storybook moves to a tap: the world waits for it.
+    if (book?.hold) acc = 0;
     while (acc >= STEP && alive && !leaving) {
       session.step();
       figures.sync(state);

@@ -34,7 +34,9 @@ import { step as worldStep, STEP } from './world/step.js';
 import { envFor, placesOf } from './world/env.js';
 import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns, addZones } from './world/populate.js';
 import { ground } from './world/systems/ground.js';
-import { REACH, learnerRecord } from './world/zones.js';
+import { REACH, learnerRecord, canPut } from './world/zones.js';
+import { setupTrial } from './world/systems/work.js';
+import { levelFor, taskOf } from './world/trials.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from './world/save.js';
 
 export { STEP };
@@ -98,7 +100,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     tileMap = createTileMap(map, data.tiles.types);
     triggers = createTriggers(map.layers.triggers);
     terrain = terrainOf(map, tileMap) ?? { homes: {} };
-    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, day: data.day, zones: data.zones, switches });
+    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, day: data.day, zones: data.zones, trials: data.trials, switches });
 
     // The world state of this map. The save keeps the hero; the rest comes from the map and the seed.
     const onThisMap = profile.world.map === map.id;
@@ -235,7 +237,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else runPending();
       return;
     }
-    openScreen(d, { id: d.id, mark: d.runner.mark, speaker: view.speaker, textKey: view.textKey, params: view.params, choices: view.choices.map((c) => c.textKey) });
+    openScreen(d, { id: d.id, mark: d.runner.mark, speaker: view.speaker, textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey) });
   }
   // One line of text (a sign, a ferry, a thing that the hero found).
   function say(textKey, params = {}) {
@@ -243,8 +245,120 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // A screen of a story effect ({ open: 'worldmap' }, a battle, a trial).
   function openCommand(c) {
+    // A trial is work in the village: its things lie in the world, and no screen opens.
+    if (c.open === 'trial') {
+      startTrial(c.id);
+      return;
+    }
     syncSave();
     openScreen({ screen: c.open, cmd: c }, { cmd: c });
+  }
+
+  // The Five Trials (data/trials.json and src/core/world/systems/work.js) --------------------
+
+  const trialDef = (id) => data.trials?.trials.find((t) => t.id === id) ?? null;
+  const trialZone = (id) => getEntity(state, `zone:trial-${id}`);
+  // The numbers of the trials at the level of the child, as words for the talks (num.<n>): the
+  // rods of a bundle, the ore of the forge, the herbs of each kind, and the sticks of the stem.
+  function trialWords() {
+    const out = {};
+    if (!data.trials) return out;
+    const level = levelFor(data.trials, profile.grade);
+    const num = (n) => ({ key: `num.${n}` });
+    for (const def of data.trials.trials) {
+      const t = taskOf(def, level);
+      if (def.task === 'bundle') out.bundle = num(t.bundle);
+      if (def.task === 'forge') out.ore = num(t.ore);
+      if (def.task === 'basket') out.each = num(t.each);
+      if (def.task === 'cut') out.parts = num(t.parts);
+    }
+    return out;
+  }
+  // Start a trial: its things lie at their places on this map, at the level of the grade.
+  function startTrial(id) {
+    const def = trialDef(id);
+    if (!def || profile.flags[def.flag]) return;
+    const places = Object.values(def.places).flat();
+    if (!places.every((p) => env.places[p])) return;
+    setupTrial(state, def, levelFor(data.trials, profile.grade), env);
+    emit({ type: 'hud' });
+  }
+  // A trial is done: the flag, the reward that flies to the counters, and the done line.
+  function trialDone(id) {
+    const def = trialDef(id);
+    if (!def || profile.flags[def.flag]) return;
+    applyEffects(profile, [{ set: def.flag }, { give: def.reward }]);
+    save('trial');
+    const from = `npc:${def.npc}`;
+    emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: def.reward, delay: 0.3 });
+    emit({ type: 'hud' });
+    talk(`${def.npc}.trial.done`);
+  }
+  // The zone of a task under a point on the ground (half blocks).
+  const workZoneAt = (x, z) => query(state, 'zone').find((e) => {
+    const r = e.zone.rect;
+    return r && x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1 && e.zone.task?.startsWith('trial-') && !trialZone(e.zone.task.slice(6))?.zone.done;
+  }) ?? null;
+  const work = (trial, act, extra = {}) => worldCommand(state, { type: 'work', id: 'hero', trial, act, ...extra });
+  // Walk near a point (half blocks) and then do something.
+  const walkNear = (p, fn) => {
+    if (distHb(hero().position, p) <= REACH + 1) return fn();
+    walkToThing({ x: p.x / 2, y: p.z / 2 }, fn);
+  };
+  // A tap on a thing of a trial. Return true when the tap was for the trial.
+  function tapTrialThing(thing, along = null) {
+    const trial = thing.item.task.slice(6);
+    const tz = trialZone(trial);
+    if (!tz || tz.zone.done) return false;
+    if (thing.item.kind === 'rod') {
+      // A rod of the heap goes on the mat; a rod on the mat goes back on the heap.
+      const mat = zoneOf('mat');
+      walkNear(mat.position, () => work(trial, thing.item.zone === 'mat' ? 'back' : 'add', { item: thing.id }));
+      return true;
+    }
+    if (thing.item.kind === 'band') {
+      walkNear(zoneOf('mat').position, () => work(trial, 'tie'));
+      return true;
+    }
+    if (thing.item.kind === 'iron') {
+      walkNear(tz.zone.anvil, () => work(trial, 'quench'));
+      return true;
+    }
+    if (thing.item.kind === 'stem') {
+      const at = along ?? thing.item.size / 2;
+      walkNear({ x: thing.position.x + at, z: thing.position.z - 2 }, () => work(trial, 'mark', { at }));
+      return true;
+    }
+    return false;
+  }
+  // A tap on the ground in the zone of a trial: put the thing in the hands there. Return true when
+  // the tap was for the trial.
+  function tapTrialZone(hit) {
+    const wz = workZoneAt(hit.x * 2, hit.y * 2);
+    if (!wz) return false;
+    const trial = wz.zone.task.slice(6);
+    const held = getEntity(state, holding());
+    if (held && canPut(wz.zone, held)) {
+      const at = { x: Math.round(hit.x * 2), z: Math.round(hit.y * 2) };
+      const stand = wz.zone.rule === 'line' ? { x: at.x, z: wz.position.z } : wz.position;
+      walkNear(stand, () => worldCommand(state, { type: 'put', id: 'hero', zone: wz.zone.id, at }));
+      return true;
+    }
+    return false;
+  }
+  // A tap on a person of a trial with work to give: the healer takes the basket; the woodcutter
+  // cuts at the marks. Return true when the tap was for the trial.
+  function tapTrialPerson(person) {
+    const def = data.trials?.trials.find((t) => t.npc === person.ref);
+    const tz = def ? trialZone(def.id) : null;
+    if (!tz || tz.zone.done) return false;
+    const ready = (def.task === 'basket' && zoneOf('basket')?.zone.items.length) || (def.task === 'cut' && tz.zone.marks?.length);
+    if (!ready) return false;
+    walkToThing(person, () => {
+      worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 });
+      work(def.id, def.task === 'basket' ? 'give' : 'cut');
+    });
+    return true;
   }
 
   // Actions of trigger zones, people, and encounters -------------------------------
@@ -350,10 +464,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (holding()) goPut(z);
     else goOnSpan(z, z.zone.from + covered - 0.5);
   }
-  function tapThing(thing) {
+  function tapThing(thing, along = null) {
     log('action', { kind: 'place' });
     const m = middleOf(thing);
     emit({ type: 'tapfx', x: m.x / 2, y: m.z / 2, h: thing.position.y / 2 + 0.4 });
+    if (thing.item.task?.startsWith('trial-') && tapTrialThing(thing, along)) return;
+    if (thing.item.fixed || (thing.item.set && !zoneOf(thing.item.zone))) return;
     const zone = zoneOf(thing.item.zone);
     if (zone?.zone.rule === 'span') {
       const last = zone.zone.items[zone.zone.items.length - 1] === thing.id;
@@ -370,8 +486,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     worldCommand(state, { type: 'aim', id: 'hero', item: thing.id });
     if (!held) return walkToThing(target, pick);
     if (held.id === thing.id) return;
-    // The hands are full: put that plank back on its pile (or down), then take this one.
-    const pile = pileFor(held);
+    // The hands are full: put that thing back on its pile (or down), then take this one.
+    const pile = zoneOf(held.item.home) ?? pileFor(held);
     walkToThing(target, () => {
       if (pile && thing.item.zone === pile.zone.id) worldCommand(state, { type: 'put', id: 'hero', zone: pile.zone.id });
       else worldCommand(state, { type: 'drop', id: 'hero' });
@@ -384,8 +500,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const hp = hero().position;
     const held = getEntity(state, holding());
     if (held) {
+      // A zone of a trial in reach that takes this thing.
+      const wz = query(state, 'zone').find((z) => z.zone.rect && canPut(z.zone, held) && distHb(hp, z.position) <= REACH + 2);
+      if (wz && wz.zone.rule !== 'line') {
+        worldCommand(state, { type: 'put', id: 'hero', zone: wz.zone.id });
+        return;
+      }
       const span = spans().find((z) => !z.zone.set && distHb(hp, z.position) <= REACH);
-      const pile = pileFor(held);
+      const pile = zoneOf(held.item.home) ?? pileFor(held);
       const nearPile = pile && pile.zone.items.some((id) => {
         const e = getEntity(state, id);
         return e && distHb(hp, middleOf(e)) <= REACH + 3;
@@ -397,7 +519,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     let best = null;
     for (const e of query(state, 'item', 'position')) {
-      if (e.hidden || e.item.set) continue;
+      if (e.hidden || e.item.set || e.item.fixed || e.item.kind === 'rod') continue;
       const zone = zoneOf(e.item.zone);
       const inSpan = zone?.zone.rule === 'span';
       if (inSpan && zone.zone.items[zone.zone.items.length - 1] !== e.id) continue;
@@ -423,18 +545,23 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (target.thing) {
       const thing = getEntity(state, target.thing);
-      if (thing?.item) tapThing(thing);
+      if (thing?.item) tapThing(thing, target.along ?? null);
       return;
     }
     if (target.person) {
       const person = persons().find((p) => p.entity === target.person);
       if (!person) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
+      if (person.kind === 'npc' && tapTrialPerson(person)) return;
       walkToThing(person, () => interact({ kind: person.kind, id: person.ref }, person));
       return;
     }
     const hit = target.ground;
     if (!hit) return;
+    if (tapTrialZone(hit)) {
+      emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.h });
+      return;
+    }
     const from = heroFrom();
     // A house at night, with its family in: a knock. The lantern flickers and a soft sound comes
     // from inside; the house does not open (the village sleeps).
@@ -489,8 +616,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (best) return best.target;
     for (const e of query(state, 'item', 'position')) {
-      if (e.hidden || e.item.set) continue;
-      consider({ thing: e.id }, segmentDistance(p, e), 1.2);
+      if (e.hidden || (e.item.set && !e.item.fixed)) continue;
+      const { d, along } = segment(p, e);
+      consider(e.item.fixed ? { thing: e.id, along } : { thing: e.id }, d, 1.2);
     }
     for (const q of persons()) consider({ person: q.entity }, Math.hypot(q.x - x, q.y - y) * 2, 1.6);
     if (best) return best.target;
@@ -529,6 +657,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         parts: ev.parts, resets: ev.resets, latencies: ev.latencies, hint: ev.hint, hintSeen: ev.hintSeen, pBefore, pAfter, retry: false, harder: false, map: map.id,
       });
     }
+    if (ev.type === 'trial' && ev.done) trialDone(ev.trial);
     // The prediction before the first commit on a gap, and the result.
     if (ev.type === 'prediction') {
       log('prediction', { task: ev.task, gap: ev.gap, guess: ev.guess, used: ev.used, solved: ev.solved });
@@ -677,6 +806,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     },
     snapshot,
     targetAt,
+    startTrial,
     syncSave,
     leave,
     calm,
@@ -714,14 +844,15 @@ export function middleOf(e) {
   };
 }
 
-// The distance from a point to the line of a thing (half blocks).
-function segmentDistance(p, e) {
+// The distance from a point to the line of a thing, and how far along the thing the nearest
+// point is (half blocks, whole numbers).
+function segment(p, e) {
   const q = e.position;
   const end = { x: q.x + Math.sin(q.facing ?? 0) * e.item.size, z: q.z + Math.cos(q.facing ?? 0) * e.item.size };
   const dx = end.x - q.x;
   const dz = end.z - q.z;
   const k = Math.max(0, Math.min(1, ((p.x - q.x) * dx + (p.z - q.z) * dz) / (dx * dx + dz * dz || 1)));
-  return Math.hypot(p.x - (q.x + dx * k), p.z - (q.z + dz * k));
+  return { d: Math.hypot(p.x - (q.x + dx * k), p.z - (q.z + dz * k)), along: Math.round(k * e.item.size) };
 }
 
 // The nearest free cell to a point (the point itself when it is free), or null.

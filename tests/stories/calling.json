@@ -1,0 +1,17 @@
+{
+  "name": "calling",
+  "about": {
+    "vi": "Sau năm thử thách, cụ già làng mở đường tới Văn Miếu, nơi em chọn nghề.",
+    "en": "After the five trials, the elder opens the way to Văn Miếu, where the child chooses a calling."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "trial.scholar.done": true, "trial.smith.done": true, "trial.fisher.done": true, "trial.healer.done": true, "trial.woodcutter.done": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [31, 27],
+  "steps": [
+    { "tap": { "entity": "npc:elder" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "dlg.elder.trials.done.n1" } }, { "flag": "prologue.done" }, { "screen": null }] }
+  ]
+}

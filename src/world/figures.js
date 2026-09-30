@@ -107,6 +107,9 @@ export function person(look) {
   if (item === 'fan') parts.push(P('item', [1.2, 1.2, 0.15], 'yellowPale', [0, hand[1] - 0.5, 0.4], { parent: 'armR' }));
   if (item === 'lantern') parts.push(P('item', [0.15, 1, 0.15], 'wood', [0, hand[1] - 0.2, 0.3], { parent: 'armR' }), P('lamp', [0.8, 0.9, 0.8], 'yellow', [0, hand[1] - 1.1, 0.3], { parent: 'armR' }));
   if (item === 'drum') parts.push(P('item', [1.4, 1, 1.4], 'vermilion', [0, hand[1] - 0.2, 0.6], { parent: 'armR' }));
+  // A thing of a trial in the hands.
+  const carried = { ore: 'ash', bucket: 'wood', stake: 'ochre', sticks: 'green' }[String(item).replace(/-.*$/, '')] ?? (String(item).startsWith('herb-') ? 'greenPale' : null);
+  if (carried) parts.push(P('item', item === 'stake' ? [0.35, 2, 0.35] : [0.9, 0.8, 0.9], carried, [0, hand[1] - 0.5, 0.5], { parent: 'armR' }));
   // A plank on the right shoulder, along the way the person looks, with its units and dots.
   const plankOf = /^plank-(\d+)$/.exec(item ?? '');
   if (plankOf) {
@@ -362,8 +365,88 @@ export function gapMarks(n) {
   return { kind: 'still', parts, scale: 1, height: 0.2, shadow: 0 };
 }
 
+// The things of the Five Trials (src/core/world/systems/work.js). Plain things with flat colors
+// (rule 9 of the design: the content object is plain; the village is rich). Units: half blocks.
+const still = (parts, height, shadow = 0) => ({ kind: 'still', parts, scale: 1, height, shadow });
+const HERBS = { ngai: ['greenPale', 'ashLight'], tiato: ['vermilionPale', 'greenDeep'], rauma: ['green', 'greenPale'] };
+const IRON = ['ash', 'vermilionPale', 'vermilion', 'yellowPale'];
+export function workThing(look) {
+  switch (look.kind) {
+    // A counting rod: a thin stick of bamboo.
+    case 'rod': return still([P('stick', [0.22, 0.22, 1.2], 'yellow', [0, 0.11, 0]), P('endA', [0.22, 0.22, 0.12], 'ochre', [0, 0.11, 0.66]), P('endB', [0.22, 0.22, 0.12], 'ochre', [0, 0.11, -0.66])], 0.25);
+    // Ten rods tied with a red band.
+    case 'rod-bundle': return still([P('rods', [0.8, 0.8, 1.5], 'yellow', [0, 0.4, 0]), P('ends', [0.7, 0.7, 1.52], 'ochre', [0, 0.4, 0]), P('band', [0.9, 0.9, 0.3], 'vermilion', [0, 0.4, 0])], 0.9);
+    // A reed mat on the ground.
+    case 'mat': return still([P('mat', [4.4, 0.08, 2.6], 'yellowPale', [2, 0.04, 1.2]), P('edgeN', [4.4, 0.1, 0.2], 'ochre', [2, 0.05, -0.05]), P('edgeS', [4.4, 0.1, 0.2], 'ochre', [2, 0.05, 2.45])], 0.1);
+    // A coil of straw rope.
+    case 'band': return still([P('coil', [0.9, 0.3, 0.9], 'ochre', [0, 0.15, 0]), P('hole', [0.4, 0.32, 0.4], 'wood', [0, 0.16, 0]), P('end', [0.2, 0.2, 0.6], 'ochre', [0.5, 0.1, 0.4])], 0.35);
+    // A lump of iron ore; red hot in the forge.
+    case 'ore': return still([P('lump', [0.8, 0.55, 0.7], look.hot ? 'vermilion' : 'ash', [0, 0.28, 0]), P('grain', [0.4, 0.3, 0.4], look.hot ? 'yellow' : 'ink', [0.15, 0.5, 0.1]), P('chip', [0.3, 0.25, 0.3], look.hot ? 'vermilionPale' : 'ashLight', [-0.3, 0.15, -0.2])], 0.7);
+    // A wooden bucket of water.
+    case 'bucket': return still([P('pail', [0.9, 0.9, 0.9], 'wood', [0, 0.45, 0]), P('water', [0.7, 0.05, 0.7], 'indigoPale', [0, 0.9, 0]), P('handle', [0.1, 0.5, 0.9], 'ink', [0, 1.1, 0])], 1.2);
+    // A wooden trough, empty or with water.
+    case 'trough': {
+      const parts = [P('floor', [3.2, 0.3, 1.6], 'wood', [1.6, 0.15, 1]), P('sideN', [3.2, 0.9, 0.3], 'ochre', [1.6, 0.45, 0.2]), P('sideS', [3.2, 0.9, 0.3], 'ochre', [1.6, 0.45, 1.8]), P('endW', [0.3, 0.9, 1.6], 'ochre', [0, 0.45, 1]), P('endE', [0.3, 0.9, 1.6], 'ochre', [3.2, 0.45, 1])];
+      if (look.full) parts.push(P('water', [2.8, 0.05, 1.2], 'indigoPale', [1.6, 0.8, 1]));
+      return still(parts, 1);
+    }
+    // The iron bar on the anvil: dark, red, bright red, and white hot; bent; or a hard blade.
+    case 'iron': {
+      const anvil = [P('anvil', [1.4, 1, 1.2], 'ink', [0, -0.5, 0]), P('horn', [0.6, 0.3, 0.5], 'ink', [0, -0.15, 0.8])];
+      if (look.bent) return still([...anvil, P('barA', [0.4, 0.3, 1.1], 'ash', [0, 0.15, -0.3]), P('barB', [0.4, 0.3, 1.1], 'ash', [0.35, 0.35, 0.6])], 0.6);
+      if (look.blade) return still([...anvil, P('blade', [0.5, 0.2, 2.2], 'ashLight', [0, 0.1, 0]), P('grip', [0.35, 0.3, 0.6], 'wood', [0, 0.15, -1.3])], 0.4);
+      return still([...anvil, P('bar', [0.4, 0.3, 2], IRON[Math.max(0, Math.min(3, look.glow ?? 0))], [0, 0.15, 0])], 0.4);
+    }
+    // A stake of the fish trap, half in the water.
+    case 'stake': return still([P('pole', [0.35, 2.4, 0.35], look.set ? 'wood' : 'ochre', [0, 0.6, 0]), P('top', [0.4, 0.15, 0.4], 'yellowPale', [0, 1.85, 0]), P('tie', [0.42, 0.15, 0.42], 'ink', [0, 1.2, 0])], 1.9);
+    // The red float at the end of the line of the trap.
+    case 'float': return still([P('buoy', [0.8, 0.6, 0.8], 'vermilion', [0, 0.1, 0]), P('flag', [0.12, 1.4, 0.12], 'wood', [0, 0.9, 0]), P('cloth', [0.1, 0.5, 0.6], 'vermilion', [0, 1.4, 0.3])], 1.7);
+    // The water of the tide over the line of the trap (n: how high).
+    case 'tide': {
+      const n = look.n ?? 0;
+      const h = 0.08 + n * 0.5;
+      return still([P('water', [20, h, 3], n ? 'indigoPale' : 'indigo', [10, h / 2, 0]), P('lineN', [20, h + 0.02, 0.15], 'indigo', [10, h / 2, -1.5]), P('lineS', [20, h + 0.02, 0.15], 'indigo', [10, h / 2, 1.5])], h);
+    }
+    // Fish in the trap, or fish that swim out through a space.
+    case 'fish-trap': {
+      const parts = [];
+      for (let i = 0; i < 3; i++) parts.push(P(`fish${i}`, [0.4, 0.3, 1], 'ash', [(i - 1) * 1.2, 0.1, look.in ? 0.4 * i : -1 - i]), P(`tail${i}`, [0.4, 0.3, 0.3], 'ashLight', [(i - 1) * 1.2, 0.1, (look.in ? 0.4 * i : -1 - i) - 0.6]));
+      return still(parts, 0.3);
+    }
+    // A bunch of healing leaves: mugwort (grey-green), perilla (red and green), pennywort (round, green).
+    case 'herb': {
+      const [a, b] = HERBS[look.herb] ?? HERBS.ngai;
+      return still([P('stem', [0.2, 0.6, 0.2], 'greenDeep', [0, 0.3, 0]), P('leaves', [0.8, 0.4, 0.8], a, [0, 0.7, 0]), P('tip', [0.45, 0.3, 0.45], b, [0, 1, 0])], 1.1);
+    }
+    // The basket of the healer, with three parts; full when the healer takes it.
+    case 'basket': {
+      const parts = [P('floor', [3.4, 0.2, 1.4], 'ochre', [1.7, 0.1, 0.6]), P('wallN', [3.4, 0.7, 0.2], 'ochre', [1.7, 0.35, 0]), P('wallS', [3.4, 0.7, 0.2], 'ochre', [1.7, 0.35, 1.3]), P('wallW', [0.2, 0.7, 1.4], 'ochre', [0, 0.35, 0.6]), P('wallE', [0.2, 0.7, 1.4], 'ochre', [3.4, 0.35, 0.6]), P('div1', [0.15, 0.6, 1.2], 'wood', [1.15, 0.3, 0.6]), P('div2', [0.15, 0.6, 1.2], 'wood', [2.25, 0.3, 0.6])];
+      if (look.full) parts.push(P('leaves', [3, 0.4, 1.1], 'green', [1.7, 0.7, 0.6]));
+      return still(parts, 0.9);
+    }
+    // A fallen bamboo stem, n half blocks long, along +z, with a node at each unit.
+    case 'stem': {
+      const parts = [];
+      for (let i = 0; i < look.n; i++) parts.push(P(`seg${i}`, [0.8, 0.8, 1], i % 2 ? 'green' : 'greenPale', [0, 0.4, i + 0.5]), P(`node${i}`, [0.9, 0.9, 0.12], 'greenDeep', [0, 0.4, i + 1]));
+      return still(parts, 0.8);
+    }
+    // A chalk mark across the stem.
+    case 'chalk': return still([P('mark', [1.1, 0.06, 0.18], 'diep', [0, 0.2, 0]), P('dotA', [0.2, 0.08, 0.2], 'diep', [-0.65, 0.2, 0]), P('dotB', [0.2, 0.08, 0.2], 'diep', [0.65, 0.2, 0])], 0.3);
+    // Equal bamboo sticks tied into a bundle.
+    case 'sticks': {
+      const parts = [];
+      for (let i = 0; i < look.n; i++) parts.push(P(`stick${i}`, [0.45, 0.45, 2.4], 'green', [(i - (look.n - 1) / 2) * 0.5, 0.25 + (i % 2) * 0.1, 0]));
+      parts.push(P('band', [look.n * 0.5 + 0.2, 0.6, 0.3], 'vermilion', [0, 0.3, 0]));
+      return still(parts, 0.7);
+    }
+    default: return null;
+  }
+}
+
 // The figure of a look from data/figures.json.
 export function figureOf(look) {
+  const thing = workThing(look);
+  if (thing) return thing;
   if (look.kind === 'plank') return plank(look.n);
   if (look.kind === 'plank-ghost') return plankGhost(Boolean(look.on));
   if (look.kind === 'gap') return gapMarks(look.n);

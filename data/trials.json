@@ -5,7 +5,7 @@
     {
       "id": "scholar", "npc": "teacher", "calling": "scholar", "flag": "trial.scholar.done", "reward": { "coin": 3 },
       "task": "bundle",
-      "_task": "Sort the counting rods into bundles of ten for the teacher. A tap on a rod of the heap puts it on the mat (from near the mat). A tap on the mat with empty hands ties the rods on it: ten rods tie into a bundle; more or fewer, and the band snaps and the rods fall back on the heap (the commit). The task is done when fewer than ten rods are left on the heap.",
+      "_task": "Sort the counting rods into bundles of ten for the teacher. A tap on a rod of the heap puts it on the mat (from near the mat). A tap on the straw rope by the mat ties the rods on the mat: ten rods tie into a bundle; more or fewer, and the band snaps and the rods fall back on the heap (the commit). The task is done when fewer than ten rods are left on the heap.",
       "bundle": 10,
       "levels": [
         { "rods": 24, "skill": "math.count.120", "level": 2 },

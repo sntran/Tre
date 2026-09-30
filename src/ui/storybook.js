@@ -78,7 +78,9 @@ async function playInBrowser(ctx, story) {
     async send(cmd, point) {
       const v = await village();
       if (point) {
-        // The finger goes to the point of the tap, and taps.
+        // The finger goes to the point of the tap, and taps. The world waits for the finger, so
+        // that a story plays the same on a slow device and at any speed.
+        book.hold = true;
         const p = v.pointOf(point.x, point.y);
         keep();
         finger.hidden = false;
@@ -89,6 +91,7 @@ async function playInBrowser(ctx, story) {
         finger.classList.remove('down');
       }
       v.send(cmd);
+      book.hold = false;
       await wait(point ? 150 : 350);
     },
     async reload() {
@@ -100,8 +103,8 @@ async function playInBrowser(ctx, story) {
       await village();
       return null;
     },
-    async onExpect(i, failures) {
-      show(failures.length ? `✗ ${failures.join(' · ')}` : `✓ ${JSON.stringify(story.steps[i].expect)}`, failures.length ? 'bad' : 'good');
+    async onExpect(i, failures, step) {
+      show(failures.length ? `✗ ${failures.join(' · ')}` : `✓ ${JSON.stringify(step.expect)}`, failures.length ? 'bad' : 'good');
       await wait(1000);
     },
   };

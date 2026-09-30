@@ -1,0 +1,36 @@
+{
+  "name": "trial-smith",
+  "about": {
+    "vi": "Thử thách của bác thợ rèn: mang quặng vào lò và nước vào máng; thả sắt vào nước quá sớm thì sắt cong, đúng lúc sắt đỏ rực thì sắt cứng.",
+    "en": "The trial of the smith: ore to the forge and water to the trough; the iron dropped too early bends, and dropped while it glows it becomes hard."
+  },
+  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [53, 43],
+  "steps": [
+    { "tap": { "entity": "npc:smith" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "dlg.smith.trial.n1" } }, { "count": { "entities": "ore", "min": 4 } }] },
+    { "repeat": 2, "steps": [
+      { "tap": { "item": "ore" } },
+      { "until": { "event": "pick", "timeout": 15 } },
+      { "tap": { "zone": "forge" } },
+      { "until": { "event": "put", "timeout": 15 } }
+    ] },
+    { "tap": { "item": "bucket" } },
+    { "until": { "event": "pick", "timeout": 40 } },
+    { "tap": { "zone": "trough" } },
+    { "until": { "event": "fire", "timeout": 40 } },
+    { "expect": [{ "event": "pour" }, { "entity": "trough:smith", "look": "trough-full" }] },
+    { "tap": { "thing": "iron:smith" } },
+    { "until": { "event": "bend", "timeout": 10 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "sci.matter.states", "solved": false, "first": true } }] },
+    { "wait": 4.5 },
+    { "tap": { "thing": "iron:smith" } },
+    { "until": { "event": "hiss", "timeout": 10 } },
+    { "expect": [{ "event": "skill", "with": { "solved": true, "efficient": false } }, { "entity": "iron:smith", "look": "blade" }, { "flag": "trial.smith.done" }, { "text": { "shown": "dlg.smith.trial.done.n1" } }] },
+    { "read": true }
+  ]
+}

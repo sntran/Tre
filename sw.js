@@ -222,6 +222,7 @@ const FILES = [
   'src/core/world/systems/schedule.js',
   'src/core/world/systems/sky.js',
   'src/core/world/systems/steer.js',
+  'src/core/world/systems/work.js',
   'src/core/world/trials.js',
   'src/core/world/zones.js',
   'src/main.js',

@@ -27,6 +27,10 @@ import {
   REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, sizesOf, sum, openRound, openGap, reachOf, oldDeck,
 } from '../zones.js';
 import { isMashing } from '../../learnlog.js';
+import { putWork, canTakeWork, toHeap } from './work.js';
+
+// The zones of the tasks of the trials: the work system puts the things there.
+const WORK = new Set(['heap', 'bundle', 'forge', 'trough', 'line', 'basket', 'woodpile']);
 
 const TIP = 0.3; // seconds: the last plank dips under the hero
 const DROP = 0.35; // seconds: the hero falls into the water
@@ -71,6 +75,7 @@ function middleOf(e) {
 
 // A thing goes back to the pile of the zone that owns it (it floats to the bank).
 function toPile(world, env, thing) {
+  if (thing.item.home) return toHeap(world, thing);
   const task = getEntity(world, `zone:${thing.item.task}`);
   const pile = task ? getEntity(world, `zone:${defOf(env, task.zone)?.pile}`) : null;
   delete thing.tilt;
@@ -96,15 +101,16 @@ function act(world, e, env, dt) {
   if (e.fall) return;
   if (want.do === 'aim') e.hands.aim = world.tick;
   else if (want.do === 'pick') pick(world, e, getEntity(world, want.item), env, dt);
-  else if (want.do === 'put') put(world, e, getEntity(world, `zone:${want.zone}`), env, dt);
+  else if (want.do === 'put') put(world, e, getEntity(world, `zone:${want.zone}`), env, dt, want.at);
   else if (want.do === 'drop') drop(world, e, env);
   else if (want.do === 'guess') guess(world, getEntity(world, `zone:${want.zone}`), want.n, env);
 }
 
 function pick(world, e, thing, env, dt) {
-  if (!thing?.item || thing.item.held || thing.item.set || e.hands.holds) return;
+  if (!thing?.item || thing.item.held || thing.item.set || thing.item.fixed || e.hands.holds) return;
   const zoneEnt = thing.item.zone ? getEntity(world, `zone:${thing.item.zone}`) : null;
-  if (zoneEnt && !canTake(zoneEnt.zone, thing.id)) return;
+  const working = zoneEnt && WORK.has(zoneEnt.zone.rule);
+  if (working ? !canTakeWork(world, thing) : zoneEnt && !canTake(zoneEnt.zone, thing.id)) return;
   const at = zoneEnt?.zone.rule === 'span' ? zoneEnt.position : middleOf(thing);
   if (dist(e.position, at) > REACH + (thing.item.size ?? 0) / 2) return say(world, 'far', e.id);
   // The time that the child took to choose this plank, from the last action on its gap.
@@ -121,6 +127,7 @@ function pick(world, e, thing, env, dt) {
   if (zoneEnt) {
     zoneEnt.zone.items = zoneEnt.zone.items.filter((id) => id !== thing.id);
     if (zoneEnt.zone.rule === 'pile') packPile(world, zoneEnt.zone);
+    else if (working) delete thing.item.slot;
     else {
       // A plank taken back from the span: a reset of the attempt.
       const a = attemptOf(world, zoneEnt.zone);
@@ -139,11 +146,24 @@ function pick(world, e, thing, env, dt) {
   say(world, 'pick', e.id, { item: thing.id, sound: 'plank-up' });
 }
 
-function put(world, e, zoneEnt, env, dt) {
+function put(world, e, zoneEnt, env, dt, at = null) {
   const thing = getEntity(world, e.hands.holds);
   if (!thing || !zoneEnt) return;
   const zone = zoneEnt.zone;
   if (!canPut(zone, thing)) return;
+  if (WORK.has(zone.rule)) {
+    // A zone of a trial: near its reach point, or near the point of the tap on a line of stakes.
+    const target = zone.rule === 'line' && at ? { x: at.x, z: zone.z } : zoneEnt.position;
+    if (dist(e.position, target) > REACH + 2) return say(world, 'far', e.id);
+    release(e, thing);
+    if (!putWork(world, e, zone, thing, at, env)) {
+      thing.item.held = e.id;
+      thing.hidden = true;
+      e.hands.holds = thing.id;
+      e.carry = thing.look;
+    }
+    return;
+  }
   // A pile is long: the hero must be near the pile or near one of its planks.
   const near = [zoneEnt.position, ...(zone.rule === 'pile' ? zone.items.map((id) => getEntity(world, id)).filter(Boolean).map(middleOf) : [])];
   if (Math.min(...near.map((q) => dist(e.position, q))) > REACH + (zone.rule === 'pile' ? 3 : 0)) return say(world, 'far', e.id);

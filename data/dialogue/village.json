@@ -27,6 +27,16 @@
    }
   },
   {
+   "id": "teacher.trial.done",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "teacher",
+     "textKey": "dlg.teacher.trial.done.n1"
+    }
+   }
+  },
+  {
    "id": "smith.wait",
    "start": "n1",
    "nodes": {
@@ -49,6 +59,16 @@
        "id": "smith"
       }
      ]
+    }
+   }
+  },
+  {
+   "id": "smith.trial.done",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "smith",
+     "textKey": "dlg.smith.trial.done.n1"
     }
    }
   },
@@ -79,6 +99,16 @@
    }
   },
   {
+   "id": "fisher.trial.done",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "fisher",
+     "textKey": "dlg.fisher.trial.done.n1"
+    }
+   }
+  },
+  {
    "id": "healer.wait",
    "start": "n1",
    "nodes": {
@@ -105,6 +135,16 @@
    }
   },
   {
+   "id": "healer.trial.done",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "healer",
+     "textKey": "dlg.healer.trial.done.n1"
+    }
+   }
+  },
+  {
    "id": "woodcutter.wait",
    "start": "n1",
    "nodes": {
@@ -127,6 +167,16 @@
        "id": "woodcutter"
       }
      ]
+    }
+   }
+  },
+  {
+   "id": "woodcutter.trial.done",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "woodcutter",
+     "textKey": "dlg.woodcutter.trial.done.n1"
     }
    }
   },

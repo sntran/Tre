@@ -116,7 +116,8 @@ export const sum = (list) => list.reduce((a, b) => a + b, 0);
 
 // Can this thing go into the zone now?
 export function canPut(zone, item) {
-  if (item.item.kind !== zone.accepts) return false;
+  const kinds = [].concat(zone.accepts);
+  if (!kinds.includes(item.item.kind)) return false;
   if (zone.rule === 'span') return !zone.set && !zone.effect;
   return true;
 }

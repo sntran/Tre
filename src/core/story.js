@@ -12,8 +12,12 @@
 //   { do: <command of the session> }         { wait: <seconds> }
 //   { until: { event, with, timeout } }      (an event after the last command)
 //   { at: { hour } }
-//   { tap: { cell: [x, y] } | { entity } | { plank: <size> } | { guess: <n> } | { zone } | { span } | { hero: true } }
-//     (plank: a plank of this size on a pile; zone: the gap of a span; span: the last plank on a span)
+//   { tap: { cell: [x, y] } | { entity } | { thing } | { item: <kind> } | { plank: <size> } | { guess: <n> } |
+//          { zone } | { span } | { stem: <along> } | { line: <along> } | { hero: true } }
+//     (item: the first thing of a kind in a heap or a pile; plank: a plank of this size on a pile;
+//     zone: the middle of the zone of a task, or the gap of a span; span: the last plank on a
+//     span; stem: a place along the stem of the woodcutter; line: a place on the fish trap line)
+//   { repeat: <n>, steps: [...] }         (the steps n times)
 //   { read: true | [<choice>, ...] }         (read the open talk to its end, with these choices)
 //   { reload: true }                         (save, load, and go on from the loaded save)
 //   { expect: [<fact>, ...] }
@@ -82,6 +86,40 @@ export function tapTarget(session, spec) {
     const g = query(state, 'guess', 'position').find((x) => x.guess.n === spec.guess && x.guess.left === undefined);
     return g ? { target: { guess: { zone: g.guess.zone, n: g.guess.n } }, point: { x: g.position.x / 2, y: g.position.z / 2 + 1 } } : null;
   }
+  if (spec.thing) {
+    const e = getEntity(state, spec.thing);
+    if (!e?.position) return null;
+    const m = e.item ? session.middleOf(e) : e.position;
+    return { target: { thing: e.id }, point: { x: m.x / 2, y: m.z / 2 } };
+  }
+  if (spec.item) {
+    // The first thing of this kind that lies in a heap or a pile.
+    for (const z of query(state, 'zone')) {
+      if (z.zone.rule !== 'pile' && z.zone.rule !== 'heap') continue;
+      const id = z.zone.items.find((i) => getEntity(state, i)?.item.kind === spec.item);
+      if (id) {
+        const e = getEntity(state, id);
+        return { target: { thing: id }, point: { x: e.position.x / 2, y: e.position.z / 2 } };
+      }
+    }
+    // A thing of this kind on the ground.
+    const loose = query(state, 'item', 'position').find((e) => e.item.kind === spec.item && !e.item.zone && !e.item.held && !e.hidden);
+    return loose ? { target: { thing: loose.id }, point: { x: loose.position.x / 2, y: loose.position.z / 2 } } : null;
+  }
+  if (spec.stem !== undefined) {
+    // A place along the stem of the woodcutter (half blocks from its start).
+    const e = query(state, 'item', 'position').find((x) => x.item.kind === 'stem' && !x.hidden);
+    if (!e) return null;
+    return { target: { thing: e.id, along: spec.stem }, point: { x: (e.position.x + spec.stem) / 2, y: e.position.z / 2 } };
+  }
+  if (spec.line !== undefined) {
+    // A place on the line of a fish trap (half blocks from the first stake).
+    const z = getEntity(state, 'zone:line')?.zone;
+    if (!z) return null;
+    const x = (z.x + spec.line) / 2;
+    const y = z.z / 2;
+    return { target: { ground: { x, y, h: session.env.groundY(x, y) / 2, thing: false, object: null } }, point: { x, y } };
+  }
   if (spec.span) {
     // The last plank on a span (a tap at the edge takes it back).
     const z = getEntity(state, `zone:${spec.span}`)?.zone;
@@ -92,9 +130,15 @@ export function tapTarget(session, spec) {
     return { target: { thing: id }, point: { x: m.x / 2, y: m.z / 2 } };
   }
   if (spec.zone) {
-    // The broken part of a bridge (a span that is not solid): a tap on the water of the gap.
+    // The zone of a task: a tap in the middle of it.
     const z = getEntity(state, `zone:${spec.zone}`)?.zone;
     if (!z) return null;
+    if (z.rect) {
+      const x = (z.rect.x0 + z.rect.x1) / 4;
+      const y = (z.rect.z0 + z.rect.z1) / 4;
+      return { target: { ground: { x, y, h: session.env.groundY(x, y) / 2, thing: false, object: null } }, point: { x, y } };
+    }
+    // The broken part of a bridge (a span that is not solid): a tap on the water of the gap.
     const x = (z.x0 + z.x1 + 1) / 2;
     const y = z.start / 2 + 0.5;
     return { target: { ground: { x, y, h: session.env.groundY(x, y) / 2, thing: false, object: null } }, point: { x, y } };
@@ -299,7 +343,7 @@ export function createLaws({ texts, limits }) {
 //   send(cmd, point): send a command (point: the map point of a tap, for the finger),
 //   reload(): save, load, and go on with a new session; return a message when the loaded world
 //     is not the same, or null,
-//   learner(): the learner, data: the data of the game, onStep(i, step), onExpect(i, failures) }.
+//   learner(): the learner, data: the data of the game, onStep(i, step), onExpect(i, failures, step) }.
 // Return the failures: [{ step, message }].
 export async function playStory(story, io) {
   const failures = [];
@@ -311,7 +355,16 @@ export async function playStory(story, io) {
   const fail = (i, message) => failures.push({ step: i, message });
   const lastLine = () => [...events].reverse().find((ev) => ev.type === 'open' && (ev.screen === 'dialogue' || ev.screen === 'say'));
 
-  for (const [i, s] of (story.steps ?? []).entries()) {
+  // The steps of a repeat have the number of the repeat step.
+  const flat = [];
+  const unroll = (steps, i = null) => {
+    for (const [k, s] of steps.entries()) {
+      if (s.repeat !== undefined) for (let n = 0; n < s.repeat; n++) unroll(s.steps ?? [], i ?? k);
+      else flat.push([i ?? k, s]);
+    }
+  };
+  unroll(story.steps ?? []);
+  for (const [i, s] of flat) {
     io.onStep?.(i, s);
     const session = io.session();
     if (s.do || s.tap || s.read) mark = events.length;
@@ -354,7 +407,7 @@ export async function playStory(story, io) {
         if (message) out.push(message);
       }
       for (const message of out) fail(i, message);
-      await io.onExpect?.(i, out);
+      await io.onExpect?.(i, out, s);
       since = events.length;
     } else fail(i, `an unknown step ${JSON.stringify(s)}`);
   }

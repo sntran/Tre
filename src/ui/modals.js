@@ -1,48 +1,16 @@
-// The screens that open over the village: trials, practice, lessons, and more.
+// The screens that open over the village: practice, lessons, and more. (The Five Trials are
+// work in the village: src/core/world/systems/work.js.)
 import { registerModal } from './registry.js';
-import { runQuiz, showMessage } from './quiz.js';
+import { runQuiz } from './quiz.js';
 import { h, img, button } from './dom.js';
 import { speak } from './speak.js';
 import { t, setChosenNames } from './i18n.js';
 import { applyEffects } from '../core/game.js';
 import { addItem, setFriendName, chosenGlossNames } from '../core/profile.js';
-import { byGrade } from '../core/grades.js';
 
 function similar(ctx) {
   return (p) => ctx.learner.problem(p.skill, { level: p.level });
 }
-
-// A trial of the prologue. The problems match the grade that the player gave.
-registerModal('trial', async (ctx, cmd) => {
-  const trial = ctx.data.trials.trials.find((x) => x.id === cmd.id);
-  // A grade with no list of skills uses the list of the nearest grade.
-  const skills = trial.skills ? byGrade(trial.skills, ctx.profile.grade) : [...new Set(trial.levels.map((l) => l.skill))];
-  let i = 0;
-  // Use a middle level for skills of the grade, and level 1 for skills of a higher grade.
-  const levelOf = (skill) => Math.min(skill.levels.length,
-    skill.grade === ctx.profile.grade ? 2 : skill.grade > ctx.profile.grade ? 1 : 3);
-  const next = () => {
-    const id = skills[i % skills.length];
-    i += 1;
-    return ctx.learner.problem(id, { level: levelOf(ctx.graph.get(id)) });
-  };
-  // Other skills of the trial, when a skill has no new question.
-  const alternatives = () => skills.map((id) => () => ctx.learner.problem(id, { level: levelOf(ctx.graph.get(id)) }));
-  const result = await runQuiz(ctx, {
-    title: t('trial.title', { who: { key: `npc.${trial.npc}.name` } }),
-    speaker: trial.npc,
-    count: ctx.data.game.trials.questions,
-    next,
-    similar: similar(ctx),
-    alternatives,
-  });
-  applyEffects(ctx.profile, [{ set: trial.flag }, { give: trial.reward }]);
-  await ctx.save('trial');
-  const calling = ctx.data.callings.callings.find((c) => c.id === trial.calling);
-  // The end text names the topics of the questions that the player answered.
-  const topics = result.skills.map((id) => t(`skill.${id}`)).join(t('ui.list.sep'));
-  await showMessage(ctx, { speaker: trial.npc, textKey: trial.doneKey, params: { topics }, art: calling.art, rewards: trial.reward });
-});
 
 // A short lesson of the mentor, with a fixed skill.
 registerModal('lesson', async (ctx, cmd) => {

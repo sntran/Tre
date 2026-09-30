@@ -14,6 +14,7 @@ import { steer } from './systems/steer.js';
 import { clock } from './systems/clock.js';
 import { ground } from './systems/ground.js';
 import { place } from './systems/place.js';
+import { work } from './systems/work.js';
 
 export const STEP = 1 / 30; // seconds: 30 steps a second
 
@@ -27,6 +28,7 @@ export const SYSTEMS = [
   move, //   the hero and other walkers move with collision, from their intents.
   follow, // after the hero moves, so that Nghé follows the new position without a step of lag.
   place, //  after the hero and Nghé move: the hands pick up and put down, and a span answers where the hero stands now.
+  work, //   after the hands: the tasks of the trials answer the work of the hands, and their timed parts go on.
   push, //   after the hero moves: a cart moves out of the way of the hero on the back of Nghé.
   react, //  after the hero moves, so that things react to where the hero is now; before steering, so that a flight starts in this step.
   flock, //  the pull of each flock goes into the steering before the animals move.

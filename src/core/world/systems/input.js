@@ -5,8 +5,9 @@
 // the back of a friend, or gets off), knock (a tap on a house at night: if the family is in, the
 // lantern flickers and a soft sound comes from inside), aim (the child chose a thing; the hero
 // walks to it), pick (take a thing), put (put the thing in the hands into a zone), drop (put it on
-// the ground), guess (the prediction before a commit). The place system does what the hands want.
-export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'hands', 'events'];
+// the ground), guess (the prediction before a commit), work (the work of a trial: add, back, tie,
+// quench, give, mark, cut). The place system does what the hands want; the work system does the work.
+export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'hands', 'work', 'events'];
 
 export const INSIDE_SOUNDS = Object.freeze(['cough', 'baby', 'clatter']);
 
@@ -72,7 +73,9 @@ export function input(world, dt, rng, env) {
         world.events.push({ type: 'mount', id: e.id, sound: 'moo' });
       }
     } else if (['aim', 'pick', 'put', 'drop', 'guess'].includes(c.type)) {
-      e.hands = { ...(e.hands ?? { holds: null }), want: { do: c.type, item: c.item ?? null, zone: c.zone ?? null, n: c.n ?? null } };
+      e.hands = { ...(e.hands ?? { holds: null }), want: { do: c.type, item: c.item ?? null, zone: c.zone ?? null, n: c.n ?? null, at: c.at ?? null } };
+    } else if (c.type === 'work') {
+      e.work = { trial: c.trial, act: c.act, item: c.item ?? null, at: c.at ?? null };
     } else if (c.type === 'stay' && e.schedule) {
       e.schedule.stay = Boolean(c.on);
 
