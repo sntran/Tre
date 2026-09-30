@@ -17,7 +17,7 @@
 | `snapshot()` | The state as plain data. |
 | `targetAt(x, y)` | The target of a tap at a map cell, as the scene finds it under a finger. |
 
-**Commands:** the world commands `move`, `stop`, `pet`, `ride`, `aim`, `pick`, `put`, `drop`, `guess`, and `face`; `tap { target }`; `hands` (the Space key); `talkTo { id }`; `talk { dialogue }`; `travel` (the country map); `refresh`; `next` and `choose { n }` (the open talk); `closed` (the view closed a screen). In a raid: `shoot { dir, pull }` (the slingshot), `pour { source, x, y }` (an element to a map point), and `pet` (Nghé charges). See `docs/RAIDS.md`.
+**Commands:** the world commands `move`, `stop`, `pet`, `ride`, `aim`, `pick`, `put`, `drop`, `guess`, and `face`; `tap { target }`; `hands` (the Space key); `talkTo { id }`; `talk { dialogue }`; `travel` (the country map); `refresh`; `next` and `choose { n }` (the open talk); `closed` (the view closed a screen). In a raid: `shoot { count }` (the slingshot at the wall), `pour { source, x, y }` (an element to a map point), and `pet` (Nghé charges, when Nghé is a tool of the raid). See `docs/RAIDS.md`.
 
 **Events:** the events of the world, and `open { screen, ... }` (a talk line, a line of text, a callout over a head, the rest, or a screen of a story effect such as `worldmap`, `vanmieu`, or `nameFriend`), `close`, `map` (the hero went to another map), `gift` (things fly to their counter), `lose` (coins that an enemy took fly from the counter to it), `raid` (a raid starts or ends), `tapfx`, `sound`, `busy`, `hud`, and `halt`.
 
@@ -47,8 +47,8 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 | `{ "wait": 2 }` | The world goes on for two seconds. |
 | `{ "until": { "event": "put", "with": {...}, "timeout": 20 } }` | The world goes on until the event comes (after the last command). |
 | `{ "at": { "hour": 18.5 } }` | The world goes on until the next 18:30. |
-| `{ "tap": ... }` | A tap, as the scene sends it: `{ "cell": [x, y] }`, `{ "entity": id }`, `{ "thing": id }`, `{ "item": "rod" }` (the first thing of a kind in a heap or a pile), `{ "plank": 4 }` (a plank of this size on a pile), `{ "guess": 3 }` (a plank outline), `{ "zone": id }` (the middle of the zone of a task, or the gap of a span), `{ "span": id }` (the last plank on a span), `{ "stem": 4 }` (a place along the stem of the woodcutter), `{ "line": 8 }` (a place on the line of the fish trap), `{ "raid": "gate" }` (the gate bar, the bamboo, or a spot such as `spot:1` in a raid), or `{ "hero": true }`. |
-| `{ "shoot": { "at": "first", "kind", "off", "lead", "wait" } }` | The slingshot of the hero at an enemy of the raid (`first`: the nearest one to the gate; `kind`: only enemies of this kind): the pull for its distance, `off` half blocks farther, where it will be after `lead` seconds. With `wait`, no enemy is no failure (the world goes on for a second). |
+| `{ "tap": ... }` | A tap, as the scene sends it: `{ "cell": [x, y] }`, `{ "entity": id }`, `{ "thing": id }`, `{ "item": "rod" }` (the first thing of a kind in a heap or a pile), `{ "plank": 4 }` (a plank of this size on a pile), `{ "guess": 3 }` (a plank outline), `{ "zone": id }` (the middle of the zone of a task, or the gap of a span), `{ "span": id }` (the last plank on a span), `{ "stem": 4 }` (a place along the stem of the woodcutter), `{ "line": 8 }` (a place on the line of the fish trap), `{ "raid": "gate" }` (the gate bar, the bamboo, or a spot such as `spot:1` in a raid), `{ "post": 20 }` (a post before the first shot: the prediction), or `{ "hero": true }`. |
+| `{ "shoot": { "count": 16 } }` or `{ "shoot": { "at": "first", "kind", "off", "lead", "wait" } }` | The slingshot: a pull of this count (half blocks along the road), or the count for an enemy of the raid (`first`: the nearest one to the gate; `kind`: only enemies of this kind): its distance where it will be after `lead` seconds, and `off` more. With `wait`, no enemy in reach is no failure (the world goes on for a second). |
 | `{ "pour": { "from": "brazier", "at": "first" } }` | The drag of an element from a source of the raid to an enemy (or to a cell `[x, y]`). |
 | `{ "repeat": 10, "steps": [...] }` | The steps, ten times. |
 | `{ "read": true }` | Reads the open talk to its end (the first choice at each choice, or the choices in a list: `{ "read": [1, 0] }`). |
@@ -114,8 +114,9 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `trial-healer` | Three kinds of herbs; one too many and the basket comes back; the right number of each. |
 | `trial-woodcutter` | Chalk marks off the middle break the short stick; equal sticks go to the wood pile. |
 | `calling` | After the five trials, the elder opens the way to Văn Miếu. |
-| `raid-scouts` | The scouts at the gate: a trap on the road, a villager at a spot, the gate bar before a torch lands, the charge of Nghé, and the slingshot until they turn back. |
-| `raid-soldiers` | Soldiers from the field: fire makes them raise wet shields, a stone bounces off, and lightning into the wet ground shocks both. |
-| `raid-boss` | The boss at Trâu Sơn: soldiers, the general and his blow, the iron staff breaks, and Gióng pulls up the bamboo. |
-| `raid-lost` | The map pauses the raid; nobody stops the soldiers; at grade 1 they take nothing and can come again. |
-| `raid-river` | Two little river serpents calm down after two stones each; the talks of Sóng. |
+| `raid-scouts` | The first raid: the lines of the slingshot and the gate, a tap on the post nearest the scout, a short pull and its correction by count, and the gate bar before a torch lands (no skill event). |
+| `raid-patrol` | The traps: the elder names the third post; a trap there is counting, a trap one post on is play. |
+| `raid-soldiers` | The first soldiers: a villager at a straw flag, a trap at the post that the smith names, and the charge of Nghé. |
+| `raid-boss` | The forge of the smith: fire makes the soldiers raise wet shields, lightning into the wet ground shocks them; the general and his blow, the iron staff breaks, and Gióng pulls up the bamboo. The fact of history keeps its year. |
+| `raid-lost` | The map only pauses the raid, with one line; nobody stops the soldiers; at grade 1 they take nothing, and they come again at the next dawn. |
+| `raid-river` | Rice balls from the same pull: two little river serpents eat two each and swim away calm; the talks of Sóng. |

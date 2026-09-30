@@ -256,3 +256,10 @@ The battle screen is gone, and its texts too (`battle.*` and `enemy.*`). New and
 
 Please check the words ngã tư (the crossroads), đuốc (a torch), bẫy (a trap), and cái ná (the slingshot), and whether "thuồng luồng con" reads well for a small river creature.
 
+### The raids after the review (#5)
+
+- `raid.tool.sling`, `raid.tool.gate`, `raid.tool.traps` (the elder), and `raid.tool.helpers`, `raid.tool.nghe`, `raid.tool.water`, `raid.tool.fire`, `raid.tool.lightning` (the smith): one line the first time that a tool comes. The elder and the smith call the child "cháu".
+- `raid.trap.ask` ("Đặt một cái bẫy ở cột {post}.") with `ord.1` to `ord.4` ("thứ nhất" to "thứ tư"; "first" to "fourth").
+- `raid.scouts.pause`, `raid.river.pause`, `raid.soldier.pause`, `raid.boss.pause`: the line of the map in a raid.
+- `raid.river.intro` now says that the serpents are hungry and that the child throws rice balls ("nắm cơm").
+
