@@ -1,40 +1,66 @@
 {
-  "_about": "The Five Trials of the prologue. One trial for each calling. skills: the skills for each grade that the player gives. The problems match that grade.",
+  "_about": "The Five Trials of the prologue: work in the village, one task for each calling (src/core/world/trials.js and src/core/world/systems/work.js). The talk of the person starts the task in the world ({ open: 'trial', id }); the task is done when the world says so, and then the flag is set, the reward flies to the counters, and the person says the done line (dialogue <id>.trial.done). grades: the level of the task (1, 2, or 3) for the grade that the player gave (the nearest grade for others). levels: the numbers of the task at each level, and the skill that the task measures at that level (one skill event at each commit). places: the named places of the map (layers.places) where the things of the task lie. Units: half blocks (one map cell is 2) and seconds. No numeral is shown in the world; a person says a number in words (the key num.<n>).",
+  "grades": { "-1": 1, "0": 1, "1": 1, "2": 2, "3": 3 },
   "trials": [
-    { "id": "scholar", "npc": "teacher", "calling": "scholar", "flag": "trial.scholar.done", "reward": { "coin": 3 },
-      "doneKey": "trial.scholar.done", "skills": {
-        "1": ["math.count.120", "math.compare.100", "math.add.10", "math.sub.10", "math.shapes"],
-        "2": ["math.add.20", "math.sub.20", "math.addsub.100", "math.place.1000"],
-        "3": ["math.addsub.1000", "math.mul.10", "math.div.10", "math.frac.unit", "math.area"],
-        "4": ["math.mul.multi", "math.frac.equiv", "math.frac.add"],
-        "5": ["math.decimal", "math.frac.unlike", "math.mul.fluent"] } },
-    { "id": "smith", "npc": "smith", "calling": "smith", "flag": "trial.smith.done", "reward": { "coin": 3 },
-      "doneKey": "trial.smith.done", "skills": {
-        "1": ["sci.matter.states", "sci.matter.materials"],
-        "2": ["sci.matter.states", "sci.matter.materials"],
-        "3": ["sci.forces", "sci.matter.materials"],
-        "4": ["sci.energy", "sci.forces"],
-        "5": ["sci.matter.particles", "sci.energy"] } },
-    { "id": "fisher", "npc": "fisher", "calling": "fisher", "flag": "trial.fisher.done", "reward": { "coin": 3 },
-      "doneKey": "trial.fisher.done", "skills": {
-        "1": ["sci.water.flow"],
-        "2": ["sci.water.flow", "sci.matter.states"],
-        "3": ["sci.water.float", "sci.water.flow"],
-        "4": ["sci.water.float", "sci.water.flow"],
-        "5": ["sci.water.earth", "sci.water.float"] } },
-    { "id": "healer", "npc": "healer", "calling": "healer", "flag": "trial.healer.done", "reward": { "coin": 3 },
-      "doneKey": "trial.healer.done", "skills": {
-        "1": ["sci.life.needs", "sci.life.animals"],
-        "2": ["sci.life.needs", "sci.life.animals"],
-        "3": ["sci.life.habitat", "sci.life.needs"],
-        "4": ["sci.life.body", "sci.life.habitat"],
-        "5": ["sci.life.foodchain", "sci.life.body"] } },
-    { "id": "woodcutter", "npc": "woodcutter", "calling": "woodcutter", "flag": "trial.woodcutter.done", "reward": { "coin": 3 },
-      "doneKey": "trial.woodcutter.done", "skills": {
-        "1": ["sci.earth.weather"],
-        "2": ["sci.earth.land", "sci.earth.weather"],
-        "3": ["sci.earth.climate", "sci.forces"],
-        "4": ["sci.earth.erosion", "sci.earth.climate"],
-        "5": ["sci.earth.space", "sci.earth.erosion"] } }
+    {
+      "id": "scholar", "npc": "teacher", "calling": "scholar", "flag": "trial.scholar.done", "reward": { "coin": 3 },
+      "task": "bundle",
+      "_task": "Sort the counting rods into bundles of ten for the teacher. A tap on a rod of the heap puts it on the mat (from near the mat). A tap on the mat with empty hands ties the rods on it: ten rods tie into a bundle; more or fewer, and the band snaps and the rods fall back on the heap (the commit). The task is done when fewer than ten rods are left on the heap.",
+      "bundle": 10,
+      "levels": [
+        { "rods": 24, "skill": "math.count.120", "level": 2 },
+        { "rods": 37, "skill": "math.place.1000", "level": 1 },
+        { "rods": 46, "skill": "math.place.1000", "level": 2 }
+      ],
+      "places": { "heap": "school-rods", "mat": "school-mat" }
+    },
+    {
+      "id": "smith", "npc": "smith", "calling": "smith", "flag": "trial.smith.done", "reward": { "coin": 3 },
+      "task": "forge",
+      "_task": "Bring ore to the forge (it needs this many; more rolls back to the heap) and a bucket of water from the well to the trough. Then the iron on the anvil glows (rise), stays hot (hold), and dims (dim), again and again. A tap on the iron drops it into the water (the commit): while it is hot (glow at or over hot), it hisses and becomes hard; too early or too late, it bends and goes back into the fire.",
+      "glow": { "rise": 2.5, "dim": 2.5, "cold": 1.5, "hot": 0.6 },
+      "levels": [
+        { "ore": 2, "hold": 3, "skill": "sci.matter.states", "level": 1 },
+        { "ore": 3, "hold": 2, "skill": "sci.matter.states", "level": 2 },
+        { "ore": 4, "hold": 1.4, "skill": "sci.matter.materials", "level": 2 }
+      ],
+      "places": { "ore": "smith-ore", "forge": "smith-forge", "anvil": "smith-anvil", "trough": "smith-trough", "bucket": "well-bucket" }
+    },
+    {
+      "id": "fisher", "npc": "fisher", "calling": "fisher", "flag": "trial.fisher.done", "reward": { "coin": 3 },
+      "task": "stakes",
+      "_task": "A fish trap: stakes in a row in the river, from the first stake to the end mark, before the tide comes in. The fisher puts the first two stakes, so the space between them shows the space of the row. The child carries stakes from the bank and puts each one on the line (it snaps to the half-block grid), and can take one back. When the tide comes in (tide: seconds after the start, and again after each tide), the row is the commit: no space between two stakes wider than the space of the row, and the last stake at the end mark. Then the tide goes out: the fish stay in the trap, or they swim out through the widest space. The fewest stakes is efficient.",
+      "levels": [
+        { "space": 4, "gaps": 4, "tide": 80, "skill": "math.count.120", "level": 2 },
+        { "space": 3, "gaps": 5, "tide": 80, "skill": "math.add.20", "level": 1 },
+        { "space": 5, "gaps": 4, "tide": 70, "skill": "math.mul.10", "level": 1 }
+      ],
+      "extra": 3,
+      "places": { "stakes": "fisher-stakes", "line": "fisher-line" }
+    },
+    {
+      "id": "healer", "npc": "healer", "calling": "healer", "flag": "trial.healer.done", "reward": { "coin": 3 },
+      "task": "basket",
+      "_task": "Three kinds of herbs grow in three beds. The healer needs each (this many) of each kind. The child carries herbs to the basket (each kind goes to its part of the basket) and can take one back. A tap on the healer gives the basket (the commit): every part has each, or the healer gives the basket back and the herbs over the number fly back to their beds.",
+      "kinds": ["ngai", "tiato", "rauma"],
+      "bed": 7,
+      "levels": [
+        { "each": 2, "skill": "math.count.120", "level": 1 },
+        { "each": 4, "skill": "math.add.20", "level": 1 },
+        { "each": 4, "skill": "math.mul.10", "level": 1 }
+      ],
+      "places": { "beds": ["healer-bed-1", "healer-bed-2", "healer-bed-3"], "basket": "healer-basket" }
+    },
+    {
+      "id": "woodcutter", "npc": "woodcutter", "calling": "woodcutter", "flag": "trial.woodcutter.done", "reward": { "coin": 3 },
+      "task": "cut",
+      "_task": "A fallen bamboo stem lies on the ground (length). The woodcutter needs it in this many equal sticks (parts). A tap on the stem puts a chalk mark there (it snaps to the half-block grid), and a tap on a mark takes it away. A tap on the woodcutter cuts at the marks (the commit): equal sticks are tied into a bundle, and the child carries it to the wood pile by the bridge; sticks that are not equal break, and a new stem comes.",
+      "levels": [
+        { "length": 8, "parts": 2, "skill": "math.shapes", "level": 1 },
+        { "length": 12, "parts": 3, "skill": "math.add.20", "level": 1 },
+        { "length": 12, "parts": 4, "skill": "math.div.10", "level": 1 }
+      ],
+      "places": { "stem": "woodcutter-stem", "pile": "woodpile" }
+    }
   ]
 }

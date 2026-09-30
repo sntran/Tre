@@ -70,24 +70,16 @@ test('quests use known people, encounters, and objects', () => {
   }
 });
 
-test('the Five Trials have skills for each grade at or below that grade', () => {
+test('the Five Trials measure skills at or below the grade of each level', () => {
   assert.equal(trials.length, 5);
   assert.deepEqual(trials.map((t) => t.calling).sort(), callings.map((c) => c.id).sort());
+  const grades = load('data/trials.json').grades;
   for (const trial of trials) {
-    for (const g of ['1', '2', '3', '4', '5']) {
-      const list = trial.skills[g];
-      assert.ok(list?.length, `${trial.id} grade ${g}`);
-      for (const id of list) {
-        const skill = graph.get(id);
-        assert.ok(skill, id);
-        assert.ok(skill.grade <= Math.max(2, Number(g)), `${trial.id}: ${id} (grade ${skill.grade}) for grade ${g}`);
-      }
-    }
-    // Math trials use skills of exactly the grade of the player.
-    if (trial.calling === 'scholar') {
-      for (const g of ['1', '2', '3', '4', '5']) {
-        for (const id of trial.skills[g]) assert.equal(graph.get(id).grade, Number(g), id);
-      }
+    for (const [g, level] of Object.entries(grades)) {
+      const id = trial.levels[level - 1].skill;
+      const skill = graph.get(id);
+      assert.ok(skill, id);
+      assert.ok(skill.grade <= Math.max(2, Number(g)), `${trial.id}: ${id} (grade ${skill.grade}) for grade ${g}`);
     }
   }
 });
@@ -166,12 +158,7 @@ test('facts of history in battle notes have the History seal', () => {
   assert.ok(/UNESCO/.test(en[battles.boss.historyKey]));
 });
 
-test('the end text of each trial names the topics of the questions', () => {
-  const en = load('i18n/en.json');
-  for (const tr of trials) {
-    for (const table of [vi, en]) assert.ok(table[tr.doneKey].includes('{topics}'), `${tr.doneKey}`);
-  }
-  // No text calls the five skilled people "thợ" (workers), because the teacher is not a worker.
+test('no text calls the five skilled people "thợ" (workers), because the teacher is not a worker', () => {
   assert.ok(!vi['dlg.elder.intro.n1'].includes('thợ giỏi'));
   assert.ok(vi['dlg.elder.intro.n1'].includes('năm người tài giỏi'));
 });

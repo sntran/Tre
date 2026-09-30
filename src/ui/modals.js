@@ -16,7 +16,7 @@ function similar(ctx) {
 registerModal('trial', async (ctx, cmd) => {
   const trial = ctx.data.trials.trials.find((x) => x.id === cmd.id);
   // A grade with no list of skills uses the list of the nearest grade.
-  const skills = byGrade(trial.skills, ctx.profile.grade);
+  const skills = trial.skills ? byGrade(trial.skills, ctx.profile.grade) : [...new Set(trial.levels.map((l) => l.skill))];
   let i = 0;
   // Use a middle level for skills of the grade, and level 1 for skills of a higher grade.
   const levelOf = (skill) => Math.min(skill.levels.length,
