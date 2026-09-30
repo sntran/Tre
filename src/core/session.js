@@ -164,7 +164,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const persons = () => query(state, 'person').map((e) => ({ ...e.person, x: e.position.x / 2, y: e.position.z / 2, entity: e.id }));
   function refreshPeople() {
     const npcs = data.npcs.npcs;
-    syncPeople(state, map, env, (kind, item) => (kind === 'npc' ? Boolean(npcs[item.id]) && isPresent(npcs[item.id], profile) : isPresent(item, profile)), data.life.people, data.people);
+    // An enemy of a lost raid comes again at the next dawn (the flag raid.<id>.back holds the
+    // minute of that dawn).
+    const back = (item) => profile.flags[`raid.${item.raid}.back`];
+    for (const e of map.encounters) if (back(e) !== undefined && back(e) <= state.clock.minutes) delete profile.flags[`raid.${e.raid}.back`];
+    const present = (kind, item) => (kind === 'npc' ? Boolean(npcs[item.id]) && isPresent(npcs[item.id], profile) : isPresent(item, profile) && !(back(item) > state.clock.minutes));
+    syncPeople(state, map, env, present, data.life.people, data.people);
     tileMap.clearOccupied();
     for (const p of persons()) tileMap.occupy(Math.floor(p.x), Math.floor(p.y), { kind: p.kind, id: p.ref });
     // A person of the quest stays out at night, with a lantern.
@@ -467,6 +472,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       for (const id of win.after ?? []) talk(id);
     } else {
       profile.stats.battlesLost = (profile.stats.battlesLost ?? 0) + 1;
+      // The enemies come again at the next dawn, so that the child sleeps on it.
+      profile.flags[`raid.${r.raid.id}.back`] = nextDawn(state.clock.minutes);
       save('raid');
       say('raid.lost');
     }
@@ -817,7 +824,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const events = state.events;
     for (const ev of events) {
       emit(ev);
-      if (ev.id === 'sky') continue;
+      if (ev.id === 'sky') {
+        // At dawn the enemies of a lost raid come again.
+        if (ev.type === 'dawn') refreshPeople();
+        continue;
+      }
       if (ev.id !== 'hero') {
         worldEvent(ev);
         continue;
@@ -904,7 +915,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (type === 'tap') tap(cmd.target ?? {});
     else if (type === 'hands') handsKey();
     else if (type === 'talkTo') walkToPerson(cmd.id);
-    else if (type === 'travel') queue(() => openCommand({ open: 'worldmap' }));
+    // In a raid the map only pauses: it says where the enemies are, and it has no travel.
+    else if (type === 'travel') queue(() => openCommand(raidOn() ? { open: 'worldmap', pauseKey: data.raids.raids[raidEnt().raid.id].pauseKey ?? null } : { open: 'worldmap' }));
     else if (WORLD.has(type)) {
       // A walk with the stick or the keys ends a walk of a tap.
       if (type === 'move' && cmd.strength) arrivals.clear();
@@ -962,6 +974,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     get busy() { return busy; },
     get profile() { return profile; },
   };
+}
+
+// The minute of the next dawn after a minute of the game clock (the middle of the dawn of the day
+// data, 06:00).
+export function nextDawn(minutes, dawnHour = 6) {
+  const day = Math.floor(minutes / 1440) * 1440 + dawnHour * 60;
+  return day > minutes ? day : day + 1440;
 }
 
 // The place next to the door of a trigger zone (the gate of Văn Miếu): where the hero stands

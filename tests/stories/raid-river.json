@@ -1,8 +1,8 @@
 {
   "name": "raid-river",
   "about": {
-    "vi": "Hai con thuồng luồng con bơi ngược sông về chỗ lội; mỗi con trúng hai viên sỏi thì bình tĩnh lại và bơi đi.",
-    "en": "Two little river serpents swim up the river to the ford; each one calms down after two stones and swims away."
+    "vi": "Hai con thuồng luồng con bơi ngược sông về chỗ lội; em ném nắm cơm, mỗi con ăn hai nắm thì bình tĩnh lại và bơi đi.",
+    "en": "Two little river serpents swim up the river to the ford; the child throws rice balls, and each one eats two, calms down, and swims away."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 4, "flags": { "intro.seen": true, "giong.spoke": true }, "items": { "coin": 5 } },
   "map": "phu-dong",
@@ -20,7 +20,7 @@
       { "wait": 1.4 }
     ] },
     { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 40 } },
-    { "expect": [{ "event": "retreat", "with": { "calm": true } }, { "event": "end", "with": { "won": true } }, { "flag": "river.calmed" }, { "text": { "shown": "raid.river.note" } }] },
+    { "expect": [{ "event": "retreat", "with": { "calm": true } }, { "event": "hit", "with": { "by": "riceball" } }, { "event": "end", "with": { "won": true } }, { "flag": "river.calmed" }, { "text": { "shown": "raid.river.note" } }] },
     { "read": [1] },
     { "expect": [{ "text": { "shown": "dlg.river.friends.n1" } }, { "screen": null }] }
   ]

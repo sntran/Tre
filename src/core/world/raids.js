@@ -323,7 +323,8 @@ function tickEnemy(raid, e, dt, ctx, out) {
 function hit(raid, e, damage, by, out) {
   if (!alive(e) || e.state === 'stunned') return false;
   e.hits = Math.min(e.max, e.hits + damage);
-  out.push({ type: 'hit', id: e.id, by, damage, left: e.max - e.hits, sound: 'hit' });
+  // A rice ball is food, not a blow: the creature eats it.
+  out.push({ type: 'hit', id: e.id, by, damage, left: e.max - e.hits, sound: by === 'riceball' ? 'pickup' : 'hit' });
   if (e.hits < e.max) return true;
   if (raid.kinds[e.kind].boss) {
     e.state = 'stunned';

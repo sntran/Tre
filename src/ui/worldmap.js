@@ -141,7 +141,9 @@ function drawBase(svg, ctx, proj, eraSouth) {
   return { regionPaths, eraY, place };
 }
 
-registerModal('worldmap', async (ctx) => {
+registerModal('worldmap', async (ctx, cmd = {}) => {
+  // In a raid the map only pauses: one line says where the enemies are, and there is no travel.
+  const pauseKey = cmd?.pauseKey ?? null;
   const { data, profile } = ctx;
   const world = data.world;
   const geo = data.geo;
@@ -299,7 +301,8 @@ registerModal('worldmap', async (ctx) => {
       if (way) lines.push(h('p', { class: 'region-way', text: t('world.way', { km: Math.round(way.km), days: Math.max(1, Math.ceil(world.travelHours(here, region.id) / 24)) }) }));
       if (region.id === here) lines.push(h('p', { text: t('world.here') }));
       else if (!open) lines.push(h('p', { text: t('world.locked') }));
-      if (open && region.id !== here) {
+      if (pauseKey) lines.push(h('p', { class: 'region-way', text: t(pauseKey) }));
+      else if (open && region.id !== here) {
         const hours = world.travelHours(here, region.id);
         lines.push(button(t('world.travel', { hours }), () => {
           const rng = createRng(`${profile.seed}:${Math.round(profile.world.clock.minutes)}:${region.id}`);
@@ -308,7 +311,7 @@ registerModal('worldmap', async (ctx) => {
         }, { cls: 'btn big red' }));
       }
       info.replaceChildren(...lines);
-      speak(named ? region.nameKey : 'world.locked');
+      speak(pauseKey ?? (named ? region.nameKey : 'world.locked'));
     }
 
     for (const [id, p] of base.regionPaths) p.addEventListener('click', () => select(world.region(id)));

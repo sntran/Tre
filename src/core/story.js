@@ -235,6 +235,8 @@ export function checkFact(fact, ctx) {
   }
   if (fact.entity) {
     const e = getEntity(state, fact.entity);
+    // gone: the entity is not in the world (an enemy of a lost raid before the next dawn).
+    if (fact.gone) return e ? `${fact.entity} is in the world` : null;
     if (!e) return `no entity ${fact.entity}`;
     if (fact.near) {
       const other = getEntity(state, fact.near);

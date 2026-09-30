@@ -62,6 +62,8 @@ test('each kind of fact: true and false', () => {
   no({ hero: { near: 'npc:grandma', within: 3 } });
   ok({ entity: 'friend:nghe', near: 'hero', within: 4 });
   no({ entity: 'nobody' });
+  ok({ entity: 'nobody', gone: true });
+  no({ entity: 'friend:nghe', gone: true });
   ok({ event: 'skill', with: { solved: true, parts: [4, 4, 4] } });
   no({ event: 'skill', with: { solved: false } });
   ok({ event: 'tip', not: true });

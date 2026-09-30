@@ -60,7 +60,7 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 | Fact | True when |
 | --- | --- |
 | `{ "hero": { "in": "water", "map", "near": id, "within", "cell": [x, y], "holding", "falls", "riding" } }` | The hero is so. |
-| `{ "entity": id, "near": id, "within", "act", "look", "hidden", "keep" }` | The entity is so. |
+| `{ "entity": id, "near": id, "within", "act", "look", "hidden", "keep", "gone" }` | The entity is so (`gone`: it is not in the world). |
 | `{ "event": type, "with": {...}, "not": true }` | The event came (or did not come) since the last expect. |
 | `{ "flag": name, "is": false }` | The flag is set (or not). |
 | `{ "item": "coin", "count": ">= 1" }` | The count of a thing. |

@@ -384,3 +384,21 @@ test('the general lifts his sword before a big blow; the hero in reach is pushed
   assert.equal(hurt.id, 'hero');
   assert.ok(Math.hypot(hurt.push.x, hurt.push.z) > 2);
 });
+
+test('a lost raid comes again at the next dawn; the river serpents eat rice balls', async () => {
+  const { nextDawn } = await import('../src/core/session.js');
+  assert.equal(nextDawn(600), 1440 + 360, 'a loss at 10:00: the dawn of the next day');
+  assert.equal(nextDawn(300), 360, 'a loss at 05:00: the dawn of the same day');
+  assert.equal(nextDawn(360), 1440 + 360, 'at dawn itself: the next one');
+  const river = createRaid(raids, 'river', 1);
+  assert.equal(river.ball, 'riceball');
+  run(river, 0.1);
+  const e = enemy(river);
+  e.state = 'wait';
+  e.t = 99;
+  e.x = river.wall.x + river.dir.x * 10;
+  e.z = river.wall.z + river.dir.z * 10;
+  shoot(river, 10);
+  const hit = until(river, 'land').find((x) => x.type === 'hit');
+  assert.deepEqual([hit.by, hit.sound], ['riceball', 'pickup']);
+});
