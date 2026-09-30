@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { levelFor, taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill } from '../src/core/world/trials.js';
+import { levelFor, taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill, feedResult, tenResult } from '../src/core/world/trials.js';
 import { load } from './helpers.js';
 
 const trials = load('data/trials.json');
@@ -20,7 +20,8 @@ test('the level of the tasks follows the grade that the player gave', () => {
   for (const d of trials.trials) {
     assert.equal(d.levels.length, 3, d.id);
     for (const l of d.levels) assert.ok(skills.has(l.skill), `${d.id}: ${l.skill}`);
-    assert.ok(d.places && d.flag && d.npc && d.calling, d.id);
+    // A trial names its calling; a task of the story (kind: task) has none.
+    assert.ok(d.places && d.flag && d.npc && (d.calling || d.kind === 'task'), d.id);
   }
 });
 
@@ -92,3 +93,14 @@ test('a commit of a trial is one skill event with the skill of its level', () =>
   assert.equal(trialSkill(task, { solved: true, first: false }).efficient, false, 'a later success is not efficient');
   assert.equal(trialSkill(task, { solved: true, efficient: false, first: true }).efficient, false);
 });
+
+test('rice for Gióng: each ten bowls he grows; the rest stays in the pot; a ten made exactly is solved', () => {
+  assert.deepEqual(feedResult(0, 5), { grew: 0, ones: 5 });
+  assert.deepEqual(feedResult(8, 5), { grew: 1, ones: 3 }, 'eight and five: one ten, three over');
+  assert.deepEqual(tenResult([5, 5], 0, [3, 5]), { solved: true, efficient: true, fewest: 2, over: 0 });
+  assert.equal(tenResult([3, 3, 3, 3], 0, [3, 5]).solved, false, 'twelve: two over the ten');
+  const carry = tenResult([3, 5], 2, [3, 5]);
+  assert.ok(carry.solved && carry.efficient, 'two in the pot, then three and five');
+  assert.equal(tenResult([3, 3, 3, 3], 1, [3, 5]).efficient, false, 'more trays than needed');
+});
+

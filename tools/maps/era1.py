@@ -121,6 +121,10 @@ A.places = {
     'healer-basket': {'x': 17.6, 'y': 20.7},
     'woodcutter-stem': {'x': 25.0, 'y': 3.25},
     'woodpile': {'x': 26.1, 'y': 30.2},
+    # Rice for Gióng: the trays of bowls on the path of the paddies, and the pot in front of the
+    # house of Gióng.
+    'rice-trays': {'x': 7.6, 'y': 17.6},
+    'giong-pot': {'x': 10.7, 'y': 12.4},
 }
 A.npcs = [
     {'id': 'grandma', 'x': 4.5, 'y': 12.7},

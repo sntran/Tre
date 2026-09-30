@@ -1,12 +1,11 @@
-// The screens that open over the village: practice, lessons, and more. (The Five Trials are
-// work in the village: src/core/world/systems/work.js.)
+// The screens that open over the village: practice, lessons, and more. (The Five Trials and the
+// rice for Gióng are work in the village: src/core/world/systems/work.js.)
 import { registerModal } from './registry.js';
 import { runQuiz } from './quiz.js';
 import { h, img, button } from './dom.js';
 import { speak } from './speak.js';
 import { t, setChosenNames } from './i18n.js';
-import { applyEffects } from '../core/game.js';
-import { addItem, setFriendName, chosenGlossNames } from '../core/profile.js';
+import { setFriendName, chosenGlossNames } from '../core/profile.js';
 
 function similar(ctx) {
   return (p) => ctx.learner.problem(p.skill, { level: p.level });
@@ -59,22 +58,6 @@ function chooseSkill(ctx) {
     ctx.ui.append(layer);
   });
 }
-
-// The village counts rice for Gióng: math problems at the level of the player.
-registerModal('rice', async (ctx, _cmd, extra) => {
-  await runQuiz(ctx, {
-    title: t('rice.title'),
-    speaker: 'mother',
-    count: 3,
-    next: () => ctx.learner.next({ filter: (s) => s.subject === 'math' }),
-    similar: similar(ctx),
-  });
-  addItem(ctx.profile, 'rice', 3);
-  applyEffects(ctx.profile, [{ set: 'giong.grown' }]);
-  await ctx.save('rice');
-  extra.village?.refresh();
-  await extra.village?.talk('giong.grown');
-});
 
 // The player gives a name to a new friend. The usual name is ready in the box.
 registerModal('nameFriend', (ctx, cmd) => new Promise((resolve) => {

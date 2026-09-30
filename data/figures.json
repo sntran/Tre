@@ -134,6 +134,23 @@
     "brazier": { "kind": "brazier" },
     "forge": { "kind": "forge" },
     "bamboo-clump": { "kind": "bamboo" },
-    "bamboo-pulled": { "kind": "bamboo", "pulled": true }
+    "bamboo-pulled": { "kind": "bamboo", "pulled": true },
+    "bowls-3": { "kind": "bowls", "n": 3 },
+    "bowls-5": { "kind": "bowls", "n": 5 },
+    "rice-pot-0": { "kind": "rice-pot", "n": 0 },
+    "rice-pot-1": { "kind": "rice-pot", "n": 1 },
+    "rice-pot-2": { "kind": "rice-pot", "n": 2 },
+    "rice-pot-3": { "kind": "rice-pot", "n": 3 },
+    "rice-pot-4": { "kind": "rice-pot", "n": 4 },
+    "rice-pot-5": { "kind": "rice-pot", "n": 5 },
+    "rice-pot-6": { "kind": "rice-pot", "n": 6 },
+    "rice-pot-7": { "kind": "rice-pot", "n": 7 },
+    "rice-pot-8": { "kind": "rice-pot", "n": 8 },
+    "rice-pot-9": { "kind": "rice-pot", "n": 9 },
+    "giong-boy-1": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.67 },
+    "giong-boy-2": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.74 },
+    "giong-boy-3": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.81 },
+    "giong-boy-4": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.88 },
+    "giong-boy-5": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.95 }
   }
 }

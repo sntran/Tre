@@ -306,9 +306,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     applyEffects(profile, [{ set: def.flag }, { give: def.reward }]);
     save('trial');
     const from = `npc:${def.npc}`;
-    emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: def.reward, delay: 0.3 });
+    if (Object.keys(def.reward ?? {}).length) emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: def.reward, delay: 0.3 });
     emit({ type: 'hud' });
-    talk(`${def.npc}.trial.done`);
+    // A task of the story may end with its own talk (rice for Gióng: Gióng grows up).
+    talk(def.doneTalk ?? `${def.npc}.trial.done`);
   }
   // The zone of a task under a point on the ground (half blocks).
   const workZoneAt = (x, z) => query(state, 'zone').find((e) => {

@@ -106,7 +106,8 @@
      "textKey": "dlg.giong.rice.n2",
      "effects": [
       {
-       "open": "rice"
+       "open": "trial",
+       "id": "rice"
       }
      ]
     }

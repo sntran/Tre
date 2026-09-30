@@ -1,5 +1,5 @@
 {
-  "_about": "The Five Trials of the prologue: work in the village, one task for each calling (src/core/world/trials.js and src/core/world/systems/work.js). The talk of the person starts the task in the world ({ open: 'trial', id }); the task is done when the world says so, and then the flag is set, the reward flies to the counters, and the person says the done line (dialogue <id>.trial.done). grades: the level of the task (1, 2, or 3) for the grade that the player gave (the nearest grade for others). levels: the numbers of the task at each level, and the skill that the task measures at that level (one skill event at each commit). The stakes of the fisher and the marks of the woodcutter are lengths on a line, as the planks of the bridge: they share the number-line skill of the bridge (math.add.20, the sum skill in data/world/zones.json). places: the named places of the map (layers.places) where the things of the task lie. Units: half blocks (one map cell is 2) and seconds. No numeral is shown in the world; a person says a number in words (the key num.<n>).",
+  "_about": "The Five Trials of the prologue, and the other work tasks of the story (kind: task, with no calling): work in the village, one task for each calling (src/core/world/trials.js and src/core/world/systems/work.js). The talk of the person starts the task in the world ({ open: 'trial', id }); the task is done when the world says so, and then the flag is set, the reward flies to the counters, and the person says the done line (dialogue <npc>.trial.done, or doneTalk). grades: the level of the task (1, 2, or 3) for the grade that the player gave (the nearest grade for others). levels: the numbers of the task at each level, and the skill that the task measures at that level (one skill event at each commit). The stakes of the fisher and the marks of the woodcutter are lengths on a line, as the planks of the bridge: they share the number-line skill of the bridge (math.add.20, the sum skill in data/world/zones.json). places: the named places of the map (layers.places) where the things of the task lie. Units: half blocks (one map cell is 2) and seconds. No numeral is shown in the world; a person says a number in words (the key num.<n>).",
   "grades": { "-1": 1, "0": 1, "1": 1, "2": 2, "3": 3 },
   "trials": [
     {
@@ -61,6 +61,18 @@
         { "length": 12, "parts": 4, "skill": "math.add.20", "level": 3 }
       ],
       "places": { "stem": "woodcutter-stem", "pile": "woodpile" }
+    },
+    {
+      "id": "rice", "npc": "mother", "kind": "task", "flag": "giong.grown", "reward": {}, "doneTalk": "giong.grown",
+      "task": "feed",
+      "_task": "Rice for Gióng (not a trial of a calling: a task of the story). Trays of 3 and of 5 bowls of rice lie on the path of the paddies (trays: the sizes; each size has this many trays, and a tray that goes to the pot comes back full to the path). The child carries one tray at a time to the pot in front of the house of Gióng. Each ten bowls: Gióng eats and grows one head taller; the bowls over the ten stay in the pot (the ones), and his height shows the tens. The commit is each ten: solved when the pot comes to exactly ten, efficient with the fewest trays for it. The task is done when Gióng has grown this many heads.",
+      "trays": { "3": 3, "5": 3 },
+      "levels": [
+        { "heads": 2, "skill": "math.add.10", "level": 2 },
+        { "heads": 3, "skill": "math.add.20", "level": 1 },
+        { "heads": 4, "skill": "math.place.1000", "level": 1 }
+      ],
+      "places": { "trays": "rice-trays", "pot": "giong-pot" }
     }
   ]
 }

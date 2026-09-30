@@ -8,12 +8,13 @@
 //   stakes: at the tide, the fish stay in the trap, or they swim out through the widest space.
 //   basket: the healer takes the basket; or gives it back, and the extra herbs fly to their beds.
 //   cut: equal sticks tie into a bundle; if not, the short stick breaks and a new stem comes.
+//   feed (rice for Gióng): each ten bowls in the pot, Gióng eats and grows one head taller.
 // When a task is done, the event "trial" goes out (the session sets the flag and gives the reward).
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { REACH } from '../zones.js';
-import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill } from '../trials.js';
+import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill, feedResult, tenResult } from '../trials.js';
 
 const BEND = 1.2; // seconds: the bent iron cools before it goes back into the fire
 const TIDE_IN = 2.5; // seconds: the tide stands high over the stakes
@@ -50,7 +51,8 @@ function taskFor(env, zone) {
 function commit(world, tz, task, result) {
   tz.zone.commits += 1;
   if (!result.solved) tz.zone.fails += 1;
-  say(world, 'skill', tz.id, trialSkill(task, { ...result, first: tz.zone.commits === 1, resets: tz.zone.resets }));
+  // Each ten of the rice is a new try of its own (first); in the other tasks only the first commit is.
+  say(world, 'skill', tz.id, trialSkill(task, { ...result, first: result.first ?? tz.zone.commits === 1, resets: tz.zone.resets }));
 }
 
 function finish(world, tz) {
@@ -136,6 +138,15 @@ export function setupTrial(world, def, level, env) {
     const b = P(def.places.basket);
     addEntity(world, { id: 'zone:basket', keep: true, zone: { id: 'basket', task: owner, rule: 'basket', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, items: [], x: b.x, y: b.y, z: b.z, rect: rect(b, 3, 1) }, position: { x: b.x + 1.5, y: b.y, z: b.z - 1.5, facing: 0 } });
     addEntity(world, { id: 'basket:healer', keep: true, position: { x: b.x, y: b.y, z: b.z, facing: 0 }, look: 'basket' });
+  } else if (def.task === 'feed') {
+    // Trays of 3 and 5 bowls on the path of the paddies, and the pot in front of the house of Gióng.
+    const trays = heap('trays', P(def.places.trays), 'bowls', { cols: 3, step: 1.6 });
+    for (const [size, n] of Object.entries(def.trays)) for (let i = 0; i < n; i++) addTray(world, trays.zone, Number(size), owner, tz);
+    packHeap(world, trays.zone);
+    const p = P(def.places.pot);
+    addEntity(world, { id: 'zone:pot', keep: true, zone: { id: 'pot', task: owner, rule: 'feed', accepts: 'bowls', items: [], x: p.x, y: p.y, z: p.z, rect: rect(p, 2, 2) }, position: { x: p.x + 1, y: p.y, z: p.z + 2.5, facing: 0 } });
+    addEntity(world, { id: 'pot:rice', keep: true, position: { x: p.x, y: p.y, z: p.z, facing: 0 }, look: 'rice-pot-0' });
+    Object.assign(tz.zone, { ones: 0, heads: 0, group: [], start: 0 });
   } else if (def.task === 'cut') {
     const s = P(def.places.stem);
     tz.zone.stem = { x: s.x, y: s.y, z: s.z, length: task.length };
@@ -145,6 +156,13 @@ export function setupTrial(world, def, level, env) {
     addEntity(world, { id: 'zone:woodpile', keep: true, zone: { id: 'woodpile', task: owner, rule: 'woodpile', accepts: 'sticks', items: [], x: w.x, y: w.y, z: w.z, rect: rect(w, 3, 2) }, position: { x: w.x + 1, y: w.y, z: w.z + 2, facing: 0 } });
   }
   return tz;
+}
+
+// A tray of bowls of rice (3 or 5) in the heap on the path of the paddies.
+function addTray(world, zone, size, owner, tz) {
+  const id = `bowls:${size}:${tz.zone.made++}`;
+  addEntity(world, { id, keep: true, item: { kind: 'bowls', size, task: owner, zone: zone.id, home: zone.id, held: null, set: false }, position: { x: zone.x, y: zone.y, z: zone.z, facing: 0 }, look: `bowls-${size}` });
+  zone.items.push(id);
 }
 
 // The things of a heap lie close together in a small grid (rods, ore, stakes, herbs).
@@ -253,6 +271,9 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packBasket(world, zone);
+  } else if (zone.rule === 'feed') {
+    feed(world, tz, thing, env);
+    return true;
   } else if (zone.rule === 'woodpile') {
     thing.item.zone = zone.id;
     thing.item.set = true;
@@ -401,6 +422,36 @@ function act(world, e, want, env) {
       say(world, 'snap', `zone:trial-woodcutter`, { pieces: result.pieces, short: shortest, sound: 'plank-down' });
     }
   }
+}
+
+// A tray of bowls goes into the pot of Gióng: each full ten, Gióng eats and grows one head taller;
+// the rest stays in the pot. Each ten is a commit. The tray comes back full to the path.
+function feed(world, tz, thing, env) {
+  const def = env.trials?.trials.find((t) => t.id === tz.zone.trial);
+  const task = taskFor(env, tz.zone);
+  const size = thing.item.size;
+  const home = zoneEnt(world, thing.item.home);
+  removeEntity(world, thing.id);
+  if (home) {
+    addTray(world, home.zone, size, thing.item.task, tz);
+    packHeap(world, home.zone);
+  }
+  tz.zone.group.push(size);
+  const r = feedResult(tz.zone.ones, size);
+  if (r.grew) {
+    const ten = tenResult(tz.zone.group, tz.zone.start, Object.keys(def.trays).map(Number).sort((a, b) => a - b));
+    commit(world, tz, task, { solved: ten.solved, efficient: ten.efficient, first: true, parts: [...tz.zone.group], target: 10 - tz.zone.start });
+    tz.zone.heads += r.grew;
+    tz.zone.group = [];
+    tz.zone.start = r.ones;
+    const giong = getEntity(world, `npc:${def.grows ?? 'giong-boy'}`);
+    if (giong) giong.look = `giong-boy-${Math.min(5, tz.zone.heads)}`;
+    say(world, 'grow', tz.id, { heads: tz.zone.heads, sound: 'drum' });
+  } else say(world, 'bowls', tz.id, { sound: 'tap' });
+  tz.zone.ones = r.ones;
+  const pot = getEntity(world, 'pot:rice');
+  if (pot) pot.look = `rice-pot-${r.ones}`;
+  if (tz.zone.heads >= task.heads) finish(world, tz);
 }
 
 // The iron goes into the fire when the forge has its ore and the trough has water.

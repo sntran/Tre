@@ -17,7 +17,7 @@ const village = {
   encounters: mapList.flatMap((m) => m.encounters),
   layers: { objects: mapList.flatMap((m) => m.layers.objects) },
 };
-const trials = load('data/trials.json').trials;
+const trials = load('data/trials.json').trials.filter((t) => t.kind !== 'task');
 const callings = load('data/callings.json').callings;
 
 test('each dialogue is valid and has unique ids', () => {
@@ -42,7 +42,7 @@ test('each talk rule names a known dialogue', () => {
 });
 
 test('dialogue effects open only known screens', () => {
-  const screens = new Set(['trial', 'practice', 'lesson', 'rice', 'home', 'craft', 'vanmieu', 'nameFriend']);
+  const screens = new Set(['trial', 'practice', 'lesson', 'home', 'craft', 'vanmieu', 'nameFriend']);
   for (const d of dialogues) {
     for (const n of Object.values(d.nodes)) {
       const effects = [...(n.effects ?? []), ...(n.choices ?? []).flatMap((c) => c.effects ?? [])];

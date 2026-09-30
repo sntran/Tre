@@ -12,10 +12,10 @@
 //   { do: <command of the session> }         { wait: <seconds> }
 //   { until: { event, with, timeout } }      (an event after the last command)
 //   { at: { hour } }
-//   { tap: { cell: [x, y] } | { entity } | { thing } | { item: <kind> } | { plank: <size> } | { guess: <n> } |
+//   { tap: { cell: [x, y] } | { entity } | { thing } | { item: <kind>, size } | { plank: <size> } | { guess: <n> } |
 //          { zone } | { span } | { stem: <along> } | { line: <along> } | { hero: true } |
 //          { raid: 'gate' | 'bamboo' | <spot id> } | { post: 10 } (a post before the first shot) }
-//     (item: the first thing of a kind in a heap or a pile; plank: a plank of this size on a pile;
+//     (item: the first thing of a kind (and size) in a heap or a pile; plank: a plank of this size on a pile;
 //     zone: the middle of the zone of a task, or the gap of a span; span: the last plank on a
 //     span; stem: a place along the stem of the woodcutter; line: a place on the fish trap line)
 //   { shoot: { count: <n> } | { at: 'first' | <enemy id>, kind, off: <half blocks>, lead: <seconds> } }
@@ -110,17 +110,19 @@ export function tapTarget(session, spec) {
     return { target: { thing: e.id }, point: { x: m.x / 2, y: m.z / 2 } };
   }
   if (spec.item) {
-    // The first thing of this kind that lies in a heap or a pile.
+    // The first thing of this kind (and of this size, when the step gives one) that lies in a heap
+    // or a pile.
+    const of = (it) => it?.kind === spec.item && (spec.size === undefined || it.size === spec.size);
     for (const z of query(state, 'zone')) {
       if (z.zone.rule !== 'pile' && z.zone.rule !== 'heap') continue;
-      const id = z.zone.items.find((i) => getEntity(state, i)?.item.kind === spec.item);
+      const id = z.zone.items.find((i) => of(getEntity(state, i)?.item));
       if (id) {
         const e = getEntity(state, id);
         return { target: { thing: id }, point: { x: e.position.x / 2, y: e.position.z / 2 } };
       }
     }
     // A thing of this kind on the ground.
-    const loose = query(state, 'item', 'position').find((e) => e.item.kind === spec.item && !e.item.zone && !e.item.held && !e.hidden);
+    const loose = query(state, 'item', 'position').find((e) => of(e.item) && !e.item.zone && !e.item.held && !e.hidden);
     return loose ? { target: { thing: loose.id }, point: { x: loose.position.x / 2, y: loose.position.z / 2 } } : null;
   }
   if (spec.stem !== undefined) {

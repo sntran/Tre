@@ -112,6 +112,8 @@ export function person(look) {
   if (item === 'torch') parts.push(P('item', [0.25, 1.6, 0.25], 'wood', [0, hand[1] - 0.2, 0.3], { parent: 'armR' }), P('flame', [0.7, 0.8, 0.7], 'vermilion', [0, hand[1] - 1.3, 0.3], { parent: 'armR' }), P('core', [0.4, 0.5, 0.4], 'yellow', [0, hand[1] - 1.5, 0.3], { parent: 'armR' }));
   if (item === 'shield') parts.push(P('item', [0.3, 2.2, 2.2], 'indigo', [-0.3, hand[1] + 0.4, 0.5], { parent: 'armL' }), P('boss', [0.35, 0.6, 0.6], 'indigoPale', [-0.5, hand[1] + 0.4, 0.5], { parent: 'armL' }));
   if (item === 'trap') parts.push(P('item', [1.2, 0.4, 1.2], 'yellow', [0, hand[1] - 0.4, 0.5], { parent: 'armR' }));
+  // A tray of bowls of rice for Gióng.
+  if (String(item).startsWith('bowls-')) parts.push(P('item', [Number(item.slice(6)) * 0.5 + 0.4, 0.5, 1], 'wood', [0, hand[1] - 0.3, 0.6], { parent: 'armR' }), P('bowls', [Number(item.slice(6)) * 0.5, 0.4, 0.8], 'diep', [0, hand[1] + 0.05, 0.6], { parent: 'armR' }));
   // A thing of a trial in the hands.
   const carried = { ore: 'ash', bucket: 'wood', stake: 'ochre', sticks: 'green' }[String(item).replace(/-.*$/, '')] ?? (String(item).startsWith('herb-') ? 'greenPale' : null);
   if (carried) parts.push(P('item', item === 'stake' ? [0.35, 2, 0.35] : [0.9, 0.8, 0.9], carried, [0, hand[1] - 0.5, 0.5], { parent: 'armR' }));
@@ -452,6 +454,20 @@ export function workThing(look) {
 // The things of a raid (src/core/world/systems/raid.js). Units: half blocks.
 export function raidThing(look) {
   switch (look.kind) {
+    // A tray of bowls of rice (3 or 5 bowls in a row on a flat tray).
+    case 'bowls': {
+      const n = look.n ?? 3;
+      const parts = [P('tray', [n * 0.9 + 0.3, 0.2, 1.2], 'wood', [0, 0.1, 0]), P('rim', [n * 0.9 + 0.4, 0.12, 0.2], 'ochre', [0, 0.25, 0.55])];
+      for (let i = 0; i < n; i++) parts.push(P(`bowl${i}`, [0.7, 0.4, 0.7], 'diep', [(i - (n - 1) / 2) * 0.9, 0.4, 0]), P(`rice${i}`, [0.5, 0.15, 0.5], 'paper', [(i - (n - 1) / 2) * 0.9, 0.65, 0]));
+      return still(parts, 0.8);
+    }
+    // The pot of Gióng, with the bowls of the ten that is not full yet beside it (the ones).
+    case 'rice-pot': {
+      const n = look.n ?? 0;
+      const parts = [P('pot', [2, 1.6, 2], 'ink', [1, 0.8, 1]), P('rim', [2.2, 0.25, 2.2], 'ash', [1, 1.65, 1]), P('rice', [1.6, 0.2, 1.6], 'paper', [1, 1.75, 1])];
+      for (let i = 0; i < n; i++) parts.push(P(`bowl${i}`, [0.6, 0.35, 0.6], 'diep', [2.6 + (i % 5) * 0.75, 0.18 + Math.floor(i / 5) * 0.4, 0.3 + Math.floor(i / 5) * 0.2]));
+      return still(parts, 2);
+    }
     // A stone of the slingshot, and a rice ball for the creatures of the river.
     case 'riceball': return still([P('ball', [0.6, 0.55, 0.6], 'diep', [0, 0.28, 0]), P('top', [0.4, 0.15, 0.4], 'paper', [0, 0.58, 0]), P('leaf', [0.62, 0.2, 0.3], 'green', [0, 0.1, 0])], 0.6);
     case 'stone': return still([P('stone', [0.5, 0.45, 0.5], 'ash', [0, 0.22, 0]), P('top', [0.3, 0.12, 0.3], 'ashLight', [0.05, 0.47, 0.05]), P('chip', [0.2, 0.2, 0.2], 'ink', [-0.2, 0.15, 0.15])], 0.5);

@@ -8,6 +8,7 @@
 //     the space that the first two stakes show, to the end mark.
 //   basket (the healer): three kinds of herbs, the same number of each, in the basket.
 //   cut (the woodcutter): chalk marks on a bamboo stem, then equal sticks at the cut.
+//   feed (rice for Gióng): trays of 3 and 5 bowls to the pot; each ten bowls, Gióng grows.
 // Each commit is one skill event for the learner (the child never sees it). Units: half blocks
 // and seconds.
 import { byGrade } from '../grades.js';
@@ -96,3 +97,27 @@ export function trialSkill(task, { solved, efficient = solved, first, parts = []
     hintSeen: null,
   };
 }
+
+// Rice for Gióng: a tray of `size` bowls goes into the pot, which had `ones` bowls. Gióng eats each
+// full ten and grows one head (grew); the rest stays in the pot.
+export function feedResult(ones, size) {
+  const total = ones + size;
+  return { grew: Math.floor(total / 10), ones: total % 10 };
+}
+
+// The commit of one ten: the trays (parts) that went in after the last ten, and the bowls that
+// were in the pot then (start). Solved: the pot came to exactly ten. Efficient: solved with the
+// fewest trays of these sizes.
+export function tenResult(parts, start, sizes) {
+  const total = start + parts.reduce((a, b) => a + b, 0);
+  const solved = total === 10;
+  let fewest = Infinity;
+  const need = 10 - start;
+  for (let a = 0; a * sizes[0] <= need; a++) {
+    const rest = need - a * sizes[0];
+    if (sizes[1] && rest % sizes[1] === 0) fewest = Math.min(fewest, a + rest / sizes[1]);
+    if (!sizes[1] && rest === 0) fewest = Math.min(fewest, a);
+  }
+  return { solved, efficient: solved && parts.length === fewest, fewest, over: total - 10 };
+}
+
