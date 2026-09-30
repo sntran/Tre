@@ -1,5 +1,5 @@
 {
-  "_about": "The Five Trials of the prologue: work in the village, one task for each calling (src/core/world/trials.js and src/core/world/systems/work.js). The talk of the person starts the task in the world ({ open: 'trial', id }); the task is done when the world says so, and then the flag is set, the reward flies to the counters, and the person says the done line (dialogue <id>.trial.done). grades: the level of the task (1, 2, or 3) for the grade that the player gave (the nearest grade for others). levels: the numbers of the task at each level, and the skill that the task measures at that level (one skill event at each commit). places: the named places of the map (layers.places) where the things of the task lie. Units: half blocks (one map cell is 2) and seconds. No numeral is shown in the world; a person says a number in words (the key num.<n>).",
+  "_about": "The Five Trials of the prologue: work in the village, one task for each calling (src/core/world/trials.js and src/core/world/systems/work.js). The talk of the person starts the task in the world ({ open: 'trial', id }); the task is done when the world says so, and then the flag is set, the reward flies to the counters, and the person says the done line (dialogue <id>.trial.done). grades: the level of the task (1, 2, or 3) for the grade that the player gave (the nearest grade for others). levels: the numbers of the task at each level, and the skill that the task measures at that level (one skill event at each commit). The stakes of the fisher and the marks of the woodcutter are lengths on a line, as the planks of the bridge: they share the number-line skill of the bridge (math.add.20, the sum skill in data/world/zones.json). places: the named places of the map (layers.places) where the things of the task lie. Units: half blocks (one map cell is 2) and seconds. No numeral is shown in the world; a person says a number in words (the key num.<n>).",
   "grades": { "-1": 1, "0": 1, "1": 1, "2": 2, "3": 3 },
   "trials": [
     {
@@ -31,9 +31,9 @@
       "task": "stakes",
       "_task": "A fish trap: stakes in a row in the river, from the first stake to the end mark, before the tide comes in. The fisher puts the first two stakes, so the space between them shows the space of the row. The child carries stakes from the bank and puts each one on the line (it snaps to the half-block grid), and can take one back. When the tide comes in (tide: seconds after the start, and again after each tide), the row is the commit: no space between two stakes wider than the space of the row, and the last stake at the end mark. Then the tide goes out: the fish stay in the trap, or they swim out through the widest space. The fewest stakes is efficient.",
       "levels": [
-        { "space": 4, "gaps": 4, "tide": 80, "skill": "math.count.120", "level": 2 },
-        { "space": 3, "gaps": 5, "tide": 80, "skill": "math.add.20", "level": 1 },
-        { "space": 5, "gaps": 4, "tide": 70, "skill": "math.mul.10", "level": 1 }
+        { "space": 4, "gaps": 4, "tide": 80, "skill": "math.add.20", "level": 1 },
+        { "space": 3, "gaps": 5, "tide": 80, "skill": "math.add.20", "level": 2 },
+        { "space": 5, "gaps": 4, "tide": 70, "skill": "math.add.20", "level": 3 }
       ],
       "extra": 3,
       "places": { "stakes": "fisher-stakes", "line": "fisher-line" }
@@ -56,9 +56,9 @@
       "task": "cut",
       "_task": "A fallen bamboo stem lies on the ground (length). The woodcutter needs it in this many equal sticks (parts). A tap on the stem puts a chalk mark there (it snaps to the half-block grid), and a tap on a mark takes it away. A tap on the woodcutter cuts at the marks (the commit): equal sticks are tied into a bundle, and the child carries it to the wood pile by the bridge; sticks that are not equal break, and a new stem comes.",
       "levels": [
-        { "length": 8, "parts": 2, "skill": "math.shapes", "level": 1 },
-        { "length": 12, "parts": 3, "skill": "math.add.20", "level": 1 },
-        { "length": 12, "parts": 4, "skill": "math.div.10", "level": 1 }
+        { "length": 8, "parts": 2, "skill": "math.add.20", "level": 1 },
+        { "length": 12, "parts": 3, "skill": "math.add.20", "level": 2 },
+        { "length": 12, "parts": 4, "skill": "math.add.20", "level": 3 }
       ],
       "places": { "stem": "woodcutter-stem", "pile": "woodpile" }
     }

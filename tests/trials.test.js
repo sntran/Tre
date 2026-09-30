@@ -77,10 +77,18 @@ test('the woodcutter: the marks cut the stem into equal sticks, or not', () => {
   assert.equal(cutResult([3, 6, 9], 12, 3).solved, false, 'four sticks, not three');
 });
 
+test('the stakes of the fisher and the marks of the woodcutter share the number-line skill of the bridge', () => {
+  const bridge = load('data/world/zones.json').bridge.skills.sum;
+  for (const id of ['fisher', 'woodcutter']) {
+    assert.deepEqual(def(id).levels.map((l) => l.skill), [bridge, bridge, bridge], id);
+    assert.deepEqual(def(id).levels.map((l) => l.level), [1, 2, 3], `${id}: the level grows with the grade`);
+  }
+});
+
 test('a commit of a trial is one skill event with the skill of its level', () => {
   const task = taskOf(def('woodcutter'), 1);
   const ev = trialSkill(task, { solved: true, first: true, parts: [4, 4, 4], target: 12 });
-  assert.deepEqual([ev.skill, ev.level, ev.task, ev.solved, ev.efficient, ev.first, ev.evidence], ['math.add.20', 1, 'trial-woodcutter', true, true, true, true]);
+  assert.deepEqual([ev.skill, ev.level, ev.task, ev.solved, ev.efficient, ev.first, ev.evidence], ['math.add.20', 2, 'trial-woodcutter', true, true, true, true]);
   assert.equal(trialSkill(task, { solved: true, first: false }).efficient, false, 'a later success is not efficient');
   assert.equal(trialSkill(task, { solved: true, efficient: false, first: true }).efficient, false);
 });

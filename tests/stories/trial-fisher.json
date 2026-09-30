@@ -22,7 +22,7 @@
     { "tap": { "line": 16 } },
     { "until": { "event": "put", "timeout": 15 } },
     { "until": { "event": "tide", "timeout": 90 } },
-    { "expect": [{ "event": "skill", "with": { "skill": "math.count.120", "solved": false, "first": true, "parts": [4, 4, 8] } }] },
+    { "expect": [{ "event": "skill", "with": { "skill": "math.add.20", "solved": false, "first": true, "parts": [4, 4, 8] } }] },
     { "until": { "event": "escape", "timeout": 5 } },
     { "expect": [{ "entity": "fish:fisher", "look": "fish-out" }, { "flag": "trial.fisher.done", "is": false }] },
     { "wait": 4 },
