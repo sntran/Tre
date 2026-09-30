@@ -2,6 +2,7 @@
 // editor, and the export code. The area opens only after a parent holds a
 // button for 3 seconds and answers a question for adults.
 import { makeGateQuestion, checkGateAnswer, holdProgress } from '../core/parentgate.js';
+import { drawLearning } from './research.js';
 import { exportCode, importCode, SaveError, replacedBy } from '../core/save.js';
 import { gradeIds, gradeName } from '../core/grades.js';
 import { extendTime, remainingMs } from '../core/timelimit.js';
@@ -125,7 +126,7 @@ async function parentArea(ctx) {
     const panel = h('div', { class: 'panel parent' });
     const body = h('div');
     const close = () => { layer.remove(); resolve(); };
-    const tabs = ctx.profile ? ['progress', 'settings', 'questions', 'code'] : ['code'];
+    const tabs = ctx.profile ? ['progress', 'learning', 'settings', 'questions', 'code'] : ['code'];
     let tab = tabs[0];
     const tabBar = h('div', { class: 'tabs' });
     const drawTabs = () => {
@@ -142,6 +143,7 @@ async function parentArea(ctx) {
     const draw = () => {
       body.replaceChildren();
       if (tab === 'progress') drawProgress();
+      if (tab === 'learning') drawLearning(body, ctx);
       if (tab === 'settings') drawSettings();
       if (tab === 'questions') drawQuestions();
       if (tab === 'code') drawCode();

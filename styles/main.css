@@ -937,3 +937,15 @@ p { line-height: 1.45; margin: 0.4em 0; }
   opacity: 0.85;
   pointer-events: none;
 }
+/* The researcher view of the parent area: words and simple bars. */
+.research { display: grid; gap: 12px; }
+.research-block { padding: 8px 10px; border: 2px solid var(--ink); border-radius: 8px; background: var(--diep); }
+.research-block h4 { margin: 0 0 6px; }
+.research-block p { margin: 4px 0; }
+.bar-row { display: grid; grid-template-columns: minmax(90px, 32%) 1fr auto; gap: 8px; align-items: center; margin: 3px 0; }
+.bar-label { font-size: 14px; }
+.bar-track { position: relative; height: 12px; border: 1.5px solid var(--ink); border-radius: 3px; background: var(--paper); overflow: hidden; }
+.bar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--indigo); }
+.bar-band { position: absolute; top: 0; bottom: 0; border-left: 2px solid var(--vermilion); border-right: 2px solid var(--vermilion); }
+.bar-value { font-size: 13px; min-width: 56px; text-align: right; }
+.summary-text { width: 100%; min-height: 180px; font: 12px ui-monospace, Menlo, Consolas, monospace; }

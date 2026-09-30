@@ -242,6 +242,7 @@ const FILES = [
   'src/ui/question.js',
   'src/ui/quiz.js',
   'src/ui/registry.js',
+  'src/ui/research.js',
   'src/ui/rest.js',
   'src/ui/speak.js',
   'src/ui/storage.js',
