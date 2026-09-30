@@ -398,3 +398,18 @@ test('the player names a friend; the texts use the chosen name', () => {
   bad.friendNames = { nghe: 42 };
   assert.throws(() => importCode(exportCode(bad)), (e) => e.reason === 'shape');
 });
+
+test('a thing that travels (the rest of the loot) goes to the next map in the hands; a plank stays', () => {
+  const hero = { id: 'hero', keep: true, position: { x: 10, y: 0, z: 10, facing: 0 }, hands: { holds: 'gift:1' }, carry: 'gift-1' };
+  const gift = { id: 'gift:1', keep: true, item: { kind: 'gift', held: 'hero', travels: true }, hidden: true, position: { x: 0, y: 0, z: 0 } };
+  const plank = { id: 'plank:1', keep: true, item: { kind: 'plank', held: null }, position: { x: 4, y: 0, z: 4 } };
+  const saved = { map: 'trau-son', entities: [hero, gift, plank] };
+  setHeroPlace(saved, 'phu-dong', 76, 30);
+  assert.deepEqual(saved.entities.map((e) => e.id), ['hero', 'gift:1']);
+  assert.equal(saved.entities[0].hands.holds, 'gift:1');
+  assert.deepEqual(saved.away['trau-son'].map((e) => e.id), ['plank:1']);
+  saved.entities[1].item.travels = false;
+  setHeroPlace(saved, 'trau-son', 2, 30);
+  assert.equal(saved.entities[0].hands.holds, null, 'a thing that does not travel stays with its map');
+  assert.deepEqual(saved.away['phu-dong'].map((e) => e.id), ['gift:1']);
+});

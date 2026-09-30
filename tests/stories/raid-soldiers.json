@@ -1,8 +1,8 @@
 {
   "name": "raid-soldiers",
   "about": {
-    "vi": "Lính Ân từ cánh đồng tới ngã tư: người làng ra đứng ở lá cờ rơm, một cái bẫy ở cột thứ ba bác thợ rèn nói, Nghé lao vào một lần, rồi bắn ná cho tới khi chúng lui.",
-    "en": "Ân soldiers come from the field to the crossroads: a villager at a straw flag, a trap at the third post that the smith names, Nghé charges once, and the slingshot turns them back."
+    "vi": "Lính Ân từ cánh đồng tới ngã tư: người làng ra đứng ở lá cờ rơm, một cái bẫy ở cột thứ ba bác thợ rèn nói, Nghé lao vào một lần, rồi bắn ná cho tới khi chúng lui. Rồi chia tiền, và đồng tiền lẻ về tay bác thợ rèn trong làng.",
+    "en": "Ân soldiers come from the field to the crossroads: a villager at a straw flag, a trap at the third post that the smith names, Nghé charges once, and the slingshot turns them back. Then the share of the loot, and the coin that is left goes back to the smith in the village."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 5, "flags": { "intro.seen": true, "giong.grown": true, "raid.tool.sling": true, "raid.tool.gate": true }, "items": { "coin": 5 } },
   "map": "trau-son",
@@ -66,6 +66,14 @@
     { "until": { "event": "happy", "timeout": 5 } },
     { "expect": [{ "event": "skill", "with": { "solved": true, "parts": [2, 2, 2] } }] },
     { "until": { "event": "gift", "timeout": 8 } },
-    { "expect": [{ "event": "gift", "with": { "give": { "coin": 2 } } }, { "entity": "mat:share-nghe", "gone": true }] }
+    { "expect": [{ "event": "gift", "with": { "give": { "coin": 2 } } }, { "entity": "mat:share-nghe", "gone": true }, { "text": { "shown": "share.rest" } }, { "hero": { "holding": true } }] },
+    { "read": true },
+    { "tap": { "cell": [0.6, 30] } },
+    { "until": { "event": "map", "with": { "map": "phu-dong" }, "timeout": 30 } },
+    { "wait": 1 },
+    { "expect": [{ "hero": { "map": "phu-dong", "holding": true } }] },
+    { "tap": { "entity": "npc:smith" } },
+    { "until": { "event": "gave", "timeout": 40 } },
+    { "expect": [{ "event": "gave", "with": { "to": "smith" } }, { "text": { "shown": "gift.thanks.smith" } }, { "hero": { "holding": false } }] }
   ]
 }

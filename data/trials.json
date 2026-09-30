@@ -86,7 +86,8 @@
     },
     {
       "id": "share", "kind": "task", "task": "share", "reward": {}, "who": ["hero", "nghe", "giong"],
-      "_task": "The loot after a won raid (loot in data/raids.json): a pile of coins behind the wall, and three mats: the basket of the hero, Nghé, and Gióng. The child carries coins from the pile to the mats, and from a mat back. When the hands are empty and the pile has fewer coins than friends, and the pile cannot even out the mats, the share is the commit: equal mats make all happy, and the coins of the hero go to the counter; if not, Nghé turns away and sulks until the share is fair. The rest in the pile stays for the village.",
+      "rest": { "elder": "gift.thanks.elder", "smith": "gift.thanks.smith", "mother": "gift.thanks.mother" },
+      "_task": "The loot after a won raid (loot in data/raids.json): a pile of coins behind the wall, and three mats: the basket of the hero, Nghé, and Gióng. The child carries coins from the pile to the mats, and from a mat back. When the hands are empty and the pile has fewer coins than friends, and the pile cannot even out the mats, the share is the commit: equal mats make all happy, and the coins of the hero go to the counter; if not, Nghé turns away and sulks until the share is fair. The rest in the pile (fewer coins than friends) becomes a small red cloth with the coins in the hands of the hero: the child carries it to the village, to one of the people of rest (the elder at the đình, the smith, or the mother of Gióng), and the person says one line of thanks. The cloth goes with the hero to other maps; nothing is scored.",
       "levels": [
         { "skill": "math.share.equal", "level": 1 },
         { "skill": "math.share.equal", "level": 2 },

@@ -48,16 +48,19 @@ export function heroPlace(saved) {
 export function setHeroPlace(saved, map, x, y) {
   const hero = saved.entities?.find((e) => e.id === 'hero');
   if (map !== saved.map) {
-    // A thing in the hands stays with its map; there it goes back to its pile.
-    if (hero?.hands?.holds) {
+    // A thing in the hands stays with its map; there it goes back to its pile. A thing that
+    // travels (the rest of the loot) goes with the hero.
+    const held = hero?.hands?.holds ? saved.entities.find((e) => e.id === hero.hands.holds) : null;
+    const carried = held?.item?.travels ? held : null;
+    if (hero?.hands?.holds && !carried) {
       hero.hands = { holds: null };
       delete hero.carry;
     }
     saved.away ??= {};
-    const others = (saved.entities ?? []).filter((e) => e.id !== 'hero');
+    const others = (saved.entities ?? []).filter((e) => e.id !== 'hero' && e !== carried);
     if (others.length) saved.away[saved.map] = others;
     else delete saved.away[saved.map];
-    saved.entities = [...(hero ? [hero] : []), ...(saved.away[map] ?? [])];
+    saved.entities = [...(hero ? [hero] : []), ...(carried ? [carried] : []), ...(saved.away[map] ?? [])];
     delete saved.away[map];
   }
   saved.map = map;

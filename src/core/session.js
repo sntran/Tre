@@ -35,7 +35,7 @@ import { currentGoal } from './quests.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
 import { createDialogue } from './dialogue.js';
 import { timeStatus, addPlayTime } from './timelimit.js';
-import { createWorldState, getEntity, query, removeEntity, command as worldCommand } from './world/state.js';
+import { createWorldState, getEntity, query, addEntity, removeEntity, command as worldCommand } from './world/state.js';
 import { step as worldStep, STEP } from './world/step.js';
 import { envFor, placesOf } from './world/env.js';
 import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns, addZones } from './world/populate.js';
@@ -125,7 +125,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       was.position.y = env.groundY(at.x, at.y);
     } else {
       if (was) state.entities.splice(state.entities.indexOf(was), 1);
-      addHero(state, env, { x: at.x, y: at.y, facing: params.facing ?? 0 });
+      const h = addHero(state, env, { x: at.x, y: at.y, facing: params.facing ?? 0 });
+      // A thing that travels (the rest of the loot) stays in the hands at the arrival.
+      if (was?.hands?.holds && getEntity(state, was.hands.holds)) {
+        h.hands.holds = was.hands.holds;
+        if (was.carry) h.carry = was.carry;
+      }
     }
     addLifeLayer(state, map, env, data.life);
     addLanterns(state, env);
@@ -529,6 +534,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // and the things of the share go away.
   function shareDone() {
     const coins = getEntity(state, 'zone:share-hero')?.zone.items.length ?? 0;
+    const rest = zoneOf('loot')?.zone.items.length ?? 0;
     if (coins) {
       applyEffects(profile, [{ give: { coin: coins } }]);
       emit({ type: 'gift', from: 'hero', give: { coin: coins }, delay: 0.3 });
@@ -539,9 +545,41 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     const friend = query(state, 'follow').find((f) => f.follow.target === 'hero');
     if (friend) delete friend.follow.goal;
+    if (rest) giveRest(rest);
     emit({ type: 'hud' });
     for (const id of shareAfter) talk(id);
     shareAfter = [];
+  }
+  // The rest of the loot: a red cloth with the coins goes into the hands of the hero. The child
+  // carries it to one of the people of the rest in the village (tapGift).
+  function giveRest(n) {
+    const h = hero();
+    const id = `gift:${state.tick}`;
+    const look = `gift-${Math.min(2, n)}`;
+    addEntity(state, { id, keep: true, item: { kind: 'gift', size: 1, task: 'gift', zone: null, held: 'hero', set: false, travels: true }, hidden: true, position: { ...h.position }, look });
+    h.hands.holds = id;
+    h.carry = look;
+    say('share.rest');
+  }
+  // A tap on a person of the rest with the cloth in the hands: the person takes it and says one
+  // line of thanks. Nothing is scored.
+  function tapGift(person) {
+    const held = getEntity(state, holding());
+    const key = held?.item.kind === 'gift' ? trialDef('share')?.rest?.[person.ref] : null;
+    if (!key) return false;
+    walkToThing(person, () => {
+      worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 });
+      const h = hero();
+      if (h.hands.holds !== held.id) return;
+      h.hands.holds = null;
+      delete h.carry;
+      removeEntity(state, held.id);
+      emit({ type: 'sound', sound: 'pickup' });
+      emit({ type: 'gave', id: person.entity, to: person.ref });
+      emit({ type: 'open', screen: 'callout', id: person.entity, textKey: key, params: { name: profile.hero.name } });
+      save('gift');
+    });
+    return true;
   }
   function raidOver() {
     const fig = raidEnc ? getEntity(state, raidEnc) : null;
@@ -728,7 +766,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const person = persons().find((p) => p.entity === target.person);
       if (!person || (person.kind === 'encounter' && raidOn())) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
-      if (person.kind === 'npc' && tapTrialPerson(person)) return;
+      if (person.kind === 'npc' && (tapGift(person) || tapTrialPerson(person))) return;
       walkToThing(person, () => interact({ kind: person.kind, id: person.ref }, person));
       return;
     }

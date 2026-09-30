@@ -132,6 +132,8 @@
     "staffs-6": { "kind": "sticks", "n": 6, "long": true },
     "coin": { "kind": "coin" },
     "share-mat": { "kind": "share-mat" },
+    "gift-1": { "kind": "gift", "n": 1 },
+    "gift-2": { "kind": "gift", "n": 2 },
     "chalk": { "kind": "chalk" },
     "sticks-2": { "kind": "sticks", "n": 2 },
     "sticks-3": { "kind": "sticks", "n": 3 },

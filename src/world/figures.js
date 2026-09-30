@@ -420,6 +420,12 @@ export function workThing(look) {
     }
     // An old coin of bronze with a square hole.
     case 'coin': return still([P('coin', [0.6, 0.12, 0.6], 'yellow', [0, 0.06, 0]), P('rim', [0.66, 0.08, 0.66], 'ochre', [0, 0.03, 0]), P('hole', [0.2, 0.14, 0.2], 'ink', [0, 0.07, 0])], 0.15);
+    // The rest of the loot on a red cloth, when the child puts it down on the way.
+    case 'gift': {
+      const parts = [P('cloth', [1.4, 0.08, 1.1], 'vermilion', [0, 0.04, 0]), P('knot', [0.3, 0.2, 0.3], 'vermilionPale', [0.6, 0.1, -0.45])];
+      for (let i = 0; i < look.n; i++) parts.push(P(`coin${i}`, [0.4, 0.12, 0.4], 'yellow', [(i - (look.n - 1) / 2) * 0.5, 0.14, 0]));
+      return still(parts, 0.2);
+    }
     // A small reed mat for a share of the loot.
     case 'share-mat': return still([P('mat', [2.2, 0.08, 2.2], 'yellowPale', [0, 0.04, 0]), P('edgeN', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, -1.05]), P('edgeS', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, 1.05])], 0.1);
     // A chalk mark across the stem.
