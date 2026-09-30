@@ -1,0 +1,36 @@
+{
+  "name": "staffs-bamboo",
+  "about": {
+    "vi": "Gậy tre cho trai làng: mỗi nhát chặt đứt cây tre ngay; bốn khúc không bằng nhau thì khúc ngắn gãy và có cây tre mới; bốn khúc bằng nhau thì buộc thành bó gậy.",
+    "en": "Bamboo staffs for the men of the village: each slash cuts the stem at once; with four pieces that are not equal, the short piece breaks and a new stem comes; with four equal pieces, the staffs tie into a bundle."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "trial.woodcutter.done": true, "giong.grown": true, "soldier1.won": true, "soldier2.won": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [48, 8],
+  "steps": [
+    { "tap": { "entity": "npc:woodcutter" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "dlg.woodcutter.staffs.n2" } }, { "entity": "stem:staffs:0", "look": "bamboo-12" }] },
+    { "tap": { "slash": 3 } },
+    { "until": { "event": "slash", "timeout": 30 } },
+    { "expect": [{ "entity": "stem:staffs:0", "look": "bamboo-3" }, { "entity": "stem:staffs:3", "look": "bamboo-9" }] },
+    { "tap": { "slash": 6 } },
+    { "until": { "event": "slash", "timeout": 20 } },
+    { "tap": { "slash": 8 } },
+    { "until": { "event": "snap", "timeout": 20 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "math.shapes", "solved": false, "first": true, "parts": [3, 3, 2, 4] } }, { "entity": "stem:staffs:6", "gone": true }, { "flag": "boss.staffs", "is": false }] },
+    { "until": { "event": "stem", "timeout": 5 } },
+    { "expect": [{ "entity": "stem:staffs:0", "look": "bamboo-12" }] },
+    { "tap": { "slash": 3 } },
+    { "until": { "event": "slash", "timeout": 20 } },
+    { "tap": { "slash": 6 } },
+    { "until": { "event": "slash", "timeout": 20 } },
+    { "tap": { "slash": 9 } },
+    { "until": { "event": "chop", "timeout": 20 } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "math.shapes", "solved": true, "first": false, "parts": [3, 3, 3, 3] } }, { "entity": "staffs:bamboo", "look": "staffs-4" }, { "flag": "boss.staffs" }, { "text": { "shown": "dlg.woodcutter.staffs.done.n1" } }] },
+    { "read": true }
+  ]
+}

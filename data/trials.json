@@ -75,6 +75,16 @@
       "places": { "ore": "horse-ore", "forge": "smith-forge", "anvil": "smith-anvil" }
     },
     {
+      "id": "staffs", "npc": "woodcutter", "kind": "task", "flag": "boss.staffs", "reward": {}, "doneTalk": "woodcutter.staffs.done", "task": "slash",
+      "_task": "Bamboo staffs for the men of the village before the general comes. A green bamboo stem lies by the north hedge (length, with a ring at each half block). A tap on the stem slashes it at the nearest ring, at once: no chalk, and no taking back. After the last slash (parts - 1), the pieces are the commit: equal pieces tie into a bundle of staffs; if not, the short piece breaks, and a new stem comes.",
+      "levels": [
+        { "length": 10, "parts": 2, "skill": "math.shapes", "level": 1 },
+        { "length": 12, "parts": 4, "skill": "math.shapes", "level": 2 },
+        { "length": 18, "parts": 6, "skill": "math.frac.unit", "level": 1 }
+      ],
+      "places": { "stem": "staffs-stem" }
+    },
+    {
       "id": "rice", "npc": "mother", "kind": "task", "flag": "giong.grown", "reward": {}, "doneTalk": "giong.grown",
       "task": "feed",
       "_task": "Rice for Gióng (not a trial of a calling: a task of the story). Trays of 3 and of 5 bowls of rice lie on the path of the paddies (trays: the sizes; each size has this many trays, and a tray that goes to the pot comes back full to the path). The child carries one tray at a time to the pot in front of the house of Gióng. Each ten bowls: Gióng eats and grows one head taller; the bowls over the ten stay in the pot (the ones), and his height shows the tens. The commit is each ten: solved when the pot comes to exactly ten, efficient with the fewest trays for it. The task is done when Gióng has grown this many heads.",

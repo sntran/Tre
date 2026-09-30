@@ -252,6 +252,18 @@
     {
      "when": {
       "flags": [
+       "soldier1.won",
+       "soldier2.won"
+      ],
+      "notFlags": [
+       "boss.staffs"
+      ]
+     },
+     "dialogue": "woodcutter.staffs"
+    },
+    {
+     "when": {
+      "flags": [
        "giong.spoke"
       ],
       "notFlags": [

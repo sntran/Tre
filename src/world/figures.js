@@ -441,16 +441,21 @@ export function workThing(look) {
     // A fallen bamboo stem, n half blocks long, along +z, with a node at each unit.
     case 'stem': {
       const parts = [];
-      // A fallen stem dries yellow, so that it stands out on the grass.
-      for (let i = 0; i < look.n; i++) parts.push(P(`seg${i}`, [1, 1, 1], i % 2 ? 'yellow' : 'yellowPale', [0, 0.5, i + 0.5]), P(`node${i}`, [1.1, 1.1, 0.14], 'ochre', [0, 0.5, i + 1]));
+      // A fallen stem dries yellow, so that it stands out on the grass; a cut stem is green, with
+      // a dark ring at each half block.
+      const [a, b, ring] = look.green ? ['green', 'greenPale', 'greenDeep'] : ['yellow', 'yellowPale', 'ochre'];
+      for (let i = 0; i < look.n; i++) parts.push(P(`seg${i}`, [1, 1, 1], i % 2 ? a : b, [0, 0.5, i + 0.5]), P(`node${i}`, [1.1, 1.1, 0.14], ring, [0, 0.5, i + 1]));
+      parts.push(P('end', [0.8, 0.8, 0.1], 'yellowPale', [0, 0.5, 0]));
       return still(parts, 0.8);
     }
     // A chalk mark across the stem.
     case 'chalk': return still([P('mark', [1.3, 0.08, 0.25], 'vermilion', [0, 0.45, 0]), P('dotA', [0.25, 0.4, 0.25], 'vermilion', [-0.65, 0.25, 0]), P('dotB', [0.25, 0.4, 0.25], 'vermilion', [0.65, 0.25, 0])], 0.5);
-    // Equal bamboo sticks tied into a bundle.
+    // Equal bamboo sticks (or staffs) tied into a bundle.
     case 'sticks': {
       const parts = [];
-      for (let i = 0; i < look.n; i++) parts.push(P(`stick${i}`, [0.45, 0.45, 2.4], 'green', [(i - (look.n - 1) / 2) * 0.5, 0.25 + (i % 2) * 0.1, 0]));
+      // Staffs for the men of the village are longer than sticks.
+      const long = look.long ? 3.6 : 2.4;
+      for (let i = 0; i < look.n; i++) parts.push(P(`stick${i}`, [0.45, 0.45, long], 'green', [(i - (look.n - 1) / 2) * 0.5, 0.25 + (i % 2) * 0.1, 0]));
       parts.push(P('band', [look.n * 0.5 + 0.2, 0.6, 0.3], 'vermilion', [0, 0.3, 0]));
       return still(parts, 0.7);
     }

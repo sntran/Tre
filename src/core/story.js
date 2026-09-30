@@ -13,11 +13,12 @@
 //   { until: { event, with, timeout } }      (an event after the last command)
 //   { at: { hour } }
 //   { tap: { cell: [x, y] } | { entity } | { thing } | { item: <kind>, size } | { plank: <size> } | { guess: <n> } |
-//          { zone } | { span } | { stem: <along> } | { line: <along> } | { hero: true } |
+//          { zone } | { span } | { stem: <along> } | { slash: <along> } | { line: <along> } | { hero: true } |
 //          { raid: 'gate' | 'bamboo' | <spot id> } | { post: 10 } (a post before the first shot) }
 //     (item: the first thing of a kind (and size) in a heap or a pile; plank: a plank of this size on a pile;
 //     zone: the middle of the zone of a task, or the gap of a span; span: the last plank on a
-//     span; stem: a place along the stem of the woodcutter; line: a place on the fish trap line)
+//     span; stem: a place along the stem of the woodcutter; slash: a place on the bamboo stem of
+//     the staffs; line: a place on the fish trap line)
 //   { shoot: { count: <n> } | { at: 'first' | <enemy id>, kind, off: <half blocks>, lead: <seconds> } }
 //     (the slingshot at the wall: a pull of n half blocks, or the count for an enemy of the raid
 //     (of this kind): off is how much farther (or nearer, below 0); lead: where the enemy will be
@@ -127,9 +128,16 @@ export function tapTarget(session, spec) {
   }
   if (spec.stem !== undefined) {
     // A place along the stem of the woodcutter (half blocks from its start).
-    const e = query(state, 'item', 'position').find((x) => x.item.kind === 'stem' && !x.hidden);
+    const e = query(state, 'item', 'position').find((x) => x.item.kind === 'stem' && x.item.task === 'trial-woodcutter' && !x.hidden);
     if (!e) return null;
     return { target: { thing: e.id, along: spec.stem }, point: { x: (e.position.x + spec.stem) / 2, y: e.position.z / 2 } };
+  }
+  if (spec.slash !== undefined) {
+    // A place on the bamboo stem of the staffs (half blocks from its start), on the piece there.
+    const e = query(state, 'item', 'position').find((x) => x.item.task === 'trial-staffs' && x.item.kind === 'stem' && spec.slash > x.item.from && spec.slash < x.item.from + x.item.size);
+    if (!e) return null;
+    const along = spec.slash - e.item.from;
+    return { target: { thing: e.id, along }, point: { x: (e.position.x + along) / 2, y: e.position.z / 2 } };
   }
   if (spec.line !== undefined) {
     // A place on the line of a fish trap (half blocks from the first stake).

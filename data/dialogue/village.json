@@ -306,6 +306,39 @@
    }
   },
   {
+   "id": "woodcutter.staffs",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "woodcutter",
+     "textKey": "dlg.woodcutter.staffs.n1",
+     "next": "n2"
+    },
+    "n2": {
+     "speaker": "woodcutter",
+     "textKey": "dlg.woodcutter.staffs.n2",
+     "effects": [
+      {
+       "open": "trial",
+       "id": "staffs"
+      }
+     ]
+    }
+   },
+   "mark": "legend"
+  },
+  {
+   "id": "woodcutter.staffs.done",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "woodcutter",
+     "textKey": "dlg.woodcutter.staffs.done.n1"
+    }
+   },
+   "mark": "legend"
+  },
+  {
    "id": "grandma.home",
    "start": "n1",
    "nodes": {

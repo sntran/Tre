@@ -113,3 +113,14 @@ test('the iron horse: the bellows light the fire only with the lumps that the sm
   for (const l of def.levels) assert.equal(l.ore, 6, 'the smith needs six lumps at each level');
   assert.ok(def.extra > 0, 'the heap has more lumps than the forge needs');
 });
+
+test('the bamboo staffs: each level cuts into equal staffs at the rings, and a wrong slash is not equal', () => {
+  const def = load('data/trials.json').trials.find((t) => t.id === 'staffs');
+  for (const l of def.levels) {
+    assert.equal(l.length % l.parts, 0, `${l.length} into ${l.parts}`);
+    const unit = l.length / l.parts;
+    const good = Array.from({ length: l.parts - 1 }, (_, i) => unit * (i + 1));
+    assert.ok(cutResult(good, l.length, l.parts).solved);
+    assert.ok(!cutResult([...good.slice(0, -1), good.at(-1) - 1], l.length, l.parts).solved, 'one slash a ring too near');
+  }
+});

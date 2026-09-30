@@ -121,6 +121,7 @@ A.places = {
     'healer-bed-3': {'x': 16.2, 'y': 21.4},
     'healer-basket': {'x': 17.6, 'y': 20.7},
     'woodcutter-stem': {'x': 25.0, 'y': 3.25},
+    'staffs-stem': {'x': 16.0, 'y': 2.75},
     'woodpile': {'x': 26.1, 'y': 30.2},
     # Rice for Gióng: the trays of bowls on the path of the paddies, and the pot in front of the
     # house of Gióng.
@@ -255,7 +256,7 @@ C.encounters = [
     {'id': 'soldier2', 'raid': 'soldier2', 'x': 12.5, 'y': 21.5, 'figure': 'soldier',
      'when': {'flags': ['giong.grown'], 'notFlags': ['soldier2.won']}},
     {'id': 'boss', 'raid': 'boss', 'x': 24.5, 'y': 8.2, 'figure': 'general',
-     'when': {'flags': ['soldier1.won', 'soldier2.won'], 'notFlags': ['era1.boss.won']}},
+     'when': {'flags': ['soldier1.won', 'soldier2.won', 'boss.staffs'], 'notFlags': ['era1.boss.won']}},
 ]
 C.life = [
     {'kind': 'duck', 'n': 2, 'x': 6.0, 'y': 5.8, 'r': 1.5},

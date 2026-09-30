@@ -247,6 +247,16 @@
      ]
     },
     {
+     "id": "staffs",
+     "goalKey": "quest.defend.staffs",
+     "done": {
+      "flags": [
+       "boss.staffs"
+      ]
+     },
+     "target": "woodcutter"
+    },
+    {
      "id": "boss",
      "goalKey": "quest.defend.boss",
      "done": {

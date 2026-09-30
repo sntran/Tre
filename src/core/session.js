@@ -287,6 +287,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (def.task === 'forge') out.ore = num(t.ore);
       if (def.task === 'basket') out.each = num(t.each);
       if (def.task === 'cut') out.parts = num(t.parts);
+      if (def.task === 'slash') out.staffs = num(t.parts);
       if (def.task === 'horse') out.lumps = num(t.ore);
     }
     return out;
@@ -350,7 +351,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (thing.item.kind === 'stem') {
       const at = along ?? thing.item.size / 2;
-      walkNear({ x: thing.position.x + at, z: thing.position.z - 2 }, () => work(trial, 'mark', { at }));
+      // A piece of the bamboo stem of the staffs slashes at once, at its place on the whole stem.
+      const act = tz.zone.task === 'slash' ? 'slash' : 'mark';
+      walkNear({ x: thing.position.x + at, z: thing.position.z - 2 }, () => work(trial, act, { at: at + (thing.item.from ?? 0) }));
       return true;
     }
     return false;
