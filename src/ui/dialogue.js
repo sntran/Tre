@@ -48,6 +48,60 @@ export function speakerName(ctx, speaker) {
   return t(`npc.${speaker}.name`);
 }
 
+// A dialogue box that shows the lines that come from elsewhere (the session of the village, or
+// runDialogue). line: { speaker, textKey, params, choices (text keys), mark }. next(): the child
+// goes on; choose(i): the child picks a choice.
+export function createDialogueBox(ctx, { next, choose }) {
+  const layer = h('div', { class: 'dialogue-layer' });
+  const box = h('div', { class: 'dialogue', role: 'dialog', 'aria-live': 'polite' });
+  layer.append(box);
+  ctx.ui.append(layer);
+  const openedAt = performance.now();
+  // The tap that opened the box can also send a click to the box. Ignore that click.
+  const early = () => performance.now() - openedAt < 400;
+
+  function show(line) {
+    box.replaceChildren();
+    const params = { ...ctx.textParams(), ...(line.params ?? {}) };
+    const text = tg(line.textKey, params);
+    const narrator = !line.speaker || line.speaker === 'narrator';
+    const voice = voiceOf(line.speaker, voiceData(ctx), ctx.profile);
+    if (line.mark) box.append(h('div', { class: `mark mark-${line.mark}`, text: t(`mark.${line.mark}`) }));
+    const face = portrait(ctx, line.speaker);
+    if (face) box.append(face);
+    const body = h('div', { class: 'dialogue-body' }, [
+      narrator ? null : h('div', { class: 'speaker', text: speakerName(ctx, line.speaker) }),
+      h('p', { class: narrator ? 'line narrator' : 'line', text }),
+    ]);
+    box.append(body);
+    const tools = h('div', { class: 'dialogue-tools' }, [
+      button(null, () => speak(line.textKey, params, { force: true, voice }), { cls: 'icon-btn', icon: 'ui/speak', aria: t('ui.listen') }),
+    ]);
+    box.append(tools);
+    const choices = line.choices ?? [];
+    if (choices.length) {
+      box.onclick = null;
+      const list = h('div', { class: 'choices' });
+      choices.forEach((key, i) => list.append(button(tg(key, params), () => choose(i), { cls: 'btn choice' })));
+      body.append(list);
+    } else {
+      tools.append(button(null, () => { if (!early()) next(); }, { cls: 'icon-btn next', icon: 'ui/back', aria: t('ui.next') }));
+      box.onclick = (e) => {
+        if (e.target.closest('button') || early() || selecting()) return;
+        next();
+      };
+    }
+    speak(line.textKey, params, { voice });
+  }
+
+  function close() {
+    stop();
+    layer.remove();
+  }
+
+  return { show, close };
+}
+
 // Show a dialogue. Return the list of commands ("open ...") from its effects.
 export function runDialogue(ctx, id) {
   const def = ctx.data.dialogues.get(id);
@@ -55,19 +109,10 @@ export function runDialogue(ctx, id) {
     console.warn(`Unknown dialogue ${id}`);
     return Promise.resolve([]);
   }
-  const state = conditionState(ctx.profile);
-  const runner = createDialogue(def, state);
+  const runner = createDialogue(def, conditionState(ctx.profile));
   const commands = [];
 
   return new Promise((resolve) => {
-    const layer = h('div', { class: 'dialogue-layer' });
-    const box = h('div', { class: 'dialogue', role: 'dialog', 'aria-live': 'polite' });
-    // The tap that opened the box can also send a click to the box. Ignore that click.
-    const openedAt = performance.now();
-    const early = () => performance.now() - openedAt < 400;
-    layer.append(box);
-    ctx.ui.append(layer);
-
     const apply = () => {
       const { commands: cmds, changes } = applyEffects(ctx.profile, runner.takeEffects(), { maxParty: ctx.data.game.battle.maxParty });
       for (const c of cmds) {
@@ -76,51 +121,17 @@ export function runDialogue(ctx, id) {
       }
       if (changes.flags.length || Object.keys(changes.items).length || changes.friends.length) ctx.save('dialogue');
     };
-
-    const finish = () => {
-      stop();
-      layer.remove();
-      resolve(commands);
-    };
-
+    let box = null;
     const show = (view) => {
       apply();
       if (!view) {
-        finish();
+        box?.close();
+        resolve(commands);
         return;
       }
-      box.replaceChildren();
-      const params = ctx.textParams();
-      const text = tg(view.textKey, params);
-      const narrator = !view.speaker || view.speaker === 'narrator';
-      if (runner.mark) box.append(h('div', { class: `mark mark-${runner.mark}`, text: t(`mark.${runner.mark}`) }));
-      const face = portrait(ctx, view.speaker);
-      if (face) box.append(face);
-      const body = h('div', { class: 'dialogue-body' }, [
-        narrator ? null : h('div', { class: 'speaker', text: speakerName(ctx, view.speaker) }),
-        h('p', { class: narrator ? 'line narrator' : 'line', text }),
-      ]);
-      box.append(body);
-      const tools = h('div', { class: 'dialogue-tools' }, [
-        button(null, () => speak(view.textKey, params, { force: true, voice: voiceOf(view.speaker, voiceData(ctx), ctx.profile) }), { cls: 'icon-btn', icon: 'ui/speak', aria: t('ui.listen') }),
-      ]);
-      box.append(tools);
-      if (view.choices.length) {
-        const list = h('div', { class: 'choices' });
-        view.choices.forEach((c, i) => {
-          list.append(button(tg(c.textKey, params), () => show(runner.next(i)), { cls: 'btn choice' }));
-        });
-        body.append(list);
-      } else {
-        tools.append(button(null, () => { if (!early()) show(runner.next()); }, { cls: 'icon-btn next', icon: 'ui/back', aria: t('ui.next') }));
-        box.onclick = (e) => {
-          if (e.target.closest('button') || early() || selecting()) return;
-          show(runner.next());
-        };
-      }
-      speak(view.textKey, params, { voice: voiceOf(view.speaker, voiceData(ctx), ctx.profile) });
+      box ??= createDialogueBox(ctx, { next: () => show(runner.next()), choose: (i) => show(runner.next(i)) });
+      box.show({ speaker: view.speaker, textKey: view.textKey, choices: view.choices.map((c) => c.textKey), mark: runner.mark });
     };
-
     show(runner.view());
   });
 }

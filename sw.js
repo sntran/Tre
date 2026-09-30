@@ -192,6 +192,7 @@ const FILES = [
   'src/core/review.js',
   'src/core/rng.js',
   'src/core/save.js',
+  'src/core/session.js',
   'src/core/skills.js',
   'src/core/solver.js',
   'src/core/tilemap.js',
