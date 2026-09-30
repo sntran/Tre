@@ -196,3 +196,16 @@ The country map is drawn by the code from real map data (`data/geo/vietnam.json`
 - **Roads and river ways of travel:** roads are dashes in `wood`, river ways are short dashes in `indigo`. The way to the chosen region is a thick `vermilion` line.
 - **The hero:** a small `vermilion` diamond at the real place of the map of the hero.
 - **Lines** keep the same width on the screen at every zoom.
+
+## 13. The raids
+
+The things of a raid are plain voxel figures (`raidThing` in `src/world/figures.js`, looks in `data/figures.json`), with flat colors of the palette:
+
+- **Distance posts:** a `wood` pole with an `ink` cap and one to four `vermilion` bands (5, 10, 15, 20 half blocks). No numeral.
+- **Traps:** a frame of `ochre` bamboo with `yellow` jaws and a `vermilion` spring; the jaws close when it snaps.
+- **The gate bar:** a `yellow` bamboo bar with a `vermilion` tie, up at the side or down across the way.
+- **Sources:** the jar (`ochre`, with `indigo-pale` water), the brazier (`ink`, with a `vermilion` and `yellow` flame), and the small forge (`ash`, with a rod and a `yellow` tip).
+- **Fire, stones, torches, wet ground:** a torch that burns on the road, a small `ash` stone, and wet ground as a flat `indigo-pale` pool.
+- **Poses and things in the hand:** a scout holds up a lit torch (the tell), a soldier raises an `indigo` shield, the general lifts his staff (no blades), an enemy on a trap sits, and Nghé lowers her horns.
+- **Marks over the world:** a row of dots over each enemy (`vermilion` for a hit that it can still take, `paper` for a hit taken), red dots that pop up at a hit, the band of the slingshot in `wood`, and its first arc as `ink` dots. An element on its way is a thick line in its color (`indigo` water, `vermilion` fire, dashed `yellow` lightning).
+

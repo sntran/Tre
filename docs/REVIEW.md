@@ -244,3 +244,15 @@ Total: 996 texts in each language.
 
 - A long tap walk through the village (for example from the north road to the west road of Phù Đổng) stops with the event `stuck` when a person stands on the way, and the hero waits there. The child can tap again. This was so before the stories; see question 60.
 - The Five Trials as work (#4): `dlg.teacher.trial.n1`, `dlg.smith.trial.n1`, `dlg.fisher.trial.n1`, `dlg.healer.trial.n1`, and `dlg.woodcutter.trial.n1` now say the work in words; the new `dlg.*.trial.done.n1` lines name the calling; `num.2` to `num.10` are the number words that the talks use. The old texts of the trial screens (`trial.title`, `trial.*.done`) are gone. Please check the names of the herbs (ngải cứu, tía tô, rau má) and the words đăng (a fish trap of stakes), phao, and lạt (a straw band).
+
+## 10. The raids
+
+The battle screen is gone, and its texts too (`battle.*` and `enemy.*`). New and changed texts for the raids (#5), in `i18n/vi.json` and `i18n/en.json`:
+
+- `raid.scouts.intro`, `raid.patrol.intro`, `raid.river.intro`, `raid.soldier.intro`, `raid.boss.intro`: the line before each raid. It tells where the enemies come from, with no rule and no numeral.
+- `raid.lost`: after a lost raid ("Quân giặc lấy một ít đồ rồi đi. Chúng có thể quay lại.").
+- `raid.boss.history`: the fact of history after the boss, now without the year (see question 74).
+- `raid.river.note`, `raid.scouts.note`, `raid.soldier.note`, `raid.boss.note`: the notes of the old battles, with the same text and a new name.
+
+Please check the words ngã tư (the crossroads), đuốc (a torch), bẫy (a trap), and cái ná (the slingshot), and whether "thuồng luồng con" reads well for a small river creature.
+

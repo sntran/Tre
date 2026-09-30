@@ -42,8 +42,8 @@ Positions are on the half-block grid: x to the east, z to the south (map y), y u
 | `look` | the key of the figure in `data/figures.json` (or `hero`) | the renderer |
 | `schedule` | `{ plan, home, spot, bed, stay, way, ... }`: the day of a person or an animal (plans in `data/world/people.json` and `data/world/life.json`) | schedule |
 | `hidden` | `true`: in a house, or gone (the owl by day) | schedule |
-| `act` | `sit`: the pose that a plan asks for (a hen in its coop) | schedule |
-| `carry` | `lantern`: a thing in the hand at night | schedule |
+| `act` | `sit`: the pose that a plan asks for (a hen in its coop); in a raid: `walk`, `sit`, `torch`, `sword`, `stunned`, and Nghé `charge` and `horns` | schedule, raid |
+| `carry` | `lantern`: a thing in the hand at night; in a raid: the `torch` of a scout, the `shield` of a soldier | schedule, raid |
 | `lantern` | `{ home, always }`: the lantern at the door of a house | lights |
 | `riding` | the id of the friend under the hero | input, move, follow, push |
 | `pushable` | `{ r }`: the hero on the back of Nghé can push it (the cart) | push |
@@ -56,6 +56,12 @@ Positions are on the half-block grid: x to the east, z to the south (map y), y u
 | `deck` | `{ zone }`: a part of the old deck of the broken bridge | place |
 | `guess` | `{ zone, n, left }`: the n-th plank outline of the prediction | place |
 | `why` | `{ zone }`: the marks of the empty part of a gap after a fall | place |
+| `raid` | the raid now (plain data from `src/core/world/raids.js`): its enemies, stones, torches, fires, wet ground, traps, spots, and phase. On the entity `raid`, which the save does not keep | raid |
+| `orders` | the orders of the child in a raid (shoot, bar, call, charge, pour, bamboo) for the raid system | input, raid |
+| `raider` | `{ kind, hits, max, shield, torch }`: an enemy of a raid, for the view | raid |
+| `source` | `{ id, kind }`: a source of an element in a raid (water, fire, lightning) | raid, the view |
+| `raidTap` | `{ what, id }`: a thing of a raid that takes a tap (the gate bar, a spot, the bamboo) | raid, the session |
+| `raidThing` | `true`: a thing of a raid; it goes away at the end of the raid | raid |
 | `keep` | `true`: the save keeps this entity | save |
 
 Helpers: `addEntity`, `removeEntity`, `getEntity`, `query(world, ...components)`, and `command(world, cmd)`. A few hundred entities do not need an index.
@@ -66,7 +72,7 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 
 `step(world, dt, env)` in `src/core/world/step.js` runs the systems in this order, 30 times a second:
 
-1. **input**: the commands go into the entities before anything moves (move, walk, stop, place, face, pause, stay, pet, ride, knock, aim, pick, put, drop, guess, work).
+1. **input**: the commands go into the entities before anything moves (move, walk, stop, place, face, pause, stay, pet, ride, knock, aim, pick, put, drop, guess, work, raid).
 2. **sky**: the light and the rain of this hour, and the river in the rain, so that the plans and the lanterns read them. It sends `dawn` and `dusk`. While the river is high (in the rain and until it is down, about one game hour after the rain), `sky.high` is true.
 3. **ground**: the cells that open and close in play, before anything moves. The broken bridge opens its old deck, the lane where the planks lie, and all of its deck when it is solid. A high river closes the ford, but not while somebody is in it. This system writes only the collision of `env` (`env.block`), never the state.
 4. **schedule**: the plan of the hour sets the goals of the people and the animals before anything moves: the spot, the well, the coop, the bank, and home (to the foot of the ladder, up, and in). The walk goes around houses and water on a path of cells. In the morning the mender (grandma) walks to each pot that the hero broke and sets a new one. 
@@ -76,11 +82,12 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 8. **follow**: after the hero moves, so that Nghé follows the new position without a step of lag. Nghé carries the hero who rides, steps back from a fire, is happy after a pet, and lies down beside the hero who rests at night. With a goal, Nghé walks to that point and takes a pose there (it stretches its neck toward the gap as a hint, looks at the hero beside the plank outlines, or pulls the hero out at the edge of the water). At a closed ford, Nghé stops at the edge and shakes its head.
 9. **place**: after the hero and Nghé move: the hands pick up, put down, and drop, and a span (the bridge) answers where the hero stands now (see "Placement" below).
 10. **work**: after the hands: the tasks of the Five Trials answer the work of the hands (a rod on the mat, a tie, the iron into the water, the basket to the healer, a chalk mark, a cut), and their timed parts go on (the glow of the iron, the tide). See `docs/TRIALS.md`.
-11. **push**: after the hero moves: on the back of Nghé the hero pushes the cart out of the way.
-12. **react**: after the hero moves, so that things react to where the hero is now, and before steering, so that a flight starts in the same step. Chickens flee a running hero, ducks and fish swim away, people turn, wave, and greet, the dog follows for a while, pots break and give a coin, and tall grass bends.
-13. **flock**: the pull of each flock (alignment with the near neighbors, cohesion to the middle of the flock, and the range of its place) goes into `steer.bias` before the animals move.
-14. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance).
-15. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits.
+11. **raid**: after the hands and Nghé: the orders of the child go to the raid (a shot, the gate bar, a villager to a spot, the charge of Nghé, an element, the bamboo), the enemies answer the traps on the road and the hero where the hero stands now, and the raid puts its enemies, stones, torches, fires, and wet ground into the world. The raid waits while the world waits. See `docs/RAIDS.md`.
+12. **push**: after the hero moves: on the back of Nghé the hero pushes the cart out of the way.
+13. **react**: after the hero moves, so that things react to where the hero is now, and before steering, so that a flight starts in the same step. Chickens flee a running hero, ducks and fish swim away, people turn, wave, and greet, the dog follows for a while, pots break and give a coin, and tall grass bends.
+14. **flock**: the pull of each flock (alignment with the near neighbors, cohesion to the middle of the flock, and the range of its place) goes into `steer.bias` before the animals move.
+15. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance).
+16. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits.
 
 Randomness comes only from the `rng` of the step. The same seed and the same commands give the same world.
 
