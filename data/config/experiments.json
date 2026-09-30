@@ -1,0 +1,41 @@
+{
+  "_about": "The switches that an experiment can change (src/core/experiments.js; docs/DESIGN.md, 'Learning measurement'). experiments: each experiment has its variants, and each variant gives the values of its switches; default is the variant that a profile gets when the experiment is not active. active: the name of the one experiment of this release, or null for none. A profile gets its variant of the active experiment from its seed, and the parent can change it. Every event of the learning log carries the variant ('base' when no experiment is active). Switches: predict (the prediction gesture before the first commit on a new gap), explore (the seconds of a free phase before a new task; 0 for none), hintsGated (hint levels three and four only when P(L) is low enough), target (the chance of success that the choice of the next task aims at), reviewDays (the days between reviews, box by box).",
+  "active": null,
+  "experiments": {
+    "predict": {
+      "default": "on",
+      "variants": {
+        "on": { "predict": true },
+        "off": { "predict": false }
+      }
+    },
+    "explore": {
+      "default": "none",
+      "variants": {
+        "none": { "explore": 0 },
+        "minute": { "explore": 60 }
+      }
+    },
+    "hints": {
+      "default": "gated",
+      "variants": {
+        "gated": { "hintsGated": true },
+        "always": { "hintsGated": false }
+      }
+    },
+    "target": {
+      "default": "80",
+      "variants": {
+        "80": { "target": 0.8 },
+        "85": { "target": 0.85 }
+      }
+    },
+    "review": {
+      "default": "doubling",
+      "variants": {
+        "doubling": { "reviewDays": [1, 2, 4, 8, 16, 32] },
+        "weeks": { "reviewDays": [1, 3, 7, 14, 30] }
+      }
+    }
+  }
+}
