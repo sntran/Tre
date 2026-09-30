@@ -119,7 +119,11 @@ export async function startApp(root) {
         if (voxel) voxel.hidden = true;
         // A session of play ends at the title (the child left) or at the rest screen (the time
         // limit of the parent), and starts again in a scene of play.
-        if (ctx.logger?.open && (name === 'title' || name === 'rest')) ctx.logger.endSession(name === 'rest' ? 'parent' : 'child', ctx.profile?.world?.map ?? null);
+        if (ctx.logger?.open && (name === 'title' || name === 'rest')) {
+          ctx.logger.endSession(name === 'rest' ? 'parent' : 'child', ctx.profile?.world?.map ?? null);
+          // The title loads the profile again from the store: save the end of the session now.
+          ctx.save('session');
+        }
         current = await MOUNT[name](ctx, params);
         if (ctx.logger && !ctx.logger.open && PLAY.has(name) && document.visibilityState !== 'hidden') ctx.logger.startSession();
       } finally {
