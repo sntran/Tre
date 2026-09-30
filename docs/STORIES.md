@@ -47,7 +47,8 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 | `{ "wait": 2 }` | The world goes on for two seconds. |
 | `{ "until": { "event": "put", "with": {...}, "timeout": 20 } }` | The world goes on until the event comes (after the last command). |
 | `{ "at": { "hour": 18.5 } }` | The world goes on until the next 18:30. |
-| `{ "tap": ... }` | A tap, as the scene sends it: `{ "cell": [x, y] }`, `{ "entity": id }`, `{ "plank": 4 }` (a plank of this size on a pile), `{ "guess": 3 }` (a plank outline), `{ "zone": id }` (the gap of a span), `{ "span": id }` (the last plank on a span), or `{ "hero": true }`. |
+| `{ "tap": ... }` | A tap, as the scene sends it: `{ "cell": [x, y] }`, `{ "entity": id }`, `{ "thing": id }`, `{ "item": "rod" }` (the first thing of a kind in a heap or a pile), `{ "plank": 4 }` (a plank of this size on a pile), `{ "guess": 3 }` (a plank outline), `{ "zone": id }` (the middle of the zone of a task, or the gap of a span), `{ "span": id }` (the last plank on a span), `{ "stem": 4 }` (a place along the stem of the woodcutter), `{ "line": 8 }` (a place on the line of the fish trap), or `{ "hero": true }`. |
+| `{ "repeat": 10, "steps": [...] }` | The steps, ten times. |
 | `{ "read": true }` | Reads the open talk to its end (the first choice at each choice, or the choices in a list: `{ "read": [1, 0] }`). |
 | `{ "reload": true }` | Saves the profile, loads it, and goes on with a new session. The loaded world must be the same. |
 | `{ "expect": [...] }` | Checks facts. |
@@ -104,3 +105,9 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `time-limit` | The time is over, but the rest waits until the hero leaves the bridge. |
 | `reactions` | A chicken flees, a villager greets, a pot gives a coin. |
 | `nghe` | Pet and ride Nghé; push the cart. |
+| `trial-scholar` | Rods on the mat, ten tie into a bundle, nine snap the band; the reward. |
+| `trial-smith` | Ore to the forge, water to the trough; the iron too early bends, while it glows it hardens. |
+| `trial-fisher` | Stakes in a row; a space too wide and the fish swim out; the full row keeps them. |
+| `trial-healer` | Three kinds of herbs; one too many and the basket comes back; the right number of each. |
+| `trial-woodcutter` | Chalk marks off the middle break the short stick; equal sticks go to the wood pile. |
+| `calling` | After the five trials, the elder opens the way to Văn Miếu. |

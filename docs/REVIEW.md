@@ -243,3 +243,4 @@ Total: 996 texts in each language.
 ## 9. Found by the stories
 
 - A long tap walk through the village (for example from the north road to the west road of Phù Đổng) stops with the event `stuck` when a person stands on the way, and the hero waits there. The child can tap again. This was so before the stories; see question 60.
+- The Five Trials as work (#4): `dlg.teacher.trial.n1`, `dlg.smith.trial.n1`, `dlg.fisher.trial.n1`, `dlg.healer.trial.n1`, and `dlg.woodcutter.trial.n1` now say the work in words; the new `dlg.*.trial.done.n1` lines name the calling; `num.2` to `num.10` are the number words that the talks use. The old texts of the trial screens (`trial.title`, `trial.*.done`) are gone. Please check the names of the herbs (ngải cứu, tía tô, rau má) and the words đăng (a fish trap of stakes), phao, and lạt (a straw band).
