@@ -9,7 +9,7 @@ import * as THREE from 'three';
 import { colorIndex, toneRgb, FACE_TONES } from '../world/voxel.js';
 import { figureOf } from '../world/figures.js';
 import { createAnimator, animate } from '../world/animate.js';
-import { detailFor, inView } from '../world/lod.js';
+import { detailFor, inView, lodFor } from '../world/lod.js';
 import { C } from './palette.js';
 
 // One unit of a fine figure is a quarter block; the coarse figures and the things keep a grid of
@@ -54,6 +54,36 @@ function partsMaterial() {
   });
 }
 
+// The material of the smooth parts (a low icosphere): the tone of each flat face comes from its
+// normal, as the tones of the faces of a box (the top lit, the sides darker), so that a ball is
+// drawn in the same three flat tones.
+function ballsMaterial() {
+  const ink = new THREE.Color(C.ink);
+  const T = FACE_TONES;
+  return new THREE.ShaderMaterial({
+    uniforms: { uInk: { value: new THREE.Vector3(ink.r, ink.g, ink.b) } },
+    vertexShader: `
+      varying vec3 vColor; varying vec3 vPos;
+      void main() {
+        vColor = instanceColor;
+        vec4 p = modelMatrix * instanceMatrix * vec4(position, 1.0);
+        vPos = p.xyz;
+        gl_Position = projectionMatrix * viewMatrix * p;
+      }`,
+    fragmentShader: `
+      uniform vec3 uInk;
+      varying vec3 vColor; varying vec3 vPos;
+      void main() {
+        vec3 n = normalize(cross(dFdx(vPos), dFdy(vPos)));
+        vec3 a = abs(n);
+        float tone = a.y >= a.x && a.y >= a.z ? (n.y > 0.0 ? ${T.py.toFixed(3)} : ${T.ny.toFixed(3)})
+          : a.x >= a.z ? (n.x > 0.0 ? ${T.px.toFixed(3)} : ${T.nx.toFixed(3)})
+          : (n.z > 0.0 ? ${T.pz.toFixed(3)} : ${T.nz.toFixed(3)});
+        gl_FragColor = vec4(vColor * tone + uInk * (1.0 - tone), 1.0);
+      }`,
+  });
+}
+
 // The layer of all figures. lookOf(key): the look of a key (see data/figures.json).
 // The pose that the act of an entity asks for (a raid: an enemy on a trap sits, a stunned general
 // kneels, the general lifts his staff; Nghé lowers her horns in a charge).
@@ -61,8 +91,9 @@ const WANTS = { sit: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shak
 
 // camera: the camera of the view (for the culling); without it, every figure draws. detail: one
 // level for all figures ('fine' or 'coarse', for the page of the figures); without it, the level
-// follows the distance from the hero.
-export function createFigureLayer(scene, lookOf, { camera = null, detail = null } = {}) {
+// follows the distance from the hero, and the line of that distance follows zoom() (the zoom level
+// of the camera).
+export function createFigureLayer(scene, lookOf, { camera = null, detail = null, zoom = () => 0 } = {}) {
   const box = unitBox();
   const plain = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PARTS), 1);
   box.setAttribute('plain', plain);
@@ -74,7 +105,13 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null 
   const shadows = new THREE.InstancedMesh(disc, new THREE.MeshBasicMaterial({
     color: new THREE.Color(C.ink), transparent: true, opacity: 0.32, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
   }), MAX_FIGURES);
-  for (const m of [parts, hulls, shadows]) {
+  // The smooth parts (the smooth heads of the comparison on docs/reference/figures.html): a low
+  // icosphere, and its ink outline. They draw only when a figure has them.
+  const ico = new THREE.IcosahedronGeometry(0.5, 1);
+  const balls = new THREE.InstancedMesh(ico, ballsMaterial(), MAX_FIGURES);
+  balls.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAX_FIGURES * 3), 3);
+  const ballHulls = new THREE.InstancedMesh(ico, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.ink), side: THREE.BackSide }), MAX_FIGURES);
+  for (const m of [parts, hulls, shadows, balls, ballHulls]) {
     m.frustumCulled = false;
     m.count = 0;
     scene.add(m);
@@ -116,7 +153,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null 
       (nodes[p.parent] ?? body).add(node);
       nodes[p.name] = node;
       if (!p.color) continue;
-      list.push({ node, size: p.size, pivotTop: p.pivotTop, mark: p.mark, rgb: toneRgb(colorIndex(p.color), 1) });
+      list.push({ node, size: p.size, pivotTop: p.pivotTop, mark: p.mark, ball: p.shape === 'ball', rgb: toneRgb(colorIndex(p.color), 1) });
     }
     const unit = figure.scale * grid;
     return { figure, root, body, nodes, parts: list, unit, hull: HULL / unit, height: figure.height * unit };
@@ -180,6 +217,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null 
     draw(t, dt) {
       let n = 0;
       let s = 0;
+      let o = 0;
       // The planes of the view, for the culling (plain numbers for src/world/lod.js).
       if (camera) {
         camera.updateMatrixWorld();
@@ -187,6 +225,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null 
         planes = frustum.planes.map((p) => ({ nx: p.normal.x, ny: p.normal.y, nz: p.normal.z, d: p.constant }));
       }
       const hero = [...figures.values()].find((f) => f.control)?.curr ?? null;
+      const lod = lodFor(zoom());
       for (const f of figures.values()) {
         const a = f.prev;
         const b = f.curr;
@@ -208,7 +247,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null 
         const pose = animate(f.anim, { speed: f.speed, dt, want: f.want });
         // The level of detail: fine near the hero, coarse far away (src/world/lod.js).
         const dist = hero ? Math.hypot(b.x - hero.x, b.z - hero.z) / 2 : 0;
-        f.detail = detail ?? detailFor(f.detail, dist);
+        f.detail = detail ?? detailFor(f.detail, dist, lod);
         const L = (f.levels[f.detail] ??= build(f.lookData, f.detail));
         f.height = L.height;
         // A figure out of the view draws nothing (and casts no shadow).
@@ -231,6 +270,14 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null 
           if (n >= MAX_PARTS) break;
           const [w, h, d] = p.size;
           m4.multiplyMatrices(p.node.matrixWorld, local.makeTranslation(0, p.pivotTop ? -h / 2 : 0, 0));
+          if (p.ball) {
+            if (o >= MAX_FIGURES) continue;
+            balls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
+            ballHulls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
+            balls.setColorAt(o, color.setRGB(p.rgb[0], p.rgb[1], p.rgb[2]));
+            o += 1;
+            continue;
+          }
           parts.setMatrixAt(n, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
           hulls.setMatrixAt(n, p.mark ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
           parts.setColorAt(n, color.setRGB(p.rgb[0], p.rgb[1], p.rgb[2]));
@@ -276,8 +323,13 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null 
       parts.count = n;
       hulls.count = n;
       shadows.count = s;
-      for (const m of [parts, hulls, shadows]) m.instanceMatrix.needsUpdate = true;
+      balls.count = o;
+      ballHulls.count = o;
+      balls.visible = o > 0;
+      ballHulls.visible = o > 0;
+      for (const m of [parts, hulls, shadows, balls, ballHulls]) m.instanceMatrix.needsUpdate = true;
       parts.instanceColor.needsUpdate = true;
+      balls.instanceColor.needsUpdate = true;
       plain.needsUpdate = true;
     },
     // A burst at a point (world units): 'splash' (drops of water) or 'dust' (a puff of dust, for
@@ -299,12 +351,13 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null 
       return f?.at ? { ...f.at, height: f.height } : null;
     },
     dispose() {
-      for (const m of [parts, hulls, shadows, dust, spray]) {
+      for (const m of [parts, hulls, shadows, dust, spray, balls, ballHulls]) {
         scene.remove(m);
         m.material.dispose();
         m.dispose();
       }
       box.dispose();
+      ico.dispose();
       disc.dispose();
       figures.clear();
     },

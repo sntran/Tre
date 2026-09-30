@@ -97,7 +97,7 @@ export async function mountVillage(ctx, params = {}) {
   if (!worlds.has(mapData.id)) worlds.set(mapData.id, D.createVoxelWorld(canvas, terrain));
   const view = worlds.get(mapData.id);
   const looks = data.figures.figures;
-  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero) : looks[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera });
+  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero) : looks[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level });
 
   // The height of the ground under a map point (world units).
   const groundY = (x, y) => columnTop(tileMap.heightAt(Math.floor(x), Math.floor(y)));

@@ -1,13 +1,16 @@
 // The fine people and animals: built on a grid of quarter blocks (FIGURE_UNIT 0.25), so that they
 // read as figures of a print and not as stacks of bricks. Pure data, no WebGL (the parts:
-// src/world/parts.js). Round where a print is round: a head is a stepped ball (three crossed
-// boxes and a core), the torso and the barrel of Nghé have their corners cut by one unit. Faces
+// src/world/parts.js). Round where a print is round: a head is a stepped ball of seven units, the
+// hair a cap two units thick that follows it, the torso has a waist and narrower shoulders, and
+// the barrel of Nghé has its corners cut by one unit. A smooth variant (smooth heads, for the
+// comparison on docs/reference/figures.html) keeps the same body. Faces
 // have eyes (a white and a dark dot), brows, a mouth, and cheeks. Legs bend at one joint (the
 // knee), and the feet lift at the heel. The coarse figures of src/world/figures.js are the far
 // level of detail.
 import { P, heldItem, shoulderPlank } from './parts.js';
 
-// A stepped ball of size s (w, h, d): three crossed boxes and a core, so that the corners are cut.
+// A small stepped ball of size (w, h, d): three crossed boxes and a core, so that the corners are
+// cut (the heads of the animals).
 function ball(name, [w, h, d], color, at, extra = {}) {
   const c = (k) => Math.max(1, k - 2);
   return [
@@ -23,18 +26,50 @@ function bevel(name, [w, h, d], color, at, extra = {}) {
   return [P(name, [w, h, d - 1], color, at, extra), P(`${name}B`, [w - 1, h, d], color, at, extra)];
 }
 
-// A face on the front of a head of size s: eyes (a white and a dark dot), brows, a mouth, and
-// cheeks. face: 1 to 4 (data/figures.json): 2 smiles, 3 has the eyes higher, 4 has a small open
-// mouth. A creature (Nghé) has no brows and no cheeks.
-function faceParts(face, s, skin, { brows = true, cheeks = true, z = s / 2 + 0.03 } = {}) {
+// A round head of seven units: a stepped ball whose layers are 7, 5, and 3 units wide (the middle
+// layer is a cross of 7 by 5 and 5 by 7, then 5 by 5 layers, then 3 by 3 caps), so that its outline
+// is round from every side. The front of the face is at z 3.5.
+export const HEAD = 7;
+function roundHead(color, extra) {
+  return [
+    P('skull', [7, 3, 5], color, [0, 0, 0], extra),
+    P('skullX', [5, 3, 7], color, [0, 0, 0], extra),
+    P('skullU', [5, 1, 5], color, [0, 2, 0], extra),
+    P('skullD', [5, 1, 5], color, [0, -2, 0], extra),
+    P('skullT', [3, 1, 3], color, [0, 3, 0], extra),
+    P('skullB', [3, 1, 3], color, [0, -3, 0], extra),
+  ];
+}
+
+// Hair as a cap two units thick that follows the round head (one unit out of it): a 3 by 3 top,
+// a 5 by 5 layer, a cross over the forehead, and the back and the sides down to the ears. No flat
+// top. The fringe stands out over the brows.
+function hairCap(color, extra) {
+  return [
+    P('hairT', [3, 1, 3], color, [0, 4, 0], extra),
+    P('hairU', [5, 1, 5], color, [0, 3, 0], extra),
+    P('hair', [7, 1, 5], color, [0, 2, -0.25], extra),
+    P('hairX', [5, 1, 7.5], color, [0, 2, 0], extra),
+    P('hairBack', [7, 3, 1], color, [0, 0, -4], extra),
+    P('hairSideL', [1, 3, 4], color, [-4, 0, -1.5], extra),
+    P('hairSideR', [1, 3, 4], color, [4, 0, -1.5], extra),
+    P('hairNape', [5, 1, 1], color, [0, -2, -3], extra),
+    P('fringe', [5, 1, 1], color, [0, 1.75, 3.8], extra),
+  ];
+}
+
+// A face on the front of a head: eyes (a white and a dark dot), brows, a mouth, and cheeks. face:
+// 1 to 4 (data/figures.json): 2 smiles, 3 has the eyes higher, 4 has a small open mouth. A creature
+// (Nghé) has no brows and no cheeks. z: the front of the head; ex: the half distance of the eyes.
+function faceParts(face, skin, { brows = true, cheeks = true, z = HEAD / 2 + 0.03, ex = 1.1 } = {}) {
   const out = [];
   const eyeY = face === 3 ? 0.5 : 0.1;
   const head = { parent: 'head', mark: true };
-  for (const [side, x] of [['L', -0.9], ['R', 0.9]]) {
+  for (const [side, x] of [['L', -ex], ['R', ex]]) {
     out.push(P(`eyeW${side}`, [0.9, 0.9, 0.05], 'diep', [x, eyeY, z], head));
     out.push(P(`eye${side}`, [0.45, 0.55, 0.06], 'ink', [x + (side === 'L' ? 0.15 : -0.15), eyeY - 0.05, z + 0.01], head));
     if (brows) out.push(P(`brow${side}`, [1, 0.25, 0.05], 'ink', [x, eyeY + 0.85, z], head));
-    if (cheeks) out.push(P(`cheek${side}`, [0.75, 0.45, 0.05], PALE[skin] ?? 'vermilionPale', [x * 1.35, -0.7, z], head));
+    if (cheeks) out.push(P(`cheek${side}`, [0.75, 0.45, 0.05], PALE[skin] ?? 'vermilionPale', [x * 1.55, -0.7, z], head));
   }
   if (face === 4) out.push(P('mouth', [0.6, 0.5, 0.05], 'vermilion', [0, -1.1, z], head));
   else out.push(P('mouth', [face === 2 ? 1.4 : 1, 0.25, 0.05], face === 2 ? 'vermilion' : 'ink', [0, -1.1, z], head));
@@ -43,28 +78,36 @@ function faceParts(face, s, skin, { brows = true, cheeks = true, z = s / 2 + 0.0
 // The pale tone of a skin (the cheeks).
 const PALE = { skin4: 'skin3', skin3: 'skin2', skin2: 'skin1', skin1: 'vermilionPale' };
 
+// The height (in blocks) of a person from the ground to the top of the hair, as the coarse person
+// (src/world/figures.js), so that both levels have the same size in the world.
+const TALL = { child: 2.34, adult: 2.87 };
+
 // A person. The same look as the coarse person (src/world/figures.js): { child, skin, top, bottom,
 // sash, bottomKind (shorts, skirt, trousers, robe), topKind (shirt, yem, bare, robe), hair,
-// hairColor, beard, hat (non, band, helmet, plume), item, face, scale }.
-export function personFine(look) {
+// hairColor, beard, hat (non, band, helmet, plume), item, face, scale }. smooth: the head and the
+// hair are smooth balls (for the comparison on docs/reference/figures.html).
+export function personFine(look, { smooth = false } = {}) {
   const child = Boolean(look.child);
   const skin = look.skin ?? 'skin2';
   const hairColor = look.hairColor ?? 'ink';
   const shin = child ? 2.5 : 3;
   const thigh = child ? 2.5 : 3;
   const hip = 1 + shin + thigh;
-  const bodyH = child ? 4 : 4;
-  const bodyW = child ? 4.5 : 5;
-  const bodyD = 3;
+  // The torso: as wide as the hips at the sash, a waist over the sash, and the chest one unit
+  // narrower up to the shoulders.
+  const bodyH = child ? 4.5 : 5.5;
+  const bodyW = child ? 5 : 6.5;
+  const bodyD = child ? 3.5 : 4;
+  const chestW = bodyW - 1;
   const shoulder = hip + bodyH;
-  const armLen = child ? 3.25 : 3.75;
-  const headS = 5;
-  const headY = shoulder + 0.5 + headS / 2;
+  const armLen = child ? 3.5 : 4.25;
+  const headY = shoulder + 0.75 + HEAD / 2;
+  const legX = child ? 1.25 : 1.5;
   const parts = [];
   const trousers = look.bottomKind === 'trousers';
   const covered = look.bottomKind === 'skirt' || look.bottomKind === 'robe';
   // Legs hang from the hips; the shin hangs from the knee, and the foot from the ankle.
-  for (const [side, x] of [['L', -1.25], ['R', 1.25]]) {
+  for (const [side, x] of [['L', -legX], ['R', legX]]) {
     const thighColor = trousers || look.bottomKind === 'shorts' ? look.bottom : skin;
     parts.push(P(`leg${side}`, [2, thigh, 2], thighColor, [x, hip, 0], { pivotTop: true }));
     parts.push(P(`shin${side}`, [1.75, shin, 1.75], trousers ? look.bottom : skin, [0, -thigh, 0], { parent: `leg${side}`, pivotTop: true }));
@@ -82,76 +125,82 @@ export function personFine(look) {
     parts.push(P('skirt', [bodyW + 0.5, h, bodyD + 0.5], look.bottom, [0, top - h / 2, 0]));
     parts.push(P('hemSkirt', [bodyW + 0.75, 0.5, bodyD + 0.75], look.bottom, [0, top - h + 0.25, 0]));
   }
-  // The body: cut corners, sloping shoulders, a collar line, and a sash with a tail.
+  // The body: hips, a waist, a chest with cut corners, sloping shoulders, a collar line, and a sash
+  // with a tail.
   const topColor = look.topKind === 'bare' || look.topKind === 'yem' ? skin : look.top;
-  parts.push(...bevel('torso', [bodyW, bodyH, bodyD], topColor, [0, hip + bodyH / 2, 0]));
-  parts.push(P('shoulders', [bodyW - 1.5, 0.75, bodyD - 0.5], topColor, [0, shoulder + 0.25, 0]));
-  parts.push(P('neck', [2, 1, 2], skin, [0, shoulder + 0.5, 0]));
+  const chestH = bodyH - 2.5;
+  parts.push(P('hips', [bodyW, 1.5, bodyD], topColor, [0, hip + 0.75, 0]));
+  parts.push(P('waist', [bodyW - 1.5, 1, bodyD - 0.5], topColor, [0, hip + 2, 0]));
+  parts.push(...bevel('torso', [chestW, chestH, bodyD], topColor, [0, hip + 2.5 + chestH / 2, 0]));
+  parts.push(P('shoulders', [chestW - 1.5, 0.75, bodyD - 1], topColor, [0, shoulder + 0.375, 0]));
+  parts.push(P('neck', [2.5, 1.25, 2.5], skin, [0, shoulder + 0.6, 0]));
   if (look.topKind === 'shirt' || look.topKind === 'robe') {
     parts.push(P('collarL', [0.3, 1.5, 0.05], 'ink', [-0.45, shoulder - 0.55, bodyD / 2 + 0.03], { mark: true }));
     parts.push(P('collarR', [0.3, 1.5, 0.05], 'ink', [0.45, shoulder - 0.55, bodyD / 2 + 0.03], { mark: true }));
   }
-  if (look.topKind === 'yem') parts.push(P('yem', [3, 3, 0.4], look.sash ?? 'vermilion', [0, hip + bodyH * 0.55, bodyD / 2 + 0.1]));
+  if (look.topKind === 'yem') parts.push(P('yem', [3, 3, 0.4], look.sash ?? 'vermilion', [0, hip + 2.5 + chestH / 2, bodyD / 2 + 0.1]));
   if (look.sash) {
-    parts.push(P('sash', [bodyW + 0.25, 1, bodyD + 0.25], look.sash, [0, hip + 0.5, 0]));
-    parts.push(P('sashTail', [0.75, 2.25, 0.5], look.sash, [bodyW / 2 - 0.75, hip - 0.9, bodyD / 2 + 0.2]));
+    parts.push(P('sash', [bodyW + 0.25, 1, bodyD + 0.25], look.sash, [0, hip + 0.75, 0]));
+    parts.push(P('sashTail', [0.75, 2.25, 0.5], look.sash, [bodyW / 2 - 0.75, hip - 0.65, bodyD / 2 + 0.2]));
   }
   // Arms hang from the shoulders; the sleeves of the áo hang over the hands.
   const sleeved = look.topKind === 'shirt' || look.topKind === 'robe';
-  for (const [side, x] of [['L', -(bodyW / 2 + 0.75)], ['R', bodyW / 2 + 0.75]]) {
+  for (const [side, x] of [['L', -(chestW / 2 + 0.75)], ['R', chestW / 2 + 0.75]]) {
     parts.push(P(`arm${side}`, [1.5, armLen, 1.5], sleeved ? look.top : skin, [x, shoulder - 0.25, 0], { pivotTop: true }));
     if (sleeved) parts.push(P(`cuff${side}`, [1.9, 1, 1.9], look.top, [0, -armLen + 0.5, 0], { parent: `arm${side}` }));
     parts.push(P(`hand${side}`, [1.25, 1.25, 1.25], skin, [0, -armLen - 0.4, 0], { parent: `arm${side}` }));
   }
-  // The head: a stepped ball, a face, hair as a volume, a hat.
-  parts.push(P('head', [0.01, 0.01, 0.01], null, [0, headY, 0]));
-  parts.push(...ball('skull', [headS, headS, headS], skin, [0, 0, 0], { parent: 'head' }));
-  parts.push(...faceParts(look.face ?? 1, headS, skin));
-  const hair = look.hair ?? 'short';
+  // The head: a round head of seven units, a face, hair as a cap, a hat.
   const onHead = { parent: 'head' };
+  parts.push(P('head', [0.01, 0.01, 0.01], null, [0, headY, 0]));
+  parts.push(...(smooth ? [P('skull', [HEAD, HEAD, HEAD], skin, [0, 0, 0], { ...onHead, shape: 'ball' })] : roundHead(skin, onHead)));
+  parts.push(...faceParts(look.face ?? 1, skin));
+  const hair = look.hair ?? 'short';
   if (hair !== 'bald') {
     const hc = hair === 'grey' ? 'ashLight' : hairColor;
-    // A stepped cap that follows the round head, a fringe over the brows, and the back.
-    parts.push(P('hair', [headS + 0.4, 1.5, headS + 0.4], hc, [0, headS / 2 - 1.15, 0], onHead));
-    parts.push(P('hairTop', [headS - 1.25, 0.75, headS - 1.25], hc, [0, headS / 2 - 0.05, 0], onHead));
-    parts.push(P('hairBack', [headS + 0.4, headS - 1.5, 1.25], hc, [0, -0.2, -headS / 2 + 0.4], onHead));
-    parts.push(P('fringe', [headS - 0.6, 0.75, 0.6], hc, [0, headS / 2 - 0.95, headS / 2 - 0.05], onHead));
-    if (hair === 'topknot') parts.push(P('knot', [1.75, 1.75, 1.75], hc, [0, headS / 2 + 0.95, -0.5], onHead));
-    if (hair === 'bun') parts.push(P('knot', [2.25, 2.25, 2.25], hc, [0, 1, -headS / 2 - 1], onHead));
-    if (hair === 'long') parts.push(P('tail', [1.5, 4, 1], hc, [0, -2.5, -headS / 2 - 0.4], onHead));
-    if (hair === 'braids') for (const s of [-1, 1]) parts.push(P(`braid${s}`, [1, 3.5, 1], hc, [s * (headS / 2 + 0.25), -2, -0.75], onHead));
-    if (hair === 'tufts') for (const s of [-1, 1]) parts.push(P(`tuft${s}`, [1.25, 1.25, 1.25], hc, [s * 1.1, headS / 2 + 0.75, 0.25], onHead));
+    // The smooth hair: a ball a little larger than the head, up and back, so that it covers the
+    // top, the back, and the forehead and leaves the face.
+    if (smooth) parts.push(P('hair', [8.4, 8, 8.4], hc, [0, 1, -1.2], { ...onHead, shape: 'ball' }));
+    else parts.push(...hairCap(hc, onHead));
+    if (hair === 'topknot') parts.push(P('knot', [2, 1.5, 2], hc, [0, 5.1, -0.5], onHead));
+    if (hair === 'bun') parts.push(P('knot', [2.5, 2.5, 2.5], hc, [0, 1.5, -5], onHead));
+    if (hair === 'long') parts.push(P('tail', [2, 5, 1.25], hc, [0, -3, -4.4], onHead));
+    if (hair === 'braids') for (const s of [-1, 1]) parts.push(P(`braid${s}`, [1.25, 4.5, 1.25], hc, [s * 4, -3, -1], onHead));
+    if (hair === 'tufts') for (const s of [-1, 1]) parts.push(P(`tuft${s}`, [1.5, 1.5, 1.5], hc, [s * 1.5, 5, 0.25], onHead));
   }
-  if (look.beard) parts.push(P('beard', [2.5, 2, 1], look.beard === true ? 'ashLight' : look.beard, [0, -headS / 2 - 0.5, headS / 2 - 0.5], onHead));
-  let hatTop = 1;
+  if (look.beard) parts.push(P('beard', [3.5, 2.5, 1.5], look.beard === true ? 'ashLight' : look.beard, [0, -3.25, 3], onHead));
+  const hairTop = hair === 'bald' ? HEAD / 2 : HEAD / 2 + 1;
+  let top = hairTop + (hair === 'topknot' ? 0.85 : 0);
   if (look.hat === 'non') {
-    // The nón lá: a stepped cone.
-    parts.push(P('hat', [7.5, 0.6, 7.5], 'yellowPale', [0, headS / 2 + 0.3, 0], onHead));
-    parts.push(P('hat2', [4.75, 0.6, 4.75], 'yellowPale', [0, headS / 2 + 0.9, 0], onHead));
-    parts.push(P('hat3', [2, 0.6, 2], 'yellowPale', [0, headS / 2 + 1.5, 0], onHead));
-    hatTop = 1.8;
+    // The nón lá: a stepped cone on the hair.
+    parts.push(P('hat', [10, 0.6, 10], 'yellowPale', [0, hairTop - 0.7, 0], onHead));
+    parts.push(P('hat2', [6.5, 0.6, 6.5], 'yellowPale', [0, hairTop - 0.1, 0], onHead));
+    parts.push(P('hat3', [3, 0.6, 3], 'yellowPale', [0, hairTop + 0.5, 0], onHead));
+    top = hairTop + 0.8;
   }
-  if (look.hat === 'band') parts.push(P('band', [headS + 0.6, 0.75, headS + 0.6], look.sash ?? 'vermilion', [0, 1, 0], onHead));
+  if (look.hat === 'band') parts.push(P('band', [9, 1, 9], look.sash ?? 'vermilion', [0, 1.8, 0], onHead));
   if (look.hat === 'helmet' || look.hat === 'plume') {
-    parts.push(P('helmet', [headS + 1, 2, headS + 1], 'ash', [0, headS / 2, 0], onHead));
-    hatTop = 1.5;
+    parts.push(P('helmet', [9, 2.5, 9], 'ash', [0, 3, 0], onHead), P('helmetTop', [5.5, 1, 5.5], 'ash', [0, 4.6, 0], onHead));
+    top = 5.1;
     if (look.hat === 'plume') {
-      parts.push(P('plume', [0.75, 2, 2], 'vermilion', [0, headS / 2 + 1.75, -0.5], onHead));
-      hatTop = 2.75;
+      parts.push(P('plume', [1, 2.5, 2.5], 'vermilion', [0, 6.2, -0.5], onHead));
+      top = 7.4;
     }
   }
   // Something in the hands, and a plank on the right shoulder.
   parts.push(...heldItem(look.item, (dx, dy, dz) => [dx * 2, dy * 2 + 0.5, dz * 2], 2, 'handR', 'handL'));
-  // A look with its own scale (Gióng grows) is in the scale of the coarse person: the same ratio.
-  const scale = look.scale ? look.scale * (child ? 0.58 / 0.6 : 0.67 / 0.66) : child ? 0.58 : 0.67;
-  parts.push(...shoulderPlank(look.item, 2 / scale, bodyW / 2 + 0.25, shoulder));
-  return { kind: 'biped', parts, scale, grid: 0.25, height: headY + headS / 2 + hatTop, shadow: 2.6 };
+  // The scale gives the size of the coarse person (a look with its own scale, as Gióng who grows,
+  // is in the scale of the coarse person: the same ratio).
+  const base = headY + hairTop;
+  const scale = (child ? TALL.child : TALL.adult) / (0.25 * base) * (look.scale ? look.scale / (child ? 0.6 : 0.66) : 1);
+  parts.push(...shoulderPlank(look.item, 2 / scale, chestW / 2 + 0.25, shoulder));
+  return { kind: 'biped', parts, scale, grid: 0.25, height: headY + top, shadow: 5 };
 }
 
 // Nghé, the buffalo calf: a stepped barrel, legs that bend at one joint, a head with a muzzle and
 // eyes, horns that curve in three steps, ears, and a tail with a tuft. The diagonal legs move
-// together. colors: { body, leg, horn, muzzle }.
-export function ngheFine(colors = {}) {
+// together. colors: { body, leg, horn, muzzle }. smooth: the head is a smooth ball.
+export function ngheFine(colors = {}, { smooth = false } = {}) {
   const body = colors.body ?? 'ashLight';
   const leg = colors.leg ?? 'ash';
   const horn = colors.horn ?? 'diep';
@@ -168,10 +217,11 @@ export function ngheFine(colors = {}) {
     parts.push(P(`hoof${n}`, [1.75, 0.75, 1.75], 'ink', [0, -2.4, 0.1], { parent: `shin${n}` }));
   }
   parts.push(P('head', [0.01, 0.01, 0.01], null, [0, 8, 4.5]));
-  parts.push(...ball('skull', [4, 4, 4], body, [0, 0, 1.5], { parent: 'head' }).slice(0, 3));
+  if (smooth) parts.push(P('skull', [4.5, 4.2, 4.5], body, [0, 0.1, 1.5], { parent: 'head', shape: 'ball' }));
+  else parts.push(...ball('skull', [4, 4, 4], body, [0, 0, 1.5], { parent: 'head' }).slice(0, 3));
   parts.push(P('muzzle', [3, 2, 1.75], muzzle, [0, -1, 3.75], { parent: 'head' }));
   for (const s of [-0.7, 0.7]) parts.push(P(`nostril${s > 0 ? 'R' : 'L'}`, [0.4, 0.4, 0.05], 'ink', [s, -0.8, 4.65], { parent: 'head', mark: true }));
-  parts.push(...faceParts(1, 4, body, { brows: false, cheeks: false, z: 3.53 }).filter((p) => p.name !== 'mouth').map((p) => ({ ...p, at: [p.at[0] * 1.2, p.at[1] + 0.6, p.at[2]] })));
+  parts.push(...faceParts(1, body, { brows: false, cheeks: false, z: 3.53, ex: 0.9 }).filter((p) => p.name !== 'mouth').map((p) => ({ ...p, at: [p.at[0] * 1.2, p.at[1] + 0.6, p.at[2]] })));
   // The horns curve out, up, and back, in three steps.
   for (const s of [-1, 1]) {
     const n = s > 0 ? 'R' : 'L';

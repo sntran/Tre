@@ -164,6 +164,9 @@ These questions need a person who knows Vietnamese history and geography. Until 
 
 81. **The frame cost on the phone.** The draw calls are the same as before (38 in the day story, 29 in the boss raid), and the culling keeps the triangles near what they were (138k against 147k in the day story, 82k against 80k in the boss raid). The browser here draws without a graphics card, so its frames each second (5 to 7, the same before and after) say nothing about a phone. Please check `?fps` on your phone in the village and in a raid.
 82. **The head.** The head is a stepped ball of five units, the same for a child and an adult, so that the child reads as a child by the body. Is the head too large on the adults (the elder, the smith, the general)?
+    - **Answer (owner):** the same head on adults and children is a print convention and it is fine, but the adults need shoulders to read as adults. Done: the head is a round ball of seven units, the hair a cap two units thick that follows it, and the torso has a waist and a chest one unit narrower than the hips; the adults have a wider torso. The figures page also compares smooth heads with the stepped ones, for the owner to choose.
 83. **The walk.** With the knee, the old swing of the legs read as a run, so a step is a little shorter now. Does the walk read as a walk at the speed of the game?
+    - **Answer (owner):** the shorter step is right. Keep the knee. Done: as it is.
 84. **The far level.** At 30 blocks the coarse figures take over. With the camera of the village, few figures are that far; in the country of later eras there are more. Is 30 blocks the right line, or should it follow the zoom of the camera?
+    - **Answer (owner):** the line follows the zoom: 30 blocks at the near zoom and 45 at the far zoom, with the same hysteresis. Done: `lodFor` in `src/world/lod.js`, from the zoom level of the camera.
 

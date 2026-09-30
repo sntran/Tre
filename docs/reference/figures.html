@@ -29,12 +29,16 @@
 <body>
   <header>
     <h1>The figures of Tre</h1>
-    <p>Every person and animal of the village, built on a grid of quarter blocks (<code>src/world/fine.js</code>). Each row: at rest and mid-step, from the front and at three-quarter; the last column is the far level (the coarse figure that the game draws for a figure more than about 30 blocks from the hero). The people are at their true size; the animals are drawn larger.</p>
+    <p>Every person and animal of the village, built on a grid of quarter blocks (<code>src/world/fine.js</code>). Each row: at rest and mid-step, from the front and at three-quarter; the last column is the far level (the coarse figure that the game draws for a figure far from the hero: 30 blocks at the near zoom, 45 at the far zoom). The people are at their true size; the animals are drawn larger.</p>
+    <p>The last sheet is a comparison for the owner: the same bodies, with the head and the hair as smooth low balls (an icosphere of level 1 in the flat tones, with the ink at the outline) in place of the stepped blocks. The game draws the stepped heads until the owner chooses.</p>
   </header>
   <h2>People</h2>
   <div class="sheet" id="people"></div>
   <h2>Animals</h2>
   <div class="sheet" id="animals"></div>
+  <h2>Stepped heads and smooth heads</h2>
+  <div class="sheet" id="smooth"></div>
+  <div class="sheet" id="smooth-nghe"></div>
   <script type="module">
     import * as THREE from 'three';
     import { createFigureLayer } from '../../src/render/figure3d.js';
@@ -58,16 +62,19 @@
     const STEP_DT = Math.PI / 2 / (4 * 1.9);
 
     // One sheet: rows of figures in one scene, drawn by the figure layer of the game.
+    // rows: keys, or { key, detail, label } (detail: 'fine' or 'smooth' for the first four columns).
     function sheet(el, rows, { px, cell, rowH }) {
+      rows = rows.map((r) => (typeof r === 'string' ? { key: r, detail: 'fine', label: r } : r));
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(C.paper);
       const fine = createFigureLayer(scene, lookOf, { detail: 'fine' });
+      const smooth = createFigureLayer(scene, lookOf, { detail: 'smooth' });
       const coarse = createFigureLayer(scene, lookOf, { detail: 'coarse' });
-      const worlds = { fine: { entities: [] }, coarse: { entities: [] } };
-      rows.forEach((key, r) => COLUMNS.forEach((col, c) => {
+      const worlds = { fine: { entities: [] }, smooth: { entities: [] }, coarse: { entities: [] } };
+      rows.forEach(({ key, detail }, r) => COLUMNS.forEach((col, c) => {
         // Positions are in half blocks (2 for each block).
-        const e = { id: `${key}:${c}`, look: key, position: { x: (c * cell + cell / 2) * 2, y: -r * rowH * 2, z: 0, facing: col.facing }, motion: { speed: col.step ? 8 : 0 } };
-        (col.coarse ? worlds.coarse : worlds.fine).entities.push(e);
+        const e = { id: `${key}:${detail}:${c}`, look: key, position: { x: (c * cell + cell / 2) * 2, y: -r * rowH * 2, z: 0, facing: col.facing }, motion: { speed: col.step ? 8 : 0 } };
+        worlds[col.coarse ? 'coarse' : detail].entities.push(e);
       }));
       const W = COLUMNS.length * cell;
       const H = rows.length * rowH;
@@ -83,7 +90,7 @@
       const tilt = 0.32;
       cam.position.set(0, Math.sin(tilt) * 20, Math.cos(tilt) * 20);
       cam.lookAt(0, 0, 0);
-      for (const [layer, world] of [[fine, worlds.fine], [coarse, worlds.coarse]]) {
+      for (const [layer, world] of [[fine, worlds.fine], [smooth, worlds.smooth], [coarse, worlds.coarse]]) {
         layer.sync(world);
         layer.draw(1, STEP_DT);
       }
@@ -97,14 +104,17 @@
         const p = toPx(c * cell + cell / 2, rowH * 0.85);
         el.append(Object.assign(document.createElement('div'), { className: 'col', textContent: col.name, style: `left:${p.x}px;top:${Math.max(0, p.y)}px` }));
       });
-      rows.forEach((key, r) => {
+      rows.forEach(({ label }, r) => {
         const p = toPx(0, -r * rowH + rowH * 0.3);
-        el.append(Object.assign(document.createElement('div'), { className: 'row-name', textContent: key, style: `left:4px;top:${p.y}px` }));
+        el.append(Object.assign(document.createElement('div'), { className: 'row-name', textContent: label, style: `left:4px;top:${p.y}px` }));
       });
     }
 
     sheet(document.getElementById('people'), ['hero (boy)', 'hero (girl)', 'grandma', 'mother', 'giong-boy', 'giong-boy-3', 'giong-hero', 'teacher', 'elder', 'socson-elder', 'messenger', 'smith', 'healer', 'woodcutter', 'fisher', 'scout', 'soldier', 'general'], { px: 44, cell: 4, rowH: 4.6 });
     sheet(document.getElementById('animals'), ['nghe', 'buffalo', 'dog', 'chicken', 'chicken-brown', 'duck', 'fish'], { px: 110, cell: 2.6, rowH: 2.4 });
+    const pair = (key) => [{ key, detail: 'fine', label: `${key}, stepped` }, { key, detail: 'smooth', label: `${key}, smooth` }];
+    sheet(document.getElementById('smooth'), [...pair('hero (boy)'), ...pair('mother'), ...pair('grandma')], { px: 70, cell: 4, rowH: 4.4 });
+    sheet(document.getElementById('smooth-nghe'), pair('nghe'), { px: 110, cell: 2.6, rowH: 2.4 });
     document.body.dataset.ready = '1';
   </script>
 </body>

@@ -1,9 +1,11 @@
 // The parts of a figure (src/world/figures.js and src/world/fine.js). Pure data, no WebGL. A part:
 // { name, size: [w, h, d], color, at: [x, y, z], parent, pivotTop, mark }. `at` is the place of the
 // part in its parent. A part with pivotTop hangs from its top (legs, arms), so a rotation swings it.
-// A mark is a flat mark with no ink outline (eyes, a mouth, a dot).
+// A mark is a flat mark with no ink outline (eyes, a mouth, a dot). shape: 'box' (the default), or
+// 'ball' (a low smooth mesh in the flat tones, for the smooth heads that the owner compares on
+// docs/reference/figures.html).
 
-export const P = (name, size, color, at, extra = {}) => ({ name, size, color, at, parent: extra.parent ?? 'body', pivotTop: Boolean(extra.pivotTop), mark: Boolean(extra.mark) });
+export const P = (name, size, color, at, extra = {}) => ({ name, size, color, at, parent: extra.parent ?? 'body', pivotTop: Boolean(extra.pivotTop), mark: Boolean(extra.mark), shape: extra.shape ?? 'box' });
 
 // The planks of the bridge have units in two tones.
 export const PLANK_TONES = Object.freeze(['yellowPale', 'ochre']);

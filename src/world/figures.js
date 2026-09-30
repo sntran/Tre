@@ -504,17 +504,19 @@ export function raidThing(look) {
 }
 
 // The figure of a look from data/figures.json. detail: 'fine' (the people and animals on a grid of
-// quarter blocks, src/world/fine.js) or 'coarse' (the parts of this file, for far figures). Things
-// have one level.
+// quarter blocks, src/world/fine.js), 'coarse' (the parts of this file, for far figures), or
+// 'smooth' (the fine figures with smooth heads: the people and Nghé, for the comparison on
+// docs/reference/figures.html). Things have one level.
 export function figureOf(look, detail = 'fine') {
-  const fine = detail === 'fine';
+  const fine = detail !== 'coarse';
+  const smooth = detail === 'smooth';
   const thing = workThing(look) ?? raidThing(look);
   if (thing) return thing;
   if (look.kind === 'plank') return plank(look.n);
   if (look.kind === 'plank-ghost') return plankGhost(Boolean(look.on));
   if (look.kind === 'gap') return gapMarks(look.n);
   if (look.kind === 'deck') return deck(look.n, look.w);
-  if (look.kind === 'nghe') return fine ? ngheFine() : nghe();
+  if (look.kind === 'nghe') return fine ? ngheFine({}, { smooth }) : nghe();
   if (look.kind === 'duck') return fine ? duckFine() : duck();
   if (look.kind === 'serpent') return serpent();
   if (look.kind === 'chicken') return fine ? chickenFine(look) : chicken(look);
@@ -527,5 +529,5 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'cart') return cart();
   if (look.kind === 'bird') return bird();
   if (look.kind === 'lantern') return lantern(Boolean(look.lit));
-  return fine ? personFine(look) : person(look);
+  return fine ? personFine(look, { smooth }) : person(look);
 }

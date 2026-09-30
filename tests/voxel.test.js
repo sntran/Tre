@@ -216,10 +216,23 @@ test('the fine figures: a quarter-block grid, the same size in the world, and pa
   const boy = personFine(heroLook({ gender: 'boy', skin: 3, face: 2, hair: 2, clothes: 2 }));
   assert.equal(boy.grid, 0.25);
   const names = new Set(boy.parts.map((p) => p.name));
-  for (const n of ['skull', 'skullY', 'skullZ', 'eyeWL', 'eyeL', 'browL', 'mouth', 'cheekL', 'handR', 'shinL', 'footL', 'toeLa', 'toeLb', 'knot', 'fringe', 'sashTail']) assert.ok(names.has(n), n);
-  // The head is a stepped ball: its boxes are not all the same size.
-  const head = boy.parts.filter((p) => p.name.startsWith('skull')).map((p) => p.size.join('x'));
-  assert.ok(new Set(head).size >= 3);
+  for (const n of ['skull', 'skullX', 'skullT', 'eyeWL', 'eyeL', 'browL', 'mouth', 'cheekL', 'handR', 'shinL', 'footL', 'toeLa', 'toeLb', 'knot', 'fringe', 'hairT', 'sashTail', 'waist']) assert.ok(names.has(n), n);
+  // The head is a ball of seven units: its layers are 7, 5, and 3 units wide, from the middle out,
+  // on both sides; the hair is a cap one unit out of it, with no flat top of the width of the head.
+  const skull = boy.parts.filter((p) => p.name.startsWith('skull'));
+  const widthAt = (y) => Math.max(...skull.filter((p) => Math.abs(p.at[1] - y) < p.size[1] / 2).map((p) => p.size[0]));
+  assert.deepEqual([widthAt(0), widthAt(2), widthAt(3)], [7, 5, 3]);
+  assert.equal(Math.max(...skull.map((p) => p.at[1] + p.size[1] / 2)), 3.5);
+  const hairTop = boy.parts.find((p) => p.name === 'hairT');
+  assert.ok(hairTop.size[0] < 7 && hairTop.at[1] - hairTop.size[1] / 2 >= 3.5, 'the top of the hair is round, over the head');
+  // The torso: the chest one unit narrower than the hips at the sash, and a waist.
+  const size = (n) => boy.parts.find((p) => p.name === n).size;
+  assert.equal(size('hips')[0] - size('torso')[0], 1);
+  assert.ok(size('waist')[0] < size('torso')[0]);
+  // The smooth variant: the head and the hair are balls on the same body.
+  const round = personFine(heroLook({ gender: 'boy', hair: 2 }), { smooth: true });
+  assert.deepEqual(round.parts.filter((p) => p.shape === 'ball').map((p) => p.name).sort(), ['hair', 'skull']);
+  assert.ok(round.parts.some((p) => p.name === 'waist'));
   // A thing in the hands hangs on the hand, not on the arm.
   const smith = figureOf({ ...looks.smith }, 'fine');
   assert.equal(smith.parts.find((p) => p.name === 'item').parent, 'handR');
@@ -244,6 +257,12 @@ test('the level of detail follows the distance with a small hysteresis, and the 
     assert.equal(level, 'coarse', `at ${d}`);
   }
   assert.equal(detailFor(level, LOD.near - 0.1), 'fine');
+  // The line follows the zoom: 30 blocks at the near zoom, 45 at the far zoom.
+  const { lodFor } = await import('../src/world/lod.js');
+  assert.equal(detailFor(null, 40, lodFor(0)), 'coarse');
+  assert.equal(detailFor(null, 40, lodFor(1)), 'fine');
+  assert.equal(detailFor('fine', 45.5, lodFor(1)), 'fine', 'the same hysteresis');
+  assert.equal(detailFor(null, 47, lodFor(1)), 'coarse');
   // A box view from -10 to 10 on x and z: a figure out of it is dropped; one on its edge stays.
   const planes = [
     { nx: 1, ny: 0, nz: 0, d: 10 }, { nx: -1, ny: 0, nz: 0, d: 10 },
