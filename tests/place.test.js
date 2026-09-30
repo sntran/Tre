@@ -6,7 +6,8 @@ import { step, STEP } from '../src/core/world/step.js';
 import { envFor, placesOf } from '../src/core/world/env.js';
 import { addHero, addFriend, addZones } from '../src/core/world/populate.js';
 import { saveWorld, loadWorld, setHeroPlace } from '../src/core/world/save.js';
-import { skillEvents, judge, minParts, isMashing, hasSweep, learnerRecord } from '../src/core/world/zones.js';
+import { skillEvents, judge, minParts, learnerRecord } from '../src/core/world/zones.js';
+import { isMashing, hasSweep } from '../src/core/learnlog.js';
 import { DAY_MINUTES } from '../src/core/world/clock.js';
 import { load } from './helpers.js';
 
@@ -118,9 +119,9 @@ test('what a commit gives the learner: efficient at the gap level, a long plan a
 
 test('the signs of mashing: choices too fast to count, a sweep of sizes, no pause after a failure', () => {
   const limits = zones.bridge.mash;
-  assert.ok(!isMashing({ thinks: [2, 3, 2.5], tries: [], pause: null }, limits));
-  assert.ok(isMashing({ thinks: [0.3, 0.4, 2], tries: [], pause: null }, limits), 'too fast');
-  assert.ok(isMashing({ thinks: [3, 3], tries: [], pause: 0.4 }, limits), 'no pause after a fall');
+  assert.ok(!isMashing({ latencies: [2, 3, 2.5], tries: [], pause: null }, limits));
+  assert.ok(isMashing({ latencies: [0.3, 0.4, 2], tries: [], pause: null }, limits), 'too fast');
+  assert.ok(isMashing({ latencies: [3, 3], tries: [], pause: 0.4 }, limits), 'no pause after a fall');
   assert.ok(hasSweep([{ slot: 2, size: 3 }, { slot: 2, size: 4 }, { slot: 2, size: 5 }]), 'three sizes in turn at one place');
   assert.ok(!hasSweep([{ slot: 0, size: 3 }, { slot: 1, size: 4 }, { slot: 2, size: 5 }]), 'three places is a bridge, not a sweep');
   assert.ok(!hasSweep([{ slot: 1, size: 5 }, { slot: 1, size: 3 }, { slot: 1, size: 4 }]));

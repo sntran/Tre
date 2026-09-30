@@ -199,35 +199,6 @@ export function learnerRecord(ev) {
   return { level: ev.level, correct: false };
 }
 
-// The signs of mashing in an attempt (rule 22 of the design): the choices come faster than a
-// child can count (the middle think time is short), the sizes at one place go through the sizes
-// in turn (a sweep), or there was no pause after a failure. attempt: { thinks: [seconds],
-// tries: [{ slot, size }], pause: seconds or null }. limits: { think, pause } in seconds.
-export function isMashing(attempt, limits) {
-  if (!attempt || !limits) return false;
-  const thinks = [...(attempt.thinks ?? [])].sort((a, b) => a - b);
-  if (thinks.length >= 2 && thinks[Math.floor((thinks.length - 1) / 2)] < limits.think) return true;
-  if (attempt.pause !== null && attempt.pause !== undefined && attempt.pause < limits.pause) return true;
-  return hasSweep(attempt.tries ?? []);
-}
-
-// A sweep: at one place in the span, the child tried three or more sizes in a row, each one
-// larger (or each one smaller) than the one before.
-export function hasSweep(tries) {
-  const run = [];
-  for (const t of tries) {
-    const last = run[run.length - 1];
-    if (last && last.slot !== t.slot) run.length = 0;
-    run.push(t);
-    const sizes = run.map((x) => x.size);
-    for (let i = 0; i + 2 < sizes.length; i++) {
-      const [a, b, c] = sizes.slice(i, i + 3);
-      if ((a < b && b < c) || (a > b && b > c)) return true;
-    }
-  }
-  return false;
-}
-
 // The collision of the cells of a span: the old deck at both ends, the lane where the things
 // cover it, or all of it when it is solid. covered: the length that the things cover.
 export function spanCells(zone, covered) {

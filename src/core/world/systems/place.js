@@ -24,8 +24,9 @@ import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { DAY_MINUTES } from '../clock.js';
 import { faceOf } from '../move.js';
 import {
-  REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, isMashing, sizesOf, sum, openRound, openGap, reachOf, oldDeck,
+  REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, sizesOf, sum, openRound, openGap, reachOf, oldDeck,
 } from '../zones.js';
+import { isMashing } from '../../learnlog.js';
 
 const TIP = 0.3; // seconds: the last plank dips under the hero
 const DROP = 0.35; // seconds: the hero falls into the water
@@ -226,7 +227,9 @@ function commit(world, zoneEnt, def, hero) {
   const parts = sizesOf(world, zone.items);
   const solved = sum(parts) === zone.gap;
   zone.commits += 1;
-  const mashing = isMashing(attemptOf(world, zone), def.mash);
+  const a = attemptOf(world, zone);
+  // The signs of mashing come from the learning log (rule 22).
+  const mashing = isMashing({ latencies: a.thinks, tries: a.tries, pause: a.pause }, def.mash);
   if (zone.guess === 'pending') endGuess(world, zoneEnt, null);
   if (zone.commits === 1) say(world, 'prediction', zoneEnt.id, { task: zone.task, gap: zone.gap, guess: zone.guess, used: parts.length, solved });
   const events = skillEvents(zone, def, parts, { solved, mashing });

@@ -1,0 +1,66 @@
+{
+  "_about": "The learning log (src/core/learnlog.js; docs/DESIGN.md, 'Learning measurement'). kinds: the fields of each kind of event. The kind of a field: time (milliseconds since 1970), id (a short id from the data of the game: a skill, a task, a map, a variant), bool, count (a whole number, 0 or more), number, prob (0 to 1), numbers (a list of at most 50 numbers), or a list of the allowed words. A kind with ? can also be null. Every event has the fields type, t (the time), and variant. No name, no free text, no picture, and no device information. maxEvents: the most raw events of one day; mastered: the P(L) of mastery (as in learning.json); band: the target band of first-try success (rule 15). summary: the fields that a shared summary may have, as paths with * for a key of a map.",
+  "version": 1,
+  "maxEvents": 2000,
+  "mastered": 0.95,
+  "band": [0.8, 0.9],
+  "shortHint": 1,
+  "kinds": {
+    "attempt": {
+      "task": "id",
+      "skill": "id",
+      "phase": ["explore", "commit"],
+      "success": "bool",
+      "efficient": "bool",
+      "first": "bool",
+      "mashing": "bool",
+      "parts": "numbers",
+      "resets": "count",
+      "latencies": "numbers",
+      "hint": "count",
+      "hintSeen": "number?",
+      "pBefore": "prob?",
+      "pAfter": "prob?",
+      "play": "number",
+      "retry": "bool",
+      "harder": "bool",
+      "map": "id?"
+    },
+    "session": {
+      "start": "time",
+      "end": "time",
+      "endedBy": ["device", "parent", "child"],
+      "quests": "count",
+      "place": "id?",
+      "afterQuest": "bool",
+      "first": ["walk", "place", "talk", "travel", "menu", "none"]
+    },
+    "review": {
+      "skill": "id",
+      "due": "time",
+      "gap": "number",
+      "result": "bool"
+    },
+    "exam": {
+      "skill": "id",
+      "correct": "bool",
+      "p": "prob"
+    },
+    "prediction": {
+      "task": "id",
+      "gap": "count",
+      "guess": "count?",
+      "used": "count",
+      "solved": "bool"
+    }
+  },
+  "summary": [
+    "v", "grade", "days", "variant",
+    "rollups.*.days",
+    "rollups.*.skills.*.commits", "rollups.*.skills.*.successes", "rollups.*.skills.*.efficient", "rollups.*.skills.*.firsts",
+    "rollups.*.skills.*.firstSuccesses", "rollups.*.skills.*.mashing", "rollups.*.skills.*.afterMash", "rollups.*.skills.*.hints",
+    "rollups.*.skills.*.hintsShort", "rollups.*.skills.*.explore", "rollups.*.skills.*.recent", "rollups.*.skills.*.curve",
+    "rollups.*.skills.*.masteredAt", "rollups.*.skills.*.retries", "rollups.*.skills.*.harder",
+    "rollups.*.reviews", "rollups.*.exams", "rollups.*.predictions", "rollups.*.sessions"
+  ]
+}
