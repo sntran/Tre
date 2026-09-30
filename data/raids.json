@@ -1,0 +1,122 @@
+{
+  "_about": "Raids: the defense of the village on the map, in light real time (src/core/world/raids.js and src/core/world/systems/raid.js). Places are in map cells [x, y]; lengths are in half blocks (one cell is 2) and times in seconds. sling: the slingshot (the angle in radians; the pull gives the speed). posts: the distance posts along the road from the wall. grades: the level of the raids (1, 2, or 3) for the grade that the player gave; at level 1 a lost raid takes nothing. gateBar: the seconds that the bar stays down (hold), and the rest before the next tap. skills: the skill of each kind of commit (shot: the first shot at an enemy, by level; correct: the next shot after a miss at the same enemy). enemies: speed (half blocks each second: they walk, never run), hits (the hits before the enemy retreats), trap (the seconds on a trap; 0: the enemy breaks the trap), torch (range from the gate, tell, every, fly), sword (reach, tell, every), shield (the seconds of the wet shield after fire), boss (it does not retreat; it stands stunned for the next phase), calm (a creature that becomes calm). raids: wall (where the hero stands with the slingshot; the posts count from here), gate (where the enemies stop), dir (the road from the wall out), bar (the gate has a bar), waves (at: seconds after the start of the phase, kind, from, side: half blocks to the side), phases (the boss), pile and traps (the bamboo traps by the gate), road (the part of the road for traps, from and to along the road), spots and helpers (the villagers that the child can call), sources (the elements to drag: water, fire, lightning), allow (the losses that still win), take (what an enemy at the gate takes), introKey (the line before the raid), win (flags, gifts, and talks after a win), repeat (the raid can come again).",
+  "sling": { "g": 20, "h0": 2.2, "vMax": 27, "angle": 0.7, "maxPull": 1, "hit": 1.5, "reload": 0.6, "preview": 0.28 },
+  "posts": [5, 10, 15, 20],
+  "grades": { "-1": 1, "0": 1, "1": 1, "2": 2, "3": 3 },
+  "gateBar": { "hold": 3, "rest": 1 },
+  "skills": {
+    "shot": [
+      { "first": "math.count.120", "correct": "math.count.120" },
+      { "first": "math.count.120", "correct": "math.add.20" },
+      { "first": "math.add.20", "correct": "math.add.20" }
+    ],
+    "near": 20,
+    "trap": { "skill": "math.count.120", "level": 1 },
+    "gate": { "skill": "math.count.120", "level": 1 },
+    "chain": { "skill": "sci.matter.states", "level": 1 }
+  },
+  "enemies": {
+    "scout": { "look": "scout", "speed": 1.0, "hits": 2, "trap": 4, "torch": { "range": 14, "tell": 2, "every": 8, "fly": 1.2, "first": 0 } },
+    "soldier": { "look": "soldier", "speed": 0.8, "hits": 2, "trap": 3, "shield": 5 },
+    "general": { "look": "general", "speed": 0.7, "hits": 3, "trap": 0, "boss": true, "sword": { "reach": 6, "tell": 2, "every": 6, "first": 0 } },
+    "serpent": { "look": "river-serpent", "speed": 0.9, "hits": 2, "trap": 0, "calm": true }
+  },
+  "raids": {
+    "scouts": {
+      "map": "phu-dong", "wall": [63, 29], "gate": [65, 29], "dir": [1, 0], "bar": true,
+      "waves": [
+        { "at": 0, "kind": "scout", "from": [78.6, 29] },
+        { "at": 7, "kind": "scout", "from": [78.6, 29] },
+        { "at": 18, "kind": "scout", "from": [78.6, 29] },
+        { "at": 26, "kind": "scout", "from": [78.6, 29] }
+      ],
+      "pile": [60.4, 26.4], "traps": 3, "road": { "from": 6, "to": 28 },
+      "spots": [[69, 27], [72, 31.2]], "helpers": 2,
+      "sources": [{ "id": "jar", "kind": "water", "at": [60.6, 32.6] }],
+      "allow": 1, "take": { "coin": 1 },
+      "introKey": "raid.scouts.intro",
+      "win": { "set": ["scouts.won"], "give": { "iron": 2, "coin": 2 }, "after": ["scouts.won"] }
+    },
+    "patrol": {
+      "map": "phu-dong", "wall": [63, 29], "gate": [65, 29], "dir": [1, 0], "bar": true, "repeat": true,
+      "waves": [
+        { "at": 0, "kind": "scout", "from": [78.6, 29] },
+        { "at": 9, "kind": "scout", "from": [78.6, 29] }
+      ],
+      "pile": [60.4, 26.4], "traps": 2, "road": { "from": 6, "to": 28 },
+      "spots": [[69, 27]], "helpers": 1,
+      "sources": [{ "id": "jar", "kind": "water", "at": [60.6, 32.6] }],
+      "allow": 1, "take": { "coin": 1 },
+      "introKey": "raid.patrol.intro",
+      "win": { "give": { "coin": 2, "bamboo": 1 } }
+    },
+    "river": {
+      "map": "phu-dong", "wall": [18, 67.5], "gate": [20.5, 67.5], "dir": [1, 0],
+      "waves": [
+        { "at": 0, "kind": "serpent", "from": [36, 67.5] },
+        { "at": 9, "kind": "serpent", "from": [36, 68.5], "side": 1 }
+      ],
+      "allow": 1, "take": {},
+      "introKey": "raid.river.intro",
+      "win": { "set": ["river.calmed"], "give": { "coin": 2 }, "after": ["river.song", "river.song.after"] }
+    },
+    "soldier1": {
+      "map": "trau-son", "wall": [25, 30], "gate": [25, 28], "dir": [0, -1],
+      "waves": [
+        { "at": 0, "kind": "soldier", "from": [25, 12] },
+        { "at": 3, "kind": "soldier", "from": [25, 12] },
+        { "at": 14, "kind": "soldier", "from": [25, 12] }
+      ],
+      "pile": [22.4, 32.6], "traps": 3, "road": { "from": 6, "to": 32 },
+      "spots": [[22.5, 25.5], [27.5, 20.5]], "helpers": 2,
+      "sources": [
+        { "id": "jar", "kind": "water", "at": [27.6, 32.6] },
+        { "id": "brazier", "kind": "fire", "at": [28.6, 27] },
+        { "id": "forge", "kind": "lightning", "at": [21, 27] }
+      ],
+      "allow": 1, "take": { "coin": 1 },
+      "introKey": "raid.soldier.intro",
+      "win": { "set": ["soldier1.won"], "give": { "coin": 3, "iron": 1 } }
+    },
+    "soldier2": {
+      "map": "trau-son", "wall": [25, 29.5], "gate": [25, 31.5], "dir": [0, 1],
+      "waves": [
+        { "at": 0, "kind": "soldier", "from": [25, 48] },
+        { "at": 3, "kind": "soldier", "from": [25, 48] },
+        { "at": 14, "kind": "soldier", "from": [25, 48] }
+      ],
+      "pile": [22.4, 27], "traps": 3, "road": { "from": 6, "to": 32 },
+      "spots": [[22.5, 35.5], [27.5, 40.5]], "helpers": 2,
+      "sources": [
+        { "id": "jar", "kind": "water", "at": [27.6, 27] },
+        { "id": "brazier", "kind": "fire", "at": [28.6, 32.6] },
+        { "id": "forge", "kind": "lightning", "at": [21, 32.6] }
+      ],
+      "allow": 1, "take": { "coin": 1 },
+      "introKey": "raid.soldier.intro",
+      "win": { "set": ["soldier2.won"], "give": { "coin": 3, "iron": 1 } }
+    },
+    "boss": {
+      "map": "trau-son", "wall": [27, 15], "gate": [29, 15], "dir": [1, 0], "companion": "giong",
+      "phases": [
+        { "id": "soldiers", "waves": [
+          { "at": 0, "kind": "soldier", "from": [46, 15] },
+          { "at": 4, "kind": "soldier", "from": [46, 15] },
+          { "at": 12, "kind": "soldier", "from": [46, 15] }
+        ] },
+        { "id": "general", "boss": "general", "waves": [{ "at": 2, "kind": "general", "from": [45, 15] }] },
+        { "id": "staff", "dialogue": "staff.breaks", "after": "bamboo.found", "bamboo": [26.4, 12.6] }
+      ],
+      "pile": [24.6, 17.8], "traps": 3, "road": { "from": 6, "to": 34 },
+      "spots": [[35, 12.5], [30, 17.5]], "helpers": 2,
+      "sources": [
+        { "id": "jar", "kind": "water", "at": [24.6, 12.4] },
+        { "id": "brazier", "kind": "fire", "at": [28.4, 17.6] },
+        { "id": "forge", "kind": "lightning", "at": [22.5, 15.5] }
+      ],
+      "allow": 99, "take": { "coin": 1 },
+      "introKey": "raid.boss.intro",
+      "win": { "set": ["era1.boss.won"], "give": { "coin": 10 }, "after": ["giong.north"] }
+    }
+  }
+}
