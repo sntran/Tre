@@ -877,8 +877,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const ev of events) {
       emit(ev);
       if (ev.id === 'sky') {
-        // At dawn the enemies of a lost raid come again.
-        if (ev.type === 'dawn') refreshPeople();
+        // At dawn the enemies of a lost raid come again, and the game saves the start of the day
+        // (a restore point for the parent).
+        if (ev.type === 'dawn') {
+          refreshPeople();
+          save('dawn');
+        }
         continue;
       }
       if (ev.id !== 'hero') {

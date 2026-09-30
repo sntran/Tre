@@ -140,7 +140,8 @@ export async function startApp(root) {
       ctx.logger?.checkQuests();
       ctx.profile.seenGloss = seenGlossList();
       const snapshot = ctx.profile;
-      saving = saving.then(() => saveProfile(snapshot)).catch((e) => console.error('Save failed', reason, e));
+      // The save at dawn is also a restore point for the parent.
+      saving = saving.then(() => saveProfile(snapshot, { dawn: reason === 'dawn' })).catch((e) => console.error('Save failed', reason, e));
       return saving;
     },
 

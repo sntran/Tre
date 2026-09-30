@@ -168,6 +168,7 @@ const FILES = [
   'src/core/profile.js',
   'src/core/quests.js',
   'src/core/rating.js',
+  'src/core/restore.js',
   'src/core/review.js',
   'src/core/rng.js',
   'src/core/save.js',
