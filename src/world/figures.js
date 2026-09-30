@@ -1,10 +1,12 @@
 // Characters made of parts (head, body, arms, legs) that rotate. Pure data, no WebGL: the
-// renderer makes one box for each part. A part: { name, size: [w, h, d], color, at: [x, y, z],
-// parent, pivotTop, mark }. `at` is the place of the part in its parent. A part with pivotTop
-// hangs from its top (legs, arms), so a rotation swings it. A mark is a flat ink mark (eyes).
-// Units: the figure before `scale`; the front of a figure is +z.
+// renderer makes one box for each part (the parts: src/world/parts.js). Units: the figure before
+// `scale`, on its `grid` (in blocks); the front of a figure is +z. This file has the coarse
+// figures (a grid of half blocks), which the renderer also draws for the people and animals far
+// from the hero; the fine people and animals (a grid of quarter blocks) are in src/world/fine.js.
+import { P, PLANK_TONES, heldItem, shoulderPlank } from './parts.js';
+import { personFine, ngheFine, buffaloFine, dogFine, chickenFine, duckFine, fishFine } from './fine.js';
 
-const P = (name, size, color, at, extra = {}) => ({ name, size, color, at, parent: extra.parent ?? 'body', pivotTop: Boolean(extra.pivotTop), mark: Boolean(extra.mark) });
+export { PLANK_TONES };
 
 // Clothes of the hero, from the choice at the start (1 to 4).
 const CLOTHES = {
@@ -94,40 +96,9 @@ export function person(look) {
   const eyeY = look.face === 3 ? 0.1 : 0;
   for (const ex of [-0.45, 0.45]) parts.push(P(`eye${ex > 0 ? 'R' : 'L'}`, [0.22, 0.3, 0.05], 'ink', [ex, eyeY, headS / 2 + 0.03], { parent: 'head', mark: true }));
   if (look.face === 2 || look.face === 4) parts.push(P('mouth', [0.5, 0.12, 0.05], 'vermilion', [0, -0.55, headS / 2 + 0.03], { parent: 'head', mark: true }));
-  // Something in the hand.
-  const item = look.item;
-  const hand = [0, -armH, 0.2];
-  // No sharp points or blades (docs/ART.md): soldiers carry blunt staffs.
-  if (item === 'staff') parts.push(P('item', [0.3, 6, 0.3], 'wood', [hand[0], hand[1] + 1.5, hand[2]], { parent: 'armR' }));
-  if (item === 'hammer') parts.push(P('item', [0.25, 1.8, 0.25], 'wood', [0, hand[1] - 0.4, 0.3], { parent: 'armR' }), P('head2', [0.9, 0.6, 0.6], 'ash', [0, hand[1] - 1.3, 0.3], { parent: 'armR' }));
-  if (item === 'axe') parts.push(P('item', [0.25, 2.2, 0.25], 'wood', [0, hand[1] - 0.5, 0.3], { parent: 'armR' }), P('blade', [0.2, 0.8, 0.8], 'ashLight', [0, hand[1] - 1.4, 0.7], { parent: 'armR' }));
-  if (item === 'net') parts.push(P('item', [1.4, 1.4, 0.2], 'paperDeep', [0, hand[1] - 0.6, 0.4], { parent: 'armR' }));
-  if (item === 'basket') parts.push(P('item', [1.3, 1, 1.3], 'ochre', [0, hand[1] - 0.4, 0.4], { parent: 'armR' }));
-  if (item === 'scroll') parts.push(P('item', [0.4, 1.4, 0.4], 'paper', [0, hand[1] - 0.3, 0.4], { parent: 'armR' }));
-  if (item === 'fan') parts.push(P('item', [1.2, 1.2, 0.15], 'yellowPale', [0, hand[1] - 0.5, 0.4], { parent: 'armR' }));
-  if (item === 'lantern') parts.push(P('item', [0.15, 1, 0.15], 'wood', [0, hand[1] - 0.2, 0.3], { parent: 'armR' }), P('lamp', [0.8, 0.9, 0.8], 'yellow', [0, hand[1] - 1.1, 0.3], { parent: 'armR' }));
-  if (item === 'drum') parts.push(P('item', [1.4, 1, 1.4], 'vermilion', [0, hand[1] - 0.2, 0.6], { parent: 'armR' }));
-  // A raid: the lit torch of a scout (the tell before the throw), the wet shield of a soldier on
-  // the left arm, and a trap of bamboo in the hands.
-  if (item === 'torch') parts.push(P('item', [0.25, 1.6, 0.25], 'wood', [0, hand[1] - 0.2, 0.3], { parent: 'armR' }), P('flame', [0.7, 0.8, 0.7], 'vermilion', [0, hand[1] - 1.3, 0.3], { parent: 'armR' }), P('core', [0.4, 0.5, 0.4], 'yellow', [0, hand[1] - 1.5, 0.3], { parent: 'armR' }));
-  if (item === 'shield') parts.push(P('item', [0.3, 2.2, 2.2], 'indigo', [-0.3, hand[1] + 0.4, 0.5], { parent: 'armL' }), P('boss', [0.35, 0.6, 0.6], 'indigoPale', [-0.5, hand[1] + 0.4, 0.5], { parent: 'armL' }));
-  if (item === 'trap') parts.push(P('item', [1.2, 0.4, 1.2], 'yellow', [0, hand[1] - 0.4, 0.5], { parent: 'armR' }));
-  // A tray of bowls of rice for Gióng.
-  if (String(item).startsWith('bowls-')) parts.push(P('item', [Number(item.slice(6)) * 0.5 + 0.4, 0.5, 1], 'wood', [0, hand[1] - 0.3, 0.6], { parent: 'armR' }), P('bowls', [Number(item.slice(6)) * 0.5, 0.4, 0.8], 'diep', [0, hand[1] + 0.05, 0.6], { parent: 'armR' }));
-  // A thing of a trial in the hands.
-  const carried = { ore: 'ash', bucket: 'wood', stake: 'ochre', sticks: 'green' }[String(item).replace(/-.*$/, '')] ?? (String(item).startsWith('herb-') ? 'greenPale' : null);
-  if (carried) parts.push(P('item', item === 'stake' ? [0.35, 2, 0.35] : [0.9, 0.8, 0.9], carried, [0, hand[1] - 0.5, 0.5], { parent: 'armR' }));
-  // A plank on the right shoulder, along the way the person looks, with its units and dots.
-  const plankOf = /^plank-(\d+)$/.exec(item ?? '');
-  if (plankOf) {
-    const n = Number(plankOf[1]);
-    const u = 1 / (look.scale ?? (child ? 0.6 : 0.66)); // one half block in the units of this figure
-    for (let i = 0; i < n; i++) {
-      const z = (i - n / 2 + 0.5) * u + u * 0.6;
-      parts.push(P(`plank${i}`, [u * 1.2, u * 0.5, u], PLANK_TONES[i % 2], [bodyW / 2 + 0.1, shoulder + 0.5, z]));
-      parts.push(P(`plankDot${i}`, [u * 0.35, 0.04, u * 0.35], 'vermilion', [bodyW / 2 + 0.1, shoulder + 0.5 + u * 0.26, z], { mark: true }));
-    }
-  }
+  // Something in the hand, and a plank on the right shoulder.
+  parts.push(...heldItem(look.item, (dx, dy, dz) => [dx, -armH + dy, dz], 1));
+  parts.push(...shoulderPlank(look.item, 1 / (look.scale ?? (child ? 0.6 : 0.66)), bodyW / 2 + 0.1, shoulder));
   const top = headY + headS / 2 + (look.hat === 'non' ? 1.1 : look.hat === 'plume' ? 1.7 : 0.8);
   return {
     kind: 'biped',
@@ -324,7 +295,6 @@ export function cart() {
 // A new plank for the bridge, n units long (one unit is one half block). The units are pale and
 // ochre in turn, with a red dot painted on each, so that the child sees the length and can count
 // it. The plank lies along +z from its position; its top is at 0.8.
-export const PLANK_TONES = Object.freeze(['yellowPale', 'ochre']);
 export function plank(n) {
   const parts = [];
   for (let i = 0; i < n; i++) {
@@ -533,26 +503,29 @@ export function raidThing(look) {
   }
 }
 
-// The figure of a look from data/figures.json.
-export function figureOf(look) {
+// The figure of a look from data/figures.json. detail: 'fine' (the people and animals on a grid of
+// quarter blocks, src/world/fine.js) or 'coarse' (the parts of this file, for far figures). Things
+// have one level.
+export function figureOf(look, detail = 'fine') {
+  const fine = detail === 'fine';
   const thing = workThing(look) ?? raidThing(look);
   if (thing) return thing;
   if (look.kind === 'plank') return plank(look.n);
   if (look.kind === 'plank-ghost') return plankGhost(Boolean(look.on));
   if (look.kind === 'gap') return gapMarks(look.n);
   if (look.kind === 'deck') return deck(look.n, look.w);
-  if (look.kind === 'nghe') return nghe();
-  if (look.kind === 'duck') return duck();
+  if (look.kind === 'nghe') return fine ? ngheFine() : nghe();
+  if (look.kind === 'duck') return fine ? duckFine() : duck();
   if (look.kind === 'serpent') return serpent();
-  if (look.kind === 'chicken') return chicken(look);
-  if (look.kind === 'fish') return fish();
-  if (look.kind === 'buffalo') return buffalo();
-  if (look.kind === 'dog') return dog();
+  if (look.kind === 'chicken') return fine ? chickenFine(look) : chicken(look);
+  if (look.kind === 'fish') return fine ? fishFine() : fish();
+  if (look.kind === 'buffalo') return fine ? buffaloFine() : buffalo();
+  if (look.kind === 'dog') return fine ? dogFine() : dog();
   if (look.kind === 'pot') return pot(Boolean(look.broken));
   if (look.kind === 'grass') return grass();
   if (look.kind === 'owl') return owl();
   if (look.kind === 'cart') return cart();
   if (look.kind === 'bird') return bird();
   if (look.kind === 'lantern') return lantern(Boolean(look.lit));
-  return person(look);
+  return fine ? personFine(look) : person(look);
 }

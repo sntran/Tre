@@ -1,4 +1,14 @@
 {
-  "_about": "Limits that the laws of the world check on every step of every story (src/core/story.js). entities: the most entities in the world state of one map (Phù Đổng has about 120).",
-  "entities": 400
+  "_about": "Limits of the game. entities: the most entities in the world state of one map (Phù Đổng has about 120); the laws of the world check it on every step of every story (src/core/story.js). figureParts: the most parts of one figure of each kind at the fine level of detail (src/world/fine.js); all parts of all figures draw as one instanced mesh, so the count is the cost.",
+  "entities": 400,
+  "figureParts": {
+    "biped": 64,
+    "quadruped": 48,
+    "fowl": 24,
+    "float": 16,
+    "fish": 12,
+    "serpent": 16,
+    "flyer": 8,
+    "still": 64
+  }
 }

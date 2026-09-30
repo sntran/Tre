@@ -2,16 +2,20 @@
 // Each entity with `position` and `look` gets a figure of parts (src/world/figures.js). All the
 // parts of all the figures are one InstancedMesh (one box for each part, with its matrix and its
 // color), their ink outlines are one more, and their shadows one more: three draw calls for all
-// the people and animals. The motion is smooth between two steps of the world.
+// the people and animals. The motion is smooth between two steps of the world. A figure near the
+// hero draws its fine version (a grid of quarter blocks, src/world/fine.js), a far one its coarse
+// version, and a figure out of the view draws nothing (src/world/lod.js).
 import * as THREE from 'three';
 import { colorIndex, toneRgb, FACE_TONES } from '../world/voxel.js';
 import { figureOf } from '../world/figures.js';
 import { createAnimator, animate } from '../world/animate.js';
+import { detailFor, inView } from '../world/lod.js';
 import { C } from './palette.js';
 
-// One unit of a figure is one half block (a block of the fine grid).
-export const FIGURE_UNIT = 0.5;
-const HULL = 0.14; // the ink outline around each part, in figure units
+// One unit of a fine figure is a quarter block; the coarse figures and the things keep a grid of
+// half blocks (the field `grid` of a figure, in blocks).
+export const FIGURE_UNIT = 0.25;
+const HULL = 0.046; // the ink outline around each part, in blocks (the same for both levels)
 const MAX_PARTS = 4096;
 const MAX_FIGURES = 512;
 const MAX_PUFFS = 64;
@@ -55,7 +59,8 @@ function partsMaterial() {
 // kneels, the general lifts his staff; Nghé lowers her horns in a charge).
 const WANTS = { sit: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns' };
 
-export function createFigureLayer(scene, lookOf) {
+// camera: the camera of the view (for the culling); without it, every figure draws.
+export function createFigureLayer(scene, lookOf, { camera = null } = {}) {
   const box = unitBox();
   const plain = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PARTS), 1);
   box.setAttribute('plain', plain);
@@ -92,13 +97,15 @@ export function createFigureLayer(scene, lookOf) {
   const tmp = new THREE.Matrix4();
   const color = new THREE.Color();
 
-  // A figure: a tree of plain three.js groups (no meshes) that gives the matrix of each part.
-  function build(look) {
-    const figure = figureOf(look);
+  // A figure at one level of detail: a tree of plain three.js groups (no meshes) that gives the
+  // matrix of each part.
+  function build(look, detail) {
+    const figure = figureOf(look, detail);
+    const grid = figure.grid ?? 0.5;
     const root = new THREE.Group();
     const body = new THREE.Group();
     root.add(body);
-    body.scale.setScalar(figure.scale * FIGURE_UNIT);
+    body.scale.setScalar(figure.scale * grid);
     const nodes = { body };
     const list = [];
     for (const p of figure.parts) {
@@ -109,8 +116,12 @@ export function createFigureLayer(scene, lookOf) {
       if (!p.color) continue;
       list.push({ node, size: p.size, pivotTop: p.pivotTop, mark: p.mark, rgb: toneRgb(colorIndex(p.color), 1) });
     }
-    return { figure, root, body, nodes, parts: list, anim: createAnimator(figure.kind), height: figure.height * figure.scale * FIGURE_UNIT };
+    const unit = figure.scale * grid;
+    return { figure, root, body, nodes, parts: list, unit, hull: HULL / unit, height: figure.height * unit };
   }
+  const frustum = new THREE.Frustum();
+  const view = new THREE.Matrix4();
+  let planes = null;
 
   const lerpAngle = (a, b, t) => {
     const d = ((((b - a + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
@@ -134,8 +145,11 @@ export function createFigureLayer(scene, lookOf) {
           f = null;
         }
         if (!f) {
-          f = build(lookOf(e.look, e.carry));
-          f.look = key;
+          f = { look: key, lookData: lookOf(e.look, e.carry), levels: {}, detail: null };
+          const coarse = figureOf(f.lookData, 'coarse');
+          f.anim = createAnimator(coarse.kind);
+          // The lift and the sink of a pose are in the units of the coarse figure.
+          f.poseUnit = coarse.scale * (coarse.grid ?? 0.5);
           f.curr = now;
           f.shownY = p.y;
           figures.set(e.id, f);
@@ -164,6 +178,13 @@ export function createFigureLayer(scene, lookOf) {
     draw(t, dt) {
       let n = 0;
       let s = 0;
+      // The planes of the view, for the culling (plain numbers for src/world/lod.js).
+      if (camera) {
+        camera.updateMatrixWorld();
+        frustum.setFromProjectionMatrix(view.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+        planes = frustum.planes.map((p) => ({ nx: p.normal.x, ny: p.normal.y, nz: p.normal.z, d: p.constant }));
+      }
+      const hero = [...figures.values()].find((f) => f.control)?.curr ?? null;
       for (const f of figures.values()) {
         const a = f.prev;
         const b = f.curr;
@@ -180,32 +201,42 @@ export function createFigureLayer(scene, lookOf) {
           }
         }
         f.at = { x: x / 2, y: f.shownY / 2, z: z / 2 };
-        f.root.position.set(f.at.x, f.at.y, f.at.z);
-        f.root.rotation.y = lerpAngle(a.facing, b.facing, t);
+        // The animation goes on for every figure, so that a figure that comes into the view is in
+        // step.
         const pose = animate(f.anim, { speed: f.speed, dt, want: f.want });
-        for (const [name, r] of Object.entries(pose.rot)) f.nodes[name]?.rotation.set(r[0], r[1], r[2]);
-        f.body.position.y = (pose.lift - pose.sink) * f.figure.scale * FIGURE_UNIT;
-        f.body.rotation.x = pose.lean + f.tilt;
-        f.body.rotation.z = 0;
+        // The level of detail: fine near the hero, coarse far away (src/world/lod.js).
+        const dist = hero ? Math.hypot(b.x - hero.x, b.z - hero.z) / 2 : 0;
+        f.detail = detailFor(f.detail, dist);
+        const L = (f.levels[f.detail] ??= build(f.lookData, f.detail));
+        f.height = L.height;
+        // A figure out of the view draws nothing (and casts no shadow).
+        if (planes && !inView(planes, { x: f.at.x, y: f.at.y + L.height / 2, z: f.at.z }, Math.max(1, L.height))) continue;
+        L.root.position.set(f.at.x, f.at.y, f.at.z);
+        L.root.rotation.y = lerpAngle(a.facing, b.facing, t);
+        for (const [name, r] of Object.entries(pose.rot)) L.nodes[name]?.rotation.set(r[0], r[1], r[2]);
+        L.body.position.y = (pose.lift - pose.sink) * f.poseUnit;
+        L.body.rotation.x = pose.lean + f.tilt;
+        L.body.rotation.z = 0;
         if (f.bend) {
           // Tall grass bends away from the hero (the direction is in the world; the figure turns).
-          const a = f.bend.dir - f.root.rotation.y;
-          f.body.rotation.x = Math.cos(a) * f.bend.amount * 0.9;
-          f.body.rotation.z = -Math.sin(a) * f.bend.amount * 0.9;
+          const a = f.bend.dir - L.root.rotation.y;
+          L.body.rotation.x = Math.cos(a) * f.bend.amount * 0.9;
+          L.body.rotation.z = -Math.sin(a) * f.bend.amount * 0.9;
         }
-        f.root.updateMatrixWorld(true);
-        for (const p of f.parts) {
+        L.root.updateMatrixWorld(true);
+        const hull = L.hull;
+        for (const p of L.parts) {
           if (n >= MAX_PARTS) break;
           const [w, h, d] = p.size;
           m4.multiplyMatrices(p.node.matrixWorld, local.makeTranslation(0, p.pivotTop ? -h / 2 : 0, 0));
           parts.setMatrixAt(n, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
-          hulls.setMatrixAt(n, p.mark ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + HULL, h + HULL, d + HULL)));
+          hulls.setMatrixAt(n, p.mark ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
           parts.setColorAt(n, color.setRGB(p.rgb[0], p.rgb[1], p.rgb[2]));
           plain.array[n] = p.mark ? 1 : 0;
           n += 1;
         }
-        if (f.figure.shadow && s < MAX_FIGURES) {
-          const r = Math.max(0.8, f.figure.shadow * f.figure.scale * FIGURE_UNIT * 1.6);
+        if (L.figure.shadow && s < MAX_FIGURES) {
+          const r = Math.max(0.8, L.figure.shadow * L.unit * 1.6);
           shadows.setMatrixAt(s++, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.04, f.at.z));
         }
       }

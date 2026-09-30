@@ -4,7 +4,10 @@
 // States: idle, walk, run, graze (four legs, after some idle time), rest (sit or lie down),
 // wave (a person waves an arm), swim (a float or a serpent in the water). want 'shake': Nghé
 // shakes its head (no); 'stretch': Nghé stretches its neck toward something; 'horns': Nghé
-// lowers its horns; 'lift': a person lifts the right arm high.
+// lowers its horns; 'lift': a person lifts the right arm high. The fine figures (src/world/fine.js)
+// have knees and feet: a knee bends while its leg swings through, the heel lifts behind, and the
+// head bobs a little with each step. The coarse figures have no shins and no feet, so these
+// rotations change nothing on them.
 
 export const GAIT = Object.freeze({ walk: 0.4, run: 5.5, graze: 1.6 });
 
@@ -44,6 +47,13 @@ export function animate(a, input) {
     // On the back of Nghé the legs go to the sides and stay still.
     rot.legL = riding ? [-0.6, 0, -0.5] : [sw - a.rest * 1.4, 0, 0];
     rot.legR = riding ? [-0.6, 0, 0.5] : [-sw - a.rest * 1.4, 0, 0];
+    // The knee of a leg behind bends as it swings through (a leg behind has a positive angle), and
+    // its heel lifts; the knees bend to sit and to ride.
+    const knee = (leg) => Math.max(0, leg) * 1.2 + a.rest * 1.4 + (riding ? 0.9 : 0);
+    rot.shinL = [knee(sw), 0, 0];
+    rot.shinR = [knee(-sw), 0, 0];
+    rot.footL = [-Math.max(0, sw) * 0.5, 0, 0];
+    rot.footR = [-Math.max(0, -sw) * 0.5, 0, 0];
     rot.armL = [-sw * 0.8, 0, 0];
     rot.armR = [sw * 0.8 - a.wave * 0.2, 0, -a.wave * (1.9 + Math.sin(a.time * 8) * 0.35)];
     // Lift: the arm with the staff goes up high (the general before a big blow).
@@ -52,7 +62,8 @@ export function animate(a, input) {
     lean = 0.08 * s;
     sink = a.rest * 1.2;
     const look = moving ? 0 : (input.lookAt ?? Math.sin(a.idle * 0.8) * 0.35 * Math.min(1, a.idle / 2));
-    rot.head = [0, look, 0];
+    // The head bobs a little with each step.
+    rot.head = [Math.sin(a.phase * 2) * 0.05 * s, look, 0];
   } else if (a.kind === 'quadruped') {
     // Diagonal legs move together: front left with back right, front right with back left.
     const sw = Math.sin(a.phase) * 0.6 * s;
@@ -61,6 +72,8 @@ export function animate(a, input) {
     rot.legBR = [sw + bend, 0, 0];
     rot.legFR = [-sw + bend, 0, 0];
     rot.legBL = [-sw + bend, 0, 0];
+    // The knee of a leg that swings forward bends; lying down, the shins fold under.
+    for (const n of ['FL', 'FR', 'BL', 'BR']) rot[`shin${n}`] = [Math.max(0, -rot[`leg${n}`][0] + bend) * 0.9 - a.rest * 2.4, 0, 0];
     rot.head = [a.graze * 0.75 + a.rest * 0.35 + Math.sin(a.time * 2.2) * 0.04, 0, 0];
     // Happy (after a pet): the tail wags fast, the head goes up, and a small hop.
     rot.tail = [0.3, 0, Math.sin(a.time * (happy ? 16 : 3.1)) * (happy ? 0.7 : 0.35)];

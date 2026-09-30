@@ -194,3 +194,77 @@ test('each person, enemy, friend, and duck of the maps has a look, and each look
     for (const p of fig.parts) if (p.color) colorIndex(p.color);
   }
 });
+
+test('the fine figures: a quarter-block grid, the same size in the world, and parts under the limits', async () => {
+  const { personFine, ngheFine } = await import('../src/world/fine.js');
+  const limits = load('data/config/limits.json').figureParts;
+  const looks = load('data/figures.json').figures;
+  for (const [id, look] of Object.entries(looks)) {
+    const fine = figureOf(look, 'fine');
+    const coarse = figureOf(look, 'coarse');
+    assert.ok(limits[fine.kind], `a limit for ${fine.kind}`);
+    assert.ok(fine.parts.length <= limits[fine.kind], `${id}: ${fine.parts.length} parts, over ${limits[fine.kind]}`);
+    // Far away the coarse figure takes its place: the same size in the world.
+    const size = (f) => f.height * f.scale * (f.grid ?? 0.5);
+    assert.ok(Math.abs(size(fine) - size(coarse)) < 0.15, `${id}: ${size(fine).toFixed(2)} and ${size(coarse).toFixed(2)} blocks`);
+    const all = new Set(['body', ...fine.parts.map((p) => p.name)]);
+    for (const p of fine.parts) {
+      assert.ok(all.has(p.parent), `${id}: ${p.name} hangs on ${p.parent}`);
+      if (p.color) colorIndex(p.color);
+    }
+  }
+  const boy = personFine(heroLook({ gender: 'boy', skin: 3, face: 2, hair: 2, clothes: 2 }));
+  assert.equal(boy.grid, 0.25);
+  const names = new Set(boy.parts.map((p) => p.name));
+  for (const n of ['skull', 'skullY', 'skullZ', 'eyeWL', 'eyeL', 'browL', 'mouth', 'cheekL', 'handR', 'shinL', 'footL', 'toeLa', 'toeLb', 'knot', 'fringe', 'sashTail']) assert.ok(names.has(n), n);
+  // The head is a stepped ball: its boxes are not all the same size.
+  const head = boy.parts.filter((p) => p.name.startsWith('skull')).map((p) => p.size.join('x'));
+  assert.ok(new Set(head).size >= 3);
+  // A thing in the hands hangs on the hand, not on the arm.
+  const smith = figureOf({ ...looks.smith }, 'fine');
+  assert.equal(smith.parts.find((p) => p.name === 'item').parent, 'handR');
+  const calf = ngheFine();
+  for (const n of ['shinFL', 'hoofBR', 'hornL1', 'hornL3', 'tuft', 'eyeWL']) assert.ok(calf.parts.some((p) => p.name === n), n);
+});
+
+test('the level of detail follows the distance with a small hysteresis, and the view culls figures', async () => {
+  const { detailFor, inView, LOD } = await import('../src/world/lod.js');
+  assert.equal(detailFor(null, 5), 'fine');
+  assert.equal(detailFor(null, 40), 'coarse');
+  // At the edge a figure keeps its level: walking back and forth over 30 blocks does not switch it.
+  let level = 'fine';
+  for (const d of [29.5, 30.2, 30.8, 30.1, 29.6]) {
+    level = detailFor(level, d);
+    assert.equal(level, 'fine', `at ${d}`);
+  }
+  level = detailFor(level, LOD.far + 0.1);
+  assert.equal(level, 'coarse');
+  for (const d of [30.8, 30, 29.3]) {
+    level = detailFor(level, d);
+    assert.equal(level, 'coarse', `at ${d}`);
+  }
+  assert.equal(detailFor(level, LOD.near - 0.1), 'fine');
+  // A box view from -10 to 10 on x and z: a figure out of it is dropped; one on its edge stays.
+  const planes = [
+    { nx: 1, ny: 0, nz: 0, d: 10 }, { nx: -1, ny: 0, nz: 0, d: 10 },
+    { nx: 0, ny: 0, nz: 1, d: 10 }, { nx: 0, ny: 0, nz: -1, d: 10 },
+    { nx: 0, ny: 1, nz: 0, d: 100 }, { nx: 0, ny: -1, nz: 0, d: 100 },
+  ];
+  assert.ok(inView(planes, { x: 0, y: 0, z: 0 }, 1));
+  assert.ok(inView(planes, { x: 10.5, y: 0, z: 0 }, 1), 'a part of it is in the view');
+  assert.ok(!inView(planes, { x: 12, y: 0, z: 0 }, 1));
+  assert.ok(!inView(planes, { x: 0, y: 0, z: -30 }, 2));
+});
+
+test('the knees: a knee bends while its leg swings through, the heel lifts, and both bend to sit', () => {
+  const a = createAnimator('biped');
+  let pose = animate(a, { speed: 4, dt: 0.1 });
+  for (let i = 0; i < 12; i++) pose = animate(a, { speed: 4, dt: 0.05 });
+  const back = pose.rot.legL[0] > 0 ? 'L' : 'R';
+  const front = back === 'L' ? 'R' : 'L';
+  assert.ok(pose.rot[`shin${back}`][0] > 0, 'the knee of the leg behind bends');
+  assert.equal(pose.rot[`shin${front}`][0], 0, 'the leg in front is straight');
+  assert.ok(pose.rot[`foot${back}`][0] < 0, 'the heel lifts');
+  for (let i = 0; i < 30; i++) pose = animate(a, { speed: 0, dt: 0.1, want: 'rest' });
+  assert.ok(pose.rot.shinL[0] > 1 && pose.rot.shinR[0] > 1, 'the knees bend to sit');
+});
