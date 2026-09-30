@@ -66,6 +66,12 @@ const LIMITS = {
     assert.ok(pr.answer >= p.minA && pr.answer <= p.maxA);
     assert.ok(pr.expr.b >= Math.max(1, p.minB) && pr.expr.b <= p.maxB);
   },
+  share(p, pr) {
+    const { n, k, ask } = pr.expr;
+    assert.ok(k >= p.minK && k <= p.maxK);
+    assert.ok(Math.floor(n / k) >= 1 && Math.floor(n / k) <= p.maxEach);
+    if (!p.rest) assert.ok(n % k === 0 && ask === 'each', 'no remainder at this level');
+  },
   fracCompare(p, pr) {
     for (const [n, d] of pr.expr.values) {
       assert.ok(d <= p.maxDen && n < d);
@@ -185,7 +191,7 @@ test('each number shield has a solution with the correct operations', () => {
 const EXAMPLE_RESULT = {
   'ex.count.after': 'm1', 'ex.count.before': 'm1', 'ex.count.ten': 'm10', 'ex.add': 'z', 'ex.add.missing': 'y',
   'ex.sub': 'z', 'ex.split.add': 'z', 'ex.split.sub': 'z', 'ex.place.expanded': 'm', 'ex.place': 'd',
-  'ex.mul': 'z', 'ex.div': 'x', 'ex.frac.equiv': 'ak', 'ex.frac.add': 's', 'ex.frac.unlike': 's',
+  'ex.mul': 'z', 'ex.div': 'x', 'ex.share.each': 'x', 'ex.share.left': 'r', 'ex.frac.equiv': 'ak', 'ex.frac.add': 's', 'ex.frac.unlike': 's',
   'ex.area': 'z', 'ex.perimeter': 'z', 'ex.mul.multi': 'z', 'ex.decimal.add': 'z', 'ex.decimal.sub': 'z', 'ex.shape.sides': 'n',
 };
 const numbersOf = (params) => Object.values(params ?? {}).filter((v) => typeof v === 'number');

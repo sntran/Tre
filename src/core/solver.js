@@ -27,6 +27,7 @@ export function evaluate(expr) {
       if (expr.b === 0 || expr.a % expr.b !== 0) throw new Error('Division has a remainder');
       return expr.a / expr.b;
     }
+    case 'share': return expr.ask === 'left' ? expr.n % expr.k : Math.floor(expr.n / expr.k);
     case 'next': return expr.n + 1;
     case 'prev': return expr.n - 1;
     case 'plus10': return expr.n + 10;

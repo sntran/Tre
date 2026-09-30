@@ -242,6 +242,27 @@ const GENERATORS = {
     };
   },
 
+  // Fair sharing: n things shared equally among m friends. Ask the share of each friend, or (with
+  // p.rest) the things that are left over.
+  share(p, rng) {
+    const m = rng.int(p.minK, p.maxK);
+    const each = rng.int(1, p.maxEach);
+    const n = each * m + (p.rest ? rng.int(0, m - 1) : 0);
+    const ask = p.rest && rng.chance(0.5) ? 'left' : 'each';
+    const answer = ask === 'left' ? n % m : each;
+    const [x, y, r] = retry(() => {
+      const yy = rng.int(2, 4);
+      return [rng.int(1, 5), yy, p.rest ? rng.int(0, yy - 1) : 0];
+    }, ([u, v, w]) => (ask === 'left' ? w : u) !== answer && ![n, m].every((z) => [u * v + w, v, u, w].includes(z)));
+    return {
+      kind: 'numeric',
+      prompt: k(ask === 'left' ? 'prob.share.left' : 'prob.share.each', { n, k: m }),
+      expr: { op: 'share', n, k: m, ask },
+      hint: k('hint.share', { n, k: m }),
+      example: k(ask === 'left' ? 'ex.share.left' : 'ex.share.each', { p: x * y + r, y, x, r }),
+    };
+  },
+
   fracCompare(p, rng) {
     const [d1, d2] = retry(() => [rng.int(2, p.maxDen), rng.int(2, p.maxDen)], ([x, y]) => x !== y);
     const n = p.sameNum ? rng.int(1, Math.min(d1, d2) - 1) : 1;

@@ -88,8 +88,8 @@
       "id": "share", "kind": "task", "task": "share", "reward": {}, "who": ["hero", "nghe", "giong"],
       "_task": "The loot after a won raid (loot in data/raids.json): a pile of coins behind the wall, and three mats: the basket of the hero, Nghé, and Gióng. The child carries coins from the pile to the mats, and from a mat back. When the hands are empty and the pile has fewer coins than friends, and the pile cannot even out the mats, the share is the commit: equal mats make all happy, and the coins of the hero go to the counter; if not, Nghé turns away and sulks until the share is fair. The rest in the pile stays for the village.",
       "levels": [
-        { "skill": "math.count.120", "level": 1 },
-        { "skill": "math.add.20", "level": 1 },
+        { "skill": "math.share.equal", "level": 1 },
+        { "skill": "math.share.equal", "level": 2 },
         { "skill": "math.div.10", "level": 1 }
       ],
       "places": {}

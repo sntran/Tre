@@ -128,18 +128,20 @@ test('Nghé is the friend of the hero from the start; Sóng is the friend of the
   for (const f of ['nghe', 'song']) assert.ok(friends[f].gloss, `${f} has a glossary id for its name`);
 });
 
-test('the quest bar text is short: 44 characters or fewer, so it fits in 2 lines on a phone', () => {
+test('the quest bar text is short (2 lines on a phone), with no numerals', () => {
   const en = load('i18n/en.json');
   const goalKeys = [...quests.flatMap((q) => q.steps.map((st) => st.goalKey)), 'quest.free'];
   for (const table of [vi, en]) {
     for (const key of goalKeys) {
       assert.ok(key in table, key);
-      // The quest bar shows the glossary names only, and numbers such as 10/10.
-      const text = table[key]
-        .replace(/\[\[(\w+)\]\]/g, (all, id) => table[`gloss.${id}.name`] ?? id)
-        .replace(/\{\w+\}/g, '10');
+      // The quest bar shows the glossary names only. A count shows as things, not numerals.
+      const text = table[key].replace(/\[\[(\w+)\]\]/g, (all, id) => table[`gloss.${id}.name`] ?? id);
       assert.ok(text.length <= 44, `${key}: "${text}" has ${text.length} characters`);
+      assert.ok(!/\d|\{\w+\}/.test(text), `${key}: "${text}" has no numerals`);
     }
+  }
+  for (const st of quests.flatMap((q) => q.steps)) {
+    if (st.progress || st.count) assert.ok(['lump', 'person', 'soldier'].includes(st.pip), `${st.id}: a thing for its count`);
   }
 });
 

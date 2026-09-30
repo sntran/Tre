@@ -180,7 +180,12 @@ export async function mountVillage(ctx, params = {}) {
       goalParams = {};
     }
     // The quest bar has short text only. The dialogues give the long explanations.
-    goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), h('span', { class: 'goal-text', text: tn(goalKey, goalParams) }));
+    // A count shows as things, not numerals (docs/QUESTIONS.md, 76): a small thing for each one that
+    // the step needs, filled for each one that the child has.
+    const pips = goal?.progress && goal.step.pip
+      ? [h('span', { class: 'goal-pips', 'aria-hidden': 'true' }, Array.from({ length: goal.progress.need }, (_, i) => h('i', { class: `pip pip-${goal.step.pip}${i < goal.progress.have ? ' on' : ''}` })))]
+      : [];
+    goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), h('span', { class: 'goal-text', text: tn(goalKey, goalParams) }), ...pips);
     // A coin on its way to the bag is not in the count yet: the count ticks up when it lands.
     counts.replaceChildren(...data.items.hud.map((item) => h('span', { class: 'count', dataset: { item } }, [
       img(data.items.items[item].art, 'count-icon'),

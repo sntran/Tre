@@ -321,6 +321,16 @@ p { line-height: 1.45; margin: 0.4em 0; }
   line-clamp: 2;
   overflow: hidden;
 }
+/* The count of a quest step: small things, filled for the ones that the child has. */
+.goal-pips { display: flex; flex-wrap: wrap; gap: 3px; flex: none; max-width: 7.5em; margin-left: auto; }
+.pip { display: block; width: 14px; height: 14px; border: 1.5px solid var(--ink); background: var(--paper); opacity: 0.55; }
+.pip.on { opacity: 1; }
+.pip-lump { border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%; }
+.pip-lump.on { background: var(--ash); }
+.pip-person { width: 12px; height: 16px; border-radius: 50% 50% 3px 3px / 40% 40% 3px 3px; }
+.pip-person.on { background: var(--ochre); }
+.pip-soldier { width: 14px; height: 16px; border-radius: 50% 50% 2px 2px / 60% 60% 2px 2px; }
+.pip-soldier.on { background: var(--indigo); }
 .counts { flex: none; }
 .counts { display: flex; gap: 6px; }
 .count {

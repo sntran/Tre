@@ -4,6 +4,9 @@
   "skills": [
     { "id": "math.count.120", "subject": "math", "area": "number", "grade": 1, "era": 1, "pre": [], "std": "1.NBT.A.1", "generator": "count",
       "levels": [{ "max": 20 }, { "max": 50 }, { "max": 120, "tens": true }] },
+    { "id": "math.share.equal", "subject": "math", "area": "number", "grade": 1, "era": 1, "pre": ["math.count.120"], "std": "2.OA.C.3", "generator": "share",
+      "_note": "Share equally, with and without a remainder (grades 1 and 2). The share of the loot after a raid sends it at levels 1 and 2; division (math.div.10) comes after it.",
+      "levels": [{ "minK": 2, "maxK": 3, "maxEach": 5 }, { "minK": 2, "maxK": 3, "maxEach": 5, "rest": true }, { "minK": 2, "maxK": 4, "maxEach": 4, "rest": true }] },
     { "id": "math.compare.100", "subject": "math", "area": "number", "grade": 1, "era": 1, "pre": ["math.count.120"], "std": "1.NBT.B.3", "generator": "compare",
       "levels": [{ "max": 20 }, { "max": 50 }, { "max": 100, "smaller": true }] },
     { "id": "math.add.10", "subject": "math", "area": "number", "grade": 1, "era": 1, "pre": [], "std": "1.OA.C.6", "generator": "add",
@@ -48,7 +51,7 @@
         { "minA": 1, "maxA": 5, "minB": 1, "maxB": 5, "cards": { "count": 4 } },
         { "minA": 2, "maxA": 10, "minB": 2, "maxB": 5, "cards": { "count": 4 } },
         { "minA": 2, "maxA": 10, "minB": 2, "maxB": 10, "cards": { "count": 4 } }] },
-    { "id": "math.div.10", "subject": "math", "area": "number", "grade": 3, "era": 3, "pre": ["math.mul.10"], "std": "3.OA.C.7", "generator": "div",
+    { "id": "math.div.10", "subject": "math", "area": "number", "grade": 3, "era": 3, "pre": ["math.mul.10", "math.share.equal"], "std": "3.OA.C.7", "generator": "div",
       "levels": [
         { "minA": 1, "maxA": 5, "minB": 1, "maxB": 5 },
         { "minA": 2, "maxA": 10, "minB": 2, "maxB": 5 },
