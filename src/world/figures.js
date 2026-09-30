@@ -452,7 +452,8 @@ export function workThing(look) {
 // The things of a raid (src/core/world/systems/raid.js). Units: half blocks.
 export function raidThing(look) {
   switch (look.kind) {
-    // A stone of the slingshot.
+    // A stone of the slingshot, and a rice ball for the creatures of the river.
+    case 'riceball': return still([P('ball', [0.6, 0.55, 0.6], 'diep', [0, 0.28, 0]), P('top', [0.4, 0.15, 0.4], 'paper', [0, 0.58, 0]), P('leaf', [0.62, 0.2, 0.3], 'green', [0, 0.1, 0])], 0.6);
     case 'stone': return still([P('stone', [0.5, 0.45, 0.5], 'ash', [0, 0.22, 0]), P('top', [0.3, 0.12, 0.3], 'ashLight', [0.05, 0.47, 0.05]), P('chip', [0.2, 0.2, 0.2], 'ink', [-0.2, 0.15, 0.15])], 0.5);
     // A torch in the air.
     case 'torch': return still([P('stick', [0.25, 0.25, 1.4], 'wood', [0, 0.2, 0]), P('flame', [0.7, 0.7, 0.7], 'vermilion', [0, 0.3, 0.8]), P('core', [0.4, 0.4, 0.4], 'yellow', [0, 0.35, 0.95])], 0.8);
@@ -466,7 +467,8 @@ export function raidThing(look) {
     // A distance post by the road: its count as bands, no numeral.
     case 'post': {
       const n = look.n ?? 1;
-      const parts = [P('pole', [0.6, 4.5, 0.6], 'wood', [0, 2.25, 0]), P('cap', [0.8, 0.3, 0.8], 'ink', [0, 4.6, 0])];
+      // A post that waits for a tap (the prediction before the first shot) has a yellow cap.
+      const parts = [P('pole', [0.6, 4.5, 0.6], 'wood', [0, 2.25, 0]), P('cap', [0.9, look.lit ? 0.6 : 0.3, 0.9], look.lit ? 'yellow' : 'ink', [0, look.lit ? 4.75 : 4.6, 0])];
       for (let i = 0; i < n; i++) parts.push(P(`band${i}`, [0.7, 0.35, 0.7], 'vermilion', [0, 3.9 - i * 0.6, 0]));
       return still(parts, 4.8);
     }

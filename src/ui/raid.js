@@ -2,15 +2,14 @@
 // the things of the raid, and the marks over the enemies. No rules here: the view sends commands
 // to the session (src/core/session.js), and the raid (src/core/world/raids.js) answers.
 //
-//   The slingshot: the child puts a finger on the hero and pulls back. The dotted line shows the
-//   first part of the arc only (not the landing point); the pull gives the speed. Let go: shoot.
+//   The slingshot: the child puts a finger on the hero and pulls back. The band stretches in steps
+//   of one half block: a tick at each step and a red band at every fifth, the same marks as the
+//   posts. No arc shows before the shot. Let go: the stone lands at the count along the road.
 //   An element: the child puts a finger on a source (the jar, the brazier, the forge, or a torch
 //   that burns on the road) and drags it to a point on the ground. Let go: pour.
 //   The marks: over each enemy a row of dots, one for each hit that it can still take; a hit pops
 //   up as red dots over the enemy (no numeral in the world).
 import { getEntity, query } from '../core/world/state.js';
-import { screenToMap } from '../core/world/move.js';
-import { shotOf, previewOf } from '../core/world/raids.js';
 import { C } from '../render/palette.js';
 
 const FLOW = { water: C.indigo, fire: C.vermilion, lightning: C.yellow };
@@ -21,7 +20,6 @@ export function createRaidView({ view, figures, session, layer, send }) {
   const draw2d = layer.getContext('2d');
   const state = () => session.state;
   const raid = () => getEntity(state(), 'raid')?.raid ?? null;
-  const hero = () => getEntity(state(), 'hero');
   let sling = null; // { id, x, y }: the finger that pulls the slingshot
   let flow = null; // { id, source, kind, x, y }: the finger that drags an element
   const pops = []; // { id, n, age }
@@ -38,16 +36,19 @@ export function createRaidView({ view, figures, session, layer, send }) {
     const f = figures.placeOf('hero');
     return f ? view.project(f.x, f.y + 1, f.z) : null;
   };
-  // The pull of the slingshot now: the direction on the ground (half blocks) and the pull (0 to 1).
+  // The length of one step of the band on the screen (one half block of the pull).
+  const stepPx = () => Math.max(7, Math.min(11, Math.min(size.w, size.h) / 90));
+  // The pull of the slingshot now: the count of steps (whole half blocks, 0 to the longest pull),
+  // and the direction of the band on the screen.
   function aim() {
     const h = heroScreen();
-    if (!sling || !h) return null;
-    const dx = h.x - sling.x;
-    const dy = h.y - sling.y;
+    const r = raid();
+    if (!sling || !h || !r) return null;
+    const dx = sling.x - h.x;
+    const dy = sling.y - h.y;
     const px = Math.hypot(dx, dy);
-    const full = Math.min(size.w, size.h) * 0.3;
-    const d = screenToMap(dx, dy, view.angle);
-    return { dir: { x: d.x, z: d.y }, pull: Math.min(1, px / full), px };
+    const count = Math.max(0, Math.min(r.sling.max, Math.round(px / stepPx())));
+    return { count, ux: px ? dx / px : 0, uy: px ? dy / px : 1, from: h };
   }
 
   return {
@@ -78,8 +79,8 @@ export function createRaidView({ view, figures, session, layer, send }) {
       if (sling?.id === id) {
         const a = aim();
         sling = null;
-        // A short pull is no shot (the finger went back to the hero).
-        if (a && a.px > 24) send({ type: 'shoot', dir: a.dir, pull: a.pull });
+        // No step is no shot (the finger went back to the hero).
+        if (a?.count) send({ type: 'shoot', count: a.count });
         return true;
       }
       if (flow?.id === id) {
@@ -126,25 +127,37 @@ export function createRaidView({ view, figures, session, layer, send }) {
       layer.hidden = !r && !pops.length;
       if (layer.hidden) return;
       draw2d.lineCap = 'round';
-      // The slingshot: the band from the hero to the finger, and the first part of the arc.
+      // The slingshot: the band from the hero to the end of the last whole step, with a tick at
+      // each step and a red band at every fifth (as on the posts). No arc before the shot.
       const a = aim();
-      const hs = heroScreen();
-      if (a && hs && r) {
+      if (a && r) {
+        const step = stepPx();
+        const end = { x: a.from.x + a.ux * a.count * step, y: a.from.y + a.uy * a.count * step };
         draw2d.strokeStyle = C.wood;
-        draw2d.lineWidth = 4;
+        draw2d.lineWidth = 5;
         draw2d.beginPath();
-        draw2d.moveTo(hs.x, hs.y);
-        draw2d.lineTo(sling.x, sling.y);
+        draw2d.moveTo(a.from.x, a.from.y);
+        draw2d.lineTo(end.x, end.y);
         draw2d.stroke();
-        const p = hero().position;
-        const shot = shotOf(a.pull, r.sling);
-        draw2d.fillStyle = C.ink;
-        for (const q of previewOf(shot, 9, r.sling)) {
-          const s = view.project((p.x + a.dir.x * q.d) / 2, (p.y + q.h) / 2, (p.z + a.dir.z * q.d) / 2);
+        for (let k = 1; k <= a.count; k++) {
+          const c = { x: a.from.x + a.ux * k * step, y: a.from.y + a.uy * k * step };
+          const fifth = k % 5 === 0;
+          const half = fifth ? 11 : 6;
+          draw2d.strokeStyle = fifth ? C.vermilion : C.ink;
+          draw2d.lineWidth = fifth ? 5 : 2;
           draw2d.beginPath();
-          draw2d.arc(s.x, s.y, 4, 0, Math.PI * 2);
-          draw2d.fill();
+          draw2d.moveTo(c.x - a.uy * half, c.y + a.ux * half);
+          draw2d.lineTo(c.x + a.uy * half, c.y - a.ux * half);
+          draw2d.stroke();
         }
+        // The pouch with the stone at the end of the band.
+        draw2d.beginPath();
+        draw2d.arc(end.x, end.y, 7, 0, Math.PI * 2);
+        draw2d.fillStyle = C.ash;
+        draw2d.fill();
+        draw2d.lineWidth = 2;
+        draw2d.strokeStyle = C.ink;
+        draw2d.stroke();
       }
       // An element on its way: a thick line in its color from the source to the finger.
       if (flow) {

@@ -14,14 +14,14 @@
 //   { at: { hour } }
 //   { tap: { cell: [x, y] } | { entity } | { thing } | { item: <kind> } | { plank: <size> } | { guess: <n> } |
 //          { zone } | { span } | { stem: <along> } | { line: <along> } | { hero: true } |
-//          { raid: 'gate' | 'bamboo' | <spot id> } }
+//          { raid: 'gate' | 'bamboo' | <spot id> } | { post: 10 } (a post before the first shot) }
 //     (item: the first thing of a kind in a heap or a pile; plank: a plank of this size on a pile;
 //     zone: the middle of the zone of a task, or the gap of a span; span: the last plank on a
 //     span; stem: a place along the stem of the woodcutter; line: a place on the fish trap line)
-//   { shoot: { at: 'first' | <enemy id>, kind, off: <half blocks>, lead: <seconds> } }  (the slingshot of
-//     the hero at an enemy of the raid (of this kind): off is how much farther (or nearer, below 0) than the
-//     enemy; lead: aim where the enemy will be after so many seconds; wait: when no enemy is
-//     there, the world goes on for a second)
+//   { shoot: { count: <n> } | { at: 'first' | <enemy id>, kind, off: <half blocks>, lead: <seconds> } }
+//     (the slingshot at the wall: a pull of n half blocks, or the count for an enemy of the raid
+//     (of this kind): off is how much farther (or nearer, below 0); lead: where the enemy will be
+//     after so many seconds; wait: when no enemy is there, the world goes on for a second)
 //   { pour: { from: <source id>, at: 'first' | <enemy id> | [x, y] } }  (the drag of an element)
 //   { repeat: <n>, steps: [...] }         (the steps n times)
 //   { read: true | [<choice>, ...] }         (read the open talk to its end, with these choices)
@@ -34,7 +34,7 @@ import { getEntity, query } from './world/state.js';
 import { saveWorld, loadWorld, setHeroPlace } from './world/save.js';
 import { createI18n } from './i18n.js';
 import { STEP } from './world/step.js';
-import { pullFor, along } from './world/raids.js';
+import { along } from './world/raids.js';
 
 // The time of the start of a story (a Monday morning), so that a story always gives the same
 // result. The time of play goes on with the steps of the world.
@@ -71,6 +71,11 @@ export function tapTarget(session, spec) {
   const at = (e) => ({ x: e.position.x / 2, y: e.position.z / 2 });
   if (spec.cell) return { target: session.targetAt(spec.cell[0], spec.cell[1]), point: { x: spec.cell[0], y: spec.cell[1] } };
   if (spec.hero) return { target: { hero: true }, point: at(getEntity(state, 'hero')) };
+  if (spec.post !== undefined) {
+    // A distance post of the raid, before the first shot (the prediction).
+    const e = query(state, 'raidTap', 'position').find((x) => x.raidTap.what === 'post' && x.raidTap.id === spec.post);
+    return e ? { target: { raid: e.raidTap }, point: at(e) } : null;
+  }
   if (spec.raid) {
     // A thing of the raid: the gate bar, the bamboo, or a spot for a villager.
     const e = query(state, 'raidTap', 'position').find((x) => x.raidTap.what === spec.raid || x.raidTap.id === spec.raid);
@@ -167,13 +172,13 @@ export function raidEnemy(session, which, kind = null) {
   return live.sort((a, b) => along(raid, a) - along(raid, b))[0] ?? null;
 }
 
-// The command of a shoot step: the pull for the distance from the hero to the enemy (where it
-// will be after `lead` seconds, when it walks), and the direction to it.
+// The command of a shoot step: a count (the pull), or the count for an enemy: its distance along
+// the road where it will be after `lead` seconds (when it walks), and `off` more (or less).
 export function shootCommand(session, spec) {
+  if (spec.count !== undefined) return { type: 'shoot', count: spec.count };
   const raid = getEntity(session.state, 'raid')?.raid;
   const e = raidEnemy(session, spec.at ?? 'first', spec.kind ?? null);
   if (!raid || !e) return null;
-  const hero = getEntity(session.state, 'hero').position;
   let p = { x: e.x, z: e.z };
   const goal = e.state === 'walk' ? e.to : e.state === 'back' ? e.back : null;
   if (spec.lead && goal) {
@@ -182,9 +187,9 @@ export function shootCommand(session, spec) {
     const k = Math.min(d, speed * spec.lead);
     p = { x: e.x + ((goal.x - e.x) / d) * k, z: e.z + ((goal.z - e.z) / d) * k };
   }
-  const dir = { x: p.x - hero.x, z: p.z - hero.z };
-  const dist = Math.hypot(dir.x, dir.z) + (spec.off ?? 0);
-  return { type: 'shoot', dir, pull: pullFor(Math.max(1, dist), raid.sling) };
+  const count = Math.max(1, Math.round(along(raid, p) + (spec.off ?? 0)));
+  // An enemy past the longest pull is out of reach (a step with wait waits for it).
+  return count > raid.sling.max ? null : { type: 'shoot', count };
 }
 
 // A comparison in a fact: a number, or a text such as ">= 0.5".

@@ -9,7 +9,7 @@
 export const WRITES = ['raid', 'orders', 'over', 'horns', 'position', 'look', 'act', 'carry', 'item', 'zone', 'follow', 'raider', 'hot', 'source', 'raidTap', 'raidThing', 'fixedThing', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
-import { stepRaid, shoot, barGate, callHelper, charge, pour, pullBamboo, setTraps, stoneAt, torchAt, along } from '../raids.js';
+import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, setTraps, stoneAt, torchAt, along } from '../raids.js';
 import { packHeap } from './work.js';
 
 const OVER = 2.5; // seconds: the things of the raid stay after the end
@@ -55,12 +55,14 @@ export function raid(world, dt, rng, env) {
   mirror(world, raid, env);
 }
 
-// The orders of the child: shoot, bar (the gate), call (a villager to a spot), charge (Nghé),
-// pour (an element from a source to a point), and bamboo (the last phase of the boss).
+// The orders of the child: shoot (a count), predict (a post before the first shot), bar (the
+// gate), call (a villager to a spot), charge (Nghé), pour (an element from a source to a point),
+// and bamboo (the last phase of the boss).
 function order(world, r, o, hero, friend) {
   const raid = r.raid;
   let evs = [];
-  if (o.act === 'shoot' && hero) evs = shoot(raid, hero.position, o.dir, o.pull);
+  if (o.act === 'shoot') evs = shoot(raid, o.count);
+  else if (o.act === 'predict') evs = predict(raid, o.post);
   else if (o.act === 'bar') evs = barGate(raid);
   else if (o.act === 'call') evs = callHelper(raid, o.spot);
   else if (o.act === 'charge' && friend) evs = charge(raid, friend.position);
@@ -116,7 +118,18 @@ function mirror(world, raid, env) {
   }
   for (const s of raid.stones) {
     const p = stoneAt(raid, s);
-    put(s.id, { position: { x: p.x, y: gy(s.from) + p.h, z: p.z, facing: 0 }, look: 'stone' });
+    put(s.id, { position: { x: p.x, y: gy(raid.wall) + p.h, z: p.z, facing: 0 }, look: s.ball ?? 'stone' });
+  }
+  // A stone that missed lies on the road for a moment, so that short or long shows at the posts.
+  for (const m of raid.marks) put(m.id, { position: { x: m.x, y: gy(m), z: m.z, facing: 0 }, look: m.look });
+  // Before the first shot, the posts wait for a tap (the prediction): their caps are yellow.
+  for (let i = 0; i < raid.posts.length; i++) {
+    const post = getEntity(world, `post:${i + 1}`);
+    if (!post) continue;
+    const waiting = raid.predict.state === 'pending' && raid.enemies.some((e) => e.state !== 'retreat');
+    post.look = `post-${i + 1}${waiting ? '-lit' : ''}`;
+    if (waiting) post.raidTap = { what: 'post', id: raid.posts[i].d };
+    else delete post.raidTap;
   }
   for (const t of raid.torches) {
     const p = torchAt(t);

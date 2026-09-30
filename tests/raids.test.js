@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  SLING, raidLevel, shotOf, positionAt, landingOf, pullFor, previewOf, createRaid, stepRaid, along, shoot, barGate,
+  SLING, raidLevel, flightFor, positionAt, createRaid, stepRaid, along, shoot, predict, barGate,
   callHelper, charge, pour, pullBamboo, setTraps, stoneAt,
 } from '../src/core/world/raids.js';
 import { load } from './helpers.js';
@@ -28,8 +28,8 @@ function until(raid, type, seconds = 60, ctx = {}) {
 }
 const types = (evs) => evs.map((e) => e.type);
 const enemy = (raid, n = 0) => raid.enemies[n];
-// A shot from the wall at an enemy, with the pull for a distance.
-const shotAt = (raid, e, distance) => shoot(raid, raid.wall, { x: e.x - raid.wall.x, z: e.z - raid.wall.z }, pullFor(distance, raid.sling));
+// A shot from the wall with the pull of a count (the distance along the road, as a whole number).
+const shotAt = (raid, e, distance) => shoot(raid, Math.round(distance));
 
 test('the data of the raids: every raid has its places, and every skill is in the skill map', () => {
   for (const [id, r] of Object.entries(raids.raids)) {
@@ -39,67 +39,78 @@ test('the data of the raids: every raid has its places, and every skill is in th
     for (const w of waves) assert.ok(raids.enemies[w.kind], `${id}: ${w.kind}`);
   }
   for (const k of raids.skills.shot) for (const s of Object.values(k)) assert.ok(skills.has(s), s);
-  for (const k of ['trap', 'gate', 'chain']) assert.ok(skills.has(raids.skills[k].skill), k);
+  for (const k of ['trap', 'chain']) assert.ok(skills.has(raids.skills[k].skill), k);
   assert.deepEqual(raids.posts, [5, 10, 15, 20]);
   assert.equal(raidLevel(raids, 1), 0, 'grade 1 is the lowest level: a lost raid takes nothing');
   assert.equal(raidLevel(raids, 2), 1);
   assert.equal(raidLevel(raids, 5), 2);
 });
 
-test('the slingshot: a real arc, and the pull for a distance lands the stone there', () => {
-  for (const d of [5, 10, 15, 20, 28]) {
-    const shot = shotOf(pullFor(d));
-    assert.ok(Math.abs(landingOf(shot).d - d) < 1e-6, `distance ${d}`);
+test('the slingshot: the pull is a count of half blocks, and the stone lands exactly at the count on a real arc', () => {
+  for (let n = 1; n <= SLING.max; n++) {
+    const f = flightFor(n);
+    assert.equal(f.count, n);
+    assert.ok(Math.abs(positionAt(f, f.t).d - n) < 1e-9, `count ${n}`);
+    assert.ok(Math.abs(positionAt(f, f.t).h) < 1e-9, `count ${n} lands on the ground`);
   }
-  // More pull, farther; the full pull is the longest shot.
-  const a = landingOf(shotOf(0.4)).d;
-  const b = landingOf(shotOf(0.6)).d;
-  const full = landingOf(shotOf(1)).d;
-  assert.ok(a < b && b < full);
-  assert.equal(landingOf(shotOf(3)).d, full, 'a pull longer than the full pull is a full pull');
-  assert.ok(full > 30, 'the full pull goes past the last post');
-  // The arc goes up and comes down: the top is over the start, and the end is on the ground.
-  const shot = shotOf(pullFor(15));
-  const land = landingOf(shot);
-  const top = positionAt(shot, land.t / 2);
-  assert.ok(top.h > SLING.h0);
-  assert.ok(Math.abs(positionAt(shot, land.t).h) < 1e-6);
-  // The dotted line shows only the first part of the arc, not the landing point.
-  const pts = previewOf(shot);
-  assert.ok(pts[pts.length - 1].d < land.d / 2);
+  assert.equal(flightFor(7.4).count, 7, 'a count is a whole number');
+  assert.equal(flightFor(99).count, SLING.max, 'the longest pull');
+  // The arc goes up and comes down; a longer count flies longer.
+  const f = flightFor(15);
+  assert.ok(positionAt(f, f.t / 2).h > SLING.h0);
+  assert.ok(flightFor(20).t > flightFor(10).t);
 });
 
-test('a stone lands where the arc ends and hits the enemy there; a miss by a little hits nothing', () => {
+test('a stone lands at the count and hits the enemy there; short shows on the road, and the next shot is a correction', () => {
   const raid = createRaid(raids, 'scouts', 1);
   run(raid, 0.1);
   const e = enemy(raid);
   e.state = 'wait';
   e.t = 99; // it stands still for the test
-  const d = along(raid, e);
-  assert.deepEqual(types(shotAt(raid, e, d)), ['shoot']);
-  assert.deepEqual(shotAt(raid, e, d), [], 'the slingshot needs a moment to reload');
+  const d = 20; // at the fourth post
+  e.x = raid.wall.x + raid.dir.x * d;
+  e.z = raid.wall.z + raid.dir.z * d;
+  // The prediction: a tap on the post nearest to the scout, before the first shot.
+  const pr = predict(raid, 20);
+  assert.deepEqual([pr[0].type, pr[0].post, pr[0].gap], ['predict', 20, d]);
+  assert.deepEqual(predict(raid, 15), [], 'one prediction');
+  const out = shoot(raid, d);
+  assert.deepEqual([out[0].type, out[0].count], ['shoot', d]);
+  assert.deepEqual(shoot(raid, d), [], 'the slingshot needs a moment to reload');
   const s = raid.stones[0];
-  assert.ok(Math.abs(s.land.x - e.x) < 1e-6 && Math.abs(s.land.z - e.z) < 1e-6);
-  const mid = stoneAt(raid, { ...s, t: s.land.t / 2 });
-  assert.ok(mid.h > 2, 'the stone is in the air');
+  assert.ok(stoneAt(raid, { ...s, t: s.flight.t / 2 }).h > 2, 'the stone is in the air');
   const evs = until(raid, 'land');
+  const land = evs.find((x) => x.type === 'land');
+  assert.deepEqual([land.count, land.hit, land.off], [d, true, 0]);
   const hit = evs.find((x) => x.type === 'hit');
-  assert.equal(hit.id, e.id);
-  assert.equal(hit.damage, 1);
-  assert.equal(hit.left, 1);
+  assert.deepEqual([hit.id, hit.damage, hit.left], [e.id, 1, 1]);
   const sk = evs.find((x) => x.type === 'skill');
-  assert.deepEqual([sk.skill, sk.solved, sk.efficient, sk.first, sk.level], ['math.count.120', true, true, true, 2]);
-  // Short by three: no hit, and the next shot at the same enemy is a correction.
+  assert.deepEqual([sk.skill, sk.solved, sk.efficient, sk.first, sk.level, sk.parts, sk.target], ['math.count.120', true, true, true, 1, [d], d]);
+  const pl = evs.find((x) => x.type === 'prediction');
+  assert.deepEqual([pl.task, pl.gap, pl.guess, pl.used, pl.solved], ['raid-scouts', d, 20, d, true]);
+  // Three short: no hit, the stone lies on the road for a moment, and the next shot at the same
+  // enemy is the correction (an addition: from the count to the enemy).
   run(raid, 1);
-  shotAt(raid, e, d - 3);
+  shoot(raid, d - 3);
   const miss = until(raid, 'land');
-  assert.ok(!miss.some((x) => x.type === 'hit'));
+  assert.deepEqual([miss.find((x) => x.type === 'land').off, miss.some((x) => x.type === 'hit')], [-3, false]);
   assert.equal(miss.find((x) => x.type === 'skill').solved, false);
+  assert.equal(raid.marks.length, 1, 'the stone lies where it landed');
+  assert.ok(!miss.some((x) => x.type === 'prediction'), 'only the first shot carries the prediction');
   run(raid, 1);
-  shotAt(raid, e, d);
+  shoot(raid, d);
   const fix = until(raid, 'land').find((x) => x.type === 'skill');
-  assert.deepEqual([fix.skill, fix.solved, fix.efficient, fix.first, fix.level], ['math.add.20', true, false, false, 1]);
-  assert.deepEqual(fix.parts, [Math.round(d - 3), Math.round(d)]);
+  assert.deepEqual([fix.skill, fix.solved, fix.efficient, fix.first, fix.level, fix.parts, fix.target], ['math.add.20', true, false, false, 1, [d - 3, d], d]);
+});
+
+test('a first shot with no tap on a post skips the prediction', () => {
+  const raid = createRaid(raids, 'scouts', 1);
+  run(raid, 0.1);
+  shoot(raid, 10);
+  const pl = until(raid, 'land').find((x) => x.type === 'prediction');
+  assert.equal(pl.guess, null);
+  assert.equal(raid.predict.state, 'skipped');
+  assert.deepEqual(predict(raid, 10), [], 'too late for a prediction');
 });
 
 test('an enemy hit twice retreats and goes away; an enemy at the gate takes a coin and leaves', () => {
@@ -188,8 +199,8 @@ test('the gate bar: a scout lights a torch for two seconds; a barred gate stops 
   assert.ok(stop);
   assert.equal(raid.fires.length, 1, 'the torch burns on the road');
   assert.equal(raid.losses, 0);
-  const sk = evs.find((x) => x.type === 'skill');
-  assert.deepEqual([sk.skill, sk.solved, sk.efficient], ['math.count.120', true, true]);
+  assert.ok(!evs.some((x) => x.type === 'skill'), 'the gate is timing: no skill event');
+  assert.deepEqual(evs.filter((x) => x.type === 'gated').map((x) => [x.barred, x.afterTell]), [[true, true]]);
   // The bar lifts after some seconds.
   assert.ok(until(raid, 'unbar', 5).some((x) => x.type === 'unbar'));
   // No bar: the torch lands inside, and it costs. With no tap, it is no skill event.
@@ -197,7 +208,7 @@ test('the gate bar: a scout lights a torch for two seconds; a barred gate stops 
   const burn = until(open, 'burn', 40);
   assert.ok(burn.some((x) => x.type === 'burn'));
   assert.equal(open.losses, 1);
-  assert.ok(!burn.some((x) => x.type === 'skill'));
+  assert.ok(!burn.some((x) => x.type === 'skill' || x.type === 'gated'));
 });
 
 test('a villager at a spot stops each enemy for a moment, once', () => {
@@ -296,7 +307,7 @@ test('the boss: soldiers, then the general, then the iron staff breaks, and the 
   const raid = createRaid(raids, 'boss', 2);
   const hero = { x: raid.wall.x, z: raid.wall.z };
   const hitAll = () => {
-    const e = raid.enemies.find((q) => q.state !== 'retreat' && q.state !== 'stunned' && q.state !== 'gone');
+    const e = raid.enemies.find((q) => q.state !== 'retreat' && q.state !== 'stunned' && q.state !== 'gone' && along(raid, q) <= 28);
     if (e && raid.reload <= 0 && !raid.stones.length) {
       e.state = 'wait';
       e.t = 5;

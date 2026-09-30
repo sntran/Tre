@@ -5,8 +5,11 @@
 //   Enemies walk on a straight path from their start to the gate, and never run. An enemy that is
 //   hit enough times retreats (a creature becomes calm and swims away). An enemy at the gate takes
 //   a coin and leaves (nothing at the lowest level). Nobody is hurt.
-//   The slingshot: the child pulls back and lets go. The stone flies on a real arc at one angle;
-//   the pull gives the speed, so the child finds the distance. Posts stand along the road.
+//   The slingshot: the child pulls back and lets go. The pull counts in steps of one half block
+//   (the band has a tick at each step and a red band at every fifth, the same marks as the posts),
+//   and the stone lands exactly at the count along the road, on a real arc at one angle. Short or
+//   long shows on the road against the posts, so the next shot is a correction. Before the first
+//   shot of a raid, the child taps the post nearest the enemy (a prediction).
 //   Traps: a scout or a soldier that steps on a trap sits down for some seconds. The general
 //   breaks a trap.
 //   The gate bar: a scout lights a torch (the tell) and then throws it at the gate. A barred gate
@@ -18,8 +21,8 @@
 //   lightning from the forge into a wet zone shocks every enemy in the wet zones.
 //   The boss: phases of soldiers, then the general, then the iron staff breaks (a talk), and a tap
 //   on the bamboo lets Gióng pull it for the strike that ends the raid.
-// Each shot at an enemy, each trap that snaps, each torch at a gate that the child barred, and
-// each strike of lightning is one skill event for the learner (the child never sees it).
+// Each shot at an enemy, each trap that snaps, and each strike of lightning is one skill event
+// for the learner (the child never sees it).
 // Units: half blocks (one map cell is 2) and seconds. The data gives places in map cells.
 import { byGrade } from '../grades.js';
 
@@ -35,10 +38,11 @@ const PAUSE = 2.5; // seconds: an enemy stops in front of a villager
 const NEAR_SPOT = 5; // half blocks: an enemy stops when it passes this near a villager
 const TRAP = 0.9; // half blocks: an enemy steps on a trap this near
 const HURT = 3; // half blocks: the blow of the general pushes the hero back
-const AIM = 0.6; // radians: the aimed enemy is inside this angle from the line of the shot
+const MARK = 4; // seconds: a stone lies where it landed, so that short or long shows on the road
+const AIM = 8; // half blocks: the shot is for the enemy nearest to the count, within this distance
 
-// The slingshot, as in the first prototype (world units are half blocks).
-export const SLING = Object.freeze({ g: 20, h0: 2.2, vMax: 27, angle: 0.7, maxPull: 1, hit: 1.5, reload: 0.6, preview: 0.28 });
+// The slingshot (world units are half blocks). max: the longest count of a pull.
+export const SLING = Object.freeze({ g: 20, h0: 2.2, angle: 0.7, max: 30, hit: 1.5, reload: 0.6 });
 
 // The level (0, 1, or 2) of the raids for a grade: grade 1 and lower is 0 (a lost raid takes
 // nothing).
@@ -49,38 +53,20 @@ export function raidLevel(raids, grade) {
 
 // The flight --------------------------------------------------------------------------------
 
-// A shot from a pull (0 to maxPull; more is a full pull).
-export function shotOf(pull, cfg = SLING) {
-  const power = Math.max(0, Math.min(1, pull / cfg.maxPull));
-  return { power, speed: power * cfg.vMax, angle: cfg.angle };
+// The flight of a stone that lands at `count` half blocks: the speed at the angle of the
+// slingshot, and the time in the air. The count is a whole number from 1 to max.
+export function flightFor(count, cfg = SLING) {
+  const d = Math.max(1, Math.min(cfg.max, Math.round(count)));
+  const c = Math.cos(cfg.angle);
+  const speed = Math.sqrt((cfg.g * d * d) / (2 * c * c * (cfg.h0 + d * Math.tan(cfg.angle))));
+  return { count: d, speed, angle: cfg.angle, t: d / (speed * c) };
 }
 
-// The stone at t seconds after the release: d along the line of the shot, and h over the ground.
+// The stone at t seconds after the release: d along the road, and h over the ground.
 export function positionAt(shot, t, cfg = SLING) {
   const vx = shot.speed * Math.cos(shot.angle);
   const vy = shot.speed * Math.sin(shot.angle);
   return { d: vx * t, h: cfg.h0 + vy * t - (cfg.g * t * t) / 2 };
-}
-
-// The time when the stone reaches the ground, and the distance there.
-export function landingOf(shot, cfg = SLING) {
-  const vy = shot.speed * Math.sin(shot.angle);
-  const t = (vy + Math.sqrt(vy * vy + 2 * cfg.g * cfg.h0)) / cfg.g;
-  return { t, d: shot.speed * Math.cos(shot.angle) * t };
-}
-
-// The pull that lands a stone at a distance (for the tests and the stories).
-export function pullFor(distance, cfg = SLING) {
-  const c = Math.cos(cfg.angle);
-  const v = Math.sqrt((cfg.g * distance * distance) / (2 * c * c * (cfg.h0 + distance * Math.tan(cfg.angle))));
-  return (v / cfg.vMax) * cfg.maxPull;
-}
-
-// The first part of the arc, for the dotted line while the child pulls (not the landing point).
-export function previewOf(shot, count = 8, cfg = SLING) {
-  const out = [];
-  for (let i = 1; i <= count; i++) out.push(positionAt(shot, (cfg.preview * i) / count, cfg));
-  return out;
 }
 
 // A raid ----------------------------------------------------------------------------------------
@@ -116,6 +102,11 @@ export function createRaid(raids, id, level = 0, loss = null) {
     dir,
     bar: def.bar ? { down: 0, cool: 0, tapped: null, ...(raids.gateBar ?? { hold: 3, rest: 1 }) } : null,
     posts: (raids.posts ?? []).map((d) => ({ d, x: wall.x + dir.x * d, z: wall.z + dir.z * d })),
+    // The prediction before the first shot: pending (the posts wait for a tap), then the post that
+    // the child tapped (guess) and the distance of the enemy then (gap), or skipped.
+    predict: { state: 'pending', guess: null, gap: null },
+    marks: [],
+    shots: 0,
     enemies: [],
     count: 0, // the enemies so far (raider:1, raider:2, ...)
     made: 0, // the other things so far (stones, fires)
@@ -163,6 +154,8 @@ export function stepRaid(raid, dt, ctx = {}) {
   tickCharge(raid, dt, ctx, out);
   for (const e of raid.enemies) tickEnemy(raid, e, dt, ctx, out);
   tickStones(raid, dt, out);
+  for (const m of raid.marks) m.t -= dt;
+  raid.marks = raid.marks.filter((m) => m.t > 0);
   tickTorches(raid, dt, out);
   for (const f of raid.fires) f.t -= dt;
   raid.fires = raid.fires.filter((f) => f.t > 0);
@@ -388,29 +381,37 @@ function tickCharge(raid, dt, ctx, out) {
 function tickStones(raid, dt, out) {
   for (const s of raid.stones) {
     s.t += dt;
-    if (s.t < s.land.t) continue;
+    if (s.t < s.flight.t) continue;
     s.done = true;
-    const at = { x: s.land.x, z: s.land.z };
-    // The enemy at the point where the stone lands, at that moment.
+    const at = { x: raid.wall.x + raid.dir.x * s.count, z: raid.wall.z + raid.dir.z * s.count };
+    // The enemy where the stone lands, at that moment.
     const target = raid.enemies.filter((e) => alive(e) && e.state !== 'stunned' && dist(e, at) <= raid.sling.hit).sort((a, b) => dist(a, at) - dist(b, at))[0] ?? null;
     let solved = false;
     if (target && target.shield > 0) out.push({ type: 'block', id: target.id, sound: 'plank-down' });
-    else if (target) solved = hit(raid, target, 1, 'stone', out);
-    out.push({ type: 'land', id: s.id, at, hit: solved, sound: solved ? null : 'thud' });
-    // The skill event: the distance of the shot against the distance of the enemy it was for.
-    const aimed = raid.enemies.find((e) => e.id === s.aimed);
+    else if (target) solved = hit(raid, target, 1, s.ball ?? 'stone', out);
+    // The shot was for the enemy nearest to the count (on the road, now).
+    const aimed = raid.enemies.filter((e) => alive(e) && e.state !== 'stunned' || e === target)
+      .map((e) => ({ e, off: Math.abs(along(raid, e) - s.count) })).filter((q) => q.off <= AIM).sort((a, b) => a.off - b.off)[0]?.e ?? null;
+    const goal = aimed ? Math.round(along(raid, aimed)) : null;
+    out.push({ type: 'land', id: s.id, at, count: s.count, hit: solved, off: goal === null ? null : s.count - goal, sound: solved ? null : 'thud' });
+    if (!solved) raid.marks.push({ id: `mark:${s.id}`, ...at, t: MARK, look: s.ball ?? 'stone' });
+    // The prediction of the first shot goes to the log with the result.
+    if (s.first) {
+      const p = raid.predict;
+      out.push({ type: 'prediction', id: 'raid', task: `raid-${raid.id}`, gap: p.gap ?? goal ?? s.count, guess: p.guess, used: s.count, solved: solved && target === aimed });
+    }
+    // The skill event: the count of the shot against the distance of the enemy it was for. The next
+    // shot at the same enemy after a miss is a correction (the difference on the road).
     if (aimed) {
       const was = raid.aims[aimed.id];
-      const goal = Math.round(dist(s.from, aimed));
-      const got = Math.round(s.land.d);
       const hitAimed = solved && target === aimed;
       const kinds = raid.skills.shot[Math.min(raid.skills.shot.length - 1, raid.level)];
       const correct = Boolean(was);
       out.push(skill(raid, correct ? 'correct' : 'shot', {
         skill: correct ? kinds.correct : kinds.first, solved: hitAimed, efficient: hitAimed && !correct, first: !correct,
-        parts: correct ? [was.got, got] : [got], target: goal, gap: correct ? Math.abs(goal - was.got) : goal,
+        parts: correct ? [was.got, s.count] : [s.count], target: goal, gap: correct ? Math.abs(goal - was.got) : goal,
       }));
-      raid.aims[aimed.id] = hitAimed ? null : { got };
+      raid.aims[aimed.id] = hitAimed ? null : { got: s.count };
     }
   }
   raid.stones = raid.stones.filter((s) => !s.done);
@@ -434,12 +435,10 @@ function tickTorches(raid, dt, out) {
       raid.losses += 1;
       out.push({ type: 'burn', id: t.id, at: { x: raid.wall.x - raid.dir.x * 3, z: raid.wall.z - raid.dir.z * 3 }, sound: 'fire' });
     }
-    // The skill event of the gate: only when the child tapped the bar for this torch or the bar
-    // is down. Efficient: the bar came down after the tell (the torch was lit).
+    // The gate is timing, not a skill: a fact of the raid (was the bar down, and did it come down
+    // after the tell), and no skill event.
     const tapped = bar?.tapped;
-    if (bar && (barred || (tapped !== null && tapped >= t.lit))) {
-      out.push(skill(raid, 'gate', { solved: barred, efficient: barred && tapped !== null && tapped >= t.lit, first: true, parts: [], target: 0 }));
-    }
+    if (bar && (barred || (tapped !== null && tapped >= t.lit))) out.push({ type: 'gated', id: 'raid', barred, afterTell: barred && tapped !== null && tapped >= t.lit });
   }
   raid.torches = raid.torches.filter((t) => !t.done);
 }
@@ -486,43 +485,40 @@ function skill(raid, what, r) {
 
 // Commands of the child ------------------------------------------------------------------------
 
-// A shot from the hero (from: half blocks) along dir (on the ground), with a pull. Return the
-// events (none when the slingshot is not ready).
-export function shoot(raid, from, dir, pull) {
-  if (raid.result || raid.reload > 0) return [];
-  const u = unit(dir);
-  const shot = shotOf(pull, raid.sling);
-  if (shot.power <= 0.05) return [];
-  const land = landingOf(shot, raid.sling);
+// A shot from the slingshot at the wall, along the road: the pull counts `count` half blocks,
+// and the stone lands exactly there. Return the events (none when the slingshot is not ready).
+// ball: what flies (a rice ball for the creatures of the river), from the data of the raid.
+export function shoot(raid, count) {
+  if (raid.result || raid.reload > 0 || !(count >= 1)) return [];
+  const flight = flightFor(count, raid.sling);
   raid.reload = raid.sling.reload;
-  // The enemy that the shot was for: the nearest one to the line of the shot, inside a narrow
-  // angle.
-  let aimed = null;
-  let best = Infinity;
-  for (const e of raid.enemies) {
-    if (!alive(e) || e.state === 'stunned') continue;
-    const v = { x: e.x - from.x, z: e.z - from.z };
-    const d = Math.hypot(v.x, v.z);
-    const off = Math.acos(Math.max(-1, Math.min(1, (v.x * u.x + v.z * u.z) / (d || 1))));
-    if (off > AIM) continue;
-    const side = d * Math.sin(off) + Math.abs(d - land.d) * 0.25;
-    if (side < best) {
-      best = side;
-      aimed = e;
-    }
-  }
-  const s = {
-    id: `stone:${++raid.made}`, from: { x: from.x, z: from.z }, dir: u, shot, t: 0, aimed: aimed?.id ?? null,
-    land: { t: land.t, d: land.d, x: from.x + u.x * land.d, z: from.z + u.z * land.d },
-  };
+  // The first shot of the raid carries the prediction; a pull with no tap on a post skips it.
+  const first = raid.shots === 0;
+  raid.shots += 1;
+  if (raid.predict.state === 'pending') raid.predict.state = 'skipped';
+  const s = { id: `stone:${++raid.made}`, count: flight.count, flight, t: 0, first, ...(raid.ball ? { ball: raid.ball } : {}) };
   raid.stones.push(s);
-  return [{ type: 'shoot', id: s.id, sound: 'sling' }];
+  return [{ type: 'shoot', id: s.id, count: flight.count, sound: 'sling' }];
 }
 
-// The place of a stone in the air (half blocks, h over the ground at its start).
+// A tap on a post before the first shot: the child says where the enemy is (the post nearest to
+// it). Return the events.
+export function predict(raid, post) {
+  const p = raid.predict;
+  if (raid.result || p.state !== 'pending' || !raid.posts.some((q) => q.d === post)) return [];
+  const first = active(raid).filter((e) => e.state !== 'stunned').sort((a, b) => along(raid, a) - along(raid, b))[0];
+  if (!first) return [];
+  p.state = 'done';
+  p.guess = post;
+  p.gap = Math.round(along(raid, first));
+  const near = raid.posts.reduce((a, q) => (Math.abs(q.d - p.gap) < Math.abs(a.d - p.gap) ? q : a)).d;
+  return [{ type: 'predict', id: 'raid', post, near, gap: p.gap, sound: 'tap' }];
+}
+
+// The place of a stone in the air (half blocks, h over the ground at the wall).
 export function stoneAt(raid, s) {
-  const p = positionAt(s.shot, Math.min(s.t, s.land.t), raid.sling);
-  return { x: s.from.x + s.dir.x * p.d, z: s.from.z + s.dir.z * p.d, h: Math.max(0, p.h) };
+  const p = positionAt(s.flight, Math.min(s.t, s.flight.t), raid.sling);
+  return { x: raid.wall.x + raid.dir.x * p.d, z: raid.wall.z + raid.dir.z * p.d, h: Math.max(0, p.h) };
 }
 
 // The place of a torch in the air: a low arc from the scout to the gate.

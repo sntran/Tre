@@ -17,10 +17,10 @@
 // - talk { dialogue }: a talk now; travel: open the country map; refresh: the people again;
 // - next, choose { n }: the next line of the open talk, or a choice;
 // - closed: the view closed the screen that the session opened;
-// - in a raid: shoot { dir: { x, z }, pull } (the slingshot of the hero: a direction on the ground
-//   and a pull from 0 to 1), pour { source, x, y } (a drag of an element from a source to a map
-//   point), and pet (Nghé charges). A tap on the gate bars it, a tap on a spot calls a villager,
-//   and a tap on the bamboo lets Gióng pull it.
+// - in a raid: shoot { count } (the slingshot at the wall: the pull counts half blocks along the
+//   road), pour { source, x, y } (a drag of an element from a source to a map point), and pet (Nghé
+//   charges). A tap on a post before the first shot is the prediction, a tap on the gate bars it,
+//   a tap on a spot calls a villager, and a tap on the bamboo lets Gióng pull it.
 //
 // Events (events()): the events of the world (see src/core/world/), and the events of the
 // session: open { screen, ... } (dialogue, say, callout, rest, or a screen of a story effect:
@@ -481,6 +481,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     refreshPeople();
     emit({ type: 'raid', on: false });
   }
+  // The slingshot is at the wall: the hero walks back there first when the hero is away.
+  function shootFromWall(count) {
+    const wall = raidEnt()?.raid.wall;
+    if (!wall) return;
+    if (distHb(hero().position, wall) <= 2) order({ act: 'shoot', count });
+    else walkTo([{ x: wall.x / 2, y: wall.z / 2 }], () => order({ act: 'shoot', count }));
+  }
   // A tap on the road with a trap in the hands: the trap goes there (the hero walks near first).
   function tapRaidRoad(hit) {
     const held = getEntity(state, holding());
@@ -640,6 +647,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (w.what === 'gate') order({ act: 'bar' });
       else if (w.what === 'spot') order({ act: 'call', spot: w.id });
       else if (w.what === 'bamboo') order({ act: 'bamboo' });
+      else if (w.what === 'post') order({ act: 'predict', post: w.id });
       return;
     }
     if (target.thing) {
@@ -873,7 +881,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (busy) return;
     if (raidOn() && (type === 'shoot' || type === 'pour' || type === 'pet')) {
-      if (type === 'shoot') order({ act: 'shoot', dir: cmd.dir, pull: cmd.pull });
+      if (type === 'shoot') shootFromWall(cmd.count);
       else if (type === 'pour') order({ act: 'pour', source: cmd.source, x: cmd.x * 2, z: cmd.y * 2 });
       else order({ act: 'charge' });
       return;
