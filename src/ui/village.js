@@ -316,7 +316,8 @@ export async function mountVillage(ctx, params = {}) {
       Object.assign(stick, { active: true, id: e.pointerId, x: p.x, y: p.y, kx: 0, ky: 0, since: performance.now(), far: 0 });
       return;
     }
-    hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false, friend: friendAt(p) };
+    // A thing under the finger (a plank, a rod, the stem) wins over Nghé beside it.
+    hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false, friend: thingAt(p) || guessAt(p) ? null : friendAt(p) };
   }
 
   // Nghé (or the hero on the back of Nghé) under a screen point: a tap pets, a hold rides.
