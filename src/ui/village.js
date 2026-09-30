@@ -467,17 +467,20 @@ export async function mountVillage(ctx, params = {}) {
       // straw rope) answers a tap.
       if (e.hidden || (e.item.set && !e.item.fixed)) continue;
       const q = e.position;
-      const end = { x: q.x + Math.sin(q.facing ?? 0) * e.item.size, z: q.z + Math.cos(q.facing ?? 0) * e.item.size };
+      // A standing culm (or cut piece) of the bamboo clump goes up from its foot; other things lie
+      // along their facing.
+      const up = e.item.kind === 'culm' || e.item.kind === 'stump';
+      const end = up ? { x: q.x, z: q.z } : { x: q.x + Math.sin(q.facing ?? 0) * e.item.size, z: q.z + Math.cos(q.facing ?? 0) * e.item.size };
       const b = view.screenBox({
         x0: Math.min(q.x, end.x) / 2 - 0.5, x1: Math.max(q.x, end.x) / 2 + 0.5,
-        y0: q.y / 2, y1: q.y / 2 + 0.5,
+        y0: q.y / 2, y1: q.y / 2 + (up ? e.item.size / 2 : 0.5),
         z0: Math.min(q.z, end.z) / 2 - 0.5, z1: Math.max(q.z, end.z) / 2 + 0.5,
       });
       const pad = 6;
       if (p.x < b.x0 - pad || p.x > b.x1 + pad || p.y < b.y0 - pad || p.y > b.y1 + pad) continue;
-      // The plank whose middle line on the screen is nearest to the finger.
-      const a = view.project(q.x / 2, q.y / 2 + 0.4, q.z / 2);
-      const c = view.project(end.x / 2, q.y / 2 + 0.4, end.z / 2);
+      // The plank whose middle line on the screen is nearest to the finger (for a culm: the height).
+      const a = view.project(q.x / 2, q.y / 2 + (up ? 0 : 0.4), q.z / 2);
+      const c = view.project(end.x / 2, q.y / 2 + (up ? e.item.size / 2 : 0.4), end.z / 2);
       const dx = c.x - a.x;
       const dy = c.y - a.y;
       const k = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));

@@ -11,8 +11,9 @@
 //   horse (the iron horse): with the lumps that the smith needs in the hearth, the bellows light
 //     the fire, and the iron on the anvil becomes the horse in the water; with too few, the fire
 //     puffs and dies; with too many, the extra rolls back to the heap.
-//   slash (bamboo staffs for the boss): each slash cuts at once; after the last slash, equal pieces
-//     tie into a bundle of staffs; if not, the short piece breaks and a new stem comes.
+//   slash (bamboo staffs for the boss): the child slashes each standing culm of a clump at the
+//     height of the hand; the piece is as long as the height of the cut. Equal pieces tie into a
+//     bundle of staffs; if not, the pieces that are not equal break, and their culms grow again.
 //   share (the loot after a raid): equal coins on the mats make all happy; if not, Nghé sulks.
 //   feed (rice for Gióng): each ten bowls in the pot, Gióng eats and grows one head taller.
 // When a task is done, the event "trial" goes out (the session sets the flag and gives the reward).
@@ -20,12 +21,13 @@ export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'ke
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { REACH } from '../zones.js';
-import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
+import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 
 const BEND = 1.2; // seconds: the bent iron cools before it goes back into the fire
 const TIDE_IN = 2.5; // seconds: the tide stands high over the stakes
 const TIDE_OUT = 3; // seconds: the tide goes out and shows the trap
-const NEW_STEM = 1.2; // seconds: a new stem comes after sticks that are not equal
+const NEW_STEM = 1.2; // seconds: a new stem (or culm) comes after sticks that are not equal
+const CULM_STEP = 2.5; // half blocks between two culms of the bamboo clump (a row along -z)
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const say = (world, type, id, extra = {}) => world.events.push({ type, id, ...extra });
@@ -44,7 +46,7 @@ export function work(world, dt, rng, env) {
     if (z.zone.task === 'forge' || z.zone.task === 'horse') tickForge(world, z, dt, env);
     if (z.zone.task === 'stakes') tickTide(world, z, dt, env);
     if (z.zone.task === 'cut') tickStem(world, z, dt);
-    if (z.zone.task === 'slash') tickSlash(world, z, dt);
+    if (z.zone.task === 'slash') tickSlash(world, z, dt, env);
     if (z.zone.task === 'share') tickShare(world, z, dt, env);
   }
 }
@@ -195,9 +197,9 @@ export function setupTrial(world, def, level, env) {
     });
     Object.assign(tz.zone, { loot: def.loot, who: def.who, settled: null, leave: null, face: Math.atan2(-back.x, -back.z) });
   } else if (def.task === 'slash') {
-    const s = P(def.places.stem);
-    Object.assign(tz.zone, { stem: { x: s.x, y: s.y, z: s.z, length: task.length }, cuts: [], pieces: [] });
-    layPieces(world, tz);
+    const c = P(def.places.clump);
+    Object.assign(tz.zone, { clump: { x: c.x, y: c.y, z: c.z }, pieces: Array(task.parts).fill(null) });
+    for (let i = 0; i < task.parts; i++) addCulm(world, tz, task, i);
   } else if (def.task === 'cut') {
     const s = P(def.places.stem);
     tz.zone.stem = { x: s.x, y: s.y, z: s.z, length: task.length };
@@ -511,31 +513,37 @@ function act(world, e, want, env) {
     }
     say(world, 'mark', stem.id, { at, sound: 'tap' });
   } else if (want.act === 'slash') {
-    // A slash at the nearest ring of the bamboo stem: it cuts at once.
-    const s = tz.zone.stem;
+    // A slash at the height of the hand on a standing culm: the top falls away, and the piece from
+    // the ground to the cut stands in its place (the staff). The pieces stand side by side in the
+    // row, so that the heights are easy to compare.
+    const c = tz.zone.clump;
+    const i = want.culm;
+    const culm = getEntity(world, `culm:staffs:${i}`);
     const at = Math.round(want.at);
-    if (!s || tz.zone.cut || at <= 0 || at >= s.length || tz.zone.cuts.includes(at)) return;
-    tz.zone.cuts.push(at);
-    layPieces(world, tz);
-    say(world, 'slash', tz.id, { at, sound: 'plank-up' });
-    if (tz.zone.cuts.length < task.parts - 1) return;
-    const result = cutResult(tz.zone.cuts, s.length, task.parts);
-    commit(world, tz, task, { solved: result.solved, parts: result.pieces, target: s.length });
+    if (!c || !culm || tz.zone.cut || at < 1 || at >= task.height) return;
+    if (at > task.reach) return say(world, 'high', tz.id, { culm: i, sound: 'tap' });
+    removeEntity(world, culm.id);
+    tz.zone.pieces[i] = at;
+    addEntity(world, { id: `stump:staffs:${i}`, keep: true, item: { kind: 'stump', size: at, slot: i, task: 'trial-staffs', zone: null, held: null, set: true, fixed: true }, position: { ...culm.position }, look: `stump-${at}` });
+    say(world, 'slash', tz.id, { culm: i, at, sound: 'plank-up' });
+    if (tz.zone.pieces.includes(null)) return;
+    const result = staffResult(tz.zone.pieces);
+    commit(world, tz, task, { solved: result.solved, parts: [...tz.zone.pieces], target: task.height });
     if (result.solved) {
       // Equal staffs, tied into a bundle for the men of the village.
-      for (const id of tz.zone.pieces) removeEntity(world, id);
-      tz.zone.pieces = [];
-      addEntity(world, { id: 'staffs:bamboo', keep: true, position: { x: s.x + s.length / 2 - 1, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `staffs-${task.parts}` });
-      say(world, 'chop', tz.id, { sound: 'plank-up', pieces: result.pieces });
+      tz.zone.pieces.forEach((_, j) => removeEntity(world, `stump:staffs:${j}`));
+      addEntity(world, { id: 'staffs:bamboo', keep: true, position: { x: c.x + 3, y: c.y, z: c.z - (task.parts - 1) * CULM_STEP / 2, facing: 0 }, look: `staffs-${task.parts}` });
+      say(world, 'chop', tz.id, { sound: 'plank-up', pieces: [...tz.zone.pieces] });
       finish(world, tz);
     } else {
-      // The pieces are not equal: the short one breaks, and a new stem comes.
-      const shortest = Math.min(...result.pieces);
-      const ends = [0, ...[...tz.zone.cuts].sort((a, b) => a - b)];
-      const i = result.pieces.indexOf(shortest);
-      removeEntity(world, `stem:staffs:${ends[i]}`);
+      // The pieces that are not equal to the others break, and their culms grow again.
+      const pieces = [...tz.zone.pieces];
+      for (const j of result.broken) {
+        removeEntity(world, `stump:staffs:${j}`);
+        tz.zone.pieces[j] = null;
+      }
       tz.zone.cut = NEW_STEM;
-      say(world, 'snap', tz.id, { pieces: result.pieces, short: shortest, sound: 'plank-down' });
+      say(world, 'snap', tz.id, { pieces, broken: result.broken, sound: 'plank-down' });
     }
   } else if (want.act === 'cut') {
     const s = tz.zone.stem;
@@ -667,18 +675,11 @@ function tickTide(world, tz, dt, env) {
 }
 
 // A new stem comes after sticks that were not equal.
-// The pieces of the bamboo stem between the slashes, with a small space between them. A piece
-// knows where it starts on the stem (from), so that a tap on it gives a place on the whole stem.
-function layPieces(world, tz) {
-  const s = tz.zone.stem;
-  for (const id of tz.zone.pieces) removeEntity(world, id);
-  const ends = [0, ...[...tz.zone.cuts].sort((a, b) => a - b), s.length];
-  tz.zone.pieces = ends.slice(1).map((b, i) => {
-    const a = ends[i];
-    const id = `stem:staffs:${a}`;
-    addEntity(world, { id, keep: true, item: { kind: 'stem', size: b - a, from: a, task: 'trial-staffs', zone: null, held: null, set: true, fixed: true }, position: { x: s.x + a + i * 0.4, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `bamboo-${b - a}` });
-    return id;
-  });
+// A standing culm of the bamboo clump, in its place (i) in the row, with a ring at each half block.
+// The row goes along -z, so that the culms stand apart in the first view of the camera.
+function addCulm(world, tz, task, i) {
+  const c = tz.zone.clump;
+  addEntity(world, { id: `culm:staffs:${i}`, keep: true, item: { kind: 'culm', size: task.height, slot: i, task: 'trial-staffs', zone: null, held: null, set: true, fixed: true }, position: { x: c.x, y: c.y, z: c.z - i * CULM_STEP, facing: 0 }, look: `culm-${task.height}` });
 }
 
 // Nghé follows the hero (the friend of the hero).
@@ -716,14 +717,14 @@ function tickShare(world, tz, dt, env) {
   } else say(world, 'sulk', friend?.id ?? tz.id, { counts, sound: 'tap' });
 }
 
-// After the short piece breaks, a new bamboo stem comes.
-function tickSlash(world, tz, dt) {
+// After the pieces that are not equal break, their culms grow again.
+function tickSlash(world, tz, dt, env) {
   if (!tz.zone.cut) return;
   tz.zone.cut -= dt;
   if (tz.zone.cut > 0) return;
   delete tz.zone.cut;
-  tz.zone.cuts = [];
-  layPieces(world, tz);
+  const task = taskFor(env, tz.zone);
+  tz.zone.pieces.forEach((p, i) => { if (p === null && !getEntity(world, `culm:staffs:${i}`)) addCulm(world, tz, task, i); });
   say(world, 'stem', tz.id, { sound: 'plank-down' });
 }
 

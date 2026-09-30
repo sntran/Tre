@@ -68,6 +68,18 @@ export function basketResult(counts, kinds, each) {
 }
 
 // The woodcutter: the pieces of a stem cut at the marks, and whether they are the equal parts.
+// The staffs from the bamboo clump: the length of the piece from each culm (the height of its
+// cut). Equal pieces are solved. If not, the pieces of the most common length stay (with a tie, the
+// length of the first piece), and the others break (broken: their places in the clump).
+export function staffResult(pieces) {
+  const count = new Map();
+  for (const p of pieces) count.set(p, (count.get(p) ?? 0) + 1);
+  let keep = pieces[0];
+  for (const [len, n] of count) if (n > count.get(keep)) keep = len;
+  const broken = pieces.flatMap((p, i) => (p === keep ? [] : [i]));
+  return { solved: broken.length === 0, keep, broken };
+}
+
 export function cutResult(marks, length, parts) {
   const at = [...new Set(marks)].filter((m) => m > 0 && m < length).sort((a, b) => a - b);
   const ends = [0, ...at, length];

@@ -418,6 +418,20 @@ export function workThing(look) {
       parts.push(P('end', [0.8, 0.8, 0.1], 'yellowPale', [0, 0.5, 0]));
       return still(parts, 0.8);
     }
+    // A standing culm of the bamboo clump of the staffs, n half blocks tall, with a dark ring at
+    // each half block (the rings are the heights where the hand can slash) and leaves at the top;
+    // or a cut piece (cut) that stands where its culm stood.
+    case 'culm': {
+      const parts = [];
+      for (let i = 0; i < look.n; i++) parts.push(P(`seg${i}`, [0.8, 1, 0.8], i % 2 ? 'green' : 'greenPale', [0, i + 0.5, 0]), P(`ring${i}`, [0.9, 0.14, 0.9], 'greenDeep', [0, i + 1, 0]));
+      // A cut piece (the staff, where the culm stood) has a pale cut at the top and no leaves.
+      if (look.cut) {
+        parts.push(P('cut', [0.7, 0.1, 0.7], 'yellowPale', [0, look.n + 0.05, 0]));
+        return still(parts, look.n + 0.1);
+      }
+      parts.push(P('leaves', [2.6, 1.4, 2.6], 'greenPale', [0, look.n + 0.4, 0]), P('leavesTop', [1.4, 1, 1.4], 'green', [0, look.n + 1.4, 0]));
+      return still(parts, look.n + 1.9);
+    }
     // An old coin of bronze with a square hole.
     case 'coin': return still([P('coin', [0.6, 0.12, 0.6], 'yellow', [0, 0.06, 0]), P('rim', [0.66, 0.08, 0.66], 'ochre', [0, 0.03, 0]), P('hole', [0.2, 0.14, 0.2], 'ink', [0, 0.07, 0])], 0.15);
     // The rest of the loot on a red cloth, when the child puts it down on the way.

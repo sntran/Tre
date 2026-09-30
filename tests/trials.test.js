@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { levelFor, taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../src/core/world/trials.js';
+import { levelFor, taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../src/core/world/trials.js';
 import { load } from './helpers.js';
 
 const trials = load('data/trials.json');
@@ -115,14 +115,14 @@ test('the iron horse: the bellows light the fire only with the lumps that the sm
   assert.ok(def.extra > 0, 'the heap has more lumps than the forge needs');
 });
 
-test('the bamboo staffs: each level cuts into equal staffs at the rings, and a wrong slash is not equal', () => {
+test('the bamboo staffs: each level has a culm for each staff, and the hand reaches a ring below the top', () => {
   const def = load('data/trials.json').trials.find((t) => t.id === 'staffs');
+  const looks = load('data/figures.json').figures;
   for (const l of def.levels) {
-    assert.equal(l.length % l.parts, 0, `${l.length} into ${l.parts}`);
-    const unit = l.length / l.parts;
-    const good = Array.from({ length: l.parts - 1 }, (_, i) => unit * (i + 1));
-    assert.ok(cutResult(good, l.length, l.parts).solved);
-    assert.ok(!cutResult([...good.slice(0, -1), good.at(-1) - 1], l.length, l.parts).solved, 'one slash a ring too near');
+    assert.ok(l.parts >= 2 && l.reach >= 2 && l.reach < l.height, JSON.stringify(l));
+    assert.ok(looks[`culm-${l.height}`] && looks[`staffs-${l.parts}`], 'the looks of the culm and the bundle');
+    for (let at = 1; at <= l.reach; at++) assert.ok(looks[`stump-${at}`], `a piece of ${at}`);
+    assert.ok(staffResult(Array(l.parts).fill(l.reach)).solved);
   }
 });
 
@@ -134,4 +134,11 @@ test('the loot: the share is fair with equal mats, and it waits while the pile c
   assert.ok(unfair.settled && !unfair.fair, 'one coin cannot even out three and one: Nghé sulks');
   const raids = load('data/raids.json').raids;
   for (const id of ['soldier1', 'soldier2', 'boss']) assert.ok(raids[id].loot >= 3, `${id} has loot to share`);
+});
+
+test('the staffs from the bamboo clump: equal pieces are solved; the pieces that are not equal to the others break', () => {
+  assert.deepEqual(staffResult([5, 5, 5, 5]), { solved: true, keep: 5, broken: [] });
+  assert.deepEqual(staffResult([5, 5, 4, 5]), { solved: false, keep: 5, broken: [2] });
+  assert.deepEqual(staffResult([3, 6]), { solved: false, keep: 3, broken: [1] }, 'a tie: the length of the first piece stays');
+  assert.deepEqual(staffResult([4, 6, 6, 4, 6, 2]), { solved: false, keep: 6, broken: [0, 3, 5] });
 });

@@ -76,13 +76,13 @@
     },
     {
       "id": "staffs", "npc": "woodcutter", "kind": "task", "flag": "boss.staffs", "reward": {}, "doneTalk": "woodcutter.staffs.done", "task": "slash",
-      "_task": "Bamboo staffs for the men of the village before the general comes. A green bamboo stem lies by the big road in front of the đình (length, with a ring at each half block). A tap on the stem slashes it at the nearest ring, at once: no chalk, and no taking back. After the last slash (parts - 1), the pieces are the commit: equal pieces tie into a bundle of staffs; if not, the short piece breaks, and a new stem comes.",
+      "_task": "Bamboo staffs for the men of the village before the general comes. A clump of standing bamboo grows by the big road in front of the đình: parts culms in a row, each of height (half blocks), with a ring at each half block. The child walks to a culm and slashes it at the height of the hand (a ring from 1 up to reach), one culm at a time, at once: no chalk, and no taking back. The top falls away, and the piece from the ground to the cut (a staff, as long as the height of the cut) stands where the culm stood, next to the others. When each culm is cut, the pieces are the commit: equal pieces tie into a bundle of staffs; if not, the pieces that are not equal to the others break, and their culms grow again. The woodcutter's own trial (a stem on the ground, with chalk) stays as it is.",
       "levels": [
-        { "length": 10, "parts": 2, "skill": "math.shapes", "level": 1 },
-        { "length": 12, "parts": 4, "skill": "math.shapes", "level": 2 },
-        { "length": 18, "parts": 6, "skill": "math.frac.unit", "level": 1 }
+        { "parts": 2, "height": 12, "reach": 6, "skill": "math.shapes", "level": 1 },
+        { "parts": 4, "height": 12, "reach": 6, "skill": "math.shapes", "level": 2 },
+        { "parts": 6, "height": 12, "reach": 6, "skill": "math.frac.unit", "level": 1 }
       ],
-      "places": { "stem": "staffs-stem" }
+      "places": { "clump": "staffs-clump" }
     },
     {
       "id": "share", "kind": "task", "task": "share", "reward": {}, "who": ["hero", "nghe", "giong"],

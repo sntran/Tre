@@ -358,11 +358,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       walkNear(tz.zone.anvil, () => work(trial, 'quench'));
       return true;
     }
+    if (thing.item.kind === 'culm') {
+      // A standing culm of the bamboo clump: the hero walks to it and slashes at that height.
+      const at = along ?? 1;
+      walkNear({ x: thing.position.x + 2, z: thing.position.z }, () => work(trial, 'slash', { culm: thing.item.slot, at }));
+      return true;
+    }
+    // A cut piece stands still in the clump.
+    if (thing.item.kind === 'stump') return true;
     if (thing.item.kind === 'stem') {
+      // On the stem of the woodcutter a tap puts a chalk mark.
       const at = along ?? thing.item.size / 2;
-      // A piece of the bamboo stem of the staffs slashes at once, at its place on the whole stem.
-      const act = tz.zone.task === 'slash' ? 'slash' : 'mark';
-      walkNear({ x: thing.position.x + at, z: thing.position.z - 2 }, () => work(trial, act, { at: at + (thing.item.from ?? 0) }));
+      walkNear({ x: thing.position.x + at, z: thing.position.z - 2 }, () => work(trial, 'mark', { at }));
       return true;
     }
     return false;
@@ -833,7 +840,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const e of query(state, 'raidTap', 'position')) consider({ raid: e.raidTap }, distHb(p, e.position), 2.2);
     if (best) return best.target;
     for (const e of query(state, 'item', 'position')) {
-      if (e.hidden || (e.item.set && !e.item.fixed)) continue;
+      // A standing culm needs the height of the finger: only the view (or a story) taps it.
+      if (e.hidden || (e.item.set && !e.item.fixed) || e.item.kind === 'culm' || e.item.kind === 'stump') continue;
       const { d, along } = segment(p, e);
       consider(e.item.fixed ? { thing: e.id, along } : { thing: e.id }, d, 1.2);
     }
@@ -1091,6 +1099,7 @@ export function doorOf(data, id) {
 
 // The middle of a thing that lies along its facing from its position (half blocks).
 export function middleOf(e) {
+  if (e.item.kind === 'culm' || e.item.kind === 'stump') return { x: e.position.x, z: e.position.z };
   return {
     x: e.position.x + Math.sin(e.position.facing ?? 0) * e.item.size / 2,
     z: e.position.z + Math.cos(e.position.facing ?? 0) * e.item.size / 2,
