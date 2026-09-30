@@ -1,5 +1,5 @@
 // The time limit: count the play time, warn a few minutes before the end,
-// and send the hero home to rest at a calm point. Never in a battle.
+// and send the hero home to rest at a calm point. Never in a raid.
 import { addPlayTime, timeStatus } from '../core/timelimit.js';
 import { registerScene } from './registry.js';
 import { h, img, button } from './dom.js';
@@ -7,7 +7,7 @@ import { t, tg } from './i18n.js';
 import { speak } from './speak.js';
 import { portrait } from './dialogue.js';
 
-const PLAY_SCENES = new Set(['village', 'battle', 'vanmieu']);
+const PLAY_SCENES = new Set(['village', 'vanmieu']);
 
 export function isTimeOver(ctx) {
   const p = ctx.profile;
@@ -47,7 +47,6 @@ export function startTimer(ctx) {
 }
 
 registerScene('rest', async (ctx) => {
-  ctx.surface.canvas.hidden = true;
   await ctx.save('rest');
   const screen = h('div', { class: 'screen' });
   const box = h('div', { class: 'vanmieu' }, [

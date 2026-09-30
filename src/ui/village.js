@@ -16,6 +16,7 @@ import { h, img, button } from './dom.js';
 import { t, tn } from './i18n.js';
 import { speak } from './speak.js';
 import { createDialogueBox } from './dialogue.js';
+import { createRaidView } from './raid.js';
 
 const STICK_R = 56; // the radius of the virtual stick, in screen pixels
 // The color of the dusk wash at full night: the hue of indigo (#2f4668) in the palette.
@@ -76,7 +77,6 @@ export async function mountVillage(ctx, params = {}) {
   const { data, profile } = ctx;
   const worldMap = data.world;
   const canvas = ctx.voxel;
-  ctx.surface.canvas.hidden = true;
 
   let D;
   try {
@@ -149,6 +149,10 @@ export async function mountVillage(ctx, params = {}) {
   const glow = glowLayer.getContext('2d');
   const dusk = duskLayer.getContext('2d');
   const drops = Array.from({ length: 140 }, (_, i) => ({ x: (i * 97) % 1000 / 1000, y: (i * 61) % 1000 / 1000, s: 0.7 + ((i * 13) % 10) / 20 }));
+  // The marks of a raid: the dotted arc of the slingshot, the flow of an element, the dots over
+  // the enemies (src/ui/raid.js).
+  const raidLayer = h('canvas', { class: 'world-raid', hidden: true });
+  const raidView = createRaidView({ view, figures, session, layer: raidLayer, send });
   // The layer of the marks on the world: the quest stars, the arrows at the edge, the tap ring.
   const marks = h('div', { class: 'world-marks' });
   const ring = h('div', { class: 'tap-ring', hidden: true });
@@ -157,7 +161,7 @@ export async function mountVillage(ctx, params = {}) {
   // A dark layer for the change of map, and the name of the new map.
   const fade = h('div', { class: params.arrive ? 'map-fade on' : 'map-fade' });
   const banner = params.arrive ? h('div', { class: 'map-name', text: t(mapData.nameKey) }) : null;
-  ctx.ui.append(duskTint, duskLayer, glowLayer, paper, marks, hud, turns, fade, ...(banner ? [banner] : []));
+  ctx.ui.append(duskTint, duskLayer, glowLayer, paper, raidLayer, marks, hud, turns, fade, ...(banner ? [banner] : []));
   if (params.arrive) {
     requestAnimationFrame(() => requestAnimationFrame(() => fade.classList.remove('on')));
     setTimeout(() => banner?.remove(), 2600);
@@ -265,7 +269,7 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     // A screen of a story effect. ctx.open() returns false when the village scene closes (for
-    // example for a battle).
+    // example for Văn Miếu).
     ctx.open(ev.cmd, { village: api }).then((stay) => {
       if (stay && alive) send({ type: 'closed' });
     });
@@ -282,6 +286,7 @@ export async function mountVillage(ctx, params = {}) {
 
   // A dialogue, a panel, or a trigger zone stops the hero: drop the input that is held.
   function dropInput() {
+    raidView.cancel();
     hold = null;
     stick.active = false;
     keys.clear();
@@ -312,6 +317,8 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     if (e.pointerType !== 'mouse') stick.show = true;
+    // In a raid: a finger on the hero pulls the slingshot; a finger on a source drags an element.
+    if (raidView.down(p, e.pointerId)) return;
     if (e.pointerType !== 'mouse' && inStickZone(p)) {
       Object.assign(stick, { active: true, id: e.pointerId, x: p.x, y: p.y, kx: 0, ky: 0, since: performance.now(), far: 0 });
       return;
@@ -344,6 +351,7 @@ export async function mountVillage(ctx, params = {}) {
       if (d / pinch.d > 1.33) { view.setZoom(0); pinch.d = d; }
       return;
     }
+    if (raidView.move(p, e.pointerId)) return;
     if (stick.active && stick.id === e.pointerId) {
       let kx = p.x - stick.x;
       let ky = p.y - stick.y;
@@ -369,6 +377,7 @@ export async function mountVillage(ctx, params = {}) {
       hold = null;
       return;
     }
+    if (raidView.up(p, e.pointerId)) return;
     if (stick.active && stick.id === e.pointerId) {
       stick.active = false;
       stick.kx = 0;
@@ -501,6 +510,8 @@ export async function mountVillage(ctx, params = {}) {
     if (session.holding() && heroUnder(p)) return { hero: true };
     const ghost = guessAt(p);
     if (ghost) return { guess: { zone: ghost.guess.zone, n: ghost.guess.n } };
+    const raidTap = raidView.targetAt(p);
+    if (raidTap) return raidTap;
     const plank = thingAt(p);
     if (plank) return plank.item.fixed ? { thing: plank.id, along: plank.along } : { thing: plank.id };
     const person = personAt(p);
@@ -627,6 +638,29 @@ export async function mountVillage(ctx, params = {}) {
     }, 260);
   }
 
+  // A coin that an enemy took at the gate: it flies from its counter in the HUD to the enemy.
+  function flyFromCounter(toId, item, delay) {
+    const f = figures.placeOf(toId);
+    const counter = counts.querySelector(`[data-item="${item}"] .count-icon`);
+    updateHud();
+    if (!f || !counter || !data.items.items[item]) return;
+    const box = counter.getBoundingClientRect();
+    const base = canvas.getBoundingClientRect();
+    const start = { x: box.left + box.width / 2 - base.left, y: box.top + box.height / 2 - base.top };
+    const el = img(data.items.items[item].art, 'flying-item');
+    marks.append(el);
+    const t0 = performance.now() + delay * 1000;
+    const tick = (now) => {
+      const end = view.project(f.x, f.y + f.height, f.z);
+      const k = Math.max(0, Math.min(1, (now - t0) / 700));
+      const e = k * k * (3 - 2 * k);
+      el.style.transform = `translate(${start.x + (end.x - start.x) * e}px, ${start.y + (end.y - start.y) * e - Math.sin(k * Math.PI) * 60}px) translate(-50%, -50%) scale(${1 - k * 0.4})`;
+      if (k < 1 && alive) requestAnimationFrame(tick);
+      else el.remove();
+    };
+    requestAnimationFrame(tick);
+  }
+
   // Greetings over the heads of the people, and the coins of broken pots.
   const bubbles = [];
   function showBubble(id, text) {
@@ -711,6 +745,13 @@ export async function mountVillage(ctx, params = {}) {
         }
         return;
       case 'map': goThrough(); return;
+      case 'raid':
+        ctx.bus.emit('raid', ev.on);
+        raidView.event(ev);
+        return;
+      case 'lose':
+        for (const [item, n] of Object.entries(ev.take)) for (let i = 0; i < n; i++) flyFromCounter(ev.to, item, i * 0.15);
+        return;
       default: worldEvent(ev);
     }
   }
@@ -723,6 +764,16 @@ export async function mountVillage(ctx, params = {}) {
     }
     if (ev.sound) ctx.bus.emit('sound', ev.sound);
     if (ev.type === 'petted') showBubble(ev.id, '♥');
+    raidView.event(ev);
+    // A raid: dust where a stone lands, a trap snaps, or Gióng strikes; water and lightning splash.
+    if (ev.type === 'land' || ev.type === 'water' || ev.type === 'shock' || ev.type === 'spark' || ev.type === 'flame') {
+      const q = ev.at;
+      if (q) figures.burst(q.x / 2, session.env.groundY(q.x / 2, q.z / 2) / 2 + 0.2, q.z / 2, ev.type === 'water' || ev.type === 'shock' ? 'splash' : 'dust', ev.type === 'land' ? 5 : 12);
+    }
+    if (ev.type === 'snap' || ev.type === 'strike' || ev.type === 'butt') {
+      const f = figures.placeOf(ev.type === 'snap' ? ev.trap : ev.id);
+      if (f) figures.burst(f.x, f.y + 0.3, f.z, 'dust', 10);
+    }
     // A plank falls into the river: a splash. The bridge takes solid form: dust along the deck.
     if (ev.type === 'float' || ev.type === 'crack') {
       const q = ev.at ?? getEntity(state, ev.id)?.position;
@@ -889,8 +940,9 @@ export async function mountVillage(ctx, params = {}) {
     figures.draw(between, dt);
     // The light of the hour: the world dims to a cool dusk (softer at 0.8 so that the night stays readable).
     D.night.value = (state.sky?.night ?? 0) * 0.8;
-    view.render(dt, figures.placeOf('hero'), time, state.sky);
+    view.render(dt, raidView.focus(figures.placeOf('hero')), time, state.sky);
     drawSky();
+    raidView.draw(dt, w, hh);
     drawMarks();
   }
 
@@ -958,7 +1010,7 @@ export async function mountVillage(ctx, params = {}) {
     turnRight.setAttribute('aria-label', t('ui.turn.right'));
     updateHud();
   });
-  // The events of the start (the intro, the talks after a battle).
+  // The events of the start (the intro, the talks after a map change).
   queueMicrotask(() => {
     if (alive) flush();
   });
@@ -979,7 +1031,7 @@ export async function mountVillage(ctx, params = {}) {
       window.removeEventListener('keyup', onKey);
       offLang();
       figures.dispose();
-      for (const el of [duskTint, duskLayer, glowLayer, paper, marks, hud, turns, fade, banner, meter, debugPanel, bookScreen]) el?.remove();
+      for (const el of [duskTint, duskLayer, glowLayer, paper, raidLayer, marks, hud, turns, fade, banner, meter, debugPanel, bookScreen]) el?.remove();
     },
     api,
   };

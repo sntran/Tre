@@ -36,7 +36,7 @@
       "spots": [[69, 27], [72, 31.2]], "helpers": 2,
       "sources": [{ "id": "jar", "kind": "water", "at": [60.6, 32.6] }],
       "allow": 1, "take": { "coin": 1 },
-      "introKey": "raid.scouts.intro", "mark": "legend", "noteKey": "battle.scouts.note",
+      "introKey": "raid.scouts.intro", "mark": "legend", "noteKey": "raid.scouts.note",
       "win": { "set": ["scouts.won"], "give": { "iron": 2, "coin": 2 }, "after": ["scouts.won"] }
     },
     "patrol": {
@@ -49,7 +49,7 @@
       "spots": [[69, 27]], "helpers": 1,
       "sources": [{ "id": "jar", "kind": "water", "at": [60.6, 32.6] }],
       "allow": 1, "take": { "coin": 1 },
-      "introKey": "raid.patrol.intro", "mark": "legend", "noteKey": "battle.scouts.note",
+      "introKey": "raid.patrol.intro", "mark": "legend", "noteKey": "raid.scouts.note",
       "win": { "give": { "coin": 2, "bamboo": 1 } }
     },
     "river": {
@@ -59,7 +59,7 @@
         { "at": 9, "kind": "serpent", "from": [36, 68.5], "side": 1 }
       ],
       "allow": 1, "take": {},
-      "introKey": "raid.river.intro", "mark": "legend", "noteKey": "battle.river.note",
+      "introKey": "raid.river.intro", "mark": "legend", "noteKey": "raid.river.note",
       "win": { "set": ["river.calmed"], "give": { "coin": 2 }, "after": ["river.song", "river.song.after"] }
     },
     "soldier1": {
@@ -77,7 +77,7 @@
         { "id": "forge", "kind": "lightning", "at": [21, 27] }
       ],
       "allow": 1, "take": { "coin": 1 },
-      "introKey": "raid.soldier.intro", "mark": "legend", "noteKey": "battle.soldier.note",
+      "introKey": "raid.soldier.intro", "mark": "legend", "noteKey": "raid.soldier.note",
       "win": { "set": ["soldier1.won"], "give": { "coin": 3, "iron": 1 } }
     },
     "soldier2": {
@@ -95,7 +95,7 @@
         { "id": "forge", "kind": "lightning", "at": [21, 32.6] }
       ],
       "allow": 1, "take": { "coin": 1 },
-      "introKey": "raid.soldier.intro", "mark": "legend", "noteKey": "battle.soldier.note",
+      "introKey": "raid.soldier.intro", "mark": "legend", "noteKey": "raid.soldier.note",
       "win": { "set": ["soldier2.won"], "give": { "coin": 3, "iron": 1 } }
     },
     "boss": {
@@ -117,7 +117,7 @@
         { "id": "forge", "kind": "lightning", "at": [22.5, 15.5] }
       ],
       "allow": 99, "take": { "coin": 1 },
-      "introKey": "raid.boss.intro", "mark": "legend", "noteKey": "battle.boss.note", "historyKey": "raid.boss.history",
+      "introKey": "raid.boss.intro", "mark": "legend", "noteKey": "raid.boss.note", "historyKey": "raid.boss.history",
       "win": { "set": ["era1.boss.won"], "give": { "coin": 10 }, "after": ["giong.north"] }
     }
   }

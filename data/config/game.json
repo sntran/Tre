@@ -1,5 +1,5 @@
 {
-  "_about": "Values of the game rules (battles, losses, time). The learning model is in learning.json.",
+  "_about": "Values of the game rules (the party, losses, time). The learning model is in learning.json.",
   "maxProfiles": 1,
   "grades": {
     "_about": "The grades that a player or a parent can choose. -1 is Pre-K, 0 is K. A grade with no \"name\" uses the text key grade.name with the number.",
@@ -53,13 +53,6 @@
       }
     ]
   },
-  "figures": {
-    "_about": "The sizes of people. map, world, and battle: the scale of an adult picture (world: on the isometric map). child: the size of a child as a share of an adult (the hero and Gióng as a boy are children).",
-    "map": 0.52,
-    "world": 0.62,
-    "battle": 1.05,
-    "child": 0.8
-  },
   "voices": {
     "_about": "Voice profiles. pitch and rate change the browser voice. gender chooses a male or a female voice when the device has one. Each person in npcs.json and friends.json has a voice profile.",
     "narrator": {
@@ -105,11 +98,9 @@
     }
   },
   "_maxProfilesAbout": "The first version has one profile. The code and the saves support more.",
-  "battle": {
-    "heroHealth": 5,
-    "mistakeCost": 1,
-    "hintsPerBattle": 2,
-    "maxParty": 3
+  "party": {
+    "_about": "The friends that go with the hero (the party) at most.",
+    "max": 3
   },
   "loss": {
     "items": [

@@ -15,7 +15,6 @@ import { isDue } from '../core/review.js';
 import { createExperiments } from '../core/experiments.js';
 import { createLogger } from '../core/logger.js';
 import { DAY_MS } from '../core/learnlog.js';
-import { createSurface } from '../render/surface.js';
 import { mountTitle } from './title.js';
 import { connectAudio } from './audio.js';
 import { startTimer, isTimeOver } from './rest.js';
@@ -25,15 +24,14 @@ import { mountVillage } from './village.js';
 import { startStory } from './storybook.js';
 
 // The scenes of play: a session of the learning log is open in them.
-const PLAY = new Set(['village', 'battle', 'vanmieu']);
+const PLAY = new Set(['village', 'vanmieu']);
 
 // Scenes and the scenes that can come after each one.
 const SCENES = {
   boot: ['title'],
   title: ['create', 'village', 'title', 'rest'],
   create: ['village', 'title'],
-  village: ['battle', 'vanmieu', 'title', 'rest', 'village'],
-  battle: ['village'],
+  village: ['vanmieu', 'title', 'rest', 'village'],
   vanmieu: ['village'],
   rest: ['title', 'village', 'rest'],
 };
@@ -45,8 +43,7 @@ const MOUNT = scenes;
 
 export async function startApp(root) {
   const ui = root.querySelector('#ui');
-  const canvas = root.querySelector('#world');
-  // The canvas of the voxel world (WebGL). The other canvas is for the battles.
+  // The canvas of the voxel world (WebGL).
   const voxel = root.querySelector('#voxel');
   ui.replaceChildren(h('div', { class: 'screen loading' }, [h('div', { class: 'progress-bar' }, [h('span', { style: { width: '5%' } })])]));
   const bar = ui.querySelector('.progress-bar span');
@@ -60,8 +57,6 @@ export async function startApp(root) {
     document.fonts?.load('700 16px "Be Vietnam Pro"'),
   ]).catch(() => {});
   const graph = createSkillGraph(data.skills);
-  const surface = createSurface(canvas);
-  window.addEventListener('resize', () => surface.resize());
   const bus = createBus();
   connectAudio(bus);
 
@@ -78,7 +73,6 @@ export async function startApp(root) {
     data,
     graph,
     ui,
-    surface,
     voxel,
     bus,
     profile: null,
@@ -198,7 +192,7 @@ export async function startApp(root) {
 
     async startProfile(profile, isNew = false) {
       ctx.profile = profile;
-      // The questions of this play session: quizzes, battles, and exams avoid repeats.
+      // The questions of this play session: quizzes and exams avoid repeats.
       ctx.seen = createSeen();
       setGlobalParams({ name: profile.hero.name });
       setChosenNames(chosenGlossNames(profile, data.friends.friends));
@@ -231,10 +225,6 @@ export async function startApp(root) {
       }
       console.warn('Unknown screen', cmd.open);
       return true;
-    },
-
-    confirmBattle(id) {
-      return modals.confirmBattle ? modals.confirmBattle(ctx, { id }) : Promise.resolve();
     },
 
     openParent() {

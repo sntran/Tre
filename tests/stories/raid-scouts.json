@@ -39,7 +39,7 @@
       { "wait": 1.2 }
     ] },
     { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 40 } },
-    { "expect": [{ "event": "end", "with": { "won": true } }, { "flag": "scouts.won" }, { "event": "gift", "with": { "give": { "iron": 2, "coin": 2 } } }, { "text": { "shown": "battle.scouts.note" } }] },
+    { "expect": [{ "event": "end", "with": { "won": true } }, { "flag": "scouts.won" }, { "event": "gift", "with": { "give": { "iron": 2, "coin": 2 } } }, { "text": { "shown": "raid.scouts.note" } }] },
     { "read": true },
     { "expect": [{ "text": { "shown": "dlg.scouts.won.n1" } }, { "item": "iron", "count": ">= 2" }] },
     { "wait": 3 },

@@ -1,10 +1,10 @@
 // The forge: the player helps the smiths make the iron horse.
 import { createCraft } from '../core/craft.js';
 import { createElementRules } from '../core/elements.js';
+import { battleSkills } from '../core/learner.js';
 import { takeItems, setFlag } from '../core/profile.js';
 import { registerModal } from './registry.js';
 import { runQuiz, showMessage } from './quiz.js';
-import { battleSkillFilter } from './battle.js';
 import { h, img, button, wait } from './dom.js';
 import { t, tg } from './i18n.js';
 import { speak } from './speak.js';
@@ -50,7 +50,7 @@ registerModal('craft', async (ctx, cmd, extra) => {
         iron.style.height = '90px';
         if (craft.state.material === 'hot-iron') iron.style.filter = 'sepia(1) saturate(6) hue-rotate(-30deg) brightness(1.1)';
         body.append(h('div', { class: 'forge-scene' }, [img('thing/forge-fire'), iron, img('thing/anvil')]));
-        const row = h('div', { class: 'battle-actions' });
+        const row = h('div', { class: 'choice-row' });
         for (const el of rules.available) {
           row.append(button(t(`element.${el}`), async () => {
             const firstTry = craft.state.mistakes === 0;
@@ -77,7 +77,7 @@ registerModal('craft', async (ctx, cmd, extra) => {
             title: t(recipe.nameKey),
             speaker: recipe.speaker,
             count: step.count,
-            next: () => ctx.learner.next({ filter: battleSkillFilter() }),
+            next: () => ctx.learner.next({ filter: battleSkills }),
             similar: (p) => ctx.learner.problem(p.skill, { level: p.level }),
           });
           layer.hidden = false;
@@ -161,7 +161,7 @@ registerModal('home', async (ctx) => {
           h('div', { class: 'col', style: { flex: '1', gap: '2px' } }, [h('strong', { text: profile.friendNames?.[id] ?? t(f.nameKey) }), h('small', { text: tg(f.helpKey) })]),
           button(t(inParty ? 'home.party.out' : 'home.party.in'), () => {
             if (inParty) profile.party = profile.party.filter((x) => x !== id);
-            else if (profile.party.length < data.game.battle.maxParty) profile.party.push(id);
+            else if (profile.party.length < data.game.party.max) profile.party.push(id);
             ctx.save('party');
             draw();
           }, { cls: `btn small ${inParty ? 'green' : 'paper'}` }),
@@ -172,7 +172,7 @@ registerModal('home', async (ctx) => {
       panel.replaceChildren(
         h('div', { class: 'panel-head' }, [h('h2', { text: t('home.title') }), button(null, close, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') })]),
         h('div', { class: 'row', style: { justifyContent: 'flex-start' } }, [portrait(ctx, 'grandma'), h('p', { class: 'prompt', style: { flex: '1', textAlign: 'left' }, text: tg('home.hello') })]),
-        h('h3', { text: t('home.friends', { max: data.game.battle.maxParty }) }),
+        h('h3', { text: t('home.friends', { max: data.game.party.max }) }),
         friendsList,
         h('h3', { text: t('home.calling') }),
         calling

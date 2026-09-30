@@ -114,7 +114,7 @@ export function runDialogue(ctx, id) {
 
   return new Promise((resolve) => {
     const apply = () => {
-      const { commands: cmds, changes } = applyEffects(ctx.profile, runner.takeEffects(), { maxParty: ctx.data.game.battle.maxParty });
+      const { commands: cmds, changes } = applyEffects(ctx.profile, runner.takeEffects(), { maxParty: ctx.data.game.party.max });
       for (const c of cmds) {
         if (c.sound) ctx.bus.emit('sound', c.sound);
         if (c.open) commands.push(c);

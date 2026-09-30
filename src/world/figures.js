@@ -107,6 +107,11 @@ export function person(look) {
   if (item === 'fan') parts.push(P('item', [1.2, 1.2, 0.15], 'yellowPale', [0, hand[1] - 0.5, 0.4], { parent: 'armR' }));
   if (item === 'lantern') parts.push(P('item', [0.15, 1, 0.15], 'wood', [0, hand[1] - 0.2, 0.3], { parent: 'armR' }), P('lamp', [0.8, 0.9, 0.8], 'yellow', [0, hand[1] - 1.1, 0.3], { parent: 'armR' }));
   if (item === 'drum') parts.push(P('item', [1.4, 1, 1.4], 'vermilion', [0, hand[1] - 0.2, 0.6], { parent: 'armR' }));
+  // A raid: the lit torch of a scout (the tell before the throw), the wet shield of a soldier on
+  // the left arm, and a trap of bamboo in the hands.
+  if (item === 'torch') parts.push(P('item', [0.25, 1.6, 0.25], 'wood', [0, hand[1] - 0.2, 0.3], { parent: 'armR' }), P('flame', [0.7, 0.8, 0.7], 'vermilion', [0, hand[1] - 1.3, 0.3], { parent: 'armR' }), P('core', [0.4, 0.5, 0.4], 'yellow', [0, hand[1] - 1.5, 0.3], { parent: 'armR' }));
+  if (item === 'shield') parts.push(P('item', [0.3, 2.2, 2.2], 'indigo', [-0.3, hand[1] + 0.4, 0.5], { parent: 'armL' }), P('boss', [0.35, 0.6, 0.6], 'indigoPale', [-0.5, hand[1] + 0.4, 0.5], { parent: 'armL' }));
+  if (item === 'trap') parts.push(P('item', [1.2, 0.4, 1.2], 'yellow', [0, hand[1] - 0.4, 0.5], { parent: 'armR' }));
   // A thing of a trial in the hands.
   const carried = { ore: 'ash', bucket: 'wood', stake: 'ochre', sticks: 'green' }[String(item).replace(/-.*$/, '')] ?? (String(item).startsWith('herb-') ? 'greenPale' : null);
   if (carried) parts.push(P('item', item === 'stake' ? [0.35, 2, 0.35] : [0.9, 0.8, 0.9], carried, [0, hand[1] - 0.5, 0.5], { parent: 'armR' }));
@@ -444,9 +449,59 @@ export function workThing(look) {
   }
 }
 
+// The things of a raid (src/core/world/systems/raid.js). Units: half blocks.
+export function raidThing(look) {
+  switch (look.kind) {
+    // A stone of the slingshot.
+    case 'stone': return still([P('stone', [0.5, 0.45, 0.5], 'ash', [0, 0.22, 0]), P('top', [0.3, 0.12, 0.3], 'ashLight', [0.05, 0.47, 0.05]), P('chip', [0.2, 0.2, 0.2], 'ink', [-0.2, 0.15, 0.15])], 0.5);
+    // A torch in the air.
+    case 'torch': return still([P('stick', [0.25, 0.25, 1.4], 'wood', [0, 0.2, 0]), P('flame', [0.7, 0.7, 0.7], 'vermilion', [0, 0.3, 0.8]), P('core', [0.4, 0.4, 0.4], 'yellow', [0, 0.35, 0.95])], 0.8);
+    // A torch that burns on the road.
+    case 'fire': return still([P('stick', [0.25, 0.25, 1.4], 'wood', [0, 0.12, 0]), P('flame', [1, 1.2, 1], 'vermilion', [0, 0.7, 0.2]), P('core', [0.5, 0.8, 0.5], 'yellow', [0, 0.8, 0.2])], 1.4);
+    // Wet ground: a flat pool of water.
+    case 'puddle': {
+      const r = look.r ?? 3;
+      return still([P('a', [r * 2, 0.06, r * 1.2], 'indigoPale', [0, 0.03, 0], { mark: true }), P('b', [r * 1.2, 0.06, r * 2], 'indigoPale', [0, 0.03, 0], { mark: true }), P('shine', [r * 0.6, 0.08, r * 0.3], 'diep', [r * 0.2, 0.04, -r * 0.3], { mark: true })], 0.1);
+    }
+    // A distance post by the road: its count as bands, no numeral.
+    case 'post': {
+      const n = look.n ?? 1;
+      const parts = [P('pole', [0.6, 4.5, 0.6], 'wood', [0, 2.25, 0]), P('cap', [0.8, 0.3, 0.8], 'ink', [0, 4.6, 0])];
+      for (let i = 0; i < n; i++) parts.push(P(`band${i}`, [0.7, 0.35, 0.7], 'vermilion', [0, 3.9 - i * 0.6, 0]));
+      return still(parts, 4.8);
+    }
+    // A bamboo trap on the road: a frame with a spring; closed after it snaps.
+    case 'trap': {
+      if (look.sprung) return still([P('frame', [1.4, 0.3, 1.4], 'ochre', [0, 0.15, 0]), P('jawA', [1.4, 0.7, 0.2], 'yellow', [0, 0.4, -0.1]), P('jawB', [1.4, 0.7, 0.2], 'yellow', [0, 0.4, 0.1])], 0.8);
+      return still([P('frame', [1.4, 0.2, 1.4], 'ochre', [0, 0.1, 0]), P('jawA', [1.4, 0.2, 0.2], 'yellow', [0, 0.25, -0.6]), P('jawB', [1.4, 0.2, 0.2], 'yellow', [0, 0.25, 0.6]), P('spring', [0.25, 0.4, 0.25], 'vermilion', [0, 0.3, 0])], 0.5);
+    }
+    // The bar of the gate: up by the gate, or down across the way.
+    case 'bar': {
+      const posts = [P('postA', [0.6, 3.4, 0.6], 'wood', [0, 1.7, -2.4]), P('postB', [0.6, 3.4, 0.6], 'wood', [0, 1.7, 2.4])];
+      if (look.down) return still([...posts, P('bar', [0.7, 0.7, 5.6], 'yellow', [0, 2, 0]), P('tie', [0.8, 0.8, 0.3], 'vermilion', [0, 2, 0])], 3.4);
+      return still([...posts, P('bar', [0.7, 5.6, 0.7], 'yellow', [0, 2.8, -1.8]), P('tie', [0.8, 0.3, 0.8], 'vermilion', [0, 2, -1.8])], 5.6);
+    }
+    // A spot for a villager: a small straw flag.
+    case 'spot': return still([P('pole', [0.2, 2.6, 0.2], 'wood', [0, 1.3, 0]), P('flag', [0.1, 0.8, 1.1], 'yellowPale', [0, 2.2, 0.55]), P('base', [0.8, 0.15, 0.8], 'ochre', [0, 0.07, 0])], 2.6);
+    // A jar of water, a brazier of fire, and the small forge (lightning).
+    case 'jar': return still([P('body', [1.4, 1.5, 1.4], 'ochre', [0, 0.75, 0]), P('neck', [0.9, 0.3, 0.9], 'wood', [0, 1.6, 0]), P('water', [0.7, 0.05, 0.7], 'indigoPale', [0, 1.76, 0])], 1.8);
+    case 'brazier': return still([P('bowl', [1.4, 0.6, 1.4], 'ink', [0, 0.9, 0]), P('leg', [0.3, 0.7, 0.3], 'ink', [0, 0.35, 0]), P('flame', [0.9, 0.9, 0.9], 'vermilion', [0, 1.6, 0]), P('core', [0.5, 0.6, 0.5], 'yellow', [0, 1.7, 0])], 2.1);
+    case 'forge': return still([P('base', [2, 1.2, 1.6], 'ash', [0, 0.6, 0]), P('mouth', [0.8, 0.5, 0.1], 'vermilion', [0, 0.7, 0.8]), P('rod', [0.2, 3, 0.2], 'ink', [0.6, 2.7, 0]), P('tip', [0.5, 0.3, 0.5], 'yellow', [0.6, 4.2, 0])], 4.4);
+    // The bamboo that Gióng pulls up: a clump, or the pulled stem that lies on the ground.
+    case 'bamboo': {
+      if (look.pulled) return still([P('hole', [1.6, 0.1, 1.6], 'wood', [0, 0.05, 0]), P('stem', [0.6, 0.6, 7], 'green', [0, 0.3, 3.5]), P('leaves', [1.4, 0.6, 1.6], 'greenPale', [0, 0.4, 7.2])], 0.7);
+      const parts = [];
+      for (let i = 0; i < 3; i++) parts.push(P(`stem${i}`, [0.5, 7 + i, 0.5], i === 1 ? 'green' : 'greenDeep', [(i - 1) * 0.6, (7 + i) / 2, (i % 2) * 0.4]));
+      parts.push(P('leaves', [2.4, 1.2, 2.4], 'greenPale', [0, 8, 0.2]));
+      return still(parts, 8.6);
+    }
+    default: return null;
+  }
+}
+
 // The figure of a look from data/figures.json.
 export function figureOf(look) {
-  const thing = workThing(look);
+  const thing = workThing(look) ?? raidThing(look);
   if (thing) return thing;
   if (look.kind === 'plank') return plank(look.n);
   if (look.kind === 'plank-ghost') return plankGhost(Boolean(look.on));

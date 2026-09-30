@@ -188,16 +188,16 @@ export function play(name) {
   SOUNDS[name]?.(a.currentTime + 0.01);
 }
 
-// Simple music: a flute line and a drum. mode: 'village' or 'battle'.
+// Simple music: a flute line and a drum. mode: 'village' or 'raid' (faster).
 const MELODY = {
   village: [0, 2, 3, 2, 4, 3, 2, 0, 1, 2, 0, -1, 0, 2, 3, 4, 3, 2, 1, 0, -1, -1, 0, -1],
-  battle: [0, 0, 3, 3, 4, 3, 2, 0, 0, 0, 3, 4, 5, 4, 3, 2],
+  raid: [0, 0, 3, 3, 4, 3, 2, 0, 0, 0, 3, 4, 5, 4, 3, 2],
 };
 
 function musicTick() {
   const a = audio();
   if (!musicOn || !musicMode) return;
-  const beat = musicMode === 'battle' ? 0.22 : 0.42;
+  const beat = musicMode === 'raid' ? 0.22 : 0.42;
   if (!a || a.state !== 'running') {
     // Wait until a tap starts the sound.
     clearTimeout(musicTimer);
@@ -256,10 +256,12 @@ export function connectAudio(bus) {
   bus.on('sound', play);
   bus.on('settings', (s) => setSoundOptions(s));
   bus.on('scene', (name) => {
-    setMusic(name === 'village' ? 'village' : name === 'battle' ? 'battle' : null);
+    setMusic(name === 'village' ? 'village' : null);
     if (name !== 'village') setAmbience(null);
   });
   bus.on('ambience', setAmbience);
+  // A raid in the village: the faster music while it goes on.
+  bus.on('raid', (on) => setMusic(on ? 'raid' : 'village'));
   // iOS starts sound only in a tap that ends (touchend, pointerup, or click).
   const unlock = () => {
     unlockAudio();

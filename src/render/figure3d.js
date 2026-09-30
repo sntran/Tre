@@ -51,6 +51,10 @@ function partsMaterial() {
 }
 
 // The layer of all figures. lookOf(key): the look of a key (see data/figures.json).
+// The pose that the act of an entity asks for (a raid: an enemy on a trap sits, a stunned general
+// kneels, the general lifts his staff; Nghé lowers her horns in a charge).
+const WANTS = { sit: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns' };
+
 export function createFigureLayer(scene, lookOf) {
   const box = unitBox();
   const plain = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PARTS), 1);
@@ -149,7 +153,7 @@ export function createFigureLayer(scene, lookOf) {
         // A rider sits on the back of Nghé; a swimmer at the ford is a little lower in the water.
         f.offset = (e.riding ? RIDER : 0) - (e.motion?.shallow && !e.control ? 0.3 : 0);
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
-        f.want = e.riding ? 'ride' : e.act === 'sit' || e.act === 'rest' ? 'rest' : e.act === 'happy' ? 'happy' : e.act === 'shake' ? 'shake' : e.act === 'stretch' ? 'stretch' : e.react?.waving > 0 ? 'wave' : null;
+        f.want = e.riding ? 'ride' : WANTS[e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
         f.bend = e.react?.bend ?? null;
         // A plank that tips or wobbles turns about its near end.
         f.tilt = e.tilt ?? 0;

@@ -91,7 +91,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const cond = () => conditionState(profile);
 
   // Start on a map. mapId: the map (or the map of the save, or the start map). params: at (the
-  // hero cell), facing, after (the ids of talks after the start, for example after a battle).
+  // hero cell), facing, after (the ids of talks after the start, for example after a travel).
   function start(mapId = null, params = {}) {
     opening = [];
     starting = true;
@@ -231,7 +231,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     });
   }
   function takeEffects(d) {
-    const { commands, changes } = applyEffects(profile, d.runner.takeEffects(), { maxParty: data.game.battle.maxParty });
+    const { commands, changes } = applyEffects(profile, d.runner.takeEffects(), { maxParty: data.game.party.max });
     for (const c of commands) {
       if (c.sound) emit({ type: 'sound', sound: c.sound });
       if (c.open) d.opens.push(c);
@@ -253,7 +253,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function say(textKey, params = {}, mark = null) {
     queue(() => openScreen({ screen: 'say' }, { speaker: 'narrator', textKey, params, ...(mark ? { mark } : {}) }));
   }
-  // A screen of a story effect ({ open: 'worldmap' }, a battle, a trial).
+  // A screen of a story effect ({ open: 'worldmap' }, Văn Miếu, a trial).
   function openCommand(c) {
     // A trial is work in the village: its things lie in the world, and no screen opens.
     if (c.open === 'trial') {
@@ -909,7 +909,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     step,
     // The events since the last call.
     events: () => out.splice(0),
-    // The events of the last start (the intro, the talks after a battle), also when the view
+    // The events of the last start (the intro, the talks after a map change), also when the view
     // took them already.
     opening: () => [...opening],
     // Also send each event to fn (for example the runner of a story). Return a function that stops it.

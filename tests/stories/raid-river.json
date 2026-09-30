@@ -1,0 +1,27 @@
+{
+  "name": "raid-river",
+  "about": {
+    "vi": "Hai con thuồng luồng con bơi ngược sông về chỗ lội; mỗi con trúng hai viên sỏi thì bình tĩnh lại và bơi đi.",
+    "en": "Two little river serpents swim up the river to the ford; each one calms down after two stones and swims away."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 4, "flags": { "intro.seen": true, "giong.spoke": true }, "items": { "coin": 5 } },
+  "map": "phu-dong",
+  "clock": 600,
+  "place": [14, 61],
+  "steps": [
+    { "tap": { "entity": "encounter:river" } },
+    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },
+    { "expect": [{ "text": { "shown": "raid.river.intro" } }] },
+    { "read": true },
+    { "wait": 2 },
+    { "expect": [{ "raid": { "on": true, "enemies": 1 } }, { "hero": { "cell": [18, 67.5], "within": 1 } }] },
+    { "repeat": 10, "steps": [
+      { "shoot": { "at": "first", "lead": 0.8, "wait": true } },
+      { "wait": 1.4 }
+    ] },
+    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 40 } },
+    { "expect": [{ "event": "retreat", "with": { "calm": true } }, { "event": "end", "with": { "won": true } }, { "flag": "river.calmed" }, { "text": { "shown": "raid.river.note" } }] },
+    { "read": [1] },
+    { "expect": [{ "text": { "shown": "dlg.river.friends.n1" } }, { "screen": null }] }
+  ]
+}

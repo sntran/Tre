@@ -1,5 +1,5 @@
 // Game rules that change the profile: story effects, talks, and encounters.
-// The functions return commands for the screens (for example "open a battle").
+// The functions return commands for the screens (for example "open the country map").
 import { check } from './conditions.js';
 import { addItem, takeItems, addFriend, setFlag } from './profile.js';
 

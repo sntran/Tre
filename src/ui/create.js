@@ -126,6 +126,5 @@ export async function mountCreate(ctx) {
 
   drawPreview();
   show(0);
-  ctx.surface.canvas.hidden = true;
   return { unmount() { screen.remove(); } };
 }

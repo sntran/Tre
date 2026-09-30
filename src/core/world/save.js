@@ -42,7 +42,7 @@ export function heroPlace(saved) {
   return { map: saved.map, x: hero ? hero.position.x / 2 : null, y: hero ? hero.position.z / 2 : null };
 }
 
-// Put the hero at a place in a save (after a travel or a lost battle). The world of the save is
+// Put the hero at a place in a save (after a travel). The world of the save is
 // the new map. The other kept entities of the old map (a bridge that the child builds) wait in
 // saved.away until the hero comes back to that map.
 export function setHeroPlace(saved, map, x, y) {

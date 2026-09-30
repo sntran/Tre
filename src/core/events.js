@@ -1,4 +1,4 @@
-// A small event bus. Battle, quests, and sound stay separate:
+// A small event bus. Raids, quests, and sound stay separate:
 // they send and get events, and they do not call each other.
 
 export function createBus() {

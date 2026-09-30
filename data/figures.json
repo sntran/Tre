@@ -110,6 +110,25 @@
     "chalk": { "kind": "chalk" },
     "sticks-2": { "kind": "sticks", "n": 2 },
     "sticks-3": { "kind": "sticks", "n": 3 },
-    "sticks-4": { "kind": "sticks", "n": 4 }
+    "sticks-4": { "kind": "sticks", "n": 4 },
+    "stone": { "kind": "stone" },
+    "torch": { "kind": "torch" },
+    "fire": { "kind": "fire" },
+    "puddle": { "kind": "puddle", "r": 3 },
+    "puddle-small": { "kind": "puddle", "r": 2.5 },
+    "post-1": { "kind": "post", "n": 1 },
+    "post-2": { "kind": "post", "n": 2 },
+    "post-3": { "kind": "post", "n": 3 },
+    "post-4": { "kind": "post", "n": 4 },
+    "trap": { "kind": "trap" },
+    "trap-sprung": { "kind": "trap", "sprung": true },
+    "bar-up": { "kind": "bar" },
+    "bar-down": { "kind": "bar", "down": true },
+    "spot": { "kind": "spot" },
+    "jar": { "kind": "jar" },
+    "brazier": { "kind": "brazier" },
+    "forge": { "kind": "forge" },
+    "bamboo-clump": { "kind": "bamboo" },
+    "bamboo-pulled": { "kind": "bamboo", "pulled": true }
   }
 }

@@ -71,6 +71,5 @@ export async function mountTitle(ctx) {
     button(null, () => ctx.openParent(), { cls: 'icon-btn', icon: 'ui/lock', aria: t('ui.parents') }),
   ]));
   ctx.ui.append(screen);
-  ctx.surface.canvas.hidden = true;
   return { unmount() { screen.remove(); } };
 }

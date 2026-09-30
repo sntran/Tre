@@ -1,5 +1,5 @@
 // One question on the screen: the prompt, a picture, and the answer input
-// (a number pad or choice buttons). The number cards of battles are in cards.js.
+// (a number pad or choice buttons).
 import { h, img, button } from './dom.js';
 import { t, tg, lang } from './i18n.js';
 import { speak, speakText } from './speak.js';

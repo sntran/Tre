@@ -3,7 +3,8 @@
 //
 // States: idle, walk, run, graze (four legs, after some idle time), rest (sit or lie down),
 // wave (a person waves an arm), swim (a float or a serpent in the water). want 'shake': Nghé
-// shakes its head (no); 'stretch': Nghé stretches its neck toward something.
+// shakes its head (no); 'stretch': Nghé stretches its neck toward something; 'horns': Nghé
+// lowers its horns; 'lift': a person lifts the right arm high.
 
 export const GAIT = Object.freeze({ walk: 0.4, run: 5.5, graze: 1.6 });
 
@@ -45,6 +46,8 @@ export function animate(a, input) {
     rot.legR = riding ? [-0.6, 0, 0.5] : [-sw - a.rest * 1.4, 0, 0];
     rot.armL = [-sw * 0.8, 0, 0];
     rot.armR = [sw * 0.8 - a.wave * 0.2, 0, -a.wave * (1.9 + Math.sin(a.time * 8) * 0.35)];
+    // Lift: the arm with the staff goes up high (the general before a big blow).
+    if (input.want === 'lift') rot.armR = [-2.9 + Math.sin(a.time * 6) * 0.08, 0, 0];
     lift = Math.abs(Math.cos(a.phase)) * 0.18 * s;
     lean = 0.08 * s;
     sink = a.rest * 1.2;
@@ -63,6 +66,8 @@ export function animate(a, input) {
     rot.tail = [0.3, 0, Math.sin(a.time * (happy ? 16 : 3.1)) * (happy ? 0.7 : 0.35)];
     if (happy) rot.head = [-0.3 + Math.sin(a.time * 8) * 0.1, 0, 0];
     if (input.want === 'shake') rot.head = [0.15, Math.sin(a.time * 14) * 0.45, 0];
+    // Horns: the head goes low, the horns to the front (Nghé when the hero is hurt, and in a charge).
+    if (input.want === 'horns') rot.head = [0.8, 0, 0];
     // Stretch: the neck goes long and low toward something (the gap of the bridge, as a hint).
     if (input.want === 'stretch') {
       rot.head = [0.55 + Math.sin(a.time * 3) * 0.05, 0, 0];

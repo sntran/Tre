@@ -1,4 +1,4 @@
-// A small finite state machine for scenes and battle turns.
+// A small finite state machine for the scenes.
 // Only the events in the table can change the state. Other events do nothing.
 //
 // createMachine({

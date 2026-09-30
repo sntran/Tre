@@ -20,8 +20,6 @@ export const FILES = {
   dialogueVillage: 'data/dialogue/village.json',
   dialogueGiong: 'data/dialogue/giong.json',
   trials: 'data/trials.json',
-  enemies: 'data/enemies.json',
-  battles: 'data/battles.json',
   raids: 'data/raids.json',
   elements: 'data/elements.json',
   items: 'data/items.json',

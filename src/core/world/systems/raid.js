@@ -6,7 +6,7 @@
 // raid, and puts the enemies, the stones, the torches, the fires, the wet ground, and the
 // villagers into the world as entities. The raid waits while the world waits (a talk, the map).
 // When the raid is over, its things go away after a moment.
-export const WRITES = ['raid', 'orders', 'over', 'horns', 'position', 'look', 'act', 'item', 'zone', 'follow', 'raider', 'hot', 'source', 'raidTap', 'raidThing', 'fixedThing', 'events'];
+export const WRITES = ['raid', 'orders', 'over', 'horns', 'position', 'look', 'act', 'carry', 'item', 'zone', 'follow', 'raider', 'hot', 'source', 'raidTap', 'raidThing', 'fixedThing', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { stepRaid, shoot, barGate, callHelper, charge, pour, pullBamboo, setTraps, stoneAt, torchAt, along } from '../raids.js';
@@ -109,6 +109,8 @@ function mirror(world, raid, env) {
       position: { x: e.x, y: gy(e), z: e.z, facing: e.facing ?? 0 },
       look: e.look,
       act: e.state === 'walk' || e.state === 'back' ? 'walk' : e.state,
+      // The lit torch before the throw, and the wet shield after fire.
+      carry: e.state === 'torch' ? 'torch' : e.shield > 0 ? 'shield' : null,
       raider: { kind: e.kind, hits: e.hits, max: e.max, shield: e.shield > 0, torch: e.state === 'torch' },
     });
   }

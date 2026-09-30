@@ -42,7 +42,7 @@ test('each talk rule names a known dialogue', () => {
 });
 
 test('dialogue effects open only known screens', () => {
-  const screens = new Set(['trial', 'practice', 'lesson', 'rice', 'home', 'craft', 'battle', 'vanmieu', 'nameFriend']);
+  const screens = new Set(['trial', 'practice', 'lesson', 'rice', 'home', 'craft', 'vanmieu', 'nameFriend']);
   for (const d of dialogues) {
     for (const n of Object.values(d.nodes)) {
       const effects = [...(n.effects ?? []), ...(n.choices ?? []).flatMap((c) => c.effects ?? [])];
@@ -95,9 +95,9 @@ test('notes do not repeat the Legend or History label that the seal shows', () =
   }
 });
 
-test('Nghé is the friend of the hero from the start; Sóng is the friend of the river battle', () => {
+test('Nghé is the friend of the hero from the start; Sóng is the friend of the river raid', () => {
   const friends = load('data/friends.json').friends;
-  const battles = load('data/battles.json').battles;
+  const raids = load('data/raids.json').raids;
   for (const [id, f] of Object.entries(friends)) {
     assert.ok(['shield', 'heart'].includes(f.help.type), `${id}: help type`);
     assert.ok(f.nameKey in vi && f.helpKey in vi, `${id}: text`);
@@ -114,9 +114,9 @@ test('Nghé is the friend of the hero from the start; Sóng is the friend of the
   const intro = byId.get('grandma.intro');
   const introChoices = Object.values(intro.nodes).flatMap((n) => n.choices ?? []);
   assert.ok(introChoices.some((c) => (c.effects ?? []).some((e) => e.open === 'nameFriend' && e.id === 'nghe')), 'the player names Nghé');
-  // After the river battle: Sóng can join, and the player can say no.
-  const after = battles.river.win.after.map((id) => byId.get(id));
-  assert.ok(after.every(Boolean), 'the dialogues after the river battle exist');
+  // After the river raid: Sóng can join, and the player can say no.
+  const after = raids.river.win.after.map((id) => byId.get(id));
+  assert.ok(after.every(Boolean), 'the dialogues after the river raid exist');
   const choices = after.flatMap((d) => Object.values(d.nodes).flatMap((n) => n.choices ?? []));
   const gives = (c, id) => (c.effects ?? []).some((e) => e.friend === id);
   assert.ok(!choices.some((c) => gives(c, 'nghe')), 'the river does not give Nghé');
@@ -143,24 +143,19 @@ test('the quest bar text is short: 44 characters or fewer, so it fits in 2 lines
   }
 });
 
-test('facts of history in battle notes have the History seal', () => {
+test('facts of history in raid notes have the History seal', () => {
   const en = load('i18n/en.json');
-  const battles = load('data/battles.json').battles;
-  for (const [id, b] of Object.entries(battles)) {
+  const raids = load('data/raids.json').raids;
+  for (const [id, r] of Object.entries(raids)) {
     // A note with the Legend seal does not tell a modern fact (a year, UNESCO).
-    if (b.mark === 'legend') {
-      for (const text of [vi[b.noteKey], en[b.noteKey]]) {
+    if (r.mark === 'legend') {
+      for (const text of [vi[r.noteKey], en[r.noteKey]]) {
         assert.ok(!/UNESCO|\b(1[0-9]{3}|20[0-9]{2})\b/.test(text), `${id}: "${text}" needs the History seal`);
       }
     }
-    if (b.historyKey) assert.ok(b.historyKey in vi && b.historyKey in en, `${id}: history text`);
+    if (r.historyKey) assert.ok(r.historyKey in vi && r.historyKey in en, `${id}: history text`);
   }
-  assert.ok(/UNESCO/.test(en[battles.boss.historyKey]));
-});
-
-test('no text calls the five skilled people "thợ" (workers), because the teacher is not a worker', () => {
-  assert.ok(!vi['dlg.elder.intro.n1'].includes('thợ giỏi'));
-  assert.ok(vi['dlg.elder.intro.n1'].includes('năm người tài giỏi'));
+  assert.ok(/UNESCO/.test(en[raids.boss.historyKey]));
 });
 
 test('the enemies of a raid leave the map after the player wins it', () => {

@@ -1,5 +1,5 @@
 // The daily time limit. The parent sets the minutes for each day (0 = no limit).
-// When the time is over, the hero goes home to rest at a calm point, never in a battle.
+// When the time is over, the hero goes home to rest at a calm point, never in a raid.
 // time: { day: 'YYYY-MM-DD', usedMs, extraMs }
 
 const MINUTE = 60 * 1000;

@@ -9,7 +9,6 @@ import { applyEffects, pickTalk, isPresent } from '../src/core/game.js';
 import { createProfile } from '../src/core/profile.js';
 import { load } from './helpers.js';
 import { spriteAt, edgeMarker } from '../src/core/hit.js';
-import { figureScale } from '../src/core/figures.js';
 import { heroLayers } from '../src/render/assets.js';
 import { readFileSync, existsSync } from 'node:fs';
 
@@ -128,12 +127,12 @@ test('the dialogue runner follows nodes, choices, "if" nodes, and effects', () =
 test('effects change the profile and give commands', () => {
   const p = createProfile({ id: 'p', name: 'An' });
   const { commands, changes } = applyEffects(p, [
-    { set: 'giong.spoke' }, { give: { iron: 2 } }, { friend: 'song' }, { open: 'battle', id: 'river' }, { take: { iron: 5 } },
+    { set: 'giong.spoke' }, { give: { iron: 2 } }, { friend: 'song' }, { open: 'worldmap' }, { take: { iron: 5 } },
   ]);
   assert.equal(p.flags['giong.spoke'], true);
   assert.equal(p.inventory.iron, 2, 'a take with too few items does nothing');
   assert.deepEqual(p.friends, ['nghe', 'song']);
-  assert.deepEqual(commands, [{ open: 'battle', id: 'river' }]);
+  assert.deepEqual(commands, [{ open: 'worldmap' }]);
   assert.equal(changes.items.iron, 2);
 });
 
@@ -335,20 +334,6 @@ test('a quest target out of view gets an arrow at the edge of the screen', () =>
   assert.ok(corner.x <= 400 && corner.y <= 300 && (corner.x === 400 || corner.y === 300));
   // A target under the top bar is out of view too.
   assert.ok(edgeMarker(view, { x: 200, y: 20 }, { top: 60 }));
-});
-
-test('children are drawn smaller than adults, on the map and in battles', () => {
-  const game = load('data/config/game.json');
-  const fig = game.figures;
-  const npcs = load('data/npcs.json').npcs;
-  for (const place of ['map', 'battle']) {
-    const adult = figureScale({}, place, fig);
-    const child = figureScale({ child: true }, place, fig);
-    assert.ok(child < adult, place);
-    assert.ok(child >= adult * 0.7 && child <= adult * 0.9, `${place}: a child is about 4/5 of an adult`);
-  }
-  assert.equal(npcs['giong-boy'].child, true, 'Gióng as a boy is a child');
-  assert.equal(figureScale(npcs['giong-hero'], 'map', fig), npcs['giong-hero'].scale, 'Gióng as a hero has his own size');
 });
 
 test('the hero has a skin tone apart from the face, and girls wear a long skirt', () => {

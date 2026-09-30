@@ -29,7 +29,7 @@
       { "wait": 1.4 }
     ] },
     { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 60 } },
-    { "expect": [{ "event": "end", "with": { "won": true } }, { "flag": "soldier1.won" }, { "text": { "shown": "battle.soldier.note" } }] },
+    { "expect": [{ "event": "end", "with": { "won": true } }, { "flag": "soldier1.won" }, { "text": { "shown": "raid.soldier.note" } }] },
     { "read": true },
     { "wait": 3 },
     { "expect": [{ "raid": { "on": false } }, { "item": "iron", "count": ">= 1" }] }

@@ -179,7 +179,6 @@ registerModal('calling', (ctx, cmd) => chooseCalling(ctx, Boolean(cmd.change)));
 
 async function mountVanMieu(ctx) {
   const { profile, data } = ctx;
-  ctx.surface.canvas.hidden = true;
   const screen = h('div', { class: 'screen' });
   const content = h('div', { class: 'vanmieu' });
   screen.append(content);

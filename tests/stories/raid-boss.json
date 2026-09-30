@@ -34,7 +34,7 @@
     {"until": {"event": "open", "with": {"screen": "dialogue"}, "timeout": 10}},
     {"expect": [{"event": "strike"}, {"text": {"shown": "dlg.bamboo.found.n1"}}, {"flag": "era1.boss.won"}]},
     {"read": true},
-    {"expect": [{"text": {"shown": "battle.boss.note"}}, {"text": {"shown": "raid.boss.history"}}, {"text": {"shown": "dlg.giong.north.n1"}}]},
+    {"expect": [{"text": {"shown": "raid.boss.note"}}, {"text": {"shown": "raid.boss.history"}}, {"text": {"shown": "dlg.giong.north.n1"}}]},
     {"wait": 4},
     {"expect": [{"raid": {"on": false}}, {"count": {"entities": "raider", "max": 0}}]}
   ]

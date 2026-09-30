@@ -124,19 +124,19 @@ export function giveTitle(profile, titleId, era, now) {
   return true;
 }
 
-// "Văn võ song toàn": the scholar title and the battle win of an era.
+// "Văn võ song toàn": the scholar title and the win over the boss of an era.
 export function eraComplete(profile, era, titleOfEra) {
   return profile.titles.includes(titleOfEra) && flag(profile, `era${era}.boss.won`);
 }
 
-// The loss rule for a lost battle. Grade 1 has no item loss unless the parent sets it.
+// The loss rule for a lost raid. Grade 1 has no item loss unless the parent sets it.
 export function lossLevel(profile) {
   const setting = profile.settings.loss;
   if (setting && setting !== 'auto') return setting;
   return profile.grade <= 1 ? 'none' : 'small';
 }
 
-// Take some small items after a lost battle. Friends, machines, and titles stay.
+// Take some small items after a lost raid. Friends, machines, and titles stay.
 // rules: { small: { share: 0.1, max: 3 }, normal: { share: 0.25, max: 10 } }, items: ['coin', ...]
 export function applyLoss(profile, level, rules, lossItems) {
   const rule = rules[level];
