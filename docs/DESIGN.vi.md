@@ -74,7 +74,8 @@ Tre là một thế giới isometric sống động duy nhất. Trẻ đi lại,
 
 **Phong cách tranh in voxel** (các quy tắc làm cho khối trông như tranh khắc gỗ, không giống Minecraft):
 
-- **Hai cỡ khối.** Mặt đất (ruộng bậc thang, ruộng lúa, đường, bờ sông) dùng khối đủ cỡ. Nhà cửa, cây cối, đồ vật và con người dùng khối nửa cỡ. Người cao xấp xỉ cột nhà sàn.
+- **Khối ở nơi trẻ đếm, đường cong ở nơi thế giới chảy.** Bốn tầng. Khối đủ cỡ: mặt đất, bờ đê, tường, tấm ván, cọc, mọi thứ được đặt hay được đếm; lưới chính là toán. Nửa khối: nhà cửa, hàng rào, đồ đạc, đồ vật của làng. Một phần tư khối: nhân vật và đồ nhỏ trẻ cầm trong tay. Mặt cong mượt với các tông màu phẳng và nét mực ở đường bao, như mái nhà hiện nay: mọi thứ sống và tròn (tán cây, tre, lá chuối, đống rơm, sen, khói, mây, mặt nước). Đá vẫn vuông. Người cao xấp xỉ cột nhà sàn.
+- **Không gì được đúc sẵn, và mọi thứ có thể tháo ra.** Một mặt cong mượt là dáng vẻ của một thực thể hay một khối, không bao giờ tự nó là một vật: đốn cây thì tán cây đi theo. Mặt đất giữ quặng, đất sét và đá như các loại khối dưới bề mặt; đào một khối là sửa lưới và dựng lại một chunk. Ngôi nhà là một danh sách bộ phận, dựng theo một thứ tự và tháo theo thứ tự ngược lại. Mọi mesh sinh ra từ một bộ sinh với seed, nên cùng một cây mọc lại từ bản lưu. Khai mỏ và tháo dỡ đến ở thời đại sau; dữ liệu cho phép chúng ngay từ đầu.
 - **Chỉ dùng màu phẳng từ bảng màu của Tre,** với ba tông phẳng cho mỗi màu: mặt trên, mặt trái, mặt phải. Không có mô hình ánh sáng, không có gradient.
 - **Nét mực chỉ ở nơi có ý nghĩa:** nơi một mặt gặp màu khác, một cạnh hở, hoặc một nếp gấp. Không bao giờ viền quanh mọi khối. Nét mảnh hơn trên các khối nhỏ.
 - **Mái là tranh lợp mượt,** không phải khối bậc thang: mặt dốc với sống mái cong hình thuyền của nhà Đông Sơn, nét mực vẽ đường tranh, và đầu chim trang trí trên đình.
