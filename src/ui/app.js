@@ -230,8 +230,9 @@ export async function startApp(root) {
       return true;
     },
 
-    openParent() {
-      return modals.parent ? modals.parent(ctx, {}) : Promise.resolve();
+    // The parent area. opts: { tab, profile, action } opens a tab (and an action on a profile).
+    openParent(opts = {}) {
+      return modals.parent ? modals.parent(ctx, opts) : Promise.resolve();
     },
 
     openMenu() {
@@ -254,7 +255,7 @@ export async function startApp(root) {
       h('div', { class: 'menu-list' }, [
         button(t('ui.continue'), close, { cls: 'btn big' }),
         button(t('ui.parents'), () => { close(); c.openParent(); }, { cls: 'btn paper', icon: 'ui/lock' }),
-        button(t('ui.save.exit'), async () => { close(); await c.save('exit'); c.go('title'); }, { cls: 'btn paper' }),
+        button(t('ui.save.exit'), async () => { close(); await c.save('exit'); c.toast('ui.saved'); c.go('title'); }, { cls: 'btn paper' }),
       ]),
     ]);
     layer.append(panel);

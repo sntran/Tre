@@ -408,6 +408,12 @@ p { line-height: 1.45; margin: 0.4em 0; }
 }
 .profile-card:active { transform: translateY(3px); }
 .profile-card .mini-portrait { width: 60px; height: 60px; }
+.profile-text { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.profile-where { display: flex; align-items: center; gap: 6px; font-family: var(--body); font-weight: 400; font-size: var(--text-small); }
+.mini-bamboo { display: inline-flex; flex-direction: column-reverse; gap: 1px; }
+.mini-bamboo i { display: block; width: 10px; height: 9px; background: var(--green); border: 1px solid var(--ink); }
+.mini-bamboo i.shoot { height: 6px; width: 6px; margin: 0 auto; background: var(--green-pale); }
+.title-full { margin: 0; max-width: 32em; }
 .lang-switch { display: flex; gap: 8px; }
 .lang-switch .btn[aria-pressed="true"] { background: var(--vermilion); color: var(--diep); }
 .corner { position: absolute; top: calc(10px + var(--safe-top)); right: 10px; }

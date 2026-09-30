@@ -1,6 +1,6 @@
 {
   "_about": "Values of the game rules (the party, losses, time). The learning model is in learning.json.",
-  "maxProfiles": 1,
+  "maxProfiles": 4,
   "grades": {
     "_about": "The grades that a player or a parent can choose. -1 is Pre-K, 0 is K. A grade with no \"name\" uses the text key grade.name with the number.",
     "default": 1,
@@ -97,7 +97,7 @@
       "examiner": "elderMan"
     }
   },
-  "_maxProfilesAbout": "The first version has one profile. The code and the saves support more.",
+  "_maxProfilesAbout": "The number of profiles (adventures) on one device. With all of them in use, a new adventure opens the parent gate, where a parent can remove one.",
   "party": {
     "_about": "The friends that go with the hero (the party) at most.",
     "max": 3
