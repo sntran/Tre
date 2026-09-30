@@ -3,14 +3,21 @@
 // little, like round walls. While the world waits (a dialogue), nothing walks. On the back of
 // Nghé (riding) the hero is faster. motion.idle counts the seconds that the hero stands still.
 // A hero who falls into the water (fall) does not walk: the place system moves the hero.
-// Each step sends the event "step" with the ground under the foot (grass, wood, or water).
+// Each step sends the event "step" with the ground under the foot (grass, wood, or water). A heavy
+// thing in the hands (item.pace, such as a tray of five bowls) makes the walk slower.
 export const WRITES = ['position', 'motion', 'events'];
 
-import { query } from '../state.js';
+import { query, getEntity } from '../state.js';
 import { stepBody, moveCircle, MOVE } from '../move.js';
 
 export const RIDE_SPEED = 1.35; // the speed factor on the back of Nghé
 const STRIDE = 2.4; // half blocks between two steps
+
+// The speed factor of the thing in the hands (1 for a light thing or empty hands).
+function paceOf(world, e) {
+  const held = e.hands?.holds ? getEntity(world, e.hands.holds) : null;
+  return held?.item?.pace ?? 1;
+}
 
 export function move(world, dt, rng, env) {
   const solids = query(world, 'solid', 'position');
@@ -20,7 +27,7 @@ export function move(world, dt, rng, env) {
     const m = e.motion;
     const i = world.paused ? null : e.intent;
     // The helpers work in map cells: one cell is 2 half blocks.
-    const body = { x: p.x / 2, y: p.z / 2, vx: m.vx / 2, vy: m.vz / 2, facing: p.facing, speedFactor: e.riding ? RIDE_SPEED : 1 };
+    const body = { x: p.x / 2, y: p.z / 2, vx: m.vx / 2, vy: m.vz / 2, facing: p.facing, speedFactor: (e.riding ? RIDE_SPEED : 1) * paceOf(world, e) };
     stepBody(body, i ? { dx: i.dx, dy: i.dz, strength: i.strength, run: i.run } : { dx: 0, dy: 0, strength: 0 }, dt, env.near(body.x, body.y));
     for (const s of solids) {
       if (s === e || (e.riding && s.pushable)) continue;

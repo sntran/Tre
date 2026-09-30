@@ -138,6 +138,7 @@ function pick(world, e, thing, env, dt) {
   }
   thing.item.zone = null;
   thing.item.held = e.id;
+  thing.item.since = world.tick;
   thing.hidden = true;
   delete thing.tilt;
   e.hands.holds = thing.id;

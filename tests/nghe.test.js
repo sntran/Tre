@@ -88,3 +88,21 @@ test('Nghé lies down beside the hero when the hero rests at night', () => {
   run(day, 4);
   assert.equal(getEntity(day, 'friend:nghe').act, undefined, 'not by day');
 });
+
+test('a heavy thing in the hands makes the walk slower: a tray of five at about two thirds', () => {
+  const walk = (pace) => {
+    const w = world();
+    if (pace) {
+      addEntity(w, { id: 'tray', position: { x: 0, y: 0, z: 0, facing: 0 }, item: { kind: 'bowls', size: 5, pace, held: 'hero' }, hidden: true });
+      getEntity(w, 'hero').hands.holds = 'tray';
+    }
+    command(w, { type: 'place', id: 'hero', x: 20, z: 10 });
+    command(w, { type: 'move', id: 'hero', dx: 0, dz: 1, strength: 1 });
+    run(w, 1.5);
+    return getEntity(w, 'hero').position.z - 10;
+  };
+  const light = walk(null);
+  const heavy = walk(load('data/trials.json').trials.find((t) => t.id === 'rice').pace['5']);
+  assert.ok(light > 3, 'the hero walks');
+  assert.ok(Math.abs(heavy / light - 2 / 3) < 0.05, `about two thirds (${(heavy / light).toFixed(2)})`);
+});

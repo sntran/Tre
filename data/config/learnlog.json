@@ -46,6 +46,11 @@
       "correct": "bool",
       "p": "prob"
     },
+    "carry": {
+      "task": "id",
+      "size": "count",
+      "seconds": "number"
+    },
     "prediction": {
       "task": "id",
       "gap": "count",

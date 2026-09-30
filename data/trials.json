@@ -97,8 +97,8 @@
     {
       "id": "rice", "npc": "mother", "kind": "task", "flag": "giong.grown", "reward": {}, "doneTalk": "giong.grown",
       "task": "feed",
-      "_task": "Rice for Gióng (not a trial of a calling: a task of the story). Trays of 3 and of 5 bowls of rice lie on the path of the paddies (trays: the sizes; each size has this many trays, and a tray that goes to the pot comes back full to the path). The child carries one tray at a time to the pot in front of the house of Gióng. Each ten bowls: Gióng eats and grows one head taller; the bowls over the ten stay in the pot (the ones), and his height shows the tens. The commit is each ten: solved when the pot comes to exactly ten, efficient with the fewest trays for it. The task is done when Gióng has grown this many heads.",
-      "trays": { "3": 3, "5": 3 },
+      "_task": "Rice for Gióng (not a trial of a calling: a task of the story). Trays of 3 and of 5 bowls of rice lie on the path of the paddies (trays: the sizes; each size has this many trays, and a tray that goes to the pot comes back full to the path). The child carries one tray at a time to the pot in front of the house of Gióng. Each ten bowls: Gióng eats and grows one head taller; the bowls over the ten stay in the pot (the ones), and his height shows the tens. The commit is each ten: solved when the pot comes to exactly ten, efficient with the fewest trays for it. The task is done when Gióng has grown this many heads. pace: the speed factor of the walk with a tray of that size: a tray of five is heavy, so the fewest trays is not always the fastest. Each tray at the pot goes into the learning log (the kind carry: the size and the seconds of the walk).",
+      "trays": { "3": 3, "5": 3 }, "pace": { "5": 0.67 },
       "levels": [
         { "heads": 2, "skill": "math.add.10", "level": 2 },
         { "heads": 3, "skill": "math.add.20", "level": 1 },

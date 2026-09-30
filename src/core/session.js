@@ -845,6 +845,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       raidOver();
       startShare();
     }
+    // A load that the child chose and carried (a tray of rice): its size and the time of the walk.
+    if (ev.type === 'carry') log('carry', { task: ev.task, size: ev.size, seconds: Math.round(ev.ticks * STEP * 10) / 10 });
     // The prediction before the first commit on a gap, and the result.
     if (ev.type === 'prediction') {
       log('prediction', { task: ev.task, gap: ev.gap, guess: ev.guess, used: ev.used, solved: ev.solved });

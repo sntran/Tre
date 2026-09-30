@@ -164,7 +164,7 @@ export function setupTrial(world, def, level, env) {
   } else if (def.task === 'feed') {
     // Trays of 3 and 5 bowls on the path of the paddies, and the pot in front of the house of Gióng.
     const trays = heap('trays', P(def.places.trays), 'bowls', { cols: 3, step: 1.6 });
-    for (const [size, n] of Object.entries(def.trays)) for (let i = 0; i < n; i++) addTray(world, trays.zone, Number(size), owner, tz);
+    for (const [size, n] of Object.entries(def.trays)) for (let i = 0; i < n; i++) addTray(world, trays.zone, Number(size), owner, tz, def.pace);
     packHeap(world, trays.zone);
     const p = P(def.places.pot);
     addEntity(world, { id: 'zone:pot', keep: true, zone: { id: 'pot', task: owner, rule: 'feed', accepts: 'bowls', items: [], x: p.x, y: p.y, z: p.z, rect: rect(p, 2, 2) }, position: { x: p.x + 1, y: p.y, z: p.z + 2.5, facing: 0 } });
@@ -209,10 +209,11 @@ export function setupTrial(world, def, level, env) {
   return tz;
 }
 
-// A tray of bowls of rice (3 or 5) in the heap on the path of the paddies.
-function addTray(world, zone, size, owner, tz) {
+// A tray of bowls of rice (3 or 5) in the heap on the path of the paddies. pace: the speed factor
+// of the walk with a tray of each size (a tray of five is heavy).
+function addTray(world, zone, size, owner, tz, pace = {}) {
   const id = `bowls:${size}:${tz.zone.made++}`;
-  addEntity(world, { id, keep: true, item: { kind: 'bowls', size, task: owner, zone: zone.id, home: zone.id, held: null, set: false }, position: { x: zone.x, y: zone.y, z: zone.z, facing: 0 }, look: `bowls-${size}` });
+  addEntity(world, { id, keep: true, item: { kind: 'bowls', size, pace: pace?.[size] ?? 1, task: owner, zone: zone.id, home: zone.id, held: null, set: false }, position: { x: zone.x, y: zone.y, z: zone.z, facing: 0 }, look: `bowls-${size}` });
   zone.items.push(id);
 }
 
@@ -567,9 +568,11 @@ function feed(world, tz, thing, env) {
   const task = taskFor(env, tz.zone);
   const size = thing.item.size;
   const home = zoneEnt(world, thing.item.home);
+  // The choice of the child: the size of the tray, and the steps of the walk with it (for the log).
+  say(world, 'carry', tz.id, { task: tz.zone.trial, size, ticks: world.tick - (thing.item.since ?? world.tick) });
   removeEntity(world, thing.id);
   if (home) {
-    addTray(world, home.zone, size, thing.item.task, tz);
+    addTray(world, home.zone, size, thing.item.task, tz, def.pace);
     packHeap(world, home.zone);
   }
   tz.zone.group.push(size);
