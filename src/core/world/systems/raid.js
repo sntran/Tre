@@ -9,7 +9,7 @@
 export const WRITES = ['raid', 'orders', 'over', 'horns', 'position', 'look', 'act', 'carry', 'item', 'zone', 'follow', 'raider', 'hot', 'source', 'raidTap', 'raidThing', 'fixedThing', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
-import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, setTraps, stoneAt, torchAt, along } from '../raids.js';
+import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, setTraps, trapPut, stoneAt, torchAt, along } from '../raids.js';
 import { packHeap } from './work.js';
 
 const OVER = 2.5; // seconds: the things of the raid stay after the end
@@ -135,7 +135,9 @@ function mirror(world, raid, env) {
     const p = torchAt(t);
     put(t.id, { position: { x: p.x, y: gy(t.from) + p.h, z: p.z, facing: 0 }, look: 'torch' });
   }
-  for (const f of raid.fires) put(f.id, { position: { x: f.x, y: gy(f), z: f.z, facing: 0 }, look: 'fire', hot: { r: 3 }, source: { id: f.id, kind: 'fire' } });
+  // A torch that burns on the road: a source of fire only in a raid with fire.
+  const fireTool = raid.tools.includes('fire');
+  for (const f of raid.fires) put(f.id, { position: { x: f.x, y: gy(f), z: f.z, facing: 0 }, look: 'fire', hot: { r: 3 }, ...(fireTool ? { source: { id: f.id, kind: 'fire' } } : {}) });
   raid.wet.forEach((w, i) => put(`wet:${i}`, { position: { x: w.x, y: gy(w), z: w.z, facing: 0 }, look: w.r > 2.8 ? 'puddle' : 'puddle-small' }));
   for (const s of raid.spots) {
     if (!s.helper) continue;
@@ -171,7 +173,8 @@ export function setupRaid(world, raid, def, env, looks = {}) {
   const r = addEntity(world, { id: 'raid', raid });
   // The distance posts, at the side of the road (a post shows its count as bands, no numeral).
   const side = { x: -raid.dir.z, z: raid.dir.x };
-  raid.posts.forEach((p, i) => fixed(`post:${i + 1}`, { x: p.x + side.x * 2.6, z: p.z + side.z * 2.6 }, `post-${i + 1}`));
+  const has = (t) => raid.tools.includes(t);
+  if (has('sling')) raid.posts.forEach((p, i) => fixed(`post:${i + 1}`, { x: p.x + side.x * 2.6, z: p.z + side.z * 2.6 }, `post-${i + 1}`));
   if (raid.bar) fixed('bar:raid', { x: raid.gate.x - raid.dir.x * 1.5, z: raid.gate.z - raid.dir.z * 1.5 }, 'bar-up', { facing: Math.atan2(side.x, side.z), raidTap: { what: 'gate' } });
   for (const s of raid.spots) {
     s.look = looks.helpers?.[raid.spots.indexOf(s) % looks.helpers.length];
@@ -183,7 +186,7 @@ export function setupRaid(world, raid, def, env, looks = {}) {
     fixed('companion:raid', at, looks.companion ?? def.companion, { facing: Math.atan2(raid.dir.x, raid.dir.z) });
   }
   // The pile of traps by the gate, and the part of the road for traps.
-  if (def.pile && def.traps) {
+  if (has('traps') && def.pile && def.traps) {
     const p = hb(def.pile);
     addEntity(world, { id: 'zone:raid-traps', zone: { id: 'raid-traps', task: 'raid', rule: 'heap', accepts: 'trap', items: [], x: p.x, y: gy(p.x, p.z), z: p.z, cols: 3, step: 1.4 }, position: { x: p.x + 1, y: gy(p.x, p.z), z: p.z + 2, facing: 0 } });
     const zone = getEntity(world, 'zone:raid-traps').zone;
@@ -229,6 +232,8 @@ export function putRaid(world, e, zone, thing, at, env) {
   const x = raid.wall.x + raid.dir.x * d;
   const z = raid.wall.z + raid.dir.z * d;
   thing.position = { x, y: env.groundY(x / 2, z / 2), z, facing: Math.atan2(raid.dir.x, raid.dir.z) };
+  const ev = trapPut(raid, d);
+  if (ev) world.events.push(ev);
   return true;
 }
 

@@ -249,9 +249,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     openScreen(d, { id: d.id, mark: d.runner.mark, speaker: view.speaker, textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey) });
   }
-  // One line of text (a sign, a ferry, a thing that the hero found, a note with a seal).
-  function say(textKey, params = {}, mark = null) {
-    queue(() => openScreen({ screen: 'say' }, { speaker: 'narrator', textKey, params, ...(mark ? { mark } : {}) }));
+  // One line of text (a sign, a ferry, a thing that the hero found, a note with a seal, a line of
+  // a person in a raid).
+  function say(textKey, params = {}, mark = null, speaker = 'narrator') {
+    queue(() => openScreen({ screen: 'say' }, { speaker, textKey, params, ...(mark ? { mark } : {}) }));
   }
   // A screen of a story effect ({ open: 'worldmap' }, Văn Miếu, a trial).
   function openCommand(c) {
@@ -430,6 +431,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const fig = raidEnc ? getEntity(state, raidEnc) : null;
     if (fig) fig.hidden = true;
     log('action', { kind: 'raid' });
+    // The elder or the smith says one line the first time that a tool comes; the raid waits.
+    for (const tool of raid.tools) {
+      const line = data.raids.toolLines?.[tool];
+      if (!line || profile.flags[`raid.tool.${tool}`]) continue;
+      profile.flags[`raid.tool.${tool}`] = true;
+      say(line.textKey, {}, null, line.speaker);
+    }
+    // A villager names the post for a trap (an ordinal word, no numeral).
+    if (raid.trapPost !== null) {
+      const n = raid.posts.findIndex((q) => q.d === raid.trapPost) + 1;
+      say('raid.trap.ask', { post: { key: `ord.${n}` } }, null, def.trapAsk ?? 'elder');
+    }
     emit({ type: 'raid', on: true, id });
     emit({ type: 'hud' });
     return true;
@@ -880,7 +893,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (busy) return;
-    if (raidOn() && (type === 'shoot' || type === 'pour' || type === 'pet')) {
+    // In a raid, a tap on Nghé is the charge only when Nghé is a tool of this raid.
+    const charges = type === 'pet' && raidEnt()?.raid.tools.includes('nghe');
+    if (raidOn() && (type === 'shoot' || type === 'pour' || charges)) {
       if (type === 'shoot') shootFromWall(cmd.count);
       else if (type === 'pour') order({ act: 'pour', source: cmd.source, x: cmd.x * 2, z: cmd.y * 2 });
       else order({ act: 'charge' });

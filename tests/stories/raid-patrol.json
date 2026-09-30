@@ -1,0 +1,40 @@
+{
+  "name": "raid-patrol",
+  "about": {
+    "vi": "Lính trinh sát quay lại: bẫy tre là đồ mới, cụ già làng bảo đặt một cái bẫy ở cột thứ ba; bẫy ở đúng cột ấy là một lần đếm, bẫy ở chỗ khác chỉ là chơi.",
+    "en": "The scouts come back: the bamboo traps are new, and the elder asks for a trap at the third post; a trap at that post is counting, a trap anywhere else is play."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 6, "flags": { "intro.seen": true, "giong.farewell": true, "scouts.won": true, "raid.tool.sling": true, "raid.tool.gate": true }, "items": { "coin": 5 } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [61, 29],
+  "steps": [
+    { "tap": { "entity": "encounter:patrol" } },
+    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "raid.patrol.intro" } }, { "text": { "shown": "raid.tool.traps" } }, { "text": { "shown": "raid.trap.ask" } }] },
+    { "wait": 0.5 },
+    { "expect": [{ "raid": { "on": true } }, { "count": { "entities": "trap", "min": 2 } }, { "count": { "entities": "spot-mark", "max": 0 } }, { "count": { "entities": "source", "max": 0 } }] },
+    { "tap": { "item": "trap" } },
+    { "until": { "event": "pick", "timeout": 15 } },
+    { "tap": { "cell": [70.5, 29] } },
+    { "until": { "event": "put", "with": { "zone": "raid-road" }, "timeout": 15 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "math.count.120", "task": "raid-patrol", "solved": true, "parts": [15], "target": 15 } }] },
+    { "tap": { "item": "trap" } },
+    { "until": { "event": "pick", "timeout": 15 } },
+    { "tap": { "cell": [72.5, 29] } },
+    { "until": { "event": "put", "with": { "zone": "raid-road" }, "timeout": 15 } },
+    { "expect": [{ "event": "skill", "not": true }] },
+    { "tap": { "cell": [63, 29] } },
+    { "until": { "event": "snap", "timeout": 30 } },
+    { "repeat": 4, "steps": [
+      { "shoot": { "at": "first", "lead": 1, "wait": true } },
+      { "wait": 1.4 }
+    ] },
+    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 60 } },
+    { "expect": [{ "event": "end", "with": { "won": true } }, { "event": "gift", "with": { "give": { "coin": 2, "bamboo": 1 } } }] },
+    { "read": true },
+    { "wait": 3 },
+    { "expect": [{ "raid": { "on": false } }] }
+  ]
+}

@@ -21,8 +21,9 @@
 //   lightning from the forge into a wet zone shocks every enemy in the wet zones.
 //   The boss: phases of soldiers, then the general, then the iron staff breaks (a talk), and a tap
 //   on the bamboo lets Gióng pull it for the strike that ends the raid.
-// Each shot at an enemy, each trap that snaps, and each strike of lightning is one skill event
-// for the learner (the child never sees it).
+// The tools come one raid after the other (tools in the data): a tool that is not in the raid is
+// not on the map. Each shot at an enemy, a trap at the post that a villager names, and each
+// strike of lightning is one skill event for the learner (the child never sees it).
 // Units: half blocks (one map cell is 2) and seconds. The data gives places in map cells.
 import { byGrade } from '../grades.js';
 
@@ -88,6 +89,8 @@ export function createRaid(raids, id, level = 0, loss = null) {
   const gate = hb(def.gate);
   const dir = unit({ x: def.dir[0], z: def.dir[1] });
   const phases = def.phases ?? [{ id: 'raid', waves: def.waves }];
+  const tools = def.tools ?? ['sling'];
+  const has = (t) => tools.includes(t);
   return {
     id,
     level,
@@ -100,7 +103,13 @@ export function createRaid(raids, id, level = 0, loss = null) {
     wall,
     gate,
     dir,
-    bar: def.bar ? { down: 0, cool: 0, tapped: null, ...(raids.gateBar ?? { hold: 3, rest: 1 }) } : null,
+    tools: [...tools],
+    bar: def.bar && has('gate') ? { down: 0, cool: 0, tapped: null, ...(raids.gateBar ?? { hold: 3, rest: 1 }) } : null,
+    // The post where a villager asks for a trap (half blocks from the wall), and whether the child
+    // put one there.
+    trapPost: has('traps') ? def.trapPost ?? null : null,
+    trapDone: false,
+    ball: def.ball ?? null,
     posts: (raids.posts ?? []).map((d) => ({ d, x: wall.x + dir.x * d, z: wall.z + dir.z * d })),
     // The prediction before the first shot: pending (the posts wait for a tap), then the post that
     // the child tapped (guess) and the distance of the enemy then (gap), or skipped.
@@ -115,10 +124,10 @@ export function createRaid(raids, id, level = 0, loss = null) {
     fires: [],
     wet: [],
     traps: [],
-    spots: (def.spots ?? []).map((p, i) => ({ id: `spot:${i + 1}`, ...hb(p), helper: null })),
-    helpers: def.helpers ?? 0,
-    sources: (def.sources ?? []).map((s) => ({ ...s, ...hb(s.at), cool: 0 })),
-    charge: 'ready',
+    spots: has('helpers') ? (def.spots ?? []).map((p, i) => ({ id: `spot:${i + 1}`, ...hb(p), helper: null })) : [],
+    helpers: has('helpers') ? def.helpers ?? 0 : 0,
+    sources: (def.sources ?? []).filter((s) => has(s.kind)).map((s) => ({ ...s, ...hb(s.at), cool: 0 })),
+    charge: has('nghe') ? 'ready' : 'none',
     nghe: null,
     reload: 0,
     losses: 0,
@@ -298,7 +307,6 @@ function tickEnemy(raid, e, dt, ctx, out) {
     e.state = 'sit';
     e.t = kind.trap;
     out.push({ type: 'snap', id: e.id, trap: trap.id, sound: 'snap' });
-    out.push(skill(raid, 'trap', { solved: true, efficient: true, first: true, parts: [Math.round(along(raid, trap))], target: Math.round(along(raid, trap)) }));
     return;
   }
   if (walkTo(e, e.to, kind.speed, dt)) {
@@ -560,7 +568,7 @@ export function charge(raid, from) {
 // the raid (data), or the id of a fire on the road.
 export function pour(raid, sourceId, at) {
   if (raid.result) return [];
-  const fire = raid.fires.find((f) => f.id === sourceId);
+  const fire = raid.tools.includes('fire') ? raid.fires.find((f) => f.id === sourceId) : null;
   const src = fire ? { kind: 'fire', cool: 0 } : raid.sources.find((s) => s.id === sourceId);
   if (!src || src.cool > 0) return [];
   const out = [];
@@ -621,6 +629,15 @@ export function pullBamboo(raid) {
   }
   end(raid, true, out);
   return out;
+}
+
+// A trap that the child put on the road at `d` half blocks: at the post that the villager named,
+// it is counting on the number line (one skill event, once in a raid); anywhere else it is play
+// and sends nothing. Return the event, or null.
+export function trapPut(raid, d) {
+  if (raid.trapPost === null || raid.trapDone || d !== raid.trapPost) return null;
+  raid.trapDone = true;
+  return skill(raid, 'trap', { solved: true, efficient: true, first: true, parts: [d], target: raid.trapPost });
 }
 
 // Traps on the road: the places of the traps that the child put (from the world), as

@@ -14,7 +14,7 @@
     { "expect": [{ "text": { "shown": "raid.scouts.intro" } }] },
     { "read": true },
     { "wait": 0.5 },
-    { "expect": [{ "raid": { "on": true, "enemies": ">= 1" } }, { "hero": { "cell": [63, 29], "within": 1 } }, { "entity": "encounter:scouts", "hidden": true }, { "entity": "post:4", "look": "post-4-lit" }] },
+    { "expect": [{ "raid": { "on": true, "enemies": ">= 1" } }, { "hero": { "cell": [63, 29], "within": 1 } }, { "entity": "encounter:scouts", "hidden": true }, { "entity": "post:4", "look": "post-4-lit" }, { "text": { "shown": "raid.tool.sling" } }, { "text": { "shown": "raid.tool.gate" } }, { "count": { "entities": "trap", "max": 0 } }, { "count": { "entities": "spot-mark", "max": 0 } }] },
     { "wait": 9 },
     { "tap": { "post": 20 } },
     { "wait": 0.2 },

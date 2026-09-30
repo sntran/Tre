@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   SLING, raidLevel, flightFor, positionAt, createRaid, stepRaid, along, shoot, predict, barGate,
-  callHelper, charge, pour, pullBamboo, setTraps, stoneAt,
+  callHelper, charge, pour, pullBamboo, setTraps, trapPut, stoneAt,
 } from '../src/core/world/raids.js';
 import { load } from './helpers.js';
 
@@ -151,7 +151,7 @@ test('enemies walk, never run, on a straight path to the gate', () => {
 });
 
 test('a trap: a scout on a trap sits down; the trap snaps once; the general breaks a trap', () => {
-  const raid = createRaid(raids, 'scouts', 1);
+  const raid = createRaid(raids, 'patrol', 1);
   run(raid, 0.1);
   const e = enemy(raid);
   const at = { x: raid.wall.x + raid.dir.x * 22, z: raid.wall.z };
@@ -161,8 +161,7 @@ test('a trap: a scout on a trap sits down; the trap snaps once; the general brea
   assert.equal(snap.id, e.id);
   assert.equal(snap.sound, 'snap');
   assert.equal(e.state, 'sit');
-  const sk = evs.find((x) => x.type === 'skill');
-  assert.deepEqual([sk.skill, sk.solved, sk.task], ['math.count.120', true, 'raid-scouts']);
+  assert.ok(!evs.some((x) => x.type === 'skill'), 'a snap is no skill event');
   const x = e.x;
   run(raid, raids.enemies.scout.trap - 0.2);
   assert.equal(e.x, x, 'it sits');
@@ -211,12 +210,40 @@ test('the gate bar: a scout lights a torch for two seconds; a barred gate stops 
   assert.ok(!burn.some((x) => x.type === 'skill' || x.type === 'gated'));
 });
 
+test('a trap at the post that the villager named is counting; a trap anywhere else is play', () => {
+  const raid = createRaid(raids, 'patrol', 1);
+  assert.equal(raid.trapPost, 15, 'the third post');
+  assert.equal(trapPut(raid, 14), null, 'one step short: play, no event');
+  const ev = trapPut(raid, 15);
+  assert.deepEqual([ev.type, ev.skill, ev.solved, ev.parts, ev.target, ev.task], ['skill', 'math.count.120', true, [15], 15, 'raid-patrol']);
+  assert.equal(trapPut(raid, 15), null, 'once in a raid');
+  assert.equal(createRaid(raids, 'scouts', 1).trapPost, null, 'no traps in the first raid');
+});
+
+test('the tools come one raid after the other: a tool that is not in the raid is not there', () => {
+  const scouts = createRaid(raids, 'scouts', 1);
+  assert.deepEqual(scouts.tools, ['sling', 'gate']);
+  assert.ok(scouts.bar);
+  assert.deepEqual([scouts.spots.length, scouts.helpers, scouts.sources.length, scouts.charge], [0, 0, 0, 'none']);
+  run(scouts, 3);
+  assert.deepEqual(charge(scouts, scouts.wall), [], 'no charge of Nghé in the first raid');
+  assert.deepEqual(pour(scouts, 'jar', scouts.wall), [], 'no water in the first raid');
+  const order = ['scouts', 'patrol', 'soldier1', 'soldier2', 'boss'].map((id) => raids.raids[id].tools);
+  for (let i = 1; i < order.length; i++) {
+    const added = order[i].filter((t) => !order[i - 1].includes(t));
+    assert.ok(order[i - 1].every((t) => order[i].includes(t) || t === 'gate'), `raid ${i} keeps the tools before it`);
+    assert.ok(added.length >= 1 && added.length <= 2, `raid ${i} adds one or two tools: ${added}`);
+  }
+  const s2 = createRaid(raids, 'soldier2', 1);
+  assert.deepEqual(s2.sources.map((q) => q.kind).sort(), ['fire', 'water'], 'no forge before the boss');
+});
+
 test('a villager at a spot stops each enemy for a moment, once', () => {
-  const raid = createRaid(raids, 'scouts', 1);
+  const raid = createRaid(raids, 'soldier1', 1);
   const spot = raid.spots[0];
   assert.deepEqual(types(callHelper(raid, spot.id)), ['summon']);
   assert.deepEqual(callHelper(raid, spot.id), [], 'one villager at a spot');
-  const evs = until(raid, 'pause', 30);
+  const evs = until(raid, 'pause', 60);
   assert.ok(evs.some((x) => x.type === 'spot'), 'the villager is at the spot first');
   const e = raid.enemies.find((q) => q.id === evs.find((x) => x.type === 'pause').id);
   assert.equal(e.state, 'wait');
@@ -243,13 +270,16 @@ test("Nghé charges once: the first enemy takes a hit and goes back", () => {
 });
 
 test('the elements: fire makes a soldier raise his wet shield; lightning into the wet zone shocks them all', () => {
-  const raid = createRaid(raids, 'soldier1', 1);
+  const raid = createRaid(raids, 'boss', 1);
   run(raid, 6);
   const [a, b] = raid.enemies;
   for (const e of [a, b]) {
     e.state = 'wait';
     e.t = 99;
   }
+  // Both stand at the fourth post, in reach of the slingshot.
+  a.x = raid.wall.x + raid.dir.x * 20;
+  a.z = raid.wall.z + raid.dir.z * 20;
   b.x = a.x;
   b.z = a.z + 1;
   // Fire at the two soldiers: they raise wet shields, and the shields drip.
@@ -275,9 +305,10 @@ test('the elements: fire makes a soldier raise his wet shield; lightning into th
   const sk = shock.find((x) => x.type === 'skill');
   assert.deepEqual([sk.skill, sk.solved, sk.efficient], ['sci.matter.states', true, true]);
   // Water puts out a fire on the road.
-  const s = createRaid(raids, 'scouts', 1);
-  s.fires.push({ id: 'fire:x', x: 140, z: 58, t: 5 });
-  const w = pour(s, 'jar', { x: 140, z: 58 });
+  const s = createRaid(raids, 'soldier2', 1);
+  const road = { x: s.wall.x + s.dir.x * 10, z: s.wall.z + s.dir.z * 10 };
+  s.fires.push({ id: 'fire:x', ...road, t: 5 });
+  const w = pour(s, 'jar', road);
   assert.deepEqual(w.find((x) => x.type === 'water').out, ['fire:x']);
   assert.equal(s.fires.length, 0);
   assert.equal(s.wet.length, 1);

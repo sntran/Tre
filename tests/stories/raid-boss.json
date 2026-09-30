@@ -1,10 +1,10 @@
 {
   "name": "raid-boss",
   "about": {
-    "vi": "Trận ở chân núi Trâu Sơn: lính trước, rồi tướng Ân giơ gươm, gậy sắt gãy, và Gióng nhổ tre đánh đuổi giặc.",
-    "en": "The raid at the foot of Trâu Sơn: soldiers first, then the Ân general lifts his sword, the iron staff breaks, and Gióng pulls up bamboo to drive the enemy away."
+    "vi": "Trận ở chân núi Trâu Sơn: bác thợ rèn mang lò rèn ra ngã tư; lửa làm lính giơ khiên ướt, sét vào chỗ ướt làm lính bị điện giật; rồi tướng Ân giơ gậy, gậy sắt gãy, và Gióng nhổ tre đánh đuổi giặc.",
+    "en": "The raid at the foot of Trâu Sơn: the smith brings his forge to the crossroads; fire makes the soldiers raise wet shields, and lightning into the wet ground shocks them; then the Ân general lifts his staff, the iron staff breaks, and Gióng pulls up bamboo to drive the enemy away."
   },
-  "profile": {"name": "An", "grade": 3, "lang": "vi", "seed": 9, "flags": {"intro.seen": true, "giong.grown": true, "soldier1.won": true, "soldier2.won": true}, "items": {"coin": 5}},
+  "profile": {"name": "An", "grade": 3, "lang": "vi", "seed": 9, "flags": {"intro.seen": true, "giong.grown": true, "soldier1.won": true, "soldier2.won": true, "raid.tool.sling": true, "raid.tool.gate": true, "raid.tool.traps": true, "raid.tool.helpers": true, "raid.tool.nghe": true, "raid.tool.water": true, "raid.tool.fire": true}, "items": {"coin": 5}},
   "map": "trau-son",
   "clock": 600,
   "place": [34, 15],
@@ -14,7 +14,14 @@
     {"expect": [{"text": {"shown": "raid.boss.intro"}}]},
     {"read": true},
     {"wait": 0.5},
-    {"expect": [{"raid": {"on": true, "phase": "soldiers"}}, {"entity": "companion:raid", "near": "hero", "within": 2}]},
+    {"expect": [{"raid": {"on": true, "phase": "soldiers"}}, {"entity": "companion:raid", "near": "hero", "within": 2}, {"text": {"shown": "raid.tool.lightning"}}, {"text": {"shown": "raid.trap.ask"}}, {"count": {"entities": "source", "min": 3}}]},
+    {"wait": 12},
+    {"pour": {"from": "brazier", "at": "first"}},
+    {"wait": 0.2},
+    {"expect": [{"event": "flame"}, {"event": "shield"}]},
+    {"pour": {"from": "forge", "at": "first"}},
+    {"wait": 0.2},
+    {"expect": [{"event": "shock"}, {"event": "skill", "with": {"skill": "sci.matter.states", "solved": true}}, {"event": "hit", "with": {"by": "lightning"}}]},
     { "repeat": 14, "steps": [
       {"shoot": {"at": "first", "kind": "soldier", "lead": 0.8, "wait": true}},
       {"wait": 1.4}
