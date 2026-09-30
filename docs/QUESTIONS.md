@@ -159,3 +159,11 @@ These questions need a person who knows Vietnamese history and geography. Until 
 78. **The rest of the loot.** The coins that cannot go one more to each friend stay in the pile "for the village". Should the child choose where the rest goes (the temple, the smith, the mother of Gióng)? That would make the remainder a thing in the world.
 79. **The trays of rice.** A tray of five is not slower to carry than a tray of three yet. Should a big tray walk slower, so that the choice of trays has a cost, and a mix of trays is sometimes better than the fewest?
 80. **The staffs and the woodcutter.** The staffs and the trial of the woodcutter both cut a stem into equal parts. The staffs have no chalk and no taking back (each slash cuts at once), and the stem is green with its rings. Is this enough difference, or should the staffs come from a standing bamboo clump (a slash at the height of the hero's hand)?
+
+## Questions about the finer figures (#15)
+
+81. **The frame cost on the phone.** The draw calls are the same as before (38 in the day story, 29 in the boss raid), and the culling keeps the triangles near what they were (138k against 147k in the day story, 82k against 80k in the boss raid). The browser here draws without a graphics card, so its frames each second (5 to 7, the same before and after) say nothing about a phone. Please check `?fps` on your phone in the village and in a raid.
+82. **The head.** The head is a stepped ball of five units, the same for a child and an adult, so that the child reads as a child by the body. Is the head too large on the adults (the elder, the smith, the general)?
+83. **The walk.** With the knee, the old swing of the legs read as a run, so a step is a little shorter now. Does the walk read as a walk at the speed of the game?
+84. **The far level.** At 30 blocks the coarse figures take over. With the camera of the village, few figures are that far; in the country of later eras there are more. Is 30 blocks the right line, or should it follow the zoom of the camera?
+
