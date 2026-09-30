@@ -22,6 +22,7 @@ import { startTimer, isTimeOver } from './rest.js';
 import { scenes, modals, registerScene, registerModal } from './registry.js';
 import { mountCreate } from './create.js';
 import { mountVillage } from './village.js';
+import { startStory } from './storybook.js';
 
 // The scenes of play: a session of the learning log is open in them.
 const PLAY = new Set(['village', 'battle', 'vanmieu']);
@@ -283,6 +284,13 @@ export async function startApp(root) {
   const saved = await getMeta('lang').catch(() => null);
   const browser = navigator.language?.toLowerCase().startsWith('vi') ? 'vi' : 'en';
   await ctx.setLanguage(saved ?? browser);
+  // ?story=<name> opens a story of the storybook (with &play, the story plays).
+  const query = new URLSearchParams(location.search);
+  if (query.get('story')) {
+    await ctx.go('title');
+    await startStory(ctx, query.get('story'), { play: query.has('play'), speed: Number(query.get('speed')) || 1 });
+    return ctx;
+  }
   await ctx.go('title');
   return ctx;
 }

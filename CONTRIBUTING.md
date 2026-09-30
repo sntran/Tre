@@ -55,7 +55,7 @@ npm test
 
 Add tests for each change to `src/core/`. All tests must pass before we merge a pull request.
 
-The use paths of the game are stories in `tests/stories/`: data files with a start state, commands, and the facts to check. `tests/stories.test.js` runs them headless, and `?story=<name>&play` plays one in the browser. Every new use path (a task, a raid, a quest step, a screen) comes with its story in the same commit. The stories test the paths; the unit tests test the parts.
+The use paths of the game are stories in `tests/stories/`: data files with a start state, commands, and the facts to check. `tests/stories.test.js` runs them headless, and `?story=<name>&play` plays one in the browser. Every new use path (a task, a raid, a quest step, a screen) comes with its story in the same commit. The stories test the paths; the unit tests test the parts. A new kind of step or fact goes into `src/core/story.js` with a test of its own in `tests/story.test.js`. After a change to a story, run `python3 tools/stories.py` to make `docs/reference/stories.html` again. `docs/STORIES.md` tells how to write a story.
 
 ## How to pick up work
 

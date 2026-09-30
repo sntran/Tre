@@ -937,6 +937,52 @@ p { line-height: 1.45; margin: 0.4em 0; }
   opacity: 0.85;
   pointer-events: none;
 }
+/* The storybook (?story=<name>&play): the finger of a tap, the step, and the screens of a story. */
+.story-finger {
+  position: absolute;
+  left: -22px;
+  top: -22px;
+  width: 44px;
+  height: 44px;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  background: rgba(247, 240, 223, 0.55);
+  transition: transform 0.4s ease;
+  pointer-events: none;
+  z-index: 30;
+}
+.story-finger.down { background: rgba(179, 65, 42, 0.6); }
+.story-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  max-width: min(92%, 760px);
+  padding: 4px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--diep);
+  font: 13px ui-monospace, Menlo, Consolas, monospace;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  z-index: 30;
+}
+.story-bar.good { border-color: var(--indigo); }
+.story-bar.bad { border-color: var(--vermilion); color: var(--vermilion); }
+.story-screen {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  padding: 16px 28px;
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  background: var(--diep);
+  font-family: var(--display);
+  font-size: 22px;
+  pointer-events: none;
+}
+.story-step { color: var(--yellow-pale); }
 /* The researcher view of the parent area: words and simple bars. */
 .research { display: grid; gap: 12px; }
 .research-block { padding: 8px 10px; border: 2px solid var(--ink); border-radius: 8px; background: var(--diep); }

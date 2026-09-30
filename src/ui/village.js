@@ -234,6 +234,8 @@ export async function mountVillage(ctx, params = {}) {
 
   // Screens: the session opens them, the view shows them and tells the session when they close.
   let box = null;
+  const book = ctx.storybook ?? null; // a story of the storybook (src/ui/storybook.js)
+  let bookScreen = null;
   function openScreen(ev) {
     if (ev.screen === 'dialogue' || ev.screen === 'say') {
       box ??= createDialogueBox(ctx, { next: () => send({ type: 'next' }), choose: (n) => send({ type: 'choose', n }) });
@@ -242,6 +244,14 @@ export async function mountVillage(ctx, params = {}) {
     }
     if (ev.screen === 'callout') {
       showBubble(ev.id, t(ev.textKey, ev.params));
+      return;
+    }
+    // A story that plays in the storybook stays in the village: the other screens show as a
+    // card with their name, until the story closes them.
+    if (book?.playing) {
+      bookScreen?.remove();
+      bookScreen = h('div', { class: 'story-screen', text: ev.screen });
+      ctx.ui.append(bookScreen);
       return;
     }
     if (ev.screen === 'rest') {
@@ -576,8 +586,9 @@ export async function mountVillage(ctx, params = {}) {
     last = now;
     time += dt;
     sendInput();
-    // The world moves in fixed steps; the drawing is smooth between two steps.
-    acc += dt;
+    // The world moves in fixed steps; the drawing is smooth between two steps. A story of the
+    // storybook can play faster (&speed=4).
+    acc += dt * (book?.speed ?? 1);
     while (acc >= STEP && alive && !leaving) {
       session.step();
       figures.sync(state);
@@ -676,6 +687,9 @@ export async function mountVillage(ctx, params = {}) {
         if (ev.screen === 'dialogue' || ev.screen === 'say') {
           box?.close();
           box = null;
+        } else {
+          bookScreen?.remove();
+          bookScreen = null;
         }
         return;
       case 'busy':
@@ -883,8 +897,14 @@ export async function mountVillage(ctx, params = {}) {
       return { x: Math.floor(c.x), y: Math.floor(c.y) };
     },
     mapId: () => mapData.id,
-    // The session of the village, for automatic tests of the whole game.
+    // The session of the village, for the storybook and for automatic tests of the whole game.
     session,
+    // Send a command to the session and show its events (the storybook).
+    send,
+    // The screen point of a map point on the ground (the finger of the storybook).
+    pointOf: (x, y) => view.project(x, groundY(x, y) + 0.2, y),
+    // The debug panel (with ?debug=1), where the storybook shows the step of a story.
+    debugPanel,
     // Open another map, for automatic tests of the whole game.
     goMap: (id, x, y) => ctx.go('village', { map: id, at: { x, y } }),
     // The screen point of the middle of a cell, for automatic tests of the whole game.
@@ -954,7 +974,7 @@ export async function mountVillage(ctx, params = {}) {
       window.removeEventListener('keyup', onKey);
       offLang();
       figures.dispose();
-      for (const el of [duskTint, duskLayer, glowLayer, paper, marks, hud, turns, fade, banner, meter, debugPanel]) el?.remove();
+      for (const el of [duskTint, duskLayer, glowLayer, paper, marks, hud, turns, fade, banner, meter, debugPanel, bookScreen]) el?.remove();
     },
     api,
   };

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tre stories</title>
+<!-- Made by tools/stories.py from tests/stories/*.json. Do not edit by hand. -->
+<style>
+  :root { --ink: #1f1b17; --paper: #efe4c8; --diep: #f7f0df; --vermilion: #b3412a; --indigo: #2f4668; }
+  body { margin: 0; padding: 16px; background: var(--paper); color: var(--ink); font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-family: Georgia, serif; margin: 0 0 4px; }
+  ul { list-style: none; padding: 0; display: grid; gap: 12px; }
+  li { padding: 10px 14px; border: 2px solid var(--ink); border-radius: 8px; background: var(--diep); }
+  h2 { margin: 0; font: 700 18px ui-monospace, Menlo, Consolas, monospace; color: var(--indigo); }
+  p { margin: 4px 0; }
+  .meta { font-size: 14px; }
+  a { color: var(--vermilion); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tre stories</h1>
+  <p>The use paths of the game as data (<code>tests/stories/</code>). Each story runs headless in
+  <code>npm test</code>, and plays here in the game with a finger on the screen. The game waits
+  one second at each check. Nothing of a story is saved.</p>
+  <ul>
+    <li>
+      <h2>bridge-mashing</h2>
+      <p lang="vi">Cây cầu, bấm vội: thử ba cỡ ván liền ở một chỗ; lần bước lên cầu không được tính, và Nghé chỉ chỗ hở.</p>
+      <p lang="en">The bridge, mashing: three sizes in a sweep at one place, fast; the commit gives no evidence, and Nghé shows the gap.</p>
+      <p class="meta">phu-dong · 26 steps ·
+        <a href="../../index.html?story=bridge-mashing&amp;play">play</a> ·
+        <a href="../../index.html?story=bridge-mashing&amp;play&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=bridge-mashing">open at the start</a></p>
+    </li>
+    <li>
+      <h2>bridge-save</h2>
+      <p lang="vi">Lưu game khi cầu mới xong một nửa, rồi mở lại: các tấm ván và vòng chơi vẫn như cũ, và cầu làm tiếp được.</p>
+      <p lang="en">Save in the middle of the bridge and load: the planks and the round are the same, and the bridge goes on.</p>
+      <p class="meta">phu-dong · 24 steps ·
+        <a href="../../index.html?story=bridge-save&amp;play">play</a> ·
+        <a href="../../index.html?story=bridge-save&amp;play&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=bridge-save">open at the start</a></p>
+    </li>
+    <li>
+      <h2>bridge</h2>
+      <p lang="vi">Cây cầu gãy: đoán số tấm ván, rồi thử ngắn, dài, và vừa đủ; các cờ của mỗi lần bước lên cầu.</p>
+      <p lang="en">The broken bridge: the prediction, then a short, a long, and an exact bridge; the flags of each commit.</p>
+      <p class="meta">phu-dong · 42 steps ·
+        <a href="../../index.html?story=bridge&amp;play">play</a> ·
+        <a href="../../index.html?story=bridge&amp;play&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=bridge">open at the start</a></p>
+    </li>
+    <li>
+      <h2>day</h2>
+      <p lang="vi">Một ngày trọn vẹn: người làng ra chỗ làm lúc mười giờ, ra giếng buổi trưa, về nhà lúc chiều tối, và ra lại lúc rạng sáng; gà vào chuồng ban đêm.</p>
+      <p lang="en">A whole day at speed: the people at their spots at ten, at the well at noon, home at dusk, and out at dawn; the chickens in the coop at night.</p>
+      <p class="meta">phu-dong · 12 steps ·
+        <a href="../../index.html?story=day&amp;play&amp;speed=4">play</a> ·
+        <a href="../../index.html?story=day&amp;play&amp;speed=4&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=day">open at the start</a></p>
+    </li>
+    <li>
+      <h2>exits</h2>
+      <p lang="vi">Đi ra lối phía bắc tới Sóc Sơn, rồi quay về Phù Đổng; Nghé luôn đi theo.</p>
+      <p lang="en">The exit north to Sóc Sơn and back to Phù Đổng; Nghé comes along.</p>
+      <p class="meta">phu-dong · 8 steps ·
+        <a href="../../index.html?story=exits&amp;play">play</a> ·
+        <a href="../../index.html?story=exits&amp;play&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=exits">open at the start</a></p>
+    </li>
+    <li>
+      <h2>new-profile</h2>
+      <p lang="vi">Hồ sơ mới vào làng: bà kể chuyện, đặt tên cho Nghé, rồi gặp cụ trưởng làng lần đầu.</p>
+      <p lang="en">A new profile comes to the village: the intro of grandma, a name for Nghé, and the first talk with the elder.</p>
+      <p class="meta">phu-dong · 10 steps ·
+        <a href="../../index.html?story=new-profile&amp;play">play</a> ·
+        <a href="../../index.html?story=new-profile&amp;play&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=new-profile">open at the start</a></p>
+    </li>
+    <li>
+      <h2>nghe</h2>
+      <p lang="vi">Vuốt ve Nghé và cưỡi lên lưng Nghé; khi cưỡi Nghé thì đẩy được xe bò, rồi xuống.</p>
+      <p lang="en">Pet and ride Nghé; on the back of Nghé the hero pushes the cart, then gets off.</p>
+      <p class="meta">phu-dong · 15 steps ·
+        <a href="../../index.html?story=nghe&amp;play">play</a> ·
+        <a href="../../index.html?story=nghe&amp;play&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=nghe">open at the start</a></p>
+    </li>
+    <li>
+      <h2>rain</h2>
+      <p lang="vi">Trời mưa: nước sông lên, chỗ lội bị ngập, Nghé lắc đầu ở mép nước, và một giờ sau cơn mưa thì lội qua được.</p>
+      <p lang="en">Rain: the river rises, the ford closes, Nghé shakes its head at the edge, and the ford opens one game hour after the rain.</p>
+      <p class="meta">phu-dong · 15 steps ·
+        <a href="../../index.html?story=rain&amp;play">play</a> ·
+        <a href="../../index.html?story=rain&amp;play&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=rain">open at the start</a></p>
+    </li>
+    <li>
+      <h2>reactions</h2>
+      <p lang="vi">Làng phản ứng với em: gà chạy khi em chạy tới, người làng chào em, và cái vò vỡ cho một đồng xu bay vào túi.</p>
+      <p lang="en">The village reacts: a chicken flees a running hero, a villager greets, and a pot gives a coin that flies to the counter.</p>
+      <p class="meta">phu-dong · 11 steps ·
+        <a href="../../index.html?story=reactions&amp;play">play</a> ·
+        <a href="../../index.html?story=reactions&amp;play&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=reactions">open at the start</a></p>
+    </li>
+    <li>
+      <h2>time-limit</h2>
+      <p lang="vi">Hết giờ chơi: trò chơi chờ lúc yên, không bao giờ khi đang ở trên cầu; khi em đi khỏi cầu thì Nghé đưa em về nghỉ.</p>
+      <p lang="en">The time limit: the day ends at a calm point, never on the bridge; when the hero leaves the bridge, the rest comes.</p>
+      <p class="meta">phu-dong · 11 steps ·
+        <a href="../../index.html?story=time-limit&amp;play">play</a> ·
+        <a href="../../index.html?story=time-limit&amp;play&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=time-limit">open at the start</a></p>
+    </li>
+    <li>
+      <h2>vanmieu-gate</h2>
+      <p lang="vi">Trên đường ra Thăng Long: qua đò sông Hồng, vào Văn Miếu, và khi trở ra thì đứng cạnh cổng.</p>
+      <p lang="en">On the road to Thăng Long: over the Red River on the ferry, into Văn Miếu, and back out next to its gate.</p>
+      <p class="meta">road-thanglong · 11 steps ·
+        <a href="../../index.html?story=vanmieu-gate&amp;play">play</a> ·
+        <a href="../../index.html?story=vanmieu-gate&amp;play&amp;debug=1">play with the debug panel</a> ·
+        <a href="../../index.html?story=vanmieu-gate">open at the start</a></p>
+    </li>
+  </ul>
+</main>
+</body>
+</html>

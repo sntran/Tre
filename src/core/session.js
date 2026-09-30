@@ -50,9 +50,12 @@ const CALM_CELLS = 2; // the hero is on the bridge when nearer than this to a sp
 export function createSession({ data, profile, learner = () => null, log = () => null, save = () => {}, now = () => Date.now(), terrainOf = () => ({ homes: {} }), switches = null }) {
   const out = [];
   const listeners = new Set();
+  let opening = []; // the events of the last start
+  let starting = false;
   // Every event goes to the queue of the view and to the listeners (the runner of a story).
   const emit = (ev) => {
     out.push(ev);
+    if (starting) opening.push(ev);
     for (const fn of listeners) fn(ev);
   };
   const arrivals = new Map(); // the token of a walk -> what to do at its end
@@ -79,6 +82,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // Start on a map. mapId: the map (or the map of the save, or the start map). params: at (the
   // hero cell), facing, after (the ids of talks after the start, for example after a battle).
   function start(mapId = null, params = {}) {
+    opening = [];
+    starting = true;
+    try {
+      begin(mapId, params);
+    } finally {
+      starting = false;
+    }
+  }
+  function begin(mapId, params) {
     const worldMap = data.world;
     const savedPlace = heroPlace(profile.world);
     const savedMap = worldMap.map(savedPlace.map) ? savedPlace.map : null;
@@ -655,8 +667,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     step,
     // The events since the last call.
     events: () => out.splice(0),
-    // The events that the view did not take yet (for example the events of the start).
-    peek: () => [...out],
+    // The events of the last start (the intro, the talks after a battle), also when the view
+    // took them already.
+    opening: () => [...opening],
     // Also send each event to fn (for example the runner of a story). Return a function that stops it.
     listen(fn) {
       listeners.add(fn);

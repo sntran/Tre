@@ -10,7 +10,8 @@
 //     state (a saved world, instead of place), steps: [...] }
 // Steps:
 //   { do: <command of the session> }         { wait: <seconds> }
-//   { until: { event, with, timeout } }      { at: { hour } }
+//   { until: { event, with, timeout } }      (an event after the last command)
+//   { at: { hour } }
 //   { tap: { cell: [x, y] } | { entity } | { plank: <size> } | { guess: <n> } | { zone } | { span } | { hero: true } }
 //     (plank: a plank of this size on a pile; zone: the gap of a span; span: the last plank on a span)
 //   { read: true | [<choice>, ...] }         (read the open talk to its end, with these choices)
@@ -293,8 +294,8 @@ export function createLaws({ texts, limits }) {
 
 // Play a story. io: {
 //   session(): the session now (a reload makes a new one),
-//   advance(seconds, until): let the world go on for some seconds, or until until() is true;
-//     return true when until() became true,
+//   advance(seconds, until): let the world go on for some seconds of the world, or until
+//     until() is true; return true when until() became true,
 //   send(cmd, point): send a command (point: the map point of a tap, for the finger),
 //   reload(): save, load, and go on with a new session; return a message when the loaded world
 //     is not the same, or null,
@@ -303,8 +304,9 @@ export function createLaws({ texts, limits }) {
 export async function playStory(story, io) {
   const failures = [];
   // The events of the start that the view did not take yet, then all the events of the session.
-  const events = io.session().peek();
+  const events = io.session().opening();
   let since = 0; // the events since the last expect start here
+  let mark = 0; // the events since the last command start here
   let stop = io.session().listen((ev) => events.push(ev));
   const fail = (i, message) => failures.push({ step: i, message });
   const lastLine = () => [...events].reverse().find((ev) => ev.type === 'open' && (ev.screen === 'dialogue' || ev.screen === 'say'));
@@ -312,10 +314,12 @@ export async function playStory(story, io) {
   for (const [i, s] of (story.steps ?? []).entries()) {
     io.onStep?.(i, s);
     const session = io.session();
+    if (s.do || s.tap || s.read) mark = events.length;
     if (s.do) await io.send(s.do, null);
     else if (s.wait !== undefined) await io.advance(s.wait, null);
     else if (s.until) {
-      const from = events.length;
+      // The event came after the last command (in a browser, it can come while the finger taps).
+      const from = mark;
       const ok = await io.advance(s.until.timeout ?? 30, () => events.slice(from).some((ev) => ev.type === s.until.event && fits(ev, s.until.with)));
       if (!ok) fail(i, `no event ${s.until.event} ${JSON.stringify(s.until.with ?? {})} in ${s.until.timeout ?? 30} seconds`);
     } else if (s.at) {
@@ -339,7 +343,7 @@ export async function playStory(story, io) {
     } else if (s.reload) {
       stop();
       const problem = await io.reload();
-      events.push(...io.session().peek());
+      events.push(...io.session().opening());
       stop = io.session().listen((ev) => events.push(ev));
       if (problem) fail(i, problem);
     } else if (s.expect) {

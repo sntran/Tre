@@ -163,3 +163,16 @@ test('each kind of step: do, wait, until, at, tap, read, reload, and expect; a f
   assert.match(failures[3].message, /unknown step/);
   assert.ok(STORY_EPOCH > 0);
 });
+
+test('the page of the stories lists each story with its about lines and a link to play it', async () => {
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../docs/reference/stories.html', import.meta.url), 'utf8');
+  const dir = new URL('./stories/', import.meta.url);
+  for (const f of readdirSync(dir).filter((x) => x.endsWith('.json'))) {
+    const story = JSON.parse(readFileSync(new URL(f, dir), 'utf8'));
+    assert.equal(`${story.name}.json`, f, 'the name of a story is the name of its file');
+    assert.ok(story.about?.vi && story.about?.en, `${story.name} has an about line in both languages`);
+    assert.ok(page.includes(`?story=${story.name}&amp;play`), `the page links ${story.name} (run tools/stories.py)`);
+    assert.ok(page.includes(story.about.en.replaceAll('&', '&amp;')), `the page has the about line of ${story.name} (run tools/stories.py)`);
+  }
+});

@@ -249,6 +249,7 @@ const FILES = [
   'src/ui/rest.js',
   'src/ui/speak.js',
   'src/ui/storage.js',
+  'src/ui/storybook.js',
   'src/ui/title.js',
   'src/ui/vanmieu.js',
   'src/ui/village.js',
