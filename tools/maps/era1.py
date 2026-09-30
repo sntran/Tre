@@ -121,7 +121,7 @@ A.places = {
     'healer-bed-3': {'x': 16.2, 'y': 21.4},
     'healer-basket': {'x': 17.6, 'y': 20.7},
     'woodcutter-stem': {'x': 25.0, 'y': 3.25},
-    'staffs-stem': {'x': 16.0, 'y': 2.75},
+    'staffs-stem': {'x': 13.5, 'y': 16.25},
     'woodpile': {'x': 26.1, 'y': 30.2},
     # Rice for Gióng: the trays of bowls on the path of the paddies, and the pot in front of the
     # house of Gióng.
