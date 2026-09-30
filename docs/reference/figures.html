@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tre: the figures</title>
+  <!--
+  The figures of Tre on paper, for the review of the owner: every person and animal at rest and
+  mid-step, from the front and at three-quarter, with the far (coarse) level at the end of each row.
+  It draws with the figure layer of the game (src/render/figure3d.js), so it shows what the game
+  shows. Open it from the root of the repository with a local server (for example
+  python3 -m http.server), at /docs/reference/figures.html. It loads three.js from a CDN.
+  -->
+  <style>
+    :root { --paper: #efe3c8; --ink: #1f1b17; --ash: #6f685d; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Be Vietnam Pro', system-ui, sans-serif; }
+    header { padding: 16px 24px 4px; max-width: 70em; }
+    h1 { margin: 0 0 6px; font-family: Georgia, serif; }
+    h2 { margin: 18px 24px 4px; font-family: Georgia, serif; font-size: 20px; }
+    p { margin: 4px 0; line-height: 1.4; }
+    .sheet { position: relative; margin: 0 24px 24px; }
+    .sheet canvas { display: block; }
+    .label { position: absolute; transform: translate(-50%, 0); font-size: 12px; white-space: nowrap; color: var(--ash); }
+    .row-name { position: absolute; transform: translate(0, -50%); font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .col { position: absolute; transform: translate(-50%, 0); font-size: 12px; font-weight: 700; text-align: center; width: 9em; }
+  </style>
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" } }</script>
+</head>
+<body>
+  <header>
+    <h1>The figures of Tre</h1>
+    <p>Every person and animal of the village, built on a grid of quarter blocks (<code>src/world/fine.js</code>). Each row: at rest and mid-step, from the front and at three-quarter; the last column is the far level (the coarse figure that the game draws for a figure more than about 30 blocks from the hero). The people are at their true size; the animals are drawn larger.</p>
+  </header>
+  <h2>People</h2>
+  <div class="sheet" id="people"></div>
+  <h2>Animals</h2>
+  <div class="sheet" id="animals"></div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { createFigureLayer } from '../../src/render/figure3d.js';
+    import { heroLook } from '../../src/world/figures.js';
+    import { C } from '../../src/render/palette.js';
+
+    const looks = (await (await fetch('../../data/figures.json')).json()).figures;
+    const heroes = {
+      'hero (boy)': heroLook({ gender: 'boy', skin: 2, face: 2, hair: 2, clothes: 1 }),
+      'hero (girl)': heroLook({ gender: 'girl', skin: 3, face: 1, hair: 4, clothes: 3 }),
+    };
+    const lookOf = (key) => heroes[key] ?? looks[key] ?? {};
+    const COLUMNS = [
+      { name: 'at rest, front', facing: 0, step: false },
+      { name: 'at rest, three-quarter', facing: Math.PI / 4, step: false },
+      { name: 'mid-step, front', facing: 0, step: true },
+      { name: 'mid-step, three-quarter', facing: Math.PI / 4, step: true },
+      { name: 'far level', facing: Math.PI / 4, step: false, coarse: true },
+    ];
+    // The walk: one draw of this many seconds puts the legs mid-step (src/world/animate.js).
+    const STEP_DT = Math.PI / 2 / (4 * 1.9);
+
+    // One sheet: rows of figures in one scene, drawn by the figure layer of the game.
+    function sheet(el, rows, { px, cell, rowH }) {
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(C.paper);
+      const fine = createFigureLayer(scene, lookOf, { detail: 'fine' });
+      const coarse = createFigureLayer(scene, lookOf, { detail: 'coarse' });
+      const worlds = { fine: { entities: [] }, coarse: { entities: [] } };
+      rows.forEach((key, r) => COLUMNS.forEach((col, c) => {
+        // Positions are in half blocks (2 for each block).
+        const e = { id: `${key}:${c}`, look: key, position: { x: (c * cell + cell / 2) * 2, y: -r * rowH * 2, z: 0, facing: col.facing }, motion: { speed: col.step ? 8 : 0 } };
+        (col.coarse ? worlds.coarse : worlds.fine).entities.push(e);
+      }));
+      const W = COLUMNS.length * cell;
+      const H = rows.length * rowH;
+      const width = Math.round(W * px) + 170;
+      const height = Math.round(H * px) + 40;
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setSize(width, height);
+      el.append(renderer.domElement);
+      // A camera from the front, a little above, as a print is seen.
+      const left = -170 / px;
+      const cam = new THREE.OrthographicCamera(left, W, rowH * 0.95, -H + rowH * 0.95 - 40 / px, -100, 100);
+      const tilt = 0.32;
+      cam.position.set(0, Math.sin(tilt) * 20, Math.cos(tilt) * 20);
+      cam.lookAt(0, 0, 0);
+      for (const [layer, world] of [[fine, worlds.fine], [coarse, worlds.coarse]]) {
+        layer.sync(world);
+        layer.draw(1, STEP_DT);
+      }
+      renderer.render(scene, cam);
+      // The names of the rows and the columns.
+      const toPx = (x, y) => {
+        const v = new THREE.Vector3(x, y, 0).project(cam);
+        return { x: ((v.x + 1) / 2) * width, y: ((1 - v.y) / 2) * height };
+      };
+      COLUMNS.forEach((col, c) => {
+        const p = toPx(c * cell + cell / 2, rowH * 0.85);
+        el.append(Object.assign(document.createElement('div'), { className: 'col', textContent: col.name, style: `left:${p.x}px;top:${Math.max(0, p.y)}px` }));
+      });
+      rows.forEach((key, r) => {
+        const p = toPx(0, -r * rowH + rowH * 0.3);
+        el.append(Object.assign(document.createElement('div'), { className: 'row-name', textContent: key, style: `left:4px;top:${p.y}px` }));
+      });
+    }
+
+    sheet(document.getElementById('people'), ['hero (boy)', 'hero (girl)', 'grandma', 'mother', 'giong-boy', 'giong-boy-3', 'giong-hero', 'teacher', 'elder', 'socson-elder', 'messenger', 'smith', 'healer', 'woodcutter', 'fisher', 'scout', 'soldier', 'general'], { px: 44, cell: 4, rowH: 4.6 });
+    sheet(document.getElementById('animals'), ['nghe', 'buffalo', 'dog', 'chicken', 'chicken-brown', 'duck', 'fish'], { px: 110, cell: 2.6, rowH: 2.4 });
+    document.body.dataset.ready = '1';
+  </script>
+</body>
+</html>

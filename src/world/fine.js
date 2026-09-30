@@ -111,10 +111,12 @@ export function personFine(look) {
   const onHead = { parent: 'head' };
   if (hair !== 'bald') {
     const hc = hair === 'grey' ? 'ashLight' : hairColor;
-    parts.push(P('hair', [headS + 0.5, 2, headS + 0.5], hc, [0, headS / 2 - 0.5, -0.25], onHead));
-    parts.push(P('hairBack', [headS + 0.5, headS - 1, 1.5], hc, [0, 0, -headS / 2 + 0.5], onHead));
-    parts.push(P('fringe', [headS - 1, 1, 0.75], hc, [0, headS / 2 - 1, headS / 2 - 0.1], onHead));
-    if (hair === 'topknot') parts.push(P('knot', [2, 2, 2], hc, [0, headS / 2 + 1, -0.5], onHead));
+    // A stepped cap that follows the round head, a fringe over the brows, and the back.
+    parts.push(P('hair', [headS + 0.4, 1.5, headS + 0.4], hc, [0, headS / 2 - 1.15, 0], onHead));
+    parts.push(P('hairTop', [headS - 1.25, 0.75, headS - 1.25], hc, [0, headS / 2 - 0.05, 0], onHead));
+    parts.push(P('hairBack', [headS + 0.4, headS - 1.5, 1.25], hc, [0, -0.2, -headS / 2 + 0.4], onHead));
+    parts.push(P('fringe', [headS - 0.6, 0.75, 0.6], hc, [0, headS / 2 - 0.95, headS / 2 - 0.05], onHead));
+    if (hair === 'topknot') parts.push(P('knot', [1.75, 1.75, 1.75], hc, [0, headS / 2 + 0.95, -0.5], onHead));
     if (hair === 'bun') parts.push(P('knot', [2.25, 2.25, 2.25], hc, [0, 1, -headS / 2 - 1], onHead));
     if (hair === 'long') parts.push(P('tail', [1.5, 4, 1], hc, [0, -2.5, -headS / 2 - 0.4], onHead));
     if (hair === 'braids') for (const s of [-1, 1]) parts.push(P(`braid${s}`, [1, 3.5, 1], hc, [s * (headS / 2 + 0.25), -2, -0.75], onHead));

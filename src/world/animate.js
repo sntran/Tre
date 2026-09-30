@@ -43,17 +43,17 @@ export function animate(a, input) {
   let lean = 0;
   let sink = 0;
   if (a.kind === 'biped') {
-    const sw = Math.sin(a.phase) * 0.75 * s;
+    const sw = Math.sin(a.phase) * 0.55 * s;
     // On the back of Nghé the legs go to the sides and stay still.
     rot.legL = riding ? [-0.6, 0, -0.5] : [sw - a.rest * 1.4, 0, 0];
     rot.legR = riding ? [-0.6, 0, 0.5] : [-sw - a.rest * 1.4, 0, 0];
     // The knee of a leg behind bends as it swings through (a leg behind has a positive angle), and
     // its heel lifts; the knees bend to sit and to ride.
-    const knee = (leg) => Math.max(0, leg) * 1.2 + a.rest * 1.4 + (riding ? 0.9 : 0);
+    const knee = (leg) => Math.max(0, leg) * 0.8 + a.rest * 1.4 + (riding ? 0.9 : 0);
     rot.shinL = [knee(sw), 0, 0];
     rot.shinR = [knee(-sw), 0, 0];
-    rot.footL = [-Math.max(0, sw) * 0.5, 0, 0];
-    rot.footR = [-Math.max(0, -sw) * 0.5, 0, 0];
+    rot.footL = [-Math.max(0, sw) * 0.35, 0, 0];
+    rot.footR = [-Math.max(0, -sw) * 0.35, 0, 0];
     rot.armL = [-sw * 0.8, 0, 0];
     rot.armR = [sw * 0.8 - a.wave * 0.2, 0, -a.wave * (1.9 + Math.sin(a.time * 8) * 0.35)];
     // Lift: the arm with the staff goes up high (the general before a big blow).

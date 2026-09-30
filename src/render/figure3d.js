@@ -59,8 +59,10 @@ function partsMaterial() {
 // kneels, the general lifts his staff; Nghé lowers her horns in a charge).
 const WANTS = { sit: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns' };
 
-// camera: the camera of the view (for the culling); without it, every figure draws.
-export function createFigureLayer(scene, lookOf, { camera = null } = {}) {
+// camera: the camera of the view (for the culling); without it, every figure draws. detail: one
+// level for all figures ('fine' or 'coarse', for the page of the figures); without it, the level
+// follows the distance from the hero.
+export function createFigureLayer(scene, lookOf, { camera = null, detail = null } = {}) {
   const box = unitBox();
   const plain = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PARTS), 1);
   box.setAttribute('plain', plain);
@@ -206,7 +208,7 @@ export function createFigureLayer(scene, lookOf, { camera = null } = {}) {
         const pose = animate(f.anim, { speed: f.speed, dt, want: f.want });
         // The level of detail: fine near the hero, coarse far away (src/world/lod.js).
         const dist = hero ? Math.hypot(b.x - hero.x, b.z - hero.z) / 2 : 0;
-        f.detail = detailFor(f.detail, dist);
+        f.detail = detail ?? detailFor(f.detail, dist);
         const L = (f.levels[f.detail] ??= build(f.lookData, f.detail));
         f.height = L.height;
         // A figure out of the view draws nothing (and casts no shadow).
