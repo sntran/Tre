@@ -112,6 +112,7 @@ A.places = {
     'smith-forge': {'x': 24.3, 'y': 20.1},
     'smith-anvil': {'x': 27.1, 'y': 21.5},
     'smith-trough': {'x': 27.7, 'y': 21.3},
+    'horse-ore': {'x': 25.6, 'y': 22.6},
     'well-bucket': {'x': 21.3, 'y': 11.8},
     'fisher-stakes': {'x': 10.5, 'y': 31.7},
     'fisher-line': {'x': 12.0, 'y': 33.25},

@@ -63,6 +63,18 @@
       "places": { "stem": "woodcutter-stem", "pile": "woodpile" }
     },
     {
+      "id": "horse", "npc": "smith", "kind": "task", "flag": "horse.forged", "reward": {}, "doneTalk": "smith.horse", "task": "horse",
+      "_task": "The iron horse for Gióng. The iron that the child found lies in a heap by the forge, with some old iron of the smith. The child carries lumps into the hearth and takes lumps out again, then taps the bellows (the commit of the count): with the lumps that the smith needs, the fire burns high and the iron goes on the anvil; with too few, the fire puffs and dies; with too many, the fire chokes and the extra rolls back to the heap. Then the iron glows and dims as in the trial of the smith, and a tap drops it into the water: at the right moment it becomes the iron horse.",
+      "extra": 3, "take": { "iron": 6 }, "startSet": "horse.iron", "clears": "smith", "made": "iron-horse",
+      "glow": { "rise": 2.5, "dim": 2.5, "cold": 1.5, "hot": 0.6 },
+      "levels": [
+        { "ore": 6, "hold": 3, "skill": "sci.matter.states", "level": 1, "count": { "skill": "math.count.120", "level": 1 } },
+        { "ore": 6, "hold": 2, "skill": "sci.matter.states", "level": 2, "count": { "skill": "math.count.120", "level": 1 } },
+        { "ore": 6, "hold": 1.4, "skill": "sci.matter.states", "level": 2, "count": { "skill": "math.count.120", "level": 2 } }
+      ],
+      "places": { "ore": "horse-ore", "forge": "smith-forge", "anvil": "smith-anvil" }
+    },
+    {
       "id": "rice", "npc": "mother", "kind": "task", "flag": "giong.grown", "reward": {}, "doneTalk": "giong.grown",
       "task": "feed",
       "_task": "Rice for Gióng (not a trial of a calling: a task of the story). Trays of 3 and of 5 bowls of rice lie on the path of the paddies (trays: the sizes; each size has this many trays, and a tray that goes to the pot comes back full to the path). The child carries one tray at a time to the pot in front of the house of Gióng. Each ten bowls: Gióng eats and grows one head taller; the bowls over the ten stay in the pot (the ones), and his height shows the tens. The commit is each ten: solved when the pot comes to exactly ten, efficient with the fewest trays for it. The task is done when Gióng has grown this many heads.",

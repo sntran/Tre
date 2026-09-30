@@ -1,0 +1,47 @@
+{
+  "name": "forge-horse",
+  "about": {
+    "vi": "Ngựa sắt: mang quặng vào lò rồi bấm ống bễ; năm miếng thì lửa tắt, bảy miếng thì miếng thừa lăn ra, đúng sáu miếng thì lửa bùng lên; nhúng sắt đỏ vào nước đúng lúc thì thành ngựa sắt.",
+    "en": "The iron horse: carry ore into the forge and tap the bellows; with five lumps the fire dies, with seven the extra lump rolls out, and with exactly six the fire burns high; the glowing iron in the water at the right moment becomes the iron horse."
+  },
+  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "items": { "iron": 6 }, "flags": { "intro.seen": true, "prologue.started": true, "trial.smith.done": true, "giong.messenger": true, "giong.spoke": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [53, 45],
+  "steps": [
+    { "tap": { "entity": "npc:smith" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "dlg.smith.forge.n2" } }, { "item": "iron", "count": 0 }, { "count": { "entities": "ore", "min": 9 } }, { "entity": "bellows:horse", "look": "bellows" }] },
+    { "repeat": 5, "steps": [
+      { "tap": { "item": "ore" } },
+      { "until": { "event": "pick", "timeout": 15 } },
+      { "tap": { "zone": "hearth" } },
+      { "until": { "event": "put", "timeout": 15 } }
+    ] },
+    { "tap": { "thing": "bellows:horse" } },
+    { "until": { "event": "puff", "timeout": 15 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "math.count.120", "solved": false, "first": true, "parts": [5] } }] },
+    { "repeat": 2, "steps": [
+      { "tap": { "item": "ore" } },
+      { "until": { "event": "pick", "timeout": 15 } },
+      { "tap": { "zone": "hearth" } },
+      { "until": { "event": "put", "timeout": 15 } }
+    ] },
+    { "tap": { "thing": "bellows:horse" } },
+    { "until": { "event": "roll", "timeout": 15 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "math.count.120", "solved": false, "first": false, "parts": [7] } }] },
+    { "tap": { "thing": "bellows:horse" } },
+    { "until": { "event": "fire", "timeout": 15 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "math.count.120", "solved": true, "parts": [6] } }, { "entity": "iron:horse", "look": "iron-0" }] },
+    { "tap": { "thing": "iron:horse" } },
+    { "until": { "event": "bend", "timeout": 10 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "sci.matter.states", "solved": false, "first": true } }] },
+    { "wait": 4.5 },
+    { "tap": { "thing": "iron:horse" } },
+    { "until": { "event": "hiss", "timeout": 10 } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "sci.matter.states", "solved": true } }, { "entity": "iron:horse", "look": "iron-horse" }, { "flag": "horse.forged" }, { "text": { "shown": "dlg.smith.horse.n1" } }] },
+    { "read": true }
+  ]
+}

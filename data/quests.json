@@ -161,6 +161,11 @@
        },
        {
         "flags": [
+         "horse.iron"
+        ]
+       },
+       {
+        "flags": [
          "horse.forged"
         ]
        }

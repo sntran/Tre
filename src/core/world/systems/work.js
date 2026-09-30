@@ -8,13 +8,16 @@
 //   stakes: at the tide, the fish stay in the trap, or they swim out through the widest space.
 //   basket: the healer takes the basket; or gives it back, and the extra herbs fly to their beds.
 //   cut: equal sticks tie into a bundle; if not, the short stick breaks and a new stem comes.
+//   horse (the iron horse): with the lumps that the smith needs in the hearth, the bellows light
+//     the fire, and the iron on the anvil becomes the horse in the water; with too few, the fire
+//     puffs and dies; with too many, the extra rolls back to the heap.
 //   feed (rice for Gióng): each ten bowls in the pot, Gióng eats and grows one head taller.
 // When a task is done, the event "trial" goes out (the session sets the flag and gives the reward).
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { REACH } from '../zones.js';
-import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill, feedResult, tenResult } from '../trials.js';
+import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill, feedResult, tenResult, hearthResult } from '../trials.js';
 
 const BEND = 1.2; // seconds: the bent iron cools before it goes back into the fire
 const TIDE_IN = 2.5; // seconds: the tide stands high over the stakes
@@ -35,7 +38,7 @@ export function work(world, dt, rng, env) {
   if (world.paused) return;
   for (const z of query(world, 'zone')) {
     if (z.zone.rule !== 'trial' || z.zone.done) continue;
-    if (z.zone.task === 'forge') tickForge(world, z, dt, env);
+    if (z.zone.task === 'forge' || z.zone.task === 'horse') tickForge(world, z, dt, env);
     if (z.zone.task === 'stakes') tickTide(world, z, dt, env);
     if (z.zone.task === 'cut') tickStem(world, z, dt);
   }
@@ -111,6 +114,20 @@ export function setupTrial(world, def, level, env) {
     const a = P(def.places.anvil);
     tz.zone.anvil = { x: a.x, y: a.y, z: a.z };
     tz.zone.heat = null;
+  } else if (def.task === 'horse') {
+    // The done trial of the smith leaves its forge: its ore, its bucket, and its blade go.
+    if (def.clears) {
+      for (const t of query(world, 'item')) if (t.item.task === `trial-${def.clears}`) removeEntity(world, t.id);
+      for (const z of query(world, 'zone')) if (z.zone.task === `trial-${def.clears}`) z.zone.items = [];
+    }
+    const ore = heap('horse-ore', P(def.places.ore), 'ore', { cols: 3 });
+    things(ore, 'ore', task.ore + (def.extra ?? 3));
+    const f = P(def.places.forge);
+    addEntity(world, { id: 'zone:hearth', keep: true, zone: { id: 'hearth', task: owner, rule: 'hearth', accepts: 'ore', items: [], x: f.x, y: f.y, z: f.z, rect: rect(f, 3, 2) }, position: { x: f.x + 1, y: f.y, z: f.z + 2, facing: 0 } });
+    // The bellows by the hearth: a tap on them blows on the fire (the commit of the count).
+    addEntity(world, { id: 'bellows:horse', keep: true, item: { kind: 'bellows', size: 1, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: f.x - 1.2, y: f.y, z: f.z + 1, facing: 0 }, look: 'bellows' });
+    const a = P(def.places.anvil);
+    Object.assign(tz.zone, { anvil: { x: a.x, y: a.y, z: a.z }, heat: null, iron: 'iron:horse', blows: 0, quenches: 0 });
   } else if (def.task === 'stakes') {
     const stakes = heap('stakes', P(def.places.stakes), 'stake', { cols: 4 });
     const length = task.space * task.gaps;
@@ -216,6 +233,15 @@ function takeOut(world, thing) {
   if (z.zone.rule === 'heap') packHeap(world, z.zone);
   if (z.zone.rule === 'bundle') packMat(world, z.zone);
   if (z.zone.rule === 'basket') packBasket(world, z.zone);
+  if (z.zone.rule === 'hearth') packHearth(world, z.zone);
+}
+
+// The lumps in the hearth lie in rows of four.
+function packHearth(world, zone) {
+  zone.items.forEach((id, i) => {
+    const e = getEntity(world, id);
+    if (e) e.position = { x: zone.x + 0.5 + (i % 4) * 0.8, y: zone.y + 1, z: zone.z + 0.6 + Math.floor(i / 4) * 0.8, facing: 0 };
+  });
 }
 
 // Can the hero take this thing? A thing that is set (the stakes of the fisher, a stem) cannot
@@ -223,6 +249,7 @@ function takeOut(world, thing) {
 export function canTakeWork(world, thing) {
   if (thing.item.fixed || thing.item.set) return false;
   if (thing.item.zone === 'forge') return false;
+  if (thing.item.zone === 'hearth') return trialZone(world, 'horse')?.zone.heat === null;
   if (thing.item.zone === 'line') {
     const tz = trialZone(world, 'fisher');
     return tz?.zone.tide?.phase === 'low';
@@ -251,6 +278,11 @@ export function putWork(world, e, zone, thing, at, env) {
     }
     thing.position = { x: zone.x + 0.5 + (zone.items.length - 1) * 0.8, y: zone.y + 1, z: zone.z + 0.8, facing: 0 };
     thing.look = 'ore-hot';
+  } else if (zone.rule === 'hearth') {
+    if (tz.zone.heat !== null) return false;
+    thing.item.zone = zone.id;
+    zone.items.push(thing.id);
+    packHearth(world, zone);
   } else if (zone.rule === 'trough') {
     // The water goes into the trough, and the bucket goes back to the well.
     zone.full = true;
@@ -335,14 +367,42 @@ function act(world, e, want, env) {
       mat.zone.items = [];
       say(world, 'snap', mat.id, { count: n, sound: 'plank-down' });
     }
+  } else if (want.act === 'blow') {
+    // The bellows: the count of the lumps in the hearth is the commit.
+    const hearth = zoneEnt(world, 'hearth');
+    if (!hearth || tz.zone.heat !== null || !near(hearth.position, REACH + 3)) return;
+    const count = hearth.zone.items.length;
+    const r = hearthResult(count, task.ore);
+    tz.zone.blows += 1;
+    commit(world, tz, { ...task, ...task.count }, { solved: r.solved, first: tz.zone.blows === 1, parts: [count], target: task.ore });
+    if (r.solved) {
+      // The fire burns high: the lumps melt, and the iron lies on the anvil.
+      for (const id of hearth.zone.items) removeEntity(world, id);
+      hearth.zone.items = [];
+      const a = tz.zone.anvil;
+      addEntity(world, { id: tz.zone.iron, keep: true, item: { kind: 'iron', size: 2, task: `trial-${tz.zone.trial}`, zone: null, held: null, set: true, fixed: true }, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'iron-0' });
+      tz.zone.heat = 0;
+      say(world, 'fire', tz.id, { sound: 'lantern' });
+    } else if (r.short) {
+      say(world, 'puff', hearth.id, { sound: 'tap' });
+    } else {
+      // The fire chokes: the extra lumps roll back to the heap.
+      for (let i = 0; i < r.over; i++) {
+        const lump = getEntity(world, hearth.zone.items.pop());
+        if (lump) toHeap(world, lump);
+      }
+      packHearth(world, hearth.zone);
+      say(world, 'roll', hearth.id, { sound: 'plank-down' });
+    }
   } else if (want.act === 'quench') {
-    const iron = getEntity(world, 'iron:smith');
+    const iron = getEntity(world, tz.zone.iron ?? 'iron:smith');
     if (!iron || tz.zone.heat === null || tz.zone.bent || !near(tz.zone.anvil, REACH + 3)) return;
     const value = glowAt(tz.zone.heat, task.glow, task.hold);
     const solved = quenchResult(value, task.glow);
-    commit(world, tz, task, { solved, parts: [Math.round(value * 10)], target: Math.round(task.glow.hot * 10) });
+    if (tz.zone.quenches !== undefined) tz.zone.quenches += 1;
+    commit(world, tz, task, { solved, first: tz.zone.quenches === undefined ? undefined : tz.zone.quenches === 1, parts: [Math.round(value * 10)], target: Math.round(task.glow.hot * 10) });
     if (solved) {
-      iron.look = 'blade';
+      iron.look = task.made ?? 'blade';
       iron.item.set = true;
       tz.zone.heat = null;
       say(world, 'hiss', iron.id, { sound: 'splash', at: iron.position });
@@ -466,7 +526,7 @@ function readyIron(world, tz) {
 }
 
 function tickForge(world, tz, dt, env) {
-  const iron = getEntity(world, 'iron:smith');
+  const iron = getEntity(world, tz.zone.iron ?? 'iron:smith');
   if (!iron || tz.zone.heat === null) return;
   const task = taskFor(env, tz.zone);
   if (tz.zone.bent) {

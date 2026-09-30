@@ -91,7 +91,7 @@
       ],
       "allow": 1, "take": { "coin": 1 },
       "pauseKey": "raid.soldier.pause", "introKey": "raid.soldier.intro", "mark": "legend", "noteKey": "raid.soldier.note",
-      "win": { "set": ["soldier1.won"], "give": { "coin": 3, "iron": 1 } }
+      "win": { "set": ["soldier1.won"], "give": { "coin": 4 } }
     },
     "soldier2": {
       "tools": ["sling", "traps", "helpers", "nghe", "water", "fire"], "trapPost": 10, "trapAsk": "smith",
@@ -110,7 +110,7 @@
       ],
       "allow": 1, "take": { "coin": 1 },
       "pauseKey": "raid.soldier.pause", "introKey": "raid.soldier.intro", "mark": "legend", "noteKey": "raid.soldier.note",
-      "win": { "set": ["soldier2.won"], "give": { "coin": 3, "iron": 1 } }
+      "win": { "set": ["soldier2.won"], "give": { "coin": 4 } }
     },
     "boss": {
       "tools": ["sling", "traps", "helpers", "nghe", "water", "fire", "lightning", "bamboo"], "trapPost": 20, "trapAsk": "smith",

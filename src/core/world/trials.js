@@ -98,6 +98,12 @@ export function trialSkill(task, { solved, efficient = solved, first, parts = []
   };
 }
 
+// The iron horse: the bellows blow on the lumps in the hearth. Solved: the lumps that the smith
+// needs. Short: too few (the fire puffs and dies). Over: the lumps too many (they roll back).
+export function hearthResult(count, need) {
+  return { solved: count === need, short: count < need, over: Math.max(0, count - need) };
+}
+
 // Rice for Gióng: a tray of `size` bowls goes into the pot, which had `ones` bowls. Gióng eats each
 // full ten and grows one head (grew); the rest stays in the pot.
 export function feedResult(ones, size) {

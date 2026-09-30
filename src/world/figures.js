@@ -389,6 +389,8 @@ export function workThing(look) {
     case 'band': return still([P('coil', [0.9, 0.3, 0.9], 'ochre', [0, 0.15, 0]), P('hole', [0.4, 0.32, 0.4], 'wood', [0, 0.16, 0]), P('end', [0.2, 0.2, 0.6], 'ochre', [0.5, 0.1, 0.4])], 0.35);
     // A lump of iron ore; red hot in the forge.
     case 'ore': return still([P('lump', [0.8, 0.55, 0.7], look.hot ? 'vermilion' : 'ash', [0, 0.28, 0]), P('grain', [0.4, 0.3, 0.4], look.hot ? 'yellow' : 'ink', [0.15, 0.5, 0.1]), P('chip', [0.3, 0.25, 0.3], look.hot ? 'vermilionPale' : 'ashLight', [-0.3, 0.15, -0.2])], 0.7);
+    // The bellows of the forge: a box of wood with a pole to push.
+    case 'bellows': return still([P('box', [1, 0.8, 1.4], 'wood', [0, 0.4, 0]), P('lid', [1.05, 0.12, 1.45], 'ochre', [0, 0.84, 0]), P('pole', [0.15, 0.15, 1.2], 'ink', [0, 0.95, -0.9]), P('grip', [0.5, 0.15, 0.15], 'wood', [0, 0.95, -1.5]), P('nozzle', [0.25, 0.25, 0.5], 'ink', [0, 0.3, 0.9])], 1);
     // A wooden bucket of water.
     case 'bucket': return still([P('pail', [0.9, 0.9, 0.9], 'wood', [0, 0.45, 0]), P('water', [0.7, 0.05, 0.7], 'indigoPale', [0, 0.9, 0]), P('handle', [0.1, 0.5, 0.9], 'ink', [0, 1.1, 0])], 1.2);
     // A wooden trough, empty or with water.
@@ -402,6 +404,11 @@ export function workThing(look) {
       const anvil = [P('anvil', [1.4, 1, 1.2], 'ink', [0, -0.5, 0]), P('horn', [0.6, 0.3, 0.5], 'ink', [0, -0.15, 0.8])];
       if (look.bent) return still([...anvil, P('barA', [0.4, 0.3, 1.1], 'ash', [0, 0.15, -0.3]), P('barB', [0.4, 0.3, 1.1], 'ash', [0.35, 0.35, 0.6])], 0.6);
       if (look.blade) return still([...anvil, P('blade', [0.5, 0.2, 2.2], 'ashLight', [0, 0.1, 0]), P('grip', [0.35, 0.3, 0.6], 'wood', [0, 0.15, -1.3])], 0.4);
+      if (look.horse) {
+        // The iron horse for Gióng: a body, a neck and a head, four legs, and a tail.
+        const legs = [[-0.25, -0.5], [0.25, -0.5], [-0.25, 0.5], [0.25, 0.5]].map(([x, z], i) => P(`leg${i}`, [0.18, 0.6, 0.18], 'ink', [x, 0.3, z]));
+        return still([...anvil, ...legs, P('body', [0.6, 0.45, 1.4], 'ash', [0, 0.8, 0]), P('neck', [0.35, 0.6, 0.35], 'ash', [0, 1.2, 0.6]), P('head', [0.35, 0.3, 0.7], 'ash', [0, 1.55, 0.85]), P('mane', [0.12, 0.5, 0.4], 'vermilion', [0, 1.4, 0.45]), P('tail', [0.15, 0.5, 0.15], 'ink', [0, 0.8, -0.8])], 1.8);
+      }
       return still([...anvil, P('bar', [0.4, 0.3, 2], IRON[Math.max(0, Math.min(3, look.glow ?? 0))], [0, 0.15, 0])], 0.4);
     }
     // A stake of the fish trap, half in the water.

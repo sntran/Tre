@@ -42,7 +42,7 @@ test('each talk rule names a known dialogue', () => {
 });
 
 test('dialogue effects open only known screens', () => {
-  const screens = new Set(['trial', 'practice', 'lesson', 'home', 'craft', 'vanmieu', 'nameFriend']);
+  const screens = new Set(['trial', 'practice', 'lesson', 'home', 'vanmieu', 'nameFriend']);
   for (const d of dialogues) {
     for (const n of Object.values(d.nodes)) {
       const effects = [...(n.effects ?? []), ...(n.choices ?? []).flatMap((c) => c.effects ?? [])];

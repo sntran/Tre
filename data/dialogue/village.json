@@ -220,14 +220,30 @@
     "n1": {
      "speaker": "smith",
      "textKey": "dlg.smith.forge.n1",
+     "next": "n2"
+    },
+    "n2": {
+     "speaker": "smith",
+     "textKey": "dlg.smith.forge.n2",
      "effects": [
       {
-       "open": "craft",
-       "id": "iron-horse"
+       "open": "trial",
+       "id": "horse"
       }
      ]
     }
    }
+  },
+  {
+   "id": "smith.horse",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "smith",
+     "textKey": "dlg.smith.horse.n1"
+    }
+   },
+   "mark": "legend"
   },
   {
    "id": "smith.idle",

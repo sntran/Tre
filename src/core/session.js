@@ -287,6 +287,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (def.task === 'forge') out.ore = num(t.ore);
       if (def.task === 'basket') out.each = num(t.each);
       if (def.task === 'cut') out.parts = num(t.parts);
+      if (def.task === 'horse') out.lumps = num(t.ore);
     }
     return out;
   }
@@ -296,6 +297,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!def || profile.flags[def.flag]) return;
     const places = Object.values(def.places).flat();
     if (!places.every((p) => env.places[p])) return;
+    // The things that the child brought go into the task (the iron for the horse).
+    if (def.take && !trialZone(id)) applyEffects(profile, [{ take: def.take }, ...(def.startSet ? [{ set: def.startSet }] : [])]);
     setupTrial(state, def, levelFor(data.trials, profile.grade), env);
     emit({ type: 'hud' });
   }
@@ -335,6 +338,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (thing.item.kind === 'band') {
       walkNear(zoneOf('mat').position, () => work(trial, 'tie'));
+      return true;
+    }
+    if (thing.item.kind === 'bellows') {
+      walkNear(zoneOf('hearth').position, () => work(trial, 'blow'));
       return true;
     }
     if (thing.item.kind === 'iron') {

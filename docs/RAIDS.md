@@ -66,9 +66,9 @@ The tools come one raid after the other (rule 11: one new part at a time). A too
 
 | Raid | Map | The road | Enemies | After a win |
 | --- | --- | --- | --- | --- |
-| `scouts` | Phù Đổng | The east road to the gate | Four scouts with torches | `scouts.won`, iron and coins, the talk `scouts.won` |
-| `soldier1` | Trâu Sơn | The north field path to the crossroads | Three soldiers | `soldier1.won`, coins and iron |
-| `soldier2` | Trâu Sơn | The south field path to the crossroads | Three soldiers | `soldier2.won`, coins and iron |
+| `scouts` | Phù Đổng | The east road to the gate | Four scouts with torches | `scouts.won`, iron (for the iron horse) and coins, the talk `scouts.won` |
+| `soldier1` | Trâu Sơn | The north field path to the crossroads | Three soldiers | `soldier1.won`, coins |
+| `soldier2` | Trâu Sơn | The south field path to the crossroads | Three soldiers | `soldier2.won`, coins |
 | `boss` | Trâu Sơn | The path from the camp at the foot of the mountain | Three soldiers, then the general | `era1.boss.won`, coins, the note and the fact of history, the talk `giong.north` |
 | `river` | Phù Đổng | The river to the ford | Two little river serpents (they become calm) | `river.calmed`, the talks of Sóng |
 | `patrol` | Phù Đổng | The east road to the gate | Two scouts (again and again) | Coins and bamboo |

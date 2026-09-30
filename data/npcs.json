@@ -134,9 +134,18 @@
       "notFlags": [
        "horse.forged"
       ],
-      "items": {
-       "iron": 6
-      }
+      "any": [
+       {
+        "items": {
+         "iron": 6
+        }
+       },
+       {
+        "flags": [
+         "horse.iron"
+        ]
+       }
+      ]
      },
      "dialogue": "smith.forge"
     },

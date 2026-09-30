@@ -82,6 +82,8 @@
     "band": { "kind": "band" },
     "ore": { "kind": "ore" },
     "ore-hot": { "kind": "ore", "hot": true },
+    "bellows": { "kind": "bellows" },
+    "iron-horse": { "kind": "iron", "horse": true },
     "bucket": { "kind": "bucket" },
     "trough": { "kind": "trough" },
     "trough-full": { "kind": "trough", "full": true },

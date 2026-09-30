@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { levelFor, taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill, feedResult, tenResult } from '../src/core/world/trials.js';
+import { levelFor, taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill, feedResult, tenResult, hearthResult } from '../src/core/world/trials.js';
 import { load } from './helpers.js';
 
 const trials = load('data/trials.json');
@@ -104,3 +104,12 @@ test('rice for Gióng: each ten bowls he grows; the rest stays in the pot; a ten
   assert.equal(tenResult([3, 3, 3, 3], 1, [3, 5]).efficient, false, 'more trays than needed');
 });
 
+
+test('the iron horse: the bellows light the fire only with the lumps that the smith needs', () => {
+  assert.deepEqual(hearthResult(6, 6), { solved: true, short: false, over: 0 });
+  assert.deepEqual(hearthResult(5, 6), { solved: false, short: true, over: 0 }, 'too few: the fire puffs and dies');
+  assert.deepEqual(hearthResult(8, 6), { solved: false, short: false, over: 2 }, 'too many: two lumps roll back');
+  const def = load('data/trials.json').trials.find((t) => t.id === 'horse');
+  for (const l of def.levels) assert.equal(l.ore, 6, 'the smith needs six lumps at each level');
+  assert.ok(def.extra > 0, 'the heap has more lumps than the forge needs');
+});
