@@ -84,6 +84,7 @@ Tre là một thế giới isometric sống động duy nhất. Trẻ đi lại,
 - **Nhân vật luôn nhìn thấy được.** Bất cứ thứ gì nằm giữa camera và nhân vật đều mờ đi thành bóng ma: giữ đường viền, bỏ màu. Cả vật thể mờ đi, không phải từng phần.
 - **Hoàng hôn** là một lớp phủ màu chàm lên toàn cảnh, với những vũng sáng ấm từ đèn lồng và đom đóm bên mặt nước. Nét mực dịu đi một chút vào ban đêm.
 - **Nhân vật được ghép từ các bộ phận** (đầu, thân, tay, chân) có thể xoay, nên chu kỳ đi bộ, gặm cỏ, vẫy tay và ngồi là hoạt ảnh của các bộ phận, không phải sprite mới. Bước đi có tay và chân đánh so le, hơi nghiêng người, và nhấc lên mỗi bước. Thú bốn chân bước với hai chân chéo nhau cùng lúc.
+- **Nhân vật mịn hơn mặt đất.** Người và thú được dựng trên lưới một phần tư khối, nên một người cao 14 đến 16 đơn vị: đầu tròn bậc thang, mặt có mắt và miệng, tóc có khối, tay áo, bàn tay cầm được đồ, bàn chân, và bước đi có gập gối. Mặt đất giữ khối đầy và nửa khối. Mọi bộ phận nhân vật vẽ bằng một instanced mesh; nhân vật ngoài khung hình được loại bỏ (culling), và nhân vật ở xa vẽ bản thô.
 
 **Năm quy tắc**
 
@@ -481,6 +482,7 @@ Mọi dữ liệu nằm lại trên thiết bị. Không có tài khoản, khôn
 - **Hồ sơ:** mỗi trẻ có một hồ sơ với một nhân vật, một bản lưu và các mức kỹ năng.
 - **Lưu:** trò chơi lưu sau mỗi trận đánh, mỗi kỳ thi và mỗi bước nhiệm vụ, trong IndexedDB.
 - **Mã xuất:** phụ huynh có thể xuất hồ sơ thành tệp hoặc một đoạn mã chữ ngắn, và nhập vào thiết bị khác.
+- **Cuộc phiêu lưu mới và điểm khôi phục:** nút "Cuộc phiêu lưu mới" luôn có trên màn hình đầu; trẻ không bao giờ thấy ô lưu. Game giữ bản lưu của ba bình minh gần nhất của mỗi hồ sơ làm điểm khôi phục; cha mẹ có thể quay lại một điểm, đổi tên, xuất mã hoặc xóa hồ sơ sau cổng cha mẹ.
 - **Cổng phụ huynh:** khu vực phụ huynh chỉ mở khi phụ huynh giữ một nút trong 3 giây và trả lời một câu hỏi đơn giản dành cho người lớn.
 - **Cài đặt phụ huynh:** ngôn ngữ, giới hạn thời gian mỗi ngày, âm thanh và nhạc, mức độ nặng nhẹ khi thua, và trình chỉnh sửa câu hỏi phụ huynh.
 - **Giới hạn thời gian:** khi hết giờ, nhân vật về nhà nghỉ ngơi. Trò chơi lưu lại và kết thúc ở một điểm yên bình, không bao giờ giữa trận đánh.

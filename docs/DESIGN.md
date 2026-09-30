@@ -84,6 +84,7 @@ Tre is one living isometric world. The child walks, builds, and defends in the s
 - **The hero is always visible.** Anything between the camera and the hero fades to a ghost: outlines stay, color goes. Whole objects fade, not parts.
 - **Dusk** is an indigo wash over the whole scene, with warm pools of light from the lanterns and fireflies by the water. Ink lines soften a little at night.
 - **Characters are made of parts** (head, body, arms, legs) that rotate, so walk cycles, grazing, waving, and sitting are animation of parts, not new sprites. A walk has legs and arms that swing in turn, a small lean, and a lift on each step. Four-legged animals walk with their diagonal legs together.
+- **Figures are finer than the land.** People and animals are built on a quarter-block grid, so a person is 14 to 16 units tall: a stepped round head, a face with eyes and a mouth, hair as a volume, sleeves, hands that hold things, feet, and a walk with a knee bend. The land keeps its full and half blocks. All figure parts draw as one instanced mesh; figures outside the view are culled, and figures far from the hero draw a coarse version.
 
 **The five rules**
 
@@ -483,6 +484,7 @@ All data stays on the device. There are no accounts, no server, no ads, and no a
 - **Profiles:** each child has a profile with a hero, a save, and skill levels.
 - **Save:** the game saves after each battle, exam, and quest step, in IndexedDB.
 - **Export code:** a parent can export a profile as a file or a short text code, and import it on another device.
+- **New adventure and restore points:** "Cuộc phiêu lưu mới" is always on the title screen; the child never sees save slots. The game keeps the save of the last three dawns of each profile as restore points, and a parent can rewind to one, rename, export, or delete a profile behind the parent gate.
 - **Parent gate:** the parent area opens only after a parent holds a button for 3 seconds and answers a simple adult question.
 - **Parent settings:** language, time limit per day, sound and music, difficulty of losses, and the parent question editor.
 - **Time limit:** when the time is over, the hero goes home to rest. The game saves and ends at a calm point, never in the middle of a battle.
