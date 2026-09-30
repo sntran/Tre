@@ -398,7 +398,7 @@ export function workThing(look) {
       return still([...anvil, P('bar', [0.4, 0.3, 2], IRON[Math.max(0, Math.min(3, look.glow ?? 0))], [0, 0.15, 0])], 0.4);
     }
     // A stake of the fish trap, half in the water.
-    case 'stake': return still([P('pole', [0.35, 2.4, 0.35], look.set ? 'wood' : 'ochre', [0, 0.6, 0]), P('top', [0.4, 0.15, 0.4], 'yellowPale', [0, 1.85, 0]), P('tie', [0.42, 0.15, 0.42], 'ink', [0, 1.2, 0])], 1.9);
+    case 'stake': return still([P('pole', [0.55, 4, 0.55], look.set ? 'wood' : 'ochre', [0, 1.2, 0]), P('top', [0.6, 0.2, 0.6], 'yellowPale', [0, 3.25, 0]), P('tie', [0.62, 0.2, 0.62], 'ink', [0, 2.4, 0])], 3.3);
     // The red float at the end of the line of the trap.
     case 'float': return still([P('buoy', [0.8, 0.6, 0.8], 'vermilion', [0, 0.1, 0]), P('flag', [0.12, 1.4, 0.12], 'wood', [0, 0.9, 0]), P('cloth', [0.1, 0.5, 0.6], 'vermilion', [0, 1.4, 0.3])], 1.7);
     // The water of the tide over the line of the trap (n: how high).
@@ -427,11 +427,12 @@ export function workThing(look) {
     // A fallen bamboo stem, n half blocks long, along +z, with a node at each unit.
     case 'stem': {
       const parts = [];
-      for (let i = 0; i < look.n; i++) parts.push(P(`seg${i}`, [0.8, 0.8, 1], i % 2 ? 'green' : 'greenPale', [0, 0.4, i + 0.5]), P(`node${i}`, [0.9, 0.9, 0.12], 'greenDeep', [0, 0.4, i + 1]));
+      // A fallen stem dries yellow, so that it stands out on the grass.
+      for (let i = 0; i < look.n; i++) parts.push(P(`seg${i}`, [1, 1, 1], i % 2 ? 'yellow' : 'yellowPale', [0, 0.5, i + 0.5]), P(`node${i}`, [1.1, 1.1, 0.14], 'ochre', [0, 0.5, i + 1]));
       return still(parts, 0.8);
     }
     // A chalk mark across the stem.
-    case 'chalk': return still([P('mark', [1.1, 0.06, 0.18], 'diep', [0, 0.2, 0]), P('dotA', [0.2, 0.08, 0.2], 'diep', [-0.65, 0.2, 0]), P('dotB', [0.2, 0.08, 0.2], 'diep', [0.65, 0.2, 0])], 0.3);
+    case 'chalk': return still([P('mark', [1.3, 0.08, 0.25], 'vermilion', [0, 0.45, 0]), P('dotA', [0.25, 0.4, 0.25], 'vermilion', [-0.65, 0.25, 0]), P('dotB', [0.25, 0.4, 0.25], 'vermilion', [0.65, 0.25, 0])], 0.5);
     // Equal bamboo sticks tied into a bundle.
     case 'sticks': {
       const parts = [];
