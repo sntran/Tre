@@ -122,13 +122,13 @@ The broken bridge in Phù Đổng is the zone `bridge-gap` (in `tools/maps/era1.
 
 ### What a save holds
 
-A profile is one record in the store of the device (IndexedDB, `src/ui/storage.js`): `{ id, name, text, updatedAt, points }`. `text` is the current save, in the versioned save format of `src/core/save.js`: the hero, the grade, the era, the calling, the titles and the stele, the flags, the quests, the things in the bag, the friends and their names, the settings, the time of play, the learning (the skill levels, the reviews, the exams, the learning log), and the world (above). Nothing leaves the device; the export code is the only way in or out.
+A profile is one record in the store of the device (IndexedDB, `src/ui/storage.js`): `{ id, name, text, updatedAt, points }`. `text` is the current save, in the versioned save format of `src/core/save.js`: the hero, the grade, the calling, the titles and the stele, the flags, the quests, the things in the bag, the friends and their names, the settings, the time of play, the learning (the skill levels, the reviews, the exams, the learning log), and the world (above). Nothing leaves the device; the export code is the only way in or out.
 
 ### The restore points
 
 `points` is a list of the saves at the last dawns of the game, the newest first (`src/core/restore.js`). The save version stays: a point is the same text as a save.
 
-- At each dawn of the game clock, the session saves (`save('dawn')`), and that save is also a restore point `{ text, day, era, at }` (day: the game day; at: the real time).
+- At each dawn of the game clock, the session saves (`save('dawn')`), and that save is also a restore point `{ text, day, map, at }` (day: the game day; map: the map of the hero; at: the real time). The profile cards and the parent area show the name of the era of the region of the map (`eraKey` in `data/world/regions.json`).
 - A second save on the same game day takes the place of the first. After three, the oldest goes out (`KEEP`).
 - A restore (the parent area, behind the parent gate) makes the chosen point the current save. The current save is not lost: it becomes a point in the place of the chosen one, marked `before` (it is not a dawn), so that the parent can go back to it.
 - A delete of the profile deletes its record, and so its points too.

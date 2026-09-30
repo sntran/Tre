@@ -1,7 +1,7 @@
 // Saves in IndexedDB. Each profile is saved as the text of the versioned save format.
 // If IndexedDB is not available (for example in some private windows), saves stay in memory.
 import { serialize, deserialize } from '../core/save.js';
-import { addPoint, restorePoint, gameDay } from '../core/restore.js';
+import { addPoint, restorePoint, whereOf } from '../core/restore.js';
 
 const DB_NAME = 'tre';
 const DB_VERSION = 1;
@@ -62,14 +62,14 @@ export async function saveProfile(profile, { dawn = false } = {}) {
   profile.updatedAt = Date.now();
   const old = await getRecord(profile.id);
   let record = { id: profile.id, name: profile.hero.name, text: serialize(profile, profile.updatedAt), updatedAt: profile.updatedAt, points: old?.points ?? [] };
-  if (dawn) record = addPoint(record, { text: record.text, day: gameDay(profile), era: profile.era ?? 1, at: profile.updatedAt });
+  if (dawn) record = addPoint(record, { text: record.text, ...whereOf(profile), at: profile.updatedAt });
   await putRecord(record);
 }
 
-// The restore points of a profile, the newest first: { day, era, at, before }.
+// The restore points of a profile, the newest first: { day, map, at, before }.
 export async function listRestorePoints(id) {
   const record = await getRecord(id);
-  return (record?.points ?? []).map(({ day, era, at, before = false }) => ({ day, era, at, before }));
+  return (record?.points ?? []).map(({ day, map = null, at, before = false }) => ({ day, map, at, before }));
 }
 
 // Go back to a restore point. The current save becomes a restore point in its place.
@@ -77,7 +77,7 @@ export async function restoreProfile(id, index) {
   const record = await getRecord(id);
   if (!record?.points?.[index]) return false;
   const current = deserialize(record.text);
-  await putRecord(restorePoint(record, index, { day: gameDay(current), era: current.era ?? 1 }, Date.now()));
+  await putRecord(restorePoint(record, index, whereOf(current), Date.now()));
   return true;
 }
 

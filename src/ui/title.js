@@ -35,7 +35,7 @@ function profileCard(ctx, p) {
       h('span', { text: t('title.play', { name: p.name }) }),
       h('span', { class: 'profile-where' }, [
         h('span', { class: 'mini-bamboo', 'aria-hidden': 'true' }, Array.from({ length: sections + 1 }, (_, i) => h('i', { class: i === sections ? 'shoot' : '' }))),
-        h('span', { text: t(`era.${p.profile.era ?? 1}`) }),
+        h('span', { text: t(ctx.data.world.eraOf(p.profile.world?.map)) }),
       ]),
     ]),
   ]);

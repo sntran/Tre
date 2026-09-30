@@ -89,6 +89,9 @@ export function createWorld(world, maps, geo = null) {
     regions: world.regions,
     region: (id) => regions.get(id) ?? null,
     regionOf: (mapId) => regionOf.get(mapId) ?? null,
+    // The text key of the name of the era of a map (the era of its region; the start region for an
+    // unknown map). The profile cards and the parent area show it.
+    eraOf: (mapId) => regions.get(regionOf.get(mapId) ?? world.start.region).eraKey,
     map: (id) => maps.get(id) ?? null,
     isOpen,
     exitAt,

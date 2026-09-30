@@ -4,8 +4,8 @@
 //
 // A record of the profile store: { id, name, text, updatedAt, points }. text: the current save (the
 // save format of src/core/save.js). points: the restore points, the newest first:
-// [{ text, day, era, at, before }] (day: the game day of the dawn; era: the era of the story then;
-// at: the real time in milliseconds; before: true for the save that was current before a restore,
+// [{ text, day, map, at, before }] (day: the game day of the dawn; map: the map of the hero then,
+// which gives the region and the name of its era (data/world/regions.json); at: the real time in milliseconds; before: true for the save that was current before a restore,
 // which is not a dawn).
 
 export const KEEP = 3;
@@ -14,6 +14,11 @@ export const KEEP = 3;
 export function gameDay(profile) {
   const minutes = profile?.world?.clock?.minutes ?? 0;
   return Math.floor(minutes / 1440);
+}
+
+// Where a save is in the game: { day, map } (the game day and the map of the hero).
+export function whereOf(profile) {
+  return { day: gameDay(profile), map: profile?.world?.map ?? null };
 }
 
 // Add the save of a dawn as a restore point. A second save on the same game day takes the place
@@ -25,11 +30,11 @@ export function addPoint(record, point, keep = KEEP) {
 }
 
 // Go back to a restore point: it becomes the current save, and the current save becomes a restore
-// point in its place. The other points stay. current: { day, era } of the current save.
+// point in its place. The other points stay. current: whereOf the current save.
 export function restorePoint(record, index, current, now) {
   const point = record.points?.[index];
   if (!point) return record;
-  const back = { text: record.text, day: current.day, era: current.era, at: now, before: true };
+  const back = { text: record.text, day: current.day, map: current.map, at: now, before: true };
   const points = record.points.map((p, i) => (i === index ? back : p)).sort((a, b) => b.day - a.day || b.at - a.at);
   return { ...record, text: point.text, updatedAt: now, points };
 }

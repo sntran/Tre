@@ -19,6 +19,13 @@ test('the world has 13 regions, one for each story chapter, in history order', (
   for (const r of built) assert.ok(r.maps.length >= 3 && r.maps.length <= 6, r.id);
 });
 
+test('the name of the era comes from the region of the map', () => {
+  const w = createWorld(world, maps);
+  for (const r of world.regions.filter((x) => x.maps.length)) assert.ok(r.eraKey in vi && r.eraKey in en, `${r.id}: era`);
+  assert.equal(w.eraOf('soc-son'), 'era.hung-vuong');
+  assert.equal(w.eraOf(undefined), w.region(world.start.region).eraKey, 'an unknown map: the start region');
+});
+
 test('each map belongs to its region, and each region with maps is open; the others are locked', () => {
   const w = createWorld(world, maps);
   for (const [id, m] of maps) {

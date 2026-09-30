@@ -8,7 +8,7 @@ import { createLogger } from '../src/core/logger.js';
 import { createRng } from '../src/core/rng.js';
 import { serialize, deserialize } from '../src/core/save.js';
 import { saveWorld } from '../src/core/world/save.js';
-import { addPoint, restorePoint, gameDay } from '../src/core/restore.js';
+import { addPoint, restorePoint, whereOf } from '../src/core/restore.js';
 import { buildTerrain } from '../src/world/terrain.js';
 import { loadGameData, load } from './helpers.js';
 
@@ -36,7 +36,7 @@ export async function runHeadless(story, { onSession = null } = {}) {
     session.syncSave();
     const text = serialize(profile, now());
     record = { ...record, text };
-    if (reason === 'dawn') record = addPoint(record, { text, day: gameDay(profile), era: profile.era ?? 1, at: now() });
+    if (reason === 'dawn') record = addPoint(record, { text, ...whereOf(profile), at: now() });
   };
   const broken = new Map(); // a law message -> the first step where it broke
   let current = -1;
@@ -91,7 +91,7 @@ export async function runHeadless(story, { onSession = null } = {}) {
       // The parent area saves the open game first; its save becomes a point in place of the chosen one.
       store('restore');
       if (!record.points[index]) return `no restore point ${index}`;
-      record = restorePoint(record, index, { day: gameDay(profile), era: profile.era ?? 1 }, now());
+      record = restorePoint(record, index, whereOf(profile), now());
       profile = deserialize(record.text);
       begin();
       return null;

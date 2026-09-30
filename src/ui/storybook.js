@@ -5,7 +5,7 @@
 // Nothing is saved on the device: the profile of a story lives only in this page.
 import { storyProfile, playStory, STEP } from '../core/story.js';
 import { serialize, deserialize } from '../core/save.js';
-import { addPoint, restorePoint, gameDay } from '../core/restore.js';
+import { addPoint, restorePoint, whereOf } from '../core/restore.js';
 import { h } from './dom.js';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -23,7 +23,7 @@ export async function startStory(ctx, name, { play = false, speed = 1 } = {}) {
     ctx.syncWorld?.();
     const text = serialize(ctx.profile, Date.now());
     ctx.storybook.record = { ...ctx.storybook.record, text };
-    if (reason === 'dawn') ctx.storybook.record = addPoint(ctx.storybook.record, { text, day: gameDay(ctx.profile), era: ctx.profile.era ?? 1, at: Date.now() });
+    if (reason === 'dawn') ctx.storybook.record = addPoint(ctx.storybook.record, { text, ...whereOf(ctx.profile), at: Date.now() });
     return Promise.resolve();
   };
   const profile = storyProfile(story, { now: Date.now() });
@@ -119,7 +119,7 @@ async function playInBrowser(ctx, story) {
       await ctx.save('restore');
       const record = book.record;
       if (!record.points[index]) return `no restore point ${index}`;
-      book.record = restorePoint(record, index, { day: gameDay(ctx.profile), era: ctx.profile.era ?? 1 }, Date.now());
+      book.record = restorePoint(record, index, whereOf(ctx.profile), Date.now());
       ctx.profile = deserialize(book.record.text);
       ctx.makeLearner();
       await ctx.go('village');

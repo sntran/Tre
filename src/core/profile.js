@@ -21,7 +21,6 @@ export function createProfile({ id, name, gender = 'boy', skin = 1, face = 1, ha
     updatedAt: now,
     hero: { name, gender, skin, face, hair, clothes },
     grade,
-    era: 1,
     calling: null,
     titles: [],
     stele: [],

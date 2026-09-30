@@ -197,7 +197,7 @@ async function parentArea(ctx, opts = {}) {
         const today = gameDay(current);
         const box = h('div', { class: 'game-box' });
         const extra = h('div');
-        box.append(h('h3', { text: t('parent.games.head', { name: current.hero.name, era: t(`era.${current.era ?? 1}`), day: today + 1, date: formatDate(item.updatedAt) }) }));
+        box.append(h('h3', { text: t('parent.games.head', { name: current.hero.name, era: t(ctx.data.world.eraOf(current.world?.map)), day: today + 1, date: formatDate(item.updatedAt) }) }));
         // Restore points.
         const points = await listRestorePoints(item.id);
         box.append(h('h4', { text: t('parent.restore') }));
@@ -206,7 +206,7 @@ async function parentArea(ctx, opts = {}) {
         points.forEach((pt, i) => {
           const back = today - pt.day;
           const label = pt.before ? t('parent.restore.before') : back < 0 ? t('parent.restore.later') : back === 0 ? t('parent.restore.today') : back === 1 ? t('parent.restore.yesterday') : t('parent.restore.days', { n: back });
-          row.append(button(`${label} · ${t(`era.${pt.era ?? 1}`)} · ${formatDate(pt.at)}`, async () => {
+          row.append(button(`${label} · ${t(ctx.data.world.eraOf(pt.map))} · ${formatDate(pt.at)}`, async () => {
             if (!window.confirm(t('parent.restore.confirm', { name: current.hero.name }))) return;
             // The open game saves first, so that its state becomes the restore point in its place.
             if (ctx.profile?.id === item.id) await ctx.save('restore');

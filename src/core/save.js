@@ -179,7 +179,6 @@ export function validate(profile, { grades = null } = {}) {
     str(st.name, 'stele.name', LIMITS.nameChars);
     int(st.era, 'stele.era', 0, 100);
   }
-  if (profile.era !== undefined) int(profile.era, 'era', 1, 100);
   if (profile.calling !== undefined && profile.calling !== null) str(profile.calling, 'calling');
   // Flags and quest data have short values only: a boolean, a number, or a short text.
   const short = (value, what) => {
