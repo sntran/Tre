@@ -1,0 +1,29 @@
+{
+  "name": "restore-point",
+  "about": {
+    "vi": "Điểm khôi phục: mỗi sáng trò chơi giữ lại một điểm, chỉ ba sáng gần nhất; bố mẹ đưa trò chơi về sáng hôm qua (trước khi gặp cụ trưởng làng), rồi quay lại chỗ đang chơi.",
+    "en": "Restore points: the game keeps a point each morning, only the last three; a parent takes the game back to yesterday morning (before the talk with the elder), and then back to where the game was."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 330,
+  "place": [40, 80],
+  "steps": [
+    { "expect": [{ "points": 0 }, { "day": 0 }] },
+    { "at": { "hour": 7 } },
+    { "expect": [{ "points": 1 }] },
+    { "at": { "hour": 6.5 } },
+    { "expect": [{ "points": 2 }, { "day": 1 }, { "flag": "prologue.started", "is": false }] },
+    { "tap": { "entity": "npc:elder" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 60 } },
+    { "read": true },
+    { "expect": [{ "flag": "prologue.started" }] },
+    { "at": { "hour": 6.5 } },
+    { "at": { "hour": 6.5 } },
+    { "expect": [{ "points": 3 }, { "day": 3 }] },
+    { "restore": 2 },
+    { "expect": [{ "day": 1 }, { "flag": "prologue.started", "is": false }, { "points": 3, "before": 1 }, { "clock": { "between": [5.9, 6.2] } }] },
+    { "restore": 0 },
+    { "expect": [{ "day": 3 }, { "flag": "prologue.started" }, { "points": 3, "before": 1 }] }
+  ]
+}

@@ -2,9 +2,10 @@
 // (tests/stories/<name>.json), and with &play it plays the steps: a finger shows each tap, and
 // the game waits one second at each expect and shows its result. &speed=4 plays the world four
 // times faster (for a whole day). This is for the review of the owner and for screenshots.
-// Nothing is saved: the profile of a story lives only in this page.
+// Nothing is saved on the device: the profile of a story lives only in this page.
 import { storyProfile, playStory, STEP } from '../core/story.js';
 import { serialize, deserialize } from '../core/save.js';
+import { addPoint, restorePoint, gameDay } from '../core/restore.js';
 import { h } from './dom.js';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -15,9 +16,19 @@ export async function startStory(ctx, name, { play = false, speed = 1 } = {}) {
   if (!response.ok) throw new Error(`No story ${name}`);
   const story = await response.json();
   ctx.storybook = { story, playing: play, speed: Math.max(1, Math.min(16, speed || 1)) };
-  // Nothing of a story goes into the store of the device.
-  ctx.save = () => Promise.resolve();
-  await ctx.startProfile(storyProfile(story, { now: Date.now() }));
+  // Nothing of a story goes into the store of the device: the saves stay in this page, with the
+  // restore points of the dawns (src/core/restore.js), as the store of the device keeps them.
+  ctx.save = (reason = '') => {
+    if (!ctx.profile) return Promise.resolve();
+    ctx.syncWorld?.();
+    const text = serialize(ctx.profile, Date.now());
+    ctx.storybook.record = { ...ctx.storybook.record, text };
+    if (reason === 'dawn') ctx.storybook.record = addPoint(ctx.storybook.record, { text, day: gameDay(ctx.profile), era: ctx.profile.era ?? 1, at: Date.now() });
+    return Promise.resolve();
+  };
+  const profile = storyProfile(story, { now: Date.now() });
+  ctx.storybook.record = { id: profile.id, text: '', points: [] };
+  await ctx.startProfile(profile);
   if (play) await playInBrowser(ctx, story);
 }
 
@@ -103,6 +114,19 @@ async function playInBrowser(ctx, story) {
       await village();
       return null;
     },
+    async restore(index) {
+      // A parent goes back to a restore point (the parent area does the same with the store).
+      await ctx.save('restore');
+      const record = book.record;
+      if (!record.points[index]) return `no restore point ${index}`;
+      book.record = restorePoint(record, index, { day: gameDay(ctx.profile), era: ctx.profile.era ?? 1 }, Date.now());
+      ctx.profile = deserialize(book.record.text);
+      ctx.makeLearner();
+      await ctx.go('village');
+      await village();
+      return null;
+    },
+    points: () => book.record.points.map(({ day, era, at, before = false }) => ({ day, era, at, before })),
     async onExpect(i, failures, step) {
       show(failures.length ? `✗ ${failures.join(' · ')}` : `✓ ${JSON.stringify(step.expect)}`, failures.length ? 'bad' : 'good');
       await wait(1000);

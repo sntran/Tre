@@ -27,6 +27,8 @@
 //   { repeat: <n>, steps: [...] }         (the steps n times)
 //   { read: true | [<choice>, ...] }         (read the open talk to its end, with these choices)
 //   { reload: true }                         (save, load, and go on from the loaded save)
+//   { restore: <n> }                         (a parent goes back to the restore point n, the newest
+//                                             first: src/core/restore.js; the game goes on from it)
 //   { expect: [<fact>, ...] }
 // Facts: see checkFact.
 import { createProfile } from './profile.js';
@@ -281,6 +283,19 @@ export function checkFact(fact, ctx) {
     if (fact.learner.pL !== undefined && !compare(e.p, fact.learner.pL)) return `P(L) of ${fact.learner.skill} is ${e.p.toFixed(3)}, not ${fact.learner.pL}`;
     return null;
   }
+  if (fact.points !== undefined) {
+    // The restore points of the profile.
+    if (!Array.isArray(ctx.points)) return 'no restore points here';
+    if (!compare(ctx.points.length, fact.points)) return `${ctx.points.length} restore points, not ${fact.points}`;
+    if (fact.before !== undefined && ctx.points.filter((p) => p.before).length !== fact.before) return `not ${fact.before} points from before a restore`;
+    return null;
+  }
+  if (fact.day !== undefined) {
+    // The game day (day 0 is the first).
+    const d = Math.floor(state.clock.minutes / DAY);
+    if (!compare(d, fact.day)) return `the game day is ${d}, not ${fact.day}`;
+    return null;
+  }
   if (fact.clock) {
     const h = hourOf(state.clock.minutes);
     const [a, b] = fact.clock.between;
@@ -418,6 +433,8 @@ export function createLaws({ texts, limits }) {
 //   send(cmd, point): send a command (point: the map point of a tap, for the finger),
 //   reload(): save, load, and go on with a new session; return a message when the loaded world
 //     is not the same, or null,
+//   restore(n): go back to the restore point n and go on with a new session; return a message or
+//     null, points(): the restore points of the profile ([{ day, era, at, before }]),
 //   learner(): the learner, data: the data of the game, onStep(i, step), onExpect(i, failures, step) }.
 // Return the failures: [{ step, message }].
 export async function playStory(story, io) {
@@ -488,8 +505,14 @@ export async function playStory(story, io) {
       events.push(...io.session().opening());
       stop = io.session().listen((ev) => events.push(ev));
       if (problem) fail(i, problem);
+    } else if (s.restore !== undefined) {
+      stop();
+      const problem = await io.restore(s.restore);
+      events.push(...io.session().opening());
+      stop = io.session().listen((ev) => events.push(ev));
+      if (problem) fail(i, problem);
     } else if (s.expect) {
-      const ctx = { session, events: events.slice(since), learner: io.learner?.(), data: io.data };
+      const ctx = { session, events: events.slice(since), learner: io.learner?.(), data: io.data, points: await io.points?.() };
       const out = [];
       for (const fact of s.expect) {
         const message = checkFact(fact, ctx);

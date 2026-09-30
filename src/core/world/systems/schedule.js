@@ -114,7 +114,7 @@ function goTo(e, target, env) {
     return;
   }
   const key = `${Math.round(target.x * 10)},${Math.round(target.z * 10)}`;
-  if (sc.wayTo !== key) {
+  if (sc.wayTo !== key || !sc.way) {
     sc.wayTo = key;
     const far = Math.hypot(target.x - e.position.x, target.z - e.position.z) > 4;
     const way = far && s.medium === 'land' ? env.path(e.position, target) : null;

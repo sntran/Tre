@@ -53,6 +53,7 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 | `{ "repeat": 10, "steps": [...] }` | The steps, ten times. |
 | `{ "read": true }` | Reads the open talk to its end (the first choice at each choice, or the choices in a list: `{ "read": [1, 0] }`). |
 | `{ "reload": true }` | Saves the profile, loads it, and goes on with a new session. The loaded world must be the same. |
+| `{ "restore": 1 }` | A parent goes back to the restore point 1 (the newest is 0; `docs/WORLD.md`), and the game goes on from it with a new session. |
 | `{ "expect": [...] }` | Checks facts. |
 
 ### Facts
@@ -66,6 +67,8 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 | `{ "item": "coin", "count": ">= 1" }` | The count of a thing. |
 | `{ "learner": { "skill", "pL": ">= 0.5" } }` | P(L) of a skill. |
 | `{ "clock": { "between": [18, 19] } }` | The hour of the game clock. |
+| `{ "day": 2 }` | The game day (day 0 is the first). |
+| `{ "points": 3, "before": 1 }` | The number of restore points, and of the points that were the current save before a restore. |
 | `{ "zone": id, "state": "solid", "round", "planks", "gap" }` | A placement zone. |
 | `{ "ford": "closed" }` | The fords of the map. |
 | `{ "text": { "shown": key } }` | The text showed since the last expect. |
@@ -120,6 +123,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `raid-boss` | The forge of the smith: fire makes the soldiers raise wet shields, lightning into the wet ground shocks them; the general and his blow, the iron staff breaks, and Gióng pulls up the bamboo. The fact of history keeps its year. Then twelve coins, four on each mat, and the farewell of Gióng. |
 | `raid-lost` | The map only pauses the raid, with one line; nobody stops the soldiers; at grade 1 they take nothing, and they come again at the next dawn. |
 | `raid-river` | Rice balls from the same pull: two little river serpents eat two each and swim away calm; the talks of Sóng. |
+| `restore-point` | A point at each dawn, only the last three; a parent goes back to yesterday morning (before the talk with the elder), and then back to where the game was. |
 | `forge-horse` | The iron horse: five lumps and the fire dies, seven and one rolls back, six and the fire burns high; the child waits by the anvil for the sound of the glow, and the glowing iron in the water becomes the horse. |
 | `rice-giong` | Rice for Gióng: two trays of five make a ten, and Gióng grows; three trays of three and one more make twelve: he grows again, two bowls stay in the pot. |
 | `staffs-bamboo` | Bamboo staffs: slashes at three, six, and eight break the short piece, and a new stem comes; slashes at three, six, and nine make four equal staffs. |

@@ -120,6 +120,20 @@ The broken bridge in Phù Đổng is the zone `bridge-gap` (in `tools/maps/era1.
 
 `profile.world` (save version 6) holds the seed, the map, the clock, and the entities with `keep` (the hero, the zones, the planks, and a broken pot), without their routes and intents (`src/core/world/save.js`). When the hero goes to another map, the kept entities of the old map wait in `profile.world.away` until the hero comes back. The people, the animals, and Nghé come again from the map data and the seed. The village puts its world into the profile before each save (`ctx.syncWorld`).
 
+### What a save holds
+
+A profile is one record in the store of the device (IndexedDB, `src/ui/storage.js`): `{ id, name, text, updatedAt, points }`. `text` is the current save, in the versioned save format of `src/core/save.js`: the hero, the grade, the era, the calling, the titles and the stele, the flags, the quests, the things in the bag, the friends and their names, the settings, the time of play, the learning (the skill levels, the reviews, the exams, the learning log), and the world (above). Nothing leaves the device; the export code is the only way in or out.
+
+### The restore points
+
+`points` is a list of the saves at the last dawns of the game, the newest first (`src/core/restore.js`). The save version stays: a point is the same text as a save.
+
+- At each dawn of the game clock, the session saves (`save('dawn')`), and that save is also a restore point `{ text, day, era, at }` (day: the game day; at: the real time).
+- A second save on the same game day takes the place of the first. After three, the oldest goes out (`KEEP`).
+- A restore (the parent area, behind the parent gate) makes the chosen point the current save. The current save is not lost: it becomes a point in the place of the chosen one, marked `before` (it is not a dawn), so that the parent can go back to it.
+- A delete of the profile deletes its record, and so its points too.
+- The storybook keeps the record in the page, and the headless story runner in memory, so that the story `restore-point` plays the same rules.
+
 ## The numbers in data
 
 - `data/world/life.json`: the kinds of living things (chickens, ducks, fish, buffalo, the dog, birds, the owl, pots, tall grass, the cart, and the heat of the forge), with their steering, flocks, reactions, and plans; and the reaction and steering of the people.

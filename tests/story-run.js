@@ -8,6 +8,7 @@ import { createLogger } from '../src/core/logger.js';
 import { createRng } from '../src/core/rng.js';
 import { serialize, deserialize } from '../src/core/save.js';
 import { saveWorld } from '../src/core/world/save.js';
+import { addPoint, restorePoint, gameDay } from '../src/core/restore.js';
 import { buildTerrain } from '../src/world/terrain.js';
 import { loadGameData, load } from './helpers.js';
 
@@ -28,6 +29,15 @@ export async function runHeadless(story, { onSession = null } = {}) {
   let learner = null;
   let logger = null;
   let session = null;
+  // The record of the profile in the store of the device (src/ui/storage.js): the current save and
+  // the restore points of the dawns.
+  let record = { id: profile.id, text: '', points: [] };
+  const store = (reason) => {
+    session.syncSave();
+    const text = serialize(profile, now());
+    record = { ...record, text };
+    if (reason === 'dawn') record = addPoint(record, { text, day: gameDay(profile), era: profile.era ?? 1, at: now() });
+  };
   const broken = new Map(); // a law message -> the first step where it broke
   let current = -1;
   const breakLaw = (message) => {
@@ -45,7 +55,7 @@ export async function runHeadless(story, { onSession = null } = {}) {
       if (kind === 'questStep') return logger.questStep();
       return logger.record(kind, fields);
     };
-    session = createSession({ data, profile, learner: () => learner, log, now, terrainOf });
+    session = createSession({ data, profile, learner: () => learner, log, save: store, now, terrainOf });
     session.listen((ev) => {
       for (const p of laws.text(ev, textParams())) breakLaw(`a text of the world: ${p}`);
     });
@@ -77,6 +87,16 @@ export async function runHeadless(story, { onSession = null } = {}) {
       session.command(cmd);
       session.events();
     },
+    async restore(index) {
+      // The parent area saves the open game first; its save becomes a point in place of the chosen one.
+      store('restore');
+      if (!record.points[index]) return `no restore point ${index}`;
+      record = restorePoint(record, index, { day: gameDay(profile), era: profile.era ?? 1 }, now());
+      profile = deserialize(record.text);
+      begin();
+      return null;
+    },
+    points: () => record.points.map(({ day, era, at, before = false }) => ({ day, era, at, before })),
     async reload() {
       session.syncSave();
       const before = saveWorld(session.state);
