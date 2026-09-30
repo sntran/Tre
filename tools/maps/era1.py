@@ -121,7 +121,7 @@ A.places = {
     'healer-bed-3': {'x': 16.2, 'y': 21.4},
     'healer-basket': {'x': 17.6, 'y': 20.7},
     'woodcutter-stem': {'x': 25.0, 'y': 3.25},
-    'staffs-stem': {'x': 13.5, 'y': 16.25},
+    'staffs-stem': {'x': 12.5, 'y': 16.25},
     'woodpile': {'x': 26.1, 'y': 30.2},
     # Rice for Gióng: the trays of bowls on the path of the paddies, and the pot in front of the
     # house of Gióng.
@@ -166,7 +166,7 @@ A.life = [
     {'kind': 'pot', 'n': 1, 'x': 13.5, 'y': 11.6, 'r': 0},
     {'kind': 'pot', 'n': 1, 'x': 29.5, 'y': 13.3, 'r': 0},
     {'kind': 'pot', 'n': 1, 'x': 6.6, 'y': 11.6, 'r': 0},
-    {'kind': 'cart', 'n': 1, 'x': 16.5, 'y': 16.8, 'r': 0},
+    {'kind': 'cart', 'n': 1, 'x': 18.5, 'y': 16.8, 'r': 0},
     {'kind': 'heat', 'n': 1, 'x': 26.5, 'y': 18.5, 'r': 0},
     {'kind': 'owl', 'n': 1, 'x': 18.5, 'y': 4.5, 'r': 0, 'spot': 'banyan-top'},
     {'kind': 'bird', 'n': 7, 'x': 18.5, 'y': 6.5, 'r': 3},
