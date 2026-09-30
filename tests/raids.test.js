@@ -203,7 +203,7 @@ test('the gate bar: a scout lights a torch for two seconds; a barred gate stops 
 test('a villager at a spot stops each enemy for a moment, once', () => {
   const raid = createRaid(raids, 'scouts', 1);
   const spot = raid.spots[0];
-  assert.deepEqual(types(callHelper(raid, spot.id)), ['call']);
+  assert.deepEqual(types(callHelper(raid, spot.id)), ['summon']);
   assert.deepEqual(callHelper(raid, spot.id), [], 'one villager at a spot');
   const evs = until(raid, 'pause', 30);
   assert.ok(evs.some((x) => x.type === 'spot'), 'the villager is at the spot first');

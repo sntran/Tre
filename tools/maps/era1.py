@@ -136,11 +136,11 @@ A.npcs = [
     {'id': 'fisher', 'x': 14.6, 'y': 31.6},
 ]
 A.encounters = [
-    {'id': 'river', 'battle': 'river', 'x': 5.5, 'y': 31.3, 'figure': 'river-serpent',
+    {'id': 'river', 'raid': 'river', 'x': 5.5, 'y': 31.3, 'figure': 'river-serpent',
      'when': {'flags': ['giong.spoke'], 'notFlags': ['river.calmed']}},
-    {'id': 'scouts', 'battle': 'scouts', 'x': 34.3, 'y': 14.6, 'figure': 'scout',
+    {'id': 'scouts', 'raid': 'scouts', 'x': 34.3, 'y': 14.6, 'figure': 'scout',
      'when': {'flags': ['giong.spoke'], 'notFlags': ['scouts.won']}},
-    {'id': 'patrol', 'battle': 'patrol', 'x': 34.3, 'y': 14.6, 'figure': 'scout',
+    {'id': 'patrol', 'raid': 'patrol', 'x': 34.3, 'y': 14.6, 'figure': 'scout',
      'when': {'flags': ['giong.farewell']}},
 ]
 # The bridge over the water blocks; the ground system opens its deck from the state of the zone
@@ -245,11 +245,11 @@ C.many('banana', 'banana', [(27, 17), (6, 30)])
 C.many('bamboo', 'bamboo', [(29, 9), (31, 0), (18, 29), (25, 22)])
 C.spawn = {'x': 1.5, 'y': 14.8}
 C.encounters = [
-    {'id': 'soldier1', 'battle': 'soldier1', 'x': 12.5, 'y': 9.5, 'figure': 'soldier',
+    {'id': 'soldier1', 'raid': 'soldier1', 'x': 12.5, 'y': 9.5, 'figure': 'soldier',
      'when': {'flags': ['giong.grown'], 'notFlags': ['soldier1.won']}},
-    {'id': 'soldier2', 'battle': 'soldier2', 'x': 12.5, 'y': 21.5, 'figure': 'soldier',
+    {'id': 'soldier2', 'raid': 'soldier2', 'x': 12.5, 'y': 21.5, 'figure': 'soldier',
      'when': {'flags': ['giong.grown'], 'notFlags': ['soldier2.won']}},
-    {'id': 'boss', 'battle': 'boss', 'x': 24.5, 'y': 8.2, 'figure': 'general',
+    {'id': 'boss', 'raid': 'boss', 'x': 24.5, 'y': 8.2, 'figure': 'general',
      'when': {'flags': ['soldier1.won', 'soldier2.won'], 'notFlags': ['era1.boss.won']}},
 ]
 C.life = [

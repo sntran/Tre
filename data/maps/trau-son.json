@@ -209,8 +209,8 @@
  },
  "npcs": [],
  "encounters": [
-  {"id": "soldier1", "battle": "soldier1", "x": 25.0, "y": 19.0, "figure": "soldier", "when": {"flags": ["giong.grown"], "notFlags": ["soldier1.won"]}},
-  {"id": "soldier2", "battle": "soldier2", "x": 25.0, "y": 43.0, "figure": "soldier", "when": {"flags": ["giong.grown"], "notFlags": ["soldier2.won"]}},
-  {"id": "boss", "battle": "boss", "x": 49.0, "y": 16.4, "figure": "general", "when": {"flags": ["soldier1.won", "soldier2.won"], "notFlags": ["era1.boss.won"]}}
+  {"id": "soldier1", "raid": "soldier1", "x": 25.0, "y": 19.0, "figure": "soldier", "when": {"flags": ["giong.grown"], "notFlags": ["soldier1.won"]}},
+  {"id": "soldier2", "raid": "soldier2", "x": 25.0, "y": 43.0, "figure": "soldier", "when": {"flags": ["giong.grown"], "notFlags": ["soldier2.won"]}},
+  {"id": "boss", "raid": "boss", "x": 49.0, "y": 16.4, "figure": "general", "when": {"flags": ["soldier1.won", "soldier2.won"], "notFlags": ["era1.boss.won"]}}
  ]
 }

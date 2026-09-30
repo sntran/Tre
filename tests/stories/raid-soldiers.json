@@ -1,0 +1,37 @@
+{
+  "name": "raid-soldiers",
+  "about": {
+    "vi": "Lính Ân từ cánh đồng tới ngã tư: lửa làm lính giơ khiên ướt, sét từ lò rèn vào chỗ ướt làm cả hai lính bị điện giật, rồi bắn ná cho tới khi chúng lui.",
+    "en": "Ân soldiers come from the field to the crossroads: fire makes them raise wet shields, lightning from the forge into the wet ground shocks both, and the slingshot turns them back."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 5, "flags": { "intro.seen": true, "giong.grown": true }, "items": { "coin": 5 } },
+  "map": "trau-son",
+  "clock": 600,
+  "place": [25, 26],
+  "steps": [
+    { "tap": { "entity": "encounter:soldier1" } },
+    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },
+    { "expect": [{ "text": { "shown": "raid.soldier.intro" } }] },
+    { "read": true },
+    { "wait": 7 },
+    { "expect": [{ "raid": { "on": true, "enemies": 2 } }, { "hero": { "cell": [25, 30], "within": 1 } }, { "count": { "entities": "source", "min": 3 } }] },
+    { "pour": { "from": "brazier", "at": "first" } },
+    { "wait": 0.2 },
+    { "expect": [{ "event": "flame" }, { "event": "shield" }, { "count": { "entities": "wet", "min": 2 } }] },
+    { "shoot": { "at": "first" } },
+    { "until": { "event": "land", "timeout": 5 } },
+    { "expect": [{ "event": "block" }, { "event": "hit", "not": true }] },
+    { "pour": { "from": "forge", "at": "first" } },
+    { "wait": 0.2 },
+    { "expect": [{ "event": "shock" }, { "event": "skill", "with": { "skill": "sci.matter.states", "solved": true, "efficient": true } }, { "event": "hit", "with": { "by": "lightning" } }] },
+    { "repeat": 10, "steps": [
+      { "shoot": { "at": "first", "lead": 0.8, "wait": true } },
+      { "wait": 1.4 }
+    ] },
+    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 60 } },
+    { "expect": [{ "event": "end", "with": { "won": true } }, { "flag": "soldier1.won" }, { "text": { "shown": "battle.soldier.note" } }] },
+    { "read": true },
+    { "wait": 3 },
+    { "expect": [{ "raid": { "on": false } }, { "item": "iron", "count": ">= 1" }] }
+  ]
+}

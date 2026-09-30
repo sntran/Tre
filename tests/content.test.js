@@ -163,13 +163,17 @@ test('no text calls the five skilled people "thợ" (workers), because the teach
   assert.ok(vi['dlg.elder.intro.n1'].includes('năm người tài giỏi'));
 });
 
-test('the enemies of a battle leave the map after the player wins it', () => {
-  const battles = load('data/battles.json').battles;
-  for (const e of village.encounters) {
-    const b = battles[e.battle];
-    if (b.repeat) continue;
-    const wins = b.win.set ?? [];
-    assert.ok((e.when.notFlags ?? []).some((f) => wins.includes(f)), `${e.id}: leaves after one of ${wins.join(', ')}`);
+test('the enemies of a raid leave the map after the player wins it', () => {
+  const raids = load('data/raids.json').raids;
+  for (const m of ['phu-dong', 'trau-son']) {
+    for (const e of load(`data/maps/${m}.json`).encounters) {
+      const r = raids[e.raid];
+      assert.ok(r, `${e.id}: a raid`);
+      assert.equal(r.map, m, `${e.id}: the raid is on the map of its encounter`);
+      if (r.repeat) continue;
+      const wins = r.win.set ?? [];
+      assert.ok((e.when.notFlags ?? []).some((f) => wins.includes(f)), `${e.id}: leaves after one of ${wins.join(', ')}`);
+    }
   }
 });
 

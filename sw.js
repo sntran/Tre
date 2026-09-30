@@ -219,6 +219,7 @@ const FILES = [
   'src/core/world/systems/move.js',
   'src/core/world/systems/place.js',
   'src/core/world/systems/push.js',
+  'src/core/world/systems/raid.js',
   'src/core/world/systems/react.js',
   'src/core/world/systems/route.js',
   'src/core/world/systems/schedule.js',

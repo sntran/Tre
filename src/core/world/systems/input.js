@@ -6,8 +6,10 @@
 // lantern flickers and a soft sound comes from inside), aim (the child chose a thing; the hero
 // walks to it), pick (take a thing), put (put the thing in the hands into a zone), drop (put it on
 // the ground), guess (the prediction before a commit), work (the work of a trial: add, back, tie,
-// quench, give, mark, cut). The place system does what the hands want; the work system does the work.
-export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'hands', 'work', 'events'];
+// quench, give, mark, cut), raid (an order of the child in a raid: shoot, bar, call, charge, pour,
+// bamboo). The place system does what the hands want; the work system does the work; the raid
+// system does the orders.
+export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'hands', 'work', 'orders', 'events'];
 
 export const INSIDE_SOUNDS = Object.freeze(['cough', 'baby', 'clatter']);
 
@@ -74,6 +76,9 @@ export function input(world, dt, rng, env) {
       }
     } else if (['aim', 'pick', 'put', 'drop', 'guess'].includes(c.type)) {
       e.hands = { ...(e.hands ?? { holds: null }), want: { do: c.type, item: c.item ?? null, zone: c.zone ?? null, n: c.n ?? null, at: c.at ?? null } };
+    } else if (c.type === 'raid' && e.raid) {
+      const { type, id, ...o } = c;
+      e.orders = [...(e.orders ?? []), o];
     } else if (c.type === 'work') {
       e.work = { trial: c.trial, act: c.act, item: c.item ?? null, at: c.at ?? null };
     } else if (c.type === 'stay' && e.schedule) {

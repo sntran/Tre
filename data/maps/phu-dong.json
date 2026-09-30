@@ -434,8 +434,8 @@
   {"id": "fisher", "x": 29.2, "y": 63.2}
  ],
  "encounters": [
-  {"id": "river", "battle": "river", "x": 11.0, "y": 62.6, "figure": "river-serpent", "when": {"flags": ["giong.spoke"], "notFlags": ["river.calmed"]}},
-  {"id": "scouts", "battle": "scouts", "x": 68.6, "y": 29.2, "figure": "scout", "when": {"flags": ["giong.spoke"], "notFlags": ["scouts.won"]}},
-  {"id": "patrol", "battle": "patrol", "x": 68.6, "y": 29.2, "figure": "scout", "when": {"flags": ["giong.farewell"]}}
+  {"id": "river", "raid": "river", "x": 11.0, "y": 62.6, "figure": "river-serpent", "when": {"flags": ["giong.spoke"], "notFlags": ["river.calmed"]}},
+  {"id": "scouts", "raid": "scouts", "x": 68.6, "y": 29.2, "figure": "scout", "when": {"flags": ["giong.spoke"], "notFlags": ["scouts.won"]}},
+  {"id": "patrol", "raid": "patrol", "x": 68.6, "y": 29.2, "figure": "scout", "when": {"flags": ["giong.farewell"]}}
  ]
 }

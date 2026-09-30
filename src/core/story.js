@@ -13,10 +13,16 @@
 //   { until: { event, with, timeout } }      (an event after the last command)
 //   { at: { hour } }
 //   { tap: { cell: [x, y] } | { entity } | { thing } | { item: <kind> } | { plank: <size> } | { guess: <n> } |
-//          { zone } | { span } | { stem: <along> } | { line: <along> } | { hero: true } }
+//          { zone } | { span } | { stem: <along> } | { line: <along> } | { hero: true } |
+//          { raid: 'gate' | 'bamboo' | <spot id> } }
 //     (item: the first thing of a kind in a heap or a pile; plank: a plank of this size on a pile;
 //     zone: the middle of the zone of a task, or the gap of a span; span: the last plank on a
 //     span; stem: a place along the stem of the woodcutter; line: a place on the fish trap line)
+//   { shoot: { at: 'first' | <enemy id>, kind, off: <half blocks>, lead: <seconds> } }  (the slingshot of
+//     the hero at an enemy of the raid (of this kind): off is how much farther (or nearer, below 0) than the
+//     enemy; lead: aim where the enemy will be after so many seconds; wait: when no enemy is
+//     there, the world goes on for a second)
+//   { pour: { from: <source id>, at: 'first' | <enemy id> | [x, y] } }  (the drag of an element)
 //   { repeat: <n>, steps: [...] }         (the steps n times)
 //   { read: true | [<choice>, ...] }         (read the open talk to its end, with these choices)
 //   { reload: true }                         (save, load, and go on from the loaded save)
@@ -28,6 +34,7 @@ import { getEntity, query } from './world/state.js';
 import { saveWorld, loadWorld, setHeroPlace } from './world/save.js';
 import { createI18n } from './i18n.js';
 import { STEP } from './world/step.js';
+import { pullFor, along } from './world/raids.js';
 
 // The time of the start of a story (a Monday morning), so that a story always gives the same
 // result. The time of play goes on with the steps of the world.
@@ -64,6 +71,11 @@ export function tapTarget(session, spec) {
   const at = (e) => ({ x: e.position.x / 2, y: e.position.z / 2 });
   if (spec.cell) return { target: session.targetAt(spec.cell[0], spec.cell[1]), point: { x: spec.cell[0], y: spec.cell[1] } };
   if (spec.hero) return { target: { hero: true }, point: at(getEntity(state, 'hero')) };
+  if (spec.raid) {
+    // A thing of the raid: the gate bar, the bamboo, or a spot for a villager.
+    const e = query(state, 'raidTap', 'position').find((x) => x.raidTap.what === spec.raid || x.raidTap.id === spec.raid);
+    return e ? { target: { raid: e.raidTap }, point: at(e) } : null;
+  }
   if (spec.entity) {
     const e = getEntity(state, spec.entity);
     if (!e?.position) return null;
@@ -144,6 +156,35 @@ export function tapTarget(session, spec) {
     return { target: { ground: { x, y, h: session.env.groundY(x, y) / 2, thing: false, object: null } }, point: { x, y } };
   }
   return null;
+}
+
+// An enemy of the raid now: 'first' is the nearest one to the gate that walks.
+export function raidEnemy(session, which, kind = null) {
+  const raid = getEntity(session.state, 'raid')?.raid;
+  if (!raid) return null;
+  const live = raid.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone' && e.state !== 'stunned' && (!kind || e.kind === kind));
+  if (which !== 'first') return live.find((e) => e.id === which) ?? null;
+  return live.sort((a, b) => along(raid, a) - along(raid, b))[0] ?? null;
+}
+
+// The command of a shoot step: the pull for the distance from the hero to the enemy (where it
+// will be after `lead` seconds, when it walks), and the direction to it.
+export function shootCommand(session, spec) {
+  const raid = getEntity(session.state, 'raid')?.raid;
+  const e = raidEnemy(session, spec.at ?? 'first', spec.kind ?? null);
+  if (!raid || !e) return null;
+  const hero = getEntity(session.state, 'hero').position;
+  let p = { x: e.x, z: e.z };
+  const goal = e.state === 'walk' ? e.to : e.state === 'back' ? e.back : null;
+  if (spec.lead && goal) {
+    const speed = raid.kinds[e.kind].speed * (e.state === 'back' ? 2 : 1);
+    const d = Math.hypot(goal.x - e.x, goal.z - e.z) || 1;
+    const k = Math.min(d, speed * spec.lead);
+    p = { x: e.x + ((goal.x - e.x) / d) * k, z: e.z + ((goal.z - e.z) / d) * k };
+  }
+  const dir = { x: p.x - hero.x, z: p.z - hero.z };
+  const dist = Math.hypot(dir.x, dir.z) + (spec.off ?? 0);
+  return { type: 'shoot', dir, pull: pullFor(Math.max(1, dist), raid.sling) };
 }
 
 // A comparison in a fact: a number, or a text such as ">= 0.5".
@@ -284,6 +325,19 @@ export function checkFact(fact, ctx) {
     }
     return null;
   }
+  if (fact.raid) {
+    // The raid now: on (a raid goes on), phase (the id of its phase), enemies (the count of the
+    // enemies that did not retreat), losses (the enemies at the gate and the torches inside).
+    const f = fact.raid;
+    const raid = getEntity(state, 'raid')?.raid ?? null;
+    if (f.on !== undefined && Boolean(raid && !raid.result) !== f.on) return `a raid goes on: ${Boolean(raid && !raid.result)}`;
+    if (!raid) return f.on === false ? null : 'no raid';
+    if (f.phase && raid.phases[raid.phase].id !== f.phase) return `the raid is at the phase ${raid.phases[raid.phase].id}, not ${f.phase}`;
+    const live = raid.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone').length;
+    if (f.enemies !== undefined && !compare(live, f.enemies)) return `${live} enemies, not ${f.enemies}`;
+    if (f.losses !== undefined && !compare(raid.losses, f.losses)) return `${raid.losses} losses, not ${f.losses}`;
+    return null;
+  }
   return `an unknown fact ${JSON.stringify(fact)}`;
 }
 
@@ -367,7 +421,7 @@ export async function playStory(story, io) {
   for (const [i, s] of flat) {
     io.onStep?.(i, s);
     const session = io.session();
-    if (s.do || s.tap || s.read) mark = events.length;
+    if (s.do || s.tap || s.read || s.shoot || s.pour) mark = events.length;
     if (s.do) await io.send(s.do, null);
     else if (s.wait !== undefined) await io.advance(s.wait, null);
     else if (s.until) {
@@ -385,6 +439,20 @@ export async function playStory(story, io) {
       const tap = tapTarget(session, s.tap);
       if (!tap?.target) fail(i, `nothing to tap for ${JSON.stringify(s.tap)}`);
       else await io.send({ type: 'tap', target: tap.target }, tap.point);
+    } else if (s.shoot) {
+      const cmd = shootCommand(session, s.shoot);
+      // wait: no enemy now is no failure; the world goes on for a second.
+      if (!cmd && s.shoot.wait) await io.advance(1, null);
+      else if (!cmd) fail(i, `no enemy to shoot at for ${JSON.stringify(s.shoot)}`);
+      else {
+        const h = getEntity(session.state, 'hero').position;
+        await io.send(cmd, { x: h.x / 2, y: h.z / 2 });
+      }
+    } else if (s.pour) {
+      const e = Array.isArray(s.pour.at) ? null : raidEnemy(session, s.pour.at ?? 'first');
+      const to = Array.isArray(s.pour.at) ? { x: s.pour.at[0], y: s.pour.at[1] } : e ? { x: e.x / 2, y: e.z / 2 } : null;
+      if (!to) fail(i, `no place to pour for ${JSON.stringify(s.pour)}`);
+      else await io.send({ type: 'pour', source: s.pour.from, x: to.x, y: to.y }, to);
     } else if (s.read) {
       const choices = Array.isArray(s.read) ? [...s.read] : [];
       for (let n = 0; n < 60 && ['dialogue', 'say'].includes(io.session().screen); n++) {

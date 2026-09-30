@@ -28,9 +28,10 @@ import {
 } from '../zones.js';
 import { isMashing } from '../../learnlog.js';
 import { putWork, canTakeWork, toHeap } from './work.js';
+import { putRaid } from './raid.js';
 
 // The zones of the tasks of the trials: the work system puts the things there.
-const WORK = new Set(['heap', 'bundle', 'forge', 'trough', 'line', 'basket', 'woodpile']);
+const WORK = new Set(['heap', 'bundle', 'forge', 'trough', 'line', 'basket', 'woodpile', 'road']);
 
 const TIP = 0.3; // seconds: the last plank dips under the hero
 const DROP = 0.35; // seconds: the hero falls into the water
@@ -152,11 +153,14 @@ function put(world, e, zoneEnt, env, dt, at = null) {
   const zone = zoneEnt.zone;
   if (!canPut(zone, thing)) return;
   if (WORK.has(zone.rule)) {
-    // A zone of a trial: near its reach point, or near the point of the tap on a line of stakes.
-    const target = zone.rule === 'line' && at ? { x: at.x, z: zone.z } : zoneEnt.position;
+    // A zone of a trial or a raid: near its reach point, or near the point of the tap on a line of
+    // stakes or on the road.
+    const target = zone.rule === 'line' && at ? { x: at.x, z: zone.z } : zone.rule === 'road' && at ? at : zoneEnt.position;
     if (dist(e.position, target) > REACH + 2) return say(world, 'far', e.id);
     release(e, thing);
-    if (!putWork(world, e, zone, thing, at, env)) {
+    const done = zone.task === 'raid' ? putRaid(world, e, zone, thing, at, env) : putWork(world, e, zone, thing, at, env);
+    if (done && zone.task === 'raid') say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: 'plank-down' });
+    if (!done) {
       thing.item.held = e.id;
       thing.hidden = true;
       e.hands.holds = thing.id;

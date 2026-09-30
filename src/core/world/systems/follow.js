@@ -102,7 +102,7 @@ function fordNear(env, p, r) {
   return (env.fords ?? []).some((c) => Math.hypot(c.x * 2 + 1 - p.x, c.y * 2 + 1 - p.z) < r + 1);
 }
 
-// Walk straight to a goal (half blocks) and look to goal.face at the end.
+// Walk straight to a goal (half blocks) and look to goal.face at the end. goal.fast: run.
 function goTo(e, goal, dt, env) {
   const p = e.position;
   const m = e.motion;
@@ -114,7 +114,8 @@ function goTo(e, goal, dt, env) {
     if (goal.face !== undefined) p.facing = goal.face;
     return;
   }
-  const speed = Math.min(MOVE.walk * 2 * 1.1, 1.5 + d * 3);
+  // A charge in a raid is a run (Nghé runs; the enemies never do).
+  const speed = Math.min(MOVE.walk * 2 * (goal.fast ? 3 : 1.1), 1.5 + d * 3);
   const stepLen = Math.min(d, speed * dt);
   const body = { x: p.x / 2, y: p.z / 2 };
   const next = moveCircle(body, (dx / d) * stepLen / 2, (dz / d) * stepLen / 2, MOVE.radius, env.near(body.x, body.y).isBlocked);

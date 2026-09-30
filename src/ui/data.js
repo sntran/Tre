@@ -22,6 +22,7 @@ export const FILES = {
   trials: 'data/trials.json',
   enemies: 'data/enemies.json',
   battles: 'data/battles.json',
+  raids: 'data/raids.json',
   elements: 'data/elements.json',
   items: 'data/items.json',
   friends: 'data/friends.json',

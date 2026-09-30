@@ -16,13 +16,19 @@
 // - talkTo { id }: walk to a person and talk;
 // - talk { dialogue }: a talk now; travel: open the country map; refresh: the people again;
 // - next, choose { n }: the next line of the open talk, or a choice;
-// - closed: the view closed the screen that the session opened.
+// - closed: the view closed the screen that the session opened;
+// - in a raid: shoot { dir: { x, z }, pull } (the slingshot of the hero: a direction on the ground
+//   and a pull from 0 to 1), pour { source, x, y } (a drag of an element from a source to a map
+//   point), and pet (Nghé charges). A tap on the gate bars it, a tap on a spot calls a villager,
+//   and a tap on the bamboo lets Gióng pull it.
 //
 // Events (events()): the events of the world (see src/core/world/), and the events of the
 // session: open { screen, ... } (dialogue, say, callout, rest, or a screen of a story effect:
-// worldmap, confirmBattle, battle, vanmieu, trial, ...), close { screen }, map { map } (the hero
-// went to another map), gift { from, give }, tapfx { x, y, h }, sound { sound }, busy { on }, hud (the
-// counts or the goal changed), and halt (a trigger zone stopped the hero: the view drops the input).
+// worldmap, vanmieu, ...), close { screen }, map { map } (the hero went to another map), gift
+// { from, give }, tapfx { x, y, h }, sound { sound }, busy { on }, hud (the counts or the goal
+// changed), halt (a trigger zone stopped the hero: the view drops the input), raid { on, id } (a
+// raid starts or its things went away), and lose { to, take } (the coins that an enemy took fly
+// from the counter to it).
 import { findPath, pathNextTo, createTileMap } from './tilemap.js';
 import { createTriggers } from './triggers.js';
 import { currentGoal } from './quests.js';
@@ -37,6 +43,9 @@ import { ground } from './world/systems/ground.js';
 import { REACH, learnerRecord, canPut } from './world/zones.js';
 import { setupTrial } from './world/systems/work.js';
 import { levelFor, taskOf } from './world/trials.js';
+import { createRaid, raidLevel } from './world/raids.js';
+import { setupRaid, roadPoint } from './world/systems/raid.js';
+import { lossLevel } from './profile.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from './world/save.js';
 
 export { STEP };
@@ -122,6 +131,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     addLanterns(state, env);
     heroTile = { x: Math.floor(at.x), y: Math.floor(at.y) };
     arrivals.clear();
+    raidEnc = null; // a raid does not go on in the save (its enemies leave with the map)
     screen = null;
     busy = false;
     pending = [];
@@ -239,9 +249,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     openScreen(d, { id: d.id, mark: d.runner.mark, speaker: view.speaker, textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey) });
   }
-  // One line of text (a sign, a ferry, a thing that the hero found).
-  function say(textKey, params = {}) {
-    queue(() => openScreen({ screen: 'say' }, { speaker: 'narrator', textKey, params }));
+  // One line of text (a sign, a ferry, a thing that the hero found, a note with a seal).
+  function say(textKey, params = {}, mark = null) {
+    queue(() => openScreen({ screen: 'say' }, { speaker: 'narrator', textKey, params, ...(mark ? { mark } : {}) }));
   }
   // A screen of a story effect ({ open: 'worldmap' }, a battle, a trial).
   function openCommand(c) {
@@ -395,8 +405,90 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (who.kind === 'npc') talk(pickTalk(data.npcs.npcs[who.id], profile));
     else if (who.kind === 'encounter') {
       const enc = map.encounters.find((e) => e.id === who.id);
-      queue(() => openCommand({ open: 'confirmBattle', id: enc.battle }));
+      const def = data.raids?.raids[enc.raid];
+      if (!def) return;
+      // One line, and then the raid starts on this map.
+      say(def.introKey);
+      queue(() => startRaid(enc.raid, enc.id));
     }
+  }
+
+  // Raids (data/raids.json, src/core/world/raids.js, and src/core/world/systems/raid.js) -----
+
+  const raidEnt = () => getEntity(state, 'raid');
+  const raidOn = () => Boolean(raidEnt());
+  let raidEnc = null; // the encounter of the raid now (its figure hides while the raid goes on)
+  // Start a raid on this map: the hero stands at the wall, and the enemies come.
+  function startRaid(id, encId = null) {
+    const def = data.raids?.raids[id];
+    if (!def || def.map !== map.id || raidOn()) return false;
+    const raid = createRaid(data.raids, id, raidLevel(data.raids, profile.grade), lossLevel(profile));
+    setupRaid(state, raid, def, env, { helpers: data.raids.helperLooks, companion: data.raids.companions?.[def.companion] });
+    placeHero(def.wall[0], def.wall[1]);
+    worldCommand(state, { type: 'face', id: 'hero', x: raid.wall.x + raid.dir.x * 10, z: raid.wall.z + raid.dir.z * 10 });
+    raidEnc = encId ? persons().find((p) => p.kind === 'encounter' && p.ref === encId)?.entity ?? null : null;
+    const fig = raidEnc ? getEntity(state, raidEnc) : null;
+    if (fig) fig.hidden = true;
+    log('action', { kind: 'raid' });
+    emit({ type: 'raid', on: true, id });
+    emit({ type: 'hud' });
+    return true;
+  }
+  const order = (o) => worldCommand(state, { type: 'raid', id: 'raid', ...o });
+  // The end of a raid: a win gives its flags, its gifts, and its talks; a loss keeps the raid for
+  // another time (the enemies took some coins, and nothing else).
+  function raidEnd(ev) {
+    const r = raidEnt();
+    const def = data.raids.raids[r?.raid.id];
+    if (!def) return;
+    profile.stats ??= {};
+    if (ev.won) {
+      profile.stats.battlesWon = (profile.stats.battlesWon ?? 0) + 1;
+      const win = def.win ?? {};
+      applyEffects(profile, [...[].concat(win.set ?? []).map((f) => ({ set: f })), ...(win.give ? [{ give: win.give }] : [])]);
+      save('raid');
+      if (win.give) emit({ type: 'gift', from: 'hero', give: win.give, delay: 0.6 });
+      // A short, fair note with its seal (Legend or History), and a fact of history.
+      if (def.noteKey) say(def.noteKey, {}, def.mark ?? null);
+      if (def.historyKey) say(def.historyKey, {}, 'history');
+      for (const id of win.after ?? []) talk(id);
+    } else {
+      profile.stats.battlesLost = (profile.stats.battlesLost ?? 0) + 1;
+      save('raid');
+      say('raid.lost');
+    }
+    emit({ type: 'hud' });
+  }
+  // An enemy at the gate took some coins: they leave the counter (never below nothing).
+  function raidTake(ev) {
+    const took = {};
+    for (const [item, n] of Object.entries(ev.take ?? {})) {
+      const have = profile.inventory[item] ?? 0;
+      const k = Math.min(have, n);
+      if (k <= 0) continue;
+      profile.inventory[item] = have - k;
+      took[item] = k;
+    }
+    if (Object.keys(took).length) {
+      emit({ type: 'lose', to: ev.id, take: took });
+      emit({ type: 'hud' });
+    }
+  }
+  function raidOver() {
+    const fig = raidEnc ? getEntity(state, raidEnc) : null;
+    if (fig) fig.hidden = false;
+    raidEnc = null;
+    refreshPeople();
+    emit({ type: 'raid', on: false });
+  }
+  // A tap on the road with a trap in the hands: the trap goes there (the hero walks near first).
+  function tapRaidRoad(hit) {
+    const held = getEntity(state, holding());
+    if (held?.item.kind !== 'trap') return false;
+    const at = roadPoint(state, { x: hit.x * 2, z: hit.y * 2 });
+    if (!at) return false;
+    walkNear(at, () => worldCommand(state, { type: 'put', id: 'hero', zone: 'raid-road', at: { x: at.x, z: at.z } }));
+    return true;
   }
 
   // Walks -------------------------------------------------------------------------
@@ -469,7 +561,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const m = middleOf(thing);
     emit({ type: 'tapfx', x: m.x / 2, y: m.z / 2, h: thing.position.y / 2 + 0.4 });
     if (thing.item.task?.startsWith('trial-') && tapTrialThing(thing, along)) return;
-    if (thing.item.fixed || (thing.item.set && !zoneOf(thing.item.zone))) return;
+    if (thing.item.fixed || (thing.item.set && (thing.item.task === 'raid' || !zoneOf(thing.item.zone)))) return;
     const zone = zoneOf(thing.item.zone);
     if (zone?.zone.rule === 'span') {
       const last = zone.zone.items[zone.zone.items.length - 1] === thing.id;
@@ -543,6 +635,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       worldCommand(state, { type: 'guess', id: 'hero', zone: target.guess.zone, n: target.guess.n });
       return;
     }
+    if (target.raid) {
+      const w = target.raid;
+      if (w.what === 'gate') order({ act: 'bar' });
+      else if (w.what === 'spot') order({ act: 'call', spot: w.id });
+      else if (w.what === 'bamboo') order({ act: 'bamboo' });
+      return;
+    }
     if (target.thing) {
       const thing = getEntity(state, target.thing);
       if (thing?.item) tapThing(thing, target.along ?? null);
@@ -550,7 +649,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (target.person) {
       const person = persons().find((p) => p.entity === target.person);
-      if (!person) return;
+      if (!person || (person.kind === 'encounter' && raidOn())) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
       if (person.kind === 'npc' && tapTrialPerson(person)) return;
       walkToThing(person, () => interact({ kind: person.kind, id: person.ref }, person));
@@ -558,7 +657,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     const hit = target.ground;
     if (!hit) return;
-    if (tapTrialZone(hit)) {
+    if (tapTrialZone(hit) || (raidOn() && tapRaidRoad(hit))) {
       emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.h });
       return;
     }
@@ -615,12 +714,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       consider({ guess: { zone: g.guess.zone, n: g.guess.n } }, distHb(p, { x: g.position.x, z: g.position.z + 2 }), 1.2);
     }
     if (best) return best.target;
+    // The things of a raid that a tap is for: the gate, a spot, the bamboo.
+    for (const e of query(state, 'raidTap', 'position')) consider({ raid: e.raidTap }, distHb(p, e.position), 2.2);
+    if (best) return best.target;
     for (const e of query(state, 'item', 'position')) {
       if (e.hidden || (e.item.set && !e.item.fixed)) continue;
       const { d, along } = segment(p, e);
       consider(e.item.fixed ? { thing: e.id, along } : { thing: e.id }, d, 1.2);
     }
-    for (const q of persons()) consider({ person: q.entity }, Math.hypot(q.x - x, q.y - y) * 2, 1.6);
+    for (const q of persons()) if (!getEntity(state, q.entity)?.hidden) consider({ person: q.entity }, Math.hypot(q.x - x, q.y - y) * 2, 1.6);
     if (best) return best.target;
     const tx = Math.floor(x);
     const ty = Math.floor(y);
@@ -658,6 +760,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       });
     }
     if (ev.type === 'trial' && ev.done) trialDone(ev.trial);
+    // The raid: the talks of the phases of the boss, the coins at the gate, and the end.
+    if (ev.type === 'phase' && ev.dialogue) talk(ev.dialogue);
+    if (ev.type === 'take') raidTake(ev);
+    if (ev.type === 'end' && ev.id === 'raid') raidEnd(ev);
+    if (ev.type === 'raidover') raidOver();
     // The prediction before the first commit on a gap, and the result.
     if (ev.type === 'prediction') {
       log('prediction', { task: ev.task, gap: ev.gap, guess: ev.guess, used: ev.used, solved: ev.solved });
@@ -724,7 +831,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The time limit: the hero goes home to rest at a calm point: no screen is open, the hands are
   // empty, and the hero is not on or next to a bridge that is not solid.
   function calm() {
-    if (screen || busy || holding() || hero().fall) return false;
+    if (screen || busy || holding() || hero().fall || raidOn()) return false;
     const c = heroCell();
     return !spans().some(({ zone: z }) => !z.set && c.x >= z.x0 - CALM_CELLS && c.x <= z.x1 + CALM_CELLS && c.y >= z.start / 2 - CALM_CELLS && c.y < z.end / 2 + CALM_CELLS);
   }
@@ -765,6 +872,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (busy) return;
+    if (raidOn() && (type === 'shoot' || type === 'pour' || type === 'pet')) {
+      if (type === 'shoot') order({ act: 'shoot', dir: cmd.dir, pull: cmd.pull });
+      else if (type === 'pour') order({ act: 'pour', source: cmd.source, x: cmd.x * 2, z: cmd.y * 2 });
+      else order({ act: 'charge' });
+      return;
+    }
     if (type === 'tap') tap(cmd.target ?? {});
     else if (type === 'hands') handsKey();
     else if (type === 'talkTo') walkToPerson(cmd.id);
@@ -807,6 +920,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     snapshot,
     targetAt,
     startTrial,
+    startRaid,
+    raidOn,
     syncSave,
     leave,
     calm,

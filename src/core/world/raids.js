@@ -92,8 +92,10 @@ const unit = (v) => {
   return { x: v.x / n, z: v.z / n };
 };
 
-// A new raid from its definition (data/raids.json), at a level. The raid is plain data.
-export function createRaid(raids, id, level = 0) {
+// A new raid from its definition (data/raids.json), at a level. loss: what an enemy at the gate
+// takes ('none', 'small', or 'normal': twice as much; see lossLevel in src/core/profile.js); by
+// default nothing at the lowest level. The raid is plain data.
+export function createRaid(raids, id, level = 0, loss = null) {
   const def = raids.raids[id];
   const sling = { ...SLING, ...raids.sling };
   const wall = hb(def.wall);
@@ -115,7 +117,8 @@ export function createRaid(raids, id, level = 0) {
     bar: def.bar ? { down: 0, cool: 0, tapped: null, ...(raids.gateBar ?? { hold: 3, rest: 1 }) } : null,
     posts: (raids.posts ?? []).map((d) => ({ d, x: wall.x + dir.x * d, z: wall.z + dir.z * d })),
     enemies: [],
-    made: 0,
+    count: 0, // the enemies so far (raider:1, raider:2, ...)
+    made: 0, // the other things so far (stones, fires)
     stones: [],
     torches: [],
     fires: [],
@@ -131,6 +134,7 @@ export function createRaid(raids, id, level = 0) {
     taken: {},
     allow: def.allow ?? 1,
     take: def.take ?? { coin: 1 },
+    loss: loss ?? (level > 0 ? 'small' : 'none'),
     aims: {},
     bamboo: null,
     sling,
@@ -145,7 +149,8 @@ export const along = (raid, p) => (p.x - raid.wall.x) * raid.dir.x + (p.z - raid
 const alive = (e) => e.state !== 'retreat' && e.state !== 'gone';
 const active = (raid) => raid.enemies.filter(alive);
 
-// One step of the raid. ctx: { hero: { x, z } } (half blocks). Return the events of the step.
+// One step of the raid. ctx: { hero, nghe } (where they are, in half blocks). Return the events
+// of the step.
 export function stepRaid(raid, dt, ctx = {}) {
   const out = [];
   if (raid.result) return out;
@@ -155,7 +160,7 @@ export function stepRaid(raid, dt, ctx = {}) {
   spawn(raid, out);
   tickGate(raid, dt, out);
   tickHelpers(raid, dt, out);
-  tickCharge(raid, dt, out);
+  tickCharge(raid, dt, ctx, out);
   for (const e of raid.enemies) tickEnemy(raid, e, dt, ctx, out);
   tickStones(raid, dt, out);
   tickTorches(raid, dt, out);
@@ -179,7 +184,7 @@ function spawn(raid, out) {
     const from = hb(w.from);
     const to = w.to ? hb(w.to) : { x: raid.gate.x + (w.side ?? 0) * -raid.dir.z, z: raid.gate.z + (w.side ?? 0) * raid.dir.x };
     const e = {
-      id: `raider:${++raid.made}`, kind: w.kind, look: kind.look, x: from.x, z: from.z, from, to,
+      id: `raider:${++raid.count}`, kind: w.kind, look: kind.look, x: from.x, z: from.z, from, to,
       hits: 0, max: kind.hits, state: 'walk', t: 0, cool: kind.torch?.first ?? kind.sword?.first ?? 0, waited: [], shield: 0, phase: raid.phase,
     };
     raid.enemies.push(e);
@@ -251,7 +256,8 @@ function tickEnemy(raid, e, dt, ctx, out) {
     if (e.t > 0) return;
     // The enemy takes a coin at the open gate, and leaves (nothing at the lowest level).
     raid.losses += 1;
-    const give = raid.level > 0 ? { ...raid.take } : {};
+    const give = {};
+    if (raid.loss !== 'none') for (const [k, n] of Object.entries(raid.take)) give[k] = n * (raid.loss === 'normal' ? 2 : 1);
     for (const [k, n] of Object.entries(give)) raid.taken[k] = (raid.taken[k] ?? 0) + n;
     out.push({ type: 'take', id: e.id, take: give, sound: 'coin' });
     if (kind.boss) {
@@ -357,13 +363,16 @@ function tickHelpers(raid, dt, out) {
   }
 }
 
-function tickCharge(raid, dt, out) {
+// Nghé runs to the enemy (ctx.nghe: where Nghé is now; without it, the run takes CHARGE
+// seconds), and butts it.
+function tickCharge(raid, dt, ctx, out) {
   const n = raid.nghe;
   if (!n) return;
   n.t += dt;
   const e = raid.enemies.find((x) => x.id === n.target);
   if (e) n.to = { x: e.x, z: e.z };
-  if (n.t < CHARGE) return;
+  const there = ctx.nghe && e ? dist(ctx.nghe, e) <= 2.5 : n.t >= CHARGE;
+  if (!there && n.t < CHARGE * 5) return;
   raid.nghe = null;
   if (!e || !alive(e)) return;
   out.push({ type: 'butt', id: e.id, sound: 'thud' });
@@ -470,7 +479,8 @@ function skill(raid, what, r) {
   if (what === 'correct') level = r.gap <= 5 ? 1 : r.gap <= 10 ? 2 : 3;
   return {
     type: 'skill', id: 'raid', skill: r.skill ?? s.skill, level, task: `raid-${raid.id}`, solved: r.solved, correct: r.solved,
-    efficient: r.efficient, first: r.first, evidence: true, parts: r.parts, target: r.target,
+    efficient: r.efficient, first: r.first, evidence: true, mashing: false, parts: r.parts, target: r.target,
+    latencies: [], resets: 0, hint: 0, hintSeen: null,
   };
 }
 
@@ -537,7 +547,7 @@ export function callHelper(raid, spotId) {
   if (!s || s.helper || raid.helpers <= 0 || raid.result) return [];
   raid.helpers -= 1;
   s.helper = { state: 'go', t: 0, from: { ...raid.wall }, x: raid.wall.x, z: raid.wall.z };
-  return [{ type: 'call', id: s.id }];
+  return [{ type: 'summon', id: s.id }];
 }
 
 // Nghé charges at the first enemy (the nearest one to the gate), once in a raid.
