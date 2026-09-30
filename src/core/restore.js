@@ -4,8 +4,9 @@
 //
 // A record of the profile store: { id, name, text, updatedAt, points }. text: the current save (the
 // save format of src/core/save.js). points: the restore points, the newest first:
-// [{ text, day, era, at }] (day: the game day of the dawn; era: the era of the story then; at: the
-// real time in milliseconds).
+// [{ text, day, era, at, before }] (day: the game day of the dawn; era: the era of the story then;
+// at: the real time in milliseconds; before: true for the save that was current before a restore,
+// which is not a dawn).
 
 export const KEEP = 3;
 
@@ -16,9 +17,10 @@ export function gameDay(profile) {
 }
 
 // Add the save of a dawn as a restore point. A second save on the same game day takes the place
-// of the first; the oldest points go out when there are more than `keep`.
+// of the first (not of a save from before a restore); the oldest points go out when there are more
+// than `keep`.
 export function addPoint(record, point, keep = KEEP) {
-  const points = (record.points ?? []).filter((p) => p.day !== point.day);
+  const points = (record.points ?? []).filter((p) => p.day !== point.day || p.before);
   return { ...record, points: [point, ...points].sort((a, b) => b.day - a.day || b.at - a.at).slice(0, keep) };
 }
 
@@ -27,7 +29,7 @@ export function addPoint(record, point, keep = KEEP) {
 export function restorePoint(record, index, current, now) {
   const point = record.points?.[index];
   if (!point) return record;
-  const back = { text: record.text, day: current.day, era: current.era, at: now };
+  const back = { text: record.text, day: current.day, era: current.era, at: now, before: true };
   const points = record.points.map((p, i) => (i === index ? back : p)).sort((a, b) => b.day - a.day || b.at - a.at);
   return { ...record, text: point.text, updatedAt: now, points };
 }

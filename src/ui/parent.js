@@ -3,11 +3,12 @@
 // button for 3 seconds and answers a question for adults.
 import { makeGateQuestion, checkGateAnswer, holdProgress } from '../core/parentgate.js';
 import { drawLearning } from './research.js';
-import { exportCode, importCode, SaveError, replacedBy } from '../core/save.js';
+import { exportCode, importCode, SaveError } from '../core/save.js';
 import { gradeIds, gradeName } from '../core/grades.js';
 import { extendTime, remainingMs } from '../core/timelimit.js';
 import { registerModal } from './registry.js';
-import { saveProfile, deleteProfile, listProfiles } from './storage.js';
+import { saveProfile, deleteProfile, listProfiles, loadProfile, listRestorePoints, restoreProfile } from './storage.js';
+import { gameDay } from '../core/restore.js';
 import { h, img, button } from './dom.js';
 import { t, lang } from './i18n.js';
 import { formatNumber } from '../core/i18n.js';
@@ -119,15 +120,24 @@ function formatDate(ms) {
   }
 }
 
-async function parentArea(ctx) {
+// opts: { tab, profile, action }: open a tab, and an action (rename, export, delete) on a profile.
+async function parentArea(ctx, opts = {}) {
   const { data } = ctx;
   await new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
     const panel = h('div', { class: 'panel parent' });
     const body = h('div');
     const close = () => { layer.remove(); resolve(); };
-    const tabs = ctx.profile ? ['progress', 'learning', 'settings', 'questions', 'code'] : ['code'];
-    let tab = tabs[0];
+    const tabs = ctx.profile ? ['progress', 'learning', 'settings', 'questions', 'games', 'code'] : ['games', 'code'];
+    let tab = tabs.includes(opts.tab) ? opts.tab : tabs[0];
+    // Leave the parent area and go on with a profile (after a restore or an import), or to the title.
+    const leave = async (profile) => {
+      ctx.profile = null;
+      layer.remove();
+      resolve();
+      if (profile) await ctx.startProfile(profile);
+      else ctx.go('title');
+    };
     const tabBar = h('div', { class: 'tabs' });
     const drawTabs = () => {
       tabBar.replaceChildren(...tabs.map((id) => {
@@ -147,7 +157,117 @@ async function parentArea(ctx) {
       if (tab === 'settings') drawSettings();
       if (tab === 'questions') drawQuestions();
       if (tab === 'code') drawCode();
+      if (tab === 'games') drawGames();
     };
+
+    // The code of a profile, with a copy button.
+    function codeBox(profile) {
+      const code = exportCode(profile, Date.now());
+      const area = h('textarea', { readonly: true, 'aria-label': t('parent.code.export') });
+      area.value = code;
+      return h('div', { class: 'field' }, [area, h('div', { class: 'row', style: { justifyContent: 'flex-start' } }, [
+        button(t('parent.code.copy'), async () => {
+          try {
+            await navigator.clipboard.writeText(code);
+            ctx.toast('parent.code.copied');
+          } catch {
+            area.select();
+          }
+        }, { cls: 'btn small' }),
+        button(t('parent.code.file'), () => {
+          const blob = new Blob([code], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const a = h('a', { href: url, download: `tre-${profile.hero.name.replace(/[^\p{L}\p{N}]+/gu, '-')}.txt` });
+          document.body.append(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }, { cls: 'btn small paper' }),
+      ])]);
+    }
+
+    // The adventures on this device: for each one, the restore points (the last dawns), rename,
+    // export, and delete (a second press deletes; the export code comes first).
+    async function drawGames() {
+      const list = (await listProfiles()).filter((x) => !x.damaged);
+      if (tab !== 'games') return;
+      if (!list.length) body.append(h('p', { class: 'muted', text: t('parent.games.none') }));
+      for (const item of list) {
+        const current = ctx.profile?.id === item.id ? ctx.profile : item.profile;
+        const today = gameDay(current);
+        const box = h('div', { class: 'game-box' });
+        const extra = h('div');
+        box.append(h('h3', { text: t('parent.games.head', { name: current.hero.name, era: t(`era.${current.era ?? 1}`), day: today + 1, date: formatDate(item.updatedAt) }) }));
+        // Restore points.
+        const points = await listRestorePoints(item.id);
+        box.append(h('h4', { text: t('parent.restore') }));
+        if (!points.length) box.append(h('p', { class: 'muted', text: t('parent.restore.none') }));
+        const row = h('div', { class: 'row', style: { justifyContent: 'flex-start', flexWrap: 'wrap' } });
+        points.forEach((pt, i) => {
+          const back = today - pt.day;
+          const label = pt.before ? t('parent.restore.before') : back < 0 ? t('parent.restore.later') : back === 0 ? t('parent.restore.today') : back === 1 ? t('parent.restore.yesterday') : t('parent.restore.days', { n: back });
+          row.append(button(`${label} · ${t(`era.${pt.era ?? 1}`)} · ${formatDate(pt.at)}`, async () => {
+            if (!window.confirm(t('parent.restore.confirm', { name: current.hero.name }))) return;
+            // The open game saves first, so that its state becomes the restore point in its place.
+            if (ctx.profile?.id === item.id) await ctx.save('restore');
+            await restoreProfile(item.id, i);
+            ctx.toast('parent.restore.done');
+            if (ctx.profile?.id === item.id) await leave(await loadProfile(item.id));
+            else draw();
+          }, { cls: 'btn small paper' }));
+        });
+        box.append(row);
+        // Rename, export, delete.
+        const rename = () => {
+          const input = h('input', { type: 'text', maxlength: String(data.hero.nameMax), 'aria-label': t('parent.rename') });
+          input.value = current.hero.name;
+          extra.replaceChildren(h('div', { class: 'row field', style: { justifyContent: 'flex-start' } }, [input, button(t('parent.rename.save'), async () => {
+            const name = input.value.trim();
+            if (!name) return;
+            const p = ctx.profile?.id === item.id ? ctx.profile : await loadProfile(item.id);
+            p.hero.name = name;
+            if (ctx.profile?.id === item.id) await ctx.save('rename');
+            else await saveProfile(p);
+            draw();
+          }, { cls: 'btn small red' })]));
+          input.focus();
+        };
+        const exportIt = async () => {
+          const p = ctx.profile?.id === item.id ? ctx.profile : await loadProfile(item.id);
+          extra.replaceChildren(h('p', { text: t('parent.code.export.note') }), codeBox(p));
+        };
+        let armed = false;
+        const del = button(t('parent.discard', { name: current.hero.name }), async () => {
+          if (!armed) {
+            // The first press: the export code first, then the second press deletes.
+            armed = true;
+            await exportIt();
+            extra.prepend(h('p', { class: 'warn', text: t('parent.discard.first', { name: current.hero.name }) }));
+            del.querySelector('.btn-label').textContent = t('parent.discard.again', { name: current.hero.name });
+            del.classList.replace('paper', 'red');
+            return;
+          }
+          await deleteProfile(item.id);
+          ctx.toast('parent.discard.done');
+          if (ctx.profile?.id === item.id) await leave(null);
+          else draw();
+        }, { cls: 'btn small paper' });
+        box.append(h('div', { class: 'row', style: { justifyContent: 'flex-start', flexWrap: 'wrap' } }, [
+          button(t('parent.rename'), rename, { cls: 'btn small paper' }),
+          button(t('parent.code.export'), exportIt, { cls: 'btn small paper' }),
+          del,
+        ]), extra);
+        body.append(box);
+        if (opts.profile === item.id && opts.action) {
+          const action = opts.action;
+          opts.action = null;
+          if (action === 'rename') rename();
+          if (action === 'export') await exportIt();
+          if (action === 'delete') del.click();
+          box.scrollIntoView?.({ block: 'center' });
+        }
+      }
+    }
 
     function drawProgress() {
       const p = ctx.profile;
@@ -296,35 +416,7 @@ async function parentArea(ctx) {
 
     function drawCode() {
       const p = ctx.profile;
-      if (p) {
-        const code = exportCode(p, Date.now());
-        const area = h('textarea', { readonly: true, 'aria-label': t('parent.code.export') });
-        area.value = code;
-        body.append(
-          h('h3', { text: t('parent.code.export') }),
-          h('p', { text: t('parent.code.export.note') }),
-          h('div', { class: 'field' }, [area]),
-          h('div', { class: 'row', style: { justifyContent: 'flex-start' } }, [
-            button(t('parent.code.copy'), async () => {
-              try {
-                await navigator.clipboard.writeText(code);
-                ctx.toast('parent.code.copied');
-              } catch {
-                area.select();
-              }
-            }, { cls: 'btn small' }),
-            button(t('parent.code.file'), () => {
-              const blob = new Blob([code], { type: 'text/plain' });
-              const url = URL.createObjectURL(blob);
-              const a = h('a', { href: url, download: `tre-${p.hero.name.replace(/[^\p{L}\p{N}]+/gu, '-')}.txt` });
-              document.body.append(a);
-              a.click();
-              a.remove();
-              setTimeout(() => URL.revokeObjectURL(url), 1000);
-            }, { cls: 'btn small paper' }),
-          ]),
-        );
-      }
+      if (p) body.append(h('h3', { text: t('parent.code.export') }), h('p', { text: t('parent.code.export.note') }), codeBox(p));
       const input = h('textarea', { 'aria-label': t('parent.code.import') });
       const file = h('input', { type: 'file', accept: '.txt,text/plain', 'aria-label': t('parent.code.file.pick') });
       file.addEventListener('change', async () => {
@@ -332,39 +424,45 @@ async function parentArea(ctx) {
         if (f) input.value = (await f.text()).trim();
       });
       const msg = h('p');
+      const choices = h('div', { class: 'menu-list' });
       body.append(
         h('h3', { text: t('parent.code.import') }),
         h('p', { text: t('parent.code.import.note') }),
         h('div', { class: 'field' }, [input, file]),
         msg,
         button(t('parent.code.load'), async () => {
+          choices.replaceChildren();
+          let profile;
           try {
-            const profile = importCode(input.value, { grades: data.game.grades });
-            // Warn when the import replaces a profile with the same id on this device.
-            const old = replacedBy(profile, await listProfiles());
-            const question = old
-              ? t('parent.code.replace', { old: old.name ?? old.id, name: profile.hero.name })
-              : t('parent.code.confirm', { name: profile.hero.name });
-            if (!window.confirm(question)) return;
-            await saveProfile(profile);
-            layer.remove();
-            resolve();
-            await ctx.startProfile(profile);
+            profile = importCode(input.value, { grades: data.game.grades });
           } catch (e) {
             msg.textContent = t(e instanceof SaveError ? `parent.code.error.${e.reason}` : 'parent.code.error.data');
+            return;
+          }
+          // The code goes in as a new adventure, or in the place of one on this device.
+          const list = (await listProfiles()).filter((x) => !x.damaged);
+          msg.textContent = t('parent.code.choose', { name: profile.hero.name });
+          const full = list.length >= data.game.maxProfiles;
+          const asNew = button(t('parent.code.as.new'), async () => {
+            if (list.some((x) => x.id === profile.id)) profile.id = `p${Date.now().toString(36)}`;
+            await saveProfile(profile);
+            await leave(profile);
+          }, { cls: 'btn red' });
+          asNew.disabled = full;
+          choices.append(asNew);
+          if (full) choices.append(h('p', { class: 'muted', text: t('title.full', { max: data.game.maxProfiles }) }));
+          for (const old of list) {
+            choices.append(button(t('parent.code.as.replace', { name: old.name }), async () => {
+              if (!window.confirm(t('parent.code.replace.confirm', { old: old.name, name: profile.hero.name }))) return;
+              await deleteProfile(old.id);
+              profile.id = old.id;
+              await saveProfile(profile);
+              await leave(profile);
+            }, { cls: 'btn paper' }));
           }
         }, { cls: 'btn red' }),
+        choices,
       );
-      if (p) {
-        body.append(h('h3', { text: t('parent.delete') }), button(t('parent.delete.button', { name: p.hero.name }), async () => {
-          if (!window.confirm(t('parent.delete.confirm', { name: p.hero.name }))) return;
-          await deleteProfile(p.id);
-          ctx.profile = null;
-          layer.remove();
-          resolve();
-          ctx.go('title');
-        }, { cls: 'btn small paper' }));
-      }
     }
 
     drawTabs();
@@ -372,8 +470,8 @@ async function parentArea(ctx) {
   });
 }
 
-registerModal('parent', async (ctx) => {
-  if (await gate(ctx)) await parentArea(ctx);
+registerModal('parent', async (ctx, opts = {}) => {
+  if (await gate(ctx)) await parentArea(ctx, opts);
 });
 
 // The text with a capital first letter, for a list of choices.

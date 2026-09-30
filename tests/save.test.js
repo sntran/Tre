@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from '../src/core/codec.js';
 import { createProfile, addItem, takeItems, applyLoss, lossLevel, addFriend, giveTitle, setFriendName, chosenGlossNames } from '../src/core/profile.js';
 import {
-  serialize, deserialize, exportCode, importCode, migrate, wrap, SaveError, SAVE_VERSION, SAVE_FORMAT, validate, replacedBy, LIMITS,
+  serialize, deserialize, exportCode, importCode, migrate, wrap, SaveError, SAVE_VERSION, SAVE_FORMAT, validate, LIMITS,
 } from '../src/core/save.js';
 import { createRng } from '../src/core/rng.js';
 import { readFileSync } from 'node:fs';
@@ -376,12 +376,6 @@ test('the pictures of parent questions have a size limit', () => {
 test('a code that is too long does not load', () => {
   assert.throws(() => importCode(`TRE1-${'A'.repeat(LIMITS.codeChars)}-00000000`), (e) => e.reason === 'size');
   assert.throws(() => deserialize('x'.repeat(LIMITS.jsonChars + 1)), (e) => e.reason === 'size');
-});
-
-test('the import finds the profile on this device that it replaces', () => {
-  const here = [{ id: 'p1', name: 'Tí' }, { id: 'p2', name: 'Tèo' }];
-  assert.equal(replacedBy({ id: 'p2' }, here).name, 'Tèo');
-  assert.equal(replacedBy({ id: 'p3' }, here), null);
 });
 
 test('the decompressed data has a size limit', () => {

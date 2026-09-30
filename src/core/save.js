@@ -414,12 +414,6 @@ function validateVisual(vis, { fail, int, isObj }) {
   }
 }
 
-// When an imported profile has the same id as a profile on this device, the import
-// replaces that profile. Return the profile that the import replaces, or null.
-export function replacedBy(imported, profiles) {
-  return profiles.find((p) => p && p.id === imported.id) ?? null;
-}
-
 export function serialize(profile, now = 0) {
   return JSON.stringify(wrap(profile, now));
 }

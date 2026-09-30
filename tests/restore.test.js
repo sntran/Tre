@@ -21,10 +21,13 @@ test('a restore swaps the current save with the point and keeps both', () => {
   assert.equal(back.text, 'dawn 4');
   assert.deepEqual(back.points.map((p) => p.text), ['day 6', 'dawn 5', 'dawn 3'], 'the current save is a point now');
   assert.equal(back.points.length, 3);
+  assert.equal(back.points[0].before, true, 'the save before the restore is marked: it is not a dawn');
   assert.equal(back.updatedAt, 1000);
   assert.deepEqual(restorePoint(r, 7, { day: 6, era: 1 }, 1), r, 'no such point: nothing changes');
   const again = restorePoint(back, 0, { day: 4, era: 1 }, 2000);
   assert.equal(again.text, 'day 6', 'a restore can be undone');
+  const dawn = addPoint(back, { text: 'dawn 6', day: 6, era: 1, at: 3000 });
+  assert.ok(dawn.points.some((p) => p.before), 'a dawn of the same day keeps the save from before the restore');
 });
 
 test('the game day comes from the clock of the world', () => {

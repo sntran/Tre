@@ -66,10 +66,10 @@ export async function saveProfile(profile, { dawn = false } = {}) {
   await putRecord(record);
 }
 
-// The restore points of a profile, the newest first: { day, era, at }.
+// The restore points of a profile, the newest first: { day, era, at, before }.
 export async function listRestorePoints(id) {
   const record = await getRecord(id);
-  return (record?.points ?? []).map(({ day, era, at }) => ({ day, era, at }));
+  return (record?.points ?? []).map(({ day, era, at, before = false }) => ({ day, era, at, before }));
 }
 
 // Go back to a restore point. The current save becomes a restore point in its place.
