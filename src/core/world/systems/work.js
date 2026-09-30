@@ -183,8 +183,11 @@ export function setupTrial(world, def, level, env) {
       const m = pt(7, (i - 1) * 3.5);
       addEntity(world, { id: `zone:share-${who}`, keep: true, zone: { id: `share-${who}`, task: owner, rule: 'share', accepts: 'coin', who, items: [], x: m.x, y: m.y, z: m.z, rect: { x0: m.x - 1.4, x1: m.x + 1.4, z0: m.z - 1.4, z1: m.z + 1.4 } }, position: { x: m.x - back.x * 2, y: m.y, z: m.z - back.z * 2, facing: 0 } });
       addEntity(world, { id: `mat:share-${who}`, keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: 'share-mat' });
-      const by = pt(9, (i - 1) * 3.5);
-      const face = Math.atan2(-back.x, -back.z);
+      // A friend stands behind the mat; where the ground there is not level with the mat (a paddy),
+      // in front of it.
+      const behind = pt(9, (i - 1) * 3.5);
+      const by = Math.abs(behind.y - m.y) < 0.6 ? behind : pt(4.8, (i - 1) * 3.5);
+      const face = Math.atan2(-back.x, -back.z) + (by === behind ? 0 : Math.PI);
       if (who === 'hero') addEntity(world, { id: 'by:share-hero', keep: true, position: { ...by, facing: face }, look: 'basket' });
       if (who === 'giong') addEntity(world, { id: 'by:share-giong', keep: true, position: { ...by, facing: face }, look: 'giong-hero' });
       const friend = friendOf(world);
