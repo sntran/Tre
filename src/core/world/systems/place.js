@@ -96,7 +96,7 @@ function act(world, e, env, dt) {
   if (e.fall) return;
   if (want.do === 'aim') e.hands.aim = world.tick;
   else if (want.do === 'pick') pick(world, e, getEntity(world, want.item), env, dt);
-  else if (want.do === 'put') put(world, e, getEntity(world, `zone:${want.zone}`), env);
+  else if (want.do === 'put') put(world, e, getEntity(world, `zone:${want.zone}`), env, dt);
   else if (want.do === 'drop') drop(world, e, env);
   else if (want.do === 'guess') guess(world, getEntity(world, `zone:${want.zone}`), want.n, env);
 }
@@ -121,7 +121,12 @@ function pick(world, e, thing, env, dt) {
   if (zoneEnt) {
     zoneEnt.zone.items = zoneEnt.zone.items.filter((id) => id !== thing.id);
     if (zoneEnt.zone.rule === 'pile') packPile(world, zoneEnt.zone);
-    else attemptOf(world, zoneEnt.zone).last = world.tick;
+    else {
+      // A plank taken back from the span: a reset of the attempt.
+      const a = attemptOf(world, zoneEnt.zone);
+      a.last = world.tick;
+      a.resets = (a.resets ?? 0) + 1;
+    }
   }
   thing.item.zone = null;
   thing.item.held = e.id;
@@ -129,11 +134,12 @@ function pick(world, e, thing, env, dt) {
   delete thing.tilt;
   e.hands.holds = thing.id;
   e.carry = thing.look;
+  hintSeen(world, dt);
   stopHint(world);
   say(world, 'pick', e.id, { item: thing.id, sound: 'plank-up' });
 }
 
-function put(world, e, zoneEnt, env) {
+function put(world, e, zoneEnt, env, dt) {
   const thing = getEntity(world, e.hands.holds);
   if (!thing || !zoneEnt) return;
   const zone = zoneEnt.zone;
@@ -144,6 +150,7 @@ function put(world, e, zoneEnt, env) {
   release(e, thing);
   thing.item.zone = zone.id;
   zone.items.push(thing.id);
+  hintSeen(world, dt);
   stopHint(world);
   if (zone.rule === 'pile') {
     packPile(world, zone);
@@ -232,7 +239,7 @@ function commit(world, zoneEnt, def, hero) {
   const mashing = isMashing({ latencies: a.thinks, tries: a.tries, pause: a.pause }, def.mash);
   if (zone.guess === 'pending') endGuess(world, zoneEnt, null);
   if (zone.commits === 1) say(world, 'prediction', zoneEnt.id, { task: zone.task, gap: zone.gap, guess: zone.guess, used: parts.length, solved });
-  const events = skillEvents(zone, def, parts, { solved, mashing });
+  const events = skillEvents(zone, def, parts, { solved, mashing, attempt: a });
   zone.attempt = { last: world.tick, thinks: [], tries: [], pause: null, failed: !solved };
   if (solved) setSpan(world, zoneEnt, def);
   else {
@@ -330,7 +337,7 @@ function tickSpan(world, zoneEnt, dt, env, rng) {
   }
   // The prediction: when the hero comes near a new gap, the plank outlines lie on the bank and
   // Nghé looks at the hero.
-  if (zone.guess === 'pending' && !zone.set && def.predict && heroes.some((h) => dist(h.position, zoneEnt.position) < def.predict.near)) showGuess(world, zoneEnt, def, env, heroes[0]);
+  if (zone.guess === 'pending' && !zone.set && def.predict && env.switches?.predict !== false && heroes.some((h) => dist(h.position, zoneEnt.position) < def.predict.near)) showGuess(world, zoneEnt, def, env, heroes[0]);
   // The commit: the hero steps on the last plank.
   if (!zone.set && zone.items.length) {
     const last = getEntity(world, zone.items[zone.items.length - 1]);
@@ -424,8 +431,22 @@ function maybeHint(world, zoneEnt, def) {
   const friend = query(world, 'follow')[0];
   if (!friend) return;
   zone.hint = def?.hint?.time ?? 10;
+  zone.hintAt = world.tick;
+  // The attempt after this failure saw the hint (level 1: an environmental cue).
+  const a = attemptOf(world, zone);
+  a.hint = Math.max(a.hint ?? 0, 1);
   friend.follow.goal = { x: zone.lane + 3, z: zone.from - 1.5, face: 0, act: 'stretch' };
   say(world, 'hint', friend.id);
+}
+
+// The seconds that the hint showed before the next action of the child (hints seen for less than
+// a second are a question of the learning log).
+function hintSeen(world, dt) {
+  for (const z of query(world, 'zone')) {
+    if (!(z.zone.hint > 0) || z.zone.hintAt === undefined) continue;
+    const a = attemptOf(world, z.zone);
+    a.hintSeen ??= Math.round((world.tick - z.zone.hintAt) * dt * 100) / 100;
+  }
 }
 
 function stopHint(world) {

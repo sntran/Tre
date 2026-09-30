@@ -120,7 +120,9 @@ export const LIMITS = Object.freeze({
   choices: 6,
   recentChars: 32,
   worldEntities: 2000, // kept entities of the world state
-  predictions: 200, // the predictions before a commit that the profile keeps
+  predictions: 200, // the predictions before a commit that an older profile kept (now in the log)
+  logEvents: 2000, // the raw events of one day in the learning log
+  logValues: 100000, // all the values in the roll-ups of the learning log
   worldValues: 200000, // all the values in the components of the kept entities
   visual: { groups: 4, dots: 20, arrayCells: 12, rectSide: 20, fractions: 3, denominator: 24 },
 });
@@ -200,7 +202,13 @@ export function validate(profile, { grades = null } = {}) {
     profile.seenGloss.forEach((x) => str(x, 'seenGloss'));
   }
   if (profile.world !== undefined) validateWorld(profile.world, { fail, num, int, str, list, isObj });
-  // The predictions before the first commit on a gap, with their results (until the learning log).
+  if (profile.log !== undefined) validateLog(profile.log, { fail, num, int, str, list, isObj });
+  if (profile.experiment !== undefined) {
+    if (!isObj(profile.experiment)) fail('experiment');
+    str(profile.experiment.experiment, 'experiment.experiment', LIMITS.idChars, 1);
+    str(profile.experiment.variant, 'experiment.variant', LIMITS.idChars, 1);
+  }
+  // The predictions of an older version (the game moves them into the learning log).
   if (profile.predictions !== undefined) {
     list(profile.predictions, 'predictions', LIMITS.predictions);
     for (const p of profile.predictions) {
@@ -277,6 +285,39 @@ function validateWorld(world, v) {
       kept.forEach(entity);
     }
   }
+}
+
+// The learning log (src/core/learnlog.js): numbers, times, short ids, words, and lists of
+// numbers only, in the events and in the roll-ups. No free text.
+function validateLog(log, v) {
+  const { fail, num, int, list, isObj } = v;
+  if (!isObj(log)) fail('log');
+  int(log.v, 'log.v', 1, 100);
+  num(log.tz, 'log.tz', -1000, 1000);
+  for (const k of ['first', 'day']) if (log[k] !== null) int(log[k], `log.${k}`, 0, 1e6);
+  num(log.playMs, 'log.playMs', 0);
+  list(log.events, 'log.events', LIMITS.logEvents);
+  const short = (s, what) => { if (typeof s !== 'string' || !/^[a-z0-9][a-zA-Z0-9.:_-]{0,39}$/.test(s)) fail(what); };
+  let size = 0;
+  const plain = (value, what, depth) => {
+    size += 1;
+    if (size > LIMITS.logValues || depth > 7) fail(what);
+    if (value === null || typeof value === 'boolean') return;
+    if (typeof value === 'number') return num(value, what);
+    if (typeof value === 'string') return short(value, what);
+    if (Array.isArray(value)) return value.forEach((x) => plain(x, what, depth + 1));
+    if (!isObj(value)) fail(what);
+    for (const [k, x] of Object.entries(value)) {
+      short(k, what);
+      plain(x, `${what}.${k}`, depth + 1);
+    }
+  };
+  for (const e of log.events) {
+    if (!isObj(e)) fail('log event');
+    plain(e, 'log event', 0);
+  }
+  if (!isObj(log.rollups)) fail('log.rollups');
+  plain(log.rollups, 'log.rollups', 0);
 }
 
 function validateLearning(learning, v) {

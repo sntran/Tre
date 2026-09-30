@@ -142,3 +142,45 @@ test('the shared summary has only the allowed fields, no name, and is small', ()
   // A field that is not allowed is found.
   assert.deepEqual(extraFields({ ...sum, name: 'Mai' }, schema.summary), ['name']);
 });
+
+test('the logger: one way into the log, with the time, the variant, the session, and the time of play', async () => {
+  const { createLogger } = await import('../src/core/logger.js');
+  const quests = load('data/quests.json').quests;
+  let now = T0;
+  const profile = { flags: {}, inventory: {}, grade: 2, quests: {} };
+  const logger = createLogger({ profile, schema, label: () => 'predict:on', quests, now: () => now });
+  logger.startSession();
+  now += 60000;
+  logger.action('talk');
+  logger.action('walk');
+  now += 4 * 60000;
+  const a = logger.attempt({ task: 'bridge', skill: 'math.add.20', phase: 'commit', success: true, efficient: true, first: true, mashing: false, parts: [4, 4, 4], resets: 1, latencies: [2.5, 3], hint: 0, hintSeen: null, pBefore: 0.3, pAfter: 0.5, retry: false, harder: false, map: 'phu-dong' });
+  assert.equal(a.play, 5, 'five minutes of play');
+  assert.equal(a.variant, 'predict:on');
+  // A quest step, and one more minute of play after it.
+  profile.flags['prologue.started'] = true;
+  logger.checkQuests();
+  now += 90000;
+  const s = logger.endSession('device', 'phu-dong');
+  assert.deepEqual([s.endedBy, s.first, s.quests, s.afterQuest, s.end - s.start], ['device', 'talk', 1, true, 6.5 * 60000]);
+  assert.equal(profile.log.playMs, 6.5 * 60000);
+  assert.equal(logger.endSession('child'), null, 'no session is open');
+  // An event that does not fit the schema is not kept, and the game goes on.
+  assert.equal(logger.record('exam', { skill: 'math.add.20', correct: 'yes', p: 0.5 }), null);
+  assert.equal(profile.log.events.length, 2);
+});
+
+test('the save keeps the learning log, and a log with free text does not load', async () => {
+  const { exportCode, importCode } = await import('../src/core/save.js');
+  const { createProfile } = await import('../src/core/profile.js');
+  const p = createProfile({ id: 'p1', name: 'Mai', gender: 'girl', grade: 2, now: T0, seed: 4 });
+  p.log = createLog(-420);
+  for (const ev of ALL) logEvent(p.log, ev, schema);
+  p.experiment = { experiment: 'predict', variant: 'off' };
+  const back = importCode(exportCode(p));
+  assert.deepEqual(back.log, p.log);
+  assert.deepEqual(back.experiment, p.experiment);
+  const bad = structuredClone(p);
+  bad.log.events.push({ ...ALL[1], skill: 'Hello, my friend!' });
+  assert.throws(() => importCode(exportCode(bad)), (e) => e.reason === 'shape');
+});

@@ -11,6 +11,10 @@ import { createMachine } from '../core/fsm.js';
 import { createRng } from '../core/rng.js';
 import { createSkillGraph } from '../core/skills.js';
 import { createLearner } from '../core/learner.js';
+import { isDue } from '../core/review.js';
+import { createExperiments } from '../core/experiments.js';
+import { createLogger } from '../core/logger.js';
+import { DAY_MS } from '../core/learnlog.js';
 import { createSurface } from '../render/surface.js';
 import { mountTitle } from './title.js';
 import { connectAudio } from './audio.js';
@@ -18,6 +22,9 @@ import { startTimer, isTimeOver } from './rest.js';
 import { scenes, modals, registerScene, registerModal } from './registry.js';
 import { mountCreate } from './create.js';
 import { mountVillage } from './village.js';
+
+// The scenes of play: a session of the learning log is open in them.
+const PLAY = new Set(['village', 'battle', 'vanmieu']);
 
 // Scenes and the scenes that can come after each one.
 const SCENES = {
@@ -77,6 +84,19 @@ export async function startApp(root) {
     learner: null,
     rng: createRng(Date.now() >>> 0),
     syncWorld: null, // set by the village: puts the world state into the profile
+    experiments: null, // the switches of this profile (src/core/experiments.js)
+    logger: null, // the learning log of this profile (src/core/logger.js)
+
+    // The one way to the learning log. kind: attempt, review, exam, prediction (events), action
+    // (the first action of a session: walk, place, talk, travel, menu), or questStep.
+    log(kind, fields = {}) {
+      const l = ctx.logger;
+      if (!l) return null;
+      if (kind === 'attempt') return l.attempt(fields);
+      if (kind === 'action') return l.action(fields.kind);
+      if (kind === 'questStep') return l.questStep();
+      return l.record(kind, fields);
+    },
 
     async setLanguage(code) {
       await loadLanguage(code);
@@ -97,7 +117,11 @@ export async function startApp(root) {
         current = null;
         ui.replaceChildren();
         if (voxel) voxel.hidden = true;
+        // A session of play ends at the title (the child left) or at the rest screen (the time
+        // limit of the parent), and starts again in a scene of play.
+        if (ctx.logger?.open && (name === 'title' || name === 'rest')) ctx.logger.endSession(name === 'rest' ? 'parent' : 'child', ctx.profile?.world?.map ?? null);
         current = await MOUNT[name](ctx, params);
+        if (ctx.logger && !ctx.logger.open && PLAY.has(name) && document.visibilityState !== 'hidden') ctx.logger.startSession();
       } finally {
         going = false;
       }
@@ -114,6 +138,7 @@ export async function startApp(root) {
       if (!ctx.profile) return saving;
       // The open village puts its world state into the profile first.
       ctx.syncWorld?.();
+      ctx.logger?.checkQuests();
       ctx.profile.seenGloss = seenGlossList();
       const snapshot = ctx.profile;
       saving = saving.then(() => saveProfile(snapshot)).catch((e) => console.error('Save failed', reason, e));
@@ -132,7 +157,38 @@ export async function startApp(root) {
       const p = ctx.profile;
       ctx.rng = createRng(`${p.seed}:${Date.now()}`);
       const bank = [...data.questions.questions, ...(p.settings.questions ?? []).map((q) => ({ ...q, level: 1, parent: true }))];
-      ctx.learner = createLearner({ graph, config: data.learning, learning: p.learning, grade: p.grade, rng: ctx.rng, bank, lang: p.settings.lang });
+      // The switches of the experiments: the target of the choice of the next task, and the days
+      // between reviews.
+      const x = ctx.experiments;
+      const target = x?.value('target') ?? data.learning.rating.target;
+      const config = {
+        ...data.learning,
+        rating: { ...data.learning.rating, target, targetLow: target - 0.05, targetHigh: target + 0.05 },
+        review: { ...data.learning.review, intervalsDays: x?.value('reviewDays') ?? data.learning.review.intervalsDays },
+      };
+      const learner = createLearner({ graph, config, learning: p.learning, grade: p.grade, rng: ctx.rng, bank, lang: p.settings.lang });
+      // A review: an answer for a mastered skill that is due goes into the learning log too.
+      const record = learner.record;
+      learner.record = (prob, correct) => {
+        const e = learner.entry(prob.skill);
+        const now = Date.now();
+        const review = e.mastered && isDue(e, now) ? { due: e.due, gap: e.last ? (now - e.last) / DAY_MS : 0 } : null;
+        const out = record(prob, correct);
+        if (review) ctx.log('review', { skill: prob.skill, due: review.due, gap: Math.round(review.gap * 10) / 10, result: Boolean(correct) });
+        return out;
+      };
+      ctx.learner = learner;
+    },
+
+    // The experiments and the learning log of the profile. Predictions that an older version kept
+    // in the profile go into the log.
+    startLog() {
+      const p = ctx.profile;
+      ctx.logger?.endSession('child', null);
+      ctx.experiments = createExperiments(data.experiments, { seed: p.seed, choice: p.experiment ?? null });
+      ctx.logger = createLogger({ profile: p, schema: data.learnlog, label: () => ctx.experiments.label, quests: data.quests.quests, tz: new Date().getTimezoneOffset() });
+      for (const x of p.predictions ?? []) ctx.log('prediction', { task: x.task, gap: x.gap, guess: x.guess, used: x.used, solved: x.solved });
+      delete p.predictions;
     },
 
     async startProfile(profile, isNew = false) {
@@ -145,6 +201,7 @@ export async function startApp(root) {
       await ctx.setLanguage(profile.settings.lang);
       setVoiceEnabled(profile.settings.voice);
       bus.emit('settings', profile.settings);
+      ctx.startLog();
       ctx.makeLearner();
       if (isNew) await ctx.save('new');
       await ctx.go(isTimeOver(ctx) ? 'rest' : 'village');
@@ -207,9 +264,13 @@ export async function startApp(root) {
     ui.append(layer);
   }));
 
-  // Save when the page goes to the background.
+  // Save when the page goes to the background. The session of play ends there (the device), and
+  // a new one starts when the page comes back in a scene of play.
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') ctx.save('hidden');
+    if (document.visibilityState === 'hidden') {
+      ctx.logger?.endSession('device', ctx.profile?.world?.map ?? null);
+      ctx.save('hidden');
+    } else if (ctx.logger && !ctx.logger.open && PLAY.has(ctx.scene)) ctx.logger.startSession();
   });
 
   startTimer(ctx);

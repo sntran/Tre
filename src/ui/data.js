@@ -4,6 +4,8 @@ import { createWorld } from '../world/regions.js';
 const FILES = {
   skills: 'data/skills.json',
   learning: 'data/config/learning.json',
+  experiments: 'data/config/experiments.json',
+  learnlog: 'data/config/learnlog.json',
   game: 'data/config/game.json',
   tiles: 'data/tiles.json',
   regions: 'data/world/regions.json',

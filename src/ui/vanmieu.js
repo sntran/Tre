@@ -69,6 +69,8 @@ function runExam(ctx, kind) {
         onAnswer: async (response) => {
           q.lock();
           const ok = checkAnswer(problem, response);
+          // The exam item and P(L) before the answer: the check of transfer (rule 30).
+          ctx.log('exam', { skill: problem.skill, correct: ok, p: ctx.learner.entry(problem.skill).p });
           ctx.learner.record(problem, ok);
           ctx.bus.emit('sound', ok ? 'correct' : 'tap');
           feedback.show(ok ? 'good' : 'hint', t(ok ? 'exam.right' : 'exam.next'));

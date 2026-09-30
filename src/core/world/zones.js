@@ -175,11 +175,17 @@ export function minParts(target, sizes) {
 //   solved: the span is exact. efficient: solved with the fewest things on the first commit on
 //   this gap (this carries most of the evidence). mashing: the signs of guessing without
 //   thought; such a commit is no evidence (and never an error).
-export function skillEvents(zone, def, parts, { solved, mashing }) {
+//   attempt: the attempt since the last commit (for the learning log): latencies (the seconds
+//   to choose each plank), resets (planks taken back), hint (the level of the hint that the
+//   child saw), and hintSeen (the seconds of the hint before the next action, or null).
+export function skillEvents(zone, def, parts, { solved, mashing, attempt = {} }) {
   const s = def.skills ?? {};
   const first = zone.commits === 1;
   const efficient = solved && first && parts.length === minParts(zone.gap, zone.sizes);
-  const info = { correct: solved, solved, efficient, first, mashing, evidence: !mashing, parts: [...parts], target: zone.gap };
+  const info = {
+    correct: solved, solved, efficient, first, mashing, evidence: !mashing, parts: [...parts], target: zone.gap, task: zone.task,
+    latencies: [...(attempt.thinks ?? [])], resets: attempt.resets ?? 0, hint: attempt.hint ?? 0, hintSeen: attempt.hintSeen ?? null,
+  };
   const out = [];
   if (s.sum) out.push({ skill: s.sum, level: zone.levels[s.sum] ?? 1, ...info });
   const same = parts.length >= (s.groupsMin ?? 3) && parts.every((x) => x === parts[0]);

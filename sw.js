@@ -183,6 +183,7 @@ const FILES = [
   'src/core/i18n.js',
   'src/core/learner.js',
   'src/core/learnlog.js',
+  'src/core/logger.js',
   'src/core/mastery.js',
   'src/core/parentgate.js',
   'src/core/profile.js',

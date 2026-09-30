@@ -25,7 +25,6 @@ import { runDialogue, say } from './dialogue.js';
 const STICK_R = 56; // the radius of the virtual stick, in screen pixels
 // The color of the dusk wash at full night: the hue of indigo (#2f4668) in the palette.
 const DUSK = Object.freeze({ hue: 215, saturation: 45, lightness: 42 });
-const PREDICTIONS = 200; // the predictions that the profile keeps
 const HOLD_MS = 220; // a press this long is a hold (walk toward the finger), not a tap
 const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyQ', 'KeyE', 'Space']);
 
@@ -81,7 +80,7 @@ export async function mountVillage(ctx, params = {}) {
 
   if (!terrains.has(mapData.id)) terrains.set(mapData.id, buildTerrain(mapData, tileTypes, tileMap));
   const terrain = terrains.get(mapData.id);
-  const env = envFor(tileMap, { places: placesOf(mapData, tileMap), homes: terrain.homes, day: data.day, zones: data.zones });
+  const env = envFor(tileMap, { places: placesOf(mapData, tileMap), homes: terrain.homes, day: data.day, zones: data.zones, switches: ctx.experiments?.switches });
   if (!worlds.has(mapData.id)) worlds.set(mapData.id, D.createVoxelWorld(canvas, terrain));
   const view = worlds.get(mapData.id);
   const looks = data.figures.figures;
@@ -164,9 +163,10 @@ export async function mountVillage(ctx, params = {}) {
     h('span', { class: 'hud-name', text: profile.hero.name }),
   ]);
   heroFace.addEventListener('click', () => walkToPerson('grandma'));
-  const menuBtn = button(null, () => ctx.openMenu(), { cls: 'icon-btn', icon: 'ui/menu', aria: t('ui.menu') });
+  const menuBtn = button(null, () => { ctx.log('action', { kind: 'menu' }); ctx.openMenu(); }, { cls: 'icon-btn', icon: 'ui/menu', aria: t('ui.menu') });
   // The country map. The world waits while it is open.
   const mapBtn = button(null, () => {
+    ctx.log('action', { kind: 'travel' });
     if (!busy && !leaving) handleCommands([{ open: 'worldmap' }]);
   }, { cls: 'icon-btn map-btn', icon: 'ui/map', aria: t('ui.worldmap') });
   hud.append(heroFace, goalBtn, counts, mapBtn, menuBtn);
@@ -334,6 +334,7 @@ export async function mountVillage(ctx, params = {}) {
   }
 
   async function interact(who, at) {
+    ctx.log('action', { kind: 'talk' });
     command(state, { type: 'face', id: 'hero', x: at.x * 2, z: at.y * 2 });
     if (who.kind === 'npc') {
       const npc = data.npcs.npcs[who.id];
@@ -624,6 +625,7 @@ export async function mountVillage(ctx, params = {}) {
     else goOnSpan(z, z.zone.from + covered - 0.5);
   }
   function tapThing(thing) {
+    ctx.log('action', { kind: 'place' });
     const m = middleOf(thing);
     showTap(m.x / 2, m.z / 2, thing.position.y / 2 + 0.4);
     const zone = zoneOf(thing.item.zone);
@@ -747,6 +749,7 @@ export async function mountVillage(ctx, params = {}) {
       walkPath(pathNextTo(tileMap, from, tile), null, () => doAction(ground), { x: hit.x, y: hit.y, d: 2.2 });
       return;
     }
+    ctx.log('action', { kind: 'walk' });
     if (tileMap.walkable(tile.x, tile.y)) walkPath(findPath(tileMap, from, tile)?.slice(0, -1), { x: hit.x, y: hit.y }, null);
     else walkPath(pathNextTo(tileMap, from, tile), null, null);
   }
@@ -782,6 +785,7 @@ export async function mountVillage(ctx, params = {}) {
       }
     }
     if (dir) {
+      if (!moving) ctx.log('action', { kind: 'walk' });
       command(state, { type: 'move', id: 'hero', ...dir });
       moving = true;
     } else if (moving) {
@@ -944,17 +948,21 @@ export async function mountVillage(ctx, params = {}) {
     }
     // A commit at a placement: a skill event for the learner (see learnerRecord). The child never
     // sees it; with ?debug=1 in the address, a small panel shows it.
+    // The commit goes into the learning log too, with P(L) before and after.
     if (ev.type === 'skill') {
+      const pBefore = ctx.learner?.entry(ev.skill).p ?? null;
       const rec = learnerRecord(ev);
       if (rec) ctx.learner?.record({ skill: ev.skill, level: rec.level }, rec.correct);
+      const pAfter = ctx.learner?.entry(ev.skill).p ?? null;
+      ctx.log('attempt', {
+        task: ev.task, skill: ev.skill, phase: 'commit', success: ev.solved, efficient: ev.efficient, first: ev.first, mashing: ev.mashing,
+        parts: ev.parts, resets: ev.resets, latencies: ev.latencies, hint: ev.hint, hintSeen: ev.hintSeen, pBefore, pAfter, retry: false, harder: false, map: mapData.id,
+      });
       logSkill(ev);
     }
-    // The prediction before the first commit on a gap, and the result, in the profile until the
-    // learning log has a place for them.
+    // The prediction before the first commit on a gap, and the result.
     if (ev.type === 'prediction') {
-      profile.predictions ??= [];
-      profile.predictions.push({ at: Math.round(state.clock.minutes), task: ev.task, gap: ev.gap, guess: ev.guess, used: ev.used, solved: ev.solved });
-      if (profile.predictions.length > PREDICTIONS) profile.predictions.splice(0, profile.predictions.length - PREDICTIONS);
+      ctx.log('prediction', { task: ev.task, gap: ev.gap, guess: ev.guess, used: ev.used, solved: ev.solved });
       ctx.save('prediction');
     }
     if (ev.type === 'break' && ev.give) {
