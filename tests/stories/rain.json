@@ -1,0 +1,28 @@
+{
+  "name": "rain",
+  "about": {
+    "vi": "Trời mưa: nước sông lên, chỗ lội bị ngập, Nghé lắc đầu ở mép nước, và một giờ sau cơn mưa thì lội qua được.",
+    "en": "Rain: the river rises, the ford closes, Nghé shakes its head at the edge, and the ford opens one game hour after the rain."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 3600,
+  "place": [17.5, 62],
+  "steps": [
+    { "expect": [{ "ford": "open" }] },
+    { "at": { "hour": 12.6 } },
+    { "expect": [{ "ford": "open" }] },
+    { "at": { "hour": 14.2 } },
+    { "expect": [{ "ford": "closed" }] },
+    { "tap": { "cell": [17.5, 65.4] } },
+    { "until": { "event": "shake", "timeout": 15 } },
+    { "expect": [{ "entity": "friend:nghe", "act": "shake" }, { "hero": { "cell": [17.5, 65], "within": 2 } }] },
+    { "at": { "hour": 15.3 } },
+    { "expect": [{ "ford": "closed" }] },
+    { "at": { "hour": 15.8 } },
+    { "expect": [{ "ford": "open" }] },
+    { "tap": { "cell": [17.5, 77] } },
+    { "wait": 12 },
+    { "expect": [{ "hero": { "cell": [17.5, 77], "within": 1.5 } }] }
+  ]
+}

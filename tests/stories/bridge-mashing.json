@@ -1,0 +1,39 @@
+{
+  "name": "bridge-mashing",
+  "about": {
+    "vi": "Cây cầu, bấm vội: thử ba cỡ ván liền ở một chỗ; lần bước lên cầu không được tính, và Nghé chỉ chỗ hở.",
+    "en": "The bridge, mashing: three sizes in a sweep at one place, fast; the commit gives no evidence, and Nghé shows the gap."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [46, 61],
+  "steps": [
+    { "tap": { "plank": 3 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "tap": { "span": "bridge-gap" } },
+    { "until": { "event": "pick", "timeout": 5 } },
+    { "tap": { "plank": 4 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "tap": { "span": "bridge-gap" } },
+    { "until": { "event": "pick", "timeout": 5 } },
+    { "tap": { "plank": 5 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "tap": { "plank": 4 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "skill", "timeout": 20 } },
+    { "expect": [{ "event": "skill", "with": { "skill": "math.add.20", "mashing": true, "evidence": false, "solved": false } }] },
+    { "until": { "event": "hint", "timeout": 12 } },
+    { "wait": 3 },
+    { "expect": [{ "entity": "friend:nghe", "act": "stretch" }] }
+  ]
+}

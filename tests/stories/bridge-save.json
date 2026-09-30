@@ -1,0 +1,41 @@
+{
+  "name": "bridge-save",
+  "about": {
+    "vi": "Lưu game khi cầu mới xong một nửa, rồi mở lại: các tấm ván và vòng chơi vẫn như cũ, và cầu làm tiếp được.",
+    "en": "Save in the middle of the bridge and load: the planks and the round are the same, and the bridge goes on."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [46, 61],
+  "steps": [
+    { "wait": 1 },
+    { "tap": { "guess": 3 } },
+    { "wait": 2 },
+    { "tap": { "plank": 4 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "wait": 1.5 },
+    { "tap": { "plank": 4 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "expect": [{ "zone": "bridge-gap", "planks": 2, "round": 0, "state": "open" }] },
+    { "reload": true },
+    { "expect": [{ "zone": "bridge-gap", "planks": 2, "round": 0, "state": "open" }, { "hero": { "holding": false } }] },
+    { "wait": 1.5 },
+    { "tap": { "plank": 4 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "wait": 1 },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "solid", "timeout": 20 } },
+    { "expect": [
+      { "zone": "bridge-gap", "state": "solid" },
+      { "event": "skill", "with": { "skill": "math.add.20", "solved": true, "first": true, "efficient": true } },
+      { "event": "prediction", "with": { "guess": 3, "used": 3, "solved": true } }
+    ] }
+  ]
+}

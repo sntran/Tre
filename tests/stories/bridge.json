@@ -1,0 +1,63 @@
+{
+  "name": "bridge",
+  "about": {
+    "vi": "Cây cầu gãy: đoán số tấm ván, rồi thử ngắn, dài, và vừa đủ; các cờ của mỗi lần bước lên cầu.",
+    "en": "The broken bridge: the prediction, then a short, a long, and an exact bridge; the flags of each commit."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [46, 61],
+  "steps": [
+    { "wait": 1 },
+    { "expect": [{ "zone": "bridge-gap", "state": "open", "gap": 12, "planks": 0 }, { "count": { "entities": "plank-ghost", "min": 6 } }] },
+    { "tap": { "guess": 3 } },
+    { "until": { "event": "guess", "timeout": 3 } },
+    { "wait": 2 },
+    { "tap": { "plank": 4 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "wait": 1.5 },
+    { "tap": { "plank": 4 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "expect": [{ "zone": "bridge-gap", "planks": 2 }, { "event": "skill", "not": true }] },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "tip", "timeout": 20 } },
+    { "expect": [
+      { "event": "skill", "with": { "skill": "math.add.20", "solved": false, "first": true, "mashing": false, "evidence": true } },
+      { "hero": { "falls": true } },
+      { "event": "prediction", "with": { "guess": 3, "used": 2, "solved": false, "gap": 12 } }
+    ] },
+    { "until": { "event": "pulled", "timeout": 20 } },
+    { "wait": 2 },
+    { "expect": [{ "hero": { "falls": false } }, { "zone": "bridge-gap", "planks": 1 }] },
+    { "tap": { "plank": 5 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "wait": 1.5 },
+    { "tap": { "plank": 5 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "long", "timeout": 20 } },
+    { "expect": [{ "event": "call", "with": { "key": "world.bridge.long" } }, { "text": { "shown": "world.bridge.long" } }, { "event": "skill", "not": true }] },
+    { "until": { "event": "float", "timeout": 10 } },
+    { "wait": 1 },
+    { "expect": [{ "zone": "bridge-gap", "planks": 2 }] },
+    { "tap": { "plank": 3 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "wait": 1 },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "solid", "timeout": 20 } },
+    { "expect": [
+      { "zone": "bridge-gap", "state": "solid" },
+      { "event": "skill", "with": { "skill": "math.add.20", "solved": true, "first": false, "efficient": false, "mashing": false } },
+      { "item": "coin", "count": ">= 1" }
+    ] }
+  ]
+}

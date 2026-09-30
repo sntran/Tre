@@ -1,0 +1,24 @@
+{
+  "name": "reactions",
+  "about": {
+    "vi": "Làng phản ứng với em: gà chạy khi em chạy tới, người làng chào em, và cái vò vỡ cho một đồng xu bay vào túi.",
+    "en": "The village reacts: a chicken flees a running hero, a villager greets, and a pot gives a coin that flies to the counter."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [10.5, 31],
+  "steps": [
+    { "do": { "type": "move", "dx": 0, "dz": -1, "strength": 1, "run": true } },
+    { "until": { "event": "flee", "timeout": 4 } },
+    { "do": { "type": "move", "dx": 0, "dz": 0, "strength": 0 } },
+    { "expect": [{ "event": "flee" }] },
+    { "tap": { "entity": "npc:grandma" } },
+    { "until": { "event": "greet", "timeout": 30 } },
+    { "expect": [{ "event": "open", "with": { "screen": "callout" } }] },
+    { "read": true },
+    { "tap": { "cell": [13.2, 23.9] } },
+    { "until": { "event": "break", "timeout": 20 } },
+    { "expect": [{ "event": "gift", "with": { "give": { "coin": 1 } } }, { "item": "coin", "count": 1 }, { "entity": "life:11:0", "look": "pot-broken" }] }
+  ]
+}

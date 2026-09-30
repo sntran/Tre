@@ -6,7 +6,7 @@
 // end of the planks it stretches its neck toward the gap (a hint), beside the plank outlines it
 // looks at the hero, and at the edge of the water it pulls the hero out. At a closed ford Nghé stops at the
 // edge and shakes its head. After a skip of the prediction, Nghé glances once at the outlines.
-export const WRITES = ['position', 'motion', 'follow', 'act'];
+export const WRITES = ['position', 'motion', 'follow', 'act', 'events'];
 
 import { query, getEntity } from '../state.js';
 import { stepFollower, moveCircle, faceOf, MOVE } from '../move.js';
@@ -79,6 +79,7 @@ export function follow(world, dt, rng, env) {
     if (atFord && !e.follow.shook) {
       e.follow.shook = true;
       e.follow.shake = SHAKE;
+      world.events.push({ type: 'shake', id: e.id });
     }
     if (!atFord) delete e.follow.shook;
     e.follow.shake = Math.max(0, (e.follow.shake ?? 0) - dt);

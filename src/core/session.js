@@ -28,7 +28,7 @@ import { createTriggers } from './triggers.js';
 import { currentGoal } from './quests.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
 import { createDialogue } from './dialogue.js';
-import { timeStatus } from './timelimit.js';
+import { timeStatus, addPlayTime } from './timelimit.js';
 import { createWorldState, getEntity, query, command as worldCommand } from './world/state.js';
 import { step as worldStep, STEP } from './world/step.js';
 import { envFor, placesOf } from './world/env.js';
@@ -49,7 +49,12 @@ const CALM_CELLS = 2; // the hero is on the bridge when nearer than this to a sp
 // the terrain of a map (for the homes of the people). switches: the switches of the experiments.
 export function createSession({ data, profile, learner = () => null, log = () => null, save = () => {}, now = () => Date.now(), terrainOf = () => ({ homes: {} }), switches = null }) {
   const out = [];
-  const emit = (ev) => out.push(ev);
+  const listeners = new Set();
+  // Every event goes to the queue of the view and to the listeners (the runner of a story).
+  const emit = (ev) => {
+    out.push(ev);
+    for (const fn of listeners) fn(ev);
+  };
   const arrivals = new Map(); // the token of a walk -> what to do at its end
   let nextToken = 1;
   let map = null;
@@ -246,10 +251,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (a.pickup || a.set) {
+      // No number in the text: the things fly from the hero to their counter in the HUD.
       const { changes } = applyEffects(profile, [{ give: a.pickup, set: a.set }]);
       emit({ type: 'sound', sound: 'pickup' });
       save('pickup');
-      say(a.textKey, { n: Object.values(changes.items)[0] ?? 0 });
+      if (Object.keys(changes.items).length) emit({ type: 'gift', from: 'hero', give: changes.items, delay: 0 });
+      say(a.textKey);
       return;
     }
     if (a.textKey) say(a.textKey);
@@ -533,11 +540,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // One step of the world, then the events of the step, the exits, and the trigger zones.
   function step() {
+    // The time of play in the village counts here, one step at a time (the app counts it in the
+    // other scenes).
+    if (profile.time) addPlayTime(profile.time, now(), STEP * 1000);
     worldStep(state, STEP, env);
     for (const fn of later.splice(0)) fn();
     const events = state.events;
     for (const ev of events) {
-      out.push(ev);
+      emit(ev);
       if (ev.id === 'sky') continue;
       if (ev.id !== 'hero') {
         worldEvent(ev);
@@ -598,7 +608,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (type === 'closed') {
-      if (screen && screen.screen !== 'dialogue' && screen.screen !== 'say') closeScreen();
+      if (!screen || screen.screen === 'dialogue' || screen.screen === 'say') return;
+      // Back from Văn Miếu: the hero stands next to its gate.
+      const door = screen.screen === 'vanmieu' ? doorOf(data, 'vanmieu') : null;
+      if (door?.map === map.id) placeHero(door.at.x, door.at.y);
+      closeScreen();
       return;
     }
     if (type === 'refresh') {
@@ -641,6 +655,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     step,
     // The events since the last call.
     events: () => out.splice(0),
+    // The events that the view did not take yet (for example the events of the start).
+    peek: () => [...out],
+    // Also send each event to fn (for example the runner of a story). Return a function that stops it.
+    listen(fn) {
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    },
     snapshot,
     targetAt,
     syncSave,
@@ -660,6 +681,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     get busy() { return busy; },
     get profile() { return profile; },
   };
+}
+
+// The place next to the door of a trigger zone (the gate of Văn Miếu): where the hero stands
+// after the screen of the door. { map, at } or null.
+export function doorOf(data, id) {
+  for (const [map, m] of data.maps) {
+    const door = m.layers.triggers.find((z) => z.id === id);
+    if (door) return { map, at: { x: door.x + door.w + 1.5, y: door.y + door.h / 2 } };
+  }
+  return null;
 }
 
 // The middle of a thing that lies along its facing from its position (half blocks).

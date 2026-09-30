@@ -1,0 +1,361 @@
+// Stories: the use paths of the game as data (tests/stories/*.json). A story is a start state,
+// a list of steps (commands, waits, taps, and facts to check), and a name. The same story runs
+// headless in node:test (tests/stories.test.js) and in the browser with ?story=<name>&play
+// (src/ui/storybook.js). This module has the parts that both use: the profile of a story, the
+// targets of the taps, the steps, the facts, and the laws of the world. No DOM.
+//
+// A story file:
+//   { name, about: { vi, en }, profile: { name, grade, lang, seed, flags, items, party, timeLimit,
+//     played (minutes of play today) }, map, clock (game minutes), place: [x, y] (the hero cell),
+//     state (a saved world, instead of place), steps: [...] }
+// Steps:
+//   { do: <command of the session> }         { wait: <seconds> }
+//   { until: { event, with, timeout } }      { at: { hour } }
+//   { tap: { cell: [x, y] } | { entity } | { plank: <size> } | { guess: <n> } | { zone } | { span } | { hero: true } }
+//     (plank: a plank of this size on a pile; zone: the gap of a span; span: the last plank on a span)
+//   { read: true | [<choice>, ...] }         (read the open talk to its end, with these choices)
+//   { reload: true }                         (save, load, and go on from the loaded save)
+//   { expect: [<fact>, ...] }
+// Facts: see checkFact.
+import { createProfile } from './profile.js';
+import { dayKey } from './timelimit.js';
+import { getEntity, query } from './world/state.js';
+import { saveWorld, loadWorld, setHeroPlace } from './world/save.js';
+import { createI18n } from './i18n.js';
+import { STEP } from './world/step.js';
+
+// The time of the start of a story (a Monday morning), so that a story always gives the same
+// result. The time of play goes on with the steps of the world.
+export const STORY_EPOCH = Date.UTC(2026, 0, 5, 2, 0);
+const DAY = 1440;
+// No digit, no operator, and no question mark in a text of the village or a raid.
+const WORLD_TEXT = /[0-9+−×÷=?]/;
+
+// The profile at the start of a story.
+export function storyProfile(story, { now = STORY_EPOCH } = {}) {
+  const p = story.profile ?? {};
+  const profile = createProfile({ id: `story-${story.name}`, name: p.name ?? 'An', gender: p.gender ?? 'boy', grade: p.grade ?? 2, lang: p.lang ?? 'vi', seed: p.seed ?? 1, now });
+  Object.assign(profile.flags, p.flags ?? {});
+  for (const [item, n] of Object.entries(p.items ?? {})) profile.inventory[item] = n;
+  if (p.party) {
+    profile.party = [...p.party];
+    profile.friends = [...new Set([...profile.friends, ...p.party])];
+  }
+  if (p.timeLimit !== undefined) profile.settings.timeLimit = p.timeLimit;
+  if (p.played !== undefined) profile.time = { day: dayKey(now), usedMs: p.played * 60000, extraMs: 0 };
+  const map = story.map ?? 'phu-dong';
+  if (story.state) profile.world = structuredClone(story.state);
+  else {
+    if (story.clock !== undefined) profile.world.clock.minutes = story.clock;
+    if (story.place) setHeroPlace(profile.world, map, story.place[0], story.place[1]);
+    else profile.world.map = map;
+  }
+  return profile;
+}
+
+// The target of a tap step for the session, and the map point of the finger ({ x, y } cells).
+export function tapTarget(session, spec) {
+  const state = session.state;
+  const at = (e) => ({ x: e.position.x / 2, y: e.position.z / 2 });
+  if (spec.cell) return { target: session.targetAt(spec.cell[0], spec.cell[1]), point: { x: spec.cell[0], y: spec.cell[1] } };
+  if (spec.hero) return { target: { hero: true }, point: at(getEntity(state, 'hero')) };
+  if (spec.entity) {
+    const e = getEntity(state, spec.entity);
+    if (!e?.position) return null;
+    return { target: e.person ? { person: e.id } : session.targetAt(e.position.x / 2, e.position.z / 2), point: at(e) };
+  }
+  if (spec.plank !== undefined) {
+    // A plank of this size on a pile.
+    for (const z of query(state, 'zone')) {
+      if (z.zone.rule !== 'pile') continue;
+      const id = z.zone.items.find((i) => getEntity(state, i)?.item.size === spec.plank);
+      if (id) {
+        const e = getEntity(state, id);
+        const m = session.middleOf(e);
+        return { target: { thing: id }, point: { x: m.x / 2, y: m.z / 2 } };
+      }
+    }
+    return null;
+  }
+  if (spec.guess !== undefined) {
+    const g = query(state, 'guess', 'position').find((x) => x.guess.n === spec.guess && x.guess.left === undefined);
+    return g ? { target: { guess: { zone: g.guess.zone, n: g.guess.n } }, point: { x: g.position.x / 2, y: g.position.z / 2 + 1 } } : null;
+  }
+  if (spec.span) {
+    // The last plank on a span (a tap at the edge takes it back).
+    const z = getEntity(state, `zone:${spec.span}`)?.zone;
+    const id = z?.items[z.items.length - 1];
+    const e = id ? getEntity(state, id) : null;
+    if (!e) return null;
+    const m = session.middleOf(e);
+    return { target: { thing: id }, point: { x: m.x / 2, y: m.z / 2 } };
+  }
+  if (spec.zone) {
+    // The broken part of a bridge (a span that is not solid): a tap on the water of the gap.
+    const z = getEntity(state, `zone:${spec.zone}`)?.zone;
+    if (!z) return null;
+    const x = (z.x0 + z.x1 + 1) / 2;
+    const y = z.start / 2 + 0.5;
+    return { target: { ground: { x, y, h: session.env.groundY(x, y) / 2, thing: false, object: null } }, point: { x, y } };
+  }
+  return null;
+}
+
+// A comparison in a fact: a number, or a text such as ">= 0.5".
+function compare(value, want) {
+  if (typeof want !== 'string') return value === want;
+  const m = /^(>=|<=|>|<|==)\s*(-?[\d.]+)$/.exec(want.trim());
+  if (!m) return String(value) === want;
+  const n = Number(m[2]);
+  return { '>=': value >= n, '<=': value <= n, '>': value > n, '<': value < n, '==': value === n }[m[1]];
+}
+// Do the fields of an event have these values?
+const fits = (ev, want = {}) => Object.entries(want).every(([k, v]) => (v !== null && typeof v === 'object' ? JSON.stringify(ev[k]) === JSON.stringify(v) : compare(ev[k], v)));
+const hourOf = (minutes) => (((minutes % DAY) + DAY) % DAY) / 60;
+const cellDist = (a, b) => Math.hypot(a.position.x - b.position.x, a.position.z - b.position.z) / 2;
+
+// Check one fact. ctx: { session, events (since the last expect), learner }. Return null when the
+// fact is true, or a message.
+export function checkFact(fact, ctx) {
+  const { session } = ctx;
+  const state = session.state;
+  const hero = getEntity(state, 'hero');
+  if (fact.hero) {
+    const f = fact.hero;
+    if (f.in) {
+      const g = session.env.groundAt(hero.position.x, hero.position.z);
+      const ok = f.in === 'water' ? g === 'water' || g === 'shallow' : g === f.in;
+      if (!ok) return `the hero is on ${g}, not in ${f.in}`;
+    }
+    if (f.map && session.map.id !== f.map) return `the hero is on the map ${session.map.id}, not ${f.map}`;
+    if (f.near) {
+      const e = getEntity(state, f.near);
+      const d = e ? cellDist(hero, e) : Infinity;
+      if (d > (f.within ?? 3)) return `the hero is ${d.toFixed(1)} cells from ${f.near}`;
+    }
+    if (f.cell) {
+      const d = Math.hypot(hero.position.x / 2 - f.cell[0], hero.position.z / 2 - f.cell[1]);
+      if (d > (f.within ?? 2)) return `the hero is ${d.toFixed(1)} cells from ${f.cell.join(', ')}`;
+    }
+    if (f.holding !== undefined && Boolean(hero.hands?.holds) !== f.holding) return `the hands of the hero: ${hero.hands?.holds ?? 'empty'}`;
+    if (f.falls !== undefined && Boolean(hero.fall) !== f.falls) return `the hero falls: ${Boolean(hero.fall)}`;
+    if (f.riding !== undefined && Boolean(hero.riding) !== f.riding) return `the hero rides: ${Boolean(hero.riding)}`;
+    return null;
+  }
+  if (fact.entity) {
+    const e = getEntity(state, fact.entity);
+    if (!e) return `no entity ${fact.entity}`;
+    if (fact.near) {
+      const other = getEntity(state, fact.near);
+      const d = other ? cellDist(e, other) : Infinity;
+      if (d > (fact.within ?? 3)) return `${fact.entity} is ${d.toFixed(1)} cells from ${fact.near}`;
+    }
+    if (fact.act !== undefined && e.act !== fact.act) return `${fact.entity} does ${e.act}, not ${fact.act}`;
+    if (fact.look !== undefined && e.look !== fact.look) return `${fact.entity} looks ${e.look}, not ${fact.look}`;
+    if (fact.hidden !== undefined && Boolean(e.hidden) !== fact.hidden) return `${fact.entity} hidden: ${Boolean(e.hidden)}`;
+    // keep: the player changed the entity (a cart that moved), so the save keeps it.
+    if (fact.keep !== undefined && Boolean(e.keep) !== fact.keep) return `${fact.entity} kept: ${Boolean(e.keep)}`;
+    return null;
+  }
+  if (fact.event) {
+    const found = ctx.events.some((ev) => ev.type === fact.event && fits(ev, fact.with));
+    if (found === (fact.not ?? false)) return fact.not ? `an event ${fact.event} came` : `no event ${fact.event} ${JSON.stringify(fact.with ?? {})}`;
+    return null;
+  }
+  if (fact.flag) {
+    const want = fact.is ?? true;
+    if (Boolean(session.profile.flags[fact.flag]) !== want) return `the flag ${fact.flag} is not ${want}`;
+    return null;
+  }
+  if (fact.item) {
+    const n = session.profile.inventory[fact.item] ?? 0;
+    if (!compare(n, fact.count)) return `${n} ${fact.item}, not ${fact.count}`;
+    return null;
+  }
+  if (fact.learner) {
+    const e = ctx.learner?.entry(fact.learner.skill);
+    if (!e) return 'no learner';
+    if (fact.learner.pL !== undefined && !compare(e.p, fact.learner.pL)) return `P(L) of ${fact.learner.skill} is ${e.p.toFixed(3)}, not ${fact.learner.pL}`;
+    return null;
+  }
+  if (fact.clock) {
+    const h = hourOf(state.clock.minutes);
+    const [a, b] = fact.clock.between;
+    if (!(a <= b ? h >= a && h <= b : h >= a || h <= b)) return `the hour is ${h.toFixed(2)}, not between ${a} and ${b}`;
+    return null;
+  }
+  if (fact.zone) {
+    const z = getEntity(state, `zone:${fact.zone}`)?.zone;
+    if (!z) return `no zone ${fact.zone}`;
+    const now = z.set ? 'solid' : 'open';
+    if (fact.state && fact.state !== now) return `the zone ${fact.zone} is ${now}, not ${fact.state}`;
+    if (fact.round !== undefined && z.round !== fact.round) return `the zone ${fact.zone} is at round ${z.round}, not ${fact.round}`;
+    if (fact.planks !== undefined && !compare(z.items.length, fact.planks)) return `the zone ${fact.zone} has ${z.items.length} planks, not ${fact.planks}`;
+    if (fact.gap !== undefined && z.gap !== fact.gap) return `the gap of ${fact.zone} is ${z.gap}, not ${fact.gap}`;
+    return null;
+  }
+  if (fact.ford) {
+    // The fords of the map: closed (every cell blocks, the river is high) or open.
+    const { tileMap, env } = session;
+    const blocked = env.fords.filter((c) => tileMap.isBlocked(c.x, c.y)).length;
+    const now = !env.fords.length ? 'none' : blocked === env.fords.length ? 'closed' : blocked === 0 ? 'open' : 'partly closed';
+    if (now !== fact.ford) return `the ford is ${now}, not ${fact.ford}`;
+    return null;
+  }
+  if (fact.text) {
+    const key = fact.text.shown;
+    const shown = ctx.events.some((ev) => ev.type === 'open' && (ev.textKey === key || ev.choices?.includes(key)));
+    if (!shown) return `the text ${key} did not show`;
+    return null;
+  }
+  if (fact.screen !== undefined) {
+    if (session.screen !== fact.screen) return `the screen is ${session.screen}, not ${fact.screen}`;
+    return null;
+  }
+  if (fact.count) {
+    const c = fact.count;
+    const n = state.entities.filter((e) => !e.hidden && (e.kind === c.entities || e.look === c.entities || String(e.id).startsWith(`${c.entities}:`))).length;
+    if (c.min !== undefined && n < c.min) return `${n} ${c.entities}, fewer than ${c.min}`;
+    if (c.max !== undefined && n > c.max) return `${n} ${c.entities}, more than ${c.max}`;
+    return null;
+  }
+  if (fact.all) {
+    // All entities of a group are near a place of their day: { of: 'people' | <kind>, plan (only
+    // the people of this plan), home (only the people with a house who go in at night), near: 'spot' | 'bed' |
+    // 'bank' | 'place:<name>', within, hidden }.
+    const a = fact.all;
+    const list = a.of === 'people' ? query(state, 'schedule', 'person') : query(state, 'kind').filter((e) => e.kind === a.of);
+    const plans = ctx.data?.people?.people ?? {};
+    // A person of the quest stays out at night (with a lantern): not part of the group.
+    const group = list.filter((e) => (!a.plan || plans[e.person?.ref]?.plan === a.plan) && (!a.home || (e.schedule?.home && !e.schedule.stay)));
+    if (!group.length) return `no ${a.of}`;
+    for (const e of group) {
+      if (a.hidden !== undefined && Boolean(e.hidden) !== a.hidden) return `${e.id} hidden: ${Boolean(e.hidden)}`;
+      if (!a.near) continue;
+      const p = a.near.startsWith('place:') ? session.env.places[a.near.slice(6)] : e.schedule?.[a.near];
+      if (!p) return `${e.id} has no ${a.near}`;
+      const d = Math.hypot(e.position.x - p.x, e.position.z - p.z) / 2;
+      if (d > (a.within ?? 2)) return `${e.id} is ${d.toFixed(1)} cells from its ${a.near}`;
+    }
+    return null;
+  }
+  return `an unknown fact ${JSON.stringify(fact)}`;
+}
+
+// The laws of the world, checked on every step of every story. data: the data of the game.
+// texts: { vi, en } (the i18n files). limits: data/config/limits.json.
+export function createLaws({ texts, limits }) {
+  const i18n = Object.fromEntries(Object.entries(texts).map(([lang, dict]) => [lang, createI18n(dict, lang)]));
+
+  // No NaN, no entity outside the map, the hero and the people on free ground, the count of the
+  // entities under the limit, and the save of the world loads back to the same world.
+  function step(session) {
+    const problems = [];
+    const { state, env, tileMap } = session;
+    if (state.entities.length > limits.entities) problems.push(`${state.entities.length} entities, more than ${limits.entities}`);
+    for (const e of state.entities) {
+      const q = e.position;
+      if (!q) continue;
+      if (![q.x, q.y, q.z, q.facing ?? 0].every(Number.isFinite)) {
+        problems.push(`${e.id} is at a place that is not a number`);
+        continue;
+      }
+      if (q.x < 0 || q.z < 0 || q.x > env.width || q.z > env.height) problems.push(`${e.id} is outside the map (${q.x.toFixed(1)}, ${q.z.toFixed(1)})`);
+      // A thing that falls, swims, or climbs the ladder of its house may be over water or a house.
+      if (e.hidden || e.fall || e.swim || e.climb || (e.id !== 'hero' && !e.person)) continue;
+      const tx = Math.floor(q.x / 2);
+      const ty = Math.floor(q.z / 2);
+      if (tileMap.groundAt(tx, ty) === 'water') problems.push(`${e.id} stands in deep water (${tx}, ${ty})`);
+      else if (tileMap.isBlocked(tx, ty)) problems.push(`${e.id} stands in a blocked cell (${tx}, ${ty})`);
+    }
+    const saved = JSON.stringify(saveWorld(state));
+    if (JSON.stringify(saveWorld(loadWorld(JSON.parse(saved)))) !== saved) problems.push('the save of the world does not load back to the same world');
+    return problems;
+  }
+
+  // The rule of the world: a text that the session shows in the village or a raid has no digit,
+  // no operator, and no question mark, in each language.
+  function text(ev, params = {}) {
+    if (ev.type !== 'open') return [];
+    const keys = [ev.textKey, ...(ev.choices ?? []), ev.mark ? `mark.${ev.mark}` : null].filter(Boolean);
+    const problems = [];
+    for (const key of keys) {
+      for (const [lang, t] of Object.entries(i18n)) {
+        const shown = t.gloss(t.t(key, { ...params, ...(ev.params ?? {}) }));
+        if (WORLD_TEXT.test(shown)) problems.push(`${key} (${lang}): "${shown}"`);
+      }
+    }
+    return problems;
+  }
+
+  return { step, text };
+}
+
+// Play a story. io: {
+//   session(): the session now (a reload makes a new one),
+//   advance(seconds, until): let the world go on for some seconds, or until until() is true;
+//     return true when until() became true,
+//   send(cmd, point): send a command (point: the map point of a tap, for the finger),
+//   reload(): save, load, and go on with a new session; return a message when the loaded world
+//     is not the same, or null,
+//   learner(): the learner, data: the data of the game, onStep(i, step), onExpect(i, failures) }.
+// Return the failures: [{ step, message }].
+export async function playStory(story, io) {
+  const failures = [];
+  // The events of the start that the view did not take yet, then all the events of the session.
+  const events = io.session().peek();
+  let since = 0; // the events since the last expect start here
+  let stop = io.session().listen((ev) => events.push(ev));
+  const fail = (i, message) => failures.push({ step: i, message });
+  const lastLine = () => [...events].reverse().find((ev) => ev.type === 'open' && (ev.screen === 'dialogue' || ev.screen === 'say'));
+
+  for (const [i, s] of (story.steps ?? []).entries()) {
+    io.onStep?.(i, s);
+    const session = io.session();
+    if (s.do) await io.send(s.do, null);
+    else if (s.wait !== undefined) await io.advance(s.wait, null);
+    else if (s.until) {
+      const from = events.length;
+      const ok = await io.advance(s.until.timeout ?? 30, () => events.slice(from).some((ev) => ev.type === s.until.event && fits(ev, s.until.with)));
+      if (!ok) fail(i, `no event ${s.until.event} ${JSON.stringify(s.until.with ?? {})} in ${s.until.timeout ?? 30} seconds`);
+    } else if (s.at) {
+      const m = session.state.clock.minutes;
+      const target = Math.floor(m / DAY) * DAY + s.at.hour * 60;
+      const end = target > m ? target : target + DAY;
+      const ok = await io.advance(2 * DAY, () => io.session().state.clock.minutes >= end);
+      if (!ok) fail(i, `the clock did not come to ${s.at.hour}`);
+    } else if (s.tap) {
+      const tap = tapTarget(session, s.tap);
+      if (!tap?.target) fail(i, `nothing to tap for ${JSON.stringify(s.tap)}`);
+      else await io.send({ type: 'tap', target: tap.target }, tap.point);
+    } else if (s.read) {
+      const choices = Array.isArray(s.read) ? [...s.read] : [];
+      for (let n = 0; n < 60 && ['dialogue', 'say'].includes(io.session().screen); n++) {
+        const line = lastLine();
+        if (line?.choices?.length) await io.send({ type: 'choose', n: choices.length ? choices.shift() : 0 }, null);
+        else await io.send({ type: 'next' }, null);
+      }
+      if (['dialogue', 'say'].includes(io.session().screen)) fail(i, 'the talk did not end');
+    } else if (s.reload) {
+      stop();
+      const problem = await io.reload();
+      events.push(...io.session().peek());
+      stop = io.session().listen((ev) => events.push(ev));
+      if (problem) fail(i, problem);
+    } else if (s.expect) {
+      const ctx = { session, events: events.slice(since), learner: io.learner?.(), data: io.data };
+      const out = [];
+      for (const fact of s.expect) {
+        const message = checkFact(fact, ctx);
+        if (message) out.push(message);
+      }
+      for (const message of out) fail(i, message);
+      await io.onExpect?.(i, out);
+      since = events.length;
+    } else fail(i, `an unknown step ${JSON.stringify(s)}`);
+  }
+  stop();
+  return failures;
+}
+
+export { STEP };

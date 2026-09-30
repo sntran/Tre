@@ -1,5 +1,6 @@
 // Văn Miếu, the Temple of Literature: the adaptive exams, the first title,
 // the stone stele on the turtle, and the choice of a calling.
+import { doorOf } from '../core/session.js';
 import { buildLadder, createExam, skillsToPractice, examSkills } from '../core/exam.js';
 import { gradeBase } from '../core/rating.js';
 import { gradeIds, gradeName } from '../core/grades.js';
@@ -17,11 +18,7 @@ import { showMessage } from './quiz.js';
 // Back to the world: the hero stands on the road just east of the door of Văn Miếu (the trigger
 // "vanmieu" on its map), not in the door, so that the door does not open again at once.
 function villageDoor(ctx) {
-  for (const [map, m] of ctx.data.maps) {
-    const door = m.layers.triggers.find((z) => z.id === 'vanmieu');
-    if (door) return { map, at: { x: door.x + door.w + 1.5, y: door.y + door.h / 2 } };
-  }
-  return {};
+  return doorOf(ctx.data, 'vanmieu') ?? {};
 }
 
 // The ladder of an exam: the skills of the era of its title, or all skills for placement.

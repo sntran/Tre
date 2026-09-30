@@ -1,0 +1,21 @@
+{
+  "name": "new-profile",
+  "about": {
+    "vi": "Hồ sơ mới vào làng: bà kể chuyện, đặt tên cho Nghé, rồi gặp cụ trưởng làng lần đầu.",
+    "en": "A new profile comes to the village: the intro of grandma, a name for Nghé, and the first talk with the elder."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7 },
+  "map": "phu-dong",
+  "steps": [
+    { "expect": [{ "screen": "dialogue" }, { "text": { "shown": "dlg.grandma.intro.n1" } }] },
+    { "read": true },
+    { "expect": [{ "flag": "intro.seen" }, { "screen": "nameFriend" }] },
+    { "do": { "type": "closed" } },
+    { "expect": [{ "screen": null }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] },
+    { "tap": { "entity": "npc:elder" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 40 } },
+    { "expect": [{ "hero": { "near": "npc:elder", "within": 3 } }, { "text": { "shown": "dlg.elder.intro.n1" } }] },
+    { "read": true },
+    { "expect": [{ "flag": "prologue.started" }, { "screen": null }] }
+  ]
+}

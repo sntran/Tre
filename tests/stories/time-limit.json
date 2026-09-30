@@ -1,0 +1,24 @@
+{
+  "name": "time-limit",
+  "about": {
+    "vi": "Hết giờ chơi: trò chơi chờ lúc yên, không bao giờ khi đang ở trên cầu; khi em đi khỏi cầu thì Nghé đưa em về nghỉ.",
+    "en": "The time limit: the day ends at a calm point, never on the bridge; when the hero leaves the bridge, the rest comes."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true }, "timeLimit": 30, "played": 29.8 },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [46, 61],
+  "steps": [
+    { "tap": { "plank": 4 } },
+    { "until": { "event": "pick", "timeout": 20 } },
+    { "wait": 15 },
+    { "expect": [{ "hero": { "holding": true } }, { "screen": null }] },
+    { "tap": { "zone": "bridge-gap" } },
+    { "until": { "event": "put", "timeout": 20 } },
+    { "wait": 3 },
+    { "expect": [{ "hero": { "holding": false } }, { "screen": null }] },
+    { "tap": { "cell": [40, 58] } },
+    { "until": { "event": "open", "with": { "screen": "rest" }, "timeout": 30 } },
+    { "expect": [{ "screen": "rest" }, { "zone": "bridge-gap", "planks": 1 }] }
+  ]
+}

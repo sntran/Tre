@@ -1,0 +1,21 @@
+{
+  "name": "exits",
+  "about": {
+    "vi": "Đi ra lối phía bắc tới Sóc Sơn, rồi quay về Phù Đổng; Nghé luôn đi theo.",
+    "en": "The exit north to Sóc Sơn and back to Phù Đổng; Nghé comes along."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [46, 5],
+  "steps": [
+    { "tap": { "cell": [46, 0.6] } },
+    { "until": { "event": "map", "with": { "map": "soc-son" }, "timeout": 20 } },
+    { "wait": 1 },
+    { "expect": [{ "hero": { "map": "soc-son", "cell": [32, 59.2], "within": 2 } }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] },
+    { "tap": { "cell": [32, 63.4] } },
+    { "until": { "event": "map", "with": { "map": "phu-dong" }, "timeout": 20 } },
+    { "wait": 1 },
+    { "expect": [{ "hero": { "map": "phu-dong", "cell": [46, 2.6], "within": 2 } }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] }
+  ]
+}

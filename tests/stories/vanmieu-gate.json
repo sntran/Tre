@@ -1,0 +1,24 @@
+{
+  "name": "vanmieu-gate",
+  "about": {
+    "vi": "Trên đường ra Thăng Long: qua đò sông Hồng, vào Văn Miếu, và khi trở ra thì đứng cạnh cổng.",
+    "en": "On the road to Thăng Long: over the Red River on the ferry, into Văn Miếu, and back out next to its gate."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.done": true } },
+  "map": "road-thanglong",
+  "clock": 540,
+  "place": [70, 24],
+  "steps": [
+    { "tap": { "cell": [55, 24] } },
+    { "until": { "event": "open", "with": { "screen": "say", "textKey": "map.ferry" }, "timeout": 40 } },
+    { "read": true },
+    { "wait": 0.5 },
+    { "expect": [{ "hero": { "cell": [24.8, 24], "within": 1 } }] },
+    { "tap": { "cell": [0.6, 24] } },
+    { "until": { "event": "open", "with": { "screen": "vanmieu" }, "timeout": 60 } },
+    { "expect": [{ "screen": "vanmieu" }] },
+    { "do": { "type": "closed" } },
+    { "wait": 0.5 },
+    { "expect": [{ "screen": null }, { "hero": { "map": "road-thanglong", "cell": [3.5, 24], "within": 1 } }] }
+  ]
+}

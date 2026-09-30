@@ -1,0 +1,28 @@
+{
+  "name": "nghe",
+  "about": {
+    "vi": "Vuốt ve Nghé và cưỡi lên lưng Nghé; khi cưỡi Nghé thì đẩy được xe bò, rồi xuống.",
+    "en": "Pet and ride Nghé; on the back of Nghé the hero pushes the cart, then gets off."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [33, 37],
+  "steps": [
+    { "wait": 1 },
+    { "do": { "type": "pet", "id": "friend:nghe" } },
+    { "until": { "event": "petted", "timeout": 2 } },
+    { "wait": 0.2 },
+    { "expect": [{ "entity": "friend:nghe", "act": "happy" }] },
+    { "do": { "type": "ride", "mount": "friend:nghe" } },
+    { "until": { "event": "mount", "timeout": 2 } },
+    { "expect": [{ "hero": { "riding": true } }, { "entity": "life:12:0", "keep": false }] },
+    { "do": { "type": "move", "dx": 0, "dz": -1, "strength": 1 } },
+    { "wait": 2.5 },
+    { "do": { "type": "move", "dx": 0, "dz": 0, "strength": 0 } },
+    { "expect": [{ "entity": "life:12:0", "keep": true }] },
+    { "do": { "type": "ride", "mount": "friend:nghe" } },
+    { "until": { "event": "dismount", "timeout": 2 } },
+    { "expect": [{ "hero": { "riding": false } }] }
+  ]
+}

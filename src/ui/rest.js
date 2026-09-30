@@ -30,7 +30,8 @@ export function startTimer(ctx) {
     last = now;
     const p = ctx.profile;
     if (!p || document.visibilityState !== 'visible' || !PLAY_SCENES.has(ctx.scene)) return;
-    addPlayTime(p.time, now, delta);
+    // The session of the village counts the time of play in its steps.
+    if (!(ctx.scene === 'village' && ctx.activeVillage)) addPlayTime(p.time, now, delta);
     const status = timeStatus(p.time, p.settings.timeLimit, ctx.data.game.time.warnBeforeMin, now);
     if (status === 'ok') warned = false;
     if (status === 'warn' && !warned) {
