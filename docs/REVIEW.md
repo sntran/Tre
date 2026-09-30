@@ -183,44 +183,40 @@ All other keys in `i18n/vi.json` also need a language review. The table shows th
 | Group | Texts | What it is |
 | --- | --- | --- |
 | `app.*` | 2 | Game name and tagline |
-| `battle.*` | 41 | Battle texts |
 | `calling.*` | 30 | Callings |
-| `craft.*` | 13 | The forge |
-| `create.*` | 14 | Hero creation |
-| `dlg.*` | 79 | Dialogues |
-| `element.*` | 14 | Element magic texts |
-| `enemy.*` | 4 | Enemy names |
+| `create.*` | 15 | Hero creation |
+| `dlg.*` | 98 | Dialogues |
 | `ex.*` | 25 | Worked examples |
 | `exam.*` | 14 | Văn Miếu exams |
-| `friend.*` | 1 | Creature friend |
-| `gloss.*` | 26 | Names and short meanings |
+| `friend.*` | 4 | Creature friend |
+| `gloss.*` | 28 | Names and short meanings |
 | `hint.*` | 33 | Hints after a mistake |
 | `home.*` | 12 | The home of the hero |
 | `item.*` | 4 | Items |
 | `lang.*` | 2 | Language names |
 | `lesson.*` | 1 | Lesson title |
-| `map.*` | 8 | Signs and places on the map |
+| `map.*` | 11 | Signs and places on the map |
 | `mark.*` | 2 | Legend and History marks |
 | `mastery.*` | 4 | Mastery states |
-| `npc.*` | 15 | Names of people |
-| `parent.*` | 78 | Parent area |
-| `place.*` | 4 | Place value names |
+| `npc.*` | 17 | Names of people |
+| `parent.*` | 82 | Parent area |
+| `place.*` | 7 | Place value names |
 | `practice.*` | 5 | Practice with the teacher |
 | `praise.*` | 5 | Praise |
 | `prob.*` | 30 | Math problem prompts |
 | `q.*` | 408 | Hand-written questions (science, legend): prompt, choices, hint, explanation |
-| `quest.*` | 19 | Quest goals |
+| `quest.*` | 22 | Quest goals |
+| `share.*` | 1 | The share of the loot after a raid |
 | `quiz.*` | 9 | Question screens |
-| `rice.*` | 1 | Rice task title |
 | `shape.*` | 6 | Shape names |
 | `skill.*` | 39 | Skill names (parent page) |
 | `state.*` | 3 | Element states |
 | `subject.*` | 4 | Subject names |
-| `time.*` | 2 | Time limit |
+| `time.*` | 6 | Time limit |
 | `title.*` | 12 | Scholar titles |
-| `trial.*` | 7 | The Five Trials |
-| `ui.*` | 15 | Buttons and messages |
-| `vanmieu.*` | 5 | Văn Miếu |
+| `trial.*` | 1 | The Five Trials |
+| `ui.*` | 21 | Buttons and messages |
+| `vanmieu.*` | 6 | Văn Miếu |
 
 Total: 996 texts in each language.
 
@@ -263,3 +259,13 @@ Please check the words ngã tư (the crossroads), đuốc (a torch), bẫy (a tr
 - `raid.scouts.pause`, `raid.river.pause`, `raid.soldier.pause`, `raid.boss.pause`: the line of the map in a raid.
 - `raid.river.intro` now says that the serpents are hungry and that the child throws rice balls ("nắm cơm").
 
+## 11. The work of the story (#6)
+
+The crafting screen of the iron horse is gone, and its texts too (`craft.*` and `element.*`). New and changed texts, in `i18n/vi.json` and `i18n/en.json`:
+
+- `dlg.giong.rice.n2`: the mother says the work: carry the trays to the pot; each ten bowls, Gióng grows one head taller.
+- `dlg.smith.forge.n1` and `dlg.smith.forge.n2`: the smith takes the iron, adds old iron, and says the work: "exactly {lumps} lumps" in the forge, then the bellows, then the water. `dlg.smith.horse.n1`: the iron horse is ready (the old text of `craft.horse.done`).
+- `dlg.woodcutter.staffs.n1`, `dlg.woodcutter.staffs.n2`, and `dlg.woodcutter.staffs.done.n1`: the bamboo staffs for the men of the village; the stem has a ring at each half block, and each slash cuts at once. `quest.defend.staffs`: the goal in the quest bar.
+- `share.start`: the line before the share of the loot ("Hãy chia đều cho cháu, Nghé và Gióng.").
+
+Please check the words ống bễ (the bellows), đốt (a ring of the bamboo), and whether "chia đều" reads well for a child of 6.

@@ -12,6 +12,8 @@ The Five Trials of the prologue are work in the village, not quizzes. The child 
 | The figures | `workThing` in `src/world/figures.js` |
 | The stories | `tests/stories/trial-*.json` and `tests/stories/calling.json` |
 
+The four tasks of the story after the trials (the iron horse, rice for Gióng, the bamboo staffs, and the loot after a raid) use the same system: see `docs/TASKS.md`.
+
 ## How a trial goes
 
 1. The child talks to the person (after the elder starts the prologue). The talk says the work in words, with the numbers of the level as words (`num.<n>`: "ten", "four"), and it starts the task: its things lie at their places near the person. No screen opens.

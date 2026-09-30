@@ -20,7 +20,7 @@ Units: half blocks (one map cell is 2) and seconds. The places in the data are i
 2. The enemies walk to the gate on a straight path. They never run. Each enemy has dots over its head, one for each hit that it can still take.
 3. An enemy with no hits left retreats and walks away. A creature (the river serpent) becomes calm and swims away. An enemy at the gate takes a coin and leaves (nothing at grade 1; see the loss rule below).
 4. The map of the country only pauses the raid: one line says where the enemies are ("The scouts are at the gate."), and there is no travel. Nobody is hurt. Nothing that the child built is changed.
-5. The raid ends when the last enemy is gone. It is won when no more than `allow` enemies (and torches) got in. A win gives its flags and gifts, a short note with its seal (Legend or History), and its talks. A lost raid comes again at the next dawn (the flag `raid.<id>.back`), so that the child sleeps on it.
+5. The raid ends when the last enemy is gone. It is won when no more than `allow` enemies (and torches) got in. A win gives its flags and gifts, a short note with its seal (Legend or History), and its talks. A raid with loot leaves a pile of coins behind the wall: the child shares it with Nghé and Gióng (`docs/TASKS.md`), and the talks come after the share. A lost raid comes again at the next dawn (the flag `raid.<id>.back`), so that the child sleeps on it.
 
 The time limit never sends the hero home in a raid: the rest waits until the raid is over.
 
@@ -67,9 +67,9 @@ The tools come one raid after the other (rule 11: one new part at a time). A too
 | Raid | Map | The road | Enemies | After a win |
 | --- | --- | --- | --- | --- |
 | `scouts` | Phù Đổng | The east road to the gate | Four scouts with torches | `scouts.won`, iron (for the iron horse) and coins, the talk `scouts.won` |
-| `soldier1` | Trâu Sơn | The north field path to the crossroads | Three soldiers | `soldier1.won`, coins |
-| `soldier2` | Trâu Sơn | The south field path to the crossroads | Three soldiers | `soldier2.won`, coins |
-| `boss` | Trâu Sơn | The path from the camp at the foot of the mountain | Three soldiers, then the general | `era1.boss.won`, coins, the note and the fact of history, the talk `giong.north` |
+| `soldier1` | Trâu Sơn | The north field path to the crossroads | Three soldiers (Gióng at the side of the hero) | `soldier1.won`, the loot: seven coins to share |
+| `soldier2` | Trâu Sơn | The south field path to the crossroads | Three soldiers (Gióng at the side of the hero) | `soldier2.won`, the loot: ten coins to share |
+| `boss` | Trâu Sơn | The path from the camp at the foot of the mountain (after the bamboo staffs) | Three soldiers, then the general | `era1.boss.won`, the loot: twelve coins to share, the note and the fact of history, the talk `giong.north` |
 | `river` | Phù Đổng | The river to the ford | Two little river serpents (they become calm) | `river.calmed`, the talks of Sóng |
 | `patrol` | Phù Đổng | The east road to the gate | Two scouts (again and again) | Coins and bamboo |
 

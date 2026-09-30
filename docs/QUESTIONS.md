@@ -150,3 +150,12 @@ These questions need a person who knows Vietnamese history and geography. Until 
 74. **The history note.** The fact of history after the boss said "In 2010, UNESCO ..."; a numeral cannot show in the world, so it says "Today, ... listed by UNESCO" now. Is the fact without its year good, or should the year show in the parent area only?
     - **Answer (owner):** the year stays: the rule of the world is about the math of the task, not about history. Done: the note is `history.giong.festival` with its year, and the digit law of the stories does not check `history.*` keys and place names (`place.*`, `region.*`).
 
+
+## Questions about the work of the story (#6)
+
+75. **The old iron of the smith.** The child finds six pieces of iron (two veins and the scouts), and the smith adds three lumps of old iron to the heap, so that the count of six in the hearth is a choice and not all the heap. Is this good, or should the heap hold only the iron that the child found (then the child must bring more than six)?
+76. **The quest bar of the iron.** The goal "Find 6 pieces of iron ({have}/{need})" in the quest bar still shows numerals. The quest bar is over the world, not in it. Should it show six small lumps (filled for the ones found) in place of the numbers?
+77. **The skills of the share and the staffs below grade 3.** Division and unit fractions are grade 3 skills. At levels 1 and 2 the share sends `math.count.120` and `math.add.20`, and the staffs send `math.shapes` (equal parts of a shape are in grades 1 and 2 of the standards). Is this the right map, or should the skill map get a skill for fair sharing at grades 1 and 2?
+78. **The rest of the loot.** The coins that cannot go one more to each friend stay in the pile "for the village". Should the child choose where the rest goes (the temple, the smith, the mother of Gióng)? That would make the remainder a thing in the world.
+79. **The trays of rice.** A tray of five is not slower to carry than a tray of three yet. Should a big tray walk slower, so that the choice of trays has a cost, and a mix of trays is sometimes better than the fewest?
+80. **The staffs and the woodcutter.** The staffs and the trial of the woodcutter both cut a stem into equal parts. The staffs have no chalk and no taking back (each slash cuts at once), and the stem is green with its rings. Is this enough difference, or should the staffs come from a standing bamboo clump (a slash at the height of the hero's hand)?

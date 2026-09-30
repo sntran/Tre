@@ -116,7 +116,10 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `calling` | After the five trials, the elder opens the way to Văn Miếu. |
 | `raid-scouts` | The first raid: the lines of the slingshot and the gate, a tap on the post nearest the scout, a short pull and its correction by count, and the gate bar before a torch lands (no skill event). |
 | `raid-patrol` | The traps: the elder names the third post; a trap there is counting, a trap one post on is play. |
-| `raid-soldiers` | The first soldiers: a villager at a straw flag, a trap at the post that the smith names, and the charge of Nghé. |
-| `raid-boss` | The forge of the smith: fire makes the soldiers raise wet shields, lightning into the wet ground shocks them; the general and his blow, the iron staff breaks, and Gióng pulls up the bamboo. The fact of history keeps its year. |
+| `raid-soldiers` | The first soldiers: a villager at a straw flag, a trap at the post that the smith names, and the charge of Nghé. Then the loot: three, one, and two coins make Nghé sulk; a coin from the basket of the hero to Nghé makes it fair. |
+| `raid-boss` | The forge of the smith: fire makes the soldiers raise wet shields, lightning into the wet ground shocks them; the general and his blow, the iron staff breaks, and Gióng pulls up the bamboo. The fact of history keeps its year. Then twelve coins, four on each mat, and the farewell of Gióng. |
 | `raid-lost` | The map only pauses the raid, with one line; nobody stops the soldiers; at grade 1 they take nothing, and they come again at the next dawn. |
 | `raid-river` | Rice balls from the same pull: two little river serpents eat two each and swim away calm; the talks of Sóng. |
+| `forge-horse` | The iron horse: five lumps and the fire dies, seven and one rolls back, six and the fire burns high; the iron in the water too early bends, while it glows it becomes the horse. |
+| `rice-giong` | Rice for Gióng: two trays of five make a ten, and Gióng grows; three trays of three and one more make twelve: he grows again, two bowls stay in the pot. |
+| `staffs-bamboo` | Bamboo staffs: slashes at three, six, and eight break the short piece, and a new stem comes; slashes at three, six, and nine make four equal staffs. |

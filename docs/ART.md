@@ -209,3 +209,14 @@ The things of a raid are plain voxel figures (`raidThing` in `src/world/figures.
 - **Poses and things in the hand:** a scout holds up a lit torch (the tell), a soldier raises an `indigo` shield, the general lifts his staff (no blades), an enemy on a trap sits, and Nghé lowers her horns.
 - **Marks over the world:** a row of dots over each enemy (`vermilion` for a hit that it can still take, `paper` for a hit taken), red dots that pop up at a hit, the band of the slingshot in `wood` with an `ink` tick at each step and a `vermilion` band at every fifth step (the marks of the posts), and no arc before the shot. A post that waits for the prediction has a `yellow` cap. A rice ball for the river serpents is `diep` white with a `green` leaf. An element on its way is a thick line in its color (`indigo` water, `vermilion` fire, dashed `yellow` lightning).
 
+
+## 14. The work of the story
+
+The things of the four tasks of the story (`docs/TASKS.md`) are plain voxel figures too (`workThing` in `src/world/figures.js`, looks in `data/figures.json`):
+
+- **Rice for Gióng:** a tray of three or five `diep` bowls with `yellow` rice; the pot shows the bowls in it (none to nine) beside it. Gióng as a boy grows one step for each ten (`giong-boy-1` to `giong-boy-5`, a larger scale each step). The count shows on his height, not as a number.
+- **The iron horse:** the bellows (a `wood` box with an `ochre` lid, an `ink` pole and nozzle), lumps of `ash` ore in the hearth, and the iron horse on the anvil: an `ash` body, neck, and head, `ink` legs and tail, and a `vermilion` mane.
+- **The bamboo staffs:** a green stem (`green` and `green-pale` parts, with a `green-deep` ring at each half block, and a pale cut end); a bundle of long `green` staffs with a `vermilion` band.
+- **The loot:** an old coin of bronze (`yellow`, with an `ochre` rim and an `ink` square hole), and a small reed mat for each friend. The hero's mat has the basket of the hero; Gióng stands behind his mat, and Nghé walks to hers. Nghé turns away and shakes her head at an unfair share.
+
+The SVG art of the old crafting screen and the old battle (`art/thing/anvil.svg`, `bamboo-stalk.svg`, `forge-fire.svg`, `iron-horse.svg`, `iron-staff.svg`, `iron-staff-broken.svg`) is removed.
