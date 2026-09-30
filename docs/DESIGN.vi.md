@@ -572,6 +572,8 @@ Mô hình học tập được chọn để giúp người chơi học và nhớ
 
 **Kiểm thử:** dùng trình chạy kiểm thử có sẵn của Node (node:test) cho mọi module logic: bộ sinh bài toán (mỗi bài toán có đáp án), đồ thị kỹ năng, mô hình thành thạo, kỳ thi, quy tắc chiến đấu, quy tắc nguyên tố, tìm đường, và lưu và nạp. Các module logic không dùng DOM hay Canvas.
 
+**Câu chuyện (stories):** các đường chơi của game là tệp dữ liệu trong `tests/stories/`: một trạng thái ban đầu, một danh sách lệnh kèm thời gian chờ, và các điều cần kiểm tra. Một phiên chạy không cần giao diện (`src/core/session.js`) giữ hồ sơ, thế giới, mô hình học và logic câu chuyện; màn làng chỉ là lớp hiển thị mỏng bên trên. Cùng một tệp câu chuyện chạy trong `node:test` và trong trình duyệt (`?story=<tên>&play`), nơi nó tự chơi với một ngón tay hiện trên màn hình để xem lại và chụp ảnh; `docs/reference/stories.html` liệt kê các câu chuyện. Ở mỗi bước của mỗi câu chuyện, bộ chạy kiểm tra các luật của thế giới: không thực thể nào ra ngoài bản đồ hay đứng trong ô bị chặn, bản lưu nạp lại đúng trạng thái cũ, và không dòng chữ nào hiện trong làng hay trong trận có chữ số, dấu phép tính hay dấu hỏi. Mỗi đường chơi mới đều đi kèm câu chuyện của nó.
+
 ## Mã nguồn mở, giấy phép và mô hình kinh doanh
 
 Tre là mã nguồn mở hoàn toàn: mã, truyện, mỹ thuật và thiết kế. Các giấy phép cho phép bất kỳ ai học hỏi từ Tre và dùng miễn phí, nhưng ngăn người khác kiếm tiền bằng một bản sao.

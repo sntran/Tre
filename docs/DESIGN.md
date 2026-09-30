@@ -574,6 +574,8 @@ The learning model is chosen to help the player learn and remember, not only to 
 
 **Tests:** the built-in Node test runner (node:test) for all logic modules: generators (each problem has an answer), skill graph, mastery model, exams, battle rules, element rules, pathfinding, and save and load. Logic modules do not use the DOM or Canvas.
 
+**Stories:** the use paths of the game are data files in `tests/stories/`: a start state, a list of commands with waits, and the facts to check. A headless session (`src/core/session.js`) owns the profile, the world, the learner, and the story logic, and the village scene is a thin view over it. The same story file runs in `node:test` and in the browser (`?story=<name>&play`), where it plays with a visible finger for review and screenshots; `docs/reference/stories.html` lists them. On every step of every story the runner checks the laws of the world: no entity outside the map or in a blocked cell, the save loads back to the same state, and no text shown in the village or a raid contains a digit, an operator, or a question mark. Every new use path comes with its story.
+
 ## Open source, licensing, and business model
 
 Tre is fully open source: code, stories, art, and design. The licenses let anyone learn from Tre and use it for free, but stop others from making money with a copy.
