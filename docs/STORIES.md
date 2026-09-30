@@ -82,7 +82,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 
 - No `NaN`, and no entity outside the map.
 - The hero and the people never stand in a blocked cell or in deep water. A thing that falls, a thing that swims, and a person on the ladder of a house are the exceptions.
-- **The rule of the world:** no text that the session shows in the village or a raid (a talk line, a choice, a line of text, a callout) has a digit, an operator (`+ − × ÷ =`), or a question mark, in Vietnamese or in English, with its values. The practice with the teacher and Văn Miếu are other screens, so the rule does not check them.
+- **The rule of the world:** no text that the session shows in the village or a raid (a talk line, a choice, a line of text, a callout) has a digit, an operator (`+ − × ÷ =`), or a question mark, in Vietnamese or in English, with its values. The practice with the teacher and Văn Miếu are other screens, so the rule does not check them. The rule is about the math of the task: a fact of history (a key `history.*`, with its year) and a place name (`place.*`, `region.*`) are not checked.
 - The count of the entities stays under the limit in `data/config/limits.json`.
 - The save of the world loads back to the same world. At the end of a story, the save of the whole profile loads back to the same world.
 
@@ -90,7 +90,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 
 - `?story=<name>` opens the game in the start state of a story. With `&play`, the story plays: a finger shows each tap, the bar at the bottom shows the step, and the game waits one second at each `expect` and shows the result. `&speed=4` plays the world faster (for the day). `&debug=1` also shows the step in the debug panel.
 - Screens that are not in the village (Văn Miếu, the country map) show as a card with their name until the story closes them. A raid plays in the village.
-- Nothing of a story is saved.
+- Nothing of a story is saved, and a story run never feeds the learning log: its logger drops every event (headless and in the browser; `?harness` in the address does the same for a scripted play).
 - `docs/reference/stories.html` lists the stories with a link to each one. `tools/stories.py` makes it from the story files.
 
 ## The stories now

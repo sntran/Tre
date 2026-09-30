@@ -185,7 +185,9 @@ export async function startApp(root) {
       const p = ctx.profile;
       ctx.logger?.endSession('child', null);
       ctx.experiments = createExperiments(data.experiments, { seed: p.seed, choice: p.experiment ?? null });
-      ctx.logger = createLogger({ profile: p, schema: data.learnlog, label: () => ctx.experiments.label, quests: data.quests.quests, tz: new Date().getTimezoneOffset() });
+      // A story of the storybook, or a scripted play (?harness), is not a child: its events never go into the log.
+      const drop = Boolean(ctx.storybook) || new URLSearchParams(location.search).has('harness');
+      ctx.logger = createLogger({ profile: p, schema: data.learnlog, label: () => ctx.experiments.label, quests: data.quests.quests, tz: new Date().getTimezoneOffset(), drop });
       for (const x of p.predictions ?? []) ctx.log('prediction', { task: x.task, gap: x.gap, guess: x.guess, used: x.used, solved: x.solved });
       delete p.predictions;
     },

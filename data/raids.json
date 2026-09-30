@@ -117,7 +117,7 @@
         { "id": "forge", "kind": "lightning", "at": [22.5, 15.5] }
       ],
       "allow": 99, "take": { "coin": 1 },
-      "introKey": "raid.boss.intro", "mark": "legend", "noteKey": "raid.boss.note", "historyKey": "raid.boss.history",
+      "introKey": "raid.boss.intro", "mark": "legend", "noteKey": "raid.boss.note", "historyKey": "history.giong.festival",
       "win": { "set": ["era1.boss.won"], "give": { "coin": 10 }, "after": ["giong.north"] }
     }
   }

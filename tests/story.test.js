@@ -96,6 +96,10 @@ test('the laws: a text of the world with a digit, an operator, or a question mar
   assert.equal(laws.text({ type: 'open', screen: 'say', textKey: 'd', params: { n: 3 } }).length, 2, 'a digit from a value, in each language');
   assert.equal(laws.text({ type: 'open', screen: 'dialogue', textKey: 'a', choices: ['b'] }).length, 1, 'the choices too');
   assert.deepEqual(laws.text({ type: 'hud' }), []);
+  // A fact of history keeps its year, and a place name is not checked.
+  const more = createLaws({ texts: { vi: { 'history.x': 'Năm 2010', e: 'Ở {place}', 'place.km': 'Km 5' }, en: { 'history.x': 'In 2010', e: 'At {place}', 'place.km': 'Km 5' } }, limits });
+  assert.deepEqual(more.text({ type: 'open', screen: 'say', textKey: 'history.x', mark: null }), []);
+  assert.deepEqual(more.text({ type: 'open', screen: 'say', textKey: 'e', params: { place: { key: 'place.km' } } }), []);
   // All the texts of the talks of the game keep the rule.
   const all = createLaws({ texts, limits });
   const bad = [...data.dialogues.values()].flatMap((d) => Object.values(d.nodes).flatMap((n) => all.text({ type: 'open', textKey: n.textKey, choices: (n.choices ?? []).map((c) => c.textKey) }, { name: 'An', trials: 0, iron: 0 })));

@@ -168,6 +168,13 @@ test('the logger: one way into the log, with the time, the variant, the session,
   // An event that does not fit the schema is not kept, and the game goes on.
   assert.equal(logger.record('exam', { skill: 'math.add.20', correct: 'yes', p: 0.5 }), null);
   assert.equal(profile.log.events.length, 2);
+  // A story run (or a scripted play) is not a child: its log drops every event.
+  const story = { flags: {}, inventory: {}, grade: 2, quests: {} };
+  const quiet = createLogger({ profile: story, schema, quests, now: () => now, drop: true });
+  quiet.startSession();
+  assert.equal(quiet.attempt({ task: 'bridge', skill: 'math.add.20', phase: 'commit', success: true, efficient: true, first: true, mashing: false, parts: [4], resets: 0, latencies: [], hint: 0, hintSeen: null, pBefore: 0.3, pAfter: 0.5, retry: false, harder: false, map: 'phu-dong' }), null);
+  assert.equal(quiet.endSession('child'), null);
+  assert.equal(story.log.events.length, 0);
 });
 
 test('the save keeps the learning log, and a log with free text does not load', async () => {

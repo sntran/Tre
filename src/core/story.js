@@ -373,14 +373,18 @@ export function createLaws({ texts, limits }) {
   }
 
   // The rule of the world: a text that the session shows in the village or a raid has no digit,
-  // no operator, and no question mark, in each language.
+  // no operator, and no question mark, in each language. The rule is about the math of the task,
+  // so a fact of history (a key history.*, which needs its year) and a place name (place.* and
+  // region.*, as a text or as a value) are not checked.
+  const exempt = (key) => /^(history|place|region)\./.test(key);
   function text(ev, params = {}) {
     if (ev.type !== 'open') return [];
-    const keys = [ev.textKey, ...(ev.choices ?? []), ev.mark ? `mark.${ev.mark}` : null].filter(Boolean);
+    const keys = [ev.textKey, ...(ev.choices ?? []), ev.mark ? `mark.${ev.mark}` : null].filter((k) => k && !exempt(k));
+    const values = Object.fromEntries(Object.entries({ ...params, ...(ev.params ?? {}) }).map(([k, v]) => [k, v?.key && exempt(v.key) ? '' : v]));
     const problems = [];
     for (const key of keys) {
       for (const [lang, t] of Object.entries(i18n)) {
-        const shown = t.gloss(t.t(key, { ...params, ...(ev.params ?? {}) }));
+        const shown = t.gloss(t.t(key, values));
         if (WORLD_TEXT.test(shown)) problems.push(`${key} (${lang}): "${shown}"`);
       }
     }

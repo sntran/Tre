@@ -16,8 +16,10 @@ export function questSteps(profile, quests) {
 
 // profile: the profile (the log is profile.log). schema: data/config/learnlog.json. label(): the
 // label of the variant. quests: the quests of the story. now(): the time in milliseconds.
-// tz: the offset of the local time (minutes).
-export function createLogger({ profile, schema, label = () => 'base', quests = [], now = () => Date.now(), tz = 0 }) {
+// tz: the offset of the local time (minutes). drop: true for a story run or a scripted play (the
+// storybook, the headless stories, ?harness in the address): the log drops every event, so that
+// the steps of a script never look like a child.
+export function createLogger({ profile, schema, label = () => 'base', quests = [], now = () => Date.now(), tz = 0, drop = false }) {
   profile.log ??= createLog(tz);
   const log = profile.log;
   let session = null;
@@ -25,6 +27,7 @@ export function createLogger({ profile, schema, label = () => 'base', quests = [
   // Add an event of a kind. Return the event, or null when it does not fit the schema (the game
   // goes on; the log keeps only good events).
   function record(type, fields) {
+    if (drop) return null;
     try {
       return logEvent(log, { type, t: now(), variant: label(), ...fields }, schema);
     } catch (e) {
@@ -42,7 +45,7 @@ export function createLogger({ profile, schema, label = () => 'base', quests = [
       return record('attempt', { play: Math.round(playMinutes() * 10) / 10, ...fields });
     },
     startSession() {
-      if (session) return;
+      if (session || drop) return;
       session = { start: now(), steps: questSteps(profile, quests), first: 'none', lastStep: null };
     },
     // The kind of the first action of the session (walk, place, talk, travel, or menu).

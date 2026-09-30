@@ -251,7 +251,7 @@ The battle screen is gone, and its texts too (`battle.*` and `enemy.*`). New and
 
 - `raid.scouts.intro`, `raid.patrol.intro`, `raid.river.intro`, `raid.soldier.intro`, `raid.boss.intro`: the line before each raid. It tells where the enemies come from, with no rule and no numeral.
 - `raid.lost`: after a lost raid ("Quân giặc lấy một ít đồ rồi đi. Chúng có thể quay lại.").
-- `raid.boss.history`: the fact of history after the boss, now without the year (see question 74).
+- `history.giong.festival`: the fact of history after the boss, with its year (question 74: the digit law does not check `history.*` keys and place names).
 - `raid.river.note`, `raid.scouts.note`, `raid.soldier.note`, `raid.boss.note`: the notes of the old battles, with the same text and a new name.
 
 Please check the words ngã tư (the crossroads), đuốc (a torch), bẫy (a trap), and cái ná (the slingshot), and whether "thuồng luồng con" reads well for a small river creature.

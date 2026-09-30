@@ -38,7 +38,7 @@ export async function runHeadless(story, { onSession = null } = {}) {
   function begin() {
     const bank = data.questions.questions;
     learner = createLearner({ graph, config: data.learning, learning: profile.learning, grade: profile.grade, rng: createRng(`${profile.seed}:story`), bank, lang: profile.settings.lang, clock: now });
-    logger = createLogger({ profile, schema: data.learnlog, quests: data.quests.quests, now });
+    logger = createLogger({ profile, schema: data.learnlog, quests: data.quests.quests, now, drop: true });
     const log = (kind, fields = {}) => {
       if (kind === 'attempt') return logger.attempt(fields);
       if (kind === 'action') return logger.action(fields.kind);

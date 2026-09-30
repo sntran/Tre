@@ -18,6 +18,8 @@ The log is `profile.log`, next to the save. It is plain data: `src/core/learnlog
 
 At the first event of a new day, the raw events of the day before roll up into the roll-ups, and they go. The roll-up of a day gives the same numbers as the raw events; a test checks it.
 
+A story run (the storybook in the browser and the headless stories) and a scripted play (`?harness` in the address) are not a child: their logger (`createLogger` with `drop`) drops every event, so that the fast steps of a script never show as mashing or as short hints.
+
 ### The events
 
 Each event has `type`, `t` (the time), and `variant`, and the fields of its kind. Only numbers, times, short ids from the data of the game, words from a list, and lists of numbers. No name, no free text, no picture, and no device information. `checkEvent` checks each event against the schema; the logger keeps only good events, and the save checks the log again.
