@@ -31,7 +31,7 @@ Positions are on the half-block grid: x to the east, z to the south (map y), y u
 | `intent` | `{ dx, dz, strength, run }`: the direction to walk now | input, route, move |
 | `route` | `{ points, near, token, still, last }`: a walk to a tapped place | input, route |
 | `follow` | `{ target, trail, idle, goal, shake }`: `goal` sends Nghé to a point (a hint, or to pull the hero out) | follow |
-| `person` | `{ kind, ref }`: a person or an enemy of the map data | the story (village scene) |
+| `person` | `{ kind, ref }`: a person or an enemy of the map data | the story (the session of the village) |
 | `solid` | `{ r }`: others keep this distance | move |
 | `react` | `{ kind, radius, ... }`: what it does when the hero comes near: flee, greet, follow, break, or bend (numbers in `data/world/life.json`) | react |
 | `broken` | `{ day }`: a pot that the hero broke; it is whole again the next day | react |
@@ -104,7 +104,7 @@ The broken bridge in Phù Đổng is the zone `bridge-gap` (in `tools/maps/era1.
 
 ## Input and the renderer
 
-- The village scene (`src/ui/village.js`) turns the stick, the keys, a held finger, and taps into commands. A tap on a plank marks the choice (`aim`), walks to it, and picks it up; a tap on a plank outline is the prediction; a tap on the gap with a plank in the hands walks to the near end and puts it there; a tap on the gap with empty hands walks out on the planks; a tap on the hero puts the plank down. The Space key does the same near the hero. A tap walk is a `walk` command with a token; the scene keeps what to do at the end of the walk and runs it when the event `arrived` comes back.
+- The session of the village (`src/core/session.js`, see `docs/STORIES.md`) turns taps into commands of the world. A tap on a plank marks the choice (`aim`), walks to it, and picks it up; a tap on a plank outline is the prediction; a tap on the gap with a plank in the hands walks to the near end and puts it there; a tap on the gap with empty hands walks out on the planks; a tap on the hero puts the plank down. The Space key does the same near the hero. A tap walk is a `walk` command with a token; the session keeps what to do at the end of the walk and runs it when the event `arrived` comes back. The village scene (`src/ui/village.js`) finds the target of a tap under the finger and sends it to the session.
 - The renderer (`src/render/voxel.js` and `src/render/figure3d.js`) reads the state and never changes it. It keeps one figure for each entity with `position` and `look`, and it is smooth between two steps. All parts of all figures are one `InstancedMesh`, their ink outlines one more, and their shadows one more.
 - The story (triggers, exits, dialogues, battles) reads the hero cell after each step.
 

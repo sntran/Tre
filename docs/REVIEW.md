@@ -238,3 +238,8 @@ Total: 996 texts in each language.
 - `parent.tab.learning` and `research.*`: the learning tab of the parent area (the researcher view and the shared summary), for parents. The texts must be plain, and they must not judge the child.
 - `world.bridge.long`: the fisher calls out when a plank is too long and sticks out past the far end of the bridge. The line must not name a number or a math operation.
 
+- The rule of the world (checked by the stories, `docs/STORIES.md`): no text in the village or a raid has a digit, an operator, or a question mark. These texts changed: `dlg.grandma.intro.n3`, `dlg.elder.trials.wait.n1`, `dlg.fisher.trial.n1`, `dlg.teacher.practice.n1`, `dlg.smith.need.iron.n1`, `dlg.smith.forge.n1`, `dlg.woodcutter.ore.n1`, `dlg.grandma.home.n1`, `dlg.giong.wait.n1`, `dlg.messenger.call.n3`, `dlg.giong.speaks.n4`, `dlg.giong.speaks.n9`, `dlg.giong.grown.n2`, `dlg.scouts.won.n1`, and `map.ore.found`. A question became a statement, and a number became a word ("sáu", "six"). The found ore does not say its number: the iron flies to its counter in the HUD. Please check that the Vietnamese lines still sound natural.
+
+## 9. Found by the stories
+
+- A long tap walk through the village (for example from the north road to the west road of Phù Đổng) stops with the event `stuck` when a person stands on the way, and the hero waits there. The child can tap again. This was so before the stories; see question 60.
