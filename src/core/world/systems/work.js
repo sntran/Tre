@@ -13,13 +13,14 @@
 //     puffs and dies; with too many, the extra rolls back to the heap.
 //   slash (bamboo staffs for the boss): each slash cuts at once; after the last slash, equal pieces
 //     tie into a bundle of staffs; if not, the short piece breaks and a new stem comes.
+//   share (the loot after a raid): equal coins on the mats make all happy; if not, Nghé sulks.
 //   feed (rice for Gióng): each ten bowls in the pot, Gióng eats and grows one head taller.
 // When a task is done, the event "trial" goes out (the session sets the flag and gives the reward).
-export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'events'];
+export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { REACH } from '../zones.js';
-import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill, feedResult, tenResult, hearthResult } from '../trials.js';
+import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 
 const BEND = 1.2; // seconds: the bent iron cools before it goes back into the fire
 const TIDE_IN = 2.5; // seconds: the tide stands high over the stakes
@@ -44,6 +45,7 @@ export function work(world, dt, rng, env) {
     if (z.zone.task === 'stakes') tickTide(world, z, dt, env);
     if (z.zone.task === 'cut') tickStem(world, z, dt);
     if (z.zone.task === 'slash') tickSlash(world, z, dt);
+    if (z.zone.task === 'share') tickShare(world, z, dt, env);
   }
 }
 
@@ -72,7 +74,8 @@ export function setupTrial(world, def, level, env) {
   if (trialZone(world, def.id)) return trialZone(world, def.id);
   const task = taskOf(def, level);
   const P = (name) => env.places[name];
-  const first = P(Object.values(def.places).flat()[0]);
+  // The share after a raid has no places of the map: it lies behind the wall of the raid (at).
+  const first = def.at ? { ...def.at, y: env.groundY(def.at.x / 2, def.at.z / 2) } : P(Object.values(def.places).flat()[0]);
   const tz = addEntity(world, {
     id: `zone:trial-${def.id}`,
     keep: true,
@@ -167,6 +170,27 @@ export function setupTrial(world, def, level, env) {
     addEntity(world, { id: 'zone:pot', keep: true, zone: { id: 'pot', task: owner, rule: 'feed', accepts: 'bowls', items: [], x: p.x, y: p.y, z: p.z, rect: rect(p, 2, 2) }, position: { x: p.x + 1, y: p.y, z: p.z + 2.5, facing: 0 } });
     addEntity(world, { id: 'pot:rice', keep: true, position: { x: p.x, y: p.y, z: p.z, facing: 0 }, look: 'rice-pot-0' });
     Object.assign(tz.zone, { ones: 0, heads: 0, group: [], start: 0 });
+  } else if (def.task === 'share') {
+    // Behind the wall: the pile, and a row of three mats across the road, with the friends
+    // behind their mats (the basket of the hero, Nghé, and Gióng).
+    const gy = (x, z) => env.groundY(x / 2, z / 2);
+    const back = { x: -def.dir.x, z: -def.dir.z };
+    const side = { x: -def.dir.z, z: def.dir.x };
+    const pt = (b, s) => { const x = def.at.x + back.x * b + side.x * s; const z = def.at.z + back.z * b + side.z * s; return { x, y: gy(x, z), z }; };
+    const pile = heap('loot', pt(3, 0), 'coin', { cols: 4, step: 0.7 });
+    things(pile, 'coin', def.loot);
+    def.who.forEach((who, i) => {
+      const m = pt(7, (i - 1) * 3.5);
+      addEntity(world, { id: `zone:share-${who}`, keep: true, zone: { id: `share-${who}`, task: owner, rule: 'share', accepts: 'coin', who, items: [], x: m.x, y: m.y, z: m.z, rect: { x0: m.x - 1.4, x1: m.x + 1.4, z0: m.z - 1.4, z1: m.z + 1.4 } }, position: { x: m.x - back.x * 2, y: m.y, z: m.z - back.z * 2, facing: 0 } });
+      addEntity(world, { id: `mat:share-${who}`, keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: 'share-mat' });
+      const by = pt(9, (i - 1) * 3.5);
+      const face = Math.atan2(-back.x, -back.z);
+      if (who === 'hero') addEntity(world, { id: 'by:share-hero', keep: true, position: { ...by, facing: face }, look: 'basket' });
+      if (who === 'giong') addEntity(world, { id: 'by:share-giong', keep: true, position: { ...by, facing: face }, look: 'giong-hero' });
+      const friend = friendOf(world);
+      if (who === 'nghe' && friend) friend.follow.goal = { x: by.x, z: by.z, face };
+    });
+    Object.assign(tz.zone, { loot: def.loot, who: def.who, settled: null, leave: null, face: Math.atan2(-back.x, -back.z) });
   } else if (def.task === 'slash') {
     const s = P(def.places.stem);
     Object.assign(tz.zone, { stem: { x: s.x, y: s.y, z: s.z, length: task.length }, cuts: [], pieces: [] });
@@ -241,6 +265,15 @@ function takeOut(world, thing) {
   if (z.zone.rule === 'bundle') packMat(world, z.zone);
   if (z.zone.rule === 'basket') packBasket(world, z.zone);
   if (z.zone.rule === 'hearth') packHearth(world, z.zone);
+  if (z.zone.rule === 'share') packShare(world, z.zone);
+}
+
+// The coins on a mat lie in a stack.
+function packShare(world, zone) {
+  zone.items.forEach((id, i) => {
+    const e = getEntity(world, id);
+    if (e) e.position = { x: zone.x + (i % 2) * 0.7 - 0.35, y: zone.y + 0.15 + Math.floor(i / 2) * 0.2, z: zone.z, facing: 0 };
+  });
 }
 
 // The lumps in the hearth lie in rows of four.
@@ -256,6 +289,7 @@ function packHearth(world, zone) {
 export function canTakeWork(world, thing) {
   if (thing.item.fixed || thing.item.set) return false;
   if (thing.item.zone === 'forge') return false;
+  if (thing.item.task === 'trial-share' && trialZone(world, 'share')?.zone.leave !== null) return false;
   if (thing.item.zone === 'hearth') return trialZone(world, 'horse')?.zone.heat === null;
   if (thing.item.zone === 'line') {
     const tz = trialZone(world, 'fisher');
@@ -290,6 +324,11 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packHearth(world, zone);
+  } else if (zone.rule === 'share') {
+    if (tz.zone.leave !== null) return false;
+    thing.item.zone = zone.id;
+    zone.items.push(thing.id);
+    packShare(world, zone);
   } else if (zone.rule === 'trough') {
     // The water goes into the trough, and the bucket goes back to the well.
     zone.full = true;
@@ -632,6 +671,41 @@ function layPieces(world, tz) {
     addEntity(world, { id, keep: true, item: { kind: 'stem', size: b - a, from: a, task: 'trial-staffs', zone: null, held: null, set: true, fixed: true }, position: { x: s.x + a + i * 0.4, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `bamboo-${b - a}` });
     return id;
   });
+}
+
+// Nghé follows the hero (the friend of the hero).
+const friendOf = (world) => query(world, 'follow', 'position').find((f) => f.follow.target === 'hero') ?? null;
+
+// The share of the loot: when the hands are empty and the pile has fewer coins than friends, the
+// share is the commit (once for each new share). Fair: all are happy, and the friends go home
+// after a moment. If not, Nghé turns away and shakes her head.
+function tickShare(world, tz, dt, env) {
+  if (tz.zone.leave !== null) {
+    tz.zone.leave -= dt;
+    if (tz.zone.leave <= 0) finish(world, tz);
+    return;
+  }
+  if (query(world, 'item').some((t) => t.item.task === 'trial-share' && t.item.held)) return;
+  const counts = tz.zone.who.map((w) => zoneEnt(world, `share-${w}`)?.zone.items.length ?? 0);
+  const left = zoneEnt(world, 'loot')?.zone.items.length ?? 0;
+  const r = shareResult(counts, left);
+  const friend = friendOf(world);
+  const goal = friend?.follow.goal;
+  if (!r.settled) {
+    // Coins went back to the pile: Nghé looks at the mats again.
+    if (goal && tz.zone.settled) Object.assign(goal, { face: tz.zone.face, act: undefined });
+    tz.zone.settled = null;
+    return;
+  }
+  const key = counts.join(',');
+  if (key === tz.zone.settled) return;
+  tz.zone.settled = key;
+  commit(world, tz, taskFor(env, tz.zone), { solved: r.fair, parts: counts, target: tz.zone.loot });
+  if (goal) Object.assign(goal, r.fair ? { face: tz.zone.face, act: 'stretch' } : { face: tz.zone.face + Math.PI, act: 'shake' });
+  if (r.fair) {
+    tz.zone.leave = 2.5;
+    say(world, 'happy', tz.id, { counts, sound: 'pickup' });
+  } else say(world, 'sulk', friend?.id ?? tz.id, { counts, sound: 'tap' });
 }
 
 // After the short piece breaks, a new bamboo stem comes.

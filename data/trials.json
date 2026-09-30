@@ -85,6 +85,16 @@
       "places": { "stem": "staffs-stem" }
     },
     {
+      "id": "share", "kind": "task", "task": "share", "reward": {}, "who": ["hero", "nghe", "giong"],
+      "_task": "The loot after a won raid (loot in data/raids.json): a pile of coins behind the wall, and three mats: the basket of the hero, Nghé, and Gióng. The child carries coins from the pile to the mats, and from a mat back. When the hands are empty and the pile has fewer coins than friends, and the pile cannot even out the mats, the share is the commit: equal mats make all happy, and the coins of the hero go to the counter; if not, Nghé turns away and sulks until the share is fair. The rest in the pile stays for the village.",
+      "levels": [
+        { "skill": "math.count.120", "level": 1 },
+        { "skill": "math.add.20", "level": 1 },
+        { "skill": "math.div.10", "level": 1 }
+      ],
+      "places": {}
+    },
+    {
       "id": "rice", "npc": "mother", "kind": "task", "flag": "giong.grown", "reward": {}, "doneTalk": "giong.grown",
       "task": "feed",
       "_task": "Rice for Gióng (not a trial of a calling: a task of the story). Trays of 3 and of 5 bowls of rice lie on the path of the paddies (trays: the sizes; each size has this many trays, and a tray that goes to the pot comes back full to the path). The child carries one tray at a time to the pot in front of the house of Gióng. Each ten bowls: Gióng eats and grows one head taller; the bowls over the ten stay in the pot (the ones), and his height shows the tens. The commit is each ten: solved when the pot comes to exactly ten, efficient with the fewest trays for it. The task is done when Gióng has grown this many heads.",

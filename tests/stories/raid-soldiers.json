@@ -35,6 +35,37 @@
     { "expect": [{ "event": "end", "with": { "won": true } }, { "flag": "soldier1.won" }, { "text": { "shown": "raid.soldier.note" } }] },
     { "read": true },
     { "wait": 3 },
-    { "expect": [{ "raid": { "on": false } }, { "item": "coin", "count": ">= 4" }] }
+    { "expect": [{ "raid": { "on": false } }, { "text": { "shown": "share.start" } }, { "count": { "entities": "coin", "min": 7 } }, { "entity": "by:share-giong", "look": "giong-hero" }] },
+    { "read": true },
+    { "repeat": 3, "steps": [
+      { "tap": { "item": "coin" } },
+      { "until": { "event": "pick", "timeout": 20 } },
+      { "tap": { "zone": "share-hero" } },
+      { "until": { "event": "put", "timeout": 20 } }
+    ] },
+    { "repeat": 1, "steps": [
+      { "tap": { "item": "coin" } },
+      { "until": { "event": "pick", "timeout": 20 } },
+      { "tap": { "zone": "share-nghe" } },
+      { "until": { "event": "put", "timeout": 20 } }
+    ] },
+    { "repeat": 2, "steps": [
+      { "tap": { "item": "coin" } },
+      { "until": { "event": "pick", "timeout": 20 } },
+      { "tap": { "zone": "share-giong" } },
+      { "until": { "event": "put", "timeout": 20 } }
+    ] },
+    { "wait": 1 },
+    { "expect": [{ "event": "sulk" }, { "event": "skill", "with": { "skill": "math.add.20", "solved": false, "parts": [3, 1, 2] } }] },
+    { "repeat": 1, "steps": [
+      { "tap": { "thing": "coin:share:2" } },
+      { "until": { "event": "pick", "timeout": 20 } },
+      { "tap": { "zone": "share-nghe" } },
+      { "until": { "event": "put", "timeout": 20 } }
+    ] },
+    { "until": { "event": "happy", "timeout": 5 } },
+    { "expect": [{ "event": "skill", "with": { "solved": true, "parts": [2, 2, 2] } }] },
+    { "until": { "event": "gift", "timeout": 8 } },
+    { "expect": [{ "event": "gift", "with": { "give": { "coin": 2 } } }, { "entity": "mat:share-nghe", "gone": true }] }
   ]
 }

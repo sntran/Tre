@@ -104,6 +104,18 @@ export function hearthResult(count, need) {
   return { solved: count === need, short: count < need, over: Math.max(0, count - need) };
 }
 
+// The loot after a raid: the coins on the mats (counts, one for each friend) and the coins left
+// in the pile. Fair: each friend has the same, and the pile has fewer coins than friends (no one
+// more coin for each). Settled: fair, or the pile has too few coins to even out the mats (short:
+// the coins that the smaller mats need to come up to the biggest), so that only a coin taken back
+// can make it fair.
+export function shareResult(counts, left) {
+  const top = Math.max(...counts);
+  const short = counts.reduce((sum, c) => sum + top - c, 0);
+  const fair = short === 0 && left < counts.length;
+  return { settled: left < counts.length && (fair || left < short), fair, short };
+}
+
 // Rice for Gióng: a tray of `size` bowls goes into the pot, which had `ones` bowls. Gióng eats each
 // full ten and grows one head (grew); the rest stays in the pot.
 export function feedResult(ones, size) {

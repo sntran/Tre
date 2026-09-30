@@ -448,6 +448,10 @@ export function workThing(look) {
       parts.push(P('end', [0.8, 0.8, 0.1], 'yellowPale', [0, 0.5, 0]));
       return still(parts, 0.8);
     }
+    // An old coin of bronze with a square hole.
+    case 'coin': return still([P('coin', [0.6, 0.12, 0.6], 'yellow', [0, 0.06, 0]), P('rim', [0.66, 0.08, 0.66], 'ochre', [0, 0.03, 0]), P('hole', [0.2, 0.14, 0.2], 'ink', [0, 0.07, 0])], 0.15);
+    // A small reed mat for a share of the loot.
+    case 'share-mat': return still([P('mat', [2.2, 0.08, 2.2], 'yellowPale', [0, 0.04, 0]), P('edgeN', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, -1.05]), P('edgeS', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, 1.05])], 0.1);
     // A chalk mark across the stem.
     case 'chalk': return still([P('mark', [1.3, 0.08, 0.25], 'vermilion', [0, 0.45, 0]), P('dotA', [0.25, 0.4, 0.25], 'vermilion', [-0.65, 0.25, 0]), P('dotB', [0.25, 0.4, 0.25], 'vermilion', [0.65, 0.25, 0])], 0.5);
     // Equal bamboo sticks (or staffs) tied into a bundle.

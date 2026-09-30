@@ -35,7 +35,7 @@ import { currentGoal } from './quests.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
 import { createDialogue } from './dialogue.js';
 import { timeStatus, addPlayTime } from './timelimit.js';
-import { createWorldState, getEntity, query, command as worldCommand } from './world/state.js';
+import { createWorldState, getEntity, query, removeEntity, command as worldCommand } from './world/state.js';
 import { step as worldStep, STEP } from './world/step.js';
 import { envFor, placesOf } from './world/env.js';
 import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns, addZones } from './world/populate.js';
@@ -306,6 +306,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // A trial is done: the flag, the reward that flies to the counters, and the done line.
   function trialDone(id) {
     const def = trialDef(id);
+    if (def?.task === 'share') {
+      shareDone();
+      return;
+    }
     if (!def || profile.flags[def.flag]) return;
     applyEffects(profile, [{ set: def.flag }, { give: def.reward }]);
     save('trial');
@@ -480,7 +484,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // A short, fair note with its seal (Legend or History), and a fact of history.
       if (def.noteKey) say(def.noteKey, {}, def.mark ?? null);
       if (def.historyKey) say(def.historyKey, {}, 'history');
-      for (const id of win.after ?? []) talk(id);
+      // A raid with loot: the share comes when the things of the raid are gone, and the talks
+      // after it.
+      if (def.loot) pendingShare = { loot: def.loot, wall: r.raid.wall, dir: r.raid.dir, after: win.after ?? [] };
+      else for (const id of win.after ?? []) talk(id);
     } else {
       profile.stats.battlesLost = (profile.stats.battlesLost ?? 0) + 1;
       // The enemies come again at the next dawn, so that the child sleeps on it.
@@ -504,6 +511,37 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       emit({ type: 'lose', to: ev.id, take: took });
       emit({ type: 'hud' });
     }
+  }
+  // The share of the loot behind the wall (a task of the world: src/core/world/systems/work.js).
+  let pendingShare = null;
+  function startShare() {
+    const p = pendingShare;
+    const def = trialDef('share');
+    if (!p || !def) return;
+    pendingShare = null;
+    shareAfter = p.after;
+    setupTrial(state, { ...def, at: p.wall, dir: p.dir, loot: p.loot }, levelFor(data.trials, profile.grade), env);
+    say('share.start');
+    emit({ type: 'hud' });
+  }
+  let shareAfter = [];
+  // The share is fair: the coins of the hero go to the counter, the rest stays for the village,
+  // and the things of the share go away.
+  function shareDone() {
+    const coins = getEntity(state, 'zone:share-hero')?.zone.items.length ?? 0;
+    if (coins) {
+      applyEffects(profile, [{ give: { coin: coins } }]);
+      emit({ type: 'gift', from: 'hero', give: { coin: coins }, delay: 0.3 });
+    }
+    save('share');
+    for (const e of [...state.entities]) {
+      if (e.item?.task === 'trial-share' || e.zone?.task === 'trial-share' || e.id === 'zone:trial-share' || String(e.id).startsWith('mat:share-') || String(e.id).startsWith('by:share-')) removeEntity(state, e.id);
+    }
+    const friend = query(state, 'follow').find((f) => f.follow.target === 'hero');
+    if (friend) delete friend.follow.goal;
+    emit({ type: 'hud' });
+    for (const id of shareAfter) talk(id);
+    shareAfter = [];
   }
   function raidOver() {
     const fig = raidEnc ? getEntity(state, raidEnc) : null;
@@ -803,7 +841,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'phase' && ev.dialogue) talk(ev.dialogue);
     if (ev.type === 'take') raidTake(ev);
     if (ev.type === 'end' && ev.id === 'raid') raidEnd(ev);
-    if (ev.type === 'raidover') raidOver();
+    if (ev.type === 'raidover') {
+      raidOver();
+      startShare();
+    }
     // The prediction before the first commit on a gap, and the result.
     if (ev.type === 'prediction') {
       log('prediction', { task: ev.task, gap: ev.gap, guess: ev.guess, used: ev.used, solved: ev.solved });

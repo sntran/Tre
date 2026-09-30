@@ -31,7 +31,7 @@ import { putWork, canTakeWork, toHeap } from './work.js';
 import { putRaid } from './raid.js';
 
 // The zones of the tasks of the trials: the work system puts the things there.
-const WORK = new Set(['heap', 'bundle', 'forge', 'trough', 'line', 'basket', 'woodpile', 'feed', 'hearth', 'road']);
+const WORK = new Set(['heap', 'bundle', 'forge', 'trough', 'line', 'basket', 'woodpile', 'feed', 'hearth', 'share', 'road']);
 
 const TIP = 0.3; // seconds: the last plank dips under the hero
 const DROP = 0.35; // seconds: the hero falls into the water

@@ -41,8 +41,32 @@
     {"until": {"event": "open", "with": {"screen": "dialogue"}, "timeout": 10}},
     {"expect": [{"event": "strike"}, {"text": {"shown": "dlg.bamboo.found.n1"}}, {"flag": "era1.boss.won"}]},
     {"read": true},
-    {"expect": [{"text": {"shown": "raid.boss.note"}}, {"text": {"shown": "history.giong.festival"}}, {"text": {"shown": "dlg.giong.north.n1"}}]},
+    {"expect": [{"text": {"shown": "raid.boss.note"}}, {"text": {"shown": "history.giong.festival"}}]},
     {"wait": 4},
-    {"expect": [{"raid": {"on": false}}, {"count": {"entities": "raider", "max": 0}}]}
+    {"expect": [{"raid": {"on": false}}, {"count": {"entities": "raider", "max": 0}}, {"text": {"shown": "share.start"}}, {"count": {"entities": "coin", "min": 12}}]},
+    {"read": true},
+    { "repeat": 4, "steps": [
+      {"tap": {"item": "coin"}},
+      {"until": {"event": "pick", "timeout": 20}},
+      {"tap": {"zone": "share-hero"}},
+      {"until": {"event": "put", "timeout": 20}}
+    ] },
+    { "repeat": 4, "steps": [
+      {"tap": {"item": "coin"}},
+      {"until": {"event": "pick", "timeout": 20}},
+      {"tap": {"zone": "share-nghe"}},
+      {"until": {"event": "put", "timeout": 20}}
+    ] },
+    { "repeat": 4, "steps": [
+      {"tap": {"item": "coin"}},
+      {"until": {"event": "pick", "timeout": 20}},
+      {"tap": {"zone": "share-giong"}},
+      {"until": {"event": "put", "timeout": 20}}
+    ] },
+    {"until": {"event": "happy", "timeout": 5}},
+    {"expect": [{"event": "skill", "with": {"skill": "math.div.10", "solved": true, "first": true, "parts": [4, 4, 4]}}]},
+    {"until": {"event": "open", "with": {"screen": "dialogue"}, "timeout": 8}},
+    {"expect": [{"event": "gift", "with": {"give": {"coin": 4}}}, {"text": {"shown": "dlg.giong.north.n1"}}]},
+    {"read": true}
   ]
 }
