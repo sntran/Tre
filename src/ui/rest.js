@@ -14,9 +14,11 @@ export function isTimeOver(ctx) {
   return Boolean(p) && timeStatus(p.time, p.settings.timeLimit, ctx.data.game.time.warnBeforeMin, Date.now()) === 'over';
 }
 
-// A calm point: the village with no open dialogue or panel.
+// A calm point. The session of the village finds its own calm point (no screen open, the hands
+// empty, not on the bridge) and opens the rest; this is only for a village with no world (a
+// device with no WebGL).
 function calm(ctx) {
-  return ctx.scene === 'village' && !ctx.ui.querySelector('.modal-layer, .dialogue-layer');
+  return ctx.scene === 'village' && !ctx.activeVillage && !ctx.ui.querySelector('.modal-layer, .dialogue-layer');
 }
 
 export function startTimer(ctx) {
