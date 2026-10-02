@@ -9,8 +9,31 @@ import { roofMesh } from './roofs.js';
 
 // The moods of a face (the brows and the mouth of the figure builder, src/world/fine.js).
 export const MOODS = Object.freeze(['calm', 'happy', 'worried', 'surprised']);
-// The framings: bust (the head and the shoulders, three-quarter view) and full (the whole figure).
-export const FRAMINGS = Object.freeze(['bust', 'full']);
+// The framings: head (the head and the neck, for the small choice buttons of hero creation), bust
+// (the head and the shoulders, for the dialogue box and the cards), and full (the whole figure).
+export const FRAMINGS = Object.freeze(['head', 'bust', 'full']);
+// For each framing that has a face: the share of the height of the image that the head fills (from
+// the chin to the top of the hair), the turn of the figure from the front (radians), and the
+// height of the camera over the eyes (radians, small: the face, not the top of the hair). A head of
+// blocks shows much of its side when it turns, so a turn of 20 degrees reads as about 30.
+export const FACE_FRAMES = Object.freeze({
+  head: { share: 0.8, turn: (15 * Math.PI) / 180, elevation: 0.06 },
+  bust: { share: 0.6, turn: (20 * Math.PI) / 180, elevation: 0.08 },
+});
+
+// The frame of a face: the middle (y) and the half height of the image, in world units. headY: the
+// middle of the head; top: the top of the hair. The chin is 0.8 of the way from the top to the
+// middle below the middle (a head of seven units with a cap of hair one unit thick). The head fills
+// its share of the height, with a small margin over the hair; the rest is the neck and the
+// shoulders down to the collarbone (bust), or only the neck (head).
+export function faceFrame(framing, { headY, top }) {
+  const f = FACE_FRAMES[framing] ?? FACE_FRAMES.bust;
+  const r = Math.max(0.01, top - headY);
+  const head = 1.8 * r;
+  const height = head / f.share;
+  const frameTop = top + 0.03 * height;
+  return { y: frameTop - height / 2, half: height / 2, chin: headY - 0.8 * r };
+}
 export const CACHE_SIZE = 64;
 
 // A text for a value with the keys of each object in order, so that the same look gives the same

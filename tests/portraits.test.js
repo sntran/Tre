@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { portraitKey, createLru, speakerLook, MOODS, CACHE_SIZE } from '../src/world/portraits.js';
+import { portraitKey, createLru, speakerLook, faceFrame, MOODS, CACHE_SIZE } from '../src/world/portraits.js';
 import { heroLook } from '../src/world/figures.js';
 import { personFine } from '../src/world/fine.js';
 import { colorIndex } from '../src/world/voxel.js';
@@ -101,4 +101,20 @@ test('no picture of a person or a thing of the world is left, and no code asks f
     const text = readFileSync(f, 'utf8');
     assert.ok(!/art\/(hero|npc|friend|thing|calling)\/|['"](hero|npc|friend|thing|calling)\/[a-z-]+['"]/.test(text), `${f.pathname} asks for an old picture`);
   }
+});
+
+test('a bust is filled for most of its height by the head, and a head framing is closer still', () => {
+  // A head of the elder: the middle of the head at 2.5, the top of the hair at 2.9 (world units).
+  const at = { headY: 2.5, top: 2.9 };
+  for (const [framing, share] of [['bust', 0.6], ['head', 0.8]]) {
+    const f = faceFrame(framing, at);
+    const head = at.top - f.chin;
+    assert.ok(Math.abs(head / (2 * f.half) - share) < 0.01, `${framing}: the head fills ${(head / (2 * f.half)).toFixed(2)}`);
+    assert.ok(f.y + f.half > at.top && f.y + f.half - at.top < 0.05 * 2 * f.half, `${framing}: a small margin over the hair`);
+  }
+  // The bust goes down past the chin to the collarbone; the head framing shows only the neck.
+  const bust = faceFrame('bust', at);
+  const head = faceFrame('head', at);
+  assert.ok(bust.y - bust.half < head.y - head.half);
+  assert.ok(head.half < bust.half, 'the head framing is closer');
 });

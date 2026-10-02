@@ -160,8 +160,9 @@ export async function mountCreate(ctx) {
       stage.append(next);
     } else if (name === 'look') {
       stage.append(title('create.look'));
-      // A small rendered picture of the hero with one choice changed.
-      const thumb = (change, framing = 'bust') => {
+      // A small rendered picture of the hero with one choice changed: the head (skin, face, hair) or
+      // the whole hero (clothes).
+      const thumb = (change, framing = 'head') => {
         const el = portraitCanvas(ctx, heroLook({ ...hero, ...change }, opts), { framing, size: 56 });
         return h('span', { class: 'thumb' }, [el]);
       };

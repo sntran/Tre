@@ -2,7 +2,8 @@
 // the game (src/render/gl.js), off the screen, and copied to a small canvas. No second WebGL
 // context. The same flat tones, ink outline, and light as in the world, on a clear background (the
 // box around a portrait gives the paper). The key and the cache are in src/world/portraits.js.
-//   bust: the head and the shoulders, three-quarter view (the dialogue box, the HUD, the cards).
+//   head: the head and the neck (the small choice buttons of hero creation).
+//   bust: the head and the shoulders down to the collarbone (the dialogue box, the HUD, the cards).
 //   full: the whole figure (the callings, the notebook of #8).
 // A look { prop, w, h, seed } is a prop of src/world/props/ (the gate and the stele of Văn Miếu),
 // drawn whole, with its flat tones and its ink lines.
@@ -11,12 +12,12 @@
 import * as THREE from 'three';
 import { rendererFor } from './gl.js';
 import { figureMeshes } from './figure3d.js';
-import { portraitKey, createLru, propMesh, CACHE_SIZE } from '../world/portraits.js';
+import { portraitKey, createLru, propMesh, faceFrame, FACE_FRAMES, CACHE_SIZE } from '../world/portraits.js';
 import { C } from './palette.js';
 
 const SUPER = 2; // render at twice the size, and draw it smaller: soft edges with no multisampling
-const ELEVATION = 0.18; // radians: the camera is a little over the eyes
-const TURN = { bust: 0.5, full: 0.4 }; // the three-quarter turn of the figure
+const ELEVATION = 0.18; // radians: the camera a little over a whole figure or a prop
+const TURN = 0.4; // the three-quarter turn of a whole figure; a face has its own (FACE_FRAMES)
 
 // The meshes of a prop on its own (src/world/portraits.js), turned by `facing`.
 function propMeshes(look, facing) {
@@ -79,7 +80,8 @@ export function createPortraits(canvas) {
     const renderer = rendererFor(canvas);
     const px = Math.max(8, Math.round(size * ratio));
     const big = px * SUPER;
-    const turn = facing ?? TURN[framing] ?? 0.4;
+    const face = FACE_FRAMES[framing];
+    const turn = facing ?? face?.turn ?? TURN;
     const fig = look.prop ? propMeshes(look, turn) : figureMeshes({ ...look, mood }, { facing: turn });
     scene.add(fig.group);
     // The frame: the whole figure, or the head and the shoulders around the head.
@@ -91,11 +93,11 @@ export function createPortraits(canvas) {
       box.getCenter(center);
       const s = box.getSize(new THREE.Vector3());
       half = Math.max(s.y, Math.hypot(s.x, s.z) * 0.8) * 0.58;
-    } else if (framing === 'bust' && fig.head) {
-      // From the head to the top of the hair (a thing in the hands, as a staff, does not count).
-      const r = Math.max(fig.height - fig.head.y, fig.height * 0.22);
-      center.set(fig.head.x, fig.head.y - r * 0.5, fig.head.z);
-      half = r * 1.6;
+    } else if (face && fig.head) {
+      // The head (and the neck, or the shoulders) fills its share of the image (src/world/portraits.js).
+      const f = faceFrame(framing, { headY: fig.head.y, top: fig.height });
+      center.set(fig.head.x, f.y, fig.head.z);
+      half = f.half;
     } else {
       // The whole figure, from its feet (the origin) to the top of its head: the same frame at
       // every turn, so that a turning figure keeps its size.
@@ -106,7 +108,8 @@ export function createPortraits(canvas) {
     camera.right = half;
     camera.top = half;
     camera.bottom = -half;
-    camera.position.set(center.x, center.y + Math.sin(ELEVATION) * 50, center.z + Math.cos(ELEVATION) * 50);
+    const elevation = face && fig.head ? face.elevation : ELEVATION;
+    camera.position.set(center.x, center.y + Math.sin(elevation) * 50, center.z + Math.cos(elevation) * 50);
     camera.lookAt(center);
     camera.updateProjectionMatrix();
     const target = new THREE.WebGLRenderTarget(big, big);
