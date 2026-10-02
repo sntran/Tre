@@ -10,6 +10,7 @@ import { pickGround } from '../world/terrain.js';
 import { C } from './palette.js';
 import { night } from './figure3d.js';
 import { rendererFor } from './gl.js';
+import { inFront, stepFade, stippleOf } from '../world/fade.js';
 
 export function hasWebGL() {
   try {
@@ -175,8 +176,8 @@ function inkGeometry(groups) {
   return g;
 }
 
-// The ink of a faded object goes with it: the lines inside it go, and its outline stays at about
-// one third.
+// The ink of a faded object: the lines inside it go with it, and its outline stays fully drawn, so
+// that the faded object still reads as a shape.
 function inkMaterial(uniforms) {
   return new THREE.ShaderMaterial({
     uniforms,
@@ -193,7 +194,7 @@ function inkMaterial(uniforms) {
         vec3 P = position + swayOf(position, sway);
         vec3 O = other + swayOf(other, swayO);
         float fade = owner > 0.5 ? texture2D(uFade, vec2((owner + 0.5) / uFadeSize, 0.5)).r : 0.0;
-        vAlpha = 1.0 - fade * (outer > 0.5 ? 0.67 : 1.0);
+        vAlpha = outer > 0.5 ? 1.0 : 1.0 - fade;
         vec3 d = normalize(O - P);
         vec3 p = normalize(cross(d, uView)) * width * 0.5 * side;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(P + p - d * width * 0.5, 1.0);
@@ -443,42 +444,18 @@ export function createVoxelWorld(canvas, terrain) {
 
   // The objects that fade when they are between the camera and the hero.
   const boxes = terrain.objects.map((o) => ({ who: o.who, b: terrain.boxOf(o), fade: 0 }));
-  const toCam = new THREE.Vector3();
-  function rayHits(b, o, d) {
-    let t0 = 0.3;
-    let t1 = 80;
-    for (const [lo, hi, oo, dd] of [[b.x0, b.x1, o.x, d.x], [b.y0, b.y1, o.y, d.y], [b.z0, b.z1, o.z, d.z]]) {
-      if (Math.abs(dd) < 1e-9) {
-        if (oo < lo || oo > hi) return false;
-        continue;
-      }
-      let a = (lo - oo) / dd;
-      let c = (hi - oo) / dd;
-      if (a > c) [a, c] = [c, a];
-      t0 = Math.max(t0, a);
-      t1 = Math.min(t1, c);
-      if (t0 > t1) return false;
-    }
-    return true;
-  }
+  // The fade of each object follows the line of sight from the hero to the camera
+  // (src/world/fade.js). The texture keeps the stipple: 0 under FADE_MIN, so that a thing that only
+  // touches the line, or that was in front once, keeps no dots.
   function updateFades(hero, dt) {
-    toCam.copy(view).negate();
     let changed = false;
-    // The feet, the head, and the two sides of the hero: a thing near the line of sight fades too.
-    const rx = Math.cos(state.az) * 0.9;
-    const rz = -Math.sin(state.az) * 0.9;
-    const points = [
-      { x: hero.x, y: hero.y + 0.4, z: hero.z },
-      { x: hero.x, y: hero.y + 2.4, z: hero.z },
-      { x: hero.x + rx, y: hero.y + 1.2, z: hero.z + rz },
-      { x: hero.x - rx, y: hero.y + 1.2, z: hero.z - rz },
-    ];
     for (const o of boxes) {
-      const hit = points.some((p) => rayHits(o.b, p, toCam));
-      const next = o.fade + ((hit ? 1 : 0) - o.fade) * Math.min(1, dt * 8);
-      if (Math.abs(next - o.fade) > 0.004) {
-        o.fade = next;
-        fadeData[o.who * 4] = Math.round(next * 255);
+      const next = stepFade(o.fade, inFront(o.b, hero, state.az, VIEW.elevation), dt);
+      if (next === o.fade) continue;
+      o.fade = next;
+      const value = Math.round(stippleOf(next) * 255);
+      if (fadeData[o.who * 4] !== value) {
+        fadeData[o.who * 4] = value;
         changed = true;
       }
     }

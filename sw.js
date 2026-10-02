@@ -199,6 +199,7 @@ const FILES = [
   'src/ui/worldmap.js',
   'src/world/animate.js',
   'src/world/chunks.js',
+  'src/world/fade.js',
   'src/world/figures.js',
   'src/world/fine.js',
   'src/world/geo.js',

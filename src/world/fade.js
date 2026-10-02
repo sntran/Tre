@@ -1,0 +1,63 @@
+// The fade of the things in front of the hero: pure rules, no WebGL. The renderer
+// (src/render/voxel.js) keeps one fade for each object of the terrain and draws it as a stipple.
+// A thing fades when the line of sight from the hero to the camera crosses its box; it comes back
+// when the line leaves it. The fade snaps to exactly 0 and 1 at the ends, so that a thing that was
+// in front once keeps no dots.
+
+// Under this fade a thing draws whole: an object that only touches the edge of the line of sight
+// gets no light scatter of dots.
+export const FADE_MIN = 0.3;
+const SPEED = 8; // a fade goes most of the way in about one eighth of a second
+const SNAP = 0.02;
+
+// The direction from the target to the camera, for the turn of the camera (az) and its elevation.
+export const toCamera = (az, elevation) => ({ x: Math.cos(elevation) * Math.sin(az), y: Math.sin(elevation), z: Math.cos(elevation) * Math.cos(az) });
+
+// Does the ray from o in the direction d cross the box b (world units)? From 0.3 to 80 units, so
+// that a thing at the feet of the hero does not count.
+export function rayHits(b, o, d) {
+  let t0 = 0.3;
+  let t1 = 80;
+  for (const [lo, hi, oo, dd] of [[b.x0, b.x1, o.x, d.x], [b.y0, b.y1, o.y, d.y], [b.z0, b.z1, o.z, d.z]]) {
+    if (Math.abs(dd) < 1e-9) {
+      if (oo < lo || oo > hi) return false;
+      continue;
+    }
+    let a = (lo - oo) / dd;
+    let c = (hi - oo) / dd;
+    if (a > c) [a, c] = [c, a];
+    t0 = Math.max(t0, a);
+    t1 = Math.min(t1, c);
+    if (t0 > t1) return false;
+  }
+  return true;
+}
+
+// The points of the hero that the camera must see: the feet, the head, and the two sides (so that
+// a thing near the line of sight fades too). hero: { x, y, z } (world units, y at the feet).
+export function heroPoints(hero, az) {
+  const rx = Math.cos(az) * 0.9;
+  const rz = -Math.sin(az) * 0.9;
+  return [
+    { x: hero.x, y: hero.y + 0.4, z: hero.z },
+    { x: hero.x, y: hero.y + 2.4, z: hero.z },
+    { x: hero.x + rx, y: hero.y + 1.2, z: hero.z + rz },
+    { x: hero.x - rx, y: hero.y + 1.2, z: hero.z - rz },
+  ];
+}
+
+// Is a box in front of the hero (the line of sight from one of its points crosses the box)?
+export function inFront(box, hero, az, elevation) {
+  const d = toCamera(az, elevation);
+  return heroPoints(hero, az).some((p) => rayHits(box, p, d));
+}
+
+// One step of a fade toward 1 (in front) or 0, with a snap at the ends.
+export function stepFade(fade, hit, dt) {
+  const target = hit ? 1 : 0;
+  const next = fade + (target - fade) * Math.min(1, dt * SPEED);
+  return Math.abs(target - next) < SNAP ? target : next;
+}
+
+// The stipple of a fade: 0 under FADE_MIN (the thing draws whole), else the fade itself.
+export const stippleOf = (fade) => (fade < FADE_MIN ? 0 : fade);
