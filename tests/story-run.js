@@ -17,7 +17,7 @@ const graph = createSkillGraph(data.skills);
 const laws = createLaws({ texts: { vi: load('i18n/vi.json'), en: load('i18n/en.json') }, limits: load('data/config/limits.json') });
 const terrains = new Map();
 const terrainOf = (map, tileMap) => {
-  if (!terrains.has(map.id)) terrains.set(map.id, buildTerrain(map, data.tiles.types, tileMap));
+  if (!terrains.has(map.id)) terrains.set(map.id, buildTerrain(map, data.tiles.types, tileMap, data.blocks));
   return terrains.get(map.id);
 };
 

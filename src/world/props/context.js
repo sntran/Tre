@@ -1,5 +1,5 @@
 // The context of a prop builder: it writes half-size blocks into the fine grid, keeps the box
-// of the prop (for the fade of things in front of the hero), the roofs (smooth meshes), and the
+// of the prop (for the fade of things in front of the hero), the roofs and the other smooth looks, and the
 // shadows on the ground. Pure, no DOM.
 import { seeded } from '../voxel.js';
 
@@ -8,6 +8,7 @@ import { seeded } from '../voxel.js';
 export function propContext(fine, groundTop, shadow, { who = 0, seed = 1 } = {}) {
   const box = { x0: Infinity, y0: Infinity, z0: Infinity, x1: -Infinity, y1: -Infinity, z1: -Infinity };
   const roofs = [];
+  let last = null; // the last block set: the owner of a roof that comes after it
   const grow = (x, y, z) => {
     if (x < box.x0) box.x0 = x;
     if (y < box.y0) box.y0 = y;
@@ -24,6 +25,7 @@ export function propContext(fine, groundTop, shadow, { who = 0, seed = 1 } = {})
       if (!fine.inside(x, y, z)) return;
       fine.set(x, y, z, color, who);
       grow(x, y, z);
+      last = [x, y, z];
     },
     // Set only an empty place.
     add(x, y, z, color) {
@@ -46,9 +48,10 @@ export function propContext(fine, groundTop, shadow, { who = 0, seed = 1 } = {})
         for (let dx = -r; dx <= r; dx++) if (dx * dx + dz * dz <= r * r) ctx.shadow(cx + dx, cz + dz - back);
       }
     },
-    // A roof: a smooth thatch shape that the renderer makes (fine units).
+    // A roof: a smooth thatch shape (src/world/roofs.js; fine units). Its owner is the last block
+    // of the house under it: the roof draws while that block is there.
     roof(r) {
-      roofs.push({ ...r, who });
+      roofs.push({ ...r, who, owner: last ? [...last] : null });
       grow(r.x0, r.y, r.z0);
       grow(r.x1 - 1, r.y + r.ridgeH * 2, r.z1 - 1);
     },

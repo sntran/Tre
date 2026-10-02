@@ -52,7 +52,19 @@ export function pickGround(o, d, topAt, W, H, maxTop) {
   return null;
 }
 
-export function buildTerrain(map, tileTypes, tileMap) {
+// The kind of a ground block (data/world/blocks.json) at a depth under the surface of its column:
+// the surface, soil, clay, rock, and ore in some of the clay and rock (a seeded rule).
+export function kindAt(blocks, depth, seed) {
+  if (depth === 0) return 'surface';
+  const L = blocks.layers;
+  const base = depth >= L.rock ? 'rock' : depth >= L.clay ? 'clay' : 'soil';
+  if (blocks.ore && blocks.ore.in.includes(base) && (seed % 1000) / 1000 < blocks.ore.chance) return 'ore';
+  return base;
+}
+
+// blocks: data/world/blocks.json; with it, the ground keeps the kind of each block (kinds), so that a
+// dig knows what it takes (src/world/chunks.js).
+export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
   const W = map.width;
   const H = map.height;
   const L = map.layers;
@@ -62,6 +74,9 @@ export function buildTerrain(map, tileTypes, tileMap) {
   for (let z = 0; z < H; z++) for (let x = 0; x < W; x++) maxTop = Math.max(maxTop, topAt(x, z));
 
   const ground = createGrid(W, maxTop + 1, H);
+  // The kind of each ground block: an index into the kinds of blocks.json (+1; 0 is none).
+  const kindNames = blocks ? Object.keys(blocks.kinds) : [];
+  const kinds = blocks ? new Uint8Array(ground.data.length) : null;
   const fine = createGrid(W * 2, maxTop * 2 + 64, H * 2, { owners: true });
   const shadows = new Set();
   const shadow = (x, z) => shadows.add(z * W + x);
@@ -99,7 +114,14 @@ export function buildTerrain(map, tileTypes, tileMap) {
       }
       const top = type === 'bridge' ? 'yellowPale' : rut(x, z) ? 'ashLight' : def.color ?? 'greenPale';
       const under = def.under ?? 'wood';
-      for (let y = 0; y < h; y++) ground.set(x, y, z, y === h - 1 ? top : y === h - 2 ? under : 'wood');
+      for (let y = 0; y < h; y++) {
+        const depth = h - 1 - y;
+        const kind = blocks ? kindAt(blocks, depth, hashSeed(`${map.id}:${x}:${y}:${z}`)) : null;
+        // The top and the block under it keep the colors of the ground type; deeper blocks show
+        // their kind.
+        ground.set(x, y, z, depth === 0 ? top : depth === 1 ? under : kind ? blocks.kinds[kind].color : 'wood');
+        if (kinds) kinds[ground.index(x, y, z)] = kindNames.indexOf(kind) + 1;
+      }
       if (type === 'water' || type === 'shallow') water.push({ x, z, y: h + WATER.river });
       if (type === 'field') paddies.push({ x, z, y: h + WATER.paddy });
     }
@@ -159,7 +181,7 @@ export function buildTerrain(map, tileTypes, tileMap) {
   // A shadow makes the top of the ground a little darker.
   const shade = (x, y, z) => (shadows.has(z * W + x) ? 0.8 : 1);
   return {
-    width: W, height: H, ground, fine, shade, objects, roofs, water, paddies,
+    width: W, height: H, ground, fine, shade, objects, roofs, water, paddies, kinds, kindNames,
     topAt,
     maxTop,
     // The ways into the houses (fine units = half blocks), by the id of the house.

@@ -31,6 +31,7 @@ export const FILES = {
   people: 'data/world/people.json',
   day: 'data/world/day.json',
   zones: 'data/world/zones.json',
+  blocks: 'data/world/blocks.json',
 };
 
 async function fetchJson(path) {

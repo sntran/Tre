@@ -1,0 +1,13 @@
+{
+  "_about": "The kinds of blocks under the look of the world (src/world/terrain.js, src/world/chunks.js), so that a later era can dig, mine, and fell. The ground grid keeps a kind for each full block: the top of a column is its surface (the ground type of the map gives its color), the blocks under it are soil, then clay, and rock at the bottom, with ore in some of the clay and the rock (a seeded rule: the same map gives the same ore). layers: the depth (blocks under the surface) where each kind starts. hardness: how hard a block is to dig (1 is soft). color: the color of the block when a dig or a cliff shows it (the surface keeps the color of its ground type). drops: what a dig of one block gives. A trunk is a block of a tree (fine blocks): to fell a tree takes its trunk, and the crown goes with it.",
+  "kinds": {
+    "surface": { "hardness": 1, "color": "green-pale", "drops": { "soil": 1 } },
+    "soil": { "hardness": 1, "color": "wood", "drops": { "soil": 1 } },
+    "clay": { "hardness": 2, "color": "vermilion-pale", "drops": { "clay": 1 } },
+    "rock": { "hardness": 3, "color": "ash", "drops": { "stone": 1 } },
+    "ore": { "hardness": 4, "color": "ash-light", "drops": { "ore": 1 } },
+    "trunk": { "hardness": 2, "color": "wood", "drops": { "log": 1 } }
+  },
+  "layers": { "soil": 1, "clay": 4, "rock": 6 },
+  "ore": { "chance": 0.08, "in": ["clay", "rock"] }
+}

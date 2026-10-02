@@ -1,10 +1,11 @@
-// The voxel world in three.js: chunked meshes of the ground and of the props, one ink mesh from
-// the edges, smooth thatch roofs, water with the wave pattern of the prints, paddies with rows of
-// seedlings, the fade of things in front of the hero, and an orthographic camera that turns in
-// steps of 90°. The logic is in src/world/; this file only draws.
+// The voxel world in three.js: for each chunk (src/world/chunks.js), a mesh of the ground, a mesh of
+// the things (half blocks, the smooth roofs, and the other smooth looks), and an ink mesh (the edges,
+// and the silhouettes of the smooth looks); water with the wave pattern of the prints, paddies with
+// rows of seedlings, the fade of things in front of the hero, and an orthographic camera that turns
+// in steps of 90°. A change of the terrain (a dig, a felled tree) builds only its chunks again. The
+// logic is in src/world/; this file only draws.
 import * as THREE from 'three';
-import { meshGrid, chunksOf } from '../world/mesher.js';
-import { toneRgb, colorIndex } from '../world/voxel.js';
+import { chunkMesh, createChunks } from '../world/chunks.js';
 import { pickGround } from '../world/terrain.js';
 import { C } from './palette.js';
 import { night } from './figure3d.js';
@@ -18,7 +19,6 @@ export function hasWebGL() {
   }
 }
 
-const CHUNK = 16; // ground cells in a chunk
 export const VIEW = Object.freeze({ elevation: Math.atan(0.5), zooms: [26, 40], lag: 4 });
 
 // One renderer for the game: a browser has only a few WebGL contexts.
@@ -77,17 +77,28 @@ function geometryOf(m, offset) {
 
 // The ink lines as quads that turn to the camera in the vertex shader. A group: { segs (flat list
 // of [ax, ay, az, bx, by, bz] in world units), w (the width of the lines), owners, outer (one value
-// for each line; see meshGrid) }.
+// for each line; see meshGrid), hull (the silhouette of a smooth look: triangles drawn in ink from
+// the back only) }.
 function inkGeometry(groups) {
   let count = 0;
-  for (const { segs } of groups) count += segs.length / 6;
-  const pos = new Float32Array(count * 12);
-  const other = new Float32Array(count * 12);
-  const side = new Float32Array(count * 4);
-  const width = new Float32Array(count * 4);
-  const owner = new Float32Array(count * 4);
-  const outer = new Float32Array(count * 4);
-  const idx = new Uint32Array(count * 6);
+  let hullVerts = 0;
+  let hullIdx = 0;
+  for (const { segs, hull } of groups) {
+    count += segs.length / 6;
+    if (hull) {
+      hullVerts += hull.positions.length / 3;
+      hullIdx += hull.indices.length;
+    }
+  }
+  const verts = count * 4 + hullVerts;
+  const pos = new Float32Array(verts * 3);
+  const other = new Float32Array(verts * 3);
+  const side = new Float32Array(verts);
+  const width = new Float32Array(verts);
+  const owner = new Float32Array(verts);
+  const outer = new Float32Array(verts);
+  const isHull = new Float32Array(verts);
+  const idx = new Uint32Array(count * 6 + hullIdx);
   let n = 0;
   for (const g of groups) {
     const { segs, w } = g;
@@ -109,6 +120,23 @@ function inkGeometry(groups) {
       n += 1;
     }
   }
+  // The hulls after the lines: no width, and `other` only to the side, so that the shader keeps them.
+  let v = n * 4;
+  let k = n * 6;
+  for (const g of groups) {
+    if (!g.hull) continue;
+    const who = g.owners?.[0] ?? 0;
+    const base = v;
+    for (let i = 0; i < g.hull.positions.length; i += 3) {
+      pos.set([g.hull.positions[i], g.hull.positions[i + 1], g.hull.positions[i + 2]], v * 3);
+      other.set([g.hull.positions[i] + 1, g.hull.positions[i + 1], g.hull.positions[i + 2]], v * 3);
+      owner[v] = g.who ?? who;
+      outer[v] = 1;
+      isHull[v] = 1;
+      v += 1;
+    }
+    for (const i of g.hull.indices) idx[k++] = base + i;
+  }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('other', new THREE.BufferAttribute(other, 3));
@@ -116,6 +144,7 @@ function inkGeometry(groups) {
   g.setAttribute('width', new THREE.BufferAttribute(width, 1));
   g.setAttribute('owner', new THREE.BufferAttribute(owner, 1));
   g.setAttribute('outer', new THREE.BufferAttribute(outer, 1));
+  g.setAttribute('hull', new THREE.BufferAttribute(isHull, 1));
   g.setIndex(new THREE.BufferAttribute(idx, 1));
   g.computeBoundingSphere();
   return g;
@@ -129,10 +158,11 @@ function inkMaterial(uniforms) {
     side: THREE.DoubleSide,
     transparent: true,
     vertexShader: `
-      attribute vec3 other; attribute float side; attribute float width; attribute float owner; attribute float outer;
+      attribute vec3 other; attribute float side; attribute float width; attribute float owner; attribute float outer; attribute float hull;
       uniform vec3 uView; uniform sampler2D uFade; uniform float uFadeSize;
-      varying float vAlpha;
+      varying float vAlpha; varying float vHull;
       void main() {
+        vHull = hull;
         float fade = owner > 0.5 ? texture2D(uFade, vec2((owner + 0.5) / uFadeSize, 0.5)).r : 0.0;
         vAlpha = 1.0 - fade * (outer > 0.5 ? 0.67 : 1.0);
         vec3 d = normalize(other - position);
@@ -140,115 +170,13 @@ function inkMaterial(uniforms) {
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position + p - d * width * 0.5, 1.0);
       }`,
     fragmentShader: `
-      uniform float uNight; varying float vAlpha;
+      uniform float uNight; varying float vAlpha; varying float vHull;
       void main() {
-        if (vAlpha < 0.02) discard;
+        // A hull shows only from the back: its front is behind the look, as a line around it.
+        if (vAlpha < 0.02 || (vHull > 0.5 && gl_FrontFacing)) discard;
         gl_FragColor = vec4(mix(vec3(0.122, 0.106, 0.09), vec3(0.2, 0.2, 0.26), uNight * 0.5), vAlpha);
       }`,
   });
-}
-
-// A smooth thatch roof (fine units in r): two slopes whose ridge sweeps up at the ends like a
-// boat, a ridge cap, the gables, and bird-head finials on the đình. Return { mesh, segs, extras }.
-function roofMesh(r, material) {
-  const S = 0.5;
-  const x0 = r.x0 * S;
-  const x1 = r.x1 * S;
-  const z0 = r.z0 * S;
-  const z1 = r.z1 * S;
-  const y = r.y * S;
-  const zc = (z0 + z1) / 2;
-  const hd = r.ridgeH * S;
-  const seg = 12;
-  const pos = [];
-  const col = [];
-  const own = [];
-  const idx = [];
-  const segs = [];
-  const base = colorIndex(r.color);
-  const ridge = colorIndex(r.ridge);
-  // The ends of the ridge rise by `sweep` ground blocks (one on a house, two on the đình).
-  const sweep = r.sweep ?? 1;
-  const ridgeY = (t) => y + hd + sweep * Math.abs(t) ** 3.2;
-  const eaveY = (t) => y + 0.5 * sweep * Math.abs(t) ** 4;
-  let n = 0;
-  const quad = (pts, c, tone, flip) => {
-    const rgb = toneRgb(c, tone);
-    for (const p of pts) {
-      pos.push(...p);
-      col.push(...rgb);
-      own.push(r.who ?? 0);
-    }
-    if (flip) idx.push(n, n + 2, n + 1, n, n + 3, n + 2);
-    else idx.push(n, n + 1, n + 2, n, n + 2, n + 3);
-    n += pts.length;
-  };
-  const outer = [];
-  const line = (a, b, out = 1) => {
-    segs.push(a[0], a[1], a[2], b[0], b[1], b[2]);
-    outer.push(out);
-  };
-  for (const sideZ of [-1, 1]) {
-    for (let i = 0; i < seg; i++) {
-      const ta = (i / seg) * 2 - 1;
-      const tb = ((i + 1) / seg) * 2 - 1;
-      const xa = x0 + ((x1 - x0) * i) / seg;
-      const xb = x0 + ((x1 - x0) * (i + 1)) / seg;
-      const ez = zc + sideZ * (z1 - zc);
-      const pts = [[xa, ridgeY(ta), zc], [xb, ridgeY(tb), zc], [xb, eaveY(tb), ez], [xa, eaveY(ta), ez]];
-      quad(pts, base, sideZ < 0 ? 0.86 : 0.98, sideZ > 0);
-      line(pts[3], pts[2]);
-      if (i % 2 === 0) line(pts[0], pts[3], 0);
-    }
-  }
-  for (let i = 0; i < seg; i++) {
-    const ta = (i / seg) * 2 - 1;
-    const tb = ((i + 1) / seg) * 2 - 1;
-    const xa = x0 + ((x1 - x0) * i) / seg;
-    const xb = x0 + ((x1 - x0) * (i + 1)) / seg;
-    for (const [za, zb, tone, flip] of [[zc - 0.22, zc, 1, false], [zc, zc + 0.22, 0.92, true]]) {
-      const pts = [[xa, ridgeY(ta) + 0.16, za], [xb, ridgeY(tb) + 0.16, za], [xb, ridgeY(tb) + 0.16, zb], [xa, ridgeY(ta) + 0.16, zb]];
-      quad(pts, ridge, tone, false);
-      if (flip) line(pts[3], pts[2]);
-      else line(pts[0], pts[1]);
-    }
-  }
-  for (const [x, t] of [[x0, -1], [x1, 1]]) {
-    const rgb = toneRgb(base, 0.72);
-    const tri = [[x, ridgeY(t), zc], [x, eaveY(t), z1], [x, eaveY(t), z0]];
-    for (const p of tri) {
-      pos.push(...p);
-      col.push(...rgb);
-      own.push(r.who ?? 0);
-    }
-    idx.push(n, n + 1, n + 2);
-    n += 3;
-    line(tri[0], tri[1]);
-    line(tri[0], tri[2]);
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('tone', new THREE.Float32BufferAttribute(col, 3));
-  g.setAttribute('owner', new THREE.Float32BufferAttribute(own, 1));
-  g.setIndex(idx);
-  g.computeBoundingSphere();
-  const mesh = new THREE.Mesh(g, material);
-  const extras = [];
-  if (r.finials) {
-    // A bird head at each end of the ridge, as on the bronze drums.
-    for (const [x, t, dir] of [[x0, -1, -1], [x1, 1, 1]]) {
-      const by = ridgeY(t) + 0.2;
-      const add = (w, h, d, color, px, py) => {
-        const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshBasicMaterial({ color: new THREE.Color(C[color]) }));
-        m.position.set(px, py, zc);
-        extras.push(m);
-      };
-      add(0.3, 1.2, 0.3, 'ochre', x + dir * 0.1, by + 0.6);
-      add(0.6, 0.45, 0.45, 'ochre', x + dir * 0.5, by + 1.25);
-      add(0.5, 0.2, 0.2, 'vermilion', x + dir * 0.95, by + 1.2);
-    }
-  }
-  return { mesh, segs, outer, owners: outer.map(() => r.who ?? 0), extras };
 }
 
 // The wave pattern of the prints, for the river.
@@ -306,36 +234,32 @@ export function createVoxelWorld(canvas, terrain) {
   const solidMat = track(flatMaterial(uniforms, false));
   const ghostMat = track(flatMaterial(uniforms, true));
 
-  const inkGroups = [];
+  // The meshes of each chunk: built at the start, and again after a change of the terrain.
+  const inkMat = track(inkMaterial(uniforms));
   const thingMeshes = [];
-  const g = terrain.ground;
-  const f = terrain.fine;
-  // Ground: full blocks. The faces under a fine block stay (the fine blocks are small).
-  for (const c of chunksOf(g, CHUNK)) {
-    const m = meshGrid(g, { ...c, scale: 1, shade: terrain.shade });
-    if (!m.indices.length) continue;
-    scene.add(new THREE.Mesh(track(geometryOf(m, [0, 0, 0])), solidMat));
-    inkGroups.push({ segs: m.segments, w: 0.14, owners: m.segOwners, outer: m.segOuter });
+  const chunkMeshes = new Map(); // key -> [ground, things, ink]
+  const chunks = createChunks(terrain);
+  const geometry = (m) => geometryOf(m, [0, 0, 0]);
+  function buildChunk(c) {
+    for (const old of chunkMeshes.get(c.key) ?? []) {
+      scene.remove(old);
+      old.geometry.dispose();
+      const i = thingMeshes.indexOf(old);
+      if (i >= 0) thingMeshes.splice(i, 1);
+    }
+    const m = chunkMesh(terrain, c.cx, c.cz);
+    const made = [];
+    if (m.ground.indices.length) made.push(new THREE.Mesh(geometry(m.ground), solidMat));
+    if (m.things.indices.length) {
+      const things = new THREE.Mesh(geometry(m.things), ghostMat);
+      thingMeshes.push(things);
+      made.push(things);
+    }
+    if (m.ink.some((k) => k.segs.length || k.hull)) made.push(new THREE.Mesh(inkGeometry(m.ink), inkMat));
+    for (const mesh of made) scene.add(mesh);
+    chunkMeshes.set(c.key, made);
   }
-  // Props: half-size blocks. A face that touches the ground is hidden.
-  const underGround = (x, y, z) => g.get(x >> 1, y >> 1, z >> 1) > 0;
-  for (const c of chunksOf(f, CHUNK * 2)) {
-    const m = meshGrid(f, { ...c, scale: 0.5, other: underGround });
-    if (!m.indices.length) continue;
-    const mesh = new THREE.Mesh(track(geometryOf(m, [0, 0, 0])), ghostMat);
-    scene.add(mesh);
-    thingMeshes.push(mesh);
-    inkGroups.push({ segs: m.segments, w: 0.1, owners: m.segOwners, outer: m.segOuter });
-  }
-  // Roofs.
-  for (const r of terrain.roofs) {
-    const roof = roofMesh(r, ghostMat);
-    track(roof.mesh.geometry);
-    scene.add(roof.mesh, ...roof.extras);
-    thingMeshes.push(roof.mesh);
-    inkGroups.push({ segs: roof.segs, w: 0.11, owners: roof.owners, outer: roof.outer });
-  }
-  scene.add(new THREE.Mesh(track(inkGeometry(inkGroups)), track(inkMaterial(uniforms))));
+  for (const c of chunks.list) buildChunk(c);
 
   // Water: one mesh for all the water cells, with the wave pattern.
   const waves = track(waveTexture());
@@ -502,6 +426,7 @@ export function createVoxelWorld(canvas, terrain) {
       focus.y += (hero.y + 1.5 - focus.y) * k;
       focus.z += (hero.z - focus.z) * k;
       place();
+      chunks.rebuild(buildChunk);
       updateFades(hero, dt);
       waves.offset.y = (t * 0.04) % 1;
       // In the rain the river rises one block.
@@ -562,12 +487,17 @@ export function createVoxelWorld(canvas, terrain) {
       }
       return { x0, y0, x1, y1 };
     },
+    // A change of the terrain (src/world/chunks.js: dig, fell): its chunks are built again before
+    // the next frame.
+    edit(keys) { chunks.mark(keys); },
+    get builds() { return chunks.builds; },
     // What the last frame drew (for tests of the speed on real devices).
     stats: () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles }),
     // The depth of a world point along the view (larger is nearer the camera).
     nearness: (x, y, z) => -(x * view.x + y * view.y + z * view.z),
     dispose() {
       for (const d of disposables) d.dispose?.();
+      for (const list of chunkMeshes.values()) for (const m of list) m.geometry.dispose();
       scene.clear();
     },
   };

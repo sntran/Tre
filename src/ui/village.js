@@ -41,8 +41,8 @@ async function loadDrawing() {
 }
 
 // The terrain of a map, made once.
-export function terrainOf(map, tileTypes, tileMap) {
-  if (!terrains.has(map.id)) terrains.set(map.id, buildTerrain(map, tileTypes, tileMap));
+export function terrainOf(map, tileTypes, tileMap, blocks = null) {
+  if (!terrains.has(map.id)) terrains.set(map.id, buildTerrain(map, tileTypes, tileMap, blocks));
   return terrains.get(map.id);
 }
 
@@ -66,7 +66,7 @@ export function villageSession(ctx) {
     learner: () => ctx.learner,
     log: (kind, fields) => ctx.log(kind, fields),
     save: (reason) => ctx.save(reason),
-    terrainOf: (map, tileMap) => terrainOf(map, ctx.data.tiles.types, tileMap),
+    terrainOf: (map, tileMap) => terrainOf(map, ctx.data.tiles.types, tileMap, ctx.data.blocks),
     switches: ctx.experiments?.switches ?? null,
   });
 }
