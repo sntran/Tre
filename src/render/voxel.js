@@ -267,25 +267,44 @@ export function createVoxelWorld(canvas, terrain) {
   }
   for (const c of chunks.list) buildChunk(c);
 
-  // Water: one mesh for all the water cells, with the wave pattern.
+  // Water: one plane over the map, with the wave pattern. A mask of the water cells (one texel for
+  // each cell, read with a linear filter) keeps the plane over the water only, also when the river
+  // rises in the rain, and its soft edge gives a narrow pale strip where the water meets the bank.
   const waves = track(waveTexture());
   let riverMesh = null;
   if (terrain.water.length) {
-    const pos = [];
-    const uv = [];
-    const idx = [];
-    terrain.water.forEach((w, i) => {
-      for (const [dx, dz] of [[0, 0], [1, 0], [1, 1], [0, 1]]) {
-        pos.push(w.x + dx, w.y, w.z + dz);
-        uv.push((w.x + dx) / 4, (w.z + dz) / 4);
-      }
-      idx.push(i * 4, i * 4 + 2, i * 4 + 1, i * 4, i * 4 + 3, i * 4 + 2);
-    });
-    const wg = track(new THREE.BufferGeometry());
-    wg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    wg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
-    wg.setIndex(idx);
-    riverMesh = new THREE.Mesh(wg, track(nightMaterial({ map: waves })));
+    const W = terrain.width;
+    const H = terrain.height;
+    const mask = new Uint8Array(W * H * 4);
+    for (const w of terrain.water) mask[(w.z * W + w.x) * 4] = 255;
+    const maskTex = track(new THREE.DataTexture(mask, W, H, THREE.RGBAFormat));
+    maskTex.magFilter = THREE.LinearFilter;
+    maskTex.minFilter = THREE.LinearFilter;
+    maskTex.needsUpdate = true;
+    const plane = track(new THREE.PlaneGeometry(W, H).rotateX(-Math.PI / 2).translate(W / 2, terrain.water[0].y, H / 2));
+    const pale = new THREE.Color(C.paper);
+    const waterMat = track(new THREE.ShaderMaterial({
+      uniforms: { uWaves: { value: waves }, uMask: { value: maskTex }, uSize: { value: new THREE.Vector2(W, H) }, uPale: { value: new THREE.Vector3(pale.r, pale.g, pale.b) } },
+      vertexShader: `
+        varying vec2 vXZ;
+        void main() {
+          vec4 p = modelMatrix * vec4(position, 1.0);
+          vXZ = p.xz;
+          gl_Position = projectionMatrix * viewMatrix * p;
+        }`,
+      fragmentShader: `
+        uniform sampler2D uWaves; uniform sampler2D uMask; uniform vec2 uSize; uniform vec3 uPale;
+        varying vec2 vXZ;
+        void main() {
+          float m = texture2D(uMask, vXZ / uSize).r;
+          if (m < 0.5) discard;
+          vec3 c = texture2D(uWaves, vXZ / 4.0 + uWavesOffset).rgb;
+          // The bank: a narrow strip of the pale tone where the water ends.
+          gl_FragColor = vec4(m < 0.8 ? mix(uPale, c, 0.45) : c, 1.0);
+        }`.replace('uniform sampler2D uWaves;', 'uniform sampler2D uWaves; uniform vec2 uWavesOffset;'),
+    }));
+    waterMat.uniforms.uWavesOffset = { value: new THREE.Vector2(0, 0) };
+    riverMesh = new THREE.Mesh(plane, waterMat);
     scene.add(riverMesh);
   }
   // Paddies: still, pale water, with rows of seedlings.
@@ -434,7 +453,7 @@ export function createVoxelWorld(canvas, terrain) {
       place();
       chunks.rebuild(buildChunk);
       updateFades(hero, dt);
-      waves.offset.y = (t * 0.04) % 1;
+      if (riverMesh) riverMesh.material.uniforms.uWavesOffset.value.y = (t * 0.04) % 1;
       // In the rain the river rises one block.
       if (riverMesh) riverMesh.position.y = sky?.flood ?? 0;
       const night = sky?.night ?? 0;
