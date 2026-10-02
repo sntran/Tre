@@ -43,7 +43,7 @@ Write all text in ASD-STE100 Simplified Technical English. This rule applies to 
 
 ## Art
 
-All art in `art/` is original SVG in the style of Đông Hồ folk paintings. Do not copy real paintings. Refer to `art/README.md`.
+Things in the world are code, not images: the land, the buildings, the people, the animals, and their portraits on the screens are built from parts and rendered (see "One look for each thing" in `docs/DESIGN.md`). The SVG files in `art/` are only the small UI icons, the logo, the paper, and the patterns of frames, in the style of Đông Hồ folk paintings. Do not copy real paintings. Refer to `art/README.md`.
 
 ## Tests
 

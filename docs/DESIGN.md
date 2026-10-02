@@ -449,7 +449,8 @@ Battles stay open at all stages. An older player can fight, build, or do both.
 - Flat colors, bold black outlines, and simple round shapes.
 - A small set of natural colors: red, yellow, green, indigo, black, and a warm paper white.
 - A paper texture in the background, as on dó paper.
-- All art is original SVG. Do not copy real Đông Hồ paintings. Use their style only.
+- All art is original. Do not copy real Đông Hồ paintings. Use their style only.
+- **One look for each thing.** Everything in the world, and every picture of it on a screen, comes from the same code: portraits in the dialogue box and the HUD, the hero in hero creation, the cards of the callings, and the prints of the notebook are rendered from the voxel figures and props, with a mood on the face where it matters. SVG is only for the small UI icons, the logo, the paper, and the patterns of frames.
 
 **Sound:** simple music from traditional instruments (đàn bầu, sáo trúc, trống). Short sound effects for hits, elements, and machines. A parent can turn music and sound off.
 

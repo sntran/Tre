@@ -447,7 +447,8 @@ Trận đánh vẫn mở ở mọi giai đoạn. Người chơi lớn hơn có t
 - Màu phẳng, nét viền đen đậm và hình dáng tròn trịa, đơn giản.
 - Một bộ màu tự nhiên nhỏ: đỏ, vàng, xanh lá, chàm, đen và trắng giấy ấm.
 - Nền có vân giấy, như trên giấy dó.
-- Toàn bộ mỹ thuật là SVG vẽ mới. Không sao chép tranh Đông Hồ thật. Chỉ dùng phong cách của tranh.
+- Toàn bộ mỹ thuật là vẽ mới. Không sao chép tranh Đông Hồ thật. Chỉ dùng phong cách của tranh.
+- **Mỗi thứ chỉ có một dáng vẻ.** Mọi thứ trong thế giới, và mọi hình ảnh của nó trên màn hình, đều sinh ra từ cùng một mã: chân dung trong khung hội thoại và trên HUD, nhân vật trong màn tạo nhân vật, thẻ các nghề, và tranh trong sổ tay đều được dựng từ nhân vật và đồ vật voxel, với nét mặt theo tâm trạng khi cần. SVG chỉ dùng cho các biểu tượng nhỏ của giao diện, logo, giấy, và hoa văn khung.
 
 **Âm thanh:** nhạc đơn giản từ nhạc cụ truyền thống (đàn bầu, sáo trúc, trống). Hiệu ứng âm thanh ngắn cho đòn đánh, các nguyên tố và máy móc. Phụ huynh có thể tắt nhạc và âm thanh.
 
