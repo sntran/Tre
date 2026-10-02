@@ -39,6 +39,8 @@ import { saveWorld, loadWorld, setHeroPlace } from './world/save.js';
 import { createI18n } from './i18n.js';
 import { STEP } from './world/step.js';
 import { along } from './world/raids.js';
+import { heroLook } from '../world/figures.js';
+import { speakerLook } from '../world/portraits.js';
 
 // The time of the start of a story (a Monday morning), so that a story always gives the same
 // result. The time of play goes on with the steps of the world.
@@ -50,7 +52,7 @@ const WORLD_TEXT = /[0-9+−×÷=?]/;
 // The profile at the start of a story.
 export function storyProfile(story, { now = STORY_EPOCH } = {}) {
   const p = story.profile ?? {};
-  const profile = createProfile({ id: `story-${story.name}`, name: p.name ?? 'An', gender: p.gender ?? 'boy', grade: p.grade ?? 2, lang: p.lang ?? 'vi', seed: p.seed ?? 1, now });
+  const profile = createProfile({ id: `story-${story.name}`, name: p.name ?? 'An', gender: p.gender ?? 'boy', skin: p.skin, face: p.face, hair: p.hair, clothes: p.clothes, grade: p.grade ?? 2, lang: p.lang ?? 'vi', seed: p.seed ?? 1, now });
   Object.assign(profile.flags, p.flags ?? {});
   for (const [item, n] of Object.entries(p.items ?? {})) profile.inventory[item] = n;
   if (p.party) {
@@ -244,6 +246,20 @@ export function checkFact(fact, ctx) {
     if (f.holding !== undefined && Boolean(hero.hands?.holds) !== f.holding) return `the hands of the hero: ${hero.hands?.holds ?? 'empty'}`;
     if (f.falls !== undefined && Boolean(hero.fall) !== f.falls) return `the hero falls: ${Boolean(hero.fall)}`;
     if (f.riding !== undefined && Boolean(hero.riding) !== f.riding) return `the hero rides: ${Boolean(hero.riding)}`;
+    return null;
+  }
+  if (fact.portrait) {
+    // The look that the portrait of a speaker shows (data/figures.json and the hero of the
+    // profile), and the mood of the last line of that speaker.
+    const f = fact.portrait;
+    const figures = session.data.figures;
+    const look = speakerLook(f.speaker, { figures: figures.figures, flags: session.profile.flags, hero: heroLook(session.profile.hero, figures.hero) });
+    if (!look) return `no portrait for ${f.speaker}`;
+    for (const [k, v] of Object.entries(f.look ?? {})) if (look[k] !== v) return `the portrait of ${f.speaker} has ${k} ${look[k]}, not ${v}`;
+    if (f.mood) {
+      const line = [...ctx.events].reverse().find((ev) => ev.type === 'open' && ev.speaker === f.speaker);
+      if ((line?.mood ?? 'calm') !== f.mood) return `the last line of ${f.speaker} has the mood ${line?.mood ?? 'none'}, not ${f.mood}`;
+    }
     return null;
   }
   if (fact.entity) {

@@ -1,5 +1,5 @@
 // Things: the well, haystacks, pots, rocks, ore, boats, the signpost, the gate, fences, rice
-// stacks, and the mountain. Units are fine blocks.
+// stacks, the mountain, the gate of Văn Miếu, and a stele on a turtle. Units are fine blocks.
 import { levelOf } from './houses.js';
 
 const center = (o) => ({ x: o.fx + Math.floor(o.fw / 2), z: o.fz + Math.floor(o.fd / 2) });
@@ -146,4 +146,49 @@ export function mountain(ctx, o) {
     }
   }
   ctx.shadowDisc(cx, cz, Math.floor(Math.min(rx, rz)), 6);
+}
+
+// The gate of Văn Miếu across the road: two brick pillars, a beam, an upper wall with a round
+// window, and a roof of red tiles in two steps with a light ridge. The road goes through it (along x).
+export function vanmieuGate(ctx, o) {
+  const { fx, fz, fw, fd } = o;
+  const g = levelOf(ctx, fx, fz, fw, fd);
+  const x0 = fx;
+  const x1 = fx + fw - 1;
+  for (const [z0, z1] of [[fz, fz + 3], [fz + fd - 4, fz + fd - 1]]) {
+    for (let y = g; y <= g + 8; y++) ctx.box(x0, y, z0, x1, y, z1, y % 3 === 2 ? 'vermilionPale' : 'paperDeep');
+  }
+  // The beam over the way, and the upper wall with a round window (a ring of dark blocks).
+  ctx.box(x0, g + 9, fz, x1, g + 9, fz + fd - 1, 'wood');
+  ctx.box(x0, g + 10, fz + 1, x1, g + 12, fz + fd - 2, 'paperDeep');
+  const mz = fz + Math.floor(fd / 2);
+  for (const [dy, dz] of [[1, -1], [1, 0], [0, -2], [0, 1], [2, -2], [2, 1], [3, -1], [3, 0]]) ctx.set(x1, g + 9 + dy, mz + dz, 'ink');
+  // The roof: two steps of red tiles that reach out over the wall, a light ridge, and ends that turn up.
+  ctx.box(x0 - 1, g + 13, fz - 1, x1 + 1, g + 13, fz + fd, 'vermilion');
+  ctx.box(x0, g + 14, fz, x1, g + 14, fz + fd - 1, 'vermilion');
+  ctx.box(x0, g + 15, fz + 1, x1, g + 15, fz + fd - 2, 'ochre');
+  for (const z of [fz - 1, fz + fd]) for (const x of [x0 - 1, x1 + 1]) ctx.set(x, g + 14, z, 'ochre');
+  ctx.shadowDisc(fx + fw / 2, fz + fd / 2, 3, 2);
+}
+
+// A stele of the doctors on a stone turtle: the turtle has a stepped shell, a head to the front
+// (+z), and four feet; the slab stands on its back with lines of writing as dark marks.
+export function stele(ctx, o) {
+  const { x, z } = center(o);
+  const g = ctx.ground(x, z);
+  const sx = x - 2;
+  const sz = z - 2;
+  // The turtle.
+  ctx.box(sx, g, sz, sx + 3, g + 1, sz + 3, 'ash');
+  ctx.box(sx + 1, g + 2, sz + 1, sx + 2, g + 2, sz + 2, 'ashLight');
+  ctx.box(sx + 1, g, sz + 4, sx + 2, g + 1, sz + 4, 'ash');
+  ctx.set(sx + 1, g + 1, sz + 5, 'ashLight');
+  ctx.set(sx + 2, g + 1, sz + 5, 'ashLight');
+  for (const [fx2, fz2] of [[sx - 1, sz], [sx + 4, sz], [sx - 1, sz + 3], [sx + 4, sz + 3]]) ctx.set(fx2, g, fz2, 'ash');
+  // The slab, with a rounded top and lines of writing.
+  ctx.box(sx + 1, g + 3, sz + 1, sx + 2, g + 10, sz + 2, 'paperDeep');
+  ctx.box(sx + 1, g + 11, sz + 1, sx + 2, g + 11, sz + 2, 'ashLight');
+  for (let y = g + 4; y <= g + 9; y += 2) ctx.set(sx + 1, y, sz + 2, 'ink');
+  for (let y = g + 5; y <= g + 9; y += 2) ctx.set(sx + 2, y, sz + 2, 'ink');
+  ctx.shadowDisc(x, z, 2, 2);
 }

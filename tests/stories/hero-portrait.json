@@ -1,0 +1,17 @@
+{
+  "name": "hero-portrait",
+  "about": {
+    "vi": "Một bạn gái với màu da và kiểu tóc khác chọn lúc tạo nhân vật, rồi nói chuyện với cụ già làng: chân dung trong khung trò chuyện và ở góc màn hình giống nhân vật đã chọn, và cụ già làng cười.",
+    "en": "A girl hero with another skin and another hair from hero creation talks with the elder: the portrait in the talk and in the corner looks like the chosen hero, and the elder smiles."
+  },
+  "profile": { "name": "Mai", "gender": "girl", "skin": 4, "hair": 5, "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "steps": [
+    { "expect": [{ "portrait": { "speaker": "hero", "look": { "skin": "skin4", "hair": "bun", "bottomKind": "skirt", "topKind": "yem", "face": 1 } } }] },
+    { "tap": { "entity": "npc:elder" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue", "speaker": "elder" }, "timeout": 40 } },
+    { "expect": [{ "text": { "shown": "dlg.elder.intro.n1" } }, { "portrait": { "speaker": "elder", "look": { "hair": "grey", "beard": true }, "mood": "happy" } }] },
+    { "read": true },
+    { "expect": [{ "flag": "prologue.started" }, { "portrait": { "speaker": "hero", "look": { "skin": "skin4", "hair": "bun" } } }] }
+  ]
+}

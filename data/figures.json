@@ -1,5 +1,23 @@
 {
   "_about": "The looks of the people, the enemies, and the animals of the world. The code builds each figure from parts (src/world/figures.js). A person: child, skin (skin1 to skin4), top, bottom, sash (palette colors), topKind (shirt, yem, bare, robe), bottomKind (shorts, skirt, trousers, robe), hair (short, topknot, long, braids, bun, tufts, grey, bald), beard (true or a color), hat (non, band, helmet, plume), item (staff, fish, lantern, hammer, axe, net, basket, scroll, fan, drum, or plank-3 to plank-5 on the shoulder), face (1 to 4), scale. An animal: kind (nghe, duck, serpent). The small joys: kind (duckling, frog, lily-pad, kingfisher, golden-shoot, puddle, banh-chung, lion). A thing: kind (pot, lantern, cart, plank: a plank of n half blocks with a dot on each, deck: a part of the bridge deck, n half blocks long and w wide; plank-ghost: the outline of a plank for the prediction, on: filled; gap: the marks of n missing units of a gap). The keys are the ids of people in npcs.json, the figure of an encounter or a decor point on a map, and the ids of friends in friends.json. The things of the Five Trials (workThing in src/world/figures.js): rod, rod-bundle, mat, band, ore, bucket, trough, iron (glow 0 to 3, bent, blade), stake, float, tide (n), fish-trap, herb (ngai, tiato, rauma), basket, stem (n), chalk, and sticks (n).",
+  "_heroAbout": "hero: the choices of hero creation. The profile keeps the number of each choice (1 is the first). genders: the clothes of a boy and of a girl; skins, faces, and hairs: the skin colors, the faces (1 to 4), and the hair styles; clothes: the colors of the top, the bottom, and the sash.",
+  "hero": {
+    "genders": { "boy": { "topKind": "shirt", "bottomKind": "shorts" }, "girl": { "topKind": "yem", "bottomKind": "skirt" } },
+    "skins": ["skin1", "skin2", "skin3", "skin4"],
+    "faces": [1, 2, 3, 4],
+    "hairs": ["short", "topknot", "long", "braids", "bun", "tufts"],
+    "clothes": [
+      { "top": "indigo", "bottom": "indigo", "sash": "vermilion" },
+      { "top": "ochre", "bottom": "wood", "sash": "yellow" },
+      { "top": "vermilionPale", "bottom": "indigo", "sash": "green" },
+      { "top": "green", "bottom": "wood", "sash": "vermilion" }
+    ]
+  },
+  "_viewsAbout": "views: the props of the world that a screen shows as a rendered view (src/world/portraits.js, propMesh): the kind of prop, its size in map cells (w, h), and a seed.",
+  "views": {
+    "vanmieu-gate": { "prop": "vanmieu-gate", "w": 2, "h": 8, "seed": 1 },
+    "stele": { "prop": "stele", "w": 4, "h": 4, "seed": 1 }
+  },
   "figures": {
     "grandma": { "skin": "skin2", "top": "wood", "bottom": "indigo", "sash": "ochre", "topKind": "shirt", "bottomKind": "skirt", "hair": "grey", "item": "fan", "face": 2 },
     "mother": { "skin": "skin2", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "yem", "bottomKind": "skirt", "hair": "bun", "face": 2 },
@@ -18,6 +36,13 @@
     "soldier": { "skin": "skin2", "top": "ink", "bottom": "ash", "sash": "vermilion", "topKind": "shirt", "bottomKind": "trousers", "hair": "short", "hat": "helmet", "item": "staff", "face": 3 },
     "general": { "skin": "skin2", "top": "vermilion", "bottom": "ink", "sash": "yellow", "topKind": "robe", "bottomKind": "robe", "hair": "short", "beard": "ink", "hat": "plume", "item": "staff", "face": 3, "scale": 0.8 },
     "river-serpent": { "kind": "serpent" },
+    "song": { "kind": "serpent", "scale": 0.5, "belly": "yellowPale" },
+    "mentor-scholar": { "skin": "skin2", "top": "indigo", "bottom": "indigo", "sash": "paperDeep", "topKind": "robe", "bottomKind": "robe", "hair": "grey", "beard": true, "item": "scroll", "face": 1 },
+    "mentor-smith": { "skin": "skin3", "top": "wood", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "trousers", "hair": "short", "hat": "band", "item": "hammer", "face": 2 },
+    "mentor-fisher": { "skin": "skin3", "top": "indigo", "bottom": "indigo", "sash": "diep", "topKind": "bare", "bottomKind": "shorts", "hair": "topknot", "item": "net", "face": 2 },
+    "mentor-healer": { "skin": "skin2", "top": "ochre", "bottom": "ochre", "sash": "wood", "topKind": "robe", "bottomKind": "robe", "hair": "bald", "item": "basket", "face": 1 },
+    "mentor-woodcutter": { "skin": "skin3", "top": "green", "bottom": "wood", "sash": "ochre", "topKind": "bare", "bottomKind": "shorts", "hair": "long", "item": "axe", "face": 2 },
+    "examiner": { "skin": "skin2", "top": "indigo", "bottom": "indigo", "sash": "yellow", "topKind": "robe", "bottomKind": "robe", "hair": "topknot", "beard": "ink", "item": "scroll", "face": 3 },
     "nghe": { "kind": "nghe" },
     "duck": { "kind": "duck" },
     "chicken": { "kind": "chicken", "color": "diep" },

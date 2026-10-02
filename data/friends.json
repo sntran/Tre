@@ -3,8 +3,8 @@
   "_nameAbout": "gloss: the glossary id of the name of the friend. The player can choose another name. The texts use the chosen name in place of the glossary name.",
   "_rideAbout": "ride: optional, for later eras. A friend with a ride block can carry the hero on the map. speed: a factor for the walk speed. over: the kinds of tiles that the friend can cross. Era 1 does not use it yet.",
   "friends": {
-    "nghe": { "art": "friend/nghe", "voice": "creature", "gloss": "nghecalf", "nameKey": "npc.nghe.name", "element": "earth", "help": { "type": "heart", "amount": 1 }, "helpKey": "friend.nghe.help",
+    "nghe": { "voice": "creature", "gloss": "nghecalf", "nameKey": "npc.nghe.name", "element": "earth", "help": { "type": "heart", "amount": 1 }, "helpKey": "friend.nghe.help",
       "ride": { "speed": 1.25, "over": ["grass", "field", "mud"] } },
-    "song": { "art": "friend/song", "voice": "creature", "gloss": "song", "nameKey": "npc.song.name", "element": "water", "help": { "type": "shield", "amount": 1 }, "helpKey": "friend.song.help" }
+    "song": { "voice": "creature", "gloss": "song", "nameKey": "npc.song.name", "element": "water", "help": { "type": "shield", "amount": 1 }, "helpKey": "friend.song.help" }
   }
 }

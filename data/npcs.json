@@ -3,7 +3,7 @@
  "npcs": {
   "elder": {
    "voice": "elderMan",
-   "art": "npc/elder",
+   
    "talk": [
     {
      "when": {
@@ -82,7 +82,7 @@
   },
   "teacher": {
    "voice": "man",
-   "art": "npc/teacher",
+   
    "talk": [
     {
      "when": {
@@ -108,7 +108,7 @@
   },
   "smith": {
    "voice": "man",
-   "art": "npc/smith",
+   
    "talk": [
     {
      "when": {
@@ -168,7 +168,7 @@
   },
   "fisher": {
    "voice": "man",
-   "art": "npc/fisher",
+   
    "talk": [
     {
      "when": {
@@ -205,7 +205,7 @@
   },
   "healer": {
    "voice": "elderWoman",
-   "art": "npc/healer",
+   
    "talk": [
     {
      "when": {
@@ -231,7 +231,7 @@
   },
   "woodcutter": {
    "voice": "man",
-   "art": "npc/woodcutter",
+   
    "talk": [
     {
      "when": {
@@ -280,7 +280,7 @@
   },
   "grandma": {
    "voice": "elderWoman",
-   "art": "npc/grandma",
+   
    "talk": [
     {
      "dialogue": "grandma.home"
@@ -290,7 +290,7 @@
   },
   "mother": {
    "voice": "woman",
-   "art": "npc/mother",
+   
    "talk": [
     {
      "when": {
@@ -330,7 +330,7 @@
   },
   "giong-boy": {
    "voice": "boy",
-   "art": "npc/giong-boy",
+   
    "child": true,
    "when": {
     "notFlags": [
@@ -373,7 +373,7 @@
   },
   "giong-hero": {
    "voice": "man",
-   "art": "npc/giong-hero",
+   
    "scale": 0.5,
    "when": {
     "flags": [
@@ -401,7 +401,7 @@
   },
   "messenger": {
    "voice": "man",
-   "art": "npc/messenger",
+   
    "when": {
     "flags": [
      "prologue.done"
@@ -431,7 +431,7 @@
   },
   "giong-sky": {
    "voice": "man",
-   "art": "npc/giong-hero",
+   
    "scale": 0.5,
    "nameKey": "npc.giong-hero.name",
    "when": {
@@ -450,7 +450,7 @@
   },
   "socson-elder": {
    "voice": "elderMan",
-   "art": "npc/elder",
+   
    "nameKey": "npc.socson-elder.name",
    "talk": [
     {

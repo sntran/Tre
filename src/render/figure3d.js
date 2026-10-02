@@ -86,6 +86,86 @@ function ballsMaterial() {
   });
 }
 
+// One figure as meshes in its rest pose, for a portrait (src/render/portrait.js): the parts with the
+// same flat tones as in the world, their ink outline, and the smooth parts. look: a look of
+// data/figures.json; facing: the turn of the figure (radians). Return { group, head (the point of
+// the head in the world, or null), height, dispose }.
+export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
+  const figure = figureOf(look, detail);
+  const grid = figure.grid ?? 0.5;
+  const unit = figure.scale * grid;
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  body.scale.setScalar(unit);
+  const nodes = { body };
+  const list = [];
+  for (const p of figure.parts) {
+    const node = new THREE.Group();
+    node.position.set(p.at[0], p.at[1], p.at[2]);
+    (nodes[p.parent] ?? body).add(node);
+    nodes[p.name] = node;
+    if (p.color) list.push({ node, p, rgb: toneRgb(colorIndex(p.color), 1) });
+  }
+  root.rotation.y = facing;
+  root.updateMatrixWorld(true);
+  const box = unitBox();
+  const n = list.filter((x) => x.p.shape !== 'ball').length;
+  const plain = new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, n)), 1);
+  box.setAttribute('plain', plain);
+  const parts = new THREE.InstancedMesh(box, partsMaterial(), Math.max(1, n));
+  parts.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, n) * 3), 3);
+  const hulls = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.ink), side: THREE.BackSide }), Math.max(1, n));
+  const ico = new THREE.IcosahedronGeometry(0.5, 1);
+  const nb = Math.max(1, list.length - n);
+  const balls = new THREE.InstancedMesh(ico, ballsMaterial(), nb);
+  balls.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(nb * 3), 3);
+  const ballHulls = new THREE.InstancedMesh(ico, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.ink), side: THREE.BackSide }), nb);
+  const hull = HULL / unit;
+  const m4 = new THREE.Matrix4();
+  const local = new THREE.Matrix4();
+  const tmp = new THREE.Matrix4();
+  const color = new THREE.Color();
+  let i = 0;
+  let o = 0;
+  for (const { node, p, rgb } of list) {
+    const [w, h, d] = p.size;
+    m4.multiplyMatrices(node.matrixWorld, local.makeTranslation(0, p.pivotTop ? -h / 2 : p.pivotBottom ? h / 2 : 0, 0));
+    if (p.shape === 'ball') {
+      balls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
+      ballHulls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
+      balls.setColorAt(o, color.setRGB(rgb[0], rgb[1], rgb[2]));
+      o += 1;
+      continue;
+    }
+    parts.setMatrixAt(i, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
+    hulls.setMatrixAt(i, p.mark ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
+    parts.setColorAt(i, color.setRGB(rgb[0], rgb[1], rgb[2]));
+    plain.array[i] = p.mark ? 1 : 0;
+    i += 1;
+  }
+  parts.count = i;
+  hulls.count = i;
+  balls.count = o;
+  ballHulls.count = o;
+  const group = new THREE.Group();
+  for (const m of [parts, hulls, balls, ballHulls]) {
+    m.frustumCulled = false;
+    if (m.count) group.add(m);
+  }
+  const head = nodes.head ? new THREE.Vector3().setFromMatrixPosition(nodes.head.matrixWorld) : null;
+  return {
+    group,
+    head,
+    height: figure.height * unit,
+    dispose() {
+      for (const m of [parts, hulls, balls, ballHulls]) m.material.dispose();
+      box.dispose();
+      ico.dispose();
+    },
+  };
+}
+
 // The layer of all figures. lookOf(key): the look of a key (see data/figures.json).
 // The pose that the act of an entity asks for (a raid: an enemy on a trap sits, a stunned general
 // kneels, the general lifts his staff; Nghé lowers her horns in a charge; the fisher holds up a

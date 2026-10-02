@@ -6,6 +6,7 @@ import { t, tg } from './i18n.js';
 import { speak, whenQuiet } from './speak.js';
 import { renderQuestion, feedbackLine, textOf, answerText } from './question.js';
 import { portrait } from './dialogue.js';
+import { portraitCanvas } from './portraits.js';
 import { checkAnswer } from '../core/solver.js';
 import { feedbackFor } from '../core/learner.js';
 import { createSeen, otherLevels } from '../core/fresh.js';
@@ -160,8 +161,9 @@ export function runQuiz(ctx, opts) {
   });
 }
 
-// A short panel that shows a message, an optional picture, and rewards.
-export function showMessage(ctx, { title, textKey, params: own = {}, art = null, rewards = null, speaker = null, rewardsKey = 'trial.reward', noteKey = null }) {
+// A short panel that shows a message, an optional picture (art: an SVG of the UI; look: a rendered
+// figure or view of data/figures.json, src/ui/portraits.js), and rewards.
+export function showMessage(ctx, { title, textKey, params: own = {}, art = null, look = null, rewards = null, speaker = null, rewardsKey = 'trial.reward', noteKey = null }) {
   const params = { ...ctx.textParams(), ...own };
   return new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
@@ -169,6 +171,7 @@ export function showMessage(ctx, { title, textKey, params: own = {}, art = null,
     const body = h('div', { class: 'col center', style: { alignItems: 'center' } }, [
       speaker ? portrait(ctx, speaker) : null,
       art ? img(art, '', '') : null,
+      look ? portraitCanvas(ctx, look, { framing: 'full', size: 160 }) : null,
       h('p', { class: 'prompt', text: tg(textKey, params) }),
       rewards && Object.keys(rewards).length ? h('div', { class: 'col', style: { alignItems: 'center' } }, [
         h('p', { text: t(rewardsKey) }),

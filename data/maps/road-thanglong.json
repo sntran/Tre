@@ -134,6 +134,8 @@
    {"id": "house1", "prop": "house", "x": 4, "y": 34, "w": 6, "h": 6, "seed": 152225607},
    {"id": "house2", "prop": "giong-house", "x": 12, "y": 36, "w": 6, "h": 6, "seed": 270243581},
    {"id": "sign", "prop": "signpost", "x": 4, "y": 18, "w": 2, "h": 2, "seed": 657228362},
+   {"id": "vanmieu-gate", "prop": "vanmieu-gate", "x": 0, "y": 20, "w": 2, "h": 8, "seed": 2057049499, "solid": [[0, 0], [0, 1], [1, 0], [1, 1], [0, 6], [0, 7], [1, 6], [1, 7]]},
+   {"id": "stele", "prop": "stele", "x": 4, "y": 26, "w": 4, "h": 4, "seed": 1790298104},
    {"id": "hay1", "prop": "haystack", "x": 72, "y": 26, "w": 2, "h": 2, "seed": 28471510},
    {"id": "tree1", "prop": "tree", "x": 22, "y": 2, "w": 2, "h": 2, "seed": 1077570192},
    {"id": "tree2", "prop": "tree", "x": 2, "y": 18, "w": 2, "h": 2, "seed": 1496529706},

@@ -45,10 +45,11 @@
     import { heroLook } from '../../src/world/figures.js';
     import { C } from '../../src/render/palette.js';
 
-    const looks = (await (await fetch('../../data/figures.json')).json()).figures;
+    const data = await (await fetch('../../data/figures.json')).json();
+    const looks = data.figures;
     const heroes = {
-      'hero (boy)': heroLook({ gender: 'boy', skin: 2, face: 2, hair: 2, clothes: 1 }),
-      'hero (girl)': heroLook({ gender: 'girl', skin: 3, face: 1, hair: 4, clothes: 3 }),
+      'hero (boy)': heroLook({ gender: 'boy', skin: 2, face: 2, hair: 2, clothes: 1 }, data.hero),
+      'hero (girl)': heroLook({ gender: 'girl', skin: 3, face: 1, hair: 4, clothes: 3 }, data.hero),
     };
     const lookOf = (key) => heroes[key] ?? looks[key] ?? {};
     const COLUMNS = [

@@ -9,7 +9,8 @@
 //     "d": { "speaker": "elder", "textKey": "dlg.elder.3", "effects": [{ "open": "trial", "id": "scholar" }] }
 //   }
 // }
-// A node with no "next" and no "choices" ends the dialogue.
+// A node with no "next" and no "choices" ends the dialogue. "mood" (optional): the face of the speaker in
+// the portrait (calm, happy, worried, surprised; calm when it is not given).
 // "effects" run when the node shows (or when the player picks a choice).
 import { check } from './conditions.js';
 

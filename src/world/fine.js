@@ -63,8 +63,11 @@ function hairCap(color, extra) {
 // 1 to 4 (data/figures.json): 2 smiles, 3 has the eyes higher, 4 has a small open mouth. A creature
 // (Nghé) has no brows and no cheeks. z: the front of the head; ex: the half distance of the eyes.
 // smooth: the face of a smooth head: each mark sits on the ball, the eyes are one unit larger, and
-// the mouth is a slight upward curve (a flat line on a ball reads as a frown).
-function faceParts(face, skin, { brows = true, cheeks = true, z = HEAD / 2 + 0.03, ex = 1.1, smooth = false } = {}) {
+// the mouth is a slight upward curve (a flat line on a ball reads as a frown). mood: calm, happy
+// (brows up a little, a wide smile with the ends up), worried (the inner ends of the brows up, the
+// ends of the mouth down), or surprised (brows high, large eyes, a small round mouth), for the
+// portraits (src/world/portraits.js).
+function faceParts(face, skin, { brows = true, cheeks = true, z = HEAD / 2 + 0.03, ex = 1.1, smooth = false, mood = 'calm' } = {}) {
   const out = [];
   const eyeY = face === 3 ? 0.5 : 0.1;
   const head = { parent: 'head', mark: true };
@@ -72,14 +75,34 @@ function faceParts(face, skin, { brows = true, cheeks = true, z = HEAD / 2 + 0.0
   const zAt = (x, y) => (smooth ? Math.sqrt(Math.max(0, (HEAD / 2) ** 2 - x * x - y * y)) * 0.97 + 0.06 : z);
   const big = smooth ? 1 : 0;
   const eyeX = smooth ? ex + 0.35 : ex;
+  const wide = mood === 'surprised' ? 0.25 : 0;
+  const lift = { happy: 0.15, surprised: 0.4 }[mood] ?? 0;
   for (const [side, x] of [['L', -eyeX], ['R', eyeX]]) {
-    out.push(P(`eyeW${side}`, [0.9 + big, 0.9 + big, 0.05], 'diep', [x, eyeY, zAt(x, eyeY)], head));
+    out.push(P(`eyeW${side}`, [0.9 + big + wide, 0.9 + big + wide, 0.05], 'diep', [x, eyeY, zAt(x, eyeY)], head));
     out.push(P(`eye${side}`, [0.45 + big / 2, 0.55 + big / 2, 0.06], 'ink', [x + (side === 'L' ? 0.15 : -0.15), eyeY - 0.05, zAt(x, eyeY) + 0.01], head));
-    if (brows) out.push(P(`brow${side}`, [1 + big / 2, 0.25, 0.05], 'ink', [x, eyeY + 0.85 + big / 2, zAt(x, eyeY + 0.85 + big / 2)], head));
+    const by = eyeY + 0.85 + big / 2 + lift + wide / 2;
+    if (brows && mood === 'worried') {
+      // The inner end of the brow (near the nose) is higher: two short steps.
+      const inner = x - Math.sign(x) * 0.25;
+      const outer = x + Math.sign(x) * 0.3;
+      out.push(P(`brow${side}`, [0.55, 0.25, 0.05], 'ink', [inner, by + 0.3, zAt(inner, by + 0.3)], head));
+      out.push(P(`browO${side}`, [0.55, 0.25, 0.05], 'ink', [outer, by - 0.05, zAt(outer, by - 0.05)], head));
+    } else if (brows) out.push(P(`brow${side}`, [1 + big / 2, 0.25, 0.05], 'ink', [x, by, zAt(x, by)], head));
     if (cheeks) out.push(P(`cheek${side}`, [0.75, 0.45, 0.05], PALE[skin] ?? 'vermilionPale', [x * 1.55, -0.7, zAt(x * 1.55, -0.7)], head));
   }
   const color = face === 2 || face === 4 ? 'vermilion' : 'ink';
-  if (face === 4) out.push(P('mouth', [0.6, 0.5, 0.05], 'vermilion', [0, -1.1, zAt(0, -1.1)], head));
+  // A mood that is not calm changes the mouth (the same on each face).
+  const ends = (y, w, c) => {
+    for (const s of [-1, 1]) out.push(P(`mouth${s > 0 ? 'R' : 'L'}`, [0.35, 0.25, 0.05], c, [s * (w / 2 + 0.12), y, zAt(s * (w / 2 + 0.12), y)], head));
+  };
+  if (mood === 'happy') {
+    out.push(P('mouth', [1.2, 0.3, 0.05], 'vermilion', [0, -1.2, zAt(0, -1.2)], head));
+    ends(-0.95, 1.2, 'vermilion');
+  } else if (mood === 'worried') {
+    out.push(P('mouth', [0.8, 0.25, 0.05], 'ink', [0, -1.1, zAt(0, -1.1)], head));
+    ends(-1.3, 0.8, 'ink');
+  } else if (mood === 'surprised') out.push(P('mouth', [0.6, 0.7, 0.05], 'ink', [0, -1.2, zAt(0, -1.2)], head));
+  else if (face === 4) out.push(P('mouth', [0.6, 0.5, 0.05], 'vermilion', [0, -1.1, zAt(0, -1.1)], head));
   else if (smooth) {
     // A slight smile: a middle line, and its ends a little higher.
     const w = face === 2 ? 0.8 : 0.5;
@@ -168,7 +191,7 @@ export function personFine(look, { smooth = false } = {}) {
   const onHead = { parent: 'head' };
   parts.push(P('head', [0.01, 0.01, 0.01], null, [0, headY, 0]));
   parts.push(...(smooth ? [P('skull', [HEAD, HEAD, HEAD], skin, [0, 0, 0], { ...onHead, shape: 'ball' })] : roundHead(skin, onHead)));
-  parts.push(...faceParts(look.face ?? 1, skin, { smooth }));
+  parts.push(...faceParts(look.face ?? 1, skin, { smooth, mood: look.mood }));
   const hair = look.hair ?? 'short';
   if (hair !== 'bald') {
     const hc = hair === 'grey' ? 'ashLight' : hairColor;

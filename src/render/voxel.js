@@ -9,6 +9,7 @@ import { chunkMesh, createChunks } from '../world/chunks.js';
 import { pickGround } from '../world/terrain.js';
 import { C } from './palette.js';
 import { night } from './figure3d.js';
+import { rendererFor } from './gl.js';
 
 export function hasWebGL() {
   try {
@@ -20,17 +21,6 @@ export function hasWebGL() {
 }
 
 export const VIEW = Object.freeze({ elevation: Math.atan(0.5), zooms: [26, 40], lag: 4 });
-
-// One renderer for the game: a browser has only a few WebGL contexts.
-let shared = null;
-function rendererFor(canvas) {
-  if (!shared || shared.domElement !== canvas) {
-    shared = new THREE.WebGLRenderer({ canvas, antialias: true });
-    shared.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    shared.setClearColor(new THREE.Color(C.paper));
-  }
-  return shared;
-}
 
 // The sway of a vertex of a smooth look in the wind (renderer only: no state). sway: [weight,
 // layer]; the layer reads its gust (paddy, hedge, tree: src/core/world/ambient.js). The leaves hold

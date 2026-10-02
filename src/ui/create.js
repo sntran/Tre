@@ -1,13 +1,22 @@
-// Hero creation: language, name, boy or girl, skin, face, hair, clothes, and grade.
-import { h, img, button } from './dom.js';
+// Hero creation: language, name, boy or girl, skin, face, hair, clothes, and grade. The preview is
+// the voxel hero itself, turning slowly (a drag turns it too), and each choice shows a small
+// rendered picture; the choices come from data/figures.json (hero).
+import { h, button } from './dom.js';
 import { t, lang } from './i18n.js';
 import { speak } from './speak.js';
 import { createProfile } from '../core/profile.js';
 import { gradeIds, gradeShort } from '../core/grades.js';
-import { heroLayers } from '../render/assets.js';
+import { heroLook } from '../world/figures.js';
+import { portraitCanvas, portraitImage } from './portraits.js';
+
+const TURNS = 16; // the preview turns in 16 steps, as a print
+const STEP_MS = 350; // one step of the turn
+const PREVIEW = 220; // the size of the preview (CSS pixels)
 
 export async function mountCreate(ctx) {
-  const opts = ctx.data.hero;
+  const opts = { ...ctx.data.figures.hero, nameMax: ctx.data.hero.nameMax };
+  const genders = Object.keys(opts.genders);
+  const count = (list) => list.map((_, i) => i + 1);
   const hero = { name: '', gender: 'boy', skin: 1, face: 1, hair: 1, clothes: 1 };
   const grades = ctx.data.game.grades;
   let grade = grades.default ?? gradeIds(grades)[0];
@@ -23,9 +32,63 @@ export async function mountCreate(ctx) {
   ]));
   ctx.ui.append(screen);
 
-  function drawPreview() {
-    preview.replaceChildren(...heroLayers(hero).map((l) => img(l, 'layer')));
+  // The preview: the voxel hero at 16 turns (src/ui/portraits.js renders one in each frame, the
+  // turn on the screen first). It steps through the turns; a drag picks the turn.
+  const turnCanvas = h('canvas', { class: 'hero-turn', 'aria-hidden': 'true' });
+  turnCanvas.style.width = `${PREVIEW}px`;
+  turnCanvas.style.height = `${PREVIEW}px`;
+  preview.append(turnCanvas);
+  const frames = new Map(); // the key of a look -> the images of its turns
+  let turn = 2;
+  let shown = null;
+  let lookKey = '';
+  let alive = true;
+  let drag = null;
+  let lastStep = performance.now();
+  const lookNow = () => heroLook(hero, opts);
+  function paint() {
+    const img = frames.get(lookKey)?.[turn];
+    if (!img || img === shown) return;
+    shown = img;
+    turnCanvas.width = img.width;
+    turnCanvas.height = img.height;
+    turnCanvas.getContext('2d').drawImage(img, 0, 0);
   }
+  function drawPreview() {
+    const look = lookNow();
+    lookKey = JSON.stringify(look);
+    if (frames.has(lookKey)) return paint();
+    const list = new Array(TURNS).fill(null);
+    frames.set(lookKey, list);
+    for (let k = 0; k < TURNS; k++) {
+      const i = (turn + k) % TURNS;
+      portraitImage(ctx, look, { framing: 'full', size: PREVIEW, facing: (i / TURNS) * Math.PI * 2 }).then((img) => {
+        list[i] = img;
+        paint();
+      });
+    }
+  }
+  const loop = (now) => {
+    if (!alive) return;
+    if (!drag && now - lastStep > STEP_MS) {
+      lastStep = now;
+      turn = (turn + 1) % TURNS;
+    }
+    paint();
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+  turnCanvas.addEventListener('pointerdown', (e) => {
+    drag = { x: e.clientX, turn };
+    turnCanvas.setPointerCapture?.(e.pointerId);
+  });
+  turnCanvas.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    turn = (((drag.turn + Math.round((e.clientX - drag.x) / 18)) % TURNS) + TURNS) % TURNS;
+  });
+  const endDrag = () => { drag = null; lastStep = performance.now(); };
+  turnCanvas.addEventListener('pointerup', endDrag);
+  turnCanvas.addEventListener('pointercancel', endDrag);
 
   function dots() {
     return h('div', { class: 'dots', 'aria-hidden': 'true' }, steps.map((_, i) => h('span', { class: i <= step ? 'on' : '' })));
@@ -39,11 +102,20 @@ export async function mountCreate(ctx) {
         onPick(v);
         for (const x of row.children) x.setAttribute('aria-pressed', String(x === b));
         drawPreview();
+        refreshThumbs();
         ctx.bus.emit('sound', 'tap');
       });
+      b.thumb = () => b.replaceChildren(render(v));
       row.append(b);
     }
+    thumbRows.push(row);
     return h('div', {}, [h('p', { class: 'option-label center', text: t(labelKey) }), row]);
+  }
+  // The pictures of the choices show the other choices of the hero too (a face with the chosen
+  // skin): draw them again after each choice.
+  let thumbRows = [];
+  function refreshThumbs() {
+    for (const row of thumbRows) for (const b of row.children) if (b.thumbed) b.thumb();
   }
 
   function title(key) {
@@ -55,6 +127,7 @@ export async function mountCreate(ctx) {
 
   function show(n) {
     step = n;
+    thumbRows = [];
     stage.replaceChildren(dots());
     const name = steps[step];
     if (name === 'lang') {
@@ -71,7 +144,7 @@ export async function mountCreate(ctx) {
       const input = h('input', { class: 'name-input', type: 'text', maxlength: String(opts.nameMax), autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', 'aria-label': t('create.name') });
       input.value = hero.name;
       stage.append(input);
-      stage.append(choiceRow(opts.genders, () => hero.gender, (g) => h('span', { text: t(`create.${g}`) }), (g) => { hero.gender = g; }, 'create.gender'));
+      stage.append(choiceRow(genders, () => hero.gender, (g) => h('span', { text: t(`create.${g}`) }), (g) => { hero.gender = g; }, 'create.gender'));
       const next = button(t('ui.next'), () => {
         hero.name = input.value.trim().slice(0, opts.nameMax);
         if (!hero.name) {
@@ -87,24 +160,20 @@ export async function mountCreate(ctx) {
       stage.append(next);
     } else if (name === 'look') {
       stage.append(title('create.look'));
-      const layer = (p) => img(p);
-      // The face and hair buttons show the skin and the face that the player chose.
-      const refresh = () => {
-        for (const el of stage.querySelectorAll('.with-skin')) el.src = `art/hero/skin-${hero.skin}.svg`;
-        for (const el of stage.querySelectorAll('.with-face')) el.src = `art/hero/face-${hero.face}.svg`;
+      // A small rendered picture of the hero with one choice changed.
+      const thumb = (change, framing = 'bust') => {
+        const el = portraitCanvas(ctx, heroLook({ ...hero, ...change }, opts), { framing, size: 56 });
+        return h('span', { class: 'thumb' }, [el]);
       };
-      const skinImg = () => img(`hero/skin-${hero.skin}`, 'with-skin');
-      stage.append(choiceRow(opts.skins, () => hero.skin, (v) => h('span', { class: 'stack head' }, [img(`hero/skin-${v}`)]), (v) => {
-        hero.skin = v;
-        refresh();
-      }, 'create.skin'));
-      stage.append(choiceRow(opts.faces, () => hero.face, (v) => h('span', { class: 'stack head' }, [skinImg(), img(`hero/face-${v}`)]), (v) => {
-        hero.face = v;
-        refresh();
-      }, 'create.face'));
-      const withFace = (v) => h('span', { class: 'stack head hair-tile' }, [skinImg(), img(`hero/face-${hero.face}`, 'with-face'), img(`hero/hair-${v}`)]);
-      stage.append(choiceRow(opts.hairs, () => hero.hair, withFace, (v) => { hero.hair = v; }, 'create.hair'));
-      stage.append(choiceRow(opts.clothes, () => hero.clothes, (v) => layer(`hero/clothes-${hero.gender}-${v}`), (v) => { hero.clothes = v; }, 'create.clothes'));
+      const row = (values, key, labelKey, framing) => {
+        const r = choiceRow(values, () => hero[key], (v) => thumb({ [key]: v }, framing), (v) => { hero[key] = v; }, labelKey);
+        for (const b of r.querySelector('.option-grid').children) b.thumbed = true;
+        return r;
+      };
+      stage.append(row(count(opts.skins), 'skin', 'create.skin'));
+      stage.append(row(count(opts.faces), 'face', 'create.face'));
+      stage.append(row(count(opts.hairs), 'hair', 'create.hair'));
+      stage.append(row(count(opts.clothes), 'clothes', 'create.clothes', 'full'));
       stage.append(button(t('ui.next'), () => show(3), { cls: 'btn big red' }));
     } else if (name === 'grade') {
       stage.append(title('create.grade'));
@@ -126,5 +195,10 @@ export async function mountCreate(ctx) {
 
   drawPreview();
   show(0);
-  return { unmount() { screen.remove(); } };
+  return {
+    unmount() {
+      alive = false;
+      screen.remove();
+    },
+  };
 }

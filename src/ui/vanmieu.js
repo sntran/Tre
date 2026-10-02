@@ -8,10 +8,11 @@ import { createSeen } from '../core/fresh.js';
 import { checkAnswer } from '../core/solver.js';
 import { giveTitle, eraComplete, setFlag } from '../core/profile.js';
 import { registerScene, registerModal } from './registry.js';
-import { h, img, button, wait } from './dom.js';
+import { h, button, wait } from './dom.js';
 import { t, tg } from './i18n.js';
 import { speak } from './speak.js';
 import { portrait } from './dialogue.js';
+import { portraitCanvas } from './portraits.js';
 import { renderQuestion, feedbackLine } from './question.js';
 import { showMessage } from './quiz.js';
 
@@ -117,7 +118,7 @@ async function afterExam(ctx, kind, result) {
     await ctx.save('exam');
     ctx.bus.emit('sound', 'win');
     await showMessage(ctx, { speaker: 'examiner', title: t(title.nameKey), textKey: 'exam.passed', params: { title: { key: title.nameKey } } });
-    await showMessage(ctx, { textKey: 'exam.stele', art: 'thing/stele-turtle' });
+    await showMessage(ctx, { textKey: 'exam.stele', look: ctx.data.figures.views.stele });
     if (profile.flags[`vvst.era${title.era}`]) await showMessage(ctx, { textKey: 'exam.vanvo', art: 'title/bamboo-section' });
   } else {
     await ctx.save('exam');
@@ -145,12 +146,12 @@ function chooseCalling(ctx, change) {
       await ctx.save('calling');
       layer.remove();
       const c = data.callings.callings.find((x) => x.id === picked);
-      await showMessage(ctx, { speaker: 'examiner', textKey: 'calling.chosen', params: { calling: { key: c.nameKey } }, art: c.art });
+      await showMessage(ctx, { speaker: 'examiner', textKey: 'calling.chosen', params: { calling: { key: c.nameKey } }, look: data.figures.figures[c.look] });
       resolve();
     }, { cls: 'btn big red', disabled: !picked });
     for (const c of data.callings.callings) {
       const card = h('button', { class: 'calling-card', type: 'button', 'aria-pressed': String(c.id === picked) }, [
-        img(c.art), h('strong', { text: t(c.nameKey) }), h('small', { text: t(c.mentorKey) }), h('small', { text: t(c.subjectKey) }),
+        portraitCanvas(ctx, data.figures.figures[c.look], { framing: 'full', size: 96 }), h('strong', { text: t(c.nameKey) }), h('small', { text: t(c.mentorKey) }), h('small', { text: t(c.subjectKey) }),
         h('small', { text: t(c.vanKey) }), h('small', { text: t(c.voKey) }),
       ]);
       card.addEventListener('click', () => {
@@ -189,7 +190,7 @@ async function mountVanMieu(ctx) {
 
   const draw = () => {
     const names = profile.stele.map((s) => h('span', { text: t('vanmieu.stele.row', { name: s.name, title: { key: `title.${s.title}.name` } }) }));
-    const stele = h('div', { class: 'stele' }, [img('thing/stele-turtle'), h('div', { class: 'stele-names' }, names)]);
+    const stele = h('div', { class: 'stele' }, [portraitCanvas(ctx, data.figures.views.stele, { framing: 'full', size: 200 }), h('div', { class: 'stele-names' }, names)]);
     const actions = h('div', { class: 'row' });
     const needPlacement = profile.grade >= ctx.data.learning.exam.placement.fromGrade && !profile.flags['placement.done'];
     if (needPlacement) {
@@ -209,7 +210,7 @@ async function mountVanMieu(ctx) {
     actions.append(button(t('vanmieu.back'), () => ctx.go('village', villageDoor(ctx)), { cls: 'btn paper' }));
     const introKey = needPlacement ? 'vanmieu.hello.placement' : profile.flags['exam.era1.passed'] ? 'vanmieu.hello.done' : 'vanmieu.hello';
     content.replaceChildren(
-      img('thing/vanmieu-gate', 'vanmieu-gate'),
+      portraitCanvas(ctx, data.figures.views['vanmieu-gate'], { framing: 'full', size: 260, cls: 'vanmieu-gate' }),
       h('div', { class: 'vanmieu-row' }, [
         stele,
         h('div', { class: 'panel' }, [

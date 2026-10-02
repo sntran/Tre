@@ -9,8 +9,6 @@ import { applyEffects, pickTalk, isPresent } from '../src/core/game.js';
 import { createProfile } from '../src/core/profile.js';
 import { load } from './helpers.js';
 import { spriteAt, edgeMarker } from '../src/core/hit.js';
-import { heroLayers } from '../src/render/assets.js';
-import { readFileSync, existsSync } from 'node:fs';
 
 const tiles = load('data/tiles.json').types;
 
@@ -337,26 +335,3 @@ test('a quest target out of view gets an arrow at the edge of the screen', () =>
   assert.ok(edgeMarker(view, { x: 200, y: 20 }, { top: 60 }));
 });
 
-test('the hero has a skin tone apart from the face, and girls wear a long skirt', () => {
-  const opts = load('data/hero.json');
-  assert.deepEqual(opts.skins, [1, 2, 3, 4]);
-  const layers = heroLayers({ gender: 'girl', skin: 3, face: 1, hair: 2, clothes: 4 });
-  assert.deepEqual(layers, ['hero/skin-3', 'hero/clothes-girl-4', 'hero/face-1', 'hero/hair-2']);
-  for (const g of opts.genders) for (const s of opts.skins) for (const f of opts.faces) for (const c of opts.clothes) {
-    for (const layer of heroLayers({ gender: g, skin: s, face: f, hair: 1, clothes: c })) {
-      assert.ok(existsSync(new URL(`../art/${layer}.svg`, import.meta.url)), layer);
-    }
-  }
-  // The face layer has only the features: no skin colors.
-  const skins = ['#f0d6b0', '#deb68a', '#b98859', '#8a5f3d'];
-  for (const f of opts.faces) {
-    const svg = readFileSync(new URL(`../art/hero/face-${f}.svg`, import.meta.url), 'utf8').toLowerCase();
-    for (const c of skins) assert.ok(!svg.includes(c), `face-${f} has no skin color ${c}`);
-  }
-  // The skirt of the girl clothes goes down to the ankles (y 130 or more in the 150-unit picture).
-  for (const c of opts.clothes) {
-    const svg = readFileSync(new URL(`../art/hero/clothes-girl-${c}.svg`, import.meta.url), 'utf8');
-    const ys = [...svg.matchAll(/[ ,LlMmCcQq](\d+(?:\.\d+)?)/g)].map((m) => Number(m[1])).filter((y) => y <= 150);
-    assert.ok(Math.max(...ys) >= 130, `clothes-girl-${c} reaches y ${Math.max(...ys)}`);
-  }
-});

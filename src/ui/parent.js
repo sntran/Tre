@@ -10,6 +10,7 @@ import { registerModal } from './registry.js';
 import { saveProfile, deleteProfile, listProfiles, loadProfile, listRestorePoints, restoreProfile } from './storage.js';
 import { gameDay } from '../core/restore.js';
 import { h, img, button } from './dom.js';
+import { portraitCanvas, heroLookOf } from './portraits.js';
 import { t, lang } from './i18n.js';
 import { formatNumber } from '../core/i18n.js';
 import { C } from '../render/palette.js';
@@ -197,7 +198,10 @@ async function parentArea(ctx, opts = {}) {
         const today = gameDay(current);
         const box = h('div', { class: 'game-box' });
         const extra = h('div');
-        box.append(h('h3', { text: t('parent.games.head', { name: current.hero.name, era: t(ctx.data.world.eraOf(current.world?.map)), day: today + 1, date: formatDate(item.updatedAt) }) }));
+        box.append(h('div', { class: 'game-head' }, [
+          portraitCanvas(ctx, heroLookOf(ctx, current.hero), { size: 48 }),
+          h('h3', { text: t('parent.games.head', { name: current.hero.name, era: t(ctx.data.world.eraOf(current.world?.map)), day: today + 1, date: formatDate(item.updatedAt) }) }),
+        ]));
         // Restore points.
         const points = await listRestorePoints(item.id);
         box.append(h('h4', { text: t('parent.restore') }));

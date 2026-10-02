@@ -2,7 +2,7 @@
 import { h, img, button } from './dom.js';
 import { t, lang } from './i18n.js';
 import { listProfiles } from './storage.js';
-import { heroLayers } from '../render/assets.js';
+import { portraitCanvas, heroLookOf } from './portraits.js';
 import { speak } from './speak.js';
 import { newAdventure } from '../core/restore.js';
 
@@ -30,7 +30,7 @@ export function bambooSections(profile) {
 function profileCard(ctx, p) {
   const sections = bambooSections(p.profile);
   const card = h('button', { class: 'profile-card', type: 'button' }, [
-    h('span', { class: 'mini-portrait' }, heroLayers(p.hero).map((l) => img(l, 'layer'))),
+    h('span', { class: 'mini-portrait' }, [portraitCanvas(ctx, heroLookOf(ctx, p.hero), { size: 56 })]),
     h('span', { class: 'profile-text' }, [
       h('span', { text: t('title.play', { name: p.name }) }),
       h('span', { class: 'profile-where' }, [

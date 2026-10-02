@@ -244,16 +244,10 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .panel > .mark { top: 10px; left: auto; right: 14px; }
 .mark-history { background: var(--indigo); border-color: var(--indigo); }
 
-/* Portraits made of layers. A portrait shows the upper body, so that the small face reads. */
+/* Portraits: the rendered voxel figures (src/ui/portraits.js) on the paper of their box. */
 
-.portrait, .mini-portrait, .hero-preview { position: relative; display: inline-block; flex: none; overflow: hidden; }
-.portrait .layer, .mini-portrait .layer, .hero-preview .layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
+.portrait, .mini-portrait, .hero-preview { position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none; overflow: hidden; }
+.portrait-img { display: block; }
 .portrait {
   width: 96px;
   height: 108px;
@@ -262,10 +256,12 @@ p { line-height: 1.45; margin: 0.4em 0; }
   background: var(--diep);
   box-shadow: var(--frame);
 }
-.portrait .layer { transform: scale(1.75); transform-origin: 50% 12%; }
 .mini-portrait { width: 44px; height: 44px; border: var(--thin); border-radius: 3px; background: var(--diep); }
-.mini-portrait .layer { transform: scale(2.6); transform-origin: 50% 9%; }
 .hero-preview { width: min(40vmin, 260px); height: min(60vmin, 390px); overflow: visible; }
+.hero-turn { cursor: grab; touch-action: none; max-width: 100%; }
+.hero-turn:active { cursor: grabbing; }
+.game-head { display: flex; align-items: center; gap: 8px; }
+.game-head .portrait-img { border: var(--thin); border-radius: 3px; background: var(--diep); }
 
 /* HUD */
 
@@ -463,11 +459,8 @@ p { line-height: 1.45; margin: 0.4em 0; }
   overflow: hidden;
 }
 .tile-btn img { width: 100%; height: 100%; object-fit: contain; }
-/* Show the head in the face and hair buttons, and the body in the clothes buttons. */
-.tile-btn .stack { position: relative; display: block; width: 100%; height: 100%; }
-.tile-btn .stack img { position: absolute; inset: 0; }
-.tile-btn .stack.head { transform: scale(2.4); transform-origin: 50% 19%; }
-.option-grid .tile-btn > img[src*="clothes-"] { transform: scale(1.6); transform-origin: 50% 50%; }
+/* A choice of hero creation shows the hero with that choice, rendered. */
+.tile-btn .thumb { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
 .tile-btn[aria-pressed="true"] { background: var(--yellow-pale); box-shadow: inset 0 0 0 3px var(--vermilion); }
 .option-label { font-weight: 700; margin: 6px 0 0; }
 .dots { display: flex; gap: 10px; }
@@ -546,22 +539,16 @@ p { line-height: 1.45; margin: 0.4em 0; }
 /* Văn Miếu */
 
 .vanmieu { display: flex; flex-direction: column; align-items: center; gap: var(--gap); width: min(1000px, 100%); }
-.vanmieu-gate { width: min(46vmin, 320px); }
+.vanmieu-gate { max-width: 100%; }
 .vanmieu-row { display: flex; gap: var(--gap); align-items: center; justify-content: center; flex-wrap: wrap; width: 100%; }
 .vanmieu-row .panel { flex: 1 1 420px; }
-.stele { position: relative; width: min(38vmin, 250px); flex: none; }
-.stele img { width: 100%; display: block; }
+.stele { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: none; }
 .stele-names {
-  position: absolute;
-  left: 31%;
-  top: 16%;
-  width: 38%;
-  height: 43%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 2px;
+  max-height: 9em;
   overflow: hidden;
   font-family: var(--display);
   font-size: clamp(11px, 1.9vmin, 17px);
@@ -583,7 +570,7 @@ p { line-height: 1.45; margin: 0.4em 0; }
   text-align: center;
   cursor: pointer;
 }
-.calling-card img { width: 76px; height: 76px; }
+.calling-card .portrait-img { margin: 0 auto; }
 .calling-card strong { font-family: var(--display); font-size: var(--text-big); }
 .calling-card small { font-size: var(--text-small); }
 .calling-card[aria-pressed="true"] { background: var(--yellow-pale); box-shadow: inset 0 0 0 3px var(--vermilion), var(--press); }

@@ -2,7 +2,8 @@
 // rice for Gióng are work in the village: src/core/world/systems/work.js.)
 import { registerModal } from './registry.js';
 import { runQuiz } from './quiz.js';
-import { h, img, button } from './dom.js';
+import { h, button } from './dom.js';
+import { portraitCanvas } from './portraits.js';
 import { speak } from './speak.js';
 import { t, setChosenNames } from './i18n.js';
 import { setFriendName, chosenGlossNames } from '../core/profile.js';
@@ -78,7 +79,7 @@ registerModal('nameFriend', (ctx, cmd) => new Promise((resolve) => {
   layer.append(h('div', { class: 'panel', style: { width: 'min(520px, 100%)' } }, [
     h('div', { class: 'panel-head' }, [h('h2', { text: t('friend.name.title') })]),
     h('div', { class: 'col', style: { alignItems: 'center' } }, [
-      img(f.art, 'friend-name-art'),
+      portraitCanvas(ctx, ctx.data.figures.figures[cmd.id], { framing: 'bust', size: 120, cls: 'friend-name-art' }),
       h('p', { class: 'center', text: t('friend.name.note', { usual: t(f.nameKey) }) }),
       input,
       button(t('ui.ok'), done, { cls: 'btn big red' }),

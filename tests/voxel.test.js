@@ -8,6 +8,7 @@ import { createAnimator, animate } from '../src/world/animate.js';
 import { load } from './helpers.js';
 
 const palette = load('art/palette.json');
+const HERO = load('data/figures.json').hero;
 
 test('a grid keeps a color and an owner for each block, and colors come from the palette', () => {
   const g = createGrid(4, 3, 4, { owners: true });
@@ -137,13 +138,13 @@ test('every prop builds blocks, and the same seed builds the same prop', () => {
 });
 
 test('the hero is made of parts from the choices at the start', () => {
-  const boy = person(heroLook({ gender: 'boy', skin: 3, face: 2, hair: 2, clothes: 2 }));
+  const boy = person(heroLook({ gender: 'boy', skin: 3, face: 2, hair: 2, clothes: 2 }, HERO));
   const names = boy.parts.map((p) => p.name);
   for (const n of ['legL', 'legR', 'armL', 'armR', 'torso', 'head', 'skull', 'knot', 'mouth']) assert.ok(names.includes(n), n);
   assert.ok(names.includes('shortsL'));
   assert.equal(boy.parts.find((p) => p.name === 'skull').color, 'skin3');
   assert.equal(boy.parts.find((p) => p.name === 'torso').color, 'ochre');
-  const girl = person(heroLook({ gender: 'girl', skin: 1, face: 1, hair: 4, clothes: 1 }));
+  const girl = person(heroLook({ gender: 'girl', skin: 1, face: 1, hair: 4, clothes: 1 }, HERO));
   assert.ok(girl.parts.some((p) => p.name === 'skirt') && girl.parts.some((p) => p.name === 'yem'));
   assert.ok(girl.parts.some((p) => p.name.startsWith('braid')));
   // Every part hangs on a part that exists, and uses a palette color.
@@ -216,7 +217,7 @@ test('the fine figures: a quarter-block grid, the same size in the world, and pa
       if (p.color) colorIndex(p.color);
     }
   }
-  const boy = personFine(heroLook({ gender: 'boy', skin: 3, face: 2, hair: 2, clothes: 2 }));
+  const boy = personFine(heroLook({ gender: 'boy', skin: 3, face: 2, hair: 2, clothes: 2 }, HERO));
   assert.equal(boy.grid, 0.25);
   const names = new Set(boy.parts.map((p) => p.name));
   for (const n of ['skull', 'skullX', 'skullT', 'eyeWL', 'eyeL', 'browL', 'mouth', 'cheekL', 'handR', 'shinL', 'footL', 'toeLa', 'toeLb', 'knot', 'fringe', 'hairT', 'sashTail', 'waist']) assert.ok(names.has(n), n);
@@ -233,7 +234,7 @@ test('the fine figures: a quarter-block grid, the same size in the world, and pa
   assert.equal(size('hips')[0] - size('torso')[0], 1);
   assert.ok(size('waist')[0] < size('torso')[0]);
   // The smooth variant: the head and the hair are balls on the same body.
-  const round = personFine(heroLook({ gender: 'boy', hair: 2 }), { smooth: true });
+  const round = personFine(heroLook({ gender: 'boy', hair: 2 }, HERO), { smooth: true });
   assert.deepEqual(round.parts.filter((p) => p.shape === 'ball').map((p) => p.name).sort(), ['hair', 'skull']);
   assert.ok(round.parts.some((p) => p.name === 'waist'));
   // A thing in the hands hangs on the hand, not on the arm.

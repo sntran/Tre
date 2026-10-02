@@ -17,6 +17,7 @@
     "n1": {
      "speaker": "teacher",
      "textKey": "dlg.teacher.trial.n1",
+     "mood": "happy",
      "effects": [
       {
        "open": "trial",
@@ -32,7 +33,8 @@
    "nodes": {
     "n1": {
      "speaker": "teacher",
-     "textKey": "dlg.teacher.trial.done.n1"
+     "textKey": "dlg.teacher.trial.done.n1",
+     "mood": "happy"
     }
    }
   },
@@ -68,7 +70,8 @@
    "nodes": {
     "n1": {
      "speaker": "smith",
-     "textKey": "dlg.smith.trial.done.n1"
+     "textKey": "dlg.smith.trial.done.n1",
+     "mood": "happy"
     }
    }
   },
@@ -104,7 +107,8 @@
    "nodes": {
     "n1": {
      "speaker": "fisher",
-     "textKey": "dlg.fisher.trial.done.n1"
+     "textKey": "dlg.fisher.trial.done.n1",
+     "mood": "happy"
     }
    }
   },
@@ -140,7 +144,8 @@
    "nodes": {
     "n1": {
      "speaker": "healer",
-     "textKey": "dlg.healer.trial.done.n1"
+     "textKey": "dlg.healer.trial.done.n1",
+     "mood": "happy"
     }
    }
   },
@@ -176,7 +181,8 @@
    "nodes": {
     "n1": {
      "speaker": "woodcutter",
-     "textKey": "dlg.woodcutter.trial.done.n1"
+     "textKey": "dlg.woodcutter.trial.done.n1",
+     "mood": "happy"
     }
    }
   },
@@ -240,7 +246,8 @@
    "nodes": {
     "n1": {
      "speaker": "smith",
-     "textKey": "dlg.smith.horse.n1"
+     "textKey": "dlg.smith.horse.n1",
+     "mood": "happy"
     }
    },
    "mark": "legend"
@@ -271,7 +278,8 @@
    "nodes": {
     "n1": {
      "speaker": "fisher",
-     "textKey": "dlg.fisher.river.n1"
+     "textKey": "dlg.fisher.river.n1",
+     "mood": "worried"
     }
    }
   },
@@ -312,6 +320,7 @@
     "n1": {
      "speaker": "woodcutter",
      "textKey": "dlg.woodcutter.staffs.n1",
+     "mood": "worried",
      "next": "n2"
     },
     "n2": {
@@ -333,7 +342,8 @@
    "nodes": {
     "n1": {
      "speaker": "woodcutter",
-     "textKey": "dlg.woodcutter.staffs.done.n1"
+     "textKey": "dlg.woodcutter.staffs.done.n1",
+     "mood": "happy"
     }
    },
    "mark": "legend"
@@ -359,7 +369,8 @@
    "nodes": {
     "n1": {
      "speaker": "mother",
-     "textKey": "dlg.mother.worry.n1"
+     "textKey": "dlg.mother.worry.n1",
+     "mood": "worried"
     }
    }
   },

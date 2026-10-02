@@ -1,9 +1,4 @@
 {
-  "_about": "Options for hero creation. Each option is an art layer in art/hero/.",
-  "genders": ["boy", "girl"],
-  "skins": [1, 2, 3, 4],
-  "faces": [1, 2, 3, 4],
-  "hairs": [1, 2, 3, 4, 5, 6],
-  "clothes": [1, 2, 3, 4],
+  "_about": "Hero creation: the most letters of the name. The choices of the look (gender, skin, face, hair, clothes) are in data/figures.json (hero).",
   "nameMax": 12
 }

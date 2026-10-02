@@ -1,4 +1,4 @@
-// The dialogue box. It shows one line at a time, with the portrait and the name
+// The dialogue box. It shows one line at a time, with the portrait (with the mood of the line) and the name
 // of the speaker, the voice, and the choices.
 import { createDialogue } from '../core/dialogue.js';
 import { applyEffects, conditionState } from '../core/game.js';
@@ -16,28 +16,14 @@ function voiceData(ctx) {
 function selecting() {
   return String(window.getSelection?.() ?? '').length > 0;
 }
-import { heroLayers } from '../render/assets.js';
+import { portraitCanvas, speakerLookOf } from './portraits.js';
 
-// The art of a speaker. "hero" uses the layers of the hero.
-export function portrait(ctx, speaker) {
-  const box = h('div', { class: 'portrait' });
-  if (!speaker || speaker === 'narrator') return null;
-  if (speaker === 'hero') {
-    const hero = ctx.profile.hero;
-    box.append(...heroLayers(hero).map((l) => img(l, 'layer')));
-    return box;
-  }
-  const art = speakerArt(ctx, speaker);
-  if (art) box.append(img(art, 'layer'));
-  return box;
-}
-
-export function speakerArt(ctx, speaker) {
-  if (speaker === 'giong') return ctx.profile.flags['giong.grown'] ? 'npc/giong-hero' : 'npc/giong-boy';
-  const friend = ctx.data.friends.friends[speaker];
-  if (friend) return friend.art;
-  if (speaker === 'examiner') return 'npc/examiner';
-  return ctx.data.npcs.npcs[speaker]?.art ?? null;
+// The portrait of a speaker: the rendered figure of its look (src/ui/portraits.js), with a mood
+// (calm, happy, worried, surprised). Null for the narrator.
+export function portrait(ctx, speaker, mood = 'calm') {
+  const look = speakerLookOf(ctx, speaker);
+  if (!look) return null;
+  return h('div', { class: 'portrait' }, [portraitCanvas(ctx, look, { framing: 'bust', mood: mood ?? 'calm', size: 96 })]);
 }
 
 export function speakerName(ctx, speaker) {
@@ -67,7 +53,7 @@ export function createDialogueBox(ctx, { next, choose }) {
     const narrator = !line.speaker || line.speaker === 'narrator';
     const voice = voiceOf(line.speaker, voiceData(ctx), ctx.profile);
     if (line.mark) box.append(h('div', { class: `mark mark-${line.mark}`, text: t(`mark.${line.mark}`) }));
-    const face = portrait(ctx, line.speaker);
+    const face = portrait(ctx, line.speaker, line.mood);
     if (face) box.append(face);
     const body = h('div', { class: 'dialogue-body' }, [
       narrator ? null : h('div', { class: 'speaker', text: speakerName(ctx, line.speaker) }),

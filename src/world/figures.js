@@ -8,29 +8,22 @@ import { personFine, ngheFine, buffaloFine, dogFine, chickenFine, duckFine, fish
 
 export { PLANK_TONES };
 
-// Clothes of the hero, from the choice at the start (1 to 4).
-const CLOTHES = {
-  1: { top: 'indigo', bottom: 'indigo', sash: 'vermilion' },
-  2: { top: 'ochre', bottom: 'wood', sash: 'yellow' },
-  3: { top: 'vermilionPale', bottom: 'indigo', sash: 'green' },
-  4: { top: 'green', bottom: 'wood', sash: 'vermilion' },
-};
-const HAIR = { 1: 'short', 2: 'topknot', 3: 'long', 4: 'braids', 5: 'bun', 6: 'tufts' };
-
-// The look of the hero from the hero of the profile.
-export function heroLook(hero) {
-  const c = CLOTHES[hero.clothes] ?? CLOTHES[1];
-  const girl = hero.gender === 'girl';
+// The look of the hero from the hero of the profile. options: the choices of hero creation
+// (hero in data/figures.json); the profile keeps the number of each choice (1 is the first).
+export function heroLook(hero, options) {
+  const pick = (list, n) => list[(n ?? 1) - 1] ?? list[0];
+  const c = pick(options.clothes, hero.clothes);
+  const g = options.genders[hero.gender] ?? Object.values(options.genders)[0];
   return {
     child: true,
-    skin: `skin${hero.skin ?? hero.face ?? 2}`,
+    skin: pick(options.skins, hero.skin ?? hero.face ?? 2),
     top: c.top,
     bottom: c.bottom,
     sash: c.sash,
-    bottomKind: girl ? 'skirt' : 'shorts',
-    topKind: girl ? 'yem' : 'shirt',
-    hair: HAIR[hero.hair] ?? 'short',
-    face: hero.face ?? 1,
+    bottomKind: g.bottomKind,
+    topKind: g.topKind,
+    hair: pick(options.hairs, hero.hair),
+    face: pick(options.faces, hero.face),
   };
 }
 
@@ -137,15 +130,17 @@ export function duck() {
   return { kind: 'float', parts, scale: 0.6, height: 1.2, shadow: 0 };
 }
 
-// A thuồng luồng of the river: a long body of segments, a head with a fin.
-export function serpent() {
+// A thuồng luồng of the river: a long body of segments, a head with a fin. look: { scale, belly }:
+// Sóng, the friend of the water, is a small one with a pale belly.
+export function serpent(look = {}) {
   const parts = [];
   for (let i = 0; i < 5; i++) parts.push(P(`seg${i}`, [1.4 - i * 0.15, 1.2 - i * 0.12, 1.3], i % 2 ? 'indigoPale' : 'indigo', [0, 1.1, -i * 1.25]));
+  if (look.belly) for (let i = 0; i < 5; i++) parts.push(P(`belly${i}`, [1.2 - i * 0.15, 0.3, 1.2], look.belly, [0, 0.55 - i * 0.06, -i * 1.25]));
   parts.push(P('head', [0.01, 0.01, 0.01], null, [0, 1.8, 1.1]));
   parts.push(P('skull', [1.6, 1.3, 1.8], 'indigo', [0, 0, 0.3], { parent: 'head' }));
   parts.push(P('fin', [0.3, 1, 1.2], 'vermilion', [0, 0.9, -0.1], { parent: 'head' }));
   for (const ex of [-0.55, 0.55]) parts.push(P(`eye${ex > 0 ? 'R' : 'L'}`, [0.25, 0.25, 0.05], 'yellow', [ex, 0.2, 1.23], { parent: 'head', mark: true }));
-  return { kind: 'serpent', parts, scale: 0.8, height: 3.2, shadow: 0 };
+  return { kind: 'serpent', parts, scale: look.scale ?? 0.8, height: 3.2, shadow: 0 };
 }
 
 // A chicken: legs that swing, wings that flap when it runs, and a head that pecks.
@@ -663,7 +658,7 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'deck') return deck(look.n, look.w);
   if (look.kind === 'nghe') return fine ? ngheFine({}, { smooth }) : nghe();
   if (look.kind === 'duck') return fine ? duckFine() : duck();
-  if (look.kind === 'serpent') return serpent();
+  if (look.kind === 'serpent') return serpent(look);
   if (look.kind === 'chicken') return fine ? chickenFine(look) : chicken(look);
   if (look.kind === 'fish') return fine ? fishFine() : fish();
   if (look.kind === 'buffalo') return fine ? buffaloFine() : buffalo();

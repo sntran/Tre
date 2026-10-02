@@ -12,16 +12,19 @@
     "n2": {
      "speaker": "messenger",
      "textKey": "dlg.messenger.call.n2",
+     "mood": "worried",
      "next": "n3"
     },
     "n3": {
      "speaker": "elder",
      "textKey": "dlg.messenger.call.n3",
+     "mood": "worried",
      "next": "n4"
     },
     "n4": {
      "speaker": "mother",
      "textKey": "dlg.messenger.call.n4",
+     "mood": "surprised",
      "effects": [
       {
        "set": "giong.messenger"
@@ -53,6 +56,7 @@
     "n4": {
      "speaker": "mother",
      "textKey": "dlg.giong.speaks.n4",
+     "mood": "surprised",
      "next": "n5"
     },
     "n5": {
@@ -126,6 +130,7 @@
     "n2": {
      "speaker": "giong",
      "textKey": "dlg.giong.grown.n2",
+     "mood": "happy",
      "choices": [
       {
        "textKey": "dlg.giong.grown.n2.c1"
@@ -325,6 +330,7 @@
     "n1": {
      "speaker": "socson-elder",
      "textKey": "dlg.socson.elder.legend.n1",
+     "mood": "surprised",
      "next": "n2"
     },
     "n2": {

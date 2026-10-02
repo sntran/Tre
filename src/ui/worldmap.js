@@ -9,7 +9,7 @@ import { speak } from './speak.js';
 import { say } from './dialogue.js';
 import { conditionState } from '../core/game.js';
 import { createRng } from '../core/rng.js';
-import { heroLayers } from '../render/assets.js';
+import { portraitImage, heroLookOf } from './portraits.js';
 import { C } from '../render/palette.js';
 import { planTravel, applyTravel } from '../world/travel.js';
 import { timeOfDay } from '../core/world/clock.js';
@@ -267,13 +267,11 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
         } else {
           g.append(el('circle', { cx: s.x, cy: s.y, r, fill: C.diep, stroke: C.ink, 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' }));
           if (kind === 'here') {
-            // The face of the hero: the layers of the hero picture, cut to the face.
+            // The face of the hero: the rendered portrait of the hero (src/ui/portraits.js), in the seal.
             const clip = `seal-face-${s.id}`;
             g.append(el('clipPath', { id: clip }, [el('circle', { cx: s.x, cy: s.y, r: r * 0.9 })]));
-            const face = el('g', { 'clip-path': `url(#${clip})` });
-            for (const layerPath of heroLayers(profile.hero)) {
-              face.append(el('image', { href: `art/${layerPath}.svg`, x: s.x - r * 2.6, y: s.y - r * 1.1, width: r * 5.2, height: r * 7.8 }));
-            }
+            const face = el('image', { 'clip-path': `url(#${clip})`, x: s.x - r, y: s.y - r, width: r * 2, height: r * 2 });
+            portraitImage(ctx, heroLookOf(ctx, profile.hero), { size: 64 }).then((c) => { if (c) face.setAttribute('href', c.toDataURL()); });
             g.append(face);
           } else {
             const n = el('text', { x: s.x, y: s.y + r * 0.35, 'font-size': r, 'text-anchor': 'middle', class: 'place-name big' });

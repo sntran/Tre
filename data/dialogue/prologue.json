@@ -17,6 +17,7 @@
     "n3": {
      "speaker": "grandma",
      "textKey": "dlg.grandma.intro.n3",
+     "mood": "happy",
      "next": "nghe1"
     },
     "n4": {
@@ -59,6 +60,7 @@
     "n1": {
      "speaker": "elder",
      "textKey": "dlg.elder.intro.n1",
+     "mood": "happy",
      "next": "n2"
     },
     "n2": {
@@ -99,6 +101,7 @@
     "n1": {
      "speaker": "elder",
      "textKey": "dlg.elder.trials.done.n1",
+     "mood": "happy",
      "effects": [
       {
        "set": "prologue.done"
@@ -131,7 +134,8 @@
     },
     "n5": {
      "speaker": "elder",
-     "textKey": "dlg.elder.trials.done.n5"
+     "textKey": "dlg.elder.trials.done.n5",
+     "mood": "surprised"
     }
    }
   },

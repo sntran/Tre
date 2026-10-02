@@ -258,7 +258,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else runPending();
       return;
     }
-    openScreen(d, { id: d.id, mark: d.runner.mark, speaker: view.speaker, textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey) });
+    openScreen(d, { id: d.id, mark: d.runner.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey) });
   }
   // One line of text (a sign, a ferry, a thing that the hero found, a note with a seal, a line of
   // a person in a raid).
@@ -1095,6 +1095,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     get screen() { return screen?.screen ?? null; },
     get busy() { return busy; },
     get profile() { return profile; },
+    // The data of the game (for the stories: the looks of the portraits).
+    get data() { return data; },
   };
 }
 

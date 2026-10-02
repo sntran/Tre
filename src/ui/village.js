@@ -5,7 +5,7 @@
 import { currentGoal } from '../core/quests.js';
 import { conditionState } from '../core/game.js';
 import { edgeMarker } from '../core/hit.js';
-import { heroLayers } from '../render/assets.js';
+import { portraitCanvas, heroLookOf, speakerLookOf, prerender, portraitStats } from './portraits.js';
 import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../core/world/move.js';
 import { getEntity, query } from '../core/world/state.js';
 import { STEP } from '../core/world/step.js';
@@ -117,6 +117,11 @@ export async function mountVillage(ctx, params = {}) {
   }
   const view = worlds.get(mapData.id).view;
   const looks = data.figures.figures;
+  // The portraits of the hero, Nghé, and the people of this map, before any dialogue opens.
+  prerender(ctx, [
+    { look: heroLookOf(ctx), size: 44 },
+    ...['hero', 'nghe', ...mapData.npcs.map((n) => n.id)].map((id) => ({ look: speakerLookOf(ctx, id), size: 96 })),
+  ]);
   // The world at rest: the smoke of the kitchens, the steam of the rice pot, the incense of the đình,
   // butterflies, a dragonfly, and a fish at the ford (src/render/ambient3d.js).
   const places = session.env.places;
@@ -138,7 +143,7 @@ export async function mountVillage(ctx, params = {}) {
     crowns: (terrain.smooth ?? []).filter((c) => c.kind === 'crown').map((c) => ({ x: c.x, y: c.y, z: c.z, r: c.r })),
     river: riverOf(terrain.water ?? []),
   });
-  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero) : looks[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level });
+  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : looks[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level });
 
   // The height of the ground under a map point (world units).
   const groundY = (x, y) => columnTop(tileMap.heightAt(Math.floor(x), Math.floor(y)));
@@ -161,7 +166,7 @@ export async function mountVillage(ctx, params = {}) {
   const goalBtn = h('button', { class: 'goal', type: 'button' });
   const counts = h('div', { class: 'counts' });
   const heroFace = h('button', { class: 'hud-hero', type: 'button', 'aria-label': t('ui.home') }, [
-    h('span', { class: 'mini-portrait' }, heroLayers(profile.hero).map((p) => img(p, 'layer'))),
+    h('span', { class: 'mini-portrait' }, [portraitCanvas(ctx, heroLookOf(ctx), { size: 44 })]),
     h('span', { class: 'hud-name', text: profile.hero.name }),
   ]);
   heroFace.addEventListener('click', () => send({ type: 'talkTo', id: 'grandma' }));
@@ -629,6 +634,7 @@ export async function mountVillage(ctx, params = {}) {
   if (meter) ctx.ui.append(meter);
   let frames = 0;
   let since = last;
+  let portraitMs = null; // the time of the last portrait render (ms), for the meter
   // With ?debug=1 in the address, a small panel shows the skill events of the placements.
   const debugPanel = new URLSearchParams(location.search).get('debug') === '1' ? h('div', { class: 'debug-events' }) : null;
   const skillLog = [];
@@ -671,7 +677,9 @@ export async function mountVillage(ctx, params = {}) {
     }
     if (meter && now - since > 1000) {
       const s = view.stats();
-      meter.textContent = `${Math.round((frames * 1000) / (now - since))} fps · ${s.calls} calls · ${Math.round(s.triangles / 1000)}k triangles`;
+      // The time of the last portrait render (src/render/portrait.js), for the check on a phone.
+      portraitStats(ctx).then((p) => { portraitMs = p?.renders ? p.lastMs : null; });
+      meter.textContent = `${Math.round((frames * 1000) / (now - since))} fps · ${s.calls} calls · ${Math.round(s.triangles / 1000)}k triangles${portraitMs === null ? '' : ` · portrait ${portraitMs.toFixed(1)} ms`}`;
       frames = 0;
       since = now;
     }
