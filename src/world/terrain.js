@@ -6,6 +6,7 @@
 // fills the blocks 0 to h - 1, so its top is at world y = h. h = the height digit of the map + 1.
 import { createGrid, hashSeed, seeded } from './voxel.js';
 import { buildProp } from './props/index.js';
+import { dig, fell } from './chunks.js';
 
 export const WATER = Object.freeze({ river: 0.6, paddy: 0.55 }); // the water over the bed, in blocks
 
@@ -182,7 +183,7 @@ export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
 
   // A shadow makes the top of the ground a little darker.
   const shade = (x, y, z) => (shadows.has(z * W + x) ? 0.8 : 1);
-  return {
+  const terrain = {
     width: W, height: H, ground, fine, shade, objects, roofs, smooth, water, paddies, kinds, kindNames,
     topAt,
     maxTop,
@@ -190,5 +191,25 @@ export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
     homes: Object.fromEntries(objects.filter((o) => o.home && o.id).map((o) => [o.id, o.home])),
     // World units: one ground block is 1 unit; a fine block is 0.5.
     boxOf: (o) => ({ x0: o.box.x0 / 2, y0: o.box.y0 / 2, z0: o.box.z0 / 2, x1: o.box.x1 / 2, y1: o.box.y1 / 2, z1: o.box.z1 / 2 }),
+    edited: false,
+    // A change of the terrain (src/world/chunks.js), for the stories and the tools of a later era:
+    // { type: 'fell', id } takes away an object of the map (a tree and its crown); { type: 'dig',
+    // at: [x, z] } takes the top block of a column. Return the result (with the chunks to build
+    // again), or null. A changed terrain is marked, so that a cache builds it again for a new start.
+    edit(cmd) {
+      if (!blocks) return null;
+      let r = null;
+      if (cmd.type === 'fell') {
+        const o = objects.find((x) => x.id === cmd.id && !x.gone);
+        r = o ? fell(terrain, blocks, o.who) : null;
+      } else if (cmd.type === 'dig') {
+        const [x, z] = cmd.at;
+        const y = ground.top(x, z);
+        r = y >= 0 ? { ...dig(terrain, blocks, x, y, z), at: [x, y, z] } : null;
+      }
+      if (r) terrain.edited = true;
+      return r;
+    },
   };
+  return terrain;
 }

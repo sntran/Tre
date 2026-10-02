@@ -43,7 +43,7 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 
 | Step | What it does |
 | --- | --- |
-| `{ "do": <command> }` | Sends a command to the session. |
+| `{ "do": <command> }` | Sends a command to the session. The tools of a later era are commands too: `{ "type": "fell", "id": "tree8" }` takes away an object of the map (a tree and its crown), and `{ "type": "dig", "at": [8, 29] }` takes the top block of a column (`docs/WORLD.md`, "Mining and taking apart"). |
 | `{ "wait": 2 }` | The world goes on for two seconds. |
 | `{ "until": { "event": "put", "with": {...}, "timeout": 20 } }` | The world goes on until the event comes (after the last command). |
 | `{ "at": { "hour": 18.5 } }` | The world goes on until the next 18:30. |

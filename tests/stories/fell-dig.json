@@ -1,0 +1,23 @@
+{
+  "name": "fell-dig",
+  "about": {
+    "vi": "Thế giới có thể đào và chặt: một cây gần chỗ bắt đầu bị chặt (tán cây đi theo thân cây), và một khối đất trên đường bị đào.",
+    "en": "The world can be dug and felled: a tree near the start is felled (its crown goes with its trunk), and one block of the path is dug."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [9, 27],
+  "steps": [
+    { "wait": 1 },
+    { "do": { "type": "fell", "id": "tree8" } },
+    { "until": { "event": "felled", "timeout": 2 } },
+    { "expect": [{ "event": "felled", "with": { "id": "tree8", "drops": { "log": 4 } } }] },
+    { "do": { "type": "dig", "at": [8, 29] } },
+    { "until": { "event": "dug", "timeout": 2 } },
+    { "expect": [{ "event": "dug", "with": { "kind": "surface", "drops": { "soil": 1 } } }] },
+    { "do": { "type": "fell", "id": "tree8" } },
+    { "wait": 1 },
+    { "expect": [{ "event": "felled", "not": true }] }
+  ]
+}

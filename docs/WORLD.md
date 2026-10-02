@@ -117,6 +117,18 @@ The broken bridge in Phù Đổng is the zone `bridge-gap` (in `tools/maps/era1.
 - The renderer (`src/render/voxel.js` and `src/render/figure3d.js`) reads the state and never changes it. It keeps one figure for each entity with `position` and `look`, and it is smooth between two steps. All parts of all figures are one `InstancedMesh`, their ink outlines one more, and their shadows one more.
 - The story (triggers, exits, dialogues, battles) reads the hero cell after each step.
 
+## Mining and taking apart
+
+The data under every tier of the look is blocks and entities, so that a later era can mine, dig, fell, and take things apart (`docs/ART.md`, section 11). This issue makes the data and the renderer ready; the mining and the building themselves come later.
+
+- **A smooth mesh is a look, not a thing.** A tree is a trunk of half blocks and a crown look; the crown mesh is built from the seed and the size of the tree (`src/world/smooth.js`). Each smooth look and each roof has an owner block (a trunk, a stem, the base of a culm, the pole of a haystack, a block of the house under a roof), and it draws only while that block is there. No smooth mesh exists without a block that owns it.
+- **The ground is minable.** The ground keeps the kind of each full block (`data/world/blocks.json`): the surface (the color of its ground type), soil under it, then clay, rock at the bottom, and ore in some of the clay and the rock (a seeded rule). Each kind has a hardness and what a dig of one block drops.
+- **Chunks.** The world draws in chunks of 16 × 16 columns (`src/world/chunks.js`): for each chunk one mesh of the ground and the things, and one ink mesh. A dig (`dig`) takes one block and builds only its chunk again (and the chunk next to it, when the column is at its edge); one chunk builds in a few milliseconds. To fell a tree (`fell`) takes the blocks of its trunk; its crown goes with them, and it drops logs.
+- **Buildings come apart.** A house is the blocks of its parts on the half-block grid, with its roof as a look that its blocks own. To take a house apart takes its blocks, and the roof goes when the block under it goes. Building is the same in the other order, on the placement system of the bridge.
+- **Nothing is baked.** No mesh is made by hand: every mesh comes from a generator with a seed, so that the same tree grows again from the save.
+- **The frame.** `frameTriangles` in `data/config/limits.json` is the most triangles of the world in the three by three chunks around the start of a map; a test checks it on every map.
+- The stories and the debug tools can change the terrain now: the commands `{ "type": "fell", "id": <object> }` and `{ "type": "dig", "at": [x, z] }` send the events `felled` and `dug` with what they drop, and the view builds the chunks again (the story `fell-dig`). These changes are not in the save yet.
+
 ## The save
 
 `profile.world` (save version 6) holds the seed, the map, the clock, and the entities with `keep` (the hero, the zones, the planks, and a broken pot), without their routes and intents (`src/core/world/save.js`). When the hero goes to another map, the kept entities of the old map wait in `profile.world.away` until the hero comes back. The people, the animals, and Nghé come again from the map data and the seed. The village puts its world into the profile before each save (`ctx.syncWorld`).

@@ -1007,6 +1007,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       talk(cmd.dialogue);
       return;
     }
+    // The tools of a later era, for the stories and the debug panel: fell an object of the map, or
+    // dig the top block of a column. The view builds the chunks of the change again.
+    if (type === 'fell' || type === 'dig') {
+      const r = terrain.edit?.(cmd) ?? null;
+      if (r) emit({ type: type === 'fell' ? 'felled' : 'dug', id: cmd.id ?? null, at: r.at ?? null, kind: r.kind ?? null, drops: r.drops, chunks: r.chunks });
+      return;
+    }
     if (busy) return;
     // In a raid, a tap on Nghé is the charge only when Nghé is a tool of this raid.
     const charges = type === 'pet' && raidEnt()?.raid.tools.includes('nghe');

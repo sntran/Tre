@@ -42,7 +42,8 @@ async function loadDrawing() {
 
 // The terrain of a map, made once.
 export function terrainOf(map, tileTypes, tileMap, blocks = null) {
-  if (!terrains.has(map.id)) terrains.set(map.id, buildTerrain(map, tileTypes, tileMap, blocks));
+  // A terrain that a story changed (a felled tree, a dig) is built again for a new start.
+  if (!terrains.has(map.id) || terrains.get(map.id).edited) terrains.set(map.id, buildTerrain(map, tileTypes, tileMap, blocks));
   return terrains.get(map.id);
 }
 
@@ -94,8 +95,12 @@ export async function mountVillage(ctx, params = {}) {
   const tileMap = session.tileMap;
   const terrain = session.terrain;
   const state = session.state;
-  if (!worlds.has(mapData.id)) worlds.set(mapData.id, D.createVoxelWorld(canvas, terrain));
-  const view = worlds.get(mapData.id);
+  // One view for each map, made once for its terrain (a terrain that was built again gets a new view).
+  if (worlds.get(mapData.id)?.terrain !== terrain) {
+    worlds.get(mapData.id)?.view.dispose();
+    worlds.set(mapData.id, { terrain, view: D.createVoxelWorld(canvas, terrain) });
+  }
+  const view = worlds.get(mapData.id).view;
   const looks = data.figures.figures;
   const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero) : looks[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level });
 
@@ -777,6 +782,12 @@ export async function mountVillage(ctx, params = {}) {
     if (ev.type === 'land' || ev.type === 'water' || ev.type === 'shock' || ev.type === 'spark' || ev.type === 'flame') {
       const q = ev.at;
       if (q) figures.burst(q.x / 2, session.env.groundY(q.x / 2, q.z / 2) / 2 + 0.2, q.z / 2, ev.type === 'water' || ev.type === 'shock' ? 'splash' : 'dust', ev.type === 'land' ? 5 : 12);
+    }
+    // A change of the terrain: its chunks build again, with a puff of dust.
+    if (ev.type === 'felled' || ev.type === 'dug') {
+      view.edit(ev.chunks);
+      const at = ev.at ?? null;
+      if (at) figures.burst(at[0] + 0.5, at[1] + 1, at[2] + 0.5, 'dust', 10);
     }
     if (ev.type === 'snap' || ev.type === 'strike' || ev.type === 'butt') {
       const f = figures.placeOf(ev.type === 'snap' ? ev.trap : ev.id);
