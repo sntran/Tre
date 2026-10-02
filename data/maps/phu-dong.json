@@ -415,6 +415,10 @@
    "giong-pot": {
     "x": 21.4,
     "y": 24.8
+   },
+   "buffalo-shade": {
+    "x": 75.2,
+    "y": 35.0
    }
   },
   "triggers": [

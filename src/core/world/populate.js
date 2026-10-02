@@ -143,7 +143,8 @@ export function addLifeLayer(world, map, env, life) {
       const bed = medium === 'water' ? null : place(g.bed) ?? { x: cx, z: cz };
       addLife(world, env, life, g.kind, { ...(g.spot ? spot : at), facing }, {
         id: `life:${gi}:${i}`,
-        ...(def.plan ? { schedule: { plan: structuredClone(def.plan), spot, bed: bed ? { x: bed.x + (i % 3) - 1, z: bed.z + Math.floor(i / 3) - 0.5 } : null } } : {}),
+        // At a place of its plan (the shade of a tree), each one of the group has its own spot.
+        ...(def.plan ? { schedule: { plan: structuredClone(def.plan), spot, bed: bed ? { x: bed.x + (i % 3) - 1, z: bed.z + Math.floor(i / 3) - 0.5 } : null, offset: { x: ((i % 3) - 1) * 3, z: Math.floor(i / 3) * 3 } } } : {}),
         ...(def.looks.length ? { look: def.looks[i % def.looks.length] } : {}),
         ...(def.flock ? { flock: { id: `${map.id}:${gi}`, ...def.flock } } : {}),
         ...(def.react ? { react: structuredClone(def.react) } : {}),

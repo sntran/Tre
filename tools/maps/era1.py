@@ -127,6 +127,7 @@ A.places = {
     # house of Gióng.
     'rice-trays': {'x': 7.6, 'y': 17.6},
     'giong-pot': {'x': 10.7, 'y': 12.4},
+    'buffalo-shade': {'x': 37.6, 'y': 17.5},
 }
 A.npcs = [
     {'id': 'grandma', 'x': 4.5, 'y': 12.7},

@@ -1,352 +1,369 @@
 {
-  "_about": "The living things of the world, and the numbers of their behaviors. kinds: one entry for each kind. looks: the figures in data/figures.json (one for each animal, in turn). steer: the steering (src/core/world/systems/steer.js): speed (half blocks a second), accel, medium (land, water, air), weights of the behaviors (seek, arrive, flee, wander, separation, avoid), slow (arrive starts to slow down at this distance), radius (separation), boost (speed factor when fleeing), run and pause (the lengths of the runs and stops of wander, in seconds), float (height over the bed for swimmers), altitude (height for fliers). flock: align and cohere (the pull of the neighbors), radius (who is a neighbor). range: how far a flock goes from its place, as a factor of the r of its group on the map (at least 4 half blocks). Units: half blocks (one map cell is 2) and seconds. react: what the thing does when the hero comes near (src/core/world/systems/react.js): flee (radius, when: near or run, time, sound), greet (radius, wave: seconds, cooldown), follow (radius, time, cooldown: the dog follows the hero and then goes home), break (radius, give: the items that the hero gets), bend (radius: tall grass). people: the reaction of the people of the story. plan: the day of an animal (src/core/world/systems/schedule.js): from (an hour) and at: range (it lives near its place), bed (it goes to its bed and sits; the bed of a chicken is its coop, the bed of a duck is the bank), spot (its place on the map), or gone (it is not there: the owl by day, the birds out of the dusk). act: sit. solid: things keep this distance from it. pushable: the hero on the back of Nghé can push it (r). hot: Nghé steps back within r.",
-  "kinds": {
-    "chicken": {
-      "looks": [
-        "chicken",
-        "chicken-brown"
-      ],
-      "steer": {
-        "speed": 2.8,
-        "accel": 10,
-        "medium": "land",
-        "weights": {
-          "wander": 1,
-          "separation": 1,
-          "avoid": 2,
-          "flee": 1
-        },
-        "radius": 1.2,
-        "boost": 5,
-        "run": [
-          0.4,
-          1.2
-        ],
-        "pause": [
-          0.8,
-          2.5
-        ]
-      },
-      "flock": {
-        "align": 0.2,
-        "cohere": 0.5,
-        "radius": 8
-      },
-      "range": 2.5,
-      "react": {
-        "kind": "flee",
-        "radius": 8,
-        "when": "run",
-        "time": 1.2,
-        "sound": "cluck"
-      },
-      "plan": [
-        {
-          "from": 6,
-          "at": "range"
-        },
-        {
-          "from": 18,
-          "at": "bed",
-          "act": "sit"
-        }
-      ]
+ "_about": "The living things of the world, and the numbers of their behaviors. kinds: one entry for each kind. looks: the figures in data/figures.json (one for each animal, in turn). steer: the steering (src/core/world/systems/steer.js): speed (half blocks a second), accel, medium (land, water, air), weights of the behaviors (seek, arrive, flee, wander, separation, avoid), slow (arrive starts to slow down at this distance), radius (separation), boost (speed factor when fleeing), run and pause (the lengths of the runs and stops of wander, in seconds), float (height over the bed for swimmers), altitude (height for fliers). flock: align and cohere (the pull of the neighbors), radius (who is a neighbor). range: how far a flock goes from its place, as a factor of the r of its group on the map (at least 4 half blocks). Units: half blocks (one map cell is 2) and seconds. react: what the thing does when the hero comes near (src/core/world/systems/react.js): flee (radius, when: near or run, time, sound), greet (radius, wave: seconds, cooldown), follow (radius, time, cooldown: the dog follows the hero and then goes home), break (radius, give: the items that the hero gets), bend (radius: tall grass). people: the reaction of the people of the story. plan: the day of an animal (src/core/world/systems/schedule.js): from (an hour) and at: range (it lives near its place), bed (it goes to its bed and sits; the bed of a chicken is its coop, the bed of a duck is the bank), spot (its place on the map), or gone (it is not there: the owl by day, the birds out of the dusk). act: sit, or sleep (it lies down and snores now and then; the buffalo of another family sleeps in the shade of a tree at noon). solid: things keep this distance from it. pushable: the hero on the back of Nghé can push it (r). hot: Nghé steps back within r.",
+ "kinds": {
+  "chicken": {
+   "looks": [
+    "chicken",
+    "chicken-brown"
+   ],
+   "steer": {
+    "speed": 2.8,
+    "accel": 10,
+    "medium": "land",
+    "weights": {
+     "wander": 1,
+     "separation": 1,
+     "avoid": 2,
+     "flee": 1
     },
-    "duck": {
-      "looks": [
-        "duck"
-      ],
-      "steer": {
-        "speed": 1.2,
-        "accel": 3,
-        "medium": "water",
-        "float": 1.1,
-        "weights": {
-          "wander": 1,
-          "separation": 1,
-          "avoid": 2,
-          "flee": 1
-        },
-        "radius": 1.4,
-        "boost": 3,
-        "run": [
-          2,
-          5
-        ],
-        "pause": [
-          1,
-          3
-        ]
-      },
-      "flock": {
-        "align": 0.4,
-        "cohere": 0.4,
-        "radius": 8
-      },
-      "range": 2.5,
-      "react": {
-        "kind": "flee",
-        "radius": 12,
-        "when": "near",
-        "time": 2,
-        "sound": "quack"
-      },
-      "plan": [
-        {
-          "from": 6,
-          "at": "range"
-        },
-        {
-          "from": 18.5,
-          "at": "bed",
-          "act": "sit"
-        }
-      ]
+    "radius": 1.2,
+    "boost": 5,
+    "run": [
+     0.4,
+     1.2
+    ],
+    "pause": [
+     0.8,
+     2.5
+    ]
+   },
+   "flock": {
+    "align": 0.2,
+    "cohere": 0.5,
+    "radius": 8
+   },
+   "range": 2.5,
+   "react": {
+    "kind": "flee",
+    "radius": 8,
+    "when": "run",
+    "time": 1.2,
+    "sound": "cluck"
+   },
+   "plan": [
+    {
+     "from": 6,
+     "at": "range"
     },
-    "fish": {
-      "looks": [
-        "fish"
-      ],
-      "steer": {
-        "speed": 2,
-        "accel": 6,
-        "medium": "water",
-        "float": 0.5,
-        "weights": {
-          "wander": 1,
-          "separation": 1,
-          "avoid": 3,
-          "flee": 1
-        },
-        "radius": 1,
-        "boost": 3,
-        "run": [
-          0.5,
-          1.5
-        ],
-        "pause": [
-          0.3,
-          1.2
-        ]
-      },
-      "flock": {
-        "align": 0.6,
-        "cohere": 0.6,
-        "radius": 5
-      },
-      "range": 2,
-      "react": {
-        "kind": "flee",
-        "radius": 6,
-        "when": "near",
-        "time": 1
-      }
-    },
-    "buffalo": {
-      "looks": [
-        "buffalo"
-      ],
-      "steer": {
-        "speed": 1.2,
-        "accel": 2,
-        "medium": "land",
-        "weights": {
-          "wander": 1,
-          "separation": 1,
-          "avoid": 2
-        },
-        "radius": 3,
-        "run": [
-          1.5,
-          3
-        ],
-        "pause": [
-          4,
-          9
-        ]
-      },
-      "flock": {
-        "align": 0.2,
-        "cohere": 0.3,
-        "radius": 10
-      },
-      "range": 3,
-      "plan": [
-        {
-          "from": 6,
-          "at": "range"
-        },
-        {
-          "from": 19,
-          "at": "bed",
-          "act": "sit"
-        }
-      ]
-    },
-    "dog": {
-      "looks": [
-        "dog"
-      ],
-      "steer": {
-        "speed": 3.6,
-        "accel": 6,
-        "medium": "land",
-        "weights": {
-          "seek": 1,
-          "arrive": 1,
-          "wander": 0.5,
-          "separation": 1,
-          "avoid": 2
-        },
-        "slow": 3,
-        "stop": 2.4,
-        "radius": 2,
-        "run": [
-          0.5,
-          1.5
-        ],
-        "pause": [
-          2,
-          5
-        ]
-      },
-      "react": {
-        "kind": "follow",
-        "radius": 8,
-        "time": 12,
-        "cooldown": 30,
-        "sound": "bark"
-      },
-      "range": 1.5,
-      "plan": [
-        {
-          "from": 6,
-          "at": "range"
-        },
-        {
-          "from": 20,
-          "at": "bed",
-          "act": "sit"
-        }
-      ]
-    },
-    "pot": {
-      "looks": [
-        "pot"
-      ],
-      "solid": 1.4,
-      "react": {
-        "kind": "break",
-        "radius": 1.9,
-        "give": {
-          "coin": 1
-        },
-        "broken": "pot-broken",
-        "sound": "pot"
-      }
-    },
-    "grass": {
-      "looks": [
-        "grass"
-      ],
-      "react": {
-        "kind": "bend",
-        "radius": 2.6,
-        "sound": "rustle"
-      }
-    },
-    "owl": {
-      "looks": [
-        "owl"
-      ],
-      "plan": [
-        {
-          "from": 5,
-          "at": "gone"
-        },
-        {
-          "from": 19,
-          "at": "spot"
-        }
-      ]
-    },
-    "bird": {
-      "looks": [
-        "bird"
-      ],
-      "steer": {
-        "speed": 7,
-        "accel": 3,
-        "medium": "air",
-        "altitude": 16,
-        "weights": {
-          "wander": 1,
-          "separation": 1
-        },
-        "radius": 2,
-        "run": [
-          2,
-          4
-        ],
-        "pause": [
-          0.5,
-          1
-        ]
-      },
-      "flock": {
-        "align": 0.8,
-        "cohere": 0.6,
-        "radius": 10
-      },
-      "range": 3,
-      "plan": [
-        {
-          "from": 0,
-          "at": "gone"
-        },
-        {
-          "from": 17,
-          "at": "range"
-        },
-        {
-          "from": 19,
-          "at": "gone"
-        }
-      ]
-    },
-    "cart": {
-      "looks": [
-        "cart"
-      ],
-      "solid": 2.2,
-      "pushable": 2
-    },
-    "heat": {
-      "looks": [],
-      "hot": 7
+    {
+     "from": 18,
+     "at": "bed",
+     "act": "sit"
     }
+   ]
   },
-  "people": {
-    "react": {
-      "kind": "greet",
-      "radius": 8,
-      "wave": 1.6,
-      "cooldown": 25,
-      "sound": "greet"
+  "duck": {
+   "looks": [
+    "duck"
+   ],
+   "steer": {
+    "speed": 1.2,
+    "accel": 3,
+    "medium": "water",
+    "float": 1.1,
+    "weights": {
+     "wander": 1,
+     "separation": 1,
+     "avoid": 2,
+     "flee": 1
     },
-    "steer": {
-      "speed": 3.6,
-      "accel": 6,
-      "medium": "land",
-      "weights": {
-        "seek": 1,
-        "arrive": 1,
-        "separation": 1,
-        "avoid": 2
-      },
-      "slow": 2,
-      "stop": 0.5,
-      "radius": 1.6
+    "radius": 1.4,
+    "boost": 3,
+    "run": [
+     2,
+     5
+    ],
+    "pause": [
+     1,
+     3
+    ]
+   },
+   "flock": {
+    "align": 0.4,
+    "cohere": 0.4,
+    "radius": 8
+   },
+   "range": 2.5,
+   "react": {
+    "kind": "flee",
+    "radius": 12,
+    "when": "near",
+    "time": 2,
+    "sound": "quack"
+   },
+   "plan": [
+    {
+     "from": 6,
+     "at": "range"
+    },
+    {
+     "from": 18.5,
+     "at": "bed",
+     "act": "sit"
     }
+   ]
+  },
+  "fish": {
+   "looks": [
+    "fish"
+   ],
+   "steer": {
+    "speed": 2,
+    "accel": 6,
+    "medium": "water",
+    "float": 0.5,
+    "weights": {
+     "wander": 1,
+     "separation": 1,
+     "avoid": 3,
+     "flee": 1
+    },
+    "radius": 1,
+    "boost": 3,
+    "run": [
+     0.5,
+     1.5
+    ],
+    "pause": [
+     0.3,
+     1.2
+    ]
+   },
+   "flock": {
+    "align": 0.6,
+    "cohere": 0.6,
+    "radius": 5
+   },
+   "range": 2,
+   "react": {
+    "kind": "flee",
+    "radius": 6,
+    "when": "near",
+    "time": 1
+   }
+  },
+  "buffalo": {
+   "looks": [
+    "buffalo"
+   ],
+   "steer": {
+    "speed": 1.2,
+    "accel": 2,
+    "medium": "land",
+    "weights": {
+     "wander": 1,
+     "separation": 1,
+     "avoid": 2
+    },
+    "radius": 3,
+    "run": [
+     1.5,
+     3
+    ],
+    "pause": [
+     4,
+     9
+    ]
+   },
+   "flock": {
+    "align": 0.2,
+    "cohere": 0.3,
+    "radius": 10
+   },
+   "range": 3,
+   "plan": [
+    {
+     "from": 6,
+     "at": "range"
+    },
+    {
+     "from": 11.5,
+     "at": "buffalo-shade",
+     "act": "sleep"
+    },
+    {
+     "from": 13.5,
+     "at": "range"
+    },
+    {
+     "from": 19,
+     "at": "bed",
+     "act": "sit"
+    }
+   ]
+  },
+  "dog": {
+   "looks": [
+    "dog"
+   ],
+   "steer": {
+    "speed": 3.6,
+    "accel": 6,
+    "medium": "land",
+    "weights": {
+     "seek": 1,
+     "arrive": 1,
+     "wander": 0.5,
+     "separation": 1,
+     "avoid": 2
+    },
+    "slow": 3,
+    "stop": 2.4,
+    "radius": 2,
+    "run": [
+     0.5,
+     1.5
+    ],
+    "pause": [
+     2,
+     5
+    ]
+   },
+   "react": {
+    "kind": "follow",
+    "radius": 8,
+    "time": 12,
+    "cooldown": 30,
+    "sound": "bark"
+   },
+   "range": 1.5,
+   "plan": [
+    {
+     "from": 6,
+     "at": "range"
+    },
+    {
+     "from": 20,
+     "at": "bed",
+     "act": "sit"
+    }
+   ]
+  },
+  "pot": {
+   "looks": [
+    "pot"
+   ],
+   "solid": 1.4,
+   "react": {
+    "kind": "break",
+    "radius": 1.9,
+    "give": {
+     "coin": 1
+    },
+    "broken": "pot-broken",
+    "sound": "pot"
+   }
+  },
+  "grass": {
+   "looks": [
+    "grass"
+   ],
+   "react": {
+    "kind": "bend",
+    "radius": 2.6,
+    "sound": "rustle"
+   }
+  },
+  "owl": {
+   "looks": [
+    "owl"
+   ],
+   "plan": [
+    {
+     "from": 5,
+     "at": "gone"
+    },
+    {
+     "from": 19,
+     "at": "spot"
+    }
+   ]
+  },
+  "bird": {
+   "looks": [
+    "bird"
+   ],
+   "steer": {
+    "speed": 7,
+    "accel": 3,
+    "medium": "air",
+    "altitude": 16,
+    "weights": {
+     "wander": 1,
+     "separation": 1
+    },
+    "radius": 2,
+    "run": [
+     2,
+     4
+    ],
+    "pause": [
+     0.5,
+     1
+    ]
+   },
+   "flock": {
+    "align": 0.8,
+    "cohere": 0.6,
+    "radius": 10
+   },
+   "range": 3,
+   "plan": [
+    {
+     "from": 0,
+     "at": "gone"
+    },
+    {
+     "from": 5,
+     "at": "range"
+    },
+    {
+     "from": 7,
+     "at": "gone"
+    },
+    {
+     "from": 17,
+     "at": "range"
+    },
+    {
+     "from": 19,
+     "at": "gone"
+    }
+   ]
+  },
+  "cart": {
+   "looks": [
+    "cart"
+   ],
+   "solid": 2.2,
+   "pushable": 2
+  },
+  "heat": {
+   "looks": [],
+   "hot": 7
   }
+ },
+ "people": {
+  "react": {
+   "kind": "greet",
+   "radius": 8,
+   "wave": 1.6,
+   "cooldown": 25,
+   "sound": "greet"
+  },
+  "steer": {
+   "speed": 3.6,
+   "accel": 6,
+   "medium": "land",
+   "weights": {
+    "seek": 1,
+    "arrive": 1,
+    "separation": 1,
+    "avoid": 2
+   },
+   "slow": 2,
+   "stop": 0.5,
+   "radius": 1.6
+  }
+ }
 }

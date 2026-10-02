@@ -89,7 +89,7 @@ function ballsMaterial() {
 // The layer of all figures. lookOf(key): the look of a key (see data/figures.json).
 // The pose that the act of an entity asks for (a raid: an enemy on a trap sits, a stunned general
 // kneels, the general lifts his staff; Nghé lowers her horns in a charge).
-const WANTS = { sit: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns' };
+const WANTS = { sit: 'rest', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns' };
 
 // camera: the camera of the view (for the culling); without it, every figure draws. detail: one
 // level for all figures ('fine' or 'coarse', for the page of the figures); without it, the level

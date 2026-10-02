@@ -181,6 +181,7 @@ const FILES = [
   'src/core/timelimit.js',
   'src/core/triggers.js',
   'src/core/voices.js',
+  'src/core/world/ambient.js',
   'src/core/world/clock.js',
   'src/core/world/env.js',
   'src/core/world/move.js',

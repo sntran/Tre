@@ -256,7 +256,8 @@ export function checkFact(fact, ctx) {
       const d = other ? cellDist(e, other) : Infinity;
       if (d > (fact.within ?? 3)) return `${fact.entity} is ${d.toFixed(1)} cells from ${fact.near}`;
     }
-    if (fact.act !== undefined && e.act !== fact.act) return `${fact.entity} does ${e.act}, not ${fact.act}`;
+    // act: what the entity does now ('none' for nothing).
+    if (fact.act !== undefined && (e.act ?? 'none') !== fact.act) return `${fact.entity} does ${e.act ?? 'none'}, not ${fact.act}`;
     if (fact.look !== undefined && e.look !== fact.look) return `${fact.entity} looks ${e.look}, not ${fact.look}`;
     if (fact.hidden !== undefined && Boolean(e.hidden) !== fact.hidden) return `${fact.entity} hidden: ${Boolean(e.hidden)}`;
     // keep: the player changed the entity (a cart that moved), so the save keeps it.

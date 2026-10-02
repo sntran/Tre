@@ -61,7 +61,7 @@ test('the same wind and the same walk give the same angles, and the targets are 
   for (const v of t.map((x) => Math.round(x / NOTCH) * NOTCH)) assert.ok(Math.abs(v / NOTCH - Math.round(v / NOTCH)) < 1e-9);
 });
 
-test('the world has a soft breeze with a slow swell, from the sky system', () => {
+test('the world has a soft breeze with a slow swell and gusts, from the sky system', () => {
   const tiles = load('data/tiles.json').types;
   const map = { width: 4, height: 4, legend: { '.': 'grass' }, layers: { ground: Array(4).fill('....'), height: Array(4).fill('2222'), objects: [] } };
   const env = envFor(createTileMap(map, tiles));
@@ -71,7 +71,9 @@ test('the world has a soft breeze with a slow swell, from the sky system', () =>
     step(w, STEP, env);
     seen.push(w.wind.strength);
   }
-  assert.ok(Math.min(...seen) >= 0.2 && Math.max(...seen) <= 0.5, 'soft');
+  assert.ok(Math.min(...seen) >= 0.2 && Math.max(...seen) <= 0.95, 'soft, and a gust is a little more');
+  // Without gusts (no seed), the breeze stays soft.
+  for (let t = 0; t < 60; t += 0.5) assert.ok(breezeAt(t).strength <= 0.5);
   assert.ok(Math.max(...seen) - Math.min(...seen) > 0.1, 'it swells slowly');
   assert.ok(Math.abs(Math.hypot(w.wind.x, w.wind.z) - 1) < 1e-9, 'a direction');
 });

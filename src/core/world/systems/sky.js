@@ -5,6 +5,7 @@
 export const WRITES = ['sky', 'wind', 'events'];
 
 import { createRng, hashSeed } from '../../rng.js';
+import { gustAt, DEFAULT_AMBIENT } from '../ambient.js';
 import { DAY_MINUTES } from '../clock.js';
 
 export const DEFAULT_DAY = Object.freeze({ dusk: [17, 19], dawn: [5, 7], rain: { chance: 0.3, start: [11, 15], hours: [1.5, 3.5], rise: 1, fall: 1 } });
@@ -12,11 +13,13 @@ export const DEFAULT_DAY = Object.freeze({ dusk: [17, 19], dawn: [5, 7], rain: {
 const ramp = (h, [a, b]) => Math.min(1, Math.max(0, (h - a) / (b - a)));
 
 // The wind of the world at a time (seconds of play): a soft breeze from the river with a slow
-// swell, until the gusts of the weather come (#12). { x, z } is the direction it blows to, and
-// strength goes from 0 to 1. The parts that hang move with it (src/world/sway.js).
-export const BREEZE = Object.freeze({ x: 0.8, z: 0.6, strength: 0.35, swell: 0.15, period: 23 });
-export function breezeAt(seconds, b = BREEZE) {
-  return { x: b.x, z: b.z, strength: b.strength + b.swell * Math.sin((2 * Math.PI * seconds) / b.period) };
+// swell, and now and then a gust (src/core/world/ambient.js; at the trees, the last layer that it
+// crosses). { x, z } is the direction it blows to, and strength goes from 0 to 1. The parts that
+// hang move with it (src/world/sway.js).
+export const BREEZE = Object.freeze({ x: 0.8, z: 0.6, strength: 0.35, swell: 0.15, period: 23, gust: 0.45 });
+export function breezeAt(seconds, b = BREEZE, seed = null, ambient = DEFAULT_AMBIENT) {
+  const gust = seed === null ? 0 : gustAt(seed, seconds, 'tree', ambient);
+  return { x: b.x, z: b.z, strength: b.strength + b.swell * Math.sin((2 * Math.PI * seconds) / b.period) + b.gust * gust };
 }
 
 // The light of an hour: 0 by day, 1 at night.
@@ -36,7 +39,7 @@ export function rainOf(seed, dayIndex, day = DEFAULT_DAY) {
 }
 
 export function sky(world, dt, rng, env) {
-  world.wind = breezeAt(world.tick * dt);
+  world.wind = breezeAt(world.tick * dt, BREEZE, world.seed, env.day?.ambient ?? DEFAULT_AMBIENT);
   const day = env.day ?? DEFAULT_DAY;
   const minutes = world.clock.minutes;
   const hour = (minutes % DAY_MINUTES) / 60;

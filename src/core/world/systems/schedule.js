@@ -3,7 +3,8 @@
 // person walks to the foot of the ladder, climbs, and goes in (hidden); in the morning the person
 // comes out and climbs down. A person with no house, or a person who is part of the quest at night
 // (schedule.stay), stays out with a lantern. Chickens go to their coop and sit, ducks sit on the
-// bank, the owl comes at night, and the birds fly at dusk. In the day the mender (schedule.mends)
+// bank, the owl comes at night, the birds fly at dawn and at dusk, and the buffalo of another family
+// sleeps in the shade at noon. In the day the mender (schedule.mends)
 // walks to each pot that waits to be made whole, and sets a new one.
 export const WRITES = ['schedule', 'steer', 'position', 'hidden', 'act', 'carry', 'broken', 'events'];
 
@@ -33,6 +34,8 @@ export function schedule(world, dt, rng, env) {
     if (e.carry === undefined) delete e.carry;
     e.act = plan.act && e.steer?.arrived ? plan.act : undefined;
     if (e.act === undefined) delete e.act;
+    // A sleeper snores now and then.
+    if (e.act === 'sleep' && rng.next() < dt / 4) world.events.push({ type: 'snore', id: e.id, sound: 'snore' });
     // In and out of the house.
     if (at === 'home') {
       if (e.hidden) continue;

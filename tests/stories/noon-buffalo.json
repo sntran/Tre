@@ -1,0 +1,20 @@
+{
+  "name": "noon-buffalo",
+  "about": {
+    "vi": "Buổi trưa, đàn trâu của nhà khác nằm ngủ dưới bóng cây và thỉnh thoảng ngáy. Không có gì để đếm, không có phần thưởng.",
+    "en": "At noon the buffalo of another family lie down in the shade of a tree and snore now and then. Nothing to count, and no reward."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 675,
+  "place": [68, 33],
+  "steps": [
+    { "at": { "hour": 11.7 } },
+    { "wait": 20 },
+    { "expect": [{ "entity": "life:7:0", "act": "sleep" }, { "entity": "life:7:1", "act": "sleep" }] },
+    { "until": { "event": "snore", "timeout": 20 } },
+    { "at": { "hour": 14 } },
+    { "wait": 5 },
+    { "expect": [{ "entity": "life:7:0", "act": "none" }] }
+  ]
+}
