@@ -123,7 +123,7 @@ export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
         ground.set(x, y, z, depth === 0 ? top : depth === 1 ? under : kind ? blocks.kinds[kind].color : 'wood');
         if (kinds) kinds[ground.index(x, y, z)] = kindNames.indexOf(kind) + 1;
       }
-      if (type === 'water' || type === 'shallow') water.push({ x, z, y: h + WATER.river });
+      if (type === 'water' || type === 'shallow') water.push({ x, z, y: h + WATER.river, ...(type === 'shallow' ? { ford: true } : {}) });
       if (type === 'field') paddies.push({ x, z, y: h + WATER.paddy });
     }
   }
@@ -166,7 +166,9 @@ export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
       add({ kind: grows, fx: x * 2, fz: z * 2, fw: 2, fd: 2, seed: hashSeed(`${map.id}:${x}:${z}`) }, null);
     }
   }
-  // Flowers and small stones on open grass, by a seeded rule (never in a grid).
+  // Flowers and small stones on open grass, by a seeded rule (never in a grid). The flowers are a
+  // list too (world units), for the butterflies by day.
+  const flowers = [];
   const r = seeded(hashSeed(`${map.id}:flowers`));
   for (let i = 0; i < W * H * 0.025; i++) {
     const x = r.int(1, W - 2);
@@ -177,14 +179,16 @@ export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
     const fz = z * 2 + r.int(0, 1);
     const g = groundTop(fx, fz);
     if (fine.get(fx, g, fz)) continue;
-    if (r.chance(0.6)) fine.set(fx, g, fz, r.pick(['vermilion', 'yellow', 'diep']));
-    else fine.set(fx, g, fz, 'ashLight');
+    if (r.chance(0.6)) {
+      fine.set(fx, g, fz, r.pick(['vermilion', 'yellow', 'diep']));
+      flowers.push({ x: (fx + 0.5) / 2, y: (g + 1) / 2, z: (fz + 0.5) / 2 });
+    } else fine.set(fx, g, fz, 'ashLight');
   }
 
   // A shadow makes the top of the ground a little darker.
   const shade = (x, y, z) => (shadows.has(z * W + x) ? 0.8 : 1);
   const terrain = {
-    width: W, height: H, ground, fine, shade, objects, roofs, smooth, water, paddies, kinds, kindNames,
+    width: W, height: H, ground, fine, shade, objects, roofs, smooth, water, paddies, flowers, kinds, kindNames,
     topAt,
     maxTop,
     // The ways into the houses (fine units = half blocks), by the id of the house.

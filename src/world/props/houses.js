@@ -98,11 +98,27 @@ export function giongHouse(ctx, o) {
 
 // The đình (village hall): larger and taller, with a vermilion ridge, bird-head finials, and stairs.
 export function dinh(ctx, o) {
-  stiltHouse(ctx, o, { postH: 7, wallH: 5, band: 'vermilion', ridge: 'vermilion', finials: true, stairs: true, sweep: 2 });
+  const h = stiltHouse(ctx, o, { postH: 7, wallH: 5, band: 'vermilion', ridge: 'vermilion', finials: true, stairs: true, sweep: 2 });
+  // A flag on a tall pole at the front of the yard; it waves in the wind (src/world/smooth.js).
+  const px = o.fx;
+  const pz = o.fz + o.fd - 2;
+  const g = ctx.ground(px, pz);
+  ctx.box(px, g, pz, px, g + 15, pz, 'wood');
+  ctx.smooth({ kind: 'flag', x: (px + 1) / 2, y: (g + 16) / 2, z: (pz + 0.5) / 2, w: 1.8, h: 1.1 }, [2.2, 1.2, 0.2]);
+  return h;
 }
 
+// A small hut. Some huts have laundry on a line between two posts at the side.
 export function hut(ctx, o) {
-  stiltHouse(ctx, o, { postH: 5, wallH: 3 });
+  const h = stiltHouse(ctx, o, { postH: 5, wallH: 3 });
+  if (!ctx.rng.chance(0.5)) return;
+  const x = o.fx;
+  const z0 = h.wz0;
+  const z1 = h.wz1 + 1;
+  const g = ctx.ground(x, z0);
+  ctx.box(x, g, z1, x, g + 4, z1, 'wood');
+  ctx.box(x, g, z0, x, g + 4, z0, 'wood');
+  ctx.smooth({ kind: 'laundry', x: (x + 0.5) / 2, y: (g + 4.5) / 2, z0: (z0 + 0.5) / 2, z1: (z1 + 0.5) / 2 }, [1, 1, 0.2]);
 }
 
 // An open school: a low floor, posts, a mat, a low table with counting rods, and a scroll.
@@ -124,6 +140,12 @@ export function school(ctx, o) {
   for (let x = tx - 2; x <= tx + 2; x += 2) ctx.set(x, fy + 3, z0 + 2, 'ink');
   ctx.box(x0, fy + 2, z0, x0, fy + 5, z0, 'paper');
   ctx.roof({ x0: x0 - 2, x1: x1 + 3, z0: z0 - 2, z1: z1 + 3, y: top + 1, ridgeH: Math.ceil((z1 - z0) / 2) + 1, color: 'ochre', ridge: 'yellow', finials: false, sweep: 1 });
+  // A stake in the yard, with the string of a kite that flies high over the village on a windy day.
+  const kx = x1 + 2;
+  const kz = z1 + 2;
+  const kg = ctx.ground(kx, kz);
+  ctx.set(kx, kg, kz, 'wood');
+  ctx.smooth({ kind: 'kite', x: (kx + 8) / 2, y: (kg + 30) / 2, z: (kz - 6) / 2, sx: (kx + 0.5) / 2, sy: (kg + 1) / 2, sz: (kz + 0.5) / 2 }, [5, 0, 16]);
   for (let z = z0 - 5; z <= z1; z++) for (let x = x0; x <= x1; x++) ctx.shadow(x, z);
   ctx.info = { ground: gy, floor: fy, walls: { x0, x1, z0, z1, top } };
 }

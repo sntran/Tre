@@ -29,13 +29,18 @@ const norm = (a) => {
   return [a[0] / l, a[1] / l, a[2] / l];
 };
 
-// A builder of one look: flat triangles with their tones, the hull, and ink lines.
+// The layers of the sway (the gust crosses them in this order: src/core/world/ambient.js).
+export const SWAY_LAYERS = Object.freeze({ paddy: 0, hedge: 1, tree: 2, kite: 3 });
+
+// A builder of one look: flat triangles with their tones, the hull, and ink lines. Each vertex has a
+// sway: [weight, layer] (how much the wind moves it, and its layer), from swayAt(point).
 function builder(who) {
-  const out = { positions: [], colors: [], owners: [], indices: [], segs: [], hull: { positions: [], indices: [] } };
+  const out = { positions: [], colors: [], owners: [], indices: [], sway: [], segs: [], segSway: [], hull: { positions: [], indices: [], sway: [] } };
   let n = 0;
   let h = 0;
-  return {
+  const B = {
     out,
+    swayAt: () => [0, 0],
     // A triangle of a closed shape, turned so that its front looks away from `center` (a point in
     // the shape). color: a palette name, or a function of the normal. hull: the ink around it.
     tri(a, b, c, center, color, hull = true) {
@@ -51,6 +56,7 @@ function builder(who) {
         out.positions.push(...p);
         out.colors.push(...rgb);
         out.owners.push(who);
+        out.sway.push(...B.swayAt(p));
       }
       out.indices.push(n, n + 1, n + 2);
       n += 3;
@@ -59,15 +65,20 @@ function builder(who) {
       for (const p of [a, b, c]) {
         const d = norm(sub(p, center));
         out.hull.positions.push(p[0] + d[0] * HULL, p[1] + d[1] * HULL, p[2] + d[2] * HULL);
+        out.hull.sway.push(...B.swayAt(p));
       }
       out.hull.indices.push(h, h + 1, h + 2);
       h += 3;
     },
     line(a, b) {
       out.segs.push(...a, ...b);
+      out.segSway.push(...B.swayAt(a), ...B.swayAt(b));
     },
   };
+  return B;
 }
+
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
 
 // The 12 corners and 20 faces of an icosahedron, and one split of each face (80 faces): a low ball.
 const T = (1 + Math.sqrt(5)) / 2;
@@ -146,12 +157,28 @@ function leaf(B, path, width, side, color) {
   }
 }
 
+// A flat rectangle (two triangles) with ink at its edges: a flag, a cloth on a line. a: the corner
+// at the pole or the line; u, v: the two sides.
+function sheet(B, a, u, v, color) {
+  const b = [a[0] + u[0], a[1] + u[1], a[2] + u[2]];
+  const c = [b[0] + v[0], b[1] + v[1], b[2] + v[2]];
+  const d = [a[0] + v[0], a[1] + v[1], a[2] + v[2]];
+  B.tri(a, b, c, null, color, false);
+  B.tri(a, c, d, null, color, false);
+  B.line(a, b);
+  B.line(b, c);
+  B.line(c, d);
+  B.line(d, a);
+}
+
 // The leaves are pale on top, so that a crown has a lit top as the blocks had.
 const leafy = (base) => (n) => (n[1] > 0.55 ? 'greenPale' : base);
 
 const BUILD = {
   // A tree crown: three or four overlapping blobs. { x, y, z (the middle of the crown), r, leaf }
   crown(B, s, rng) {
+    // The top of the crown moves most.
+    B.swayAt = (p) => [0.15 + 0.55 * clamp01((p[1] - (s.y - s.r)) / (2 * s.r)), SWAY_LAYERS.tree];
     const count = 3 + (rng.next() < 0.5 ? 1 : 0);
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2 + rng.next();
@@ -163,12 +190,15 @@ const BUILD = {
   },
   // A bush: two small blobs. { x, y, z (the ground under it), r }
   bush(B, s, rng) {
+    B.swayAt = (p) => [0.3 * clamp01((p[1] - s.y) / (s.r * 1.4)), SWAY_LAYERS.hedge];
     blob(B, [s.x, s.y + s.r * 0.6, s.z], [s.r, s.r * 0.7, s.r], leafy('green'), rng);
     blob(B, [s.x + s.r * 0.4, s.y + s.r * 0.5, s.z - s.r * 0.3], [s.r * 0.7, s.r * 0.6, s.r * 0.7], leafy('green'), rng);
   },
   // A bamboo culm: a thin segmented cylinder with a dark ring at each joint, a little lean, and
   // fans of narrow leaves in its top third. { x, y (the ground), z, h, lean: [dx, dz], leaf }
   culm(B, s, rng) {
+    // The top of a culm bends with the wind; its foot stays.
+    B.swayAt = (p) => [1.4 * clamp01((p[1] - s.y) / s.h) ** 2, SWAY_LAYERS.hedge];
     const joints = Math.max(3, Math.round(s.h / 2.5));
     const points = [];
     const radii = [];
@@ -205,6 +235,7 @@ const BUILD = {
   // The leaves of a banana plant: wide curved planes that arch out from the top of the stem and
   // droop, and a bud. { x, y (the top of the stem), z }
   banana(B, s, rng) {
+    B.swayAt = (p) => [0.1 + 0.45 * clamp01(Math.hypot(p[0] - s.x, p[2] - s.z) / 2.4), SWAY_LAYERS.tree];
     const count = 6;
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2 + rng.next() * 0.4;
@@ -238,18 +269,61 @@ const BUILD = {
   // The hanging roots of the banyan: thin curves from the crown to the ground. { x, y (the ground),
   // z, top (the height of the crown), roots: [[dx, dz], ...] }
   roots(B, s, rng) {
+    B.swayAt = (p) => [0.25 * clamp01(1 - (p[1] - s.y) / s.top), SWAY_LAYERS.tree];
     for (const [dx, dz] of s.roots) {
       const bend = (rng.next() - 0.5) * 0.6;
       const points = [0, 0.25, 0.5, 0.75, 1].map((u) => [s.x + dx + Math.sin(u * Math.PI) * bend, s.y + s.top * (1 - u), s.z + dz + Math.sin(u * Math.PI) * bend * 0.5]);
       tube(B, points, points.map((_, i) => 0.08 + i * 0.015), points.map(() => 'wood'), 4);
     }
   },
+  // The flag of the đình on its pole: a yellow banner with a vermilion band, in four parts so that it
+  // waves (its free end moves most). { x, y (the top of the pole), z, w, h }
+  flag(B, s) {
+    B.swayAt = (p) => [1.2 * clamp01(Math.hypot(p[0] - s.x, p[2] - s.z) / s.w), SWAY_LAYERS.tree];
+    const parts = 4;
+    for (let i = 0; i < parts; i++) {
+      const a = [s.x + (s.w * i) / parts, s.y, s.z];
+      sheet(B, a, [s.w / parts, 0, 0], [0, -s.h * 0.7, 0], 'yellow');
+      sheet(B, [a[0], s.y - s.h * 0.7, a[2]], [s.w / parts, 0, 0], [0, -s.h * 0.3, 0], 'vermilion');
+    }
+  },
+  // Laundry on a line between two posts: three cloths that hang and move in the wind. { x, y (the
+  // line), z0, z1 }
+  laundry(B, s) {
+    B.swayAt = (p) => [0.8 * clamp01((s.y - p[1]) / 0.8), SWAY_LAYERS.tree];
+    B.line([s.x, s.y, s.z0], [s.x, s.y, s.z1]);
+    const colors = ['indigo', 'vermilionPale', 'paper'];
+    const step = (s.z1 - s.z0) / 3;
+    colors.forEach((c, i) => sheet(B, [s.x, s.y, s.z0 + step * i + 0.15], [0, 0, step * 0.7], [0, -0.55 - (i % 2) * 0.2, 0], c));
+  },
+  // A kite high over the village on a windy day, on a long string from a stake. { x, y (the
+  // kite), z, sx, sy, sz (the stake) }
+  kite(B, s) {
+    B.swayAt = (p) => [clamp01((p[1] - s.sy) / (s.y - s.sy)), SWAY_LAYERS.kite];
+    const r = 0.6;
+    const top = [s.x, s.y + r, s.z];
+    const left = [s.x - r * 0.7, s.y, s.z];
+    const right = [s.x + r * 0.7, s.y, s.z];
+    const bottom = [s.x, s.y - r * 1.2, s.z];
+    B.tri(top, left, right, null, 'vermilion', false);
+    B.tri(left, bottom, right, null, 'yellow', false);
+    for (const [a, b] of [[top, left], [left, bottom], [bottom, right], [right, top]]) B.line(a, b);
+    // The tail, and the string down to the stake.
+    let p = bottom;
+    for (let i = 1; i <= 4; i++) {
+      const q = [s.x + (i % 2 ? 0.2 : -0.2), s.y - r * 1.2 - i * 0.4, s.z];
+      B.line(p, q);
+      p = q;
+    }
+    B.line(bottom, [s.sx, s.sy, s.sz]);
+  },
 };
 
 export const SMOOTH_KINDS = Object.freeze(Object.keys(BUILD));
 
 // The mesh of one smooth look: { kind, seed, who, owner, ...the numbers of its kind }.
-// Return { positions, colors, owners, indices, segs, hull: { positions, indices } }.
+// Return { positions, colors, owners, indices, sway, segs, segSway, hull: { positions, indices, sway } }
+// (sway: [weight, layer] for each vertex, and for each end of a line).
 export function smoothMesh(s) {
   const build = BUILD[s.kind];
   if (!build) throw new Error(`Unknown smooth look ${s.kind}`);

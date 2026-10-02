@@ -9,6 +9,7 @@ import { heroLayers } from '../render/assets.js';
 import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../core/world/move.js';
 import { getEntity, query } from '../core/world/state.js';
 import { STEP } from '../core/world/step.js';
+import { gustsAt, windyOn, dayIndex, mealAt } from '../core/world/ambient.js';
 import { createSession, middleOf } from '../core/session.js';
 import { buildTerrain, columnTop } from '../world/terrain.js';
 import { heroLook } from '../world/figures.js';
@@ -31,8 +32,8 @@ const terrains = new Map();
 const worlds = new Map();
 
 async function loadDrawing() {
-  drawing ??= Promise.all([import('../render/voxel.js'), import('../render/figure3d.js')])
-    .then(([voxel, figure]) => ({ ...voxel, ...figure }))
+  drawing ??= Promise.all([import('../render/voxel.js'), import('../render/figure3d.js'), import('../render/ambient3d.js')])
+    .then(([voxel, figure, ambient]) => ({ ...voxel, ...figure, ...ambient }))
     .catch((e) => {
       drawing = null;
       throw e;
@@ -102,6 +103,21 @@ export async function mountVillage(ctx, params = {}) {
   }
   const view = worlds.get(mapData.id).view;
   const looks = data.figures.figures;
+  // The world at rest: the smoke of the kitchens, the steam of the rice pot, the incense of the đình,
+  // butterflies, a dragonfly, and a fish at the ford (src/render/ambient3d.js).
+  const places = session.env.places;
+  const objWorld = (kinds) => terrain.objects.filter((o) => kinds.includes(o.kind) && !o.gone).map((o) => terrain.boxOf(o));
+  const motes = D.createAmbient(view.scene, {
+    // The smoke comes out at the ridge of the roof, a little off its middle (fine units in the roof).
+    kitchens: terrain.roofs
+      .filter((r) => terrain.objects.some((o) => o.who === r.who && !o.gone && ['house', 'giong-house', 'hut'].includes(o.kind)))
+      .map((r) => ({ x: (r.x0 + r.x1) / 4 + 0.8, y: (r.y + r.ridgeH) / 2 + 0.2, z: (r.z0 + r.z1) / 4 })),
+    pots: places['giong-pot'] ? [{ x: places['giong-pot'].x / 2 + 0.5, y: places['giong-pot'].y / 2 + 1.1, z: places['giong-pot'].z / 2 + 0.6 }] : [],
+    incense: objWorld(['dinh']).map((b) => ({ x: (b.x0 + b.x1) / 2, y: b.y0 + 4.3, z: b.z1 - 3 })),
+    flowers: terrain.flowers ?? [],
+    paddies: terrain.paddies ?? [],
+    fords: (terrain.water ?? []).filter((w) => w.ford),
+  });
   const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero) : looks[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level });
 
   // The height of the ground under a map point (world units).
@@ -629,7 +645,9 @@ export async function mountVillage(ctx, params = {}) {
     // The sound of the place changes with the light and the rain.
     if (frames % 30 === 0) {
       const sk = state.sky ?? { night: 0, rain: 0 };
-      ctx.bus.emit('ambience', busy ? null : { day: 1 - sk.night, night: sk.night, rain: sk.rain });
+      // The wind in the leaves: a soft hiss, louder while a gust goes over the paddies and the hedges.
+      const g = gustsAt(state.seed, state.tick * STEP, data.day?.ambient);
+      ctx.bus.emit('ambience', busy ? null : { day: 1 - sk.night, night: sk.night, rain: sk.rain, wind: Math.max(g.paddy, g.hedge) });
     }
     if (meter && now - since > 1000) {
       const s = view.stats();
@@ -771,8 +789,9 @@ export async function mountVillage(ctx, params = {}) {
   // What the world did in a step: sounds, hearts, splashes, and dust.
   function worldEvent(ev) {
     if (ev.id === 'sky') {
-      // The drum of the đình at dawn, and the lanterns at dusk.
+      // The drum of the đình and a cock crow at dawn; the lanterns and a far temple bell at dusk.
       ctx.bus.emit('sound', ev.type === 'dawn' ? 'drum' : 'lantern');
+      ctx.bus.emit('sound', ev.type === 'dawn' ? 'crow' : 'bell');
       return;
     }
     if (ev.sound) ctx.bus.emit('sound', ev.sound);
@@ -959,7 +978,13 @@ export async function mountVillage(ctx, params = {}) {
     figures.draw(between, dt);
     // The light of the hour: the world dims to a cool dusk (softer at 0.8 so that the night stays readable).
     D.night.value = (state.sky?.night ?? 0) * 0.8;
-    view.render(dt, raidView.focus(figures.placeOf('hero')), time, state.sky);
+    // The world at rest: the gusts and the wind for the sway of the leaves (src/core/world/ambient.js).
+    const seconds = state.tick * STEP;
+    const amb = data.day?.ambient;
+    const ambient = { gusts: gustsAt(state.seed, seconds, amb), wind: state.wind, windy: windyOn(state.seed, dayIndex(state.clock.minutes), amb) };
+    const hour = (state.clock.minutes % 1440) / 60;
+    motes.draw({ t: time, dt, night: state.sky?.night ?? 0, wind: state.wind, meal: mealAt(hour, amb) });
+    view.render(dt, raidView.focus(figures.placeOf('hero')), time, state.sky, ambient);
     drawSky();
     raidView.draw(dt, w, hh);
     drawMarks();
@@ -981,6 +1006,8 @@ export async function mountVillage(ctx, params = {}) {
     pointOf: (x, y) => view.project(x, groundY(x, y) + 0.2, y),
     // The debug panel (with ?debug=1), where the storybook shows the step of a story.
     debugPanel,
+    // The motes of the world at rest that the last frame drew (for the tests on a device).
+    motes: () => motes.count,
     // Open another map, for automatic tests of the whole game.
     goMap: (id, x, y) => ctx.go('village', { map: id, at: { x, y } }),
     // The screen point of the middle of a cell, for automatic tests of the whole game.
@@ -1050,6 +1077,7 @@ export async function mountVillage(ctx, params = {}) {
       window.removeEventListener('keyup', onKey);
       offLang();
       figures.dispose();
+      motes.dispose();
       for (const el of [duskTint, duskLayer, glowLayer, paper, raidLayer, marks, hud, turns, fade, banner, meter, debugPanel, bookScreen]) el?.remove();
     },
     api,

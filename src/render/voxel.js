@@ -32,6 +32,23 @@ function rendererFor(canvas) {
   return shared;
 }
 
+// The sway of a vertex of a smooth look in the wind (renderer only: no state). sway: [weight,
+// layer]; the layer reads its gust (paddy, hedge, tree: src/core/world/ambient.js). The leaves hold
+// three positions with a soft ease between them, as a print, each with its own phase from its place;
+// a gust pushes them downwind. A kite (layer 3) flies only on a windy day.
+const SWAY_GLSL = `
+  uniform float uTime; uniform vec3 uGust; uniform vec2 uWind; uniform float uWindy;
+  vec3 swayOf(vec3 p, vec2 s) {
+    if (s.x <= 0.0) return vec3(0.0);
+    float g = s.y < 0.5 ? uGust.x : (s.y < 1.5 ? uGust.y : uGust.z);
+    float v = sin(uTime * 0.9 + p.x * 0.41 + p.z * 0.27) + 1.0;
+    float held = floor(v) + smoothstep(0.75, 1.0, fract(v));
+    float k = (held - 1.0) * (0.1 + 0.12 * g) + 0.45 * g;
+    vec3 d = vec3(uWind.x, 0.0, uWind.y) * s.x * k;
+    if (s.y > 2.5) d = d * 3.0 + vec3(0.0, sin(uTime * 0.7 + p.x) * 0.3, 0.0) * s.x - vec3(0.0, 40.0, 0.0) * (1.0 - uWindy);
+    return d;
+  }`;
+
 // The material of the blocks, the roofs, and the smooth looks: flat colors, and the fade of an
 // owner. The fade is a stipple (an ordered dither, as the dots of a print), so that the world is
 // opaque and the ground and the things of a chunk are one mesh.
@@ -43,13 +60,14 @@ function flatMaterial(uniforms) {
     polygonOffsetUnits: 1,
     side: THREE.DoubleSide,
     vertexShader: `
-      attribute vec3 tone; attribute float owner;
+      attribute vec3 tone; attribute float owner; attribute vec2 sway;
       uniform sampler2D uFade; uniform float uFadeSize;
       varying vec3 vColor; varying float vFade;
+      ${SWAY_GLSL}
       void main() {
         vColor = tone;
         vFade = owner > 0.5 ? texture2D(uFade, vec2((owner + 0.5) / uFadeSize, 0.5)).r : 0.0;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position + swayOf(position, sway), 1.0);
       }`,
     fragmentShader: `
       varying vec3 vColor; varying float vFade;
@@ -74,6 +92,7 @@ function geometryOf(m, offset) {
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('tone', new THREE.BufferAttribute(new Float32Array(m.colors), 3));
   g.setAttribute('owner', new THREE.BufferAttribute(new Float32Array(m.owners), 1));
+  g.setAttribute('sway', new THREE.BufferAttribute(new Float32Array(m.sway ?? (m.positions.length / 3) * 2), 2));
   g.setIndex(new THREE.BufferAttribute(new Uint32Array(m.indices), 1));
   g.computeBoundingSphere();
   return g;
@@ -102,6 +121,8 @@ function inkGeometry(groups) {
   const owner = new Float32Array(verts);
   const outer = new Float32Array(verts);
   const isHull = new Float32Array(verts);
+  const sway = new Float32Array(verts * 2);
+  const swayO = new Float32Array(verts * 2);
   const idx = new Uint32Array(count * 6 + hullIdx);
   let n = 0;
   for (const g of groups) {
@@ -112,7 +133,11 @@ function inkGeometry(groups) {
       const verts = [[a, b, 1], [a, b, -1], [b, a, 1], [b, a, -1]];
       const who = g.owners?.[i / 6] ?? 0;
       const out = g.outer?.[i / 6] ?? 1;
+      const sa = g.sway ? [g.sway[(i / 6) * 4], g.sway[(i / 6) * 4 + 1]] : [0, 0];
+      const sb = g.sway ? [g.sway[(i / 6) * 4 + 2], g.sway[(i / 6) * 4 + 3]] : [0, 0];
       verts.forEach(([p, o, sd], k) => {
+        sway.set(k < 2 ? sa : sb, (n * 4 + k) * 2);
+        swayO.set(k < 2 ? sb : sa, (n * 4 + k) * 2);
         pos.set(p, (n * 4 + k) * 3);
         other.set(o, (n * 4 + k) * 3);
         side[n * 4 + k] = sd;
@@ -137,6 +162,10 @@ function inkGeometry(groups) {
       owner[v] = g.who ?? who;
       outer[v] = 1;
       isHull[v] = 1;
+      if (g.hull.sway) {
+        sway.set([g.hull.sway[(i / 3) * 2], g.hull.sway[(i / 3) * 2 + 1]], v * 2);
+        swayO.set([g.hull.sway[(i / 3) * 2], g.hull.sway[(i / 3) * 2 + 1]], v * 2);
+      }
       v += 1;
     }
     for (const i of g.hull.indices) idx[k++] = base + i;
@@ -149,6 +178,8 @@ function inkGeometry(groups) {
   g.setAttribute('owner', new THREE.BufferAttribute(owner, 1));
   g.setAttribute('outer', new THREE.BufferAttribute(outer, 1));
   g.setAttribute('hull', new THREE.BufferAttribute(isHull, 1));
+  g.setAttribute('sway', new THREE.BufferAttribute(sway, 2));
+  g.setAttribute('swayO', new THREE.BufferAttribute(swayO, 2));
   g.setIndex(new THREE.BufferAttribute(idx, 1));
   g.computeBoundingSphere();
   return g;
@@ -163,15 +194,19 @@ function inkMaterial(uniforms) {
     transparent: true,
     vertexShader: `
       attribute vec3 other; attribute float side; attribute float width; attribute float owner; attribute float outer; attribute float hull;
+      attribute vec2 sway; attribute vec2 swayO;
       uniform vec3 uView; uniform sampler2D uFade; uniform float uFadeSize;
       varying float vAlpha; varying float vHull;
+      ${SWAY_GLSL}
       void main() {
         vHull = hull;
+        vec3 P = position + swayOf(position, sway);
+        vec3 O = other + swayOf(other, swayO);
         float fade = owner > 0.5 ? texture2D(uFade, vec2((owner + 0.5) / uFadeSize, 0.5)).r : 0.0;
         vAlpha = 1.0 - fade * (outer > 0.5 ? 0.67 : 1.0);
-        vec3 d = normalize(other - position);
+        vec3 d = normalize(O - P);
         vec3 p = normalize(cross(d, uView)) * width * 0.5 * side;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position + p - d * width * 0.5, 1.0);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(P + p - d * width * 0.5, 1.0);
       }`,
     fragmentShader: `
       uniform float uNight; varying float vAlpha; varying float vHull;
@@ -212,10 +247,6 @@ function waveTexture() {
   return t;
 }
 
-function nightMaterial(params) {
-  return new THREE.MeshBasicMaterial(params);
-}
-
 // Build the scene of one map. terrain: from src/world/terrain.js.
 export function createVoxelWorld(canvas, terrain) {
   const renderer = rendererFor(canvas);
@@ -234,7 +265,11 @@ export function createVoxelWorld(canvas, terrain) {
   fadeTex.minFilter = THREE.NearestFilter;
   fadeTex.needsUpdate = true;
   const view = new THREE.Vector3();
-  const uniforms = { uFade: { value: fadeTex }, uFadeSize: { value: fadeSize }, uNight: night, uView: { value: view } };
+  // The time and the wind for the sway of the leaves: one set of uniforms for all chunks.
+  const uniforms = {
+    uFade: { value: fadeTex }, uFadeSize: { value: fadeSize }, uNight: night, uView: { value: view },
+    uTime: { value: 0 }, uGust: { value: new THREE.Vector3() }, uWind: { value: new THREE.Vector2(0.8, 0.6) }, uWindy: { value: 0 },
+  };
   const flatMat = track(flatMaterial(uniforms));
 
   // The meshes of each chunk: built at the start, and again after a change of the terrain.
@@ -275,8 +310,16 @@ export function createVoxelWorld(canvas, terrain) {
   if (terrain.water.length) {
     const W = terrain.width;
     const H = terrain.height;
+    // r: water; g: the ford (ripples around the stones); b: by a boat (a wake).
     const mask = new Uint8Array(W * H * 4);
-    for (const w of terrain.water) mask[(w.z * W + w.x) * 4] = 255;
+    for (const w of terrain.water) {
+      mask[(w.z * W + w.x) * 4] = 255;
+      if (w.ford) mask[(w.z * W + w.x) * 4 + 1] = 255;
+    }
+    for (const o of terrain.objects.filter((x) => x.kind === 'boat')) {
+      const b = terrain.boxOf(o);
+      for (let z = Math.floor(b.z0) - 1; z <= Math.ceil(b.z1); z++) for (let x = Math.floor(b.x0) - 1; x <= Math.ceil(b.x1); x++) if (x >= 0 && z >= 0 && x < W && z < H) mask[(z * W + x) * 4 + 2] = 255;
+    }
     const maskTex = track(new THREE.DataTexture(mask, W, H, THREE.RGBAFormat));
     maskTex.magFilter = THREE.LinearFilter;
     maskTex.minFilter = THREE.LinearFilter;
@@ -284,7 +327,7 @@ export function createVoxelWorld(canvas, terrain) {
     const plane = track(new THREE.PlaneGeometry(W, H).rotateX(-Math.PI / 2).translate(W / 2, terrain.water[0].y, H / 2));
     const pale = new THREE.Color(C.paper);
     const waterMat = track(new THREE.ShaderMaterial({
-      uniforms: { uWaves: { value: waves }, uMask: { value: maskTex }, uSize: { value: new THREE.Vector2(W, H) }, uPale: { value: new THREE.Vector3(pale.r, pale.g, pale.b) } },
+      uniforms: { uWaves: { value: waves }, uMask: { value: maskTex }, uSize: { value: new THREE.Vector2(W, H) }, uPale: { value: new THREE.Vector3(pale.r, pale.g, pale.b) }, uTime: uniforms.uTime },
       vertexShader: `
         varying vec2 vXZ;
         void main() {
@@ -293,12 +336,19 @@ export function createVoxelWorld(canvas, terrain) {
           gl_Position = projectionMatrix * viewMatrix * p;
         }`,
       fragmentShader: `
-        uniform sampler2D uWaves; uniform sampler2D uMask; uniform vec2 uSize; uniform vec3 uPale;
+        uniform sampler2D uWaves; uniform sampler2D uMask; uniform vec2 uSize; uniform vec3 uPale; uniform float uTime;
         varying vec2 vXZ;
         void main() {
-          float m = texture2D(uMask, vXZ / uSize).r;
+          vec4 mk = texture2D(uMask, vXZ / uSize);
+          float m = mk.r;
           if (m < 0.5) discard;
           vec3 c = texture2D(uWaves, vXZ / 4.0 + uWavesOffset).rgb;
+          // The ford: rings that go out from the stones, in steps.
+          float ring = fract(length(fract(vXZ) - 0.5) * 2.5 - floor(uTime * 2.0) / 6.0);
+          if (mk.g > 0.4 && ring < 0.12) c = mix(c, uPale, 0.7);
+          // By a boat: the lines of a wake that move away from it.
+          float wake = fract((vXZ.x + vXZ.y) * 0.7 - uTime * 0.5);
+          if (mk.b > 0.4 && wake < 0.08) c = mix(c, uPale, 0.6 * mk.b);
           // The bank: a narrow strip of the pale tone where the water ends.
           gl_FragColor = vec4(m < 0.8 ? mix(uPale, c, 0.45) : c, 1.0);
         }`.replace('uniform sampler2D uWaves;', 'uniform sampler2D uWaves; uniform vec2 uWavesOffset;'),
@@ -318,10 +368,37 @@ export function createVoxelWorld(canvas, terrain) {
     const pg = track(new THREE.BufferGeometry());
     pg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     pg.setIndex(idx);
-    scene.add(new THREE.Mesh(pg, track(nightMaterial({ color: new THREE.Color(C.indigoPale), transparent: true, opacity: 0.72, depthWrite: false }))));
+    // A slow shimmer on the still water: pale bands that come and go.
+    const pale = new THREE.Color(C.indigoPale);
+    scene.add(new THREE.Mesh(pg, track(new THREE.ShaderMaterial({
+      uniforms: { uTime: uniforms.uTime, uColor: { value: new THREE.Vector3(pale.r, pale.g, pale.b) } },
+      transparent: true,
+      depthWrite: false,
+      vertexShader: `varying vec3 vP; void main() { vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: `
+        uniform float uTime; uniform vec3 uColor; varying vec3 vP;
+        void main() {
+          float band = step(0.82, sin(vP.x * 1.3 + vP.z * 0.7 + floor(uTime * 0.8) * 1.7));
+          gl_FragColor = vec4(uColor * (1.0 + 0.08 * band), 0.72);
+        }`,
+    }))));
     const seed = track(new THREE.BoxGeometry(0.16, 0.8, 0.16));
     seed.translate(0, 0.25, 0);
-    const seeds = new THREE.InstancedMesh(seed, track(nightMaterial({ color: new THREE.Color(C.green) })), terrain.paddies.length * 2);
+    // The seedlings bend a little in the wind, and a gust crosses the paddies as a wave in them.
+    const green = new THREE.Color(C.green);
+    const seeds = new THREE.InstancedMesh(seed, track(new THREE.ShaderMaterial({
+      uniforms: { ...uniforms, uColor: { value: new THREE.Vector3(green.r, green.g, green.b) } },
+      vertexShader: `
+        ${SWAY_GLSL}
+        void main() {
+          vec4 w = modelMatrix * instanceMatrix * vec4(position, 1.0);
+          float k = clamp((position.y + 0.15) / 0.8, 0.0, 1.0);
+          float wave = uGust.x * max(0.0, sin(w.x * 0.35 + w.z * 0.2 - uTime * 2.5));
+          vec3 d = swayOf(w.xyz, vec2(0.25 * k, 0.0)) + vec3(uWind.x, -0.15, uWind.y) * k * wave * 0.5;
+          gl_Position = projectionMatrix * viewMatrix * (w + vec4(d, 0.0));
+        }`,
+      fragmentShader: `uniform vec3 uColor; void main() { gl_FragColor = vec4(uColor, 1.0); }`,
+    })), terrain.paddies.length * 2);
     const m4 = new THREE.Matrix4();
     let k = 0;
     for (const p of terrain.paddies) {
@@ -440,8 +517,16 @@ export function createVoxelWorld(canvas, terrain) {
       place();
     },
     // One frame: turn, follow, fade, and draw.
-    // sky: { night, flood } from the world state.
-    render(dt, hero, t, sky = null) {
+    // sky: { night, flood } from the world state. ambient: { gusts: { paddy, hedge, tree }, wind
+    // ({ x, z }), windy } for the sway (src/core/world/ambient.js).
+    render(dt, hero, t, sky = null, ambient = null) {
+      uniforms.uTime.value = t;
+      if (ambient) {
+        uniforms.uGust.value.set(ambient.gusts.paddy, ambient.gusts.hedge, ambient.gusts.tree);
+        const l = Math.hypot(ambient.wind?.x ?? 0.8, ambient.wind?.z ?? 0.6) || 1;
+        uniforms.uWind.value.set((ambient.wind?.x ?? 0.8) / l, (ambient.wind?.z ?? 0.6) / l);
+        uniforms.uWindy.value = ambient.windy ? 1 : 0;
+      }
       const turning = state.az !== state.azTarget;
       state.az += (state.azTarget - state.az) * Math.min(1, dt * 7);
       if (Math.abs(state.azTarget - state.az) < 0.01) state.az = state.azTarget;

@@ -209,6 +209,7 @@ const FILES = [
   'src/core/world/trials.js',
   'src/core/world/zones.js',
   'src/main.js',
+  'src/render/ambient3d.js',
   'src/render/assets.js',
   'src/render/figure3d.js',
   'src/render/palette.js',

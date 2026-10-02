@@ -41,7 +41,8 @@ export function chunkMesh(terrain, cx, cz) {
   // The faces of a fine block that touch the ground are hidden.
   const underGround = (x, y, z) => g.get(x >> 1, y >> 1, z >> 1) > 0;
   const fine = meshGrid(f, { x0: x0 * 2, z0: z0 * 2, x1: Math.min(f.sx, (x0 + CHUNK) * 2), z1: Math.min(f.sz, (z0 + CHUNK) * 2), scale: 0.5, other: underGround });
-  const things = { positions: [...fine.positions], colors: [...fine.colors], owners: [...fine.owners], indices: [...fine.indices] };
+  // sway: [weight, layer] for each vertex (src/world/smooth.js); blocks and roofs do not move.
+  const things = { positions: [...fine.positions], colors: [...fine.colors], owners: [...fine.owners], indices: [...fine.indices], sway: new Array((fine.positions.length / 3) * 2).fill(0) };
   const ink = [
     { segs: ground.segments, w: 0.14, owners: ground.segOwners, outer: ground.segOuter },
     { segs: fine.segments, w: 0.1, owners: fine.segOwners, outer: fine.segOuter },
@@ -51,6 +52,7 @@ export function chunkMesh(terrain, cx, cz) {
     things.positions.push(...m.positions);
     things.colors.push(...m.colors);
     things.owners.push(...m.owners);
+    things.sway.push(...(m.sway ?? new Array((m.positions.length / 3) * 2).fill(0)));
     for (const i of m.indices) things.indices.push(base + i);
   };
   const here = (fx, fz) => chunkOfFine(fx, fz) === chunkKey(cx, cz);
@@ -66,7 +68,7 @@ export function chunkMesh(terrain, cx, cz) {
     if (!here(s.owner[0], s.owner[2]) || !ownerThere(terrain, s.owner)) continue;
     const m = smoothMesh(s);
     append(m);
-    ink.push({ who: s.who ?? 0, segs: m.segs, w: 0.09, owners: m.segs.length ? Array(m.segs.length / 6).fill(s.who ?? 0) : [], outer: Array(m.segs.length / 6).fill(1), hull: m.hull });
+    ink.push({ who: s.who ?? 0, sway: m.segSway, segs: m.segs, w: 0.09, owners: m.segs.length ? Array(m.segs.length / 6).fill(s.who ?? 0) : [], outer: Array(m.segs.length / 6).fill(1), hull: m.hull });
   }
   let triangles = (ground.indices.length + things.indices.length) / 3;
   for (const k of ink) triangles += (k.segs.length / 6) * 2 + (k.hull ? k.hull.indices.length / 3 : 0);

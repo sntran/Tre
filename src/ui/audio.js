@@ -121,7 +121,7 @@ const SOUNDS = {
   crack: (t) => { noise(t, 0.12, { volume: 0.4, filter: 2500, q: 0.8 }); tone(160, t + 0.05, 0.3, { type: 'sawtooth', volume: 0.08, glide: 80 }); },
 };
 
-// The sound of the place: insects by day, frogs by night, and the rain. Three quiet loops.
+// The sound of the place: insects by day, frogs by night, the rain, and the wind. Quiet loops.
 let amb = null;
 function ambience() {
   const a = audio();
@@ -157,11 +157,11 @@ function ambience() {
   lfo.start();
   insects.disconnect();
   insects.connect(pulse).connect(master);
-  amb = { insects, rain: loop('lowpass', 900, 0.5), frogs: 0, timer: null, level: { day: 0, night: 0, rain: 0 } };
+  amb = { insects, rain: loop('lowpass', 900, 0.5), wind: loop('bandpass', 420, 0.7), frogs: 0, timer: null, level: { day: 0, night: 0, rain: 0 } };
   return amb;
 }
 
-// level: { day, night, rain } from 0 to 1, or null for silence (away from the world).
+// level: { day, night, rain, wind } from 0 to 1, or null for silence (away from the world).
 export function setAmbience(level) {
   const a = audio();
   if (!a || a.state !== 'running') return;
@@ -171,6 +171,7 @@ export function setAmbience(level) {
   const t = a.currentTime;
   x.insects.gain.setTargetAtTime(on ? 0.03 * level.day : 0, t, 0.5);
   x.rain.gain.setTargetAtTime(on ? 0.12 * level.rain : 0, t, 0.5);
+  x.wind.gain.setTargetAtTime(on ? 0.015 + 0.07 * (level.wind ?? 0) : 0, t, 0.8);
   x.level = on ? level : { day: 0, night: 0, rain: 0 };
   // Frogs croak now and then at night.
   if (on && level.night > 0.5 && !x.timer) {
