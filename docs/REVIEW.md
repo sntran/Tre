@@ -26,6 +26,13 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
   - The scouts and the soldiers of Ân wear helmets and carry blunt staffs. The general has a plume, a beard, and a staff.
   - The houses on stilts have thatch roofs with a ridge that curves up at the ends. The đình (nhà làng) has a vermilion ridge and bird-head finials, as on the Đông Sơn bronze drums.
 
+- Tết in the world of Era 1 (the small joys of #12, `docs/WORLD.md`, "The world at rest"). The game shows Tết on two days of each game year, with no text. A history reviewer decides what stays for the time of the Hùng Kings:
+  - Bánh chưng in a big pot over a fire in the yard of the đình (nhà làng). The legend of Lang Liêu puts bánh chưng in the time of the sixth Hùng King, so it can stay.
+  - Red couplets (câu đối đỏ) on the door posts. Couplets are written in Chinese or Nôm characters, from a much later time. With no characters on them, are plain red strips good, or must they go?
+  - Peach blossoms (hoa đào) on the trees. Is the peach blossom of Tết in the north from this time?
+  - A lion dance (múa lân) at noon, with a drum. The lion dance came later. Must it go, or change to a dance of this time (for example, a dance with a drum and bamboo, as on the bronze drums)?
+  - The other joys have no history question: a frog, ducklings, a kingfisher, a golden bamboo shoot (the golden bamboo of the legend of Gióng), a rainbow, puddles, footprints, a shooting star, and a firefly.
+
 ## 2. Sensitivity checks
 
 - The game names "quân Ân" (the Ân army) and "tướng quân Ân" (the Ân general) as the legend does. It never names a people of today. Check each text in section 4.

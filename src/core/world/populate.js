@@ -101,7 +101,8 @@ export function addLife(world, env, life, kind, at, extra = {}) {
   const def = life.kinds[kind];
   const s = def.steer;
   const ground = env.groundY(at.x / HALF, at.z / HALF);
-  const y = s?.medium === 'water' ? ground + (s.float ?? 1.1) : s?.medium === 'air' ? ground + (s.altitude ?? 12) : ground;
+  // A swimmer (or a thing on the water that does not swim, such as a lily pad) floats over the bed.
+  const y = s?.medium === 'water' ? ground + (s.float ?? 1.1) : s?.medium === 'air' ? ground + (s.altitude ?? 12) : def.float !== undefined ? ground + def.float : ground;
   return addEntity(world, {
     kind,
     position: { x: at.x, y, z: at.z, facing: at.facing ?? 0 },
@@ -151,6 +152,10 @@ export function addLifeLayer(world, map, env, life) {
         ...(def.solid ? { solid: { r: def.solid } } : {}),
         ...(def.pushable ? { pushable: { r: def.pushable } } : {}),
         ...(def.hot ? { hot: { r: def.hot } } : {}),
+        // The small joys: the days and hours of a thing, a dance, and a thing that Nghé may notice.
+        ...(def.when ? { when: structuredClone(def.when), hidden: true } : {}),
+        ...(def.dance ? { dance: { ...def.dance, x: cx, z: cz } } : {}),
+        ...(def.joy ? { joy: true } : {}),
         range: { x: cx, z: cz, r: Math.max(4, r * (def.range ?? 2)) },
       });
     }

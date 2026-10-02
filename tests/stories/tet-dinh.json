@@ -1,0 +1,21 @@
+{
+  "name": "tet-dinh",
+  "about": {
+    "vi": "Ngày Tết ở sân đình: nồi bánh chưng bốc hơi, câu đối đỏ ở cửa, hoa đào trên cây, và buổi trưa có múa lân với tiếng trống. Không có gì để đếm, không có phần thưởng.",
+    "en": "Tết in the yard of the đình: the pot of bánh chưng steams, red couplets are at the doors, peach blossoms are on the trees, and at noon a lion dances to a drum. Nothing to count, and no reward."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 29460,
+  "place": [31, 28.6],
+  "steps": [
+    { "wait": 1 },
+    { "expect": [{ "entity": "life:28:0", "hidden": false }, { "entity": "life:29:0", "hidden": true }] },
+    { "at": { "hour": 11.6 } },
+    { "until": { "event": "beat", "with": { "id": "life:29:0" }, "timeout": 5 } },
+    { "expect": [{ "entity": "life:29:0", "hidden": false }] },
+    { "wait": 6 },
+    { "at": { "hour": 13.2 } },
+    { "expect": [{ "entity": "life:29:0", "hidden": true }, { "entity": "life:28:0", "hidden": false }] }
+  ]
+}

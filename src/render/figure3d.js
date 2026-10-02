@@ -88,8 +88,9 @@ function ballsMaterial() {
 
 // The layer of all figures. lookOf(key): the look of a key (see data/figures.json).
 // The pose that the act of an entity asks for (a raid: an enemy on a trap sits, a stunned general
-// kneels, the general lifts his staff; Nghé lowers her horns in a charge).
-const WANTS = { sit: 'rest', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns' };
+// kneels, the general lifts his staff; Nghé lowers her horns in a charge; the fisher holds up a
+// fish).
+const WANTS = { catch: 'lift', sit: 'rest', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns' };
 
 // camera: the camera of the view (for the culling); without it, every figure draws. detail: one
 // level for all figures ('fine' or 'coarse', for the page of the figures); without it, the level
@@ -216,6 +217,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
         f.want = e.riding ? 'ride' : WANTS[e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
         f.bend = e.react?.bend ?? null;
+        // A tap on a sleeping animal: its ear flicks (in two held positions, as a print).
+        f.flick = e.flick ?? 0;
         // A plank that tips or wobbles turns about its near end.
         f.tilt = e.tilt ?? 0;
       }
@@ -272,7 +275,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
             const r = pose.rot[h.name] ?? [0, 0, 0];
             // A part that stands up turns the other way, so that its free end goes with the air too.
             // An ear goes back about the up axis.
-            if (h.kind === 'ear') h.node.rotation.set(r[0], r[1] + h.side * rx, r[2]);
+            if (h.kind === 'ear') h.node.rotation.set(r[0] + (Math.floor(f.flick * 8) % 2 ? -0.9 : 0), r[1] + h.side * rx, r[2]);
             else if (h.up) h.node.rotation.set(r[0] - rx, r[1], r[2] - rz);
             else h.node.rotation.set(r[0] + rx, r[1], r[2] + rz);
           }

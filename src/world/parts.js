@@ -26,6 +26,8 @@ export function heldItem(item, at, k, hand = 'armR', off = 'armL') {
   if (item === 'hammer') out.push(R('item', [0.25, 1.8, 0.25], 'wood', 0, -0.4, 0.3), R('head2', [0.9, 0.6, 0.6], 'ash', 0, -1.3, 0.3));
   if (item === 'axe') out.push(R('item', [0.25, 2.2, 0.25], 'wood', 0, -0.5, 0.3), R('blade', [0.2, 0.8, 0.8], 'ashLight', 0, -1.4, 0.7));
   if (item === 'net') out.push(R('item', [1.4, 1.4, 0.2], 'paperDeep', 0, -0.6, 0.4));
+  // A fish from the net of the fisher, held up by the tail.
+  if (item === 'fish') out.push(R('item', [0.4, 1.6, 0.7], 'ashLight', 0, -0.9, 0.4), R('tail2', [0.2, 0.4, 0.8], 'ash', 0, -0.05, 0.4));
   if (item === 'basket') out.push(R('item', [1.3, 1, 1.3], 'ochre', 0, -0.4, 0.4));
   if (item === 'scroll') out.push(R('item', [0.4, 1.4, 0.4], 'paper', 0, -0.3, 0.4));
   if (item === 'fan') out.push(R('item', [1.2, 1.2, 0.15], 'yellowPale', 0, -0.5, 0.4));

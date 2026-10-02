@@ -1,5 +1,5 @@
 {
- "_about": "The living things of the world, and the numbers of their behaviors. kinds: one entry for each kind. looks: the figures in data/figures.json (one for each animal, in turn). steer: the steering (src/core/world/systems/steer.js): speed (half blocks a second), accel, medium (land, water, air), weights of the behaviors (seek, arrive, flee, wander, separation, avoid), slow (arrive starts to slow down at this distance), radius (separation), boost (speed factor when fleeing), run and pause (the lengths of the runs and stops of wander, in seconds), float (height over the bed for swimmers), altitude (height for fliers). flock: align and cohere (the pull of the neighbors), radius (who is a neighbor). range: how far a flock goes from its place, as a factor of the r of its group on the map (at least 4 half blocks). Units: half blocks (one map cell is 2) and seconds. react: what the thing does when the hero comes near (src/core/world/systems/react.js): flee (radius, when: near or run, time, sound), greet (radius, wave: seconds, cooldown), follow (radius, time, cooldown: the dog follows the hero and then goes home), break (radius, give: the items that the hero gets), bend (radius: tall grass). people: the reaction of the people of the story. plan: the day of an animal (src/core/world/systems/schedule.js): from (an hour) and at: range (it lives near its place), bed (it goes to its bed and sits; the bed of a chicken is its coop, the bed of a duck is the bank), spot (its place on the map), or gone (it is not there: the owl by day, the birds out of the dusk). act: sit, or sleep (it lies down and snores now and then; the buffalo of another family sleeps in the shade of a tree at noon). solid: things keep this distance from it. pushable: the hero on the back of Nghé can push it (r). hot: Nghé steps back within r.",
+ "_about": "The living things of the world, and the numbers of their behaviors. kinds: one entry for each kind. looks: the figures in data/figures.json (one for each animal, in turn). steer: the steering (src/core/world/systems/steer.js): speed (half blocks a second), accel, medium (land, water, air), weights of the behaviors (seek, arrive, flee, wander, separation, avoid), slow (arrive starts to slow down at this distance), radius (separation), boost (speed factor when fleeing), run and pause (the lengths of the runs and stops of wander, in seconds), float (height over the bed for swimmers), altitude (height for fliers). flock: align and cohere (the pull of the neighbors), radius (who is a neighbor). range: how far a flock goes from its place, as a factor of the r of its group on the map (at least 4 half blocks). Units: half blocks (one map cell is 2) and seconds. react: what the thing does when the hero comes near (src/core/world/systems/react.js): flee (radius, when: near or run, time, sound), greet (radius, wave: seconds, cooldown), follow (radius, time, cooldown: the dog follows the hero and then goes home), break (radius, give: the items that the hero gets), bend (radius: tall grass). people: the reaction of the people of the story. plan: the day of an animal (src/core/world/systems/schedule.js): from (an hour) and at: range (it lives near its place), bed (it goes to its bed and sits; the bed of a chicken is its coop, the bed of a duck is the bank), spot (its place on the map), or gone (it is not there: the owl by day, the birds out of the dusk). act: sit, or sleep (it lies down and snores now and then; the buffalo of another family sleeps in the shade of a tree at noon). solid: things keep this distance from it. pushable: the hero on the back of Nghé can push it (r). hot: Nghé steps back within r. The small joys (docs/WORLD.md, \"The world at rest\"): react also has hop (radius, away: the seconds that a frog stays under the water), splash (radius: a puddle after the rain), and follow with when: walk (the ducklings follow only a hero who walks, not one who runs). float: the height over the bed of a thing on the water that does not swim (a lily pad). when: the days and hours of a thing (rare: a rare thing of the seed, tet: the days of Tết, wet: the hours after a rain, hours: [from, to]); out of them the thing is not there. dance: a lion dance on a circle of r around its place, with a beat of the drum each beat seconds. joy: Nghé may notice it (at most once a day). joys: catch (the fisher holds up a fish now and then: who, every (seconds), chance, hold (seconds)) and notice (Nghé turns its head to a joy: radius from Nghé, hero (the most distance from the hero), time).",
  "kinds": {
   "chicken": {
    "looks": [
@@ -341,6 +341,142 @@
   "heat": {
    "looks": [],
    "hot": 7
+  },
+  "duckling": {
+   "looks": [
+    "duckling"
+   ],
+   "steer": {
+    "speed": 3.4,
+    "accel": 8,
+    "medium": "land",
+    "weights": {
+     "seek": 1,
+     "arrive": 1,
+     "wander": 0.4,
+     "separation": 1,
+     "avoid": 2
+    },
+    "slow": 2,
+    "stop": 1.6,
+    "radius": 1,
+    "run": [
+     0.5,
+     1.5
+    ],
+    "pause": [
+     1,
+     3
+    ]
+   },
+   "flock": {
+    "align": 0.5,
+    "cohere": 0.8,
+    "radius": 6
+   },
+   "range": 3,
+   "react": {
+    "kind": "follow",
+    "when": "walk",
+    "radius": 7,
+    "time": 10,
+    "cooldown": 40,
+    "sound": "peep"
+   },
+   "plan": [
+    {
+     "from": 6,
+     "at": "range"
+    },
+    {
+     "from": 18.5,
+     "at": "bed",
+     "act": "sit"
+    }
+   ],
+   "joy": true
+  },
+  "frog": {
+   "looks": [
+    "frog"
+   ],
+   "float": 1.15,
+   "react": {
+    "kind": "hop",
+    "radius": 6,
+    "away": 12,
+    "sound": "frog"
+   },
+   "joy": true
+  },
+  "lily-pad": {
+   "looks": [
+    "lily-pad"
+   ],
+   "float": 1.05
+  },
+  "kingfisher": {
+   "looks": [
+    "kingfisher"
+   ],
+   "when": {
+    "rare": "kingfisher",
+    "hours": [
+     6,
+     18
+    ]
+   },
+   "joy": true
+  },
+  "golden-shoot": {
+   "looks": [
+    "golden-shoot"
+   ],
+   "when": {
+    "rare": "golden-shoot"
+   },
+   "joy": true
+  },
+  "puddle": {
+   "looks": [
+    "puddle"
+   ],
+   "when": {
+    "wet": 4
+   },
+   "react": {
+    "kind": "splash",
+    "radius": 1.6,
+    "sound": "splash"
+   }
+  },
+  "banh-chung": {
+   "looks": [
+    "banh-chung"
+   ],
+   "when": {
+    "tet": true
+   },
+   "solid": 1.8,
+   "joy": true
+  },
+  "lion": {
+   "looks": [
+    "lion"
+   ],
+   "when": {
+    "tet": true,
+    "hours": [
+     11.5,
+     13
+    ]
+   },
+   "dance": {
+    "r": 1.8,
+    "beat": 0.8,
+    "step": 0.5
+   },
+   "joy": true
   }
  },
  "people": {
@@ -364,6 +500,19 @@
    "slow": 2,
    "stop": 0.5,
    "radius": 1.6
+  }
+ },
+ "joys": {
+  "catch": {
+   "who": "npc:fisher",
+   "every": 45,
+   "chance": 0.5,
+   "hold": 3
+  },
+  "notice": {
+   "radius": 12,
+   "hero": 20,
+   "time": 2
   }
  }
 }

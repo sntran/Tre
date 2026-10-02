@@ -175,6 +175,20 @@ A.life = [
     {'kind': 'grass', 'n': 12, 'x': 20.0, 'y': 24.0, 'r': 3},
     {'kind': 'grass', 'n': 10, 'x': 30.0, 'y': 27.0, 'r': 2.5},
     {'kind': 'grass', 'n': 10, 'x': 12.0, 'y': 29.5, 'r': 2.5},
+    # The small joys (docs/WORLD.md, "The world at rest"): ducklings on the path by the paddies of
+    # the ducks, a frog on a lily pad by the sand, a kingfisher on a stake by the ford, a golden
+    # bamboo shoot in the low hedge, puddles on the roads after the rain, and at Tết a pot of
+    # bánh chưng and a lion dance in the yard of the đình.
+    {'kind': 'duckling', 'n': 4, 'x': 6.0, 'y': 22.3, 'r': 0.6},
+    {'kind': 'lily-pad', 'n': 1, 'x': 4.0, 'y': 33.2, 'r': 0},
+    {'kind': 'frog', 'n': 1, 'x': 4.0, 'y': 33.2, 'r': 0},
+    {'kind': 'kingfisher', 'n': 1, 'x': 7.3, 'y': 32.65, 'r': 0},
+    {'kind': 'golden-shoot', 'n': 1, 'x': 5.25, 'y': 28.25, 'r': 0},
+    {'kind': 'puddle', 'n': 1, 'x': 15.25, 'y': 14.75, 'r': 0},
+    {'kind': 'puddle', 'n': 1, 'x': 26.25, 'y': 15.15, 'r': 0},
+    {'kind': 'puddle', 'n': 1, 'x': 22.75, 'y': 25.25, 'r': 0},
+    {'kind': 'banh-chung', 'n': 1, 'x': 13.3, 'y': 12.4, 'r': 0},
+    {'kind': 'lion', 'n': 1, 'x': 16.75, 'y': 13.3, 'r': 0},
 ]
 ore_triggers(A, 'ore1', 25, 2)
 ore_triggers(A, 'ore2', 3, 31)

@@ -9,7 +9,9 @@ import { heroLayers } from '../render/assets.js';
 import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../core/world/move.js';
 import { getEntity, query } from '../core/world/state.js';
 import { STEP } from '../core/world/step.js';
-import { gustsAt, windyOn, dayIndex, mealAt } from '../core/world/ambient.js';
+import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, rainbowAt, starOn } from '../core/world/ambient.js';
+import { rainOf } from '../core/world/systems/sky.js';
+import { whenOn } from '../core/world/systems/joys.js';
 import { createSession, middleOf } from '../core/session.js';
 import { buildTerrain, columnTop } from '../world/terrain.js';
 import { heroLook } from '../world/figures.js';
@@ -42,6 +44,18 @@ async function loadDrawing() {
 }
 
 // The terrain of a map, made once.
+// A shooting star crosses the sky in this many game minutes (about two seconds of play).
+const STAR_MINUTES = 6;
+
+// The middle of the river and the half width of a rainbow over it (world units), or null.
+function riverOf(water) {
+  const deep = water.filter((w) => !w.ford);
+  if (!deep.length) return null;
+  const x = deep.reduce((a, w) => a + w.x, 0) / deep.length;
+  const z = deep.reduce((a, w) => a + w.z, 0) / deep.length;
+  return { x: x + 0.5, y: deep[0].y + 1, z: z + 0.5, r: 14 };
+}
+
 export function terrainOf(map, tileTypes, tileMap, blocks = null) {
   // A terrain that a story changed (a felled tree, a dig) is built again for a new start.
   if (!terrains.has(map.id) || terrains.get(map.id).edited) terrains.set(map.id, buildTerrain(map, tileTypes, tileMap, blocks));
@@ -117,6 +131,12 @@ export async function mountVillage(ctx, params = {}) {
     flowers: terrain.flowers ?? [],
     paddies: terrain.paddies ?? [],
     fords: (terrain.water ?? []).filter((w) => w.ford),
+    // The small joys of the view: the pot of bánh chưng at Tết, the doors of the houses (couplets),
+    // the crowns of the trees (peach blossoms), and the middle of the river (the rainbow).
+    tetPots: state.entities.filter((e) => e.kind === 'banh-chung').map((e) => ({ x: e.position.x / 2, y: e.position.y / 2 + 2.2, z: e.position.z / 2 })),
+    doors: Object.values(session.env.homes).map((w) => ({ x: w.door.x / 2, y: w.door.y / 2, z: w.door.z / 2 })),
+    crowns: (terrain.smooth ?? []).filter((c) => c.kind === 'crown').map((c) => ({ x: c.x, y: c.y, z: c.z, r: c.r })),
+    river: riverOf(terrain.water ?? []),
   });
   const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero) : looks[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level });
 
@@ -824,6 +844,11 @@ export async function mountVillage(ctx, params = {}) {
     // A commit at a placement: the child never sees the skill event; with ?debug=1 in the
     // address, a small panel shows it.
     if (ev.type === 'skill') logSkill(ev);
+    // The small joys: a puddle that the hero walks into, and a frog that dives into the river.
+    if ((ev.type === 'splash' && ev.id !== 'hero') || ev.type === 'dive') {
+      const q = ev.at;
+      if (q) figures.burst(q.x / 2, session.env.groundY(q.x / 2, q.z / 2) / 2 + (ev.type === 'dive' ? 0.6 : 0.1), q.z / 2, 'splash', ev.type === 'dive' ? 8 : 10);
+    }
     if (ev.id === 'hero' && ev.type === 'splash') {
       const q = hero().position;
       figures.burst(q.x / 2, q.y / 2 + 0.6, q.z / 2, 'splash', 18);
@@ -951,6 +976,25 @@ export async function mountVillage(ctx, params = {}) {
         glow.fillRect(q.x - r, q.y - r, r * 2, r * 2);
       }
     }
+    // A shooting star on one night in five: a streak over the top of the frame, in steps.
+    const starHour = night > 0.6 ? starOn(state.seed, dayIndex(state.clock.minutes - (state.clock.minutes % 1440 < 360 ? 1440 : 0)), data.day?.ambient) : null;
+    if (starHour !== null) {
+      const hour = (state.clock.minutes % 1440) / 60;
+      const k = (((hour - starHour + 24) % 24) * 60) / STAR_MINUTES;
+      if (k >= 0 && k < 1) {
+        const s = Math.floor(k * 8) / 8;
+        const x0 = w * 0.15;
+        const y0 = hh * 0.12;
+        const x = x0 + s * w * 0.5;
+        const y = y0 + s * hh * 0.12;
+        glow.strokeStyle = 'rgba(247, 240, 223, 0.95)';
+        glow.lineWidth = 3;
+        glow.beginPath();
+        glow.moveTo(Math.max(x0, x - w * 0.12), Math.max(y0, y - hh * 0.03));
+        glow.lineTo(x, y);
+        glow.stroke();
+      }
+    }
     if (rain > 0.01) {
       // Rain: short slanted lines, in the ink of the print.
       dusk.globalCompositeOperation = 'source-over';
@@ -983,7 +1027,24 @@ export async function mountVillage(ctx, params = {}) {
     const amb = data.day?.ambient;
     const ambient = { gusts: gustsAt(state.seed, seconds, amb), wind: state.wind, windy: windyOn(state.seed, dayIndex(state.clock.minutes), amb) };
     const hour = (state.clock.minutes % 1440) / 60;
-    motes.draw({ t: time, dt, night: state.sky?.night ?? 0, wind: state.wind, meal: mealAt(hour, amb) });
+    // The small joys of the view (src/render/ambient3d.js): Tết, the rainbow and the wet ground after
+    // a rain, and the firefly on the horn of Nghé on its rare night.
+    const today = dayIndex(state.clock.minutes);
+    const nghe = state.entities.find((e) => e.follow);
+    const ngheAt = nghe && rareOn(state.seed, today, amb).includes('firefly-horn') ? figures.placeOf(nghe.id) : null;
+    const heroAt = figures.placeOf('hero');
+    motes.draw({
+      t: time,
+      dt,
+      night: state.sky?.night ?? 0,
+      wind: state.wind,
+      meal: mealAt(hour, amb),
+      tet: isTet(today, amb),
+      rainbow: rainbowAt(rainOf(state.seed, today, data.day ?? undefined), hour, amb),
+      wet: whenOn({ wet: 4 }, state.seed, state.clock.minutes, amb, data.day ?? undefined),
+      hero: heroAt ? { ...heroAt, facing: hero()?.position.facing ?? 0 } : null,
+      horn: ngheAt ? { x: ngheAt.x, y: ngheAt.y + ngheAt.height, z: ngheAt.z } : null,
+    });
     view.render(dt, raidView.focus(figures.placeOf('hero')), time, state.sky, ambient);
     drawSky();
     raidView.draw(dt, w, hh);

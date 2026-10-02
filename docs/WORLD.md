@@ -73,7 +73,7 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 
 `step(world, dt, env)` in `src/core/world/step.js` runs the systems in this order, 30 times a second:
 
-1. **input**: the commands go into the entities before anything moves (move, walk, stop, place, face, pause, stay, pet, ride, knock, aim, pick, put, drop, guess, work, raid).
+1. **input**: the commands go into the entities before anything moves (move, walk, stop, place, face, pause, stay, pet, ride, knock, aim, pick, put, drop, guess, work, raid, poke).
 2. **sky**: the wind, the light and the rain of this hour, and the river in the rain, so that the plans and the lanterns read them. It sends `dawn` and `dusk`. While the river is high (in the rain and until it is down, about one game hour after the rain), `sky.high` is true.
 3. **ground**: the cells that open and close in play, before anything moves. The broken bridge opens its old deck, the lane where the planks lie, and all of its deck when it is solid. A high river closes the ford, but not while somebody is in it. This system writes only the collision of `env` (`env.block`), never the state.
 4. **schedule**: the plan of the hour sets the goals of the people and the animals before anything moves: the spot, the well, the coop, the bank, and home (to the foot of the ladder, up, and in). The walk goes around houses and water on a path of cells. In the morning the mender (grandma) walks to each pot that the hero broke and sets a new one. 
@@ -85,10 +85,11 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 10. **work**: after the hands: the tasks of the Five Trials answer the work of the hands (a rod on the mat, a tie, the iron into the water, the basket to the healer, a chalk mark, a cut), and their timed parts go on (the glow of the iron, the tide). See `docs/TRIALS.md`.
 11. **raid**: after the hands and Nghé: the orders of the child go to the raid (a shot, the gate bar, a villager to a spot, the charge of Nghé, an element, the bamboo), the enemies answer the traps on the road and the hero where the hero stands now, and the raid puts its enemies, stones, torches, fires, and wet ground into the world. The raid waits while the world waits. See `docs/RAIDS.md`.
 12. **push**: after the hero moves: on the back of Nghé the hero pushes the cart out of the way.
-13. **react**: after the hero moves, so that things react to where the hero is now, and before steering, so that a flight starts in the same step. Chickens flee a running hero, ducks and fish swim away, people turn, wave, and greet, the dog follows for a while, pots break and give a coin, and tall grass bends.
-14. **flock**: the pull of each flock (alignment with the near neighbors, cohesion to the middle of the flock, and the range of its place) goes into `steer.bias` before the animals move.
-15. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance).
-16. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits.
+13. **react**: after the hero moves, so that things react to where the hero is now, and before steering, so that a flight starts in the same step. Chickens flee a running hero, ducks and fish swim away, people turn, wave, and greet, the dog follows for a while, the ducklings follow a hero who walks (not one who runs), a frog jumps off its lily pad, a puddle splashes, pots break and give a coin, and tall grass bends.
+14. **joys**: after the plans and Nghé: the small joys show or hide by their days and hours, the lion dances, the fisher holds up a fish over his plan, and Nghé turns its head over its walk (see "The world at rest" below).
+15. **flock**: the pull of each flock (alignment with the near neighbors, cohesion to the middle of the flock, and the range of its place) goes into `steer.bias` before the animals move.
+16. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance).
+17. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits.
 
 Randomness comes only from the `rng` of the step. The same seed and the same commands give the same world.
 
@@ -116,6 +117,24 @@ The broken bridge in Phù Đổng is the zone `bridge-gap` (in `tools/maps/era1.
 - The session of the village (`src/core/session.js`, see `docs/STORIES.md`) turns taps into commands of the world. A tap on a plank marks the choice (`aim`), walks to it, and picks it up; a tap on a plank outline is the prediction; a tap on the gap with a plank in the hands walks to the near end and puts it there; a tap on the gap with empty hands walks out on the planks; a tap on the hero puts the plank down. The Space key does the same near the hero. A tap walk is a `walk` command with a token; the session keeps what to do at the end of the walk and runs it when the event `arrived` comes back. The village scene (`src/ui/village.js`) finds the target of a tap under the finger and sends it to the session.
 - The renderer (`src/render/voxel.js` and `src/render/figure3d.js`) reads the state and never changes it. It keeps one figure for each entity with `position` and `look`, and it is smooth between two steps. All parts of all figures are one `InstancedMesh`, their ink outlines one more, and their shadows one more.
 - The story (triggers, exits, dialogues, battles) reads the hero cell after each step.
+
+## The world at rest
+
+The world moves when the child does nothing, and it hides small joys for the child who looks. Nothing here teaches, counts, or gives: no reward, no count, no notebook entry, and no text. The child finds them or does not.
+
+- **Ambient motion** is in the renderer only, with no state (`src/render/voxel.js`, `src/render/ambient3d.js`; the look is in `docs/ART.md`). The pure rules are in `src/core/world/ambient.js`: the gusts (a gust crosses the paddies, then the hedge, then the trees), the meal times (smoke from the kitchens, steam from the rice pot), the year of the game (40 days; Tết on two of them), the rare days, the shooting star, the windy days (a kite), and the rainbow after a rain. All of them come from the seed and the clock, so the same seed gives the same days.
+- **Small joys with state** are entities of the life layer (`data/world/life.json`, placed by `tools/maps/era1.py`):
+  - The buffalo of another family sleeps in the shade at noon and snores (the plan of the buffalo). A tap on a sleeping animal (target `sleeper`, command `poke`) makes it flick an ear (`flick`), and it sleeps on.
+  - The ducklings by the paddies follow a hero who walks past (react `follow` with `when: walk`), and then go back.
+  - A frog on a lily pad by the sand jumps into the river when the hero comes near (`hop`, `dive`) and comes back after a while.
+  - Now and then the net of the fisher comes up with a fish, and he holds it up (`haul`; `joys.catch`).
+  - After the rain: puddles on the roads that splash (`splash`) while the ground is wet, footprints that fade, and a rainbow over the river for about a minute (the last two are in the renderer).
+  - At night: a shooting star on about one night in five.
+  - Rare things from the seed, each on about one day in twenty: a kingfisher on a stake by the ford, a golden bamboo shoot in the low hedge, and a firefly on the horn of Nghé (in the renderer).
+  - Tết, two days of each year: the pot of bánh chưng steams in the yard of the đình, red couplets at the doors, peach blossoms on the trees, and at noon a lion dance with a drum (`beat`). The history review decides what stays (`docs/REVIEW.md`).
+- An entity with `when` (`rare`, `tet`, `wet`, `hours`) is there only on those days and hours; out of them the joys system hides it.
+- **Nghé notices** a joy near it at most once a day (`notice`): it turns its head to the joy for two seconds, so that the child learns to look where Nghé looks. The day of the last notice is `world.noticed` (not in the save: after a load, Nghé may notice once more that day).
+- The stories `noon-buffalo`, `frog-pad`, and `tet-dinh` play some of them.
 
 ## Mining and taking apart
 

@@ -9,7 +9,8 @@
 // - the world commands move, stop, pet, ride, aim, pick, put, drop, guess, and face go to the
 //   world state (with id 'hero' when there is no id);
 // - tap { target }: the child tapped a thing. target is one of { hero: true }, { guess: { zone, n } },
-//   { thing: id } (a plank), { person: entity id }, or { ground: { x, y, h, thing, object } }
+//   { thing: id } (a plank), { person: entity id }, { sleeper: entity id } (a sleeping animal), or
+//   { ground: { x, y, h, thing, object } }
 //   (a point on the ground in map cells; object: the id of a map object there, or null).
 //   targetAt(x, y) gives the target at a map cell, as a tap there;
 // - hands: the key of the hands (put the plank in reach, or pick up the nearest plank);
@@ -109,7 +110,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     tileMap = createTileMap(map, data.tiles.types);
     triggers = createTriggers(map.layers.triggers);
     terrain = terrainOf(map, tileMap) ?? { homes: {} };
-    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, day: data.day, zones: data.zones, trials: data.trials, switches });
+    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, day: data.day, zones: data.zones, trials: data.trials, switches, joys: data.life?.joys ?? null });
 
     // The world state of this map. The save keeps the hero; the rest comes from the map and the seed.
     const onThisMap = profile.world.map === map.id;
@@ -769,6 +770,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (thing?.item) tapThing(thing, target.along ?? null);
       return;
     }
+    // A sleeping animal flicks an ear, and sleeps on. Nothing more.
+    if (target.sleeper) {
+      const e = getEntity(state, target.sleeper);
+      if (e?.position) emit({ type: 'tapfx', x: e.position.x / 2, y: e.position.z / 2, h: groundY(e.position.x / 2, e.position.z / 2) });
+      worldCommand(state, { type: 'poke', id: target.sleeper });
+      return;
+    }
     if (target.person) {
       const person = persons().find((p) => p.entity === target.person);
       if (!person || (person.kind === 'encounter' && raidOn())) return;
@@ -846,6 +854,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       consider(e.item.fixed ? { thing: e.id, along } : { thing: e.id }, d, 1.2);
     }
     for (const q of persons()) if (!getEntity(state, q.entity)?.hidden) consider({ person: q.entity }, Math.hypot(q.x - x, q.y - y) * 2, 1.6);
+    if (best) return best.target;
+    // A sleeping animal (the buffalo in the shade at noon).
+    for (const e of query(state, 'act', 'position')) if (e.act === 'sleep' && !e.hidden) consider({ sleeper: e.id }, distHb(p, e.position), 3);
     if (best) return best.target;
     const tx = Math.floor(x);
     const ty = Math.floor(y);

@@ -290,7 +290,7 @@ test('the ground of the maps has depth: river steps, sunken paddies, the dinh mo
   assert.ok(village.heightAt(0, 0) >= 4 && village.heightAt(2, 10) === 3);
 });
 
-test('the animals of each map live in their medium: ducks and fish on water or a paddy, the others on land', () => {
+test('the animals of each map live in their medium: ducks and fish on water or a paddy, a lily pad and its frog on the water, the others on land', () => {
   const life = load('data/world/life.json');
   let count = 0;
   for (const [id, m] of maps) {
@@ -300,7 +300,8 @@ test('the animals of each map live in their medium: ducks and fish on water or a
       count += g.n;
       const ground = map.groundAt(Math.floor(g.x), Math.floor(g.y));
       const water = ['water', 'shallow', 'field'].includes(ground);
-      assert.equal(water, life.kinds[g.kind].steer?.medium === 'water', `${id}: ${g.kind} at ${g.x},${g.y} is on ${ground}`);
+      const def = life.kinds[g.kind];
+      assert.equal(water, def.steer?.medium === 'water' || def.float !== undefined, `${id}: ${g.kind} at ${g.x},${g.y} is on ${ground}`);
     }
   }
   assert.ok(count >= 20, 'a village full of animals');

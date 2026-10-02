@@ -1,0 +1,22 @@
+{
+  "name": "frog-pad",
+  "about": {
+    "vi": "Một chú ếch ngồi trên lá sen bên bãi cát. Khi bạn lại gần, nó nhảy xuống sông, rồi một lúc sau lại leo lên lá. Không có gì để đếm, không có phần thưởng.",
+    "en": "A frog sits on a lily pad by the sand. When the hero comes near, it jumps into the river, and after a while it climbs back onto the pad. Nothing to count, and no reward."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [8, 60],
+  "steps": [
+    { "wait": 2 },
+    { "expect": [{ "entity": "life:22:0", "hidden": false }] },
+    { "tap": { "cell": [8, 64.6] } },
+    { "until": { "event": "hop", "with": { "id": "life:22:0" }, "timeout": 10 } },
+    { "until": { "event": "dive", "with": { "id": "life:22:0" }, "timeout": 2 } },
+    { "expect": [{ "entity": "life:22:0", "hidden": true }, { "entity": "life:21:0", "hidden": false }] },
+    { "tap": { "cell": [8, 58] } },
+    { "wait": 14 },
+    { "expect": [{ "entity": "life:22:0", "hidden": false }] }
+  ]
+}

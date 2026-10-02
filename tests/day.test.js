@@ -51,7 +51,7 @@ test('the light of the day: day, dusk, night, and dawn; the rain of some days, f
 // The whole village from 6 in the morning: the hero stands far from everybody.
 function village(minutes) {
   const w = createWorldState({ seed: 11, map: map.id, clock: { minutes } });
-  addHero(w, env, { x: 40, y: 80 });
+  addHero(w, env, { x: 78, y: 1 });
   syncPeople(w, map, env, () => true, life.people, days);
   addLifeLayer(w, map, env, life);
   addLanterns(w, env);
@@ -144,7 +144,7 @@ test('in the morning grandma sets a new pot for the pot that the hero broke, wit
   Object.assign(hero.position, { x: pot.position.x + 1, z: pot.position.z });
   step(w, STEP, env);
   assert.equal(pot.look, 'pot-broken');
-  Object.assign(hero.position, { x: 80, z: 160 });
+  Object.assign(hero.position, { x: 156, z: 2 });
   // The same day: still broken.
   runTo(w, 16);
   assert.equal(pot.look, 'pot-broken');

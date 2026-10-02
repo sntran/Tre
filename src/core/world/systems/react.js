@@ -6,14 +6,19 @@
 //   break: a pot breaks when the hero walks into it, and gives a coin. The next morning the
 //     mender (grandma) sets a new pot. A broken pot is a change of the player, so the save keeps it.
 //   bend: tall grass bends away from the hero and rustles.
+//   hop: a frog on a lily pad jumps into the water when the hero comes near, and comes back after
+//     a while (the small joys, docs/WORLD.md).
+//   splash: a puddle after the rain splashes when the hero walks into it.
+//   follow with when: walk: the ducklings follow a hero who walks past, not one who runs.
 // The sounds and the story (a greeting, a coin) go out as events.
-export const WRITES = ['react', 'steer', 'position', 'look', 'broken', 'keep', 'solid', 'events'];
+export const WRITES = ['react', 'steer', 'position', 'look', 'broken', 'keep', 'solid', 'hidden', 'events'];
 
 import { query, getEntity } from '../state.js';
 import { faceOf } from '../move.js';
 import { DAY_MINUTES } from '../clock.js';
 
 export const RUN_SPEED = 11; // half blocks a second: faster than this, the hero runs
+export const HOP_SECONDS = 0.6; // the jump of a frog into the water
 const TURN = 5; // radians a second
 
 export function react(world, dt) {
@@ -23,9 +28,20 @@ export function react(world, dt) {
   const running = (hero.motion?.speed ?? 0) > RUN_SPEED;
   const today = Math.floor(world.clock.minutes / DAY_MINUTES);
   const menders = query(world, 'schedule').some((m) => m.schedule.mends);
+  const walking = !running && (hero.motion?.speed ?? 0) > 0.5;
   for (const e of query(world, 'react', 'position')) {
-    if (e.hidden) continue;
     const r = e.react;
+    // A frog under the water comes back to its lily pad after a while.
+    if (r.kind === 'hop' && r.away > 0 && r.left !== undefined) {
+      r.left -= dt;
+      if (r.left <= 0) {
+        delete r.left;
+        delete e.hidden;
+        Object.assign(e.position, r.home);
+      }
+      continue;
+    }
+    if (e.hidden) continue;
     const p = e.position;
     const dx = h.x - p.x;
     const dz = h.z - p.z;
@@ -50,7 +66,7 @@ export function react(world, dt) {
       }
     } else if (r.kind === 'follow' && e.steer) {
       r.cool = Math.max(0, (r.cool ?? 0) - dt);
-      if ((r.state ?? 'home') === 'home' && near && r.cool === 0 && !world.paused) {
+      if ((r.state ?? 'home') === 'home' && near && r.cool === 0 && !world.paused && (r.when !== 'walk' || walking)) {
         r.state = 'follow';
         r.left = r.time;
         say('follow');
@@ -91,6 +107,31 @@ export function react(world, dt) {
         delete e.solid;
         say('break', { give: r.give });
       }
+    } else if (r.kind === 'hop') {
+      if (r.hop !== undefined) {
+        // The jump: an arc away from the hero, then under the water.
+        r.hop += dt;
+        const k = Math.min(1, r.hop / HOP_SECONDS);
+        p.x = r.home.x + r.dir.x * 2.4 * k;
+        p.z = r.home.z + r.dir.z * 2.4 * k;
+        p.y = r.home.y + Math.sin(Math.PI * k) * 1.6 - k * 0.8;
+        if (k >= 1) {
+          delete r.hop;
+          r.left = r.away;
+          e.hidden = true;
+          say('dive', { sound: null, at: { x: p.x, z: p.z } });
+        }
+      } else if (near && !world.paused) {
+        r.home = { x: p.x, y: p.y, z: p.z };
+        r.dir = d > 0.01 ? { x: -dx / d, z: -dz / d } : { x: 0, z: 1 };
+        r.hop = 0;
+        p.facing = faceOf(-dx, -dz);
+        say('hop');
+      }
+    } else if (r.kind === 'splash') {
+      const was = r.inside ?? false;
+      r.inside = near;
+      if (near && !was && !hero.riding) say('splash', { at: { x: p.x, z: p.z } });
     } else if (r.kind === 'bend') {
       const was = r.inside ?? false;
       r.inside = near;

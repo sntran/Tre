@@ -20,7 +20,7 @@ export function placesOf(map, tileMap) {
 
 // extra: { places: { name: { x, y, z } }, homes: { id: { base, top, door } } } in half blocks,
 // day (data/world/day.json), zones (the kinds of placement zones, data/world/zones.json), trials
-// (data/trials.json), and switches (the switches of the experiments of the profile).
+// (data/trials.json), switches (the switches of the experiments of the profile), and joys.
 export function envFor(tileMap, extra = {}) {
   const cell = (v) => Math.floor(v / 2);
   // The tile map for walks of the world: only the ground and the objects block.
@@ -85,6 +85,8 @@ export function envFor(tileMap, extra = {}) {
     trials: extra.trials ?? null,
     // The switches of the experiments (src/core/experiments.js), for example predict.
     switches: extra.switches ?? {},
+    // The small joys (the joys of data/world/life.json): the catch of the fisher, and the notice of Nghé.
+    joys: extra.joys ?? null,
   };
   return env;
 }

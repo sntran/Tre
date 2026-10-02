@@ -116,6 +116,10 @@ const SOUNDS = {
   snore: (t) => { noise(t, 0.9, { volume: 0.06, filter: 300, q: 2 }); tone(70, t, 0.9, { type: 'triangle', volume: 0.05, glide: 60 }); },
   crow: (t) => { tone(500, t, 0.18, { type: 'sawtooth', volume: 0.05, glide: 700 }); tone(700, t + 0.2, 0.5, { type: 'sawtooth', volume: 0.05, glide: 450 }); },
   bell: (t) => { tone(196, t, 3, { volume: 0.12 }); tone(392.4, t, 2.2, { volume: 0.05 }); tone(588, t, 1.4, { volume: 0.03 }); },
+  // The small joys: a duckling peeps, a buffalo huffs at a tap, and the drum of the lion dance.
+  peep: (t) => { tone(1800, t, 0.06, { type: 'triangle', volume: 0.04, glide: 2200 }); tone(1900, t + 0.1, 0.06, { type: 'triangle', volume: 0.04, glide: 2300 }); },
+  huff: (t) => noise(t, 0.35, { volume: 0.08, filter: 500, q: 1 }),
+  tom: (t) => tone(110, t, 0.3, { volume: 0.4, glide: 60 }),
   frog: (t) => { tone(180, t, 0.08, { type: 'square', volume: 0.04, glide: 120 }); tone(200, t + 0.12, 0.08, { type: 'square', volume: 0.04, glide: 130 }); },
   splash: (t) => { noise(t, 0.45, { volume: 0.35, filter: 1800, sweep: 500, q: 0.6 }); tone(420, t, 0.12, { volume: 0.08, glide: 900 }); },
   crack: (t) => { noise(t, 0.12, { volume: 0.4, filter: 2500, q: 0.8 }); tone(160, t + 0.05, 0.3, { type: 'sawtooth', volume: 0.08, glide: 80 }); },

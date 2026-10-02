@@ -16,6 +16,7 @@ import { ground } from './systems/ground.js';
 import { place } from './systems/place.js';
 import { work } from './systems/work.js';
 import { raid } from './systems/raid.js';
+import { joys } from './systems/joys.js';
 
 export const STEP = 1 / 30; // seconds: 30 steps a second
 
@@ -33,6 +34,7 @@ export const SYSTEMS = [
   raid, //   after the hands and Nghé: the enemies answer the traps on the road and the hero where the hero stands now.
   push, //   after the hero moves: a cart moves out of the way of the hero on the back of Nghé.
   react, //  after the hero moves, so that things react to where the hero is now; before steering, so that a flight starts in this step.
+  joys, //   after the plans and Nghé: the small joys show or hide, the fisher holds up a fish over his plan, and Nghé turns its head over its walk.
   flock, //  the pull of each flock goes into the steering before the animals move.
   steer, //  animals and people that move by themselves.
   clock, //  last: the time of this step passes after all that happened in it.

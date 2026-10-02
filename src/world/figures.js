@@ -274,6 +274,131 @@ export function lantern(lit = false) {
   return { kind: 'still', parts, scale: 1, height: 3, shadow: 0 };
 }
 
+// The small joys (docs/WORLD.md, "The world at rest"): small things that the child finds or does
+// not. A duckling walks with quick steps; the others stand still, and the systems move them.
+
+// A duckling: a small yellow ball with a beak, on two legs.
+export function duckling() {
+  const parts = [
+    P('legL', [0.3, 0.6, 0.3], 'ochre', [-0.3, 0.6, 0], { pivotTop: true }),
+    P('legR', [0.3, 0.6, 0.3], 'ochre', [0.3, 0.6, 0], { pivotTop: true }),
+    P('trunk', [1.3, 1, 1.6], 'yellowPale', [0, 1.05, 0]),
+    P('tailF', [0.6, 0.5, 0.4], 'yellowPale', [0, 1.4, -0.85]),
+    P('wingL', [0.2, 0.6, 1], 'yellow', [-0.7, 1.2, 0], { pivotTop: true }),
+    P('wingR', [0.2, 0.6, 1], 'yellow', [0.7, 1.2, 0], { pivotTop: true }),
+    P('head', [0.01, 0.01, 0.01], null, [0, 1.8, 0.6]),
+    P('skull', [0.9, 0.9, 0.9], 'yellowPale', [0, 0.1, 0], { parent: 'head' }),
+    P('beak', [0.5, 0.25, 0.5], 'ochre', [0, 0, 0.6], { parent: 'head' }),
+  ];
+  for (const ex of [-0.46, 0.46]) parts.push(P(`eye${ex > 0 ? 'R' : 'L'}`, [0.05, 0.18, 0.18], 'ink', [ex, 0.2, 0.2], { parent: 'head', mark: true }));
+  return { kind: 'fowl', parts, scale: 0.45, height: 2.4, shadow: 0.6 };
+}
+
+// A frog of the river: a flat green body, two eyes on top, and the back legs folded.
+export function frog() {
+  const parts = [
+    P('trunk', [2.2, 1, 2.6], 'green', [0, 0.5, 0]),
+    P('belly', [1.8, 0.3, 2.2], 'yellowPale', [0, 0.1, 0.1]),
+    P('legL', [0.7, 0.6, 1.6], 'greenDeep', [-1.2, 0.3, -0.6]),
+    P('legR', [0.7, 0.6, 1.6], 'greenDeep', [1.2, 0.3, -0.6]),
+  ];
+  for (const ex of [-0.6, 0.6]) {
+    const n = ex > 0 ? 'R' : 'L';
+    parts.push(P(`bump${n}`, [0.7, 0.6, 0.7], 'green', [ex, 1.2, 0.8]));
+    parts.push(P(`eye${n}`, [0.35, 0.35, 0.05], 'ink', [ex, 1.25, 1.16], { mark: true }));
+  }
+  return { kind: 'still', parts, scale: 0.32, height: 1.6, shadow: 0 };
+}
+
+// A lily pad on the water, with a notch and one pale bud.
+export function lilyPad() {
+  const parts = [
+    P('pad', [6, 0.3, 4.4], 'green', [0, 0, 0]),
+    P('padB', [4.4, 0.3, 6], 'green', [0, 0, 0]),
+    P('notch', [0.6, 0.32, 2.4], 'greenDeep', [0, 0.01, 1.8], { mark: true }),
+    P('bud', [0.8, 1, 0.8], 'vermilionPale', [1.8, 0.6, -1.4]),
+  ];
+  return { kind: 'still', parts, scale: 0.32, height: 0.4, shadow: 0 };
+}
+
+// A kingfisher on a stake by the ford: a blue back, a rust belly, and a long dark beak.
+export function kingfisher() {
+  const parts = [
+    P('stake', [0.6, 4, 0.6], 'wood', [0, 2, 0]),
+    P('trunk', [1.2, 1.3, 1.8], 'indigo', [0, 4.65, 0]),
+    P('belly', [1, 0.9, 1.4], 'ochre', [0, 4.35, 0.25]),
+    P('tail', [0.6, 0.3, 1.2], 'indigoPale', [0, 4.4, -1.3]),
+    P('head', [1.1, 1, 1.1], 'indigo', [0, 5.6, 0.7]),
+    P('cheek', [1.15, 0.35, 0.5], 'ochre', [0, 5.35, 0.9]),
+    P('beak', [0.3, 0.3, 1.3], 'ink', [0, 5.5, 1.8]),
+  ];
+  for (const ex of [-0.56, 0.56]) parts.push(P(`eye${ex > 0 ? 'R' : 'L'}`, [0.05, 0.25, 0.25], 'ink', [ex, 5.7, 0.9], { mark: true }));
+  return { kind: 'still', parts, scale: 0.34, height: 6.2, shadow: 0 };
+}
+
+// A golden bamboo shoot in the hedge: rings that get narrow to the tip.
+export function goldenShoot() {
+  const parts = [];
+  const rings = [[1.6, 1.4], [1.3, 1.3], [1, 1.2], [0.7, 1], [0.4, 0.8]];
+  let y = 0;
+  rings.forEach(([w, h], i) => {
+    parts.push(P(`ring${i}`, [w, h, w], i % 2 ? 'yellowPale' : 'yellow', [0, y + h / 2, 0]));
+    y += h;
+  });
+  parts.push(P('sheath', [0.2, 1.2, 0.7], 'ochre', [0.75, 1, 0]));
+  return { kind: 'still', parts, scale: 0.5, height: y, shadow: 0 };
+}
+
+// A puddle on the road after the rain: a flat pool of sky.
+export function puddle() {
+  const parts = [
+    P('pool', [7, 0.12, 4.4], 'indigoPale', [0, 0.06, 0]),
+    P('poolB', [5, 0.12, 6], 'indigoPale', [0.4, 0.06, 0.2]),
+    P('glint', [1.6, 0.14, 0.4], 'diep', [-1.2, 0.07, -0.8], { mark: true }),
+  ];
+  return { kind: 'still', parts, scale: 0.3, height: 0.2, shadow: 0 };
+}
+
+// The pot of bánh chưng at Tết: a big pot on three stones over a small fire, and square cakes
+// wrapped in leaves beside it.
+export function banhChung() {
+  const parts = [];
+  for (const [i, a] of [0, 2.1, 4.2].entries()) parts.push(P(`stone${i}`, [1, 0.8, 1], 'ashLight', [Math.cos(a) * 1.4, 0.4, Math.sin(a) * 1.4]));
+  parts.push(P('flame', [1.2, 0.9, 1.2], 'vermilion', [0, 0.5, 0]), P('core', [0.6, 0.6, 0.6], 'yellow', [0, 0.6, 0]));
+  parts.push(P('pot', [3.4, 2.6, 3.4], 'ash', [0, 2.1, 0]), P('potB', [2.8, 2.9, 2.8], 'ash', [0, 2.1, 0]));
+  parts.push(P('lid', [3, 0.3, 3], 'wood', [0, 3.55, 0]));
+  for (const [i, [x, z]] of [[3, 0.6], [3, -0.9], [3.1, -0.15]].entries()) {
+    const y = i === 2 ? 1.25 : 0.45;
+    parts.push(P(`cake${i}`, [1.4, 0.9, 1.4], 'green', [x, y, z]));
+    parts.push(P(`tie${i}`, [1.45, 0.92, 0.2], 'paperDeep', [x, y, z], { mark: true }));
+  }
+  return { kind: 'still', parts, scale: 0.55, height: 3.8, shadow: 1.6 };
+}
+
+// The lion of the lion dance (múa lân) at Tết: a big head with a horn and wide eyes, a body of
+// cloth, and four legs in indigo trousers (two dancers).
+export function lion() {
+  const parts = [P('trunk', [3.2, 1.8, 6], 'yellow', [0, 4.2, -0.4])];
+  for (const z of [-2.4, -0.4, 1.6]) parts.push(P(`stripe${z}`, [3.3, 1.85, 0.5], 'vermilion', [0, 4.2, z]));
+  parts.push(P('fringe', [3.4, 0.4, 6], 'diep', [0, 3.2, -0.4]));
+  const legs = [['legFL', -0.8, 1.8], ['legFR', 0.8, 1.8], ['legBL', -0.8, -2.6], ['legBR', 0.8, -2.6]];
+  for (const [name, x, z] of legs) parts.push(P(name, [0.7, 3.2, 0.7], 'indigo', [x, 3.2, z], { pivotTop: true }));
+  parts.push(P('head', [0.01, 0.01, 0.01], null, [0, 5.2, 2.8]));
+  parts.push(P('skull', [3.6, 3, 2.6], 'vermilion', [0, 0.4, 0.6], { parent: 'head' }));
+  parts.push(P('brow', [3.8, 0.6, 2.7], 'yellow', [0, 1.7, 0.6], { parent: 'head' }));
+  parts.push(P('horn', [0.6, 1.2, 0.6], 'yellow', [0, 2.5, 1], { parent: 'head' }));
+  parts.push(P('mouth', [2.6, 0.6, 0.3], 'ink', [0, -0.7, 1.95], { parent: 'head', mark: true }));
+  parts.push(P('beard', [2.4, 1.2, 0.4], 'diep', [0, -1.4, 1.8], { parent: 'head' }));
+  for (const ex of [-0.9, 0.9]) {
+    const n = ex > 0 ? 'R' : 'L';
+    parts.push(P(`eyeW${n}`, [1, 1, 0.05], 'diep', [ex, 0.8, 1.93], { parent: 'head', mark: true }));
+    parts.push(P(`eye${n}`, [0.5, 0.5, 0.06], 'ink', [ex, 0.8, 1.95], { parent: 'head', mark: true }));
+    parts.push(P(`ear${n}`, [0.5, 1, 0.5], 'yellow', [ex * 1.9, 1.6, 0.2], { parent: 'head' }));
+  }
+  parts.push(P('tail', [0.6, 2.2, 0.6], 'vermilion', [0, 4.6, -3.4], { pivotTop: true }));
+  return { kind: 'quadruped', parts, scale: 0.5, height: 7.2, shadow: 2.6 };
+}
+
 // A wooden cart with two wheels and two shafts. The shafts point to the front (+z).
 export function cart() {
   const parts = [
@@ -549,5 +674,13 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'cart') return cart();
   if (look.kind === 'bird') return bird();
   if (look.kind === 'lantern') return lantern(Boolean(look.lit));
+  if (look.kind === 'duckling') return duckling();
+  if (look.kind === 'frog') return frog();
+  if (look.kind === 'lily-pad') return lilyPad();
+  if (look.kind === 'kingfisher') return kingfisher();
+  if (look.kind === 'golden-shoot') return goldenShoot();
+  if (look.kind === 'puddle') return puddle();
+  if (look.kind === 'banh-chung') return banhChung();
+  if (look.kind === 'lion') return lion();
   return fine ? personFine(look, { smooth }) : person(look);
 }

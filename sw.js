@@ -195,6 +195,7 @@ const FILES = [
   'src/core/world/systems/follow.js',
   'src/core/world/systems/ground.js',
   'src/core/world/systems/input.js',
+  'src/core/world/systems/joys.js',
   'src/core/world/systems/lights.js',
   'src/core/world/systems/move.js',
   'src/core/world/systems/place.js',

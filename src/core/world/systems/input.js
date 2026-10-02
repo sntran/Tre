@@ -7,9 +7,9 @@
 // walks to it), pick (take a thing), put (put the thing in the hands into a zone), drop (put it on
 // the ground), guess (the prediction before a commit), work (the work of a trial: add, back, tie,
 // quench, give, mark, cut), raid (an order of the child in a raid: shoot, bar, call, charge, pour,
-// bamboo). The place system does what the hands want; the work system does the work; the raid
+// bamboo), poke (a tap on a sleeping animal: it flicks an ear). The place system does what the hands want; the work system does the work; the raid
 // system does the orders.
-export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'hands', 'work', 'orders', 'events'];
+export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'hands', 'work', 'orders', 'flick', 'events'];
 
 export const INSIDE_SOUNDS = Object.freeze(['cough', 'baby', 'clatter']);
 
@@ -81,6 +81,9 @@ export function input(world, dt, rng, env) {
       e.orders = [...(e.orders ?? []), o];
     } else if (c.type === 'work') {
       e.work = { trial: c.trial, act: c.act, item: c.item ?? null, at: c.at ?? null, culm: c.culm ?? null };
+    } else if (c.type === 'poke' && e.act === 'sleep') {
+      e.flick = 0.8;
+      world.events.push({ type: 'flick', id: e.id, sound: 'huff' });
     } else if (c.type === 'stay' && e.schedule) {
       e.schedule.stay = Boolean(c.on);
 
