@@ -396,7 +396,7 @@ export function lion() {
     parts.push(P(`ear${n}`, [0.5, 1, 0.5], 'yellow', [ex * 1.9, 1.6, 0.2], { parent: 'head' }));
   }
   parts.push(P('tail', [0.6, 2.2, 0.6], 'vermilion', [0, 4.6, -3.4], { pivotTop: true }));
-  return { kind: 'quadruped', parts, scale: 0.5, height: 7.2, shadow: 2.6 };
+  return { kind: 'quadruped', parts, scale: 0.66, height: 7.2, shadow: 2.6 };
 }
 
 // A wooden cart with two wheels and two shafts. The shafts point to the front (+z).
