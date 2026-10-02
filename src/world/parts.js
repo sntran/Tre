@@ -3,9 +3,11 @@
 // part in its parent. A part with pivotTop hangs from its top (legs, arms), so a rotation swings it.
 // A mark is a flat mark with no ink outline (eyes, a mouth, a dot). shape: 'box' (the default), or
 // 'ball' (a low smooth mesh in the flat tones, for the smooth heads that the owner compares on
-// docs/reference/figures.html).
+// docs/reference/figures.html). hang: a kind of src/world/sway.js for a part that moves with the
+// walk and the wind (hair, cloth, a tail); it turns about its top (pivotTop) or, for a part that
+// stands up (a topknot, the tail of a rooster), about its bottom (pivotBottom).
 
-export const P = (name, size, color, at, extra = {}) => ({ name, size, color, at, parent: extra.parent ?? 'body', pivotTop: Boolean(extra.pivotTop), mark: Boolean(extra.mark), shape: extra.shape ?? 'box' });
+export const P = (name, size, color, at, extra = {}) => ({ name, size, color, at, parent: extra.parent ?? 'body', pivotTop: Boolean(extra.pivotTop), pivotBottom: Boolean(extra.pivotBottom), mark: Boolean(extra.mark), shape: extra.shape ?? 'box', hang: extra.hang ?? null });
 
 // The planks of the bridge have units in two tones.
 export const PLANK_TONES = Object.freeze(['yellowPale', 'ochre']);

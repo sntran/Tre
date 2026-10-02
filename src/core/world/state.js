@@ -20,6 +20,7 @@ export function createWorldState({ seed = 1, map = null, clock = { minutes: 0 } 
     clock: { minutes: clock.minutes },
     paused: false, // true while a dialogue or a panel is open
     sky: null, // the light, the rain, and the river of this hour (see systems/sky.js)
+    wind: null, // the wind: { x, z (the direction it blows to), strength (0 to 1) } (see systems/sky.js)
     tick: 0, // the number of steps
     nextId: 1,
     entities: [],

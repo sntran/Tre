@@ -4,12 +4,14 @@
 // color), their ink outlines are one more, and their shadows one more: three draw calls for all
 // the people and animals. The motion is smooth between two steps of the world. A figure near the
 // hero draws its fine version (a grid of quarter blocks, src/world/fine.js), a far one its coarse
-// version, and a figure out of the view draws nothing (src/world/lod.js).
+// version, and a figure out of the view draws nothing (src/world/lod.js). Hair, cloth, and tails
+// move with the walk of the figure and the wind of the world (src/world/sway.js).
 import * as THREE from 'three';
 import { colorIndex, toneRgb, FACE_TONES } from '../world/voxel.js';
 import { figureOf } from '../world/figures.js';
 import { createAnimator, animate } from '../world/animate.js';
 import { detailFor, inView, lodFor } from '../world/lod.js';
+import { createSway, swayStep } from '../world/sway.js';
 import { C } from './palette.js';
 
 // One unit of a fine figure is a quarter block; the coarse figures and the things keep a grid of
@@ -153,15 +155,18 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       (nodes[p.parent] ?? body).add(node);
       nodes[p.name] = node;
       if (!p.color) continue;
-      list.push({ node, size: p.size, pivotTop: p.pivotTop, mark: p.mark, ball: p.shape === 'ball', rgb: toneRgb(colorIndex(p.color), 1) });
+      list.push({ node, size: p.size, pivotTop: p.pivotTop, pivotBottom: p.pivotBottom, mark: p.mark, ball: p.shape === 'ball', rgb: toneRgb(colorIndex(p.color), 1) });
     }
+    // The parts that hang: the node, its kind, and its side (an ear on the left turns the other way).
+    const hangs = figure.parts.filter((p) => p.hang && nodes[p.name]).map((p) => ({ name: p.name, node: nodes[p.name], kind: p.hang, up: p.pivotBottom, side: p.at[0] < 0 ? -1 : 1 }));
     const unit = figure.scale * grid;
-    return { figure, root, body, nodes, parts: list, unit, hull: HULL / unit, height: figure.height * unit };
+    return { figure, root, body, nodes, parts: list, hangs, unit, hull: HULL / unit, height: figure.height * unit };
   }
   const frustum = new THREE.Frustum();
   const view = new THREE.Matrix4();
   let planes = null;
 
+  let wind = null; // the wind of the world: { x, z, strength }
   const lerpAngle = (a, b, t) => {
     const d = ((((b - a + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
     return a + d * t;
@@ -171,6 +176,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     // After each step of the world: note the new place of each entity, and add or remove figures.
     sync(world) {
       const seen = new Set();
+      wind = world.wind ?? null;
       for (const e of world.entities) {
         if (!e.position || !e.look || e.hidden) continue;
         seen.add(e.id);
@@ -201,6 +207,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
           f.shownY = f.curr.y;
         }
         f.speed = e.riding ? 0 : (e.motion?.speed ?? 0) / 2;
+        // The velocity in blocks a second, for the parts that hang.
+        f.vel = { x: (e.motion?.vx ?? 0) / 2, z: (e.motion?.vz ?? 0) / 2 };
         f.control = Boolean(e.control);
         f.running = (e.motion?.speed ?? 0) > 11;
         // A rider sits on the back of Nghé; a swimmer at the ford is a little lower in the water.
@@ -255,6 +263,20 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         L.root.position.set(f.at.x, f.at.y, f.at.z);
         L.root.rotation.y = lerpAngle(a.facing, b.facing, t);
         for (const [name, r] of Object.entries(pose.rot)) L.nodes[name]?.rotation.set(r[0], r[1], r[2]);
+        if (L.hangs.length) {
+          // The parts that hang follow the air that the figure feels, with a lag, on top of the pose.
+          const facing = L.root.rotation.y;
+          const sway = swayStep((f.sway ??= createSway()), { vel: f.vel, facing, wind, phase: f.anim.phase, stride: Math.min(1, f.speed / 4.5), dt });
+          for (const h of L.hangs) {
+            const [rx, , rz] = sway[h.kind];
+            const r = pose.rot[h.name] ?? [0, 0, 0];
+            // A part that stands up turns the other way, so that its free end goes with the air too.
+            // An ear goes back about the up axis.
+            if (h.kind === 'ear') h.node.rotation.set(r[0], r[1] + h.side * rx, r[2]);
+            else if (h.up) h.node.rotation.set(r[0] - rx, r[1], r[2] - rz);
+            else h.node.rotation.set(r[0] + rx, r[1], r[2] + rz);
+          }
+        }
         L.body.position.y = (pose.lift - pose.sink) * f.poseUnit;
         L.body.rotation.x = pose.lean + f.tilt;
         L.body.rotation.z = 0;
@@ -269,7 +291,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         for (const p of L.parts) {
           if (n >= MAX_PARTS) break;
           const [w, h, d] = p.size;
-          m4.multiplyMatrices(p.node.matrixWorld, local.makeTranslation(0, p.pivotTop ? -h / 2 : 0, 0));
+          m4.multiplyMatrices(p.node.matrixWorld, local.makeTranslation(0, p.pivotTop ? -h / 2 : p.pivotBottom ? h / 2 : 0, 0));
           if (p.ball) {
             if (o >= MAX_FIGURES) continue;
             balls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));

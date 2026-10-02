@@ -13,6 +13,7 @@ The world of a map is plain data in `src/core/world/`. Small systems change it i
 | `map` | The id of the map. |
 | `clock` | `{ minutes }`: game minutes from the start (see `clock.js`). |
 | `sky` | `{ night, rain, flood, high }`: the light of the hour (0 by day, 1 at night), the rain, the river (1: one block up), and `high` (the ford is closed). |
+| `wind` | `{ x, z, strength }`: the direction that the wind blows to, and its strength (0 to 1). Until the weather of #12, a soft breeze with a slow swell. The hair, the cloth, and the tails of the figures move with it (`src/world/sway.js`). |
 | `paused` | True while a dialogue or a panel is open. |
 | `tick` | The number of steps. |
 | `entities` | The list of entities. |
@@ -73,7 +74,7 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 `step(world, dt, env)` in `src/core/world/step.js` runs the systems in this order, 30 times a second:
 
 1. **input**: the commands go into the entities before anything moves (move, walk, stop, place, face, pause, stay, pet, ride, knock, aim, pick, put, drop, guess, work, raid).
-2. **sky**: the light and the rain of this hour, and the river in the rain, so that the plans and the lanterns read them. It sends `dawn` and `dusk`. While the river is high (in the rain and until it is down, about one game hour after the rain), `sky.high` is true.
+2. **sky**: the wind, the light and the rain of this hour, and the river in the rain, so that the plans and the lanterns read them. It sends `dawn` and `dusk`. While the river is high (in the rain and until it is down, about one game hour after the rain), `sky.high` is true.
 3. **ground**: the cells that open and close in play, before anything moves. The broken bridge opens its old deck, the lane where the planks lie, and all of its deck when it is solid. A high river closes the ford, but not while somebody is in it. This system writes only the collision of `env` (`env.block`), never the state.
 4. **schedule**: the plan of the hour sets the goals of the people and the animals before anything moves: the spot, the well, the coop, the bank, and home (to the foot of the ladder, up, and in). The walk goes around houses and water on a path of cells. In the morning the mender (grandma) walks to each pot that the hero broke and sets a new one. 
 5. **lights**: after the plans, so that a lantern lights in the step when its family goes in. A knock at a lit house makes its lantern flicker.

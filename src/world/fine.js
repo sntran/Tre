@@ -54,25 +54,38 @@ function hairCap(color, extra) {
     P('hairSideL', [1, 3, 4], color, [-4, 0, -1.5], extra),
     P('hairSideR', [1, 3, 4], color, [4, 0, -1.5], extra),
     P('hairNape', [5, 1, 1], color, [0, -2, -3], extra),
-    P('fringe', [5, 1, 1], color, [0, 1.75, 3.8], extra),
+    // The fringe turns about its top, so that it lifts in the air from the front.
+    P('fringe', [5, 1, 1], color, [0, 2.25, 3.8], { ...extra, pivotTop: true, hang: 'lift' }),
   ];
 }
 
 // A face on the front of a head: eyes (a white and a dark dot), brows, a mouth, and cheeks. face:
 // 1 to 4 (data/figures.json): 2 smiles, 3 has the eyes higher, 4 has a small open mouth. A creature
 // (Nghé) has no brows and no cheeks. z: the front of the head; ex: the half distance of the eyes.
-function faceParts(face, skin, { brows = true, cheeks = true, z = HEAD / 2 + 0.03, ex = 1.1 } = {}) {
+// smooth: the face of a smooth head: each mark sits on the ball, the eyes are one unit larger, and
+// the mouth is a slight upward curve (a flat line on a ball reads as a frown).
+function faceParts(face, skin, { brows = true, cheeks = true, z = HEAD / 2 + 0.03, ex = 1.1, smooth = false } = {}) {
   const out = [];
   const eyeY = face === 3 ? 0.5 : 0.1;
   const head = { parent: 'head', mark: true };
-  for (const [side, x] of [['L', -ex], ['R', ex]]) {
-    out.push(P(`eyeW${side}`, [0.9, 0.9, 0.05], 'diep', [x, eyeY, z], head));
-    out.push(P(`eye${side}`, [0.45, 0.55, 0.06], 'ink', [x + (side === 'L' ? 0.15 : -0.15), eyeY - 0.05, z + 0.01], head));
-    if (brows) out.push(P(`brow${side}`, [1, 0.25, 0.05], 'ink', [x, eyeY + 0.85, z], head));
-    if (cheeks) out.push(P(`cheek${side}`, [0.75, 0.45, 0.05], PALE[skin] ?? 'vermilionPale', [x * 1.55, -0.7, z], head));
+  // On a ball the face goes back from the middle (an icosphere is a little inside its ball).
+  const zAt = (x, y) => (smooth ? Math.sqrt(Math.max(0, (HEAD / 2) ** 2 - x * x - y * y)) * 0.97 + 0.06 : z);
+  const big = smooth ? 1 : 0;
+  const eyeX = smooth ? ex + 0.35 : ex;
+  for (const [side, x] of [['L', -eyeX], ['R', eyeX]]) {
+    out.push(P(`eyeW${side}`, [0.9 + big, 0.9 + big, 0.05], 'diep', [x, eyeY, zAt(x, eyeY)], head));
+    out.push(P(`eye${side}`, [0.45 + big / 2, 0.55 + big / 2, 0.06], 'ink', [x + (side === 'L' ? 0.15 : -0.15), eyeY - 0.05, zAt(x, eyeY) + 0.01], head));
+    if (brows) out.push(P(`brow${side}`, [1 + big / 2, 0.25, 0.05], 'ink', [x, eyeY + 0.85 + big / 2, zAt(x, eyeY + 0.85 + big / 2)], head));
+    if (cheeks) out.push(P(`cheek${side}`, [0.75, 0.45, 0.05], PALE[skin] ?? 'vermilionPale', [x * 1.55, -0.7, zAt(x * 1.55, -0.7)], head));
   }
-  if (face === 4) out.push(P('mouth', [0.6, 0.5, 0.05], 'vermilion', [0, -1.1, z], head));
-  else out.push(P('mouth', [face === 2 ? 1.4 : 1, 0.25, 0.05], face === 2 ? 'vermilion' : 'ink', [0, -1.1, z], head));
+  const color = face === 2 || face === 4 ? 'vermilion' : 'ink';
+  if (face === 4) out.push(P('mouth', [0.6, 0.5, 0.05], 'vermilion', [0, -1.1, zAt(0, -1.1)], head));
+  else if (smooth) {
+    // A slight smile: a middle line, and its ends a little higher.
+    const w = face === 2 ? 0.8 : 0.5;
+    out.push(P('mouth', [w, 0.25, 0.05], color, [0, -1.2, zAt(0, -1.2)], head));
+    for (const s of [-1, 1]) out.push(P(`mouth${s > 0 ? 'R' : 'L'}`, [0.35, 0.25, 0.05], color, [s * (w / 2 + 0.12), -1.05, zAt(s * (w / 2 + 0.12), -1.05)], head));
+  } else out.push(P('mouth', [face === 2 ? 1.4 : 1, 0.25, 0.05], color, [0, -1.1, z], head));
   return out;
 }
 // The pale tone of a skin (the cheeks).
@@ -122,8 +135,9 @@ export function personFine(look, { smooth = false } = {}) {
     const robe = look.bottomKind === 'robe';
     const h = robe ? thigh + shin + bodyH * 0.5 : thigh + 1;
     const top = robe ? hip + bodyH * 0.5 : hip + 0.5;
-    parts.push(P('skirt', [bodyW + 0.5, h, bodyD + 0.5], look.bottom, [0, top - h / 2, 0]));
-    parts.push(P('hemSkirt', [bodyW + 0.75, 0.5, bodyD + 0.75], look.bottom, [0, top - h + 0.25, 0]));
+    // The skirt hangs from the waist and swings a little; its hem is on it.
+    parts.push(P('skirt', [bodyW + 0.5, h, bodyD + 0.5], look.bottom, [0, top, 0], { pivotTop: true, hang: 'cloth' }));
+    parts.push(P('hemSkirt', [bodyW + 0.75, 0.5, bodyD + 0.75], look.bottom, [0, -h + 0.25, 0], { parent: 'skirt' }));
   }
   // The body: hips, a waist, a chest with cut corners, sloping shoulders, a collar line, and a sash
   // with a tail.
@@ -141,20 +155,20 @@ export function personFine(look, { smooth = false } = {}) {
   if (look.topKind === 'yem') parts.push(P('yem', [3, 3, 0.4], look.sash ?? 'vermilion', [0, hip + 2.5 + chestH / 2, bodyD / 2 + 0.1]));
   if (look.sash) {
     parts.push(P('sash', [bodyW + 0.25, 1, bodyD + 0.25], look.sash, [0, hip + 0.75, 0]));
-    parts.push(P('sashTail', [0.75, 2.25, 0.5], look.sash, [bodyW / 2 - 0.75, hip - 0.65, bodyD / 2 + 0.2]));
+    parts.push(P('sashTail', [0.75, 2.25, 0.5], look.sash, [bodyW / 2 - 0.75, hip + 0.475, bodyD / 2 + 0.2], { pivotTop: true, hang: 'hang' }));
   }
   // Arms hang from the shoulders; the sleeves of the áo hang over the hands.
   const sleeved = look.topKind === 'shirt' || look.topKind === 'robe';
   for (const [side, x] of [['L', -(chestW / 2 + 0.75)], ['R', chestW / 2 + 0.75]]) {
     parts.push(P(`arm${side}`, [1.5, armLen, 1.5], sleeved ? look.top : skin, [x, shoulder - 0.25, 0], { pivotTop: true }));
-    if (sleeved) parts.push(P(`cuff${side}`, [1.9, 1, 1.9], look.top, [0, -armLen + 0.5, 0], { parent: `arm${side}` }));
+    if (sleeved) parts.push(P(`cuff${side}`, [1.9, 1, 1.9], look.top, [0, -armLen + 1, 0], { parent: `arm${side}`, pivotTop: true, hang: 'cloth' }));
     parts.push(P(`hand${side}`, [1.25, 1.25, 1.25], skin, [0, -armLen - 0.4, 0], { parent: `arm${side}` }));
   }
   // The head: a round head of seven units, a face, hair as a cap, a hat.
   const onHead = { parent: 'head' };
   parts.push(P('head', [0.01, 0.01, 0.01], null, [0, headY, 0]));
   parts.push(...(smooth ? [P('skull', [HEAD, HEAD, HEAD], skin, [0, 0, 0], { ...onHead, shape: 'ball' })] : roundHead(skin, onHead)));
-  parts.push(...faceParts(look.face ?? 1, skin));
+  parts.push(...faceParts(look.face ?? 1, skin, { smooth }));
   const hair = look.hair ?? 'short';
   if (hair !== 'bald') {
     const hc = hair === 'grey' ? 'ashLight' : hairColor;
@@ -162,11 +176,13 @@ export function personFine(look, { smooth = false } = {}) {
     // top, the back, and the forehead and leaves the face.
     if (smooth) parts.push(P('hair', [8.4, 8, 8.4], hc, [0, 1, -1.2], { ...onHead, shape: 'ball' }));
     else parts.push(...hairCap(hc, onHead));
-    if (hair === 'topknot') parts.push(P('knot', [2, 1.5, 2], hc, [0, 5.1, -0.5], onHead));
-    if (hair === 'bun') parts.push(P('knot', [2.5, 2.5, 2.5], hc, [0, 1.5, -5], onHead));
-    if (hair === 'long') parts.push(P('tail', [2, 5, 1.25], hc, [0, -3, -4.4], onHead));
-    if (hair === 'braids') for (const s of [-1, 1]) parts.push(P(`braid${s}`, [1.25, 4.5, 1.25], hc, [s * 4, -3, -1], onHead));
-    if (hair === 'tufts') for (const s of [-1, 1]) parts.push(P(`tuft${s}`, [1.5, 1.5, 1.5], hc, [s * 1.5, 5, 0.25], onHead));
+    // The parts that hang swing from the head (src/world/sway.js); a knot, a bun, and tufts bob.
+    // On the smooth hair the topknot stands higher and taller, so that it reads as a topknot.
+    if (hair === 'topknot') parts.push(smooth ? P('knot', [2, 2.25, 2], hc, [0, 4.6, -0.6], { ...onHead, pivotBottom: true, hang: 'bob' }) : P('knot', [2, 1.5, 2], hc, [0, 4.35, -0.5], { ...onHead, pivotBottom: true, hang: 'bob' }));
+    if (hair === 'bun') parts.push(P('knot', [2.5, 2.5, 2.5], hc, [0, 1.5, -5], { ...onHead, hang: 'bob' }));
+    if (hair === 'long') parts.push(P('tail', [2, 5, 1.25], hc, [0, -0.5, -4.4], { ...onHead, pivotTop: true, hang: 'hang' }));
+    if (hair === 'braids') for (const s of [-1, 1]) parts.push(P(`braid${s}`, [1.25, 4.5, 1.25], hc, [s * 4, -0.75, -1], { ...onHead, pivotTop: true, hang: 'hang' }));
+    if (hair === 'tufts') for (const s of [-1, 1]) parts.push(P(`tuft${s}`, [1.5, 1.5, 1.5], hc, [s * 1.5, 4.25, 0.25], { ...onHead, pivotBottom: true, hang: 'bob' }));
   }
   if (look.beard) parts.push(P('beard', [3.5, 2.5, 1.5], look.beard === true ? 'ashLight' : look.beard, [0, -3.25, 3], onHead));
   const hairTop = hair === 'bald' ? HEAD / 2 : HEAD / 2 + 1;
@@ -176,6 +192,8 @@ export function personFine(look, { smooth = false } = {}) {
     parts.push(P('hat', [10, 0.6, 10], 'yellowPale', [0, hairTop - 0.7, 0], onHead));
     parts.push(P('hat2', [6.5, 0.6, 6.5], 'yellowPale', [0, hairTop - 0.1, 0], onHead));
     parts.push(P('hat3', [3, 0.6, 3], 'yellowPale', [0, hairTop + 0.5, 0], onHead));
+    // The strings of the nón hang from the rim at the sides of the head.
+    for (const s of [-1, 1]) parts.push(P(`string${s > 0 ? 'R' : 'L'}`, [0.25, 3.5, 0.25], 'paperDeep', [s * 3.9, hairTop - 1, 0.5], { ...onHead, pivotTop: true, hang: 'hang' }));
     top = hairTop + 0.8;
   }
   if (look.hat === 'band') parts.push(P('band', [9, 1, 9], look.sash ?? 'vermilion', [0, 1.8, 0], onHead));
@@ -228,9 +246,9 @@ export function ngheFine(colors = {}, { smooth = false } = {}) {
     parts.push(P(`horn${n}1`, [1.25, 1, 1], horn, [s * 2.4, 1.6, 1.4], { parent: 'head' }));
     parts.push(P(`horn${n}2`, [1, 1, 1], horn, [s * 3.1, 2.3, 1.1], { parent: 'head' }));
     parts.push(P(`horn${n}3`, [0.75, 1, 0.75], horn, [s * 3.3, 3.1, 0.6], { parent: 'head' }));
-    parts.push(P(`ear${n}`, [1.5, 0.75, 1], body, [s * 2.6, 0.5, 0.9], { parent: 'head' }));
+    parts.push(P(`ear${n}`, [1.5, 0.75, 1], body, [s * 2.6, 0.5, 0.9], { parent: 'head', hang: 'ear' }));
   }
-  parts.push(P('tail', [0.6, 3.5, 0.6], leg, [0, 8, -4.5], { pivotTop: true }));
+  parts.push(P('tail', [0.6, 3.5, 0.6], leg, [0, 8, -4.5], { pivotTop: true, hang: 'tail' }));
   parts.push(P('tuft', [1, 1, 1], 'ink', [0, -3.5, 0], { parent: 'tail' }));
   return { kind: 'quadruped', parts, scale: 0.41, grid: 0.25, height: 12, shadow: 4.6 };
 }
@@ -258,7 +276,7 @@ export function dogFine() {
     parts.push(P(`eyeW${n}`, [0.7, 0.7, 0.05], 'diep', [s * 0.7, 0.6, 2.28], { parent: 'head', mark: true }));
     parts.push(P(`eye${n}`, [0.35, 0.45, 0.06], 'ink', [s * 0.62, 0.55, 2.3], { parent: 'head', mark: true }));
   }
-  parts.push(P('tail', [0.5, 2.5, 0.5], 'wood', [0, 6, -3], { pivotTop: true }));
+  parts.push(P('tail', [0.5, 2.5, 0.5], 'wood', [0, 6, -3], { pivotTop: true, hang: 'tail' }));
   return { kind: 'quadruped', parts, scale: 0.39, grid: 0.25, height: 9, shadow: 3 };
 }
 
@@ -271,7 +289,8 @@ export function chickenFine(look = {}) {
     parts.push(P(`foot${n}`, [1, 0.25, 1.25], 'yellow', [0, -2, 0.3], { parent: `leg${n}` }));
   }
   parts.push(...bevel('trunk', [3, 2.5, 4], c, [0, 3.2, 0]));
-  parts.push(P('tailF', [1.75, 2.5, 1], c === 'diep' ? 'ashLight' : 'wood', [0, 4.4, -2.2]));
+  // The tail feathers stand up from their base and move with the wind.
+  parts.push(P('tailF', [1.75, 2.5, 1], c === 'diep' ? 'ashLight' : 'wood', [0, 3.15, -2.2], { pivotBottom: true, hang: 'tail' }));
   parts.push(P('wingL', [0.5, 1.75, 3], c, [-1.6, 3.8, 0], { pivotTop: true }));
   parts.push(P('wingR', [0.5, 1.75, 3], c, [1.6, 3.8, 0], { pivotTop: true }));
   parts.push(P('head', [0.01, 0.01, 0.01], null, [0, 5, 1.6]));

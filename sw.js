@@ -247,6 +247,7 @@ const FILES = [
   'src/world/props/plants.js',
   'src/world/props/things.js',
   'src/world/regions.js',
+  'src/world/sway.js',
   'src/world/terrain.js',
   'src/world/travel.js',
   'src/world/voxel.js',
