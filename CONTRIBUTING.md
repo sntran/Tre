@@ -67,6 +67,7 @@ Work is planned in GitHub issues, grouped in milestones. To pick up work:
 4. Do the work in small commits. Each commit leaves the game playable and all tests passing.
 5. When the issue is done, comment on it with what changed, and add a screen recording or screenshots when the issue asks for them. Then close the issue.
 6. When the issue has the label `needs-review`, stop after it. Wait for the owner before you start the next issue.
+7. Before you start each issue, read the milestone description and the labels again. The owner can add an issue, change the order, or add `needs-review` while you work; the current state wins over what you read at the start of the run.
 
 ## Pull requests
 
