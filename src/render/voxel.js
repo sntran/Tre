@@ -1,5 +1,5 @@
-// The voxel world in three.js: for each chunk (src/world/chunks.js), a mesh of the ground, a mesh of
-// the things (half blocks, the smooth roofs, and the other smooth looks), and an ink mesh (the edges,
+// The voxel world in three.js: for each chunk (src/world/chunks.js), one mesh of the ground and the
+// things (half blocks, the smooth roofs, and the other smooth looks), and an ink mesh (the edges,
 // and the silhouettes of the smooth looks); water with the wave pattern of the prints, paddies with
 // rows of seedlings, the fade of things in front of the hero, and an orthographic camera that turns
 // in steps of 90°. A change of the terrain (a dig, a felled tree) builds only its chunks again. The
@@ -32,11 +32,12 @@ function rendererFor(canvas) {
   return shared;
 }
 
-// The material of the blocks and the roofs: flat colors, the fade of an owner, and the dusk.
-function flatMaterial(uniforms, transparent) {
+// The material of the blocks, the roofs, and the smooth looks: flat colors, and the fade of an
+// owner. The fade is a stipple (an ordered dither, as the dots of a print), so that the world is
+// opaque and the ground and the things of a chunk are one mesh.
+function flatMaterial(uniforms) {
   return new THREE.ShaderMaterial({
     uniforms,
-    transparent,
     polygonOffset: true,
     polygonOffsetFactor: 1,
     polygonOffsetUnits: 1,
@@ -52,9 +53,12 @@ function flatMaterial(uniforms, transparent) {
       }`,
     fragmentShader: `
       varying vec3 vColor; varying float vFade;
+      // A 4 x 4 ordered dither: 0 to 1 in a fixed pattern over the screen.
+      float bayer2(vec2 a) { a = floor(a); return fract(a.x / 2.0 + a.y * a.y * 0.75); }
+      float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
       void main() {
-        vec3 c = vColor;
-        gl_FragColor = vec4(c, 1.0 - vFade * 0.85);
+        if (vFade > 0.001 && vFade * 0.85 > bayer4(gl_FragCoord.xy)) discard;
+        gl_FragColor = vec4(vColor, 1.0);
       }`,
   });
 }
@@ -231,13 +235,12 @@ export function createVoxelWorld(canvas, terrain) {
   fadeTex.needsUpdate = true;
   const view = new THREE.Vector3();
   const uniforms = { uFade: { value: fadeTex }, uFadeSize: { value: fadeSize }, uNight: night, uView: { value: view } };
-  const solidMat = track(flatMaterial(uniforms, false));
-  const ghostMat = track(flatMaterial(uniforms, true));
+  const flatMat = track(flatMaterial(uniforms));
 
   // The meshes of each chunk: built at the start, and again after a change of the terrain.
   const inkMat = track(inkMaterial(uniforms));
   const thingMeshes = [];
-  const chunkMeshes = new Map(); // key -> [ground, things, ink]
+  const chunkMeshes = new Map(); // key -> [world, ink]
   const chunks = createChunks(terrain);
   const geometry = (m) => geometryOf(m, [0, 0, 0]);
   function buildChunk(c) {
@@ -249,11 +252,14 @@ export function createVoxelWorld(canvas, terrain) {
     }
     const m = chunkMesh(terrain, c.cx, c.cz);
     const made = [];
-    if (m.ground.indices.length) made.push(new THREE.Mesh(geometry(m.ground), solidMat));
-    if (m.things.indices.length) {
-      const things = new THREE.Mesh(geometry(m.things), ghostMat);
-      thingMeshes.push(things);
-      made.push(things);
+    // The ground and the things of the chunk in one mesh.
+    const all = { positions: [...m.ground.positions, ...m.things.positions], colors: [...m.ground.colors, ...m.things.colors], owners: [...m.ground.owners, ...m.things.owners], indices: [...m.ground.indices] };
+    const base = m.ground.positions.length / 3;
+    for (const i of m.things.indices) all.indices.push(base + i);
+    if (all.indices.length) {
+      const world = new THREE.Mesh(geometry(all), flatMat);
+      thingMeshes.push(world);
+      made.push(world);
     }
     if (m.ink.some((k) => k.segs.length || k.hull)) made.push(new THREE.Mesh(inkGeometry(m.ink), inkMat));
     for (const mesh of made) scene.add(mesh);

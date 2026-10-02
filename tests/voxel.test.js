@@ -121,16 +121,19 @@ test('every prop builds blocks, and the same seed builds the same prop', () => {
     const b = world();
     const prop = { kind, fx: 12, fz: 12, fw: 12, fd: 12, seed: 42 };
     const ra = buildProp(a, prop, 1);
-    buildProp(b, prop, 1);
+    const rb = buildProp(b, prop, 1);
     assert.ok(ra.box, `${kind} has blocks`);
     assert.deepEqual(a.fine.data, b.fine.data, `${kind} is the same with the same seed`);
+    assert.deepEqual(ra.smooth, rb.smooth, `${kind}: the same smooth looks`);
+    // Each smooth look has an owner block of its prop.
+    for (const sm of ra.smooth) assert.ok(sm.owner && a.fine.get(...sm.owner), `${kind}: ${sm.kind} has an owner block`);
   }
-  // Another seed gives another tree.
+  // Another seed gives another tree (its trunk, or its smooth crown).
   const a = world();
   const b = world();
-  buildProp(a, { kind: 'tree', fx: 12, fz: 12, fw: 4, fd: 4, seed: 1 }, 1);
-  buildProp(b, { kind: 'tree', fx: 12, fz: 12, fw: 4, fd: 4, seed: 2 }, 1);
-  assert.notDeepEqual(a.fine.data, b.fine.data);
+  const ta = buildProp(a, { kind: 'tree', fx: 12, fz: 12, fw: 4, fd: 4, seed: 1 }, 1);
+  const tb = buildProp(b, { kind: 'tree', fx: 12, fz: 12, fw: 4, fd: 4, seed: 2 }, 1);
+  assert.notDeepEqual([a.fine.data, ta.smooth], [b.fine.data, tb.smooth]);
 });
 
 test('the hero is made of parts from the choices at the start', () => {

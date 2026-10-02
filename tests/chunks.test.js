@@ -83,3 +83,39 @@ test('a roof draws only while its house is there', () => {
   assert.ok(r.blocks > 50 && r.chunks.includes(key));
   assert.ok(chunkMesh(t, cx, cz).things.indices.length < with_ - 100, 'the roof went with the house');
 });
+
+test('every smooth look has an owner block, and a felled tree takes its crown and gives logs', () => {
+  const t = terrainOf('phu-dong');
+  assert.ok(t.smooth.length > 50, 'the plants of the village are smooth');
+  for (const s of t.smooth) assert.ok(s.owner && t.fine.get(...s.owner) && t.fine.ownerAt(...s.owner) === s.who, `${s.kind} has an owner block of its prop`);
+  const tree = t.objects.find((o) => o.kind === 'tree');
+  const crown = t.smooth.find((s) => s.who === tree.who && s.kind === 'crown');
+  const key = chunkOf(Math.floor(crown.owner[0] / 2), Math.floor(crown.owner[2] / 2));
+  const [cx, cz] = key.split(',').map(Number);
+  const before = chunkMesh(t, cx, cz);
+  const hulls = (m) => m.ink.filter((k) => k.hull).length;
+  const chunks = createChunks(t);
+  const r = fell(t, blocks, tree.who);
+  assert.ok(r.blocks >= 8 && r.drops.log >= 1, JSON.stringify(r));
+  assert.ok(r.chunks.includes(key));
+  chunks.mark(r.chunks);
+  assert.equal(chunks.rebuild(() => {}), r.chunks.length, 'only the chunks of the tree build again');
+  const after = chunkMesh(t, cx, cz);
+  assert.equal(hulls(after), hulls(before) - 1, 'the crown went with its trunk');
+  assert.ok(after.things.indices.length < before.things.indices.length - 300);
+  assert.equal(fell(t, blocks, tree.who), null, 'a felled tree is gone');
+});
+
+test('the triangles of the world around the start of every map stay under the budget', () => {
+  const limit = load('data/config/limits.json').frameTriangles;
+  const maps = load('data/world/regions.json').regions.flatMap((r) => r.maps);
+  for (const id of maps) {
+    const map = load(`data/maps/${id}.json`);
+    const t = buildTerrain(map, tiles, createTileMap(map, tiles), blocks);
+    const sx = Math.floor(map.spawn.x / CHUNK);
+    const sz = Math.floor(map.spawn.y / CHUNK);
+    let tri = 0;
+    for (const c of chunkList(t)) if (Math.abs(c.cx - sx) <= 1 && Math.abs(c.cz - sz) <= 1) tri += chunkMesh(t, c.cx, c.cz).triangles;
+    assert.ok(tri <= limit, `${id}: ${tri} triangles`);
+  }
+});

@@ -14,7 +14,7 @@ export const PROPS = Object.freeze({
 // Build one prop into the fine grid.
 // world: { fine, groundTop(fx, fz), shadow(cx, cz) }. prop: { kind, fx, fz, fw, fd, seed, ... }.
 // who: the number of the object (for the fade of things in front of the hero).
-// Return { box, roofs, info } (box in fine units, or null for a prop with no blocks).
+// Return { box, roofs, smooth, info } (box in fine units, or null for a prop with no blocks).
 export function buildProp(world, prop, who) {
   const fn = PROPS[prop.kind];
   if (!fn) throw new Error(`Unknown prop ${prop.kind}`);

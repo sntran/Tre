@@ -131,12 +131,14 @@ export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
   const world = { fine, groundTop, shadow };
   const objects = [];
   const roofs = [];
+  const smooth = [];
   const add = (prop, id, solid = true) => {
     const who = objects.length + 1;
     const r = buildProp(world, prop, who);
     if (!r.box) return;
     objects.push({ id, who, kind: prop.kind, box: r.box, solid, ...(r.info?.home ? { home: r.info.home } : {}) });
     roofs.push(...r.roofs);
+    smooth.push(...r.smooth);
   };
 
   // Planks of the bridges. The deck in a placement zone (the broken bridge) comes from the world
@@ -181,7 +183,7 @@ export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
   // A shadow makes the top of the ground a little darker.
   const shade = (x, y, z) => (shadows.has(z * W + x) ? 0.8 : 1);
   return {
-    width: W, height: H, ground, fine, shade, objects, roofs, water, paddies, kinds, kindNames,
+    width: W, height: H, ground, fine, shade, objects, roofs, smooth, water, paddies, kinds, kindNames,
     topAt,
     maxTop,
     // The ways into the houses (fine units = half blocks), by the id of the house.

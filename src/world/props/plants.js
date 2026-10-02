@@ -3,7 +3,11 @@
 
 const center = (o) => ({ x: o.fx + Math.floor(o.fw / 2), z: o.fz + Math.floor(o.fd / 2) });
 
-// A round tree: a trunk and a crown of leaf clumps, with a few fruits.
+// The plants are blocks where they can be taken (a trunk, a stem, the base of a culm) and smooth
+// looks where they are living and round (src/world/smooth.js): the look of a plant goes with its
+// blocks. World units for the smooth looks are half of the fine units.
+
+// A round tree: a trunk of blocks and a smooth crown of three or four blobs.
 export function tree(ctx, o, opts = {}) {
   const r = ctx.rng;
   const { x, z } = center(o);
@@ -13,43 +17,33 @@ export function tree(ctx, o, opts = {}) {
   ctx.box(x - 1, g, z - 1, x, g + h, z, 'wood');
   const cy = g + h + Math.round(rad * 0.6);
   const leaf = opts.leaf ?? r.pick(['green', 'green', 'greenDeep']);
-  for (let dy = -rad; dy <= rad; dy++) {
-    for (let dz = -rad; dz <= rad; dz++) {
-      for (let dx = -rad; dx <= rad; dx++) {
-        const d = (dx * dx + dy * dy * 1.8 + dz * dz) / (rad * rad);
-        if (d >= 1 - r.next() * 0.18) continue;
-        // The top of the crown is in the light: whole layers, so that the ink stays calm.
-        ctx.set(x + dx, cy + dy, z + dz, dy >= Math.ceil(rad * 0.5) ? 'greenPale' : leaf);
-      }
-    }
-  }
-  if (opts.fruit !== false) {
-    for (let i = 0; i < 4; i++) ctx.set(x + r.int(-rad, rad), cy - 1, z + rad, r.pick(['yellow', 'vermilionPale']));
-  }
+  const R = (rad / 2) * 1.15;
+  ctx.smooth({ kind: 'crown', x: x / 2, y: (cy + 0.5) / 2, z: z / 2, r: R, leaf }, [R * 1.4, R, R]);
   ctx.shadowDisc(x, z, rad, Math.round((h + rad) * 0.4));
   ctx.info = { trunk: h, crown: rad };
 }
 
-// The old banyan: a thick trunk, aerial roots, a wide crown, and a small shrine stone.
+// The old banyan: a thick trunk, a wide crown, aerial roots that hang to the ground as curves, and
+// a small shrine stone.
 export function banyan(ctx, o) {
   const r = ctx.rng;
   const { x, z } = center(o);
   const g = ctx.ground(x, z);
-  ctx.box(x - 1, g, z - 1, x + 1, g + 8, z + 1, 'wood');
-  tree(ctx, o, { trunk: 9, crown: Math.min(8, Math.floor(o.fw / 2) + 1), leaf: 'green', fruit: false });
-  for (let i = 0; i < 18; i++) {
-    const a = r.next() * Math.PI * 2;
-    const rr = 2 + r.next() * 4;
-    const rx = Math.round(x + Math.cos(a) * rr);
-    const rz = Math.round(z + Math.sin(a) * rr);
-    for (let y = g; y <= g + 9; y++) ctx.add(rx, y, rz, 'wood');
-  }
   ctx.box(x + 2, g, z + 3, x + 3, g + 1, z + 3, 'ashLight');
   ctx.set(x + 2, g + 2, z + 3, 'vermilion');
+  const roots = [];
+  for (let i = 0; i < 12; i++) {
+    const a = r.next() * Math.PI * 2;
+    const rr = 1.2 + r.next() * 2;
+    roots.push([Math.cos(a) * rr, Math.sin(a) * rr]);
+  }
+  ctx.box(x - 1, g, z - 1, x + 1, g + 8, z + 1, 'wood');
+  ctx.smooth({ kind: 'roots', x: x / 2, y: g / 2, z: z / 2, top: 4.6, roots }, [3.5, 0, 4.6]);
+  tree(ctx, o, { trunk: 9, crown: Math.min(8, Math.floor(o.fw / 2) + 1), leaf: 'green' });
 }
 
-// A clump of bamboo: two or three thin, tall stems with joints, and a few narrow leaves only in
-// the top third, so that the paper shows through the clump.
+// A clump of bamboo: two or three tall culms (smooth: thin segmented cylinders with fans of narrow
+// leaves), each on a base block in the ground.
 export function bamboo(ctx, o, opts = {}) {
   const r = ctx.rng;
   const { x, z } = center(o);
@@ -60,37 +54,20 @@ export function bamboo(ctx, o, opts = {}) {
     const bz = z + r.int(-spread, spread);
     const g = ctx.ground(bx, bz);
     const h = (opts.height ?? 24) + r.int(0, 8);
-    for (let y = g; y < g + h; y++) ctx.set(bx, y, bz, (y - g) % 5 === 4 ? 'greenDeep' : 'green');
-    // Leaves in the top third of the stem, in one color for each stem.
+    ctx.set(bx, g, bz, 'greenDeep');
     const leaf = r.chance(0.5) ? 'greenDeep' : 'green';
-    for (let k = 0; k < 8; k++) {
-      const lx = bx + r.int(-2, 2);
-      const lz = bz + r.int(-2, 2);
-      const ly = g + h - 1 - r.int(0, Math.floor(h / 3));
-      ctx.add(lx, ly, lz, leaf);
-    }
+    const lean = [(r.next() - 0.5) * 1.2, (r.next() - 0.5) * 1.2];
+    ctx.smooth({ kind: 'culm', x: (bx + 0.5) / 2, y: (g + 1) / 2, z: (bz + 0.5) / 2, h: h / 2, lean, leaf }, [2, 0, h / 2]);
   }
   ctx.shadowDisc(x, z, 2, 4);
 }
 
-// A banana plant: a short thick stem of leaf sheaths, wide leaves that arch out, and a bud.
+// A banana plant: a short thick stem of blocks, and wide smooth leaves that arch out, with a bud.
 export function banana(ctx, o) {
-  const r = ctx.rng;
   const { x, z } = center(o);
   const g = ctx.ground(x, z);
   ctx.box(x, g, z, x, g + 5, z, 'greenPale');
-  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]];
-  for (const [dx, dz] of dirs) {
-    for (let k = 1; k <= 5; k++) {
-      const y = g + 6 - (k > 3 ? k - 3 : 0);
-      ctx.set(x + dx * k, y, z + dz * k, k === 5 && r.chance(0.3) ? 'ochre' : 'green');
-      // The leaves are wide: a second row of blocks beside the midrib.
-      ctx.add(x + dx * k + (dz ? 1 : 0), y, z + dz * k + (dx ? 1 : 0), 'greenPale');
-    }
-  }
-  ctx.set(x, g + 7, z, 'green');
-  ctx.set(x + 1, g + 3, z + 1, 'green');
-  ctx.set(x + 1, g + 2, z + 1, 'vermilionPale');
+  ctx.smooth({ kind: 'banana', x: (x + 0.5) / 2, y: (g + 6) / 2, z: (z + 0.5) / 2 }, [2.8, 1.5, 1.4]);
   ctx.shadowDisc(x, z, 2, 3);
 }
 
@@ -112,18 +89,13 @@ export function herbs(ctx, o) {
   ctx.set(fx + 1, ctx.ground(fx + 1, fz + 1) + 1, fz + 1, 'vermilion');
 }
 
-// A low bush of the hedge on the sides that face the camera: a trimmed bamboo bush.
+// A low bush of the hedge on the sides that face the camera: a smooth bush on a stem block, and
+// sometimes a young culm out of it.
 export function bush(ctx, o) {
   const r = ctx.rng;
   const { x, z } = center(o);
   const g = ctx.ground(x, z);
-  for (let dy = 0; dy <= 3; dy++) {
-    for (let dz = -2; dz <= 1; dz++) {
-      for (let dx = -2; dx <= 1; dx++) {
-        if (dx * dx + dz * dz + dy * dy * 0.8 > 5 + r.next()) continue;
-        ctx.set(x + dx, g + dy, z + dz, dy === 3 || r.chance(0.3) ? 'greenPale' : 'green');
-      }
-    }
-  }
   if (r.chance(0.5)) ctx.box(x, g, z, x, g + 6, z, 'green');
+  ctx.set(x, g, z, 'greenDeep');
+  ctx.smooth({ kind: 'bush', x: (x + 0.5) / 2, y: g / 2, z: (z + 0.5) / 2, r: 1 + r.next() * 0.25 }, [1.8, 0, 1.4]);
 }

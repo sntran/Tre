@@ -43,13 +43,9 @@ export function haystack(ctx, o) {
   const g = ctx.ground(x, z);
   const r0 = Math.max(2, Math.min(o.fw, o.fd) / 2 - 0.5);
   const layers = Math.round(r0 * 1.8);
-  for (let l = 0; l < layers; l++) {
-    const rad = r0 - (l * r0) / layers;
-    for (let dz = -Math.ceil(r0); dz <= Math.ceil(r0); dz++) {
-      for (let dx = -Math.ceil(r0); dx <= Math.ceil(r0); dx++) if (dx * dx + dz * dz <= rad * rad) ctx.set(x + dx, g + l, z + dz, l % 3 === 2 ? 'ochre' : 'yellow');
-    }
-  }
-  ctx.box(x, g + layers, z, x, g + layers + 2, z, 'wood');
+  // The pole of blocks goes through the stack; the straw is a smooth cone around it.
+  ctx.box(x, g, z, x, g + layers + 2, z, 'wood');
+  ctx.smooth({ kind: 'haystack', x: (x + 0.5) / 2, y: g / 2, z: (z + 0.5) / 2, r: (r0 + 0.6) / 2, h: (layers + 0.6) / 2 }, [(r0 + 0.6) / 2, 0, (layers + 3) / 2]);
   ctx.shadowDisc(x, z, Math.ceil(r0), 3);
 }
 

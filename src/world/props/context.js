@@ -55,7 +55,16 @@ export function propContext(fine, groundTop, shadow, { who = 0, seed = 1 } = {})
       grow(r.x0, r.y, r.z0);
       grow(r.x1 - 1, r.y + r.ridgeH * 2, r.z1 - 1);
     },
+    // A smooth look (src/world/smooth.js; world units). Its owner is the last block set (a trunk,
+    // a stem, the base of a culm, the pole of a haystack): the look draws while that block is
+    // there. ext: [half width, below, above] in world units, for the box of the prop.
+    smooth(s, [half, below, above]) {
+      smooth.push({ ...s, who, owner: last ? [...last] : null, seed: s.seed ?? ctx.rng.int(1, 2147483646) });
+      grow(Math.floor((s.x - half) * 2), Math.floor((s.y - below) * 2), Math.floor((s.z - half) * 2));
+      grow(Math.ceil((s.x + half) * 2) - 1, Math.ceil((s.y + above) * 2) - 1, Math.ceil((s.z + half) * 2) - 1);
+    },
   };
-  ctx.result = () => ({ box: box.x0 === Infinity ? null : { ...box }, roofs });
+  const smooth = [];
+  ctx.result = () => ({ box: box.x0 === Infinity ? null : { ...box }, roofs, smooth });
   return ctx;
 }
