@@ -1,0 +1,152 @@
+{
+  "name": "event-market",
+  "about": {
+    "vi": "Phiên chợ: trả đúng giá một nắm cơm bằng xâu mười đồng và đồng lẻ. Tiền chỉ rời túi khi trả xong.",
+    "en": "Market day: pay the exact price of a rice ball with strings of ten coins and single coins. The coins leave the purse only when the price is paid."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    },
+    "items": {
+      "coin": 30
+    }
+  },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [
+    22.5,
+    28.5
+  ],
+  "steps": [
+    {
+      "do": {
+        "type": "event",
+        "id": "market"
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "tap": {
+        "entity": "event:market"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.market.start"
+          }
+        },
+        {
+          "count": {
+            "entities": "coins-10",
+            "min": 2
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 5,
+      "steps": [
+        {
+          "tap": {
+            "item": "coins"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 30
+          }
+        },
+        {
+          "tap": {
+            "zone": "event-market-place"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "event:market"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.market.done"
+          }
+        },
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.place.1000",
+            "solved": true,
+            "parts": [
+              10,
+              10,
+              1,
+              1,
+              1
+            ],
+            "target": 23
+          }
+        },
+        {
+          "event": "lose",
+          "with": {
+            "take": {
+              "coin": 23
+            }
+          }
+        },
+        {
+          "item": "coin",
+          "count": 7
+        },
+        {
+          "item": "rice",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "read": true
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+{
+  "name": "event-duck",
+  "about": {
+    "vi": "Vịt lạc: cô nông dân nói đàn có mấy con; tìm vịt lạc mang về chuồng cho đủ đàn.",
+    "en": "Lost ducks: the farmer says how many ducks the flock has; find the lost ducks and bring them to the pen until the flock is whole."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    }
+  },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [
+    22.5,
+    28.5
+  ],
+  "steps": [
+    {
+      "do": {
+        "type": "event",
+        "id": "duck"
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "tap": {
+        "entity": "event:duck"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.duck.start"
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "steps": [
+        {
+          "tap": {
+            "item": "duck"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 30
+          }
+        },
+        {
+          "tap": {
+            "zone": "event-duck-place"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "event:duck"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.duck.short"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "repeat": 1,
+      "steps": [
+        {
+          "tap": {
+            "item": "duck"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 30
+          }
+        },
+        {
+          "tap": {
+            "zone": "event-duck-place"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "event:duck"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.duck.done"
+          }
+        },
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.count.120",
+            "solved": true,
+            "target": 4
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    }
+  ]
+}

@@ -22,7 +22,7 @@ ABOUT = ('A map of the voxel world: a window on the plane of its region. Map x i
          'rules add more. layers.collision: rectangles that block (block: true) or open (block: false) cells. '
          'layers.zones: placement zones. layers.paths: walk lines in cells. The exits come from the windows: an edge '
          'that touches another map takes the hero there (src/world/regions.js). layers.places: named map points for the '
-         'plans of the day (h: the height over the ground in half blocks). layers.life: groups of animals (kind in '
+         'plans of the day (h: the height over the ground in half blocks). layers.spots: the spots of the small events of the day in the stamps (road, field, yard; cells; the land adds more). layers.life: groups of animals (kind in '
          'data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the '
          'world. figure: the look of a person or an enemy in data/figures.json. geo: the real place of the middle of the '
          'map ([longitude, latitude]) and the map direction of north ([dx, dy]). The maps are made by '
@@ -38,6 +38,7 @@ class M:
         self.collision, self.zones, self.paths, self.exits = [], [], {}, []
         self.life = []
         self.places = {}
+        self.spots = {}  # the spots of the small events of the day: road, field, yard (cells, not tiles)
         self.geo = None
         self.spawn = None
         self.terrace = ''  # the sides with terraces: n, e, s, w (north is y = 0, west is x = 0)
@@ -216,6 +217,7 @@ def window_def(m, region, window, size, offset, stamps):
             'life': [move(g) for g in L['life'] if inside(g['x'], g['y'])],
             'places': {k: move(p) for k, p in L['places'].items()},
             'triggers': trig,
+            'spots': {k: [[x + ox, y + oy] for x, y in pts] for k, pts in m.spots.items()},
         },
         'npcs': [move(n) for n in d['npcs']],
         'encounters': [move(e) for e in d['encounters']],

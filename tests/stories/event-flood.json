@@ -1,0 +1,135 @@
+{
+  "name": "event-flood",
+  "about": {
+    "vi": "Mưa làm ngập một thửa ruộng: gánh đúng số thùng nước cô nông dân nói ra mương.",
+    "en": "Rain flooded a field: carry as many pails of water to the ditch as the farmer says."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    }
+  },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [
+    14.5,
+    44.5
+  ],
+  "steps": [
+    {
+      "do": {
+        "type": "event",
+        "id": "flood"
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "tap": {
+        "entity": "event:flood"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.flood.start"
+          }
+        },
+        {
+          "count": {
+            "entities": "pails",
+            "min": 5
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 5,
+      "steps": [
+        {
+          "tap": {
+            "item": "pails"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 30
+          }
+        },
+        {
+          "tap": {
+            "zone": "event-flood-place"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "event:flood"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.flood.done"
+          }
+        },
+        {
+          "event": "skill",
+          "with": {
+            "solved": true,
+            "target": 5,
+            "first": true,
+            "efficient": true
+          }
+        },
+        {
+          "event": "gift",
+          "with": {
+            "give": {
+              "coin": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    }
+  ]
+}

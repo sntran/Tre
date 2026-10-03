@@ -1,5 +1,5 @@
 {
- "_about": "A map of the voxel world: a window on the plane of its region. Map x is east, map y is south (world z). One cell is one ground block. window: the place of the map on the region plane (cells); the maps of a region touch at their edges, and the land goes on from one map to the next. stamps: the hand-made story places, which stay as they are: ground (one letter for each cell, see legend) and height (one digit for each cell, the height of the ground in steps: water 0, river bank 1, rice paddy 1, ground 2; the top of a column is the digit + 1 blocks). The land outside the stamps comes from the rules of the region and the seed of the world (src/core/gen/, data/world/land-<region>.json, data/world/scatter.json). The hero steps up or down one step; a higher step is a cliff. layers.objects: props that the code builds from blocks (prop: the kind, seed: the variation), on a footprint of w x h cells that they block (solid: a list of [dx, dy], or false); the scatter rules add more. layers.collision: rectangles that block (block: true) or open (block: false) cells. layers.zones: placement zones. layers.paths: walk lines in cells. The exits come from the windows: an edge that touches another map takes the hero there (src/world/regions.js). layers.places: named map points for the plans of the day (h: the height over the ground in half blocks). layers.life: groups of animals (kind in data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the world. figure: the look of a person or an enemy in data/figures.json. geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). The maps are made by tools/maps/era1.py; do not change them by hand.",
+ "_about": "A map of the voxel world: a window on the plane of its region. Map x is east, map y is south (world z). One cell is one ground block. window: the place of the map on the region plane (cells); the maps of a region touch at their edges, and the land goes on from one map to the next. stamps: the hand-made story places, which stay as they are: ground (one letter for each cell, see legend) and height (one digit for each cell, the height of the ground in steps: water 0, river bank 1, rice paddy 1, ground 2; the top of a column is the digit + 1 blocks). The land outside the stamps comes from the rules of the region and the seed of the world (src/core/gen/, data/world/land-<region>.json, data/world/scatter.json). The hero steps up or down one step; a higher step is a cliff. layers.objects: props that the code builds from blocks (prop: the kind, seed: the variation), on a footprint of w x h cells that they block (solid: a list of [dx, dy], or false); the scatter rules add more. layers.collision: rectangles that block (block: true) or open (block: false) cells. layers.zones: placement zones. layers.paths: walk lines in cells. The exits come from the windows: an edge that touches another map takes the hero there (src/world/regions.js). layers.places: named map points for the plans of the day (h: the height over the ground in half blocks). layers.spots: the spots of the small events of the day in the stamps (road, field, yard; cells; the land adds more). layers.life: groups of animals (kind in data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the world. figure: the look of a person or an enemy in data/figures.json. geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). The maps are made by tools/maps/era1.py; do not change them by hand.",
  "id": "phu-dong",
  "region": "giong",
  "nameKey": "place.phudong",
@@ -271,7 +271,18 @@
    {"id": "field-home", "x": 6, "y": 38, "w": 16, "h": 12, "on": "tap", "action": {"textKey": "map.field"}},
    {"id": "field-south", "x": 52, "y": 78, "w": 24, "h": 6, "on": "tap", "action": {"textKey": "map.field"}},
    {"id": "river", "x": 0, "y": 66, "w": 80, "h": 10, "on": "tap", "action": {"textKey": "map.river"}}
-  ]
+  ],
+  "spots": {
+   "road": [
+    [10, 80]
+   ],
+   "field": [
+    [12, 47]
+   ],
+   "yard": [
+    [22, 25]
+   ]
+  }
  },
  "npcs": [
   {"id": "grandma", "x": 9.0, "y": 25.4},

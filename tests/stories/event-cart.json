@@ -1,0 +1,248 @@
+{
+  "name": "event-cart",
+  "about": {
+    "vi": "Một chiếc xe bò sa lầy trên đường: chèn đá vào hố bánh xe. Thiếu đá thì xe còn lún, thừa đá thì đá lăn ra, vừa đủ thì xe lên.",
+    "en": "A cart is stuck on the road: put stones into the hole under the wheel. Too few and the cart still sinks, too many and stones roll out, just right and the cart rolls on."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    }
+  },
+  "map": "phu-dong",
+  "clock": 540,
+  "place": [
+    14.5,
+    80.5
+  ],
+  "steps": [
+    {
+      "do": {
+        "type": "event",
+        "id": "cart"
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.cart.start"
+          }
+        },
+        {
+          "count": {
+            "entities": "stones",
+            "min": 7
+          }
+        },
+        {
+          "entity": "event:cart:cart",
+          "look": "cart"
+        }
+      ]
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "tap": {
+            "item": "stones"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 30
+          }
+        },
+        {
+          "tap": {
+            "zone": "event-cart-place"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.cart.short"
+          }
+        },
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.count.120",
+            "solved": false,
+            "parts": [
+              1,
+              1,
+              1
+            ],
+            "target": 4
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "repeat": 2,
+      "steps": [
+        {
+          "tap": {
+            "item": "stones"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 30
+          }
+        },
+        {
+          "tap": {
+            "zone": "event-cart-place"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.cart.over"
+          }
+        },
+        {
+          "event": "roll"
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.cart.done"
+          }
+        },
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.count.120",
+            "solved": true,
+            "target": 4
+          }
+        },
+        {
+          "event": "gift",
+          "with": {
+            "give": {
+              "coin": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 1
+    },
+    {
+      "expect": [
+        {
+          "entity": "event:cart",
+          "gone": true
+        },
+        {
+          "entity": "event:cart:cart",
+          "gone": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+ "_about": "The small events of each day (src/core/world/days.js; the work is the task exact of src/core/world/systems/work.js). Each day, the seed of the world and the day choose the events of each map: an event with every comes on one day in every (a market day); the others come with their chance. An event happens at a spot of its kind on the map (where: road, field, or yard; the spots of the stamps are in layers.spots, the spots of the generated land come from src/core/gen/map.js). A person (person: the look in data/figures.json) says what is needed, with the number as a word. The child carries things (thing: the look of a thing; its size is the number of units that it shows) from the pile to the place (target: its look) and taps the person: the sum of the sizes on the place is the commit. Exact: the work is done, and the reward flies to the counter. Too few: the person says so and waits. Too many: the last things go back to the pile. levels: for each level of the task, need (from and to), the sizes of the things on the pile, and the skill of the commit with its level. The level comes from the grade of the player, one step up when P(L) of the skill of the event (levelBy) is over up, one step down when it is under down. extra: more things on the pile than the work needs. pay: the things are coins of the purse of the hero: they leave the purse only when the work is done. lost: the things do not lie on one pile: each lies alone, near the spot (a lost duck); the place already holds keep things.",
+ "up": 0.8,
+ "down": 0.3,
+ "events": [
+  {
+   "id": "cart", "where": "road", "chance": 0.5, "person": "carter", "thing": "stones", "target": "mud", "prop": "cart", "levelBy": "math.add.20",
+   "levels": [
+    { "need": [4, 7], "sizes": [1], "skill": "math.count.120", "level": 1 },
+    { "need": [8, 13], "sizes": [1, 2], "skill": "math.add.20", "level": 1 },
+    { "need": [12, 20], "sizes": [2, 5], "skill": "math.add.20", "level": 2 }
+   ],
+   "extra": 3, "reward": { "coin": 2 },
+   "lines": { "start": "event.cart.start", "short": "event.cart.short", "over": "event.cart.over", "done": "event.cart.done" }
+  },
+  {
+   "id": "flood", "where": "field", "chance": 0.4, "person": "farmer", "thing": "pails", "target": "ditch", "levelBy": "math.add.20",
+   "levels": [
+    { "need": [3, 6], "sizes": [1], "skill": "math.count.120", "level": 1 },
+    { "need": [7, 12], "sizes": [2, 3], "skill": "math.add.20", "level": 1 },
+    { "need": [12, 18], "sizes": [3, 5], "skill": "math.add.20", "level": 2 }
+   ],
+   "extra": 3, "reward": { "coin": 2 },
+   "lines": { "start": "event.flood.start", "short": "event.flood.short", "over": "event.flood.over", "done": "event.flood.done" }
+  },
+  {
+   "id": "market", "where": "yard", "every": 3, "person": "seller", "thing": "coins", "target": "seller-mat", "levelBy": "math.place.1000", "pay": true,
+   "levels": [
+    { "need": [3, 6], "sizes": [1], "skill": "math.count.120", "level": 1 },
+    { "need": [7, 14], "sizes": [1, 5], "skill": "math.add.20", "level": 1 },
+    { "need": [12, 30], "sizes": [1, 10], "skill": "math.place.1000", "level": 1 }
+   ],
+   "extra": 4, "reward": { "rice": 1 },
+   "lines": { "start": "event.market.start", "short": "event.market.short", "over": "event.market.over", "done": "event.market.done", "poor": "event.market.poor" }
+  },
+  {
+   "id": "duck", "where": "yard", "chance": 0.35, "person": "farmer", "thing": "duck", "target": "pen", "levelBy": "math.count.120", "lost": true,
+   "levels": [
+    { "need": [4, 5], "lost": 2, "sizes": [1], "skill": "math.count.120", "level": 1 },
+    { "need": [7, 9], "lost": 3, "sizes": [1], "skill": "math.count.120", "level": 1 },
+    { "need": [10, 14], "lost": 4, "sizes": [1], "skill": "math.count.120", "level": 2 }
+   ],
+   "extra": 0, "reward": { "coin": 1 },
+   "lines": { "start": "event.duck.start", "short": "event.duck.short", "over": "event.duck.over", "done": "event.duck.done" }
+  }
+ ]
+}

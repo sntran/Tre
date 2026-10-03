@@ -33,6 +33,7 @@ export const FILES = {
   zones: 'data/world/zones.json',
   blocks: 'data/world/blocks.json',
   scatter: 'data/world/scatter.json',
+  events: 'data/world/events.json',
 };
 
 async function fetchJson(path) {

@@ -26,6 +26,32 @@ export function generateRegion(defs, land, geo, rules, seed, parts = null) {
     // The villagers of the hamlets, and their looks from parts (the view draws a look by its key).
     const villagers = hamlets.villagers.filter((v) => v.map === mi).map((v) => ({ id: v.id, home: v.home, plan: v.plan, x: v.x - x, y: v.y - y }));
     const looks = Object.fromEntries(hamlets.villagers.filter((v) => v.map === mi).map((v) => [v.id, v.look]));
+    // The spots of the small events of the day (src/core/world/days.js): points of the roads, the
+    // middles of paddies, and the yards of the hamlets, away from the stamps and the edges; with
+    // the hand-made spots of the stamps (layers.spots).
+    const inside = (gx, gy, m = 6) => gx >= x + m && gy >= y + m && gx < x + def.width - m && gy < y + def.height - m;
+    const spots = { road: [], field: [], yard: [] };
+    for (const r of ground.roads) {
+      for (let k = 0; k < r.line.length; k += 9) {
+        const gx = Math.floor(r.line[k][0]);
+        const gy = Math.floor(r.line[k][1]);
+        const c = ground.cell(gx, gy);
+        if (c && c.map === mi && c.letter === '=' && !c.stamp && c.nearStamp > 8 && inside(gx, gy)) spots.road.push([gx - x, gy - y]);
+      }
+    }
+    const fields = [];
+    for (let gy = y + 2; gy < y + def.height; gy += 5) {
+      for (let gx = x + 2; gx < x + def.width; gx += 5) {
+        const c = ground.cell(gx, gy);
+        if (c && c.map === mi && c.letter === 'f' && !c.stamp && inside(gx, gy)) fields.push([gx - x, gy - y]);
+      }
+    }
+    // At most sixteen paddies, spread over the map.
+    const every = Math.max(1, Math.ceil(fields.length / 16));
+    spots.field = fields.filter((_, i) => i % every === 0);
+    for (const site of ground.sites) if (site.map === mi) spots.yard.push([site.x + 11 - x, site.y + 12 - y]);
+    const hand = def.layers.spots ?? {};
+    for (const k of Object.keys(spots)) spots[k] = [...(hand[k] ?? []), ...spots[k]];
     const { stamps, ...rest } = def;
     out.set(def.id, {
       ...rest,
@@ -33,7 +59,7 @@ export function generateRegion(defs, land, geo, rules, seed, parts = null) {
       // The key of the map and its seed (a cache of a terrain keeps one for each key).
       key: `${def.id}:${seed}`,
       looks,
-      layers: { ...def.layers, ground: rows.ground, height: rows.height, objects: [...def.layers.objects, ...objects], life: [...(def.layers.life ?? []), ...life], villagers },
+      layers: { ...def.layers, ground: rows.ground, height: rows.height, objects: [...def.layers.objects, ...objects], life: [...(def.layers.life ?? []), ...life], villagers, spots },
     });
   });
   return out;

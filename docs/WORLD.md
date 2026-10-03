@@ -148,6 +148,18 @@ The data under every tier of the look is blocks and entities, so that a later er
 - **The frame.** `frameTriangles` in `data/config/limits.json` is the most triangles of the world in the three by three chunks around the start of a map; a test checks it on every map.
 - The stories and the debug tools can change the terrain now: the commands `{ "type": "fell", "id": <object> }` and `{ "type": "dig", "at": [x, z] }` send the events `felled` and `dug` with what they drop, and the view builds the chunks again (the story `fell-dig`). A felled thing opens its cells. The save keeps the changes (`profile.maps[<map>].edits`): the land of a map comes from the seed, and the session does the changes again when the map starts.
 
+## The small events of each day
+
+Each day, the seed of the world and the day choose some small events on each map (`data/world/events.json`, `src/core/world/days.js`): a cart stuck on the road, a flood on a field, a market day (one day in three), and lost ducks. An event happens at a spot of its kind: a road, a paddy, or the yard of a hamlet (`layers.spots`: the spots of the stamps, and the spots of the generated land from `src/core/gen/map.js`).
+
+- A person stands at the spot (the carter, the farmer, or the seller; `data/figures.json`). A tap on the person starts the work, with one line that says the number as a word ("The hole takes seven stones").
+- The work is the task `exact` of the work system: things of sizes lie on a pile (stones in a net of one, two, or five; pails on a pole; coins on a string of one, five, or ten; a lost duck alone), and the child carries them to the place (the mud under the wheel, the ditch, the mat of the seller, the pen). Each thing shows its units, so its size is seen and never written.
+- A tap on the person is the commit of the sum (one skill event for the learner). Exact: done, and the reward flies to the counter. Too few: the person says so and waits. Too many: the last things go back to the pile.
+- The level of the work: the level of the grade, one step up when P(L) of the skill of the event is over 0.8, one step down when it is under 0.3 (`up` and `down` in the data). The levels go from counting to sums of two sizes to place value (strings of ten at the market).
+- The coins of a market come from the purse of the hero, and leave it only when the price is paid. A child with too few coins hears one line and comes back another day.
+- An event that the child did today does not come again today (`profile.maps[<map>].things["event.<id>"]` holds the day). At the next dawn, the events of the day before go, with their things.
+- The stories `event-cart`, `event-flood`, `event-market`, and `event-duck` play them; the command `{ "type": "event", "id": <id> }` brings an event today.
+
 ## The save
 
 `profile.world` (save version 7) holds the seed, the map, the clock, and the entities with `keep` (the hero, the zones, the planks, and a broken pot), without their routes and intents (`src/core/world/save.js`). When the hero goes to another map, the kept entities of the old map wait in `profile.world.away` until the hero comes back. The people, the animals, and Nghé come again from the map data and the seed. The village puts its world into the profile before each save (`ctx.syncWorld`).

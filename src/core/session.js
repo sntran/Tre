@@ -48,6 +48,8 @@ import { createRaid, raidLevel } from './world/raids.js';
 import { setupRaid, roadPoint } from './world/systems/raid.js';
 import { lossLevel } from './profile.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from './world/save.js';
+import { dayOf, eventsOfDay, eventLevel, eventTask, purse } from './world/days.js';
+import { createRng, hashSeed } from './rng.js';
 
 export { STEP };
 
@@ -151,6 +153,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     visit = (profile.maps[map.id] ??= { first: Math.round(state.clock.minutes), things: {} });
     visit.last = Math.round(state.clock.minutes);
     refreshPeople();
+    placeEvents();
     if (!profile.flags['intro.seen']) talk('grandma.intro');
     for (const id of params.after ?? []) talk(id);
   }
@@ -419,6 +422,137 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return true;
   }
 
+  // The small events of each day (data/world/events.json, src/core/world/days.js) -------------
+
+  const eventDef = (id) => data.events?.events.find((d) => d.id === id) ?? null;
+  const today = () => dayOf(state.clock.minutes);
+  // All the things of an event (its zones, its things, its marks, its person, and its cart).
+  function clearEvent(id) {
+    const owner = `trial-event-${id}`;
+    for (const e of [...state.entities]) {
+      const mine = e.id === `zone:${owner}` || e.item?.task === owner || e.zone?.task === owner || e.id === `mark:event-${id}` || e.dayEvent?.id === id;
+      if (mine && e.id !== holding()) removeEntity(state, e.id);
+    }
+  }
+  // The events of today on this map: the person (and the cart) at the spot of each one. The events
+  // of another day go, with their things; an event that the child did today does not come again.
+  function placeEvents(force = null) {
+    if (!data.events) return;
+    const day = today();
+    for (const e of query(state, 'dayEvent')) if (e.dayEvent.day !== day) clearEvent(e.dayEvent.id);
+    for (const z of query(state, 'zone')) if (z.zone.event && z.zone.day !== day) clearEvent(z.zone.event);
+    const spots = map.layers.spots ?? {};
+    const list = eventsOfDay(data.events, { seed: state.seed, day, map: map.id, spots });
+    // A story or the debug panel can bring an event today, at its first spot.
+    if (force && !list.some((x) => x.id === force) && spots[eventDef(force)?.where]?.length) list.push({ id: force, at: spots[eventDef(force).where][0] });
+    for (const ev of list) {
+      const def = eventDef(ev.id);
+      if (!def || visit.things[`event.${ev.id}`] === day || getEntity(state, `event:${ev.id}`)) continue;
+      const rng = createRng(hashSeed(`${state.seed}:event-place:${ev.id}:${day}`));
+      // The person stands on open ground near the spot (not in a narrow lane).
+      const stand = nearFree(ev.at, 2, 5, rng, [], 1) ?? nearFree(ev.at, 1, 6, rng) ?? { x: ev.at[0] + 0.5, y: ev.at[1] + 0.5 };
+      addEntity(state, {
+        id: `event:${ev.id}`,
+        dayEvent: { id: ev.id, day, at: ev.at },
+        person: { kind: 'event', ref: ev.id },
+        position: { x: stand.x * 2, y: env.groundY(stand.x, stand.y), z: stand.y * 2, facing: 0 },
+        motion: { vx: 0, vz: 0, speed: 0 },
+        solid: { r: 1.8 },
+        look: def.person,
+      });
+      if (def.prop === 'cart') {
+        addEntity(state, { id: `event:${ev.id}:cart`, dayEvent: { id: ev.id, day, at: ev.at }, position: { x: ev.at[0] * 2 + 1, y: env.groundY(ev.at[0], ev.at[1]) - 0.5, z: ev.at[1] * 2 + 1, facing: 0.3 }, solid: { r: 2.2 }, look: 'cart' });
+      }
+    }
+  }
+  // A free cell from min to max cells from a point, in the order of the seed (map cells, the middle).
+  // room: the cells around it that must be free too (1: three by three), for a pile of things.
+  function nearFree([x, y], min, max, rng, taken = [], room = 0) {
+    const cells = [];
+    const free = (cx, cy) => tileMap.walkable(cx, cy) && tileMap.type(cx, cy) !== 'shallow';
+    for (let dy = -max; dy <= max; dy++) for (let dx = -max; dx <= max; dx++) {
+      const d = Math.hypot(dx, dy);
+      if (d < min || d > max) continue;
+      const cx = Math.floor(x) + dx;
+      const cy = Math.floor(y) + dy;
+      let ok = true;
+      for (let ry = -room; ry <= room && ok; ry++) for (let rx = -room; rx <= room; rx++) if (!free(cx + rx, cy + ry)) ok = false;
+      if (!ok) continue;
+      if (taken.some((t) => Math.hypot(t.x - cx - 0.5, t.y - cy - 0.5) < 2.5)) continue;
+      cells.push({ x: cx + 0.5, y: cy + 0.5 });
+    }
+    return cells.length ? rng.pick(cells) : null;
+  }
+  // A tap on the person of an event: the work starts (with a line that says the number as a
+  // word), or the sum on the place is the commit.
+  function tapEvent(id) {
+    const tz = trialZone(`event-${id}`);
+    if (tz?.zone.done) return;
+    if (tz) {
+      work(`event-${id}`, 'exact');
+      return;
+    }
+    const def = eventDef(id);
+    const ent = getEntity(state, `event:${id}`);
+    if (!def || !ent) return;
+    const day = ent.dayEvent.day;
+    const rng = createRng(hashSeed(`${state.seed}:event-task:${id}:${map.id}:${day}`));
+    // The level: the grade, and P(L) of the skill of the event in the skill model.
+    const p = learner()?.entry(def.levelBy)?.p ?? null;
+    const level = eventLevel(data.events, levelFor(data.trials ?? { grades: {} }, profile.grade), p);
+    const task = eventTask(def, level, rng);
+    let pile = task.pile;
+    if (def.pay) {
+      // The coins of the purse of the hero lie on the mat side; they leave the purse only at the end.
+      const coins = profile.inventory.coin ?? 0;
+      if (coins < task.need) {
+        say(def.lines.poor, {}, null, def.person);
+        return;
+      }
+      pile = purse(coins, def.levels[level].sizes);
+    }
+    // The places: the work at the spot, the pile a few cells away, and each lost duck further.
+    const target = { x: ent.dayEvent.at[0] + 0.5, y: ent.dayEvent.at[1] + 0.5 };
+    const placeAt = tileMap.walkable(Math.floor(target.x), Math.floor(target.y)) ? target : nearFree(ent.dayEvent.at, 1, 4, rng) ?? target;
+    const taken = [placeAt, { x: ent.position.x / 2, y: ent.position.z / 2 }];
+    const pileAt = nearFree(ent.dayEvent.at, 4, 7, rng, taken, 1) ?? nearFree(ent.dayEvent.at, 2, 10, rng, [], 1) ?? placeAt;
+    const lost = [];
+    if (task.lost) {
+      for (let k = 0; k < pile.length; k++) {
+        const q = nearFree(ent.dayEvent.at, 7, 14, rng, [...taken, ...lost]);
+        if (q) lost.push(q);
+      }
+      pile = pile.slice(0, lost.length);
+    }
+    const hb = (q) => ({ x: q.x * 2, z: q.y * 2 });
+    setupTrial(state, {
+      id: `event-${id}`, task: 'exact', thing: def.thing, target: def.target, pile, keep: task.keep, lost: task.lost,
+      need: task.need, skill: task.skill, level: task.level, day, event: id, levels: [{}],
+      at: { target: hb(placeAt), pile: hb(pileAt), lost: lost.map(hb) },
+    }, 0, env);
+    say(def.lines.start, { need: { key: `num.${task.need}` } }, null, def.person);
+    emit({ type: 'hud' });
+  }
+  // An event is done: the reward flies to the counter, the person says thanks, and the event goes.
+  function eventDone(id) {
+    const def = eventDef(id);
+    const tz = trialZone(`event-${id}`);
+    if (!def || !tz) return;
+    visit.things[`event.${id}`] = tz.zone.day;
+    const from = `event:${id}`;
+    if (def.pay) {
+      const k = Math.min(profile.inventory.coin ?? 0, tz.zone.need);
+      profile.inventory.coin = (profile.inventory.coin ?? 0) - k;
+      emit({ type: 'lose', to: from, take: { coin: k } });
+    }
+    applyEffects(profile, [{ give: def.reward }]);
+    emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: def.reward, delay: 0.3 });
+    emit({ type: 'hud' });
+    save('event');
+    say(def.lines.done, {}, null, def.person);
+    queue(() => clearEvent(id));
+  }
+
   // Actions of trigger zones, people, and encounters -------------------------------
 
   function doAction(zone) {
@@ -451,6 +585,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     log('action', { kind: 'talk' });
     worldCommand(state, { type: 'face', id: 'hero', x: at.x * 2, z: at.y * 2 });
     if (who.kind === 'npc') talk(pickTalk(data.npcs.npcs[who.id], profile));
+    else if (who.kind === 'event') tapEvent(who.id);
     else if (who.kind === 'encounter') {
       const enc = map.encounters.find((e) => e.id === who.id);
       const def = data.raids?.raids[enc.raid];
@@ -907,7 +1042,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         parts: ev.parts, resets: ev.resets, latencies: ev.latencies, hint: ev.hint, hintSeen: ev.hintSeen, pBefore, pAfter, retry: false, harder: false, map: map.id,
       });
     }
-    if (ev.type === 'trial' && ev.done) trialDone(ev.trial);
+    if (ev.type === 'trial' && ev.done && String(ev.trial).startsWith('event-')) eventDone(ev.trial.slice(6));
+    else if (ev.type === 'trial' && ev.done) trialDone(ev.trial);
+    // A small event of the day: too few on the place, or too many (the last things go back).
+    if ((ev.type === 'short' || ev.type === 'roll') && String(ev.id).startsWith('zone:event-')) {
+      const def = eventDef(String(ev.id).slice(11, -6));
+      const key = def?.lines[ev.type === 'short' ? 'short' : 'over'];
+      if (key) say(key, {}, null, def.person);
+    }
     // The raid: the talks of the phases of the boss, the coins at the gate, and the end.
     if (ev.type === 'phase' && ev.dialogue) talk(ev.dialogue);
     if (ev.type === 'take') raidTake(ev);
@@ -954,6 +1096,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // (a restore point for the parent).
         if (ev.type === 'dawn') {
           refreshPeople();
+          placeEvents();
           save('dawn');
         }
         continue;
@@ -1034,6 +1177,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     // The tools of a later era, for the stories and the debug panel: fell an object of the map, or
     // dig the top block of a column. The view builds the chunks of the change again.
+    // A story or the debug panel brings a small event today (at its first spot on this map).
+    if (type === 'event') {
+      placeEvents(cmd.id);
+      return;
+    }
     if (type === 'fell' || type === 'dig') {
       const r = editLand(cmd);
       if (!r) return;

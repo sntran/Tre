@@ -16,12 +16,17 @@
 //     bundle of staffs; if not, the pieces that are not equal break, and their culms grow again.
 //   share (the loot after a raid): equal coins on the mats make all happy; if not, Nghé sulks.
 //   feed (rice for Gióng): each ten bowls in the pot, Gióng eats and grows one head taller.
+//   exact (a small event of the day, ../days.js): things of sizes go on a place (stones under the
+//     wheel of a cart, pails of water into the ditch, coins on the mat of a seller, lost ducks into
+//     the pen); a tap on the person is the commit of the sum. Exact: done. Too few: the person
+//     waits. Too many: the last things go back to the pile.
 // When a task is done, the event "trial" goes out (the session sets the flag and gives the reward).
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { REACH } from '../zones.js';
 import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
+import { exactResult } from '../days.js';
 
 const BEND = 1.2; // seconds: the bent iron cools before it goes back into the fire
 const TIDE_IN = 2.5; // seconds: the tide stands high over the stakes
@@ -53,6 +58,8 @@ export function work(world, dt, rng, env) {
 
 // The definition of a trial and the numbers of its task at the level of the child.
 function taskFor(env, zone) {
+  // A small event of the day keeps its work in its zone.
+  if (zone.work) return zone.work;
   const def = env.trials?.trials.find((t) => t.id === zone.trial);
   return def ? taskOf(def, zone.level) : null;
 }
@@ -77,7 +84,9 @@ export function setupTrial(world, def, level, env) {
   const task = taskOf(def, level);
   const P = (name) => env.places[name];
   // The share after a raid has no places of the map: it lies behind the wall of the raid (at).
-  const first = def.at ? { ...def.at, y: env.groundY(def.at.x / 2, def.at.z / 2) } : P(Object.values(def.places).flat()[0]);
+  // A small event of the day has its places in def.at too: the zone of the task is at its place.
+  const spot = def.at?.target ?? def.at;
+  const first = spot ? { x: spot.x, y: env.groundY(spot.x / 2, spot.z / 2), z: spot.z } : P(Object.values(def.places).flat()[0]);
   const tz = addEntity(world, {
     id: `zone:trial-${def.id}`,
     keep: true,
@@ -196,6 +205,37 @@ export function setupTrial(world, def, level, env) {
       if (who === 'nghe' && friend) friend.follow.goal = { x: by.x, z: by.z, face };
     });
     Object.assign(tz.zone, { loot: def.loot, who: def.who, settled: null, leave: null, face: Math.atan2(-back.x, -back.z) });
+  } else if (def.task === 'exact') {
+    // A small event of the day: the things of sizes on a pile (or a lost duck alone at each of its
+    // places), and the place where they go. The things that are there from the start (the ducks
+    // that did not run away) are set.
+    const at = (p) => ({ x: p.x, y: env.groundY(p.x / 2, p.z / 2), z: p.z });
+    const add = (zone, size, extra = {}) => {
+      const id = `${def.thing}:${def.id}:${tz.zone.made++}`;
+      const look = def.thing === 'duck' ? 'duck' : `${def.thing}-${size}`;
+      addEntity(world, { id, keep: true, item: { kind: def.thing, size, task: owner, zone: zone.zone.id, home: zone.zone.id, held: null, set: false, ...extra }, position: { x: zone.zone.x, y: zone.zone.y, z: zone.zone.z, facing: 0 }, look });
+      zone.zone.items.push(id);
+      return id;
+    };
+    if (def.lost) {
+      def.at.lost.forEach((p, k) => {
+        const h = heap(`${def.id}-lost-${k}`, at(p), def.thing, { cols: 1 });
+        add(h, def.pile[k] ?? 1);
+        packHeap(world, h.zone);
+      });
+    } else {
+      // The pile lies in the middle of its free cells (three by three).
+      const p = at({ x: def.at.pile.x - 1, z: def.at.pile.z - 1 });
+      const pile = heap(`${def.id}-pile`, p, def.thing, { cols: 3, step: 1 });
+      for (const size of def.pile) add(pile, size);
+      packHeap(world, pile.zone);
+    }
+    const t = at(def.at.target);
+    const place = addEntity(world, { id: `zone:${def.id}-place`, keep: true, zone: { id: `${def.id}-place`, task: owner, rule: 'exact', accepts: def.thing, items: [], x: t.x, y: t.y, z: t.z, rect: { x0: t.x - 2.5, x1: t.x + 2.5, z0: t.z - 2.5, z1: t.z + 2.5 } }, position: { x: t.x, y: t.y, z: t.z + 2.5, facing: 0 } });
+    addEntity(world, { id: `mark:${def.id}`, keep: true, position: { ...t, facing: 0 }, look: def.target });
+    for (let i = 0; i < (def.keep ?? 0); i++) add(place, 1, { set: true, fixed: true });
+    packExact(world, place.zone);
+    Object.assign(tz.zone, { work: { id: def.id, skill: def.skill, level: def.level, need: def.need }, need: def.need, day: def.day, event: def.event });
   } else if (def.task === 'slash') {
     const c = P(def.places.clump);
     Object.assign(tz.zone, { clump: { x: c.x, y: c.y, z: c.z }, pieces: Array(task.parts).fill(null) });
@@ -272,6 +312,7 @@ function takeOut(world, thing) {
   if (z.zone.rule === 'basket') packBasket(world, z.zone);
   if (z.zone.rule === 'hearth') packHearth(world, z.zone);
   if (z.zone.rule === 'share') packShare(world, z.zone);
+  if (z.zone.rule === 'exact') packExact(world, z.zone);
 }
 
 // The coins on a mat lie in a stack.
@@ -287,6 +328,16 @@ function packHearth(world, zone) {
   zone.items.forEach((id, i) => {
     const e = getEntity(world, id);
     if (e) e.position = { x: zone.x + 0.5 + (i % 4) * 0.8, y: zone.y + 1, z: zone.z + 0.6 + Math.floor(i / 4) * 0.8, facing: 0 };
+  });
+}
+
+// The things on the place of a small event lie in rows of four (a duck in a pen: in rows of three).
+function packExact(world, zone) {
+  const cols = zone.accepts === 'duck' ? 3 : 4;
+  const step = zone.accepts === 'duck' ? 1.4 : 1;
+  zone.items.forEach((id, i) => {
+    const e = getEntity(world, id);
+    if (e) e.position = { x: zone.x - 1.5 + (i % cols) * step, y: zone.y + (zone.accepts === 'duck' ? 0 : 0.2), z: zone.z - 1.2 + Math.floor(i / cols) * step, facing: zone.accepts === 'duck' ? (i % 4) * 1.5 : 0 };
   });
 }
 
@@ -358,6 +409,10 @@ export function putWork(world, e, zone, thing, at, env) {
   } else if (zone.rule === 'feed') {
     feed(world, tz, thing, env);
     return true;
+  } else if (zone.rule === 'exact') {
+    thing.item.zone = zone.id;
+    zone.items.push(thing.id);
+    packExact(world, zone);
   } else if (zone.rule === 'woodpile') {
     thing.item.zone = zone.id;
     thing.item.set = true;
@@ -418,6 +473,34 @@ function act(world, e, want, env) {
       }
       mat.zone.items = [];
       say(world, 'snap', mat.id, { count: n, sound: 'plank-down' });
+    }
+  } else if (want.act === 'exact') {
+    // A tap on the person of a small event: the sum of the sizes on the place is the commit.
+    const place = zoneEnt(world, `${task.id}-place`);
+    if (!place || !near(place.position, REACH + 6)) return;
+    const things = place.zone.items.map((id) => getEntity(world, id)).filter(Boolean);
+    const brought = things.filter((t) => !t.item.fixed);
+    if (!brought.length) return say(world, 'short', place.id, { sound: 'tap' });
+    const sum = things.reduce((a, t) => a + t.item.size, 0);
+    const r = exactResult(sum, task.need);
+    commit(world, tz, task, { solved: r.solved, parts: brought.map((t) => t.item.size), target: task.need });
+    if (r.solved) {
+      for (const t of things) t.item.set = true;
+      say(world, 'exact', place.id, { sound: 'plank-up' });
+      finish(world, tz);
+    } else if (r.over) {
+      // Too many: the last things go back to the pile, until the place is not over.
+      let rest = sum;
+      while (rest > task.need && brought.length) {
+        const t = brought.pop();
+        place.zone.items = place.zone.items.filter((id) => id !== t.id);
+        rest -= t.item.size;
+        toHeap(world, t);
+      }
+      packExact(world, place.zone);
+      say(world, 'roll', place.id, { sound: 'plank-down' });
+    } else {
+      say(world, 'short', place.id, { sound: 'tap' });
     }
   } else if (want.act === 'blow') {
     // The bellows: the count of the lumps in the hearth is the commit.

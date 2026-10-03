@@ -43,7 +43,7 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 
 | Step | What it does |
 | --- | --- |
-| `{ "do": <command> }` | Sends a command to the session. The tools of a later era are commands too: `{ "type": "fell", "id": "tree8" }` takes away an object of the map (a tree and its crown), and `{ "type": "dig", "at": [8, 29] }` takes the top block of a column (`docs/WORLD.md`, "Mining and taking apart"). |
+| `{ "do": <command> }` | Sends a command to the session. The tools of a later era are commands too: `{ "type": "fell", "id": "tree8" }` takes away an object of the map (a tree and its crown), and `{ "type": "dig", "at": [8, 29] }` takes the top block of a column (`docs/WORLD.md`, "Mining and taking apart"). `{ "type": "event", "id": "cart" }` brings a small event of the day today, at the first spot of its kind on the map (`docs/WORLD.md`, "The small events of each day"). |
 | `{ "wait": 2 }` | The world goes on for two seconds. |
 | `{ "until": { "event": "put", "with": {...}, "timeout": 20 } }` | The world goes on until the event comes (after the last command). |
 | `{ "at": { "hour": 18.5 } }` | The world goes on until the next 18:30. |
@@ -127,3 +127,8 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `forge-horse` | The iron horse: five lumps and the fire dies, seven and one rolls back, six and the fire burns high; the child waits by the anvil for the sound of the glow, and the glowing iron in the water becomes the horse. |
 | `rice-giong` | Rice for Gióng: two trays of five make a ten, and Gióng grows; three trays of three and one more make twelve: he grows again, two bowls stay in the pot. |
 | `staffs-bamboo` | Bamboo staffs: slashes at three, six, and eight break the short piece, and a new stem comes; slashes at three, six, and nine make four equal staffs. |
+| `fell-dig` | A tree is felled and a block is dug; after a save and a load, the tree stays felled. |
+| `event-cart` | A cart stuck on the road: three stones are too few, five roll one back, four lift the cart. |
+| `event-flood` | A flooded field: five pails of water to the ditch. |
+| `event-market` | Market day: two strings of ten and three single coins pay the price; the coins leave the purse only then. |
+| `event-duck` | Lost ducks: one is not enough; with the second, the flock is whole. |

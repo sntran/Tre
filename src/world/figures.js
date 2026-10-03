@@ -562,6 +562,42 @@ export function workThing(look) {
     }
     // A small reed mat for a share of the loot.
     case 'share-mat': return still([P('mat', [2.2, 0.08, 2.2], 'yellowPale', [0, 0.04, 0]), P('edgeN', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, -1.05]), P('edgeS', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, 1.05])], 0.1);
+    // The things of the small events of the day: each shows its units, so that its size is seen
+    // and never written. Stones in a net (one, two, or five), pails of water on a carrying pole,
+    // and coins on a string.
+    case 'stones': {
+      const n = look.n ?? 1;
+      const parts = [];
+      for (let i = 0; i < n; i++) {
+        const at = [(i % 3 - 1) * 0.55, 0.22 + Math.floor(i / 3) * 0.4, (Math.floor(i / 3) % 2) * 0.3];
+        parts.push(P(`stone${i}`, [0.55, 0.45, 0.55], 'ash', at), P(`top${i}`, [0.3, 0.1, 0.3], 'ashLight', [at[0] + 0.05, at[1] + 0.25, at[2]]));
+      }
+      parts.push(P('net', [Math.min(3, n) * 0.6, 0.08, 0.9], 'ochre', [0, 0.04, 0]));
+      return still(parts, 0.6 + Math.floor((n - 1) / 3) * 0.4);
+    }
+    case 'pails': {
+      const n = look.n ?? 1;
+      const parts = [P('pole', [Math.max(1, n) * 0.8 + 0.4, 0.12, 0.12], 'wood', [0, 1.1, 0])];
+      for (let i = 0; i < n; i++) parts.push(P(`pail${i}`, [0.55, 0.6, 0.55], 'wood', [(i - (n - 1) / 2) * 0.8, 0.3, 0]), P(`water${i}`, [0.45, 0.05, 0.45], 'indigoPale', [(i - (n - 1) / 2) * 0.8, 0.62, 0]));
+      return still(parts, 1.2);
+    }
+    case 'coins': {
+      const n = look.n ?? 1;
+      const parts = [];
+      for (let i = 0; i < n; i++) parts.push(P(`coin${i}`, [0.12, 0.45, 0.45], 'yellow', [(i - (n - 1) / 2) * 0.16, 0.25, 0]), P(`hole${i}`, [0.13, 0.15, 0.15], 'ink', [(i - (n - 1) / 2) * 0.16, 0.25, 0]));
+      parts.push(P('string', [n * 0.16 + 0.3, 0.06, 0.06], 'vermilion', [0, 0.25, 0]));
+      return still(parts, 0.5);
+    }
+    // The mud under the wheel of a stuck cart.
+    case 'mud': return still([P('mud', [2.6, 0.06, 2], 'wood', [0, 0.03, 0]), P('wet', [1.6, 0.07, 1.2], 'ink', [0.2, 0.04, 0.1]), P('rut', [0.5, 0.08, 2.2], 'ochre', [-0.8, 0.05, 0])], 0.1);
+    // A small ditch at the side of a paddy, where the water goes.
+    case 'ditch': return still([P('bed', [2.8, 0.06, 1.2], 'ochre', [0, 0.03, 0]), P('water', [2.4, 0.07, 0.7], 'indigoPale', [0, 0.05, 0]), P('lip', [2.8, 0.12, 0.15], 'wood', [0, 0.06, -0.6])], 0.1);
+    // A low pen of woven bamboo for the ducks.
+    case 'pen': {
+      const parts = [];
+      for (const [x, z, w, d] of [[0, -2, 4.4, 0.2], [0, 2, 4.4, 0.2], [-2.2, 0, 0.2, 4], [2.2, 0.8, 0.2, 2.4]]) parts.push(P(`side${x}${z}`, [w, 0.6, d], 'yellow', [x, 0.3, z]));
+      return still(parts, 0.6);
+    }
     // A chalk mark across the stem.
     case 'chalk': return still([P('mark', [1.3, 0.08, 0.25], 'vermilion', [0, 0.45, 0]), P('dotA', [0.25, 0.4, 0.25], 'vermilion', [-0.65, 0.25, 0]), P('dotB', [0.25, 0.4, 0.25], 'vermilion', [0.65, 0.25, 0])], 0.5);
     // Equal bamboo sticks (or staffs) tied into a bundle.
