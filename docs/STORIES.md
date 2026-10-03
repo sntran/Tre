@@ -134,3 +134,4 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `event-duck` | Lost ducks: one is not enough; with the second, the flock is whole. |
 | `walk-trau-son` | From the gate of Phù Đổng over the east edge, through the generated land, to the fields of Núi Trâu. |
 | `walk-vanmieu` | From Phù Đổng over the ford and the west edge, through the generated land, over the Red River on the ferry, to Văn Miếu. |
+| `climb-nui-trau` | From the yard at the foot of Núi Trâu up the path to the top of the hill (a real hill from the fine heights), past the rock faces. |

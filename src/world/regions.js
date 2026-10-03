@@ -43,9 +43,10 @@ export function edgeExits(list, roads = []) {
 }
 
 // world: data/world/regions.json. defs: a Map from map id to map data (data/maps/). geo: { routes
-// (data/world/routes.json), places, rivers, elevation (data/geo/vietnam.json), lands (a Map from the
-// land of a region to its data, data/world/land-<region>.json), scatter (data/world/scatter.json),
-// villagers (the parts of the villagers, data/figures.json) }.
+// (data/world/routes.json), places, rivers (data/geo/vietnam.json), heights (the fine heights,
+// src/core/gen/heights.js), lands (a Map from the land of a region to its data,
+// data/world/land-<region>.json), scatter (data/world/scatter.json), villagers (the parts of the
+// villagers, data/figures.json) }.
 export function createWorld(world, defs, geo = null) {
   const routes = geo?.routes ? createRoutes(geo.routes, geo.places) : null;
   const regions = new Map(world.regions.map((r) => [r.id, r]));
@@ -66,7 +67,7 @@ export function createWorld(world, defs, geo = null) {
   function generated(regionId, seed) {
     const r = regions.get(regionId);
     const land = r?.land ? geo?.lands?.get(r.land) : null;
-    if (!land || !geo?.elevation) return null;
+    if (!land || !geo?.heights) return null;
     const bySeed = built.get(regionId) ?? new Map();
     built.set(regionId, bySeed);
     if (!bySeed.has(seed)) {

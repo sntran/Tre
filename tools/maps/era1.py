@@ -249,7 +249,6 @@ C.fill(20, 7, 9, 3, 'y')
 C.fill(24, 11, 8, 20, '.')
 C.fill(19, 0, 13, 7, '.')
 C.flowers(22, 3)
-C.obj('mountain', 'mountain', 22, 1, 5, 5)
 C.obj('rock1', 'rock', 28, 12)
 C.obj('rock2', 'rock', 21, 6)
 C.obj('hay1', 'haystack', 14, 15)
@@ -334,17 +333,19 @@ WINDOWS = [
     # map, window (region cells), size (cells), offset of the hand-made map (cells), stamps (tiles)
     (A, (0, 0), (80, 88), (0, 0), [(0, 0, 33, 31), (0, 29, 40, 15), (31, 0, 9, 20)]),
     (B, (-56, -120), (120, 120), (8, 4), [(0, 0, 30, 30)]),
-    (C, (80, -40), (128, 84), (64, 4), [(0, 0, 32, 31)]),
+    (C, (80, -40), (200, 84), (64, 4), [(0, 0, 30, 31)]),
     (D, (-120, 40), (120, 64), (0, 16), [(0, 0, 28, 24)]),
 ]
 
 # The anchors of the warp: a cell of the plane and its real place. The places are in
 # data/geo/vietnam.json; the points on the rivers are on the real lines of the Đuống and the Hồng,
-# at the ends of the rivers of the stamps.
+# at the ends of the rivers of the stamps. The tops of Núi Trâu and of the hill of Sóc Sơn (núi Vệ
+# Linh) are the highest values of the fine heights there (data/geo/heights/). Núi Trâu rises east
+# of the fields of its stamp; the stamp of Sóc Sơn rises with its hill (lift).
 ANCHORS = [
     {'cell': [32, 20], 'at': [105.953, 21.059], 'note': 'Phù Đổng: the đình'},
-    {'cell': [193, -29], 'at': [106.1, 21.13], 'note': 'Núi Trâu: the hill'},
-    {'cell': [-18, -100], 'at': [105.826, 21.272], 'note': 'Sóc Sơn: the top of the hill'},
+    {'cell': [232, -22], 'at': [106.1, 21.145], 'note': 'Núi Trâu: the top of the hill'},
+    {'cell': [-18, -100], 'at': [105.825, 21.29], 'lift': True, 'note': 'Sóc Sơn: the top of the hill'},
     {'cell': [-120, 80], 'at': [105.836, 21.029], 'note': 'Văn Miếu: the gate'},
     {'cell': [0, 71], 'at': [105.94, 21.059], 'river': 'duong', 'note': 'the Đuống, west end of Phù Đổng'},
     {'cell': [-36, 68], 'at': [105.92, 21.07], 'river': 'duong', 'note': 'the Đuống, west of Phù Đổng'},
@@ -358,12 +359,18 @@ LAND = {
                'real places, for the warp between the plane and data/geo/vietnam.json. rivers: the real rivers that cross '
                'the land (id in data/geo/vietnam.json; water and bank: widths in cells; bend: how far the river winds). '
                'roads: the roads between the stamps (points in region cells; the road winds between its points by the '
-               'seed; width in cells). base: the height of the ground (steps). hills: the noise of the hills (scale in '
-               'cells, amp in steps; rise: steps for each 10 m of real height over the first anchor; more: more hills on '
-               'high land). wet: the rice paddies (scale of the noise, near: cells from water, over: the least score). '
-               'blend: cells over which the land comes to the height of a stamp. dike: the size of a paddy block. '
+               'seed; width in cells; on a hill the road turns back and forth). tiles: the fine height tiles of the land '
+               '(data/geo/heights/, made by tools/geo/build.mjs). base: the height of the low land (steps). relief: the '
+               'curve from meters to steps: k x the square root of the meters over low (the land under low is flat). '
+               'road: steep (the most steps for each cell that a road climbs without a cost), climb (the cost of a '
+               'steeper climb), keep (the cost of each cell away from the line of the road). An anchor with lift is the '
+               'top of a hill under a stamp: the stamp rises to the real height there. wet: the rice paddies (scale of '
+               'the noise, near: cells from water, over: the least score, terrace: cells from a hamlet where paddies '
+               'are terraces over the low land). blend: cells over which the land comes to the height of a stamp. dike: '
+               'the size of a paddy block. '
                'Made by tools/maps/era1.py; do not change it by hand.'),
     'id': 'giong',
+    'tiles': ['N21E105', 'N21E106'],
     'base': 2,
     'anchors': ANCHORS,
     'rivers': [
@@ -374,9 +381,12 @@ LAND = {
         {'id': 'east', 'width': 4, 'points': [[80, 30], [104, 22], [126, 4], [144, -6]]},
         {'id': 'north', 'width': 4, 'points': [[46, 0], [38, -18], [10, -38], [-16, -56]]},
         {'id': 'west', 'width': 4, 'points': [[0, 80], [-22, 78], [-44, 82], [-64, 80]]},
+        # The path from the yard at the foot of Núi Trâu to its top: the soldiers come down it.
+        {'id': 'trau', 'width': 2, 'bend': 2, 'points': [[203, -19], [232, -22]]},
     ],
-    'hills': {'scale': 40, 'amp': 1.2, 'rise': 1, 'more': 0.8},
-    'wet': {'scale': 22, 'near': 14, 'over': 0.15},
+    'relief': {'low': 16, 'k': 0.8},
+    'road': {'steep': 0.7, 'climb': 40, 'keep': 0.06},
+    'wet': {'scale': 22, 'near': 14, 'over': 0.15, 'terrace': 18},
     'blend': 10,
     'dike': 5,
 }

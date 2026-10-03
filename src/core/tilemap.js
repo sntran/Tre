@@ -1,7 +1,8 @@
 // A tile map with layers, a collision grid, and A* pathfinding.
 // data: { width, height, legend, layers: { ground: [rows], height: [rows], objects, collision } }.
-// Ground rows have one letter for each tile (see legend). Height rows have one digit for each
-// tile: the height of the ground in steps. Objects block their footprint.
+// Ground rows have one letter for each tile (see legend). Height rows have one digit of base 36
+// for each tile (0 to 9, then a to z): the height of the ground in steps. Objects block their
+// footprint.
 // The hero can step up or down one step. A higher step is a cliff.
 // Collision rectangles block tiles (block: true) or open them (block: false).
 
@@ -21,7 +22,7 @@ export function createTileMap(data, tileTypes) {
   const heights = new Uint8Array(width * height);
   for (let y = 0; y < height; y++) {
     const row = layers.height?.[y] ?? '';
-    for (let x = 0; x < width; x++) heights[y * width + x] = Number(row[x] ?? 0) || 0;
+    for (let x = 0; x < width; x++) heights[y * width + x] = parseInt(row[x] ?? '0', 36) || 0;
   }
   const inside = (x, y) => x >= 0 && y >= 0 && x < width && y < height;
   const index = (x, y) => y * width + x;

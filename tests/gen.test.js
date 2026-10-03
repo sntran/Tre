@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { hash2, valueNoise, fbm } from '../src/core/gen/noise.js';
 import { createWarp } from '../src/core/gen/warp.js';
 import { localSamples, scatter, fits } from '../src/core/gen/scatter.js';
-import { createLand, distanceField, elevationAt } from '../src/core/gen/land.js';
+import { createLand, distanceField } from '../src/core/gen/land.js';
+import { stepsOf } from '../src/core/gen/heights.js';
 import { createRng } from '../src/core/rng.js';
 
 test('noise: the same seed and point give the same value, in its range', () => {
@@ -91,9 +92,17 @@ test('a distance field gives the distance to the nearest source', () => {
 });
 
 // A small region for the tests: two maps side by side, a stamp of grass with a pond in the
-// first, a river from the real data through the second, and a road across the edge.
-const elevation = { lon0: 105, lat1: 22, step: 0.5, cols: 4, rows: 4, unit: 10, data: [[1, 1, 3, 3], [1, 1, 3, 3], [1, 1, 1, 1], [1, 1, 1, 1]] };
-const geo = { elevation, rivers: [{ id: 'r', lines: [[[106.02, 21.2], [106.02, 20.9]]] }] };
+// first, a river from the real data through the second, a road across the edge, and a steep hill
+// of 400 m in the second map (around the cell 115, 12).
+const anchors = [{ cell: [16, 16], at: [106.0, 21.05] }, { cell: [100, 0], at: [106.02, 21.1] }, { cell: [100, 50], at: [106.02, 21.0] }];
+const hillWarp = createWarp(anchors);
+const heights = {
+  at(lon, lat) {
+    const [x, y] = hillWarp.toCell([lon, lat]);
+    return 10 + 400 * Math.exp(-((x - 115) ** 2 + (y - 12) ** 2) / 60);
+  },
+};
+const geo = { heights, rivers: [{ id: 'r', lines: [[[106.02, 21.2], [106.02, 20.9]]] }] };
 const stampRows = (w, h) => ({ ground: Array.from({ length: h }, (_, y) => Array.from({ length: w }, (_, x) => (x > 3 && x < 8 && y > 3 && y < 8 ? '~' : '.')).join('')), height: Array.from({ length: h }, (_, y) => Array.from({ length: w }, (_, x) => (x > 3 && x < 8 && y > 3 && y < 8 ? '0' : '2')).join('')) });
 const maps = [
   { id: 'a', window: { x: 0, y: 0 }, width: 60, height: 50, stamps: [{ x: 10, y: 10, w: 12, h: 12, ...stampRows(12, 12) }], layers: { objects: [] } },
@@ -102,10 +111,10 @@ const maps = [
 const land = {
   id: 't',
   base: 2,
-  anchors: [{ cell: [16, 16], at: [106.0, 21.05] }, { cell: [100, 0], at: [106.02, 21.1] }, { cell: [100, 50], at: [106.02, 21.0] }],
+  anchors,
   rivers: [{ id: 'r', water: 6, bank: 2, bend: 2 }],
   roads: [{ id: 'x', width: 4, points: [[22, 16], [60, 20], [85, 30], [125, 30]] }],
-  hills: { scale: 20, amp: 2, rise: 1, more: 1 },
+  relief: { low: 16, k: 0.8 },
 };
 
 test('the land keeps the stamps, follows the real river, and is the same for the same seed', () => {
@@ -136,25 +145,68 @@ test('the land keeps the stamps, follows the real river, and is the same for the
   assert.notDeepEqual(other.rows(maps[1]).height, L.rows(maps[1]).height);
 });
 
-test('the land is gentle: the hero can step from each free cell to the next', () => {
+test('where the land is steeper than one step for each cell, it is a rock face; a road never is', () => {
+  let rock = 0;
   for (const seed of [1, 2, 3]) {
     const L = createLand(land, maps, geo, seed);
     for (let y = 0; y < 50; y++) for (let x = 0; x < 130; x++) {
       const a = L.cell(x, y);
-      if (a.stamp || a.letter === '~' || a.letter === 'f' || a.edge) continue;
-      for (const [dx, dy] of [[1, 0], [0, 1]]) {
+      if (a.letter === 'r') rock += 1;
+      if (a.stamp || a.edge || a.taken || !'.r'.includes(a.letter)) continue;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const b = L.cell(x + dx, y + dy);
-        if (!b || b.letter === '~' || b.letter === 'f' || b.edge) continue;
-        assert.ok(Math.abs(a.level - b.level) <= 1, `seed ${seed}: a cliff at ${x},${y}`);
+        if (b && b.level <= a.level - 2) assert.equal(a.letter, 'r', `seed ${seed}: a cliff at ${x},${y} is rock`);
       }
     }
+    // The line of each road goes one step at most from a cell to the next.
+    for (const r of L.roads) for (let k = 1; k < r.levels.length; k++) assert.ok(Math.abs(r.levels[k] - r.levels[k - 1]) <= 1, `seed ${seed}: road ${r.id} at ${k}`);
+  }
+  assert.ok(rock > 20, `rock faces on the steep hill: ${rock}`);
+});
+
+test('a road up a steep hill turns back and forth, one step at most for each cell', () => {
+  const up = { ...land, roads: [{ id: 'up', width: 2, bend: 0, points: [[66, 44], [115, 12]] }] };
+  const L = createLand(up, maps, geo, 5);
+  const { line, levels } = L.roads[0];
+  const top = levels[levels.length - 1];
+  assert.ok(top - levels[0] >= 10, `the road climbs ${top - levels[0]} steps`);
+  for (let k = 1; k < levels.length; k++) assert.ok(Math.abs(levels[k] - levels[k - 1]) <= 1);
+  let length = 0;
+  for (let k = 1; k < line.length; k++) length += Math.hypot(line[k][0] - line[k - 1][0], line[k][1] - line[k - 1][1]);
+  const straight = Math.hypot(115 - 66, 12 - 44);
+  // A straight way climbs the last part of the hill faster than one step for each cell.
+  assert.ok(length > straight * 1.15, `the road is ${length.toFixed(0)} cells for ${straight.toFixed(0)}`);
+  // The hero can walk the road: each cell of it is at most one step from the next.
+  for (let k = 1; k < line.length; k++) {
+    const a = L.cell(Math.floor(line[k - 1][0]), Math.floor(line[k - 1][1]));
+    const b = L.cell(Math.floor(line[k][0]), Math.floor(line[k][1]));
+    if (a.letter === '=' && b.letter === '=') assert.ok(Math.abs(a.level - b.level) <= 1);
+  }
+});
+
+test('the height curve: the low land is flat, a hill of 100 m is about 8 steps, a mountain of 1,300 m about 29', () => {
+  const relief = { low: 16, k: 0.8 };
+  assert.equal(stepsOf(5, relief), 0);
+  assert.equal(stepsOf(16, relief), 0);
+  assert.ok(Math.abs(stepsOf(116, relief) - 8) < 0.01);
+  assert.ok(Math.abs(stepsOf(1316, relief) - 29) < 0.2);
+  // Concave: each 100 m more gives fewer steps.
+  let last = Infinity;
+  for (let m = 116; m < 3000; m += 100) {
+    const d = stepsOf(m + 100, relief) - stepsOf(m, relief);
+    assert.ok(d > 0 && d < last);
+    last = d;
   }
 });
 
 test('the land rises where the real land is high, and the closed edges of a map rise', () => {
-  assert.equal(elevationAt(elevation, [105.0, 22.0]), 1);
-  assert.ok(elevationAt(elevation, [106.25, 21.75]) > 1);
   const L = createLand(land, maps, geo, 7);
+  // The top of the hill: its height comes from the real height and the curve.
+  const top = L.cell(115, 12);
+  assert.equal(top.level, Math.round(2 + stepsOf(heights.at(...L.warp.toGeo([115.5, 12.5])), land.relief)));
+  assert.ok(top.level >= 15, `the top is ${top.level}`);
+  // The low land stays at the base.
+  assert.equal(L.cell(70, 45).level, 2);
   // The north edge of map a is closed (no map there): it is higher than the land inside.
   let up = 0;
   let n = 0;
@@ -174,11 +226,12 @@ test('rice paddies lie in blocks of five with dikes, on low wet land, as terrace
   let fields = 0;
   const near = [0, 0];
   const far = [0, 0];
-  for (const seed of [1, 2, 3, 4]) {
+  for (const seed of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
     const L = createLand(land, maps, geo, seed);
     for (let y = 0; y < 50; y++) for (let x = 0; x < 130; x++) {
       const c = L.cell(x, y);
-      if (!c.stamp && c.letter !== '~' && c.letter !== '_') {
+      // On the low land west of the river (the hill is east of it): more paddies near the water.
+      if (!c.stamp && c.letter !== '~' && c.letter !== '_' && x < 94) {
         const side = c.water < 12 ? near : c.water > 30 ? far : null;
         if (side) {
           side[0] += c.letter === 'f' ? 1 : 0;

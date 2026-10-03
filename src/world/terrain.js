@@ -117,10 +117,14 @@ export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
       const under = def.under ?? 'wood';
       for (let y = 0; y < h; y++) {
         const depth = h - 1 - y;
-        const kind = blocks ? kindAt(blocks, depth, hashSeed(`${map.id}:${x}:${y}:${z}`)) : null;
+        const hash = hashSeed(`${map.id}:${x}:${y}:${z}`);
+        // A face of stone (a rock face): rock under the top, in the colors of the face by a seeded
+        // rule, so that the ink draws the cracks.
+        const kind = blocks ? (def.face && depth > 0 ? 'rock' : kindAt(blocks, depth, hash)) : null;
         // The top and the block under it keep the colors of the ground type; deeper blocks show
         // their kind.
-        ground.set(x, y, z, depth === 0 ? top : depth === 1 ? under : kind ? blocks.kinds[kind].color : 'wood');
+        const color = depth === 0 ? top : def.face ? def.face[hash % def.face.length] : depth === 1 ? under : kind ? blocks.kinds[kind].color : 'wood';
+        ground.set(x, y, z, color);
         if (kinds) kinds[ground.index(x, y, z)] = kindNames.indexOf(kind) + 1;
       }
       if (type === 'water' || type === 'shallow') water.push({ x, z, y: h + WATER.river, ...(type === 'shallow' ? { ford: true } : {}) });

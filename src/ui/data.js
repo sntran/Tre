@@ -1,6 +1,7 @@
 // Load all JSON data files at the start. The reader is fetch in the browser; the tests give a
 // reader of the files (tests/helpers.js).
 import { createWorld } from '../world/regions.js';
+import { createHeights, parseHeightTile } from '../core/gen/heights.js';
 
 export const FILES = {
   skills: 'data/skills.json',
@@ -41,8 +42,14 @@ async function fetchJson(path) {
   return response.ok ? response.json() : null;
 }
 
-// read(path): the JSON of a file, or null.
-export async function loadData(onProgress = () => {}, read = fetchJson) {
+async function fetchBytes(path) {
+  const response = await fetch(path);
+  return response.ok ? response.arrayBuffer() : null;
+}
+
+// read(path): the JSON of a file, or null. readBytes(path): the bytes of a file (an ArrayBuffer or
+// a Buffer), or null.
+export async function loadData(onProgress = () => {}, read = fetchJson, readBytes = fetchBytes) {
   const out = {};
   const names = Object.keys(FILES);
   let done = 0;
@@ -64,7 +71,10 @@ export async function loadData(onProgress = () => {}, read = fetchJson) {
     const land = await read(`data/world/${r.land}.json`);
     if (land) lands.set(r.land, land);
   }));
-  out.world = createWorld(out.regions, out.maps, { routes: out.routes, places: out.geo.places, rivers: out.geo.rivers, elevation: out.geo.elevation, lands, scatter: out.scatter, villagers: out.figures.villagers });
+  // The fine height tiles that the lands need (data/geo/heights/).
+  const tileNames = [...new Set([...lands.values()].flatMap((l) => l.tiles ?? []))];
+  const tiles = (await Promise.all(tileNames.map((n) => readBytes(`data/geo/heights/${n}.bin`)))).filter(Boolean).map(parseHeightTile);
+  out.world = createWorld(out.regions, out.maps, { routes: out.routes, places: out.geo.places, rivers: out.geo.rivers, heights: createHeights(tiles), lands, scatter: out.scatter, villagers: out.figures.villagers });
   out.dialogues = new Map();
   for (const name of ['dialoguePrologue', 'dialogueVillage', 'dialogueGiong']) {
     for (const d of out[name]?.dialogues ?? []) out.dialogues.set(d.id, d);

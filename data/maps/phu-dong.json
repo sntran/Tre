@@ -25,7 +25,8 @@
   "f": "field",
   "d": "dike",
   "h": "hedge",
-  "l": "hedge-low"
+  "l": "hedge-low",
+  "r": "rock"
  },
  "spawn": {
   "x": 11.0,

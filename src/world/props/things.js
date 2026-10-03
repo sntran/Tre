@@ -1,5 +1,5 @@
 // Things: the well, haystacks, pots, rocks, ore, boats, the signpost, the gate, fences, rice
-// stacks, the mountain, the gate of Văn Miếu, and a stele on a turtle. Units are fine blocks.
+// stacks, the gate of Văn Miếu, and a stele on a turtle. Units are fine blocks.
 import { levelOf } from './houses.js';
 
 const center = (o) => ({ x: o.fx + Math.floor(o.fw / 2), z: o.fz + Math.floor(o.fd / 2) });
@@ -139,27 +139,6 @@ export function riceStack(ctx, o) {
   const g = ctx.ground(x, z);
   for (let i = -1; i <= 1; i++) ctx.box(x + i, g, z - 1, x + i, g + 2 - Math.abs(i), z + 1, i ? 'yellow' : 'ochre');
   ctx.set(x, g + 3, z, 'yellow');
-}
-
-// A rounded mountain of blocks with ridge rocks and trees at its foot.
-export function mountain(ctx, o) {
-  const r = ctx.rng;
-  const { fx, fz, fw, fd } = o;
-  const cx = fx + fw / 2;
-  const cz = fz + fd / 2;
-  const rx = fw / 2;
-  const rz = fd / 2;
-  const peak = Math.round(Math.min(fw, fd) * 0.9);
-  for (let z = fz; z < fz + fd; z++) {
-    for (let x = fx; x < fx + fw; x++) {
-      const d = ((x + 0.5 - cx) / rx) ** 2 + ((z + 0.5 - cz) / rz) ** 2;
-      if (d >= 1) continue;
-      const g = ctx.ground(x, z);
-      const h = Math.round(peak * (1 - d) ** 0.8);
-      for (let y = 0; y < h; y++) ctx.set(x, g + y, z, y === h - 1 ? (r.chance(0.08) ? 'ashLight' : 'greenPale') : 'green');
-    }
-  }
-  ctx.shadowDisc(cx, cz, Math.floor(Math.min(rx, rz)), 6);
 }
 
 // The gate of Văn Miếu across the road: two brick pillars, a beam, an upper wall with a round

@@ -1,0 +1,52 @@
+{
+  "name": "climb-nui-trau",
+  "about": {
+    "vi": "Từ sân dưới chân núi Trâu, đi theo đường mòn lên đỉnh núi: đường mòn lượn theo sườn núi, qua rừng và vách đá.",
+    "en": "From the yard at the foot of Núi Trâu, up the path to the top of the hill: the path winds on the slope, through the forest and past the rock faces."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    }
+  },
+  "map": "trau-son",
+  "clock": 540,
+  "place": [
+    112.5,
+    21.5
+  ],
+  "steps": [
+    {
+      "tap": {
+        "cell": [
+          152.5,
+          18.5
+        ]
+      }
+    },
+    {
+      "until": {
+        "event": "arrived",
+        "timeout": 90
+      }
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "map": "trau-son",
+            "cell": [
+              152.5,
+              18.5
+            ],
+            "within": 2
+          }
+        }
+      ]
+    }
+  ]
+}

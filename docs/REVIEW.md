@@ -291,4 +291,6 @@ Facts and looks to check:
 
 - The generated hamlets (`docs/WORLD.md`, "The generated land") have no names and are not historical places. A history reviewer checks their houses on stilts, the areca palms (cây cau), the boats with a cover (mui), and the clothes of the villagers from parts (`villagers` in `data/figures.json`): shirts and trousers or skirts, a nón or a head band.
 - The real directions of the story places of Era 1 on the plane of the region (`data/world/land-giong.json`): Núi Trâu to the east-northeast, Sóc Sơn to the north-northwest, and Văn Miếu to the west-southwest of Phù Đổng, over the Đuống and the Hồng. The Đuống flows west from Phù Đổng and joins the Hồng north of the ferry.
+- The real hills (`docs/WORLD.md`, "The generated land"): Núi Trâu is the hill of the battle in Bắc Ninh (the top in the SRTM tiles at 106.100 E, 21.145 N, about 130 m), with the fields at its foot; the hill of Sóc Sơn is núi Vệ Linh with Đền Sóc (the top at 105.825 E, 21.290 N, about 262 m). Please check that these are the right hills.
+- The story `climb-nui-trau` (new text in `tests/stories/climb-nui-trau.json`): "Từ sân dưới chân núi Trâu, đi theo đường mòn lên đỉnh núi: đường mòn lượn theo sườn núi, qua rừng và vách đá." Please check "đường mòn" (a path) and "vách đá" (a rock face).
 

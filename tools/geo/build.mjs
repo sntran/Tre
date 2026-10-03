@@ -4,7 +4,9 @@
 // It reads Natural Earth (countries from the point of view of Vietnam, rivers, lakes) and NASA SRTM
 // elevation tiles, keeps the part around Vietnam, simplifies the lines, and adds the hand-traced
 // rivers and the story places from this folder. Coordinates are [longitude, latitude] in degrees.
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+// It also writes the fine height tiles of the land (data/geo/heights/) that the lands of the
+// regions (data/world/land-*.json, tiles) need.
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -19,8 +21,11 @@ const LAND_TOLERANCE = 0.02; // degrees, about 2 km
 const RIVER_TOLERANCE = 0.015;
 // Natural Earth rivers that the map shows, with their Vietnamese names.
 const NE_RIVERS = { Hong: { id: 'hong', name: 'Hồng' }, Ca: { id: 'ca', name: 'Cả' }, Mekong: { id: 'mekong', name: 'Mê Kông' } };
-// The coarse elevation grid (degrees).
+// The coarse elevation grid (degrees), for the country map.
 const GRID = { lon0: 101.5, lat0: 8, lon1: 110, lat1: 23.5, step: 0.1 };
+// The fine height tiles of the land: 1 x 1 degree, a value every 0.005 degree (about 550 m), with
+// both edges, so that a point in a tile needs no other tile.
+export const FINE = { step: 0.005, size: 201 };
 
 const round = (v) => Math.round(v * 1000) / 1000;
 const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'));
@@ -161,6 +166,61 @@ function srtmSampler() {
   };
 }
 
+// The name of the tile with this south-west corner, as SRTM names it.
+export const tileName = (lat, lon) => `N${String(lat).padStart(2, '0')}E${String(lon).padStart(3, '0')}`;
+
+// The fine height tile with this south-west corner. Each value keeps the tops: the SRTM samples of
+// its square (7 x 7, 3 arc-seconds apart) give 0.6 x the highest + 0.4 x the mean, so that a hill
+// smaller than the square keeps most of its height. Meters; sea and voids are 0. Return the values
+// (row 0 is the north) and the header of the tile file.
+export function heightTile(lat, lon, sample = srtmSampler()) {
+  const n = FINE.size;
+  const half = Math.round(FINE.step * 1200 / 2); // SRTM samples from the middle to the edge of a square
+  const data = new Int16Array(n * n);
+  for (let r = 0; r < n; r++) {
+    const la = lat + 1 - r * FINE.step;
+    for (let c = 0; c < n; c++) {
+      const lo = lon + c * FINE.step;
+      let max = 0;
+      let sum = 0;
+      let k = 0;
+      for (let i = -half; i <= half; i++) {
+        for (let j = -half; j <= half; j++) {
+          const v = Math.max(0, sample(lo + j / 1200, la + i / 1200) ?? 0);
+          max = Math.max(max, v);
+          sum += v;
+          k += 1;
+        }
+      }
+      data[r * n + c] = Math.round(0.6 * max + 0.4 * (sum / k));
+    }
+  }
+  const header = { tile: tileName(lat, lon), lon0: lon, lat1: lat + 1, step: FINE.step, cols: n, rows: n, unit: 'm', filter: '0.6 max + 0.4 mean of 7 x 7 SRTM samples', source: 'NASA SRTM 3 arc-second, version 2.1' };
+  return { header, data };
+}
+
+// The bytes of a height tile file: the length of the header (4 bytes, little-endian), the header
+// (JSON, with spaces at the end so that the values start at an even byte), and the values (16-bit,
+// little-endian, row by row from the north). src/core/gen/heights.js reads it.
+export function encodeTile({ header, data }) {
+  let json = JSON.stringify(header);
+  while ((4 + Buffer.byteLength(json)) % 2) json += ' ';
+  const head = Buffer.from(json);
+  const out = Buffer.alloc(4 + head.length + data.length * 2);
+  out.writeUInt32LE(head.length, 0);
+  head.copy(out, 4);
+  for (let i = 0; i < data.length; i++) out.writeInt16LE(data[i], 4 + head.length + i * 2);
+  return out;
+}
+
+// The tiles that the lands of the regions need (tiles in data/world/land-*.json).
+function landTiles() {
+  const dir = join(here, '..', '..', 'data', 'world');
+  const names = new Set();
+  for (const f of readdirSync(dir)) if (/^land-.*\.json$/.test(f)) for (const t of readJson(join(dir, f)).tiles ?? []) names.add(t);
+  return [...names].sort();
+}
+
 // The mean height of each grid cell, from 6 x 6 samples, in steps of 10 m. Sea is 0.
 function elevationGrid() {
   const sample = srtmSampler();
@@ -247,4 +307,13 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   writeFileSync(out, text + '\n');
   const kb = Math.round(Buffer.byteLength(text) / 1024);
   console.log(`Wrote ${out} (${kb} KB): ${Object.entries(result.land).map(([k, v]) => `${k} ${v.length}`).join(', ')}; rivers ${result.rivers.length}; lakes ${result.lakes.length}; places ${result.places.length}`);
+  const tiles = join(dirname(out), 'heights');
+  mkdirSync(tiles, { recursive: true });
+  const sample = srtmSampler();
+  for (const name of landTiles()) {
+    const [, lat, lon] = name.match(/^N(\d+)E(\d+)$/).map(Number);
+    const file = join(tiles, `${name}.bin`);
+    writeFileSync(file, encodeTile(heightTile(lat, lon, sample)));
+    console.log(`Wrote ${file}`);
+  }
 }

@@ -3,33 +3,28 @@
 // ground that stays. Around them, rules make the land from the real geography and the seed:
 //   - the warp (warp.js) puts the real rivers of data/geo/vietnam.json into the plane, through
 //     the rivers of the stamps;
-//   - the real elevation lifts the land, and seeded noise makes the hills;
-//   - roads join the roads of the stamps across the edges of the maps;
-//   - rice paddies lie on low, wet land, in blocks with dikes; on a slope they are terraces;
-//   - the land is gentle: the hero can walk from each cell to the next (one step up or down).
+//   - the real heights (heights.js: SRTM, about 550 m) give the hills, through a concave curve:
+//     the low land stays flat, and the hills are real. A stamp on a real hill rises with it;
+//   - where the land is steeper than one step for each cell, it is a rock face (a cliff);
+//   - roads join the roads of the stamps across the edges of the maps. A road is never steeper
+//     than one step for each cell: on a hill it turns back and forth;
+//   - rice paddies lie on low, wet land, in blocks with dikes; near a hamlet they are terraces on
+//     the gentle slopes. Forest grows on the hills (the scatter rules).
 // The same seed gives the same land. Pure functions, no DOM.
 import { createWarp } from './warp.js';
 import { fbm, hash2 } from './noise.js';
+import { stepsOf } from './heights.js';
 import { hashSeed } from '../rng.js';
 
 // The size of the site of a hamlet (cells).
 export const HAMLET = Object.freeze({ w: 22, h: 16 });
 
-export const LETTER = Object.freeze({ grass: '.', path: '=', sand: '_', water: '~', field: 'f', dike: 'd', bridge: 'B' });
+export const LETTER = Object.freeze({ grass: '.', path: '=', sand: '_', water: '~', field: 'f', dike: 'd', bridge: 'B', rock: 'r' });
 const CODE = Object.fromEntries(Object.entries(LETTER).map(([k, v]) => [k, v.charCodeAt(0)]));
 const FIXED = { none: 0, stamp: 1, river: 2, claim: 3 };
-
-// The height of the real land at a coordinate, in steps of the elevation grid (10 m), bilinear.
-export function elevationAt(e, [lon, lat]) {
-  const fx = (lon - e.lon0) / e.step;
-  const fy = (e.lat1 - lat) / e.step;
-  const at = (x, y) => e.data[Math.max(0, Math.min(e.rows - 1, y))][Math.max(0, Math.min(e.cols - 1, x))];
-  const x0 = Math.floor(fx);
-  const y0 = Math.floor(fy);
-  const tx = fx - x0;
-  const ty = fy - y0;
-  return (at(x0, y0) * (1 - tx) + at(x0 + 1, y0) * tx) * (1 - ty) + (at(x0, y0 + 1) * (1 - tx) + at(x0 + 1, y0 + 1) * tx) * ty;
-}
+// A height is one digit of base 36 in the height rows (0 to 9, then a to z).
+export const MAX_LEVEL = 35;
+export const digit = (ch) => parseInt(ch, 36);
 
 // The box of the windows of all maps of a region.
 export function regionBox(maps) {
@@ -89,6 +84,49 @@ export function distanceField(w, h, isSource) {
   return { dist, near };
 }
 
+// A small binary heap of cells by a score, for A*.
+function createHeap() {
+  const items = [];
+  const keys = [];
+  const swap = (a, b) => {
+    [items[a], items[b]] = [items[b], items[a]];
+    [keys[a], keys[b]] = [keys[b], keys[a]];
+  };
+  return {
+    get size() { return items.length; },
+    push(item, key) {
+      items.push(item);
+      keys.push(key);
+      for (let i = items.length - 1; i > 0;) {
+        const p = (i - 1) >> 1;
+        if (keys[p] <= keys[i]) break;
+        swap(p, i);
+        i = p;
+      }
+    },
+    pop() {
+      const top = items[0];
+      const lastItem = items.pop();
+      const lastKey = keys.pop();
+      if (items.length) {
+        items[0] = lastItem;
+        keys[0] = lastKey;
+        for (let i = 0; ;) {
+          const l = 2 * i + 1;
+          const r = l + 1;
+          let m = i;
+          if (l < items.length && keys[l] < keys[m]) m = l;
+          if (r < items.length && keys[r] < keys[m]) m = r;
+          if (m === i) break;
+          swap(m, i);
+          i = m;
+        }
+      }
+      return top;
+    },
+  };
+}
+
 // The distance from a point to a segment, and the place along it (0 to 1).
 function segDist(px, py, ax, ay, bx, by) {
   const dx = bx - ax;
@@ -138,10 +176,11 @@ function wind(line, seed, amp, scale, weight) {
   });
 }
 
-// def: the land of the region ({ anchors, rivers, roads, base, hills, wet, blend }). maps: the map
-// definitions with their window and stamps. geo: { rivers, elevation } of data/geo/vietnam.json.
-// seed: the seed of the world. hamlets: the rules of the hamlets (data/world/scatter.json), or null:
-// their sites are chosen before the paddies (src/core/gen/hamlets.js builds them).
+// def: the land of the region ({ anchors, rivers, roads, base, relief, road, wet, blend }). maps:
+// the map definitions with their window and stamps. geo: { rivers } of data/geo/vietnam.json and
+// heights (heights.js). seed: the seed of the world. hamlets: the rules of the hamlets
+// (data/world/scatter.json), or null: their sites are chosen before the paddies
+// (src/core/gen/hamlets.js builds them).
 export function createLand(def, maps, geo, seed, hamlets = null) {
   const box = regionBox(maps);
   const { x0, y0, w: W, h: H } = box;
@@ -153,15 +192,29 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
   const fixed = new Uint8Array(N);
   const owner = new Int16Array(N).fill(-1); // the map of each cell
   const sd = (k) => hashSeed(`${seed}:land:${def.id}:${k}`) & 0x7fffffff;
+  const warp = createWarp(def.anchors);
+  const base = def.base ?? 2;
+  const relief = def.relief ?? { low: 16, k: 0.8 };
+  // The real height of a cell (meters, 0 where no tile is loaded), and the height of the land
+  // there in steps. Each comes from the cell alone.
+  const meters = (gx, gy) => geo.heights?.at(...warp.toGeo([gx + 0.5, gy + 0.5])) ?? 0;
+  const natural = (gx, gy) => base + stepsOf(meters(gx, gy), relief);
 
-  // The windows and the stamps.
+  // The windows and the stamps. A stamp under an anchor with lift rises (all its cells by the same
+  // steps) to the height of the real land at the anchor: a story place on a real hill.
+  const lifts = [];
   maps.forEach((m, mi) => {
     for (let y = 0; y < m.height; y++) for (let x = 0; x < m.width; x++) owner[at(m.window.x + x, m.window.y + y)] = mi;
     for (const s of m.stamps ?? []) {
+      const sx = m.window.x + s.x;
+      const sy = m.window.y + s.y;
+      const top = def.anchors.find((a) => a.lift && a.cell[0] >= sx && a.cell[1] >= sy && a.cell[0] < sx + s.w && a.cell[1] < sy + s.h);
+      const lift = top ? Math.max(0, Math.round(natural(...top.cell) - digit(s.height[top.cell[1] - sy][top.cell[0] - sx]))) : 0;
+      if (lift) lifts.push({ map: mi, x: sx, y: sy, w: s.w, h: s.h, lift });
       for (let y = 0; y < s.h; y++) for (let x = 0; x < s.w; x++) {
-        const i = at(m.window.x + s.x + x, m.window.y + s.y + y);
+        const i = at(sx + x, sy + y);
         letter[i] = s.ground[y].charCodeAt(x);
-        level[i] = Number(s.height[y][x]);
+        level[i] = Math.min(MAX_LEVEL, digit(s.height[y][x]) + lift);
         fixed[i] = FIXED.stamp;
       }
     }
@@ -171,7 +224,6 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
   const smooth = (d, edge) => Math.min(1, Math.max(0, d / edge)) ** 2;
 
   // The rivers: the real lines, through the warp, with a small seeded bend away from the stamps.
-  const warp = createWarp(def.anchors);
   const riverDist = new Float32Array(N).fill(Infinity);
   const riverOf = new Int8Array(N).fill(-1);
   const rivers = [];
@@ -217,7 +269,76 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
     }
   }
 
-  // The roads: lines through their points, with a seeded bend between the points.
+  // The height of the free land: the real height, through the curve. Near a stamp the land comes to
+  // the height of the edge of the stamp.
+  const NB = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const target = new Float32Array(N);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x;
+    if (owner[i] < 0) continue;
+    if (fixed[i]) {
+      target[i] = level[i];
+      continue;
+    }
+    const g = natural(x + x0, y + y0);
+    const s = toStamp.near[i] >= 0 ? level[toStamp.near[i]] : base;
+    // The blend is longer where the land is far from the height of the stamp, so that it is never
+    // steeper than about one step for each cell.
+    target[i] = s + (g - s) * smooth(toStamp.dist[i], Math.max(def.blend ?? 10, 2.2 * Math.abs(g - s)));
+  }
+  // Bound the free land near the source cells (the stamps, the water and its banks): at most one
+  // step for each cell of distance from them (out to `reach` cells), so that the hero can walk from
+  // a source onto the land. Farther away, the land is the real land.
+  const bound = (isSource, reach = Infinity) => {
+    const lo = new Float32Array(N).fill(-Infinity);
+    const hi = new Float32Array(N).fill(Infinity);
+    const dist = new Float32Array(N).fill(Infinity);
+    const queue = [];
+    for (let i = 0; i < N; i++) if (owner[i] >= 0 && isSource(i)) {
+      lo[i] = level[i];
+      hi[i] = level[i];
+      dist[i] = 0;
+      queue.push(i);
+    }
+    for (let q = 0; q < queue.length; q++) {
+      const i = queue[q];
+      const x = i % W;
+      const y = Math.floor(i / W);
+      for (const [dx, dy] of NB) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        const j = ny * W + nx;
+        if (fixed[j] || owner[j] < 0 || isSource(j) || dist[i] + 1 > reach) continue;
+        let changed = false;
+        if (lo[i] - 1 > lo[j]) {
+          lo[j] = lo[i] - 1;
+          changed = true;
+        }
+        if (hi[i] + 1 < hi[j]) {
+          hi[j] = hi[i] + 1;
+          changed = true;
+        }
+        if (dist[i] + 1 < dist[j]) {
+          dist[j] = dist[i] + 1;
+          changed = true;
+        }
+        if (changed) queue.push(j);
+      }
+    }
+    return (i, v) => Math.max(lo[i], Math.min(hi[i], v));
+  };
+  const nearFixed = bound((i) => fixed[i] !== FIXED.none, def.blend ?? 10);
+  for (let i = 0; i < N; i++) {
+    if (owner[i] < 0 || fixed[i]) continue;
+    level[i] = Math.max(1, Math.min(MAX_LEVEL, Math.round(nearFixed(i, target[i]))));
+  }
+
+  // The roads: each part between two points of a road is the cheapest way over the land (A*). The
+  // way keeps near a line that winds by the seed between the points, and a climb steeper than
+  // `steep` steps for each cell costs much more: on a hill the road turns back and forth. Then the
+  // road gets its heights: never more than one step from one cell of its line to the next.
+  const rules = { steep: 0.7, climb: 40, keep: 0.06, ...(def.road ?? {}) };
   const roadDist = new Float32Array(N).fill(Infinity);
   const roads = [];
   (def.roads ?? []).forEach((rd, ri) => {
@@ -236,110 +357,117 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
       return best;
     };
     const bent = wind(line, sd(`road:${ri}`), rd.bend ?? 4, 30, (p) => t(p) * smooth(nearStamp(Math.round(p[0]), Math.round(p[1])), 6));
-    roads.push({ id: rd.id ?? `road${ri}`, line: bent });
+    // The distance of each cell to the line, in a box around the road (the way stays in it).
+    const M = 40;
+    const kx0 = Math.max(x0, Math.floor(Math.min(...pts.map((p) => p[0]))) - M);
+    const ky0 = Math.max(y0, Math.floor(Math.min(...pts.map((p) => p[1]))) - M);
+    const kw = Math.min(x0 + W, Math.ceil(Math.max(...pts.map((p) => p[0]))) + M) - kx0;
+    const kh = Math.min(y0 + H, Math.ceil(Math.max(...pts.map((p) => p[1]))) + M) - ky0;
+    const onLine = new Uint8Array(kw * kh);
+    for (const [px, py] of dense(bent, 0.5)) {
+      const kx = Math.floor(px) - kx0;
+      const ky = Math.floor(py) - ky0;
+      if (kx >= 0 && ky >= 0 && kx < kw && ky < kh) onLine[ky * kw + kx] = 1;
+    }
+    const near = distanceField(kw, kh, (k) => onLine[k] === 1).dist;
+    const keep = (gx, gy) => (gx >= kx0 && gy >= ky0 && gx < kx0 + kw && gy < ky0 + kh ? near[(gy - ky0) * kw + gx - kx0] : Infinity);
+    const way = [];
+    for (let j = 0; j + 1 < pts.length; j++) {
+      const part = route(pts[j], pts[j + 1], keep, rules);
+      way.push(...(way.length ? part.slice(1) : part));
+    }
+    const levels = grade(way);
+    roads.push({ id: rd.id ?? `road${ri}`, line: way.map(([x, y]) => [x + 0.5, y + 0.5]), levels });
+    // The cells of the road take the height of the nearest cell of its line.
     const half = (rd.width ?? 4) / 2;
-    for (let j = 1; j < bent.length; j++) {
-      const [ax, ay] = bent[j - 1];
-      const [bx, by] = bent[j];
+    const best = new Float32Array(N).fill(Infinity);
+    for (let j = 0; j < way.length; j++) {
+      const [ax, ay] = way[j];
+      const [bx, by] = way[Math.min(way.length - 1, j + 1)];
       for (let y = Math.floor(Math.min(ay, by) - half - 2); y <= Math.ceil(Math.max(ay, by) + half + 2); y++) {
         for (let x = Math.floor(Math.min(ax, bx) - half - 2); x <= Math.ceil(Math.max(ax, bx) + half + 2); x++) {
           if (!inBox(x, y)) continue;
           const i = at(x, y);
-          const d = segDist(x + 0.5, y + 0.5, ax, ay, bx, by);
+          const d = segDist(x + 0.5, y + 0.5, ax + 0.5, ay + 0.5, bx + 0.5, by + 0.5);
           if (d < roadDist[i]) roadDist[i] = d;
-          if (d < half && fixed[i] !== FIXED.stamp) {
-            if (letter[i] === CODE.water) letter[i] = CODE.bridge;
-            else if (letter[i] !== CODE.bridge) {
-              letter[i] = CODE.path;
-              if (fixed[i] === FIXED.river) fixed[i] = FIXED.none;
-            }
+          if (d >= half || fixed[i] === FIXED.stamp || owner[i] < 0 || d >= best[i]) continue;
+          best[i] = d;
+          if (letter[i] === CODE.water || letter[i] === CODE.bridge) letter[i] = CODE.bridge;
+          else {
+            letter[i] = CODE.path;
+            if (fixed[i] === FIXED.river) fixed[i] = FIXED.none;
+            level[i] = levels[j];
           }
         }
       }
     }
   });
+  // The land beside a road comes to it (a bank of two cells), so that the hero can step off it.
+  const isRoad = (i) => letter[i] === CODE.path && fixed[i] !== FIXED.stamp;
+  const bank = bound(isRoad, 2);
+  for (let i = 0; i < N; i++) if (owner[i] >= 0 && !fixed[i] && !isRoad(i) && letter[i] !== CODE.bridge) level[i] = bank(i, level[i]);
 
-  // The height of the free land: the real elevation, and hills from the noise. Near a stamp the
-  // land comes to the height of the edge of the stamp.
-  const base = def.base ?? 2;
-  const ref = elevationAt(geo.elevation, def.anchors[0].at);
-  const hills = def.hills ?? { scale: 40, amp: 1.2, rise: 1, more: 0.8 };
-  const target = new Float32Array(N);
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    const i = y * W + x;
-    if (owner[i] < 0 || fixed[i]) continue;
-    const gx = x + x0;
-    const gy = y + y0;
-    const e = elevationAt(geo.elevation, warp.toGeo([gx + 0.5, gy + 0.5])) - ref;
-    const amp = hills.amp * (1 + Math.max(0, e) * hills.more);
-    let g = base + Math.max(0, e) * hills.rise + Math.max(0, fbm(sd('hills'), gx, gy, { scale: hills.scale, octaves: 3 })) * amp * 2;
-    const s = toStamp.near[i] >= 0 ? level[toStamp.near[i]] : base;
-    g = s + (g - s) * smooth(toStamp.dist[i], def.blend ?? 10);
-    target[i] = g;
-  }
-
-  // The land is gentle. A cell of free land is at most one step from the fixed cells near it
-  // (stamps, water, banks) for each cell of distance, and from its neighbors.
-  const NB = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-  const lo = new Float32Array(N).fill(-Infinity);
-  const hi = new Float32Array(N).fill(Infinity);
-  const queue = [];
-  for (let i = 0; i < N; i++) if (fixed[i] && owner[i] >= 0) {
-    lo[i] = level[i];
-    hi[i] = level[i];
-    queue.push(i);
-  }
-  for (let q = 0; q < queue.length; q++) {
-    const i = queue[q];
-    const x = i % W;
-    const y = Math.floor(i / W);
-    for (const [dx, dy] of NB) {
-      const nx = x + dx;
-      const ny = y + dy;
-      if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
-      const j = ny * W + nx;
-      if (fixed[j] || owner[j] < 0) continue;
-      let changed = false;
-      if (lo[i] - 1 > lo[j]) {
-        lo[j] = lo[i] - 1;
-        changed = true;
-      }
-      if (hi[i] + 1 < hi[j]) {
-        hi[j] = hi[i] + 1;
-        changed = true;
-      }
-      if (changed) queue.push(j);
-    }
-  }
-  for (let i = 0; i < N; i++) {
-    if (owner[i] < 0 || fixed[i]) continue;
-    level[i] = Math.max(1, Math.min(8, Math.round(Math.max(lo[i], Math.min(hi[i], target[i])))));
-  }
-  // Lower each free cell until no neighbor is more than one step under it. A paddy is water: it
-  // does not count.
-  const relax = (free) => {
-    for (let changed = true; changed;) {
-      changed = false;
-      for (let i = 0; i < N; i++) {
-        if (owner[i] < 0 || !free(i)) continue;
-        const x = i % W;
-        const y = Math.floor(i / W);
-        let min = Infinity;
-        for (const [dx, dy] of NB) {
-          const nx = x + dx;
-          const ny = y + dy;
-          const j = ny * W + nx;
-          if (nx < 0 || ny < 0 || nx >= W || ny >= H || owner[j] < 0 || letter[j] === CODE.field) continue;
-          min = Math.min(min, level[j]);
-        }
-        if (level[i] > min + 1) {
-          level[i] = min + 1;
-          changed = true;
+  // The cheapest way between two cells (eight neighbors). keep(x, y): the distance of a region cell
+  // to the line of the road (Infinity: the way does not go there).
+  function route(from, to, keep, r) {
+    const [fx, fy] = [Math.round(from[0]) - x0, Math.round(from[1]) - y0].map((v, k) => Math.max(0, Math.min((k ? H : W) - 1, v)));
+    const [tx, ty] = [Math.round(to[0]) - x0, Math.round(to[1]) - y0].map((v, k) => Math.max(0, Math.min((k ? H : W) - 1, v)));
+    const start = fy * W + fx;
+    const goal = ty * W + tx;
+    const g = new Float32Array(N).fill(Infinity);
+    const from_ = new Int32Array(N).fill(-1);
+    const done = new Uint8Array(N);
+    const heap = createHeap();
+    const h = (i) => Math.hypot((i % W) - tx, Math.floor(i / W) - ty);
+    g[start] = 0;
+    heap.push(start, h(start));
+    while (heap.size) {
+      const i = heap.pop();
+      if (done[i]) continue;
+      done[i] = 1;
+      if (i === goal) break;
+      const x = i % W;
+      const y = Math.floor(i / W);
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        const j = ny * W + nx;
+        const k = keep(nx + x0, ny + y0);
+        if (owner[j] < 0 || done[j] || k === Infinity) continue;
+        const len = dx && dy ? Math.SQRT2 : 1;
+        const slope = Math.abs(target[j] - target[i]) / len;
+        let c = len * (1 + r.climb * Math.max(0, slope - r.steep) ** 2 + r.keep * k);
+        if (fixed[j] === FIXED.stamp) c += len * 8;
+        if (letter[j] === CODE.water) c += len * 6;
+        if (g[i] + c < g[j]) {
+          g[j] = g[i] + c;
+          from_[j] = i;
+          heap.push(j, g[j] + h(j));
         }
       }
     }
-  };
-  relax((i) => !fixed[i]);
+    const out = [];
+    for (let i = goal; i >= 0; i = i === start ? -1 : from_[i]) out.push([(i % W) + x0, Math.floor(i / W) + y0]);
+    return out.reverse();
+  }
+
+  // The heights of the line of a road: near the land under it, with the ends at the land of the
+  // ends, and never more than one step from one cell to the next.
+  function grade(way) {
+    const n = way.length - 1;
+    const want = way.map(([x, y]) => (inBox(x, y) ? (fixed[at(x, y)] ? level[at(x, y)] : target[at(x, y)]) : base));
+    const s = Math.round(want[0]);
+    const e = Math.round(want[n]);
+    const out = [s];
+    for (let k = 1; k <= n; k++) {
+      const lo = Math.max(s - k, e - (n - k), out[k - 1] - 1);
+      const hi = Math.min(s + k, e + (n - k), out[k - 1] + 1);
+      out.push(Math.max(1, Math.min(MAX_LEVEL, Math.max(lo, Math.min(hi, Math.round(want[k]))))));
+    }
+    return out;
+  }
 
   // The edge of a map that no other map continues rises in two steps (as the old terraces).
   const closed = (i) => {
@@ -425,9 +553,11 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
 
   // Rice paddies, in blocks of five cells with a dike around each block: on low, wet land near
   // water, never on a road or near a stamp. All cells of a block lie at one level, one step under
-  // the dike; blocks on a slope make terraces.
+  // the dike. Over the low land, paddies are terraces cut into the gentle slopes near a hamlet
+  // (wet.terrace: cells from the yard), and the hills keep their forest.
   const DIKE = def.dike ?? 5;
-  const wet = def.wet ?? { scale: 22, near: 14, over: 0.15 };
+  const wet = { scale: 22, near: 14, over: 0.15, terrace: 18, ...(def.wet ?? {}) };
+  const toSite = distanceField(W, H, (i) => fixed[i] === FIXED.claim);
   const fieldBlock = new Map();
   for (let by = Math.floor(y0 / DIKE); by <= Math.floor((y0 + H) / DIKE); by++) {
     for (let bx = Math.floor(x0 / DIKE); bx <= Math.floor((x0 + W) / DIKE); bx++) {
@@ -448,8 +578,14 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
       if (!ok || highL - lowL > 1 || lowL < 2) continue;
       const cx = bx * DIKE + DIKE / 2;
       const cy = by * DIKE + DIKE / 2;
-      // Wet: the noise, more near water, less on high land.
-      const score = fbm(sd('wet'), cx, cy, { scale: wet.scale, octaves: 2 }) * 0.8 + (wetSum / (DIKE + 1) ** 2) * 1.2 - Math.max(0, lowL - base) * 0.15;
+      const noise = fbm(sd('wet'), cx, cy, { scale: wet.scale, octaves: 2 });
+      if (lowL > base + 1) {
+        // A terrace: only near a hamlet.
+        if (toSite.dist[at(Math.floor(cx), Math.floor(cy))] <= wet.terrace && noise > -0.4) fieldBlock.set(`${bx},${by}`, lowL);
+        continue;
+      }
+      // Wet: the noise, more near water.
+      const score = noise * 0.8 + (wetSum / (DIKE + 1) ** 2) * 1.2 - Math.max(0, lowL - base) * 0.15;
       if (score > wet.over) fieldBlock.set(`${bx},${by}`, lowL);
     }
   }
@@ -470,12 +606,26 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
       }
     }
   }
-  // A dike can be lower than the land next to it: that land comes down to it.
-  relax((i) => !fixed[i] && !isDike[i] && letter[i] !== CODE.field);
   for (let i = 0; i < N; i++) {
     if (owner[i] < 0) continue;
     if (!letter[i]) letter[i] = CODE.grass;
-    if (edge[i] >= 0 && letter[i] !== CODE.path && letter[i] !== CODE.water && letter[i] !== CODE.bridge && letter[i] !== CODE.field) level[i] = Math.min(9, level[i] + 2 - edge[i]);
+    if (edge[i] >= 0 && letter[i] !== CODE.path && letter[i] !== CODE.water && letter[i] !== CODE.bridge && letter[i] !== CODE.field) level[i] = Math.min(MAX_LEVEL, level[i] + 2 - edge[i]);
+  }
+  // A rock face: free grass that is two steps or more over a cell next to it (a cliff).
+  for (let i = 0; i < N; i++) {
+    if (owner[i] < 0 || fixed[i] || edge[i] >= 0 || letter[i] !== CODE.grass) continue;
+    const x = i % W;
+    const y = Math.floor(i / W);
+    for (const [dx, dy] of NB) {
+      const nx = x + dx;
+      const ny = y + dy;
+      const j = ny * W + nx;
+      if (nx < 0 || ny < 0 || nx >= W || ny >= H || owner[j] < 0) continue;
+      if (level[j] <= level[i] - 2) {
+        letter[i] = CODE.rock;
+        break;
+      }
+    }
   }
 
   const toRoad = distanceField(W, H, (i) => letter[i] === CODE.path || letter[i] === CODE.bridge);
@@ -487,6 +637,12 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
     roads,
     // The sites of the hamlets (region cells), with their maps.
     sites,
+    // The stamps that rise with a real hill (region cells, and the steps).
+    lifts,
+    // The real height of a region cell (meters), and the height of the land there before the
+    // stamps, the rivers, and the roads change it (steps).
+    meters,
+    natural,
     // The facts of a region cell, for the scatter rules.
     cell(x, y) {
       if (!inBox(x, y)) return null;
@@ -525,7 +681,7 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
         for (let x = 0; x < m.width; x++) {
           const i = at(m.window.x + x, m.window.y + y);
           g += String.fromCharCode(letter[i]);
-          hgt += String(Math.max(0, Math.min(9, level[i])));
+          hgt += Math.max(0, Math.min(MAX_LEVEL, level[i])).toString(36);
         }
         ground.push(g);
         height.push(hgt);

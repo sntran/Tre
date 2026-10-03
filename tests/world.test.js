@@ -263,7 +263,7 @@ test('the ground of the maps has depth: river steps, sunken paddies, the dinh mo
   const at = (id) => createTileMap(maps.get(id), tiles);
   for (const [id, m] of maps) {
     assert.equal(m.layers.height.length, m.height, id);
-    for (const row of m.layers.height) assert.match(row, new RegExp(`^[0-9]{${m.width}}$`), id);
+    for (const row of m.layers.height) assert.match(row, new RegExp(`^[0-9a-z]{${m.width}}$`), id);
   }
   // The river bank drops two steps to the water: ground 2, sand 1, water 0.
   const river = at('phu-dong');

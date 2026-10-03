@@ -6,7 +6,7 @@ import { scatter } from './scatter.js';
 import { placeHamlets } from './hamlets.js';
 
 // defs: the map definitions of the region (with their exits), in the order of the region. land:
-// the land of the region (data/world/land-<region>.json). geo: { rivers, elevation }. rules:
+// the land of the region (data/world/land-<region>.json). geo: { rivers, heights }. rules:
 // data/world/scatter.json. parts: the parts of the villagers (data/figures.json). Return a Map from
 // map id to map.
 export function generateRegion(defs, land, geo, rules, seed, parts = null) {
@@ -26,9 +26,10 @@ export function generateRegion(defs, land, geo, rules, seed, parts = null) {
     // The villagers of the hamlets, and their looks from parts (the view draws a look by its key).
     const villagers = hamlets.villagers.filter((v) => v.map === mi).map((v) => ({ id: v.id, home: v.home, plan: v.plan, x: v.x - x, y: v.y - y }));
     const looks = Object.fromEntries(hamlets.villagers.filter((v) => v.map === mi).map((v) => [v.id, v.look]));
-    // The spots of the small events of the day (src/core/world/days.js): points of the roads, the
-    // middles of paddies, and the yards of the hamlets, away from the stamps and the edges; with
-    // the hand-made spots of the stamps (layers.spots).
+    // The spots of the small events of the day (src/core/world/days.js): points of the roads on
+    // the low land (a cart does not climb a hill path), the middles of paddies, and the yards of
+    // the hamlets, away from the stamps and the edges; with the hand-made spots of the stamps
+    // (layers.spots).
     const inside = (gx, gy, m = 6) => gx >= x + m && gy >= y + m && gx < x + def.width - m && gy < y + def.height - m;
     const spots = { road: [], field: [], yard: [] };
     for (const r of ground.roads) {
@@ -36,7 +37,7 @@ export function generateRegion(defs, land, geo, rules, seed, parts = null) {
         const gx = Math.floor(r.line[k][0]);
         const gy = Math.floor(r.line[k][1]);
         const c = ground.cell(gx, gy);
-        if (c && c.map === mi && c.letter === '=' && !c.stamp && c.nearStamp > 8 && inside(gx, gy)) spots.road.push([gx - x, gy - y]);
+        if (c && c.map === mi && c.letter === '=' && !c.stamp && c.nearStamp > 8 && c.level <= (land.base ?? 2) + 1 && inside(gx, gy)) spots.road.push([gx - x, gy - y]);
       }
     }
     const fields = [];
