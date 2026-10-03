@@ -152,13 +152,15 @@ Thế giới là Việt Nam với địa lý thật: bờ biển, sông, núi v�
 **Hai tỉ lệ**
 
 - **Bản đồ đất nước** là bản đồ thật của Việt Nam, vẽ như bản đồ cổ trên giấy dó. Nó được tạo từ dữ liệu mở: bờ biển, biên giới và sông ngòi từ Natural Earth (public domain), và địa hình từ dữ liệu độ cao NASA SRTM (public domain). Dữ liệu được đơn giản hóa một lần bằng script và giữ trong repository. Người chơi đi trên đó theo đường bộ và đường sông thật, với thời gian di chuyển theo đồng hồ trong game và các sự kiện trên đường.
-- **Bản đồ vùng** là các bản đồ isometric dựng thủ công ở tỉ lệ con người, đặt tại vị trí thật trên bản đồ đất nước. Các đặc điểm chính của mỗi vùng lấy từ địa điểm thật: sông, đồi, và hướng từ nơi này đến nơi khác.
+- **Vùng đất** là một thế giới liền mạch ở tỉ lệ con người, dựng từ cùng dữ liệu thật và seed, với các địa danh trong truyện là những mảnh dựng tay đặt đúng chỗ thật. Khoảng cách được thu ngắn (đi bộ giữa hai địa danh trong một vùng mất một đến ba phút); đồ vật giữ đúng cỡ. Vùng đất được dựng và bỏ đi theo từng chunk quanh nhân vật, nên không có rìa bản đồ và không phải chờ tải trong vùng đất.
 
 **Thời kỳ 1 là thật.** Phù Đổng nằm bên bờ sông Đuống. Núi Trâu (Trâu Sơn), nơi truyền thuyết đặt trận đánh, ở phía đông thuộc Bắc Ninh. Sóc Sơn, nơi Gióng bay về trời, ở phía bắc. Thăng Long và Văn Miếu ở phía tây nam, bên kia sông Đuống và sông Hồng.
 
 **Các vùng sau đi theo địa thế thật:** Cổ Loa ở phía bắc sông Hồng, cửa sông Bạch Đằng và thủy triều của nó gần Hạ Long, núi đá vôi Ninh Bình, núi rừng Lam Sơn ở Thanh Hóa, duyên hải miền Trung và Phú Xuân (Huế), cao nguyên Tây Sơn, và đồng bằng sông Cửu Long.
 
-**Các vùng:** mỗi chương truyện có một vùng. Mỗi vùng có 3 đến 6 bản đồ dựng thủ công. Nhân vật đi từ bản đồ này sang bản đồ kia ở rìa bản đồ hoặc cuối đường, và di chuyển giữa các vùng trên bản đồ đất nước. Một ngày trong game khoảng 8 phút chơi. Dữ liệu nằm trong `data/world/regions.json` và `data/maps/`.
+**Các vùng:** mỗi chương truyện có một vùng, là một khu có tên trên cùng một vùng đất. Nhân vật đi từ nơi này sang nơi khác không bị cắt ngang, và đi xa trên bản đồ đất nước, vốn là chính vùng đất ấy nhìn từ xa. Một ngày trong game khoảng 8 phút chơi. Dữ liệu nằm trong `data/world/regions.json` và các tệp vùng đất của từng vùng.
+
+**Rìa thế giới luôn có lý do mà trẻ nhìn thấy, không bao giờ là bức tường vô hình.** Bờ biển thật (nước sâu dần và nhân vật dừng khi nước tới gối), núi thật (quá dốc để leo), vùng đất của thời đại sau (mờ dần vào sương rồi vào giấy dó trắng, như rìa một bức tranh chưa vẽ xong, và được vẽ thêm khi các thời đại tiếp diễn), và những nơi câu chuyện chưa mở (khúc sông quá sâu, người gác, cây đổ chắn lối). Tới rìa, nhân vật tự quay lại với một câu ngắn, và camera không bao giờ cho thấy chỗ tận cùng của vùng đất.
 
 | # | Vùng | Vị trí trên bản đồ đất nước | Bản đồ hiện có |
 | --- | --- | --- | --- |

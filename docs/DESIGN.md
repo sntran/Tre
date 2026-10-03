@@ -152,13 +152,15 @@ The world is Vietnam with its real geography: real coast, rivers, mountains, and
 **Two scales**
 
 - **The country map** is the real map of Vietnam, drawn as an old map on dó paper. It is made from open data: coastline, borders, and rivers from Natural Earth (public domain), and terrain from NASA SRTM elevation data (public domain). The data is simplified once with a script and kept in the repository. The player travels on it along real roads and rivers, with travel time on the game clock and events on the road.
-- **Region maps** are hand-built isometric maps at human scale, placed at their real location on the country map. The main features of each region come from the real place: rivers, hills, and the direction from one place to another.
+- **The land** is one continuous world at human scale, made from the same real data and the seed, with the story places as hand-made stamps at their real places. Distances are compressed (a walk between two story places of a region takes one to three minutes); things are life size. The land is made and dropped chunk by chunk around the hero, so there is no map edge and no load inside the land.
 
 **Era 1 is real.** Phù Đổng stands on the bank of the Đuống River. Núi Trâu (Trâu Sơn), where the legend puts the battle, is to the east in Bắc Ninh. Sóc Sơn, where Gióng rode to the sky, is to the north. Thăng Long and Văn Miếu are to the southwest, across the Đuống and the Red River.
 
 **Later regions follow the real land:** Cổ Loa north of the Red River, the Bạch Đằng estuary and its tides near Hạ Long, the limestone karst of Ninh Bình, the mountains of Lam Sơn in Thanh Hóa, the central coast and Phú Xuân (Huế), the Tây Sơn highlands, and the Mekong delta.
 
-**Regions:** one region for each story chapter. Each region has 3 to 6 hand-built maps. The hero walks from one map to the next at the edge of a map or at the end of a road, and travels between regions on the country map. A game day is about 8 minutes of play. The data is in `data/world/regions.json` and `data/maps/`.
+**Regions:** one region for each story chapter, as a named area of the one land. The hero walks from place to place with no cut, and travels far on the country map, which is the same land seen from far away. A game day is about 8 minutes of play. The data is in `data/world/regions.json` and the land files of each region.
+
+**The edges of the world have reasons the child can see, never an invisible wall.** The real coast (the water gets deeper and the hero stops at the knee), the real mountains (too steep to climb), the land of a later era (it fades into mist and then into blank dó paper, as the edge of a print that is not finished yet, and it fills in as the eras go on), and the places the story has not opened (a deep ford, a guard, a fallen tree). At an edge the hero turns back by himself with a short line, and the camera never shows the end of the land.
 
 | # | Region | Place on the country map | Maps now |
 | --- | --- | --- | --- |
