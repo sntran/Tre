@@ -277,3 +277,17 @@ One look for each person: the portraits are rendered from the voxel figures, not
 - **Hero creation:** the preview is the voxel hero, at 16 turns, that steps around slowly (a drag turns it), and each choice button shows the hero with that choice (`head` for the skin, the face, and the hair; `full` for the clothes). The choices are in `data/figures.json` (`hero`).
 - **The notebook of #8** draws its prints of people, creatures, and places with this renderer (`portraitCanvas` in `src/ui/portraits.js`; a view of a place is a prop look `{ prop, w, h, seed }`). It makes no new pictures.
 - **What stays SVG:** the small UI icons (`art/ui/`), the items (`art/item/`), the logo and the app icons, the paper, the patterns of frames, and the bamboo of the title screen. These are graphic design, not pictures of things in the world.
+
+## 18. The ground
+
+The ground is printed, not a flat color. The texture is in the shader (`GROUND_GLSL` in `src/render/voxel.js`) and costs no geometry. Each top face of the ground gets its kind and the direction of its road as attributes (`surface` and `soil`, from `surface` in `src/world/terrain.js`), and a chunk gives the same values alone and in a ring.
+
+- **The rules of the print.** All patterns are fixed on the land (world units), so they do not slide when the camera moves. They change only the flat tone of the top face: the side faces keep the three flat tones, and the patterns go to the paper with the face in the far land and in the mist. They are thin and quiet, so that the things of the world stay on top.
+- **Grass:** two greens in large soft patches, darker near water and lighter on dry high land, with short printed strokes (a V of ink). A village lawn has fewer strokes, and the edge of a field has more. The forest floor is darker, with fallen leaves; a dike top has few strokes.
+- **Earth roads:** grain, small dark stones, pale specks, worn patches, two wheel ruts along the road, and a lighter line in the middle where people walk. The ruts follow the direction of the road, also on a diagonal road.
+- **The paved paths of a village:** bricks along the path, in rows with offset joints, with ink in the joints.
+- **Sand:** soft ripples and a few specks. **Rock:** grain and a few short cracks.
+- **Roads in the low land** run on low banks, one step over the paddies, with slopes of grass on each side. **Roads on dry land** lie 0.25 block lower than the grass beside them. This is in the mesh only: the height for movement does not change.
+- **Tufts:** small smooth tufts of grass along the edges of roads and the banks of the fields, and reeds at the water (`tuft` in `src/world/smooth.js`; a tuft belongs to its ground block, so a dig takes it). There is no tuft on a road, on a dike top, or on water. Tufts show at the near level only.
+- **The low land is not a table:** mounds (gò) of one step with a clump of bamboo or a tree stand among the paddies, and short ditches (mương) of still water run along some blocks of paddies (drawn as the water of a paddy, with no seedlings).
+- **Puddles:** from the start of a rain until a game day after its end, some cells of an earth road have a flat puddle in a rut: pale water with one glint and a thin ink rim (`puddlesAt` in `src/core/world/ambient.js`).

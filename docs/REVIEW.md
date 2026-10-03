@@ -333,3 +333,7 @@ Facts to check:
 ## 14. The faces and the hair (#19)
 
 No new texts. Please check the hair styles of the people for the time of the Hùng Kings (`docs/ART.md`, section 15): a fringe parted on the side (`short`), the hair pulled back to a knot on the crown with a red tie (`topknot`), long hair with a part in the middle, two braids with red ties, a low bun with a pin, and the tuft of a child (trái đào) on a short crop. The grey hair of grandma and the healer is a bun; the elders with a beard have short grey hair.
+
+## 15. The ground (#20)
+
+No new texts. Please check the ground of the Red River delta for the time of the Hùng Kings (`docs/ART.md`, section 18): earth roads with wheel ruts on low banks through the paddies, village paths of brick, mounds (gò) with bamboo or a tree among the paddies, and short ditches (mương) of still water. A path of brick may be too late for the time; if so, the village paths can be packed earth or flat stones.

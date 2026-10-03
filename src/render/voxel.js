@@ -136,10 +136,11 @@ const GROUND_GLSL = `
           if (h21(cell + 17.0) < 0.3) {
             float along = dot(p - (cell + 0.5), dir) + (h21(cell + 4.0) - 0.5) * 0.3;
             float side = h21(cell + 9.0) < 0.5 ? -0.7 : 0.7;
-            float d = length(vec2(along / 0.46, (dot(p - (cell + 0.5), across) + surface.w - side) / 0.22));
+            float d = length(vec2(along / 0.46, (dot(p - (cell + 0.5), across) + surface.w - side) / 0.24));
+            d += (vnoise(p * 5.0) - 0.5) * 0.35;
             if (d < 1.0) {
               col = mix(vec3(0.62, 0.69, 0.76), vec3(0.85, 0.89, 0.92), step(0.86, fract(along * 2.0 + 0.3)) * step(d, 0.5));
-              if (d > 0.82) col = mix(col, INK, 0.35);
+              if (d > 0.84) col = mix(col, INK, 0.18);
             }
           }
         }
