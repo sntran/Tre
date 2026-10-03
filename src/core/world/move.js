@@ -11,17 +11,30 @@ export const MOVE = Object.freeze({
   runAt: 0.85, // a stick pushed this far makes the hero run
 });
 
-// Does a circle at (x, y) touch a blocked tile? isBlocked(tx, ty) says if a tile is blocked.
-export function collides(x, y, r, isBlocked) {
+// How deep a circle at (x, y) goes into the blocked tiles (0: it touches none).
+function depthAt(x, y, r, isBlocked) {
+  let deep = 0;
   for (let ty = Math.floor(y - r); ty <= Math.floor(y + r); ty++) {
     for (let tx = Math.floor(x - r); tx <= Math.floor(x + r); tx++) {
       if (!isBlocked(tx, ty)) continue;
       const cx = Math.max(tx, Math.min(x, tx + 1));
       const cy = Math.max(ty, Math.min(y, ty + 1));
-      if ((x - cx) ** 2 + (y - cy) ** 2 < r * r - 1e-9) return true;
+      deep = Math.max(deep, r - Math.hypot(x - cx, y - cy));
     }
   }
-  return false;
+  return deep;
+}
+
+// Does a circle at (x, y) touch a blocked tile? isBlocked(tx, ty) says if a tile is blocked.
+export const collides = (x, y, r, isBlocked) => depthAt(x, y, r, isBlocked) > 1e-9;
+
+// Can a circle go from (x, y) to (nx, ny)? Not when it goes deeper into the blocked tiles. A
+// circle that already touches a blocked tile can still move along it or away from it: at the top
+// of a cliff the edge of the circle can reach over the lower cell (the cell under the foot decides
+// which cells are cliffs), and the hero does not get stuck there.
+function canMove(x, y, nx, ny, r, isBlocked) {
+  const next = depthAt(nx, ny, r, isBlocked);
+  return next <= 1e-9 || next <= depthAt(x, y, r, isBlocked) + 1e-9;
 }
 
 // Move a circle by (dx, dy). Each small step tries x and y apart, so the circle slides along walls.
@@ -31,8 +44,8 @@ export function moveCircle(pos, dx, dy, r, isBlocked) {
   const sx = dx / steps;
   const sy = dy / steps;
   for (let i = 0; i < steps; i++) {
-    if (sx && !collides(x + sx, y, r, isBlocked)) x += sx;
-    if (sy && !collides(x, y + sy, r, isBlocked)) y += sy;
+    if (sx && canMove(x, y, x + sx, y, r, isBlocked)) x += sx;
+    if (sy && canMove(x, y, x, y + sy, r, isBlocked)) y += sy;
   }
   return { x, y };
 }

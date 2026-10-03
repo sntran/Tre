@@ -119,3 +119,19 @@ test('a body sees a cliff as a wall: a tile two steps higher or lower blocks it'
   assert.equal(w.isBlocked(2, 0), true, 'two steps up');
   assert.equal(worldFor(tileMap, 1.5, 1.5).isBlocked(2, 0), false, 'from one step higher');
 });
+
+test('at the top of a cliff, the hero walks along the edge and does not get stuck', () => {
+  // A row of cells two steps up (y 0), over low land (y 1): the circle of the hero on the high row
+  // reaches over the low row, which is a cliff from there.
+  const heights = [[4, 4, 4, 4, 4, 4], [2, 2, 2, 2, 2, 2]];
+  const map = { isBlocked: () => false, heightAt: (x, y) => heights[y]?.[x] ?? 9, groundAt: () => 'grass' };
+  const pos = { x: 0.5, y: 0.8 };
+  const world = worldFor(map, pos.x, pos.y);
+  assert.equal(world.isBlocked(1, 1), true, 'the low row is a cliff from the high row');
+  const along = moveCircle(pos, 3, 0, MOVE.radius, world.isBlocked);
+  assert.ok(along.x > 3.4, `along the edge to ${along.x}`);
+  const down = moveCircle(pos, 0, 0.5, MOVE.radius, world.isBlocked);
+  assert.ok(down.y <= 0.8 + 1e-9, 'not deeper over the cliff');
+  const back = moveCircle(pos, 0, -0.3, MOVE.radius, world.isBlocked);
+  assert.ok(back.y < 0.6, 'away from the edge');
+});
