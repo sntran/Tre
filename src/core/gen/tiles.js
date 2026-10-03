@@ -657,7 +657,17 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
         if (letter[i] === CODE.water || letter[i] === CODE.bridge || letter[i] === CODE.bamboo || letter[i] === CODE.shallow) {
           // A road over a river: a ford, a bamboo bridge, or the water of a ferry.
           const kind = riverOf[i] >= 0 ? crossingOf(rivers[riverOf[i]].water) : 'bamboo';
-          if (kind === 'ford') letter[i] = CODE.shallow;
+          if (kind === 'ford') {
+            letter[i] = CODE.shallow;
+            // Stepping stones (đá kê) in the ford, one cell in two, a step over the water: a child
+            // can wade, or hop from stone to stone.
+            const cx = i % W;
+            const cy = (i - cx) / W;
+            if ((cx + cy + X0 + Z0) % 2 === 0) {
+              letter[i] = CODE.rock;
+              level[i] += 1;
+            }
+          }
           else if (kind === 'bamboo') {
             // The deck of the bridge is at the height of the road.
             letter[i] = CODE.bamboo;

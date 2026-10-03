@@ -1,4 +1,4 @@
-// Things: the well, haystacks, pots, a big jar, rocks, ore, boats, the signpost, the gate, fences,
+// Things: the well, haystacks, pots, a big jar, a fallen log, rocks, ore, boats, the signpost, the gate, fences,
 // rice stacks, the gate of Văn Miếu, and a stele on a turtle. Units are fine blocks.
 import { levelOf } from './houses.js';
 
@@ -57,6 +57,20 @@ export function jar(ctx, o) {
   ctx.box(x - 1, g + 1, z - 1, x, g + 2, z, 'vermilion');
   ctx.box(x - 1, g + 3, z - 1, x, g + 3, z, 'vermilionPale');
   ctx.shadowDisc(x, z, 1, 1);
+}
+
+// A fallen log by the road: a low trunk of wood, one fine block high, with pale ends and a short
+// branch. It is low enough to jump over (data/hero.json, jump.low).
+export function log(ctx, o) {
+  const { fx, fz } = o;
+  const len = Math.max(3, o.fw);
+  const z = fz + Math.floor(o.fd / 2);
+  const g = levelOf(ctx, fx, z, len, 1);
+  ctx.box(fx, g, z, fx + len - 1, g, z, 'wood');
+  ctx.set(fx, g, z, 'ochre');
+  ctx.set(fx + len - 1, g, z, 'ochre');
+  ctx.set(fx + Math.floor(len / 2), g, z - 1, 'wood');
+  ctx.shadowDisc(fx + len / 2, z + 0.5, Math.ceil(len / 2), 1);
 }
 
 // A rock of grey blocks (an ore rock has glints of ore). Never the shape of a sign: see

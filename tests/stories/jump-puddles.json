@@ -1,0 +1,231 @@
+{
+  "name": "jump-puddles",
+  "about": {
+    "vi": "Ngày mưa ở Phù Đổng: An nhảy trên đường có vũng nước, rồi nhảy từ đá này sang đá kia qua chỗ lội; khi nước sông lên, chỗ lội đóng và không nhảy qua được nữa.",
+    "en": "A day of rain in Phù Đổng: An hops on the road with its puddles, then from stone to stone across the ford; when the river rises, the ford closes and a jump cannot cross it."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    }
+  },
+  "clock": 3600,
+  "at": [
+    "phu-dong",
+    17.5,
+    61.5
+  ],
+  "steps": [
+    {
+      "at": {
+        "hour": 12.4
+      }
+    },
+    {
+      "expect": [
+        {
+          "ford": "open"
+        }
+      ]
+    },
+    {
+      "do": {
+        "type": "move",
+        "id": "hero",
+        "dx": 0,
+        "dz": 1,
+        "strength": 1
+      }
+    },
+    {
+      "wait": 0.2
+    },
+    {
+      "do": {
+        "type": "stop",
+        "id": "hero"
+      }
+    },
+    {
+      "wait": 0.3
+    },
+    {
+      "do": {
+        "type": "jump"
+      }
+    },
+    {
+      "until": {
+        "event": "land",
+        "timeout": 3
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "jump",
+          "with": {
+            "kind": "jump"
+          }
+        },
+        {
+          "hero": {
+            "in": "path"
+          }
+        }
+      ]
+    },
+    {
+      "walk": {
+        "to": [
+          17.5,
+          65.5
+        ]
+      }
+    },
+    {
+      "do": {
+        "type": "move",
+        "id": "hero",
+        "dx": 0,
+        "dz": 1,
+        "strength": 0.3
+      }
+    },
+    {
+      "wait": 0.1
+    },
+    {
+      "do": {
+        "type": "stop",
+        "id": "hero"
+      }
+    },
+    {
+      "wait": 0.3
+    },
+    {
+      "do": {
+        "type": "jump"
+      }
+    },
+    {
+      "until": {
+        "event": "land",
+        "timeout": 3
+      }
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "in": "rock"
+          }
+        }
+      ]
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "do": {
+        "type": "jump"
+      }
+    },
+    {
+      "until": {
+        "event": "land",
+        "timeout": 3
+      }
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "in": "rock"
+          }
+        }
+      ]
+    },
+    {
+      "walk": {
+        "to": [
+          17.5,
+          62
+        ]
+      }
+    },
+    {
+      "at": {
+        "hour": 14.2
+      }
+    },
+    {
+      "expect": [
+        {
+          "ford": "closed"
+        }
+      ]
+    },
+    {
+      "walk": {
+        "to": [
+          17.5,
+          65.5
+        ]
+      }
+    },
+    {
+      "do": {
+        "type": "move",
+        "id": "hero",
+        "dx": 0,
+        "dz": 1,
+        "strength": 0.3
+      }
+    },
+    {
+      "wait": 0.1
+    },
+    {
+      "do": {
+        "type": "stop",
+        "id": "hero"
+      }
+    },
+    {
+      "wait": 0.3
+    },
+    {
+      "do": {
+        "type": "jump"
+      }
+    },
+    {
+      "wait": 1
+    },
+    {
+      "expect": [
+        {
+          "event": "jump",
+          "with": {
+            "kind": "hop"
+          }
+        },
+        {
+          "hero": {
+            "cell": [
+              17.5,
+              64.5
+            ],
+            "within": 1
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -345,7 +345,8 @@ test('a road over a river: a ford over a small river, a bamboo bridge over a mid
     const rx = Math.round(plane.toCell([lon, 21.0])[0]);
     return road.filter(([x]) => Math.abs(x - rx) <= 1).map(([x, yy]) => letterAt(x, yy));
   });
-  assert.ok(over[0].length && over[0].every((c) => c === 's'), `a ford: ${over[0].join('')}`);
+  // A ford: shallow water, with stepping stones (rock) one cell in two.
+  assert.ok(over[0].length && over[0].every((c) => c === 's' || c === 'r') && over[0].includes('s') && over[0].includes('r'), `a ford: ${over[0].join('')}`);
   assert.ok(over[1].length && over[1].every((c) => c === 'k'), `a bamboo bridge: ${over[1].join('')}`);
   assert.ok(over[2].length && over[2].every((c) => c === '~'), `the water of a ferry: ${over[2].join('')}`);
   // One ferry, over the big river: its boat on the water, the landings on the land beside it.
