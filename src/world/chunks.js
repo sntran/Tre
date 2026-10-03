@@ -25,8 +25,9 @@ export function chunkList(terrain) {
   return out;
 }
 
-// Is the owner of a look there? owner: a fine block [fx, fy, fz], or null (always there).
-export const ownerThere = (terrain, owner) => !owner || terrain.fine.get(owner[0], owner[1], owner[2]) > 0;
+// Is the owner of a look there? owner: a fine block [fx, fy, fz] (or a ground block [x, y, z] when
+// grid is 'ground'), or null (always there).
+export const ownerThere = (terrain, owner, grid = 'fine') => !owner || terrain[grid].get(owner[0], owner[1], owner[2]) > 0;
 
 // The meshes of one chunk. Return { ground, things, ink, triangles }:
 // ground and things: { positions, colors, owners, indices } (world units); ink: a list of groups
@@ -63,9 +64,10 @@ export function chunkMesh(terrain, cx, cz) {
     append(m);
     ink.push({ segs: m.segs, w: 0.11, owners: m.outer.map(() => r.who ?? 0), outer: m.outer });
   }
-  // The smooth looks (crowns, culms, leaves, haystacks) whose owner block is in this chunk.
+  // The smooth looks (crowns, culms, leaves, haystacks, flowers) whose owner block is in this chunk.
   for (const s of terrain.smooth ?? []) {
-    if (!here(s.owner[0], s.owner[2]) || !ownerThere(terrain, s.owner)) continue;
+    const k = s.ownerGrid === 'ground' ? 2 : 1; // a ground block is two fine blocks wide
+    if (!here(s.owner[0] * k, s.owner[2] * k) || !ownerThere(terrain, s.owner, s.ownerGrid)) continue;
     const m = smoothMesh(s);
     append(m);
     ink.push({ who: s.who ?? 0, sway: m.segSway, segs: m.segs, w: 0.09, owners: m.segs.length ? Array(m.segs.length / 6).fill(s.who ?? 0) : [], outer: Array(m.segs.length / 6).fill(1), hull: m.hull });

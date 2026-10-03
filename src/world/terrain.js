@@ -5,6 +5,7 @@
 // Map cells: x to the east, y (map) to the south = z in the world. A ground column of height h
 // fills the blocks 0 to h - 1, so its top is at world y = h. h = the height digit of the map + 1.
 import { createGrid, hashSeed, seeded } from './voxel.js';
+import { fbm } from '../core/gen/noise.js';
 import { buildProp } from './props/index.js';
 import { dig, fell } from './chunks.js';
 
@@ -170,23 +171,30 @@ export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
       add({ kind: grows, fx: x * 2, fz: z * 2, fw: 2, fd: 2, seed: hashSeed(`${map.id}:${x}:${z}`) }, null);
     }
   }
-  // Flowers and small stones on open grass, by a seeded rule (never in a grid). The flowers are a
-  // list too (world units), for the butterflies by day.
+  // Flowers on open grass: small patches of three to seven of one color, where a noise lets them
+  // grow (never in a grid, never on a road, a dike, or a paddy). They are smooth looks owned by the
+  // top block of their ground column (a dig takes them). The flowers are a list too (world units),
+  // for the butterflies by day.
   const flowers = [];
   const r = seeded(hashSeed(`${map.id}:flowers`));
-  for (let i = 0; i < W * H * 0.025; i++) {
-    const x = r.int(1, W - 2);
-    const z = r.int(1, H - 2);
-    const type = typeAt(x, z);
-    if (type !== 'grass' && type !== 'flowers') continue;
-    const fx = x * 2 + r.int(0, 1);
-    const fz = z * 2 + r.int(0, 1);
-    const g = groundTop(fx, fz);
-    if (fine.get(fx, g, fz)) continue;
-    if (r.chance(0.6)) {
-      fine.set(fx, g, fz, r.pick(['vermilion', 'yellow', 'diep']));
-      flowers.push({ x: (fx + 0.5) / 2, y: (g + 1) / 2, z: (fz + 0.5) / 2 });
-    } else fine.set(fx, g, fz, 'ashLight');
+  const meadow = hashSeed(`${map.id}:meadow`) & 0x7fffffff;
+  const grassy = (x, z) => ['grass', 'flowers'].includes(typeAt(x, z));
+  for (let i = 0; i < W * H * 0.0025; i++) {
+    const cx = r.int(2, W - 3);
+    const cz = r.int(2, H - 3);
+    if (!grassy(cx, cz) || fbm(meadow, cx, cz, { scale: 14, octaves: 2 }) < 0) continue;
+    const color = r.pick(['vermilion', 'yellow', 'diep']);
+    const n = r.int(3, 7);
+    for (let k = 0; k < n; k++) {
+      const x = cx + r.next() * 3 - 1.5;
+      const z = cz + r.next() * 3 - 1.5;
+      const tx = Math.floor(x);
+      const tz = Math.floor(z);
+      if (!grassy(tx, tz) || fine.get(Math.floor(x * 2), groundTop(x * 2, z * 2), Math.floor(z * 2))) continue;
+      const y = topAt(tx, tz);
+      smooth.push({ kind: 'flower', x, y, z, color, seed: r.int(1, 2147483646), who: 0, owner: [tx, y - 1, tz], ownerGrid: 'ground' });
+      flowers.push({ x, y: y + 0.2, z });
+    }
   }
 
   // A shadow makes the top of the ground a little darker.

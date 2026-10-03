@@ -49,18 +49,48 @@ export function haystack(ctx, o) {
   ctx.shadowDisc(x, z, Math.ceil(r0), 3);
 }
 
+// A rock of grey blocks (an ore rock has glints of ore). Never the shape of a sign: see
+// docs/ART.md, "Do and do not".
 export function rock(ctx, o, opts = {}) {
   const r = ctx.rng;
-  const { x, z } = center(o);
-  const g = ctx.ground(x, z);
-  const rad = Math.max(1.5, Math.min(o.fw, o.fd) / 2 - 0.3);
-  for (let dy = 0; dy <= rad; dy++) {
-    for (let dz = -2; dz <= 2; dz++) {
-      for (let dx = -2; dx <= 2; dx++) {
-        if (dx * dx + dz * dz + dy * dy * 1.6 > rad * rad + r.next()) continue;
-        const glint = opts.ore && r.chance(0.25);
-        ctx.set(x + dx, g + dy, z + dz, glint ? r.pick(['ochre', 'ashLight']) : opts.ore ? 'ash' : (dy === 0 ? 'ash' : 'ashLight'));
+  const { fx, fz, fw, fd } = o;
+  const g = ctx.ground(fx + Math.floor(fw / 2), fz + Math.floor(fd / 2));
+  // Two or three lumps of different sizes along a long side that the seed turns, and a main lump
+  // off the middle: no rock has a four-fold shape.
+  const half = Math.min(fw, fd) / 2;
+  const turn = r.next() * Math.PI;
+  const ux = Math.cos(turn);
+  const uz = Math.sin(turn);
+  const cx = fx + fw / 2 + (r.next() - 0.5) * 0.8;
+  const cz = fz + fd / 2 + (r.next() - 0.5) * 0.8;
+  const lumps = [{ x: cx + ux * 0.4, z: cz + uz * 0.4, a: half * 0.95, b: half * 0.6, h: 2.6 + r.next() * 0.8 }];
+  const more = 1 + (r.chance(0.5) ? 1 : 0);
+  for (let k = 0; k < more; k++) {
+    const t = (k ? 1 : -1) * (0.9 + r.next() * 0.5) * half * 0.6;
+    lumps.push({ x: cx + ux * t + uz * (r.next() - 0.5), z: cz + uz * t - ux * (r.next() - 0.5), a: half * (0.45 + r.next() * 0.2), b: half * 0.4, h: 1.2 + r.next() * 0.9 });
+  }
+  // The height of each column: the highest lump over it.
+  const cols = [];
+  for (let z = fz; z < fz + fd; z++) {
+    for (let x = fx; x < fx + fw; x++) {
+      let v = 0;
+      for (const l of lumps) {
+        const dx = x + 0.5 - l.x;
+        const dz = z + 0.5 - l.z;
+        const along = (dx * ux + dz * uz) / l.a;
+        const across = (-dx * uz + dz * ux) / l.b;
+        v = Math.max(v, l.h * (1 - along * along - across * across));
       }
+      if (v > 0.35) cols.push({ x, z, v, h: Math.max(1, Math.round(v)) });
+    }
+  }
+  // The top: one or two blocks only (never a line or a cross of blocks).
+  const top = Math.max(...cols.map((c) => c.h));
+  cols.filter((c) => c.h === top).sort((p, q) => q.v - p.v).slice(2).forEach((c) => { c.h -= 1; });
+  for (const c of cols) {
+    for (let y = 0; y < c.h; y++) {
+      const glint = opts.ore && r.chance(0.25);
+      ctx.set(c.x, g + y, c.z, glint ? r.pick(['ochre', 'ashLight']) : opts.ore ? 'ash' : y === 0 ? 'ash' : 'ashLight');
     }
   }
 }

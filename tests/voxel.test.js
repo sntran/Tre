@@ -291,3 +291,32 @@ test('the knees: a knee bends while its leg swings through, the heel lifts, and 
   for (let i = 0; i < 30; i++) pose = animate(a, { speed: 0, dt: 0.1, want: 'rest' });
   assert.ok(pose.rot.shinL[0] > 1 && pose.rot.shinR[0] > 1, 'the knees bend to sit');
 });
+
+test('a rock is irregular: its top is never a plus, an X, or a line of three blocks', () => {
+  const shapes = new Set();
+  for (let seed = 1; seed <= 500; seed++) {
+    for (const [fw, fd] of [[4, 4], [6, 6]]) {
+      const fine = createGrid(16, 16, 16, { owners: true });
+      buildProp({ fine, groundTop: () => 0, shadow: () => {} }, { kind: 'rock', fx: 4, fz: 4, fw, fd, seed }, 1);
+      let top = -1;
+      const cells = [];
+      for (let y = 0; y < 16; y++) for (let z = 0; z < 16; z++) for (let x = 0; x < 16; x++) if (fine.get(x, y, z)) {
+        if (y > top) { top = y; cells.length = 0; }
+        if (y === top) cells.push([x, z]);
+      }
+      assert.ok(top >= 1, `seed ${seed}: a rock has some height`);
+      assert.ok(cells.length <= 2, `seed ${seed}: the top has ${cells.length} blocks`);
+      const key = (x, z) => `${x},${z}`;
+      const at = new Set(cells.map(([x, z]) => key(x, z)));
+      for (const [x, z] of cells) {
+        const line = [[1, 0], [0, 1], [1, 1], [1, -1]].some(([dx, dz]) => at.has(key(x - dx, z - dz)) && at.has(key(x + dx, z + dz)));
+        assert.ok(!line, `seed ${seed}: a line or a cross on the top`);
+      }
+      // The rocks differ from seed to seed.
+      const bottom = [];
+      for (let z = 0; z < 16; z++) for (let x = 0; x < 16; x++) if (fine.get(x, 0, z)) bottom.push(key(x, z));
+      shapes.add(bottom.sort().join(' '));
+    }
+  }
+  assert.ok(shapes.size > 100, `${shapes.size} different rocks`);
+});

@@ -87,7 +87,12 @@ test('a roof draws only while its house is there', () => {
 test('every smooth look has an owner block, and a felled tree takes its crown and gives logs', () => {
   const t = terrainOf('phu-dong');
   assert.ok(t.smooth.length > 50, 'the plants of the village are smooth');
-  for (const s of t.smooth) assert.ok(s.owner && t.fine.get(...s.owner) && t.fine.ownerAt(...s.owner) === s.who, `${s.kind} has an owner block of its prop`);
+  for (const s of t.smooth) {
+    // A flower is owned by the top block of its ground column (a dig takes it); the others by a block of their prop.
+    if (s.ownerGrid === 'ground') assert.ok(s.kind === 'flower' && t.ground.get(...s.owner) && !t.ground.get(s.owner[0], s.owner[1] + 1, s.owner[2]), `${s.kind} on the top block of its column`);
+    else assert.ok(s.owner && t.fine.get(...s.owner) && t.fine.ownerAt(...s.owner) === s.who, `${s.kind} has an owner block of its prop`);
+  }
+  assert.ok(t.smooth.some((s) => s.kind === 'flower'), 'flowers grow on the grass');
   const tree = t.objects.find((o) => o.kind === 'tree');
   const crown = t.smooth.find((s) => s.who === tree.who && s.kind === 'crown');
   const key = chunkOf(Math.floor(crown.owner[0] / 2), Math.floor(crown.owner[2] / 2));
@@ -117,5 +122,31 @@ test('the triangles of the world around the start of every map stay under the bu
     let tri = 0;
     for (const c of chunkList(t)) if (Math.abs(c.cx - sx) <= 1 && Math.abs(c.cz - sz) <= 1) tri += chunkMesh(t, c.cx, c.cz).triangles;
     assert.ok(tri <= limit, `${id}: ${tri} triangles`);
+  }
+});
+
+test('flowers grow in small patches on the grass, with no outline, and no decoration looks like a thing to carry', async () => {
+  const { smoothMesh } = await import('../src/world/smooth.js');
+  for (const id of ['phu-dong', 'trau-son']) {
+    const map = mapOf(id);
+    const t = terrainOf(id);
+    const tm = createTileMap(map, tiles);
+    const flowers = t.smooth.filter((s) => s.kind === 'flower');
+    assert.ok(flowers.length > 10 && flowers.length < map.width * map.height * 0.008, `${id}: ${flowers.length} flowers`);
+    for (const f of flowers) {
+      assert.ok(['grass', 'flowers'].includes(tm.groundAt(Math.floor(f.x), Math.floor(f.z))), `${id}: a flower at ${f.x},${f.z} is on the grass`);
+      // In a patch: two others of the same color near it.
+      const near = flowers.filter((g) => g !== f && g.color === f.color && Math.hypot(g.x - f.x, g.z - f.z) < 3.2);
+      assert.ok(near.length >= 2, `${id}: a flower alone at ${f.x},${f.z}`);
+      const m = smoothMesh(f);
+      assert.equal(m.segs.length + m.hull.indices.length, 0, 'a flower has no ink');
+    }
+    // No single grey half block lies on the ground (the old small stones looked like the stones of the cart).
+    let stones = 0;
+    for (let z = 0; z < t.fine.sz; z++) for (let x = 0; x < t.fine.sx; x++) {
+      const y = t.topAt(x >> 1, z >> 1) * 2;
+      if (t.fine.get(x, y, z) && !t.fine.ownerAt(x, y, z) && !t.fine.get(x, y + 1, z)) stones += 1;
+    }
+    assert.equal(stones, 0, `${id}: loose blocks on the ground`);
   }
 });

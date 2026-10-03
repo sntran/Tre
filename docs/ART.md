@@ -153,6 +153,8 @@ Bamboo is the symbol of the game. Draw it correctly:
 | Seals (triện) for important labels | Soft rounded bubble labels |
 | Dignity for all people, also enemies | Toy-like people, caricatures of any group |
 | Original art in the style of the prints | Copies of real Đông Hồ prints |
+| Rocks, stones, and other things in irregular shapes: lumps of different sizes, a top off the middle | A thing of the world in the shape of a digit or of the sign of an operation (+, −, ×, ÷, =): the child reads it as math |
+| Decoration that is part of the ground: small smooth flowers (a short stem and a flat head of petals, about a quarter block, no outline) in patches of three to seven | Decoration that looks like a thing that the child can carry (a block with an outline, as the stones of the cart) |
 
 ## 10. Files
 

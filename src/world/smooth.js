@@ -1,5 +1,5 @@
 // The smooth looks of the world: everything living and round (tree crowns, bamboo culms, banana
-// leaves, haystacks, bushes, the hanging roots of the banyan). Each is low-poly, in the flat tones
+// leaves, haystacks, bushes, flowers, the hanging roots of the banyan). Each is low-poly, in the flat tones
 // of the palette (the tone of a face comes from its normal, as the tone of a face of a block), with
 // ink at the silhouette only (a hull drawn from the back) and at the edges of a leaf (lines). Pure,
 // no WebGL: plain arrays in world units, as from src/world/mesher.js.
@@ -189,6 +189,24 @@ const BUILD = {
     }
   },
   // A bush: two small blobs. { x, y, z (the ground under it), r }
+  // A small flower on the grass: a short stem and a flat head of petals, about a quarter block,
+  // with no outline of its own (decoration of the ground, never a thing to carry). { x, y (the
+  // ground), z, color }
+  flower(B, s, rng) {
+    B.swayAt = (p) => [0.25 * clamp01((p[1] - s.y) / 0.25), SWAY_LAYERS.paddy];
+    const h = 0.14 + rng.next() * 0.08;
+    const top = [s.x, s.y + h, s.z];
+    const turn = rng.next() * Math.PI;
+    const w = 0.015;
+    B.tri([s.x - w * Math.cos(turn), s.y, s.z - w * Math.sin(turn)], [s.x + w * Math.cos(turn), s.y, s.z + w * Math.sin(turn)], top, null, 'green', false);
+    const petals = 5;
+    const r = 0.09 + rng.next() * 0.03;
+    for (let i = 0; i < petals; i++) {
+      const a = turn + (i / petals) * Math.PI * 2;
+      const b = a + (Math.PI * 2) / petals;
+      B.tri(top, [s.x + Math.cos(a) * r, top[1] + 0.01, s.z + Math.sin(a) * r], [s.x + Math.cos(b) * r, top[1] + 0.01, s.z + Math.sin(b) * r], null, s.color, false);
+    }
+  },
   bush(B, s, rng) {
     B.swayAt = (p) => [0.3 * clamp01((p[1] - s.y) / (s.r * 1.4)), SWAY_LAYERS.hedge];
     blob(B, [s.x, s.y + s.r * 0.6, s.z], [s.r, s.r * 0.7, s.r], leafy('green'), rng);
