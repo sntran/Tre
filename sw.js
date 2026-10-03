@@ -222,6 +222,7 @@ const FILES = [
   'src/world/fade.js',
   'src/world/figures.js',
   'src/world/fine.js',
+  'src/world/gallery.js',
   'src/world/geo.js',
   'src/world/lod.js',
   'src/world/mesher.js',
