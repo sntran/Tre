@@ -819,17 +819,26 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       }
       if (!changed) break;
     }
-    // The shoulder: the free land next to a road on its bank comes up to the road.
-    for (let y = 1; y < W - 1; y++) for (let x = 1; x < W - 1; x++) {
-      const i = y * W + x;
-      if (fixed[i] || letter[i]) continue;
-      for (const [dx, dy] of NB) {
-        const j = i + dy * W + dx;
-        if (onBank[j] && roadCell(j)) {
-          level[i] = Math.max(level[i], level[j]);
-          onBank[i] = 2;
-          break;
+    // The shoulder: the free land within SHOULDER cells of a road on its bank comes up to the road,
+    // so that the steps of the side of the bank stand back from the strip of the road.
+    const SHOULDER = 2;
+    for (let ring = 0; ring < SHOULDER; ring++) {
+      const near = (j) => (ring === 0 ? onBank[j] === 1 && roadCell(j) : onBank[j] === 2);
+      const next = [];
+      for (let y = 1; y < W - 1; y++) for (let x = 1; x < W - 1; x++) {
+        const i = y * W + x;
+        if (fixed[i] || letter[i] || onBank[i]) continue;
+        for (const [dx, dy] of NB) {
+          const j = i + dy * W + dx;
+          if (near(j)) {
+            next.push([i, level[j]]);
+            break;
+          }
         }
+      }
+      for (const [i, lv] of next) {
+        level[i] = Math.max(level[i], lv);
+        onBank[i] = 2;
       }
     }
     // Ditches (mương): along some sides of the paddies, a run of still water one step under the

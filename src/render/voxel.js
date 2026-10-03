@@ -66,11 +66,14 @@ const STAGES_GLSL = `
 
 // The printed texture of the ground, on the top faces only (surface: kind, the direction of a road,
 // the distance of the cell from the middle line of the road; soil: the wetness and the density of
-// the strokes of grass; src/world/terrain.js). All patterns are fixed on the land (world units) and
-// change only the flat tone of the face: grass in two greens with short strokes, forest floor with
-// leaf litter, earth roads with grain, stones, worn patches, two wheel ruts, and a lighter line in
-// the middle, paved paths of the villages in bricks along the path, sand with ripples, and a few
-// cracks on rock. They are thin and quiet, so that the things of the world stay on top.
+// the strokes of grass; strip: the color and the half width of a road of the land over the top;
+// src/world/terrain.js). All patterns are fixed on the land (world units) and change only the flat
+// tone of the face: grass in two greens with short strokes, forest floor with leaf litter, the
+// packed earth of a village (swept, with footprints and a few small stones), bricks for a later era,
+// sand with ripples, and a few cracks on rock. A road of the land is a strip along the smooth line
+// of the road, over the tops at their heights: grain, stones, worn patches, two wheel ruts, and a
+// lighter line in the middle, with a soft edge of dots and no ink line. They are thin and quiet, so
+// that the things of the world stay on top.
 const GROUND_GLSL = `
   float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float vnoise(vec2 p) {
@@ -78,6 +81,9 @@ const GROUND_GLSL = `
     return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), f.x), f.y);
   }
   const vec3 INK = vec3(0.122, 0.106, 0.09);
+  // The soft edge of the strip of a road (cells on each side of its half width; STRIP_EDGE in
+  // src/world/terrain.js).
+  const float EDGE = 0.12;
   // A short V stroke of grass in each cell of a grid of 1 / scale, in some of the cells.
   float strokes(vec2 p, float scale, float density) {
     vec2 g = p * scale; vec2 c = floor(g); vec2 f = fract(g);
@@ -100,12 +106,35 @@ const GROUND_GLSL = `
     }
     return col;
   }
-  vec3 groundOf(vec3 col, vec3 w, vec4 surface, vec2 soil, float puddles) {
+  // An earth road of the land: grain, worn patches, two wheel ruts along the line, a lighter line
+  // where people walk in the middle, and after a rain flat puddles in the ruts of some cells. s: the
+  // signed distance from the middle line.
+  vec3 earthRoad(vec3 col, vec2 p, vec2 dir, float s, float puddles) {
+    col = grain(col, p);
+    if (vnoise(p * 0.22 + 7.0) > 0.68) col *= 1.05;
+    float a = abs(s);
+    float rut = 1.0 - smoothstep(0.035, 0.07, abs(a - 0.7));
+    col = mix(col, col * 0.78, rut * 0.8);
+    col *= 1.0 + 0.06 * (1.0 - smoothstep(0.12, 0.3, a));
+    if (puddles > 0.5) {
+      vec2 cell = floor(p);
+      if (h21(cell + 17.0) < 0.3) {
+        float along = dot(p - (cell + 0.5), dir) + (h21(cell + 4.0) - 0.5) * 0.3;
+        float side = h21(cell + 9.0) < 0.5 ? -0.7 : 0.7;
+        float d = length(vec2(along / 0.46, (s - side) / 0.24));
+        d += (vnoise(p * 5.0) - 0.5) * 0.35;
+        if (d < 1.0) {
+          col = mix(vec3(0.62, 0.69, 0.76), vec3(0.85, 0.89, 0.92), step(0.86, fract(along * 2.0 + 0.3)) * step(d, 0.5));
+          if (d > 0.84) col = mix(col, INK, 0.18);
+        }
+      }
+    }
+    return col;
+  }
+  vec3 groundOf(vec3 col, vec3 w, vec4 surface, vec2 soil, vec4 strip, float puddles) {
     float kind = floor(surface.x + 0.5);
-    if (kind < 0.5) return col;
     vec2 p = w.xz;
     vec2 dir = surface.yz;
-    vec2 across = vec2(-dir.y, dir.x);
     float wet = soil.x;
     if (kind == 1.0 || kind == 5.0 || kind == 6.0) {
       // Grass: two greens in large soft patches, darker near water and lighter on dry high land.
@@ -119,34 +148,26 @@ const GROUND_GLSL = `
       }
       float density = kind == 6.0 ? 0.15 : kind == 5.0 ? 0.35 : soil.y * 0.7;
       col = mix(col, INK * 1.6 + col * 0.2, strokes(p, 2.2, density) * 0.42);
-    } else if (kind == 2.0 || kind == 8.0) {
-      col = grain(col, p);
-      // Worn patches.
-      float worn = vnoise(p * 0.22 + 7.0);
-      if (worn > 0.68) col *= 1.05;
-      if (kind == 2.0 && dot(dir, dir) > 0.25) {
-        // Two wheel ruts along the road, and a lighter line where people walk in the middle.
-        float a = abs(dot(p - (floor(p) + 0.5), across) + surface.w);
-        float rut = 1.0 - smoothstep(0.035, 0.07, abs(a - 0.7));
-        col = mix(col, col * 0.78, rut * 0.8);
-        col *= 1.0 + 0.06 * (1.0 - smoothstep(0.12, 0.3, a));
-        // After a rain: flat puddles in the ruts of some cells, pale water with one glint.
-        if (puddles > 0.5) {
-          vec2 cell = floor(p);
-          if (h21(cell + 17.0) < 0.3) {
-            float along = dot(p - (cell + 0.5), dir) + (h21(cell + 4.0) - 0.5) * 0.3;
-            float side = h21(cell + 9.0) < 0.5 ? -0.7 : 0.7;
-            float d = length(vec2(along / 0.46, (dot(p - (cell + 0.5), across) + surface.w - side) / 0.24));
-            d += (vnoise(p * 5.0) - 0.5) * 0.35;
-            if (d < 1.0) {
-              col = mix(vec3(0.62, 0.69, 0.76), vec3(0.85, 0.89, 0.92), step(0.86, fract(along * 2.0 + 0.3)) * step(d, 0.5));
-              if (d > 0.84) col = mix(col, INK, 0.18);
-            }
-          }
+    } else if (kind == 2.0) {
+      // The packed earth of a village: lighter and smoother than a road, swept in long soft arcs,
+      // with footprints and a few small stones.
+      col *= 1.04 + (vnoise(p * 0.5) - 0.5) * 0.05;
+      float sweep = sin(dot(p, vec2(0.9, 0.45)) * 9.0 + vnoise(p * 0.7) * 6.0);
+      col *= 1.0 - 0.03 * smoothstep(0.85, 1.0, sweep);
+      vec2 g = p * 1.5; vec2 c = floor(g); vec2 f = fract(g) - 0.5;
+      if (h21(c + 5.0) > 0.86) {
+        float t = h21(c + 2.0) * 6.2832;
+        vec2 d = vec2(cos(t), sin(t));
+        vec2 n = vec2(-d.y, d.x);
+        for (int k = 0; k < 2; k++) {
+          float sd = k == 0 ? -1.0 : 1.0;
+          vec2 q = f - n * 0.09 * sd - d * 0.08 * sd;
+          if (length(vec2(dot(q, d) / 0.11, dot(q, n) / 0.06)) < 1.0) col *= 0.92;
         }
       }
+      if (h21(floor(p * 7.0) + 13.0) > 0.985) col = mix(col, INK, 0.22);
     } else if (kind == 3.0) {
-      // Bricks or stones of a village path, along the path, with ink in the joints.
+      // Bricks or stones of a path, along the path, with ink in the joints (for a later era).
       vec2 d = dot(dir, dir) > 0.25 ? dir : vec2(1.0, 0.0);
       float u = dot(p, d) * 2.0;
       float v = dot(p, vec2(-d.y, d.x)) * 3.0;
@@ -165,6 +186,19 @@ const GROUND_GLSL = `
       col *= 0.94 + vnoise(p * 1.3) * 0.1;
       vec2 g = p * 1.1; vec2 c = floor(g); vec2 f = fract(g) - 0.5;
       if (h21(c + 2.0) > 0.7 && abs(f.x * 0.8 - f.y) < 0.03 && abs(f.x) < 0.3) col = mix(col, INK, 0.35);
+    }
+    if (strip.w != 0.0) {
+      // The strip of a road of the land over this top: the signed distance from its middle line,
+      // and a soft edge in dots of the print, fixed on the land (no ink line).
+      float hw = abs(strip.w);
+      float s = dot(p - (floor(p) + 0.5), vec2(-dir.y, dir.x)) + surface.w;
+      float a = abs(s) + (vnoise(p * 3.0) - 0.5) * 0.08;
+      if (smoothstep(hw + EDGE, hw - EDGE, a) > h21(floor(p * 10.0) + 31.0)) {
+        vec3 road = earthRoad(strip.rgb, p, dir, s, puddles);
+        // A road that lies lower than the grass: a thin shadow line along each edge.
+        if (strip.w < 0.0) road *= 1.0 - 0.16 * smoothstep(hw - 0.3, hw - 0.06, a);
+        col = road;
+      }
     }
     return col;
   }`;
@@ -197,9 +231,9 @@ function flatMaterial(uniforms) {
     side: THREE.DoubleSide,
     vertexShader: `
       attribute vec3 tone; attribute float owner; attribute vec2 sway; attribute float mist;
-      attribute vec4 surface; attribute vec2 soil;
+      attribute vec4 surface; attribute vec2 soil; attribute vec4 strip;
       varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
-      varying vec4 vSurface; varying vec2 vSoil;
+      varying vec4 vSurface; varying vec2 vSoil; varying vec4 vStrip;
       ${FADE_GLSL}
       ${PAPER_GLSL}
       ${SWAY_GLSL}
@@ -207,6 +241,7 @@ function flatMaterial(uniforms) {
         vColor = tone;
         vSurface = surface;
         vSoil = soil;
+        vStrip = strip;
         vFade = fadeOf(owner);
         vec4 w = modelMatrix * vec4(position, 1.0);
         vW = w.xyz;
@@ -216,7 +251,7 @@ function flatMaterial(uniforms) {
     fragmentShader: `
       uniform vec3 uPaper; uniform float uPuddles;
       varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
-      varying vec4 vSurface; varying vec2 vSoil;
+      varying vec4 vSurface; varying vec2 vSoil; varying vec4 vStrip;
       ${STAGES_GLSL}
       ${GROUND_GLSL}
       // A 4 x 4 ordered dither: 0 to 1 in a fixed pattern over the screen.
@@ -224,7 +259,7 @@ function flatMaterial(uniforms) {
       float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
       void main() {
         if (vFade > 0.001 && vFade * 0.85 > bayer4(gl_FragCoord.xy)) discard;
-        gl_FragColor = vec4(onPaper(groundOf(vColor, vW, vSurface, vSoil, uPuddles), uPaper, vPaper, vW), 1.0);
+        gl_FragColor = vec4(onPaper(groundOf(vColor, vW, vSurface, vSoil, vStrip, uPuddles), uPaper, vPaper, vW), 1.0);
       }`,
   });
 }
@@ -262,6 +297,13 @@ function surfaceArray(list, n, from) {
   return out;
 }
 
+// The strip numbers of a mesh (four for each vertex; zeros for the vertices after the list).
+function stripArray(list, n) {
+  const out = new Float32Array(n * 4);
+  if (list) out.set(list.slice(0, n * 4));
+  return out;
+}
+
 function worldArrays(m) {
   const n = m.positions.length / 3;
   return {
@@ -275,6 +317,9 @@ function worldArrays(m) {
       // distance from its middle line; then the wetness and the density of the grass strokes.
       surface: [surfaceArray(m.surface, n, 0), 4],
       soil: [surfaceArray(m.surface, n, 4), 2],
+      // The strip of a road of the land over a top: the color of the road, and its half width
+      // (negative for a road that lies lower; 0 for none).
+      strip: [stripArray(m.strip, n), 4],
     },
     index: new Uint32Array(m.indices),
   };
@@ -735,7 +780,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
       return mist;
     };
     // The ground and the things of the chunk in one mesh.
-    const all = { positions: [...m.ground.positions, ...m.things.positions], colors: [...m.ground.colors, ...m.things.colors], owners: [...m.ground.owners, ...m.things.owners], indices: [...m.ground.indices], sway: [...new Array((m.ground.positions.length / 3) * 2).fill(0), ...m.things.sway], surface: m.ground.surface ?? null };
+    const all = { positions: [...m.ground.positions, ...m.things.positions], colors: [...m.ground.colors, ...m.things.colors], owners: [...m.ground.owners, ...m.things.owners], indices: [...m.ground.indices], sway: [...new Array((m.ground.positions.length / 3) * 2).fill(0), ...m.things.sway], surface: m.ground.surface ?? null, strip: m.ground.strip ?? null };
     const base = m.ground.positions.length / 3;
     for (const i of m.things.indices) all.indices.push(base + i);
     const page = terrain.page(key);

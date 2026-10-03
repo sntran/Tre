@@ -52,7 +52,9 @@ export function chunkMesh(terrain, cx, cz, { coarse = false } = {}) {
   // The top of each column has its surface (the kind of the ground and the direction of a road),
   // for the printed texture of the ground.
   const top = terrain.surface ? (x, y, z) => terrain.surface(x - 1 + ox, z - 1 + oz) : null;
-  const ground = coarse ? coarseGround(p, top) : meshGrid(p.ground, { x0: 1, z0: 1, x1: 1 + CHUNK, z1: 1 + CHUNK, scale: 1, origin: [-1, 0, -1], shade: (x, y, z) => terrain.shade(x - 1 + ox, y, z - 1 + oz), top, inset: terrain.inset ? (x, z) => terrain.inset(x - 1 + ox, z - 1 + oz) : null, split: terrain.split ? (x, z) => terrain.split(x - 1 + ox, z - 1 + oz) : null });
+  // The strip of a road of the land over a top (see strip in src/world/terrain.js).
+  const roadOf = terrain.strip ? (x, z) => terrain.strip(x - 1 + ox, z - 1 + oz) : null;
+  const ground = coarse ? coarseGround(p, top, roadOf) : meshGrid(p.ground, { x0: 1, z0: 1, x1: 1 + CHUNK, z1: 1 + CHUNK, scale: 1, origin: [-1, 0, -1], shade: (x, y, z) => terrain.shade(x - 1 + ox, y, z - 1 + oz), top, strip: roadOf });
   // The faces of a fine block that touch the ground are hidden.
   const underGround = (x, y, z) => p.ground.get(((x + p.fx0) >> 1) - ox + 1, (y + p.fy0) >> 1, ((z + p.fz0) >> 1) - oz + 1) > 0;
   const fine = meshGrid(p.fine, { x0: 1, z0: 1, x1: 1 + CHUNK * 2, z1: 1 + CHUNK * 2, scale: 0.5, origin: [-1, p.fy0, -1], other: underGround, ink: !coarse });
@@ -94,20 +96,23 @@ export function chunkMesh(terrain, cx, cz, { coarse = false } = {}) {
 // The ground of a far chunk (the coarse level): the tops of a row of columns of one height and one
 // color are one quad, and the step down to a lower column is one quad, in the color under the top.
 // No ink. surfaceOf(x, y, z): the surface of a top (see meshGrid); a far top keeps its kind and its
-// wetness, but not the direction of a road. Return the form of meshGrid (positions from the corner
-// of the chunk).
+// wetness. stripOf(x, z): the strip of a road over a top (see meshGrid); a top under a strip is one
+// quad, with the direction of its road. Return the form of meshGrid (positions from the corner of
+// the chunk).
 const FLAT = [0, 0, 0, 0, 0, 0];
-export function coarseGround(p, surfaceOf = null) {
+const NO_STRIP = [0, 0, 0, 0];
+export function coarseGround(p, surfaceOf = null, stripOf = null) {
   const g = p.ground;
   const top = (lx, lz) => g.top(lx, lz) + 1; // the top of a column of the page (with the apron)
-  const out = { positions: [], colors: [], owners: [], indices: [], segments: [], segOwners: [], segOuter: [], surface: surfaceOf ? [] : null };
+  const out = { positions: [], colors: [], owners: [], indices: [], segments: [], segOwners: [], segOuter: [], surface: surfaceOf ? [] : null, strip: stripOf ? [] : null };
   let n = 0;
-  const quad = (a, b, c, d, rgb, sf = FLAT) => {
+  const quad = (a, b, c, d, rgb, sf = FLAT, st = NO_STRIP) => {
     for (const v of [a, b, c, d]) {
       out.positions.push(v[0], v[1], v[2]);
       out.colors.push(...rgb);
       out.owners.push(0);
-      if (out.surface) out.surface.push(sf[0], 0, 0, 0, sf[4], sf[5]);
+      if (out.surface) out.surface.push(sf[0], st[3] ? sf[1] : 0, st[3] ? sf[2] : 0, st[3] ? sf[3] : 0, sf[4], sf[5]);
+      if (out.strip) out.strip.push(...st);
     }
     out.indices.push(n, n + 1, n + 2, n, n + 2, n + 3);
     n += 4;
@@ -121,10 +126,11 @@ export function coarseGround(p, surfaceOf = null) {
         continue;
       }
       const c = g.get(x, h - 1, z);
+      const road = stripOf?.(x, z);
       let e = x + 1;
-      while (e <= CHUNK && top(e, z) === h && g.get(e, h - 1, z) === c) e += 1;
+      if (!road) while (e <= CHUNK && top(e, z) === h && g.get(e, h - 1, z) === c && !stripOf?.(e, z)) e += 1;
       const rgb = toneRgb(c, FACE_TONES.py);
-      quad([x - 1, h, z], [e - 1, h, z], [e - 1, h, z - 1], [x - 1, h, z - 1], rgb, surfaceOf?.(x, h - 1, z) ?? FLAT);
+      quad([x - 1, h, z], [e - 1, h, z], [e - 1, h, z - 1], [x - 1, h, z - 1], rgb, surfaceOf?.(x, h - 1, z) ?? FLAT, road ? [...toneRgb(road[0], FACE_TONES.py), road[1]] : NO_STRIP);
       x = e;
     }
     for (let x2 = 1; x2 <= CHUNK; x2++) {

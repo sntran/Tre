@@ -1,9 +1,9 @@
 {
- "_about": "Ground types of the maps. walk: the hero can walk on it. color: the color of the top block (a palette name). under: the color of the block under the top. slow: the speed factor on it. grows: a prop that grows on every second cell of this type (the bamboo of the hedge). bamboo: a bridge of bamboo where a road of the land crosses a small river. ditch: a small ditch of still water along the paddies (drawn as the water of a paddy, with no seedlings). surf and sea: the shallow sea next to the land (the hero wades to the knee) and the deep sea. face: the colors of the blocks under the top, by a seeded rule for each block (a face of stone: the ink draws the cracks where two colors meet); the blocks are rock.",
+ "_about": "Ground types of the maps. walk: the hero can walk on it. color: the color of the top block (a palette name). under: the color of the block under the top. slow: the speed factor on it. grows: a prop that grows on every second cell of this type (the bamboo of the hedge). bamboo: a bridge of bamboo where a road of the land crosses a small river. village: the print of the paths of a village (packed: packed earth, swept, with footprints; paved: bricks, for a later era); a road of the land is a strip of earth with wheel ruts over the ground (src/world/terrain.js). ditch: a small ditch of still water along the paddies (drawn as the water of a paddy, with no seedlings). surf and sea: the shallow sea next to the land (the hero wades to the knee) and the deep sea. face: the colors of the blocks under the top, by a seeded rule for each block (a face of stone: the ink draws the cracks where two colors meet); the blocks are rock.",
  "types": {
   "grass": { "walk": true, "color": "green-pale", "under": "green" },
   "flowers": { "walk": true, "color": "green-pale", "under": "green" },
-  "path": { "walk": true, "color": "paper-deep", "under": "ochre" },
+  "path": { "walk": true, "color": "paper-deep", "under": "ochre", "village": "packed" },
   "yard": { "walk": true, "color": "paper", "under": "ochre" },
   "sand": { "walk": true, "color": "yellow-pale", "under": "ochre" },
   "bridge": { "walk": true, "color": "ochre", "under": "wood" },

@@ -88,45 +88,76 @@ test('the kind of the ground and the direction of a road reach each top face of 
   const b = chunkMesh(ring, cx, cz).ground;
   assert.deepEqual(a.surface, b.surface, 'the same surface alone and in a ring');
   assert.equal(a.surface.length, (a.positions.length / 3) * 6, 'six numbers for each vertex');
-  // Each top face (a face with all four corners at one height and its normal up) of the road, a
-  // whole cell or a part of one at the edge of the road (quarter blocks), has the kind of an earth road and the
-  // direction of the road; the grass beside it is grass.
+  assert.equal(a.strip.length, (a.positions.length / 3) * 4, 'four numbers of the strip for each vertex');
+  assert.deepEqual(a.strip, b.strip, 'the same strip alone and in a ring');
+  // Each top face (a face with all four corners at one height and its normal up) of a road cell has
+  // the kind of the ground under the road, the direction of the road, and the strip of the road
+  // with the half width of the road.
   let roads = 0;
-  let parts = 0;
   for (let v = 0; v < a.positions.length / 3; v += 4) {
     const y = [0, 1, 2, 3].map((k) => a.positions[(v + k) * 3 + 1]);
     // A top face: one height, and its corners counter-clockwise from above (z goes down).
     if (y.some((h) => h !== y[0]) || a.positions[v * 3 + 2] <= a.positions[(v + 2) * 3 + 2]) continue;
-    const xs = [0, 1, 2, 3].map((k) => a.positions[(v + k) * 3] + cx * CHUNK);
-    const zs = [0, 1, 2, 3].map((k) => a.positions[(v + k) * 3 + 2] + cz * CHUNK);
-    const x = Math.floor(Math.min(...xs));
-    const z = Math.floor(Math.min(...zs));
-    if (Math.max(...xs) - Math.min(...xs) < 1 || Math.max(...zs) - Math.min(...zs) < 1) parts += 1;
+    const x = Math.floor(Math.min(...[0, 1, 2, 3].map((k) => a.positions[(v + k) * 3]))) + cx * CHUNK;
+    const z = Math.floor(Math.min(...[0, 1, 2, 3].map((k) => a.positions[(v + k) * 3 + 2]))) + cz * CHUNK;
     const sf = a.surface.slice(v * 6, v * 6 + 6);
+    const st = a.strip.slice(v * 4, v * 4 + 4);
     const c = map.land.cell(x, z);
-    if (c.stamp) continue;
-    const road = alone.roadAt((Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...zs) + Math.max(...zs)) / 2);
-    if (road && (c.letter === '=' || c.letter === '.')) {
+    if (c.letter === '=' && !c.stamp) {
       roads += 1;
-      assert.equal(sf[0], SURFACE.earth, `${x},${z}: an earth road`);
+      assert.ok([SURFACE.grass, SURFACE.forest, SURFACE.sand].includes(sf[0]), `${x},${z}: the ground under the road`);
       assert.ok(Math.abs(Math.hypot(sf[1], sf[2]) - 1) < 0.05, `${x},${z}: the direction of the road`);
-    } else if (c.letter === '.' || c.letter === '=') assert.ok(sf[0] === SURFACE.grass || sf[0] === SURFACE.forest, `${x},${z}: grass`);
+      assert.equal(Math.abs(st[3]), c.roadHalf, `${x},${z}: the strip of the road`);
+    }
+    if (c.letter === '.') assert.ok(sf[0] === SURFACE.grass || sf[0] === SURFACE.forest, `${x},${z}: grass`);
   }
   assert.ok(roads > 10, `${roads} top faces of the road`);
-  assert.ok(parts > 8, `${parts} parts at the edge of the road`);
-  // A path of a stamp is paved, with a direction from the path cells around it.
+  // A path of a village is packed earth, with a direction from the path cells around it.
   const home = createTerrain(map, tiles, tileMap, blocks);
   const [hx, hy] = worldOf().at('phu-dong', 31, 27);
   let paved = null;
   for (let j = -12; j <= 12 && !paved; j++) for (let i = -12; i <= 12 && !paved; i++) if (tileMap.type(hx + i, hy + j) === 'path') paved = home.surface(hx + i, hy + j);
-  assert.ok(paved && paved[0] === SURFACE.paved && Math.abs(Math.hypot(paved[1], paved[2]) - 1) < 1e-6, 'a paved path of the village');
+  assert.ok(paved && paved[0] === SURFACE.packed && Math.abs(Math.hypot(paved[1], paved[2]) - 1) < 1e-6, 'a path of packed earth in the village');
 });
 
-test('a road on dry land lies a quarter block under the grass in the mesh, and keeps its height for movement', () => {
+test('a road of the land is a strip along its line: the width of the road, a shadow line on dry land, and the heights for movement do not change', () => {
   const map = mapOf('giong', 7);
   const tileMap = createPlaneTileMap(map, tiles);
   const t = createTerrain(map, tiles, tileMap, blocks);
-  // A cell of a road of the land, off the stamps and off any bank, with grass next to it.
+  // Along the roads: at each point of the smooth line, the strip covers the line out to a little
+  // under the half width on each side, and ends a little over it (where the ground beside the road
+  // is flat at the height of the road).
+  const flat = (x, z, h) => {
+    for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) if (t.topAt(x + i, z + j) !== h || !['path', 'grass'].includes(tileMap.type(x + i, z + j))) return false;
+    return true;
+  };
+  let checked = 0;
+  for (const r of map.land.roads) {
+    for (let k = 2; k < r.segs.length - 2; k += 3) {
+      const [ax, az, bx, bz] = r.segs[k];
+      const len = Math.hypot(bx - ax, bz - az) || 1;
+      const across = [-(bz - az) / len, (bx - ax) / len];
+      const [lx, lz] = [Math.floor(ax), Math.floor(az)];
+      const c = map.land.cell(lx, lz);
+      if (c.letter !== '=' || c.stamp || !flat(lx, lz, t.topAt(lx, lz))) continue;
+      assert.ok(t.roadAt(ax, az), `${r.id} at ${ax.toFixed(1)},${az.toFixed(1)}: the line is on the strip`);
+      for (const side of [-1, 1]) {
+        const at = (d) => [ax + across[0] * d * side, az + across[1] * d * side];
+        const [ix, iz] = at(r.half - 0.25);
+        const [ox, oz] = at(r.half + 0.3);
+        if (flat(Math.floor(ix), Math.floor(iz), t.topAt(lx, lz)) && flat(Math.floor(ox), Math.floor(oz), t.topAt(lx, lz))) {
+          assert.ok(t.roadAt(ix, iz), `${r.id} at ${ix.toFixed(2)},${iz.toFixed(2)}: in the strip`);
+          assert.ok(!t.roadAt(ox, oz), `${r.id} at ${ox.toFixed(2)},${oz.toFixed(2)}: out of the strip`);
+          checked += 1;
+        }
+      }
+      // The cells keep their type and their height for movement.
+      assert.equal(tileMap.type(lx, lz), 'path');
+      assert.equal(tileMap.heightAt(lx, lz), c.level, `${lx},${lz}: the height for movement`);
+    }
+  }
+  assert.ok(checked > 40, `${checked} edges of the strip`);
+  // A road cell has the color of the ground under the road: no ink line goes along the cells.
   const [px, py] = worldOf().at('phu-dong', 31, 2);
   let cell = null;
   for (let d = 0; d < 400 && !cell; d++) {
@@ -137,79 +168,13 @@ test('a road on dry land lies a quarter block under the grass in the mesh, and k
   }
   assert.ok(cell, 'a road cell on dry land next to grass');
   const [x, z] = cell;
-  assert.equal(t.inset(x, z), 0.25);
-  const cx = Math.floor(x / CHUNK);
-  const cz = Math.floor(z / CHUNK);
-  const g = chunkMesh(t, cx, cz).ground;
-  const lx = x - cx * CHUNK;
-  const lz = z - cz * CHUNK;
-  // The top face of the road cell is a quarter block down; the cell keeps its height for movement.
-  const top = t.topAt(x, z);
-  let found = null;
-  for (let v = 0; v < g.positions.length / 3; v += 4) {
-    const P = [0, 1, 2, 3].map((k) => g.positions.slice((v + k) * 3, (v + k) * 3 + 3));
-    if (P.every((p) => p[0] >= lx && p[0] <= lx + 1 && p[2] >= lz && p[2] <= lz + 1) && P.every((p) => p[1] === P[0][1]) && g.positions[v * 3 + 2] > g.positions[(v + 2) * 3 + 2]) found = P[0][1];
-  }
-  assert.equal(found, top - 0.25, 'the road is drawn a quarter block down');
-  assert.equal(tileMap.heightAt(x, z), map.land.cell(x, z).level, 'the height of the cell for movement is its level');
-  // The grass beside it shows a strip of its side down to the road.
-  const strip = [];
-  for (let v = 0; v < g.positions.length / 3; v += 4) {
-    const P = [0, 1, 2, 3].map((k) => g.positions.slice((v + k) * 3, (v + k) * 3 + 3));
-    const ys = P.map((p) => p[1]);
-    if (P.every((p) => p[0] === lx + 1) && Math.max(...ys) === top && Math.min(...ys) === top - 0.25) strip.push(P);
-  }
-  assert.ok(strip.length >= 1 || lx + 1 >= CHUNK, 'a strip of the side of the grass');
-  // A road on a bank over the paddies has no inset.
+  const top = t.topAt(x, z) - 1;
+  assert.equal(t.ground.get(x, top, z), t.ground.get(x + 1, top, z), 'the road cell has the color of the grass beside it');
+  // A road on dry land lies lower: a shadow line (a negative half width); a road on a bank does not.
+  assert.ok(t.strip(x, z)[1] < 0, 'a shadow line on dry land');
   let bank = null;
-  for (const r of map.land.roads) for (const [bx, bz] of r.line) if (!bank && map.land.cell(Math.floor(bx), Math.floor(bz)).bank === 1) bank = [Math.floor(bx), Math.floor(bz)];
-  assert.ok(bank && t.inset(...bank) === 0, 'no inset on a bank');
-});
-
-test('the edge of a road follows its line in quarter blocks, and the heights for movement do not change', () => {
-  const map = mapOf('giong', 7);
-  const tileMap = createPlaneTileMap(map, tiles);
-  const t = createTerrain(map, tiles, tileMap, blocks);
-  // The cells of the roads of the land at an angle (not along the grid), off the stamps and the
-  // banks: each quarter of a cell on or beside the road is road when its middle is clearly in the
-  // road, and land when it is clearly out (on the flat grass beside the road).
-  let checked = 0;
-  let split = 0;
-  for (const r of map.land.roads) {
-    for (let k = 0; k < r.line.length; k += 4) {
-      const [lx, lz] = r.line[k].map(Math.floor);
-      const c = map.land.cell(lx, lz);
-      if (c.letter !== '=' || c.stamp || c.bank || !c.roadDir || Math.min(Math.abs(c.roadDir[0]), Math.abs(c.roadDir[1])) < 0.3) continue;
-      for (let dz = -3; dz <= 3; dz++) {
-        for (let dx = -3; dx <= 3; dx++) {
-          const x = lx + dx;
-          const z = lz + dz;
-          const q = map.land.cell(x, z);
-          if (!q.roadHalf || q.stamp || q.bank) continue;
-          if (t.split(x, z)) split += 1;
-          // Only where the cell and all its neighbors are at one height, on road or plain grass.
-          let flat = true;
-          for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
-            const type = tileMap.type(x + i, z + j);
-            if (t.topAt(x + i, z + j) !== t.topAt(x, z) || (type !== 'path' && type !== 'grass')) flat = false;
-          }
-          if (!flat) continue;
-          for (let n = 0; n < 16; n++) {
-            const px = x + ((n % 4) + 0.5) / 4;
-            const pz = z + (Math.floor(n / 4) + 0.5) / 4;
-            const d = Math.abs((px - x - 0.5) * -q.roadDir[1] + (pz - z - 0.5) * q.roadDir[0] - q.roadOff);
-            if (Math.abs(d - q.roadHalf) < 0.2) continue;
-            assert.equal(t.roadAt(px, pz), d < q.roadHalf, `${r.id} at ${px},${pz}: ${d.toFixed(2)} from the line`);
-            // A figure stands on the road as it is drawn: a quarter block down on a dry road.
-            assert.equal(t.dropAt(px, pz), d < q.roadHalf ? 0.25 : 0, `${px},${pz}: the drop`);
-            checked += 1;
-          }
-          assert.equal(tileMap.heightAt(x, z), q.level, `${x},${z}: the height for movement`);
-        }
-      }
-    }
-  }
-  assert.ok(checked > 500 && split > 20, `${checked} quarters, ${split} cells in parts`);
+  for (const rd of map.land.roads) for (const [bx, bz] of rd.line) if (!bank && map.land.cell(Math.floor(bx), Math.floor(bz)).bank === 1) bank = [Math.floor(bx), Math.floor(bz)];
+  assert.ok(bank && t.strip(...bank)[1] > 0, 'no shadow line on a bank');
 });
 
 test('tufts of grass and reeds grow along roads, fields, and water, never on them, and a dig takes one', () => {
@@ -227,6 +192,7 @@ test('tufts of grass and reeds grow along roads, fields, and water, never on the
     const x = Math.floor(s.x);
     const z = Math.floor(s.z);
     assert.ok(tileMap.type(x, z) === 'grass' || (s.reed && tileMap.type(x, z) === 'sand'), `a tuft at ${x},${z} stands on grass, or reeds on sand`);
+    assert.ok(!t.roadAt(s.x, s.z), `a tuft at ${s.x.toFixed(2)},${s.z.toFixed(2)} is off the strip of a road`);
     assert.deepEqual(s.owner.slice(0, 1).concat(s.owner.slice(2)), [x, z], 'the owner is the ground block under it');
     assert.ok(s.ownerGrid === 'ground' && t.ground.get(...s.owner) && !t.ground.get(s.owner[0], s.owner[1] + 1, s.owner[2]), 'the owner is the top block of its column');
   }

@@ -141,7 +141,7 @@ const smooth = (a, b, x) => {
 };
 const PAPER_RGB = [1, 3, 5].map((i) => parseInt(C.paper.slice(i, i + 2), 16) / 255);
 
-export function createFigureLayer(scene, lookOf, { camera = null, detail = null, zoom = () => 0, mistAt = () => 0, insetAt = () => 0 } = {}) {
+export function createFigureLayer(scene, lookOf, { camera = null, detail = null, zoom = () => 0, mistAt = () => 0 } = {}) {
   const box = unitBox();
   const plain = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PARTS), 1);
   box.setAttribute('plain', plain);
@@ -253,8 +253,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         f.running = (e.motion?.speed ?? 0) > 11;
         // A rider sits on the back of Nghé; a swimmer at the ford is a little lower in the water;
         // in the surf the feet sink into the sand, so that the water comes to the knee.
-        // On a road with an inset (src/world/terrain.js) the feet stand on the road as it is drawn.
-        f.offset = (e.riding ? RIDER : 0) - (e.motion?.wade ? WADE : e.motion?.shallow && !e.control ? 0.3 : 0) - insetAt(p.x / 2, p.z / 2);
+        f.offset = (e.riding ? RIDER : 0) - (e.motion?.wade ? WADE : e.motion?.shallow && !e.control ? 0.3 : 0);
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
         f.want = e.riding ? 'ride' : WANTS[e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
         f.bend = e.react?.bend ?? null;

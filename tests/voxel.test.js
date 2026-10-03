@@ -30,31 +30,26 @@ test('a grid keeps a color and an owner for each block, and colors come from the
   assert.deepEqual([a.next(), a.next()], [b.next(), b.next()]);
 });
 
-test('the mesher draws a top in parts: a quad for each run, and a step and lines where two parts differ', () => {
-  // Three columns in a row; the middle one is in 4 x 4 parts: the first column of parts is road a
-  // quarter block down, the rest is grass.
-  const g = createGrid(3, 1, 1);
+test('the mesher gives the strip of a road to the top faces only, in the tone of the top', () => {
+  const g = createGrid(3, 2, 1);
   g.box(0, 0, 0, 2, 0, 0, 'green-pale');
-  const road = { c: colorIndex('yellowPale'), drop: 0.25 };
-  const grass = { c: colorIndex('greenPale'), drop: 0 };
-  const parts = Array.from({ length: 16 }, (_, k) => (k % 4 === 0 ? road : grass));
-  const m = meshGrid(g, { split: (x) => (x === 1 ? { n: 4, parts } : null) });
-  const quads = [];
-  for (let v = 0; v < m.positions.length / 3; v += 4) quads.push([0, 1, 2, 3].map((k) => m.positions.slice((v + k) * 3, (v + k) * 3 + 3)));
-  const tops = quads.filter((q) => q.every((p) => p[1] === q[0][1]) && q[0][2] > q[2][2]);
-  // The middle top: four rows of a road part and a run of three grass parts.
-  const mid = tops.filter((q) => q.every((p) => p[0] >= 1 && p[0] <= 2));
-  assert.equal(mid.length, 8);
-  assert.equal(mid.filter((q) => q[0][1] === 0.75).length, 4, 'the road parts are a quarter block down');
-  // A step of the grass down to the road, at x = 1.25, and the side of the first column down to it.
-  const steps = quads.filter((q) => q.every((p) => p[0] === q[0][0]) && Math.min(...q.map((p) => p[1])) === 0.75 && Math.max(...q.map((p) => p[1])) === 1);
-  assert.deepEqual([...new Set(steps.map((q) => q[0][0]))].sort(), [1, 1.25]);
-  // Lines: along the step (two heights), none between equal parts.
-  const lines = [];
-  for (let i = 0; i < m.segments.length; i += 6) lines.push(m.segments.slice(i, i + 6));
-  const at = (x, y) => lines.filter((l) => l[0] === x && l[3] === x && l[1] === y && l[4] === y);
-  assert.ok(at(1.25, 0.75).length && at(1.25, 1).length, 'lines at the top and the foot of the step');
-  assert.equal(at(1.5, 1).length, 0, 'no line between two grass parts');
+  const road = colorIndex('paperDeep');
+  const m = meshGrid(g, { strip: (x) => (x === 1 ? [road, -2] : null), shade: (x) => (x === 1 ? 0.8 : 1) });
+  assert.equal(m.strip.length, (m.positions.length / 3) * 4, 'four numbers for each vertex');
+  const plain = meshGrid(g);
+  assert.deepEqual(m.segments, plain.segments, 'the strip adds no ink line');
+  let tops = 0;
+  for (let v = 0; v < m.positions.length / 3; v += 4) {
+    const ys = [0, 1, 2, 3].map((k) => m.positions[(v + k) * 3 + 1]);
+    const xs = [0, 1, 2, 3].map((k) => m.positions[(v + k) * 3]);
+    const st = m.strip.slice(v * 4, v * 4 + 4);
+    const top = ys.every((y) => y === 1) && Math.min(...xs) === 1 && Math.max(...xs) === 2;
+    if (top) {
+      tops += 1;
+      assert.deepEqual(st, [...toneRgb(road, 0.8), -2], 'the color of the road in the tone of the top (a shadow), and the half width');
+    } else assert.deepEqual(st, [0, 0, 0, 0]);
+  }
+  assert.equal(tops, 1);
 });
 
 test('the mesher shows only the faces that can be seen, and draws ink only where it means something', () => {

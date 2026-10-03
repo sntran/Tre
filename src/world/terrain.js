@@ -32,8 +32,10 @@ const SEA = new Set(['sea', 'surf']);
 const DECKS = new Set(['bridge', 'bamboo']); // the ground types with a deck of planks over the water
 // The kinds of the surface of the ground for the printed texture (src/render/voxel.js), and the
 // kind of each ground type. A grass cell of the hills is forest floor; a path of a stamp is paved.
-export const SURFACE = Object.freeze({ none: 0, grass: 1, earth: 2, paved: 3, sand: 4, dike: 5, forest: 6, rock: 7, yard: 8 });
-const SURFACE_OF = { grass: SURFACE.grass, flowers: SURFACE.grass, hedge: SURFACE.grass, 'hedge-low': SURFACE.grass, path: SURFACE.earth, sand: SURFACE.sand, dike: SURFACE.dike, rock: SURFACE.rock, yard: SURFACE.yard };
+export const SURFACE = Object.freeze({ none: 0, grass: 1, packed: 2, paved: 3, sand: 4, dike: 5, forest: 6, rock: 7 });
+// The kind of each ground type. A path of a village is packed earth (`village` in data/tiles.json:
+// `paved` gives bricks, for a later era); a road of the land is a strip over the ground under it.
+const SURFACE_OF = { grass: SURFACE.grass, flowers: SURFACE.grass, hedge: SURFACE.grass, 'hedge-low': SURFACE.grass, sand: SURFACE.sand, dike: SURFACE.dike, rock: SURFACE.rock, yard: SURFACE.packed };
 
 // The top of the ground of a cell (world y), from the height layer.
 export const columnTop = (digit) => digit + 1;
@@ -221,7 +223,9 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
         const def = tileTypes[type] ?? {};
         const h = tops[gz * GW + gx];
         const full = DECKS.has(type) ? 1 : baseTop(x, z);
-        const top = DECKS.has(type) ? 'yellowPale' : def.color ?? 'greenPale';
+        // A road of the land is a strip over the ground (strip): its cells have the color of the
+        // ground under it, so that no ink line follows the cells.
+        const top = DECKS.has(type) ? 'yellowPale' : isLandRoad(x, z) ? tileTypes[underOf(x, z)]?.color ?? 'greenPale' : def.color ?? 'greenPale';
         const under = def.under ?? 'wood';
         for (let y = 0; y < h; y++) {
           // The depth under the first top of the column (a dug column keeps the kinds of its blocks).
@@ -362,9 +366,20 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
           if ((t === 'field' || t === 'dike') && chance < 0.35) { side = [dx, dz]; chance = 0.35; }
         }
         if (!side || roll >= chance) continue;
-        // Near the edge of the cell on the side of the road, the field, or the water.
-        const tx = x + 0.5 + side[0] * 0.32 + (lean - 0.5) * 0.4 * Math.abs(side[1]);
-        const tz = z + 0.5 + side[1] * 0.32 + (lean - 0.5) * 0.4 * Math.abs(side[0]);
+        // Near the edge of the cell on the side of the road, the field, or the water. Beside the
+        // strip of a road: just out of its edge, on the side of the line of this cell, so that the
+        // tufts cover the seam.
+        let tx = x + 0.5 + side[0] * 0.32 + (lean - 0.5) * 0.4 * Math.abs(side[1]);
+        let tz = z + 0.5 + side[1] * 0.32 + (lean - 0.5) * 0.4 * Math.abs(side[0]);
+        const c = roadCellOf(x, z) && !reed ? map.land.cell(x, z) : null;
+        if (c) {
+          const [dx, dz] = c.roadDir;
+          const at = -c.roadOff;
+          const move = Math.sign(at || 1) * (c.roadHalf + STRIP_EDGE + 0.12 + lean * 0.12) - at;
+          tx = x + 0.5 - dz * move + dx * (lean - 0.5) * 0.6;
+          tz = z + 0.5 + dx * move + dz * (lean - 0.5) * 0.6;
+          if (Math.floor(tx) !== x || Math.floor(tz) !== z) continue;
+        }
         if (writer.get(Math.floor(tx * 2), world.groundTop(tx * 2, tz * 2), Math.floor(tz * 2)) || roadAt(tx, tz)) continue;
         const y = baseTop(x, z);
         page.smooth.push({ kind: 'tuft', x: tx, y, z: tz, reed, side, seed, who: 0, owner: [x, y - 1, z], ownerGrid: 'ground' });
@@ -514,50 +529,109 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
   // A shadow makes the top of the ground a little darker.
   const shade = (x, y, z) => (pageOf(x, z)?.shadows.has(`${x},${z}`) ? 0.8 : 1);
 
+  // The roads of the land are strips over the ground (src/render/voxel.js): each top face on or
+  // beside a road keeps the direction of the smooth line of the road, the distance of the cell from
+  // it, and the half width of the road, and the shader draws the road where a point is within the
+  // half width, with a soft edge. So the edge follows the line, with no step from cell to cell. The
+  // cells keep their types and their heights for movement.
+  const STRIP_TYPES = new Set(['grass', 'flowers', 'sand', 'yard']);
+  const NEAR8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+  const isLandRoad = (x, z) => typeAt(x, z) === 'path' && (map.land?.cell?.(x, z).roadHalf ?? 0) > 0;
+  // The ground under a road cell: the most common plain ground type next to it (grass if none).
+  function underOf(x, z) {
+    const count = new Map();
+    for (const [dx, dz] of NEAR8) {
+      const t = typeAt(x + dx, z + dz);
+      if (STRIP_TYPES.has(t) && t !== 'yard') count.set(t, (count.get(t) ?? 0) + 1);
+    }
+    let best = 'grass';
+    for (const [t, n] of count) if (n > (count.get(best) ?? 0)) best = t;
+    return best;
+  }
+  // The road cell whose strip goes over a cell: the cell itself, or a road cell next to it at the
+  // same height (a cell beside the road on plain ground). null for any other cell.
+  function roadCellOf(x, z) {
+    const c = map.land?.cell?.(x, z);
+    if (!c || !c.roadHalf || !c.roadDir || dugAt(x, z)) return null;
+    if (isLandRoad(x, z)) return [x, z];
+    if (!STRIP_TYPES.has(typeAt(x, z))) return null;
+    const h = baseTop(x, z);
+    for (const [dx, dz] of NEAR8) if (isLandRoad(x + dx, z + dz) && baseTop(x + dx, z + dz) === h && !dugAt(x + dx, z + dz)) return [x + dx, z + dz];
+    return null;
+  }
+  // A road of the land on dry land lies a little lower than the grass: the strip shows a shadow
+  // line along its edges. A road on a bank over the paddies, or next to one, does not.
+  function lowRoad(x, z) {
+    const c = map.land.cell(x, z);
+    if (c.bank) return false;
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (map.land.cell(x + dx, z + dz).bank === 1) return false;
+    return true;
+  }
+  // The strip over a top: [the color index of the road, its half width (negative on a road that lies
+  // lower)], or null.
+  const roadColor = colorIndex(tileTypes.path?.color ?? 'paperDeep');
+  function strip(x, z) {
+    const r = roadCellOf(x, z);
+    if (!r) return null;
+    const half = map.land.cell(x, z).roadHalf;
+    return [roadColor, lowRoad(r[0], r[1]) ? -half : half];
+  }
+  // The edge of the strip: the soft band where the road goes into the ground (in cells, on each
+  // side of the half width).
+  const STRIP_EDGE = 0.12;
+  // Is a point on the strip of a road (the soft band included)?
+  function roadAt(fx, fz) {
+    const x = Math.floor(fx);
+    const z = Math.floor(fz);
+    if (!roadCellOf(x, z)) return false;
+    const c = map.land.cell(x, z);
+    const [dx, dz] = c.roadDir;
+    return Math.abs((fx - x - 0.5) * -dz + (fz - z - 0.5) * dx - c.roadOff) < c.roadHalf + STRIP_EDGE;
+  }
+
   // The surface of the top of a cell, for the printed texture of the ground (src/render/voxel.js):
   // [kind (SURFACE), dx, dz (the direction of a road), off (the signed distance of the cell from
   // the middle line of the road), wet (-1 dry high land to 1 next to water), density (of the
-  // strokes of grass)]. A road of the land takes its direction from its line; a path of a stamp
-  // takes it from the path cells around it.
+  // strokes of grass)]. A cell under or beside the strip of a road takes the direction from the
+  // line of the road; a path of a village takes it from the path cells around it.
   const isPath = (x, z) => typeAt(x, z) === 'path';
+  const VILLAGE = SURFACE[tileTypes.path?.village ?? 'packed'] ?? SURFACE.packed;
   function surface(x, z) {
     const type = typeAt(x, z);
     const c = map.land?.cell?.(x, z) ?? null;
     const stamp = c ? c.stamp : true;
-    let kind = SURFACE_OF[type] ?? 0;
+    const road = roadCellOf(x, z);
+    let kind = type === 'path' ? (road ? SURFACE_OF[underOf(x, z)] : VILLAGE) : SURFACE_OF[type] ?? 0;
     if (kind === SURFACE.grass && c && !stamp && c.level >= 5) kind = SURFACE.forest;
-    if (kind === SURFACE.earth && stamp) kind = SURFACE.paved;
     let dx = 0;
     let dz = 0;
     let off = 0;
-    if (kind === SURFACE.earth || kind === SURFACE.paved) {
-      if (c?.roadDir) {
-        [dx, dz] = c.roadDir;
-        // The across axis is (-dz, dx); the line keeps the distance on the other side.
-        off = -c.roadOff;
-      } else {
-        // The main axis of the path cells within two cells, and the middle of them.
-        let n = 0;
-        let mx = 0;
-        let mz = 0;
-        const pts = [];
-        for (let j = -2; j <= 2; j++) for (let i = -2; i <= 2; i++) if (isPath(x + i, z + j)) { pts.push([i, j]); mx += i; mz += j; n += 1; }
-        mx /= n;
-        mz /= n;
-        let sxx = 0;
-        let szz = 0;
-        let sxz = 0;
-        for (const [i, j] of pts) {
-          sxx += (i - mx) ** 2;
-          szz += (j - mz) ** 2;
-          sxz += (i - mx) * (j - mz);
-        }
-        const a = 0.5 * Math.atan2(2 * sxz, sxx - szz);
-        dx = Math.cos(a);
-        dz = Math.sin(a);
-        // The cell is off the middle of the path cells across the axis.
-        off = -(mx * -dz + mz * dx);
+    if (road) {
+      [dx, dz] = c.roadDir;
+      // The across axis is (-dz, dx); the line keeps the distance on the other side.
+      off = -c.roadOff;
+    } else if (type === 'path') {
+      // The main axis of the path cells within two cells, and the middle of them.
+      let n = 0;
+      let mx = 0;
+      let mz = 0;
+      const pts = [];
+      for (let j = -2; j <= 2; j++) for (let i = -2; i <= 2; i++) if (isPath(x + i, z + j)) { pts.push([i, j]); mx += i; mz += j; n += 1; }
+      mx /= n;
+      mz /= n;
+      let sxx = 0;
+      let szz = 0;
+      let sxz = 0;
+      for (const [i, j] of pts) {
+        sxx += (i - mx) ** 2;
+        szz += (j - mz) ** 2;
+        sxz += (i - mx) * (j - mz);
       }
+      const a = 0.5 * Math.atan2(2 * sxz, sxx - szz);
+      dx = Math.cos(a);
+      dz = Math.sin(a);
+      // The cell is off the middle of the path cells across the axis.
+      off = -(mx * -dz + mz * dx);
     }
     let wet = 0;
     let density = 0.75;
@@ -569,104 +643,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     }
     return [kind, dx, dz, off, wet, density];
   }
-  // How much lower the top of a cell is drawn: an earth road of the land on dry land lies a quarter
-  // block under the grass beside it (the mesh only; the cell keeps its height for movement). A road
-  // on a bank over the paddies has none.
-  const INSET = 0.25;
-  function inset(x, z) {
-    if (typeAt(x, z) !== 'path') return 0;
-    const c = map.land?.cell?.(x, z);
-    if (!c || c.stamp || c.bank) return 0;
-    // The end of a bank: no inset next to it, so that the road does not step twice.
-    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (map.land.cell(x + dx, z + dz).bank === 1) return 0;
-    return INSET;
-  }
   const topAt = (x, z) => Math.max(0, baseTop(x, z) - dugAt(x, z));
-
-  // The edge of a road of the land in quarter blocks (split in src/world/mesher.js): the top of a
-  // cell on or beside a road is 4 x 4 parts, and a part is road when its middle is within the half
-  // width of the smooth line of the road. So the edge follows the line, in steps of a quarter
-  // block. A part of a road cell out of the road takes the ground of a cell next to it at the same
-  // height; a part of a cell beside the road in the road takes the road of a road cell next to it
-  // at the same height (and its inset). The heights for movement do not change.
-  const PARTS = 4;
-  const PLAIN = new Set([SURFACE.grass, SURFACE.forest, SURFACE.sand, SURFACE.yard]);
-  const QUARTERS = Array.from({ length: PARTS * PARTS }, (_, k) => [((k % PARTS) + 0.5) / PARTS, (Math.floor(k / PARTS) + 0.5) / PARTS]);
-  // A part takes another kind than its cell only when it is clearly over the edge (by MARGIN), so
-  // that a road along the grid keeps a straight edge with no small teeth.
-  const MARGIN = 0.15;
-  const topColor = (type) => colorIndex(DECKS.has(type) ? 'yellowPale' : tileTypes[type]?.color ?? 'greenPale');
-  const isLandRoad = (x, z) => typeAt(x, z) === 'path' && (map.land?.cell?.(x, z).roadHalf ?? 0) > 0;
-  function split(x, z) {
-    const c = map.land?.cell?.(x, z);
-    if (!c || !c.roadHalf || !c.roadDir || dugAt(x, z)) return null;
-    const road = isLandRoad(x, z);
-    if (!road && !PLAIN.has(surface(x, z)[0])) return null;
-    const [dx, dz] = c.roadDir;
-    // The distance of each part from the line: the signed distance of the middle of the cell, and
-    // the step across the line (-dz, dx) from the middle of the cell to the middle of the part.
-    const d = QUARTERS.map(([qx, qz]) => Math.abs((qx - 0.5) * -dz + (qz - 0.5) * dx - c.roadOff));
-    const inRoad = d.map((v) => v < c.roadHalf + (road ? MARGIN : -MARGIN));
-    if (road ? inRoad.every(Boolean) : !inRoad.some(Boolean)) return null;
-    const h = topAt(x, z);
-    // A cell next to a part (on its two sides, then on its corner) at the same height.
-    const nextTo = (k, want) => {
-      const sx = QUARTERS[k][0] < 0.5 ? -1 : 1;
-      const sz = QUARTERS[k][1] < 0.5 ? -1 : 1;
-      for (const [ddx, ddz] of [[sx, 0], [0, sz], [sx, sz]]) {
-        const nx = x + ddx;
-        const nz = z + ddz;
-        if (topAt(nx, nz) === h && !dugAt(nx, nz) && want(nx, nz)) return [nx, nz];
-      }
-      return null;
-    };
-    const plain = (nx, nz) => typeAt(nx, nz) !== 'path' && PLAIN.has(surface(nx, nz)[0]);
-    const own = { c: topColor(typeAt(x, z)), drop: inset(x, z), sf: surface(x, z) };
-    const kinds = new Map(); // one part for each cell next to this one, so that equal parts merge
-    let changed = false;
-    const parts = d.map((_, k) => {
-      if (road && !inRoad[k]) {
-        const q = nextTo(k, plain);
-        if (!q) return own;
-        changed = true;
-        const key = `land:${q}`;
-        if (!kinds.has(key)) kinds.set(key, { c: topColor(typeAt(q[0], q[1])), drop: 0, sf: surface(q[0], q[1]) });
-        return kinds.get(key);
-      }
-      if (!road && inRoad[k]) {
-        const q = nextTo(k, isLandRoad);
-        if (!q) return own;
-        changed = true;
-        const key = `road:${q}`;
-        if (!kinds.has(key)) {
-          // The road on a cell beside it: the kind of the road, with the line seen from this cell.
-          const sf = own.sf.slice();
-          sf[0] = surface(q[0], q[1])[0];
-          [sf[1], sf[2]] = c.roadDir;
-          sf[3] = -c.roadOff;
-          kinds.set(key, { c: topColor('path'), drop: inset(q[0], q[1]), sf });
-        }
-        return kinds.get(key);
-      }
-      return own;
-    });
-    return changed ? { n: PARTS, parts } : null;
-  }
-  // The part of a cell at a point (a part of a split, or the whole cell).
-  const partAt = (fx, fz) => {
-    const x = Math.floor(fx);
-    const z = Math.floor(fz);
-    const q = split(x, z);
-    if (!q) return null;
-    return q.parts[Math.min(PARTS - 1, Math.floor((fz - z) * PARTS)) * PARTS + Math.min(PARTS - 1, Math.floor((fx - x) * PARTS))];
-  };
-  // How much lower the ground is drawn at a point (a figure stands on the ground as it is drawn).
-  const dropAt = (fx, fz) => partAt(fx, fz)?.drop ?? inset(Math.floor(fx), Math.floor(fz));
-  // Is the ground at a point road (a part of a cell beside a road too)?
-  const roadAt = (fx, fz) => {
-    const p = partAt(fx, fz);
-    return p ? p.c === topColor('path') : typeAt(Math.floor(fx), Math.floor(fz)) === 'path';
-  };
 
   const terrain = {
     width: W,
@@ -676,9 +653,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     fine: fineView,
     shade,
     surface,
-    inset,
-    split,
-    dropAt,
+    strip,
     roadAt,
     topAt,
     baseTop,
