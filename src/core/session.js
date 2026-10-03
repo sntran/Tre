@@ -45,9 +45,10 @@ import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
 import { REACH, learnerRecord, canPut } from './world/zones.js';
-import { setupTrial, clearTrial } from './world/systems/work.js';
+import { setupTrial, clearTrial, addToHeap } from './world/systems/work.js';
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
+import { createMentoring } from './mentoring.js';
 import { createRaid, raidLevel } from './world/raids.js';
 import { setupRaid, roadPoint } from './world/systems/raid.js';
 import { lossLevel } from './profile.js';
@@ -97,6 +98,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The practice of a visit from a practice link (src/core/practice.js), or null: { id, trial,
   // person, set, level, back, round, stayed }.
   let practice = null;
+  // The mentors of the tasks: the person who gives a task watches the child and answers (docs/MENTOR.md).
+  const mentoring = createMentoring({
+    data, profile, learner, log, emit, world: () => state, env: () => env,
+    // A bigger task: the next round of a practice is one level higher, and the teacher brings more
+    // rods (two bundles more on the heap).
+    raise: (key) => {
+      if (practice && key === `trial-${practice.trial}`) practice.level = Math.min(2, practice.level + 1);
+      const scholar = trialDef('scholar');
+      if (key === 'trial-scholar' && scholar) addToHeap(state, 'trial-scholar', 'rods', 'rod', (scholar.bundle ?? 10) * 2);
+    },
+  });
 
   const hero = () => getEntity(state, 'hero');
   const heroCell = () => ({ x: hero().position.x / 2, y: hero().position.z / 2 });
@@ -173,6 +185,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     turning = null;
     arrivals.clear();
     raidEnc = null; // a raid does not go on in the save (its enemies leave with the map)
+    mentoring.reset();
     screen = null;
     busy = false;
     pending = [];
@@ -462,6 +475,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The things that the child brought go into the task (the iron for the horse).
     if (def.take && !trialZone(id)) applyEffects(profile, [{ take: def.take }, ...(def.startSet ? [{ set: def.startSet }] : [])]);
     setupTrial(state, def, practicing ? practice.level : levelFor(data.trials, profile.grade), env);
+    mentoring.start(`trial-${id}`);
     emit({ type: 'hud' });
   }
   // A trial is done: the flag, the reward that flies to the counters, and the done line.
@@ -755,7 +769,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const rng = createRng(hashSeed(`${state.seed}:event-task:${id}:${ent.dayEvent.area ?? map.id}:${day}`));
     // The level: the grade, and P(L) of the skill of the event in the skill model.
     const p = learner()?.entry(def.levelBy)?.p ?? null;
-    const level = eventLevel(data.events, levelFor(data.trials ?? { grades: {} }, profile.grade), p);
+    // A mentor that asked for a bigger task last time (a move raise): one level up, this time.
+    const mem = profile.mentors?.[`event-${id}`];
+    const lift = mem?.lift ?? 0;
+    if (mem) mem.lift = 0;
+    const level = Math.max(0, Math.min(def.levels.length - 1, eventLevel(data.events, levelFor(data.trials ?? { grades: {} }, profile.grade), p) + lift));
     const task = eventTask(def, level, rng);
     let pile = task.pile;
     if (def.pay) {
@@ -798,6 +816,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       need: task.need, skill: task.skill, level: task.level, day, event: id, levels: [{}],
       at: { target: hb(placeAt), pile: hb(pileAt), lost: lost.map(hb), strays: strays.map(hb) }, strayLook: def.strayLook,
     }, 0, env);
+    mentoring.start(`event-${id}`);
     say(def.lines.start, { need: { key: `num.${task.need}` } }, null, def.person);
     emit({ type: 'hud' });
   }
@@ -1269,6 +1288,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     const hit = target.ground;
     if (!hit) return;
+    // With empty hands, a tap at the place of a task is a check (the hero walks there and looks).
+    if (!holding()) mentoring.checkAt(hit.x * 2, hit.y * 2);
     if (tapTrialZone(hit) || (raidOn() && tapRaidRoad(hit))) {
       emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.h });
       return;
@@ -1373,8 +1394,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
       emit({ type: 'open', screen: 'callout', id: ev.id, textKey: marketLine() ?? GREETS[n % GREETS.length], params: { name: profile.hero.name } });
     }
-    // The fisher calls out when a plank is too long.
-    if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: {} });
+    // A person calls out: the fisher when a plank is too long, and the lines of the mentors.
+    if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {} });
+    // The mentors read the commits (before the learner takes them), the plank too long, and the
+    // actions of the hands.
+    if (ev.type === 'skill') mentoring.skill(ev);
+    if (ev.type === 'long') mentoring.long(ev);
+    mentoring.worldEvent(ev);
     if ((ev.type === 'solid' || ev.type === 'break') && ev.give) {
       // The gift flies from the thing to its counter in the HUD; no number is written in the world.
       applyEffects(profile, [{ give: ev.give }]);
@@ -1495,6 +1521,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         worldEvent(ev);
         continue;
       }
+      mentoring.worldEvent(ev);
       if (ev.type === 'arrived' || ev.type === 'stuck') {
         const fn = arrivals.get(ev.token);
         arrivals.delete(ev.token);
@@ -1503,6 +1530,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (ev.type === 'arrived' || back) fn?.();
       }
     }
+    mentoring.tick();
     checkRest();
     checkEdge();
     checkLandFerries();
@@ -1596,6 +1624,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (type === 'tap') tap(cmd.target ?? {});
     else if (type === 'hands') handsKey();
+    // A wave: the child calls the person of the task (docs/MENTOR.md).
+    else if (type === 'wave') mentoring.wave();
     else if (type === 'talkTo') walkToPerson(cmd.id);
     // In a raid the map only pauses: it says where the enemies are, and it has no travel.
     else if (type === 'travel') queue(() => openCommand(raidOn() ? { open: 'worldmap', pauseKey: data.raids.raids[raidEnt().raid.id].pauseKey ?? null } : { open: 'worldmap' }));
@@ -1658,6 +1688,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     get screen() { return screen?.screen ?? null; },
     get busy() { return busy; },
     get profile() { return profile; },
+    // The task with a mentor that the hero works on now (the view shows the wave), or null.
+    get mentorTask() { return mentoring.activeKey(); },
+    // The mentor of a task (for the tests and the debug panel).
+    mentorOf: (key) => mentoring.stateOf(key),
     // The practice of the visit (a copy), or null.
     get practice() { return practice ? { ...practice } : null; },
     // The data of the game (for the stories: the looks of the portraits).

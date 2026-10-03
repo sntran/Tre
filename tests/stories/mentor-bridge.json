@@ -1,0 +1,216 @@
+{
+  "name": "mentor-bridge",
+  "about": {
+    "vi": "Người giao việc ở cầu: hai tấm ván bốn còn thiếu một tấm, chú đánh cá đếm từng tấm và chỉ chỗ thiếu; lần sau đúng, chú chỉ đứng xem.",
+    "en": "The mentor at the bridge: two planks of four are one plank short; the fisher counts the planks one by one and marks the empty part; the next try is right, and the fisher only watches."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    46,
+    61
+  ],
+  "steps": [
+    {
+      "wait": 1.5
+    },
+    {
+      "tap": {
+        "plank": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 20
+      }
+    },
+    {
+      "tap": {
+        "zone": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1.5
+    },
+    {
+      "tap": {
+        "plank": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 20
+      }
+    },
+    {
+      "tap": {
+        "zone": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1.5
+    },
+    {
+      "tap": {
+        "zone": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "tip",
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "mentor",
+          "with": {
+            "key": "bridge",
+            "diagnosis": "missing",
+            "move": "mark",
+            "level": 1
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "mentor.mark"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "wait": 1.2
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "mentor-mark",
+            "min": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "num.4"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "pulled",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "tap": {
+        "plank": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 20
+      }
+    },
+    {
+      "tap": {
+        "zone": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1.5
+    },
+    {
+      "tap": {
+        "plank": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 20
+      }
+    },
+    {
+      "tap": {
+        "zone": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1.5
+    },
+    {
+      "tap": {
+        "zone": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "solid",
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "mentor",
+          "with": {
+            "key": "bridge",
+            "diagnosis": "ok",
+            "move": "wait",
+            "level": 0
+          }
+        },
+        {
+          "zone": "bridge-gap",
+          "state": "solid"
+        }
+      ]
+    }
+  ]
+}

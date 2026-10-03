@@ -8,8 +8,8 @@ const vi = load('i18n/vi.json');
 const en = load('i18n/en.json');
 const sum = cfg.families.groups;
 const span = cfg.families.span;
-// A try: the parts, the target, and the seconds of the try (normal: two seconds a part).
-const tryOf = (parts, target, extra = {}) => ({ parts, target, solved: parts.reduce((a, b) => a + b, 0) === target, timeS: parts.length * 2, sizes: [1, 2, 5], fact: target, pL: 0.4, resets: 0, ...extra });
+// A try: the parts, the target, and the seconds of the try (normal: one and a half seconds a unit).
+const tryOf = (parts, target, extra = {}) => ({ parts, target, solved: parts.reduce((a, b) => a + b, 0) === target, timeS: target * 1.5, sizes: [1, 2, 5], fact: target, pL: 0.4, resets: 0, ...extra });
 
 test('the help level is contingent: down after a success, up after a miss, none at mastery', () => {
   assert.equal(shiftLevel(2, true, 0.4, cfg), 1);
@@ -42,7 +42,8 @@ test('the diagnoses of made-up commits', () => {
   assert.equal(d(tryOf([1, 1, 1, 1, 1, 1, 1], 7, { timeS: 40 })), 'counting');
   // Fast and far off: a guess; the mashing flag is a guess too.
   assert.equal(d(tryOf([5, 5, 5, 2], 7, { timeS: 1 })), 'guess');
-  assert.equal(d(tryOf([5, 2], 7, { mashing: true })), 'guess');
+  assert.equal(d(tryOf([5, 1], 7, { mashing: true })), 'guess');
+  assert.notEqual(d(tryOf([5, 2], 7, { mashing: true })), 'guess', 'a right try with the signs is no miss');
   // The same fact missed twice: stuck.
   const st = newMentor('t');
   onCommit(st, newMemory(), tryOf([5, 5], 7), sum, cfg);

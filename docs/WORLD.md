@@ -94,6 +94,8 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 
 Randomness comes only from the `rng` of the step. The same seed and the same commands give the same world.
 
+The **mentor** system (after the work) plays the moves of the mentors of the tasks: a person points, marks lie on the ground for a few seconds, the things of a demonstration on another instance come one at a time, and a person puts some parts into the place for the child (`docs/MENTOR.md`).
+
 ## Placement
 
 Placement is the core verb: the hero picks up a thing, carries it, puts it in a zone or on the ground, and picks it up again. A thing snaps to the half-block grid: its position is whole numbers, and on the ground it lies square to the grid. The rules are pure functions in `src/core/world/zones.js`; the place system (`systems/place.js`) uses them. `docs/DESIGN.md` ("Learning by doing: the rules from the evidence") gives the reasons.

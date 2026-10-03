@@ -1,0 +1,199 @@
+{
+  "name": "mentor-share",
+  "about": {
+    "vi": "Người giao việc thấy con nản: ba lần liền xe vẫn lún; bác đánh xe làm chung, tự chèn khoảng một nửa số đá còn thiếu, phần còn lại để An làm.",
+    "en": "The mentor sees frustration: three times in a row the cart still sinks; the carter shares the task and puts in about half of the stones that are still missing, and leaves the rest to An."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    },
+    "skills": {
+      "math.add.20": 0.4
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    14.5,
+    80.5
+  ],
+  "steps": [
+    {
+      "do": {
+        "type": "event",
+        "id": "cart"
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "item": "stones"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "event-cart-place"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.cart.short"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.cart.short"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "mentor",
+          "with": {
+            "key": "event-cart",
+            "diagnosis": "frustrated",
+            "move": "share"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "mentor.share"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "with": {
+          "id": "event:cart"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "wait": 3
+    },
+    {
+      "expect": [
+        {
+          "zone": "event-cart-place",
+          "planks": ">= 3"
+        },
+        {
+          "zone": "trial-event-cart",
+          "state": "open"
+        }
+      ]
+    }
+  ]
+}

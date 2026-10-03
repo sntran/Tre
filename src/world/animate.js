@@ -4,7 +4,8 @@
 // States: idle, walk, run, graze (four legs, after some idle time), rest (sit or lie down),
 // wave (a person waves an arm), swim (a float or a serpent in the water). want 'shake': Nghé
 // shakes its head (no); 'stretch': Nghé stretches its neck toward something; 'horns': Nghé
-// lowers its horns; 'lift': a person lifts the right arm high; 'pole': a ferryman pushes his
+// lowers its horns; 'lift': a person lifts the right arm high; 'point': a person points to the
+// front (a mentor); 'pole': a ferryman pushes his
 // pole. The fine figures (src/world/fine.js)
 // have knees and feet: a knee bends while its leg swings through, the heel lifts behind, and the
 // head bobs a little with each step. The coarse figures have no shins and no feet, so these
@@ -57,6 +58,11 @@ export function animate(a, input) {
     rot.footR = [-Math.max(0, -sw) * 0.35, 0, 0];
     rot.armL = [-sw * 0.8, 0, 0];
     rot.armR = [sw * 0.8 - a.wave * 0.2, 0, -a.wave * (1.9 + Math.sin(a.time * 8) * 0.35)];
+    // Point: the right arm goes out to the front, a little down, toward what matters (a mentor).
+    if (input.want === 'point') {
+      rot.armR = [-1.35, 0, 0.1];
+      rot.head = [0.12, 0, 0];
+    }
     // Lift: the arm with the staff goes up high (the general before a big blow).
     if (input.want === 'lift') rot.armR = [-2.9 + Math.sin(a.time * 6) * 0.08, 0, 0];
     // Pole: the ferryman pushes his pole down and back in time with the boat, with both hands.

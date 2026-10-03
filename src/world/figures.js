@@ -664,6 +664,9 @@ export function workThing(look) {
       for (const [x, z, w, d] of [[0, -2, 4.4, 0.2], [0, 2, 4.4, 0.2], [-2.2, 0, 0.2, 4], [2.2, 0.8, 0.2, 2.4]]) parts.push(P(`side${x}${z}`, [w, 0.6, d], 'yellow', [x, 0.3, z]));
       return still(parts, 0.6);
     }
+    // The mark of a mentor: a red ring on the ground and a small red flag on a stick, where the
+    // person points (what matters, the heap, the place).
+    case 'mentor-mark': return still([P('ring', [1.4, 0.06, 1.4], 'vermilion', [0, 0.03, 0]), P('hole', [0.9, 0.07, 0.9], 'paper', [0, 0.035, 0]), P('stick', [0.15, 1.6, 0.15], 'wood', [0, 0.8, 0]), P('flag', [0.6, 0.4, 0.08], 'vermilion', [0.3, 1.4, 0])], 1.6);
     // A chalk mark across the stem.
     case 'chalk': return still([P('mark', [1.3, 0.08, 0.25], 'vermilion', [0, 0.45, 0]), P('dotA', [0.25, 0.4, 0.25], 'vermilion', [-0.65, 0.25, 0]), P('dotB', [0.25, 0.4, 0.25], 'vermilion', [0.65, 0.25, 0])], 0.5);
     // Equal bamboo sticks (or staffs) tied into a bundle.

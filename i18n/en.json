@@ -1254,5 +1254,6 @@
   "research.move.raise": "A harder task",
   "research.move.break": "A short break",
   "research.move.tryFirst": "Try first",
-  "research.move.offer": "Offer help"
+  "research.move.offer": "Offer help",
+  "ui.wave": "Wave for help"
 }

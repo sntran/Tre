@@ -85,6 +85,8 @@ export function storyProfile(story, { now = STORY_EPOCH } = {}) {
   const profile = createProfile({ id: `story-${story.name}`, name: p.name ?? 'An', gender: p.gender ?? 'boy', skin: p.skin, face: p.face, hair: p.hair, clothes: p.clothes, grade: p.grade ?? 2, lang: p.lang ?? 'vi', seed: p.seed ?? 1, now });
   Object.assign(profile.flags, p.flags ?? {});
   for (const [item, n] of Object.entries(p.items ?? {})) profile.inventory[item] = n;
+  // P(L) of some skills at the start (a child who did not master them yet).
+  for (const [id, pl] of Object.entries(p.skills ?? {})) profile.learning.skills[id] = { p: pl, r: 1000, n: 0, c: 0, streak: 0, box: 0, due: 0, last: 0, top: 0, recent: '', mastered: false };
   if (p.party) {
     profile.party = [...p.party];
     profile.friends = [...new Set([...profile.friends, ...p.party])];

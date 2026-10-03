@@ -127,7 +127,7 @@ export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
 // The pose that the act of an entity asks for (a raid: an enemy on a trap sits, a stunned general
 // kneels, the general lifts his staff; Nghé lowers her horns in a charge; the fisher holds up a
 // fish).
-const WANTS = { catch: 'lift', sit: 'rest', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns', pole: 'pole' };
+const WANTS = { point: 'point', catch: 'lift', sit: 'rest', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns', pole: 'pole' };
 
 // camera: the camera of the view (for the culling); without it, every figure draws. detail: one
 // level for all figures ('fine' or 'coarse', for the page of the figures); without it, the level
@@ -255,7 +255,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         // in the surf the feet sink into the sand, so that the water comes to the knee.
         f.offset = (e.riding ? RIDER : 0) - (e.motion?.wade ? WADE : e.motion?.shallow && !e.control ? 0.3 : 0);
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
-        f.want = e.riding ? 'ride' : WANTS[e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
+        // A mentor that points (the gesture of a move) comes before the act of the plan.
+        f.want = e.riding ? 'ride' : WANTS[e.gesture?.act ?? e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
         f.bend = e.react?.bend ?? null;
         // A tap on a sleeping animal: its ear flicks (in two held positions, as a print).
         f.flick = e.flick ?? 0;

@@ -32,6 +32,7 @@ export function newMentor(key) {
     repeat: { diag: null, n: 0 }, // the same diagnosis in a row
     helped: {}, // the diagnoses that got a move other than wait in this task
     tried: false, // the child committed at least one time
+    raised: false, // the person gave a bigger task in this task
     lastDiag: null,
     lastSolved: null,
     pending: null, // the last move, until the next commit says whether it helped
@@ -53,20 +54,24 @@ const count = (map, a, b) => {
 };
 
 // What the commit shows. input: parts (the sizes or counts of the try), target, solved, mashing,
-// resets, timeS (seconds of the try, from the first action to the commit), sizes (the sizes of the
+// resets, timeS (seconds of the try, from the first action to the commit; fast is less than
+// fastUnit for each unit of the target), sizes (the sizes of the
 // things on the pile), fact (the key of the fact: the target), left (the child left the station
-// soon after the last miss). fam: the family of the task (data/world/mentors.json).
+// soon after the last miss), allTaken (the child brought all the things of the task). fam: the
+// family of the task (data/world/mentors.json).
 export function readCommit(input, fam) {
   const parts = input.parts ?? [];
-  const n = Math.max(1, parts.length);
-  const fast = (input.timeS ?? Infinity) < fam.fastPart * n;
+  // The units of the try: the target (each kind of the basket counts), or the parts.
+  const units = fam.reader === 'sum' ? Math.max(1, input.target ?? 1) : fam.reader === 'each' ? Math.max(1, (input.target ?? 1) * parts.length) : Math.max(1, parts.length);
+  const fast = (input.timeS ?? Infinity) < fam.fastUnit * units;
   const out = { solved: Boolean(input.solved), fast, slow: false, error: 0, missing: false, units: false, far: false };
   if (fam.reader === 'sum') {
     const total = parts.reduce((a, b) => a + b, 0);
     out.error = total - (input.target ?? 0);
     out.slow = out.solved && (input.timeS ?? 0) > fam.slowUnit * Math.max(1, input.target ?? 1);
-    // The things were counted, not their units: as many things as the target, with a thing of more than one unit.
-    out.units = !out.solved && parts.length === input.target && parts.some((p) => p > 1);
+    // The things were counted, not their units: as many things as the target, or all the things of
+    // the task for a target that is less than their units, with a thing of more than one unit.
+    out.units = !out.solved && parts.some((p) => p > 1) && (parts.length === input.target || (input.allTaken && total > input.target && parts.length < input.target));
     // Off by exactly one part of the sizes that the child could choose.
     out.missing = !out.solved && !out.units && (input.sizes ?? []).includes(Math.abs(out.error));
     out.far = Math.abs(out.error) > fam.slip;
@@ -85,7 +90,8 @@ export function readCommit(input, fam) {
 export function diagnose(input, st, fam, cfg) {
   const obs = readCommit(input, fam);
   const pL = input.pL ?? 0;
-  if (input.mashing) return 'guess';
+  // The signs of mashing on a miss: a guess (a right try with them is no evidence, and no miss).
+  if (input.mashing && !obs.solved) return 'guess';
   if (!obs.solved && (st.misses + 1 >= fam.frustrated || (input.left && st.misses >= 1))) return 'frustrated';
   if (obs.solved) {
     const clean = obs.fast && !(input.resets > 0) ? st.clean + 1 : 0;
@@ -187,6 +193,9 @@ export function onCommit(st, memory, input, fam, cfg) {
     if (stage === 2) move = 'wait';
     else if (stage === 1) delay = fam.look;
   }
+  // A bigger task comes once in a task.
+  if (move === 'raise' && st.raised) move = 'wait';
+  if (move === 'raise') st.raised = true;
   if (move !== 'wait') st.helped[diag] = true;
   st.tried = true;
   st.lastDiag = diag;

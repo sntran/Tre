@@ -325,6 +325,37 @@ export function toHeap(world, thing) {
   packHeap(world, home.zone);
 }
 
+// More things of a kind on a heap of a task (a move raise of the mentor: a bigger heap). Return
+// the count of new things.
+export function addToHeap(world, owner, heapId, kind, n, look = kind) {
+  const tz = getEntity(world, `zone:${owner}`);
+  const heap = zoneEnt(world, heapId);
+  if (!tz || !heap || tz.zone.done) return 0;
+  for (let i = 0; i < n; i++) {
+    const id = `${kind}:${owner.slice(6)}:${tz.zone.made++}`;
+    addEntity(world, { id, keep: true, item: { kind, size: 1, task: owner, zone: heap.zone.id, home: heap.zone.id, held: null, set: false }, position: { x: heap.zone.x, y: heap.zone.y, z: heap.zone.z, facing: 0 }, look });
+    heap.zone.items.push(id);
+  }
+  packHeap(world, heap.zone);
+  return n;
+}
+
+// The person of a task puts a thing of the pile into the place for the child (a move of the mentor:
+// smaller or share, src/core/mentor.js). Return true when the thing went in.
+export function handPut(world, person, thing, zoneEnt, env) {
+  if (!thing?.item || thing.item.held || thing.item.set || !zoneEnt?.zone) return false;
+  const zone = zoneEnt.zone;
+  takeOut(world, thing);
+  if (zone.rule === 'bundle') {
+    thing.item.zone = zone.id;
+    zone.items.push(thing.id);
+    packMat(world, zone);
+    say(world, 'add', zoneEnt.id, { item: thing.id, by: person.id, sound: 'tap' });
+    return true;
+  }
+  return putWork(world, person, zone, thing, null, env);
+}
+
 // Take a thing out of the zone where it lies.
 function takeOut(world, thing) {
   const z = thing.item.zone ? zoneEnt(world, thing.item.zone) : null;

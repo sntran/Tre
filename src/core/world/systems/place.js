@@ -269,8 +269,6 @@ function commit(world, zoneEnt, def, hero) {
   if (solved) setSpan(world, zoneEnt, def);
   else {
     zone.fails += 1;
-    // A commit with the signs of mashing is no evidence and never an error: Nghé shows the gap.
-    if (mashing) zone.hintNext = true;
     tip(world, zoneEnt, def, hero);
   }
   for (const s of events) say(world, 'skill', zoneEnt.id, s);
@@ -445,12 +443,20 @@ function tickFall(world, e, dt, env) {
   if (zoneEnt && !zoneEnt.zone.effect) maybeHint(world, zoneEnt, defOf(env, zoneEnt.zone));
 }
 
-// After enough failures on a gap, or after a commit with the signs of mashing, Nghé stands on the
-// bank at the near end of the planks and stretches its neck toward the gap. Nghé never says a
-// number, and never stands on the planks.
+// The cue of the mentor of the bridge (src/core/mentor.js, the move cue): Nghé shows the gap. While
+// the hero falls or a plank wobbles, the cue waits for the end of it.
+export function cueHint(world, zoneEnt, env) {
+  const zone = zoneEnt?.zone;
+  if (!zone || zone.set) return;
+  zone.hintNext = true;
+  if (!query(world, 'fall').length && !zone.effect) maybeHint(world, zoneEnt, defOf(env, zone));
+}
+
+// When the mentor asks for it (a cue), Nghé stands on the bank at the near end of the planks and
+// stretches its neck toward the gap. Nghé never says a number, and never stands on the planks.
 function maybeHint(world, zoneEnt, def) {
   const zone = zoneEnt.zone;
-  const due = zone.hintNext || (def?.hint && zone.fails >= def.hint.after);
+  const due = zone.hintNext;
   delete zone.hintNext;
   if (!due || zone.set) return;
   const friend = query(world, 'follow')[0];

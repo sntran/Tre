@@ -1,0 +1,223 @@
+{
+  "name": "mentor-bored",
+  "about": {
+    "vi": "Người giao việc thấy con chán: ba bó que nhanh và đúng liền; thầy đồ mang thêm que cho hai bó nữa (một việc lớn hơn), và An bó tiếp.",
+    "en": "The mentor sees boredom: three bundles in a row, fast and right; the teacher brings rods for two more bundles (a bigger task), and An goes on."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    },
+    "skills": {
+      "math.place.1000": 0.2
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    54,
+    27
+  ],
+  "steps": [
+    {
+      "tap": {
+        "entity": "npc:teacher"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "rod",
+            "min": 46
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 10,
+      "steps": [
+        {
+          "tap": {
+            "item": "rod"
+          }
+        },
+        {
+          "until": {
+            "event": "add",
+            "timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "thing": "band:scholar"
+      }
+    },
+    {
+      "until": {
+        "event": "tie",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "mentor",
+          "with": {
+            "diagnosis": "ok",
+            "move": "wait"
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 10,
+      "steps": [
+        {
+          "tap": {
+            "item": "rod"
+          }
+        },
+        {
+          "until": {
+            "event": "add",
+            "timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "thing": "band:scholar"
+      }
+    },
+    {
+      "until": {
+        "event": "tie",
+        "timeout": 10
+      }
+    },
+    {
+      "repeat": 10,
+      "steps": [
+        {
+          "tap": {
+            "item": "rod"
+          }
+        },
+        {
+          "until": {
+            "event": "add",
+            "timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "thing": "band:scholar"
+      }
+    },
+    {
+      "until": {
+        "event": "tie",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "mentor",
+          "with": {
+            "key": "trial-scholar",
+            "diagnosis": "bored",
+            "move": "raise"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "mentor.raise"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "rod",
+            "min": 36
+          }
+        },
+        {
+          "zone": "trial-scholar",
+          "state": "open"
+        }
+      ]
+    },
+    {
+      "repeat": 10,
+      "steps": [
+        {
+          "tap": {
+            "item": "rod"
+          }
+        },
+        {
+          "until": {
+            "event": "add",
+            "timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "thing": "band:scholar"
+      }
+    },
+    {
+      "until": {
+        "event": "tie",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "rod-bundle",
+            "min": 4
+          }
+        }
+      ]
+    }
+  ]
+}

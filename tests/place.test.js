@@ -8,6 +8,7 @@ import { addHero, addFriend, addZones } from '../src/core/world/populate.js';
 import { saveWorld, loadWorld, setHeroPlace } from '../src/core/world/save.js';
 import { skillEvents, judge, minParts, learnerRecord } from '../src/core/world/zones.js';
 import { isMashing, hasSweep } from '../src/core/learnlog.js';
+import { cueHint } from '../src/core/world/systems/place.js';
 import { DAY_MINUTES } from '../src/core/world/clock.js';
 import { load, mapOf } from './helpers.js';
 
@@ -275,13 +276,17 @@ test('too short: the plank dips, the hero falls, the empty part of the gap shows
   assert.deepEqual(skills(again).map((e) => [e.solved, e.first, e.efficient]), [[true, false, false], [true, false, false]]);
 });
 
-test('after two failures Nghé stands on the bank at the near end and stretches its neck toward the gap', () => {
+test('when the mentor asks for a cue, Nghé stands on the bank at the near end and stretches its neck toward the gap', () => {
   const w = world();
   lay(w, 5);
   lay(w, 5);
   lay(w, 5); // long: 1
-  run(w, 4);
+  const first = run(w, 4);
+  assert.ok(!first.find((e) => e.type === 'hint'), 'no hint of its own: the mentor chooses the moves');
   lay(w, 4, 3); // long again: 2
+  // The mentor asks for a cue while the plank wobbles: it comes when the plank floats back.
+  cueHint(w, getEntity(w, 'zone:gap'), env);
+  assert.ok(!w.events.find((e) => e.type === 'hint'), 'not while the plank wobbles');
   const later = run(w, 4);
   assert.ok(later.find((e) => e.type === 'hint'));
   run(w, 3);
@@ -305,8 +310,10 @@ test('a commit with the signs of mashing is no evidence and no error, and Nghé 
   const [ev] = skills(events);
   assert.equal(ev.mashing, true);
   assert.equal(ev.evidence, false);
+  // The mentor reads the signs as a guess, and asks for a cue: it comes after the fall.
+  cueHint(w, getEntity(w, 'zone:gap'), env);
   const later = run(w, 8);
-  assert.ok(later.find((e) => e.type === 'hint'), 'the hint comes at once');
+  assert.ok(later.find((e) => e.type === 'hint'), 'the hint comes after the fall');
 });
 
 test('a child who thinks before each plank is not mashing, and the first choice on a gap has no think time', () => {

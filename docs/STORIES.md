@@ -18,9 +18,9 @@
 | `snapshot()` | The state as plain data. |
 | `targetAt(x, y)` | The target of a tap at a map cell, as the scene finds it under a finger. |
 
-**Commands:** the world commands `move`, `stop`, `pet`, `ride`, `aim`, `pick`, `put`, `drop`, `guess`, and `face`; `tap { target }`; `hands` (the Space key); `talkTo { id }`; `talk { dialogue }`; `travel` (the country map); `refresh`; `next` and `choose { n }` (the open talk); `closed` (the view closed a screen). In a raid: `shoot { count }` (the slingshot at the wall), `pour { source, x, y }` (an element to a map point), and `pet` (Nghé charges, when Nghé is a tool of the raid). See `docs/RAIDS.md`.
+**Commands:** the world commands `move`, `stop`, `pet`, `ride`, `aim`, `pick`, `put`, `drop`, `guess`, and `face`; `tap { target }`; `hands` (the Space key); `talkTo { id }`; `talk { dialogue }`; `travel` (the country map); `refresh`; `next` and `choose { n }` (the open talk); `wave` (the child calls the person of the task); `closed` (the view closed a screen). In a raid: `shoot { count }` (the slingshot at the wall), `pour { source, x, y }` (an element to a map point), and `pet` (Nghé charges, when Nghé is a tool of the raid). See `docs/RAIDS.md`.
 
-**Events:** the events of the world, and `open { screen, ... }` (a talk line, a line of text, a callout over a head, the rest, or a screen of a story effect such as `worldmap`, `vanmieu`, or `nameFriend`), `close`, `map` (the hero went to another map), `gift` (things fly to their counter), `practice` (a set of a practice is done), `back` ("go back" at the end of a practice: the view opens the village at `to`, the place before the visit, or at the start of the game), `lose` (coins that an enemy took fly from the counter to it), `raid` (a raid starts or ends), `tapfx`, `sound`, `busy`, `hud`, and `halt`.
+**Events:** the events of the world, and `open { screen, ... }` (a talk line, a line of text, a callout over a head, the rest, or a screen of a story effect such as `worldmap`, `vanmieu`, or `nameFriend`), `close`, `map` (the hero went to another map), `gift` (things fly to their counter), `practice` (a set of a practice is done), `mentor` (a move of the mentor of a task: key, diagnosis, move, level; `docs/MENTOR.md`), `check` and `selfFix` (a check of the child, and a change after it), `back` ("go back" at the end of a practice: the view opens the village at `to`, the place before the visit, or at the start of the game), `lose` (coins that an enemy took fly from the counter to it), `raid` (a raid starts or ends), `tapfx`, `sound`, `busy`, `hud`, and `halt`.
 
 The screens are events, not calls. The world waits while a screen is open, and the view sends `closed` when the child closes it. A talk is one `open` event for each line; the view sends `next` or `choose`.
 
@@ -34,7 +34,7 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 | --- | --- |
 | `name` | The name (the name of the file). |
 | `about` | `{ vi, en }`: one line in each language. |
-| `profile` | `name`, `grade`, `lang`, `seed`, `flags`, `items`, `party`, `timeLimit`, `played` (minutes of play today). |
+| `profile` | `name`, `grade`, `lang`, `seed`, `flags`, `items`, `party`, `timeLimit`, `played` (minutes of play today), `skills` (P(L) of some skills at the start: `{ "math.add.20": 0.4 }`). |
 | `map` | The map of the start (the map of the region of `at`, when it is not there). |
 | `clock` | The game clock in minutes (day 0 starts at 0; 540 is 9:00). |
 | `practice` | The id of an activity of `data/world/practice.json`: the story opens its practice link with the profile of the story. The hero starts at the place of the activity; `at` is then the place before the visit (where "go back" goes). |
@@ -150,4 +150,8 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `practice-cam-coc` | The practice link of the fish trap: two rounds; go back. |
 | `practice-hai-thuoc` | The practice link of the herbs: two rounds; the child stays, and a new round starts there. |
 | `practice-chat-tre` | The practice link of the bamboo: two rounds of equal sticks; go back. |
+| `mentor-bridge` | A missing plank: the fisher counts the planks aloud and marks the empty part; the next try is right, and the help level goes down to only watching. |
+| `mentor-cart` | All the nets of stones in the mud, as if each net is one stone; the carter shows it on another cart, counting on, stone by stone; then the cart rolls on. |
+| `mentor-bored` | Three bundles in a row, fast and right; the teacher brings rods for two more bundles. |
+| `mentor-share` | Three misses in a row at the cart; the carter shares the task and puts about half of what is missing. |
 | `pot-far` | The hero breaks a pot and walks far away; in the night the pot is new, also while its chunk sleeps; the next morning the hero sees the new pot. |

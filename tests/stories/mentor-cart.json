@@ -1,0 +1,206 @@
+{
+  "name": "mentor-cart",
+  "about": {
+    "vi": "Người giao việc ở xe bò: An chèn hết các bao đá như đếm từng bao, không đếm từng hòn; bác đánh xe làm mẫu ở một chiếc xe khác, đếm tiếp từng hòn; rồi xe lên.",
+    "en": "The mentor at the cart: An puts in all the nets of stones, as if each net is one stone; the carter shows it on another cart and counts on, stone by stone; then the cart rolls on."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    },
+    "skills": {
+      "math.add.20": 0.4
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    14.5,
+    80.5
+  ],
+  "steps": [
+    {
+      "do": {
+        "type": "event",
+        "id": "cart"
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "repeat": 7,
+      "steps": [
+        {
+          "tap": {
+            "item": "stones"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 30
+          }
+        },
+        {
+          "tap": {
+            "zone": "event-cart-place"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.cart.over"
+          }
+        },
+        {
+          "event": "mentor",
+          "with": {
+            "key": "event-cart",
+            "diagnosis": "units",
+            "move": "demo"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "num.10"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "cart",
+            "min": 2
+          }
+        },
+        {
+          "count": {
+            "entities": "mud",
+            "min": 2
+          }
+        },
+        {
+          "text": {
+            "shown": "mentor.demo"
+          }
+        },
+        {
+          "text": {
+            "shown": "num.5"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "mentor.demo.done"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "wait": 4
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "cart",
+            "max": 1
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "event:cart"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.cart.done"
+          }
+        },
+        {
+          "event": "skill",
+          "with": {
+            "solved": true,
+            "target": 14
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    }
+  ]
+}

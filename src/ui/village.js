@@ -250,7 +250,11 @@ export async function mountVillage(ctx, params = {}) {
   const turnRight = h('button', { class: 'turn-btn', type: 'button', 'aria-label': t('ui.turn.right'), title: t('ui.turn.right'), text: '⟳' });
   turnLeft.addEventListener('click', () => view.turn(-1));
   turnRight.addEventListener('click', () => view.turn(1));
-  const turns = h('div', { class: 'turns' }, [turnLeft, turnRight]);
+  // The wave: the child calls the person of the task near the hero (docs/MENTOR.md). It shows only
+  // at a task with a mentor.
+  const waveBtn = h('button', { class: 'turn-btn wave-btn', type: 'button', hidden: true, 'aria-label': t('ui.wave'), title: t('ui.wave') }, [img('ui/wave', 'btn-icon')]);
+  waveBtn.addEventListener('click', () => send({ type: 'wave' }));
+  const turns = h('div', { class: 'turns' }, [waveBtn, turnLeft, turnRight]);
   // The paper of the print over the world: grain and a soft vignette.
   const paper = h('div', { class: 'world-paper' });
   // The dusk over the world: an indigo wash with warm pools around the lanterns, and the rain.
@@ -737,6 +741,7 @@ export async function mountVillage(ctx, params = {}) {
     }
     draw(dt, acc / STEP);
     frames += 1;
+    if (frames % 15 === 0) waveBtn.hidden = busy || !session.mentorTask;
     // The sound of the place changes with the light and the rain.
     if (frames % 30 === 0) {
       const sk = state.sky ?? { night: 0, rain: 0 };
