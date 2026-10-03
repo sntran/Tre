@@ -374,6 +374,24 @@ export function goldenShoot() {
   return { kind: 'still', parts, scale: 0.5, height: y, shadow: 0 };
 }
 
+// A piece of the board of the figures (docs/reference/figures.html): a flat round base of quarter
+// blocks in wood under a figure, as a piece of a board game, with the ink outline. rx, rz: the
+// radii in blocks (a long figure has an oval base). square: the side (blocks) of a square of dó
+// paper under the base on the board (0 for none); dark: the darker paper of every second square.
+export function pieceBase(rx, rz = rx, square = 0, dark = false) {
+  const qx = Math.max(2, Math.round(rx * 4));
+  const qz = Math.max(2, Math.round(rz * 4));
+  const parts = [];
+  if (square) parts.push(P('square', [square * 4, 0.5, square * 4], dark ? 'paperDeep' : 'paper', [0, -0.25, 0]));
+  // One row of quarter blocks for each quarter along z: a stepped disc (or oval).
+  for (let z = -qz; z < qz; z++) {
+    const t = (z + 0.5) / qz;
+    const half = Math.round(qx * Math.sqrt(Math.max(0, 1 - t * t)));
+    if (half > 0) parts.push(P(`row${z}`, [half * 2, 1, 1], 'wood', [0, 0.5, z + 0.5]));
+  }
+  return { kind: 'still', parts, scale: 1, grid: 0.25, height: 0.25, shadow: 0 };
+}
+
 // A puddle on the road after the rain: a flat pool of sky.
 export function puddle() {
   const parts = [
@@ -756,6 +774,7 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'kingfisher') return kingfisher();
   if (look.kind === 'golden-shoot') return goldenShoot();
   if (look.kind === 'puddle') return puddle();
+  if (look.kind === 'piece') return pieceBase(look.rx, look.rz, look.square, look.dark);
   if (look.kind === 'banh-chung') return banhChung();
   if (look.kind === 'lion') return lion();
   return fine ? personFine(look) : person(look);

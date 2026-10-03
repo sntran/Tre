@@ -226,6 +226,7 @@ const FILES = [
   'src/world/lod.js',
   'src/world/mesher.js',
   'src/world/parts.js',
+  'src/world/pieces.js',
   'src/world/portraits.js',
   'src/world/props/context.js',
   'src/world/props/houses.js',

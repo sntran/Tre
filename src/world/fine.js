@@ -193,6 +193,8 @@ function hairParts(style, hc, extra, hat) {
 // The height (in blocks) of a person from the ground to the top of the hair, as the coarse person
 // (src/world/figures.js), so that both levels have the same size in the world.
 export const TALL = Object.freeze({ child: 2.34, adult: 2.87 });
+// The hats of the people (look.hat): a hat that covers the top hides a knot and a tuft.
+export const HATS = Object.freeze(['non', 'band', 'helmet', 'plume']);
 
 // The shape of the hair of a look: grey hair keeps the grey color with the shape in hairStyle
 // (data/figures.json; a bun for grandma, short for the elders with a beard).
