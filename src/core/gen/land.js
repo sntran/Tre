@@ -9,8 +9,8 @@
 //   - the land is gentle: the hero can walk from each cell to the next (one step up or down).
 // The same seed gives the same land. Pure functions, no DOM.
 import { createWarp } from './warp.js';
-import { fbm } from './noise.js';
-import { hashSeed, createRng } from '../rng.js';
+import { fbm, hash2 } from './noise.js';
+import { hashSeed } from '../rng.js';
 
 // The size of the site of a hamlet (cells).
 export const HAMLET = Object.freeze({ w: 22, h: 16 });
@@ -375,47 +375,52 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
   const toWater = distanceField(W, H, (i) => letter[i] === CODE.water);
 
   // The sites of the hamlets: free, nearly level land of one map, away from water, with a road a
-  // few cells from the south side (the way into the yard). A site takes its cells first.
+  // few cells from the south side (the way into the yard). The choice is local: a candidate every
+  // few cells (moved by the seed), and a site where no other good candidate within `spacing` has a
+  // higher priority. A site takes its cells first.
   const sites = [];
   if (hamlets) {
-    const rng = createRng(hashSeed(`${seed}:hamlets`));
     const nearRoad = distanceField(W, H, (i) => letter[i] === CODE.path || letter[i] === CODE.bridge);
-    const count = new Map();
     const margin = hamlets.margin ?? 3;
+    const hs = hashSeed(`${seed}:hamlets`) & 0x7fffffff;
     const free = (i) => owner[i] >= 0 && !fixed[i] && edge[i] < 0 && !letter[i];
-    // Many places to try, in a seeded order; a site keeps `spacing` cells from the others.
-    const tries = [];
-    for (let y = 1; y + HAMLET.h + 2 < H; y += 4) for (let x = 1; x + HAMLET.w + 1 < W; x += 4) tries.push([x + rng.int(0, 3), y + rng.int(0, 3)]);
-    for (const [sx, sy] of rng.shuffle(tries)) {
-      if (sites.some((t) => Math.hypot(t.x - x0 - sx, t.y - y0 - sy) < (hamlets.spacing ?? 30))) continue;
+    const good = (sx, sy) => {
+      if (sx < 1 || sy < 1 || sx + HAMLET.w + 1 >= W || sy + HAMLET.h + 2 >= H) return false;
       const mi = owner[sy * W + sx];
+      if (mi < 0) return false;
       const m = maps[mi];
-      if (mi < 0 || (count.get(mi) ?? 0) >= (hamlets.perMap ?? 2)) continue;
       const gx = sx + x0;
       const gy = sy + y0;
-      if (gx < m.window.x + margin || gy < m.window.y + margin || gx + HAMLET.w > m.window.x + m.width - margin || gy + HAMLET.h > m.window.y + m.height - margin) continue;
-      let ok = true;
+      if (gx < m.window.x + margin || gy < m.window.y + margin || gx + HAMLET.w > m.window.x + m.width - margin || gy + HAMLET.h > m.window.y + m.height - margin) return false;
       let lo = Infinity;
       let hi = -Infinity;
-      for (let y = sy - 1; y <= sy + HAMLET.h && ok; y++) {
+      for (let y = sy - 1; y <= sy + HAMLET.h; y++) {
         for (let x = sx - 1; x <= sx + HAMLET.w; x++) {
           const i = y * W + x;
-          if (owner[i] !== mi || !free(i) || toWater.dist[i] < (hamlets.water?.[0] ?? 4) || toStamp.dist[i] < 4) {
-            ok = false;
-            break;
-          }
+          if (owner[i] !== mi || !free(i) || toWater.dist[i] < (hamlets.water?.[0] ?? 4) || toStamp.dist[i] < 4) return false;
           lo = Math.min(lo, level[i]);
           hi = Math.max(hi, level[i]);
         }
       }
-      const door = (sy + HAMLET.h + 1) * W + sx + HAMLET.w / 2;
-      const road = nearRoad.dist[door];
-      if (!ok || hi - lo > 1 || road < (hamlets.road?.[0] ?? 2) || road > (hamlets.road?.[1] ?? 14)) continue;
-      if (!rng.chance(hamlets.chance ?? 1)) continue;
-      count.set(mi, (count.get(mi) ?? 0) + 1);
-      sites.push({ map: mi, x: gx, y: gy, w: HAMLET.w, h: HAMLET.h, seed: rng.int(1, 2147483646) });
-      for (let y = sy; y < sy + HAMLET.h; y++) for (let x = sx; x < sx + HAMLET.w; x++) fixed[y * W + x] = FIXED.claim;
+      const road = nearRoad.dist[(sy + HAMLET.h + 1) * W + sx + HAMLET.w / 2];
+      return hi - lo <= 1 && road >= (hamlets.road?.[0] ?? 2) && road <= (hamlets.road?.[1] ?? 14) && hash2(hs + 1, sx + x0, sy + y0) < (hamlets.chance ?? 1);
+    };
+    // The candidates: one in each square of four cells, at a place of the seed (region cells).
+    const cands = [];
+    for (let gy = Math.floor(y0 / 4) * 4; gy < y0 + H; gy += 4) {
+      for (let gx = Math.floor(x0 / 4) * 4; gx < x0 + W; gx += 4) {
+        const cx = gx + Math.floor(hash2(hs + 2, gx, gy) * 4);
+        const cy = gy + Math.floor(hash2(hs + 3, gx, gy) * 4);
+        if (good(cx - x0, cy - y0)) cands.push({ x: cx, y: cy, p: hash2(hs, cx, cy) });
+      }
     }
+    const spacing = hamlets.spacing ?? 30;
+    for (const c of cands) {
+      if (cands.some((d) => d !== c && Math.hypot(d.x - c.x, d.y - c.y) < spacing && (d.p > c.p || (d.p === c.p && (d.y < c.y || (d.y === c.y && d.x < c.x)))))) continue;
+      const mi = owner[(c.y - y0) * W + (c.x - x0)];
+      sites.push({ map: mi, x: c.x, y: c.y, w: HAMLET.w, h: HAMLET.h, seed: 1 + Math.floor(hash2(hs + 4, c.x, c.y) * 2147483645) });
+    }
+    for (const t of sites) for (let y = t.y - y0; y < t.y - y0 + HAMLET.h; y++) for (let x = t.x - x0; x < t.x - x0 + HAMLET.w; x++) fixed[y * W + x] = FIXED.claim;
   }
 
   // Rice paddies, in blocks of five cells with a dike around each block: on low, wet land near

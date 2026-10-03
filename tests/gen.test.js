@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { hash2, valueNoise, fbm } from '../src/core/gen/noise.js';
 import { createWarp } from '../src/core/gen/warp.js';
-import { poissonDisk, scatter, fits } from '../src/core/gen/scatter.js';
+import { localSamples, scatter, fits } from '../src/core/gen/scatter.js';
 import { createLand, distanceField, elevationAt } from '../src/core/gen/land.js';
 import { createRng } from '../src/core/rng.js';
 
@@ -50,13 +50,13 @@ test('the warp goes through its anchors and is smooth between them', () => {
   assert.throws(() => createWarp(anchors.slice(0, 2)));
 });
 
-test('Poisson-disk samples: no two nearer than the spacing, seeded, and never in a grid', () => {
-  const a = poissonDisk(createRng(3), 120, 90, 6);
-  const b = poissonDisk(createRng(3), 120, 90, 6);
-  const c = poissonDisk(createRng(4), 120, 90, 6);
-  assert.deepEqual(a, b, 'the same seed gives the same samples');
-  assert.notDeepEqual(a, c);
-  assert.ok(a.length > 150, `the box is full: ${a.length}`);
+test('local samples: no two nearer than the spacing, seeded, never in a grid, and the same in any part of the land', () => {
+  const ok = (x, y) => (x * 7 + y * 3) % 11 !== 0; // a few cells where nothing may stand
+  const a = localSamples(120, 90, 6, ok, 3);
+  assert.deepEqual(localSamples(120, 90, 6, ok, 3), a, 'the same seed gives the same samples');
+  assert.notDeepEqual(localSamples(120, 90, 6, ok, 4), a);
+  assert.ok(a.length > 60, `the box is full: ${a.length}`);
+  for (const [x, y] of a) assert.ok(ok(x, y));
   let min = Infinity;
   const nearest = [];
   for (const p of a) {
@@ -66,11 +66,18 @@ test('Poisson-disk samples: no two nearer than the spacing, seeded, and never in
     nearest.push(n);
   }
   assert.ok(min >= 6 - 1e-9);
-  // Not a grid: the nearest distances are not all the same, and the samples do not line up.
+  // Not a grid: the nearest distances vary, and the samples do not line up.
   const mean = nearest.reduce((s, v) => s + v, 0) / nearest.length;
   const sd = Math.sqrt(nearest.reduce((s, v) => s + (v - mean) ** 2, 0) / nearest.length);
   assert.ok(sd / mean > 0.05, 'the spacing varies');
-  for (const k of [0, 1]) assert.equal(new Set(a.map((p) => Math.floor(p[k]) % 6)).size, 6, 'the samples do not line up');
+  for (const k of [0, 1]) assert.equal(new Set(a.map((p) => p[k] % 6)).size, 6, 'the samples do not line up');
+  // Local: a part of the land made alone (a box at 30, 20 on the plane) has the same samples,
+  // away from its edges.
+  const part = localSamples(60, 50, 6, (x, y) => ok(x + 30, y + 20), 3, 30, 20).map(([x, y]) => [x + 30, y + 20]);
+  const inner = ([x, y]) => x >= 30 + 6 && y >= 20 + 6 && x < 90 - 6 && y < 70 - 6;
+  const key = (p) => p.join(',');
+  assert.deepEqual(part.filter(inner).map(key).sort(), a.filter(inner).map(key).sort());
+  assert.ok(part.filter(inner).length > 10);
 });
 
 test('a distance field gives the distance to the nearest source', () => {
