@@ -44,6 +44,7 @@ class M:
         self.spawn = None
         self.terrace = ''  # the sides with terraces: n, e, s, w (north is y = 0, west is x = 0)
         self.raise_rects = []  # (x, y, w, h, z): ground at a set height (a mound)
+        self.cells = []  # (x, y, ch, z): one cell (not a tile) with its ground and height, such as a stepping stone
 
     # The height of each tile, in steps.
     def heights(self):
@@ -129,6 +130,9 @@ class M:
                 if ch == 'f' and (x % DIKE == 0 or z % DIKE == 0):
                     row[x] = 'd'
                     heights[z][x] = str(int(heights[z][x]) + 1)
+        for (x, y, ch, zz) in self.cells:
+            ground[y][x] = ch
+            heights[y][x] = str(zz)
         objects = []
         for o in self.objects:
             n = {**o, 'x': o['x'] * k, 'y': o['y'] * k, 'w': o['w'] * k, 'h': o['h'] * k}

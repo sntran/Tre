@@ -38,6 +38,8 @@ A.fill(0, 31, 40, 2, '_')
 A.fill(0, 33, 40, 5, '~')
 A.fill(0, 38, 40, 1, '_')
 A.fill(8, 33, 2, 5, 's')
+# Stepping stones across the ford, one step high, on every second cell (a place to jump).
+A.cells += [(17, y, 'r', 1) for y in (67, 69, 71, 73, 75)]
 A.fill(22, 33, 2, 5, 'B')
 A.fill(8, 31, 2, 2, '=')
 A.fill(22, 31, 2, 2, '=')
