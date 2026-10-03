@@ -269,6 +269,17 @@ Báo cáo nghiên cứu trong `docs/research/learning-by-doing.md` tập hợp c
 29. **Nhiều phiên ngắn với người lớn ở gần.** Mười phút ba lần một tuần là đủ để có tiến bộ đo được (Wuzzit Trouble); tiến bộ trong các phân tích tổng hợp xuất hiện với nhiều phiên và có một phần giảng dạy (Wouters).
 30. **Xây cầu nối từ hành động đến ký hiệu.** Thành thạo trong trò chơi không phải là thành thạo trên giấy. Buổi luyện tập của thầy giáo là nơi hành động của chính trẻ nhận được ký hiệu của nó, sau khi hành động đã thành thói quen (tài liệu dành cho giáo viên của DragonBox).
 
+**Người giao việc làm cùng với trẻ**
+
+31. **Lần thử đầu tiên là của trẻ.** Người giao việc chờ và quan sát. Sự giúp duy nhất trước lần chốt đầu tiên là cho trẻ không biết phải làm gì: người ấy làm mẫu thao tác (nhặt một bó mạ, đặt xuống), không bao giờ làm mẫu phép tính (Koedinger & Aleven 2007; Sinha & Kapur 2021).
+32. **Đọc lỗi, không chỉ đọc lần trượt.** Kết quả và thời gian cho biết sai ở đâu: thiếu một nhóm, cộng thay vì nhân, sơ suất nhỏ, đếm từng cái (chậm mà đúng), đoán bừa (nhanh và lệch xa), đứng im lúc đầu, bỏ đi ngay sau khi trượt, hoặc chán (làm nhanh và sạch liên tục, hoặc đứng im lâu và chạy từ chỗ này sang chỗ khác). Quy tắc của mỗi việc là dữ liệu (van de Pol và cộng sự 2010: chẩn đoán trước).
+33. **Giúp theo tình huống.** Sau một lần trượt, lần giúp sau nhiều hơn một mức; sau một lần làm được, ít hơn một mức; khi trẻ đã thành thạo, người ấy chỉ quan sát. Trách nhiệm trở về với trẻ (Wood, Wood & Middleton 1978).
+34. **Giúp là một động tác trong thế giới, của một người có thân thể.** Làm mẫu thao tác; chỉ vào điều quan trọng (chỉ hàng còn trống, gõ vào từng cọc trong khi đếm số hàng); thu nhỏ việc (một phép nhỏ hơn có liên quan trước, rồi mới đến phép ban đầu); diễn một chiến lược trên một trường hợp khác; đổi hình ảnh (gợi ý sang chỗ khác); nâng thử thách; hoặc gánh phần khó và để lại phần còn lại. Không bao giờ đưa đáp số của chính trường hợp đó, không bao giờ hỏi, không bao giờ khen hay chê (Wood, Bruner & Ross 1976; quy tắc 25).
+35. **Dạy chiến lược cho bảng tính, rồi luyện đến thành thạo.** Đếm, rồi suy luận (đổi chỗ thừa số, nhân đôi, năm và mười, chín là mười bớt một nhóm, tách ở năm), rồi nhớ nhanh. Người giao việc diễn chiến lược hợp với phép tính đó. Không tính giờ (Baroody 2006; Boaler 2014).
+36. **Đáp lại sự chán nhanh như đáp lại trẻ đang bí.** Sự chán kéo dài và dẫn đến bấm bừa; sự bực thì qua nhanh. Chán thì được dạng bài mới, lựa chọn lớn hơn, hoặc chỗ khác; bực thì được việc nhỏ hơn, việc làm chung, hoặc một quãng nghỉ trong câu chuyện (Baker và cộng sự 2010).
+37. **Người giao việc nhớ đứa trẻ.** Mỗi người giữ lại điều đã giúp được đứa trẻ này và những lỗi trẻ hay mắc, thử trước động tác lần trước có tác dụng, và nói điều đã thay đổi như một thông tin ("Hôm trước mình chia ô ra làm hai.").
+38. **Mỗi động tác được ghi lại cùng kết quả.** Chẩn đoán, động tác, P(L) trước đó, và lần chốt tiếp theo, để Tre tìm ra động tác nào có tác dụng, và phụ huynh thấy người giao việc đã thử gì và điều gì giúp được.
+
 ## Nhiệm vụ trong thế giới từ kỹ thuật làng quê
 
 Mỗi nhiệm vụ theo một khuôn mẫu. Truyền thuyết đặt ra một nhu cầu. Trẻ dự đoán. Trẻ thay đổi một thứ và chốt. Thế giới cho thấy kết quả và lý do. Trẻ lặp lại tự do. Mô hình chỉ tính điểm hành động đã chốt. Các nhiệm vụ này là nguồn cho các nhiệm vụ xếp lớp của Kỷ nguyên 1 và các kỷ nguyên sau. Đòn bẩy xuất hiện năm lần trong năm thiết bị, thời gian và tốc độ xuất hiện ba lần, tạo nên hiện thân đa dạng mà quy tắc 10 yêu cầu.

@@ -270,6 +270,17 @@ The research report in `docs/research/learning-by-doing.md` collects the evidenc
 29. **Many short sessions with an adult nearby.** Ten minutes three times a week was enough for measured gains (Wuzzit Trouble); gains in the meta-analyses appear with several sessions and some instruction (Wouters).
 30. **Build the bridge from action to notation.** In-game mastery is not paper mastery. The teacher's practice is where the child's own action gets its symbol, after the action is habitual (DragonBox teacher materials).
 
+**The person who gives the task works with the child**
+
+31. **The first try belongs to the child.** The person waits and watches. The only help before the first commit is for a child who does not know what to do: the person shows the action (picks up a bundle, puts it down), never the math (Koedinger & Aleven 2007; Sinha & Kapur 2021).
+32. **Read the error, not only the miss.** The result and the timing tell what went wrong: a missing group, an addition in place of a product, a small slip, counting all (slow and right), guessing (fast and far off), idle at the start, a quick exit after a miss, or boredom (fast, clean runs, or long idles and hopping between stations). The rules of each task are data (van de Pol et al. 2010: diagnosis comes first).
+33. **Help is contingent.** After a miss, the next help is one level more; after a success, one level less; at mastery the person only watches. Responsibility goes back to the child (Wood, Wood & Middleton 1978).
+34. **Help is one move in the world, by a person with a body.** Show the action; mark what matters (point at the empty row, tap the stakes while counting the rows); make the task smaller (a related smaller fact first, then the first one); act out a strategy on a different instance; change the picture (send to another station); raise the challenge; or take the hard part and leave the rest. Never the answer to the same instance, never a question, never praise or blame (Wood, Bruner & Ross 1976; rule 25).
+35. **Teach the strategies for facts, then practice to fluency.** Counting, then reasoning (the turned fact, doubles, fives and tens, nine as ten minus a group, the split at five), then fast recall. The person acts out the strategy that fits the fact. No timer (Baroody 2006; Boaler 2014).
+36. **Answer boredom as fast as a stuck child.** Boredom lasts and leads to mashing; frustration passes. Boredom gets a new form, a bigger choice, or another station; frustration gets a smaller task, a shared task, or a break in the story (Baker et al. 2010).
+37. **The person remembers the child.** Each person keeps what helped this child and the child's usual errors, tries the move that worked last time first, and says what changed as information ("Hôm trước mình chia ô ra làm hai.").
+38. **Every move is logged with its outcome.** The diagnosis, the move, P(L) before, and the next commit, so that Tre can find out which moves work, and the parent can see what the person tried and what helped.
+
 ## World tasks from village technology
 
 Each task follows one template. The legend poses a need. The child predicts. The child changes one thing and commits. The world shows the result and why. The child repeats freely. The model scores only the committed action. These tasks are the source for the placement tasks of Era 1 and the later eras. The lever appears five times in five devices, and time and rate appear three times, which gives the multiple embodiment that rule 10 asks for.
