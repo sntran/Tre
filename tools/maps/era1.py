@@ -392,6 +392,56 @@ LAND = {
     'dike': 5,
 }
 
+# The plane of the land (src/core/gen/plane.js, src/core/gen/tiles.js): one plane for the whole
+# country, at one scale (meters for each cell), the same in both directions. Each map is the frame
+# of a place: its anchor is a cell of the frame and its real place. Phù Đổng: the đình. Sóc Sơn: the
+# top of núi Vệ Linh (the stamp rises with the hill). Núi Trâu: the top of the hill, east of the
+# fields of the stamp. Văn Miếu: the gate. The pins are the ends of the rivers of the stamps: the
+# real rivers bend to meet them. The roads join the roads of the stamps (points in the cells of the
+# frames).
+PLANE = {
+    '_about': ('The land of the region of Thánh Gióng on the plane (src/core/gen/tiles.js). plane: the projection '
+               '(Mercator; origin: the real place of the cell 0, 0; trueLat: the latitude of true scale; scale: meters of '
+               'real land for each cell, the same in both directions). frames: the place of each map on the plane (cell: a '
+               'cell of the frame of the map; at: its real place; lift: the stamp under the cell rises to the real height '
+               'there). pins: the ends of the rivers of the stamps (frame and cell): the real river bends to meet them. '
+               'rivers: the widths of the real rivers (cells). roads: the roads between the stamps (points: frame and cell; '
+               'the road winds between its points by the seed; on a hill it turns back and forth). tiles: the fine height '
+               'tiles (data/geo/heights/). base, relief, road, wet, blend, dike: as in the old land file. Made by '
+               'tools/maps/era1.py; do not change it by hand.'),
+    'id': 'giong',
+    'plane': {'origin': [102.0, 23.5], 'trueLat': 16, 'scale': 45},
+    'tiles': ['N21E105', 'N21E106'],
+    'frames': [
+        {'id': 'phu-dong', 'cell': [32, 20], 'at': [105.953, 21.059], 'note': 'the đình'},
+        {'id': 'soc-son', 'cell': [38, 20], 'at': [105.825, 21.29], 'lift': True, 'note': 'the top of núi Vệ Linh'},
+        {'id': 'trau-son', 'cell': [176, 20], 'at': [106.1, 21.145], 'note': 'the top of Núi Trâu, east of the fields'},
+        {'id': 'road-thanglong', 'cell': [0, 40], 'at': [105.836, 21.029], 'note': 'the gate of Văn Miếu'},
+    ],
+    'pins': [
+        {'river': 'duong', 'frame': 'phu-dong', 'cell': [0, 71]},
+        {'river': 'duong', 'frame': 'phu-dong', 'cell': [80, 71]},
+        {'river': 'hong', 'frame': 'road-thanglong', 'cell': [41, 16]},
+        {'river': 'hong', 'frame': 'road-thanglong', 'cell': [41, 63]},
+    ],
+    'base': 2,
+    'relief': {'low': 16, 'k': 0.8},
+    'rivers': [
+        {'id': 'duong', 'water': 10, 'bank': 2, 'bend': 2},
+        {'id': 'hong', 'water': 26, 'bank': 2, 'bend': 3},
+    ],
+    'roads': [
+        {'id': 'east', 'width': 4, 'points': [['phu-dong', 79, 30], ['trau-son', 64, 33]]},
+        {'id': 'north', 'width': 4, 'points': [['phu-dong', 46, 0], ['soc-son', 39, 63]]},
+        {'id': 'west', 'width': 4, 'points': [['phu-dong', 0, 80], ['road-thanglong', 55, 39]]},
+        {'id': 'trau', 'width': 2, 'bend': 2, 'points': [['trau-son', 123, 19], ['trau-son', 176, 20]]},
+    ],
+    'road': {'steep': 0.7, 'climb': 40, 'keep': 0.06},
+    'wet': {'scale': 22, 'near': 14, 'over': 0.15, 'terrace': 14},
+    'blend': 10,
+    'dike': 5,
+}
+
 os.makedirs(OUT, exist_ok=True)
 for m, window, size, offset, stamps in WINDOWS:
     with open(os.path.join(OUT, f'{m.id}.json'), 'w') as f:
@@ -399,3 +449,5 @@ for m, window, size, offset, stamps in WINDOWS:
     print(m.id, size)
 with open(os.path.join(OUT, '..', 'world', 'land-giong.json'), 'w') as f:
     f.write(dump(LAND) + '\n')
+with open(os.path.join(OUT, '..', 'world', 'plane-giong.json'), 'w') as f:
+    f.write(dump(PLANE) + '\n')

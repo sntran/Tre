@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { hash2, valueNoise, fbm } from '../src/core/gen/noise.js';
 import { createWarp } from '../src/core/gen/warp.js';
 import { localSamples, scatter, fits } from '../src/core/gen/scatter.js';
-import { createLand, distanceField } from '../src/core/gen/land.js';
+import { createLand } from '../src/core/gen/land.js';
+import { distanceField } from '../src/core/gen/geom.js';
 import { stepsOf } from '../src/core/gen/heights.js';
 import { createRng } from '../src/core/rng.js';
 
