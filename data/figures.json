@@ -13,6 +13,26 @@
       { "top": "green", "bottom": "wood", "sash": "vermilion" }
     ]
   },
+  "_villagersAbout": "villagers: the parts of the people of the generated hamlets (src/core/gen/people.js). Each villager takes one choice of each part from the seed of the world, so that no two hamlets look the same: an age (grown, child, or old; a child is smaller, an old person has grey hair and sometimes a beard), a body (the clothes of a man or a woman), a skin, clothes (the colors of the top, the bottom, and the sash), a hair for each body, a hat (or none), an item in the hand (or none), and a face. The villagers of the hamlets are not people of the story: they have no names and no talks, and they are not historical people.",
+  "villagers": {
+    "ages": [{ "age": "grown", "weight": 6 }, { "age": "child", "weight": 2, "scale": 0.8 }, { "age": "old", "weight": 2, "hair": "grey" }],
+    "bodies": {
+      "man": { "topKind": "shirt", "bottomKind": "trousers", "hairs": ["short", "topknot", "bald"] },
+      "woman": { "topKind": "shirt", "bottomKind": "skirt", "hairs": ["bun", "long", "braids"] }
+    },
+    "skins": ["skin1", "skin2", "skin3", "skin4"],
+    "clothes": [
+      { "top": "indigo", "bottom": "ink", "sash": "vermilion" },
+      { "top": "wood", "bottom": "indigo", "sash": "yellow" },
+      { "top": "ochre", "bottom": "wood", "sash": "green" },
+      { "top": "green", "bottom": "indigo", "sash": "yellowPale" },
+      { "top": "ash", "bottom": "ink", "sash": "ochre" },
+      { "top": "vermilionPale", "bottom": "wood", "sash": "diep" }
+    ],
+    "hats": [null, null, "non", "non", "band"],
+    "items": [null, null, "basket", "net", "fan", "staff"],
+    "faces": [1, 2, 3, 4]
+  },
   "_viewsAbout": "views: the props of the world that a screen shows as a rendered view (src/world/portraits.js, propMesh): the kind of prop, its size in map cells (w, h), and a seed.",
   "views": {
     "vanmieu-gate": { "prop": "vanmieu-gate", "w": 2, "h": 8, "seed": 1 },

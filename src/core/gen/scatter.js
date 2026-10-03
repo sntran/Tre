@@ -53,7 +53,7 @@ const inRange = (v, range) => !range || (v >= range[0] && v <= range[1]);
 
 // Does a rule let a thing stand on this cell (land.cell)?
 export function fits(rule, c) {
-  return Boolean(c) && !c.stamp && !c.edge && (rule.on ?? ['.']).includes(c.letter) && inRange(c.level, rule.level) && inRange(c.water, rule.water) && inRange(c.road, rule.road) && inRange(c.field, rule.field);
+  return Boolean(c) && !c.stamp && !c.taken && !c.edge && (rule.on ?? ['.']).includes(c.letter) && inRange(c.level, rule.level) && inRange(c.water, rule.water) && inRange(c.road, rule.road) && inRange(c.field, rule.field);
 }
 
 // land: createLand(). rules: data/world/scatter.json. maps: the maps of the region (for the
@@ -70,19 +70,20 @@ export function scatter(land, rules, maps, seed) {
   (rules.props ?? []).forEach((rule, ri) => {
     const rng = createRng(hashSeed(`${seed}:scatter:${rule.prop}:${ri}`));
     const patch = rule.patch ? hashSeed(`${seed}:patch:${rule.prop}`) & 0x7fffffff : 0;
-    const size = rule.size ?? 2;
+    // A footprint of size x size cells, or [w, h] (a boat).
+    const [sw, sh] = Array.isArray(rule.size) ? rule.size : [rule.size ?? 2, rule.size ?? 2];
     for (const [px, py] of poissonDisk(rng, w, h, rule.spacing)) {
-      const x = x0 + Math.floor(px - size / 2);
-      const y = y0 + Math.floor(py - size / 2);
+      const x = x0 + Math.floor(px - sw / 2);
+      const y = y0 + Math.floor(py - sh / 2);
       if (rule.patch && fbm(patch, x, y, { scale: rule.patch.scale, octaves: 2 }) < rule.patch.over) continue;
       if (rule.chance !== undefined && !rng.chance(rule.chance)) continue;
       const first = land.cell(x, y);
       if (!first) continue;
       const m = maps[first.map];
       let ok = true;
-      for (let dy = -1; dy <= size && ok; dy++) {
-        for (let dx = -1; dx <= size; dx++) {
-          const edge = dx < 0 || dy < 0 || dx === size || dy === size;
+      for (let dy = -1; dy <= sh && ok; dy++) {
+        for (let dx = -1; dx <= sw; dx++) {
+          const edge = dx < 0 || dy < 0 || dx === sw || dy === sh;
           // The footprint fits the rule; one cell around it stays free, so that the land between
           // two things is open to walk.
           if (taken.has(key(x + dx, y + dy)) || (!edge && (!inside(m, x + dx, y + dy) || !fits(rule, land.cell(x + dx, y + dy))))) {
@@ -92,8 +93,8 @@ export function scatter(land, rules, maps, seed) {
         }
       }
       if (!ok) continue;
-      for (let dy = 0; dy < size; dy++) for (let dx = 0; dx < size; dx++) taken.add(key(x + dx, y + dy));
-      objects.push({ map: first.map, prop: rule.prop, x, y, w: size, h: size, seed: rng.int(1, 2147483646) });
+      for (let dy = 0; dy < sh; dy++) for (let dx = 0; dx < sw; dx++) taken.add(key(x + dx, y + dy));
+      objects.push({ map: first.map, prop: rule.prop, x, y, w: sw, h: sh, seed: rng.int(1, 2147483646) });
     }
   });
   (rules.life ?? []).forEach((rule, ri) => {

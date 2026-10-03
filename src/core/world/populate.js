@@ -77,6 +77,29 @@ export function syncPeople(world, map, env, present, people = {}, days = null) {
   return changed;
 }
 
+// The villagers of the generated hamlets (layers.villagers of a generated map): people with a day
+// and a house, who greet the hero, but who are not people of the story (no talk). Their looks are
+// in map.looks, by their ids.
+export function addVillagers(world, map, env, people = {}, days = null) {
+  for (const v of map.layers.villagers ?? []) {
+    if (getEntity(world, v.id)) continue;
+    const spot = { x: v.x * HALF, z: v.y * HALF };
+    const plan = days?.plans[v.plan] ?? days?.plans.keeper;
+    addEntity(world, {
+      id: v.id,
+      position: { x: spot.x, y: env.groundY(v.x, v.y), z: spot.z, facing: 0 },
+      motion: { vx: 0, vz: 0, speed: 0 },
+      solid: { r: 1.8 },
+      ...(people.react ? { react: structuredClone(people.react) } : {}),
+      ...(plan && people.steer ? {
+        steer: { ...structuredClone(people.steer), goal: null, arrived: false, flee: null, bias: null, wander: null },
+        schedule: { plan: structuredClone(plan), home: env.homes[v.home] ? v.home : null, spot, offset: offsetOf(v.id) },
+      } : {}),
+      look: v.id,
+    });
+  }
+}
+
 // A small place near a named place, so that two people at the well do not stand on one point.
 function offsetOf(id) {
   const a = (hashSeed(String(id)) % 628) / 100;

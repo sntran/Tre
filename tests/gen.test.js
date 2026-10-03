@@ -231,3 +231,77 @@ test('scatter: things follow their rules, keep a free cell around them, and come
   const trees = a.objects.filter((o) => o.prop === 'tree');
   assert.ok(new Set(trees.map((o) => o.x % 5)).size >= 4 && new Set(trees.map((o) => o.y % 5)).size >= 4);
 });
+
+test('villagers come from parts: valid looks, each seed its own people', async () => {
+  const { villagerLook } = await import('../src/core/gen/people.js');
+  const { load } = await import('./helpers.js');
+  const { colorIndex } = await import('../src/world/voxel.js');
+  const parts = load('data/figures.json').villagers;
+  const seen = new Set();
+  for (let s = 1; s <= 60; s++) {
+    const look = villagerLook(createRng(s), parts);
+    for (const k of ['skin', 'top', 'bottom', 'sash']) assert.ok(colorIndex(look[k]) > 0, `${k} ${look[k]}`);
+    assert.ok(['shirt'].includes(look.topKind));
+    assert.ok(Object.values(parts.bodies).some((b) => b.hairs.includes(look.hair)) || look.hair === 'grey');
+    if (look.child) assert.equal(look.item, undefined, 'a child carries nothing');
+    seen.add(JSON.stringify(look));
+  }
+  assert.ok(seen.size > 50, `${seen.size} different villagers in 60`);
+  assert.deepEqual(villagerLook(createRng(9), parts), villagerLook(createRng(9), parts));
+});
+
+test('hamlets: houses from parts around a yard near a road, a villager for each house, and no name', async () => {
+  const { mapOf } = await import('./helpers.js');
+  const { createTileMap } = await import('../src/core/tilemap.js');
+  const { buildTerrain } = await import('../src/world/terrain.js');
+  const { load } = await import('./helpers.js');
+  const tiles = load('data/tiles.json').types;
+  let hamlets = 0;
+  const looks = new Set();
+  for (const seed of [1, 2, 3]) {
+    for (const id of ['phu-dong', 'soc-son', 'trau-son', 'road-thanglong']) {
+      const m = mapOf(id, seed);
+      const def = load(`data/maps/${id}.json`);
+      const houses = m.layers.objects.filter((o) => o.id.startsWith('hamlet:') && (o.prop === 'house' || o.prop === 'hut'));
+      if (!houses.length) continue;
+      hamlets += 1;
+      const terrain = buildTerrain(m, tiles, createTileMap(m, tiles));
+      // A generated place has no name, no talk, and no trigger: it is never a historical place.
+      assert.deepEqual(m.layers.triggers, def.layers.triggers);
+      assert.deepEqual(m.layers.places, def.layers.places);
+      assert.equal(m.nameKey, def.nameKey);
+      for (const h of houses) {
+        assert.ok(terrain.homes[h.id], `${id}: ${h.id} has a way in`);
+        for (const s of def.stamps) assert.ok(h.x + h.w <= s.x || h.x >= s.x + s.w || h.y + h.h <= s.y || h.y >= s.y + s.h, 'not on a stamp');
+      }
+      for (const v of m.layers.villagers) {
+        assert.ok(terrain.homes[v.home], `${v.id}: a house`);
+        assert.equal(m.layers.ground[Math.floor(v.y)][Math.floor(v.x)], 'y', `${v.id} stands in the yard`);
+        looks.add(JSON.stringify(m.looks[v.id]));
+      }
+    }
+  }
+  assert.ok(hamlets >= 4, `hamlets: ${hamlets}`);
+  assert.ok(looks.size >= 8, 'the villagers look different');
+});
+
+test('a house from parts: the seed changes its colors and things, never its size or its way in', async () => {
+  const { createGrid } = await import('../src/world/voxel.js');
+  const { buildProp } = await import('../src/world/props/index.js');
+  const build = (seed) => {
+    const fine = createGrid(40, 64, 40, { owners: true });
+    const r = buildProp({ fine, groundTop: () => 0, shadow: () => {} }, { kind: 'house', fx: 8, fz: 8, fw: 12, fd: 12, seed }, 1);
+    return { r, colors: new Set(Array.from(fine.data).filter(Boolean)).size, data: Array.from(fine.data).join(',') };
+  };
+  const a = build(1);
+  assert.equal(build(1).data, a.data, 'the same seed builds the same house');
+  const ways = new Set();
+  const looks = new Set();
+  for (let s = 1; s <= 12; s++) {
+    const b = build(s);
+    ways.add(JSON.stringify(b.r.info.home));
+    looks.add(b.data);
+  }
+  assert.ok(looks.size >= 10, 'the houses differ');
+  assert.ok(ways.size <= 2, 'the way in stays (the posts are 6 or 7 high)');
+});

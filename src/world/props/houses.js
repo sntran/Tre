@@ -82,8 +82,43 @@ export function stiltHouse(ctx, o, opts = {}) {
   return { dx, fy, wx0, wx1, wz0, wz1, gy };
 }
 
+// The parts of a house that change from one house to the next (by its seed): the walls, the
+// band, the thatch, the door, the curve of the ridge, and the things around it. The size and the
+// way in stay the same, so that the people of a house always find the ladder.
+export const HOUSE_PARTS = Object.freeze({
+  walls: ['yellowPale', 'paper', 'paperDeep'],
+  band: ['yellow', 'ochre', 'wood', 'vermilionPale'],
+  roof: ['ochre', 'yellow', 'ochre', 'wood'],
+  ridge: ['yellow', 'ochre', 'wood'],
+  door: ['wood', 'indigo', 'greenDeep', 'ochre'],
+  sweep: [0.5, 1, 1.5],
+  extras: ['firewood', 'corn', 'baskets', 'jar'],
+});
+
+// A variant of a house from its seed: one choice of each part, and one or two extras.
+export function houseVariant(rng) {
+  const pick = (k) => rng.pick(HOUSE_PARTS[k]);
+  const first = pick('extras');
+  const second = pick('extras');
+  const extras = rng.chance(0.5) && second !== first ? [first, second] : [first];
+  return { walls: pick('walls'), band: pick('band'), roof: pick('roof'), ridge: pick('ridge'), door: pick('door'), sweep: pick('sweep'), extras };
+}
+
+// The extras around a house (fine units): firewood under the floor, corn under the eaves, baskets
+// on the veranda, a water jar at the side of the ladder.
+function extrasOf(ctx, h, list) {
+  for (const e of list) {
+    if (e === 'firewood') ctx.box(h.wx1 - 3, h.gy, h.wz0 + 1, h.wx1 - 1, h.gy + 1, h.wz0 + 2, 'wood');
+    if (e === 'corn') for (let x = h.wx0 + 1; x < h.wx1; x += 2) ctx.set(x, h.fy - 1, h.wz1 + 2, 'yellow');
+    if (e === 'baskets') ctx.box(h.wx0, h.fy + 1, h.wz1 + 1, h.wx0, h.fy + 2, h.wz1 + 1, 'ochre');
+    if (e === 'jar') ctx.box(h.dx + 3, h.gy, h.wz1 + 3, h.dx + 3, h.gy + 1, h.wz1 + 3, 'vermilionPale');
+  }
+}
+
 export function house(ctx, o) {
-  stiltHouse(ctx, o);
+  const v = houseVariant(ctx.rng);
+  const h = stiltHouse(ctx, o, v);
+  extrasOf(ctx, h, v.extras);
 }
 
 // The house of Gióng: a green door cloth, a rice basket on the veranda, and a piece of fence.
@@ -110,7 +145,9 @@ export function dinh(ctx, o) {
 
 // A small hut. Some huts have laundry on a line between two posts at the side.
 export function hut(ctx, o) {
-  const h = stiltHouse(ctx, o, { postH: 5, wallH: 3 });
+  const v = houseVariant(ctx.rng);
+  const h = stiltHouse(ctx, o, { ...v, postH: 5, wallH: 3 });
+  extrasOf(ctx, h, v.extras.slice(0, 1));
   if (!ctx.rng.chance(0.5)) return;
   const x = o.fx;
   const z0 = h.wz0;

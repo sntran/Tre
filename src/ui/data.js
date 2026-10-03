@@ -63,7 +63,7 @@ export async function loadData(onProgress = () => {}, read = fetchJson) {
     const land = await read(`data/world/${r.land}.json`);
     if (land) lands.set(r.land, land);
   }));
-  out.world = createWorld(out.regions, out.maps, { routes: out.routes, places: out.geo.places, rivers: out.geo.rivers, elevation: out.geo.elevation, lands, scatter: out.scatter });
+  out.world = createWorld(out.regions, out.maps, { routes: out.routes, places: out.geo.places, rivers: out.geo.rivers, elevation: out.geo.elevation, lands, scatter: out.scatter, villagers: out.figures.villagers });
   out.dialogues = new Map();
   for (const name of ['dialoguePrologue', 'dialogueVillage', 'dialogueGiong']) {
     for (const d of out[name]?.dialogues ?? []) out.dialogues.set(d.id, d);

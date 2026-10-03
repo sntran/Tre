@@ -19,8 +19,26 @@ export function tree(ctx, o, opts = {}) {
   const leaf = opts.leaf ?? r.pick(['green', 'green', 'greenDeep']);
   const R = (rad / 2) * 1.15;
   ctx.smooth({ kind: 'crown', x: x / 2, y: (cy + 0.5) / 2, z: z / 2, r: R, leaf }, [R * 1.4, R, R]);
+  // Some trees have a second, smaller crown to one side (a tree from parts: no two the same).
+  if (opts.second ?? r.chance(0.35)) {
+    const side = r.pick([[1, 0], [-1, 0], [0, 1], [0, -1]]);
+    const r2 = R * 0.7;
+    ctx.smooth({ kind: 'crown', x: x / 2 + side[0] * R * 0.8, y: (cy + 0.5) / 2 - R * 0.35, z: z / 2 + side[1] * R * 0.8, r: r2, leaf }, [R * 1.4 + r2, R, R]);
+  }
   ctx.shadowDisc(x, z, rad, Math.round((h + rad) * 0.4));
   ctx.info = { trunk: h, crown: rad };
+}
+
+// An areca palm (cây cau) of the gardens: a tall thin trunk of blocks with rings, and a tuft of
+// fronds at the top (the smooth leaves of the banana plant).
+export function areca(ctx, o) {
+  const r = ctx.rng;
+  const { x, z } = center(o);
+  const g = ctx.ground(x, z);
+  const h = 16 + r.int(0, 6);
+  for (let y = g; y < g + h; y++) ctx.set(x, y, z, y % 4 === 0 ? 'ash' : 'ashLight');
+  ctx.smooth({ kind: 'banana', x: (x + 0.5) / 2, y: (g + h + 1) / 2, z: (z + 0.5) / 2 }, [2.8, 1.5, 1.4]);
+  ctx.shadowDisc(x, z, 2, Math.round(h * 0.4));
 }
 
 // The old banyan: a thick trunk, a wide crown, aerial roots that hang to the ground as curves, and

@@ -30,7 +30,7 @@ export function worldOf() {
     const defs = new Map(regions.regions.flatMap((r) => r.maps).map((id) => [id, load(`data/maps/${id}.json`)]));
     const geo = load('data/geo/vietnam.json');
     const lands = new Map(regions.regions.filter((r) => r.land).map((r) => [r.land, load(`data/world/${r.land}.json`)]));
-    return createWorld(regions, defs, { routes: load('data/world/routes.json'), places: geo.places, rivers: geo.rivers, elevation: geo.elevation, lands, scatter: load('data/world/scatter.json') });
+    return createWorld(regions, defs, { routes: load('data/world/routes.json'), places: geo.places, rivers: geo.rivers, elevation: geo.elevation, lands, scatter: load('data/world/scatter.json'), villagers: load('data/figures.json').villagers });
   })();
   return world;
 }

@@ -2,12 +2,12 @@
 // buildProp() runs one of them with a seed, and returns its box and its roofs.
 import { propContext } from './context.js';
 import { house, giongHouse, dinh, hut, school, forge } from './houses.js';
-import { tree, banyan, bamboo, banana, herbs, bush } from './plants.js';
+import { tree, banyan, bamboo, banana, herbs, bush, areca } from './plants.js';
 import { well, haystack, coop, rock, ore, boat, signpost, gate, fence, riceStack, mountain, vanmieuGate, stele } from './things.js';
 
 export const PROPS = Object.freeze({
   house, 'giong-house': giongHouse, dinh, hut, school, forge,
-  tree, banyan, bamboo, banana, herbs, bush,
+  tree, banyan, bamboo, banana, herbs, bush, areca,
   well, haystack, coop, rock, ore, boat, signpost, gate, fence, 'rice-stack': riceStack, mountain,
   'vanmieu-gate': vanmieuGate, stele,
 });

@@ -10,11 +10,14 @@
 // The same seed gives the same land. Pure functions, no DOM.
 import { createWarp } from './warp.js';
 import { fbm } from './noise.js';
-import { hashSeed } from '../rng.js';
+import { hashSeed, createRng } from '../rng.js';
+
+// The size of the site of a hamlet (cells).
+export const HAMLET = Object.freeze({ w: 22, h: 16 });
 
 export const LETTER = Object.freeze({ grass: '.', path: '=', sand: '_', water: '~', field: 'f', dike: 'd', bridge: 'B' });
 const CODE = Object.fromEntries(Object.entries(LETTER).map(([k, v]) => [k, v.charCodeAt(0)]));
-const FIXED = { none: 0, stamp: 1, river: 2 };
+const FIXED = { none: 0, stamp: 1, river: 2, claim: 3 };
 
 // The height of the real land at a coordinate, in steps of the elevation grid (10 m), bilinear.
 export function elevationAt(e, [lon, lat]) {
@@ -137,8 +140,9 @@ function wind(line, seed, amp, scale, weight) {
 
 // def: the land of the region ({ anchors, rivers, roads, base, hills, wet, blend }). maps: the map
 // definitions with their window and stamps. geo: { rivers, elevation } of data/geo/vietnam.json.
-// seed: the seed of the world.
-export function createLand(def, maps, geo, seed) {
+// seed: the seed of the world. hamlets: the rules of the hamlets (data/world/scatter.json), or null:
+// their sites are chosen before the paddies (src/core/gen/hamlets.js builds them).
+export function createLand(def, maps, geo, seed, hamlets = null) {
   const box = regionBox(maps);
   const { x0, y0, w: W, h: H } = box;
   const N = W * H;
@@ -368,12 +372,57 @@ export function createLand(def, maps, geo, seed) {
     if (d <= 1) edge[i] = d;
   }
 
+  const toWater = distanceField(W, H, (i) => letter[i] === CODE.water);
+
+  // The sites of the hamlets: free, nearly level land of one map, away from water, with a road a
+  // few cells from the south side (the way into the yard). A site takes its cells first.
+  const sites = [];
+  if (hamlets) {
+    const rng = createRng(hashSeed(`${seed}:hamlets`));
+    const nearRoad = distanceField(W, H, (i) => letter[i] === CODE.path || letter[i] === CODE.bridge);
+    const count = new Map();
+    const margin = hamlets.margin ?? 3;
+    const free = (i) => owner[i] >= 0 && !fixed[i] && edge[i] < 0 && !letter[i];
+    // Many places to try, in a seeded order; a site keeps `spacing` cells from the others.
+    const tries = [];
+    for (let y = 1; y + HAMLET.h + 2 < H; y += 4) for (let x = 1; x + HAMLET.w + 1 < W; x += 4) tries.push([x + rng.int(0, 3), y + rng.int(0, 3)]);
+    for (const [sx, sy] of rng.shuffle(tries)) {
+      if (sites.some((t) => Math.hypot(t.x - x0 - sx, t.y - y0 - sy) < (hamlets.spacing ?? 30))) continue;
+      const mi = owner[sy * W + sx];
+      const m = maps[mi];
+      if (mi < 0 || (count.get(mi) ?? 0) >= (hamlets.perMap ?? 2)) continue;
+      const gx = sx + x0;
+      const gy = sy + y0;
+      if (gx < m.window.x + margin || gy < m.window.y + margin || gx + HAMLET.w > m.window.x + m.width - margin || gy + HAMLET.h > m.window.y + m.height - margin) continue;
+      let ok = true;
+      let lo = Infinity;
+      let hi = -Infinity;
+      for (let y = sy - 1; y <= sy + HAMLET.h && ok; y++) {
+        for (let x = sx - 1; x <= sx + HAMLET.w; x++) {
+          const i = y * W + x;
+          if (owner[i] !== mi || !free(i) || toWater.dist[i] < (hamlets.water?.[0] ?? 4) || toStamp.dist[i] < 4) {
+            ok = false;
+            break;
+          }
+          lo = Math.min(lo, level[i]);
+          hi = Math.max(hi, level[i]);
+        }
+      }
+      const door = (sy + HAMLET.h + 1) * W + sx + HAMLET.w / 2;
+      const road = nearRoad.dist[door];
+      if (!ok || hi - lo > 1 || road < (hamlets.road?.[0] ?? 2) || road > (hamlets.road?.[1] ?? 14)) continue;
+      if (!rng.chance(hamlets.chance ?? 1)) continue;
+      count.set(mi, (count.get(mi) ?? 0) + 1);
+      sites.push({ map: mi, x: gx, y: gy, w: HAMLET.w, h: HAMLET.h, seed: rng.int(1, 2147483646) });
+      for (let y = sy; y < sy + HAMLET.h; y++) for (let x = sx; x < sx + HAMLET.w; x++) fixed[y * W + x] = FIXED.claim;
+    }
+  }
+
   // Rice paddies, in blocks of five cells with a dike around each block: on low, wet land near
   // water, never on a road or near a stamp. All cells of a block lie at one level, one step under
   // the dike; blocks on a slope make terraces.
   const DIKE = def.dike ?? 5;
   const wet = def.wet ?? { scale: 22, near: 14, over: 0.15 };
-  const toWater = distanceField(W, H, (i) => letter[i] === CODE.water);
   const fieldBlock = new Map();
   for (let by = Math.floor(y0 / DIKE); by <= Math.floor((y0 + H) / DIKE); by++) {
     for (let bx = Math.floor(x0 / DIKE); bx <= Math.floor((x0 + W) / DIKE); bx++) {
@@ -431,6 +480,8 @@ export function createLand(def, maps, geo, seed) {
     warp,
     rivers,
     roads,
+    // The sites of the hamlets (region cells), with their maps.
+    sites,
     // The facts of a region cell, for the scatter rules.
     cell(x, y) {
       if (!inBox(x, y)) return null;
@@ -441,12 +492,23 @@ export function createLand(def, maps, geo, seed) {
         level: level[i],
         map: owner[i],
         stamp: fixed[i] === FIXED.stamp,
+        taken: fixed[i] === FIXED.claim,
         edge: edge[i] >= 0,
         water: toWater.dist[i],
         road: toRoad.dist[i],
         field: toField.dist[i],
         nearStamp: toStamp.dist[i],
       };
+    },
+    // Claim a free cell for a generated place (a hamlet): it gets this ground letter, and the
+    // scatter leaves it. Return false for a cell that is not free.
+    claim(x, y, ground) {
+      if (!inBox(x, y)) return false;
+      const i = at(x, y);
+      if (owner[i] < 0 || fixed[i] === FIXED.stamp) return false;
+      letter[i] = ground.charCodeAt(0);
+      fixed[i] = FIXED.claim;
+      return true;
     },
     // The ground and the height rows of a map (its window).
     rows(m) {

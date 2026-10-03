@@ -147,7 +147,8 @@ export async function mountVillage(ctx, params = {}) {
     crowns: (terrain.smooth ?? []).filter((c) => c.kind === 'crown').map((c) => ({ x: c.x, y: c.y, z: c.z, r: c.r })),
     river: riverOf(terrain.water ?? []),
   });
-  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : looks[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level });
+  // A villager of a generated hamlet has a look from parts in the map (by its id).
+  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : looks[key] ?? mapData.looks?.[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level });
 
   // The height of the ground under a map point (world units).
   const groundY = (x, y) => columnTop(tileMap.heightAt(Math.floor(x), Math.floor(y)));

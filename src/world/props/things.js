@@ -69,22 +69,36 @@ export const ore = (ctx, o) => rock(ctx, o, { ore: true });
 
 // A long dugout boat with a bird-head prow, along x.
 export function boat(ctx, o) {
+  const r = ctx.rng;
   const { fx, fz, fw, fd } = o;
   const z = fz + Math.floor(fd / 2);
   const g = o.water ? o.water : ctx.ground(fx + fw / 2, z);
+  // A boat from parts: the wood of the hull, the color of the rim, and sometimes a curved cover
+  // of woven bamboo (mui) and a pole.
+  const hull = r.pick(['wood', 'wood', 'ash']);
+  const rim = r.pick(['ochre', 'ochre', 'yellow']);
   for (let x = fx; x < fx + fw; x++) {
     const end = x === fx || x === fx + fw - 1;
-    ctx.set(x, g, z, 'wood');
+    ctx.set(x, g, z, hull);
     if (!end) {
-      ctx.set(x, g + 1, z - 1, 'ochre');
-      ctx.set(x, g + 1, z + 1, 'ochre');
-      ctx.set(x, g, z - 1, 'wood');
-      ctx.set(x, g, z + 1, 'wood');
+      ctx.set(x, g + 1, z - 1, rim);
+      ctx.set(x, g + 1, z + 1, rim);
+      ctx.set(x, g, z - 1, hull);
+      ctx.set(x, g, z + 1, hull);
     }
   }
   const px = fx + fw - 1;
   ctx.box(px, g + 1, z, px, g + 3, z, 'ochre');
   ctx.set(px + 1, g + 3, z, 'vermilion');
+  if (fw >= 5 && r.chance(0.5)) {
+    const c = fx + Math.floor(fw / 2) - 1;
+    for (let x = c; x < c + 2; x++) {
+      ctx.set(x, g + 2, z - 1, 'yellow');
+      ctx.set(x, g + 2, z + 1, 'yellow');
+      ctx.set(x, g + 3, z, 'yellow');
+    }
+  }
+  if (r.chance(0.4)) ctx.box(fx + 1, g + 1, z, fx + 1, g + 6, z, 'wood');
 }
 
 export function signpost(ctx, o) {

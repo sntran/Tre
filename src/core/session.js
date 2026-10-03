@@ -39,7 +39,7 @@ import { timeStatus, addPlayTime } from './timelimit.js';
 import { createWorldState, getEntity, query, addEntity, removeEntity, command as worldCommand } from './world/state.js';
 import { step as worldStep, STEP } from './world/step.js';
 import { envFor, placesOf } from './world/env.js';
-import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns, addZones } from './world/populate.js';
+import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns, addZones, addVillagers } from './world/populate.js';
 import { ground } from './world/systems/ground.js';
 import { REACH, learnerRecord, canPut } from './world/zones.js';
 import { setupTrial } from './world/systems/work.js';
@@ -137,6 +137,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
     }
     addLifeLayer(state, map, env, data.life);
+    addVillagers(state, map, env, data.life.people, data.people);
     addLanterns(state, env);
     heroTile = { x: Math.floor(at.x), y: Math.floor(at.y) };
     arrivals.clear();
