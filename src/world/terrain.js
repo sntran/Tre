@@ -33,10 +33,9 @@ const DECKS = new Set(['bridge', 'bamboo']); // the ground types with a deck of 
 // The kinds of the surface of the ground for the printed texture (src/render/voxel.js), and the
 // kind of each ground type. A grass cell of the hills is forest floor; a path of a stamp is paved.
 export const SURFACE = Object.freeze({ none: 0, grass: 1, packed: 2, paved: 3, sand: 4, dike: 5, forest: 6, rock: 7 });
-// The kind of each ground type. A path of a village is packed earth; bricks are for a later era. A
-// road of the land is a strip over the ground under it (strip). The forest floor is the grass of
-// the land on high ground.
-export const SURFACE_OF = Object.freeze({ grass: SURFACE.grass, flowers: SURFACE.grass, hedge: SURFACE.grass, 'hedge-low': SURFACE.grass, path: SURFACE.packed, yard: SURFACE.packed, brick: SURFACE.paved, sand: SURFACE.sand, dike: SURFACE.dike, rock: SURFACE.rock });
+// The kind of each ground type. A path of a village is packed earth (`village` in data/tiles.json:
+// `paved` gives bricks, for a later era); a road of the land is a strip over the ground under it.
+const SURFACE_OF = { grass: SURFACE.grass, flowers: SURFACE.grass, hedge: SURFACE.grass, 'hedge-low': SURFACE.grass, sand: SURFACE.sand, dike: SURFACE.dike, rock: SURFACE.rock, yard: SURFACE.packed };
 
 // The top of the ground of a cell (world y), from the height layer.
 export const columnTop = (digit) => digit + 1;
@@ -595,13 +594,14 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
   // the middle line of the road), wet (-1 dry high land to 1 next to water), density (of the
   // strokes of grass)]. A cell under or beside the strip of a road takes the direction from the
   // line of the road; a path of a village takes it from the path cells around it.
-  const isPath = (x, z) => typeAt(x, z) === 'path' || typeAt(x, z) === 'brick';
+  const isPath = (x, z) => typeAt(x, z) === 'path';
+  const VILLAGE = SURFACE[tileTypes.path?.village ?? 'packed'] ?? SURFACE.packed;
   function surface(x, z) {
     const type = typeAt(x, z);
     const c = map.land?.cell?.(x, z) ?? null;
     const stamp = c ? c.stamp : true;
     const road = roadCellOf(x, z);
-    let kind = SURFACE_OF[road && type === 'path' ? underOf(x, z) : type] ?? 0;
+    let kind = type === 'path' ? (road ? SURFACE_OF[underOf(x, z)] : VILLAGE) : SURFACE_OF[type] ?? 0;
     if (kind === SURFACE.grass && c && !stamp && c.level >= 5) kind = SURFACE.forest;
     let dx = 0;
     let dz = 0;
@@ -610,7 +610,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
       [dx, dz] = c.roadDir;
       // The across axis is (-dz, dx); the line keeps the distance on the other side.
       off = -c.roadOff;
-    } else if (type === 'path' || type === 'brick') {
+    } else if (type === 'path') {
       // The main axis of the path cells within two cells, and the middle of them.
       let n = 0;
       let mx = 0;
