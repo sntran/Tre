@@ -282,3 +282,76 @@ test('a house from parts: the seed changes its colors and things, never its size
   assert.ok(looks.size >= 10, 'the houses differ');
   assert.ok(ways.size <= 2, 'the way in stays (the posts are 6 or 7 high)');
 });
+
+test('the south edge of the land of the era follows the Hoành Sơn range: not a straight row, and the land rises to it', () => {
+  const m = mapOf('giong', 1);
+  const plane = m.land.plane;
+  const cellOf = (x, y) => {
+    const t = m.land.tile(Math.floor(x / TILE), Math.floor(y / TILE));
+    const i = (y - t.z0) * TILE + (x - t.x0);
+    return { mist: t.mist[i], level: t.level[i], letter: String.fromCharCode(t.letter[i]) };
+  };
+  const rows = [];
+  for (const lon of [106.0, 106.2, 106.35]) {
+    const [x, y0] = plane.toCell([lon, 18.4]).map(Math.floor);
+    let y = y0;
+    while (cellOf(x, y).mist === 0 && y < y0 + 2000) y++;
+    const lat = plane.toGeo([x, y])[1];
+    assert.ok(lat > 17.6 && lat < 18.3, `the mist at ${lon} E starts at ${lat.toFixed(2)} N`);
+    // The land rises to the mountains: the edge is higher than the land a little to the north.
+    const north = cellOf(x, y - 40).level;
+    const edge = Math.max(...[0, 2, 4, 6].map((d) => cellOf(x, y + d).level));
+    rows.push({ lon, y, north, edge });
+  }
+  const ys = rows.map((r) => r.y);
+  assert.ok(Math.max(...ys) - Math.min(...ys) > 10, `the edge is not one row: ${ys.join(', ')}`);
+  assert.ok(rows.filter((r) => r.edge > r.north).length >= 2, `the land rises to the edge: ${JSON.stringify(rows)}`);
+});
+
+test('the land knows the land of another country (for the line at the mist of another land)', () => {
+  const m = mapOf('giong', 1);
+  const at = (lon, lat) => m.land.plane.toCell([lon, lat]);
+  assert.equal(m.land.foreignAt(...at(103.2, 19.4)), true, 'Laos');
+  assert.equal(m.land.foreignAt(...at(105.0, 23.2)), true, 'China');
+  assert.equal(m.land.foreignAt(...at(105.85, 21.03)), false, 'Hà Nội');
+  assert.equal(m.land.foreignAt(...at(107.5, 20.0)), false, 'the sea');
+});
+
+test('a road over a river: a ford over a small river, a bamboo bridge over a middle one, and a ferry over a big one', async () => {
+  const { createLandPlane, CROSSING } = await import('../src/core/gen/tiles.js');
+  const { createPlane } = await import('../src/core/gen/plane.js');
+  const planeDef = { origin: [102, 23.5], trueLat: 16, scale: 45 };
+  const plane = createPlane(planeDef);
+  const lons = [105.0, 105.03, 105.07];
+  const widths = [CROSSING.ford - 2, CROSSING.ford + 4, CROSSING.ferry + 6];
+  const rivers = lons.map((lon, i) => ({ id: `r${i}`, lines: [[[lon, 21.15], [lon, 20.85]]] }));
+  const [x0, y] = plane.toCell([104.97, 21.0]).map(Math.round);
+  const [x1] = plane.toCell([105.1, 21.0]).map(Math.round);
+  const def = {
+    id: 'test',
+    plane: planeDef,
+    rivers: widths.map((w, i) => ({ id: `r${i}`, water: w, bank: 2, bend: 0 })),
+    roads: [{ id: 'x', width: 4, bend: 0, points: [[null, x0, y], [null, x1, y]] }],
+  };
+  const land = createLandPlane(def, [], { rivers, heights: null }, 1);
+  const letterAt = (x, yy) => {
+    const t = land.tile(Math.floor(x / TILE), Math.floor(yy / TILE));
+    return String.fromCharCode(t.letter[(yy - t.z0) * TILE + (x - t.x0)]);
+  };
+  // The cells of the road over each river.
+  const road = land.roads[0].line.map(([x, yy]) => [Math.floor(x), Math.floor(yy)]);
+  const over = lons.map((lon) => {
+    const rx = Math.round(plane.toCell([lon, 21.0])[0]);
+    return road.filter(([x]) => Math.abs(x - rx) <= 1).map(([x, yy]) => letterAt(x, yy));
+  });
+  assert.ok(over[0].length && over[0].every((c) => c === 's'), `a ford: ${over[0].join('')}`);
+  assert.ok(over[1].length && over[1].every((c) => c === 'k'), `a bamboo bridge: ${over[1].join('')}`);
+  assert.ok(over[2].length && over[2].every((c) => c === '~'), `the water of a ferry: ${over[2].join('')}`);
+  // One ferry, over the big river: its boat on the water, the landings on the land beside it.
+  assert.equal(land.ferries.length, 1);
+  const f = land.ferries[0];
+  assert.equal(f.river, 'r2');
+  assert.equal(letterAt(Math.floor(f.a.x), Math.floor(f.a.y)), '~');
+  assert.equal(letterAt(Math.floor(f.b.x), Math.floor(f.b.y)), '~');
+  for (const q of [f.landA, f.landB, f.stepA, f.stepB]) assert.notEqual(letterAt(Math.floor(q.x), Math.floor(q.y)), '~');
+});

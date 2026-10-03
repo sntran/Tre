@@ -29,6 +29,7 @@ const MARGIN = Math.max(...Object.values(REACH));
 const FINE_Y = 136; // fine blocks: the highest place of a prop
 const FINE_UP = 80; // fine blocks over the highest ground of a page
 const SEA = new Set(['sea', 'surf']);
+const DECKS = new Set(['bridge', 'bamboo']); // the ground types with a deck of planks over the water
 
 // The top of the ground of a cell (world y), from the height layer.
 export const columnTop = (digit) => digit + 1;
@@ -194,7 +195,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
         const x = x0 - 1 + gx;
         const z = z0 - 1 + gz;
         const type = typeAt(x, z);
-        let h = type === 'bridge' ? 1 : baseTop(x, z);
+        let h = DECKS.has(type) ? 1 : baseTop(x, z);
         h = Math.max(0, h - dugAt(x, z));
         tops[gz * GW + gx] = h;
         maxTop = Math.max(maxTop, baseTop(x, z));
@@ -215,8 +216,8 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
         if (!type) continue;
         const def = tileTypes[type] ?? {};
         const h = tops[gz * GW + gx];
-        const full = type === 'bridge' ? 1 : baseTop(x, z);
-        const top = type === 'bridge' ? 'yellowPale' : rut(x, z) ? 'ashLight' : def.color ?? 'greenPale';
+        const full = DECKS.has(type) ? 1 : baseTop(x, z);
+        const top = DECKS.has(type) ? 'yellowPale' : rut(x, z) ? 'ashLight' : def.color ?? 'greenPale';
         const under = def.under ?? 'wood';
         for (let y = 0; y < h; y++) {
           // The depth under the first top of the column (a dug column keeps the kinds of its blocks).
@@ -232,9 +233,10 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
           if (kinds) kinds[ground.index(gx, y, gz)] = kindNames.indexOf(kind) + 1;
         }
         if (!inChunk(x, z)) continue;
-        if (type === 'bridge') {
-          // A bridge is a deck of planks over the water; the ground under it is the river bed.
-          bridges.push({ x, z, y: baseTop(x, z) });
+        if (DECKS.has(type)) {
+          // A bridge is a deck of planks over the water (of bamboo on a small river of the land);
+          // the ground under it is the river bed.
+          bridges.push({ x, z, y: baseTop(x, z), bamboo: type === 'bamboo' });
           water.push({ x, z, y: 1 + WATER.river });
         }
         if (type === 'water' || type === 'shallow') water.push({ x, z, y: baseTop(x, z) + WATER.river, ...(type === 'shallow' ? { ford: true } : {}) });
@@ -281,7 +283,8 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     for (const b of bridges) {
       if (inSpan(b.x, b.z)) continue;
       const fy = b.y * 2 - 1;
-      for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) writer.set(b.x * 2 + dx, fy, b.z * 2 + dz, (b.z * 2 + dz) % 2 ? 'wood' : 'ochre');
+      const tones = b.bamboo ? ['yellow', 'greenPale'] : ['ochre', 'wood'];
+      for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) writer.set(b.x * 2 + dx, fy, b.z * 2 + dz, tones[(b.z * 2 + dz) % 2]);
     }
     // The objects of the map near the chunk.
     for (const o of near(x0 - MARGIN, z0 - MARGIN, x0 + CHUNK + MARGIN, z0 + CHUNK + MARGIN)) {

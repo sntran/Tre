@@ -51,7 +51,7 @@ import { createRaid, raidLevel } from './world/raids.js';
 import { setupRaid, roadPoint } from './world/systems/raid.js';
 import { lossLevel } from './profile.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from './world/save.js';
-import { dayOf, eventsOfDay, eventLevel, eventTask, purse } from './world/days.js';
+import { dayOf, eventsOfDay, isEventDay, notAgain, eventLevel, eventTask, purse } from './world/days.js';
 import { createRng, hashSeed } from './rng.js';
 import { TILE } from './gen/tiles.js';
 
@@ -61,7 +61,7 @@ const WORLD = new Set(['move', 'stop', 'pet', 'ride', 'aim', 'pick', 'put', 'dro
 const GREETS = ['world.greet.1', 'world.greet.2', 'world.greet.3'];
 const CALM_CELLS = 2; // the hero is on the bridge when nearer than this to a span that is not solid
 const LIVE = 2; // the live chunks: this many chunks on each side of the chunk of the hero (5 x 5)
-const BACK = 2; // cells: the hero takes this many steps back from an edge of the world
+const BACK = 1.5; // cells: two steps back from an edge of the world (a step of the hero is about 0.75 of a cell)
 
 // data: the data of the game (src/ui/data.js). profile: the profile of the player. learner():
 // the learner of the profile, or null. log(kind, fields): the learning log (ctx.log). save(reason):
@@ -143,6 +143,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (onThisMap) for (const rec of Object.values(visit.chunks ?? {})) for (const e of rec.entities ?? []) if (!getEntity(state, e.id)) addEntity(state, e);
     // The placement zones and their cells, before the hero finds a free place.
     addZones(state, map, env);
+    addFerries();
     ground(state, 0, null, env);
     const saved = onThisMap && savedPlace.x !== null ? savedPlace : null;
     const at = freeSpot(tileMap, params.at ?? saved ?? map.spawn) ?? map.spawn;
@@ -560,9 +561,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const byPlace = [...areas.filter((a) => map.spotsByPlace?.[a.key]), ...areas.filter((a) => !map.spotsByPlace?.[a.key])];
     const area = where ? byPlace.find((a) => a.spots[where]?.length) : null;
     if (force && !list.some((x) => x.id === force) && area) list.push({ id: force, at: area.spots[where][0], area: area.key });
-    for (const ev of list) {
+    // An event (but the market of a hamlet, and an event that a story brings) does not come at the
+    // spot of yesterday.
+    const kept = notAgain(list, found, day, (id) => visit.things[`event.${id}.spot`], (id) => Boolean(eventDef(id)?.every) || id === force);
+    for (const ev of kept) {
       const def = eventDef(ev.id);
       if (!def || visit.things[`event.${ev.id}`] === day || getEntity(state, `event:${ev.id}`)) continue;
+      visit.things[`event.${ev.id}.spot`] = `${day}:${ev.at[0]},${ev.at[1]}`;
       const rng = createRng(hashSeed(`${state.seed}:event-place:${ev.id}:${day}`));
       // The person stands on open ground near the spot (not in a narrow lane).
       const stand = nearFree(ev.at, 2, 5, rng, [], 1) ?? nearFree(ev.at, 1, 6, rng) ?? { x: ev.at[0] + 0.5, y: ev.at[1] + 0.5 };
@@ -580,6 +585,36 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         addEntity(state, { id: `event:${ev.id}:cart`, chunk: chunkOf(ev.at[0], ev.at[1]), dayEvent: { id: ev.id, day, at: ev.at }, position: { x: ev.at[0] * 2 + 1, y: env.groundY(ev.at[0], ev.at[1]) - 0.5, z: ev.at[1] * 2 + 1, facing: 0.3 }, solid: { r: 2.2 }, look: 'cart' });
       }
     }
+  }
+  // The market of today near a place: on the market day of a hamlet in the 3 x 3 tiles of the land
+  // around the place, the first person of the place who greets the hero says so, once a day, with
+  // the way to it (north, south, east, or west). Return the text key, or null.
+  function marketLine() {
+    const def = eventDef('market');
+    if (!def?.every || visit.things['market.told'] === today()) return null;
+    const c = heroCell();
+    const frame = (map.source?.def?.frames ?? []).map((f) => ({ f, at: data.world.at(f.id, f.cell[0], f.cell[1]) })).find(({ at }) => Math.hypot(at[0] - c.x, at[1] - c.y) < 60);
+    if (!frame || !map.land) return null;
+    const [px, py] = frame.at;
+    const tx0 = Math.floor(px / TILE);
+    const tz0 = Math.floor(py / TILE);
+    let best = null;
+    for (let tz = tz0 - 1; tz <= tz0 + 1; tz++) {
+      for (let tx = tx0 - 1; tx <= tx0 + 1; tx++) {
+        if (!map.ready(tx, tz)) continue;
+        for (const y of map.land.tile(tx, tz).spots.yard ?? []) {
+          if (!isEventDay(def, state.seed, today(), y)) continue;
+          const d = Math.hypot(y[0] - px, y[1] - py);
+          if (!best || d < best.d) best = { at: y, d };
+        }
+      }
+    }
+    if (!best) return null;
+    visit.things['market.told'] = today();
+    const dx = best.at[0] - px;
+    const dy = best.at[1] - py;
+    const way = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'east' : 'west') : dy > 0 ? 'south' : 'north';
+    return `world.market.${way}`;
   }
   // The areas of the small events near the hero: each place of the map, and each tile of the land
   // of the live chunks, with their spots in the live chunks ({ key, spots: { road, field, wetfield,
@@ -708,6 +743,64 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     queue(() => clearEvent(id));
   }
 
+  // The ferries of the map (layers.ferries): a boat that waits at the landing of side a. The boat
+  // never sleeps (it is not of a chunk), so that it is where it was left.
+  function addFerries() {
+    for (const f of [...(map.layers.ferries ?? []), ...(map.land?.ferries ?? [])]) {
+      const id = `ferry:${f.id}`;
+      if (getEntity(state, id)) continue;
+      const half = (q) => ({ x: q.x * 2, z: q.y * 2 });
+      const a = half(f.a);
+      addEntity(state, {
+        id,
+        ferry: { a, b: half(f.b), landA: half(f.landA), landB: half(f.landB), side: 'a', state: 'wait', riders: [], from: [], t: 0 },
+        position: { x: a.x, y: env.groundY(f.a.x, f.a.y) + 1.2, z: a.z, facing: Math.atan2(f.b.x - f.a.x, f.b.y - f.a.y) },
+        look: 'ferry',
+      });
+    }
+  }
+  // The ferries of the roads of the land (map.land.ferries) have no trigger zone: the hero calls the
+  // boat at the cell of the bank (step), once each time the hero comes there.
+  const atLanding = new Set();
+  function checkLandFerries() {
+    const list = map.land?.ferries;
+    if (!list?.length || busy || turning !== null) return;
+    const c = heroCell();
+    for (const f of list) {
+      for (const side of ['A', 'B']) {
+        const q = f[`step${side}`];
+        const key = `${f.id}:${side}`;
+        const d = Math.hypot(q.x - c.x, q.y - c.y);
+        if (d > 3) atLanding.delete(key);
+        else if (d < 1.2 && !atLanding.has(key) && !hero().aboard) {
+          atLanding.add(key);
+          startFerry(f.id, 'map.ferry.river');
+        }
+      }
+    }
+  }
+  // The hero comes to the landing of a ferry: the boat comes (when it waits at the other side),
+  // the hero and Nghé (when it is near) step onto it, and it crosses. The line says it first.
+  function startFerry(id, textKey) {
+    const e = getEntity(state, `ferry:${id}`);
+    if (!e || e.ferry.state !== 'wait') return;
+    const f = e.ferry;
+    const h = hero().position;
+    const side = Math.hypot(h.x - f.landA.x, h.z - f.landA.z) <= Math.hypot(h.x - f.landB.x, h.z - f.landB.z) ? 'a' : 'b';
+    const riders = ['hero'];
+    const nghe = getEntity(state, 'friend:nghe');
+    if (nghe && !nghe.hidden && Math.hypot(nghe.position.x - h.x, nghe.position.z - h.z) < 20) riders.push(nghe.id);
+    arrivals.clear();
+    worldCommand(state, { type: 'stop', id: 'hero' });
+    f.riders = riders;
+    f.call = side;
+    f.t = 0;
+    f.from = riders.map((r) => ({ ...getEntity(state, r).position }));
+    f.state = f.side === side ? 'board' : 'call';
+    emit({ type: 'halt' });
+    if (textKey) say(textKey);
+  }
+
   // Actions of trigger zones, people, and encounters -------------------------------
 
   function doAction(zone) {
@@ -717,8 +810,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       walkToPerson(a.talk);
       return;
     }
+    if (a.ferry) {
+      // A ferry: the boat takes the hero and Nghé to the other side of the river.
+      startFerry(a.ferry, a.textKey);
+      return;
+    }
     if (a.move) {
-      // A ferry: the hero and Nghé go to the other side of the river.
       say(a.textKey);
       queue(() => placeHero(a.move.x, a.move.y));
       return;
@@ -1193,7 +1290,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function worldEvent(ev) {
     if (ev.type === 'greet' && !busy) {
       const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
-      emit({ type: 'open', screen: 'callout', id: ev.id, textKey: GREETS[n % GREETS.length], params: { name: profile.hero.name } });
+      emit({ type: 'open', screen: 'callout', id: ev.id, textKey: marketLine() ?? GREETS[n % GREETS.length], params: { name: profile.hero.name } });
     }
     // The fisher calls out when a plank is too long.
     if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: {} });
@@ -1252,13 +1349,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if ((tileMap.mistAt?.(x, y) ?? 0) > mistWalk()) return 'mist';
     return null;
   }
-  // The line of an edge: the sea, the mist to the south (the land of a later era), or the mist of
-  // another land.
-  function edgeLine(kind, x, y) {
+  // The line of an edge: the sea, the mist of the land of a later era (to the south), or the mist
+  // of another land (when the land of another country is ahead of the hero).
+  function edgeLine(kind, x, y, f) {
     if (kind === 'sea') return 'edge.sea';
-    const lat = map.land?.plane.toGeo([x, y])[1];
-    const era = data.world.eraLand?.byChapter?.[String(data.world.region(map.region)?.chapter)];
-    return era !== undefined && lat < era ? 'edge.mist' : 'edge.mist.far';
+    for (let d = 2; d <= 24; d += 2) if (map.land?.foreignAt?.(x + Math.sin(f) * d, y + Math.cos(f) * d)) return 'edge.mist.far';
+    return 'edge.mist';
   }
   function checkEdge() {
     if (busy || turning !== null || hero().fall || raidOn()) return;
@@ -1275,7 +1371,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function turnBack(kind, c, f) {
     arrivals.clear();
     worldCommand(state, { type: 'stop', id: 'hero' });
-    const line = edgeLine(kind, c.x, c.y);
+    const line = edgeLine(kind, c.x, c.y, f);
     emit({ type: 'edge', kind, textKey: line });
     emit({ type: 'halt' });
     // Two steps back, the way the hero came (or the nearest free cell there).
@@ -1328,6 +1424,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     checkRest();
     checkEdge();
+    checkLandFerries();
     // The live chunks follow the hero: the people of the chunks that woke come.
     if (updateLive()) {
       refreshPeople();

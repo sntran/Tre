@@ -1,0 +1,22 @@
+{
+  "name": "pot-far",
+  "about": {
+    "vi": "Em làm vỡ một cái vò, rồi đi xa. Trong đêm, vò được thay mới, cả khi em ở xa; sáng hôm sau em quay lại và thấy vò mới.",
+    "en": "The hero breaks a pot, then walks far away. In the night the pot is new, also while the hero is far; the next morning the hero comes back and sees the new pot."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "clock": 540,
+  "at": ["phu-dong", 10.5, 31],
+  "steps": [
+    { "tap": { "cell": [13.2, 23.9] } },
+    { "until": { "event": "break", "timeout": 20 } },
+    { "expect": [{ "entity": "life:11:0", "look": "pot-broken", "keep": true }] },
+    { "walk": { "to": ["phu-dong", 46.5, 1.5] } },
+    { "walk": { "to": ["phu-dong", 46.5, -40.5] } },
+    { "at": { "hour": 10 } },
+    { "expect": [{ "day": 1 }, { "entity": "life:11:0", "look": "pot", "keep": false }] },
+    { "walk": { "to": ["phu-dong", 31.5, 27.5] } },
+    { "wait": 1 },
+    { "expect": [{ "entity": "life:11:0", "look": "pot", "keep": false }] }
+  ]
+}

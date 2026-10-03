@@ -21,6 +21,7 @@ const HULL = 0.046; // the ink outline around each part, in blocks (the same for
 const MAX_PARTS = 4096;
 const MAX_FIGURES = 512;
 const MAX_PUFFS = 64;
+const WADE = 0.4; // blocks: how deep the feet go in the surf (the sea is 0.5 over the sand)
 const RIDER = 0.35; // world units: the seat of a rider over the ground
 // The night (0 to 1): the ink is softer at night. The color of the dusk is one multiply layer over
 // the frame (see the village scene), not a tint in the shaders.
@@ -176,7 +177,15 @@ const WANTS = { catch: 'lift', sit: 'rest', sleep: 'rest', rest: 'rest', stunned
 // level for all figures ('fine' or 'coarse', for the page of the figures); without it, the level
 // follows the distance from the hero, and the line of that distance follows zoom() (the zoom level
 // of the camera).
-export function createFigureLayer(scene, lookOf, { camera = null, detail = null, zoom = () => 0 } = {}) {
+// The stages of the mist for a figure, as for the land (src/render/voxel.js): the colors get pale
+// (all paper at 0.45), then only the ink outline stays, then nothing (mist: 0 to 1).
+const smooth = (a, b, x) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+const PAPER_RGB = [1, 3, 5].map((i) => parseInt(C.paper.slice(i, i + 2), 16) / 255);
+
+export function createFigureLayer(scene, lookOf, { camera = null, detail = null, zoom = () => 0, mistAt = () => 0 } = {}) {
   const box = unitBox();
   const plain = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PARTS), 1);
   box.setAttribute('plain', plain);
@@ -292,8 +301,9 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         f.vel = { x: (e.motion?.vx ?? 0) / 2, z: (e.motion?.vz ?? 0) / 2 };
         f.control = Boolean(e.control);
         f.running = (e.motion?.speed ?? 0) > 11;
-        // A rider sits on the back of Nghé; a swimmer at the ford is a little lower in the water.
-        f.offset = (e.riding ? RIDER : 0) - (e.motion?.shallow && !e.control ? 0.3 : 0);
+        // A rider sits on the back of Nghé; a swimmer at the ford is a little lower in the water;
+        // in the surf the feet sink into the sand, so that the water comes to the knee.
+        f.offset = (e.riding ? RIDER : 0) - (e.motion?.wade ? WADE : e.motion?.shallow && !e.control ? 0.3 : 0);
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
         f.want = e.riding ? 'ride' : WANTS[e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
         f.bend = e.react?.bend ?? null;
@@ -333,6 +343,11 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
           }
         }
         f.at = { x: x / 2, y: f.shownY / 2, z: z / 2 };
+        // A figure deep in the mist is paper: it draws nothing. The hero always draws.
+        const mist = f.control ? 0 : mistAt(f.at.x, f.at.z);
+        if (mist >= 0.78) continue;
+        const pale = smooth(0, 0.45, mist);
+        const tint = (rgb) => color.setRGB(rgb[0] + (PAPER_RGB[0] - rgb[0]) * pale, rgb[1] + (PAPER_RGB[1] - rgb[1]) * pale, rgb[2] + (PAPER_RGB[2] - rgb[2]) * pale);
         // The animation goes on for every figure, so that a figure that comes into the view is in
         // step.
         const pose = animate(f.anim, { speed: f.speed, dt, want: f.want });
@@ -379,17 +394,17 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
             if (o >= MAX_FIGURES) continue;
             balls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
             ballHulls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
-            balls.setColorAt(o, color.setRGB(p.rgb[0], p.rgb[1], p.rgb[2]));
+            balls.setColorAt(o, tint(p.rgb));
             o += 1;
             continue;
           }
           parts.setMatrixAt(n, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
           hulls.setMatrixAt(n, p.mark ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
-          parts.setColorAt(n, color.setRGB(p.rgb[0], p.rgb[1], p.rgb[2]));
+          parts.setColorAt(n, tint(p.rgb));
           plain.array[n] = p.mark ? 1 : 0;
           n += 1;
         }
-        if (L.figure.shadow && s < MAX_FIGURES) {
+        if (L.figure.shadow && s < MAX_FIGURES && mist < 0.45) {
           const r = Math.max(0.8, L.figure.shadow * L.unit * 1.6);
           shadows.setMatrixAt(s++, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.04, f.at.z));
         }

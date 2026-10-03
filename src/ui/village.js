@@ -14,6 +14,7 @@ import { rainOf } from '../core/world/systems/sky.js';
 import { whenOn } from '../core/world/systems/joys.js';
 import { createSession, middleOf } from '../core/session.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
+import { WATER_KINDS } from '../world/chunks.js';
 import { heroLook } from '../world/figures.js';
 import { h, img, button } from './dom.js';
 import { t, tn } from './i18n.js';
@@ -134,7 +135,6 @@ export async function mountVillage(ctx, params = {}) {
   // One view for each map, made once for its terrain. The far land and the mist fade into the
   // paper (mistAt: 0 in the land of the era, 1 deep in the mist).
   const fadeCells = mapData.mist?.fade ?? 12;
-  const waterKind = { water: 'river', bridge: 'river', shallow: 'ford', sea: 'sea', surf: 'sea' };
   // The land around the hero is made in a worker before the hero and the view need it.
   if (!streams.has(mapData.key)) {
     for (const [k, st] of streams) {
@@ -149,7 +149,7 @@ export async function mountVillage(ctx, params = {}) {
     worlds.set(mapData.id, { terrain, view: D.createVoxelWorld(canvas, terrain, {
       ready: (cx, cz) => stream.ready(cx * CHUNK - 10, cz * CHUNK - 10, cx * CHUNK + CHUNK + 10, cz * CHUNK + CHUNK + 10),
       mistAt: (x, z) => Math.min(1, (session.tileMap.mistAt?.(Math.floor(x), Math.floor(z)) ?? 0) / fadeCells),
-      waterAt: (x, z) => waterKind[session.tileMap.type(Math.floor(x), Math.floor(z))] ?? null,
+      waterAt: (x, z) => WATER_KINDS[session.tileMap.type(Math.floor(x), Math.floor(z))] ?? null,
     }) });
   }
   const view = worlds.get(mapData.id).view;
@@ -205,7 +205,7 @@ export async function mountVillage(ctx, params = {}) {
     get river() { return nearby().river; },
   });
   // A villager of a generated hamlet has a look from parts in the map (by its id).
-  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : looks[key] ?? mapData.looks?.[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level });
+  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : looks[key] ?? mapData.looks?.[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level, mistAt: (x, z) => Math.min(1, (session.tileMap.mistAt?.(Math.floor(x), Math.floor(z)) ?? 0) / fadeCells) });
 
   // The height of the ground under a map point (world units).
   const groundY = (x, y) => columnTop(tileMap.heightAt(Math.floor(x), Math.floor(y)));
@@ -1147,7 +1147,7 @@ export async function mountVillage(ctx, params = {}) {
     // The plank under a screen point, for automatic tests.
     thingAt: (x, y) => thingAt({ x, y })?.id ?? null,
     turn: (n) => view.turn(n),
-    stats: () => view.stats(),
+    stats: (opts) => view.stats(opts),
     // The world state, for automatic tests (read only).
     state: () => state,
   };

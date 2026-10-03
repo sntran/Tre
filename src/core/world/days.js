@@ -11,7 +11,7 @@ export const dayOf = (minutes) => Math.floor(minutes / 1440);
 // spots: the spots of the map by kind ({ road: [[x, y]], field, wetfield, yard }). wet: a rain fell
 // today (and it is over) or yesterday. One event of each kind at most, and never two events at one
 // spot. An event with `every` comes on fixed days: each spot (each hamlet) gets its day from the
-// seed, one day in `every`, so that a child can learn when its market comes. An event with
+// seed and its cell, one day in `every`, so that a child can learn when its market comes. An event with
 // `after: "rain"` comes only when the land is wet.
 export function eventsOfDay(defs, { seed, day, map, spots = {}, wet = false }) {
   const out = [];
@@ -20,12 +20,37 @@ export function eventsOfDay(defs, { seed, day, map, spots = {}, wet = false }) {
     if (def.after === 'rain' && !wet) continue;
     const rng = createRng(hashSeed(`${seed}:event:${def.id}:${map}:${day}`));
     let free = (spots[def.where] ?? []).filter((p) => !used.has(`${p[0]},${p[1]}`));
-    if (def.every) free = free.filter((p) => (day + hashSeed(`${seed}:day:${def.id}:${map}:${p[0]},${p[1]}`)) % def.every === 0);
+    if (def.every) free = free.filter((p) => isEventDay(def, seed, day, p));
     else if (!rng.chance(def.chance ?? 0)) continue;
     if (!free.length) continue;
     const at = rng.pick(free);
     used.add(`${at[0]},${at[1]}`);
     out.push({ id: def.id, at: [at[0], at[1]] });
+  }
+  return out;
+}
+
+// Is a day the day of an event with `every` at a spot (a market at the yard of a hamlet)? The day
+// comes from the seed and the cell of the spot only, so that a hamlet keeps its market day.
+export function isEventDay(def, seed, day, [x, y]) {
+  return (day + hashSeed(`${seed}:day:${def.id}:${x},${y}`)) % def.every === 0;
+}
+
+// An event does not come at its spot of yesterday: it comes at the next spot of its kind (of the
+// other spots that the day found), or not today. list: the events to place ({ id, at }); found: all
+// the events of the day near the hero, the nearest first; last(id): the spot of the event on its
+// last day ("day:x,y"), or undefined; fixed(id): an event that keeps its spot (a market).
+export function notAgain(list, found, day, last, fixed = () => false) {
+  const key = (at) => `${at[0]},${at[1]}`;
+  const out = [];
+  for (const ev of list) {
+    const [d, at] = String(last(ev.id) ?? '').split(':');
+    if (fixed(ev.id) || Number(d) !== day - 1 || at !== key(ev.at)) {
+      out.push(ev);
+      continue;
+    }
+    const other = found.find((x) => x.id === ev.id && key(x.at) !== at);
+    if (other) out.push(other);
   }
   return out;
 }

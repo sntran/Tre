@@ -110,6 +110,31 @@ test('a house on stilts has its floor above its posts, and the roof covers the w
   assert.equal(w.fine.ownerAt(wall.x0, info.floor, wall.z0), 5, 'each block knows its house');
 });
 
+test('a round roof is a low oval shell, long along the house, with its eaves below the top of the walls', async () => {
+  const { roundShell } = await import('../src/world/roofs.js');
+  let seen = 0;
+  for (let seed = 1; seed < 60 && seen < 4; seed++) {
+    for (const [fw, fd] of [[12, 12], [16, 12], [12, 16]]) {
+      const r = buildProp(world(), { kind: 'house', gen: true, fx: 4, fz: 4, fw, fd, seed }, 5);
+      const roof = r.roofs[0];
+      if (roof.shape !== 'round') continue;
+      seen += 1;
+      const wall = r.info.walls;
+      const wallTop = (wall.top + 1) / 2;
+      const shell = roundShell(roof);
+      assert.ok(shell.eave < wallTop, 'the eaves come down below the top of the walls');
+      // About half as tall as a dome that rose 1.15 ridges over the walls.
+      assert.ok(shell.top - wallTop <= (roof.ridgeH / 2) * 1.15 * 0.5 + 1e-9, `low: ${(shell.top - wallTop).toFixed(2)}`);
+      // Oval: long along the longer side of the house.
+      const long = roof.x1 - roof.x0 >= roof.z1 - roof.z0;
+      assert.ok(long ? shell.rx > shell.rz : shell.rz > shell.rx, 'long along the house');
+      // It covers the corners of the walls at their top.
+      for (const x of [wall.x0 / 2, (wall.x1 + 1) / 2]) for (const z of [wall.z0 / 2, (wall.z1 + 1) / 2]) assert.ok(shell.covers(x, wallTop - 0.01, z), `the corner ${x}, ${z} is under the roof`);
+    }
+  }
+  assert.ok(seen >= 4, 'some houses of the land have a round roof');
+});
+
 test('the đình has a vermilion ridge and bird-head finials', () => {
   const r = buildProp(world(), { kind: 'dinh', fx: 2, fz: 2, fw: 16, fd: 16, seed: 1 }, 1);
   assert.equal(r.roofs[0].ridge, 'vermilion');

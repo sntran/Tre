@@ -37,6 +37,7 @@ class M:
         self.objects, self.npcs, self.encounters, self.triggers = [], [], [], []
         self.collision, self.zones, self.paths, self.exits = [], [], {}, []
         self.life = []
+        self.ferries = []  # ferries over a big river: id, a and b (the spots of the boat), landA and landB (where the riders step off)
         self.places = {}
         self.spots = {}  # the spots of the small events of the day: road, field, yard (cells, not tiles)
         self.geo = None
@@ -166,6 +167,7 @@ class M:
                 'life': [{**point(g), 'r': sc(g['r'])} for g in self.life],
                 'places': {name: point(p) for name, p in self.places.items()},
                 'triggers': triggers,
+                'ferries': [{**f, **{key: point(f[key]) for key in ('a', 'b', 'landA', 'landB')}} for f in self.ferries],
             },
             'npcs': [point(n) for n in self.npcs],
             'encounters': [point(e) for e in self.encounters],
@@ -216,6 +218,7 @@ def place_def(m, region, size, offset, stamps):
             'life': [move(g) for g in L['life'] if inside(g['x'], g['y'])],
             'places': {k: move(p) for k, p in L['places'].items()},
             'triggers': trig,
+            'ferries': [{**f, **{key: move(f[key]) for key in ('a', 'b', 'landA', 'landB')}} for f in L['ferries']],
             'spots': {k: [[x + ox, y + oy] for x, y in pts] for k, pts in m.spots.items()},
         },
         'npcs': [move(n) for n in d['npcs']],

@@ -312,7 +312,20 @@ New about lines of the stories (in `tests/stories/`):
 - `mist-edge`: "Ở cuối phía nam của vùng đất thời này: em đi vào màn sương, bước chậm lại; Nghé dừng lại và kêu; em quay lại hai bước: phía nam còn mù sương."
 - `save-chunks`: "Bản lưu giữ những gì đã thay đổi ở từng vùng: chặt một cây, đi xa bốn vùng rồi quay lại, lưu và mở lại. Cây vẫn không còn, và không có gì khác thay đổi." Please check "vùng" for a chunk of the world.
 
+New texts after the review of #18:
+
+- `world.market.north`, `.south`, `.east`, `.west`: "Hôm nay xóm phía bắc có phiên chợ đấy." ("There is a market today in the hamlet to the north."), and the same for the south, the east, and the west. A person in Phù Đổng says it on a market day, one time in a day.
+- `map.ferry.river`: "Bác lái đò chở em và [[nghecalf]] qua sông." ("The ferryman takes you and the calf across the river in his boat."), at a ferry where a road of the land crosses a big river.
+
+New about lines of the stories after the review:
+
+- `ferry`: "Ở bến sông Hồng: chiếc đò chở em và Nghé sang sông, không qua cảnh chuyển nào; đò đi trên mặt nước, rồi cả hai bước lên bờ bên kia. Em quay lại bến, và đò chở em về."
+- `market-crier`: "Hôm nay là phiên chợ của xóm phía đông: bà ở làng chào em và nói có chợ. Em đi về phía đông, tới sân của xóm, và người bán hàng đang đợi ở đó."
+- `pot-far`: "Em làm vỡ một cái vò, rồi đi xa. Trong đêm, vò được thay mới, cả khi em ở xa; sáng hôm sau em quay lại và thấy vò mới."
+
 Facts to check:
 
+- The south edge of Era 1 follows the crest of the Hoành Sơn range (Đèo Ngang), near 18° N, between Hà Tĩnh and Quảng Bình. See `QUESTIONS.md`, question 99.
+- The rivers of Era 1 on the plane: the Hồng, the Đuống, the Thái Bình, the Bạch Đằng, the Mã, and the Cả, each with a width from its size. The Hồng has ferries, and a smaller river has a ford or a bamboo bridge. See `QUESTIONS.md`, question 103.
 - The line of the land of Era 1 at 18° N (near Hà Tĩnh and Quảng Bình): the land of Văn Lang in the legends reaches about there. See `QUESTIONS.md`, question 99.
 - The scale: one cell is 45 m of real land, and the story places stand at their real places (the đình of Phù Đổng, núi Vệ Linh, Núi Trâu, Văn Miếu). See `docs/WORLD.md`, "The scale".

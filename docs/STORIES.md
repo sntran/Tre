@@ -135,9 +135,12 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `event-market` | Market day: two strings of ten and three single coins pay the price; the coins leave the purse only then. |
 | `event-duck` | Lost ducks: one is not enough; with the second, the flock is whole. |
 | `walk-trau-son` | From the gate of Phù Đổng on the east road, through the generated land, to the fields of Núi Trâu, with no change of scene. |
-| `walk-vanmieu` | From Phù Đổng over the ford and the west road, through the generated land, over the Red River on the ferry, to Văn Miếu. |
+| `walk-vanmieu` | From Phù Đổng over the ford and the west road, through the generated land, over the Red River on the ferry (the story waits for `ferried`), to Văn Miếu. |
 | `climb-nui-trau` | From the yard at the foot of Núi Trâu up the path to the top of the hill (a real hill from the fine heights), past the rock faces. |
 | `walk-soc-son` | From the đình of Phù Đổng on the north road to the top of the hill of Sóc Sơn, with no change of scene; Nghé comes along. The live chunks stay under the limit on the whole walk. |
 | `sea-edge` | At the coast in the east: the hero wades to the knee, then stops, turns, and takes two steps back: "Biển sâu quá". Nghé stays on the sand. The line shows once in a day. |
 | `mist-edge` | At the south end of the land of the era: the hero walks into the mist and slows; Nghé stops and lows; the hero turns back two steps: "Phía nam còn mù sương". |
 | `save-chunks` | Fell a tree, walk four chunks away and back, save and load: the tree is still gone, and nothing else changed. |
+| `ferry` | At the landing on the Red River: the boat takes the hero and Nghé across with no cut (the event `ferried`), both step onto the other bank, and the boat takes the hero back. |
+| `market-crier` | On the market day of the hamlet to the east, grandma in Phù Đổng says that there is a market; the hero walks east to the yard of the hamlet, and the seller waits there. |
+| `pot-far` | The hero breaks a pot and walks far away; in the night the pot is new, also while its chunk sleeps; the next morning the hero sees the new pot. |

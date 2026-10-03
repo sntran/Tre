@@ -76,6 +76,7 @@
    {"id": "field", "x": 68, "y": 8, "w": 44, "h": 22, "on": "tap", "action": {"textKey": "map.field"}},
    {"id": "field-south", "x": 68, "y": 38, "w": 44, "h": 22, "on": "tap", "action": {"textKey": "map.field"}}
   ],
+  "ferries": [],
   "spots": {
 
   }

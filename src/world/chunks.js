@@ -137,3 +137,86 @@ export function coarseGround(p) {
   }
   return out;
 }
+
+// The kind of water of each ground type, as the view draws it.
+export const WATER_KINDS = Object.freeze({ water: 'river', bridge: 'river', bamboo: 'river', shallow: 'ford', sea: 'sea', surf: 'surf' });
+
+// The water of a far chunk in runs along x: one flat quad for each run of one kind of water at one
+// height. waterAt(x, z): the kind of water of a cell ('river', 'ford', 'sea', 'surf', or null).
+// Return [{ x0, x1, z, y, kind }] (cells).
+export function waterRuns(page, waterAt) {
+  const ox = page.x0;
+  const oz = page.z0;
+  const cells = new Map(page.water.filter((w) => w.x >= ox && w.z >= oz && w.x < ox + CHUNK && w.z < oz + CHUNK).map((w) => [`${w.x},${w.z}`, w]));
+  const out = [];
+  for (let z = oz; z < oz + CHUNK; z++) {
+    let run = null;
+    for (let x = ox; x <= ox + CHUNK; x++) {
+      const w = x < ox + CHUNK ? cells.get(`${x},${z}`) : null;
+      const kind = w ? waterAt(x, z) ?? (w.sea ? 'sea' : 'river') : null;
+      if (run && (!w || w.y !== run.y || kind !== run.kind)) {
+        out.push(run);
+        run = null;
+      }
+      if (!w) continue;
+      if (run) run.x1 = x + 1;
+      else run = { x0: x, x1: x + 1, z, y: w.y, kind };
+    }
+  }
+  return out;
+}
+
+// The edges of the foam: a cell of land of the chunk next to a cell of surf, and the direction of
+// the surf (dx, dz). Return [{ x, z, dx, dz }].
+export function foamEdges(page, waterAt) {
+  const out = [];
+  if (!page.water.some((w) => w.sea)) return out;
+  for (let z = page.z0; z < page.z0 + CHUNK; z++) {
+    for (let x = page.x0; x < page.x0 + CHUNK; x++) {
+      if (waterAt(x, z)) continue;
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (waterAt(x + dx, z + dz) === 'surf') out.push({ x, z, dx, dz });
+    }
+  }
+  return out;
+}
+
+// What the view (src/render/voxel.js) draws for a chunk: { triangles, kinds, water } with all its
+// meshes, the ink included, as the frame counts them. A near chunk: the ground and the things, the
+// lines, the hulls, a plane for each kind of water, the paddies and their seedlings (two boxes of 12
+// triangles in each paddy), and the foam. A far chunk: one mesh with flat water and paddies. kinds:
+// the kinds of meshes that the chunk puts into its block (one draw call for each kind in a block of
+// 2 x 2 chunks); water: the water planes of the chunk (one draw call each). The mask of the faded
+// objects is not counted (it draws only while a thing of the block fades). mesh: the chunkMesh,
+// when it is made already.
+export function chunkCost(terrain, cx, cz, { coarse = false, waterAt = () => null, mesh = null } = {}) {
+  const m = mesh ?? chunkMesh(terrain, cx, cz, { coarse });
+  const page = terrain.chunk(cx, cz);
+  if (coarse) return { triangles: m.triangles + waterRuns(page, waterAt).length * 2 + page.paddies.length * 2, kinds: ['world'], water: 0 };
+  const kinds = [];
+  if (m.ground.indices.length || m.things.indices.length) kinds.push('world');
+  if (m.ink.some((k) => k.segs.length)) kinds.push('ink');
+  if (m.ink.some((k) => k.hull?.indices.length)) kinds.push('hull');
+  if (page.paddies.length) kinds.push('paddy', 'seeds');
+  const foam = foamEdges(page, waterAt).length;
+  if (foam) kinds.push('foam');
+  const water = new Set(page.water.map((w) => (w.sea ? 'sea' : 'river'))).size;
+  return { triangles: m.triangles + water * 2 + page.paddies.length * 26 + foam * 2, kinds, water };
+}
+
+// The draw calls of some chunks (each { cx, cz, coarse, cost } with its chunkCost) in their blocks
+// of 2 x 2 chunks of one level: one call for each kind of mesh in each block, and one for each
+// water plane.
+export function blocksCost(list) {
+  const blocks = new Map();
+  let calls = 0;
+  let triangles = 0;
+  for (const { cx, cz, coarse, cost } of list) {
+    const key = `${coarse ? 'far' : 'near'}:${Math.floor(cx / 2)},${Math.floor(cz / 2)}`;
+    if (!blocks.has(key)) blocks.set(key, new Set());
+    for (const k of cost.kinds) blocks.get(key).add(k);
+    calls += cost.water;
+    triangles += cost.triangles;
+  }
+  for (const kinds of blocks.values()) calls += kinds.size;
+  return { triangles, calls };
+}

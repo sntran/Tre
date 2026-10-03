@@ -4,6 +4,7 @@ import { input } from './systems/input.js';
 import { route } from './systems/route.js';
 import { move } from './systems/move.js';
 import { follow } from './systems/follow.js';
+import { ferry } from './systems/ferry.js';
 import { react } from './systems/react.js';
 import { sky } from './systems/sky.js';
 import { schedule } from './systems/schedule.js';
@@ -29,6 +30,7 @@ export const SYSTEMS = [
   route, //  a route turns into an intent (a direction), so that movement reads one kind of input.
   move, //   the hero and other walkers move with collision, from their intents.
   follow, // after the hero moves, so that Nghé follows the new position without a step of lag.
+  ferry, //  after the hero and Nghé move: the riders of a ferry stand on its deck (or step on or off it).
   place, //  after the hero and Nghé move: the hands pick up and put down, and a span answers where the hero stands now.
   work, //   after the hands: the tasks of the trials answer the work of the hands, and their timed parts go on.
   raid, //   after the hands and Nghé: the enemies answer the traps on the road and the hero where the hero stands now.

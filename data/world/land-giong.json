@@ -78,7 +78,12 @@
  },
  "rivers": [
   {"id": "duong", "water": 10, "bank": 2, "bend": 2, "from": "hong"},
-  {"id": "hong", "water": 26, "bank": 2, "bend": 3}
+  {"id": "hong", "water": 26, "bank": 2, "bend": 3},
+  {"id": "thai-binh", "water": 14, "bank": 2, "bend": 3, "from": "duong"},
+  {"id": "bach-dang", "water": 14, "bank": 2, "bend": 2},
+  {"id": "ma", "water": 10, "bank": 2, "bend": 3},
+  {"id": "ca", "water": 12, "bank": 2, "bend": 3},
+  {"id": "mekong", "water": 24, "bank": 2, "bend": 3}
  ],
  "roads": [
   {"id": "east", "width": 4, "points": [["phu-dong", 79, 30], ["trau-son", 64, 33]]},

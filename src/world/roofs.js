@@ -46,38 +46,31 @@ export function roofMesh(r) {
     segs.push(a[0], a[1], a[2], b[0], b[1], b[2]);
     outer.push(out);
   };
-  // A round roof: a low dome of thatch over the house, with a ring of ink at the eave and a few
-  // lines down its sides, and a small cap at the top.
+  // A round roof: a low shell of thatch over the house, as on the drums (the shell of a turtle):
+  // oval, long along the house, with its eaves below the top of the walls. A ring of ink at the
+  // eave, a few lines down its sides, and a small cap at the top.
   if (r.shape === 'round') {
-    const xc = (x0 + x1) / 2;
-    const rx = (x1 - x0) / 2;
-    const rz = (z1 - z0) / 2;
-    const around = 16;
-    const rings = 4;
-    const at = (a, k) => {
-      const t = k / rings; // 0 at the eave, 1 at the top
-      const c = Math.cos((t * Math.PI) / 2);
-      return [xc + Math.cos(a) * rx * c, y + hd * Math.sin((t * Math.PI) / 2) * 1.15, zc + Math.sin(a) * rz * c];
-    };
+    const shell = roundShell(r);
+    const { xc, around, rings, at } = shell;
     for (let j = 0; j < around; j++) {
       const a0 = (j / around) * Math.PI * 2;
       const a1 = ((j + 1) / around) * Math.PI * 2;
       const tone = 0.8 + 0.18 * Math.max(0, Math.sin((a0 + a1) / 2));
       for (let k = 0; k < rings; k++) {
-        const pts = [at(a0, k), at(a1, k), at(a1, k + 1), at(a0, k + 1)];
+        const pts = [at(a0, k / rings), at(a1, k / rings), at(a1, (k + 1) / rings), at(a0, (k + 1) / rings)];
         quad(pts, base, tone, true);
       }
       line(at(a0, 0), at(a1, 0));
-      if (j % 4 === 0) line(at(a0, 0), at(a0, rings - 1), 0);
+      if (j % 4 === 0) line(at(a0, 0), at(a0, (rings - 1) / rings), 0);
     }
-    const capY = y + hd * 1.15;
-    for (let j = 0; j < around; j++) line(at((j / around) * Math.PI * 2, rings - 1), at(((j + 1) / around) * Math.PI * 2, rings - 1), 0);
+    for (let j = 0; j < around; j++) line(at((j / around) * Math.PI * 2, (rings - 1) / rings), at(((j + 1) / around) * Math.PI * 2, (rings - 1) / rings), 0);
+    const capY = shell.top;
     const top = colorIndex(r.ridge);
     for (let j = 0; j < 4; j++) {
       const a0 = (j / 4) * Math.PI * 2;
       const a1 = ((j + 1) / 4) * Math.PI * 2;
       const rgb = toneRgb(top, 0.95);
-      for (const p of [[xc, capY + 0.18, zc], [xc + Math.cos(a0) * 0.35, capY - 0.05, zc + Math.sin(a0) * 0.35], [xc + Math.cos(a1) * 0.35, capY - 0.05, zc + Math.sin(a1) * 0.35]]) {
+      for (const p of [[xc, capY + 0.12, zc], [xc + Math.cos(a0) * 0.35, capY - 0.05, zc + Math.sin(a0) * 0.35], [xc + Math.cos(a1) * 0.35, capY - 0.05, zc + Math.sin(a1) * 0.35]]) {
         positions.push(...p);
         colors.push(...rgb);
         owners.push(who);
@@ -146,4 +139,44 @@ export function roofMesh(r) {
     }
   }
   return { positions, colors, owners, indices, segs, outer };
+}
+
+// The shape of a round roof (world units): an oval in plan (a superellipse, long along the longer
+// side of the house, so that it covers the corners of the walls), and a low profile that stays
+// wide up to half its height, then rounds over. The eave is a little below the top of the walls
+// (r.y), and the top is half of the height of a ridge over them. at(a, t): the point at the angle a
+// and the height t (0 at the eave, 1 at the top).
+export function roundShell(r) {
+  const S = 0.5;
+  const x0 = r.x0 * S;
+  const x1 = r.x1 * S;
+  const z0 = r.z0 * S;
+  const z1 = r.z1 * S;
+  const xc = (x0 + x1) / 2;
+  const zc = (z0 + z1) / 2;
+  const long = x1 - x0 >= z1 - z0 ? 'x' : 'z';
+  const rx = ((x1 - x0) / 2) * (long === 'x' ? 1.12 : 1);
+  const rz = ((z1 - z0) / 2) * (long === 'z' ? 1.12 : 1);
+  const eave = r.y * S - 0.6;
+  const top = r.y * S + r.ridgeH * S * 0.5;
+  const P = 3; // the plan: |x / rx|^P + |z / rz|^P = 1
+  const Q = 3; // the profile: the width at the height t is (1 - t^Q)^(1 / Q)
+  const width = (t) => Math.max(0, 1 - t ** Q) ** (1 / Q);
+  const plan = (a) => {
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    return [Math.sign(c) * Math.abs(c) ** (2 / P), Math.sign(s) * Math.abs(s) ** (2 / P)];
+  };
+  const at = (a, t) => {
+    const [px, pz] = plan(a);
+    const w = width(t);
+    return [xc + px * rx * w, eave + (top - eave) * t, zc + pz * rz * w];
+  };
+  // Is a point (world units) under the shell?
+  const covers = (x, y, z) => {
+    if (y < eave || y > top) return false;
+    const w = width((y - eave) / (top - eave));
+    return Math.abs((x - xc) / (rx * w)) ** P + Math.abs((z - zc) / (rz * w)) ** P <= 1;
+  };
+  return { xc, zc, rx, rz, eave, top, around: 20, rings: 5, at, covers };
 }

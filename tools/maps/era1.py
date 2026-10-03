@@ -296,8 +296,8 @@ D.fill(2, 2, 8, 6, 'f')
 D.fill(1, 15, 5, 3, 'y')
 D.fill(6, 16, 5, 1, '=')
 D.flowers(24, 17)
-D.obj('ferry-east', 'boat', 25, 10, 2, 1, water=True, solid=False)
-D.obj('ferry-west', 'boat', 14, 13, 2, 1, water=True, solid=False)
+# The ferry: one boat that waits at a landing and takes the hero and Nghé across (no cut).
+D.ferries = [{'id': 'red', 'a': {'x': 25.2, 'y': 12.0}, 'b': {'x': 14.8, 'y': 12.0}, 'landA': {'x': 28.6, 'y': 12.0}, 'landB': {'x': 12.4, 'y': 12.0}}]
 D.obj('house1', 'house', 2, 17, 3, 3)
 D.obj('house2', 'giong-house', 6, 18, 3, 3)
 D.obj('sign', 'signpost', 2, 9)
@@ -314,8 +314,8 @@ D.life = [
     {'kind': 'duck', 'n': 1, 'x': 22.5, 'y': 18.5, 'r': 1},
 ]
 D.triggers = [
-    {'id': 'ferry-east', 'x': 27, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'move': {'x': 12.4, 'y': 12.0}, 'textKey': 'map.ferry'}},
-    {'id': 'ferry-west', 'x': 13, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'move': {'x': 28.6, 'y': 12.0}, 'textKey': 'map.ferry.back'}},
+    {'id': 'ferry-east', 'x': 27, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'ferry': 'red', 'textKey': 'map.ferry'}},
+    {'id': 'ferry-west', 'x': 13, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'ferry': 'red', 'textKey': 'map.ferry.back'}},
     {'id': 'vanmieu', 'x': 0, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'when': {'flags': ['prologue.done']}, 'action': {'open': 'vanmieu'}},
     {'id': 'vanmieu-early', 'x': 0, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'textKey': 'map.road.early'}},
     {'id': 'sign', 'x': 2, 'y': 9, 'on': 'tap', 'action': {'textKey': 'map.sign.vanmieu'}},
@@ -391,6 +391,13 @@ PLANE = {
     'rivers': [
         {'id': 'duong', 'water': 10, 'bank': 2, 'bend': 2, 'from': 'hong'},
         {'id': 'hong', 'water': 26, 'bank': 2, 'bend': 3},
+        # The other rivers of the land of Era 1, each with a width from its size (cells of 45 m).
+        # The Lục Đầu Giang, where the Đuống meets the Cầu and the Thương, begins the Thái Bình.
+        {'id': 'thai-binh', 'water': 14, 'bank': 2, 'bend': 3, 'from': 'duong'},
+        {'id': 'bach-dang', 'water': 14, 'bank': 2, 'bend': 2},
+        {'id': 'ma', 'water': 10, 'bank': 2, 'bend': 3},
+        {'id': 'ca', 'water': 12, 'bank': 2, 'bend': 3},
+        {'id': 'mekong', 'water': 24, 'bank': 2, 'bend': 3},
     ],
     'roads': [
         {'id': 'east', 'width': 4, 'points': [['phu-dong', 79, 30], ['trau-son', 64, 33]]},

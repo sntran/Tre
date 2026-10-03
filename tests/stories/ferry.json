@@ -1,0 +1,24 @@
+{
+  "name": "ferry",
+  "about": {
+    "vi": "Ở bến sông Hồng: chiếc đò chở em và Nghé sang sông, không qua cảnh chuyển nào; đò đi trên mặt nước, rồi cả hai bước lên bờ bên kia. Em quay lại bến, và đò chở em về.",
+    "en": "At the landing on the Red River: the boat takes the hero and Nghé across, with no cut; the boat goes over the water, then both step onto the other bank. The hero comes back to the landing, and the boat takes the hero back."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.done": true } },
+  "clock": 540,
+  "at": ["road-thanglong", 66, 40],
+  "steps": [
+    { "tap": { "cell": [55, 40] } },
+    { "until": { "event": "open", "with": { "screen": "say", "textKey": "map.ferry" }, "timeout": 40 } },
+    { "read": true },
+    { "wait": 3 },
+    { "expect": [{ "hero": { "in": "water" } }, { "entity": "ferry:red", "near": "hero", "within": 1.5 }, { "entity": "friend:nghe", "near": "hero", "within": 2 }, { "event": "ferried", "not": true }] },
+    { "until": { "event": "ferried", "timeout": 30 } },
+    { "expect": [{ "hero": { "cell": [24.8, 40], "within": 1 } }, { "entity": "friend:nghe", "near": "hero", "within": 3 }, { "entity": "ferry:red", "near": "hero", "within": 6 }] },
+    { "tap": { "cell": [27, 40] } },
+    { "until": { "event": "open", "with": { "screen": "say", "textKey": "map.ferry.back" }, "timeout": 20 } },
+    { "read": true },
+    { "until": { "event": "ferried", "timeout": 30 } },
+    { "expect": [{ "hero": { "cell": [57.2, 40], "within": 1 } }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] }
+  ]
+}

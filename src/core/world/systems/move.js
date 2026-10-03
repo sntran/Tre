@@ -53,12 +53,13 @@ export function move(world, dt, rng, env) {
     m.vz = body.vy * 2;
     m.speed = body.speed * 2;
     m.shallow = Boolean(body.shallow);
+    m.wade = Boolean(body.wade);
     m.idle = m.speed < 0.2 ? (m.idle ?? 0) + dt : 0;
     m.stride = (m.stride ?? 0) + m.speed * dt;
     if (m.stride > STRIDE) {
       m.stride = 0;
       const ground = env.groundAt?.(p.x, p.z);
-      world.events.push({ type: 'step', id: e.id, sound: ground === 'shallow' || ground === 'surf' || ground === 'water' ? 'step-water' : ground === 'bridge' ? 'step-wood' : 'step-grass' });
+      world.events.push({ type: 'step', id: e.id, sound: ground === 'shallow' || ground === 'surf' || ground === 'water' ? 'step-water' : ground === 'bridge' || ground === 'bamboo' ? 'step-wood' : 'step-grass' });
     }
   }
 }

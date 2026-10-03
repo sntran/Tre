@@ -6,7 +6,7 @@
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
   "clock": 540,
-  "at": [9501.5, 13969.5],
+  "at": [9522.5, 14203.5],
   "steps": [
     { "wait": 1 },
     { "expect": [{ "hero": { "mist": false } }] },

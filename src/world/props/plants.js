@@ -7,20 +7,24 @@ const center = (o) => ({ x: o.fx + Math.floor(o.fw / 2), z: o.fz + Math.floor(o.
 // looks where they are living and round (src/world/smooth.js): the look of a plant goes with its
 // blocks. World units for the smooth looks are half of the fine units.
 
-// A round tree: a trunk of blocks and a smooth crown of three or four blobs.
+// A round tree: a trunk of blocks and a smooth crown of three or four blobs. A tree of the forest
+// has a crown of one of three sizes (o.crown, the radius in fine blocks: 2, 3, or 5): a small
+// crown is one blob on a short trunk, a large one four blobs on a tall trunk.
 export function tree(ctx, o, opts = {}) {
   const r = ctx.rng;
   const { x, z } = center(o);
   const g = ctx.ground(x, z);
-  const h = opts.trunk ?? 5 + r.int(0, 2);
-  const rad = opts.crown ?? 3 + r.int(0, 1);
+  const size = opts.crown ?? o.crown ?? null;
+  const h = opts.trunk ?? (size ? Math.round(2 + size * 0.9) + r.int(0, 1) : 5 + r.int(0, 2));
+  const rad = size ?? 3 + r.int(0, 1);
+  const blobs = size ? (size <= 2 ? 1 : size <= 3 ? 2 : 4) : undefined;
   ctx.box(x - 1, g, z - 1, x, g + h, z, 'wood');
   const cy = g + h + Math.round(rad * 0.6);
   const leaf = opts.leaf ?? r.pick(['green', 'green', 'greenDeep']);
   const R = (rad / 2) * 1.15;
-  ctx.smooth({ kind: 'crown', x: x / 2, y: (cy + 0.5) / 2, z: z / 2, r: R, leaf }, [R * 1.4, R, R]);
+  ctx.smooth({ kind: 'crown', x: x / 2, y: (cy + 0.5) / 2, z: z / 2, r: R, leaf, ...(blobs ? { blobs } : {}) }, [R * 1.4, R, R]);
   // Some trees have a second, smaller crown to one side (a tree from parts: no two the same).
-  if (opts.second ?? r.chance(0.35)) {
+  if (opts.second ?? (!size || size > 3 ? r.chance(0.35) : false)) {
     const side = r.pick([[1, 0], [-1, 0], [0, 1], [0, -1]]);
     const r2 = R * 0.7;
     ctx.smooth({ kind: 'crown', x: x / 2 + side[0] * R * 0.8, y: (cy + 0.5) / 2 - R * 0.35, z: z / 2 + side[1] * R * 0.8, r: r2, leaf }, [R * 1.4 + r2, R, R]);

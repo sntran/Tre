@@ -414,6 +414,23 @@ export function cart() {
   return { kind: 'still', parts, scale: 0.7, height: 3, shadow: 1.8 };
 }
 
+// The boat of a ferry: a long dugout with a deck, a rim, a bird-head prow (as the boats on the
+// bronze drums), and the pole of the ferryman. It lies along +z; the deck is at 0.6 units (the
+// riders stand there), and the hull goes under the water.
+export function ferryBoat() {
+  const parts = [
+    P('hull', [4, 1, 10], 'wood', [0, -0.1, 0]),
+    P('deck', [3.4, 0.2, 8.6], 'ochre', [0, 0.5, 0]),
+    P('rimL', [0.4, 0.6, 9.4], 'yellow', [-1.9, 0.7, 0]),
+    P('rimR', [0.4, 0.6, 9.4], 'yellow', [1.9, 0.7, 0]),
+    P('stern', [3.2, 0.8, 0.5], 'wood', [0, 0.7, -4.9]),
+    P('prow', [0.7, 2.2, 0.7], 'ochre', [0, 1.2, 5.1]),
+    P('head', [0.7, 0.7, 1.2], 'vermilion', [0, 2.3, 5.5]),
+    P('pole', [0.25, 7, 0.25], 'wood', [1.3, 3.5, -3.9]),
+  ];
+  return { kind: 'still', parts, scale: 1, height: 2, shadow: 0 };
+}
+
 // A new plank for the bridge, n units long (one unit is one half block). The units are pale and
 // ochre in turn, with a red dot painted on each, so that the child sees the length and can count
 // it. The plank lies along +z from its position; its top is at 0.8.
@@ -705,6 +722,7 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'grass') return grass();
   if (look.kind === 'owl') return owl();
   if (look.kind === 'cart') return cart();
+  if (look.kind === 'ferry') return ferryBoat();
   if (look.kind === 'bird') return bird();
   if (look.kind === 'lantern') return lantern(Boolean(look.lit));
   if (look.kind === 'duckling') return duckling();

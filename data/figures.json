@@ -87,6 +87,7 @@
     "lantern": { "kind": "lantern" },
     "lantern-lit": { "kind": "lantern", "lit": true },
     "cart": { "kind": "cart" },
+    "ferry": { "kind": "ferry" },
     "plank-3": { "kind": "plank", "n": 3 },
     "plank-4": { "kind": "plank", "n": 4 },
     "plank-5": { "kind": "plank", "n": 5 },

@@ -269,6 +269,7 @@
    {"id": "field-south", "x": 52, "y": 78, "w": 24, "h": 6, "on": "tap", "action": {"textKey": "map.field"}},
    {"id": "river", "x": 0, "y": 66, "w": 80, "h": 10, "on": "tap", "action": {"textKey": "map.river"}}
   ],
+  "ferries": [],
   "spots": {
    "road": [
     [10, 80]

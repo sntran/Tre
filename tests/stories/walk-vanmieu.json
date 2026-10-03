@@ -13,7 +13,7 @@
     { "tap": { "cell": ["road-thanglong", 55, 40] } },
     { "until": { "event": "open", "with": { "screen": "say", "textKey": "map.ferry" }, "timeout": 90 } },
     { "read": true },
-    { "wait": 0.5 },
+    { "until": { "event": "ferried", "timeout": 30 } },
     { "tap": { "cell": ["road-thanglong", 0.6, 40] } },
     { "until": { "event": "open", "with": { "screen": "vanmieu" }, "timeout": 60 } },
     { "expect": [{ "screen": "vanmieu" }] }

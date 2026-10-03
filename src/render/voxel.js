@@ -8,12 +8,14 @@
 // a later era (the mist): the camera never shows an end of the world. A change of the terrain (a
 // dig, a felled tree) builds only its chunks again. The logic is in src/world/; this file only draws.
 import * as THREE from 'three';
-import { chunkMesh, CHUNK, chunkKey } from '../world/chunks.js';
+import { chunkMesh, chunkCost, waterRuns, foamEdges, CHUNK, chunkKey } from '../world/chunks.js';
+import { toneRgb, colorIndex } from '../world/voxel.js';
 import { pickGround } from '../world/terrain.js';
 import { C } from './palette.js';
 import { night } from './figure3d.js';
 import { rendererFor } from './gl.js';
 import { inFront, stepFade, stippleOf } from '../world/fade.js';
+import { VIEW, viewSize } from '../world/view.js';
 
 export function hasWebGL() {
   try {
@@ -24,7 +26,7 @@ export function hasWebGL() {
   }
 }
 
-export const VIEW = Object.freeze({ elevation: Math.atan(0.5), zooms: [26, 40], lag: 4 });
+export { VIEW };
 
 // The sway of a vertex of a smooth look in the wind (renderer only: no state). sway: [weight,
 // layer]; the layer reads its gust (paddy, hedge, tree: src/core/world/ambient.js). The leaves hold
@@ -45,6 +47,22 @@ const PAPER_GLSL = `
     float far = smoothstep(uFar.x, uFar.y, length(world.xz - uFocus.xz));
     return max(far, mist);
   }`;
+// The stages of the paper, as the edge of a print that is not finished (p: paperOf). First the
+// colors get pale (the faces are paper at 0.45), then only the ink lines stay, then the lines stop
+// (from 0.6 to 0.95) and only the paper with its grain is left.
+const STAGES_GLSL = `
+  float faceToPaper(float p) { return smoothstep(0.0, 0.45, p); }
+  float inkOf(float p) { return 1.0 - smoothstep(0.6, 0.95, p); }
+  // The grain of the paper: short fibers and specks, fixed on the land (world units).
+  float grainOf(vec3 w) {
+    vec2 c = floor(w.xz * vec2(6.0, 2.0) + vec2(0.0, floor(w.x * 6.0) * 0.37));
+    float h = fract(sin(dot(c, vec2(12.9898, 78.233))) * 43758.5453);
+    return h > 0.93 ? -0.06 : (h < 0.05 ? 0.03 : 0.0);
+  }
+  vec3 onPaper(vec3 color, vec3 paper, float p, vec3 w) {
+    float k = faceToPaper(p);
+    return mix(color, paper * (1.0 + grainOf(w) * k), k);
+  }`;
 
 const SWAY_GLSL = `
   uniform float uTime; uniform vec3 uGust; uniform vec2 uWind; uniform float uWindy;
@@ -59,6 +77,9 @@ const SWAY_GLSL = `
     return d;
   }`;
 
+// The raw values (0 to 1) of a color of the palette, with no change of color space.
+const rawRgb = (hex) => new THREE.Vector3(...[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255));
+
 // The material of the blocks, the roofs, and the smooth looks: flat colors, and the fade of an
 // owner. The fade is a stipple (an ordered dither, as the dots of a print), so that the world is
 // opaque and the ground and the things of a chunk are one mesh.
@@ -71,7 +92,7 @@ function flatMaterial(uniforms) {
     side: THREE.DoubleSide,
     vertexShader: `
       attribute vec3 tone; attribute float owner; attribute vec2 sway; attribute float mist;
-      varying vec3 vColor; varying float vFade; varying float vPaper;
+      varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
       ${FADE_GLSL}
       ${PAPER_GLSL}
       ${SWAY_GLSL}
@@ -79,18 +100,20 @@ function flatMaterial(uniforms) {
         vColor = tone;
         vFade = fadeOf(owner);
         vec4 w = modelMatrix * vec4(position, 1.0);
+        vW = w.xyz;
         vPaper = paperOf(w.xyz, mist);
         gl_Position = projectionMatrix * viewMatrix * (w + vec4(swayOf(w.xyz, sway), 0.0));
       }`,
     fragmentShader: `
       uniform vec3 uPaper;
-      varying vec3 vColor; varying float vFade; varying float vPaper;
+      varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
+      ${STAGES_GLSL}
       // A 4 x 4 ordered dither: 0 to 1 in a fixed pattern over the screen.
       float bayer2(vec2 a) { a = floor(a); return fract(a.x / 2.0 + a.y * a.y * 0.75); }
       float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
       void main() {
         if (vFade > 0.001 && vFade * 0.85 > bayer4(gl_FragCoord.xy)) discard;
-        gl_FragColor = vec4(mix(vColor, uPaper, vPaper), 1.0);
+        gl_FragColor = vec4(onPaper(vColor, uPaper, vPaper, vW), 1.0);
       }`,
   });
 }
@@ -107,7 +130,7 @@ function maskMaterial(uniforms) {
   m.stencilFunc = THREE.AlwaysStencilFunc;
   m.stencilZPass = THREE.ReplaceStencilOp;
   m.fragmentShader = `
-    varying vec3 vColor; varying float vFade; varying float vPaper;
+    varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
     void main() {
       if (vFade <= 0.001) discard;
       gl_FragColor = vec4(vColor, 1.0);
@@ -115,20 +138,59 @@ function maskMaterial(uniforms) {
   return m;
 }
 
-function geometryOf(m, offset) {
-  const g = new THREE.BufferGeometry();
-  const pos = new Float32Array(m.positions.length);
-  for (let i = 0; i < pos.length; i += 3) {
-    pos[i] = m.positions[i] + offset[0];
-    pos[i + 1] = m.positions[i + 1] + offset[1];
-    pos[i + 2] = m.positions[i + 2] + offset[2];
+// The vertex arrays of a mesh of flat faces ({ positions, colors, owners, indices, sway, mist }):
+// { attrs: { name: [array, size] }, index }, for concat.
+function worldArrays(m) {
+  const n = m.positions.length / 3;
+  return {
+    attrs: {
+      position: [new Float32Array(m.positions), 3],
+      tone: [new Float32Array(m.colors), 3],
+      owner: [new Float32Array(m.owners), 1],
+      sway: [new Float32Array(m.sway ?? n * 2), 2],
+      mist: [new Float32Array(m.mist ?? n), 1],
+    },
+    index: new Uint32Array(m.indices),
+  };
+}
+
+// One geometry from the vertex arrays of some chunks, each moved by (dx, dz): the arrays of a
+// chunk are from its corner, and the geometry is from the corner of its block. shift: the
+// attributes that are points (moved too).
+function concat(list, shift = ['position', 'other']) {
+  const parts = list.filter((p) => p.arrays && p.arrays.index.length);
+  if (!parts.length) return null;
+  const names = Object.keys(parts[0].arrays.attrs);
+  let verts = 0;
+  let count = 0;
+  for (const p of parts) {
+    verts += p.arrays.attrs.position[0].length / 3;
+    count += p.arrays.index.length;
   }
-  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  g.setAttribute('tone', new THREE.BufferAttribute(new Float32Array(m.colors), 3));
-  g.setAttribute('owner', new THREE.BufferAttribute(new Float32Array(m.owners), 1));
-  g.setAttribute('sway', new THREE.BufferAttribute(new Float32Array(m.sway ?? (m.positions.length / 3) * 2), 2));
-  g.setAttribute('mist', new THREE.BufferAttribute(new Float32Array(m.mist ?? m.positions.length / 3), 1));
-  g.setIndex(new THREE.BufferAttribute(new Uint32Array(m.indices), 1));
+  const g = new THREE.BufferGeometry();
+  const index = new Uint32Array(count);
+  const out = Object.fromEntries(names.map((k) => [k, new Float32Array(verts * parts[0].arrays.attrs[k][1])]));
+  let v = 0;
+  let i = 0;
+  for (const p of parts) {
+    const { attrs } = p.arrays;
+    for (const k of names) {
+      const [arr, size] = attrs[k];
+      const at = v * size;
+      out[k].set(arr, at);
+      if (shift.includes(k) && (p.dx || p.dz)) {
+        for (let j = at; j < at + arr.length; j += 3) {
+          out[k][j] += p.dx;
+          out[k][j + 2] += p.dz;
+        }
+      }
+    }
+    for (let j = 0; j < p.arrays.index.length; j++) index[i + j] = p.arrays.index[j] + v;
+    v += attrs.position[0].length / 3;
+    i += p.arrays.index.length;
+  }
+  for (const k of names) g.setAttribute(k, new THREE.BufferAttribute(out[k], parts[0].arrays.attrs[k][1]));
+  g.setIndex(new THREE.BufferAttribute(index, 1));
   g.computeBoundingSphere();
   return g;
 }
@@ -136,8 +198,8 @@ function geometryOf(m, offset) {
 // The ink lines as quads that turn to the camera in the vertex shader. A group: { segs (flat list
 // of [ax, ay, az, bx, by, bz] in world units), w (the width of the lines), owners, outer (one value
 // for each line; see meshGrid), hull (the silhouette of a smooth look: triangles drawn in ink from
-// the back only) }.
-function inkGeometry(groups, mistAt = () => 0) {
+// the back only) }. Return the vertex arrays (for concat).
+function inkArrays(groups, mistAt = () => 0) {
   let count = 0;
   let hullVerts = 0;
   let hullIdx = 0;
@@ -208,20 +270,10 @@ function inkGeometry(groups, mistAt = () => 0) {
     }
     for (const i of g.hull.indices) idx[k++] = base + i;
   }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  g.setAttribute('other', new THREE.BufferAttribute(other, 3));
-  g.setAttribute('side', new THREE.BufferAttribute(side, 1));
-  g.setAttribute('width', new THREE.BufferAttribute(width, 1));
-  g.setAttribute('owner', new THREE.BufferAttribute(owner, 1));
-  g.setAttribute('outer', new THREE.BufferAttribute(outer, 1));
-  g.setAttribute('hull', new THREE.BufferAttribute(isHull, 1));
-  g.setAttribute('sway', new THREE.BufferAttribute(sway, 2));
-  g.setAttribute('swayO', new THREE.BufferAttribute(swayO, 2));
-  g.setAttribute('mist', new THREE.BufferAttribute(mist, 1));
-  g.setIndex(new THREE.BufferAttribute(idx, 1));
-  g.computeBoundingSphere();
-  return g;
+  return {
+    attrs: { position: [pos, 3], other: [other, 3], side: [side, 1], width: [width, 1], owner: [owner, 1], outer: [outer, 1], hull: [isHull, 1], sway: [sway, 2], swayO: [swayO, 2], mist: [mist, 1] },
+    index: idx,
+  };
 }
 
 // The ink of a faded object: the lines inside it go with it, and its outline stays fully drawn, so
@@ -241,6 +293,7 @@ function inkMaterial(uniforms, hull = false) {
       varying float vAlpha; varying float vHull;
       ${FADE_GLSL}
       ${PAPER_GLSL}
+      ${STAGES_GLSL}
       ${SWAY_GLSL}
       void main() {
         vHull = hull;
@@ -249,8 +302,9 @@ function inkMaterial(uniforms, hull = false) {
         vec3 P = W.xyz + swayOf(W.xyz, sway);
         vec3 O = WO.xyz + swayOf(WO.xyz, swayO);
         float fade = fadeOf(owner);
-        // The ink goes with the paper: none on the far land, none in the mist.
-        vAlpha = (outer > 0.5 ? 1.0 : 1.0 - fade) * (1.0 - paperOf(P, mist));
+        // The ink stays after the colors go, then it stops: none on the far land, none deep in the
+        // mist.
+        vAlpha = (outer > 0.5 ? 1.0 : 1.0 - fade) * inkOf(paperOf(P, mist));
         vec3 d = normalize(O - P);
         vec3 p = normalize(cross(d, uView)) * width * 0.5 * side;
         gl_Position = projectionMatrix * viewMatrix * vec4(P + p - d * width * 0.5, 1.0);
@@ -322,27 +376,34 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
   fadeTex.minFilter = THREE.NearestFilter;
   fadeTex.needsUpdate = true;
   const view = new THREE.Vector3();
-  const paper = new THREE.Color(C.paper);
+  // The paper as the panels show it: the raw values of the palette (these shaders write their
+  // colors with no change of color space, as the colors of the blocks).
+  const paper = rawRgb(C.paper);
   // The time and the wind for the sway of the leaves, and the paper over the far land: one set of
   // uniforms for all chunks.
   const uniforms = {
     uFade: { value: fadeTex }, uNight: night, uView: { value: view },
     uTime: { value: 0 }, uGust: { value: new THREE.Vector3() }, uWind: { value: new THREE.Vector2(0.8, 0.6) }, uWindy: { value: 0 },
-    uFocus: { value: new THREE.Vector3() }, uFar: { value: new THREE.Vector2(CHUNK * 2.6, CHUNK * 4.2) }, uPaper: { value: new THREE.Vector3(paper.r, paper.g, paper.b) },
+    uFocus: { value: new THREE.Vector3() }, uFar: { value: new THREE.Vector2(CHUNK * 2.6, CHUNK * 4.2) }, uPaper: { value: paper },
   };
   const flatMat = track(flatMaterial(uniforms));
+  flatMat.name = 'world';
   const inkMat = track(inkMaterial(uniforms));
+  inkMat.name = 'ink';
   const hullMat = track(inkMaterial(uniforms, true));
+  hullMat.name = 'hull';
   const maskMat = track(maskMaterial(uniforms));
+  maskMat.name = 'mask';
 
   // Water: a plane over each chunk with water, with the wave pattern. A mask of the water cells (one
   // texel for each cell, with the cells around the chunk, read with a linear filter) keeps the plane
   // over the water only, also when the river rises in the rain, and its soft edge gives a narrow
   // pale strip where the water meets the bank. The sea is a plane of its own, at the level of the sea.
   const waves = track(waveTexture());
-  const pale = new THREE.Color(C.paper);
+  const pale = rawRgb(C.paper);
   const waterMaterial = (maskTex) => new THREE.ShaderMaterial({
-    uniforms: { uWaves: { value: waves }, uMask: { value: maskTex }, uPale: { value: new THREE.Vector3(pale.r, pale.g, pale.b) }, uTime: uniforms.uTime, uWavesOffset: waveOffset, uFocus: uniforms.uFocus, uFar: uniforms.uFar, uPaper: uniforms.uPaper },
+    name: 'water',
+    uniforms: { uWaves: { value: waves }, uMask: { value: maskTex }, uPale: { value: pale }, uTime: uniforms.uTime, uWavesOffset: waveOffset, uFocus: uniforms.uFocus, uFar: uniforms.uFar, uPaper: uniforms.uPaper },
     vertexShader: `
       varying vec2 vUV; varying vec3 vW;
       void main() {
@@ -354,6 +415,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     fragmentShader: `
       uniform sampler2D uWaves; uniform sampler2D uMask; uniform vec3 uPale; uniform float uTime; uniform vec2 uWavesOffset;
       ${PAPER_GLSL}
+      ${STAGES_GLSL}
       uniform vec3 uPaper;
       varying vec2 vUV; varying vec3 vW;
       void main() {
@@ -362,7 +424,8 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
         if (m < 0.5) discard;
         vec2 xz = mod(vW.xz, 256.0);
         vec3 c = texture2D(uWaves, xz / 4.0 + uWavesOffset).rgb;
-        // The ford: rings that go out from the stones, in steps.
+        // Shallow water (the ford, the surf) is lighter, with rings that go out in steps.
+        c = mix(c, uPale, 0.38 * smoothstep(0.3, 0.9, mk.g));
         float ring = fract(length(fract(xz) - 0.5) * 2.5 - floor(uTime * 2.0) / 6.0);
         if (mk.g > 0.4 && ring < 0.12) c = mix(c, uPale, 0.7);
         // By a boat: the lines of a wake that move away from it.
@@ -370,7 +433,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
         if (mk.b > 0.4 && wake < 0.08) c = mix(c, uPale, 0.6 * mk.b);
         // The bank: a narrow strip of the pale tone where the water ends.
         c = m < 0.8 ? mix(uPale, c, 0.45) : c;
-        gl_FragColor = vec4(mix(c, uPaper, paperOf(vW, mk.a)), 1.0);
+        gl_FragColor = vec4(onPaper(c, uPaper, paperOf(vW, mk.a), vW), 1.0);
       }`,
   });
   const waveOffset = { value: new THREE.Vector2(0, 0) };
@@ -378,6 +441,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
   // Paddies: still, pale water, with rows of seedlings.
   const paleIndigo = new THREE.Color(C.indigoPale);
   const paddyMat = track(new THREE.ShaderMaterial({
+    name: 'paddy',
     uniforms: { uTime: uniforms.uTime, uColor: { value: new THREE.Vector3(paleIndigo.r, paleIndigo.g, paleIndigo.b) }, uFocus: uniforms.uFocus, uFar: uniforms.uFar, uPaper: uniforms.uPaper },
     transparent: true,
     depthWrite: false,
@@ -391,11 +455,30 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
         gl_FragColor = vec4(mix(uColor * (1.0 + 0.08 * band), uPaper, paperOf(vP, 0.0)), 0.72);
       }`,
   }));
+  // The foam on the sand: the line runs up the sand and back in held steps (as a print), each
+  // stretch of the shore a little after the next.
+  const foamMat = track(new THREE.ShaderMaterial({
+    name: 'foam',
+    side: THREE.DoubleSide,
+    uniforms: { uTime: uniforms.uTime, uPale: { value: pale }, uFocus: uniforms.uFocus, uFar: uniforms.uFar, uPaper: uniforms.uPaper },
+    vertexShader: `attribute float d; varying float vD; varying vec3 vP; void main() { vD = d; vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: `
+      uniform float uTime; uniform vec3 uPale; uniform vec3 uPaper; varying float vD; varying vec3 vP;
+      ${PAPER_GLSL}
+      ${STAGES_GLSL}
+      void main() {
+        float wave = 0.5 + 0.5 * sin(uTime * 1.1 - (vP.x + vP.z) * 0.35);
+        float reach = 0.3 + 0.7 * floor(wave * 4.0) / 3.0;
+        if (vD > reach || vD < reach - 0.45) discard;
+        gl_FragColor = vec4(onPaper(mix(uPale, vec3(1.0), 0.85), uPaper, paperOf(vP, 0.0), vP), 1.0);
+      }`,
+  }));
   const seedGeo = track(new THREE.BoxGeometry(0.16, 0.8, 0.16));
   seedGeo.translate(0, 0.25, 0);
   // The seedlings bend a little in the wind, and a gust crosses the paddies as a wave in them.
   const green = new THREE.Color(C.green);
   const seedMat = track(new THREE.ShaderMaterial({
+    name: 'seedlings',
     uniforms: { ...uniforms, uColor: { value: new THREE.Vector3(green.r, green.g, green.b) } },
     vertexShader: `
       ${SWAY_GLSL}
@@ -412,25 +495,98 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     fragmentShader: `uniform vec3 uColor; uniform vec3 uPaper; varying float vPaper; void main() { gl_FragColor = vec4(mix(uColor, uPaper, vPaper), 1.0); }`,
   }));
 
-  // The meshes of each chunk: a group at the corner of the chunk.
+  // The meshes of each chunk: the water planes of a chunk in a group at its corner, and the other
+  // meshes in the blocks.
   const thingMeshes = new Set(); // the meshes for the picks of things
-  const masks = new Set(); // the masks of the faded objects: drawn only while a thing fades
+  const masks = new Set(); // the masks of the faded objects: drawn only while a thing of the chunk fades
   const fades = new Map(); // who -> fade
-  const chunks = new Map(); // key -> { group, level, meshes, dispose }
+  const maskOn = (mask) => {
+    for (const w of fades.keys()) if (mask.userData.owners.has(w)) return true;
+    return false;
+  };
+  const chunks = new Map(); // key -> { cx, cz, level, block, parts, owners, group, meshes, textures, triangles }
   const dirty = new Set();
   let builds = 0;
   let triangles = 0;
-  function dropChunk(key) {
-    const c = chunks.get(key);
-    if (!c) return;
-    scene.remove(c.group);
-    for (const m of c.meshes) {
+  // The chunks draw in blocks of 2 x 2 chunks of one level: for each block one mesh of each kind
+  // (the ground and the things, the lines, the hulls, the paddies and their seedlings, the foam;
+  // a far block only the first), so that a frame has few draw calls. A block is made again when
+  // one of its chunks comes, goes, or changes; the arrays of each chunk stay, so that this is a
+  // copy. The water planes stay with each chunk (each has the mask of its cells).
+  const BLOCK = 2;
+  const blocks = new Map(); // `${level}:${block}` -> { group, meshes }
+  const blockDirty = new Set();
+  const blockOf = (cx, cz) => chunkKey(Math.floor(cx / BLOCK), Math.floor(cz / BLOCK));
+  function dropMeshes(meshes) {
+    for (const m of meshes) {
       thingMeshes.delete(m);
       masks.delete(m);
       rivers.delete(m);
       if (!m.userData.shared) m.geometry.dispose();
       if (m.userData.material) m.material.dispose();
     }
+  }
+  function buildBlocks() {
+    for (const bk of blockDirty) {
+      const old = blocks.get(bk);
+      if (old) {
+        scene.remove(old.group);
+        dropMeshes(old.meshes);
+        blocks.delete(bk);
+      }
+      const members = [...chunks.values()].filter((c) => `${c.level}:${c.block}` === bk);
+      if (!members.length) continue;
+      const far = members[0].level === 'coarse';
+      const [bx, bz] = [Math.floor(members[0].cx / BLOCK) * BLOCK * CHUNK, Math.floor(members[0].cz / BLOCK) * BLOCK * CHUNK];
+      const list = (kind) => members.map((c) => ({ arrays: c.parts[kind], dx: c.ox - bx, dz: c.oz - bz }));
+      const group = new THREE.Group();
+      group.position.set(bx, 0, bz);
+      const meshes = [];
+      const world = concat(list('world'));
+      if (world) {
+        const mesh = new THREE.Mesh(world, flatMat);
+        meshes.push(mesh);
+        if (far) mesh.userData.part = 'far';
+        else {
+          thingMeshes.add(mesh);
+          const mask = new THREE.Mesh(world, maskMat);
+          mask.renderOrder = 1;
+          mask.userData.shared = true;
+          // The owners of the block: its mask draws only while one of them fades.
+          mask.userData.owners = new Set(members.flatMap((c) => [...c.owners]));
+          mask.visible = maskOn(mask);
+          masks.add(mask);
+          meshes.push(mask);
+        }
+      }
+      for (const [kind, mat] of [['ink', inkMat], ['hull', hullMat], ['paddy', paddyMat], ['foam', foamMat]]) {
+        const g = concat(list(kind));
+        if (g) meshes.push(new THREE.Mesh(g, mat));
+      }
+      const seeds = members.flatMap((c) => (c.parts.seeds ?? []).map((q) => [q[0] + c.ox - bx, q[1], q[2] + c.oz - bz, q[3]]));
+      if (seeds.length) {
+        const inst = new THREE.InstancedMesh(seedGeo, seedMat, seeds.length);
+        inst.userData.shared = true;
+        const m4 = new THREE.Matrix4();
+        seeds.forEach(([x, y, z, rot], k) => {
+          m4.makeRotationZ(rot);
+          m4.setPosition(x, y, z);
+          inst.setMatrixAt(k, m4);
+        });
+        meshes.push(inst);
+      }
+      for (const mesh of meshes) group.add(mesh);
+      scene.add(group);
+      blocks.set(bk, { group, meshes });
+    }
+    blockDirty.clear();
+  }
+  function dropChunk(key) {
+    const c = chunks.get(key);
+    if (!c) return;
+    blockDirty.add(`${c.level}:${c.block}`);
+    scene.remove(c.group);
+    dropMeshes(c.meshes);
     for (const t of c.textures) t.dispose();
     triangles -= c.triangles;
     chunks.delete(key);
@@ -455,96 +611,114 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     const all = { positions: [...m.ground.positions, ...m.things.positions], colors: [...m.ground.colors, ...m.things.colors], owners: [...m.ground.owners, ...m.things.owners], indices: [...m.ground.indices], sway: [...new Array((m.ground.positions.length / 3) * 2).fill(0), ...m.things.sway] };
     const base = m.ground.positions.length / 3;
     for (const i of m.things.indices) all.indices.push(base + i);
-    all.mist = withMist(all);
-    if (all.indices.length) {
-      const world = new THREE.Mesh(geometryOf(all, [0, 0, 0]), flatMat);
-      thingMeshes.add(world);
-      made.push(world);
-      if (!coarse) {
-        const mask = new THREE.Mesh(world.geometry, maskMat);
-        mask.renderOrder = 1;
-        mask.userData.shared = true;
-        mask.visible = fades.size > 0;
-        masks.add(mask);
-        made.push(mask);
-      }
-    }
-    // The lines, and the hulls of the smooth looks apart (they keep out of the mask).
-    if (m.ink.some((k) => k.segs.length)) made.push(new THREE.Mesh(inkGeometry(m.ink.map((k) => ({ ...k, hull: null })), mistOf), inkMat));
-    const hulls = m.ink.filter((k) => k.hull?.indices.length).map((k) => ({ ...k, segs: [] }));
-    if (hulls.length) made.push(new THREE.Mesh(inkGeometry(hulls, mistOf), hullMat));
-    // The water of the chunk: the river (and the fords) and the sea, each a plane with a mask.
     const page = terrain.page(key);
-    for (const kind of ['river', 'sea']) {
-      const cells = page.water.filter((w) => (kind === 'sea') === Boolean(w.sea));
-      if (!cells.length) continue;
-      const N = CHUNK + 2;
-      const mask = new Uint8Array(N * N * 4);
-      for (let z = 0; z < N; z++) {
-        for (let x = 0; x < N; x++) {
-          const w = waterAt(ox + x - 1, oz + z - 1);
-          const i = (z * N + x) * 4;
-          if (kind === 'sea' ? w === 'sea' : w === 'river' || w === 'ford') mask[i] = 255;
-          if (w === 'ford') mask[i + 1] = 255;
-          mask[i + 3] = Math.round(mistAt(ox + x - 1, oz + z - 1) * 255);
+    const parts = {};
+    const tone = (name, k = 0) => {
+      const c = toneRgb(colorIndex(name), 1);
+      return k ? c.map((v, i) => v * (1 - k) + paper.getComponent(i) * k) : c;
+    };
+    if (coarse) {
+      // A far chunk: its water and its paddies are flat quads of its mesh.
+      const quad = (x0, x1, z0, z1, y, rgb) => {
+        const b = all.positions.length / 3;
+        for (const [x, z] of [[x0, z0], [x1, z0], [x1, z1], [x0, z1]]) {
+          all.positions.push(x - ox, y, z - oz);
+          all.colors.push(...rgb);
+          all.owners.push(0);
+          all.sway.push(0, 0);
         }
-      }
-      for (const o of page.objects.filter((x) => x.kind === 'boat')) {
-        const b = terrain.boxOf(o);
-        for (let z = Math.floor(b.z0) - 1; z <= Math.ceil(b.z1); z++) {
-          for (let x = Math.floor(b.x0) - 1; x <= Math.ceil(b.x1); x++) {
-            const lx = x - ox + 1;
-            const lz = z - oz + 1;
-            if (lx >= 0 && lz >= 0 && lx < N && lz < N) mask[(lz * N + lx) * 4 + 2] = 255;
-          }
-        }
-      }
-      const tex = new THREE.DataTexture(mask, N, N, THREE.RGBAFormat);
-      tex.magFilter = THREE.LinearFilter;
-      tex.minFilter = THREE.LinearFilter;
-      tex.needsUpdate = true;
-      textures.push(tex);
-      // The plane covers the chunk; its uv reads the middle of the mask (the cells of the chunk).
-      const geo = new THREE.PlaneGeometry(CHUNK, CHUNK).rotateX(-Math.PI / 2).translate(CHUNK / 2, cells[0].y, CHUNK / 2);
-      const uv = geo.getAttribute('uv');
-      for (let i = 0; i < uv.count; i++) uv.setXY(i, (1 + uv.getX(i) * CHUNK) / N, (1 + (1 - uv.getY(i)) * CHUNK) / N);
-      const mesh = new THREE.Mesh(geo, waterMaterial(tex));
-      mesh.userData.material = true;
-      if (kind === 'river') rivers.add(mesh);
-      made.push(mesh);
+        all.indices.push(b, b + 2, b + 1, b, b + 3, b + 2);
+      };
+      const waterRgb = { river: tone('indigoPale'), ford: tone('indigoPale', 0.35), sea: tone('indigoPale'), surf: tone('indigoPale', 0.35) };
+      // The water in runs along x (one quad for each run of one kind at one height).
+      for (const r of waterRuns(page, waterAt)) quad(r.x0, r.x1, r.z, r.z + 1, r.y, waterRgb[r.kind] ?? waterRgb.river);
+      for (const pd of page.paddies) quad(pd.x, pd.x + 1, pd.z, pd.z + 1, pd.y, tone('indigoPale', 0.25));
     }
-    // The paddies of the chunk, and their seedlings (not on the coarse level).
-    if (page.paddies.length) {
-      const pos = [];
-      const idx = [];
-      page.paddies.forEach((p, i) => {
-        for (const [dx, dz] of [[0, 0], [1, 0], [1, 1], [0, 1]]) pos.push(p.x + dx - ox, p.y, p.z + dz - oz);
-        idx.push(i * 4, i * 4 + 2, i * 4 + 1, i * 4, i * 4 + 3, i * 4 + 2);
-      });
-      const pg = new THREE.BufferGeometry();
-      pg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-      pg.setIndex(idx);
-      made.push(new THREE.Mesh(pg, paddyMat));
-      if (!coarse) {
-        const seeds = new THREE.InstancedMesh(seedGeo, seedMat, page.paddies.length * 2);
-        seeds.userData.shared = true;
-        const m4 = new THREE.Matrix4();
-        let k = 0;
-        for (const p of page.paddies) {
-          // Rows along x: two seedlings in each cell, on the same row.
-          for (const dx of [0.25, 0.75]) {
-            m4.makeRotationZ(((p.x * 7 + p.z * 13 + dx * 10) % 5) * 0.05 - 0.1);
-            m4.setPosition(p.x + dx - ox, p.y, p.z + 0.5 - oz);
-            seeds.setMatrixAt(k++, m4);
+    all.mist = withMist(all);
+    parts.world = worldArrays(all);
+    if (!coarse) {
+      // The lines, and the hulls of the smooth looks apart (they keep out of the mask).
+      if (m.ink.some((k) => k.segs.length)) parts.ink = inkArrays(m.ink.map((k) => ({ ...k, hull: null })), mistOf);
+      const hulls = m.ink.filter((k) => k.hull?.indices.length).map((k) => ({ ...k, segs: [] }));
+      if (hulls.length) parts.hull = inkArrays(hulls, mistOf);
+      // The water of the chunk: the river (and the fords) and the sea, each a plane with a mask.
+      for (const kind of ['river', 'sea']) {
+        const cells = page.water.filter((w) => (kind === 'sea') === Boolean(w.sea));
+        if (!cells.length) continue;
+        const N = CHUNK + 2;
+        const mask = new Uint8Array(N * N * 4);
+        for (let z = 0; z < N; z++) {
+          for (let x = 0; x < N; x++) {
+            const w = waterAt(ox + x - 1, oz + z - 1);
+            const i = (z * N + x) * 4;
+            if (kind === 'sea' ? w === 'sea' || w === 'surf' : w === 'river' || w === 'ford') mask[i] = 255;
+            if (w === 'ford' || w === 'surf') mask[i + 1] = 255;
+            mask[i + 3] = Math.round(mistAt(ox + x - 1, oz + z - 1) * 255);
           }
         }
-        made.push(seeds);
+        for (const o of page.objects.filter((x) => x.kind === 'boat')) {
+          const b = terrain.boxOf(o);
+          for (let z = Math.floor(b.z0) - 1; z <= Math.ceil(b.z1); z++) {
+            for (let x = Math.floor(b.x0) - 1; x <= Math.ceil(b.x1); x++) {
+              const lx = x - ox + 1;
+              const lz = z - oz + 1;
+              if (lx >= 0 && lz >= 0 && lx < N && lz < N) mask[(lz * N + lx) * 4 + 2] = 255;
+            }
+          }
+        }
+        const tex = new THREE.DataTexture(mask, N, N, THREE.RGBAFormat);
+        tex.magFilter = THREE.LinearFilter;
+        tex.minFilter = THREE.LinearFilter;
+        tex.needsUpdate = true;
+        textures.push(tex);
+        // The plane covers the chunk; its uv reads the middle of the mask (the cells of the chunk).
+        const geo = new THREE.PlaneGeometry(CHUNK, CHUNK).rotateX(-Math.PI / 2).translate(CHUNK / 2, cells[0].y, CHUNK / 2);
+        const uv = geo.getAttribute('uv');
+        for (let i = 0; i < uv.count; i++) uv.setXY(i, (1 + uv.getX(i) * CHUNK) / N, (1 + (1 - uv.getY(i)) * CHUNK) / N);
+        const mesh = new THREE.Mesh(geo, waterMaterial(tex));
+        mesh.userData.material = true;
+        if (kind === 'river') rivers.add(mesh);
+        made.push(mesh);
+      }
+      // The foam on the sand by the surf: a line that runs up the sand and back with the waves.
+      const foam = { positions: [], d: [], indices: [] };
+      for (const { x, z, dx, dz } of foamEdges(page, waterAt)) {
+        const top = terrain.ground.top(x, z) + 1.02;
+        // A quad from the edge with the surf (d = 0) half a cell up the sand (d = 1).
+        const ex = dx === 1 ? 1 : dx === -1 ? 0 : null;
+        const ez = dz === 1 ? 1 : dz === -1 ? 0 : null;
+        const n = foam.positions.length / 3;
+        const corner = (u, d) => {
+          const lx = ex !== null ? ex - dx * d * 0.5 : u;
+          const lz = ez !== null ? ez - dz * d * 0.5 : u;
+          foam.positions.push(x - ox + lx, top, z - oz + lz);
+          foam.d.push(d);
+        };
+        corner(0, 0);
+        corner(1, 0);
+        corner(1, 1);
+        corner(0, 1);
+        foam.indices.push(n, n + 1, n + 2, n, n + 2, n + 3);
+      }
+      if (foam.indices.length) parts.foam = { attrs: { position: [new Float32Array(foam.positions), 3], d: [new Float32Array(foam.d), 1] }, index: new Uint32Array(foam.indices) };
+      // The paddies of the chunk, and their seedlings: two in each cell, on a row along x.
+      if (page.paddies.length) {
+        const pos = [];
+        const idx = [];
+        page.paddies.forEach((p, i) => {
+          for (const [dx, dz] of [[0, 0], [1, 0], [1, 1], [0, 1]]) pos.push(p.x + dx - ox, p.y, p.z + dz - oz);
+          idx.push(i * 4, i * 4 + 2, i * 4 + 1, i * 4, i * 4 + 3, i * 4 + 2);
+        });
+        parts.paddy = { attrs: { position: [new Float32Array(pos), 3] }, index: new Uint32Array(idx) };
+        parts.seeds = page.paddies.flatMap((p) => [0.25, 0.75].map((dx) => [p.x + dx - ox, p.y, p.z + 0.5 - oz, ((p.x * 7 + p.z * 13 + dx * 10) % 5) * 0.05 - 0.1]));
       }
     }
     for (const mesh of made) group.add(mesh);
-    scene.add(group);
-    const tri = m.triangles + page.paddies.length * (coarse ? 2 : 26);
-    chunks.set(key, { group, level, meshes: made, textures, triangles: tri });
+    if (made.length) scene.add(group);
+    const tri = chunkCost(terrain, cx, cz, { coarse, waterAt, mesh: m }).triangles;
+    const block = blockOf(cx, cz);
+    chunks.set(key, { cx, cz, ox, oz, level, block, parts, owners: new Set(m.things.owners.filter((w) => w > 0)), group, meshes: made, textures, triangles: tri });
+    blockDirty.add(`${level}:${block}`);
     triangles += tri;
     builds += 1;
   }
@@ -586,6 +760,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
       dirty.delete(c.key);
       if (performance.now() - start > ms) break;
     }
+    if (blockDirty.size) buildBlocks();
   }
 
   // Fireflies over the water at night: small pale boxes that blink and drift, over the water near
@@ -624,13 +799,11 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     state.width = w;
     state.height = h;
     renderer.setSize(w, h, false);
-    // A phone shows a little more of the world than an iPad.
-    const size = VIEW.zooms[state.level] * (h < 500 ? 1.15 : 1);
-    const a = w / h;
-    cam.left = (-size * a) / 2;
-    cam.right = (size * a) / 2;
-    cam.top = size / 2;
-    cam.bottom = -size / 2;
+    const size = viewSize(w, h, state.level);
+    cam.left = -size.w / 2;
+    cam.right = size.w / 2;
+    cam.top = size.h / 2;
+    cam.bottom = -size.h / 2;
     cam.updateProjectionMatrix();
   };
 
@@ -662,11 +835,30 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     }
     if (changed) {
       fadeTex.needsUpdate = true;
-      for (const m of masks) m.visible = fades.size > 0;
+      for (const m of masks) m.visible = maskOn(m);
     }
   }
 
   let drew = { calls: 0, triangles: 0 }; // what the last frame of the world drew
+  // The meshes in the view, by the name of their material (for the ?fps line of a device): the
+  // draw calls and the triangles of each kind.
+  const frustum = new THREE.Frustum();
+  const viewProj = new THREE.Matrix4();
+  function partsInView() {
+    viewProj.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+    frustum.setFromProjectionMatrix(viewProj);
+    const out = {};
+    scene.traverseVisible((o) => {
+      if (!o.isMesh || (o.frustumCulled && !frustum.intersectsObject(o))) return;
+      const k = o.userData.part ?? (o.material.name || o.material.type);
+      const g = o.geometry;
+      const tri = ((g.index ? g.index.count : g.attributes.position.count) / 3) * (o.isInstancedMesh ? o.count : 1);
+      out[k] ??= { calls: 0, triangles: 0 };
+      out[k].calls += 1;
+      out[k].triangles += Math.round(tri);
+    });
+    return out;
+  }
   // Raycasts for taps.
   const ray = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
@@ -789,11 +981,12 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     get triangles() { return triangles; },
     get drawn() { return chunks.size; },
     // What the last frame drew (for tests of the speed on real devices).
-    stats: () => ({ ...drew, chunks: chunks.size, chunkTriangles: triangles }),
+    stats: ({ parts = false } = {}) => ({ ...drew, chunks: chunks.size, chunkTriangles: triangles, ...(parts ? { parts: partsInView() } : {}) }),
     // The depth of a world point along the view (larger is nearer the camera).
     nearness: (x, y, z) => -(x * view.x + y * view.y + z * view.z),
     dispose() {
       for (const k of [...chunks.keys()]) dropChunk(k);
+      buildBlocks();
       terrain.hold?.('view', []);
       for (const d of disposables) d.dispose?.();
       scene.clear();

@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createTerrain, kindAt, REACH } from '../src/world/terrain.js';
 import { createPlaneTileMap } from '../src/core/tilemap.js';
-import { chunkMesh, chunkOf, chunkKey, CHUNK } from '../src/world/chunks.js';
+import { chunkMesh, chunkCost, blocksCost, chunkOf, chunkKey, CHUNK, WATER_KINDS } from '../src/world/chunks.js';
+import { inView, viewSize } from '../src/world/view.js';
 import { buildProp } from '../src/world/props/index.js';
 import { hashSeed } from '../src/world/voxel.js';
 import { load, mapOf, worldOf } from './helpers.js';
@@ -166,36 +167,66 @@ test('the triangles of the 3 x 3 chunks around the start of every place stay und
   }
 });
 
-test('the ring of chunks that the view draws stays under the budget on the walk from Phù Đổng to Sóc Sơn', (c) => {
-  // The view draws 9 x 9 chunks: the 5 x 5 near ones at the full level, the others at the coarse
-  // level (src/render/voxel.js, RINGS). The walk goes on the road to the north (the story
-  // walk-soc-son); a ring each 8 chunks on the way covers each chunk of the way.
-  const limit = load('data/config/limits.json').ringTriangles;
+// What a frame draws around a focus (cells), as the ?fps line counts it: every mesh of the chunks
+// in the view (src/world/view.js), in their blocks of 2 x 2 chunks, plus the figures and the
+// sky (limits.viewExtra). The view is the far zoom, on the screen that sees the most.
+function frameCost(t, tileMap, x, z) {
+  const waterAt = (wx, wz) => WATER_KINDS[tileMap.type(Math.floor(wx), Math.floor(wz))] ?? null;
+  const cx = Math.floor(x / CHUNK);
+  const cz = Math.floor(z / CHUNK);
+  const focus = { x, y: (tileMap.heightAt(Math.floor(x), Math.floor(z)) + 1) * 1, z };
+  let worst = { triangles: 0, calls: 0 };
+  for (const [w, h] of [[844, 390], [1024, 768]]) {
+    const size = viewSize(w, h, 1);
+    const list = [];
+    for (let dz = -4; dz <= 4; dz++) for (let dx = -4; dx <= 4; dx++) {
+      const page = t.chunk(cx + dx, cz + dz);
+      const box = { x0: page.x0, x1: page.x0 + CHUNK, y0: 0, y1: page.maxTop + 6, z0: page.z0, z1: page.z0 + CHUNK };
+      if (!inView(box, focus, { size })) continue;
+      const coarse = Math.max(Math.abs(dx), Math.abs(dz)) > 2;
+      list.push({ cx: cx + dx, cz: cz + dz, coarse, cost: chunkCost(t, cx + dx, cz + dz, { coarse, waterAt }) });
+    }
+    const { triangles, calls } = blocksCost(list);
+    if (triangles > worst.triangles || calls > worst.calls) worst = { triangles: Math.max(worst.triangles, triangles), calls: Math.max(worst.calls, calls) };
+  }
+  return worst;
+}
+
+test('a frame stays under the budget of triangles and draw calls on the walk to Sóc Sơn and at the densest places', (c) => {
+  // The budget counts what the ?fps line counts: all meshes of the chunks in the view, the ink
+  // included, and the figures and the sky. The walk goes on the road to the north (the story
+  // walk-soc-son), with a frame each 4 chunks; then the hill forest at the south edge of the land
+  // of the era, the mountains of Tam Đảo, and Ba Vì.
+  const limits = load('data/config/limits.json');
   const map = mapOf('giong', 1);
-  const t = createTerrain(map, tiles, createPlaneTileMap(map, tiles), blocks);
-  const way = [['phu-dong', 31.5, 27.5], ['phu-dong', 46.5, 1.5], ['soc-son', 39.5, 50.5], ['soc-son', 40.5, 18.5]].map(([p, x, y]) => worldOf().at(p, x, y));
-  const rings = [];
+  const tileMap = createPlaneTileMap(map, tiles);
+  const t = createTerrain(map, tiles, tileMap, blocks);
+  const world = worldOf();
+  const way = [['phu-dong', 31.5, 27.5], ['phu-dong', 46.5, 1.5], ['soc-son', 39.5, 50.5], ['soc-son', 40.5, 18.5]].map(([p, x, y]) => world.at(p, x, y));
+  const spots = [];
   for (let i = 1; i < way.length; i++) {
     const [ax, ay] = way[i - 1];
     const [bx, by] = way[i];
-    const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / (CHUNK * 8)));
-    for (let k = i === 1 ? 0 : 1; k <= n; k++) rings.push([Math.floor((ax + ((bx - ax) * k) / n) / CHUNK), Math.floor((ay + ((by - ay) * k) / n) / CHUNK)]);
+    const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / (CHUNK * 4)));
+    for (let k = i === 1 ? 0 : 1; k <= n; k++) spots.push({ name: 'walk', at: [ax + ((bx - ax) * k) / n, ay + ((by - ay) * k) / n] });
   }
-  const cost = new Map();
-  const most = { tri: 0, at: null };
-  for (const [cx, cz] of rings) {
-    let tri = 0;
-    for (let dz = -4; dz <= 4; dz++) for (let dx = -4; dx <= 4; dx++) {
-      const coarse = Math.max(Math.abs(dx), Math.abs(dz)) > 2;
-      const key = `${chunkKey(cx + dx, cz + dz)}:${coarse}`;
-      if (!cost.has(key)) cost.set(key, chunkMesh(t, cx + dx, cz + dz, { coarse }).triangles);
-      tri += cost.get(key);
-    }
-    if (tri > most.tri) Object.assign(most, { tri, at: [cx, cz] });
-    assert.ok(tri <= limit, `the ring at the chunk ${cx},${cz}: ${tri} triangles`);
+  const plane = map.land.plane;
+  spots.push({ name: 'the south edge', at: [9522.5, 14203.5] });
+  spots.push({ name: 'Tam Đảo', at: plane.toCell([105.645, 21.455]) });
+  spots.push({ name: 'Ba Vì', at: plane.toCell([105.37, 21.07]) });
+  const most = { triangles: 0, calls: 0 };
+  for (const s of spots) {
+    const f = frameCost(t, tileMap, s.at[0], s.at[1]);
+    const triangles = f.triangles + limits.viewExtra.triangles;
+    const calls = f.calls + limits.viewExtra.calls;
+    if (s.name !== 'walk') c.diagnostic(`${s.name}: ${triangles} triangles, ${calls} calls`);
+    most.triangles = Math.max(most.triangles, triangles);
+    most.calls = Math.max(most.calls, calls);
+    assert.ok(triangles <= limits.viewTriangles, `${s.name} at ${s.at.map(Math.round)}: ${triangles} triangles`);
+    assert.ok(calls <= limits.viewCalls, `${s.name} at ${s.at.map(Math.round)}: ${calls} draw calls`);
   }
-  c.diagnostic(`${rings.length} rings; the most: ${most.tri} triangles at the chunk ${most.at}`);
-  assert.ok(rings.length >= 5 && most.tri > limit / 4, `${rings.length} rings, at most ${most.tri} triangles`);
+  c.diagnostic(`the most: ${most.triangles} triangles, ${most.calls} calls`);
+  assert.ok(spots.length >= 12 && most.triangles > limits.viewTriangles / 4);
 });
 
 test('flowers grow in small patches on the grass, with no outline, and no decoration looks like a thing to carry', async () => {

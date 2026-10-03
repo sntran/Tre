@@ -175,12 +175,13 @@ function sheet(B, a, u, v, color) {
 const leafy = (base) => (n) => (n[1] > 0.55 ? 'greenPale' : base);
 
 const BUILD = {
-  // A tree crown: three or four overlapping blobs. { x, y, z (the middle of the crown), r, leaf }
+  // A tree crown: three or four overlapping blobs. { x, y, z (the middle of the crown), r, leaf,
+  // blobs (the count of blobs, for the crowns of the forest) }
   crown(B, s, rng) {
     // The top of the crown moves most.
     B.swayAt = (p) => [0.15 + 0.55 * clamp01((p[1] - (s.y - s.r)) / (2 * s.r)), SWAY_LAYERS.tree];
     // A far crown (the coarse level) is one blob.
-    const count = B.coarse ? 1 : 3 + (rng.next() < 0.5 ? 1 : 0);
+    const count = B.coarse ? 1 : s.blobs ?? 3 + (rng.next() < 0.5 ? 1 : 0);
     if (B.coarse) {
       blob(B, [s.x, s.y, s.z], [s.r, s.r * 0.85, s.r], leafy(s.leaf ?? 'green'), rng);
       return;

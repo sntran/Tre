@@ -91,10 +91,7 @@ export function react(world, dt) {
         // A new pot: the mender set it (with a small sigh), or, on a map with no mender, the
         // family set it in the night.
         if (e.broken.mended) say('mend', { sound: 'sigh' });
-        delete e.broken;
-        e.look = r.whole ?? e.look;
-        e.keep = false;
-        e.solid = r.solid ?? e.solid;
+        mend(e);
       } else if (e.broken && today > e.broken.day) {
         // A new day: the pot waits for the mender (see the schedule system).
         e.broken.due = true;
@@ -151,4 +148,13 @@ export function turnToward(from, to, step) {
   let d = ((((to - from + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
   if (Math.abs(d) > step) d = Math.sign(d) * step;
   return from + d;
+}
+
+// A broken thing is whole again (its look, its solid, and it is not kept).
+function mend(e) {
+  const r = e.react;
+  delete e.broken;
+  e.look = r.whole ?? e.look;
+  e.keep = false;
+  e.solid = r.solid ?? e.solid;
 }

@@ -112,6 +112,7 @@ export function stepBody(body, input, dt, world, cfg = MOVE) {
   body.y = next.y;
   body.moving = moved > 1e-4;
   body.shallow = shallow;
+  body.wade = ground === 'surf'; // the sea to the knee: the body is a little lower in the water
   return body;
 }
 

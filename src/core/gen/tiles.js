@@ -23,11 +23,16 @@ const PAD = 56;
 const CAP = 16; // distances are capped (cells): no rule reads farther
 const SITE = 32; // one hamlet site at most in each square of SITE cells (two squares in a tile side)
 export const HAMLET = Object.freeze({ w: 22, h: 16 });
-export const LETTER = Object.freeze({ grass: '.', path: '=', sand: '_', water: '~', field: 'f', dike: 'd', bridge: 'B', rock: 'r', yard: 'y', hedge: 'h', surf: ':', sea: '^' });
+export const LETTER = Object.freeze({ grass: '.', path: '=', sand: '_', water: '~', field: 'f', dike: 'd', bridge: 'B', rock: 'r', yard: 'y', hedge: 'h', surf: ':', sea: '^', shallow: 's', bamboo: 'k' });
 const CODE = Object.fromEntries(Object.entries(LETTER).map(([k, v]) => [k, v.charCodeAt(0)]));
 const FIXED = { none: 0, stamp: 1, river: 2, claim: 3, sea: 4 };
 const SURF = 3; // cells of shallow sea (to the knee) next to the land; farther, the sea is deep
 const SEA_LOW = 5; // meters: a cell out of all rings of the land is sea only when the land there is this low
+// Where a road crosses a river: a river this wide or less is a ford (shallow water to walk through),
+// a river this wide or more has a ferry (a boat at a landing on each bank), and a river between
+// them has a bamboo bridge (cells of water across).
+export const CROSSING = Object.freeze({ ford: 6, ferry: 14 });
+const crossingOf = (water) => (water >= CROSSING.ferry ? 'ferry' : water <= CROSSING.ford ? 'ford' : 'bamboo');
 // A height is one digit of base 36 in the height rows (0 to 9, then a to z).
 export const MAX_LEVEL = 35;
 export const digit = (ch) => parseInt(ch, 36);
@@ -118,7 +123,63 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
     }
     return (xs.length - lo) % 2 === 1;
   };
-  const eraRow = def.eraLand !== undefined ? plane.toCell([0, def.eraLand])[1] : Infinity;
+  // The south line of the land of the era follows the range of mountains near eraLand (the
+  // Hoành Sơn at 18° N in Era 1), not a straight row: for each column, the crest of the highest
+  // land within ERA.band degrees of the line (a crest nearer the line is better), smoothed over the
+  // columns near it. The land of the era ends ERA.before cells before the crest, so that the land
+  // rises to the mountains and the mist lies on them and past them. The crests come from the height
+  // grid only, so the line is the same for every tile.
+  const ERA = { band: 0.35, step: 0.005, median: 15, smooth: 8, before: 6 };
+  const era = def.eraLand;
+  const crests = new Map(); // a column of the height grid -> the latitude of its crest
+  const medians = new Map();
+  const crestOf = (k) => {
+    if (crests.has(k)) return crests.get(k);
+    const lon = k * ERA.step;
+    let best = era;
+    let score = -Infinity;
+    for (let lat = era + ERA.band; lat >= era - ERA.band - 1e-9; lat -= ERA.step) {
+      const m = geo.heights?.at(lon, lat) ?? 0;
+      const v = m - (300 * Math.abs(lat - era)) / ERA.band;
+      if (m > 0 && v > score) {
+        score = v;
+        best = lat;
+      }
+    }
+    crests.set(k, best);
+    return best;
+  };
+  const eraRows = new Map(); // a column of the plane -> the first row out of the land of the era
+  const eraRowOf = (x) => {
+    if (era === undefined) return Infinity;
+    if (eraRows.has(x)) return eraRows.get(x);
+    const lon = plane.toGeo([x + 0.5, 0])[0];
+    const f = lon / ERA.step;
+    const k0 = Math.floor(f);
+    // A median first (a crest that jumps to another ridge for a few columns does not count), then
+    // a mean.
+    const median = (k) => {
+      if (medians.has(k)) return medians.get(k);
+      const list = [];
+      for (let d = -ERA.median; d <= ERA.median; d++) list.push(crestOf(k + d));
+      const m = list.sort((p, q) => p - q)[ERA.median];
+      medians.set(k, m);
+      return m;
+    };
+    const smooth = (k) => {
+      let sum = 0;
+      for (let d = -ERA.smooth; d <= ERA.smooth; d++) sum += median(k + d);
+      return sum / (2 * ERA.smooth + 1);
+    };
+    const lat = smooth(k0) * (1 - (f - k0)) + smooth(k0 + 1) * (f - k0);
+    const row = Math.floor(plane.toCell([lon, lat])[1]) - ERA.before;
+    eraRows.set(x, row);
+    return row;
+  };
+  // The rows of the band of the crests (with the cells before them), for the height tiles a tile
+  // needs.
+  const eraBand = era === undefined ? null : [plane.toCell([0, era + ERA.band])[1] - ERA.before - CAP, plane.toCell([0, era - ERA.band])[1] + CAP];
+  const BORDER = 12; // cells: near a border, a ridge top of the land of the era is mist too
 
   // The segments of the lines (rivers, roads) by tile, so that a window finds its segments fast.
   const bucketKey = (bx, by) => `${bx},${by}`;
@@ -176,6 +237,47 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
   // step from one cell to the next, with the ends at the land of the ends.
   const roadRules = { steep: 0.7, climb: 40, keep: 0.06, ...(def.road ?? {}) };
   let roads = null;
+  const ferries = [];
+  // The river of a cell (the nearest line of a river that holds the cell in its water), or null.
+  const riverAt = (x, y) => {
+    let best = null;
+    let bd = Infinity;
+    for (const r of rivers) {
+      for (const k of near(r.index, Math.floor(x / TILE), Math.floor(y / TILE))) {
+        const [ax, ay, bx, by] = r.segs[k];
+        const d = segDist(x + 0.5, y + 0.5, ax, ay, bx, by);
+        if (d < r.water / 2 && d < bd) {
+          bd = d;
+          best = r;
+        }
+      }
+    }
+    return best;
+  };
+  // The ferries of a road: for each run of its cells in the water of a river with a ferry, the
+  // spots of the boat at both ends of the run (on the water), the cells of the banks where the
+  // hero calls the boat (step), and the places where the riders step off (land), a little farther
+  // from the water (plane cells, the middle of a cell).
+  function ferriesOf(id, way) {
+    const out = [];
+    let k = 0;
+    while (k < way.length) {
+      const r = riverAt(way[k][0], way[k][1]);
+      if (!r || crossingOf(r.water) !== 'ferry') {
+        k += 1;
+        continue;
+      }
+      let e = k;
+      while (e + 1 < way.length && riverAt(way[e + 1][0], way[e + 1][1]) === r) e += 1;
+      const at = (j) => {
+        const q = way[Math.max(0, Math.min(way.length - 1, j))];
+        return { x: q[0] + 0.5, y: q[1] + 0.5 };
+      };
+      if (k > 3 && e < way.length - 4) out.push({ id: `${id}:${r.id}:${k}`, river: r.id, a: at(k + 1), b: at(e - 1), stepA: at(k - 2), stepB: at(e + 2), landA: at(k - 4), landB: at(e + 4) });
+      k = e + 1;
+    }
+    return out;
+  }
   const roadTarget = (x, y) => {
     const s = stampAt(x, y);
     return s ? stampLevel(s, x, y) : natural(x, y);
@@ -205,7 +307,9 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
         segs.push([way[k][0] + 0.5, way[k][1] + 0.5, b[0] + 0.5, b[1] + 0.5]);
       }
       const half = (rd.width ?? 4) / 2;
-      roads.push({ id: rd.id ?? `road${ri}`, half, line: way.map(([x, y]) => [x + 0.5, y + 0.5]), levels, segs, index: index(segs, half + 3) });
+      const id = rd.id ?? `road${ri}`;
+      roads.push({ id, half, line: way.map(([x, y]) => [x + 0.5, y + 0.5]), levels, segs, index: index(segs, half + 3) });
+      ferries.push(...ferriesOf(id, way));
     });
   }
   function routeRoad(from, to, rd, ri) {
@@ -356,7 +460,32 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
     }
     const toLand = distanceField(W, W, (i) => kindOf[i] !== SEA);
     const toSea = distanceField(W, W, (i) => kindOf[i] === SEA);
-    const toEra = distanceField(W, W, (i) => kindOf[i] !== FOREIGN && plz(i) < eraRow);
+    // Near a border with another country, the mist follows the ridges where it can: a cell of the
+    // land of the era within BORDER cells of the border is mist when it is a ridge top (the
+    // highest cell within 4 cells of it, and at least 4 steps over the base).
+    const toForeign = distanceField(W, W, (i) => kindOf[i] === FOREIGN);
+    let ridge = null;
+    if (toForeign.dist.some((d) => d > 0 && d <= BORDER)) {
+      const nat = new Float32Array(N);
+      for (let i = 0; i < N; i++) nat[i] = toForeign.dist[i] <= BORDER + 4 ? natural(plx(i), plz(i)) : 0;
+      ridge = new Uint8Array(N);
+      for (let i = 0; i < N; i++) {
+        if (kindOf[i] || toForeign.dist[i] > BORDER || nat[i] < base + 4) continue;
+        const x = i % W;
+        const y = Math.floor(i / W);
+        let top = true;
+        for (let dy = -4; dy <= 4 && top; dy++) for (let dx = -4; dx <= 4; dx++) {
+          const xx = x + dx;
+          const yy = y + dy;
+          if (xx >= 0 && yy >= 0 && xx < W && yy < W && nat[yy * W + xx] > nat[i]) {
+            top = false;
+            break;
+          }
+        }
+        if (top) ridge[i] = 1;
+      }
+    }
+    const toEra = distanceField(W, W, (i) => kindOf[i] !== FOREIGN && plz(i) < eraRowOf(plx(i)) && !(ridge && ridge[i]));
     for (let i = 0; i < N; i++) {
       if (kindOf[i] !== SEA || fixed[i]) continue;
       const surf = toLand.dist[i] <= SURF;
@@ -466,8 +595,16 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
             if (d < roadDist[i]) roadDist[i] = d;
             if (d >= r.half || fixed[i] === FIXED.stamp || d >= best[i]) continue;
             best[i] = d;
-            if (letter[i] === CODE.water || letter[i] === CODE.bridge) letter[i] = CODE.bridge;
-            else {
+            if (letter[i] === CODE.water || letter[i] === CODE.bridge || letter[i] === CODE.bamboo || letter[i] === CODE.shallow) {
+              // A road over a river: a ford, a bamboo bridge, or the water of a ferry.
+              const kind = riverOf[i] >= 0 ? crossingOf(rivers[riverOf[i]].water) : 'bamboo';
+              if (kind === 'ford') letter[i] = CODE.shallow;
+              else if (kind === 'bamboo') {
+                // The deck of the bridge is at the height of the road.
+                letter[i] = CODE.bamboo;
+                level[i] = Math.max(1, r.levels[k]);
+              }
+            } else {
               letter[i] = CODE.path;
               if (fixed[i] === FIXED.river) fixed[i] = FIXED.none;
               level[i] = r.levels[k];
@@ -479,15 +616,15 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
     // The land beside a road comes to it (a bank of two cells), so that the hero can step off it.
     const isRoad = (i) => letter[i] === CODE.path && fixed[i] !== FIXED.stamp;
     const bank = bound(isRoad, 2);
-    for (let i = 0; i < N; i++) if (!fixed[i] && !isRoad(i) && letter[i] !== CODE.bridge) level[i] = bank(i, level[i]);
+    for (let i = 0; i < N; i++) if (!fixed[i] && !isRoad(i) && letter[i] !== CODE.bridge && letter[i] !== CODE.bamboo) level[i] = bank(i, level[i]);
 
     // At the edge of a stamp no cliff: the land next to it (a road too) is one step from it at most
     // for each cell of distance.
     const byStamp = bound((i) => fixed[i] === FIXED.stamp, 4);
-    for (let i = 0; i < N; i++) if (!fixed[i] && letter[i] !== CODE.bridge) level[i] = byStamp(i, level[i]);
+    for (let i = 0; i < N; i++) if (!fixed[i] && letter[i] !== CODE.bridge && letter[i] !== CODE.bamboo) level[i] = byStamp(i, level[i]);
 
     const toWater = distanceField(W, W, (i) => letter[i] === CODE.water);
-    const nearRoad = distanceField(W, W, (i) => letter[i] === CODE.path || letter[i] === CODE.bridge);
+    const nearRoad = distanceField(W, W, (i) => letter[i] === CODE.path || letter[i] === CODE.bridge || letter[i] === CODE.bamboo);
     const cap = (d) => Math.min(CAP, d);
 
     // The hamlets: one site at most in each square of SITE cells (at a place of the seed), on free,
@@ -556,7 +693,7 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
         for (let y = by * DIKE; y <= by * DIKE + DIKE && ok; y++) {
           for (let x = bx * DIKE; x <= bx * DIKE + DIKE; x++) {
             const i = (y - Z0) * W + (x - X0);
-            if (fixed[i] || letter[i] === CODE.path || letter[i] === CODE.bridge || roadDist[i] < 3 || toStamp.dist[i] < 3) {
+            if (fixed[i] || letter[i] === CODE.path || letter[i] === CODE.bridge || letter[i] === CODE.bamboo || roadDist[i] < 3 || toStamp.dist[i] < 3) {
               ok = false;
               break;
             }
@@ -609,7 +746,7 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
         }
       }
     }
-    const toRoad = distanceField(W, W, (i) => letter[i] === CODE.path || letter[i] === CODE.bridge);
+    const toRoad = distanceField(W, W, (i) => letter[i] === CODE.path || letter[i] === CODE.bridge || letter[i] === CODE.bamboo);
     const toField = distanceField(W, W, (i) => letter[i] === CODE.field);
 
     const things = scatterWindow({ W, X0, Z0, letter, level, fixed, toWater, toRoad, toField, cap, tx, tz }, rules, seed);
@@ -717,14 +854,33 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
     needs(tx, tz) {
       const [lonA, latA] = plane.toGeo([tx * TILE - PAD, tz * TILE - PAD]);
       const [lonB, latB] = plane.toGeo([(tx + 1) * TILE + PAD, (tz + 1) * TILE + PAD]);
-      const out = [];
-      for (let la = Math.floor(latB); la <= Math.floor(latA); la++) {
-        for (let lo = Math.floor(lonA); lo <= Math.floor(lonB); lo++) {
-          const name = tileOf(lo, la);
-          if ((def.tiles ?? []).includes(name)) out.push(name);
+      const out = new Set();
+      const add = (lo0, lo1, la0, la1) => {
+        for (let la = Math.floor(la0); la <= Math.floor(la1); la++) {
+          for (let lo = Math.floor(lo0); lo <= Math.floor(lo1); lo++) {
+            const name = tileOf(lo, la);
+            if ((def.tiles ?? []).includes(name)) out.add(name);
+          }
         }
+      };
+      add(lonA, lonB, latB, latA);
+      // A tile near the line of the era reads the crests of the band (and of the columns near it).
+      if (eraBand && (tz + 1) * TILE + PAD >= eraBand[0] && tz * TILE - PAD <= eraBand[1]) {
+        const d = (ERA.median + ERA.smooth + 1) * ERA.step;
+        add(lonA - d, lonB + d, era - ERA.band, era + ERA.band);
       }
-      return out;
+      return [...out];
+    },
+    // The ferries of the roads over the big rivers (see ferriesOf).
+    get ferries() {
+      if (!roads) makeRoads();
+      return ferries;
+    },
+    // Is a cell in the land of another country (the rings of the land, with no wobble)?
+    foreignAt(x, y) {
+      const row = Math.floor(y);
+      const xs = crossings(ringBands.vn, row);
+      return !insideRow(xs, x + 0.5) && insideRow(crossings(ringBands.other, row), x + 0.5);
     },
     // Forget a tile (a worker gave its arrays away).
     forget: (tx, tz) => cache.delete(keyOf(tx, tz)),
@@ -780,7 +936,27 @@ function scatterWindow(w, rules, seed) {
   const { W, X0, Z0, letter, level, fixed, toWater, toRoad, toField, cap, tx, tz } = w;
   const inRange = (v, range) => !range || (v >= range[0] && v <= range[1]);
   const codes = (on) => new Set((on ?? ['.']).map((c) => c.charCodeAt(0)));
-  const fitsAt = (rule, on, i) => !fixed[i] && on.has(letter[i]) && inRange(level[i], rule.level) && inRange(cap(toWater.dist[i]), rule.water) && inRange(cap(toRoad.dist[i]), rule.road) && inRange(cap(toField.dist[i]), rule.field);
+  // How many steps a cell is under the highest cell within TOP cells of it (0 at a top), made
+  // only when a rule asks for it (a max filter in rows, then in columns).
+  const TOP = 6;
+  let below = null;
+  const belowTop = () => {
+    if (below) return below;
+    const rows = new Uint8Array(W * W);
+    for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+      let m = 0;
+      for (let d = Math.max(0, x - TOP); d <= Math.min(W - 1, x + TOP); d++) m = Math.max(m, level[y * W + d]);
+      rows[y * W + x] = m;
+    }
+    below = new Uint8Array(W * W);
+    for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+      let m = 0;
+      for (let d = Math.max(0, y - TOP); d <= Math.min(W - 1, y + TOP); d++) m = Math.max(m, rows[d * W + x]);
+      below[y * W + x] = m - level[y * W + x];
+    }
+    return below;
+  };
+  const fitsAt = (rule, on, i) => !fixed[i] && on.has(letter[i]) && inRange(level[i], rule.level) && inRange(cap(toWater.dist[i]), rule.water) && inRange(cap(toRoad.dist[i]), rule.road) && inRange(cap(toField.dist[i]), rule.field) && (!rule.top || inRange(belowTop()[i], rule.top));
   const roll = (name, x, y) => hash2(hashSeed(`${seed}:${name}`) & 0x7fffffff, x, y);
   const x0 = tx * TILE;
   const z0 = tz * TILE;
@@ -790,7 +966,7 @@ function scatterWindow(w, rules, seed) {
   (rules.props ?? []).forEach((rule, ri) => {
     const name = `scatter:${rule.prop}:${ri}`;
     const on = codes(rule.on);
-    const patch = rule.patch ? hashSeed(`${seed}:patch:${rule.prop}`) & 0x7fffffff : 0;
+    const patch = rule.patch ? hashSeed(`${seed}:patch:${rule.patch.key ?? rule.prop}`) & 0x7fffffff : 0;
     const [sw, sh] = Array.isArray(rule.size) ? rule.size : [rule.size ?? 2, rule.size ?? 2];
     const R = Math.ceil(rule.spacing);
     const lo = PAD - MARGIN - R;
@@ -829,7 +1005,8 @@ function scatterWindow(w, rules, seed) {
         const gx = x + X0;
         const gy = y + Z0;
         if (rule.chance !== undefined && roll(`${name}:chance`, gx, gy) >= rule.chance) continue;
-        cands.push({ prop: rule.prop, kind: ri, x: gx, y: gy, w: sw, h: sh, p, seed: 1 + Math.floor(roll(`${name}:seed`, gx, gy) * 2147483645) });
+        const crown = rule.crowns ? rule.crowns[Math.floor(roll(`${name}:crown`, gx, gy) * rule.crowns.length)] : undefined;
+        cands.push({ prop: rule.prop, kind: ri, x: gx, y: gy, w: sw, h: sh, p, seed: 1 + Math.floor(roll(`${name}:seed`, gx, gy) * 2147483645), ...(crown ? { crown } : {}) });
       }
     }
   });
@@ -837,7 +1014,7 @@ function scatterWindow(w, rules, seed) {
   const before = (a, b) => a.kind < b.kind || (a.kind === b.kind && (a.p > b.p || (a.p === b.p && (a.y < b.y || (a.y === b.y && a.x < b.x)))));
   const touch = (a, b) => a.x - 1 < b.x + b.w && b.x - 1 < a.x + a.w && a.y - 1 < b.y + b.h && b.y - 1 < a.y + a.h;
   const kept = cands.filter((a) => Math.abs(a.x - x0 - TILE / 2) < TILE / 2 + 4 && Math.abs(a.y - z0 - TILE / 2) < TILE / 2 + 4 && !cands.some((b) => b !== a && touch(a, b) && before(b, a)));
-  const objects = kept.map((o) => ({ id: `gen:${o.prop}:${o.x}:${o.y}`, prop: o.prop, x: o.x, y: o.y, w: o.w, h: o.h, seed: o.seed, gen: true }));
+  const objects = kept.map((o) => ({ id: `gen:${o.prop}:${o.x}:${o.y}`, prop: o.prop, x: o.x, y: o.y, w: o.w, h: o.h, seed: o.seed, gen: true, ...(o.crown ? { crown: o.crown } : {}) }));
   const taken = (x, y) => kept.some((o) => x >= o.x && y >= o.y && x < o.x + o.w && y < o.y + o.h);
   // The groups of living things: one candidate in each square of `spacing` cells, at a place of
   // the seed.

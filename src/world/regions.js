@@ -63,7 +63,7 @@ export function createWorld(world, defs, geo = null) {
       set.add(out);
       return out;
     };
-    const layers = { objects: [], collision: [], zones: [], triggers: [], places: {}, life: [], paths: {}, spots: {} };
+    const layers = { objects: [], collision: [], zones: [], triggers: [], places: {}, life: [], paths: {}, spots: {}, ferries: [] };
     const npcs = [];
     const encounters = [];
     const legend = {};
@@ -81,6 +81,7 @@ export function createWorld(world, defs, geo = null) {
         if (t.action?.move) n.action = { ...t.action, move: move(t.action.move) };
         layers.triggers.push(n);
       }
+      for (const f of L.ferries ?? []) layers.ferries.push({ id: uniq('ferry', p.id, f.id), a: move(f.a), b: move(f.b), landA: move(f.landA), landB: move(f.landB) });
       for (const [name, q] of Object.entries(L.places ?? {})) layers.places[uniq('place', p.id, name)] = move(q);
       (L.life ?? []).forEach((g, i) => layers.life.push({ ...move(g), place: p.id, index: i }));
       for (const [name, line] of Object.entries(L.paths ?? {})) layers.paths[uniq('path', p.id, name)] = line.map(([x, y]) => [x + ox, y + oy]);

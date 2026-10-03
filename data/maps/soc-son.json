@@ -74,6 +74,7 @@
   "triggers": [
    {"id": "field", "x": 16, "y": 54, "w": 12, "h": 10, "on": "tap", "action": {"textKey": "map.field"}}
   ],
+  "ferries": [],
   "spots": {
 
   }

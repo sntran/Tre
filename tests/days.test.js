@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { eventsOfDay, eventLevel, eventTask, exactResult, purse, dayOf } from '../src/core/world/days.js';
+import { eventsOfDay, isEventDay, notAgain, eventLevel, eventTask, exactResult, purse, dayOf } from '../src/core/world/days.js';
 import { createRng } from '../src/core/rng.js';
 import { load, mapOf } from './helpers.js';
 
@@ -103,4 +103,20 @@ test('the land has spots for the events: roads, paddies, and the yards of the ha
     // The spots of the places are on their stamps.
     for (const [x, y] of m.spotsByPlace['phu-dong'].field) assert.equal(m.land.cell(x, y).letter, 'f');
   }
+});
+
+test('an event does not come at its spot of yesterday; a market keeps the yard of its hamlet', () => {
+  const found = [{ id: 'cart', at: [10, 4] }, { id: 'flood', at: [3, 3] }, { id: 'cart', at: [20, 8] }, { id: 'market', at: [5, 5] }];
+  const list = [found[0], found[1], found[3]];
+  const last = { cart: '6:10,4', flood: '4:3,3', market: '6:5,5' };
+  const out = notAgain(list, found, 7, (id) => last[id], (id) => id === 'market');
+  // The cart was at [10, 4] yesterday: it comes at its next spot. The flood was there on another day.
+  assert.deepEqual(out.map((e) => [e.id, e.at]), [['cart', [20, 8]], ['flood', [3, 3]], ['market', [5, 5]]]);
+  // With no other spot, the cart does not come today.
+  assert.deepEqual(notAgain([found[0]], [found[0]], 7, (id) => last[id]).length, 0);
+  // The market day of a yard comes from the seed and its cell only: one day in five.
+  const def = { id: 'market', every: 5 };
+  const days = Array.from({ length: 10 }, (_, d) => isEventDay(def, 7, d, [5, 5]));
+  assert.equal(days.filter(Boolean).length, 2);
+  assert.equal(days.indexOf(true) + 5, days.lastIndexOf(true));
 });

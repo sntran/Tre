@@ -33,8 +33,6 @@
  ],
  "layers": {
   "objects": [
-   {"id": "ferry-east", "prop": "boat", "x": 50, "y": 36, "w": 4, "h": 2, "seed": 1384763135, "float": true, "solid": false},
-   {"id": "ferry-west", "prop": "boat", "x": 28, "y": 42, "w": 4, "h": 2, "seed": 798030135, "float": true, "solid": false},
    {"id": "house1", "prop": "house", "x": 4, "y": 50, "w": 6, "h": 6, "seed": 152225607},
    {"id": "house2", "prop": "giong-house", "x": 12, "y": 52, "w": 6, "h": 6, "seed": 270243581},
    {"id": "sign", "prop": "signpost", "x": 4, "y": 34, "w": 2, "h": 2, "seed": 657228362},
@@ -61,13 +59,16 @@
 
   },
   "triggers": [
-   {"id": "ferry-east", "x": 54, "y": 38, "w": 2, "h": 4, "on": "enter", "action": {"move": {"x": 24.8, "y": 40.0}, "textKey": "map.ferry"}},
-   {"id": "ferry-west", "x": 26, "y": 38, "w": 2, "h": 4, "on": "enter", "action": {"move": {"x": 57.2, "y": 40.0}, "textKey": "map.ferry.back"}},
+   {"id": "ferry-east", "x": 54, "y": 38, "w": 2, "h": 4, "on": "enter", "action": {"ferry": "red", "textKey": "map.ferry"}},
+   {"id": "ferry-west", "x": 26, "y": 38, "w": 2, "h": 4, "on": "enter", "action": {"ferry": "red", "textKey": "map.ferry.back"}},
    {"id": "vanmieu", "x": 0, "y": 38, "w": 2, "h": 4, "on": "enter", "when": {"flags": ["prologue.done"]}, "action": {"open": "vanmieu"}},
    {"id": "vanmieu-early", "x": 0, "y": 38, "w": 2, "h": 4, "on": "enter", "action": {"textKey": "map.road.early"}},
    {"id": "sign", "x": 4, "y": 34, "on": "tap", "action": {"textKey": "map.sign.vanmieu"}, "w": 2, "h": 2},
    {"id": "river", "x": 28, "y": 16, "w": 26, "h": 48, "on": "tap", "action": {"textKey": "map.redriver"}},
    {"id": "field-west", "x": 4, "y": 20, "w": 16, "h": 12, "on": "tap", "action": {"textKey": "map.field"}}
+  ],
+  "ferries": [
+   {"id": "red", "a": {"x": 50.4, "y": 40.0}, "b": {"x": 29.6, "y": 40.0}, "landA": {"x": 57.2, "y": 40.0}, "landB": {"x": 24.8, "y": 40.0}}
   ],
   "spots": {
 
