@@ -25,6 +25,9 @@ const FACES = [
 //   inset(x, z): how much lower the top of a column is drawn (a road on dry land lies a little under
 //     the grass beside it; the mesh only), 0 for none. The faces and the lines at the top of the
 //     column come down, and the column next to it shows a strip of its side down to it,
+//   split(x, z): the top of a column in n x n parts (the edge of a road in quarter blocks), or
+//     null: { n, parts: [n * n parts, in rows of x along z] }, each part { c (a color index), drop
+//     (as inset), sf (its surface) }. The lines and the steps go where two parts differ.
 // }
 // Return { positions, colors, owners, indices, segments, segOwners, segOuter, faces, surface } (six
 // numbers for each vertex when opts.top is given). Each segment
@@ -42,6 +45,8 @@ export function meshGrid(grid, opts = {}) {
   const shade = opts.shade ?? null;
   const top = opts.top ?? null;
   const inset = opts.inset ?? null;
+  const split = opts.split ?? null;
+  const shaped = Boolean(inset || split);
   const surface = top ? [] : null;
   const NONE = [0, 0, 0, 0, 0, 0];
   const withInk = opts.ink !== false;
@@ -59,6 +64,7 @@ export function meshGrid(grid, opts = {}) {
   let n = 0;
   let faces = 0;
   const addSeg = (a, b, who, outer) => {
+    if (!withInk) return;
     const k1 = `${a[0]},${a[1]},${a[2]}|${b[0]},${b[1]},${b[2]}`;
     const k2 = `${b[0]},${b[1]},${b[2]}|${a[0]},${a[1]},${a[2]}`;
     const i = seen.get(k1) ?? seen.get(k2);
@@ -72,48 +78,163 @@ export function meshGrid(grid, opts = {}) {
     segOuter.push(outer ? 1 : 0);
   };
   const ownerAt = (x, y, z) => (at(x, y, z) > 0 ? grid.ownerAt(x, y, z) : -1);
+  // A quad: four corners (counter-clockwise from outside), a color, an owner, and a surface.
+  const quad = (corners, rgb, who, sf) => {
+    for (const v of corners) {
+      positions.push((v[0] + ox) * s, (v[1] + oy) * s, (v[2] + oz) * s);
+      colors.push(rgb[0], rgb[1], rgb[2]);
+      owners.push(who);
+      if (surface) surface.push(...(sf ?? NONE));
+    }
+    indices.push(n, n + 1, n + 2, n, n + 2, n + 3);
+    n += 4;
+    faces += 1;
+  };
+  // A part of a side face: at e on its axis, from a0 to a1 along the edge, from ylo to yhi.
+  const sideQuad = (f, e, a0, a1, ylo, yhi, rgb, who) => quad(f.v.map((v) => (f.n[0] ? [e, v[1] ? yhi : ylo, a0 + v[2] * (a1 - a0)] : [a0 + v[0] * (a1 - a0), v[1] ? yhi : ylo, e])), rgb, who, null);
+  // A line along a side of a top face (at e on its axis, from a0 to a1, at the height y).
+  const edgeLine = (f, e, a0, a1, y, who, outer) => addSeg(f.n[0] ? [e, y, a0] : [a0, y, e], f.n[0] ? [e, y, a1] : [a1, y, e], who, outer);
+
+  // The parts of the top of a column (see opts.split). A column with no split is one part, with
+  // the surface of the column (sf undefined).
+  const partsOf = (x, y, z) => split?.(x, z) ?? { n: 1, parts: [{ c: at(x, y, z), drop: inset ? inset(x, z) : 0 }] };
+  // The part at the step t of R along a side (the parts along the side, in its direction).
+  const R = 4;
+  const sidePart = (P, f, t) => {
+    const k = Math.floor((t * P.n) / R);
+    const far = P.n - 1;
+    if (f.key === 'px') return P.parts[k * P.n + far];
+    if (f.key === 'nx') return P.parts[k * P.n];
+    if (f.key === 'pz') return P.parts[far * P.n + k];
+    return P.parts[k];
+  };
+  const OPP = { px: 'nx', nx: 'px', pz: 'nz', nz: 'pz' };
+  // Is the top of the column at x, z at the height y (a block of this grid with nothing over it)?
+  const topAtY = (x, y, z) => at(x, y, z) > 0 && !solid(x, y + 1, z);
+  const SIDES = FACES.filter((f) => !f.n[1]);
+  const FACE = Object.fromEntries(FACES.map((f) => [f.key, f]));
+  // The runs of equal values along a side in R steps: [from, to (steps), value].
+  const runs = (values, eq) => {
+    const out = [];
+    for (let t = 0; t < values.length; t++) {
+      if (out.length && eq(out[out.length - 1][2], values[t])) out[out.length - 1][1] = t + 1;
+      else out.push([t, t + 1, values[t]]);
+    }
+    return out;
+  };
+
+  // The top block of a column, when the tops have an inset or a split: its top face (whole or in
+  // parts), the steps between parts, and its four sides (whole or in parts).
+  function topBlock(x, y, z, c, who) {
+    const P = partsOf(x, y, z);
+    const n = P.n;
+    const own = top ? top(x, y, z) ?? NONE : null;
+    const sfOf = (h) => h.sf ?? own;
+    const toneTop = FACE_TONES.py * (shade ? shade(x, y, z) : 1);
+    const like = (a, b) => a.c === b.c && a.drop === b.drop && sfOf(a) === sfOf(b);
+    // The top face: one quad for each run of equal parts in a row.
+    for (let j = 0; j < n; j++) {
+      for (const [i0, i1, h] of runs(P.parts.slice(j * n, j * n + n), like)) {
+        const hy = y + 1 - h.drop;
+        const xa = x + i0 / n;
+        const xb = x + i1 / n;
+        const za = z + j / n;
+        const zb = z + (j + 1) / n;
+        quad([[xa, hy, zb], [xb, hy, zb], [xb, hy, za], [xa, hy, za]], toneRgb(h.c, toneTop), who, sfOf(h));
+      }
+    }
+    // Between two parts of another color or drop: a line on each, and a step of the side of the
+    // higher one down to the lower one.
+    if (n > 1) {
+      const step = (a, b, key, e, a0, a1) => {
+        if (a.c === b.c && a.drop === b.drop) return;
+        const f = FACE[a.drop <= b.drop ? key : OPP[key]];
+        edgeLine(f, e, a0, a1, y + 1 - a.drop, who, false);
+        edgeLine(f, e, a0, a1, y + 1 - b.drop, who, false);
+        if (a.drop !== b.drop) {
+          const hi = a.drop < b.drop ? a : b;
+          const lo = a.drop < b.drop ? b : a;
+          sideQuad(f, e, a0, a1, y + 1 - lo.drop, y + 1 - hi.drop, toneRgb(hi.c, FACE_TONES[f.key]), who);
+        }
+      };
+      for (let j = 0; j < n; j++) {
+        for (let i = 0; i < n; i++) {
+          const a = P.parts[j * n + i];
+          if (i + 1 < n) step(a, P.parts[j * n + i + 1], 'px', x + (i + 1) / n, z + j / n, z + (j + 1) / n);
+          if (j + 1 < n) step(a, P.parts[(j + 1) * n + i], 'pz', z + (j + 1) / n, x + i / n, x + (i + 1) / n);
+        }
+      }
+    }
+    for (const f of SIDES) {
+      const nx = x + f.n[0];
+      const nz = z + f.n[2];
+      const e = f.n[0] ? x + (f.n[0] > 0 ? 1 : 0) : z + (f.n[2] > 0 ? 1 : 0);
+      const a0 = f.n[0] ? z : x;
+      const outer = ownerAt(nx, y, nz) !== who;
+      const next = topAtY(nx, y, nz) ? partsOf(nx, y, nz) : null;
+      const steps = n > 1 || next?.n > 1 ? R : 1;
+      const mine = Array.from({ length: steps }, (_, t) => sidePart(P, f, (t * R) / steps));
+      const theirs = next ? Array.from({ length: steps }, (_, t) => sidePart(next, FACE[OPP[f.key]], (t * R) / steps)) : null;
+      // The lines along this side of the top: none where the next top is at the same height, with
+      // the same color and drop.
+      const lineY = mine.map((h, t) => (theirs && theirs[t].c === h.c && theirs[t].drop === h.drop ? null : y + 1 - h.drop));
+      for (const [t0, t1, ly] of runs(lineY, (p, q) => p === q)) if (ly !== null) edgeLine(f, e, a0 + t0 / steps, a0 + t1 / steps, ly, who, outer);
+      if (solid(nx, y, nz)) {
+        // A strip of the side down to a lower-drawn top next to this one.
+        if (theirs) {
+          const strip = mine.map((h, t) => (theirs[t].drop > h.drop ? [y + 1 - theirs[t].drop, y + 1 - h.drop, h.c] : null));
+          for (const [t0, t1, st] of runs(strip, (p, q) => (p && q ? p[0] === q[0] && p[1] === q[1] && p[2] === q[2] : p === q))) {
+            if (st) sideQuad(f, e, a0 + t0 / steps, a0 + t1 / steps, st[0], st[1], toneRgb(st[2], FACE_TONES[f.key]), who);
+          }
+        }
+        continue;
+      }
+      // An open side: in runs of one height.
+      const rgb = toneRgb(c, FACE_TONES[f.key]);
+      const heights = runs(mine.map((h) => h.drop), (p, q) => p === q);
+      for (const [t0, t1, d] of heights) sideQuad(f, e, a0 + t0 / steps, a0 + t1 / steps, y, y + 1 - d, rgb, who);
+      for (let k = 1; k < heights.length; k++) {
+        const a = a0 + heights[k][0] / steps;
+        addSeg(f.n[0] ? [e, y + 1 - heights[k - 1][2], a] : [a, y + 1 - heights[k - 1][2], e], f.n[0] ? [e, y + 1 - heights[k][2], a] : [a, y + 1 - heights[k][2], e], who, true);
+      }
+      // The bottom edge and the two ends of the side, as the lines of a whole face.
+      const below = [x, y - 1, z];
+      if (!(at(...below) === c && !solid(below[0] + f.n[0], below[1], below[2] + f.n[2]))) edgeLine(f, e, a0, a0 + 1, y, who, ownerAt(...below) !== who);
+      for (const [end, a, d] of [[-1, a0, mine[0].drop], [1, a0 + 1, mine[steps - 1].drop]]) {
+        const w = f.n[0] ? [x, y, z + end] : [x + end, y, z];
+        if (at(...w) === c && !solid(w[0] + f.n[0], y, w[2] + f.n[2])) continue;
+        addSeg(f.n[0] ? [e, y, a] : [a, y, e], f.n[0] ? [e, y + 1 - d, a] : [a, y + 1 - d, e], who, ownerAt(...w) !== who);
+      }
+    }
+  }
+
   for (let y = 0; y < grid.sy; y++) {
     for (let z = z0; z < z1; z++) {
       for (let x = x0; x < x1; x++) {
         const c = at(x, y, z);
         if (!c) continue;
         const who = grid.ownerAt(x, y, z);
-        // The top block of a column with an inset comes down at its top.
-        const isTop = inset && !solid(x, y + 1, z);
-        const drop = isTop ? inset(x, z) : 0;
+        const isTop = shaped && !solid(x, y + 1, z);
+        if (isTop) topBlock(x, y, z, c, who);
         for (const f of FACES) {
+          if (isTop && f.key !== 'ny') continue;
           const [nx, ny, nz] = f.n;
           if (solid(x + nx, y + ny, z + nz)) {
-            // A strip of the side down to the top of a lower-drawn column next to this one.
-            if (!isTop || ny || solid(x + nx, y + 1, z + nz) || !at(x + nx, y, z + nz)) continue;
-            const down = inset(x + nx, z + nz);
-            if (down <= drop) continue;
-            const [r, g, b] = toneRgb(c, FACE_TONES[f.key]);
-            for (const v of f.v) {
-              const vy = v[1] ? y + 1 - drop : y + 1 - down;
-              positions.push((x + v[0] + ox) * s, (vy + oy) * s, (z + v[2] + oz) * s);
-              colors.push(r, g, b);
-              owners.push(who);
-              if (surface) surface.push(...NONE);
+            // A wall next to a lower-drawn top: a strip of its side down to it.
+            if (shaped && !ny && topAtY(x + nx, y, z + nz)) {
+              const next = partsOf(x + nx, y, z + nz);
+              const e = nx ? x + (nx > 0 ? 1 : 0) : z + (nz > 0 ? 1 : 0);
+              const a0 = nx ? z : x;
+              const steps = next.n > 1 ? R : 1;
+              const drops = Array.from({ length: steps }, (_, t) => sidePart(next, FACE[OPP[f.key]], (t * R) / steps).drop);
+              for (const [t0, t1, d] of runs(drops, (p, q) => p === q)) if (d > 0) sideQuad(f, e, a0 + t0 / steps, a0 + t1 / steps, y + 1 - d, y + 1, toneRgb(c, FACE_TONES[f.key]), who);
             }
-            indices.push(n, n + 1, n + 2, n, n + 2, n + 3);
-            n += 4;
-            faces += 1;
             continue;
           }
-          faces += 1;
           let tone = FACE_TONES[f.key];
           if (f.key === 'py' && shade) tone *= shade(x, y, z);
-          const [r, g, b] = toneRgb(c, tone);
           const sf = top ? (f.key === 'py' ? top(x, y, z) ?? NONE : NONE) : null;
-          for (const v of f.v) {
-            positions.push((x + v[0] + ox) * s, (y + v[1] - (v[1] ? drop : 0) + oy) * s, (z + v[2] + oz) * s);
-            colors.push(r, g, b);
-            owners.push(who);
-            if (sf) surface.push(...sf);
-          }
-          indices.push(n, n + 1, n + 2, n, n + 2, n + 3);
-          n += 4;
+          quad(f.v.map((v) => [x + v[0], y + v[1], z + v[2]]), toneRgb(c, tone), who, sf);
           if (!withInk) continue;
           // Ink only where the face meets another color, an open edge, or a fold.
           const axis = nx ? 0 : ny ? 1 : 2;
@@ -130,8 +251,6 @@ export function meshGrid(grid, opts = {}) {
               a[t] += side;
               const b = [...a];
               b[u] += 1;
-              // A line at the top of a column with an inset comes down with it.
-              if (drop) for (const e of [a, b]) if (e[1] === y + 1) e[1] -= drop;
               addSeg(a, b, who, ownerAt(w[0], w[1], w[2]) !== who);
             }
           }

@@ -52,7 +52,7 @@ export function chunkMesh(terrain, cx, cz, { coarse = false } = {}) {
   // The top of each column has its surface (the kind of the ground and the direction of a road),
   // for the printed texture of the ground.
   const top = terrain.surface ? (x, y, z) => terrain.surface(x - 1 + ox, z - 1 + oz) : null;
-  const ground = coarse ? coarseGround(p, top) : meshGrid(p.ground, { x0: 1, z0: 1, x1: 1 + CHUNK, z1: 1 + CHUNK, scale: 1, origin: [-1, 0, -1], shade: (x, y, z) => terrain.shade(x - 1 + ox, y, z - 1 + oz), top, inset: terrain.inset ? (x, z) => terrain.inset(x - 1 + ox, z - 1 + oz) : null });
+  const ground = coarse ? coarseGround(p, top) : meshGrid(p.ground, { x0: 1, z0: 1, x1: 1 + CHUNK, z1: 1 + CHUNK, scale: 1, origin: [-1, 0, -1], shade: (x, y, z) => terrain.shade(x - 1 + ox, y, z - 1 + oz), top, inset: terrain.inset ? (x, z) => terrain.inset(x - 1 + ox, z - 1 + oz) : null, split: terrain.split ? (x, z) => terrain.split(x - 1 + ox, z - 1 + oz) : null });
   // The faces of a fine block that touch the ground are hidden.
   const underGround = (x, y, z) => p.ground.get(((x + p.fx0) >> 1) - ox + 1, (y + p.fy0) >> 1, ((z + p.fz0) >> 1) - oz + 1) > 0;
   const fine = meshGrid(p.fine, { x0: 1, z0: 1, x1: 1 + CHUNK * 2, z1: 1 + CHUNK * 2, scale: 0.5, origin: [-1, p.fy0, -1], other: underGround, ink: !coarse });

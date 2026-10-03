@@ -88,25 +88,32 @@ test('the kind of the ground and the direction of a road reach each top face of 
   const b = chunkMesh(ring, cx, cz).ground;
   assert.deepEqual(a.surface, b.surface, 'the same surface alone and in a ring');
   assert.equal(a.surface.length, (a.positions.length / 3) * 6, 'six numbers for each vertex');
-  // Each top face (a face with all four corners at one height and its normal up) of a road cell
-  // has the kind of an earth road and the direction of the road.
+  // Each top face (a face with all four corners at one height and its normal up) of the road, a
+  // whole cell or a part of one at the edge of the road (quarter blocks), has the kind of an earth road and the
+  // direction of the road; the grass beside it is grass.
   let roads = 0;
+  let parts = 0;
   for (let v = 0; v < a.positions.length / 3; v += 4) {
     const y = [0, 1, 2, 3].map((k) => a.positions[(v + k) * 3 + 1]);
     // A top face: one height, and its corners counter-clockwise from above (z goes down).
     if (y.some((h) => h !== y[0]) || a.positions[v * 3 + 2] <= a.positions[(v + 2) * 3 + 2]) continue;
-    const x = Math.floor(Math.min(...[0, 1, 2, 3].map((k) => a.positions[(v + k) * 3]))) + cx * CHUNK;
-    const z = Math.floor(Math.min(...[0, 1, 2, 3].map((k) => a.positions[(v + k) * 3 + 2]))) + cz * CHUNK;
+    const xs = [0, 1, 2, 3].map((k) => a.positions[(v + k) * 3] + cx * CHUNK);
+    const zs = [0, 1, 2, 3].map((k) => a.positions[(v + k) * 3 + 2] + cz * CHUNK);
+    const x = Math.floor(Math.min(...xs));
+    const z = Math.floor(Math.min(...zs));
+    if (Math.max(...xs) - Math.min(...xs) < 1 || Math.max(...zs) - Math.min(...zs) < 1) parts += 1;
     const sf = a.surface.slice(v * 6, v * 6 + 6);
     const c = map.land.cell(x, z);
-    if (c.letter === '=' && !c.stamp) {
+    if (c.stamp) continue;
+    const road = alone.roadAt((Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...zs) + Math.max(...zs)) / 2);
+    if (road && (c.letter === '=' || c.letter === '.')) {
       roads += 1;
       assert.equal(sf[0], SURFACE.earth, `${x},${z}: an earth road`);
       assert.ok(Math.abs(Math.hypot(sf[1], sf[2]) - 1) < 0.05, `${x},${z}: the direction of the road`);
-    }
-    if (c.letter === '.') assert.ok(sf[0] === SURFACE.grass || sf[0] === SURFACE.forest, `${x},${z}: grass`);
+    } else if (c.letter === '.' || c.letter === '=') assert.ok(sf[0] === SURFACE.grass || sf[0] === SURFACE.forest, `${x},${z}: grass`);
   }
   assert.ok(roads > 10, `${roads} top faces of the road`);
+  assert.ok(parts > 8, `${parts} parts at the edge of the road`);
   // A path of a stamp is paved, with a direction from the path cells around it.
   const home = createTerrain(map, tiles, tileMap, blocks);
   const [hx, hy] = worldOf().at('phu-dong', 31, 27);
@@ -157,6 +164,52 @@ test('a road on dry land lies a quarter block under the grass in the mesh, and k
   let bank = null;
   for (const r of map.land.roads) for (const [bx, bz] of r.line) if (!bank && map.land.cell(Math.floor(bx), Math.floor(bz)).bank === 1) bank = [Math.floor(bx), Math.floor(bz)];
   assert.ok(bank && t.inset(...bank) === 0, 'no inset on a bank');
+});
+
+test('the edge of a road follows its line in quarter blocks, and the heights for movement do not change', () => {
+  const map = mapOf('giong', 7);
+  const tileMap = createPlaneTileMap(map, tiles);
+  const t = createTerrain(map, tiles, tileMap, blocks);
+  // The cells of the roads of the land at an angle (not along the grid), off the stamps and the
+  // banks: each quarter of a cell on or beside the road is road when its middle is clearly in the
+  // road, and land when it is clearly out (on the flat grass beside the road).
+  let checked = 0;
+  let split = 0;
+  for (const r of map.land.roads) {
+    for (let k = 0; k < r.line.length; k += 4) {
+      const [lx, lz] = r.line[k].map(Math.floor);
+      const c = map.land.cell(lx, lz);
+      if (c.letter !== '=' || c.stamp || c.bank || !c.roadDir || Math.min(Math.abs(c.roadDir[0]), Math.abs(c.roadDir[1])) < 0.3) continue;
+      for (let dz = -3; dz <= 3; dz++) {
+        for (let dx = -3; dx <= 3; dx++) {
+          const x = lx + dx;
+          const z = lz + dz;
+          const q = map.land.cell(x, z);
+          if (!q.roadHalf || q.stamp || q.bank) continue;
+          if (t.split(x, z)) split += 1;
+          // Only where the cell and all its neighbors are at one height, on road or plain grass.
+          let flat = true;
+          for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) {
+            const type = tileMap.type(x + i, z + j);
+            if (t.topAt(x + i, z + j) !== t.topAt(x, z) || (type !== 'path' && type !== 'grass')) flat = false;
+          }
+          if (!flat) continue;
+          for (let n = 0; n < 16; n++) {
+            const px = x + ((n % 4) + 0.5) / 4;
+            const pz = z + (Math.floor(n / 4) + 0.5) / 4;
+            const d = Math.abs((px - x - 0.5) * -q.roadDir[1] + (pz - z - 0.5) * q.roadDir[0] - q.roadOff);
+            if (Math.abs(d - q.roadHalf) < 0.2) continue;
+            assert.equal(t.roadAt(px, pz), d < q.roadHalf, `${r.id} at ${px},${pz}: ${d.toFixed(2)} from the line`);
+            // A figure stands on the road as it is drawn: a quarter block down on a dry road.
+            assert.equal(t.dropAt(px, pz), d < q.roadHalf ? 0.25 : 0, `${px},${pz}: the drop`);
+            checked += 1;
+          }
+          assert.equal(tileMap.heightAt(x, z), q.level, `${x},${z}: the height for movement`);
+        }
+      }
+    }
+  }
+  assert.ok(checked > 500 && split > 20, `${checked} quarters, ${split} cells in parts`);
 });
 
 test('tufts of grass and reeds grow along roads, fields, and water, never on them, and a dig takes one', () => {

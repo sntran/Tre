@@ -11,7 +11,7 @@
 // A page keeps one cell (and one fine block) of the chunks around it (the apron), so that the faces
 // and the ink at the edge of a chunk come out right. The props of the objects near a chunk are all
 // built into it in one fixed order, and only their blocks in the page stay.
-import { createGrid, hashSeed, seeded } from './voxel.js';
+import { createGrid, hashSeed, seeded, colorIndex } from './voxel.js';
 import { fbm } from '../core/gen/noise.js';
 import { buildProp } from './props/index.js';
 
@@ -365,7 +365,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
         // Near the edge of the cell on the side of the road, the field, or the water.
         const tx = x + 0.5 + side[0] * 0.32 + (lean - 0.5) * 0.4 * Math.abs(side[1]);
         const tz = z + 0.5 + side[1] * 0.32 + (lean - 0.5) * 0.4 * Math.abs(side[0]);
-        if (writer.get(Math.floor(tx * 2), world.groundTop(tx * 2, tz * 2), Math.floor(tz * 2))) continue;
+        if (writer.get(Math.floor(tx * 2), world.groundTop(tx * 2, tz * 2), Math.floor(tz * 2)) || roadAt(tx, tz)) continue;
         const y = baseTop(x, z);
         page.smooth.push({ kind: 'tuft', x: tx, y, z: tz, reed, side, seed, who: 0, owner: [x, y - 1, z], ownerGrid: 'ground' });
       }
@@ -583,6 +583,91 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
   }
   const topAt = (x, z) => Math.max(0, baseTop(x, z) - dugAt(x, z));
 
+  // The edge of a road of the land in quarter blocks (split in src/world/mesher.js): the top of a
+  // cell on or beside a road is 4 x 4 parts, and a part is road when its middle is within the half
+  // width of the smooth line of the road. So the edge follows the line, in steps of a quarter
+  // block. A part of a road cell out of the road takes the ground of a cell next to it at the same
+  // height; a part of a cell beside the road in the road takes the road of a road cell next to it
+  // at the same height (and its inset). The heights for movement do not change.
+  const PARTS = 4;
+  const PLAIN = new Set([SURFACE.grass, SURFACE.forest, SURFACE.sand, SURFACE.yard]);
+  const QUARTERS = Array.from({ length: PARTS * PARTS }, (_, k) => [((k % PARTS) + 0.5) / PARTS, (Math.floor(k / PARTS) + 0.5) / PARTS]);
+  // A part takes another kind than its cell only when it is clearly over the edge (by MARGIN), so
+  // that a road along the grid keeps a straight edge with no small teeth.
+  const MARGIN = 0.15;
+  const topColor = (type) => colorIndex(DECKS.has(type) ? 'yellowPale' : tileTypes[type]?.color ?? 'greenPale');
+  const isLandRoad = (x, z) => typeAt(x, z) === 'path' && (map.land?.cell?.(x, z).roadHalf ?? 0) > 0;
+  function split(x, z) {
+    const c = map.land?.cell?.(x, z);
+    if (!c || !c.roadHalf || !c.roadDir || dugAt(x, z)) return null;
+    const road = isLandRoad(x, z);
+    if (!road && !PLAIN.has(surface(x, z)[0])) return null;
+    const [dx, dz] = c.roadDir;
+    // The distance of each part from the line: the signed distance of the middle of the cell, and
+    // the step across the line (-dz, dx) from the middle of the cell to the middle of the part.
+    const d = QUARTERS.map(([qx, qz]) => Math.abs((qx - 0.5) * -dz + (qz - 0.5) * dx - c.roadOff));
+    const inRoad = d.map((v) => v < c.roadHalf + (road ? MARGIN : -MARGIN));
+    if (road ? inRoad.every(Boolean) : !inRoad.some(Boolean)) return null;
+    const h = topAt(x, z);
+    // A cell next to a part (on its two sides, then on its corner) at the same height.
+    const nextTo = (k, want) => {
+      const sx = QUARTERS[k][0] < 0.5 ? -1 : 1;
+      const sz = QUARTERS[k][1] < 0.5 ? -1 : 1;
+      for (const [ddx, ddz] of [[sx, 0], [0, sz], [sx, sz]]) {
+        const nx = x + ddx;
+        const nz = z + ddz;
+        if (topAt(nx, nz) === h && !dugAt(nx, nz) && want(nx, nz)) return [nx, nz];
+      }
+      return null;
+    };
+    const plain = (nx, nz) => typeAt(nx, nz) !== 'path' && PLAIN.has(surface(nx, nz)[0]);
+    const own = { c: topColor(typeAt(x, z)), drop: inset(x, z), sf: surface(x, z) };
+    const kinds = new Map(); // one part for each cell next to this one, so that equal parts merge
+    let changed = false;
+    const parts = d.map((_, k) => {
+      if (road && !inRoad[k]) {
+        const q = nextTo(k, plain);
+        if (!q) return own;
+        changed = true;
+        const key = `land:${q}`;
+        if (!kinds.has(key)) kinds.set(key, { c: topColor(typeAt(q[0], q[1])), drop: 0, sf: surface(q[0], q[1]) });
+        return kinds.get(key);
+      }
+      if (!road && inRoad[k]) {
+        const q = nextTo(k, isLandRoad);
+        if (!q) return own;
+        changed = true;
+        const key = `road:${q}`;
+        if (!kinds.has(key)) {
+          // The road on a cell beside it: the kind of the road, with the line seen from this cell.
+          const sf = own.sf.slice();
+          sf[0] = surface(q[0], q[1])[0];
+          [sf[1], sf[2]] = c.roadDir;
+          sf[3] = -c.roadOff;
+          kinds.set(key, { c: topColor('path'), drop: inset(q[0], q[1]), sf });
+        }
+        return kinds.get(key);
+      }
+      return own;
+    });
+    return changed ? { n: PARTS, parts } : null;
+  }
+  // The part of a cell at a point (a part of a split, or the whole cell).
+  const partAt = (fx, fz) => {
+    const x = Math.floor(fx);
+    const z = Math.floor(fz);
+    const q = split(x, z);
+    if (!q) return null;
+    return q.parts[Math.min(PARTS - 1, Math.floor((fz - z) * PARTS)) * PARTS + Math.min(PARTS - 1, Math.floor((fx - x) * PARTS))];
+  };
+  // How much lower the ground is drawn at a point (a figure stands on the ground as it is drawn).
+  const dropAt = (fx, fz) => partAt(fx, fz)?.drop ?? inset(Math.floor(fx), Math.floor(fz));
+  // Is the ground at a point road (a part of a cell beside a road too)?
+  const roadAt = (fx, fz) => {
+    const p = partAt(fx, fz);
+    return p ? p.c === topColor('path') : typeAt(Math.floor(fx), Math.floor(fz)) === 'path';
+  };
+
   const terrain = {
     width: W,
     height: H,
@@ -592,6 +677,9 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     shade,
     surface,
     inset,
+    split,
+    dropAt,
+    roadAt,
     topAt,
     baseTop,
     // The highest top of the ground (for a ray from the camera).
