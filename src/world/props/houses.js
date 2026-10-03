@@ -1,6 +1,7 @@
 // Houses: houses on stilts (nhà sàn), the đình, the school, the forge, and a small hut.
 // All units are fine blocks (half the size of a ground block). A prop gets its footprint:
 // { fx, fz, fw, fd } (x from fx, z from fz, fw wide, fd deep). The front of a house is +z.
+import { hashSeed, seeded } from '../voxel.js';
 
 // The highest ground in a footprint, so that a house stands level.
 export function levelOf(ctx, fx, fz, fw, fd) {
@@ -9,7 +10,8 @@ export function levelOf(ctx, fx, fz, fw, fd) {
   return y;
 }
 
-// A house on stilts. opts: { postH, walls, band, roof, ridge, finials, stairs, door, sweep }.
+// A house on stilts. opts: { postH, walls, band, roof, ridge, finials, stairs, door, sweep, round }.
+// round: a round roof with no gables.
 // sweep: how high the ends of the ridge rise over its middle, in ground blocks.
 export function stiltHouse(ctx, o, opts = {}) {
   const { fx, fz, fw, fd } = o;
@@ -42,10 +44,10 @@ export function stiltHouse(ctx, o, opts = {}) {
   // The door in the front wall.
   const dx = Math.floor((wx0 + wx1) / 2);
   ctx.box(dx, fy + 1, wz1, dx + 1, fy + 3, wz1, opts.door ?? 'wood');
-  // The gables under the roof, at the two ends.
+  // The gables under the roof, at the two ends (a round roof has none).
   const zc = (wz0 + wz1) / 2;
   const gableH = Math.ceil((wz1 - wz0 + 1) / 2);
-  for (const gx of [wx0, wx1]) {
+  for (const gx of opts.round ? [] : [wx0, wx1]) {
     for (let y = top + 1; y <= top + gableH; y++) {
       for (let z = wz0; z <= wz1; z++) if (Math.abs(z - zc) < top + gableH - y + 0.5) ctx.set(gx, y, z, opts.walls ?? 'yellowPale');
     }
@@ -62,10 +64,12 @@ export function stiltHouse(ctx, o, opts = {}) {
   }
   // A clay jar under the floor.
   ctx.box(wx0 + 1, gy, wz0 + 1, wx0 + 2, gy + 1, wz0 + 2, 'vermilionPale');
-  // The roof: a smooth thatch shape with the curved ridge of the Đông Sơn houses.
+  // The roof: a smooth thatch shape with the curved ridge of the Đông Sơn houses, or a round roof
+  // (the bronze drums show both).
   ctx.roof({
     x0: wx0 - 2, x1: wx1 + 3, z0: wz0 - 2, z1: wz1 + 3, y: top + 1,
     ridgeH: gableH + 2, color: opts.roof ?? 'ochre', ridge: opts.ridge ?? 'yellow', finials: Boolean(opts.finials), sweep: opts.sweep ?? 1,
+    ...(opts.round ? { shape: 'round' } : {}),
   });
   // The shadow under the floor, and behind the house.
   for (let z = wz0 - 1; z <= wz1 + 2; z++) for (let x = wx0 - 1; x <= wx1 + 1; x++) ctx.shadow(x, z);
@@ -115,9 +119,12 @@ function extrasOf(ctx, h, list) {
   }
 }
 
+// A house on stilts. A house of the generated land (gen) has a round roof in some hamlets, from its
+// own seed (the houses of the stamps keep their look).
 export function house(ctx, o) {
   const v = houseVariant(ctx.rng);
-  const h = stiltHouse(ctx, o, v);
+  const round = Boolean(o.gen) && seeded(hashSeed(`${o.seed}:form`)).chance(0.4);
+  const h = stiltHouse(ctx, o, { ...v, round });
   extrasOf(ctx, h, v.extras);
 }
 

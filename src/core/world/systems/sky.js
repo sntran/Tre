@@ -50,6 +50,9 @@ export function sky(world, dt, rng, env) {
   if (was >= 0.5 && s.night < 0.5) world.events.push({ type: 'dawn', id: 'sky' });
   const rain = rainOf(world.seed, Math.floor(minutes / DAY_MINUTES), day);
   const raining = rain && hour >= rain.start && hour < rain.end ? 1 : 0;
+  // The end of a rain: the land is wet (the session can bring a flood).
+  if (s.raining && !raining) world.events.push({ type: 'dry', id: 'sky' });
+  s.raining = raining;
   const hours = Math.min(6, Math.max(0, (minutes - (s.last ?? minutes)) / 60));
   s.last = minutes;
   s.rain += (raining - s.rain) * Math.min(1, hours * 4);

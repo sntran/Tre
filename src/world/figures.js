@@ -4,7 +4,7 @@
 // figures (a grid of half blocks), which the renderer also draws for the people and animals far
 // from the hero; the fine people and animals (a grid of quarter blocks) are in src/world/fine.js.
 import { P, PLANK_TONES, heldItem, shoulderPlank } from './parts.js';
-import { personFine, ngheFine, buffaloFine, dogFine, chickenFine, duckFine, fishFine } from './fine.js';
+import { personFine, ngheFine, buffaloFine, dogFine, chickenFine, duckFine, fishFine, coatOf } from './fine.js';
 
 export { PLANK_TONES };
 
@@ -121,10 +121,12 @@ export function nghe() {
   return { kind: 'quadruped', parts, scale: 0.58, height: 4.2, shadow: 1.9 };
 }
 
-export function duck() {
+// A duck (coat: see coatOf in fine.js).
+export function duck(coat) {
+  const c = coatOf(coat);
   const parts = [
-    P('trunk', [1, 0.7, 1.5], 'diep', [0, 0.2, 0]),
-    P('head', [0.6, 0.6, 0.6], 'green', [0, 0.8, 0.6]),
+    P('trunk', [1, 0.7, 1.5], c.body, [0, 0.2, 0]),
+    P('head', [0.6, 0.6, 0.6], c.head, [0, 0.8, 0.6]),
     P('beak', [0.3, 0.15, 0.4], 'yellow', [0, 0.7, 1]),
   ];
   return { kind: 'float', parts, scale: 0.6, height: 1.2, shadow: 0 };
@@ -693,7 +695,7 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'gap') return gapMarks(look.n);
   if (look.kind === 'deck') return deck(look.n, look.w);
   if (look.kind === 'nghe') return fine ? ngheFine({}, { smooth }) : nghe();
-  if (look.kind === 'duck') return fine ? duckFine() : duck();
+  if (look.kind === 'duck') return fine ? duckFine(look.coat) : duck(look.coat);
   if (look.kind === 'serpent') return serpent(look);
   if (look.kind === 'chicken') return fine ? chickenFine(look) : chicken(look);
   if (look.kind === 'fish') return fine ? fishFine() : fish();

@@ -116,9 +116,9 @@ export function tapTarget(session, spec) {
     return { target: { thing: e.id }, point: { x: m.x / 2, y: m.z / 2 } };
   }
   if (spec.item) {
-    // The first thing of this kind (and of this size, when the step gives one) that lies in a heap
-    // or a pile.
-    const of = (it) => it?.kind === spec.item && (spec.size === undefined || it.size === spec.size);
+    // The first thing of this kind (and of this size, and of another owner or not, when the step
+    // gives it) that lies in a heap or a pile.
+    const of = (it) => it?.kind === spec.item && (spec.size === undefined || it.size === spec.size) && (spec.stray === undefined || Boolean(it.stray) === spec.stray);
     for (const z of query(state, 'zone')) {
       if (z.zone.rule !== 'pile' && z.zone.rule !== 'heap') continue;
       const id = z.zone.items.find((i) => of(getEntity(state, i)?.item));

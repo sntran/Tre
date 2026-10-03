@@ -661,13 +661,15 @@ export function createLand(def, maps, geo, seed, hamlets = null) {
         nearStamp: toStamp.dist[i],
       };
     },
-    // Claim a free cell for a generated place (a hamlet): it gets this ground letter, and the
-    // scatter leaves it. Return false for a cell that is not free.
-    claim(x, y, ground) {
+    // Claim a free cell for a generated place (a hamlet): it gets this ground letter (and a lower
+    // height: drop steps, for a pond), and the scatter leaves it. Return false for a cell that is
+    // not free.
+    claim(x, y, ground, drop = 0) {
       if (!inBox(x, y)) return false;
       const i = at(x, y);
       if (owner[i] < 0 || fixed[i] === FIXED.stamp) return false;
       letter[i] = ground.charCodeAt(0);
+      level[i] = Math.max(0, level[i] - drop);
       fixed[i] = FIXED.claim;
       return true;
     },

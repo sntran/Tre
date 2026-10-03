@@ -210,13 +210,19 @@ export function setupTrial(world, def, level, env) {
     // places), and the place where they go. The things that are there from the start (the ducks
     // that did not run away) are set.
     const at = (p) => ({ x: p.x, y: env.groundY(p.x / 2, p.z / 2), z: p.z });
-    const add = (zone, size, extra = {}) => {
+    const add = (zone, size, extra = {}, look = def.thing === 'duck' ? 'duck' : `${def.thing}-${size}`) => {
       const id = `${def.thing}:${def.id}:${tz.zone.made++}`;
-      const look = def.thing === 'duck' ? 'duck' : `${def.thing}-${size}`;
       addEntity(world, { id, keep: true, item: { kind: def.thing, size, task: owner, zone: zone.zone.id, home: zone.zone.id, held: null, set: false, ...extra }, position: { x: zone.zone.x, y: zone.zone.y, z: zone.zone.z, facing: 0 }, look });
       zone.zone.items.push(id);
       return id;
     };
+    // The things of another owner (ducks of another farm) at their own yard: they count on the
+    // place too, and too many go back there.
+    (def.at.strays ?? []).forEach((p, k) => {
+      const h = heap(`${def.id}-stray-${k}`, at(p), def.thing, { cols: 1 });
+      add(h, 1, { stray: true }, def.strayLook);
+      packHeap(world, h.zone);
+    });
     if (def.lost) {
       def.at.lost.forEach((p, k) => {
         const h = heap(`${def.id}-lost-${k}`, at(p), def.thing, { cols: 1 });
@@ -482,9 +488,19 @@ function act(world, e, want, env) {
     const brought = things.filter((t) => !t.item.fixed);
     if (!brought.length) return say(world, 'short', place.id, { sound: 'tap' });
     const sum = things.reduce((a, t) => a + t.item.size, 0);
-    const r = exactResult(sum, task.need);
+    // A thing of another owner on the place (a duck of another farm) is never right: it goes back
+    // to its own yard, and the person says why.
+    const strays = brought.filter((t) => t.item.stray);
+    const r = strays.length ? { solved: false, over: strays.length } : exactResult(sum, task.need);
     commit(world, tz, task, { solved: r.solved, parts: brought.map((t) => t.item.size), target: task.need });
-    if (r.solved) {
+    if (strays.length) {
+      for (const t of strays) {
+        place.zone.items = place.zone.items.filter((id) => id !== t.id);
+        toHeap(world, t);
+      }
+      packExact(world, place.zone);
+      say(world, 'roll', place.id, { sound: 'plank-down' });
+    } else if (r.solved) {
       for (const t of things) t.item.set = true;
       say(world, 'exact', place.id, { sound: 'plank-up' });
       finish(world, tz);

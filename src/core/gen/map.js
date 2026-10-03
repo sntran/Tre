@@ -5,6 +5,9 @@ import { createLand } from './land.js';
 import { scatter } from './scatter.js';
 import { placeHamlets } from './hamlets.js';
 
+// The fields at most this far from water (cells) can flood after a rain.
+const WET = 12;
+
 // defs: the map definitions of the region (with their exits), in the order of the region. land:
 // the land of the region (data/world/land-<region>.json). geo: { rivers, heights }. rules:
 // data/world/scatter.json. parts: the parts of the villagers (data/figures.json). Return a Map from
@@ -53,6 +56,8 @@ export function generateRegion(defs, land, geo, rules, seed, parts = null) {
     for (const site of ground.sites) if (site.map === mi) spots.yard.push([site.x + 11 - x, site.y + 12 - y]);
     const hand = def.layers.spots ?? {};
     for (const k of Object.keys(spots)) spots[k] = [...(hand[k] ?? []), ...spots[k]];
+    // The fields near water (the river, a pond): a flood comes only there.
+    spots.wetfield = spots.field.filter(([sx, sy]) => (ground.cell(sx + x, sy + y)?.water ?? Infinity) <= WET);
     const { stamps, ...rest } = def;
     out.set(def.id, {
       ...rest,

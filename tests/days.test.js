@@ -5,22 +5,35 @@ import { createRng } from '../src/core/rng.js';
 import { load, mapOf } from './helpers.js';
 
 const defs = load('data/world/events.json');
-const spots = { road: [[10, 10], [20, 20]], field: [[30, 30]], yard: [[40, 40]] };
+const spots = { road: [[10, 10], [20, 20]], field: [[30, 30]], wetfield: [[30, 30]], yard: [[40, 40]] };
 
-test('the events of a day come from the seed and the day; a market comes on one day in every few', () => {
-  const days = Array.from({ length: 60 }, (_, day) => eventsOfDay(defs, { seed: 5, day, map: 'trau-son', spots }));
-  assert.deepEqual(eventsOfDay(defs, { seed: 5, day: 7, map: 'trau-son', spots }), days[7], 'the same seed and day');
+test('the events of a day come from the seed and the day; a market comes on the fixed days of its hamlet', () => {
+  const days = Array.from({ length: 60 }, (_, day) => eventsOfDay(defs, { seed: 5, day, map: 'trau-son', spots, wet: true }));
+  assert.deepEqual(eventsOfDay(defs, { seed: 5, day: 7, map: 'trau-son', spots, wet: true }), days[7], 'the same seed and day');
+  // One hamlet: its market comes every fifth day.
   const market = days.map((d) => d.some((e) => e.id === 'market'));
   const every = defs.events.find((d) => d.id === 'market').every;
+  assert.equal(every, 5);
   const first = market.indexOf(true);
   market.forEach((m, day) => assert.equal(m, (day - first) % every === 0, `day ${day}`));
+  // Two hamlets: each has its own day in the five, from the seed.
+  const two = { yard: [[40, 40], [50, 50]] };
+  const at = (day) => eventsOfDay(defs, { seed: 9, day, map: 'm', spots: two }).find((e) => e.id === 'market')?.at.join(',') ?? null;
+  for (const yard of ['40,40', '50,50']) {
+    const ds = Array.from({ length: 40 }, (_, d) => d).filter((d) => at(d) === yard);
+    assert.ok(ds.length >= 4, `${yard}: ${ds.length} market days`);
+    for (const d of ds) assert.equal((d - ds[0]) % every, 0, `${yard}: day ${d}`);
+  }
   for (const id of ['cart', 'flood', 'duck']) {
     const n = days.filter((d) => d.some((e) => e.id === id)).length;
     assert.ok(n > 5 && n < 55, `${id}: on ${n} of 60 days`);
   }
+  // A flood only on wet land, and only at a field near water.
+  for (let day = 0; day < 60; day++) assert.ok(!eventsOfDay(defs, { seed: 5, day, map: 'trau-son', spots, wet: false }).some((e) => e.id === 'flood'), 'no flood with no rain');
+  for (let day = 0; day < 60; day++) assert.ok(!eventsOfDay(defs, { seed: 5, day, map: 'trau-son', spots: { ...spots, wetfield: [] }, wet: true }).some((e) => e.id === 'flood'), 'no flood far from water');
   // Never two events at one spot; an event with no spot of its kind does not come.
   for (const d of days) assert.equal(new Set(d.map((e) => e.at.join(','))).size, d.length);
-  for (let day = 0; day < 30; day++) assert.deepEqual(eventsOfDay(defs, { seed: 5, day, map: 'x', spots: { road: [[1, 1]] } }).map((e) => e.id).filter((id) => id !== 'cart'), []);
+  for (let day = 0; day < 30; day++) assert.deepEqual(eventsOfDay(defs, { seed: 5, day, map: 'x', spots: { road: [[1, 1]] }, wet: true }).map((e) => e.id).filter((id) => id !== 'cart'), []);
   assert.equal(dayOf(1440 * 3 + 5), 3);
 });
 

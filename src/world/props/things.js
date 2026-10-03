@@ -1,5 +1,5 @@
-// Things: the well, haystacks, pots, rocks, ore, boats, the signpost, the gate, fences, rice
-// stacks, the gate of Văn Miếu, and a stele on a turtle. Units are fine blocks.
+// Things: the well, haystacks, pots, a big jar, rocks, ore, boats, the signpost, the gate, fences,
+// rice stacks, the gate of Văn Miếu, and a stele on a turtle. Units are fine blocks.
 import { levelOf } from './houses.js';
 
 const center = (o) => ({ x: o.fx + Math.floor(o.fw / 2), z: o.fz + Math.floor(o.fd / 2) });
@@ -47,6 +47,16 @@ export function haystack(ctx, o) {
   ctx.box(x, g, z, x, g + layers + 2, z, 'wood');
   ctx.smooth({ kind: 'haystack', x: (x + 0.5) / 2, y: g / 2, z: (z + 0.5) / 2, r: (r0 + 0.6) / 2, h: (layers + 0.6) / 2 }, [(r0 + 0.6) / 2, 0, (layers + 3) / 2]);
   ctx.shadowDisc(x, z, Math.ceil(r0), 3);
+}
+
+// A big jar of clay for water (chum), by a pond: a round body, a neck, and a rim.
+export function jar(ctx, o) {
+  const { x, z } = center(o);
+  const g = ctx.ground(x, z);
+  ctx.box(x - 1, g, z - 1, x, g, z, 'vermilionPale');
+  ctx.box(x - 1, g + 1, z - 1, x, g + 2, z, 'vermilion');
+  ctx.box(x - 1, g + 3, z - 1, x, g + 3, z, 'vermilionPale');
+  ctx.shadowDisc(x, z, 1, 1);
 }
 
 // A rock of grey blocks (an ore rock has glints of ore). Never the shape of a sign: see

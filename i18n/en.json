@@ -1152,7 +1152,7 @@
   "event.cart.short": "The cart still sinks. The hole needs more stones.",
   "event.cart.over": "Too many: some stones roll out.",
   "event.cart.done": "The cart is out! Thank you.",
-  "event.flood.start": "The rain flooded my field. {need} pails of water must go into the ditch. Carry the water to the ditch, then call me.",
+  "event.flood.start": "The heavy rain flooded my field. {need} pails of water must go into the ditch. Carry the water to the ditch, then call me.",
   "event.flood.short": "The field is still too wet. More water must go.",
   "event.flood.over": "Too much: the field gets dry. Some water goes back.",
   "event.flood.done": "Just right for the rice. Thank you!",
@@ -1161,8 +1161,8 @@
   "event.market.over": "That is too much. Take some back.",
   "event.market.done": "Just right! Here is your rice.",
   "event.market.poor": "You do not have enough coins. Come back another day.",
-  "event.duck.start": "My flock has {need} ducks, and some are lost. Find them, bring them to the pen, and call me to count.",
+  "event.duck.start": "My flock has {need} ducks, all white with green heads, and some are lost. The brown ducks are from another farm. Find my ducks, bring them to the pen, and call me to count.",
   "event.duck.short": "I count, and the flock is not all here. Some are still lost.",
-  "event.duck.over": "This duck is from another farm!",
+  "event.duck.over": "A brown duck is from another farm. I let it go home.",
   "event.duck.done": "The whole flock is home! Thank you."
 }

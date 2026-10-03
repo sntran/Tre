@@ -345,6 +345,36 @@ test('hamlets: houses from parts around a yard near a road, a villager for each 
   assert.ok(looks.size >= 8, 'the villagers look different');
 });
 
+test('hamlets: some houses have a round roof, and some hamlets a pond with a big jar', async () => {
+  const { mapOf } = await import('./helpers.js');
+  const { createGrid } = await import('../src/world/voxel.js');
+  const { buildProp } = await import('../src/world/props/index.js');
+  const shapes = { round: 0, boat: 0 };
+  let ponds = 0;
+  for (const seed of [1, 2, 3, 4, 5, 6]) {
+    for (const id of ['soc-son', 'trau-son', 'road-thanglong']) {
+      const m = mapOf(id, seed);
+      for (const h of m.layers.objects.filter((o) => o.id.startsWith('hamlet:') && o.prop === 'house')) {
+        const fine = createGrid(40, 64, 40, { owners: true });
+        const r = buildProp({ fine, groundTop: () => 0, shadow: () => {} }, { kind: 'house', fx: 8, fz: 8, fw: 12, fd: 12, seed: h.seed, gen: true }, 1);
+        shapes[r.roofs[0].shape === 'round' ? 'round' : 'boat'] += 1;
+      }
+      for (const jar of m.layers.objects.filter((o) => o.id.startsWith('hamlet:') && o.prop === 'jar')) {
+        ponds += 1;
+        // The pond lies next to the jar, one step under the yard.
+        let water = 0;
+        for (let y = jar.y - 2; y < jar.y + 5; y++) for (let x = jar.x; x < jar.x + 7; x++) if (m.layers.ground[y]?.[x] === '~') water += 1;
+        assert.ok(water >= 12, `${id}: a pond by the jar (${water} cells)`);
+      }
+    }
+  }
+  assert.ok(shapes.round >= 2 && shapes.boat >= 2, JSON.stringify(shapes));
+  assert.ok(ponds >= 1, `ponds: ${ponds}`);
+  // The houses of the stamps keep their look: never a round roof.
+  const fine = createGrid(40, 64, 40, { owners: true });
+  for (let seed = 1; seed < 20; seed++) assert.notEqual(buildProp({ fine, groundTop: () => 0, shadow: () => {} }, { kind: 'house', fx: 8, fz: 8, fw: 12, fd: 12, seed }, 1).roofs[0].shape, 'round');
+});
+
 test('a house from parts: the seed changes its colors and things, never its size or its way in', async () => {
   const { createGrid } = await import('../src/world/voxel.js');
   const { buildProp } = await import('../src/world/props/index.js');

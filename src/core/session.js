@@ -41,6 +41,7 @@ import { step as worldStep, STEP } from './world/step.js';
 import { envFor, placesOf } from './world/env.js';
 import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns, addZones, addVillagers } from './world/populate.js';
 import { ground } from './world/systems/ground.js';
+import { rainOf } from './world/systems/sky.js';
 import { REACH, learnerRecord, canPut } from './world/zones.js';
 import { setupTrial } from './world/systems/work.js';
 import { levelFor, taskOf } from './world/trials.js';
@@ -442,7 +443,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const e of query(state, 'dayEvent')) if (e.dayEvent.day !== day) clearEvent(e.dayEvent.id);
     for (const z of query(state, 'zone')) if (z.zone.event && z.zone.day !== day) clearEvent(z.zone.event);
     const spots = map.layers.spots ?? {};
-    const list = eventsOfDay(data.events, { seed: state.seed, day, map: map.id, spots });
+    // The land is wet after a rain today (when it is over) and on the next day.
+    const rain = rainOf(state.seed, day, data.day ?? undefined);
+    const hour = (state.clock.minutes % 1440) / 60;
+    const wet = Boolean(rainOf(state.seed, day - 1, data.day ?? undefined)) || Boolean(rain && hour >= rain.end);
+    const list = eventsOfDay(data.events, { seed: state.seed, day, map: map.id, spots, wet });
     // A story or the debug panel can bring an event today, at its first spot.
     if (force && !list.some((x) => x.id === force) && spots[eventDef(force)?.where]?.length) list.push({ id: force, at: spots[eventDef(force).where][0] });
     for (const ev of list) {
@@ -518,17 +523,29 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const pileAt = nearFree(ent.dayEvent.at, 4, 7, rng, taken, 1) ?? nearFree(ent.dayEvent.at, 2, 10, rng, [], 1) ?? placeAt;
     const lost = [];
     if (task.lost) {
+      // Some lost things are near; the others are farther, out of view from the place, so that
+      // the child must look for them.
       for (let k = 0; k < pile.length; k++) {
-        const q = nearFree(ent.dayEvent.at, 7, 14, rng, [...taken, ...lost]);
+        const q = (k % 2 ? nearFree(ent.dayEvent.at, 13, 19, rng, [...taken, ...lost]) : null) ?? nearFree(ent.dayEvent.at, 7, 12, rng, [...taken, ...lost]);
         if (q) lost.push(q);
       }
       pile = pile.slice(0, lost.length);
+    }
+    // Things of another owner near their own yard (ducks of another farm), a few cells away.
+    const strays = [];
+    if (def.strays) {
+      const yard = nearFree(ent.dayEvent.at, 8, 12, rng, [...taken, ...lost]);
+      const n = rng.int(def.strays[0], def.strays[1]);
+      for (let k = 0; yard && k < n; k++) {
+        const q = nearFree([Math.floor(yard.x), Math.floor(yard.y)], 0, 4, rng, [...taken, ...lost, ...strays]);
+        if (q) strays.push(q);
+      }
     }
     const hb = (q) => ({ x: q.x * 2, z: q.y * 2 });
     setupTrial(state, {
       id: `event-${id}`, task: 'exact', thing: def.thing, target: def.target, pile, keep: task.keep, lost: task.lost,
       need: task.need, skill: task.skill, level: task.level, day, event: id, levels: [{}],
-      at: { target: hb(placeAt), pile: hb(pileAt), lost: lost.map(hb) },
+      at: { target: hb(placeAt), pile: hb(pileAt), lost: lost.map(hb), strays: strays.map(hb) }, strayLook: def.strayLook,
     }, 0, env);
     say(def.lines.start, { need: { key: `num.${task.need}` } }, null, def.person);
     emit({ type: 'hud' });
@@ -1099,6 +1116,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           placeEvents();
           save('dawn');
         }
+        // After a rain, the land is wet: a flood can come.
+        if (ev.type === 'dry') placeEvents();
         continue;
       }
       if (ev.id !== 'hero') {

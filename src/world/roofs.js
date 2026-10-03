@@ -1,10 +1,11 @@
 // The smooth thatch roofs: two slopes whose ridge sweeps up at the ends like a boat, a ridge cap,
-// the gables, and bird-head finials on the đình. Pure, no WebGL: the result is plain arrays, as
+// the gables, and bird-head finials on the đình; or a round roof (a low dome), as on the drums. Pure, no WebGL: the result is plain arrays, as
 // from src/world/mesher.js, in world units. A roof is a look of its house: it draws while its owner
 // block (a block of the house under it) is there (src/world/chunks.js).
 import { toneRgb, colorIndex, FACE_TONES } from './voxel.js';
 
-// r: a roof of a prop (fine units): { x0, x1, z0, z1, y, ridgeH, color, ridge, finials, sweep, who }.
+// r: a roof of a prop (fine units): { x0, x1, z0, z1, y, ridgeH, color, ridge, finials, sweep, who,
+// shape ('round': a dome, else two slopes with a ridge) }.
 // Return { positions, colors, owners, indices, segs, outer }.
 export function roofMesh(r) {
   const S = 0.5;
@@ -45,6 +46,47 @@ export function roofMesh(r) {
     segs.push(a[0], a[1], a[2], b[0], b[1], b[2]);
     outer.push(out);
   };
+  // A round roof: a low dome of thatch over the house, with a ring of ink at the eave and a few
+  // lines down its sides, and a small cap at the top.
+  if (r.shape === 'round') {
+    const xc = (x0 + x1) / 2;
+    const rx = (x1 - x0) / 2;
+    const rz = (z1 - z0) / 2;
+    const around = 16;
+    const rings = 4;
+    const at = (a, k) => {
+      const t = k / rings; // 0 at the eave, 1 at the top
+      const c = Math.cos((t * Math.PI) / 2);
+      return [xc + Math.cos(a) * rx * c, y + hd * Math.sin((t * Math.PI) / 2) * 1.15, zc + Math.sin(a) * rz * c];
+    };
+    for (let j = 0; j < around; j++) {
+      const a0 = (j / around) * Math.PI * 2;
+      const a1 = ((j + 1) / around) * Math.PI * 2;
+      const tone = 0.8 + 0.18 * Math.max(0, Math.sin((a0 + a1) / 2));
+      for (let k = 0; k < rings; k++) {
+        const pts = [at(a0, k), at(a1, k), at(a1, k + 1), at(a0, k + 1)];
+        quad(pts, base, tone, true);
+      }
+      line(at(a0, 0), at(a1, 0));
+      if (j % 4 === 0) line(at(a0, 0), at(a0, rings - 1), 0);
+    }
+    const capY = y + hd * 1.15;
+    for (let j = 0; j < around; j++) line(at((j / around) * Math.PI * 2, rings - 1), at(((j + 1) / around) * Math.PI * 2, rings - 1), 0);
+    const top = colorIndex(r.ridge);
+    for (let j = 0; j < 4; j++) {
+      const a0 = (j / 4) * Math.PI * 2;
+      const a1 = ((j + 1) / 4) * Math.PI * 2;
+      const rgb = toneRgb(top, 0.95);
+      for (const p of [[xc, capY + 0.18, zc], [xc + Math.cos(a0) * 0.35, capY - 0.05, zc + Math.sin(a0) * 0.35], [xc + Math.cos(a1) * 0.35, capY - 0.05, zc + Math.sin(a1) * 0.35]]) {
+        positions.push(...p);
+        colors.push(...rgb);
+        owners.push(who);
+      }
+      indices.push(n, n + 2, n + 1);
+      n += 3;
+    }
+    return { positions, colors, owners, indices, segs, outer };
+  }
   for (const sideZ of [-1, 1]) {
     for (let i = 0; i < seg; i++) {
       const ta = (i / seg) * 2 - 1;

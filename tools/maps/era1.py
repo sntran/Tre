@@ -129,8 +129,9 @@ A.places = {
     'buffalo-shade': {'x': 37.6, 'y': 17.5},
 }
 # The spots of the small events of the day in the village (cells): the road on the south bank,
-# the paddies by the home, and the yard in front of the đình.
-A.spots = {'road': [[10, 80]], 'field': [[12, 47]], 'yard': [[22, 25]]}
+# the paddies on the south bank by the river (they can flood) and by the home, and the yard in
+# front of the đình.
+A.spots = {'road': [[10, 80]], 'field': [[57, 82], [12, 47]], 'yard': [[22, 25]]}
 A.npcs = [
     {'id': 'grandma', 'x': 4.5, 'y': 12.7},
     {'id': 'mother', 'x': 11.5, 'y': 12.7},

@@ -1,8 +1,8 @@
 {
   "name": "event-duck",
   "about": {
-    "vi": "Vịt lạc: cô nông dân nói đàn có mấy con; tìm vịt lạc mang về chuồng cho đủ đàn.",
-    "en": "Lost ducks: the farmer says how many ducks the flock has; find the lost ducks and bring them to the pen until the flock is whole."
+    "vi": "Vịt lạc: cô nông dân nói đàn vịt có mấy con và vịt của cô trông thế nào. Vịt lông nâu của nhà khác không được tính; tìm vịt lạc của cô, mang về chuồng cho đủ đàn.",
+    "en": "Lost ducks: the farmer says how many ducks the flock has and how her ducks look. A brown duck of another farm does not count; find her lost ducks and bring them to the pen until the flock is whole."
   },
   "profile": {
     "name": "An",
@@ -60,7 +60,62 @@
       "steps": [
         {
           "tap": {
-            "item": "duck"
+            "item": "duck",
+            "stray": true
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 30
+          }
+        },
+        {
+          "tap": {
+            "zone": "event-duck-place"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "event:duck"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.duck.over"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "repeat": 1,
+      "steps": [
+        {
+          "tap": {
+            "item": "duck",
+            "stray": false
           }
         },
         {
@@ -113,7 +168,8 @@
       "steps": [
         {
           "tap": {
-            "item": "duck"
+            "item": "duck",
+            "stray": false
           }
         },
         {

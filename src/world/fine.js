@@ -329,14 +329,20 @@ export function chickenFine(look = {}) {
 }
 
 // A duck on the water: a body, a neck, a head with a beak, and eyes.
-export function duckFine() {
+// The coat of a duck: 'brown' for the ducks of another farm (a brown body and head), else a white
+// body with a green head.
+const COATS = { white: { body: 'diep', wing: 'ashLight', head: 'green' }, brown: { body: 'ochre', wing: 'wood', head: 'wood' } };
+export const coatOf = (coat) => COATS[coat] ?? COATS.white;
+
+export function duckFine(coat) {
+  const c = coatOf(coat);
   const parts = [
-    ...bevel('trunk', [3, 2, 4.5], 'diep', [0, 0.6, 0]),
-    P('tailF', [1.5, 1, 1], 'diep', [0, 1.3, -2.6]),
-    P('wingL', [0.4, 1, 2.5], 'ashLight', [-1.55, 1, -0.2]),
-    P('wingR', [0.4, 1, 2.5], 'ashLight', [1.55, 1, -0.2]),
-    P('neck', [1.25, 1.75, 1.25], 'green', [0, 2.2, 1.6]),
-    P('head', [2, 2, 2.25], 'green', [0, 3.4, 1.9]),
+    ...bevel('trunk', [3, 2, 4.5], c.body, [0, 0.6, 0]),
+    P('tailF', [1.5, 1, 1], c.body, [0, 1.3, -2.6]),
+    P('wingL', [0.4, 1, 2.5], c.wing, [-1.55, 1, -0.2]),
+    P('wingR', [0.4, 1, 2.5], c.wing, [1.55, 1, -0.2]),
+    P('neck', [1.25, 1.75, 1.25], c.head, [0, 2.2, 1.6]),
+    P('head', [2, 2, 2.25], c.head, [0, 3.4, 1.9]),
     P('beak', [1.25, 0.5, 1.5], 'yellow', [0, 3.1, 3.4]),
   ];
   for (const s of [-1, 1]) parts.push(P(`eye${s > 0 ? 'R' : 'L'}`, [0.05, 0.4, 0.4], 'ink', [s * 1.03, 3.6, 2.4], { mark: true }));

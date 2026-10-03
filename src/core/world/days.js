@@ -8,17 +8,20 @@ import { createRng, hashSeed } from '../rng.js';
 export const dayOf = (minutes) => Math.floor(minutes / 1440);
 
 // The events of a day on a map: [{ id, at: [x, y] (map cells) }]. defs: data/world/events.json.
-// spots: the spots of the map by kind ({ road: [[x, y]], field, yard }). One event of each kind at
-// most, and never two events at one spot.
-export function eventsOfDay(defs, { seed, day, map, spots = {} }) {
+// spots: the spots of the map by kind ({ road: [[x, y]], field, wetfield, yard }). wet: a rain fell
+// today (and it is over) or yesterday. One event of each kind at most, and never two events at one
+// spot. An event with `every` comes on fixed days: each spot (each hamlet) gets its day from the
+// seed, one day in `every`, so that a child can learn when its market comes. An event with
+// `after: "rain"` comes only when the land is wet.
+export function eventsOfDay(defs, { seed, day, map, spots = {}, wet = false }) {
   const out = [];
   const used = new Set();
   for (const def of defs.events) {
+    if (def.after === 'rain' && !wet) continue;
     const rng = createRng(hashSeed(`${seed}:event:${def.id}:${map}:${day}`));
-    const phase = hashSeed(`${seed}:phase:${def.id}`) % (def.every ?? 1);
-    const today = def.every ? (day + phase) % def.every === 0 : rng.chance(def.chance ?? 0);
-    if (!today) continue;
-    const free = (spots[def.where] ?? []).filter((p) => !used.has(`${p[0]},${p[1]}`));
+    let free = (spots[def.where] ?? []).filter((p) => !used.has(`${p[0]},${p[1]}`));
+    if (def.every) free = free.filter((p) => (day + hashSeed(`${seed}:day:${def.id}:${map}:${p[0]},${p[1]}`)) % def.every === 0);
+    else if (!rng.chance(def.chance ?? 0)) continue;
     if (!free.length) continue;
     const at = rng.pick(free);
     used.add(`${at[0]},${at[1]}`);

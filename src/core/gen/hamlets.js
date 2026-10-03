@@ -1,5 +1,6 @@
 // Small hamlets in the generated land: two or three houses on stilts around a yard, a bamboo hedge
-// behind them, a haystack, a coop with hens, a banana plant, and a villager for each house. The
+// behind them, a haystack, a coop with hens, a banana plant, and a villager for each house. A
+// hamlet of two houses can have a small pond with a big jar of water by it. The
 // houses and the people come from parts (src/world/props/houses.js, people.js), so that no two
 // hamlets look the same. A hamlet is never a historical place: it has no name. Pure functions.
 import { createRng } from '../rng.js';
@@ -29,6 +30,12 @@ export function placeHamlets(land, maps, parts) {
       const prop = hr.chance(0.6) ? 'house' : 'hut';
       add(prop, x, hy + 2, 6, i);
       out.villagers.push({ map: mi, id: `villager:${k + i}`, look: villagerLook(hr, parts), home: id(prop, i), plan: hr.pick(['keeper', 'early', 'late']), x: x + 3, y: hy + 10.5 });
+    }
+    // A pond where a third house would stand (one step down, so that the water lies under the
+    // yard), with a big jar by it.
+    if (houses === 2 && hr.chance(0.5)) {
+      for (let y = hy + 3; y < hy + 7; y++) for (let x = hx + 15; x < hx + 19; x++) land.claim(x, y, '~', 1);
+      add('jar', hx + 13, hy + 4, 1);
     }
     add('haystack', hx + 3, hy + H - 4);
     add('coop', hx + 11, hy + H - 4);
