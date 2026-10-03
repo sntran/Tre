@@ -420,6 +420,7 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .mini-bamboo i { display: block; width: 10px; height: 9px; background: var(--green); border: 1px solid var(--ink); }
 .mini-bamboo i.shoot { height: 6px; width: 6px; margin: 0 auto; background: var(--green-pale); }
 .title-full { margin: 0; max-width: 32em; }
+.practice-note { margin: 0; max-width: 32em; padding: 6px 12px; border: var(--line); border-radius: 10px; background: var(--diep); font-weight: 700; }
 .lang-switch { display: flex; gap: 8px; }
 .lang-switch .btn[aria-pressed="true"] { background: var(--vermilion); color: var(--diep); }
 .corner { position: absolute; top: calc(10px + var(--safe-top)); right: 10px; }
@@ -928,3 +929,6 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .game-box { border-top: var(--line); padding-top: 8px; margin-top: 8px; }
 .game-box h4 { margin: 8px 0 4px; }
 .game-box .warn { color: var(--vermilion); font-weight: 700; }
+.practice-link h3 { margin: 4px 0; }
+.practice-link p { margin: 4px 0; }
+.practice-url { display: block; margin: 4px 0 8px; font-size: 14px; overflow-wrap: anywhere; user-select: all; -webkit-user-select: all; }

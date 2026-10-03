@@ -13,6 +13,7 @@ import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, rainbowAt, starOn, p
 import { rainOf } from '../core/world/systems/sky.js';
 import { whenOn } from '../core/world/systems/joys.js';
 import { createSession, middleOf } from '../core/session.js';
+import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
 import { heroLook } from '../world/figures.js';
@@ -105,8 +106,9 @@ async function loadHeightsNear(data, map, x, y) {
   if (names.size) await data.moreHeights([...names]);
 }
 
-// params: map, at, facing, after (talks after the start), arrive (the map name shows), and
-// session (a session that already started, after an exit to this map).
+// params: map, at, facing, after (talks after the start), arrive (the map name shows), session (a
+// session that already started, after an exit to this map), and practice (the activity of a
+// practice link: the visit starts at its place, src/core/practice.js).
 export async function mountVillage(ctx, params = {}) {
   const { data, profile } = ctx;
   const canvas = ctx.voxel;
@@ -123,10 +125,15 @@ export async function mountVillage(ctx, params = {}) {
 
   const session = params.session ?? villageSession(ctx);
   if (!params.session) {
+    // A visit from a practice link: the place, the clock, and the practice of the activity.
+    const visit = params.practice ? practiceStart(data, profile, params.practice) : null;
+    if (visit) ctx.practiceId = params.practice.id;
+    const mapId = visit?.map ?? params.map ?? null;
+    const at = visit?.at ?? params.at;
     // The height tiles of the land around the start come first (the land of a tile waits for them).
-    const where = session.startPlace(params.map ?? null, { at: params.at });
+    const where = session.startPlace(mapId, { at });
     await loadHeightsNear(data, where.map, where.x, where.y);
-    session.start(params.map ?? null, { at: params.at, facing: params.facing, after: params.after });
+    session.start(mapId, { at, facing: params.facing, after: params.after, ...(visit ? { clock: visit.clock, practice: visit.practice } : {}) });
   }
   const mapData = session.map;
   const tileMap = session.tileMap;
@@ -278,8 +285,14 @@ export async function mountVillage(ctx, params = {}) {
   let goalParams = {};
   const flying = {}; // items on their way to the counters of the HUD
   function updateHud() {
-    const goal = currentGoal(data.quests.quests, conditionState(profile));
-    if (goal) {
+    // In a visit from a practice link, the quest bar shows the activity (until the child stays).
+    const pr = session.practice;
+    const activity = pr && !pr.stayed ? activityOf(data.practice, pr.id) : null;
+    const goal = activity ? null : currentGoal(data.quests.quests, conditionState(profile));
+    if (activity) {
+      goalKey = activity.titleKey;
+      goalParams = {};
+    } else if (goal) {
       goalKey = goal.step.goalKey;
       goalParams = goal.progress ?? {};
     } else {
@@ -851,6 +864,12 @@ export async function mountVillage(ctx, params = {}) {
         return;
       case 'lose':
         for (const [item, n] of Object.entries(ev.take)) for (let i = 0; i < n; i++) flyFromCounter(ev.to, item, i * 0.15);
+        return;
+      case 'back':
+        // "Go back" at the end of a practice: a short change to the place before the visit (or
+        // to the start of the game, when the profile had no place).
+        fade.classList.add('on');
+        setTimeout(() => { if (alive) ctx.go('village', ev.to ? { map: ev.to.map, at: { x: ev.to.x, y: ev.to.y }, arrive: true } : { arrive: true }); }, 400);
         return;
       default: worldEvent(ev);
     }

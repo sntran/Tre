@@ -171,14 +171,17 @@ async function parentArea(ctx, opts = {}) {
       const base = new URL('./', location.href).toString();
       for (const r of practiceLinks(data.practice, base)) {
         const title = t(r.titleKey);
-        const field = h('input', { type: 'text', readonly: true, 'aria-label': title });
-        field.value = r.link;
+        const url = h('code', { class: 'practice-url', text: r.link });
         const copy = button(t('parent.links.copy'), async () => {
           try {
             await navigator.clipboard.writeText(r.link);
             ctx.toast('parent.links.copied');
           } catch {
-            field.select();
+            // No clipboard: the link is selected, for a copy by hand.
+            const range = document.createRange();
+            range.selectNodeContents(url);
+            getSelection()?.removeAllRanges();
+            getSelection()?.addRange(range);
           }
         }, { cls: 'btn small' });
         const share = navigator.share ? button(t('parent.links.share'), () => navigator.share({ title, text: t(r.lineKey), url: r.link }).catch(() => {}), { cls: 'btn small paper' }) : null;
@@ -186,7 +189,8 @@ async function parentArea(ctx, opts = {}) {
           h('h3', { text: title }),
           h('p', { text: t(r.lineKey) }),
           h('p', { class: 'muted', text: t('parent.links.skills', { list: r.skills.map((id) => t(`skill.${id}`)).join(t('ui.list.sep')) }) }),
-          h('div', { class: 'row field', style: { justifyContent: 'flex-start', flexWrap: 'wrap' } }, [field, copy, share]),
+          url,
+          h('div', { class: 'row', style: { justifyContent: 'flex-start', flexWrap: 'wrap' } }, [copy, share]),
         ]));
       }
     }

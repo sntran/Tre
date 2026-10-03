@@ -93,6 +93,12 @@ export async function mountTitle(ctx) {
   );
   text.querySelector('.tagline').addEventListener('click', () => speak('app.tagline', null, { force: true }));
 
+  // The line of a practice link: who plays, or an unknown link (once).
+  const note = ctx.practiceNote;
+  if (note) {
+    text.append(h('p', { class: 'practice-note', role: 'status', text: t(note.key, note.params) }));
+    if (!ctx.practiceLink) ctx.practiceNote = null;
+  }
   if (good.length) {
     const list = h('div', { class: 'profiles' });
     for (const p of good) list.append(profileCard(ctx, p));

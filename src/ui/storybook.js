@@ -6,6 +6,7 @@
 import { storyProfile, storyOnPlane, playStory, STEP } from '../core/story.js';
 import { serialize, deserialize } from '../core/save.js';
 import { addPoint, restorePoint, whereOf } from '../core/restore.js';
+import { activityOf } from '../core/practice.js';
 import { h } from './dom.js';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -28,6 +29,8 @@ export async function startStory(ctx, name, { play = false, speed = 1 } = {}) {
   };
   const profile = storyProfile(story, { now: Date.now() });
   ctx.storybook.record = { id: profile.id, text: '', points: [] };
+  // A story of a practice link opens the link with the profile of the story.
+  if (story.practice) ctx.practiceLink = activityOf(ctx.data.practice, story.practice);
   await ctx.startProfile(profile);
   if (play) await playInBrowser(ctx, story);
 }
@@ -101,9 +104,16 @@ async function playInBrowser(ctx, story) {
         await wait(150);
         finger.classList.remove('down');
       }
+      // "Go back" at the end of a practice opens the village again: wait for the new session.
+      const old = v.session;
+      let back = false;
+      const stop = old.listen((ev) => { if (ev.type === 'back') back = true; });
       v.send(cmd);
+      stop();
       book.hold = false;
       await wait(point ? 150 : 350);
+      for (let i = 0; back && i < 200 && ctx.activeVillage?.session === old; i++) await wait(50);
+      if (back) await village();
     },
     async reload() {
       // Save and load, as the store of the device does, and open the village again.

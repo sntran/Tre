@@ -1,4 +1,6 @@
-// Hero creation: language, name, boy or girl, skin, face, hair, clothes, and grade. The preview is
+// Hero creation: language, name, boy or girl, skin, face, hair, clothes, and grade. For a practice
+// link it is short: name, look, and grade (the grade sets the first level), and then the activity,
+// with no prologue. The preview is
 // the voxel hero itself, turning slowly (a drag turns it too), and each choice shows a small
 // rendered picture; the choices come from data/figures.json (hero).
 import { h, button } from './dom.js';
@@ -21,7 +23,9 @@ export async function mountCreate(ctx) {
   const grades = ctx.data.game.grades;
   let grade = grades.default ?? gradeIds(grades)[0];
   let step = 0;
-  const steps = ['lang', 'name', 'look', 'grade'];
+  const practice = ctx.practiceLink;
+  const steps = practice ? ['name', 'look', 'grade'] : ['lang', 'name', 'look', 'grade'];
+  const next = () => show(step + 1);
 
   const screen = h('div', { class: 'screen' });
   const preview = h('div', { class: 'hero-preview' });
@@ -135,17 +139,18 @@ export async function mountCreate(ctx) {
       for (const code of ['vi', 'en']) {
         const b = button(t(`lang.${code}`), async () => {
           await ctx.setLanguage(code);
-          show(1);
+          next();
         }, { cls: `btn big ${lang() === code ? 'red' : 'paper'}` });
         stage.append(b);
       }
     } else if (name === 'name') {
+      if (practice) stage.append(h('p', { class: 'practice-note center', text: t('practiceLink.new', { title: { key: practice.titleKey } }) }));
       stage.append(title('create.name'));
       const input = h('input', { class: 'name-input', type: 'text', maxlength: String(opts.nameMax), autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', 'aria-label': t('create.name') });
       input.value = hero.name;
       stage.append(input);
       stage.append(choiceRow(genders, () => hero.gender, (g) => h('span', { text: t(`create.${g}`) }), (g) => { hero.gender = g; }, 'create.gender'));
-      const next = button(t('ui.next'), () => {
+      const go = button(t('ui.next'), () => {
         hero.name = input.value.trim().slice(0, opts.nameMax);
         if (!hero.name) {
           input.focus();
@@ -154,10 +159,10 @@ export async function mountCreate(ctx) {
           speak('create.name.need', null, { force: true });
           return;
         }
-        show(2);
+        next();
       }, { cls: 'btn big red' });
-      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') next.click(); });
-      stage.append(next);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go.click(); });
+      stage.append(go);
     } else if (name === 'look') {
       stage.append(title('create.look'));
       // A small rendered picture of the hero with one choice changed: the head (skin, face, hair) or
@@ -176,7 +181,7 @@ export async function mountCreate(ctx) {
       stage.append(row(count(opts.faces), 'face', 'create.face'));
       stage.append(row(count(opts.hairs), 'hair', 'create.hair', 'head', (30 * Math.PI) / 180));
       stage.append(row(count(opts.clothes), 'clothes', 'create.clothes', 'full'));
-      stage.append(button(t('ui.next'), () => show(3), { cls: 'btn big red' }));
+      stage.append(button(t('ui.next'), next, { cls: 'btn big red' }));
     } else if (name === 'grade') {
       stage.append(title('create.grade'));
       stage.append(choiceRow(gradeIds(grades), () => grade, (v) => h('span', { text: t(gradeShort(v, grades).key, gradeShort(v, grades).params) }), (v) => { grade = v; }, 'create.grade.label'));

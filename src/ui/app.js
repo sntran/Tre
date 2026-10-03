@@ -4,7 +4,8 @@ import { chosenGlossNames } from '../core/profile.js';
 import { loadRecordedKeys, setVoiceEnabled, setVoiceProfiles, speak } from './speak.js';
 import { loadData } from './data.js';
 import { createSeen } from '../core/fresh.js';
-import { saveProfile, loadProfile, isMemoryOnly, getMeta, setMeta } from './storage.js';
+import { saveProfile, loadProfile, listProfiles, isMemoryOnly, getMeta, setMeta } from './storage.js';
+import { linkIdOf, activityOf } from '../core/practice.js';
 import { h, button } from './dom.js';
 import { createBus } from '../core/events.js';
 import { createMachine } from '../core/fsm.js';
@@ -81,6 +82,9 @@ export async function startApp(root) {
     syncWorld: null, // set by the village: puts the world state into the profile
     experiments: null, // the switches of this profile (src/core/experiments.js)
     logger: null, // the learning log of this profile (src/core/logger.js)
+    practiceLink: null, // the activity of a practice link (?practice=<id>), until a profile plays it
+    practiceNote: null, // the line of the title screen for a practice link: { key, params }
+    practiceId: null, // the id of the practice of the visit now (for the sessions of the log)
 
     // The one way to the learning log. kind: attempt, review, exam, prediction (events), action
     // (the first action of a session: walk, place, talk, travel, menu), or questStep.
@@ -114,13 +118,14 @@ export async function startApp(root) {
         if (voxel) voxel.hidden = true;
         // A session of play ends at the title (the child left) or at the rest screen (the time
         // limit of the parent), and starts again in a scene of play.
+        if (name === 'title' || name === 'rest') ctx.practiceId = null;
         if (ctx.logger?.open && (name === 'title' || name === 'rest')) {
           ctx.logger.endSession(name === 'rest' ? 'parent' : 'child', ctx.profile?.world?.map ?? null);
           // The title loads the profile again from the store: save the end of the session now.
           ctx.save('session');
         }
         current = await MOUNT[name](ctx, params);
-        if (ctx.logger && !ctx.logger.open && PLAY.has(name) && document.visibilityState !== 'hidden') ctx.logger.startSession();
+        if (ctx.logger && !ctx.logger.open && PLAY.has(name) && document.visibilityState !== 'hidden') ctx.logger.startSession({ practice: ctx.practiceId });
       } finally {
         going = false;
       }
@@ -206,7 +211,11 @@ export async function startApp(root) {
       ctx.startLog();
       ctx.makeLearner();
       if (isNew) await ctx.save('new');
-      await ctx.go(isTimeOver(ctx) ? 'rest' : 'village');
+      // A practice link: the visit goes straight to the activity (the rules of the parent hold).
+      const practice = ctx.practiceLink;
+      ctx.practiceLink = null;
+      ctx.practiceNote = null;
+      await ctx.go(isTimeOver(ctx) ? 'rest' : 'village', practice ? { practice } : {});
       if (isMemoryOnly()) ctx.toast('ui.memory.only');
     },
 
@@ -269,7 +278,7 @@ export async function startApp(root) {
     if (document.visibilityState === 'hidden') {
       ctx.logger?.endSession('device', ctx.profile?.world?.map ?? null);
       ctx.save('hidden');
-    } else if (ctx.logger && !ctx.logger.open && PLAY.has(ctx.scene)) ctx.logger.startSession();
+    } else if (ctx.logger && !ctx.logger.open && PLAY.has(ctx.scene)) ctx.logger.startSession({ practice: ctx.practiceId });
   });
 
   startTimer(ctx);
@@ -283,6 +292,18 @@ export async function startApp(root) {
   if (query.get('story')) {
     await ctx.go('title');
     await startStory(ctx, query.get('story'), { play: query.has('play'), speed: Number(query.get('speed')) || 1 });
+    return ctx;
+  }
+  // ?practice=<id> takes a child to one activity (src/core/practice.js): only the id is read. With
+  // profiles, the title screen asks who plays; with none, a short hero creation comes first. An
+  // unknown id opens the title screen with a short line.
+  const practiceId = linkIdOf(location.search);
+  if (practiceId) {
+    const activity = activityOf(data.practice, practiceId);
+    ctx.practiceLink = activity;
+    ctx.practiceNote = activity ? { key: 'practiceLink.pick', params: { title: { key: activity.titleKey } } } : { key: 'practiceLink.unknown', params: {} };
+    await ctx.go('title');
+    if (activity && !(await listProfiles()).some((p) => !p.damaged)) await ctx.go('create');
     return ctx;
   }
   await ctx.go('title');
