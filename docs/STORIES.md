@@ -106,7 +106,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `day` | A whole day: the spots at 10:00, the well at noon, home at night, out in the morning; the chickens in the coop. |
 | `rain` | The river rises, the ford closes, Nghé shakes its head, the ford opens one game hour after the rain. |
 | `bridge-save` | Save in the middle of the bridge, load, and go on. |
-| `exits` | North to Sóc Sơn and back. |
+| `exits` | Over the north edge to Sóc Sơn and back. |
 | `vanmieu-gate` | The ferry over the Red River, Văn Miếu, and back out next to its gate. |
 | `time-limit` | The time is over, but the rest waits until the hero leaves the bridge. |
 | `reactions` | A chicken flees, a villager greets, a pot gives a coin. |
@@ -132,3 +132,5 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `event-flood` | A flooded field: five pails of water to the ditch. |
 | `event-market` | Market day: two strings of ten and three single coins pay the price; the coins leave the purse only then. |
 | `event-duck` | Lost ducks: one is not enough; with the second, the flock is whole. |
+| `walk-trau-son` | From the gate of Phù Đổng over the east edge, through the generated land, to the fields of Núi Trâu. |
+| `walk-vanmieu` | From Phù Đổng over the ford and the west edge, through the generated land, over the Red River on the ferry, to Văn Miếu. |

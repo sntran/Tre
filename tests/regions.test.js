@@ -167,3 +167,60 @@ test('the land goes on across the edge between two maps, and a road crosses each
     }
   }
 });
+
+test('the hero can walk from Phù Đổng to Núi Trâu and to Văn Miếu through the generated land, for any seed', async () => {
+  const { createTileMap, findPath } = await import('../src/core/tilemap.js');
+  const tiles = load('data/tiles.json').types;
+  const w = worldOf();
+  const cellOf = (p) => ({ x: Math.floor(p.x), y: Math.floor(p.y) });
+  // A walk on one map: from a cell to any cell of a target (an exit or a place).
+  const walk = (m, from, cells) => {
+    const t = createTileMap(m, tiles);
+    return cells.some((c) => t.walkable(c.x, c.y) && findPath(t, from, c, { maxNodes: 60000 }));
+  };
+  const exitCells = (e) => {
+    const out = [];
+    for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) out.push({ x, y });
+    return out;
+  };
+  for (const seed of [1, 2, 3, 7, 42, 2024]) {
+    const pd = w.map('phu-dong', seed);
+    const start = cellOf(pd.spawn);
+    // East: through the gate, over the edge, and on through the generated land to the fields of Núi Trâu.
+    const east = pd.layers.exits.find((e) => e.to.map === 'trau-son');
+    assert.ok(walk(pd, start, [east.mark]), `${seed}: Phù Đổng to its east edge`);
+    const ts = w.map('trau-son', seed);
+    const into = w.arrival(east, east.mark.x + 0.5, east.mark.y + 0.5);
+    const wall = load('data/raids.json').raids.soldier1.wall;
+    assert.ok(walk(ts, cellOf(into), [{ x: wall[0], y: wall[1] }]), `${seed}: through the land to the fields of Núi Trâu`);
+    // South-west: over the ford, over the edge, through the land to the ferry; from its landing to Văn Miếu.
+    const west = pd.layers.exits.find((e) => e.to.map === 'road-thanglong');
+    assert.ok(walk(pd, start, [west.mark]), `${seed}: Phù Đổng over the ford to its west edge`);
+    const rd = w.map('road-thanglong', seed);
+    const at = w.arrival(west, west.mark.x + 0.5, west.mark.y + 0.5);
+    const ferry = rd.layers.triggers.find((z) => z.id === 'ferry-east');
+    assert.ok(walk(rd, cellOf(at), exitCells(ferry)), `${seed}: through the land to the ferry`);
+    const gate = rd.layers.triggers.find((z) => z.id === 'vanmieu');
+    assert.ok(walk(rd, cellOf(ferry.action.move), exitCells(gate)), `${seed}: from the ferry to Văn Miếu`);
+    // North: to the hill of Sóc Sơn.
+    const north = pd.layers.exits.find((e) => e.to.map === 'soc-son');
+    const ss = w.map('soc-son', seed);
+    const sky = ss.npcs.find((n) => n.id === 'giong-sky');
+    assert.ok(walk(ss, cellOf(w.arrival(north, north.mark.x + 0.5, north.mark.y + 0.5)), [{ x: Math.floor(sky.x), y: Math.floor(sky.y) + 1 }]), `${seed}: through the land to the top of Sóc Sơn`);
+  }
+});
+
+test('the story places stand in the real directions from Phù Đổng (the distances are shorter)', () => {
+  const land = load('data/world/land-giong.json');
+  const [home, ...others] = land.anchors.filter((a) => !a.river);
+  const deg = (r) => (r * 180) / Math.PI;
+  for (const a of others) {
+    const dx = a.cell[0] - home.cell[0];
+    const dy = a.cell[1] - home.cell[1];
+    const ex = (a.at[0] - home.at[0]) * 104;
+    const ey = (home.at[1] - a.at[1]) * 110.6;
+    let diff = Math.abs(deg(Math.atan2(dy, dx)) - deg(Math.atan2(ey, ex)));
+    if (diff > 180) diff = 360 - diff;
+    assert.ok(diff < 30, `${a.note}: ${diff.toFixed(0)} degrees off`);
+  }
+});

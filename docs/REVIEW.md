@@ -276,3 +276,19 @@ The crafting screen of the iron horse is gone, and its texts too (`craft.*` and 
 - `share.start`: the line before the share of the loot ("Hãy chia đều cho cháu, Nghé và Gióng.").
 
 Please check the words ống bễ (the bellows), đốt (a ring of the bamboo), and whether "chia đều" reads well for a child of 6.
+
+## 12. The generated land and the small events (#7)
+
+New texts, in `i18n/vi.json` and `i18n/en.json`:
+
+- `num.1` to `num.30`: the number words that the people of the events say ("một" to "ba mươi"; "one" to "thirty"). Please check "hai mươi mốt", "hai mươi lăm", and "mười lăm".
+- The cart stuck on the road: `event.cart.start` ("Bánh xe bò của bác sa xuống bùn rồi. Cái hố cần {need} hòn đá. ..."), `event.cart.short`, `event.cart.over`, `event.cart.done`. The carter calls the child "cháu".
+- The flood on a field: `event.flood.start` ("... Phải tát {need} thùng nước ra mương. ..."), `event.flood.short`, `event.flood.over`, `event.flood.done`. Please check "tát nước" (to bail water) and "mương" (a ditch).
+- The market day: `event.market.start` ("Hôm nay có phiên chợ. Một nắm cơm giá {need} đồng. ..."), `event.market.short`, `event.market.over`, `event.market.done`, `event.market.poor`. See `QUESTIONS.md`, question 91: coins and the market in the time of the Hùng Kings.
+- The lost ducks: `event.duck.start` ("Đàn vịt của cô có {need} con, mà vài con lạc mất rồi. ..."), `event.duck.short`, `event.duck.over`, `event.duck.done`.
+
+Facts and looks to check:
+
+- The generated hamlets (`docs/WORLD.md`, "The generated land") have no names and are not historical places. A history reviewer checks their houses on stilts, the areca palms (cây cau), the boats with a cover (mui), and the clothes of the villagers from parts (`villagers` in `data/figures.json`): shirts and trousers or skirts, a nón or a head band.
+- The real directions of the story places of Era 1 on the plane of the region (`data/world/land-giong.json`): Núi Trâu to the east-northeast, Sóc Sơn to the north-northwest, and Văn Miếu to the west-southwest of Phù Đổng, over the Đuống and the Hồng. The Đuống flows west from Phù Đổng and joins the Hồng north of the ferry.
+
