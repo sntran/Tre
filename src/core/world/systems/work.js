@@ -257,6 +257,23 @@ export function setupTrial(world, def, level, env) {
   return tz;
 }
 
+// Take away the things of a trial, so that a new round of a practice starts with new things: its
+// zones, its things, and the things that only show it (the mat, the trough, the marks, the bundles).
+// A person and the friend stay. A hand that held a thing of the trial is empty.
+export function clearTrial(world, id) {
+  const owner = `trial-${id}`;
+  const shows = (e) => !e.item && !e.zone && !e.person && !e.follow && !e.control && String(e.id).split(':')[1] === id;
+  for (const e of [...world.entities]) {
+    if (e.id === `zone:${owner}` || e.item?.task === owner || e.zone?.task === owner || shows(e)) removeEntity(world, e.id);
+  }
+  for (const e of query(world, 'hands')) {
+    if (e.hands.holds && !getEntity(world, e.hands.holds)) {
+      e.hands.holds = null;
+      delete e.carry;
+    }
+  }
+}
+
 // A tray of bowls of rice (3 or 5) in the heap on the path of the paddies. pace: the speed factor
 // of the walk with a tray of each size (a tray of five is heavy).
 function addTray(world, zone, size, owner, tz, pace = {}) {

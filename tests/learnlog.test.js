@@ -12,7 +12,7 @@ const T0 = Date.UTC(2026, 8, 1, 9); // a morning (UTC)
 // Events of two days and two variants: bridge commits, a prediction, reviews, exams, sessions.
 const attempt = (t, x) => ({ type: 'attempt', t, variant: 'base', task: 'bridge', skill: 'math.add.20', phase: 'commit', success: false, efficient: false, first: false, mashing: false, parts: [4, 4], resets: 0, latencies: [2, 3], hint: 0, hintSeen: null, pBefore: 0.5, pAfter: 0.4, play: 10, retry: false, harder: false, map: 'phu-dong', ...x });
 const DAY1 = [
-  { type: 'session', t: T0, variant: 'base', start: T0 - 12 * 60000, end: T0, endedBy: 'child', quests: 1, place: 'phu-dong', afterQuest: false, first: 'walk' },
+  { type: 'session', t: T0, variant: 'base', start: T0 - 12 * 60000, end: T0, endedBy: 'child', quests: 1, place: 'phu-dong', afterQuest: false, first: 'walk', practice: null },
   attempt(T0 + 1000, { first: true, mashing: true }),
   attempt(T0 + 2000, { success: true, parts: [4, 4, 4] }),
   attempt(T0 + 3000, { first: true, success: true, efficient: true, hint: 1, hintSeen: 0.5, pBefore: 0.9, pAfter: 0.96, play: 25 }),
@@ -28,7 +28,7 @@ const DAY2 = [
   attempt(T0 + DAY_MS + 2000, { first: true, success: true, efficient: true }),
   { type: 'review', t: T0 + DAY_MS + 3000, variant: 'base', skill: 'math.add.20', due: T0, gap: 6, result: true },
   { type: 'review', t: T0 + DAY_MS + 4000, variant: 'base', skill: 'math.add.20', due: T0, gap: 20, result: false },
-  { type: 'session', t: T0 + DAY_MS + 5000, variant: 'base', start: T0 + DAY_MS - 30 * 60000, end: T0 + DAY_MS + 5000, endedBy: 'parent', quests: 0, place: 'soc-son', afterQuest: true, first: 'talk' },
+  { type: 'session', t: T0 + DAY_MS + 5000, variant: 'base', start: T0 + DAY_MS - 30 * 60000, end: T0 + DAY_MS + 5000, endedBy: 'parent', quests: 0, place: 'soc-son', afterQuest: true, first: 'talk', practice: 'bo-que' },
 ];
 const ALL = [...DAY1, ...DAY2];
 const opts = { first: Math.floor(T0 / DAY_MS) };
@@ -165,9 +165,13 @@ test('the logger: one way into the log, with the time, the variant, the session,
   assert.deepEqual([s.endedBy, s.first, s.quests, s.afterQuest, s.end - s.start], ['device', 'talk', 1, true, 6.5 * 60000]);
   assert.equal(profile.log.playMs, 6.5 * 60000);
   assert.equal(logger.endSession('child'), null, 'no session is open');
+  assert.equal(s.practice, null);
+  // The session of a practice link keeps the id of the activity.
+  logger.startSession({ practice: 'bo-que' });
+  assert.equal(logger.endSession('child', 'giong').practice, 'bo-que');
   // An event that does not fit the schema is not kept, and the game goes on.
   assert.equal(logger.record('exam', { skill: 'math.add.20', correct: 'yes', p: 0.5 }), null);
-  assert.equal(profile.log.events.length, 2);
+  assert.equal(profile.log.events.length, 3);
   // A story run (or a scripted play) is not a child: its log drops every event.
   const story = { flags: {}, inventory: {}, grade: 2, quests: {} };
   const quiet = createLogger({ profile: story, schema, quests, now: () => now, drop: true });

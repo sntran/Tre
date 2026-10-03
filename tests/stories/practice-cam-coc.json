@@ -1,0 +1,327 @@
+{
+  "name": "practice-cam-coc",
+  "about": {
+    "vi": "Luyện tập cắm cọc đăng: đường link đưa An đến bến sông của chú đánh cá; hai lượt; chú cảm ơn, An về chỗ cũ.",
+    "en": "Practice of the fish trap: the link takes An to the river of the fisher; two rounds; the fisher says thank you, and An goes back."
+  },
+  "practice": "cam-coc",
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    53,
+    43
+  ],
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.fisher.trial.n1"
+          }
+        },
+        {
+          "hero": {
+            "near": "npc:fisher",
+            "within": 8
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "entity": "stake:fisher:b",
+          "look": "stake-set"
+        }
+      ]
+    },
+    {
+      "tap": {
+        "item": "stake"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 15
+      }
+    },
+    {
+      "tap": {
+        "line": 8
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 15
+      }
+    },
+    {
+      "tap": {
+        "item": "stake"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 15
+      }
+    },
+    {
+      "tap": {
+        "line": 16
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 15
+      }
+    },
+    {
+      "until": {
+        "event": "tide",
+        "timeout": 90
+      }
+    },
+    {
+      "until": {
+        "event": "escape",
+        "timeout": 5
+      }
+    },
+    {
+      "wait": 4
+    },
+    {
+      "tap": {
+        "item": "stake"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 15
+      }
+    },
+    {
+      "tap": {
+        "line": 12
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 15
+      }
+    },
+    {
+      "until": {
+        "event": "tide",
+        "timeout": 90
+      }
+    },
+    {
+      "until": {
+        "event": "catch",
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say",
+          "textKey": "practiceLink.again"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "entity": "stake:fisher:b",
+          "look": "stake-set"
+        },
+        {
+          "count": {
+            "entities": "stake-set",
+            "max": 2
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "item": "stake"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 15
+      }
+    },
+    {
+      "tap": {
+        "line": 8
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 15
+      }
+    },
+    {
+      "tap": {
+        "item": "stake"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 15
+      }
+    },
+    {
+      "tap": {
+        "line": 16
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 15
+      }
+    },
+    {
+      "until": {
+        "event": "tide",
+        "timeout": 90
+      }
+    },
+    {
+      "until": {
+        "event": "escape",
+        "timeout": 5
+      }
+    },
+    {
+      "wait": 4
+    },
+    {
+      "tap": {
+        "item": "stake"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 15
+      }
+    },
+    {
+      "tap": {
+        "line": 12
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 15
+      }
+    },
+    {
+      "until": {
+        "event": "tide",
+        "timeout": 90
+      }
+    },
+    {
+      "until": {
+        "event": "catch",
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "practice",
+          "with": {
+            "id": "cam-coc",
+            "sets": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "dlg.fisher.practice.end.n1"
+          }
+        },
+        {
+          "item": "coin",
+          "count": 3
+        },
+        {
+          "practice": {
+            "id": "cam-coc",
+            "sets": 1,
+            "level": 0
+          }
+        }
+      ]
+    },
+    {
+      "read": [
+        1
+      ]
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "cell": [
+              53,
+              43
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

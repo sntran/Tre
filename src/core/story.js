@@ -350,6 +350,16 @@ export function checkFact(fact, ctx) {
     if (!compare(d, fact.day)) return `the game day is ${d}, not ${fact.day}`;
     return null;
   }
+  if (fact.practice) {
+    // The record of an activity of the practice links in the profile: its sets and the level of
+    // its next round.
+    const f = fact.practice;
+    const r = session.profile.practice?.[f.id];
+    if (!r) return `no practice ${f.id} in the profile`;
+    if (f.sets !== undefined && !compare(r.sets, f.sets)) return `${r.sets} sets of ${f.id}, not ${f.sets}`;
+    if (f.level !== undefined && !compare(r.level, f.level)) return `the level of ${f.id} is ${r.level}, not ${f.level}`;
+    return null;
+  }
   if (fact.clock) {
     const h = hourOf(state.clock.minutes);
     const [a, b] = fact.clock.between;
@@ -515,6 +525,16 @@ export async function playStory(story, io) {
   let since = 0; // the events since the last expect start here
   let mark = 0; // the events since the last command start here
   let stop = io.session().listen((ev) => events.push(ev));
+  // A new session (after a reload, a restore, or "go back" at the end of a practice): its events
+  // from its start on.
+  let bound = io.session();
+  const rebind = () => {
+    if (io.session() === bound) return;
+    stop();
+    bound = io.session();
+    events.push(...bound.opening());
+    stop = bound.listen((ev) => events.push(ev));
+  };
   const fail = (i, message) => failures.push({ step: i, message });
   const lastLine = () => [...events].reverse().find((ev) => ev.type === 'open' && (ev.screen === 'dialogue' || ev.screen === 'say'));
 
@@ -529,6 +549,7 @@ export async function playStory(story, io) {
   unroll(story.steps ?? []);
   for (const [i, s] of flat) {
     io.onStep?.(i, s);
+    rebind();
     const session = io.session();
     if (s.do || s.tap || s.read || s.shoot || s.pour) mark = events.length;
     if (s.do) await io.send(s.do, null);
@@ -574,16 +595,12 @@ export async function playStory(story, io) {
       }
       if (['dialogue', 'say'].includes(io.session().screen)) fail(i, 'the talk did not end');
     } else if (s.reload) {
-      stop();
       const problem = await io.reload();
-      events.push(...io.session().opening());
-      stop = io.session().listen((ev) => events.push(ev));
+      rebind();
       if (problem) fail(i, problem);
     } else if (s.restore !== undefined) {
-      stop();
       const problem = await io.restore(s.restore);
-      events.push(...io.session().opening());
-      stop = io.session().listen((ev) => events.push(ev));
+      rebind();
       if (problem) fail(i, problem);
     } else if (s.expect) {
       const ctx = { session, events: events.slice(since), learner: io.learner?.(), data: io.data, points: await io.points?.() };

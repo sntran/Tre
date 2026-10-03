@@ -10,6 +10,7 @@ import { serialize, deserialize } from '../src/core/save.js';
 import { saveWorld } from '../src/core/world/save.js';
 import { addPoint, restorePoint, whereOf } from '../src/core/restore.js';
 import { createTerrain } from '../src/world/terrain.js';
+import { activityOf, practiceStart } from '../src/core/practice.js';
 import { loadGameData, load } from './helpers.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -26,8 +27,10 @@ const terrainOf = (map, tileMap) => {
   return terrains.get(key);
 };
 
-// Play a story headless. Return the failures of the steps and of the laws.
-export async function runHeadless(raw, { onSession = null } = {}) {
+// Play a story headless. Return the failures of the steps and of the laws. log: true keeps the
+// learning log (a story drops it, as a scripted play does). onEnd({ profile, learner, logger }):
+// a look at the end, after the save.
+export async function runHeadless(raw, { onSession = null, log: keepLog = false, onEnd = null } = {}) {
   const story = storyOnPlane(raw, data.world);
   let elapsed = 0;
   const now = () => STORY_EPOCH + elapsed * 1000;
@@ -51,10 +54,22 @@ export async function runHeadless(raw, { onSession = null } = {}) {
   };
   const textParams = () => ({ name: profile.hero.name, trials: 0, iron: profile.inventory.iron ?? 0 });
 
-  function begin() {
+  // The start of a story: on the map of the save, or (practice: the id of an activity) as a visit
+  // from a practice link (src/core/practice.js).
+  const firstStart = () => {
+    if (!story.practice) return [null, {}];
+    const s = practiceStart(data, profile, activityOf(data.practice, story.practice));
+    return [s.map, { at: s.at, clock: s.clock, practice: s.practice }];
+  };
+  // "Go back" at the end of a practice: the village starts again at the place before the visit.
+  let back = null;
+  // fresh: a new learner and a new log (false after "go back": the same play goes on).
+  function begin([map, params] = [null, {}], fresh = true) {
     const bank = data.questions.questions;
-    learner = createLearner({ graph, config: data.learning, learning: profile.learning, grade: profile.grade, rng: createRng(`${profile.seed}:story`), bank, lang: profile.settings.lang, clock: now });
-    logger = createLogger({ profile, schema: data.learnlog, quests: data.quests.quests, now, drop: true });
+    if (fresh) {
+      learner = createLearner({ graph, config: data.learning, learning: profile.learning, grade: profile.grade, rng: createRng(`${profile.seed}:story`), bank, lang: profile.settings.lang, clock: now });
+      logger = createLogger({ profile, schema: data.learnlog, quests: data.quests.quests, now, drop: !keepLog });
+    }
     const log = (kind, fields = {}) => {
       if (kind === 'attempt') return logger.attempt(fields);
       if (kind === 'action') return logger.action(fields.kind);
@@ -65,11 +80,19 @@ export async function runHeadless(raw, { onSession = null } = {}) {
     session.listen((ev) => {
       for (const p of laws.text(ev, textParams())) breakLaw(`a text of the world: ${p}`);
     });
-    session.start();
-    logger.startSession();
+    session.listen((ev) => {
+      if (ev.type === 'back') back = ev;
+    });
+    session.start(map, params);
+    logger.startSession({ practice: params.practice?.id ?? null });
     onSession?.(session);
   }
-  begin();
+  begin(firstStart());
+  const goBack = () => {
+    const to = back?.to;
+    back = null;
+    begin(to ? [to.map, { at: { x: to.x, y: to.y } }] : [null, {}], false);
+  };
 
   const io = {
     session: () => session,
@@ -85,6 +108,7 @@ export async function runHeadless(raw, { onSession = null } = {}) {
         elapsed += STEP;
         session.events();
         for (const p of laws.step(session)) breakLaw(p);
+        if (back) goBack();
         if (until?.()) return true;
       }
       return !until;
@@ -92,6 +116,7 @@ export async function runHeadless(raw, { onSession = null } = {}) {
     async send(cmd) {
       session.command(cmd);
       session.events();
+      if (back) goBack();
     },
     async restore(index) {
       // The parent area saves the open game first; its save becomes a point in place of the chosen one.
@@ -120,6 +145,7 @@ export async function runHeadless(raw, { onSession = null } = {}) {
   const again = deserialize(serialize(profile, now()));
   if (JSON.stringify(again.world) !== JSON.stringify(profile.world)) breakLaw('the save of the profile does not load back to the same world');
   for (const [message, step] of broken) failures.push({ step, message: `law: ${message}` });
+  onEnd?.({ profile, learner, logger, session });
   return failures;
 }
 

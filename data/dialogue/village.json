@@ -403,6 +403,151 @@
      "textKey": "dlg.giong.wait.n1"
     }
    }
+  },
+  {
+   "id": "teacher.practice.end",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "teacher",
+     "textKey": "dlg.teacher.practice.end.n1",
+     "mood": "happy",
+     "choices": [
+      {
+       "textKey": "dlg.practice.end.stay",
+       "effects": [
+        {
+         "open": "practice-stay"
+        }
+       ]
+      },
+      {
+       "textKey": "dlg.practice.end.back",
+       "effects": [
+        {
+         "open": "practice-back"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "smith.practice.end",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "smith",
+     "textKey": "dlg.smith.practice.end.n1",
+     "mood": "happy",
+     "choices": [
+      {
+       "textKey": "dlg.practice.end.stay",
+       "effects": [
+        {
+         "open": "practice-stay"
+        }
+       ]
+      },
+      {
+       "textKey": "dlg.practice.end.back",
+       "effects": [
+        {
+         "open": "practice-back"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "fisher.practice.end",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "fisher",
+     "textKey": "dlg.fisher.practice.end.n1",
+     "mood": "happy",
+     "choices": [
+      {
+       "textKey": "dlg.practice.end.stay",
+       "effects": [
+        {
+         "open": "practice-stay"
+        }
+       ]
+      },
+      {
+       "textKey": "dlg.practice.end.back",
+       "effects": [
+        {
+         "open": "practice-back"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "healer.practice.end",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "healer",
+     "textKey": "dlg.healer.practice.end.n1",
+     "mood": "happy",
+     "choices": [
+      {
+       "textKey": "dlg.practice.end.stay",
+       "effects": [
+        {
+         "open": "practice-stay"
+        }
+       ]
+      },
+      {
+       "textKey": "dlg.practice.end.back",
+       "effects": [
+        {
+         "open": "practice-back"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "woodcutter.practice.end",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "woodcutter",
+     "textKey": "dlg.woodcutter.practice.end.n1",
+     "mood": "happy",
+     "choices": [
+      {
+       "textKey": "dlg.practice.end.stay",
+       "effects": [
+        {
+         "open": "practice-stay"
+        }
+       ]
+      },
+      {
+       "textKey": "dlg.practice.end.back",
+       "effects": [
+        {
+         "open": "practice-back"
+        }
+       ]
+      }
+     ]
+    }
+   }
   }
  ]
 }

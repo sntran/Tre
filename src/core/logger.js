@@ -44,9 +44,10 @@ export function createLogger({ profile, schema, label = () => 'base', quests = [
     attempt(fields) {
       return record('attempt', { play: Math.round(playMinutes() * 10) / 10, ...fields });
     },
-    startSession() {
+    // A session of play starts. practice: the id of the activity of a practice link, or null.
+    startSession({ practice = null } = {}) {
       if (session || drop) return;
-      session = { start: now(), steps: questSteps(profile, quests), first: 'none', lastStep: null };
+      session = { start: now(), steps: questSteps(profile, quests), first: 'none', lastStep: null, practice };
     },
     // The kind of the first action of the session (walk, place, talk, travel, or menu).
     action(kind) {
@@ -73,7 +74,7 @@ export function createLogger({ profile, schema, label = () => 'base', quests = [
       log.playMs += end - s.start;
       const steps = Math.max(0, questSteps(profile, quests) - s.steps);
       return record('session', {
-        start: s.start, end, endedBy, quests: steps, place, afterQuest: s.lastStep !== null && end - s.lastStep >= AFTER_QUEST_MS, first: s.first,
+        start: s.start, end, endedBy, quests: steps, place, afterQuest: s.lastStep !== null && end - s.lastStep >= AFTER_QUEST_MS, first: s.first, practice: s.practice,
       });
     },
     get open() {

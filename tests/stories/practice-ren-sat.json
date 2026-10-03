@@ -1,0 +1,306 @@
+{
+  "name": "practice-ren-sat",
+  "about": {
+    "vi": "Luyện tập rèn sắt lúc đêm: đêm trôi qua, buổi thăm bắt đầu lúc sáng sớm ở lò rèn; hai lượt; bác thợ rèn cảm ơn, An về chỗ cũ.",
+    "en": "Practice at the forge at night: the night goes by, and the visit starts in the early morning at the forge; two rounds; the smith says thank you, and An goes back."
+  },
+  "practice": "ren-sat",
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 1300,
+  "at": [
+    "phu-dong",
+    54,
+    27
+  ],
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "clock": {
+            "between": [
+              7,
+              7.5
+            ]
+          }
+        },
+        {
+          "day": 1
+        },
+        {
+          "text": {
+            "shown": "dlg.smith.trial.n1"
+          }
+        },
+        {
+          "hero": {
+            "near": "npc:smith",
+            "within": 8
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "ore",
+            "min": 4
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "steps": [
+        {
+          "tap": {
+            "item": "ore"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 15
+          }
+        },
+        {
+          "tap": {
+            "zone": "forge"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 15
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "item": "bucket"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 40
+      }
+    },
+    {
+      "tap": {
+        "zone": "trough"
+      }
+    },
+    {
+      "until": {
+        "event": "fire",
+        "timeout": 40
+      }
+    },
+    {
+      "tap": {
+        "thing": "iron:smith"
+      }
+    },
+    {
+      "until": {
+        "event": "bend",
+        "timeout": 10
+      }
+    },
+    {
+      "wait": 4.5
+    },
+    {
+      "tap": {
+        "thing": "iron:smith"
+      }
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say",
+          "textKey": "practiceLink.again"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "entity": "trough:smith",
+          "look": "trough"
+        },
+        {
+          "count": {
+            "entities": "ore",
+            "min": 4
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "steps": [
+        {
+          "tap": {
+            "item": "ore"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 15
+          }
+        },
+        {
+          "tap": {
+            "zone": "forge"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 15
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "item": "bucket"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 40
+      }
+    },
+    {
+      "tap": {
+        "zone": "trough"
+      }
+    },
+    {
+      "until": {
+        "event": "fire",
+        "timeout": 40
+      }
+    },
+    {
+      "tap": {
+        "thing": "iron:smith"
+      }
+    },
+    {
+      "until": {
+        "event": "bend",
+        "timeout": 10
+      }
+    },
+    {
+      "wait": 4.5
+    },
+    {
+      "tap": {
+        "thing": "iron:smith"
+      }
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "practice",
+          "with": {
+            "id": "ren-sat",
+            "sets": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "dlg.smith.practice.end.n1"
+          }
+        },
+        {
+          "item": "coin",
+          "count": 3
+        },
+        {
+          "practice": {
+            "id": "ren-sat",
+            "sets": 1,
+            "level": 0
+          }
+        }
+      ]
+    },
+    {
+      "read": [
+        1
+      ]
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "cell": [
+              54,
+              27
+            ]
+          }
+        },
+        {
+          "flag": "trial.smith.done",
+          "is": false
+        }
+      ]
+    }
+  ]
+}

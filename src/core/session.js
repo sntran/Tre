@@ -45,8 +45,9 @@ import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
 import { REACH, learnerRecord, canPut } from './world/zones.js';
-import { setupTrial } from './world/systems/work.js';
+import { setupTrial, clearTrial } from './world/systems/work.js';
 import { levelFor, taskOf } from './world/trials.js';
+import { nextLevel } from './practice.js';
 import { createRaid, raidLevel } from './world/raids.js';
 import { setupRaid, roadPoint } from './world/systems/raid.js';
 import { lossLevel } from './profile.js';
@@ -93,6 +94,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   let pending = []; // what to do when the screen closes, one after the other
   let later = []; // what to do after the next step of the world (a second command for the hands)
   let resting = false;
+  // The practice of a visit from a practice link (src/core/practice.js), or null: { id, trial,
+  // person, set, level, back, round, stayed }.
+  let practice = null;
 
   const hero = () => getEntity(state, 'hero');
   const heroCell = () => ({ x: hero().position.x / 2, y: hero().position.z / 2 });
@@ -101,10 +105,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // Start on a map (the map of a region on the plane). mapId: the map (or the map of the save, or
   // the start map; the id of a place of a region is its map). params: at (the hero cell on the
-  // plane), facing, after (the ids of talks after the start, for example after a travel).
+  // plane), facing, after (the ids of talks after the start, for example after a travel), clock
+  // (the minute of the game clock at the start), and practice (the practice of a visit from a
+  // practice link: practiceStart in src/core/practice.js).
   function start(mapId = null, params = {}) {
     opening = [];
     starting = true;
+    if (params.clock !== undefined) profile.world.clock.minutes = params.clock;
+    practice = params.practice ? { ...params.practice, round: 0, stayed: false } : null;
     try {
       begin(mapId, params);
     } finally {
@@ -173,7 +181,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     updateLive(true);
     refreshPeople();
     placeEvents();
-    if (!profile.flags['intro.seen']) talk('grandma.intro');
+    // A practice has no prologue: the person of the activity is ready and starts the task.
+    if (practice) talk(`${practice.person}.trial`);
+    else if (!profile.flags['intro.seen']) talk('grandma.intro');
     for (const id of params.after ?? []) talk(id);
   }
 
@@ -267,13 +277,27 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     visit.chunks = chunks;
     delete visit.edits;
+    // A practice does not move the hero of the save, until the child stays: the save keeps the
+    // place before the visit (or no place).
+    if (practice && !practice.stayed) keepBack();
+  }
+  function keepBack() {
+    const b = practice.back;
+    // A thing of the task in the hands stays at the task (a thing that travels goes with the hero).
+    const h = profile.world.entities.find((e) => e.id === 'hero');
+    if (h?.hands?.holds && !profile.world.entities.some((e) => e.id === h.hands.holds)) {
+      h.hands = { holds: null };
+      delete h.carry;
+    }
+    if (b) setHeroPlace(profile.world, b.map, b.x, b.y);
+    else setHeroPlace(profile.world, profile.world.map, null, null);
   }
 
   // The end of the visit of this map (the scene closes, or the hero goes to another map).
   function leave() {
     if (!state) return;
     syncSave();
-    const c = heroCell();
+    const c = practice && !practice.stayed ? (practice.back ?? heroCell()) : heroCell();
     visit.at = { x: Math.round(c.x * 100) / 100, y: Math.round(c.y * 100) / 100 };
     visit.last = Math.round(state.clock.minutes);
   }
@@ -301,6 +325,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A person of the quest stays out at night, with a lantern.
     const goal = currentGoal(data.quests.quests, cond());
     const wanted = new Set((goal?.step.targets ?? (goal?.step.target ? [{ npc: goal.step.target }] : [])).map((tg) => tg.npc).filter(Boolean));
+    // The person of a practice stays at the task too.
+    if (practice) wanted.add(practice.person);
     for (const p of persons()) if (p.kind === 'npc') worldCommand(state, { type: 'stay', id: p.entity, on: wanted.has(p.ref) });
     // The friend walks behind the hero.
     const friendId = profile.party[0];
@@ -392,6 +418,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       startTrial(c.id);
       return;
     }
+    // The choice at the end of a set of a practice: stay and play on, or go back.
+    if (c.open === 'practice-stay' || c.open === 'practice-back') {
+      practiceChoice(c.open === 'practice-stay');
+      return;
+    }
     syncSave();
     openScreen({ screen: c.open, cmd: c }, { cmd: c });
   }
@@ -408,7 +439,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const level = levelFor(data.trials, profile.grade);
     const num = (n) => ({ key: `num.${n}` });
     for (const def of data.trials.trials) {
-      const t = taskOf(def, level);
+      const t = taskOf(def, practice?.trial === def.id ? practice.level : level);
       if (def.task === 'bundle') out.bundle = num(t.bundle);
       if (def.task === 'forge') out.ore = num(t.ore);
       if (def.task === 'basket') out.each = num(t.each);
@@ -418,15 +449,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     return out;
   }
-  // Start a trial: its things lie at their places on this map, at the level of the grade.
+  // Start a trial: its things lie at their places on this map, at the level of the grade. The
+  // trial of a practice starts again and again (at the level of the practice), with new things.
   function startTrial(id) {
     const def = trialDef(id);
-    if (!def || profile.flags[def.flag]) return;
+    const practicing = practice?.trial === id;
+    if (!def || (!practicing && profile.flags[def.flag])) return;
     const places = Object.values(def.places).flat();
     if (!places.every((p) => env.places[p])) return;
+    // The things of a done round (of a practice) go first.
+    if (practicing || trialZone(id)?.zone.done) clearTrial(state, id);
     // The things that the child brought go into the task (the iron for the horse).
     if (def.take && !trialZone(id)) applyEffects(profile, [{ take: def.take }, ...(def.startSet ? [{ set: def.startSet }] : [])]);
-    setupTrial(state, def, levelFor(data.trials, profile.grade), env);
+    setupTrial(state, def, practicing ? practice.level : levelFor(data.trials, profile.grade), env);
     emit({ type: 'hud' });
   }
   // A trial is done: the flag, the reward that flies to the counters, and the done line.
@@ -434,6 +469,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const def = trialDef(id);
     if (def?.task === 'share') {
       shareDone();
+      return;
+    }
+    if (practice?.trial === id) {
+      practiceRound(def);
       return;
     }
     if (!def || profile.flags[def.flag]) return;
@@ -444,6 +483,45 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'hud' });
     // A task of the story may end with its own talk (rice for Gióng: Gióng grows up).
     talk(def.doneTalk ?? `${def.npc}.trial.done`);
+  }
+  // A round of the practice is done. The level of the next round comes from the commits of this
+  // one. After the rounds of a set, the person thanks the child (the reward flies to the counters),
+  // and the child chooses to stay or to go back. The flag of the trial of the story stays as it is.
+  function practiceRound(def) {
+    const z = trialZone(def.id).zone;
+    practice.round += 1;
+    practice.level = nextLevel(practice.level, z, def.levels.length - 1);
+    const rec = (profile.practice ??= {})[practice.id] ??= { level: practice.level, sets: 0 };
+    rec.level = practice.level;
+    if (practice.round < practice.set) {
+      save('practice');
+      say('practiceLink.again', {}, null, def.npc);
+      queue(() => startTrial(def.id));
+      return;
+    }
+    practice.round = 0;
+    rec.sets += 1;
+    applyEffects(profile, [{ give: def.reward }]);
+    save('practice');
+    const from = `npc:${def.npc}`;
+    if (Object.keys(def.reward ?? {}).length) emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: def.reward, delay: 0.3 });
+    emit({ type: 'hud' });
+    emit({ type: 'practice', id: practice.id, sets: rec.sets, level: practice.level });
+    talk(`${def.npc}.practice.end`);
+  }
+  // Stay: the position of the profile is here from now on, and a new set starts. Go back: the hero
+  // goes to the place before the visit (the view shows a short change), or to the start of the game
+  // when the profile had no place.
+  function practiceChoice(stay) {
+    if (stay) {
+      practice.stayed = true;
+      save('practice');
+      startTrial(practice.trial);
+      return;
+    }
+    syncSave();
+    save('practice');
+    emit({ type: 'back', id: practice.id, to: practice.back });
   }
   // The zone of a task under a point on the ground (half blocks).
   const workZoneAt = (x, z) => query(state, 'zone').find((e) => {
@@ -1580,6 +1658,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     get screen() { return screen?.screen ?? null; },
     get busy() { return busy; },
     get profile() { return profile; },
+    // The practice of the visit (a copy), or null.
+    get practice() { return practice ? { ...practice } : null; },
     // The data of the game (for the stories: the looks of the portraits).
     get data() { return data; },
   };

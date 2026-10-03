@@ -349,6 +349,15 @@ export function validate(profile, { grades = null } = {}) {
     }
   }
   if (profile.stats !== undefined) for (const [, v] of entries(profile.stats, 'stats')) int(v, 'stats value', 0, 1e9);
+  // The practice links (src/core/practice.js): the level of the next round and the sets of each
+  // activity.
+  if (profile.practice !== undefined) {
+    for (const [id, r] of entries(profile.practice, 'practice')) {
+      if (!isObj(r)) fail(`practice ${id}`);
+      int(r.level, `practice ${id}.level`, 0, 10);
+      int(r.sets, `practice ${id}.sets`, 0, 1e9);
+    }
+  }
   // Time
   const time = profile.time;
   if (time.day !== null && time.day !== undefined) str(time.day, 'time.day', 20);

@@ -1,0 +1,357 @@
+{
+  "name": "practice-hai-thuoc",
+  "about": {
+    "vi": "Luyện tập hái thuốc: đường link đưa An đến vườn thuốc của bà; hai lượt; bà cảm ơn, An ở lại chơi tiếp, và một lượt mới bắt đầu ngay tại đó.",
+    "en": "Practice of the herbs: the link takes An to the herb beds of the healer; two rounds; the healer says thank you, An stays and plays on, and a new round starts there."
+  },
+  "practice": "hai-thuoc",
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    27,
+    64.5
+  ],
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.healer.trial.n1"
+          }
+        },
+        {
+          "hero": {
+            "near": "npc:healer",
+            "within": 8
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "herb-ngai",
+            "min": 7
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "tap": {
+            "item": "herb-ngai"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 15
+          }
+        },
+        {
+          "tap": {
+            "zone": "basket"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 15
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "steps": [
+        {
+          "tap": {
+            "item": "herb-tiato"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 15
+          }
+        },
+        {
+          "tap": {
+            "zone": "basket"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 15
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "steps": [
+        {
+          "tap": {
+            "item": "herb-rauma"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 15
+          }
+        },
+        {
+          "tap": {
+            "zone": "basket"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 15
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "npc:healer"
+      }
+    },
+    {
+      "until": {
+        "event": "nope",
+        "timeout": 15
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:healer"
+      }
+    },
+    {
+      "until": {
+        "event": "given",
+        "timeout": 15
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say",
+          "textKey": "practiceLink.again"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "herb-ngai",
+            "min": 7
+          }
+        },
+        {
+          "entity": "basket:healer",
+          "look": "basket"
+        }
+      ]
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "tap": {
+            "item": "herb-ngai"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 15
+          }
+        },
+        {
+          "tap": {
+            "zone": "basket"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 15
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "steps": [
+        {
+          "tap": {
+            "item": "herb-tiato"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 15
+          }
+        },
+        {
+          "tap": {
+            "zone": "basket"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 15
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "steps": [
+        {
+          "tap": {
+            "item": "herb-rauma"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 15
+          }
+        },
+        {
+          "tap": {
+            "zone": "basket"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 15
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "npc:healer"
+      }
+    },
+    {
+      "until": {
+        "event": "nope",
+        "timeout": 15
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:healer"
+      }
+    },
+    {
+      "until": {
+        "event": "given",
+        "timeout": 15
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "practice",
+          "with": {
+            "id": "hai-thuoc",
+            "sets": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "dlg.healer.practice.end.n1"
+          }
+        },
+        {
+          "item": "coin",
+          "count": 3
+        },
+        {
+          "practice": {
+            "id": "hai-thuoc",
+            "sets": 1,
+            "level": 0
+          }
+        }
+      ]
+    },
+    {
+      "read": [
+        0
+      ]
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "near": "npc:healer",
+            "within": 8
+          }
+        },
+        {
+          "zone": "trial-healer",
+          "state": "open"
+        },
+        {
+          "count": {
+            "entities": "herb-ngai",
+            "min": 7
+          }
+        }
+      ]
+    }
+  ]
+}

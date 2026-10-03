@@ -33,7 +33,8 @@
       "quests": "count",
       "place": "id?",
       "afterQuest": "bool",
-      "first": ["walk", "place", "talk", "travel", "menu", "none"]
+      "first": ["walk", "place", "talk", "travel", "menu", "none"],
+      "practice": "id?"
     },
     "review": {
       "skill": "id",

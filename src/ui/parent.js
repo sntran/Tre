@@ -13,6 +13,7 @@ import { h, img, button } from './dom.js';
 import { portraitCanvas, heroLookOf } from './portraits.js';
 import { t, lang } from './i18n.js';
 import { formatNumber } from '../core/i18n.js';
+import { practiceLinks } from '../core/practice.js';
 import { C } from '../render/palette.js';
 import { setVoiceEnabled } from './speak.js';
 
@@ -129,7 +130,7 @@ async function parentArea(ctx, opts = {}) {
     const panel = h('div', { class: 'panel parent' });
     const body = h('div');
     const close = () => { layer.remove(); resolve(); };
-    const tabs = ctx.profile ? ['progress', 'learning', 'settings', 'questions', 'games', 'code'] : ['games', 'code'];
+    const tabs = ctx.profile ? ['progress', 'learning', 'settings', 'questions', 'games', 'links', 'code'] : ['games', 'links', 'code'];
     let tab = tabs.includes(opts.tab) ? opts.tab : tabs[0];
     // Leave the parent area and go on with a profile (after a restore or an import), or to the title.
     const leave = async (profile) => {
@@ -159,7 +160,36 @@ async function parentArea(ctx, opts = {}) {
       if (tab === 'questions') drawQuestions();
       if (tab === 'code') drawCode();
       if (tab === 'games') drawGames();
+      if (tab === 'links') drawLinks();
     };
+
+    // The practice links (data/world/practice.json): each activity with its title, its line, its
+    // skills, and a button to copy the link and a button to share it (where the device can share).
+    // All activities are there, whatever the era of the child: the parent decides.
+    function drawLinks() {
+      body.append(h('p', { text: t('parent.links.about') }));
+      const base = new URL('./', location.href).toString();
+      for (const r of practiceLinks(data.practice, base)) {
+        const title = t(r.titleKey);
+        const field = h('input', { type: 'text', readonly: true, 'aria-label': title });
+        field.value = r.link;
+        const copy = button(t('parent.links.copy'), async () => {
+          try {
+            await navigator.clipboard.writeText(r.link);
+            ctx.toast('parent.links.copied');
+          } catch {
+            field.select();
+          }
+        }, { cls: 'btn small' });
+        const share = navigator.share ? button(t('parent.links.share'), () => navigator.share({ title, text: t(r.lineKey), url: r.link }).catch(() => {}), { cls: 'btn small paper' }) : null;
+        body.append(h('div', { class: 'game-box practice-link', dataset: { practice: r.id } }, [
+          h('h3', { text: title }),
+          h('p', { text: t(r.lineKey) }),
+          h('p', { class: 'muted', text: t('parent.links.skills', { list: r.skills.map((id) => t(`skill.${id}`)).join(t('ui.list.sep')) }) }),
+          h('div', { class: 'row field', style: { justifyContent: 'flex-start', flexWrap: 'wrap' } }, [field, copy, share]),
+        ]));
+      }
+    }
 
     // The code of a profile, with a copy button.
     function codeBox(profile) {
