@@ -12,6 +12,7 @@ Tre là một game RPG trên web dành cho trẻ từ Pre-K đến lớp 12. B�
 - **Tên gọi:** *tre* là cây tre. Tre là loài cây bình thường nhất ở làng quê Việt Nam. Tre lớn nhanh, oằn mình trong bão mà không gãy. Thánh Gióng đã đánh giặc bằng tre khi gậy sắt gãy.
 - **Ý tưởng:** nhiều anh hùng Việt Nam vốn là người bình thường: một cậu bé không biết nói, một người tiều phu, một người đánh cá, một người nông dân. Người chơi cũng bắt đầu là một đứa trẻ bình thường và trở thành anh hùng qua khám phá và thử thách.
 - **Nguyên tắc học:** toán và khoa học là cách người chơi chiến đấu, xây dựng và khám phá. Chúng không phải là bài kiểm tra trước khi được chơi.
+- **Kỹ năng đầu tiên là học cách học:** trước mọi kỹ năng toán hay khoa học, trẻ học cách quan sát điều đã xảy ra, biết điều gì đúng, sai, hay chưa rõ, và tự điều chỉnh. Mỗi việc đều cho trẻ một lúc để nhìn, để thử, để thấy vì sao, và để thay đổi, và những người trong thế giới dần trao việc tự đánh giá cho trẻ khi trẻ lớn lên. Kỹ năng này giúp trẻ học được mọi thứ khác.
 - **Mục tiêu văn hóa:** trẻ em sinh ra ngoài Việt Nam học lịch sử, truyền thuyết và tiếng Việt qua trò chơi. Game có tiếng Việt và tiếng Anh.
 - **Màn hình mở đầu:** nhân vật bắt đầu là một búp măng. Cây tre cao dần theo từng thời kỳ.
 
@@ -279,6 +280,13 @@ Báo cáo nghiên cứu trong `docs/research/learning-by-doing.md` tập hợp c
 36. **Đáp lại sự chán nhanh như đáp lại trẻ đang bí.** Sự chán kéo dài và dẫn đến bấm bừa; sự bực thì qua nhanh. Chán thì được dạng bài mới, lựa chọn lớn hơn, hoặc chỗ khác; bực thì được việc nhỏ hơn, việc làm chung, hoặc một quãng nghỉ trong câu chuyện (Baker và cộng sự 2010).
 37. **Người giao việc nhớ đứa trẻ.** Mỗi người giữ lại điều đã giúp được đứa trẻ này và những lỗi trẻ hay mắc, thử trước động tác lần trước có tác dụng, và nói điều đã thay đổi như một thông tin ("Hôm trước mình chia ô ra làm hai.").
 38. **Mỗi động tác được ghi lại cùng kết quả.** Chẩn đoán, động tác, P(L) trước đó, và lần chốt tiếp theo, để Tre tìm ra động tác nào có tác dụng, và phụ huynh thấy người giao việc đã thử gì và điều gì giúp được.
+
+**Học cách học**
+
+39. **Trẻ dần nhận lấy việc tự đánh giá.** Người giao việc không chỉ trao lại công việc mà còn trao lại việc kiểm tra: lúc đầu người ấy chỉ ra chỗ sai; sau đó người ấy chờ trong khi trẻ tự nhìn; cuối cùng trẻ tự kiểm tra trước khi gọi người ấy. Kiểm tra là một hành động mà trò chơi thấy được (đi dọc thửa ruộng, nhìn dọc một hàng, đếm các cọc, nhấc thử cái thúng), và một lần tự sửa trước khi chốt được tính là tự điều chỉnh (quy tắc 33, chuyển giao trách nhiệm).
+40. **Mỗi việc có trọn vòng: nhìn, thử, thấy vì sao, thay đổi.** Dự đoán (quy tắc 4), kiểm tra, chốt, thấy kết quả và lý do (quy tắc 12), điều chỉnh, rồi thử lại. Đây là vòng của người tự điều chỉnh việc học: lập kế hoạch, theo dõi, suy ngẫm (Zimmerman 2002). Rèn luyện khả năng tự điều chỉnh việc học có hiệu quả trung bình 0,69 trong trường học, cao hơn ở môn toán (Dignath & Büttner 2008), và với trẻ nhỏ thì hiệu quả nhất khi thầy cô hoặc chính học liệu mang nó (Huang và cộng sự 2024).
+41. **Biết hỏi là một kỹ năng.** Trẻ có thể gọi người giao việc bất cứ lúc nào bằng một cái vẫy tay. Hỏi sau khi đã thật sự thử, khi bị bí, là tốt; hỏi trước khi thử, hoặc không bao giờ hỏi trong khi bí, là một dấu hiệu cho người kèm. Trò chơi không bao giờ coi việc hỏi là yếu kém (Aleven và cộng sự 2016).
+42. **Trẻ thấy được việc học của chính mình.** Sổ tay cho thấy sự tiến bộ của trẻ như một thứ trẻ đã làm ra (cánh đồng của những phép tính đã cấy), và những người trong làng nói điều đã thay đổi so với lần trước, để trẻ thấy rằng chính việc quan sát, chiến lược và luyện tập làm nên khác biệt, chứ không phải năng khiếu.
 
 ## Nhiệm vụ trong thế giới từ kỹ thuật làng quê
 
