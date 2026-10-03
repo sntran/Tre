@@ -1,0 +1,20 @@
+{
+  "_about": "The planting of a paddy in Xóm Ruộng (src/core/planting.js; docs/PLANTING.md). A plot is an array of seedlings: one seedling on each half block, rows along z and columns along x. The size of a plot comes from the level of math.mul.10 that the learner chooses (the factor ranges of data/skills.json). levels: for each level of the skill, bundle (the size of a bundle of the seedbed: 'row' for one row of the plot, or a number), example (the farmer plants the first row as an example), hard (the part of the plots with a hard fact, a factor of six to nine), and forms (the kinds of task at that level). The form 'divide' comes only when math.div.10 is open. set: the plots of a set. offers: the plots that are ready at the same time (the child chooses one); bigger: a bigger plot on offer at these levels, for pride (never needed). boxes: the days to the next check of a fact after each clean success (rule 24); a missed fact comes back in the same set, after 'again' plots. growth: the stage of a planted plot after these game days. events: the small events of a set (at most one in a set, never the same in two sets in a row), and chance (the chance of one event in a set). season: the season of a planted plot (a hook for the harvest of a later issue).",
+  "skill": "math.mul.10",
+  "divide": "math.div.10",
+  "levels": [
+    { "bundle": "row", "example": true, "hard": 0, "forms": ["product", "rest"] },
+    { "bundle": 10, "example": false, "hard": 0.3, "forms": ["product", "rest", "choose", "turned"] },
+    { "bundle": 10, "example": false, "hard": 0.5, "forms": ["product", "rest", "lshape", "split", "turned", "choose"] }
+  ],
+  "set": 6,
+  "offers": 2,
+  "bigger": [2, 3],
+  "boxes": [1, 3, 7, 14, 30],
+  "again": 2,
+  "growth": [["planted", 0], ["green", 1], ["tall", 3], ["gold", 6]],
+  "season": "spring",
+  "events": ["ducks", "heron", "neighbor", "nghe-mud", "song", "rice-balls", "buffalo"],
+  "chance": 0.6,
+  "extra": { "bundles": 2, "loose": 9 }
+}
