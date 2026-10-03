@@ -50,13 +50,16 @@ export function footprint(look) {
 }
 
 // The base of a piece: a little wider than the feet (a quarter block out on each side), round for
-// a figure that is about as wide as it is deep, and oval for a long one. Return { rx, rz } (blocks).
+// a figure that is about as wide as it is deep, and oval for a long one. Return { rx, rz } (blocks),
+// and cx, cz: the middle of the footprint from the origin of the figure (the figure stands with
+// its middle on the middle of the base).
 export function baseOf(look) {
   const b = footprint(look);
-  const rx = Math.max(Math.abs(b.x0), Math.abs(b.x1)) + 0.25;
-  const rz = Math.max(Math.abs(b.z0), Math.abs(b.z1)) + 0.25;
+  const rx = (b.x1 - b.x0) / 2 + 0.25;
+  const rz = (b.z1 - b.z0) / 2 + 0.25;
   const r = Math.max(rx, rz);
-  return Math.min(rx, rz) > r * 0.6 ? { rx: r, rz: r } : { rx, rz };
+  const round = Math.min(rx, rz) > r * 0.6;
+  return { rx: round ? r : rx, rz: round ? r : rz, cx: (b.x0 + b.x1) / 2, cz: (b.z0 + b.z1) / 2 };
 }
 
 // The switches of the page, with their values (the first is the default).

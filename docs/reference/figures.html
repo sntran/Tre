@@ -5,129 +5,444 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tre: the figures</title>
   <!--
-  The figures of Tre on paper, for the review of the owner: every person and animal at rest and
-  mid-step, from the front and at three-quarter, with the far (coarse) level at the end of each row.
-  It draws with the figure layer of the game (src/render/figure3d.js), so it shows what the game
-  shows. Open it from the root of the repository with a local server (for example
-  python3 -m http.server), at /docs/reference/figures.html. It loads three.js from a CDN.
+  The figures of Tre as the pieces of a board game, for the review of the owner. Each figure of the
+  game stands on a round base of quarter blocks on a square of dó paper. A tap lifts a piece up
+  close: drag to turn it and to tilt the view, pinch or the wheel to zoom. The switches show the
+  walk, the wind, the moods, the night, and the far level. Only the code of the game draws: the
+  figure layer (src/render/figure3d.js), data/figures.json, and the pieces (src/world/pieces.js).
+  The address keeps the piece and the switches: figures.html?look=grandma&mood=happy&pose=walk.
+  Open it from the root of the repository with a local server (for example python3 -m http.server),
+  at /docs/reference/figures.html. It loads three.js from a CDN.
   -->
   <style>
-    :root { --paper: #efe3c8; --ink: #1f1b17; --ash: #6f685d; }
+    :root { --paper: #efe3c8; --paper-deep: #e4d3ae; --ink: #1f1b17; --ash: #6f685d; --vermilion: #c2412d; }
+    * { box-sizing: border-box; }
     body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Be Vietnam Pro', system-ui, sans-serif; }
-    header { padding: 16px 24px 4px; max-width: 70em; }
-    h1 { margin: 0 0 6px; font-family: Georgia, serif; }
-    h2 { margin: 18px 24px 4px; font-family: Georgia, serif; font-size: 20px; }
+    header { padding: 12px 16px 4px; max-width: 70em; }
+    h1 { margin: 0 0 4px; font-family: Georgia, serif; font-size: 24px; }
+    h2 { margin: 14px 16px 2px; font-family: Georgia, serif; font-size: 18px; }
     p { margin: 4px 0; line-height: 1.4; }
-    .sheet { position: relative; margin: 0 24px 24px; }
-    .sheet canvas { display: block; }
-    .label { position: absolute; transform: translate(-50%, 0); font-size: 12px; white-space: nowrap; color: var(--ash); }
-    .row-name { position: absolute; transform: translate(0, -50%); font-size: 13px; font-weight: 700; white-space: nowrap; }
-    .col { position: absolute; transform: translate(-50%, 0); font-size: 12px; font-weight: 700; text-align: center; width: 9em; }
+    .switches { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 8px 16px; background: var(--paper); border-bottom: 2px solid var(--ink); }
+    .group { display: flex; gap: 0; align-items: center; }
+    .group span { font-size: 12px; color: var(--ash); margin-right: 4px; }
+    .group button { font: inherit; font-size: 13px; padding: 4px 8px; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); cursor: pointer; margin-left: -1.5px; }
+    .group button:first-of-type { margin-left: 0; }
+    .group button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    .strip { position: relative; margin: 0 16px; }
+    .strip canvas { display: block; cursor: pointer; }
+    .name { position: absolute; transform: translate(-50%, 0); font-size: 10px; line-height: 1.1; overflow-wrap: anywhere; color: var(--ink); background: rgba(239, 227, 200, 0.85); padding: 0 3px; pointer-events: none; text-align: center; }
+    .night .strip canvas, .night #close canvas { filter: brightness(0.62) sepia(0.4) hue-rotate(175deg) saturate(1.6); }
+    #close { position: fixed; inset: 0; z-index: 10; background: var(--paper); display: none; touch-action: none; }
+    #close.on { display: block; }
+    #close canvas { display: block; width: 100%; height: 100%; }
+    #close .bar { position: absolute; top: 8px; left: 8px; right: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    #close .bar button { font: inherit; font-size: 13px; padding: 5px 9px; border: 1.5px solid var(--ink); background: var(--paper); cursor: pointer; }
+    #close .bar button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+    #close .title { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; font-family: Georgia, serif; font-size: 20px; pointer-events: none; }
+    @media (max-width: 600px) { body > .switches { position: static; } }
+    #close .switches { position: absolute; top: auto; bottom: 44px; left: 0; right: 0; border: 0; background: transparent; justify-content: center; }
   </style>
   <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" } }</script>
 </head>
 <body>
   <header>
     <h1>The figures of Tre</h1>
-    <p>Every person and animal of the village, built on a grid of quarter blocks (<code>src/world/fine.js</code>). Each row: at rest and mid-step, from the front and at three-quarter; in the wind (at rest, with the breeze at full strength blowing to the left, into the faces: the hair, the cloth, and the tails move, <code>src/world/sway.js</code>); the last column is the far level (the coarse figure that the game draws for a figure far from the hero: 30 blocks at the near zoom, 45 at the far zoom). The people are at their true size; the animals are drawn larger.</p>
-    <p>A head is a rounded box with a large flat face. A child (the hero, Gióng as a boy, the children of the hamlets) has the face of a child: the eyes lower and larger, thin short brows, rosy cheeks, and no nose. The sheet of the hair shows the six hair choices of hero creation, which differ from the front, and the sheet of the hats shows each hat on a grown-up.</p>
+    <p>Every figure of the game as a piece of a board game: on a round base of quarter blocks, on a square of dó paper. Tap a piece to lift it up close: drag to turn it and to tilt the view, pinch or use the wheel to zoom, and tap two times to go back to the first view. The switches show the walk, the wind, the moods of the face, the night, and the far level (the figure that the game draws far from the hero). The address keeps what is on the screen, so that a link opens the same piece.</p>
   </header>
-  <h2>People</h2>
-  <div class="sheet" id="people"></div>
-  <h2>Animals</h2>
-  <div class="sheet" id="animals"></div>
-  <h2>The hair choices</h2>
-  <div class="sheet" id="hair"></div>
-  <h2>The hats</h2>
-  <div class="sheet" id="hats"></div>
+  <div class="switches" id="switches"></div>
+  <main id="board"></main>
+  <div id="close" role="dialog" aria-label="One piece up close">
+    <div class="bar">
+      <button type="button" id="back" aria-label="Back to the board">✕ Board</button>
+      <button type="button" id="spin" aria-pressed="true">Turn slowly</button>
+      <button type="button" id="game-near">View of the game: near</button>
+      <button type="button" id="game-far">View of the game: far</button>
+      <button type="button" id="reset">First view</button>
+    </div>
+    <div class="switches" id="close-switches"></div>
+    <div class="title" id="close-title"></div>
+  </div>
   <script type="module">
     import * as THREE from 'three';
-    import { createFigureLayer } from '../../src/render/figure3d.js';
-    import { heroLook } from '../../src/world/figures.js';
+    import { createFigureLayer, night } from '../../src/render/figure3d.js';
+    import { figureOf } from '../../src/world/figures.js';
+    import { boardRows, baseOf, parseAddress, formatAddress, SWITCHES } from '../../src/world/pieces.js';
+    import { VIEW, viewSize } from '../../src/world/view.js';
+    import { BREEZE } from '../../src/core/world/systems/sky.js';
     import { C } from '../../src/render/palette.js';
 
     const data = await (await fetch('../../data/figures.json')).json();
-    const looks = data.figures;
-    const heroes = {
-      'hero (boy)': heroLook({ gender: 'boy', skin: 2, face: 2, hair: 2, clothes: 1 }, data.hero),
-      'hero (girl)': heroLook({ gender: 'girl', skin: 3, face: 1, hair: 4, clothes: 3 }, data.hero),
+    const en = await (await fetch('../../i18n/en.json')).json();
+    const rows = boardRows(data);
+    const items = rows.flatMap((r) => r.items);
+    const byId = new Map(items.map((it) => [it.id, it]));
+    const ROW_NAMES = { heroes: 'The hero', people: 'The people', hairs: 'The hair choices', hats: 'The hats', animals: 'The animals', things: 'The things' };
+    const nameOf = (it) => {
+      const name = it.key ? en[`npc.${it.key}.name`] : null;
+      return name ?? it.id;
     };
-    // The six hair choices on the hero, and each hat on a grown-up.
-    data.hero.hairs.forEach((hair, i) => { heroes[`hair: ${hair}`] = heroLook({ gender: i % 2 ? 'girl' : 'boy', skin: 2, face: 1, hair: i + 1, clothes: 1 }, data.hero); });
-    const grown = { skin: 'skin2', top: 'indigo', bottom: 'indigo', sash: 'vermilion', topKind: 'shirt', bottomKind: 'trousers', face: 1 };
-    for (const [hat, hair] of [['non', 'short'], ['non', 'long'], ['band', 'bun'], ['helmet', 'topknot'], ['plume', 'braids']]) heroes[`${hat}, ${hair}`] = { ...grown, hat, hair };
-    const lookOf = (key) => heroes[key] ?? looks[key] ?? {};
-    const COLUMNS = [
-      { name: 'at rest, front', facing: 0, step: false },
-      { name: 'at rest, three-quarter', facing: Math.PI / 4, step: false },
-      { name: 'mid-step, front', facing: 0, step: true },
-      { name: 'mid-step, three-quarter', facing: Math.PI / 4, step: true },
-      { name: 'in the wind', facing: Math.PI / 4, step: false, wind: true },
-      { name: 'far level', facing: Math.PI / 4, step: false, coarse: true },
-    ];
-    // The walk: one draw of this many seconds puts the legs mid-step (src/world/animate.js).
-    // The breeze at full strength, blowing to the left of the sheet, into the faces (src/world/sway.js).
-    const WIND = { x: -1, z: 0, strength: 1 };
-    const STEP_DT = Math.PI / 2 / (4 * 1.9);
 
-    // One sheet: rows of figures in one scene, drawn by the figure layer of the game.
-    // rows: keys, or { key, detail, label } (detail: 'fine' for the first columns).
-    function sheet(el, rows, { px, cell, rowH }) {
-      rows = rows.map((r) => (typeof r === 'string' ? { key: r, detail: 'fine', label: r } : r));
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(C.paper);
-      // One layer for each level, and one more for each fine level in the wind.
-      const layers = {};
-      const worlds = {};
-      for (const d of ['fine', 'coarse', 'fine+wind']) {
-        layers[d] = createFigureLayer(scene, lookOf, { detail: d.replace('+wind', '') });
-        worlds[d] = { entities: [], wind: d.endsWith('+wind') ? WIND : null };
+    // The state of the page: the piece up close and the switches (src/world/pieces.js).
+    const state = parseAddress(location.search, items.map((it) => it.id));
+    const writeAddress = () => history.replaceState(null, '', `${location.pathname}${formatAddress(state)}`);
+
+    // The looks of the figure layer: a piece with its mood, and the bases and squares of the board.
+    const lookOf = (key) => {
+      if (key.startsWith('piece:')) {
+        const [, rx, rz, square, dark] = key.split(':');
+        return { kind: 'piece', rx: Number(rx), rz: Number(rz), square: Number(square), dark: dark === '1' };
       }
-      rows.forEach(({ key, detail }, r) => COLUMNS.forEach((col, c) => {
-        // Positions are in half blocks (2 for each block).
-        const e = { id: `${key}:${detail}:${c}`, look: key, position: { x: (c * cell + cell / 2) * 2, y: -r * rowH * 2, z: 0, facing: col.facing }, motion: { speed: col.step ? 8 : 0 } };
-        worlds[col.coarse ? 'coarse' : col.wind ? `${detail}+wind` : detail].entities.push(e);
-      }));
-      const W = COLUMNS.length * cell;
-      const H = rows.length * rowH;
-      const width = Math.round(W * px) + 170;
-      const height = Math.round(H * px) + 40;
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-      renderer.setSize(width, height);
-      el.append(renderer.domElement);
-      // A camera from the front, a little above, as a print is seen.
-      const left = -170 / px;
-      const cam = new THREE.OrthographicCamera(left, W, rowH * 0.95, -H + rowH * 0.95 - 40 / px, -100, 100);
-      const tilt = 0.32;
-      cam.position.set(0, Math.sin(tilt) * 20, Math.cos(tilt) * 20);
-      cam.lookAt(0, 0, 0);
-      for (const [d, layer] of Object.entries(layers)) {
-        layer.sync(worlds[d]);
-        // The figures in the wind stand for two seconds, so that the hair and the cloth settle.
-        if (d.endsWith('+wind')) for (let i = 0; i < 20; i++) layer.draw(1, 0.1);
-        else layer.draw(1, STEP_DT);
+      const [id, mood] = key.split('|');
+      return { ...(byId.get(id)?.look ?? {}), mood };
+    };
+    const windOf = () => (state.wind === 'none' ? null : { x: -1, z: 0.3, strength: state.wind === 'full' ? 1 : BREEZE.strength });
+    const detailOf = () => (state.level === 'far' ? 'coarse' : 'fine');
+    // The height of a figure in blocks, and the long side of a thing along x (the board shows it
+    // from the front).
+    const heightOf = (look) => {
+      const f = figureOf(look, 'fine');
+      return f.height * f.scale * (f.grid ?? 0.5);
+    };
+    const shapeOf = (it) => {
+      const b = baseOf(it.look);
+      const turn = b.rz > b.rx * 1.6;
+      return { rx: turn ? b.rz : b.rx, rz: turn ? b.rx : b.rz, facing: turn ? Math.PI / 2 : 0, base: b, height: heightOf(it.look) };
+    };
+
+    // One renderer for the whole page: the strips of the board draw into it and copy to their
+    // canvases; the piece up close draws in it on the screen.
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+    const paper = new THREE.Color(C.paper);
+
+    // A world of the figure layer for some pieces: the entities (positions in half blocks) and the
+    // wind.
+    function entitiesOf(placed, { squares = [] } = {}) {
+      const out = [];
+      const walk = state.pose === 'walk';
+      for (const sq of squares) out.push({ id: `sq:${sq.x}`, look: `piece:0:0:${sq.size}:${sq.dark ? 1 : 0}`, position: { x: sq.x * 2, y: 0, z: 0, facing: 0 } });
+      for (const p of placed) {
+        const { base, facing } = p.shape;
+        out.push({ id: `base:${p.it.id}`, look: `piece:${base.rx.toFixed(2)}:${base.rz.toFixed(2)}:0:0`, position: { x: p.x * 2, y: 0, z: p.z * 2, facing } });
+        // The figure stands with the middle of its footprint on the middle of the base.
+        const ox = base.cx * Math.cos(facing) + base.cz * Math.sin(facing);
+        const oz = -base.cx * Math.sin(facing) + base.cz * Math.cos(facing);
+        out.push({ id: p.it.id, look: `${p.it.id}|${state.mood}`, position: { x: (p.x - ox) * 2, y: 0.5, z: (p.z - oz) * 2, facing }, motion: { speed: walk ? 8 : 0 } });
       }
-      renderer.render(scene, cam);
-      // The names of the rows and the columns.
-      const toPx = (x, y) => {
-        const v = new THREE.Vector3(x, y, 0).project(cam);
-        return { x: ((v.x + 1) / 2) * width, y: ((1 - v.y) / 2) * height };
-      };
-      COLUMNS.forEach((col, c) => {
-        const p = toPx(c * cell + cell / 2, rowH * 0.85);
-        el.append(Object.assign(document.createElement('div'), { className: 'col', textContent: col.name, style: `left:${p.x}px;top:${Math.max(0, p.y)}px` }));
-      });
-      rows.forEach(({ label }, r) => {
-        const p = toPx(0, -r * rowH + rowH * 0.3);
-        el.append(Object.assign(document.createElement('div'), { className: 'row-name', textContent: label, style: `left:4px;top:${p.y}px` }));
-      });
+      return { entities: out, wind: windOf() };
     }
 
-    sheet(document.getElementById('people'), ['hero (boy)', 'hero (girl)', 'grandma', 'mother', 'giong-boy', 'giong-boy-3', 'giong-hero', 'teacher', 'elder', 'socson-elder', 'messenger', 'smith', 'healer', 'woodcutter', 'fisher', 'scout', 'soldier', 'general'], { px: 44, cell: 4, rowH: 4.6 });
-    sheet(document.getElementById('animals'), ['nghe', 'buffalo', 'dog', 'chicken', 'chicken-brown', 'duck', 'fish'], { px: 85, cell: 2.6, rowH: 2.4 });
-    sheet(document.getElementById('hair'), data.hero.hairs.map((h) => `hair: ${h}`), { px: 55, cell: 4, rowH: 4.4 });
-    sheet(document.getElementById('hats'), ['non, short', 'non, long', 'band, bun', 'helmet, topknot', 'plume, braids'], { px: 50, cell: 4, rowH: 4.8 });
+    // The board: one strip for each line of squares, in groups by row. A strip draws only when it
+    // is near the screen; it has its own scene and figure layer while it is there.
+    const PX = () => (innerWidth < 600 ? 26 : 38); // pixels of one block on the board
+    const E = 0.42; // the angle of the view of the board over the squares
+    const board = document.getElementById('board');
+    const strips = [];
+    function layoutBoard() {
+      for (const s of strips) s.layer?.dispose?.();
+      strips.length = 0;
+      board.replaceChildren();
+      const px = PX();
+      const width = Math.max(240, Math.min(innerWidth, 1400) - 32);
+      for (const row of rows) {
+        board.append(Object.assign(document.createElement('h2'), { textContent: ROW_NAMES[row.id] ?? row.id }));
+        const shapes = row.items.map((it) => ({ it, shape: shapeOf(it) }));
+        // The side of a square: the widest base of a usual piece of the row; a long thing takes
+        // more than one square.
+        const sides = shapes.map((s) => Math.min(4, Math.max(s.shape.rx, s.shape.rz) * 2 + 0.4)).sort((a, b) => a - b);
+        const S = Math.max(1.6, sides[Math.floor(sides.length * 0.9)] ?? 2);
+        const cols = Math.max(2, Math.floor(width / (S * px)));
+        let line = [];
+        let used = 0;
+        const flush = () => {
+          if (line.length) {
+            const strip = makeStrip(line, S, cols, px, strips.length);
+            strips.push(strip);
+            board.append(strip.el);
+          }
+          line = [];
+          used = 0;
+        };
+        for (const s of shapes) {
+          const span = Math.min(cols, Math.max(1, Math.ceil((s.shape.rx * 2 + 0.2) / S)));
+          if (used + span > cols) flush();
+          line.push({ ...s, col: used, span });
+          used += span;
+        }
+        flush();
+      }
+      watch();
+    }
+    function makeStrip(line, S, cols, px, index) {
+      const el = document.createElement('div');
+      el.className = 'strip';
+      const canvas = document.createElement('canvas');
+      el.append(canvas);
+      const W = cols * S;
+      const H = Math.max(...line.map((l) => l.shape.height), 1);
+      const top = H * Math.cos(E) + (S / 2) * Math.sin(E) + 0.3;
+      const bottom = (S / 2) * Math.sin(E) + 26 / px;
+      const w = Math.round(W * px);
+      const h = Math.round((top + bottom) * px);
+      canvas.width = Math.round(w * renderer.getPixelRatio());
+      canvas.height = Math.round(h * renderer.getPixelRatio());
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      const cam = new THREE.OrthographicCamera(0, W, top, -bottom, -100, 100);
+      cam.position.set(0, Math.sin(E) * 50, Math.cos(E) * 50);
+      cam.lookAt(0, 0, 0);
+      cam.updateMatrixWorld();
+      const placed = line.map((l) => ({ ...l, x: (l.col + l.span / 2) * S, z: 0 }));
+      const squares = Array.from({ length: cols }, (_, c) => ({ x: (c + 0.5) * S, size: S, dark: (c + index) % 2 === 1 }));
+      // The names on the rims of the bases.
+      for (const p of placed) {
+        const v = new THREE.Vector3(p.x, 0, p.shape.rz).project(cam);
+        el.append(Object.assign(document.createElement('div'), { className: 'name', textContent: nameOf(p.it), style: `left:${((v.x + 1) / 2) * w}px;top:${((1 - v.y) / 2) * h + 2}px;max-width:${Math.max(48, p.span * S * px - 4)}px` }));
+      }
+      const strip = { el, canvas, cam, placed, squares, w, h, scene: null, layer: null, detail: null, near: false, dirty: true };
+      canvas.addEventListener('click', (e) => {
+        const r = canvas.getBoundingClientRect();
+        const x = ((e.clientX - r.left) / r.width) * W;
+        const hit = placed.find((p) => Math.abs(p.x - x) <= (p.span * S) / 2);
+        if (hit) openClose(hit.it.id);
+      });
+      return strip;
+    }
+    // The strips near the screen get their layer; the far ones let it go.
+    let observer = null;
+    function watch() {
+      observer?.disconnect();
+      observer = new IntersectionObserver((list) => {
+        for (const en of list) {
+          const s = strips.find((x) => x.el === en.target);
+          if (!s) continue;
+          s.near = en.isIntersecting;
+          if (s.near) s.dirty = true;
+          else if (s.layer) {
+            s.layer.dispose();
+            s.layer = null;
+            s.scene = null;
+          }
+        }
+      }, { rootMargin: '300px 0px' });
+      for (const s of strips) observer.observe(s.el);
+    }
+    // The world of the layer settles for a moment (the hair and the cloth in the wind).
+    function drawStrip(s, dt) {
+      if (!s.layer || s.detail !== detailOf()) {
+        s.layer?.dispose();
+        s.scene = new THREE.Scene();
+        s.scene.background = paper;
+        s.detail = detailOf();
+        s.layer = createFigureLayer(s.scene, lookOf, { detail: s.detail });
+        s.layer.sync(entitiesOf(s.placed, { squares: s.squares }));
+        for (let i = 0; i < 12; i++) s.layer.draw(1, 0.1);
+      }
+      s.layer.sync(entitiesOf(s.placed, { squares: s.squares }));
+      s.layer.draw(1, dt);
+      renderer.setSize(s.w, s.h, false);
+      renderer.render(s.scene, s.cam);
+      const c = s.canvas.getContext('2d');
+      c.clearRect(0, 0, s.canvas.width, s.canvas.height);
+      c.drawImage(renderer.domElement, 0, 0, s.canvas.width, s.canvas.height);
+    }
+
+    // One piece up close: its base and the figure in the middle of the screen, large. Drag turns it
+    // all the way around and tilts the view; pinch or the wheel zooms.
+    const close = document.getElementById('close');
+    const closeScene = new THREE.Scene();
+    closeScene.background = paper;
+    let closeLayer = null;
+    let closeDetail = null;
+    const closeCam = new THREE.OrthographicCamera(-1, 1, 1, -1, -100, 100);
+    const view = { az: Math.PI / 6, el: 0.3, size: 4, spin: true, idle: 0, target: 1 };
+    const firstView = (it) => {
+      const sh = shapeOf(it);
+      view.az = Math.PI / 6;
+      view.el = 0.3;
+      view.size = Math.max(sh.height * 1.5, Math.max(sh.base.rx, sh.base.rz) * 2.6, 2.2);
+      view.target = sh.height / 2;
+    };
+    function openClose(id) {
+      const it = byId.get(id);
+      if (!it) return;
+      state.look = id;
+      writeAddress();
+      firstView(it);
+      closeLayer?.dispose();
+      closeLayer = null;
+      close.classList.add('on');
+      close.prepend(renderer.domElement);
+      document.getElementById('close-title').textContent = nameOf(it);
+      drawSwitches();
+    }
+    function closeBack() {
+      state.look = null;
+      writeAddress();
+      close.classList.remove('on');
+      renderer.domElement.remove();
+      closeLayer?.dispose();
+      closeLayer = null;
+      for (const s of strips) s.dirty = true;
+      drawSwitches();
+    }
+    document.getElementById('back').addEventListener('click', closeBack);
+    addEventListener('keydown', (e) => { if (e.key === 'Escape' && state.look) closeBack(); });
+    const spinBtn = document.getElementById('spin');
+    spinBtn.addEventListener('click', () => {
+      view.spin = !view.spin;
+      spinBtn.setAttribute('aria-pressed', String(view.spin));
+    });
+    document.getElementById('reset').addEventListener('click', () => firstView(byId.get(state.look)));
+    // The view of the game: the angle of the camera of play and the size of a block on the screen
+    // at the near and the far zoom (src/world/view.js).
+    const gameView = (level) => {
+      view.az = Math.PI / 4;
+      view.el = VIEW.elevation;
+      view.size = viewSize(innerWidth, innerHeight, level).h;
+      view.spin = false;
+      spinBtn.setAttribute('aria-pressed', 'false');
+    };
+    document.getElementById('game-near').addEventListener('click', () => gameView(0));
+    document.getElementById('game-far').addEventListener('click', () => gameView(1));
+    // Touch and mouse: one finger turns and tilts, two fingers zoom, two taps go to the first view.
+    const pointers = new Map();
+    let pinch = null;
+    let lastTap = 0;
+    const surface = close;
+    surface.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button')) return;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      surface.setPointerCapture(e.pointerId);
+      view.idle = 0;
+      if (pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), size: view.size };
+      }
+      const now = performance.now();
+      if (pointers.size === 1 && now - lastTap < 300) firstView(byId.get(state.look));
+      lastTap = now;
+    });
+    surface.addEventListener('pointermove', (e) => {
+      const p = pointers.get(e.pointerId);
+      if (!p) return;
+      view.idle = 0;
+      if (pointers.size === 1) {
+        view.az -= (e.clientX - p.x) * 0.01;
+        view.el = Math.max(0.02, Math.min(Math.PI / 2 - 0.01, view.el + (e.clientY - p.y) * 0.008));
+      }
+      p.x = e.clientX;
+      p.y = e.clientY;
+      if (pinch && pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        view.size = Math.max(0.8, Math.min(60, pinch.size * (pinch.d / Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)))));
+      }
+    });
+    const up = (e) => {
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) pinch = null;
+    };
+    surface.addEventListener('pointerup', up);
+    surface.addEventListener('pointercancel', up);
+    surface.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      view.size = Math.max(0.8, Math.min(60, view.size * Math.exp(e.deltaY * 0.001)));
+      view.idle = 0;
+    }, { passive: false });
+    function drawClose(dt) {
+      const it = byId.get(state.look);
+      if (!it) return;
+      if (!closeLayer || closeDetail !== detailOf()) {
+        closeLayer?.dispose();
+        closeDetail = detailOf();
+        closeLayer = createFigureLayer(closeScene, lookOf, { detail: closeDetail });
+        closeLayer.sync(entitiesOf([{ it, shape: { ...shapeOf(it), facing: 0 }, x: 0, z: 0 }]));
+        for (let i = 0; i < 12; i++) closeLayer.draw(1, 0.1);
+      }
+      view.idle += dt;
+      if (view.spin && view.idle > 1.5) view.az += dt * 0.35;
+      closeLayer.sync(entitiesOf([{ it, shape: { ...shapeOf(it), facing: 0 }, x: 0, z: 0 }]));
+      closeLayer.draw(1, dt);
+      const w = innerWidth;
+      const h = innerHeight;
+      renderer.setSize(w, h);
+      const half = view.size / 2;
+      closeCam.left = (-half * w) / h;
+      closeCam.right = (half * w) / h;
+      closeCam.top = half;
+      closeCam.bottom = -half;
+      closeCam.updateProjectionMatrix();
+      const d = 40;
+      closeCam.position.set(Math.sin(view.az) * Math.cos(view.el) * d, view.target + Math.sin(view.el) * d, Math.cos(view.az) * Math.cos(view.el) * d);
+      closeCam.lookAt(0, view.target, 0);
+      renderer.render(closeScene, closeCam);
+    }
+
+    // The switches: for the board and for the piece up close. Each one changes the address.
+    const LABELS = { pose: { rest: 'At rest', walk: 'Walking' }, wind: { none: 'No wind', breeze: 'Breeze', full: 'Full wind' }, time: { day: 'Day', night: 'Night' }, level: { fine: 'Fine', far: 'Far level' } };
+    function drawSwitches() {
+      for (const host of [document.getElementById('switches'), document.getElementById('close-switches')]) {
+        host.replaceChildren();
+        for (const [k, values] of Object.entries(SWITCHES)) {
+          const g = document.createElement('div');
+          g.className = 'group';
+          g.append(Object.assign(document.createElement('span'), { textContent: k }));
+          for (const v of values) {
+            const b = Object.assign(document.createElement('button'), { type: 'button', textContent: LABELS[k]?.[v] ?? v });
+            b.setAttribute('aria-pressed', String(state[k] === v));
+            b.addEventListener('click', () => {
+              state[k] = v;
+              writeAddress();
+              for (const s of strips) s.dirty = true;
+              drawSwitches();
+            });
+            g.append(b);
+          }
+          host.append(g);
+        }
+      }
+      night.value = state.time === 'night' ? 0.8 : 0;
+      document.body.classList.toggle('night', state.time === 'night');
+    }
+
+    // Each frame: the piece up close, or the strips near the screen (all of them while they move:
+    // the walk and the wind; else only after a change).
+    let last = performance.now();
+    function frame(now) {
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      if (state.look) drawClose(dt);
+      else {
+        const moving = state.pose === 'walk' || state.wind !== 'none';
+        for (const s of strips) {
+          if (!s.near || (!moving && !s.dirty)) continue;
+          drawStrip(s, dt);
+          s.dirty = false;
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    drawSwitches();
+    layoutBoard();
+    let width = innerWidth;
+    addEventListener('resize', () => {
+      if (Math.abs(innerWidth - width) < 40) return;
+      width = innerWidth;
+      layoutBoard();
+    });
+    if (state.look) openClose(state.look);
+    // The strips in view draw at once, so that a screenshot can wait for data-ready.
+    for (const s of strips) {
+      const r = s.el.getBoundingClientRect();
+      if (r.top < innerHeight + 300) {
+        s.near = true;
+        drawStrip(s, 0);
+        s.dirty = false;
+      }
+    }
+    if (state.look) drawClose(0);
+    requestAnimationFrame(frame);
     document.body.dataset.ready = '1';
   </script>
 </body>
