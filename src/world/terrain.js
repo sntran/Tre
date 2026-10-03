@@ -221,7 +221,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
         const def = tileTypes[type] ?? {};
         const h = tops[gz * GW + gx];
         const full = DECKS.has(type) ? 1 : baseTop(x, z);
-        const top = DECKS.has(type) ? 'yellowPale' : rut(x, z) ? 'ashLight' : def.color ?? 'greenPale';
+        const top = DECKS.has(type) ? 'yellowPale' : def.color ?? 'greenPale';
         const under = def.under ?? 'wood';
         for (let y = 0; y < h; y++) {
           // The depth under the first top of the column (a dug column keeps the kinds of its blocks).
@@ -246,6 +246,8 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
         if (type === 'water' || type === 'shallow') water.push({ x, z, y: baseTop(x, z) + WATER.river, ...(type === 'shallow' ? { ford: true } : {}) });
         if (SEA.has(type)) water.push({ x, z, y: WATER.sea, sea: true });
         if (type === 'field') paddies.push({ x, z, y: baseTop(x, z) + WATER.paddy });
+        // A ditch has the still water of a paddy, with no seedlings.
+        if (type === 'ditch') paddies.push({ x, z, y: baseTop(x, z) + WATER.paddy, ditch: true });
       }
     }
 
@@ -340,7 +342,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     // or water), owned by the top block
     // of their ground column (a dig takes them). They lean out from the edge.
     const rt = seeded(hashSeed(`${id}:tufts:${cx}:${cz}`));
-    const wetType = (t) => t === 'water' || t === 'shallow' || t === 'sea' || t === 'surf';
+    const wetType = (t) => t === 'water' || t === 'shallow' || t === 'sea' || t === 'surf' || t === 'ditch';
     for (let z = z0; z < z0 + CHUNK; z++) {
       for (let x = x0; x < x0 + CHUNK; x++) {
         const roll = rt.next();
@@ -370,24 +372,6 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     }
     for (const o of page.objects) if (o.home && o.id) homes[o.id] = o.home;
     return page;
-  }
-
-  // Ruts along a road: the second and the second-last row across a road that is long in one way.
-  const isRoad = (x, z) => typeAt(x, z) === 'path';
-  const run = (x, z, dx, dz) => {
-    let back = 0;
-    while (back < 8 && isRoad(x - dx * (back + 1), z - dz * (back + 1))) back += 1;
-    let n = back + 1;
-    while (n < 16 && isRoad(x + dx * (n - back), z + dz * (n - back))) n += 1;
-    return { n, i: back };
-  };
-  function rut(x, z) {
-    if (!isRoad(x, z)) return false;
-    const along = run(x, z, 1, 0);
-    const across = run(x, z, 0, 1);
-    if (along.n >= 6 && across.n >= 3 && across.n <= 6) return across.i === 1 || across.i === across.n - 2;
-    if (across.n >= 6 && along.n >= 3 && along.n <= 6) return along.i === 1 || along.i === along.n - 2;
-    return false;
   }
 
   // The page of a chunk (made when it is first asked for).
@@ -592,7 +576,10 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
   function inset(x, z) {
     if (typeAt(x, z) !== 'path') return 0;
     const c = map.land?.cell?.(x, z);
-    return c && !c.stamp && !c.bank ? INSET : 0;
+    if (!c || c.stamp || c.bank) return 0;
+    // The end of a bank: no inset next to it, so that the road does not step twice.
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (map.land.cell(x + dx, z + dz).bank === 1) return 0;
+    return INSET;
   }
   const topAt = (x, z) => Math.max(0, baseTop(x, z) - dugAt(x, z));
 

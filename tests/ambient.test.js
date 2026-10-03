@@ -49,3 +49,20 @@ test('the rare things and the shooting stars come from the seed: the same seed g
   assert.equal(typeof windyOn(5, 3, A), 'boolean');
   assert.deepEqual(DEFAULT_AMBIENT, A, 'the code default is the data');
 });
+
+test('puddles lie on the earth roads from the start of a rain until a game day after its end', async () => {
+  const { puddlesAt } = await import('../src/core/world/ambient.js');
+  const { rainOf } = await import('../src/core/world/systems/sky.js');
+  const seed = 7;
+  // A day with a rain and no rain on the day before or after it.
+  let d = 1;
+  while (!(rainOf(seed, d) && !rainOf(seed, d - 1) && !rainOf(seed, d + 1))) d += 1;
+  const rain = rainOf(seed, d);
+  const at = (day, hour) => puddlesAt((k) => rainOf(seed, k), day * 1440 + hour * 60);
+  assert.equal(at(d, rain.start - 0.5), false, 'no puddles before the rain');
+  assert.equal(at(d, rain.start + 0.1), true, 'puddles in the rain');
+  assert.equal(at(d, rain.end + 2), true, 'puddles after the rain');
+  assert.equal(at(d + 1, rain.end - 0.5), true, 'still the next day, until a game day after the end');
+  assert.equal(at(d + 1, rain.end + 0.5), false, 'gone a game day after the end');
+  assert.equal(at(d + 2, 12), false);
+});

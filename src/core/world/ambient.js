@@ -73,6 +73,17 @@ export function starOn(seed, day, a = DEFAULT_AMBIENT) {
 // Is a day windy (a kite over the village)?
 export const windyOn = (seed, day, a = DEFAULT_AMBIENT) => unit(seed, `windy:${day}`) < a.windy;
 
+// Puddles on the earth roads: from the start of a rain until a game day after its end. rainOf:
+// (dayIndex) => the rain of a day ({ start, end } in hours, or null; rainOf in systems/sky.js).
+// minutes: the game clock. Return true while the roads are wet.
+export function puddlesAt(rainOf, minutes) {
+  const day = Math.floor(minutes / (24 * 60));
+  const hour = (minutes % (24 * 60)) / 60;
+  const today = rainOf(day);
+  const yesterday = rainOf(day - 1);
+  return Boolean((today && hour >= today.start) || (yesterday && hour < yesterday.end));
+}
+
 // A rainbow over the river for a while after a rain. rain: the rain of the day ({ start, end } in
 // hours, or null, from rainOf in systems/sky.js). Return true at the hour.
 export const rainbowAt = (rain, hour, a = DEFAULT_AMBIENT) => Boolean(rain) && hour >= rain.end && hour < rain.end + a.rainbow;

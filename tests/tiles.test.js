@@ -117,3 +117,35 @@ test('a road through paddies runs on a bank: one step over the paddies on both s
     assert.ok(checked > 20, `seed ${seed}: ${checked} points of roads on a bank`);
   }
 });
+
+test('the low land is not a table: mounds with bamboo or a tree, and ditches of water along the paddies', () => {
+  const L = make(7);
+  const [px, py] = L.toPlane(['phu-dong', 31, 27]);
+  const [tx0, tz0] = L.tileOf(px, py);
+  let mounds = 0;
+  let ditches = 0;
+  for (let tz = tz0 - 2; tz <= tz0 + 2; tz++) {
+    for (let tx = tx0 - 2; tx <= tx0 + 2; tx++) {
+      const t = L.tile(tx, tz);
+      for (const o of t.objects.filter((x) => x.mound)) {
+        mounds += 1;
+        assert.ok(o.prop === 'bamboo' || o.prop === 'tree', o.id);
+        // The rise is one step over the land around it.
+        const top = L.cell(o.x, o.y).level;
+        for (const [x, y] of [[o.x, o.y], [o.x + 1, o.y], [o.x, o.y + 1], [o.x + 1, o.y + 1]]) assert.equal(L.cell(x, y).level, top, `${o.id}: a flat top`);
+        for (const [x, y] of [[o.x - 2, o.y], [o.x + 3, o.y], [o.x, o.y - 2], [o.x, o.y + 3]]) assert.equal(L.cell(x, y).level, top - 1, `${o.id}: one step over the land`);
+      }
+      for (let i = 0; i < TILE * TILE; i++) {
+        if (String.fromCharCode(t.letter[i]) !== 'c') continue;
+        ditches += 1;
+        // A ditch lies next to the dike of a paddy, under it.
+        const x = t.x0 + (i % TILE);
+        const y = t.z0 + Math.floor(i / TILE);
+        const dikes = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => L.cell(x + dx, y + dy)).filter((c) => c.letter === 'd');
+        assert.ok(dikes.length >= 1 && dikes.every((c) => c.level >= L.cell(x, y).level + 1), `a ditch at ${x},${y} along a dike, under it`);
+      }
+    }
+  }
+  assert.ok(mounds >= 10, `${mounds} mounds`);
+  assert.ok(ditches >= 20, `${ditches} cells of ditches`);
+});

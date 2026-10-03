@@ -100,7 +100,7 @@ const GROUND_GLSL = `
     }
     return col;
   }
-  vec3 groundOf(vec3 col, vec3 w, vec4 surface, vec2 soil) {
+  vec3 groundOf(vec3 col, vec3 w, vec4 surface, vec2 soil, float puddles) {
     float kind = floor(surface.x + 0.5);
     if (kind < 0.5) return col;
     vec2 p = w.xz;
@@ -130,6 +130,19 @@ const GROUND_GLSL = `
         float rut = 1.0 - smoothstep(0.035, 0.07, abs(a - 0.7));
         col = mix(col, col * 0.78, rut * 0.8);
         col *= 1.0 + 0.06 * (1.0 - smoothstep(0.12, 0.3, a));
+        // After a rain: flat puddles in the ruts of some cells, pale water with one glint.
+        if (puddles > 0.5) {
+          vec2 cell = floor(p);
+          if (h21(cell + 17.0) < 0.3) {
+            float along = dot(p - (cell + 0.5), dir) + (h21(cell + 4.0) - 0.5) * 0.3;
+            float side = h21(cell + 9.0) < 0.5 ? -0.7 : 0.7;
+            float d = length(vec2(along / 0.46, (dot(p - (cell + 0.5), across) + surface.w - side) / 0.22));
+            if (d < 1.0) {
+              col = mix(vec3(0.62, 0.69, 0.76), vec3(0.85, 0.89, 0.92), step(0.86, fract(along * 2.0 + 0.3)) * step(d, 0.5));
+              if (d > 0.82) col = mix(col, INK, 0.35);
+            }
+          }
+        }
       }
     } else if (kind == 3.0) {
       // Bricks or stones of a village path, along the path, with ink in the joints.
@@ -200,7 +213,7 @@ function flatMaterial(uniforms) {
         gl_Position = projectionMatrix * viewMatrix * (w + vec4(swayOf(w.xyz, sway), 0.0));
       }`,
     fragmentShader: `
-      uniform vec3 uPaper;
+      uniform vec3 uPaper; uniform float uPuddles;
       varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
       varying vec4 vSurface; varying vec2 vSoil;
       ${STAGES_GLSL}
@@ -210,7 +223,7 @@ function flatMaterial(uniforms) {
       float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
       void main() {
         if (vFade > 0.001 && vFade * 0.85 > bayer4(gl_FragCoord.xy)) discard;
-        gl_FragColor = vec4(onPaper(groundOf(vColor, vW, vSurface, vSoil), uPaper, vPaper, vW), 1.0);
+        gl_FragColor = vec4(onPaper(groundOf(vColor, vW, vSurface, vSoil, uPuddles), uPaper, vPaper, vW), 1.0);
       }`,
   });
 }
@@ -496,6 +509,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
   const uniforms = {
     uFade: { value: fadeTex }, uNight: night, uView: { value: view },
     uTime: { value: 0 }, uGust: { value: new THREE.Vector3() }, uWind: { value: new THREE.Vector2(0.8, 0.6) }, uWindy: { value: 0 },
+    uPuddles: { value: 0 },
     uFocus: { value: new THREE.Vector3() }, uFar: { value: new THREE.Vector2(CHUNK * 2.6, CHUNK * 4.2) }, uPaper: { value: paper },
   };
   const flatMat = track(flatMaterial(uniforms));
@@ -822,7 +836,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
           idx.push(i * 4, i * 4 + 2, i * 4 + 1, i * 4, i * 4 + 3, i * 4 + 2);
         });
         parts.paddy = { attrs: { position: [new Float32Array(pos), 3] }, index: new Uint32Array(idx) };
-        parts.seeds = page.paddies.flatMap((p) => [0.25, 0.75].map((dx) => [p.x + dx - ox, p.y, p.z + 0.5 - oz, ((p.x * 7 + p.z * 13 + dx * 10) % 5) * 0.05 - 0.1]));
+        parts.seeds = page.paddies.filter((p) => !p.ditch).flatMap((p) => [0.25, 0.75].map((dx) => [p.x + dx - ox, p.y, p.z + 0.5 - oz, ((p.x * 7 + p.z * 13 + dx * 10) % 5) * 0.05 - 0.1]));
       }
     }
     for (const mesh of made) group.add(mesh);
@@ -1018,8 +1032,9 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
       update(hero.x, hero.z);
       updateFades(hero, dt);
       waveOffset.value.y = (t * 0.04) % 1;
-      // In the rain the river rises one block.
+      // In the rain the river rises one block; after a rain the earth roads have puddles.
       for (const r of rivers) r.position.y = sky?.flood ?? 0;
+      uniforms.uPuddles.value = sky?.puddles ? 1 : 0;
       const night = sky?.night ?? 0;
       flyMat.opacity = night;
       fireflies.visible = night > 0.05;

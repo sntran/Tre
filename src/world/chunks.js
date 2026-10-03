@@ -205,11 +205,13 @@ export function chunkCost(terrain, cx, cz, { coarse = false, waterAt = () => nul
   if (m.ground.indices.length || m.things.indices.length) kinds.push('world');
   if (m.ink.some((k) => k.segs.length)) kinds.push('ink');
   if (m.ink.some((k) => k.hull?.indices.length)) kinds.push('hull');
-  if (page.paddies.length) kinds.push('paddy', 'seeds');
+  if (page.paddies.length) kinds.push('paddy');
+  if (page.paddies.some((p) => !p.ditch)) kinds.push('seeds');
   const foam = foamEdges(page, waterAt).length;
   if (foam) kinds.push('foam');
   const water = new Set(page.water.map((w) => (w.sea ? 'sea' : 'river'))).size;
-  return { triangles: m.triangles + water * 2 + page.paddies.length * 26 + foam * 2, kinds, water };
+  const seeded = page.paddies.filter((p) => !p.ditch).length;
+  return { triangles: m.triangles + water * 2 + page.paddies.length * 2 + seeded * 24 + foam * 2, kinds, water };
 }
 
 // The draw calls of some chunks (each { cx, cz, coarse, cost } with its chunkCost) in their blocks

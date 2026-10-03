@@ -9,7 +9,7 @@ import { portraitCanvas, heroLookOf, speakerLookOf, prerender, portraitStats } f
 import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../core/world/move.js';
 import { getEntity, query } from '../core/world/state.js';
 import { STEP } from '../core/world/step.js';
-import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, rainbowAt, starOn } from '../core/world/ambient.js';
+import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, rainbowAt, starOn, puddlesAt } from '../core/world/ambient.js';
 import { rainOf } from '../core/world/systems/sky.js';
 import { whenOn } from '../core/world/systems/joys.js';
 import { createSession, middleOf } from '../core/session.js';
@@ -1098,7 +1098,9 @@ export async function mountVillage(ctx, params = {}) {
     const hm = hero().motion;
     const speed = Math.hypot(hm?.vx ?? 0, hm?.vz ?? 0) || 1;
     stream.update(hp.x / 2, hp.z / 2, { x: (hm?.vx ?? 0) / speed, y: (hm?.vz ?? 0) / speed });
-    view.render(dt, raidView.focus(figures.placeOf('hero')), time, state.sky, ambient);
+    // The puddles on the earth roads after a rain (drawn by the ground of the view).
+    const puddles = puddlesAt((d) => rainOf(state.seed, d, data.day ?? undefined), state.clock.minutes);
+    view.render(dt, raidView.focus(figures.placeOf('hero')), time, { ...state.sky, puddles }, ambient);
     drawSky();
     raidView.draw(dt, w, hh);
     drawMarks();

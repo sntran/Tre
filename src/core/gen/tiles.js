@@ -23,7 +23,7 @@ const PAD = 56;
 const CAP = 16; // distances are capped (cells): no rule reads farther
 const SITE = 32; // one hamlet site at most in each square of SITE cells (two squares in a tile side)
 export const HAMLET = Object.freeze({ w: 22, h: 16 });
-export const LETTER = Object.freeze({ grass: '.', path: '=', sand: '_', water: '~', field: 'f', dike: 'd', bridge: 'B', rock: 'r', yard: 'y', hedge: 'h', surf: ':', sea: '^', shallow: 's', bamboo: 'k' });
+export const LETTER = Object.freeze({ grass: '.', path: '=', sand: '_', water: '~', field: 'f', dike: 'd', bridge: 'B', rock: 'r', yard: 'y', hedge: 'h', surf: ':', sea: '^', shallow: 's', bamboo: 'k', ditch: 'c' });
 const CODE = Object.fromEntries(Object.entries(LETTER).map(([k, v]) => [k, v.charCodeAt(0)]));
 const FIXED = { none: 0, stamp: 1, river: 2, claim: 3, sea: 4 };
 const SURF = 3; // cells of shallow sea (to the knee) next to the land; farther, the sea is deep
@@ -743,7 +743,7 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
     // delta: a road cell with paddies near it is one step up, and so is the edge of grass beside it
     // (a shoulder, whose face of grass goes down to the dikes). Near a crossing of a river the road
     // stays down, so that it comes to the water; a road cell is never two steps from the next.
-    const ROAD_BANK = { fields: 5, width: 4, crossing: 3 };
+    const ROAD_BANK = { fields: 5, width: 7, crossing: 3 };
     const toPaddy = distanceField(W, W, (i) => letter[i] === CODE.field);
     const toCrossing = distanceField(W, W, (i) => letter[i] === CODE.water || letter[i] === CODE.shallow || letter[i] === CODE.bridge || letter[i] === CODE.bamboo);
     const onBank = new Uint8Array(N);
@@ -782,6 +782,62 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
           onBank[i] = 2;
           break;
         }
+      }
+    }
+    // Ditches (mương): along some sides of the paddies, a run of still water one step under the
+    // dike, on free land (never on a road, a stamp, or a bank). The whole side or none of it.
+    const free = (i) => !fixed[i] && !letter[i] && !onBank[i] && roadDist[i] >= 3 && toStamp.dist[i] >= 3;
+    const ditchSeed = hashSeed(`${seed}:ditches`) & 0x7fffffff;
+    for (const [bx, by, L] of blocks) {
+      if (hash2(ditchSeed, bx, by) >= 0.3) continue;
+      const k = Math.floor(hash2(ditchSeed + 1, bx, by) * 4);
+      const cells = [];
+      for (let t = 1; t < DIKE; t++) {
+        const [x, y] = [[bx * DIKE - 1, by * DIKE + t], [bx * DIKE + DIKE + 1, by * DIKE + t], [bx * DIKE + t, by * DIKE - 1], [bx * DIKE + t, by * DIKE + DIKE + 1]][k];
+        if (x < X0 || y < Z0 || x >= X0 + W || y >= Z0 + W) break;
+        cells.push((y - Z0) * W + (x - X0));
+      }
+      if (cells.length !== DIKE - 1 || !cells.every((i) => free(i) && level[i] >= L && level[i] <= L + 1)) continue;
+      for (const i of cells) {
+        letter[i] = CODE.ditch;
+        level[i] = L - 1;
+        fixed[i] = FIXED.claim;
+      }
+    }
+    // Mounds (gò) on the low land: a round rise one step high with bamboo or a tree on it, at a
+    // place of the seed in some squares, on free land away from water, the roads, and the stamps.
+    // Each mound reads only the land around it, so it is the same in every window.
+    const MOUND = { square: 18, chance: 0.5 };
+    const moundSeed = hashSeed(`${seed}:mounds`) & 0x7fffffff;
+    const moundObjects = [];
+    for (let sy = Math.floor((tz * TILE) / MOUND.square) - 1; sy <= Math.floor(((tz + 1) * TILE) / MOUND.square) + 1; sy++) {
+      for (let sx = Math.floor((tx * TILE) / MOUND.square) - 1; sx <= Math.floor(((tx + 1) * TILE) / MOUND.square) + 1; sx++) {
+        if (hash2(moundSeed, sx, sy) >= MOUND.chance) continue;
+        const x = sx * MOUND.square + 3 + Math.floor(hash2(moundSeed + 1, sx, sy) * (MOUND.square - 6));
+        const y = sy * MOUND.square + 3 + Math.floor(hash2(moundSeed + 2, sx, sy) * (MOUND.square - 6));
+        if (x - 3 < X0 || y - 3 < Z0 || x + 4 >= X0 + W || y + 4 >= Z0 + W) continue;
+        // The rise covers the cells x - 1 to x + 2 (the corners cut); the land around stays.
+        let ok = true;
+        for (let dy = -2; dy <= 3 && ok; dy++) {
+          for (let dx = -2; dx <= 3; dx++) {
+            const i = (y + dy - Z0) * W + (x + dx - X0);
+            if (!free(i) || level[i] < 2 || level[i] > base + 1 || cap(toWater.dist[i]) <= 3 || roadDist[i] < 6 || toStamp.dist[i] < 6 || toPaddy.dist[i] <= 1) {
+              ok = false;
+              break;
+            }
+          }
+        }
+        if (!ok) continue;
+        for (let dy = -1; dy <= 2; dy++) {
+          for (let dx = -1; dx <= 2; dx++) {
+            const i = (y + dy - Z0) * W + (x + dx - X0);
+            fixed[i] = FIXED.claim;
+            if ((dx === -1 || dx === 2) && (dy === -1 || dy === 2)) continue;
+            level[i] += 1;
+          }
+        }
+        const prop = hash2(moundSeed + 3, sx, sy) < 0.5 ? 'bamboo' : 'tree';
+        moundObjects.push({ id: `gen:mound:${x}:${y}`, prop, x, y, w: 2, h: 2, seed: 1 + Math.floor(hash2(moundSeed + 4, sx, sy) * 2147483645), gen: true, mound: true });
       }
     }
     // A beach of sand along the sea.
@@ -858,6 +914,7 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       out.spots.yard.push([hm.site.x + 11, hm.site.y + 12]);
     }
     for (const o of things.objects) if (inTile(o.x, o.y)) out.objects.push(o);
+    for (const o of moundObjects) if (inTile(o.x, o.y)) out.objects.push(o);
     for (const g of things.life) if (inTile(Math.floor(g.x), Math.floor(g.y))) out.life.push(g);
     // The spots of the small events: points of the roads on the low land (a cart does not climb a
     // hill path), the middles of paddies, and the paddies near water (a flood comes only there).
