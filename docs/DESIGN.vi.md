@@ -119,7 +119,7 @@ Tre là một thế giới isometric sống động duy nhất. Trẻ đi lại,
 | Dòng chảy nguyên tố | Kéo lửa từ đuốc lên băng. Nước chảy xuống dốc vào sông. Sét đánh xuống nước giật mọi lính trong vùng ướt | Nguyên nhân và kết quả, trạng thái vật chất | Năng lượng, hóa học, mạch điện |
 | Chặt tre | Chém một thân tre tại vạch đánh dấu. Một thân dài 12 chia thành 3 khúc bằng nhau cho 3 cây gậy | Phần bằng nhau, phân số | Tỉ lệ, đo lường |
 | Cho Gióng ăn | Mang bát cơm từ ruộng về. Gióng cao thêm một đầu sau mỗi 10 bát. Mang 3 bát thì nhanh hoặc 5 bát thì chậm | Đếm theo nhóm, giá trị hàng | Tốc độ, thời gian và quãng đường |
-| Chia chiến lợi phẩm | Kéo 12 đồng xu chia cho nhân vật, Nghé và Gióng. Nghé dỗi khi bị chia không công bằng | Phép chia, số dư | Tỉ lệ, phần trăm |
+| Chia chiến lợi phẩm | Kéo 12 bao gạo chia cho nhân vật, Nghé và Gióng. Nghé dỗi khi bị chia không công bằng | Phép chia, số dư | Tỉ lệ, phần trăm |
 
 **Trận đấu: phòng thủ làng**
 
@@ -130,7 +130,7 @@ Trận đấu là chiến thuật thời gian thực nhẹ nhàng trên bản đ
 - **Ngắn, có các giai đoạn.** Một trận tập kích kéo dài 2 đến 3 phút. Trùm có các giai đoạn: tướng cho lính tiến lên, rồi tự mình đánh, rồi gậy sắt gãy và Gióng nhổ tre.
 - **Thế giới thay đổi sau chiến thắng.** Quân do thám làm rơi bản đồ chỉ nơi có quặng. Dòng sông mở ra một lối đi mới.
 - **Kẻ địch bị đánh bại** rút lui hoặc đầu hàng. Sinh vật trở nên hiền lành, và một số thành bạn. Game không có máu và không có cái chết.
-- **Thua một trận tập kích:** kẻ địch lấy đi một ít tiền xu hoặc vật liệu rồi rời đi. Làng vẫn đứng vững. Không thứ gì trẻ xây bị phá hủy. Người chơi không bao giờ mất một sinh vật bạn, một cỗ máy đã chế tạo, hay một danh hiệu. Trận tập kích ở lớp 1 không lấy gì cả. Phụ huynh có thể tăng mức mất mát trong phần cài đặt.
+- **Thua một trận tập kích:** kẻ địch lấy đi một ít gạo hoặc vật liệu rồi rời đi. Làng vẫn đứng vững. Không thứ gì trẻ xây bị phá hủy. Người chơi không bao giờ mất một sinh vật bạn, một cỗ máy đã chế tạo, hay một danh hiệu. Trận tập kích ở lớp 1 không lấy gì cả. Phụ huynh có thể tăng mức mất mát trong phần cài đặt.
 - **Hai người chơi** chơi cùng lúc trên cùng bản đồ, mỗi người một nhân vật riêng, mỗi người ở trình độ riêng.
 
 **Nguyên mẫu đầu tiên:** một ngôi làng isometric, di chuyển tự do, Nghé đi theo, thế giới phản ứng (gà, cỏ, nồi), cây cầu gãy với nhiệm vụ đặt ván, và một trận tập kích nhỏ của quân do thám ở cổng với bẫy và ná. Không có lời thoại nào ngoài một câu của cụ già làng. Chơi với người chơi đầu tiên trong mười phút và quan sát em làm gì trong hai phút đầu mà không có trợ giúp. Nguyên mẫu kiểm tra ba điều: thế giới có cảm giác thật không, việc đặt đồ có cảm giác như chơi không, và trẻ có muốn bảo vệ thứ mình đã xây không?
@@ -158,7 +158,7 @@ Thế giới là Việt Nam với địa lý thật: bờ biển, sông, núi v�
 
 **Đồi núi là thật, và trẻ cảm nhận được.** Độ cao của đất lấy từ dữ liệu SRTM với các điểm cách nhau khoảng 550 m, không lấy từ lưới thô của bản đồ đất nước, và khi gộp điểm thì giữ lại các đỉnh, để một ngọn đồi nhỏ không chìm vào đồng bằng xung quanh. Độ cao tính bằng khối theo một đường cong, không theo đường thẳng: đồi thấp được nhiều khối hơn độ cao thật (Núi Trâu và Sóc Sơn là những ngọn đồi mà trẻ leo lên), còn núi cao được ít khối hơn (Ba Vì và Tam Đảo vẫn cao nhưng vẫn nằm trong khung nhìn). Sườn dốc cho thấy hình dáng của nó: vách đá có nét mực, rừng trên đồi, ruộng bậc thang trên sườn thoải, và đường mòn uốn qua lại lên đồi.
 
-**Thời kỳ 1 là thật.** Phù Đổng nằm bên bờ sông Đuống. Núi Trâu (Trâu Sơn), nơi truyền thuyết đặt trận đánh, ở phía đông thuộc Bắc Ninh. Sóc Sơn, nơi Gióng bay về trời, ở phía bắc. Thăng Long và Văn Miếu ở phía tây nam, bên kia sông Đuống và sông Hồng.
+**Thời kỳ 1 là thật.** Phù Đổng nằm bên bờ sông Đuống. Núi Trâu (Trâu Sơn), nơi truyền thuyết đặt trận đánh, ở phía đông thuộc Bắc Ninh. Sóc Sơn, nơi Gióng bay về trời, ở phía bắc. Thăng Long và Văn Miếu ở phía tây nam, bên kia sông Đuống và sông Hồng. **Mọi thứ thuộc về thời của nó:** người thời kỳ 1 trao đổi bằng cách đổi hàng lấy hàng (gạo, cá, trứng, nồi đất), không có tiền xu; những đồng tiền đầu tiên của Việt Nam ra đời dưới thời nhà Đinh (968–981), và việc đổi hàng vẫn phổ biến thêm hai thế kỷ nữa. Thế giới có xe bò. Ngọn núi đúng của Trâu Sơn ở Quế Võ vẫn còn phải xác nhận.
 
 **Các vùng sau đi theo địa thế thật:** Cổ Loa ở phía bắc sông Hồng, cửa sông Bạch Đằng và thủy triều của nó gần Hạ Long, núi đá vôi Ninh Bình, núi rừng Lam Sơn ở Thanh Hóa, duyên hải miền Trung và Phú Xuân (Huế), cao nguyên Tây Sơn, và đồng bằng sông Cửu Long.
 
@@ -228,7 +228,7 @@ Báo cáo nghiên cứu trong `docs/research/learning-by-doing.md` tập hợp c
 **Nhiệm vụ**
 
 1. **Khái niệm là con đường duy nhất dẫn tới mục tiêu.** Một nhiệm vụ phải không thể giải được nếu thiếu phép toán đó. Một engine vật lý với mục tiêu không cần đến khái niệm thì không dạy được gì (các nghiên cứu về Angry Birds). Cùng một nội dung toán, khi là hành động thay vì là câu đố, cho kết quả 58 phần trăm so với 41 phần trăm trong bài kiểm tra trì hoãn, và trẻ chọn chơi phiên bản hành động lâu gấp bảy lần (Zombie Division).
-2. **Một phép toán, một cử chỉ.** Kéo một tấm ván để ghép thành chiều dài. Chia tiền xu để làm phép chia. Xoay bánh răng để nhân. Mọi trò chơi toán có nghiên cứu đối chứng cho kết quả tích cực đều làm như vậy (DragonBox, Slice Fractions, Wuzzit Trouble, Motion Math).
+2. **Một phép toán, một cử chỉ.** Kéo một tấm ván để ghép thành chiều dài. Chia các bao gạo để làm phép chia. Xoay bánh răng để nhân. Mọi trò chơi toán có nghiên cứu đối chứng cho kết quả tích cực đều làm như vậy (DragonBox, Slice Fractions, Wuzzit Trouble, Motion Math).
 3. **Hình dạng của hành động là hình dạng của ý tưởng.** Các chiều dài nằm trên một đường thẳng với khoảng cách đều nhau. Các nhóm là các hàng. Một trò chơi bàn cờ tuyến tính dạy được cảm quan số cho trẻ 4 tuổi; cùng trò chơi đó trên vòng tròn thì không (Siegler and Ramani).
 4. **Dự đoán, rồi chốt.** Trước khi chốt, trẻ chỉ xem mũi tên sẽ rơi ở đâu hoặc cần bao nhiêu tấm ván. Sau đó trẻ hành động. Một lời dự đoán biến món đồ chơi vật lý thành một bài học (Angry Birds với mục tiêu tri thức; mẫu "đặt cược của bạn").
 5. **Một sân chơi tự do trước khi chốt có tính điểm.** Trẻ có thể thử, hoàn tác, và thử lại mà không mất gì. Chỉ hành động đã chốt ("qua cầu") mới được tính điểm. Khám phá không bao giờ bị tính là lỗi.
@@ -295,7 +295,7 @@ Mỗi nhiệm vụ theo một khuôn mẫu. Truyền thuyết đặt ra một nh
 | Nhiệm vụ | Khái niệm | Trẻ | Thế giới | Mô hình quan sát |
 | --- | --- | --- | --- | --- |
 | Cầu khỉ bắc qua khoảng trống dài N | Ghép chiều dài; phép cộng; về sau là nhân và chia chiều dài | Kéo các cây tre cỡ 2, 3, 5 (về sau có cỡ khác) lên một đường thẳng có vạch chia để chạm đúng bờ bên kia | Cầu ngắn làm nhân vật rơi xuống nước ở chỗ hụt. Cây tre dài thì nhô ra và lật. Vạch chia cho thấy phần hụt | Đã giải; đã giải với số cây tối thiểu ngay lần chốt đầu; số lần làm lại; độ trễ mỗi lần đặt; cờ quét đơn điệu |
-| Chia chiến lợi phẩm cho K dân làng | Phép chia có dư và không dư; nhóm bằng nhau | Chia tiền xu hoặc bao gạo vào K cái bát bằng cách kéo; chốt bằng "chia xong" | Dân làng được ít hơn chìa bàn tay trống ra. Xu thừa nằm lại trên chiếu. Các bát bằng nhau thì đứng ngang | Chia đều sạch ngay lần chốt đầu; số lần chia lại; chia từng cái một hay theo nhóm; phần dư được xử lý hay bỏ qua |
+| Chia chiến lợi phẩm cho K dân làng | Phép chia có dư và không dư; nhóm bằng nhau | Chia bao gạo (tiền xu ở các thời kỳ sau) vào K cái bát bằng cách kéo; chốt bằng "chia xong" | Dân làng được ít hơn chìa bàn tay trống ra. Xu thừa nằm lại trên chiếu. Các bát bằng nhau thì đứng ngang | Chia đều sạch ngay lần chốt đầu; số lần chia lại; chia từng cái một hay theo nhóm; phần dư được xử lý hay bỏ qua |
 | Gánh nước theo nhóm | Đếm cách; phép nhân; gộp nhóm | Chất các bát vào thúng của đòn gánh thành các nhóm bằng nhau để đủ tổng số làng cần | Đòn cân bằng khi hai bên khớp và nghiêng khi không khớp. Tiếng đếm của dân làng dừng ở chỗ gánh dừng | Tổng đúng ngay lần chốt đầu; kích thước nhóm đã chọn; thời gian đến khi chốt; theo nhóm bằng nhau hay từng cái |
 | Đòn gánh với hai bên nặng nhẹ khác nhau | Cân bằng mô-men; đòn bẩy với điểm tựa di động | Trượt điểm đặt vai dọc theo đòn dưới hai gánh nặng khác nhau | Đòn nghiêng về bên nặng cho đến khi điểm đặt vai đúng chỗ, rồi cân bằng, và nhân vật bước đi | Sai lệch so với điểm đúng ngay lần chốt đầu; số lần trượt; hướng của lần chỉnh đầu tiên |
 | Gàu sòng | Đòn bẩy loại 1; con lắc; đánh đổi giữa lực và quãng đường | Dịch nút buộc dây dọc theo cán; chọn chỗ cầm; múc | Gàu nhấc lên nhẹ nhàng, hoặc chúi xuống và đổ nước, hoặc không nhấc lên được. Nước trong ruộng dâng lên sau mỗi lần múc | Sai số vị trí nút; số lần múc cho mỗi đơn vị nước; thời gian đến gàu đầy đầu tiên |

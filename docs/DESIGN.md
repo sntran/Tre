@@ -119,7 +119,7 @@ Tre is one living isometric world. The child walks, builds, and defends in the s
 | Element flow | Drags fire from a torch onto ice. The water runs downhill into the river. Lightning into the water shocks every soldier in the wet zone | Cause and effect, states of matter | Energy, chemistry, circuits |
 | Cut bamboo | Slashes a stem at a mark. A stem of 12 in 3 equal sticks gives 3 staffs | Equal parts, fractions | Ratios, measurement |
 | Feed Gióng | Carries rice bowls from the field. Gióng grows one head each 10 bowls. Carries 3 bowls fast or 5 bowls slow | Counting in groups, place value | Rates, time and distance |
-| Share loot | Drags 12 coins to the hero, Nghé, and Gióng. Nghé sulks at an unfair share | Division, remainders | Ratios, percent |
+| Share loot | Drags 12 sacks of rice to the hero, Nghé, and Gióng. Nghé sulks at an unfair share | Division, remainders | Ratios, percent |
 
 **Battles: defense of the village**
 
@@ -130,7 +130,7 @@ Battles are light real-time tactics on the village map, like a gentle tower defe
 - **Short, with phases.** A raid lasts 2 to 3 minutes. The boss has phases: the general sends soldiers, then fights himself, then the iron staff breaks and Gióng pulls bamboo.
 - **The world changes after a win.** The scouts drop a map that shows the ore. The river opens a new path.
 - **Defeated enemies** retreat or surrender. Creatures become calm, and some become friends. The game shows no blood and no deaths.
-- **A lost raid:** the enemies take some coins or materials and leave. The village stands. Nothing the child built is destroyed. The player never loses a creature friend, a crafted machine, or a title. Grade 1 raids take nothing. A parent can make losses harder in the settings.
+- **A lost raid:** the enemies take some rice or materials and leave. The village stands. Nothing the child built is destroyed. The player never loses a creature friend, a crafted machine, or a title. Grade 1 raids take nothing. A parent can make losses harder in the settings.
 - **Two players** play at the same time on the same map, each with their own hero, each at their own level.
 
 **First prototype:** one isometric village, free movement, Nghé who follows, the world that reacts (chickens, grass, pots), the broken bridge with the plank placement task, and one small raid of scouts at the gate with traps and the slingshot. No story text beyond one line from the elder. Play it with the first player for ten minutes and watch what he does in the first two minutes without help. The prototype tests three things: does the world feel real, does placement feel like play, and does the child want to protect what he built?
@@ -158,7 +158,7 @@ The world is Vietnam with its real geography: real coast, rivers, mountains, and
 
 **The hills are real, and the child can feel them.** The height of the land comes from the SRTM data at about 550 m between samples, not from the coarse grid of the country map, and the downsample keeps the tops, so that a small hill does not disappear into the plain around it. The height in blocks follows a curve, not a straight line: low hills get more blocks than their true height (Núi Trâu and Sóc Sơn are hills that the child climbs), and high mountains get fewer (Ba Vì and Tam Đảo are tall but stay in the view). The slopes show their shape: rock faces with ink lines, forest on the hills, terraced fields on gentle slopes, and paths that turn back and forth up a hill.
 
-**Era 1 is real.** Phù Đổng stands on the bank of the Đuống River. Núi Trâu (Trâu Sơn), where the legend puts the battle, is to the east in Bắc Ninh. Sóc Sơn, where Gióng rode to the sky, is to the north. Thăng Long and Văn Miếu are to the southwest, across the Đuống and the Red River.
+**Era 1 is real.** Phù Đổng stands on the bank of the Đuống River. Núi Trâu (Trâu Sơn), where the legend puts the battle, is to the east in Bắc Ninh. Sóc Sơn, where Gióng rode to the sky, is to the north. Thăng Long and Văn Miếu are to the southwest, across the Đuống and the Red River. **Things belong to their time:** the people of Era 1 trade by barter (rice, fish, eggs, pots), with no coins; the first coins of Vietnam came with the Đinh (968–981), and barter stayed common for two centuries after. Carts are in the world. The exact hill of Trâu Sơn in Quế Võ is still to be confirmed.
 
 **Later regions follow the real land:** Cổ Loa north of the Red River, the Bạch Đằng estuary and its tides near Hạ Long, the limestone karst of Ninh Bình, the mountains of Lam Sơn in Thanh Hóa, the central coast and Phú Xuân (Huế), the Tây Sơn highlands, and the Mekong delta.
 
@@ -229,14 +229,14 @@ The research report in `docs/research/learning-by-doing.md` collects the evidenc
 **The task**
 
 1. **The concept is the only route to the goal.** A task must be unsolvable without the operation. A physics engine with a goal that does not need the concept teaches nothing (Angry Birds studies). The same math as an action instead of as a quiz gave 58 percent against 41 percent on a delayed test, and children chose to play the action version seven times longer (Zombie Division).
-2. **One operation, one gesture.** Drag a plank to compose a length. Deal coins to divide. Turn a gear to multiply. Every math game with a positive controlled study does this (DragonBox, Slice Fractions, Wuzzit Trouble, Motion Math).
+2. **One operation, one gesture.** Drag a plank to compose a length. Deal sacks to divide. Turn a gear to multiply. Every math game with a positive controlled study does this (DragonBox, Slice Fractions, Wuzzit Trouble, Motion Math).
 3. **The shape of the action is the shape of the idea.** Lengths lie on a straight line with equal spacing. Groups are rows. A linear board game taught number sense to 4-year-olds; the same game on a circle did not (Siegler and Ramani).
 4. **Predict, then commit.** Before the commit, the child points where the arrow will land or how many planks it will take. Then the child acts. A prediction turns a physics toy into a lesson (Angry Birds with epistemic goals; the "place your bets" pattern).
 5. **A free sandbox before the scored commit.** The child can try, undo, and try again at no cost. Only the committed action ("cross the bridge") is scored. Exploration is never scored as error.
 6. **Tight constraints for grades 1 to 3, wider walls with grade.** Few parts, one variable, a first success that is easy. Struggle before help works for older students and reverses for grades 2 to 5 (Sinha and Kapur; Karpicke).
 7. **New content comes in a short explore-then-show cycle.** The child tries a new task for about a minute. Then Nghé or a villager demonstrates on a different instance, at counting pace. Then the child does the original (DeCaro and Rittle-Johnson; worked examples were the favorite support in Physics Playground).
 8. **Fade the representation inside each skill.** Start with bowls and planks. Add tick marks and numerals beside them. End with numerals alone, with the old picture one tap away. Concreteness fading beat every other order for transfer (Fyfe, McNeil and Borjas).
-9. **The content object is plain; the village is rich.** Put the Đông Hồ detail on houses and trees, not on the plank, the bowl, or the coin. Perceptually rich manipulatives lower accuracy (McNeil).
+9. **The content object is plain; the village is rich.** Put the Đông Hồ detail on houses and trees, not on the plank, the bowl, or the sack. Perceptually rich manipulatives lower accuracy (McNeil).
 10. **The same concept lives in several devices.** The lever is in the đòn gánh, the gàu sòng, the cối giã gạo, and the cầu khỉ. Multiple embodiment is what makes a concept portable (Dienes; fluency across many levels in Physics Playground).
 11. **One new part for each region.** A new device, a new plank size, or a new rule, never two at once (Baba Is You; PhET).
 
@@ -296,7 +296,7 @@ Each task follows one template. The legend poses a need. The child predicts. The
 | Task | Concept | The child | The world | The model observes |
 | --- | --- | --- | --- | --- |
 | Cầu khỉ (monkey bridge) across a gap of N | Composition of length; addition; later multiplication and division of length | Drags bamboo poles of sizes 2, 3, 5 (later others) onto a straight line with tick marks to reach the far bank exactly | A short bridge drops the hero into the water at the gap. A long pole overhangs and tips. The tick marks show the shortfall | Solved; solved with the minimum poles on the first commit; resets; latency for each placement; monotone sweep flag |
-| Chia chiến lợi phẩm (sharing loot) among K villagers | Division with and without remainder; equal groups | Deals coins or rice sacks into K bowls by drag; commits with "chia xong" | A villager with less holds out an empty hand. Leftover coins stay on the mat. Equal bowls settle level | Clean equal deal on the first commit; re-deals; one-by-one or grouped dealing; remainder handled or ignored |
+| Chia chiến lợi phẩm (sharing loot) among K villagers | Division with and without remainder; equal groups | Deals rice sacks (coins in later eras) into K bowls by drag; commits with "chia xong" | A villager with less holds out an empty hand. Leftover coins stay on the mat. Equal bowls settle level | Clean equal deal on the first commit; re-deals; one-by-one or grouped dealing; remainder handled or ignored |
 | Gánh nước theo nhóm (carrying in groups) | Skip counting; multiplication; grouping | Loads the baskets of a đòn gánh with bowls in equal groups to meet the total the village asks for | The pole levels when both sides match and tips when they do not. The count that the villagers speak stops where the load stops | Correct total on the first commit; group size chosen; time to commit; equal groups or ones |
 | Đòn gánh (carrying pole) with unequal loads | Balance of moments; a lever with a moving fulcrum | Slides the shoulder point along the pole under two different loads | The pole tilts toward the heavy side until the shoulder point is right, then levels, and the hero walks | Distance from the correct point on the first commit; slides; direction of the first correction |
 | Gàu sòng (tripod water scoop) | Class-1 lever; pendulum; trade of force and distance | Moves the rope knot along the handle; chooses where to hold; swings | The scoop lifts easily, or dips and spills, or does not rise. The water in the paddy rises with each swing | Knot position error; swings for each unit of water; time to the first full scoop |
