@@ -40,6 +40,10 @@ jobs:
           mkdir _site
           cp index.html manifest.webmanifest sw.js LICENSE _site/
           cp -r src data i18n art audio styles fonts _site/
+          # The stories (?story=<name>) and the reference pages, so that the owner can open them on a device.
+          mkdir -p _site/tests _site/docs
+          cp -r tests/stories _site/tests/
+          cp -r docs/reference _site/docs/
           mkdir _site/content
           cp content/LICENSE _site/content/
           find _site -name '*.md' -delete
