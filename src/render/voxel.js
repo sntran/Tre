@@ -72,6 +72,26 @@ function flatMaterial(uniforms) {
   });
 }
 
+// The mask of the faded objects: their faces again, with no color and no depth, into the stencil
+// (1 where a faded object is in front). The hulls of the smooth looks are not drawn there, so that
+// the holes of a faded crown show what is behind it, and its outline stays whole around it.
+function maskMaterial(uniforms) {
+  const m = flatMaterial(uniforms);
+  m.colorWrite = false;
+  m.depthWrite = false;
+  m.stencilWrite = true;
+  m.stencilRef = 1;
+  m.stencilFunc = THREE.AlwaysStencilFunc;
+  m.stencilZPass = THREE.ReplaceStencilOp;
+  m.fragmentShader = `
+    varying vec3 vColor; varying float vFade;
+    void main() {
+      if (vFade <= 0.001) discard;
+      gl_FragColor = vec4(vColor, 1.0);
+    }`;
+  return m;
+}
+
 function geometryOf(m, offset) {
   const g = new THREE.BufferGeometry();
   const pos = new Float32Array(m.positions.length);
@@ -177,9 +197,11 @@ function inkGeometry(groups) {
 }
 
 // The ink of a faded object: the lines inside it go with it, and its outline stays fully drawn, so
-// that the faded object still reads as a shape.
-function inkMaterial(uniforms) {
+// that the faded object still reads as a shape. hull: the material of the hulls, which are not
+// drawn over the mask of the faded objects (maskMaterial).
+function inkMaterial(uniforms, hull = false) {
   return new THREE.ShaderMaterial({
+    ...(hull ? { stencilWrite: true, stencilRef: 1, stencilFunc: THREE.NotEqualStencilFunc, stencilZPass: THREE.KeepStencilOp } : {}),
     uniforms,
     side: THREE.DoubleSide,
     transparent: true,
@@ -265,6 +287,8 @@ export function createVoxelWorld(canvas, terrain) {
 
   // The meshes of each chunk: built at the start, and again after a change of the terrain.
   const inkMat = track(inkMaterial(uniforms));
+  const hullMat = track(inkMaterial(uniforms, true));
+  const maskMat = track(maskMaterial(uniforms));
   const thingMeshes = [];
   const chunkMeshes = new Map(); // key -> [world, ink]
   const chunks = createChunks(terrain);
@@ -286,8 +310,14 @@ export function createVoxelWorld(canvas, terrain) {
       const world = new THREE.Mesh(geometry(all), flatMat);
       thingMeshes.push(world);
       made.push(world);
+      const mask = new THREE.Mesh(world.geometry, maskMat);
+      mask.renderOrder = 1;
+      made.push(mask);
     }
-    if (m.ink.some((k) => k.segs.length || k.hull)) made.push(new THREE.Mesh(inkGeometry(m.ink), inkMat));
+    // The lines, and the hulls of the smooth looks apart (they keep out of the mask).
+    if (m.ink.some((k) => k.segs.length)) made.push(new THREE.Mesh(inkGeometry(m.ink.map((k) => ({ ...k, hull: null }))), inkMat));
+    const hulls = m.ink.filter((k) => k.hull?.indices.length).map((k) => ({ ...k, segs: [] }));
+    if (hulls.length) made.push(new THREE.Mesh(inkGeometry(hulls), hullMat));
     for (const mesh of made) scene.add(mesh);
     chunkMeshes.set(c.key, made);
   }

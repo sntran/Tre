@@ -11,7 +11,8 @@ let shared = null;
 export function rendererFor(canvas) {
   if (!shared || shared.domElement !== canvas) {
     shared?.dispose();
-    shared = new THREE.WebGLRenderer({ canvas, antialias: true });
+    // The stencil keeps the outlines of the smooth looks off the faded things (src/render/voxel.js).
+    shared = new THREE.WebGLRenderer({ canvas, antialias: true, stencil: true });
     shared.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     shared.setClearColor(new THREE.Color(C.paper));
   }
