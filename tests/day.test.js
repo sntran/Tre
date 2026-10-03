@@ -8,13 +8,13 @@ import { addHero, syncPeople, addLifeLayer, addLanterns } from '../src/core/worl
 import { nightAt, rainOf, sky } from '../src/core/world/systems/sky.js';
 import { stepAt } from '../src/core/world/systems/schedule.js';
 import { buildTerrain } from '../src/world/terrain.js';
-import { load } from './helpers.js';
+import { load, mapOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
 const life = load('data/world/life.json');
 const days = load('data/world/people.json');
 const dayData = load('data/world/day.json');
-const map = load('data/maps/phu-dong.json');
+const map = mapOf('phu-dong');
 const tileMap = createTileMap(map, tiles);
 const terrain = buildTerrain(map, tiles, tileMap);
 const env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes, day: dayData });

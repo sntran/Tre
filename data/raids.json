@@ -76,18 +76,18 @@
     },
     "soldier1": {
       "tools": ["sling", "traps", "helpers", "nghe"], "trapPost": 15, "trapAsk": "smith",
-      "map": "trau-son", "wall": [25, 30], "gate": [25, 28], "dir": [0, -1], "companion": "giong",
+      "map": "trau-son", "wall": [89, 34], "gate": [89, 32], "dir": [0, -1], "companion": "giong",
       "waves": [
-        { "at": 0, "kind": "soldier", "from": [25, 12] },
-        { "at": 3, "kind": "soldier", "from": [25, 12] },
-        { "at": 14, "kind": "soldier", "from": [25, 12] }
+        { "at": 0, "kind": "soldier", "from": [89, 16] },
+        { "at": 3, "kind": "soldier", "from": [89, 16] },
+        { "at": 14, "kind": "soldier", "from": [89, 16] }
       ],
-      "pile": [22.4, 32.6], "traps": 3, "road": { "from": 6, "to": 32 },
-      "spots": [[23, 25.5], [27, 20.5]], "helpers": 2,
+      "pile": [86.4, 36.6], "traps": 3, "road": { "from": 6, "to": 32 },
+      "spots": [[87, 29.5], [91, 24.5]], "helpers": 2,
       "sources": [
-        { "id": "jar", "kind": "water", "at": [27.6, 32.6] },
-        { "id": "brazier", "kind": "fire", "at": [28.6, 27] },
-        { "id": "forge", "kind": "lightning", "at": [21, 27] }
+        { "id": "jar", "kind": "water", "at": [91.6, 36.6] },
+        { "id": "brazier", "kind": "fire", "at": [92.6, 31] },
+        { "id": "forge", "kind": "lightning", "at": [85, 31] }
       ],
       "allow": 1, "take": { "coin": 1 },
       "pauseKey": "raid.soldier.pause", "introKey": "raid.soldier.intro", "mark": "legend", "noteKey": "raid.soldier.note",
@@ -96,18 +96,18 @@
     },
     "soldier2": {
       "tools": ["sling", "traps", "helpers", "nghe", "water", "fire"], "trapPost": 10, "trapAsk": "smith",
-      "map": "trau-son", "wall": [25, 29.5], "gate": [25, 31.5], "dir": [0, 1], "companion": "giong",
+      "map": "trau-son", "wall": [89, 33.5], "gate": [89, 35.5], "dir": [0, 1], "companion": "giong",
       "waves": [
-        { "at": 0, "kind": "soldier", "from": [25, 48] },
-        { "at": 3, "kind": "soldier", "from": [25, 48] },
-        { "at": 14, "kind": "soldier", "from": [25, 48] }
+        { "at": 0, "kind": "soldier", "from": [89, 52] },
+        { "at": 3, "kind": "soldier", "from": [89, 52] },
+        { "at": 14, "kind": "soldier", "from": [89, 52] }
       ],
-      "pile": [22.4, 27], "traps": 3, "road": { "from": 6, "to": 32 },
-      "spots": [[23, 35.5], [27, 40.5]], "helpers": 2,
+      "pile": [86.4, 31], "traps": 3, "road": { "from": 6, "to": 32 },
+      "spots": [[87, 39.5], [91, 44.5]], "helpers": 2,
       "sources": [
-        { "id": "jar", "kind": "water", "at": [27.6, 27] },
-        { "id": "brazier", "kind": "fire", "at": [28.6, 32.6] },
-        { "id": "forge", "kind": "lightning", "at": [21, 32.6] }
+        { "id": "jar", "kind": "water", "at": [91.6, 31] },
+        { "id": "brazier", "kind": "fire", "at": [92.6, 36.6] },
+        { "id": "forge", "kind": "lightning", "at": [85, 36.6] }
       ],
       "allow": 1, "take": { "coin": 1 },
       "pauseKey": "raid.soldier.pause", "introKey": "raid.soldier.intro", "mark": "legend", "noteKey": "raid.soldier.note",
@@ -116,22 +116,22 @@
     },
     "boss": {
       "tools": ["sling", "traps", "helpers", "nghe", "water", "fire", "lightning", "bamboo"], "trapPost": 20, "trapAsk": "smith",
-      "map": "trau-son", "wall": [27, 15], "gate": [29, 15], "dir": [1, 0], "companion": "giong",
+      "map": "trau-son", "wall": [91, 19], "gate": [93, 19], "dir": [1, 0], "companion": "giong",
       "phases": [
         { "id": "soldiers", "waves": [
-          { "at": 0, "kind": "soldier", "from": [46, 15] },
-          { "at": 4, "kind": "soldier", "from": [46, 15] },
-          { "at": 12, "kind": "soldier", "from": [46, 15] }
+          { "at": 0, "kind": "soldier", "from": [110, 19] },
+          { "at": 4, "kind": "soldier", "from": [110, 19] },
+          { "at": 12, "kind": "soldier", "from": [110, 19] }
         ] },
-        { "id": "general", "boss": "general", "waves": [{ "at": 2, "kind": "general", "from": [45, 15] }] },
-        { "id": "staff", "dialogue": "staff.breaks", "after": "bamboo.found", "bamboo": [26.4, 12.6] }
+        { "id": "general", "boss": "general", "waves": [{ "at": 2, "kind": "general", "from": [109, 19] }] },
+        { "id": "staff", "dialogue": "staff.breaks", "after": "bamboo.found", "bamboo": [90.4, 16.6] }
       ],
-      "pile": [24.6, 17.8], "traps": 3, "road": { "from": 6, "to": 34 },
-      "spots": [[35, 13], [30, 17]], "helpers": 2,
+      "pile": [88.6, 21.8], "traps": 3, "road": { "from": 6, "to": 34 },
+      "spots": [[99, 17], [94, 21]], "helpers": 2,
       "sources": [
-        { "id": "jar", "kind": "water", "at": [24.6, 12.4] },
-        { "id": "brazier", "kind": "fire", "at": [28.4, 17.6] },
-        { "id": "forge", "kind": "lightning", "at": [22.5, 15.5] }
+        { "id": "jar", "kind": "water", "at": [88.6, 16.4] },
+        { "id": "brazier", "kind": "fire", "at": [92.4, 21.6] },
+        { "id": "forge", "kind": "lightning", "at": [86.5, 19.5] }
       ],
       "allow": 99, "take": { "coin": 1 },
       "pauseKey": "raid.boss.pause", "introKey": "raid.boss.intro", "mark": "legend", "noteKey": "raid.boss.note", "historyKey": "history.giong.festival",

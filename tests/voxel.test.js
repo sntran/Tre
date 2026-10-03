@@ -5,7 +5,7 @@ import { meshGrid, chunksOf } from '../src/world/mesher.js';
 import { buildProp, PROPS } from '../src/world/props/index.js';
 import { person, nghe, heroLook, figureOf } from '../src/world/figures.js';
 import { createAnimator, animate } from '../src/world/animate.js';
-import { load } from './helpers.js';
+import { load, mapOf } from './helpers.js';
 
 const palette = load('art/palette.json');
 const HERO = load('data/figures.json').hero;
@@ -188,7 +188,7 @@ test('each person, enemy, friend, and duck of the maps has a look, and each look
   for (const id of Object.keys(npcs)) assert.ok(looks[id], `a look for ${id}`);
   assert.ok(looks.nghe, 'a look for Nghé');
   for (const id of regions.regions.flatMap((r) => r.maps)) {
-    const m = load(`data/maps/${id}.json`);
+    const m = mapOf(id);
     for (const e of m.encounters) assert.ok(looks[e.figure], `${id}: a look for ${e.id}`);
     for (const g of m.layers.life) for (const look of load('data/world/life.json').kinds[g.kind].looks) assert.ok(looks[look], `${id}: a look for ${look}`);
   }

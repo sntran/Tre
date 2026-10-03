@@ -1,6 +1,7 @@
 // Helpers for tests: load the JSON data files.
 import { readFileSync, existsSync } from 'node:fs';
 import { loadData } from '../src/ui/data.js';
+import { createWorld } from '../src/world/regions.js';
 
 export function load(path) {
   return JSON.parse(readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'));
@@ -19,3 +20,18 @@ export function loadGameData() {
   });
   return gameData;
 }
+
+// A map with the land of a seed (src/core/gen/), as the session builds it. The map files in
+// data/maps/ hold only the stamps and the story data.
+let world = null;
+export function worldOf() {
+  world ??= (() => {
+    const regions = load('data/world/regions.json');
+    const defs = new Map(regions.regions.flatMap((r) => r.maps).map((id) => [id, load(`data/maps/${id}.json`)]));
+    const geo = load('data/geo/vietnam.json');
+    const lands = new Map(regions.regions.filter((r) => r.land).map((r) => [r.land, load(`data/world/${r.land}.json`)]));
+    return createWorld(regions, defs, { routes: load('data/world/routes.json'), places: geo.places, rivers: geo.rivers, elevation: geo.elevation, lands, scatter: load('data/world/scatter.json') });
+  })();
+  return world;
+}
+export const mapOf = (id, seed = 1) => worldOf().map(id, seed);

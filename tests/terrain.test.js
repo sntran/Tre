@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createTileMap } from '../src/core/tilemap.js';
 import { buildTerrain, pickGround, columnTop, WATER } from '../src/world/terrain.js';
 import { colorName } from '../src/world/voxel.js';
-import { load } from './helpers.js';
+import { load, mapOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
 
@@ -97,7 +97,7 @@ test('a ray from the camera picks the first column that it meets', () => {
 test('every map of the game builds its terrain, and each object has blocks', () => {
   const world = load('data/world/regions.json');
   for (const id of world.regions.flatMap((r) => r.maps)) {
-    const m = load(`data/maps/${id}.json`);
+    const m = mapOf(id);
     const t = buildTerrain(m, tiles, createTileMap(m, tiles));
     const ids = new Set(t.objects.map((o) => o.id));
     for (const o of m.layers.objects) assert.ok(ids.has(o.id), `${id}: ${o.id} has blocks`);

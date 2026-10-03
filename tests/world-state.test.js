@@ -7,10 +7,10 @@ import { step, SYSTEMS, STEP } from '../src/core/world/step.js';
 import { envFor } from '../src/core/world/env.js';
 import { addHero, addFriend, syncPeople, addLifeLayer } from '../src/core/world/populate.js';
 import { createRng } from '../src/core/rng.js';
-import { load } from './helpers.js';
+import { load, mapOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
-const map = load('data/maps/phu-dong.json');
+const map = mapOf('phu-dong');
 const env = envFor(createTileMap(map, tiles));
 
 // A world on Phù Đổng: the hero at the spawn point, Nghé, all people and enemies, and the ducks.

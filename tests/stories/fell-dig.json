@@ -1,8 +1,8 @@
 {
   "name": "fell-dig",
   "about": {
-    "vi": "Thế giới có thể đào và chặt: một cây gần chỗ bắt đầu bị chặt (tán cây đi theo thân cây), và một khối đất trên đường bị đào.",
-    "en": "The world can be dug and felled: a tree near the start is felled (its crown goes with its trunk), and one block of the path is dug."
+    "vi": "Thế giới có thể đào và chặt: một cây gần chỗ bắt đầu bị chặt (tán cây đi theo thân cây), và một khối đất trên đường bị đào. Bản lưu giữ lại những thay đổi đó.",
+    "en": "The world can be dug and felled: a tree near the start is felled (its crown goes with its trunk), and one block of the path is dug. The save keeps the changes."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
   "map": "phu-dong",
@@ -18,6 +18,11 @@
     { "expect": [{ "event": "dug", "with": { "kind": "surface", "drops": { "soil": 1 } } }] },
     { "do": { "type": "fell", "id": "tree8" } },
     { "wait": 1 },
-    { "expect": [{ "event": "felled", "not": true }] }
+    { "expect": [{ "event": "felled", "not": true }] },
+    { "reload": true },
+    { "wait": 1 },
+    { "do": { "type": "fell", "id": "tree8" } },
+    { "wait": 1 },
+    { "expect": [{ "event": "felled", "not": true }, { "hero": { "cell": [9, 27], "within": 1 } }] }
   ]
 }

@@ -8,7 +8,7 @@ import {
 import { createRng } from '../src/core/rng.js';
 import { readFileSync } from 'node:fs';
 import { heroPlace, setHeroPlace, saveWorld, loadWorld } from '../src/core/world/save.js';
-import { load } from './helpers.js';
+import { load, mapOf } from './helpers.js';
 
 function sample() {
   const p = createProfile({ id: 'p1', name: 'Tí Sún', gender: 'girl', grade: 2, now: 1000 });
@@ -167,6 +167,17 @@ test('the version 4 migration adds the game clock and the state of each map', ()
   assert.throws(() => importCode(exportCode(badClock)), (e) => e.reason === 'shape');
 });
 
+test('the save keeps what the player changed in the land of a map: a felled thing and a dug block', () => {
+  const p = sample();
+  p.maps = { 'phu-dong': { first: 420, last: 500, things: {}, edits: [{ type: 'fell', id: 'tree8' }, { type: 'dig', at: [8, 29] }] } };
+  assert.deepEqual(importCode(exportCode(p)).maps, p.maps);
+  for (const bad of [[{ type: 'burn', id: 'tree8' }], [{ type: 'dig', at: [8] }], [{ type: 'dig', at: [8, -1] }], [{ type: 'fell' }], 'tree8']) {
+    const q = sample();
+    q.maps = { 'phu-dong': { edits: bad } };
+    assert.throws(() => validate(q), SaveError, JSON.stringify(bad));
+  }
+});
+
 test('the save keeps the state of every visited map, and the place on the last map', () => {
   const p = sample();
   p.maps = {
@@ -187,11 +198,30 @@ test('the save keeps the state of every visited map, and the place on the last m
   v4.place = { map: 'road-thanglong', x: 1.5, y: 11.5 };
   v4.clock = { minutes: 1300 };
   const old = migrate({ format: SAVE_FORMAT, version: 4, savedAt: 0, profile: v4 }).profile;
-  assert.deepEqual(old.maps, p.maps);
-  assert.deepEqual(heroPlace(old.world), { map: 'road-thanglong', x: 1.5, y: 11.5 });
+  // The story part of three maps moved in their windows in version 7 (see the migration).
+  const moved = structuredClone(p.maps);
+  moved['soc-son'].at = { x: 24, y: 11.4 };
+  moved['trau-son'].at = { x: 76.5, y: 14.8 };
+  moved['road-thanglong'].at = { x: 1.5, y: 27.5 };
+  assert.deepEqual(old.maps, moved);
+  assert.deepEqual(heroPlace(old.world), { map: 'road-thanglong', x: 1.5, y: 27.5 });
   assert.equal(old.world.clock.minutes, 1300);
   assert.equal(old.place, undefined);
   assert.equal(old.clock, undefined);
+});
+
+test('the version 7 migration moves a place on a map whose story part moved in its window', () => {
+  const p = sample();
+  p.world.map = 'trau-son';
+  p.world.entities = [{ id: 'hero', keep: true, control: true, position: { x: 50, y: 4, z: 60, facing: 0 }, motion: { vx: 0, vz: 0, speed: 0 }, look: 'hero' }];
+  p.world.away = { 'road-thanglong': [{ id: 'thing', keep: true, position: { x: 10, y: 4, z: 20, facing: 0 } }], 'phu-dong': [{ id: 'pot', keep: true, position: { x: 10, y: 4, z: 20, facing: 0 } }] };
+  p.maps = { 'soc-son': { first: 1, last: 2, at: { x: 16, y: 7.4 }, things: {} }, 'phu-dong': { first: 1, last: 2, at: { x: 5, y: 13 }, things: {} } };
+  const done = migrate({ format: SAVE_FORMAT, version: 6, savedAt: 0, profile: p }).profile;
+  assert.deepEqual(heroPlace(done.world), { map: 'trau-son', x: 25 + 64, y: 30 + 4 });
+  assert.deepEqual(done.world.away['road-thanglong'][0].position, { x: 10, y: 4, z: 20 + 32, facing: 0 });
+  assert.deepEqual(done.world.away['phu-dong'][0].position, { x: 10, y: 4, z: 20, facing: 0 }, 'Phù Đổng did not move');
+  assert.deepEqual(done.maps['soc-son'].at, { x: 24, y: 11.4 });
+  assert.deepEqual(done.maps['phu-dong'].at, { x: 5, y: 13 });
 });
 
 test('the version 6 save keeps the world state: the seed, the map, the clock, and the kept entities', async () => {
@@ -201,7 +231,7 @@ test('the version 6 save keeps the world state: the seed, the map, the clock, an
   const { step, STEP } = await import('../src/core/world/step.js');
   const { command } = await import('../src/core/world/state.js');
   const tiles = load('data/tiles.json').types;
-  const map = load('data/maps/phu-dong.json');
+  const map = mapOf('phu-dong');
   const env = envFor(createTileMap(map, tiles));
   // Build a world, play it, and save it.
   const make = (w) => {

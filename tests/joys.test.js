@@ -9,13 +9,13 @@ import { rainOf } from '../src/core/world/systems/sky.js';
 import { whenOn, catchAt } from '../src/core/world/systems/joys.js';
 import { rareOn } from '../src/core/world/ambient.js';
 import { buildTerrain } from '../src/world/terrain.js';
-import { load } from './helpers.js';
+import { load, mapOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
 const life = load('data/world/life.json');
 const dayData = load('data/world/day.json');
 const A = dayData.ambient;
-const map = load('data/maps/phu-dong.json');
+const map = mapOf('phu-dong');
 const tileMap = createTileMap(map, tiles);
 const terrain = buildTerrain(map, tiles, tileMap);
 const env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes, day: dayData, joys: life.joys });

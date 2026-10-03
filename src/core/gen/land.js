@@ -341,6 +341,12 @@ export function createLand(def, maps, geo, seed) {
   const closed = (i) => {
     const x = i % W;
     const y = Math.floor(i / W);
+    // Near another map (a corner where the edges meet), the land stays level with it.
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx >= 0 && ny >= 0 && nx < W && ny < H && owner[ny * W + nx] >= 0 && owner[ny * W + nx] !== owner[i]) return Infinity;
+    }
     let d = Infinity;
     for (const [dx, dy] of NB) {
       for (let k = 1; k <= 2; k++) {

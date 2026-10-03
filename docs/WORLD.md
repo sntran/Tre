@@ -146,11 +146,11 @@ The data under every tier of the look is blocks and entities, so that a later er
 - **Buildings come apart.** A house is the blocks of its parts on the half-block grid, with its roof as a look that its blocks own. To take a house apart takes its blocks, and the roof goes when the block under it goes. Building is the same in the other order, on the placement system of the bridge.
 - **Nothing is baked.** No mesh is made by hand: every mesh comes from a generator with a seed, so that the same tree grows again from the save.
 - **The frame.** `frameTriangles` in `data/config/limits.json` is the most triangles of the world in the three by three chunks around the start of a map; a test checks it on every map.
-- The stories and the debug tools can change the terrain now: the commands `{ "type": "fell", "id": <object> }` and `{ "type": "dig", "at": [x, z] }` send the events `felled` and `dug` with what they drop, and the view builds the chunks again (the story `fell-dig`). These changes are not in the save yet.
+- The stories and the debug tools can change the terrain now: the commands `{ "type": "fell", "id": <object> }` and `{ "type": "dig", "at": [x, z] }` send the events `felled` and `dug` with what they drop, and the view builds the chunks again (the story `fell-dig`). A felled thing opens its cells. The save keeps the changes (`profile.maps[<map>].edits`): the land of a map comes from the seed, and the session does the changes again when the map starts.
 
 ## The save
 
-`profile.world` (save version 6) holds the seed, the map, the clock, and the entities with `keep` (the hero, the zones, the planks, and a broken pot), without their routes and intents (`src/core/world/save.js`). When the hero goes to another map, the kept entities of the old map wait in `profile.world.away` until the hero comes back. The people, the animals, and Nghé come again from the map data and the seed. The village puts its world into the profile before each save (`ctx.syncWorld`).
+`profile.world` (save version 7) holds the seed, the map, the clock, and the entities with `keep` (the hero, the zones, the planks, and a broken pot), without their routes and intents (`src/core/world/save.js`). When the hero goes to another map, the kept entities of the old map wait in `profile.world.away` until the hero comes back. The people, the animals, and Nghé come again from the map data and the seed. The village puts its world into the profile before each save (`ctx.syncWorld`).
 
 ### What a save holds
 

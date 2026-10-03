@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { checkDialogue } from '../src/core/dialogue.js';
 import { createSkillGraph } from '../src/core/skills.js';
-import { load, skillsData } from './helpers.js';
+import { load, skillsData, mapOf } from './helpers.js';
 import { createProfile } from '../src/core/profile.js';
 
 const vi = load('i18n/vi.json');
@@ -11,7 +11,7 @@ const dialogues = ['prologue', 'village', 'giong'].flatMap((f) => load(`data/dia
 const byId = new Map(dialogues.map((d) => [d.id, d]));
 const npcs = load('data/npcs.json').npcs;
 const quests = load('data/quests.json').quests;
-const mapList = load('data/world/regions.json').regions.flatMap((r) => r.maps).map((id) => load(`data/maps/${id}.json`));
+const mapList = load('data/world/regions.json').regions.flatMap((r) => r.maps).map((id) => mapOf(id));
 const village = {
   npcs: mapList.flatMap((m) => m.npcs),
   encounters: mapList.flatMap((m) => m.encounters),
@@ -163,7 +163,7 @@ test('facts of history in raid notes have the History seal', () => {
 test('the enemies of a raid leave the map after the player wins it', () => {
   const raids = load('data/raids.json').raids;
   for (const m of ['phu-dong', 'trau-son']) {
-    for (const e of load(`data/maps/${m}.json`).encounters) {
+    for (const e of mapOf(m).encounters) {
       const r = raids[e.raid];
       assert.ok(r, `${e.id}: a raid`);
       assert.equal(r.map, m, `${e.id}: the raid is on the map of its encounter`);

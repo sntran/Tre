@@ -32,6 +32,7 @@ export const FILES = {
   day: 'data/world/day.json',
   zones: 'data/world/zones.json',
   blocks: 'data/world/blocks.json',
+  scatter: 'data/world/scatter.json',
 };
 
 async function fetchJson(path) {
@@ -56,7 +57,13 @@ export async function loadData(onProgress = () => {}, read = fetchJson) {
     const map = await read(`data/maps/${id}.json`);
     if (map) out.maps.set(id, map);
   }));
-  out.world = createWorld(out.regions, out.maps, { routes: out.routes, places: out.geo.places });
+  // The land of each region that has one (data/world/land-<region>.json).
+  const lands = new Map();
+  await Promise.all(out.regions.regions.filter((r) => r.land).map(async (r) => {
+    const land = await read(`data/world/${r.land}.json`);
+    if (land) lands.set(r.land, land);
+  }));
+  out.world = createWorld(out.regions, out.maps, { routes: out.routes, places: out.geo.places, rivers: out.geo.rivers, elevation: out.geo.elevation, lands, scatter: out.scatter });
   out.dialogues = new Map();
   for (const name of ['dialoguePrologue', 'dialogueVillage', 'dialogueGiong']) {
     for (const d of out[name]?.dialogues ?? []) out.dialogues.set(d.id, d);

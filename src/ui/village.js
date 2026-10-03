@@ -58,8 +58,12 @@ function riverOf(water) {
 
 export function terrainOf(map, tileTypes, tileMap, blocks = null) {
   // A terrain that a story changed (a felled tree, a dig) is built again for a new start.
-  if (!terrains.has(map.id) || terrains.get(map.id).edited) terrains.set(map.id, buildTerrain(map, tileTypes, tileMap, blocks));
-  return terrains.get(map.id);
+  const key = map.key ?? map.id; // a generated map: one terrain for each seed
+  if (!terrains.has(key) || terrains.get(key).edited) {
+    for (const k of terrains.keys()) if (k !== key && k.startsWith(`${map.id}:`)) terrains.delete(k);
+    terrains.set(key, buildTerrain(map, tileTypes, tileMap, blocks));
+  }
+  return terrains.get(key);
 }
 
 // A clear message when the device cannot draw the world.
@@ -260,8 +264,9 @@ export async function mountVillage(ctx, params = {}) {
     const markExit = (mapId) => {
       const exit = mapId && mapId !== mapData.id ? worldMap.firstExit(mapData.id, mapId) : null;
       if (exit && !out.some((m) => m.exit === exit.id)) {
-        const x = exit.x + exit.w / 2;
-        const y = exit.y + exit.h / 2;
+        // An exit at an edge marks the road that crosses it.
+        const x = exit.mark ? exit.mark.x + 0.5 : exit.x + exit.w / 2;
+        const y = exit.mark ? exit.mark.y + 0.5 : exit.y + exit.h / 2;
         out.push({ exit: exit.id, x, y, h: groundY(Math.min(x, mapData.width - 1), Math.min(y, mapData.height - 1)) + 3 });
       }
     };

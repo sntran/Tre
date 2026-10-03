@@ -1,0 +1,38 @@
+{
+ "_about": "The land of the region of Thánh Gióng (src/core/gen/land.js). anchors: cells of the region plane and their real places, for the warp between the plane and data/geo/vietnam.json. rivers: the real rivers that cross the land (id in data/geo/vietnam.json; water and bank: widths in cells; bend: how far the river winds). roads: the roads between the stamps (points in region cells; the road winds between its points by the seed; width in cells). base: the height of the ground (steps). hills: the noise of the hills (scale in cells, amp in steps; rise: steps for each 10 m of real height over the first anchor; more: more hills on high land). wet: the rice paddies (scale of the noise, near: cells from water, over: the least score). blend: cells over which the land comes to the height of a stamp. dike: the size of a paddy block. Made by tools/maps/era1.py; do not change it by hand.",
+ "id": "giong",
+ "base": 2,
+ "anchors": [
+  {"cell": [32, 20], "at": [105.953, 21.059], "note": "Phù Đổng: the đình"},
+  {"cell": [193, -29], "at": [106.1, 21.13], "note": "Núi Trâu: the hill"},
+  {"cell": [-18, -100], "at": [105.826, 21.272], "note": "Sóc Sơn: the top of the hill"},
+  {"cell": [-120, 80], "at": [105.836, 21.029], "note": "Văn Miếu: the gate"},
+  {"cell": [0, 71], "at": [105.94, 21.059], "river": "duong", "note": "the Đuống, west end of Phù Đổng"},
+  {"cell": [-36, 68], "at": [105.92, 21.07], "river": "duong", "note": "the Đuống, west of Phù Đổng"},
+  {"cell": [80, 71], "at": [105.966, 21.0541], "river": "duong", "note": "the Đuống, east end of Phù Đổng"},
+  {"cell": [-79, 56], "at": [105.8628, 21.0451], "river": "hong", "note": "the Hồng, north of the ferry"},
+  {"cell": [-79, 104], "at": [105.8772, 21.0281], "river": "hong", "note": "the Hồng, south of the ferry"}
+ ],
+ "rivers": [
+  {"id": "duong", "water": 10, "bank": 2, "bend": 2},
+  {"id": "hong", "water": 26, "bank": 2, "bend": 3}
+ ],
+ "roads": [
+  {"id": "east", "width": 4, "points": [[80, 30], [104, 22], [126, 4], [144, -6]]},
+  {"id": "north", "width": 4, "points": [[46, 0], [38, -18], [10, -38], [-16, -56]]},
+  {"id": "west", "width": 4, "points": [[0, 80], [-22, 78], [-44, 82], [-64, 80]]}
+ ],
+ "hills": {
+  "scale": 40,
+  "amp": 1.2,
+  "rise": 1,
+  "more": 0.8
+ },
+ "wet": {
+  "scale": 22,
+  "near": 14,
+  "over": 0.15
+ },
+ "blend": 10,
+ "dike": 5
+}

@@ -9,11 +9,11 @@ import { saveWorld, loadWorld, setHeroPlace } from '../src/core/world/save.js';
 import { skillEvents, judge, minParts, learnerRecord } from '../src/core/world/zones.js';
 import { isMashing, hasSweep } from '../src/core/learnlog.js';
 import { DAY_MINUTES } from '../src/core/world/clock.js';
-import { load } from './helpers.js';
+import { load, mapOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
 const zones = load('data/world/zones.json');
-const legend = load('data/maps/phu-dong.json').legend;
+const legend = mapOf('phu-dong').legend;
 
 // A small map: grass in the north and the south, a river from row 16 to row 25, and a bridge in
 // the columns 10 to 13 with a broken part (the zone).
@@ -453,7 +453,7 @@ test('the save keeps the bridge, and keeps it while the hero is on another map',
 
 test('each plank, each part of the old deck, and each mark of a gap of the bridge in the map has a look', () => {
   const looks = load('data/figures.json').figures;
-  const phu = load('data/maps/phu-dong.json');
+  const phu = mapOf('phu-dong');
   for (const rect of phu.layers.zones.filter((r) => r.task)) {
     const def = zones[rect.task];
     const length = rect.h * 2;

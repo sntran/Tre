@@ -30,7 +30,7 @@
 // changed), halt (a trigger zone stopped the hero: the view drops the input), raid { on, id } (a
 // raid starts or its things went away), and lose { to, take } (the coins that an enemy took fly
 // from the counter to it).
-import { findPath, pathNextTo, createTileMap } from './tilemap.js';
+import { findPath, pathNextTo, createTileMap, footprint } from './tilemap.js';
 import { createTriggers } from './triggers.js';
 import { currentGoal } from './quests.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
@@ -106,10 +106,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const worldMap = data.world;
     const savedPlace = heroPlace(profile.world);
     const savedMap = worldMap.map(savedPlace.map) ? savedPlace.map : null;
-    map = worldMap.map(mapId ?? savedMap ?? worldMap.start.map);
+    // The map with the land of the seed of the world.
+    map = worldMap.map(mapId ?? savedMap ?? worldMap.start.map, profile.world.seed);
     tileMap = createTileMap(map, data.tiles.types);
     triggers = createTriggers(map.layers.triggers);
     terrain = terrainOf(map, tileMap) ?? { homes: {} };
+    // The changes of the player to the land of this map, from the save.
+    for (const e of profile.maps?.[map.id]?.edits ?? []) editLand(e);
     env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, day: data.day, zones: data.zones, trials: data.trials, switches, joys: data.life?.joys ?? null });
 
     // The world state of this map. The save keeps the hero; the rest comes from the map and the seed.
@@ -149,6 +152,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     refreshPeople();
     if (!profile.flags['intro.seen']) talk('grandma.intro');
     for (const id of params.after ?? []) talk(id);
+  }
+
+  // A change of the land: fell a thing of the map, or dig a block. A felled thing opens its cells.
+  function editLand(cmd) {
+    const r = terrain.edit?.(cmd) ?? null;
+    if (r && cmd.type === 'fell') {
+      const o = map.layers.objects.find((x) => x.id === cmd.id);
+      if (o) for (const [dx, dy] of footprint(o)) tileMap.setSolid(o.x + dx, o.y + dy, false);
+    }
+    return r;
   }
 
   // Put the world into the save. When the hero went to another map, the save has the new place.
@@ -1021,8 +1034,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The tools of a later era, for the stories and the debug panel: fell an object of the map, or
     // dig the top block of a column. The view builds the chunks of the change again.
     if (type === 'fell' || type === 'dig') {
-      const r = terrain.edit?.(cmd) ?? null;
-      if (r) emit({ type: type === 'fell' ? 'felled' : 'dug', id: cmd.id ?? null, at: r.at ?? null, kind: r.kind ?? null, drops: r.drops, chunks: r.chunks });
+      const r = editLand(cmd);
+      if (!r) return;
+      // The save keeps the change: the land of the map comes from the seed and these changes.
+      (visit.edits ??= []).push(type === 'fell' ? { type, id: cmd.id } : { type, at: [cmd.at[0], cmd.at[1]] });
+      emit({ type: type === 'fell' ? 'felled' : 'dug', id: cmd.id ?? null, at: r.at ?? null, kind: r.kind ?? null, drops: r.drops, chunks: r.chunks });
       return;
     }
     if (busy) return;

@@ -10,17 +10,23 @@ LEGEND = {'.': 'grass', ',': 'flowers', '=': 'path', 'y': 'yard', '_': 'sand', '
 S = 2
 # A dike (bờ) crosses the paddies every DIKE cells.
 DIKE = 5
-ABOUT = ('A map of the voxel world. Map x is east, map y is south (world z). One cell is one ground block. '
-         'layers.ground: one letter for each cell (see legend). layers.height: one digit for each cell, the height '
-         'of the ground in steps (water 0, river bank 1, rice paddy 1, ground 2); the top of a column is the digit + 1 '
-         'blocks. The hero steps up or down one step; a higher step is a cliff. layers.objects: props that the code '
-         'builds from blocks (prop: the kind, seed: the variation), on a footprint of w x h cells that they block '
-         '(solid: a list of [dx, dy], or false). layers.collision: rectangles that block (block: true) or open '
-         '(block: false) cells. layers.zones: placement zones. layers.paths: walk lines in cells. layers.exits: when the '
-         'hero walks into an exit, the hero goes to another map (to.x and to.y, or to.dx and to.dy added to the '
-         'position). layers.places: named map points for the plans of the day (h: the height over the ground in half blocks). layers.life: groups of animals (kind in data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the world. figure: the look of a person or an enemy in data/figures.json. '
-         'geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). '
-         'The maps are made by tools/maps/era1.py; do not change them by hand.')
+ABOUT = ('A map of the voxel world: a window on the plane of its region. Map x is east, map y is south (world z). '
+         'One cell is one ground block. window: the place of the map on the region plane (cells); the maps of a region '
+         'touch at their edges, and the land goes on from one map to the next. stamps: the hand-made story places, '
+         'which stay as they are: ground (one letter for each cell, see legend) and height (one digit for each cell, '
+         'the height of the ground in steps: water 0, river bank 1, rice paddy 1, ground 2; the top of a column is the '
+         'digit + 1 blocks). The land outside the stamps comes from the rules of the region and the seed of the world '
+         '(src/core/gen/, data/world/land-<region>.json, data/world/scatter.json). The hero steps up or down one step; a '
+         'higher step is a cliff. layers.objects: props that the code builds from blocks (prop: the kind, seed: the '
+         'variation), on a footprint of w x h cells that they block (solid: a list of [dx, dy], or false); the scatter '
+         'rules add more. layers.collision: rectangles that block (block: true) or open (block: false) cells. '
+         'layers.zones: placement zones. layers.paths: walk lines in cells. The exits come from the windows: an edge '
+         'that touches another map takes the hero there (src/world/regions.js). layers.places: named map points for the '
+         'plans of the day (h: the height over the ground in half blocks). layers.life: groups of animals (kind in '
+         'data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the '
+         'world. figure: the look of a person or an enemy in data/figures.json. geo: the real place of the middle of the '
+         'map ([longitude, latitude]) and the map direction of north ([dx, dy]). The maps are made by '
+         'tools/maps/era1.py; do not change them by hand.')
 
 
 class M:
@@ -163,6 +169,57 @@ class M:
             'npcs': [point(n) for n in self.npcs],
             'encounters': [point(e) for e in self.encounters],
         }
+
+
+def window_def(m, region, window, size, offset, stamps):
+    """The map as a window on the region plane. window: the place of the window (region cells);
+    size: its width and height (cells); offset: the place of the hand-made map in the window
+    (cells); stamps: the parts of the hand-made map that stay (tiles: x, y, w, h). The land
+    outside the stamps comes from the rules of the region (src/core/gen/). The objects and the
+    groups of animals outside the stamps go: the scatter rules make new ones there."""
+    d = m.data(region)
+    ox, oy = offset
+    rects = [(x * S, y * S, w * S, h * S) for (x, y, w, h) in stamps]
+    def inside(x, y, w=0, h=0):
+        return any(rx <= x and ry <= y and x + w <= rx + rw and y + h <= ry + rh for rx, ry, rw, rh in rects)
+    def move(p):
+        return {**p, 'x': round(p['x'] + ox, 3), 'y': round(p['y'] + oy, 3)}
+    L = d['layers']
+    out_stamps = [{'x': x + ox, 'y': y + oy, 'w': w, 'h': h,
+                   'ground': [row[x:x + w] for row in L['ground'][y:y + h]],
+                   'height': [row[x:x + w] for row in L['height'][y:y + h]]} for (x, y, w, h) in rects]
+    trig = []
+    for t in L['triggers']:
+        if not inside(t['x'], t['y'], t['w'], t['h']):
+            continue
+        n = move(t)
+        if 'move' in t.get('action', {}):
+            n['action'] = {**t['action'], 'move': move(t['action']['move'])}
+        trig.append(n)
+    return {
+        '_about': d['_about'],
+        'id': d['id'],
+        'region': region,
+        'nameKey': d['nameKey'],
+        'geo': d['geo'],
+        'window': {'x': window[0], 'y': window[1]},
+        'width': size[0],
+        'height': size[1],
+        'legend': d['legend'],
+        'spawn': move(d['spawn']),
+        'stamps': out_stamps,
+        'layers': {
+            'objects': [move(o) for o in L['objects'] if inside(o['x'], o['y'], o['w'], o['h'])],
+            'collision': [move(c) for c in L['collision']],
+            'zones': [move(z) for z in L['zones']],
+            'paths': {k: [[round(x + ox, 3), round(y + oy, 3)] for x, y in line] for k, line in L['paths'].items()},
+            'life': [move(g) for g in L['life'] if inside(g['x'], g['y'])],
+            'places': {k: move(p) for k, p in L['places'].items()},
+            'triggers': trig,
+        },
+        'npcs': [move(n) for n in d['npcs']],
+        'encounters': [move(e) for e in d['encounters']],
+    }
 
 
 def ore_triggers(m, id, x, y):

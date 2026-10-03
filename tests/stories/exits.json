@@ -12,8 +12,8 @@
     { "tap": { "cell": [46, 0.6] } },
     { "until": { "event": "map", "with": { "map": "soc-son" }, "timeout": 20 } },
     { "wait": 1 },
-    { "expect": [{ "hero": { "map": "soc-son", "cell": [32, 59.2], "within": 2 } }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] },
-    { "tap": { "cell": [32, 63.4] } },
+    { "expect": [{ "hero": { "map": "soc-son", "cell": [102, 117.4], "within": 2 } }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] },
+    { "tap": { "cell": [102, 119.4] } },
     { "until": { "event": "map", "with": { "map": "phu-dong" }, "timeout": 20 } },
     { "wait": 1 },
     { "expect": [{ "hero": { "map": "phu-dong", "cell": [46, 2.6], "within": 2 } }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] }

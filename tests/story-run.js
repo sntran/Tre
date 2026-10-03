@@ -17,8 +17,9 @@ const graph = createSkillGraph(data.skills);
 const laws = createLaws({ texts: { vi: load('i18n/vi.json'), en: load('i18n/en.json') }, limits: load('data/config/limits.json') });
 const terrains = new Map();
 const terrainOf = (map, tileMap) => {
-  if (!terrains.has(map.id) || terrains.get(map.id).edited) terrains.set(map.id, buildTerrain(map, data.tiles.types, tileMap, data.blocks));
-  return terrains.get(map.id);
+  const key = map.key ?? map.id; // one terrain for each map and seed
+  if (!terrains.has(key) || terrains.get(key).edited) terrains.set(key, buildTerrain(map, data.tiles.types, tileMap, data.blocks));
+  return terrains.get(key);
 };
 
 // Play a story headless. Return the failures of the steps and of the laws.

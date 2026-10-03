@@ -7,8 +7,9 @@ import { check } from '../src/core/conditions.js';
 import { questState, currentGoal } from '../src/core/quests.js';
 import { applyEffects, pickTalk, isPresent } from '../src/core/game.js';
 import { createProfile } from '../src/core/profile.js';
-import { load } from './helpers.js';
+import { load, mapOf } from './helpers.js';
 import { spriteAt, edgeMarker } from '../src/core/hit.js';
+import { freeSpot } from '../src/core/session.js';
 
 const tiles = load('data/tiles.json').types;
 
@@ -166,7 +167,7 @@ test('talk rules pick the first dialogue whose condition is true', () => {
 
 const regions = load('data/world/regions.json');
 const mapIds = regions.regions.flatMap((r) => r.maps);
-const maps = new Map(mapIds.map((id) => [id, load(`data/maps/${id}.json`)]));
+const maps = new Map(mapIds.map((id) => [id, mapOf(id)]));
 
 test('each map is valid, and each person and place on it can be reached', () => {
   for (const [id, m] of maps) {
@@ -208,7 +209,9 @@ test('each map is valid, and each person and place on it can be reached', () => 
         const x = typeof e.to.x === 'number' ? e.to.x : c.x + 0.5 + (e.to.dx ?? 0);
         const y = typeof e.to.y === 'number' ? e.to.y : c.y + 0.5 + (e.to.dy ?? 0);
         if (!findPath(map, start, c)) continue;
-        assert.ok(!tmap.isBlocked(Math.floor(x), Math.floor(y)), `${id}: exit ${e.id} at ${c.x},${c.y} lands on a free tile of ${e.to.map}`);
+        // Where a river crosses the edge at a slant, the hero lands on the nearest free cell.
+        const spot = freeSpot(tmap, { x, y });
+        assert.ok(spot && Math.hypot(spot.x - x, spot.y - y) < 4, `${id}: exit ${e.id} at ${c.x},${c.y} lands near a free tile of ${e.to.map}`);
         assert.ok(!target.layers.exits.some((z) => Math.floor(x) >= z.x && Math.floor(x) < z.x + z.w && Math.floor(y) >= z.y && Math.floor(y) < z.y + z.h),
           `${id}: exit ${e.id} does not land on an exit`);
       }
@@ -229,15 +232,15 @@ test('Era 1 has the real layout: the Đuống south of Phù Đổng, and the way
   // The bridge is broken: the way over the Đuống goes through the ford.
   const gap = m.layers.zones.find((z) => z.id === 'bridge-gap');
   assert.ok(map.isBlocked(gap.x, gap.y));
-  const west = m.layers.exits.find((e) => e.id === 'west-road');
-  const path = findPath(map, { x: 10, y: 26 }, { x: west.x, y: west.y });
+  const west = m.layers.exits.find((e) => e.id === 'west:road-thanglong');
+  const path = findPath(map, { x: 10, y: 26 }, west.mark);
   assert.ok(path, 'the road south-west');
   assert.ok(path.some((p) => map.groundAt(p.x, p.y) === 'shallow'), 'the road goes through the ford');
   // The exits: north to Sóc Sơn, east to Núi Trâu, south-west to Thăng Long.
   const to = Object.fromEntries(m.layers.exits.map((e) => [e.to.map, e]));
   assert.ok(to['soc-son'].y === 0, 'Sóc Sơn is north');
   assert.ok(to['trau-son'].x + to['trau-son'].w === m.width, 'Núi Trâu is east');
-  assert.ok(to['road-thanglong'].x === 0 && to['road-thanglong'].y > gap.y, 'Thăng Long is south-west, across the river');
+  assert.ok(to['road-thanglong'].x === 0 && to['road-thanglong'].mark.y > gap.y, 'Thăng Long is south-west, across the river');
   // Each map has its real center and the direction of north; north is map -y.
   for (const [id, mm] of maps) {
     assert.equal(mm.geo.at.length, 2, id);
@@ -284,8 +287,17 @@ test('the ground of the maps has depth: river steps, sunken paddies, the dinh mo
   const village = at('phu-dong');
   const dinh = maps.get('phu-dong').layers.objects.find((o) => o.id === 'dinh');
   assert.ok(village.heightAt(dinh.x, dinh.y) > village.heightAt(dinh.x, dinh.y + dinh.h + 2));
-  // The edges of a map rise in terraces (roads and water go through).
-  assert.ok(village.heightAt(0, 0) >= 4 && village.heightAt(2, 10) === 3);
+  // The edges of the generated land rise in terraces where no map is beyond them (roads and water
+  // go through): the north edge of Sóc Sơn.
+  const hills = at('soc-son');
+  let up = 0;
+  let n = 0;
+  for (let x = 80; x < 114; x++) {
+    if (hills.groundAt(x, 0) !== 'grass' || hills.groundAt(x, 4) !== 'grass') continue;
+    n += 1;
+    if (hills.heightAt(x, 0) > hills.heightAt(x, 4)) up += 1;
+  }
+  assert.ok(n > 10 && up / n > 0.8, `${up} of ${n}`);
 });
 
 test('the animals of each map live in their medium: ducks and fish on water or a paddy, a lily pad and its frog on the water, the others on land', () => {

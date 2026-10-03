@@ -72,6 +72,9 @@ export function setHeroPlace(saved, map, x, y) {
   }
   const position = { x: x * 2, y: hero?.position.y ?? 0, z: y * 2, facing: hero?.position.facing ?? 0 };
   if (hero) hero.position = position;
-  else saved.entities.unshift({ id: 'hero', keep: true, control: true, position, motion: { vx: 0, vz: 0, speed: 0 }, hands: { holds: null }, look: 'hero' });
+  // A thing that travels in the hands comes to the new place with the hero.
+  const held = hero?.hands?.holds ? saved.entities.find((e) => e.id === hero.hands.holds) : null;
+  if (held?.item?.travels && held.position) held.position = { ...held.position, x: position.x, z: position.z };
+  if (!hero) saved.entities.unshift({ id: 'hero', keep: true, control: true, position, motion: { vx: 0, vz: 0, speed: 0 }, hands: { holds: null }, look: 'hero' });
   return saved;
 }

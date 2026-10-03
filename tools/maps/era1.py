@@ -5,7 +5,7 @@
 # On every map, north is map -y (the screen up and right), and east is map +x.
 import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
-from maplib import M, ore_triggers, dump
+from maplib import M, ore_triggers, dump, window_def
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "..", "data", "maps")
 NORTH = [0, -1]
@@ -48,7 +48,6 @@ A.fill(0, 39, 24, 2, '=')
 A.fill(26, 39, 12, 3, 'f')
 A.fill(31, 39, 1, 3, '=')
 A.flowers(34, 7)
-A.terrace = 'nwes'
 # The đình stands on a mound: its footprint and one tile around it.
 A.raise_rects = [(13, 7, 6, 6, 3)]
 A.obj('home', 'house', 3, 9, 3, 3)
@@ -207,11 +206,6 @@ A.triggers += [
     {'id': 'river', 'x': 0, 'y': 33, 'w': 40, 'h': 5, 'on': 'tap', 'action': {'textKey': 'map.river'}},
 ]
 A.paths = {'east-road': [[39.5, 14.8], [32.5, 14.8]]}
-A.exits = [
-    {'id': 'north-road', 'kind': 'road', 'x': 22, 'y': 0, 'w': 2, 'h': 1, 'to': {'map': 'soc-son', 'dx': -7, 'y': 29.6}},
-    {'id': 'east-road', 'kind': 'road', 'x': 39, 'y': 13, 'w': 1, 'h': 4, 'to': {'map': 'trau-son', 'x': 1.3, 'dy': 0}},
-    {'id': 'west-road', 'kind': 'road', 'x': 0, 'y': 39, 'w': 1, 'h': 2, 'to': {'map': 'road-thanglong', 'x': 38.7, 'dy': -28}},
-]
 
 # ---------------------------------------------------------------- The hills of Sóc Sơn, to the north
 B = M('soc-son', 'place.socson', 30, 32)
@@ -221,7 +215,6 @@ B.fill(12, 5, 8, 3, 'y')
 B.fill(4, 25, 6, 5, 'f')
 B.fill(4, 27, 11, 1, '=')
 B.flowers(26, 13)
-B.terrace = 'nwe'
 # The hill rises in steps of one: the path goes up all the way to the top.
 B.raise_rects = [(3, 1, 24, 24, 3), (6, 2, 18, 19, 4), (9, 3, 12, 14, 5), (11, 4, 8, 9, 6)]
 B.obj('rock1', 'rock', 13, 5)
@@ -240,9 +233,6 @@ B.life = [{'kind': 'duck', 'n': 2, 'x': 6.5, 'y': 26.5, 'r': 1.5}, {'kind': 'pot
 B.triggers = [
     {'id': 'field', 'x': 4, 'y': 25, 'w': 6, 'h': 5, 'on': 'tap', 'action': {'textKey': 'map.field'}},
 ]
-B.exits = [
-    {'id': 'south-road', 'kind': 'road', 'x': 15, 'y': 31, 'w': 2, 'h': 1, 'to': {'map': 'phu-dong', 'dx': 7, 'y': 1.3}},
-]
 
 # ---------------------------------------------------------------- The foot of Núi Trâu, to the east
 C = M('trau-son', 'place.trauson', 32, 31)
@@ -256,7 +246,6 @@ C.fill(20, 7, 9, 3, 'y')
 C.fill(24, 11, 8, 20, '.')
 C.fill(19, 0, 13, 7, '.')
 C.flowers(22, 3)
-C.terrace = 'nesw'
 C.obj('mountain', 'mountain', 22, 1, 5, 5)
 C.obj('rock1', 'rock', 28, 12)
 C.obj('rock2', 'rock', 21, 6)
@@ -286,9 +275,6 @@ C.paths = {
     'field-north': [[12.5, 2.5], [12.5, 13.5], [0.5, 14.5]],
     'field-south': [[12.5, 27.5], [12.5, 16.0], [0.5, 14.8]],
 }
-C.exits = [
-    {'id': 'west-road', 'kind': 'road', 'x': 0, 'y': 13, 'w': 1, 'h': 4, 'to': {'map': 'phu-dong', 'x': 38.2, 'dy': 0}},
-]
 
 # ---------------------------------------------------------------- The road south-west to Thăng Long
 D = M('road-thanglong', 'place.roadthanglong', 40, 24)
@@ -307,7 +293,6 @@ D.fill(2, 2, 8, 6, 'f')
 D.fill(1, 15, 5, 3, 'y')
 D.fill(6, 16, 5, 1, '=')
 D.flowers(24, 17)
-D.terrace = 'nsew'
 D.obj('ferry-east', 'boat', 25, 10, 2, 1, water=True, solid=False)
 D.obj('ferry-west', 'boat', 14, 13, 2, 1, water=True, solid=False)
 D.obj('house1', 'house', 2, 17, 3, 3)
@@ -335,12 +320,68 @@ D.triggers = [
     {'id': 'field', 'x': 30, 'y': 2, 'w': 8, 'h': 20, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-west', 'x': 2, 'y': 2, 'w': 8, 'h': 6, 'on': 'tap', 'action': {'textKey': 'map.field'}},
 ]
-D.exits = [
-    {'id': 'east-road', 'kind': 'road', 'x': 39, 'y': 11, 'w': 1, 'h': 2, 'to': {'map': 'phu-dong', 'x': 1.3, 'dy': 28}},
+
+# ---------------------------------------------------------------- The region plane
+# Each map is a window on one plane (cells, x to the east, y to the south). Phù Đổng is at the
+# middle; Núi Trâu is to the east (and a little north), Sóc Sơn to the north (and a little west),
+# and the road to Văn Miếu goes west over the Red River. The windows touch, so that the land goes
+# on from one map to the next. The hand-made story places are stamps (tiles: x, y, w, h); the land
+# around them comes from data/geo/vietnam.json, the rules, and the seed (src/core/gen/).
+WINDOWS = [
+    # map, window (region cells), size (cells), offset of the hand-made map (cells), stamps (tiles)
+    (A, (0, 0), (80, 88), (0, 0), [(0, 0, 33, 31), (0, 29, 40, 15), (31, 0, 9, 20)]),
+    (B, (-56, -120), (120, 120), (8, 4), [(0, 0, 30, 30)]),
+    (C, (80, -40), (128, 84), (64, 4), [(0, 0, 32, 31)]),
+    (D, (-120, 40), (120, 64), (0, 16), [(0, 0, 28, 24)]),
 ]
 
+# The anchors of the warp: a cell of the plane and its real place. The places are in
+# data/geo/vietnam.json; the points on the rivers are on the real lines of the Đuống and the Hồng,
+# at the ends of the rivers of the stamps.
+ANCHORS = [
+    {'cell': [32, 20], 'at': [105.953, 21.059], 'note': 'Phù Đổng: the đình'},
+    {'cell': [193, -29], 'at': [106.1, 21.13], 'note': 'Núi Trâu: the hill'},
+    {'cell': [-18, -100], 'at': [105.826, 21.272], 'note': 'Sóc Sơn: the top of the hill'},
+    {'cell': [-120, 80], 'at': [105.836, 21.029], 'note': 'Văn Miếu: the gate'},
+    {'cell': [0, 71], 'at': [105.94, 21.059], 'river': 'duong', 'note': 'the Đuống, west end of Phù Đổng'},
+    {'cell': [-36, 68], 'at': [105.92, 21.07], 'river': 'duong', 'note': 'the Đuống, west of Phù Đổng'},
+    {'cell': [80, 71], 'at': [105.966, 21.0541], 'river': 'duong', 'note': 'the Đuống, east end of Phù Đổng'},
+    {'cell': [-79, 56], 'at': [105.8628, 21.0451], 'river': 'hong', 'note': 'the Hồng, north of the ferry'},
+    {'cell': [-79, 104], 'at': [105.8772, 21.0281], 'river': 'hong', 'note': 'the Hồng, south of the ferry'},
+]
+
+LAND = {
+    '_about': ('The land of the region of Thánh Gióng (src/core/gen/land.js). anchors: cells of the region plane and their '
+               'real places, for the warp between the plane and data/geo/vietnam.json. rivers: the real rivers that cross '
+               'the land (id in data/geo/vietnam.json; water and bank: widths in cells; bend: how far the river winds). '
+               'roads: the roads between the stamps (points in region cells; the road winds between its points by the '
+               'seed; width in cells). base: the height of the ground (steps). hills: the noise of the hills (scale in '
+               'cells, amp in steps; rise: steps for each 10 m of real height over the first anchor; more: more hills on '
+               'high land). wet: the rice paddies (scale of the noise, near: cells from water, over: the least score). '
+               'blend: cells over which the land comes to the height of a stamp. dike: the size of a paddy block. '
+               'Made by tools/maps/era1.py; do not change it by hand.'),
+    'id': 'giong',
+    'base': 2,
+    'anchors': ANCHORS,
+    'rivers': [
+        {'id': 'duong', 'water': 10, 'bank': 2, 'bend': 2},
+        {'id': 'hong', 'water': 26, 'bank': 2, 'bend': 3},
+    ],
+    'roads': [
+        {'id': 'east', 'width': 4, 'points': [[80, 30], [104, 22], [126, 4], [144, -6]]},
+        {'id': 'north', 'width': 4, 'points': [[46, 0], [38, -18], [10, -38], [-16, -56]]},
+        {'id': 'west', 'width': 4, 'points': [[0, 80], [-22, 78], [-44, 82], [-64, 80]]},
+    ],
+    'hills': {'scale': 40, 'amp': 1.2, 'rise': 1, 'more': 0.8},
+    'wet': {'scale': 22, 'near': 14, 'over': 0.15},
+    'blend': 10,
+    'dike': 5,
+}
+
 os.makedirs(OUT, exist_ok=True)
-for m in (A, B, C, D):
+for m, window, size, offset, stamps in WINDOWS:
     with open(os.path.join(OUT, f'{m.id}.json'), 'w') as f:
-        f.write(dump(m.data('giong')) + '\n')
-    print(m.id, m.w, m.h)
+        f.write(dump(window_def(m, 'giong', window, size, offset, stamps)) + '\n')
+    print(m.id, size)
+with open(os.path.join(OUT, '..', 'world', 'land-giong.json'), 'w') as f:
+    f.write(dump(LAND) + '\n')

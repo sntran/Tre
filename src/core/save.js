@@ -6,7 +6,7 @@ import { newWorldSave } from './world/save.js';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
 
 export const SAVE_FORMAT = 'tre-save';
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 export const CODE_PREFIX = 'TRE1';
 
 // MIGRATIONS[n] changes a save of version n into version n + 1.
@@ -72,6 +72,30 @@ export const MIGRATIONS = {
     out.world = world;
     delete out.place;
     delete out.clock;
+    return out;
+  },
+  // Version 7: each map is a window on the plane of its region, with generated land around its
+  // story places (src/core/gen/). The hand-made part of three maps moved in its window: a place
+  // on these maps moves with it (cells).
+  6: (profile) => {
+    const out = structuredClone(profile);
+    const moved = { 'soc-son': [8, 4], 'trau-son': [64, 4], 'road-thanglong': [0, 16] };
+    const shift = (entities, by) => {
+      for (const e of entities ?? []) {
+        if (e?.position && typeof e.position.x === 'number' && typeof e.position.z === 'number') {
+          e.position.x += by[0] * 2;
+          e.position.z += by[1] * 2;
+        }
+      }
+    };
+    const w = out.world;
+    if (w && typeof w === 'object') {
+      if (moved[w.map]) shift(w.entities, moved[w.map]);
+      for (const [map, list] of Object.entries(w.away ?? {})) if (moved[map]) shift(list, moved[map]);
+    }
+    for (const [map, m] of Object.entries(out.maps ?? {})) {
+      if (moved[map] && m?.at && typeof m.at.x === 'number' && typeof m.at.y === 'number') m.at = { x: m.at.x + moved[map][0], y: m.at.y + moved[map][1] };
+    }
     return out;
   },
 };
@@ -229,6 +253,20 @@ export function validate(profile, { grades = null } = {}) {
         for (const k of ['x', 'y']) num(m.at[k], `maps ${id}.at.${k}`, 0, 10000);
       }
       if (m.things !== undefined) for (const [, x] of entries(m.things, `maps ${id}.things`)) short(x, `maps ${id}.things value`);
+      // What the player changed in the land of the map (src/core/session.js): a felled thing (its
+      // id) or a dug block (its column).
+      if (m.edits !== undefined) {
+        list(m.edits, `maps ${id}.edits`, 2000);
+        for (const e of m.edits) {
+          if (!isObj(e)) fail(`maps ${id}.edits`);
+          if (e.type === 'fell') str(e.id, `maps ${id}.edits.id`, LIMITS.idChars, 1);
+          else if (e.type === 'dig') {
+            list(e.at, `maps ${id}.edits.at`, 2);
+            if (e.at.length !== 2) fail(`maps ${id}.edits.at`);
+            for (const v of e.at) int(v, `maps ${id}.edits.at`, 0, 10000);
+          } else fail(`maps ${id}.edits.type`);
+        }
+      }
     }
   }
   if (profile.stats !== undefined) for (const [, v] of entries(profile.stats, 'stats')) int(v, 'stats value', 0, 1e9);

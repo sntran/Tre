@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { createTileMap } from '../src/core/tilemap.js';
 import { buildTerrain, columnTop } from '../src/world/terrain.js';
 import { inFront, stepFade, stippleOf, toCamera, FADE_MIN } from '../src/world/fade.js';
-import { load } from './helpers.js';
+import { load, mapOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
-const map = load('data/maps/phu-dong.json');
+const map = mapOf('phu-dong');
 const tileMap = createTileMap(map, tiles);
 const terrain = buildTerrain(map, tiles, tileMap, load('data/world/blocks.json'));
 const ELEVATION = Math.atan(0.5); // the camera of src/render/voxel.js (VIEW.elevation)

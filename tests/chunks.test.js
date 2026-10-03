@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { buildTerrain, kindAt } from '../src/world/terrain.js';
 import { createTileMap } from '../src/core/tilemap.js';
 import { chunkMesh, chunkList, createChunks, dig, fell, chunkOf, chunkKey, CHUNK } from '../src/world/chunks.js';
-import { load } from './helpers.js';
+import { load, mapOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
 const blocks = load('data/world/blocks.json');
 const terrainOf = (id) => {
-  const map = load(`data/maps/${id}.json`);
+  const map = mapOf(id);
   return buildTerrain(map, tiles, createTileMap(map, tiles), blocks);
 };
 // A column of land in the middle of a chunk, and its top block.
@@ -110,7 +110,7 @@ test('the triangles of the world around the start of every map stay under the bu
   const limit = load('data/config/limits.json').frameTriangles;
   const maps = load('data/world/regions.json').regions.flatMap((r) => r.maps);
   for (const id of maps) {
-    const map = load(`data/maps/${id}.json`);
+    const map = mapOf(id);
     const t = buildTerrain(map, tiles, createTileMap(map, tiles), blocks);
     const sx = Math.floor(map.spawn.x / CHUNK);
     const sz = Math.floor(map.spawn.y / CHUNK);
