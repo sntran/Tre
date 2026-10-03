@@ -163,6 +163,7 @@ const FILES = [
   'src/core/world/clock.js',
   'src/core/world/days.js',
   'src/core/world/env.js',
+  'src/core/world/jump.js',
   'src/core/world/move.js',
   'src/core/world/populate.js',
   'src/core/world/raids.js',

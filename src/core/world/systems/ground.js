@@ -20,7 +20,9 @@ export function ground(world, dt, rng, env) {
   if (!env.fords?.length) return;
   const high = Boolean(world.sky?.high);
   const bodies = query(world, 'position').filter((e) => e.control || e.follow);
-  const inFord = bodies.some((b) => env.groundAt(b.position.x, b.position.z) === 'shallow');
+  // Somebody in the water of the ford, or on a stepping stone in it.
+  const cells = new Set(env.fords.map((c) => `${c.x},${c.y}`));
+  const inFord = bodies.some((b) => env.groundAt(b.position.x, b.position.z) === 'shallow' || cells.has(`${Math.floor(b.position.x / 2)},${Math.floor(b.position.z / 2)}`));
   const close = high && !inFord;
   for (const c of env.fords) env.block(c.x, c.y, close ? true : null);
 }

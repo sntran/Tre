@@ -2,14 +2,17 @@
 // blocked cells and cliffs, and stands on the ground. People and enemies (solid) push it away a
 // little, like round walls. While the world waits (a dialogue), nothing walks. On the back of
 // Nghé (riding) the hero is faster. motion.idle counts the seconds that the hero stands still.
-// A hero who falls into the water (fall) does not walk: the place system moves the hero.
+// A hero who falls into the water (fall) does not walk: the place system moves the hero. A jump
+// (src/core/world/jump.js) goes in an arc from its start to its end, after a short crouch; a
+// jump into the gap of a task ends in the water (a fall).
 // Each step sends the event "step" with the ground under the foot (grass, wood, or water). A heavy
 // thing in the hands (item.pace, such as a tray of five bowls) makes the walk slower, and so does
 // the mist of the land of a later era.
-export const WRITES = ['position', 'motion', 'events'];
+export const WRITES = ['position', 'motion', 'jump', 'fall', 'events'];
 
 import { query, getEntity } from '../state.js';
 import { stepBody, moveCircle, MOVE } from '../move.js';
+import { arcAt } from '../jump.js';
 
 export const RIDE_SPEED = 1.35; // the speed factor on the back of Nghé
 const STRIDE = 2.4; // half blocks between two steps
@@ -24,6 +27,10 @@ function paceOf(world, e) {
 export function move(world, dt, rng, env) {
   const solids = query(world, 'solid', 'position');
   for (const e of query(world, 'position', 'motion')) {
+    if (e.jump && !e.fall) {
+      jumpStep(world, e, dt, env);
+      continue;
+    }
     if (e.follow || e.steer || e.fall || (!e.control && !e.intent)) continue;
     const p = e.position;
     const m = e.motion;
@@ -62,4 +69,33 @@ export function move(world, dt, rng, env) {
       world.events.push({ type: 'step', id: e.id, sound: ground === 'shallow' || ground === 'surf' || ground === 'water' ? 'step-water' : ground === 'bridge' || ground === 'bamboo' ? 'step-wood' : 'step-grass' });
     }
   }
+}
+
+// One step of a jump: the crouch, then the arc. At the end: the landing (a puff of dust, or a
+// splash in shallow water), or the water of the gap of a task (the fall of the place system).
+function jumpStep(world, e, dt, env) {
+  const j = e.jump;
+  const p = e.position;
+  Object.assign(e.motion, { vx: 0, vz: 0, speed: 0 });
+  if (world.paused) return;
+  if (j.crouch > 0) {
+    j.crouch -= dt;
+    return;
+  }
+  j.t += dt;
+  const k = Math.min(1, j.t / j.time);
+  const groundTo = env.groundY(j.to.x / 2, j.to.z / 2);
+  p.x = j.from.x + (j.to.x - j.from.x) * k;
+  p.z = j.from.z + (j.to.z - j.from.z) * k;
+  p.y = j.from.y + (groundTo - j.from.y) * k + arcAt(j.top, k);
+  if (k < 1) return;
+  delete e.jump;
+  if (j.fall) {
+    e.fall = { t: 0, x: p.x, z: p.z, y: p.y, water: j.fall.water ?? 2, time: j.fall.time ?? 1.2, out: { ...j.fall.out }, zone: j.fall.zone };
+    world.events.push({ type: 'tip', id: e.id, jump: true, sound: 'creak' });
+    return;
+  }
+  p.y = groundTo;
+  world.events.push({ type: 'land', id: e.id, at: { x: p.x, z: p.z }, sound: j.splash ? 'step-water' : 'step-grass' });
+  if (j.splash) world.events.push({ type: 'splash', id: e.id, sound: 'splash' });
 }

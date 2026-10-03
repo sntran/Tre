@@ -474,9 +474,9 @@ export function createLaws({ texts, limits }) {
         continue;
       }
       if (q.x < 0 || q.z < 0 || q.x > env.width || q.z > env.height) problems.push(`${e.id} is outside the map (${q.x.toFixed(1)}, ${q.z.toFixed(1)})`);
-      // A thing that falls, swims, climbs the ladder of its house, or rides a ferry may be over
-      // water or a house.
-      if (e.hidden || e.fall || e.swim || e.climb || e.aboard || (e.id !== 'hero' && !e.person)) continue;
+      // A thing that falls, swims, climbs the ladder of its house, rides a ferry, or jumps (in the
+      // air over a log or a ditch) may be over water or a house.
+      if (e.hidden || e.fall || e.swim || e.climb || e.aboard || e.jump || (e.id !== 'hero' && !e.person)) continue;
       const tx = Math.floor(q.x / 2);
       const ty = Math.floor(q.z / 2);
       if (['water', 'sea'].includes(tileMap.groundAt(tx, ty))) problems.push(`${e.id} stands in deep water (${tx}, ${ty})`);

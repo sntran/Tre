@@ -1,0 +1,195 @@
+{
+  "name": "jump-bridge-gap",
+  "about": {
+    "vi": "Nhảy qua chỗ cầu gãy thì rơi xuống nước, và Nghé kéo lên ở đầu cầu; những tấm ván vẫn là đường qua sông.",
+    "en": "A jump over the gap of the bridge ends in the water, and Nghé pulls the hero out at the near end; the planks are still the way across."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 12,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    46,
+    65
+  ],
+  "steps": [
+    {
+      "wait": 1
+    },
+    {
+      "do": {
+        "type": "move",
+        "id": "hero",
+        "dx": 0,
+        "dz": 1,
+        "strength": 1
+      }
+    },
+    {
+      "wait": 0.3
+    },
+    {
+      "do": {
+        "type": "stop",
+        "id": "hero"
+      }
+    },
+    {
+      "wait": 0.3
+    },
+    {
+      "do": {
+        "type": "jump"
+      }
+    },
+    {
+      "until": {
+        "event": "tip",
+        "timeout": 4
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "jump",
+          "with": {
+            "kind": "fall"
+          }
+        },
+        {
+          "hero": {
+            "falls": true
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "pulled",
+        "timeout": 15
+      }
+    },
+    {
+      "wait": 1
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "falls": false,
+            "cell": [
+              46,
+              67.3
+            ],
+            "within": 1.5
+          }
+        },
+        {
+          "zone": "bridge-gap",
+          "state": "open"
+        }
+      ]
+    },
+    {
+      "tap": {
+        "plank": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 20
+      }
+    },
+    {
+      "tap": {
+        "zone": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1.5
+    },
+    {
+      "tap": {
+        "plank": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 20
+      }
+    },
+    {
+      "tap": {
+        "zone": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1.5
+    },
+    {
+      "tap": {
+        "plank": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 20
+      }
+    },
+    {
+      "tap": {
+        "zone": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1.5
+    },
+    {
+      "tap": {
+        "zone": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "solid",
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "zone": "bridge-gap",
+          "state": "solid"
+        }
+      ]
+    }
+  ]
+}

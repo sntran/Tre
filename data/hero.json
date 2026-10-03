@@ -1,4 +1,31 @@
 {
   "_about": "Hero creation: the most letters of the name. The choices of the look (gender, skin, face, hair, clothes) are in data/figures.json (hero).",
-  "nameMax": 12
+  "nameMax": 12,
+  "jump": {
+    "_about": "The jump of the hero (src/core/world/jump.js; docs/WORLD.md, 'The jump'). ages: the typical age of each grade (Pre-K is -1, K is 0). table: for each age, the median standing long jump (cm, the mean of boys and girls, so that a girl and a boy jump the same) and the median height (cm, the mean of boys and girls). Sources: the standing long jump of Polish children of 4 to 7 (Scientific Reports 2021, https://www.nature.com/articles/s41598-021-86903-x), of 10,302 European children of 6 to 9 (IDEFICS, https://www.nature.com/articles/ijo2014136), and the norms of 5 to 18 of Kolimechkov, Petrov and Alexandrova 2019 (https://zenodo.org/records/2546360, CC BY 4.0); the height for age of the WHO (https://www.who.int/tools/growth-reference-data-for-5to19-years/indicators/height-for-age, and the child growth standards for age 4). The values are rounded. The jump in blocks is (jump / height) x hero (the height of the hero in blocks, TALL.child of src/world/fine.js). run: the factor of a jump with a run. arc: the top of the arc is this part of the length (a throw at 45 degrees). time: the seconds in the air for each half block of the jump, and the least. hop: a small hop in place (seconds and the top in half blocks). low: the kinds of map objects that are low enough to jump over (a log).",
+    "ages": {"-1": 4, "0": 5, "1": 6.5, "2": 7.5, "3": 8.5, "4": 9.5, "5": 10.5, "6": 11.5, "7": 12.5, "8": 13.5, "9": 14.5, "10": 15.5, "11": 16.5, "12": 17.5},
+    "table": [
+      [4, 75, 102.5],
+      [5, 89, 109.5],
+      [6, 101, 115.8],
+      [7, 113, 121.8],
+      [8, 124, 127.6],
+      [9, 133, 133.0],
+      [10, 141, 138.4],
+      [11, 148, 144.2],
+      [12, 155, 150.5],
+      [13, 163, 157.0],
+      [14, 171, 162.5],
+      [15, 178, 166.5],
+      [16, 184, 169.0],
+      [17, 188, 170.5],
+      [18, 190, 171.0]
+    ],
+    "hero": 2.34,
+    "run": 1.15,
+    "arc": 0.25,
+    "time": [0.1, 0.4],
+    "hop": [0.3, 0.4],
+    "low": ["log"]
+  }
 }

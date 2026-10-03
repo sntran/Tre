@@ -7,11 +7,13 @@
 // walks to it), pick (take a thing), put (put the thing in the hands into a zone), drop (put it on
 // the ground), guess (the prediction before a commit), work (the work of a trial: add, back, tie,
 // quench, give, mark, cut), raid (an order of the child in a raid: shoot, bar, call, charge, pour,
-// bamboo), poke (a tap on a sleeping animal: it flicks an ear). The place system does what the hands want; the work system does the work; the raid
+// bamboo), poke (a tap on a sleeping animal: it flicks an ear), jump (a jump of the hero that the
+// session planned: src/core/world/jump.js). The place system does what the hands want; the work system does the work; the raid
 // system does the orders.
-export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'hands', 'work', 'orders', 'flick', 'events'];
+export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'motion', 'follow', 'schedule', 'riding', 'lantern', 'hands', 'work', 'orders', 'flick', 'jump', 'events'];
 
 export const INSIDE_SOUNDS = Object.freeze(['cough', 'baby', 'clatter']);
+const CROUCH = 0.1; // seconds: the short crouch before a jump
 
 import { getEntity, query } from '../state.js';
 import { faceOf } from '../move.js';
@@ -86,6 +88,12 @@ export function input(world, dt, rng, env) {
       world.events.push({ type: 'flick', id: e.id, sound: 'huff' });
     } else if (c.type === 'stay' && e.schedule) {
       e.schedule.stay = Boolean(c.on);
+    } else if (c.type === 'jump' && e.position && !e.jump && !e.fall && !e.riding) {
+      // The jump starts with a short crouch; the move system plays its arc.
+      delete e.intent;
+      delete e.route;
+      e.jump = { t: 0, crouch: CROUCH, from: { x: e.position.x, z: e.position.z, y: e.position.y }, to: { x: c.to.x, z: c.to.z }, top: c.top, time: c.time, splash: Boolean(c.splash), fall: c.fall ?? null };
+      world.events.push({ type: 'jump', id: e.id, kind: c.kind ?? 'jump' });
 
     } else if (c.type === 'face' && e.position) {
       const dx = c.x - e.position.x;

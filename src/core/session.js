@@ -49,6 +49,8 @@ import { setupTrial, clearTrial, addToHeap } from './world/systems/work.js';
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring } from './mentoring.js';
+import { jumpLength, planJump } from './world/jump.js';
+import { MOVE } from './world/move.js';
 import { createRaid, raidLevel } from './world/raids.js';
 import { setupRaid, roadPoint } from './world/systems/raid.js';
 import { lossLevel } from './profile.js';
@@ -201,11 +203,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
 
   // The fords of the stamps of a map (the cells of shallow water that people walk through).
+  // The stepping stones in a ford (rock with shallow water beside it) close with it.
   function fordsOf(m) {
     const out = [];
     for (const s of m.land?.stamps ?? []) {
+      const at = (x, y) => m.legend[s.ground[y]?.[x]];
       s.ground.forEach((row, y) => {
-        for (let x = 0; x < row.length; x++) if (m.legend[row[x]] === 'shallow') out.push({ x: s.x + x, y: s.y + y });
+        for (let x = 0; x < row.length; x++) {
+          const t = m.legend[row[x]];
+          const stone = t === 'rock' && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => at(x + dx, y + dy) === 'shallow');
+          if (t === 'shallow' || stone) out.push({ x: s.x + x, y: s.y + y });
+        }
       });
     }
     return out;
@@ -1156,6 +1164,49 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const zoneOf = (id) => (id ? getEntity(state, `zone:${id}`) : null);
   const spans = () => query(state, 'zone').filter((z) => z.zone.rule === 'span');
   const distHb = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+  // A jump of the hero (src/core/world/jump.js), as far as a child of the age of the player. A jump
+  // does not interrupt a talk or a task in progress (a thing in the hands, a walk to a thing).
+  function jump() {
+    const h = hero();
+    const cfg = data.hero?.jump;
+    if (!cfg || !h || busy || screen || h.fall || h.jump || h.riding || holding() || raidOn() || arrivals.size) return null;
+    const run = (h.motion?.speed ?? 0) > MOVE.walk * 2 * 1.1;
+    const len = jumpLength(cfg, profile.grade, { run });
+    const f = h.position.facing ?? 0;
+    const plan = planJump(jumpCtx(), { x: h.position.x, z: h.position.z }, { x: Math.sin(f), z: Math.cos(f) }, len, cfg);
+    const cmd = { type: 'jump', id: 'hero', kind: plan.kind, to: plan.to ?? plan.at, top: plan.top ?? len * cfg.arc, time: plan.time ?? Math.max(cfg.time[1], cfg.time[0] * len), splash: Boolean(plan.splash) };
+    if (plan.kind === 'fall') {
+      // Over the gap of the bridge the jump ends in the water: the same fall as a short plank, and
+      // the hero climbs out at the near end.
+      const z = plan.gap.zone;
+      const def = data.zones?.[z.task] ?? null;
+      cmd.fall = { zone: plan.gap.id, out: { x: z.lane, z: z.from - 1.5 }, time: def?.outcomes?.short?.fall ?? 1.2, water: 2 };
+    }
+    worldCommand(state, cmd);
+    return plan;
+  }
+  // What the jump needs to know of the map around the hero.
+  function jumpCtx() {
+    const open = spans().filter((s) => !s.zone.set);
+    const tasks = query(state, 'zone').filter((z) => z.zone.rect && String(z.zone.task ?? '').startsWith('trial-') && !trialZone(String(z.zone.task).slice(6))?.zone.done);
+    return {
+      groundY: (cx, cy) => env.groundY(cx + 0.5, cy + 0.5),
+      level: (cx, cy) => tileMap.heightAt?.(cx, cy) ?? 0,
+      type: (cx, cy) => (tileMap.inside(cx, cy) ? tileMap.type(cx, cy) : null),
+      walkable: (cx, cy) => tileMap.inside(cx, cy) && !tileMap.isBlocked(cx, cy),
+      objectAt: (cx, cy) => map.objectsNear(cx, cy, cx + 1, cy + 1).find((o) => !terrain?.isFelled?.(o) && footprint(o).some(([dx, dy]) => o.x + dx === cx && o.y + dy === cy)) ?? null,
+      gapAt: (x, z) => {
+        for (const s of open) {
+          const g = s.zone;
+          const covered = itemsSum(g);
+          if (x >= g.x0 * 2 && x < (g.x1 + 1) * 2 && z >= g.from + covered && z < g.from + g.gap) return s;
+        }
+        return null;
+      },
+      taskAt: (x, z) => tasks.some((t) => { const r = t.zone.rect; return x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1; }),
+    };
+  }
+  const itemsSum = (zone) => zone.items.reduce((a, id) => a + (getEntity(state, id)?.item?.size ?? 0), 0);
   // The span that has this cell, if it is not solid yet.
   const spanAt = (x, y) => spans().find(({ zone: z }) => !z.set && x >= z.x0 && x <= z.x1 && y >= z.start / 2 && y < z.end / 2);
   // The pile of the task of a thing.
@@ -1626,6 +1677,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     else if (type === 'hands') handsKey();
     // A wave: the child calls the person of the task (docs/MENTOR.md).
     else if (type === 'wave') mentoring.wave();
+    else if (type === 'jump') jump();
     else if (type === 'talkTo') walkToPerson(cmd.id);
     // In a raid the map only pauses: it says where the enemies are, and it has no travel.
     else if (type === 'travel') queue(() => openCommand(raidOn() ? { open: 'worldmap', pauseKey: data.raids.raids[raidEnt().raid.id].pauseKey ?? null } : { open: 'worldmap' }));
