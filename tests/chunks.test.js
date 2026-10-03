@@ -67,6 +67,54 @@ test('one page alone is the same as the same page in a ring of pages', () => {
   }
 });
 
+test('the kind of the ground and the direction of a road reach each top face of a chunk, alone and in a ring', async () => {
+  const { SURFACE } = await import('../src/world/terrain.js');
+  const map = mapOf('giong', 7);
+  const tileMap = createPlaneTileMap(map, tiles);
+  // A chunk with a road of the land on it: a cell of the east road, out of the stamps.
+  const [px, py] = worldOf().at('phu-dong', 79, 12);
+  let road = null;
+  for (let d = 0; d < 120 && !road; d++) {
+    const c = map.land.cell(px + d, py);
+    if (c.letter === '=' && !c.stamp && c.roadDir) road = [px + d, py];
+  }
+  assert.ok(road, 'a cell of a road of the land');
+  const cx = Math.floor(road[0] / CHUNK);
+  const cz = Math.floor(road[1] / CHUNK);
+  const ring = createTerrain(map, tiles, tileMap, blocks);
+  for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) ring.chunk(cx + dx, cz + dz);
+  const alone = createTerrain(map, tiles, createPlaneTileMap(map, tiles), blocks);
+  const a = chunkMesh(alone, cx, cz).ground;
+  const b = chunkMesh(ring, cx, cz).ground;
+  assert.deepEqual(a.surface, b.surface, 'the same surface alone and in a ring');
+  assert.equal(a.surface.length, (a.positions.length / 3) * 6, 'six numbers for each vertex');
+  // Each top face (a face with all four corners at one height and its normal up) of a road cell
+  // has the kind of an earth road and the direction of the road.
+  let roads = 0;
+  for (let v = 0; v < a.positions.length / 3; v += 4) {
+    const y = [0, 1, 2, 3].map((k) => a.positions[(v + k) * 3 + 1]);
+    // A top face: one height, and its corners counter-clockwise from above (z goes down).
+    if (y.some((h) => h !== y[0]) || a.positions[v * 3 + 2] <= a.positions[(v + 2) * 3 + 2]) continue;
+    const x = Math.floor(Math.min(...[0, 1, 2, 3].map((k) => a.positions[(v + k) * 3]))) + cx * CHUNK;
+    const z = Math.floor(Math.min(...[0, 1, 2, 3].map((k) => a.positions[(v + k) * 3 + 2]))) + cz * CHUNK;
+    const sf = a.surface.slice(v * 6, v * 6 + 6);
+    const c = map.land.cell(x, z);
+    if (c.letter === '=' && !c.stamp) {
+      roads += 1;
+      assert.equal(sf[0], SURFACE.earth, `${x},${z}: an earth road`);
+      assert.ok(Math.abs(Math.hypot(sf[1], sf[2]) - 1) < 0.05, `${x},${z}: the direction of the road`);
+    }
+    if (c.letter === '.') assert.ok(sf[0] === SURFACE.grass || sf[0] === SURFACE.forest, `${x},${z}: grass`);
+  }
+  assert.ok(roads > 10, `${roads} top faces of the road`);
+  // A path of a stamp is paved, with a direction from the path cells around it.
+  const home = createTerrain(map, tiles, tileMap, blocks);
+  const [hx, hy] = worldOf().at('phu-dong', 31, 27);
+  let paved = null;
+  for (let j = -12; j <= 12 && !paved; j++) for (let i = -12; i <= 12 && !paved; i++) if (tileMap.type(hx + i, hy + j) === 'path') paved = home.surface(hx + i, hy + j);
+  assert.ok(paved && paved[0] === SURFACE.paved && Math.abs(Math.hypot(paved[1], paved[2]) - 1) < 1e-6, 'a paved path of the village');
+});
+
 test('the blocks of every prop stay within its reach of its cells (the pages build the props near them)', () => {
   const fine = { inside: () => true, get: () => 0, set: () => {} };
   const objects = ['phu-dong', 'soc-son', 'trau-son', 'road-thanglong'].flatMap((id) => load(`data/maps/${id}.json`).layers.objects);

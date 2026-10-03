@@ -30,6 +30,10 @@ const FINE_Y = 136; // fine blocks: the highest place of a prop
 const FINE_UP = 80; // fine blocks over the highest ground of a page
 const SEA = new Set(['sea', 'surf']);
 const DECKS = new Set(['bridge', 'bamboo']); // the ground types with a deck of planks over the water
+// The kinds of the surface of the ground for the printed texture (src/render/voxel.js), and the
+// kind of each ground type. A grass cell of the hills is forest floor; a path of a stamp is paved.
+export const SURFACE = Object.freeze({ none: 0, grass: 1, earth: 2, paved: 3, sand: 4, dike: 5, forest: 6, rock: 7, yard: 8 });
+const SURFACE_OF = { grass: SURFACE.grass, flowers: SURFACE.grass, hedge: SURFACE.grass, 'hedge-low': SURFACE.grass, path: SURFACE.earth, sand: SURFACE.sand, dike: SURFACE.dike, rock: SURFACE.rock, yard: SURFACE.yard };
 
 // The top of the ground of a cell (world y), from the height layer.
 export const columnTop = (digit) => digit + 1;
@@ -492,6 +496,62 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
 
   // A shadow makes the top of the ground a little darker.
   const shade = (x, y, z) => (pageOf(x, z)?.shadows.has(`${x},${z}`) ? 0.8 : 1);
+
+  // The surface of the top of a cell, for the printed texture of the ground (src/render/voxel.js):
+  // [kind (SURFACE), dx, dz (the direction of a road), off (the signed distance of the cell from
+  // the middle line of the road), wet (-1 dry high land to 1 next to water), density (of the
+  // strokes of grass)]. A road of the land takes its direction from its line; a path of a stamp
+  // takes it from the path cells around it.
+  const isPath = (x, z) => typeAt(x, z) === 'path';
+  function surface(x, z) {
+    const type = typeAt(x, z);
+    const c = map.land?.cell?.(x, z) ?? null;
+    const stamp = c ? c.stamp : true;
+    let kind = SURFACE_OF[type] ?? 0;
+    if (kind === SURFACE.grass && c && !stamp && c.level >= 5) kind = SURFACE.forest;
+    if (kind === SURFACE.earth && stamp) kind = SURFACE.paved;
+    let dx = 0;
+    let dz = 0;
+    let off = 0;
+    if (kind === SURFACE.earth || kind === SURFACE.paved) {
+      if (c?.roadDir) {
+        [dx, dz] = c.roadDir;
+        // The across axis is (-dz, dx); the line keeps the distance on the other side.
+        off = -c.roadOff;
+      } else {
+        // The main axis of the path cells within two cells, and the middle of them.
+        let n = 0;
+        let mx = 0;
+        let mz = 0;
+        const pts = [];
+        for (let j = -2; j <= 2; j++) for (let i = -2; i <= 2; i++) if (isPath(x + i, z + j)) { pts.push([i, j]); mx += i; mz += j; n += 1; }
+        mx /= n;
+        mz /= n;
+        let sxx = 0;
+        let szz = 0;
+        let sxz = 0;
+        for (const [i, j] of pts) {
+          sxx += (i - mx) ** 2;
+          szz += (j - mz) ** 2;
+          sxz += (i - mx) * (j - mz);
+        }
+        const a = 0.5 * Math.atan2(2 * sxz, sxx - szz);
+        dx = Math.cos(a);
+        dz = Math.sin(a);
+        // The cell is off the middle of the path cells across the axis.
+        off = -(mx * -dz + mz * dx);
+      }
+    }
+    let wet = 0;
+    let density = 0.75;
+    if (c) {
+      if (c.water <= 3) wet = 1 - c.water / 4;
+      else if (c.level >= 5 && c.water > 8) wet = -0.6;
+      if (stamp) density = 0.45;
+      else if (c.field <= 1) density = 1;
+    }
+    return [kind, dx, dz, off, wet, density];
+  }
   const topAt = (x, z) => Math.max(0, baseTop(x, z) - dugAt(x, z));
 
   const terrain = {
@@ -501,6 +561,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     ground: groundView,
     fine: fineView,
     shade,
+    surface,
     topAt,
     baseTop,
     // The highest top of the ground (for a ray from the camera).

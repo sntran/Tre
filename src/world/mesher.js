@@ -20,8 +20,11 @@ const FACES = [
 //   shade(x, y, z): a factor for the color of the top face (for shadows), 1 for none,
 //   ink: false to make no ink lines,
 //   origin: [x, y, z] in blocks, added to each position (a grid of a part of the world),
+//   top(x, y, z): the surface of a top face (six numbers, see surface in src/world/terrain.js), or
+//     null; the other faces have zeros,
 // }
-// Return { positions, colors, owners, indices, segments, segOwners, segOuter, faces }. Each segment
+// Return { positions, colors, owners, indices, segments, segOwners, segOuter, faces, surface } (six
+// numbers for each vertex when opts.top is given). Each segment
 // is six numbers: the two ends of an ink line. segOwners has the owner of each line, and segOuter
 // is 1 for a line on the outline of its owner (the edge meets empty space or another owner) and 0
 // for a line inside it (where two colors of the same owner meet, or a fold). A faded object keeps
@@ -34,6 +37,9 @@ export function meshGrid(grid, opts = {}) {
   const z1 = opts.z1 ?? grid.sz;
   const other = opts.other ?? (() => false);
   const shade = opts.shade ?? null;
+  const top = opts.top ?? null;
+  const surface = top ? [] : null;
+  const NONE = [0, 0, 0, 0, 0, 0];
   const withInk = opts.ink !== false;
   const [ox, oy, oz] = opts.origin ?? [0, 0, 0];
   const at = grid.get;
@@ -75,10 +81,12 @@ export function meshGrid(grid, opts = {}) {
           let tone = FACE_TONES[f.key];
           if (f.key === 'py' && shade) tone *= shade(x, y, z);
           const [r, g, b] = toneRgb(c, tone);
+          const sf = top ? (f.key === 'py' ? top(x, y, z) ?? NONE : NONE) : null;
           for (const v of f.v) {
             positions.push((x + v[0] + ox) * s, (y + v[1] + oy) * s, (z + v[2] + oz) * s);
             colors.push(r, g, b);
             owners.push(who);
+            if (sf) surface.push(...sf);
           }
           indices.push(n, n + 1, n + 2, n, n + 2, n + 3);
           n += 4;
@@ -105,7 +113,7 @@ export function meshGrid(grid, opts = {}) {
       }
     }
   }
-  return { positions, colors, owners, indices, segments, segOwners, segOuter, faces };
+  return { positions, colors, owners, indices, segments, segOwners, segOuter, faces, surface };
 }
 
 // The chunks of a grid: the parts of `size` blocks in x and z.

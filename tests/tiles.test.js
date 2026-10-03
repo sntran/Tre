@@ -46,7 +46,7 @@ test('one tile alone gives the same land as the same tile inside a ring', () => 
       const alone = make(seed).tile(tx, tz);
       for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) if (dx || dz) A.tile(tx + dx, tz + dz);
       const ring = A.tile(tx, tz);
-      for (const k of ['letter', 'level', 'fixed', 'water', 'road', 'field', 'nearStamp']) assert.deepEqual([...alone[k]], [...ring[k]], `seed ${seed}, tile ${tx},${tz}: ${k}`);
+      for (const k of ['letter', 'level', 'fixed', 'water', 'road', 'roadDx', 'roadDz', 'roadOff', 'field', 'nearStamp']) assert.deepEqual([...alone[k]], [...ring[k]], `seed ${seed}, tile ${tx},${tz}: ${k}`);
       for (const k of ['objects', 'life', 'villagers', 'sites', 'spots']) assert.deepEqual(alone[k], ring[k], `seed ${seed}, tile ${tx},${tz}: ${k}`);
     }
   }

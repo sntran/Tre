@@ -582,8 +582,13 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
     const nearFixed = bound((i) => fixed[i] !== FIXED.none, blend);
     for (let i = 0; i < N; i++) if (!fixed[i]) level[i] = Math.max(1, Math.min(MAX_LEVEL, Math.round(nearFixed(i, target[i]))));
 
-    // The roads: their cells take the height of the nearest cell of their line.
+    // The roads: their cells take the height of the nearest cell of their line. A road cell keeps
+    // the direction of the nearest segment of its line and its signed distance from the line (for
+    // the ruts of the texture of the ground).
     const roadDist = new Float32Array(N).fill(Infinity);
+    const roadDx = new Float32Array(N);
+    const roadDz = new Float32Array(N);
+    const roadOff = new Float32Array(N);
     for (const r of roads) {
       const best = new Float32Array(N).fill(Infinity);
       for (const k of near(r.index, tx, tz)) {
@@ -608,6 +613,10 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
               letter[i] = CODE.path;
               if (fixed[i] === FIXED.river) fixed[i] = FIXED.none;
               level[i] = r.levels[k];
+              const len = Math.hypot(bx - ax, by - ay) || 1;
+              roadDx[i] = (bx - ax) / len;
+              roadDz[i] = (by - ay) / len;
+              roadOff[i] = ((x + 0.5 - ax) * (by - ay) - (y + 0.5 - ay) * (bx - ax)) / len;
             }
           }
         }
@@ -763,6 +772,11 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       fixed: new Uint8Array(T * T),
       water: new Uint8Array(T * T),
       road: new Uint8Array(T * T),
+      // The direction of the road line at a road cell (x and z, times 100) and the signed distance
+      // of the cell from the line (times 40); 0, 0 at a cell with no road line.
+      roadDx: new Int8Array(T * T),
+      roadDz: new Int8Array(T * T),
+      roadOff: new Int8Array(T * T),
       field: new Uint8Array(T * T),
       nearStamp: new Uint8Array(T * T),
       mist: new Uint8Array(T * T),
@@ -780,6 +794,9 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       out.fixed[o] = fixed[i];
       out.water[o] = cap(toWater.dist[i]);
       out.road[o] = cap(toRoad.dist[i]);
+      out.roadDx[o] = Math.round(roadDx[i] * 100);
+      out.roadDz[o] = Math.round(roadDz[i] * 100);
+      out.roadOff[o] = Math.max(-127, Math.min(127, Math.round(roadOff[i] * 40)));
       out.field[o] = cap(toField.dist[i]);
       out.nearStamp[o] = cap(toStamp.dist[i]);
       out.mist[o] = cap(toEra.dist[i]);
@@ -828,6 +845,8 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       taken: t.fixed[o] === FIXED.claim,
       water: t.water[o],
       road: t.road[o],
+      roadDir: t.roadDx[o] || t.roadDz[o] ? [t.roadDx[o] / 100, t.roadDz[o] / 100] : null,
+      roadOff: t.roadOff[o] / 40,
       field: t.field[o],
       nearStamp: t.nearStamp[o],
       mist: t.mist[o],

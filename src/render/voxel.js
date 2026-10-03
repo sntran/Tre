@@ -64,6 +64,97 @@ const STAGES_GLSL = `
     return mix(color, paper * (1.0 + grainOf(w) * k), k);
   }`;
 
+// The printed texture of the ground, on the top faces only (surface: kind, the direction of a road,
+// the distance of the cell from the middle line of the road; soil: the wetness and the density of
+// the strokes of grass; src/world/terrain.js). All patterns are fixed on the land (world units) and
+// change only the flat tone of the face: grass in two greens with short strokes, forest floor with
+// leaf litter, earth roads with grain, stones, worn patches, two wheel ruts, and a lighter line in
+// the middle, paved paths of the villages in bricks along the path, sand with ripples, and a few
+// cracks on rock. They are thin and quiet, so that the things of the world stay on top.
+const GROUND_GLSL = `
+  float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float vnoise(vec2 p) {
+    vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), f.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), f.x), f.y);
+  }
+  const vec3 INK = vec3(0.122, 0.106, 0.09);
+  // A short V stroke of grass in each cell of a grid of 1 / scale, in some of the cells.
+  float strokes(vec2 p, float scale, float density) {
+    vec2 g = p * scale; vec2 c = floor(g); vec2 f = fract(g);
+    if (h21(c) < 1.0 - density) return 0.0;
+    vec2 d = f - (vec2(h21(c + 3.1), h21(c + 7.7)) * 0.6 + 0.2);
+    float a = abs(d.x - d.y * 0.5) < 0.045 && d.y > -0.22 && d.y < 0.0 ? 1.0 : 0.0;
+    float b = abs(d.x + d.y * 0.5 - 0.12) < 0.045 && d.y > -0.22 && d.y < 0.0 ? 1.0 : 0.0;
+    return max(a, b);
+  }
+  // Small dark stones and pale specks on earth.
+  vec3 grain(vec3 col, vec2 p) {
+    col *= 0.9 + vnoise(p * 0.35) * 0.16;
+    float sp = h21(floor(p * 9.0));
+    if (sp > 0.92) col = mix(col, INK, 0.2);
+    else if (sp < 0.03) col *= 1.06;
+    vec2 g = p * 1.4; vec2 c = floor(g); vec2 f = fract(g);
+    if (h21(c + 11.0) > 0.82) {
+      float r = length((f - (vec2(h21(c + 1.3), h21(c + 5.9)) * 0.6 + 0.2)) * vec2(1.0, 1.4));
+      if (r < 0.07) col = mix(col, INK, 0.12); else if (r < 0.1) col = mix(col, INK, 0.28);
+    }
+    return col;
+  }
+  vec3 groundOf(vec3 col, vec3 w, vec4 surface, vec2 soil) {
+    float kind = floor(surface.x + 0.5);
+    if (kind < 0.5) return col;
+    vec2 p = w.xz;
+    vec2 dir = surface.yz;
+    vec2 across = vec2(-dir.y, dir.x);
+    float wet = soil.x;
+    if (kind == 1.0 || kind == 5.0 || kind == 6.0) {
+      // Grass: two greens in large soft patches, darker near water and lighter on dry high land.
+      float pt = vnoise(p * 0.16) * 0.65 + vnoise(p * 0.5) * 0.35;
+      col *= (0.87 + pt * 0.24) * (1.0 - 0.09 * wet);
+      if (kind == 6.0) {
+        // Forest floor: darker, with fallen leaves.
+        col *= 0.9;
+        float lf = h21(floor(p * 6.0));
+        if (lf > 0.94) col = mix(col, vec3(0.62, 0.45, 0.22), 0.35);
+      }
+      float density = kind == 6.0 ? 0.15 : kind == 5.0 ? 0.35 : soil.y * 0.7;
+      col = mix(col, INK * 1.6 + col * 0.2, strokes(p, 2.2, density) * 0.42);
+    } else if (kind == 2.0 || kind == 8.0) {
+      col = grain(col, p);
+      // Worn patches.
+      float worn = vnoise(p * 0.22 + 7.0);
+      if (worn > 0.68) col *= 1.05;
+      if (kind == 2.0 && dot(dir, dir) > 0.25) {
+        // Two wheel ruts along the road, and a lighter line where people walk in the middle.
+        float a = abs(dot(p - (floor(p) + 0.5), across) + surface.w);
+        float rut = 1.0 - smoothstep(0.035, 0.07, abs(a - 0.7));
+        col = mix(col, col * 0.78, rut * 0.8);
+        col *= 1.0 + 0.06 * (1.0 - smoothstep(0.12, 0.3, a));
+      }
+    } else if (kind == 3.0) {
+      // Bricks or stones of a village path, along the path, with ink in the joints.
+      vec2 d = dot(dir, dir) > 0.25 ? dir : vec2(1.0, 0.0);
+      float u = dot(p, d) * 2.0;
+      float v = dot(p, vec2(-d.y, d.x)) * 3.0;
+      float row = floor(v);
+      u += mod(row, 2.0) * 0.5;
+      float joint = max(1.0 - smoothstep(0.0, 0.06, min(fract(u), 1.0 - fract(u))), 1.0 - smoothstep(0.0, 0.08, min(fract(v), 1.0 - fract(v))));
+      col *= 0.95 + h21(vec2(floor(u), row)) * 0.08;
+      col = mix(col, INK, joint * 0.22);
+    } else if (kind == 4.0) {
+      // Sand: soft ripples, and a few specks.
+      float r = sin((p.x * 0.8 + p.y * 0.45 + vnoise(p * 0.3) * 2.5) * 7.0);
+      col *= 1.0 - 0.05 * smoothstep(0.7, 1.0, r);
+      if (h21(floor(p * 8.0)) > 0.96) col = mix(col, INK, 0.12);
+    } else if (kind == 7.0) {
+      // Rock: grain and a few short cracks.
+      col *= 0.94 + vnoise(p * 1.3) * 0.1;
+      vec2 g = p * 1.1; vec2 c = floor(g); vec2 f = fract(g) - 0.5;
+      if (h21(c + 2.0) > 0.7 && abs(f.x * 0.8 - f.y) < 0.03 && abs(f.x) < 0.3) col = mix(col, INK, 0.35);
+    }
+    return col;
+  }`;
+
 const SWAY_GLSL = `
   uniform float uTime; uniform vec3 uGust; uniform vec2 uWind; uniform float uWindy;
   vec3 swayOf(vec3 p, vec2 s) {
@@ -92,12 +183,16 @@ function flatMaterial(uniforms) {
     side: THREE.DoubleSide,
     vertexShader: `
       attribute vec3 tone; attribute float owner; attribute vec2 sway; attribute float mist;
+      attribute vec4 surface; attribute vec2 soil;
       varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
+      varying vec4 vSurface; varying vec2 vSoil;
       ${FADE_GLSL}
       ${PAPER_GLSL}
       ${SWAY_GLSL}
       void main() {
         vColor = tone;
+        vSurface = surface;
+        vSoil = soil;
         vFade = fadeOf(owner);
         vec4 w = modelMatrix * vec4(position, 1.0);
         vW = w.xyz;
@@ -107,13 +202,15 @@ function flatMaterial(uniforms) {
     fragmentShader: `
       uniform vec3 uPaper;
       varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
+      varying vec4 vSurface; varying vec2 vSoil;
       ${STAGES_GLSL}
+      ${GROUND_GLSL}
       // A 4 x 4 ordered dither: 0 to 1 in a fixed pattern over the screen.
       float bayer2(vec2 a) { a = floor(a); return fract(a.x / 2.0 + a.y * a.y * 0.75); }
       float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
       void main() {
         if (vFade > 0.001 && vFade * 0.85 > bayer4(gl_FragCoord.xy)) discard;
-        gl_FragColor = vec4(onPaper(vColor, uPaper, vPaper, vW), 1.0);
+        gl_FragColor = vec4(onPaper(groundOf(vColor, vW, vSurface, vSoil), uPaper, vPaper, vW), 1.0);
       }`,
   });
 }
@@ -140,6 +237,17 @@ function maskMaterial(uniforms) {
 
 // The vertex arrays of a mesh of flat faces ({ positions, colors, owners, indices, sway, mist }):
 // { attrs: { name: [array, size] }, index }, for concat.
+// The surface numbers of a mesh (six for each vertex) as an array of `size` numbers for each vertex
+// from `from` (0: kind, dx, dz, off; 4: wet, density).
+function surfaceArray(list, n, from) {
+  const size = from === 0 ? 4 : 2;
+  const out = new Float32Array(n * size);
+  if (!list) return out;
+  const have = Math.min(n, list.length / 6);
+  for (let v = 0; v < have; v++) for (let k = 0; k < size; k++) out[v * size + k] = list[v * 6 + from + k];
+  return out;
+}
+
 function worldArrays(m) {
   const n = m.positions.length / 3;
   return {
@@ -149,6 +257,10 @@ function worldArrays(m) {
       owner: [new Float32Array(m.owners), 1],
       sway: [new Float32Array(m.sway ?? n * 2), 2],
       mist: [new Float32Array(m.mist ?? n), 1],
+      // The surface of the ground (src/world/terrain.js): kind, the direction of a road, the
+      // distance from its middle line; then the wetness and the density of the grass strokes.
+      surface: [surfaceArray(m.surface, n, 0), 4],
+      soil: [surfaceArray(m.surface, n, 4), 2],
     },
     index: new Uint32Array(m.indices),
   };
@@ -608,7 +720,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
       return mist;
     };
     // The ground and the things of the chunk in one mesh.
-    const all = { positions: [...m.ground.positions, ...m.things.positions], colors: [...m.ground.colors, ...m.things.colors], owners: [...m.ground.owners, ...m.things.owners], indices: [...m.ground.indices], sway: [...new Array((m.ground.positions.length / 3) * 2).fill(0), ...m.things.sway] };
+    const all = { positions: [...m.ground.positions, ...m.things.positions], colors: [...m.ground.colors, ...m.things.colors], owners: [...m.ground.owners, ...m.things.owners], indices: [...m.ground.indices], sway: [...new Array((m.ground.positions.length / 3) * 2).fill(0), ...m.things.sway], surface: m.ground.surface ?? null };
     const base = m.ground.positions.length / 3;
     for (const i of m.things.indices) all.indices.push(base + i);
     const page = terrain.page(key);

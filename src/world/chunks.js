@@ -49,7 +49,10 @@ export function chunkMesh(terrain, cx, cz, { coarse = false } = {}) {
   const p = terrain.chunk(cx, cz);
   const ox = p.x0;
   const oz = p.z0;
-  const ground = coarse ? coarseGround(p) : meshGrid(p.ground, { x0: 1, z0: 1, x1: 1 + CHUNK, z1: 1 + CHUNK, scale: 1, origin: [-1, 0, -1], shade: (x, y, z) => terrain.shade(x - 1 + ox, y, z - 1 + oz) });
+  // The top of each column has its surface (the kind of the ground and the direction of a road),
+  // for the printed texture of the ground.
+  const top = terrain.surface ? (x, y, z) => terrain.surface(x - 1 + ox, z - 1 + oz) : null;
+  const ground = coarse ? coarseGround(p, top) : meshGrid(p.ground, { x0: 1, z0: 1, x1: 1 + CHUNK, z1: 1 + CHUNK, scale: 1, origin: [-1, 0, -1], shade: (x, y, z) => terrain.shade(x - 1 + ox, y, z - 1 + oz), top });
   // The faces of a fine block that touch the ground are hidden.
   const underGround = (x, y, z) => p.ground.get(((x + p.fx0) >> 1) - ox + 1, (y + p.fy0) >> 1, ((z + p.fz0) >> 1) - oz + 1) > 0;
   const fine = meshGrid(p.fine, { x0: 1, z0: 1, x1: 1 + CHUNK * 2, z1: 1 + CHUNK * 2, scale: 0.5, origin: [-1, p.fy0, -1], other: underGround, ink: !coarse });
@@ -90,17 +93,21 @@ export function chunkMesh(terrain, cx, cz, { coarse = false } = {}) {
 
 // The ground of a far chunk (the coarse level): the tops of a row of columns of one height and one
 // color are one quad, and the step down to a lower column is one quad, in the color under the top.
-// No ink. Return the form of meshGrid (positions from the corner of the chunk).
-export function coarseGround(p) {
+// No ink. surfaceOf(x, y, z): the surface of a top (see meshGrid); a far top keeps its kind and its
+// wetness, but not the direction of a road. Return the form of meshGrid (positions from the corner
+// of the chunk).
+const FLAT = [0, 0, 0, 0, 0, 0];
+export function coarseGround(p, surfaceOf = null) {
   const g = p.ground;
   const top = (lx, lz) => g.top(lx, lz) + 1; // the top of a column of the page (with the apron)
-  const out = { positions: [], colors: [], owners: [], indices: [], segments: [], segOwners: [], segOuter: [] };
+  const out = { positions: [], colors: [], owners: [], indices: [], segments: [], segOwners: [], segOuter: [], surface: surfaceOf ? [] : null };
   let n = 0;
-  const quad = (a, b, c, d, rgb) => {
+  const quad = (a, b, c, d, rgb, sf = FLAT) => {
     for (const v of [a, b, c, d]) {
       out.positions.push(v[0], v[1], v[2]);
       out.colors.push(...rgb);
       out.owners.push(0);
+      if (out.surface) out.surface.push(sf[0], 0, 0, 0, sf[4], sf[5]);
     }
     out.indices.push(n, n + 1, n + 2, n, n + 2, n + 3);
     n += 4;
@@ -117,7 +124,7 @@ export function coarseGround(p) {
       let e = x + 1;
       while (e <= CHUNK && top(e, z) === h && g.get(e, h - 1, z) === c) e += 1;
       const rgb = toneRgb(c, FACE_TONES.py);
-      quad([x - 1, h, z], [e - 1, h, z], [e - 1, h, z - 1], [x - 1, h, z - 1], rgb);
+      quad([x - 1, h, z], [e - 1, h, z], [e - 1, h, z - 1], [x - 1, h, z - 1], rgb, surfaceOf?.(x, h - 1, z) ?? FLAT);
       x = e;
     }
     for (let x2 = 1; x2 <= CHUNK; x2++) {
