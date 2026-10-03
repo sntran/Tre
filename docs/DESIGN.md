@@ -12,6 +12,7 @@ Tre is a web RPG from Pre-K to grade 12. The first release covers grades 1 to 5.
 - **Name:** *tre* means bamboo. Bamboo is the most ordinary plant in a Vietnamese village. It grows fast, bends in a storm, and does not break. Thánh Gióng fought with bamboo when his iron staff broke.
 - **Idea:** many Vietnamese heroes were ordinary people: a boy who did not speak, a woodcutter, a fisherman, a farmer. The player also starts as an ordinary child and becomes a hero through discovery and challenges.
 - **Learning rule:** math and science are the way the player fights, builds, and explores. They are not a quiz before the fun.
+- **The first skill is learning to learn:** before any skill of math or science, the child learns to observe what happened, to know what was right, wrong, or unclear, and to adjust. Every task gives a moment to look, to try, to see why, and to change, and the people of the world hand the judging over to the child as the child grows. This skill helps the child learn everything else.
 - **Culture goal:** children born outside Vietnam learn Vietnamese history, legends, and language in play. The game is in Vietnamese and in English.
 - **Title screen:** the hero starts as a bamboo shoot. The bamboo grows taller with each era.
 
@@ -280,6 +281,13 @@ The research report in `docs/research/learning-by-doing.md` collects the evidenc
 36. **Answer boredom as fast as a stuck child.** Boredom lasts and leads to mashing; frustration passes. Boredom gets a new form, a bigger choice, or another station; frustration gets a smaller task, a shared task, or a break in the story (Baker et al. 2010).
 37. **The person remembers the child.** Each person keeps what helped this child and the child's usual errors, tries the move that worked last time first, and says what changed as information ("Hôm trước mình chia ô ra làm hai.").
 38. **Every move is logged with its outcome.** The diagnosis, the move, P(L) before, and the next commit, so that Tre can find out which moves work, and the parent can see what the person tried and what helped.
+
+**Learning to learn**
+
+39. **The child takes over the judging.** The person hands over not only the task but the checking: first the person points at what went wrong; later the person waits while the child looks; at last the child checks before calling the person. A check is an action that the game can see (walk along the plot, look along a row, count the stakes, lift the basket), and a fix before the commit counts as a self-correction (rule 33, transfer of responsibility).
+40. **Every task has the whole cycle: look, try, see why, change.** Predict (rule 4), check, commit, see the result and the reason (rule 12), adjust, and try again. This is the cycle of a self-regulated learner: plan, monitor, reflect (Zimmerman 2002). Training of self-regulation had an average effect of 0.69 in schools, more in mathematics (Dignath & Büttner 2008), and in young children it worked best when the teacher or the task material carried it (Huang et al. 2024).
+41. **Asking is a skill.** The child can call the person at any time with a wave. Asking after a real try, when stuck, is good; asking before any try, or never asking while stuck, is a sign for the mentor. The game never treats asking as a weakness (Aleven et al. 2016).
+42. **The child sees the own learning.** The notebook shows the child's progress as a thing the child made (the field of planted facts), and the people say what changed since last time, so that the child sees that looking, strategies, and practice make the difference, not talent.
 
 ## World tasks from village technology
 
