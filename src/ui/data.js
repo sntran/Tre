@@ -36,6 +36,7 @@ export const FILES = {
   scatter: 'data/world/scatter.json',
   events: 'data/world/events.json',
   practice: 'data/world/practice.json',
+  mentors: 'data/world/mentors.json',
 };
 
 async function fetchJson(path) {

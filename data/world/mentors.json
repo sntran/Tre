@@ -1,0 +1,116 @@
+{
+  "_about": "The mentors of the tasks (src/core/mentor.js; docs/MENTOR.md). The person who gives a task watches the child, reads the error, and chooses one move after each commit, and on idle time. mastery: at this P(L) the person only watches. ready: P(L) over this, with fast right commits, is ready for more. top: the highest help level. handover: the self-corrections of the child after which the person first waits before a mark (the first number), and then only watches (the second). families: how a family of tasks reads its commits. reader: sum (the sum of the parts against the target), each (each part against the target: the kinds of the basket), or plain (only right or not). slip: an error of at most this many units is a slip. fastPart: seconds for each part; a try faster than this is fast. slowUnit: seconds for each unit of the target; a right try slower than this is counting all. idleStart: seconds with no action at the start of a task (does not know what to do). offerAfter: seconds of idle time after a miss, with no wave, before the person offers help. look: the seconds that the person waits after a miss for the child to look first (the second stage of the handover). frustrated: misses in a row; bored: fast clean commits in a row (the same number, so that boredom gets a response as soon as frustration). ladders: for each diagnosis, the moves in the order of the help level. mentors: the mentor of each task (the task id of its skill events): its family, its person (the entity that acts), demo (the look of the other instance of a demonstration: its prop, and the look of its things; size is the size of a thing), and picture (the line that sends the child to another station). lines: the line of each move (the person says it in a bubble). again: the line of a move that helped this child before (the person says it as information).",
+  "mastery": 0.95,
+  "ready": 0.8,
+  "top": 3,
+  "handover": [1, 3],
+  "families": {
+    "groups": {
+      "reader": "sum", "slip": 3, "fastPart": 0.8, "slowUnit": 2.5, "idleStart": 20, "offerAfter": 30, "look": 6, "frustrated": 3, "bored": 3,
+      "ladders": {
+        "unsure": ["show"],
+        "missing": ["mark", "demo", "smaller", "share"],
+        "units": ["mark", "demo", "picture", "share"],
+        "slip": ["wait", "mark", "demo", "share"],
+        "guess": ["mark", "demo", "share"],
+        "stuck": ["smaller", "demo", "share"],
+        "miss": ["mark", "demo", "smaller", "share"],
+        "frustrated": ["share", "break"],
+        "counting": ["wait", "demo"],
+        "bored": ["raise", "picture"],
+        "ready": ["raise"]
+      }
+    },
+    "span": {
+      "reader": "sum", "slip": 2, "fastPart": 0.8, "slowUnit": 2.5, "idleStart": 25, "offerAfter": 30, "look": 6, "frustrated": 3, "bored": 3,
+      "ladders": {
+        "unsure": ["show"],
+        "missing": ["mark", "cue", "demo", "picture"],
+        "units": ["mark", "demo", "picture"],
+        "slip": ["wait", "mark", "cue", "demo"],
+        "guess": ["cue", "mark", "demo"],
+        "stuck": ["cue", "demo", "picture"],
+        "miss": ["mark", "cue", "demo", "picture"],
+        "frustrated": ["break", "picture"],
+        "counting": ["wait", "demo"],
+        "bored": ["raise", "picture"],
+        "ready": ["raise"]
+      }
+    },
+    "bundle": {
+      "reader": "sum", "slip": 3, "fastPart": 0.6, "slowUnit": 2.5, "idleStart": 20, "offerAfter": 30, "look": 6, "frustrated": 3, "bored": 3,
+      "ladders": {
+        "unsure": ["show"],
+        "missing": ["mark", "demo", "smaller"],
+        "slip": ["mark", "demo", "smaller"],
+        "guess": ["mark", "demo"],
+        "stuck": ["smaller", "demo"],
+        "miss": ["mark", "demo", "smaller"],
+        "frustrated": ["share", "break"],
+        "counting": ["wait", "demo"],
+        "bored": ["raise", "picture"],
+        "ready": ["raise"]
+      }
+    },
+    "basket": {
+      "reader": "each", "slip": 1, "fastPart": 0.8, "slowUnit": 3, "idleStart": 20, "offerAfter": 30, "look": 6, "frustrated": 3, "bored": 3,
+      "ladders": {
+        "unsure": ["show"],
+        "slip": ["mark", "smaller", "share"],
+        "guess": ["mark", "share"],
+        "stuck": ["smaller", "share"],
+        "miss": ["mark", "smaller", "share"],
+        "frustrated": ["share", "break"],
+        "counting": ["wait"],
+        "bored": ["raise", "picture"],
+        "ready": ["raise"]
+      }
+    },
+    "plain": {
+      "reader": "plain", "slip": 0, "fastPart": 0.8, "slowUnit": 4, "idleStart": 25, "offerAfter": 30, "look": 6, "frustrated": 3, "bored": 3,
+      "ladders": {
+        "unsure": ["show"],
+        "guess": ["mark", "picture"],
+        "stuck": ["mark", "picture"],
+        "miss": ["wait", "mark", "picture", "break"],
+        "frustrated": ["break", "picture"],
+        "counting": ["wait"],
+        "bored": ["raise", "picture"],
+        "ready": ["raise"]
+      }
+    }
+  },
+  "mentors": {
+    "bridge": { "family": "span", "person": "npc:fisher", "demo": { "thing": "plank", "prop": null }, "picture": "mentor.picture.bridge" },
+    "event-cart": { "family": "groups", "person": "event:cart", "demo": { "thing": "stones", "prop": "cart", "target": "mud" }, "picture": "mentor.picture.cart" },
+    "event-flood": { "family": "groups", "person": "event:flood", "demo": { "thing": "pails", "prop": null, "target": "ditch" }, "picture": "mentor.picture.flood" },
+    "event-market": { "family": "groups", "person": "event:market", "demo": { "thing": "coins", "prop": null, "target": null }, "picture": "mentor.picture.market" },
+    "event-duck": { "family": "groups", "person": "event:duck", "demo": null, "picture": "mentor.picture.duck" },
+    "trial-scholar": { "family": "bundle", "person": "npc:teacher", "demo": { "thing": "rod", "prop": null, "target": null }, "picture": "mentor.picture.scholar" },
+    "trial-smith": { "family": "plain", "person": "npc:smith", "demo": null, "picture": "mentor.picture.smith" },
+    "trial-fisher": { "family": "plain", "person": "npc:fisher", "demo": null, "picture": "mentor.picture.fisher" },
+    "trial-healer": { "family": "basket", "person": "npc:healer", "demo": null, "picture": "mentor.picture.healer" },
+    "trial-woodcutter": { "family": "plain", "person": "npc:woodcutter", "demo": null, "picture": "mentor.picture.woodcutter" }
+  },
+  "lines": {
+    "show": "mentor.show",
+    "mark": "mentor.mark",
+    "cue": null,
+    "demo": "mentor.demo",
+    "smaller": "mentor.smaller",
+    "share": "mentor.share",
+    "raise": "mentor.raise",
+    "break": "mentor.break",
+    "tryFirst": "mentor.tryFirst",
+    "offer": "mentor.offer",
+    "wait": null
+  },
+  "again": {
+    "mark": "mentor.again.mark",
+    "cue": "mentor.again.cue",
+    "demo": "mentor.again.demo",
+    "smaller": "mentor.again.smaller",
+    "share": "mentor.again.share",
+    "show": "mentor.again.show"
+  }
+}
