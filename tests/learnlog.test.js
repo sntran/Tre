@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createLog, logEvent, checkEvent, rollupEvents, mergeRollups, currentRollups, emptyRollup, DAY_MS,
+  qHelp, createLog, logEvent, checkEvent, rollupEvents, mergeRollups, currentRollups, emptyRollup, DAY_MS,
   qLearn, qStay, qTransfer, qDifficulty, qPredict, qHints, qMashing, qComeBack, qSessions, QUESTIONS, summarize, extraFields,
 } from '../src/core/learnlog.js';
 import { load } from './helpers.js';
@@ -29,6 +29,12 @@ const DAY2 = [
   { type: 'review', t: T0 + DAY_MS + 3000, variant: 'base', skill: 'math.add.20', due: T0, gap: 6, result: true },
   { type: 'review', t: T0 + DAY_MS + 4000, variant: 'base', skill: 'math.add.20', due: T0, gap: 20, result: false },
   { type: 'session', t: T0 + DAY_MS + 5000, variant: 'base', start: T0 + DAY_MS - 30 * 60000, end: T0 + DAY_MS + 5000, endedBy: 'parent', quests: 0, place: 'soc-son', afterQuest: true, first: 'talk', practice: 'bo-que' },
+  { type: 'help', t: T0 + DAY_MS + 6000, variant: 'base', task: 'event-cart', diagnosis: 'units', move: 'demo', pBefore: 0.4, success: true, efficient: false },
+  { type: 'help', t: T0 + DAY_MS + 7000, variant: 'base', task: 'event-cart', diagnosis: 'units', move: 'demo', pBefore: 0.5, success: false, efficient: false },
+  { type: 'help', t: T0 + DAY_MS + 8000, variant: 'base', task: 'bridge', diagnosis: 'missing', move: 'mark', pBefore: null, success: true, efficient: true },
+  { type: 'check', t: T0 + DAY_MS + 9000, variant: 'base', task: 'bridge', changed: true },
+  { type: 'check', t: T0 + DAY_MS + 9500, variant: 'base', task: 'bridge', changed: false },
+  { type: 'ask', t: T0 + DAY_MS + 9800, variant: 'base', task: 'bridge', when: 'before', move: 'tryFirst' },
 ];
 const ALL = [...DAY1, ...DAY2];
 const opts = { first: Math.floor(T0 / DAY_MS) };
@@ -194,4 +200,21 @@ test('the save keeps the learning log, and a log with free text does not load', 
   const bad = structuredClone(p);
   bad.log.events.push({ ...ALL[1], skill: 'Hello, my friend!' });
   assert.throws(() => importCode(exportCode(bad)), (e) => e.reason === 'shape');
+});
+
+test('which help works: the moves of the mentors with the next commit, the checks, and the waves', () => {
+  const r = rollupEvents(ALL, opts);
+  const q = qHelp(r);
+  assert.deepEqual(q.rows[0], { diagnosis: 'units', move: 'demo', n: 2, rate: 0.5, efficient: 0 });
+  assert.deepEqual(q.rows[1], { diagnosis: 'missing', move: 'mark', n: 1, rate: 1, efficient: 1 });
+  assert.equal(q.checks, 2);
+  assert.equal(q.selfFix, 0.5);
+  assert.deepEqual(q.asks, { before: 1, after: 0 });
+  // A roll-up of an older version (no helps) merges with a new one.
+  const old = emptyRollup();
+  delete old.helps;
+  delete old.checks;
+  delete old.asks;
+  assert.deepEqual(mergeRollups(old, r.base).helps, r.base.helps);
+  assert.throws(() => checkEvent({ ...ALL.find((e) => e.type === 'help'), move: 'answer' }, schema), 'no move gives the answer');
 });

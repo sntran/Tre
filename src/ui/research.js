@@ -4,7 +4,7 @@
 // nothing is sent). HTML and CSS only, no chart library.
 import { h, button } from './dom.js';
 import { t } from './i18n.js';
-import { currentRollups, summarize, QUESTIONS } from '../core/learnlog.js';
+import { currentRollups, summarize, QUESTIONS, qHelp } from '../core/learnlog.js';
 import { createExperiments } from '../core/experiments.js';
 
 const pct = (x) => (x === null || x === undefined ? '–' : `${Math.round(x * 100)}`);
@@ -63,6 +63,16 @@ export function researchView(rollups, data) {
   blocks.push(block('hints', q.hints.levels.length ? [
     ...q.hints.levels.map((l) => bar(l.level ? t('research.hints.level', { level: l.level }) : t('research.hints.none'), l.rate, `${pct(l.rate)}% (${l.n})`)),
     h('p', { class: 'muted', text: t('research.hints.short', { short: pct(q.hints.short) }) }),
+  ] : [empty()]));
+
+  // Which help works: the success of the next commit after each move of the mentors, for each
+  // diagnosis; the checks of the child; the waves.
+  const help = qHelp(rollups);
+  blocks.push(block('help', help.rows.length || help.checks || help.asks.before + help.asks.after ? [
+    h('p', { class: 'muted', text: t('research.help.note') }),
+    ...help.rows.slice(0, 12).map((r) => bar(t('research.help.row', { diagnosis: t(`research.diagnosis.${r.diagnosis}`), move: t(`research.move.${r.move}`) }), r.rate, `${pct(r.rate)}% (${r.n})`)),
+    h('p', { class: 'muted', text: t('research.help.checks', { n: help.checks, fix: pct(help.selfFix) }) }),
+    h('p', { class: 'muted', text: t('research.help.asks', { before: help.asks.before, after: help.asks.after }) }),
   ] : [empty()]));
 
   blocks.push(block('mashing', q.mashing.commits ? [

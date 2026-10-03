@@ -349,6 +349,19 @@ export function validate(profile, { grades = null } = {}) {
     }
   }
   if (profile.stats !== undefined) for (const [, v] of entries(profile.stats, 'stats')) int(v, 'stats value', 0, 1e9);
+  // The mentors (src/core/mentor.js): for each task, the moves that were tried and that helped
+  // this child (by diagnosis), the usual errors, the self-corrections, and the lift of the task.
+  if (profile.mentors !== undefined) {
+    for (const [key, m] of entries(profile.mentors, 'mentors')) {
+      if (!isObj(m)) fail(`mentors ${key}`);
+      for (const part of ['worked', 'tried']) {
+        for (const [, moves] of entries(m[part] ?? {}, `mentors ${key}.${part}`)) for (const [, n] of entries(moves, `mentors ${key}.${part}`)) int(n, `mentors ${key}.${part}`, 0, 1e9);
+      }
+      for (const [, n] of entries(m.errors ?? {}, `mentors ${key}.errors`)) int(n, `mentors ${key}.errors`, 0, 1e9);
+      int(m.selfFix ?? 0, `mentors ${key}.selfFix`, 0, 1e9);
+      int(m.lift ?? 0, `mentors ${key}.lift`, -3, 3);
+    }
+  }
   // The practice links (src/core/practice.js): the level of the next round and the sets of each
   // activity.
   if (profile.practice !== undefined) {

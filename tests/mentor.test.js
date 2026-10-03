@@ -173,3 +173,18 @@ test('each mentor names a family and a person', () => {
     assert.match(m.person, /^(npc|event):/, `${key}: person`);
   }
 });
+
+test('the save keeps the memory of the mentors, and a bad memory does not load', async () => {
+  const { createProfile } = await import('../src/core/profile.js');
+  const { serialize, deserialize } = await import('../src/core/save.js');
+  const p = createProfile({ id: 'm', name: 'An' });
+  const mem = newMemory();
+  const st = newMentor('event-cart');
+  onCommit(st, mem, tryOf([5, 1], 7, { sizes: [5, 2] }), sum, cfg);
+  onCommit(st, mem, tryOf([5, 2], 7), sum, cfg);
+  p.mentors = { 'event-cart': mem };
+  assert.deepEqual(deserialize(serialize(p, 0)).mentors, p.mentors);
+  const bad = structuredClone(p);
+  bad.mentors['event-cart'].worked = { slip: { mark: 'often' } };
+  assert.throws(() => deserialize(serialize(bad, 0)));
+});

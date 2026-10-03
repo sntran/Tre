@@ -31,6 +31,9 @@ Each event has `type`, `t` (the time), and `variant`, and the fields of its kind
 | `review` | skill, due, gap (days since the last practice), result | the learner, for an answer for a mastered skill that is due |
 | `exam` | skill, correct, p (P(L) before the answer) | Văn Miếu, for each exam item |
 | `prediction` | task, gap, guess (null when skipped), used, solved | the village, at the first commit on a gap |
+| `help` | task, diagnosis, move, pBefore, success, efficient (the next commit after the move) | the session, at the commit after a move of the mentor of a task (`docs/MENTOR.md`) |
+| `check` | task, changed (a part put or taken back after the check, before the commit: a self-correction) | the session, at the commit after the check |
+| `ask` | task, when (before or after a try), move | the session, when the child waves for help |
 | `carry` | task, size (the size of the load, such as a tray of three or five bowls), seconds (the walk from the pick-up to the put) | the village, when a load of rice goes into the pot |
 
 The scenes never write the log. They call `ctx.log(kind, fields)`, the one way in (`src/core/logger.js`). The logger adds the time and the variant, keeps the open session, and counts the time of play.

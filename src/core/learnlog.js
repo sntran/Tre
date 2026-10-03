@@ -88,6 +88,10 @@ export function emptyRollup() {
     exams: { n: 0, sp: 0, sc: 0, spc: 0, spp: 0, scc: 0 },
     predictions: { n: 0, skipped: 0, err: 0, curve: [] },
     sessions: { n: 0, ms: 0, endedBy: { device: 0, parent: 0, child: 0 }, weeks: {}, afterQuest: 0, stops: {}, first: {}, lengths: [0, 0, 0, 0, 0] },
+    // The moves of the mentors: for each diagnosis and move, [moves, next commits right, efficient].
+    helps: {},
+    checks: [0, 0], // checks, and checks with a change after them (self-corrections)
+    asks: { before: 0, after: 0 },
   };
 }
 
@@ -167,6 +171,16 @@ export function rollupEvents(events, { tz = 0, first = 0, mastered = 0.95, short
         p.err += err;
         addPoint(p.curve, day, err);
       }
+    } else if (ev.type === 'help') {
+      const h = ((r.helps[ev.diagnosis] ??= {})[ev.move] ??= [0, 0, 0]);
+      h[0] += 1;
+      h[1] += ev.success ? 1 : 0;
+      h[2] += ev.efficient ? 1 : 0;
+    } else if (ev.type === 'check') {
+      r.checks[0] += 1;
+      r.checks[1] += ev.changed ? 1 : 0;
+    } else if (ev.type === 'ask') {
+      r.asks[ev.when] += 1;
     } else if (ev.type === 'session') {
       const s = r.sessions;
       const ms = Math.max(0, ev.end - ev.start);
@@ -251,6 +265,17 @@ export function mergeRollups(a, b) {
     first: addMap(s.first, t.first),
     lengths: s.lengths.map((v, i) => v + t.lengths[i]),
   };
+  // A roll-up of an older version has no helps, checks, or asks.
+  for (const x of [a.helps ?? {}, b.helps ?? {}]) {
+    for (const [d, moves] of Object.entries(x)) {
+      for (const [m, v] of Object.entries(moves)) {
+        const o = ((out.helps[d] ??= {})[m] ??= [0, 0, 0]);
+        v.forEach((n, i) => { o[i] += n; });
+      }
+    }
+  }
+  out.checks = addPairs(a.checks ?? [0, 0], b.checks ?? [0, 0]);
+  out.asks = addMap(a.asks ?? { before: 0, after: 0 }, b.asks ?? { before: 0, after: 0 });
   return out;
 }
 
@@ -364,6 +389,18 @@ export function qSessions(rollups) {
   return { n: s.n, minutes: s.n ? s.ms / s.n / 60000 : null, lengths: [...s.lengths], bounds: [...LENGTHS], endedBy: { ...s.endedBy }, first: { ...s.first } };
 }
 
+// Which help works: for each diagnosis and move of the mentors, the moves and the success of the
+// next commit (and efficient); the checks and the self-corrections; the waves before and after a try.
+export function qHelp(rollups) {
+  const all = allVariants(rollups);
+  const rows = [];
+  for (const [diagnosis, moves] of Object.entries(all.helps)) {
+    for (const [move, [n, ok, eff]] of Object.entries(moves)) rows.push({ diagnosis, move, n, rate: rate(ok, n), efficient: rate(eff, n) });
+  }
+  rows.sort((a, b) => b.n - a.n || a.diagnosis.localeCompare(b.diagnosis) || a.move.localeCompare(b.move));
+  return { rows, checks: all.checks[0], selfFix: rate(all.checks[1], all.checks[0]), asks: { ...all.asks } };
+}
+
 export const QUESTIONS = Object.freeze({ learn: qLearn, stay: qStay, transfer: qTransfer, difficulty: qDifficulty, predict: qPredict, hints: qHints, mashing: qMashing, comeBack: qComeBack, sessions: qSessions });
 
 // The signs of mashing (rule 22 of the design): the choices come faster than a child can count
@@ -418,6 +455,9 @@ export function summarize(log, { grade, variant }, schema) {
       exams: JSON.parse(JSON.stringify(r.exams), (k, v) => round(v)),
       predictions: JSON.parse(JSON.stringify(r.predictions), (k, v) => round(v)),
       sessions,
+      helps: r.helps,
+      checks: r.checks,
+      asks: r.asks,
     };
   }
   return out;

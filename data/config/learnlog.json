@@ -1,5 +1,5 @@
 {
-  "_about": "The learning log (src/core/learnlog.js; docs/DESIGN.md, 'Learning measurement'). kinds: the fields of each kind of event. The kind of a field: time (milliseconds since 1970), id (a short id from the data of the game: a skill, a task, a map, a variant), bool, count (a whole number, 0 or more), number, prob (0 to 1), numbers (a list of at most 50 numbers), or a list of the allowed words. A kind with ? can also be null. Every event has the fields type, t (the time), and variant. No name, no free text, no picture, and no device information. maxEvents: the most raw events of one day; mastered: the P(L) of mastery (as in learning.json); band: the target band of first-try success (rule 15). summary: the fields that a shared summary may have, as paths with * for a key of a map.",
+  "_about": "The learning log (src/core/learnlog.js; docs/DESIGN.md, 'Learning measurement'). kinds: the fields of each kind of event. The kind of a field: time (milliseconds since 1970), id (a short id from the data of the game: a skill, a task, a map, a variant), bool, count (a whole number, 0 or more), number, prob (0 to 1), numbers (a list of at most 50 numbers), or a list of the allowed words. A kind with ? can also be null. Every event has the fields type, t (the time), and variant. No name, no free text, no picture, and no device information. maxEvents: the most raw events of one day; mastered: the P(L) of mastery (as in learning.json); band: the target band of first-try success (rule 15). help: a move of the mentor of a task (src/core/mentor.js), with the outcome of the next commit; check: a check before a commit, and whether a change followed it (a self-correction); ask: a wave of the child, before or after a try, and the move that it got. summary: the fields that a shared summary may have, as paths with * for a key of a map.",
   "version": 1,
   "maxEvents": 2000,
   "mastered": 0.95,
@@ -52,6 +52,23 @@
       "size": "count",
       "seconds": "number"
     },
+    "help": {
+      "task": "id",
+      "diagnosis": ["unsure", "missing", "units", "slip", "counting", "guess", "stuck", "frustrated", "bored", "ready", "miss", "ok"],
+      "move": ["wait", "show", "mark", "cue", "demo", "smaller", "share", "picture", "raise", "break", "tryFirst", "offer"],
+      "pBefore": "prob?",
+      "success": "bool",
+      "efficient": "bool"
+    },
+    "check": {
+      "task": "id",
+      "changed": "bool"
+    },
+    "ask": {
+      "task": "id",
+      "when": ["before", "after"],
+      "move": ["wait", "show", "mark", "cue", "demo", "smaller", "share", "picture", "raise", "break", "tryFirst", "offer"]
+    },
     "prediction": {
       "task": "id",
       "gap": "count",
@@ -67,6 +84,7 @@
     "rollups.*.skills.*.firstSuccesses", "rollups.*.skills.*.mashing", "rollups.*.skills.*.afterMash", "rollups.*.skills.*.hints",
     "rollups.*.skills.*.hintsShort", "rollups.*.skills.*.explore", "rollups.*.skills.*.recent", "rollups.*.skills.*.curve",
     "rollups.*.skills.*.masteredAt", "rollups.*.skills.*.retries", "rollups.*.skills.*.harder",
-    "rollups.*.reviews", "rollups.*.exams", "rollups.*.predictions", "rollups.*.sessions"
+    "rollups.*.reviews", "rollups.*.exams", "rollups.*.predictions", "rollups.*.sessions",
+    "rollups.*.helps.*.*", "rollups.*.checks", "rollups.*.asks.*"
   ]
 }
