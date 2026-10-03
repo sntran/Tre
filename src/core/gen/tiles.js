@@ -282,6 +282,7 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
     const s = stampAt(x, y);
     return s ? stampLevel(s, x, y) : natural(x, y);
   };
+  const SMOOTH = 3; // points on each side for the mean of the middle line of a road
   function makeRoads() {
     roads = [];
     (def.roads ?? []).forEach((rd, ri) => {
@@ -301,14 +302,38 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
         const hi = Math.min(s + k, e + (n - k), levels[k - 1] + 1);
         levels.push(Math.max(1, Math.min(MAX_LEVEL, Math.max(lo, Math.min(hi, Math.round(want[k]))))));
       }
+      // The middle line: the route of cells goes in steps of eight directions, so a road at an angle
+      // makes a zigzag. Each point is the mean of the points within SMOOTH on each side, but never
+      // more than half a cell from its cell: so a road at an angle runs straight and has the same
+      // width, and a road up a hill keeps its turns.
+      const line = way.map(([x, y], k) => {
+        const r = Math.min(SMOOTH, k, way.length - 1 - k);
+        let mx = 0;
+        let my = 0;
+        for (let j = k - r; j <= k + r; j++) {
+          mx += way[j][0] - x;
+          my += way[j][1] - y;
+        }
+        mx /= 2 * r + 1;
+        my /= 2 * r + 1;
+        const d = Math.hypot(mx, my);
+        if (d > 0.5) {
+          mx *= 0.5 / d;
+          my *= 0.5 / d;
+        }
+        return [x + 0.5 + mx, y + 0.5 + my];
+      });
       const segs = [];
-      for (let k = 0; k < way.length; k++) {
-        const b = way[Math.min(way.length - 1, k + 1)];
-        segs.push([way[k][0] + 0.5, way[k][1] + 0.5, b[0] + 0.5, b[1] + 0.5]);
+      const route = [];
+      for (let k = 0; k < line.length; k++) {
+        const b = line[Math.min(line.length - 1, k + 1)];
+        segs.push([line[k][0], line[k][1], b[0], b[1]]);
+        const c = way[Math.min(way.length - 1, k + 1)];
+        route.push([way[k][0] + 0.5, way[k][1] + 0.5, c[0] + 0.5, c[1] + 0.5]);
       }
       const half = (rd.width ?? 4) / 2;
       const id = rd.id ?? `road${ri}`;
-      roads.push({ id, half, line: way.map(([x, y]) => [x + 0.5, y + 0.5]), levels, segs, index: index(segs, half + 3) });
+      roads.push({ id, half, line, levels, segs, route, index: index(segs, half + 3) });
       ferries.push(...ferriesOf(id, way));
     });
   }
@@ -582,43 +607,66 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
     const nearFixed = bound((i) => fixed[i] !== FIXED.none, blend);
     for (let i = 0; i < N; i++) if (!fixed[i]) level[i] = Math.max(1, Math.min(MAX_LEVEL, Math.round(nearFixed(i, target[i]))));
 
-    // The roads: their cells take the height of the nearest cell of their line. A road cell keeps
-    // the direction of the nearest segment of its line and its signed distance from the line (for
-    // the ruts of the texture of the ground).
+    // The roads: their cells take the height of the nearest cell of their line. A road cell, and a
+    // cell beside a road (within one cell of its edge), keeps the direction of the nearest segment
+    // of the line, its signed distance from the line, and the half width of the road (for the ruts
+    // of the texture of the ground, and for the edge of the road in half blocks).
     const roadDist = new Float32Array(N).fill(Infinity);
     const roadDx = new Float32Array(N);
     const roadDz = new Float32Array(N);
     const roadOff = new Float32Array(N);
+    const roadHalf = new Float32Array(N);
+    const nearest = new Float32Array(N).fill(Infinity);
     for (const r of roads) {
+      // The cells of the road are within its half width of the smooth line; each one takes the
+      // height of the nearest cell of the route (the heights of the route go one step at most from
+      // a cell to the next, and the smooth points can be nearer than one cell).
       const best = new Float32Array(N).fill(Infinity);
+      const fromRoute = new Float32Array(N).fill(Infinity);
+      const routeK = new Int32Array(N);
+      const cells = [];
       for (const k of near(r.index, tx, tz)) {
         const [ax, ay, bx, by] = r.segs[k];
+        const [rx, ry, sx, sy] = r.route[k];
         for (let y = Math.max(Z0, Math.floor(Math.min(ay, by) - r.half - 2)); y <= Math.min(Z0 + W - 1, Math.ceil(Math.max(ay, by) + r.half + 2)); y++) {
           for (let x = Math.max(X0, Math.floor(Math.min(ax, bx) - r.half - 2)); x <= Math.min(X0 + W - 1, Math.ceil(Math.max(ax, bx) + r.half + 2)); x++) {
             const i = (y - Z0) * W + (x - X0);
             const d = segDist(x + 0.5, y + 0.5, ax, ay, bx, by);
             if (d < roadDist[i]) roadDist[i] = d;
-            if (d >= r.half || fixed[i] === FIXED.stamp || d >= best[i]) continue;
-            best[i] = d;
-            if (letter[i] === CODE.water || letter[i] === CODE.bridge || letter[i] === CODE.bamboo || letter[i] === CODE.shallow) {
-              // A road over a river: a ford, a bamboo bridge, or the water of a ferry.
-              const kind = riverOf[i] >= 0 ? crossingOf(rivers[riverOf[i]].water) : 'bamboo';
-              if (kind === 'ford') letter[i] = CODE.shallow;
-              else if (kind === 'bamboo') {
-                // The deck of the bridge is at the height of the road.
-                letter[i] = CODE.bamboo;
-                level[i] = Math.max(1, r.levels[k]);
-              }
-            } else {
-              letter[i] = CODE.path;
-              if (fixed[i] === FIXED.river) fixed[i] = FIXED.none;
-              level[i] = r.levels[k];
+            const dr = segDist(x + 0.5, y + 0.5, rx, ry, sx, sy);
+            if (dr < fromRoute[i]) {
+              fromRoute[i] = dr;
+              routeK[i] = k;
+            }
+            if (d < r.half + 1 && d < nearest[i] && fixed[i] !== FIXED.stamp) {
+              nearest[i] = d;
               const len = Math.hypot(bx - ax, by - ay) || 1;
               roadDx[i] = (bx - ax) / len;
               roadDz[i] = (by - ay) / len;
               roadOff[i] = ((x + 0.5 - ax) * (by - ay) - (y + 0.5 - ay) * (bx - ax)) / len;
+              roadHalf[i] = r.half;
             }
+            if (d >= r.half || fixed[i] === FIXED.stamp || d >= best[i]) continue;
+            if (best[i] === Infinity) cells.push(i);
+            best[i] = d;
           }
+        }
+      }
+      for (const i of cells) {
+        const lv = r.levels[routeK[i]];
+        if (letter[i] === CODE.water || letter[i] === CODE.bridge || letter[i] === CODE.bamboo || letter[i] === CODE.shallow) {
+          // A road over a river: a ford, a bamboo bridge, or the water of a ferry.
+          const kind = riverOf[i] >= 0 ? crossingOf(rivers[riverOf[i]].water) : 'bamboo';
+          if (kind === 'ford') letter[i] = CODE.shallow;
+          else if (kind === 'bamboo') {
+            // The deck of the bridge is at the height of the road.
+            letter[i] = CODE.bamboo;
+            level[i] = Math.max(1, lv);
+          }
+        } else {
+          letter[i] = CODE.path;
+          if (fixed[i] === FIXED.river) fixed[i] = FIXED.none;
+          level[i] = lv;
         }
       }
     }
@@ -873,11 +921,13 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       fixed: new Uint8Array(T * T),
       water: new Uint8Array(T * T),
       road: new Uint8Array(T * T),
-      // The direction of the road line at a road cell (x and z, times 100) and the signed distance
-      // of the cell from the line (times 40); 0, 0 at a cell with no road line.
+      // The direction of the road line at a cell on or beside a road (x and z, times 100), the
+      // signed distance of the cell from the line (times 30), and the half width of the road (times
+      // 20); 0, 0 at a cell with no road line near it.
       roadDx: new Int8Array(T * T),
       roadDz: new Int8Array(T * T),
       roadOff: new Int8Array(T * T),
+      roadHalf: new Uint8Array(T * T),
       // 1 for a road cell on a bank over the paddies, 2 for the shoulder of grass beside it.
       bank: new Uint8Array(T * T),
       field: new Uint8Array(T * T),
@@ -899,7 +949,8 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       out.road[o] = cap(toRoad.dist[i]);
       out.roadDx[o] = Math.round(roadDx[i] * 100);
       out.roadDz[o] = Math.round(roadDz[i] * 100);
-      out.roadOff[o] = Math.max(-127, Math.min(127, Math.round(roadOff[i] * 40)));
+      out.roadOff[o] = Math.max(-127, Math.min(127, Math.round(roadOff[i] * 30)));
+      out.roadHalf[o] = Math.min(255, Math.round(roadHalf[i] * 20));
       out.bank[o] = onBank[i];
       out.field[o] = cap(toField.dist[i]);
       out.nearStamp[o] = cap(toStamp.dist[i]);
@@ -951,7 +1002,8 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       water: t.water[o],
       road: t.road[o],
       roadDir: t.roadDx[o] || t.roadDz[o] ? [t.roadDx[o] / 100, t.roadDz[o] / 100] : null,
-      roadOff: t.roadOff[o] / 40,
+      roadOff: t.roadOff[o] / 30,
+      roadHalf: t.roadHalf[o] / 20,
       bank: t.bank[o],
       field: t.field[o],
       nearStamp: t.nearStamp[o],

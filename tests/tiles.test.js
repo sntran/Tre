@@ -46,7 +46,7 @@ test('one tile alone gives the same land as the same tile inside a ring', () => 
       const alone = make(seed).tile(tx, tz);
       for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) if (dx || dz) A.tile(tx + dx, tz + dz);
       const ring = A.tile(tx, tz);
-      for (const k of ['letter', 'level', 'fixed', 'water', 'road', 'roadDx', 'roadDz', 'roadOff', 'bank', 'field', 'nearStamp']) assert.deepEqual([...alone[k]], [...ring[k]], `seed ${seed}, tile ${tx},${tz}: ${k}`);
+      for (const k of ['letter', 'level', 'fixed', 'water', 'road', 'roadDx', 'roadDz', 'roadOff', 'roadHalf', 'bank', 'field', 'nearStamp']) assert.deepEqual([...alone[k]], [...ring[k]], `seed ${seed}, tile ${tx},${tz}: ${k}`);
       for (const k of ['objects', 'life', 'villagers', 'sites', 'spots']) assert.deepEqual(alone[k], ring[k], `seed ${seed}, tile ${tx},${tz}: ${k}`);
     }
   }
@@ -83,6 +83,29 @@ test('the hills on the plane: Sóc Sơn rises with its hill, Núi Trâu is east 
   assert.ok(TILE === 64);
 });
 
+test('the middle line of a road is smooth: no zigzag of steps, and never more than half a cell from its route', () => {
+  const L = make(7);
+  const turn = (seg, k) => {
+    const a = Math.atan2(seg[k][3] - seg[k][1], seg[k][2] - seg[k][0]);
+    const b = Math.atan2(seg[k - 1][3] - seg[k - 1][1], seg[k - 1][2] - seg[k - 1][0]);
+    const d = Math.abs(a - b);
+    return d > Math.PI ? 2 * Math.PI - d : d;
+  };
+  for (const r of L.roads) {
+    let line = 0;
+    let route = 0;
+    const n = r.segs.length - 2;
+    for (let k = 1; k <= n; k++) {
+      line += turn(r.segs, k);
+      route += turn(r.route, k);
+      assert.ok(Math.hypot(r.line[k][0] - r.route[k][0], r.line[k][1] - r.route[k][1]) <= 0.5 + 1e-9, `${r.id} at ${k}: off its route`);
+    }
+    // The mean turn from a point to the next, in degrees.
+    const deg = (t) => ((t / n) * 180) / Math.PI;
+    assert.ok(deg(line) < 5 && deg(line) < deg(route) / 2, `${r.id}: the line turns ${deg(line).toFixed(1)} degrees a point, the route ${deg(route).toFixed(1)}`);
+  }
+});
+
 test('a road through paddies runs on a bank: one step over the paddies on both sides, with a shoulder of grass', () => {
   for (const seed of [1, 7]) {
     const L = make(seed);
@@ -92,6 +115,10 @@ test('a road through paddies runs on a bank: one step over the paddies on both s
         const [x, y] = r.line[k].map(Math.floor);
         const c = L.cell(x, y);
         if (c.bank !== 1 || !c.roadDir) continue;
+        // Not at the end of a bank, where the road comes up to land at its own height.
+        let end = false;
+        for (let j = -3; j <= 3; j++) for (let i = -3; i <= 3; i++) if (L.cell(x + i, y + j).letter === '=' && !L.cell(x + i, y + j).bank) end = true;
+        if (end) continue;
         // Out from the line on each side: the road, the shoulder at the height of the road, then the
         // land one step down; the dikes of the paddies are one step under the road.
         const [dx, dz] = c.roadDir;

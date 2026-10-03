@@ -120,8 +120,9 @@ test('a road up a steep hill turns back and forth, one step at most for each cel
   let length = 0;
   for (let k = 1; k < line.length; k++) length += Math.hypot(line[k][0] - line[k - 1][0], line[k][1] - line[k - 1][1]);
   const straight = Math.hypot(50, 30);
-  // A straight way climbs the last part of the hill faster than one step for each cell.
-  assert.ok(length > straight * 1.15, `the road is ${length.toFixed(0)} cells for ${straight.toFixed(0)}`);
+  // A straight way climbs the last part of the hill faster than one step for each cell. (The line
+  // is smooth: the zigzag of the cells of the route does not count in its length.)
+  assert.ok(length > straight * 1.05, `the road is ${length.toFixed(0)} cells for ${straight.toFixed(0)}`);
   // The hero can walk the road: each cell of it is at most one step from the next.
   for (let k = 1; k < line.length; k++) {
     const a = L.cell(Math.floor(line[k - 1][0]), Math.floor(line[k - 1][1]));
