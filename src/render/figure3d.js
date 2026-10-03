@@ -256,7 +256,13 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         f.offset = (e.riding ? RIDER : 0) - (e.motion?.wade ? WADE : e.motion?.shallow && !e.control ? 0.3 : 0);
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
         // A mentor that points (the gesture of a move) comes before the act of the plan.
-        f.want = e.riding ? 'ride' : WANTS[e.gesture?.act ?? e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
+        // A jump: a crouch, then the pose in the air. At the landing, a puff of dust at the feet.
+        if (f.jumping && !e.jump && !e.fall && !e.motion?.shallow) {
+          for (let i = 0; i < 4; i++) puffs.push({ x: p.x / 2 + Math.cos(i * 1.6) * 0.35, y: p.y / 2, z: p.z / 2 + Math.sin(i * 1.6) * 0.35, age: 0 });
+        }
+        f.jumping = Boolean(e.jump);
+        const jump = e.jump ? (e.jump.crouch > 0 ? 'crouch' : 'jump') : null;
+        f.want = e.riding ? 'ride' : jump ?? WANTS[e.gesture?.act ?? e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
         f.bend = e.react?.bend ?? null;
         // A tap on a sleeping animal: its ear flicks (in two held positions, as a print).
         f.flick = e.flick ?? 0;
@@ -282,8 +288,9 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         const b = f.curr;
         const x = a.x + (b.x - a.x) * t;
         const z = a.z + (b.z - a.z) * t;
-        // A step up or down is smooth.
-        f.shownY += (b.y + f.offset * 2 - f.shownY) * Math.min(1, dt * 14);
+        // A step up or down is smooth. In a jump the height follows the arc between the steps.
+        if (f.jumping) f.shownY = a.y + (b.y - a.y) * t + f.offset * 2;
+        else f.shownY += (b.y + f.offset * 2 - f.shownY) * Math.min(1, dt * 14);
         // Dust behind a running hero.
         if (f.control && f.running) {
           f.dust = (f.dust ?? 0) - dt;

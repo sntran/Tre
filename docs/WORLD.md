@@ -121,6 +121,20 @@ The broken bridge in Phù Đổng is the zone `bridge-gap` (in `tools/maps/era1.
 - The renderer (`src/render/voxel.js` and `src/render/figure3d.js`) reads the state and never changes it. It keeps one figure for each entity with `position` and `look`, and it is smooth between two steps. All parts of all figures are one `InstancedMesh`, their ink outlines one more, and their shadows one more.
 - The story (triggers, exits, dialogues, battles) reads the hero cell after each step.
 
+## The jump
+
+The hero jumps with the round button at the bottom right of the village or with the key J (the help of the keys is in the menu). The rules are pure functions in `src/core/world/jump.js`; the numbers are in `data/hero.json` (`jump`).
+
+- **The length** is the jump of a real child of the age of the player: the typical age of the grade (`ages`: Pre-K 4, K 5, grade one six and a half, and so on), then the median standing long jump and the median height at that age (`table`: the mean of boys and girls, so that a girl and a boy of a grade jump the same). The jump in blocks is (jump ÷ height) × the height of the hero (`hero`, 2.34 blocks). With a run, the jump is longer (`run`). Each hero jumps with the grade of its own player.
+- **The height** follows from the length: the top of the arc is at a quarter of the length (`arc`, a throw at 45 degrees). The hero clears a thing lower than the top (a log, a ditch, the rim of a puddle). The time in the air grows with the length (`time`).
+- **What a jump does not do:** it does not climb or go down a cliff (two steps or more), and it does not cross a wall, a house, a hedge, a thing that is not low (`low` names the props a jump goes over), or deep water (also a ford that the high river closed). It never crosses a gap that a task asks the child to fill or to measure: a jump into the open part of the gap of the bridge ends in the water, the same fall as a short plank (the hero comes out at the near end, and nothing is lost); a jump into the zone of a trial is a hop. Any other jump that cannot land well is a small hop in place (`hop`).
+- **The look:** a short crouch, the arc, and a puff of dust at the landing (a splash in shallow water, and the hero walks on). The hair and the cloth sway. Nghé does not jump: it walks around.
+- **The world:** logs lie by the roads (`log` in `data/world/scatter.json`), puddles come after rain, and the fords have stepping stones (rock one step high; at the ford of Phù Đổng, a row across the stream).
+- **No command in a talk, a screen, a raid, or a task in progress** (a thing in the hands): then the command `jump` does nothing.
+- **The log:** a jump is play. It is not evidence of a skill, and it goes to neither the learner nor the learning log.
+
+Events: `jump { kind }` (`jump`, `hop`, or `fall`), `land { at }`, `splash`, and `tip { jump: true }` at a fall into the gap.
+
 ## The world at rest
 
 The world moves when the child does nothing, and it hides small joys for the child who looks. Nothing here teaches, counts, or gives: no reward, no count, no notebook entry, and no text. The child finds them or does not.

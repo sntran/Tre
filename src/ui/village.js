@@ -28,7 +28,7 @@ const STICK_R = 56; // the radius of the virtual stick, in screen pixels
 // The color of the dusk wash at full night: the hue of indigo (#2f4668) in the palette.
 const DUSK = Object.freeze({ hue: 215, saturation: 45, lightness: 42 });
 const HOLD_MS = 220; // a press this long is a hold (walk toward the finger), not a tap
-const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyQ', 'KeyE', 'Space']);
+const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyQ', 'KeyE', 'KeyJ', 'Space']);
 
 // three.js and the drawing code load only when the village opens, so that the other screens
 // work without them. The terrain of a map takes some time to make: keep it for the next visit.
@@ -254,7 +254,10 @@ export async function mountVillage(ctx, params = {}) {
   // at a task with a mentor.
   const waveBtn = h('button', { class: 'turn-btn wave-btn', type: 'button', hidden: true, 'aria-label': t('ui.wave'), title: t('ui.wave') }, [img('ui/wave', 'btn-icon')]);
   waveBtn.addEventListener('click', () => send({ type: 'wave' }));
-  const turns = h('div', { class: 'turns' }, [waveBtn, turnLeft, turnRight]);
+  // The jump (src/core/world/jump.js): a round button at the bottom right, and the key J.
+  const jumpBtn = h('button', { class: 'turn-btn jump-btn', type: 'button', 'aria-label': t('ui.jump'), title: t('ui.jump') }, [img('ui/jump', 'btn-icon')]);
+  jumpBtn.addEventListener('click', () => send({ type: 'jump' }));
+  const turns = h('div', { class: 'turns' }, [waveBtn, turnLeft, turnRight, jumpBtn]);
   // The paper of the print over the world: grain and a soft vignette.
   const paper = h('div', { class: 'world-paper' });
   // The dusk over the world: an indigo wash with warm pools around the lanterns, and the rain.
@@ -544,6 +547,11 @@ export async function mountVillage(ctx, params = {}) {
       if (busy) return;
       if (e.code === 'KeyQ' || e.code === 'KeyE') {
         if (!e.repeat) view.turn(e.code === 'KeyQ' ? -1 : 1);
+        e.preventDefault();
+        return;
+      }
+      if (e.code === 'KeyJ') {
+        if (!e.repeat) send({ type: 'jump' });
         e.preventDefault();
         return;
       }
@@ -1197,6 +1205,8 @@ export async function mountVillage(ctx, params = {}) {
   const offLang = ctx.bus.on('lang', () => {
     heroFace.setAttribute('aria-label', t('ui.home'));
     menuBtn.setAttribute('aria-label', t('ui.menu'));
+    jumpBtn.setAttribute('aria-label', t('ui.jump'));
+    jumpBtn.title = t('ui.jump');
     mapBtn.setAttribute('aria-label', t('ui.worldmap'));
     turnLeft.setAttribute('aria-label', t('ui.turn.left'));
     turnRight.setAttribute('aria-label', t('ui.turn.right'));

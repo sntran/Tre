@@ -50,6 +50,7 @@ const FILES = [
   'art/ui/heart-empty.svg',
   'art/ui/heart.svg',
   'art/ui/hint.svg',
+  'art/ui/jump.svg',
   'art/ui/home.svg',
   'art/ui/lock.svg',
   'art/ui/map.svg',

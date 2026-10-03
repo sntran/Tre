@@ -266,6 +266,8 @@ export async function startApp(root) {
         button(t('ui.parents'), () => { close(); c.openParent(); }, { cls: 'btn paper', icon: 'ui/lock' }),
         button(t('ui.save.exit'), async () => { close(); await c.save('exit'); c.toast('ui.saved'); c.go('title'); }, { cls: 'btn paper' }),
       ]),
+      // The help of the controls.
+      h('p', { class: 'menu-keys', text: t('ui.keys') }),
     ]);
     layer.append(panel);
     layer.addEventListener('click', (e) => { if (e.target === layer) close(); });

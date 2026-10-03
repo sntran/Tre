@@ -5,8 +5,8 @@
 // wave (a person waves an arm), swim (a float or a serpent in the water). want 'shake': Nghé
 // shakes its head (no); 'stretch': Nghé stretches its neck toward something; 'horns': Nghé
 // lowers its horns; 'lift': a person lifts the right arm high; 'point': a person points to the
-// front (a mentor); 'pole': a ferryman pushes his
-// pole. The fine figures (src/world/fine.js)
+// front (a mentor); 'crouch' and 'jump': the hero before a jump and in the air; 'pole': a
+// ferryman pushes his pole. The fine figures (src/world/fine.js)
 // have knees and feet: a knee bends while its leg swings through, the heel lifts behind, and the
 // head bobs a little with each step. The coarse figures have no shins and no feet, so these
 // rotations change nothing on them.
@@ -80,6 +80,28 @@ export function animate(a, input) {
     const look = moving ? 0 : (input.lookAt ?? Math.sin(a.idle * 0.8) * 0.35 * Math.min(1, a.idle / 2));
     // The head bobs a little with each step.
     rot.head = [Math.sin(a.phase * 2) * 0.05 * s, look, 0];
+    // Crouch: the knees bend and the arms swing back, before a jump.
+    if (input.want === 'crouch') {
+      rot.legL = [-0.6, 0, 0];
+      rot.legR = [-0.6, 0, 0];
+      rot.shinL = [1.2, 0, 0];
+      rot.shinR = [1.2, 0, 0];
+      rot.armL = [0.9, 0, 0];
+      rot.armR = [0.9, 0, 0];
+      lean = 0.3;
+      sink = 0.4;
+    }
+    // Jump: the arms swing up and out, and the legs come up under the body.
+    if (input.want === 'jump') {
+      rot.legL = [-0.8, 0, 0];
+      rot.legR = [-0.5, 0, 0];
+      rot.shinL = [1.3, 0, 0];
+      rot.shinR = [1, 0, 0];
+      rot.armL = [-0.9, 0, -1.9];
+      rot.armR = [-0.9, 0, 1.9];
+      lift = 0;
+      lean = 0.1;
+    }
   } else if (a.kind === 'quadruped') {
     // Diagonal legs move together: front left with back right, front right with back left.
     const sw = Math.sin(a.phase) * 0.6 * s;
