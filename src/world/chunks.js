@@ -81,7 +81,7 @@ export function chunkMesh(terrain, cx, cz, { coarse = false } = {}) {
   // The lines at the edges of a leaf are inner lines: on a thin leaf they are most of the leaf, so
   // they fade with their owner. Only the hull stays as the outline of a faded look.
   for (const s of p.smooth) {
-    if ((coarse && s.kind === 'flower') || !ownerThere(terrain, s.owner, s.ownerGrid)) continue;
+    if ((coarse && (s.kind === 'flower' || s.kind === 'tuft')) || !ownerThere(terrain, s.owner, s.ownerGrid)) continue;
     const m = shift(smoothMesh(s, { coarse }), ox, oz);
     append(m);
     if (!coarse) ink.push({ who: s.who ?? 0, sway: m.segSway, segs: m.segs, w: 0.09, owners: m.segs.length ? Array(m.segs.length / 6).fill(s.who ?? 0) : [], outer: Array(m.segs.length / 6).fill(0), hull: m.hull });

@@ -159,6 +159,37 @@ test('a road on dry land lies a quarter block under the grass in the mesh, and k
   assert.ok(bank && t.inset(...bank) === 0, 'no inset on a bank');
 });
 
+test('tufts of grass and reeds grow along roads, fields, and water, never on them, and a dig takes one', () => {
+  const map = mapOf('giong', 7);
+  const tileMap = createPlaneTileMap(map, tiles);
+  const t = createTerrain(map, tiles, tileMap, blocks);
+  const [px, py] = worldOf().at('phu-dong', 31, 27);
+  const cx0 = Math.floor(px / CHUNK);
+  const cz0 = Math.floor(py / CHUNK);
+  for (let dz = -3; dz <= 3; dz++) for (let dx = -3; dx <= 3; dx++) t.chunk(cx0 + dx, cz0 + dz);
+  const tufts = t.smooth.filter((s) => s.kind === 'tuft');
+  assert.ok(tufts.length > 20, `${tufts.length} tufts`);
+  assert.ok(tufts.some((s) => s.reed), 'reeds at the water');
+  for (const s of tufts) {
+    const x = Math.floor(s.x);
+    const z = Math.floor(s.z);
+    assert.ok(tileMap.type(x, z) === 'grass' || (s.reed && tileMap.type(x, z) === 'sand'), `a tuft at ${x},${z} stands on grass, or reeds on sand`);
+    assert.deepEqual(s.owner.slice(0, 1).concat(s.owner.slice(2)), [x, z], 'the owner is the ground block under it');
+    assert.ok(s.ownerGrid === 'ground' && t.ground.get(...s.owner) && !t.ground.get(s.owner[0], s.owner[1] + 1, s.owner[2]), 'the owner is the top block of its column');
+  }
+  // A dig of the block under a tuft takes the tuft from the mesh of its chunk.
+  const s = tufts[0];
+  const cx = Math.floor(s.owner[0] / CHUNK);
+  const cz = Math.floor(s.owner[2] / CHUNK);
+  const before = chunkMesh(t, cx, cz).things.positions.length;
+  t.edit({ type: 'dig', at: [s.owner[0], s.owner[2]] });
+  assert.ok(chunkMesh(t, cx, cz).things.positions.length < before, 'the dig took the tuft');
+  // The far level has no tufts.
+  const far = chunkMesh(t, cx0, cz0, { coarse: true });
+  const near = chunkMesh(t, cx0, cz0);
+  assert.ok(far.things.positions.length < near.things.positions.length);
+});
+
 test('the blocks of every prop stay within its reach of its cells (the pages build the props near them)', () => {
   const fine = { inside: () => true, get: () => 0, set: () => {} };
   const objects = ['phu-dong', 'soc-son', 'trau-son', 'road-thanglong'].flatMap((id) => load(`data/maps/${id}.json`).layers.objects);
@@ -225,8 +256,8 @@ test('every smooth look has an owner block, and a felled tree takes its crown an
   const { t } = terrainAt('phu-dong', 30, 30);
   assert.ok(t.smooth.length > 50, 'the plants of the village are smooth');
   for (const s of t.smooth) {
-    // A flower is owned by the top block of its ground column (a dig takes it); the others by a block of their prop.
-    if (s.ownerGrid === 'ground') assert.ok(s.kind === 'flower' && t.ground.get(...s.owner) && !t.ground.get(s.owner[0], s.owner[1] + 1, s.owner[2]), `${s.kind} on the top block of its column`);
+    // A flower or a tuft is owned by the top block of its ground column (a dig takes it); the others by a block of their prop.
+    if (s.ownerGrid === 'ground') assert.ok((s.kind === 'flower' || s.kind === 'tuft') && t.ground.get(...s.owner) && !t.ground.get(s.owner[0], s.owner[1] + 1, s.owner[2]), `${s.kind} on the top block of its column`);
     else assert.ok(s.owner && t.fine.get(...s.owner) && t.fine.ownerAt(...s.owner) === s.who, `${s.kind} has an owner block of its prop`);
   }
   assert.ok(t.smooth.some((s) => s.kind === 'flower'), 'flowers grow on the grass');

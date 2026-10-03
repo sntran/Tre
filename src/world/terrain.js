@@ -335,6 +335,39 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
         page.flowers.push({ x, y: y + 0.2, z });
       }
     }
+    // Tufts of grass along the edges of the roads and the banks of the fields, and reeds at the
+    // water: small smooth looks on grass, or reeds on the sand of a bank (never on a road, a dike,
+    // or water), owned by the top block
+    // of their ground column (a dig takes them). They lean out from the edge.
+    const rt = seeded(hashSeed(`${id}:tufts:${cx}:${cz}`));
+    const wetType = (t) => t === 'water' || t === 'shallow' || t === 'sea' || t === 'surf';
+    for (let z = z0; z < z0 + CHUNK; z++) {
+      for (let x = x0; x < x0 + CHUNK; x++) {
+        const roll = rt.next();
+        const lean = rt.next();
+        const seed = rt.int(1, 2147483646);
+        const here = typeAt(x, z);
+        if ((here !== 'grass' && here !== 'sand') || edge(x, z)) continue;
+        let side = null;
+        let reed = false;
+        let chance = 0;
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const t = typeAt(x + dx, z + dz);
+          // Reeds at the water, on grass or on the sand of a bank.
+          if (wetType(t)) { side = [dx, dz]; reed = true; chance = 0.6; break; }
+          if (here === 'sand') continue;
+          if (t === 'path' && chance < 0.5) { side = [dx, dz]; chance = 0.5; }
+          if ((t === 'field' || t === 'dike') && chance < 0.35) { side = [dx, dz]; chance = 0.35; }
+        }
+        if (!side || roll >= chance) continue;
+        // Near the edge of the cell on the side of the road, the field, or the water.
+        const tx = x + 0.5 + side[0] * 0.32 + (lean - 0.5) * 0.4 * Math.abs(side[1]);
+        const tz = z + 0.5 + side[1] * 0.32 + (lean - 0.5) * 0.4 * Math.abs(side[0]);
+        if (writer.get(Math.floor(tx * 2), world.groundTop(tx * 2, tz * 2), Math.floor(tz * 2))) continue;
+        const y = baseTop(x, z);
+        page.smooth.push({ kind: 'tuft', x: tx, y, z: tz, reed, side, seed, who: 0, owner: [x, y - 1, z], ownerGrid: 'ground' });
+      }
+    }
     for (const o of page.objects) if (o.home && o.id) homes[o.id] = o.home;
     return page;
   }

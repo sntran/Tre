@@ -213,6 +213,28 @@ const BUILD = {
       B.tri(top, [s.x + Math.cos(a) * r, top[1] + 0.01, s.z + Math.sin(a) * r], [s.x + Math.cos(b) * r, top[1] + 0.01, s.z + Math.sin(b) * r], null, s.color, false);
     }
   },
+  // A tuft of grass, or of reeds at the water: a few narrow blades from one foot, leaning out from
+  // the edge (side: [dx, dz]), with no outline of their own. { x, y (the ground), z, reed, side }
+  tuft(B, s, rng) {
+    const tall = s.reed ? 0.7 : 0.42;
+    B.swayAt = (p) => [0.35 * clamp01((p[1] - s.y) / tall), SWAY_LAYERS.paddy];
+    const blades = s.reed ? 4 : 5;
+    const w = s.reed ? 0.04 : 0.05;
+    for (let i = 0; i < blades; i++) {
+      const a = (i / blades) * Math.PI * 2 + rng.next() * 0.8;
+      const h = tall * (0.7 + rng.next() * 0.4);
+      const out = 0.1 + rng.next() * 0.08;
+      const foot = [s.x + Math.cos(a) * 0.04, s.y, s.z + Math.sin(a) * 0.04];
+      const tip = [s.x + Math.cos(a) * out + s.side[0] * 0.08, s.y + h, s.z + Math.sin(a) * out + s.side[1] * 0.08];
+      const color = s.reed ? (i % 2 ? 'greenDeep' : 'green') : i % 2 ? 'green' : 'greenDeep';
+      B.tri([foot[0] - w * Math.sin(a), foot[1], foot[2] + w * Math.cos(a)], [foot[0] + w * Math.sin(a), foot[1], foot[2] - w * Math.cos(a)], tip, null, color, false);
+      // A reed has a small brown head on some blades.
+      if (s.reed && i % 2 === 0) {
+        const head = [tip[0], tip[1] + 0.08, tip[2]];
+        B.tri([tip[0] - 0.025, tip[1] - 0.02, tip[2]], [tip[0] + 0.025, tip[1] - 0.02, tip[2]], head, null, 'wood', false);
+      }
+    }
+  },
   bush(B, s, rng) {
     B.swayAt = (p) => [0.3 * clamp01((p[1] - s.y) / (s.r * 1.4)), SWAY_LAYERS.hedge];
     blob(B, [s.x, s.y + s.r * 0.6, s.z], [s.r, s.r * 0.7, s.r], leafy('green'), rng);
