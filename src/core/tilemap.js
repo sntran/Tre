@@ -68,6 +68,112 @@ export function createTileMap(data, tileTypes) {
   };
 }
 
+// The tile map of a map on the plane (src/world/regions.js): the same use as createTileMap, for a
+// land that has no end. The cells come from the tiles of the land (src/core/gen/tiles.js), made
+// when they are first asked for; a tile that cannot be made yet (its height tiles are not there)
+// is not inside, so nobody walks onto it. Out of the land of the era, the hero walks into the mist
+// only a few cells (map.mist.walk), and the deep sea blocks. Objects and collision rectangles block
+// as in createTileMap; gone(object): an object that the player took away. An index of a cell is
+// y * map.width + x.
+export function createPlaneTileMap(map, tileTypes, { size = 64, gone = () => false } = {}) {
+  const { width, height, land, legend } = map;
+  const walkMist = map.mist?.walk ?? 4;
+  const types = new Map(); // letter code -> type
+  const typeOf = (code) => {
+    if (!types.has(code)) types.set(code, legend[String.fromCharCode(code)] ?? 'grass');
+    return types.get(code);
+  };
+  const index = (x, y) => y * width + x;
+  const ok = (x, y) => x >= 0 && y >= 0 && x < width && y < height;
+  // The collision of each tile (the last ones stay). The land of a tile comes from the land.
+  const cache = new Map();
+  const MAX = 160;
+  function solidOf(tx, tz, lt) {
+    const key = `${tx},${tz}`;
+    let solid = cache.get(key);
+    if (solid) {
+      cache.delete(key);
+      cache.set(key, solid);
+      return solid;
+    }
+    const x0 = tx * size;
+    const z0 = tz * size;
+    solid = new Uint8Array(size * size);
+    for (let i = 0; i < size * size; i++) solid[i] = tileTypes[typeOf(lt.letter[i])]?.walk && lt.mist[i] <= walkMist ? 0 : 1;
+    const mark = (x, y, on) => {
+      if (x >= x0 && y >= z0 && x < x0 + size && y < z0 + size) solid[(y - z0) * size + (x - x0)] = on;
+    };
+    for (const o of map.objectsNear(x0, z0, x0 + size, z0 + size)) if (!gone(o)) for (const [dx, dy] of footprint(o)) mark(o.x + dx, o.y + dy, 1);
+    for (const r of map.layers.collision ?? []) {
+      if (r.x >= x0 + size || r.y >= z0 + size || r.x + (r.w ?? 1) <= x0 || r.y + (r.h ?? 1) <= z0) continue;
+      for (let y = r.y; y < r.y + (r.h ?? 1); y++) for (let x = r.x; x < r.x + (r.w ?? 1); x++) mark(x, y, r.block === false ? 0 : 1);
+    }
+    cache.set(key, solid);
+    if (cache.size > MAX) cache.delete(cache.keys().next().value);
+    return solid;
+  }
+  // The land tile of a cell, or null (out of the plane, or not made yet). The tiles that were
+  // asked for last stay at hand (a cell is asked for many times in a step).
+  const near = new Map(); // tx * size + tz -> land tile
+  const at = (x, y) => {
+    if (!ok(x, y)) return null;
+    const tx = Math.floor(x / size);
+    const tz = Math.floor(y / size);
+    const k = tx * 65536 + tz;
+    let t = near.get(k);
+    if (t && land.has(tx, tz)) return t;
+    t = map.ready(tx, tz) ? land.tile(tx, tz) : null;
+    if (t) {
+      if (near.size > 16) near.clear();
+      near.set(k, t);
+    }
+    return t;
+  };
+  const cellOf = (x, y) => (y - Math.floor(y / size) * size) * size + (x - Math.floor(x / size) * size);
+  const inside = (x, y) => Boolean(at(x, y));
+  // The changes of the collision in play (a ford, the deck of a bridge, a felled tree).
+  const set = new Map();
+  const isSolid = (x, y) => {
+    const lt = at(x, y);
+    if (!lt) return true;
+    const k = index(x, y);
+    return set.has(k) ? set.get(k) === 1 : solidOf(Math.floor(x / size), Math.floor(y / size), lt)[cellOf(x, y)] === 1;
+  };
+  const occupied = new Map();
+  const type = (x, y) => {
+    const t = at(x, y);
+    return t ? typeOf(t.letter[cellOf(x, y)]) : null;
+  };
+  const heightAt = (x, y) => {
+    const t = at(x, y);
+    return t ? t.level[cellOf(x, y)] : 0;
+  };
+  return {
+    width,
+    height,
+    plane: true,
+    inside,
+    type,
+    walkable: (x, y) => !isSolid(x, y) && !occupied.has(index(x, y)),
+    solidAt: isSolid,
+    isBlocked: isSolid,
+    groundAt: type,
+    heightAt,
+    // How deep a cell is in the mist (cells out of the land of the era; 0 in it).
+    mistAt: (x, y) => {
+      const t = at(x, y);
+      return t ? t.mist[cellOf(x, y)] : 0;
+    },
+    canStep: (ax, ay, bx, by) => Math.abs(heightAt(ax, ay) - heightAt(bx, by)) <= 1,
+    setSolid: (x, y, on) => { if (ok(x, y)) set.set(index(x, y), on ? 1 : 0); },
+    resetSolid: (x, y) => { set.delete(index(x, y)); },
+    occupy: (x, y, who) => occupied.set(index(x, y), who),
+    free: (x, y) => occupied.delete(index(x, y)),
+    whoAt: (x, y) => occupied.get(index(x, y)) ?? null,
+    clearOccupied: () => occupied.clear(),
+  };
+}
+
 // The tiles that an object blocks, relative to its top-left tile.
 // obj.solid can be a list of [dx, dy], or false for no block.
 export function footprint(obj) {

@@ -6,7 +6,7 @@ import { newWorldSave } from './world/save.js';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
 
 export const SAVE_FORMAT = 'tre-save';
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 export const CODE_PREFIX = 'TRE1';
 
 // MIGRATIONS[n] changes a save of version n into version n + 1.
@@ -98,6 +98,71 @@ export const MIGRATIONS = {
     }
     return out;
   },
+  // Version 8: the world is one plane for the whole country, and the maps of a region are the
+  // frames of its story places on it (src/world/regions.js). The game walks one map for a region:
+  // a place in the frame of a map moves to its cell of the plane (the frames of Era 1 at the time of
+  // this version), and the state of the maps of a region goes into the map of the region. The kept
+  // entities (other than the hero and a thing that travels) go into the chunks of the map (16 x 16
+  // cells), as the save keeps them now. The felled trees and the dug blocks of the old maps (only
+  // from the tools of a later era) do not stay.
+  7: (profile) => {
+    const out = structuredClone(profile);
+    const ORIGIN = { 'phu-dong': [9357, 6246], 'soc-son': [9047, 5658], 'trau-son': [9563, 6027], 'road-thanglong': [9112, 6303] };
+    const REGION = 'giong';
+    const shift = (list, by) => {
+      for (const e of list ?? []) {
+        if (e?.position && typeof e.position.x === 'number' && typeof e.position.z === 'number') {
+          e.position.x += by[0] * 2;
+          e.position.z += by[1] * 2;
+        }
+      }
+    };
+    const chunks = {};
+    const w = out.world;
+    let from = null;
+    if (w && typeof w === 'object') {
+      from = typeof w.map === 'string' ? w.map : null;
+      if (ORIGIN[from]) {
+        shift(w.entities, ORIGIN[from]);
+        w.map = REGION;
+      }
+      const kept = [];
+      for (const [m, list] of Object.entries(w.away ?? {})) {
+        if (!ORIGIN[m] || !Array.isArray(list)) continue;
+        shift(list, ORIGIN[m]);
+        kept.push(...list);
+        delete w.away[m];
+      }
+      if (w.away && !Object.keys(w.away).length) delete w.away;
+      const stay = [];
+      for (const e of Array.isArray(w.entities) ? w.entities : []) {
+        if (e?.id === 'hero' || e?.item?.travels || !e?.position) stay.push(e);
+        else kept.push(e);
+      }
+      if (Array.isArray(w.entities)) w.entities = stay;
+      for (const e of kept) {
+        if (!e?.position) continue;
+        const k = `${Math.floor(e.position.x / 32)},${Math.floor(e.position.z / 32)}`;
+        ((chunks[k] ??= {}).entities ??= []).push(e);
+      }
+    }
+    if (out.maps && typeof out.maps === 'object') {
+      const merged = { things: {} };
+      let any = false;
+      for (const [m, v] of Object.entries(out.maps)) {
+        if (!ORIGIN[m] || !v || typeof v !== 'object') continue;
+        any = true;
+        if (typeof v.first === 'number') merged.first = Math.min(merged.first ?? Infinity, v.first);
+        if (typeof v.last === 'number') merged.last = Math.max(merged.last ?? 0, v.last);
+        Object.assign(merged.things, v.things ?? {});
+        if (m === from && v.at && typeof v.at.x === 'number' && typeof v.at.y === 'number') merged.at = { x: v.at.x + ORIGIN[m][0], y: v.at.y + ORIGIN[m][1] };
+        delete out.maps[m];
+      }
+      if (Object.keys(chunks).length) merged.chunks = chunks;
+      if (any) out.maps[REGION] = merged;
+    }
+    return out;
+  },
 };
 
 export class SaveError extends Error {
@@ -132,6 +197,8 @@ export function migrate(save, options = {}) {
 
 // Limits for a profile from a code. A code from another device is not trusted,
 // so each value must have the correct type and a sensible size.
+const CHUNK_CELLS = 256; // the cells of a chunk of the land (16 x 16)
+
 export const LIMITS = Object.freeze({
   codeChars: 600000, // the length of an export code (a full profile has fewer than 100000)
   jsonChars: 2000000, // the length of the save text in the code
@@ -250,21 +317,33 @@ export function validate(profile, { grades = null } = {}) {
       for (const k of ['first', 'last']) if (m[k] !== undefined) num(m[k], `maps ${id}.${k}`, 0, 1e9);
       if (m.at !== undefined) {
         if (!isObj(m.at)) fail(`maps ${id}.at`);
-        for (const k of ['x', 'y']) num(m.at[k], `maps ${id}.at.${k}`, 0, 10000);
+        for (const k of ['x', 'y']) num(m.at[k], `maps ${id}.at.${k}`, 0, 70000);
       }
       if (m.things !== undefined) for (const [, x] of entries(m.things, `maps ${id}.things`)) short(x, `maps ${id}.things value`);
-      // What the player changed in the land of the map (src/core/session.js): a felled thing (its
-      // id) or a dug block (its column).
-      if (m.edits !== undefined) {
-        list(m.edits, `maps ${id}.edits`, 2000);
-        for (const e of m.edits) {
-          if (!isObj(e)) fail(`maps ${id}.edits`);
-          if (e.type === 'fell') str(e.id, `maps ${id}.edits.id`, LIMITS.idChars, 1);
-          else if (e.type === 'dig') {
-            list(e.at, `maps ${id}.edits.at`, 2);
-            if (e.at.length !== 2) fail(`maps ${id}.edits.at`);
-            for (const v of e.at) int(v, `maps ${id}.edits.at`, 0, 10000);
-          } else fail(`maps ${id}.edits.type`);
+      // What the player changed in the land of the map, for each chunk that the player changed
+      // (src/world/terrain.js: run lengths of the bits of the chunk), and its kept entities.
+      if (m.chunks !== undefined) {
+        for (const [k, c] of entries(m.chunks, `maps ${id}.chunks`, 4000)) {
+          if (!/^-?\d{1,5},-?\d{1,5}$/.test(k) || !isObj(c)) fail(`maps ${id}.chunks ${k}`);
+          const runs = (r, what) => {
+            list(r, what, CHUNK_CELLS + 1);
+            let sum = 0;
+            for (const n of r) {
+              int(n, what, 0, CHUNK_CELLS);
+              sum += n;
+            }
+            if (sum > CHUNK_CELLS) fail(what);
+          };
+          if (c.dug !== undefined) {
+            list(c.dug, `maps ${id}.chunks ${k}.dug`, 64);
+            for (const r of c.dug) runs(r, `maps ${id}.chunks ${k}.dug`);
+          }
+          if (c.felled !== undefined) runs(c.felled, `maps ${id}.chunks ${k}.felled`);
+          if (c.entities !== undefined) {
+            list(c.entities, `maps ${id}.chunks ${k}.entities`, LIMITS.worldEntities);
+            const check = entityCheck({ fail, num, str, isObj });
+            c.entities.forEach(check);
+          }
         }
       }
     }
@@ -290,6 +369,23 @@ function validateWorld(world, v) {
   if (!isObj(world.clock)) fail('world.clock');
   num(world.clock.minutes, 'world.clock.minutes', 0, 1e9);
   list(world.entities, 'world.entities', LIMITS.worldEntities);
+  const entity = entityCheck(v);
+  world.entities.forEach(entity);
+  // The kept entities of the other maps, until the hero comes back there.
+  if (world.away !== undefined) {
+    if (!isObj(world.away)) fail('world.away');
+    for (const [map, kept] of Object.entries(world.away)) {
+      str(map, 'world.away map');
+      list(kept, `world.away ${map}`, LIMITS.worldEntities);
+      kept.forEach(entity);
+    }
+  }
+}
+
+// A check of a kept entity: components are plain data only (numbers, short texts, booleans,
+// lists, and objects, not too deep and not too many), and the place is on the plane.
+function entityCheck(v) {
+  const { fail, num, str, isObj } = v;
   let size = 0;
   const plain = (value, what, depth) => {
     size += 1;
@@ -304,24 +400,14 @@ function validateWorld(world, v) {
       plain(x, `${what}.${k}`, depth + 1);
     }
   };
-  const entity = (e) => {
+  return (e) => {
     if (!isObj(e) || (typeof e.id !== 'string' && !Number.isInteger(e.id))) fail('world entity');
     plain(e, `world entity ${e.id}`, 0);
     if (e.position !== undefined) {
       if (!isObj(e.position)) fail('world entity position');
-      for (const k of ['x', 'y', 'z']) num(e.position[k], `world entity ${e.id} position.${k}`, -1000, 100000);
+      for (const k of ['x', 'y', 'z']) num(e.position[k], `world entity ${e.id} position.${k}`, -1000, 140000);
     }
   };
-  world.entities.forEach(entity);
-  // The kept entities of the other maps, until the hero comes back there.
-  if (world.away !== undefined) {
-    if (!isObj(world.away)) fail('world.away');
-    for (const [map, kept] of Object.entries(world.away)) {
-      str(map, 'world.away map');
-      list(kept, `world.away ${map}`, LIMITS.worldEntities);
-      kept.forEach(entity);
-    }
-  }
 }
 
 // The learning log (src/core/learnlog.js): numbers, times, short ids, words, and lists of

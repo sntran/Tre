@@ -5,9 +5,8 @@
     "en": "Tết in the yard of the đình: the pot of bánh chưng steams, red couplets are at the doors, peach blossoms are on the trees, and at noon a lion dances to a drum. Nothing to count, and no reward."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
   "clock": 29460,
-  "place": [31, 28.6],
+  "at": ["phu-dong", 31, 28.6],
   "steps": [
     { "wait": 1 },
     { "expect": [{ "entity": "life:28:0", "hidden": false }, { "entity": "life:29:0", "hidden": true }] },

@@ -5,9 +5,8 @@
     "en": "The village reacts: a chicken flees a running hero, a villager greets, and a pot gives a coin that flies to the counter."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [10.5, 31],
+  "at": ["phu-dong", 10.5, 31],
   "steps": [
     { "do": { "type": "move", "dx": 0, "dz": -1, "strength": 1, "run": true } },
     { "until": { "event": "flee", "timeout": 4 } },

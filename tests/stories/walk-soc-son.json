@@ -1,0 +1,18 @@
+{
+  "name": "walk-soc-son",
+  "about": {
+    "vi": "Đi bộ từ đình Phù Đổng lên đỉnh núi Sóc Sơn, theo con đường về phía bắc, không qua cửa chuyển cảnh nào; Nghé đi theo suốt đường.",
+    "en": "A walk from the đình of Phù Đổng to the top of the hill of Sóc Sơn, on the road to the north, with no change of scene; Nghé comes along the whole way."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "clock": 480,
+  "at": ["phu-dong", 31.5, 27.5],
+  "steps": [
+    { "walk": { "to": ["phu-dong", 46.5, 1.5] } },
+    { "expect": [{ "entity": "friend:nghe", "near": "hero", "within": 5 }] },
+    { "walk": { "to": ["soc-son", 39.5, 50.5] } },
+    { "expect": [{ "entity": "friend:nghe", "near": "hero", "within": 5 }] },
+    { "walk": { "to": ["soc-son", 40.5, 18.5] } },
+    { "expect": [{ "hero": { "cell": ["soc-son", 40.5, 18.5], "within": 2 } }, { "entity": "friend:nghe", "near": "hero", "within": 5 }] }
+  ]
+}

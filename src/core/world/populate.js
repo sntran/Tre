@@ -78,16 +78,17 @@ export function syncPeople(world, map, env, present, people = {}, days = null) {
   return changed;
 }
 
-// The villagers of the generated hamlets (layers.villagers of a generated map): people with a day
-// and a house, who greet the hero, but who are not people of the story (no talk). Their looks are
-// in map.looks, by their ids.
-export function addVillagers(world, map, env, people = {}, days = null) {
-  for (const v of map.layers.villagers ?? []) {
+// The villagers of the generated hamlets: people with a day and a house, who greet the hero, but
+// who are not people of the story (no talk). Their looks are in map.looks, by their ids. list:
+// [{ id, home, plan, x, y, chunk? }] (map cells; chunk: the home chunk of the villager).
+export function addVillagers(world, list, env, people = {}, days = null) {
+  for (const v of list ?? []) {
     if (getEntity(world, v.id)) continue;
     const spot = { x: v.x * HALF, z: v.y * HALF };
     const plan = days?.plans[v.plan] ?? days?.plans.keeper;
     addEntity(world, {
       id: v.id,
+      ...(v.chunk ? { chunk: v.chunk } : {}),
       position: { x: spot.x, y: env.groundY(v.x, v.y), z: spot.z, facing: 0 },
       motion: { vx: 0, vz: 0, speed: 0 },
       solid: { r: 1.8 },
@@ -107,12 +108,14 @@ function offsetOf(id) {
   return { x: Math.cos(a) * 1.4, z: Math.sin(a) * 1.4 };
 }
 
-// The lantern at the door of each house (env.homes).
-export function addLanterns(world, env) {
+// The lantern at the door of each house (env.homes). chunkOf(x, z) (half blocks): the home chunk of
+// a lantern, when the lanterns come and go with their chunks; only: the homes to light.
+export function addLanterns(world, env, { chunkOf = null, only = null } = {}) {
   for (const [home, way] of Object.entries(env.homes)) {
-    if (getEntity(world, `lantern:${home}`)) continue;
+    if (getEntity(world, `lantern:${home}`) || (only && !only(home, way))) continue;
     addEntity(world, {
       id: `lantern:${home}`,
+      ...(chunkOf ? { chunk: chunkOf(way.door.x, way.door.z) } : {}),
       lantern: { home, always: home === 'dinh' },
       position: { x: way.door.x, y: way.door.y, z: way.door.z, facing: 0 },
       look: 'lantern',
@@ -137,13 +140,20 @@ export function addLife(world, env, life, kind, at, extra = {}) {
   });
 }
 
-// The groups of animals of the life layer of a map. The seed of the world places them in their
-// medium around the point of the group, and each group is a flock.
+// The groups of animals of the life layer of a map (a small map with all its cells).
 export function addLifeLayer(world, map, env, life) {
-  (map.layers.life ?? []).forEach((g, gi) => {
+  addLifeGroups(world, (map.layers.life ?? []).map((g, gi) => ({ ...g, key: gi, place: g.place ?? map.id, index: g.index ?? gi })), env, life);
+}
+
+// Groups of animals: { key (the ids are life:<key>:<n>), place and index (the seed of the group and
+// its flock), chunk (the home chunk, when the group comes and goes with it), kind, n, x, y, r, spot,
+// bed }. The seed of the world places them in their medium around the point of the group, and each
+// group is a flock.
+export function addLifeGroups(world, groups, env, life) {
+  for (const g of groups) {
     const def = life.kinds[g.kind];
-    if (!def) return;
-    const rng = createRng(hashSeed(`${world.seed}:${map.id}:life:${gi}`));
+    if (!def) continue;
+    const rng = createRng(hashSeed(`${world.seed}:${g.place}:life:${g.index}`));
     const cx = g.x * HALF;
     const cz = g.y * HALF;
     const r = g.r * HALF;
@@ -161,17 +171,18 @@ export function addLifeLayer(world, map, env, life) {
       }
       const facing = rng.next() * Math.PI * 2;
       // A thing that the player changed (a broken pot) comes from the save, not from the map.
-      if (getEntity(world, `life:${gi}:${i}`)) continue;
+      if (getEntity(world, `life:${g.key}:${i}`)) continue;
       const place = (name) => (name && env.places[name] ? { ...env.places[name] } : null);
       const spot = place(g.spot) ?? { x: cx, z: cz };
       // A swimmer finds its bank at dusk (see the schedule system); the others have a bed here.
       const bed = medium === 'water' ? null : place(g.bed) ?? { x: cx, z: cz };
       addLife(world, env, life, g.kind, { ...(g.spot ? spot : at), facing }, {
-        id: `life:${gi}:${i}`,
+        id: `life:${g.key}:${i}`,
+        ...(g.chunk ? { chunk: g.chunk } : {}),
         // At a place of its plan (the shade of a tree), each one of the group has its own spot.
         ...(def.plan ? { schedule: { plan: structuredClone(def.plan), spot, bed: bed ? { x: bed.x + (i % 3) - 1, z: bed.z + Math.floor(i / 3) - 0.5 } : null, offset: { x: ((i % 3) - 1) * 3, z: Math.floor(i / 3) * 3 } } } : {}),
         ...(def.looks.length ? { look: def.looks[i % def.looks.length] } : {}),
-        ...(def.flock ? { flock: { id: `${map.id}:${gi}`, ...def.flock } } : {}),
+        ...(def.flock ? { flock: { id: `${g.place}:${g.index}`, ...def.flock } } : {}),
         ...(def.react ? { react: structuredClone(def.react) } : {}),
         ...(def.solid ? { solid: { r: def.solid } } : {}),
         ...(def.pushable ? { pushable: { r: def.pushable } } : {}),
@@ -183,7 +194,12 @@ export function addLifeLayer(world, map, env, life) {
         range: { x: cx, z: cz, r: Math.max(4, r * (def.range ?? 2)) },
       });
     }
-  });
+  }
+}
+
+// The entities of a chunk that sleeps go (an entity with `chunk`, and no `keep`).
+export function sleepChunk(world, key) {
+  for (const e of [...world.entities]) if (e.chunk === key && !e.keep) removeEntity(world, e.id);
 }
 
 // The placement zones of a map (layers.zones with a task in data/world/zones.json), with the pile

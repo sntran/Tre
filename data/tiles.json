@@ -1,5 +1,5 @@
 {
- "_about": "Ground types of the maps. walk: the hero can walk on it. color: the color of the top block (a palette name). under: the color of the block under the top. slow: the speed factor on it. grows: a prop that grows on every second cell of this type (the bamboo of the hedge). face: the colors of the blocks under the top, by a seeded rule for each block (a face of stone: the ink draws the cracks where two colors meet); the blocks are rock.",
+ "_about": "Ground types of the maps. walk: the hero can walk on it. color: the color of the top block (a palette name). under: the color of the block under the top. slow: the speed factor on it. grows: a prop that grows on every second cell of this type (the bamboo of the hedge). surf and sea: the shallow sea next to the land (the hero wades to the knee) and the deep sea. face: the colors of the blocks under the top, by a seeded rule for each block (a face of stone: the ink draws the cracks where two colors meet); the blocks are rock.",
  "types": {
   "grass": { "walk": true, "color": "green-pale", "under": "green" },
   "flowers": { "walk": true, "color": "green-pale", "under": "green" },
@@ -9,6 +9,8 @@
   "bridge": { "walk": true, "color": "ochre", "under": "wood" },
   "shallow": { "walk": true, "slow": 0.55, "color": "yellow-pale", "under": "ochre" },
   "water": { "walk": false, "color": "yellow-pale", "under": "ochre" },
+  "surf": { "walk": true, "slow": 0.55, "color": "yellow-pale", "under": "ochre" },
+  "sea": { "walk": false, "color": "yellow-pale", "under": "ochre" },
   "field": { "walk": false, "color": "wood", "under": "wood" },
   "dike": { "walk": true, "color": "green-pale", "under": "green" },
   "hedge": { "walk": false, "color": "green-pale", "under": "green", "grows": "bamboo" },

@@ -5,9 +5,8 @@
     "en": "The trial of the healer: three kinds of leaves, two bunches of each, in the basket; one too many and she gives it back, just right and she takes the basket."
   },
   "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [33, 44],
+  "at": ["phu-dong", 33, 44],
   "steps": [
     { "tap": { "entity": "npc:healer" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },

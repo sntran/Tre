@@ -2,11 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createProfile } from '../src/core/profile.js';
 import { createSession } from '../src/core/session.js';
-import { buildTerrain } from '../src/world/terrain.js';
+import { createTerrain } from '../src/world/terrain.js';
 import { loadGameData } from './helpers.js';
 
 const data = await loadGameData();
-const terrainOf = (map, tileMap) => buildTerrain(map, data.tiles.types, tileMap);
+const terrainOf = (map, tileMap) => createTerrain(map, data.tiles.types, tileMap);
 
 function newSession(extra = {}) {
   const profile = createProfile({ id: 'p', name: 'An', seed: 7 });
@@ -27,7 +27,7 @@ function readAll(session) {
 
 test('a new profile: the intro opens as lines; the choice and the next screen come as events', () => {
   const { session, profile } = newSession();
-  assert.equal(session.map.id, 'phu-dong');
+  assert.equal(session.map.id, 'giong', 'the map of the region on the plane');
   assert.equal(session.screen, 'dialogue');
   assert.equal(opens(session.events())[0].textKey, 'dlg.grandma.intro.n1');
   // The world waits while a screen is open.
@@ -74,6 +74,6 @@ test('the target of a tap at a cell, and the snapshot as plain data', () => {
   const t = session.targetAt(c.x + 1, c.y);
   assert.ok(t.ground && Number.isFinite(t.ground.h));
   const snap = session.snapshot();
-  assert.equal(snap.map, 'phu-dong');
+  assert.equal(snap.map, 'giong');
   assert.deepEqual(JSON.parse(JSON.stringify(snap)), snap);
 });

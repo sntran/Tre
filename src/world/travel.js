@@ -73,7 +73,7 @@ export function planTravel(world, from, to, state, rng, events, cfg = TRAVEL) {
     picked.push(rng.weighted(left, (e) => e.weight ?? 1));
   }
   const hours = Math.max(1, road + picked.reduce((sum, e) => sum + (e.hours ?? 0), 0));
-  return { ok: true, to, hours, events: picked, entry: world.region(to).entry, legs: world.travelWay?.(from, to)?.legs ?? [] };
+  return { ok: true, to, hours, events: picked, entry: world.entryOf(to), legs: world.travelWay?.(from, to)?.legs ?? [] };
 }
 
 // Apply a planned travel to the profile: the clock, the items of the events, and the new place.

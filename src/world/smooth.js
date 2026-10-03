@@ -179,7 +179,12 @@ const BUILD = {
   crown(B, s, rng) {
     // The top of the crown moves most.
     B.swayAt = (p) => [0.15 + 0.55 * clamp01((p[1] - (s.y - s.r)) / (2 * s.r)), SWAY_LAYERS.tree];
-    const count = 3 + (rng.next() < 0.5 ? 1 : 0);
+    // A far crown (the coarse level) is one blob.
+    const count = B.coarse ? 1 : 3 + (rng.next() < 0.5 ? 1 : 0);
+    if (B.coarse) {
+      blob(B, [s.x, s.y, s.z], [s.r, s.r * 0.85, s.r], leafy(s.leaf ?? 'green'), rng);
+      return;
+    }
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2 + rng.next();
       const d = i === 0 ? 0 : s.r * 0.45;
@@ -342,10 +347,12 @@ export const SMOOTH_KINDS = Object.freeze(Object.keys(BUILD));
 // The mesh of one smooth look: { kind, seed, who, owner, ...the numbers of its kind }.
 // Return { positions, colors, owners, indices, sway, segs, segSway, hull: { positions, indices, sway } }
 // (sway: [weight, layer] for each vertex, and for each end of a line).
-export function smoothMesh(s) {
+// coarse: the far level (a crown of one blob).
+export function smoothMesh(s, { coarse = false } = {}) {
   const build = BUILD[s.kind];
   if (!build) throw new Error(`Unknown smooth look ${s.kind}`);
   const B = builder(s.who ?? 0);
+  B.coarse = coarse;
   build(B, s, seeded(s.seed ?? 1));
   return B.out;
 }

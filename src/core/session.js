@@ -30,7 +30,7 @@
 // changed), halt (a trigger zone stopped the hero: the view drops the input), raid { on, id } (a
 // raid starts or its things went away), and lose { to, take } (the coins that an enemy took fly
 // from the counter to it).
-import { findPath, pathNextTo, createTileMap, footprint } from './tilemap.js';
+import { findPath, pathNextTo, createPlaneTileMap, footprint } from './tilemap.js';
 import { createTriggers } from './triggers.js';
 import { currentGoal } from './quests.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
@@ -39,7 +39,9 @@ import { timeStatus, addPlayTime } from './timelimit.js';
 import { createWorldState, getEntity, query, addEntity, removeEntity, command as worldCommand } from './world/state.js';
 import { step as worldStep, STEP } from './world/step.js';
 import { envFor, placesOf } from './world/env.js';
-import { addHero, addFriend, syncPeople, addLifeLayer, addLanterns, addZones, addVillagers } from './world/populate.js';
+import { addHero, addFriend, syncPeople, addLifeGroups, addLanterns, addZones, addVillagers, sleepChunk } from './world/populate.js';
+import { placeBySchedule } from './world/systems/schedule.js';
+import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
 import { REACH, learnerRecord, canPut } from './world/zones.js';
@@ -51,12 +53,15 @@ import { lossLevel } from './profile.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from './world/save.js';
 import { dayOf, eventsOfDay, eventLevel, eventTask, purse } from './world/days.js';
 import { createRng, hashSeed } from './rng.js';
+import { TILE } from './gen/tiles.js';
 
 export { STEP };
 
 const WORLD = new Set(['move', 'stop', 'pet', 'ride', 'aim', 'pick', 'put', 'drop', 'guess', 'face']);
 const GREETS = ['world.greet.1', 'world.greet.2', 'world.greet.3'];
 const CALM_CELLS = 2; // the hero is on the bridge when nearer than this to a span that is not solid
+const LIVE = 2; // the live chunks: this many chunks on each side of the chunk of the hero (5 x 5)
+const BACK = 2; // cells: the hero takes this many steps back from an edge of the world
 
 // data: the data of the game (src/ui/data.js). profile: the profile of the player. learner():
 // the learner of the profile, or null. log(kind, fields): the learning log (ctx.log). save(reason):
@@ -94,8 +99,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const groundY = (x, y) => env.groundY(x, y) / 2; // the top of the ground of a cell, in blocks
   const cond = () => conditionState(profile);
 
-  // Start on a map. mapId: the map (or the map of the save, or the start map). params: at (the
-  // hero cell), facing, after (the ids of talks after the start, for example after a travel).
+  // Start on a map (the map of a region on the plane). mapId: the map (or the map of the save, or
+  // the start map; the id of a place of a region is its map). params: at (the hero cell on the
+  // plane), facing, after (the ids of talks after the start, for example after a travel).
   function start(mapId = null, params = {}) {
     opening = [];
     starting = true;
@@ -105,23 +111,36 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       starting = false;
     }
   }
-  function begin(mapId, params) {
+  // The map and the hero cell of a start (before the hero finds a free place near the cell), so
+  // that a view can load the height tiles of the land there first.
+  function startPlace(mapId = null, params = {}) {
     const worldMap = data.world;
     const savedPlace = heroPlace(profile.world);
     const savedMap = worldMap.map(savedPlace.map) ? savedPlace.map : null;
     // The map with the land of the seed of the world.
-    map = worldMap.map(mapId ?? savedMap ?? worldMap.start.map, profile.world.seed);
-    tileMap = createTileMap(map, data.tiles.types);
+    const m = worldMap.map(mapId ?? savedMap ?? worldMap.start.map, profile.world.seed);
+    const saved = profile.world.map === m.id && savedPlace.x !== null ? savedPlace : null;
+    const at = params.at ?? saved ?? m.spawn;
+    return { map: m, x: at.x, y: at.y };
+  }
+  function begin(mapId, params) {
+    const savedPlace = heroPlace(profile.world);
+    map = startPlace(mapId, params).map;
+    tileMap = createPlaneTileMap(map, data.tiles.types, { gone: (o) => Boolean(terrain?.isFelled?.(o)) });
     triggers = createTriggers(map.layers.triggers);
     terrain = terrainOf(map, tileMap) ?? { homes: {} };
-    // The changes of the player to the land of this map, from the save.
-    for (const e of profile.maps?.[map.id]?.edits ?? []) editLand(e);
-    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, day: data.day, zones: data.zones, trials: data.trials, switches, joys: data.life?.joys ?? null });
-
-    // The world state of this map. The save keeps the hero; the rest comes from the map and the seed.
+    // The state of this map in the save, and the changes of the player to its land.
+    profile.maps ??= {};
     const onThisMap = profile.world.map === map.id;
+    visit = (profile.maps[map.id] ??= { first: Math.round(profile.world.clock.minutes), things: {} });
+    terrain.loadEdits?.(visit.chunks ?? {});
+    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, fords: fordsOf(map), day: data.day, zones: data.zones, trials: data.trials, switches, joys: data.life?.joys ?? null });
+
+    // The world state of this map. The save keeps the hero, and the kept entities of each chunk; the
+    // rest comes from the map and the seed.
     state = onThisMap ? loadWorld(profile.world) : createWorldState({ seed: profile.world.seed, map: map.id, clock: profile.world.clock });
     state.clock = profile.world.clock; // one clock: a travel on the country map moves it too
+    if (onThisMap) for (const rec of Object.values(visit.chunks ?? {})) for (const e of rec.entities ?? []) if (!getEntity(state, e.id)) addEntity(state, e);
     // The placement zones and their cells, before the hero finds a free place.
     addZones(state, map, env);
     ground(state, 0, null, env);
@@ -139,40 +158,114 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (was.carry) h.carry = was.carry;
       }
     }
-    addLifeLayer(state, map, env, data.life);
-    addVillagers(state, map, env, data.life.people, data.people);
-    addLanterns(state, env);
     heroTile = { x: Math.floor(at.x), y: Math.floor(at.y) };
+    live = new Set();
+    liveAt = null;
+    turning = null;
     arrivals.clear();
     raidEnc = null; // a raid does not go on in the save (its enemies leave with the map)
     screen = null;
     busy = false;
     pending = [];
     later = [];
-    // The state of this map in the save.
-    profile.maps ??= {};
-    visit = (profile.maps[map.id] ??= { first: Math.round(state.clock.minutes), things: {} });
     visit.last = Math.round(state.clock.minutes);
+    updateLive(true);
     refreshPeople();
     placeEvents();
     if (!profile.flags['intro.seen']) talk('grandma.intro');
     for (const id of params.after ?? []) talk(id);
   }
 
+  // The fords of the stamps of a map (the cells of shallow water that people walk through).
+  function fordsOf(m) {
+    const out = [];
+    for (const s of m.land?.stamps ?? []) {
+      s.ground.forEach((row, y) => {
+        for (let x = 0; x < row.length; x++) if (m.legend[row[x]] === 'shallow') out.push({ x: s.x + x, y: s.y + y });
+      });
+    }
+    return out;
+  }
+
+  // The live chunks: the chunks around the hero, where the entities move and the systems run. When
+  // a chunk wakes, its people and animals come (where their day puts them at this hour); when it
+  // sleeps, they go, but a kept entity stays. The hero and Nghé never sleep.
+  let live = new Set();
+  let liveAt = null;
+  let woken = new Set(); // the chunks that woke after the start, until the people come
+  function updateLive(first = false) {
+    const c = heroCell();
+    const cx = Math.floor(c.x / CHUNK);
+    const cz = Math.floor(c.y / CHUNK);
+    const key = chunkKey(cx, cz);
+    if (key === liveAt) return false;
+    liveAt = key;
+    const next = new Set();
+    for (let dz = -LIVE; dz <= LIVE; dz++) for (let dx = -LIVE; dx <= LIVE; dx++) next.add(chunkKey(cx + dx, cz + dz));
+    const woke = [...next].filter((k) => !live.has(k));
+    const slept = [...live].filter((k) => !next.has(k));
+    live = next;
+    woken = first ? new Set() : new Set(woke);
+    // The pages of the live chunks first: the houses of the people are there.
+    terrain.hold?.('session', [...live]);
+    for (const k of slept) sleepChunk(state, k);
+    for (const k of woke) wake(k, first);
+    return woke.length > 0 || slept.length > 0;
+  }
+  const inLive = (x, y) => live.has(chunkOf(Math.floor(x), Math.floor(y)));
+  function wake(k, first) {
+    const [cx, cz] = k.split(',').map(Number);
+    const inK = (x, y) => chunkOf(Math.floor(x), Math.floor(y)) === k;
+    const groups = [];
+    map.layers.life.forEach((g, gi) => {
+      if (inK(g.x, g.y)) groups.push({ ...g, key: gi, place: g.place ?? map.id, index: g.index ?? gi, chunk: k });
+    });
+    // A chunk lies in one tile of the land.
+    const tx = Math.floor((cx * CHUNK) / TILE);
+    const tz = Math.floor((cz * CHUNK) / TILE);
+    const t = map.ready?.(tx, tz) ? map.land.tile(tx, tz) : null;
+    t?.life.forEach((g, i) => {
+      const id = `t${tx}_${tz}_${i}`;
+      if (inK(g.x, g.y)) groups.push({ ...g, key: id, place: map.id, index: id, chunk: k });
+    });
+    const before = new Set(state.entities.map((e) => e.id));
+    addLifeGroups(state, groups, env, data.life);
+    const villagers = (t?.villagers ?? []).filter((v) => inK(v.x, v.y));
+    for (const v of villagers) map.looks[v.id] = v.look;
+    addVillagers(state, villagers.map((v) => ({ ...v, chunk: k })), env, data.life.people, data.people);
+    addLanterns(state, env, { chunkOf: (x, z) => chunkOf(Math.floor(x / 2), Math.floor(z / 2)), only: (home, way) => inK(way.door.x / 2, way.door.z / 2) });
+    // After the start, a chunk that wakes has its people where their day puts them now.
+    if (!first) {
+      const hour = (state.clock.minutes % 1440) / 60;
+      for (const e of state.entities) if (!before.has(e.id) && e.schedule) placeBySchedule(e, hour, env);
+    }
+  }
+
   // A change of the land: fell a thing of the map, or dig a block. A felled thing opens its cells.
   function editLand(cmd) {
+    const o = cmd.type === 'fell' ? terrain.objects?.find((x) => x.id === cmd.id) : null;
     const r = terrain.edit?.(cmd) ?? null;
-    if (r && cmd.type === 'fell') {
-      const o = map.layers.objects.find((x) => x.id === cmd.id);
-      if (o) for (const [dx, dy] of footprint(o)) tileMap.setSolid(o.x + dx, o.y + dy, false);
-    }
+    if (r && o) for (const [dx, dy] of footprint(o)) tileMap.setSolid(Math.floor(o.x) + dx, Math.floor(o.y) + dy, false);
     return r;
   }
 
-  // Put the world into the save. When the hero went to another map, the save has the new place.
+  // Put the world into the save: the hero (and a thing that travels with the hero) in the world, and
+  // for each chunk that the player changed, its changed cells and its kept entities. When the hero
+  // went to another map, the save has the new place.
   function syncSave() {
     if (!state || profile.world.map !== state.map) return;
-    profile.world.entities = saveWorld(state).entities;
+    const kept = saveWorld(state).entities;
+    const hero = kept.find((e) => e.id === 'hero');
+    const travels = kept.filter((e) => e.item?.travels && e.item.held === 'hero');
+    profile.world.entities = [...(hero ? [hero] : []), ...travels];
+    const chunks = terrain.edits?.() ?? {};
+    for (const e of kept) {
+      if (e.id === 'hero' || travels.includes(e) || !e.position) continue;
+      const k = e.chunk ?? chunkOf(Math.floor(e.position.x / 2), Math.floor(e.position.z / 2));
+      ((chunks[k] ??= {}).entities ??= []).push(e);
+    }
+    visit.chunks = chunks;
+    delete visit.edits;
   }
 
   // The end of the visit of this map (the scene closes, or the hero goes to another map).
@@ -192,8 +285,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // minute of that dawn).
     const back = (item) => profile.flags[`raid.${item.raid}.back`];
     for (const e of map.encounters) if (back(e) !== undefined && back(e) <= state.clock.minutes) delete profile.flags[`raid.${e.raid}.back`];
-    const present = (kind, item) => (kind === 'npc' ? Boolean(npcs[item.id]) && isPresent(npcs[item.id], profile) : isPresent(item, profile) && !(back(item) > state.clock.minutes));
+    // Only the people of the live chunks are in the world.
+    const present = (kind, item) => inLive(item.x, item.y) && (kind === 'npc' ? Boolean(npcs[item.id]) && isPresent(npcs[item.id], profile) : isPresent(item, profile) && !(back(item) > state.clock.minutes));
+    const before = new Set(state.entities.map((e) => e.id));
     syncPeople(state, map, env, present, data.life.people, data.people);
+    // A person of a chunk that woke after the start is where the day puts the person now.
+    const hour = (state.clock.minutes % 1440) / 60;
+    for (const e of query(state, 'person')) {
+      if (!before.has(e.id) && e.schedule && woken.has(chunkOf(Math.floor(e.schedule.spot.x / 2), Math.floor(e.schedule.spot.z / 2)))) placeBySchedule(e, hour, env);
+    }
+    woken = new Set();
     tileMap.clearOccupied();
     for (const p of persons()) tileMap.occupy(Math.floor(p.x), Math.floor(p.y), { kind: p.kind, id: p.ref });
     // A person of the quest stays out at night, with a lantern.
@@ -442,14 +543,23 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const day = today();
     for (const e of query(state, 'dayEvent')) if (e.dayEvent.day !== day) clearEvent(e.dayEvent.id);
     for (const z of query(state, 'zone')) if (z.zone.event && z.zone.day !== day) clearEvent(z.zone.event);
-    const spots = map.layers.spots ?? {};
     // The land is wet after a rain today (when it is over) and on the next day.
     const rain = rainOf(state.seed, day, data.day ?? undefined);
     const hour = (state.clock.minutes % 1440) / 60;
     const wet = Boolean(rainOf(state.seed, day - 1, data.day ?? undefined)) || Boolean(rain && hour >= rain.end);
-    const list = eventsOfDay(data.events, { seed: state.seed, day, map: map.id, spots, wet });
-    // A story or the debug panel can bring an event today, at its first spot.
-    if (force && !list.some((x) => x.id === force) && spots[eventDef(force)?.where]?.length) list.push({ id: force, at: spots[eventDef(force).where][0] });
+    // The events of each area near the hero (each place, and each tile of the land of the live
+    // chunks), at the spots of the live chunks; of two events of one kind, the nearer one comes.
+    const areas = eventAreas();
+    const c = heroCell();
+    const found = [];
+    for (const a of areas) for (const ev of eventsOfDay(data.events, { seed: state.seed, day, map: a.key, spots: a.spots, wet })) found.push({ ...ev, area: a.key, d: Math.hypot(ev.at[0] - c.x, ev.at[1] - c.y) });
+    found.sort((p, q) => p.d - q.d);
+    const list = found.filter((ev, i) => found.findIndex((x) => x.id === ev.id) === i);
+    // A story or the debug panel can bring an event today, at its first spot (of the nearest area).
+    const where = eventDef(force)?.where;
+    const byPlace = [...areas.filter((a) => map.spotsByPlace?.[a.key]), ...areas.filter((a) => !map.spotsByPlace?.[a.key])];
+    const area = where ? byPlace.find((a) => a.spots[where]?.length) : null;
+    if (force && !list.some((x) => x.id === force) && area) list.push({ id: force, at: area.spots[where][0], area: area.key });
     for (const ev of list) {
       const def = eventDef(ev.id);
       if (!def || visit.things[`event.${ev.id}`] === day || getEntity(state, `event:${ev.id}`)) continue;
@@ -458,7 +568,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const stand = nearFree(ev.at, 2, 5, rng, [], 1) ?? nearFree(ev.at, 1, 6, rng) ?? { x: ev.at[0] + 0.5, y: ev.at[1] + 0.5 };
       addEntity(state, {
         id: `event:${ev.id}`,
-        dayEvent: { id: ev.id, day, at: ev.at },
+        chunk: chunkOf(ev.at[0], ev.at[1]),
+        dayEvent: { id: ev.id, day, at: ev.at, area: ev.area },
         person: { kind: 'event', ref: ev.id },
         position: { x: stand.x * 2, y: env.groundY(stand.x, stand.y), z: stand.y * 2, facing: 0 },
         motion: { vx: 0, vz: 0, speed: 0 },
@@ -466,9 +577,36 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         look: def.person,
       });
       if (def.prop === 'cart') {
-        addEntity(state, { id: `event:${ev.id}:cart`, dayEvent: { id: ev.id, day, at: ev.at }, position: { x: ev.at[0] * 2 + 1, y: env.groundY(ev.at[0], ev.at[1]) - 0.5, z: ev.at[1] * 2 + 1, facing: 0.3 }, solid: { r: 2.2 }, look: 'cart' });
+        addEntity(state, { id: `event:${ev.id}:cart`, chunk: chunkOf(ev.at[0], ev.at[1]), dayEvent: { id: ev.id, day, at: ev.at }, position: { x: ev.at[0] * 2 + 1, y: env.groundY(ev.at[0], ev.at[1]) - 0.5, z: ev.at[1] * 2 + 1, facing: 0.3 }, solid: { r: 2.2 }, look: 'cart' });
       }
     }
+  }
+  // The areas of the small events near the hero: each place of the map, and each tile of the land
+  // of the live chunks, with their spots in the live chunks ({ key, spots: { road, field, wetfield,
+  // yard } }), the nearest first. The fields of a place near water (12 cells) can flood.
+  function eventAreas() {
+    const out = [];
+    const keep = (list) => (list ?? []).filter(([x, y]) => inLive(x, y));
+    const has = (sp) => Object.values(sp).some((l) => l.length);
+    for (const [place, sp] of Object.entries(map.spotsByPlace ?? {})) {
+      const spots = Object.fromEntries(Object.entries(sp).map(([k, l]) => [k, keep(l)]));
+      spots.wetfield = (spots.field ?? []).filter(([x, y]) => (map.land.cell(x, y).water ?? Infinity) <= 12);
+      if (has(spots)) out.push({ key: place, spots });
+    }
+    const tiles = new Set([...live].map((k) => {
+      const [cx, cz] = k.split(',').map(Number);
+      return `${Math.floor((cx * CHUNK) / TILE)},${Math.floor((cz * CHUNK) / TILE)}`;
+    }));
+    for (const k of tiles) {
+      const [tx, tz] = k.split(',').map(Number);
+      if (!map.ready(tx, tz)) continue;
+      const t = map.land.tile(tx, tz);
+      const spots = Object.fromEntries(Object.entries(t.spots).map(([s2, l]) => [s2, keep(l)]));
+      if (has(spots)) out.push({ key: `${map.id}:${k}`, spots });
+    }
+    const c = heroCell();
+    const near = (a) => Math.min(...Object.values(a.spots).flat().map(([x, y]) => Math.hypot(x - c.x, y - c.y)));
+    return out.map((a) => ({ ...a, d: near(a) })).sort((p, q) => p.d - q.d);
   }
   // A free cell from min to max cells from a point, in the order of the seed (map cells, the middle).
   // room: the cells around it that must be free too (1: three by three), for a pile of things.
@@ -501,7 +639,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const ent = getEntity(state, `event:${id}`);
     if (!def || !ent) return;
     const day = ent.dayEvent.day;
-    const rng = createRng(hashSeed(`${state.seed}:event-task:${id}:${map.id}:${day}`));
+    const rng = createRng(hashSeed(`${state.seed}:event-task:${id}:${ent.dayEvent.area ?? map.id}:${day}`));
     // The level: the grade, and P(L) of the skill of the event in the skill model.
     const p = learner()?.entry(def.levelBy)?.p ?? null;
     const level = eventLevel(data.events, levelFor(data.trials ?? { grades: {} }, profile.grade), p);
@@ -993,8 +1131,27 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     log('action', { kind: 'walk' });
+    // A tap past an edge of the world (the deep sea, the mist): the walk stops at the edge.
+    if (edgeAt(tile.x, tile.y)) {
+      const stop = edgeStop(from, hit);
+      if (stop) walkPath(findPath(tileMap, from, stop)?.slice(0, -1), { x: stop.x + 0.5, y: stop.y + 0.5 }, null);
+      return;
+    }
     if (tileMap.walkable(tile.x, tile.y)) walkPath(findPath(tileMap, from, tile)?.slice(0, -1), { x: hit.x, y: hit.y }, null);
     else walkPath(pathNextTo(tileMap, from, tile), null, null);
+  }
+
+  // The last free cell before an edge on the line from the hero to a point (map cells), or null.
+  function edgeStop(from, to) {
+    const n = Math.ceil(Math.hypot(to.x - from.x - 0.5, to.y - from.y - 0.5) * 2);
+    let last = null;
+    for (let i = 0; i <= n; i++) {
+      const x = Math.floor(from.x + 0.5 + ((to.x - from.x - 0.5) * i) / Math.max(1, n));
+      const y = Math.floor(from.y + 0.5 + ((to.y - from.y - 0.5) * i) / Math.max(1, n));
+      if (edgeAt(x, y)) break;
+      if (tileMap.walkable(x, y)) last = { x, y };
+    }
+    return last;
   }
 
   // The target of a tap at a map cell (x, y may have a fraction): what the scene finds under a
@@ -1084,18 +1241,55 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
   }
 
-  // The hero walks into an exit: the next map starts.
-  function goThrough(exit) {
+  // The edges of the world: the deep sea, and the mist of the land of a later era. The hero stops,
+  // turns, and takes two steps back, with a line once for each edge in a day. Nghé stops at the
+  // edge too (the follow system).
+  let turning = null; // the token of the walk back from an edge
+  const mistWalk = () => map.mist?.walk ?? 4;
+  // The edge at a cell: 'sea' (deep water), 'mist' (too deep in the mist), or null.
+  function edgeAt(x, y) {
+    if (tileMap.type(x, y) === 'sea') return 'sea';
+    if ((tileMap.mistAt?.(x, y) ?? 0) > mistWalk()) return 'mist';
+    return null;
+  }
+  // The line of an edge: the sea, the mist to the south (the land of a later era), or the mist of
+  // another land.
+  function edgeLine(kind, x, y) {
+    if (kind === 'sea') return 'edge.sea';
+    const lat = map.land?.plane.toGeo([x, y])[1];
+    const era = data.world.eraLand?.byChapter?.[String(data.world.region(map.region)?.chapter)];
+    return era !== undefined && lat < era ? 'edge.mist' : 'edge.mist.far';
+  }
+  function checkEdge() {
+    if (busy || turning !== null || hero().fall || raidOn()) return;
+    const h = hero();
+    const c = heroCell();
+    const f = h.position.facing ?? 0;
+    const ahead = { x: c.x + Math.sin(f) * 0.9, y: c.y + Math.cos(f) * 0.9 };
+    // A walk of a tap stops at the edge by itself (edgeStop); the stick and the keys push on.
+    const moving = !h.route && (h.intent?.strength ?? 0) > 0;
+    const deep = (tileMap.mistAt?.(Math.floor(c.x), Math.floor(c.y)) ?? 0) >= mistWalk();
+    const kind = deep ? 'mist' : moving ? edgeAt(Math.floor(ahead.x), Math.floor(ahead.y)) : null;
+    if (kind) turnBack(kind, c, f);
+  }
+  function turnBack(kind, c, f) {
     arrivals.clear();
     worldCommand(state, { type: 'stop', id: 'hero' });
-    const c = heroCell();
-    const to = data.world.arrival(exit, c.x, c.y);
-    const facing = hero().position.facing;
-    leave();
-    setHeroPlace(profile.world, to.map, to.x, to.y);
-    save('map');
-    start(to.map, { at: { x: to.x, y: to.y }, facing });
-    emit({ type: 'map', map: to.map });
+    const line = edgeLine(kind, c.x, c.y);
+    emit({ type: 'edge', kind, textKey: line });
+    emit({ type: 'halt' });
+    // Two steps back, the way the hero came (or the nearest free cell there).
+    const back = { x: c.x - Math.sin(f) * BACK, y: c.y - Math.cos(f) * BACK };
+    const to = freeSpot(tileMap, back) ?? c;
+    const token = nextToken++;
+    turning = token;
+    const said = visit.things[`edge.${line}`] === today();
+    arrivals.set(token, () => {
+      if (said) return;
+      visit.things[`edge.${line}`] = today();
+      say(line);
+    });
+    worldCommand(state, { type: 'walk', id: 'hero', points: [{ x: to.x * 2, z: to.y * 2 }], token, near: null });
   }
 
   // One step of the world, then the events of the step, the exits, and the trigger zones.
@@ -1127,21 +1321,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (ev.type === 'arrived' || ev.type === 'stuck') {
         const fn = arrivals.get(ev.token);
         arrivals.delete(ev.token);
-        if (ev.type === 'arrived') fn?.();
+        const back = ev.token === turning;
+        if (back) turning = null;
+        if (ev.type === 'arrived' || back) fn?.();
       }
     }
     checkRest();
+    checkEdge();
+    // The live chunks follow the hero: the people of the chunks that woke come.
+    if (updateLive()) {
+      refreshPeople();
+      placeEvents();
+    }
+    if (turning !== null && !arrivals.has(turning)) turning = null;
     const c = heroCell();
     const tx = Math.floor(c.x);
     const ty = Math.floor(c.y);
     if (tx === heroTile.x && ty === heroTile.y) return;
     heroTile = { x: tx, y: ty };
     if (busy) return;
-    const exit = data.world.exitAt(map.id, tx, ty, cond());
-    if (exit) {
-      goThrough(exit);
-      return;
-    }
     const zone = triggers.fire('enter', tx, ty, cond());
     if (zone) {
       arrivals.clear();
@@ -1204,8 +1402,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (type === 'fell' || type === 'dig') {
       const r = editLand(cmd);
       if (!r) return;
-      // The save keeps the change: the land of the map comes from the seed and these changes.
-      (visit.edits ??= []).push(type === 'fell' ? { type, id: cmd.id } : { type, at: [cmd.at[0], cmd.at[1]] });
+      // The save keeps the change (the changed cells of its chunk): the land of the map comes from
+      // the seed and these changes.
       emit({ type: type === 'fell' ? 'felled' : 'dug', id: cmd.id ?? null, at: r.at ?? null, kind: r.kind ?? null, drops: r.drops, chunks: r.chunks });
       return;
     }
@@ -1246,6 +1444,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   return {
     start,
+    startPlace,
     command,
     step,
     // The events since the last call.
@@ -1276,6 +1475,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     get triggers() { return triggers; },
     get env() { return env; },
     get terrain() { return terrain; },
+    // The live chunks around the hero (keys).
+    get live() { return [...live]; },
     get screen() { return screen?.screen ?? null; },
     get busy() { return busy; },
     get profile() { return profile; },
@@ -1294,9 +1495,9 @@ export function nextDawn(minutes, dawnHour = 6) {
 // The place next to the door of a trigger zone (the gate of Văn Miếu): where the hero stands
 // after the screen of the door. { map, at } or null.
 export function doorOf(data, id) {
-  for (const [map, m] of data.maps) {
-    const door = m.layers.triggers.find((z) => z.id === id);
-    if (door) return { map, at: { x: door.x + door.w + 1.5, y: door.y + door.h / 2 } };
+  for (const r of data.world.regions) {
+    const door = r.maps.length ? data.world.map(r.id)?.layers.triggers.find((z) => z.id === id) : null;
+    if (door) return { map: r.id, at: { x: door.x + door.w + 1.5, y: door.y + door.h / 2 } };
   }
   return null;
 }

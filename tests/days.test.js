@@ -80,18 +80,27 @@ test('the purse for a market: strings and single coins that make any price up to
   }
 });
 
-test('the maps have spots for the events: roads, paddies, and the yards of the hamlets', () => {
+test('the land has spots for the events: roads, paddies, and the yards of the hamlets', () => {
   for (const seed of [1, 2]) {
     let roads = 0;
     let fields = 0;
-    for (const id of ['phu-dong', 'soc-son', 'trau-son', 'road-thanglong']) {
-      const m = mapOf(id, seed);
-      for (const [x, y] of m.layers.spots.road) assert.equal(m.layers.ground[y][x], '=', `${id}: a road at ${x},${y}`);
-      for (const [x, y] of m.layers.spots.field) assert.equal(m.layers.ground[y][x], 'f', `${id}: a paddy at ${x},${y}`);
-      for (const [x, y] of m.layers.spots.yard) assert.equal(m.layers.ground[y][x], 'y', `${id}: a yard at ${x},${y}`);
-      roads += m.layers.spots.road.length;
-      fields += m.layers.spots.field.length;
+    let yards = 0;
+    const m = mapOf('giong', seed);
+    // The tiles of the land between the four places of Era 1.
+    for (let tz = 94; tz <= 97; tz++) {
+      for (let tx = 145; tx <= 150; tx++) {
+        const t = m.land.tile(tx, tz);
+        const letter = ([x, y]) => m.land.cell(x, y).letter;
+        for (const p of t.spots.road) assert.equal(letter(p), '=', `a road at ${p}`);
+        for (const p of t.spots.field) assert.equal(letter(p), 'f', `a paddy at ${p}`);
+        for (const p of t.spots.yard) assert.equal(letter(p), 'y', `a yard at ${p}`);
+        roads += t.spots.road.length;
+        fields += t.spots.field.length;
+        yards += t.spots.yard.length;
+      }
     }
-    assert.ok(roads >= 10 && fields >= 10, `${seed}: ${roads} roads, ${fields} paddies`);
+    assert.ok(roads >= 10 && fields >= 10 && yards >= 3, `${seed}: ${roads} roads, ${fields} paddies, ${yards} yards`);
+    // The spots of the places are on their stamps.
+    for (const [x, y] of m.spotsByPlace['phu-dong'].field) assert.equal(m.land.cell(x, y).letter, 'f');
   }
 });

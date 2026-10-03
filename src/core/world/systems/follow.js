@@ -5,7 +5,9 @@
 // system), Nghé walks to that point, looks to `face`, and takes the pose `act` there: at the near
 // end of the planks it stretches its neck toward the gap (a hint), beside the plank outlines it
 // looks at the hero, and at the edge of the water it pulls the hero out. At a closed ford Nghé stops at the
-// edge and shakes its head. After a skip of the prediction, Nghé glances once at the outlines.
+// edge and shakes its head. After a skip of the prediction, Nghé glances once at the outlines. Nghé
+// does not go into the sea, nor into the mist of the land of a later era: it stops at the edge, and
+// at the mist it lows.
 export const WRITES = ['position', 'motion', 'follow', 'act', 'events'];
 
 import { query, getEntity } from '../state.js';
@@ -45,7 +47,7 @@ export function follow(world, dt, rng, env) {
       x: p.x / 2, y: p.z / 2, vx: m.vx / 2, vy: m.vz / 2, facing: p.facing, speed: 0, moving: false,
       idle: e.follow.idle ?? 0, trail: e.follow.trail.map(([x, z]) => ({ x: x / 2, y: z / 2 })),
     };
-    stepFollower(f, { x: leader.position.x / 2, y: leader.position.z / 2, facing: leader.position.facing }, dt, env.near(f.x, f.y));
+    stepFollower(f, { x: leader.position.x / 2, y: leader.position.z / 2, facing: leader.position.facing }, dt, (env.nearFriend ?? env.near)(f.x, f.y));
     p.x = f.x * 2;
     p.z = f.y * 2;
     p.facing = f.facing;
@@ -82,6 +84,14 @@ export function follow(world, dt, rng, env) {
       world.events.push({ type: 'shake', id: e.id });
     }
     if (!atFord) delete e.follow.shook;
+    // The mist of the land of a later era: Nghé stops at its edge and lows, once for each time that
+    // the hero walks in.
+    const misty = (env.mistAt?.(leader.position.x / 2, leader.position.z / 2) ?? 0) > 0;
+    if (misty && !e.follow.lowed) {
+      e.follow.lowed = true;
+      world.events.push({ type: 'low', id: e.id, sound: 'moo' });
+    }
+    if (!misty) delete e.follow.lowed;
     e.follow.shake = Math.max(0, (e.follow.shake ?? 0) - dt);
     if (!e.follow.shake) delete e.follow.shake;
     // A glance: Nghé turns its head to a point for a moment (the plank outlines after a skip).

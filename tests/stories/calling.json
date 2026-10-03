@@ -5,9 +5,8 @@
     "en": "After the five trials, the elder opens the way to Văn Miếu, where the child chooses a calling."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "trial.scholar.done": true, "trial.smith.done": true, "trial.fisher.done": true, "trial.healer.done": true, "trial.woodcutter.done": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [31, 27],
+  "at": ["phu-dong", 31, 27],
   "steps": [
     { "tap": { "entity": "npc:elder" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },

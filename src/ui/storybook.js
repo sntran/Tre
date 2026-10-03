@@ -3,7 +3,7 @@
 // the game waits one second at each expect and shows its result. &speed=4 plays the world four
 // times faster (for a whole day). This is for the review of the owner and for screenshots.
 // Nothing is saved on the device: the profile of a story lives only in this page.
-import { storyProfile, playStory, STEP } from '../core/story.js';
+import { storyProfile, storyOnPlane, playStory, STEP } from '../core/story.js';
 import { serialize, deserialize } from '../core/save.js';
 import { addPoint, restorePoint, whereOf } from '../core/restore.js';
 import { h } from './dom.js';
@@ -14,7 +14,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export async function startStory(ctx, name, { play = false, speed = 1 } = {}) {
   const response = await fetch(`tests/stories/${encodeURIComponent(name)}.json`);
   if (!response.ok) throw new Error(`No story ${name}`);
-  const story = await response.json();
+  const story = storyOnPlane(await response.json(), ctx.data.world);
   ctx.storybook = { story, playing: play, speed: Math.max(1, Math.min(16, speed || 1)) };
   // Nothing of a story goes into the store of the device: the saves stay in this page, with the
   // restore points of the dawns (src/core/restore.js), as the store of the device keeps them.

@@ -5,9 +5,8 @@
     "en": "The time limit: the day ends at a calm point, never on the bridge; when the hero leaves the bridge, the rest comes."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true }, "timeLimit": 30, "played": 29.8 },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [46, 61],
+  "at": ["phu-dong", 46, 61],
   "steps": [
     { "tap": { "plank": 4 } },
     { "until": { "event": "pick", "timeout": 20 } },

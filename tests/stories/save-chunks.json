@@ -1,0 +1,29 @@
+{
+  "name": "save-chunks",
+  "about": {
+    "vi": "Bản lưu giữ những gì đã thay đổi ở từng vùng: chặt một cây, đi xa bốn vùng rồi quay lại, lưu và mở lại. Cây vẫn không còn, và không có gì khác thay đổi.",
+    "en": "The save keeps the changes of each chunk: fell a tree, walk four chunks away and back, then save and load. The tree is still gone, and nothing else changed."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "clock": 540,
+  "at": ["phu-dong", 9, 27],
+  "steps": [
+    { "wait": 1 },
+    { "expect": [{ "edits": { "chunks": 0 } }] },
+    { "do": { "type": "fell", "id": "tree8" } },
+    { "until": { "event": "felled", "timeout": 2 } },
+    { "expect": [{ "event": "felled", "with": { "id": "tree8" } }, { "edits": { "chunks": 1, "felled": 1, "dug": 0 } }] },
+    { "walk": { "to": ["phu-dong", 46.5, 1.5] } },
+    { "walk": { "to": ["phu-dong", 46.5, -40.5] } },
+    { "expect": [{ "hero": { "cell": ["phu-dong", 46.5, -40.5], "within": 2 } }, { "edits": { "chunks": 1, "felled": 1, "dug": 0 } }] },
+    { "walk": { "to": ["phu-dong", 9, 27] } },
+    { "do": { "type": "fell", "id": "tree8" } },
+    { "wait": 1 },
+    { "expect": [{ "hero": { "cell": ["phu-dong", 9, 27], "within": 2 } }, { "event": "felled", "not": true }, { "edits": { "chunks": 1, "felled": 1, "dug": 0 } }] },
+    { "reload": true },
+    { "wait": 1 },
+    { "do": { "type": "fell", "id": "tree8" } },
+    { "wait": 1 },
+    { "expect": [{ "event": "felled", "not": true }, { "edits": { "chunks": 1, "felled": 1, "dug": 0 } }, { "entity": "friend:nghe", "near": "hero", "within": 5 }] }
+  ]
+}

@@ -5,9 +5,8 @@
     "en": "Restore points: the game keeps a point each morning, only the last three; a parent takes the game back to yesterday morning (before the talk with the elder), and then back to where the game was."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
   "clock": 330,
-  "place": [40, 80],
+  "at": ["phu-dong", 34, 33],
   "steps": [
     { "expect": [{ "points": 0 }, { "day": 0 }] },
     { "at": { "hour": 7 } },

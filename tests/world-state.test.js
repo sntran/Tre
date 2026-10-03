@@ -1,17 +1,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import { createTileMap } from '../src/core/tilemap.js';
 import { createWorldState, addEntity, removeEntity, getEntity, query, command } from '../src/core/world/state.js';
 import { step, SYSTEMS, STEP } from '../src/core/world/step.js';
 import { envFor } from '../src/core/world/env.js';
 import { addHero, addFriend, syncPeople, addLifeLayer } from '../src/core/world/populate.js';
 import { createRng } from '../src/core/rng.js';
-import { load, mapOf } from './helpers.js';
+import { load, planeOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
-const map = mapOf('phu-dong');
-const env = envFor(createTileMap(map, tiles));
+const { map, tileMap, at } = planeOf(1, { r: 0 });
+const env = envFor(tileMap);
+// A point of the frame of Phù Đổng on the plane, in half blocks.
+const [ox, oz] = at('phu-dong', 0, 0);
+const hb = (x, z) => ({ x: x + ox * 2, z: z + oz * 2 });
 
 // A world on Phù Đổng: the hero at the spawn point, Nghé, all people and enemies, and the ducks.
 function village(seed = 7) {
@@ -49,7 +51,7 @@ test('the same seed and the same commands give the same world after 1000 steps',
       if (i === 10) command(w, { type: 'move', id: 'hero', dx: 1, dz: 0, strength: 1, run: true });
       if (i === 200) command(w, { type: 'move', id: 'hero', dx: 0, dz: turn, strength: 0.6 });
       if (i === 400) command(w, { type: 'stop', id: 'hero' });
-      if (i === 450) command(w, { type: 'walk', id: 'hero', points: [{ x: 40, z: 60 }, { x: 44, z: 64 }], token: 'a' });
+      if (i === 450) command(w, { type: 'walk', id: 'hero', points: [hb(40, 60), hb(44, 64)], token: 'a' });
       if (i === 700) command(w, { type: 'pause', on: true });
       if (i === 800) command(w, { type: 'pause', on: false });
       step(w, STEP, env);
@@ -95,12 +97,12 @@ test('the hero walks with a command, follows a route to its end, and waits in a 
   assert.ok(Math.abs(hero.position.x - at.x) < 0.05);
   // A place command puts the hero at a point, and Nghé comes behind.
   command(w, { type: 'pause', on: false });
-  command(w, { type: 'place', id: 'hero', x: 40, z: 60 });
+  command(w, { type: 'place', id: 'hero', ...hb(40, 60) });
   step(w, STEP, env);
-  assert.deepEqual([hero.position.x, hero.position.z], [40, 60]);
+  assert.deepEqual([hero.position.x, hero.position.z], [hb(40, 60).x, hb(40, 60).z]);
   assert.ok(w.events.some((e) => e.type === 'placed' && e.id === 'hero'));
   const nghe = getEntity(w, 'friend:nghe');
-  assert.ok(Math.hypot(nghe.position.x - 40, nghe.position.z - 60) < 8);
+  assert.ok(Math.hypot(nghe.position.x - hb(40, 60).x, nghe.position.z - hb(40, 60).z) < 8);
 });
 
 test('people come and go with the story, and turn to the hero when the hero is near', () => {
@@ -134,7 +136,7 @@ test('a system changes only the components that it names', () => {
     // Give the world some work: commands, a route, and some steps before.
     command(w, { type: 'move', id: 'hero', dx: 1, dz: 1, strength: 1 });
     for (let i = 0; i < 5; i++) step(w, STEP, env);
-    command(w, { type: 'walk', id: 'hero', points: [{ x: 30, z: 60 }], token: 'x' });
+    command(w, { type: 'walk', id: 'hero', points: [hb(30, 60)], token: 'x' });
     command(w, { type: 'pause', on: true });
     const before = structuredClone(w);
     system(w, STEP, createRng(1), env);

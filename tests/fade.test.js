@@ -1,14 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createTileMap } from '../src/core/tilemap.js';
-import { buildTerrain, columnTop } from '../src/world/terrain.js';
+import { columnTop } from '../src/world/terrain.js';
 import { inFront, stepFade, stippleOf, toCamera, FADE_MIN } from '../src/world/fade.js';
-import { load, mapOf } from './helpers.js';
+import { load, planeOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
-const map = mapOf('phu-dong');
-const tileMap = createTileMap(map, tiles);
-const terrain = buildTerrain(map, tiles, tileMap, load('data/world/blocks.json'));
+const { map, tileMap, terrain, at } = planeOf(1, { blocks: load('data/world/blocks.json') });
 const ELEVATION = Math.atan(0.5); // the camera of src/render/voxel.js (VIEW.elevation)
 
 // Is a point of the line of sight inside the box? A sample along the line, apart from rayHits.
@@ -29,7 +26,7 @@ function crossed(b, hero, az) {
 }
 
 test('only the objects whose box the line of sight crosses fade: at the start of Phù Đổng and at the đình, at each turn', () => {
-  const places = { start: [map.spawn.x, map.spawn.y], dinh: [31.5, 25.4] };
+  const places = { start: [map.spawn.x, map.spawn.y], dinh: at('phu-dong', 31.5, 25.4) };
   for (const [name, [x, z]] of Object.entries(places)) {
     const hero = { x, y: columnTop(tileMap.heightAt(Math.floor(x), Math.floor(z))), z };
     for (let k = 0; k < 4; k++) {

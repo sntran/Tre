@@ -11,7 +11,8 @@ const dialogues = ['prologue', 'village', 'giong'].flatMap((f) => load(`data/dia
 const byId = new Map(dialogues.map((d) => [d.id, d]));
 const npcs = load('data/npcs.json').npcs;
 const quests = load('data/quests.json').quests;
-const mapList = load('data/world/regions.json').regions.flatMap((r) => r.maps).map((id) => mapOf(id));
+// The maps of the regions with places (one map on the plane for each region).
+const mapList = load('data/world/regions.json').regions.filter((r) => r.maps.length).map((r) => mapOf(r.id));
 const village = {
   npcs: mapList.flatMap((m) => m.npcs),
   encounters: mapList.flatMap((m) => m.encounters),
@@ -163,10 +164,10 @@ test('facts of history in raid notes have the History seal', () => {
 test('the enemies of a raid leave the map after the player wins it', () => {
   const raids = load('data/raids.json').raids;
   for (const m of ['phu-dong', 'trau-son']) {
-    for (const e of mapOf(m).encounters) {
+    for (const e of load(`data/maps/${m}.json`).encounters) {
       const r = raids[e.raid];
       assert.ok(r, `${e.id}: a raid`);
-      assert.equal(r.map, m, `${e.id}: the raid is on the map of its encounter`);
+      assert.equal(r.map, m, `${e.id}: the raid is at the place of its encounter`);
       if (r.repeat) continue;
       const wins = r.win.set ?? [];
       assert.ok((e.when.notFlags ?? []).some((f) => wins.includes(f)), `${e.id}: leaves after one of ${wins.join(', ')}`);

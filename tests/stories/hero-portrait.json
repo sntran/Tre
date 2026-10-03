@@ -5,7 +5,7 @@
     "en": "A girl hero with another skin and another hair from hero creation talks with the elder: the portrait in the talk and in the corner looks like the chosen hero, and the elder smiles."
   },
   "profile": { "name": "Mai", "gender": "girl", "skin": 4, "hair": 5, "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
+  "at": ["phu-dong", 11.0, 26.6],
   "steps": [
     { "expect": [{ "portrait": { "speaker": "hero", "look": { "skin": "skin4", "hair": "bun", "bottomKind": "skirt", "topKind": "yem", "face": 1 } } }] },
     { "tap": { "entity": "npc:elder" } },

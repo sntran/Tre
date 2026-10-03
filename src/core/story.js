@@ -6,8 +6,12 @@
 //
 // A story file:
 //   { name, about: { vi, en }, profile: { name, grade, lang, seed, flags, items, party, timeLimit,
-//     played (minutes of play today) }, map, clock (game minutes), place: [x, y] (the hero cell),
-//     state (a saved world, instead of place), steps: [...] }
+//     played (minutes of play today) }, at: [place, x, y] (the start of the hero: a cell of the
+//     plane in the frame of a place; [x, y]: a cell of the plane), clock (game minutes), state (a
+//     saved world, instead of at), steps: [...] }
+// The cells of the steps ([x, y]) are in the frame of the place of the start (of the plane, when
+// the start is [x, y]); a cell in the frame of another place is [place, x, y] (storyOnPlane makes
+// them cells of the plane).
 // Steps:
 //   { do: <command of the session> }         { wait: <seconds> }
 //   { until: { event, with, timeout } }      (an event after the last command)
@@ -25,6 +29,9 @@
 //     (of this kind): off is how much farther (or nearer, below 0); lead: where the enemy will be
 //     after so many seconds; wait: when no enemy is there, the world goes on for a second)
 //   { pour: { from: <source id>, at: 'first' | <enemy id> | [x, y] } }  (the drag of an element)
+//   { walk: { to: [x, y], leg } }            (a walk to a far cell, as a child taps ahead again and
+//                                             again: a tap each `leg` cells (20) on the way; a line
+//                                             of a trigger zone on the way is read)
 //   { repeat: <n>, steps: [...] }         (the steps n times)
 //   { read: true | [<choice>, ...] }         (read the open talk to its end, with these choices)
 //   { reload: true }                         (save, load, and go on from the loaded save)
@@ -35,6 +42,7 @@
 import { createProfile } from './profile.js';
 import { dayKey } from './timelimit.js';
 import { getEntity, query } from './world/state.js';
+import { findPath } from './tilemap.js';
 import { saveWorld, loadWorld, setHeroPlace } from './world/save.js';
 import { createI18n } from './i18n.js';
 import { STEP } from './world/step.js';
@@ -49,7 +57,29 @@ const DAY = 1440;
 // No digit, no operator, and no question mark in a text of the village or a raid.
 const WORLD_TEXT = /[0-9+−×÷=?]/;
 
-// The profile at the start of a story.
+// A story with its cells on the plane. world: the world of the regions (src/world/regions.js).
+export function storyOnPlane(story, world) {
+  const out = structuredClone(story);
+  // A start [x, y] is a cell of the plane: the cells of the steps are cells of the plane too.
+  const frame = !Array.isArray(story.at) ? world.start.place : story.at.length === 3 ? story.at[0] : null;
+  const cell = (p) => (p.length === 3 ? world.at(p[0], p[1], p[2]) : frame ? world.at(frame, p[0], p[1]) : [p[0], p[1]]);
+  out.map = story.map ?? world.regionOf(frame ?? world.start.place);
+  if (Array.isArray(story.at)) out.at = cell(story.at);
+  const steps = (list) => {
+    for (const st of list ?? []) {
+      if (st.steps) steps(st.steps);
+      if (st.tap?.cell) st.tap.cell = cell(st.tap.cell);
+      if (Array.isArray(st.do?.at)) st.do.at = cell(st.do.at);
+      if (Array.isArray(st.pour?.at)) st.pour.at = cell(st.pour.at);
+      if (st.walk?.to) st.walk.to = cell(st.walk.to);
+      for (const f of st.expect ?? []) if (f.hero?.cell) f.hero.cell = cell(f.hero.cell);
+    }
+  };
+  steps(out.steps);
+  return out;
+}
+
+// The profile at the start of a story (its cells on the plane: storyOnPlane).
 export function storyProfile(story, { now = STORY_EPOCH } = {}) {
   const p = story.profile ?? {};
   const profile = createProfile({ id: `story-${story.name}`, name: p.name ?? 'An', gender: p.gender ?? 'boy', skin: p.skin, face: p.face, hair: p.hair, clothes: p.clothes, grade: p.grade ?? 2, lang: p.lang ?? 'vi', seed: p.seed ?? 1, now });
@@ -61,11 +91,11 @@ export function storyProfile(story, { now = STORY_EPOCH } = {}) {
   }
   if (p.timeLimit !== undefined) profile.settings.timeLimit = p.timeLimit;
   if (p.played !== undefined) profile.time = { day: dayKey(now), usedMs: p.played * 60000, extraMs: 0 };
-  const map = story.map ?? 'phu-dong';
+  const map = story.map ?? 'giong';
   if (story.state) profile.world = structuredClone(story.state);
   else {
     if (story.clock !== undefined) profile.world.clock.minutes = story.clock;
-    if (story.place) setHeroPlace(profile.world, map, story.place[0], story.place[1]);
+    if (story.at) setHeroPlace(profile.world, map, story.at[0], story.at[1]);
     else profile.world.map = map;
   }
   return profile;
@@ -233,7 +263,8 @@ export function checkFact(fact, ctx) {
       const ok = f.in === 'water' ? g === 'water' || g === 'shallow' : g === f.in;
       if (!ok) return `the hero is on ${g}, not in ${f.in}`;
     }
-    if (f.map && session.map.id !== f.map) return `the hero is on the map ${session.map.id}, not ${f.map}`;
+    // mist: the hero is in the mist of the land of a later era (or not).
+    if (f.mist !== undefined && ((session.env.mistAt?.(hero.position.x / 2, hero.position.z / 2) ?? 0) > 0) !== f.mist) return `the hero in the mist: ${!f.mist}`;
     if (f.near) {
       const e = getEntity(state, f.near);
       const d = e ? cellDist(hero, e) : Infinity;
@@ -278,6 +309,11 @@ export function checkFact(fact, ctx) {
     if (fact.hidden !== undefined && Boolean(e.hidden) !== fact.hidden) return `${fact.entity} hidden: ${Boolean(e.hidden)}`;
     // keep: the player changed the entity (a cart that moved), so the save keeps it.
     if (fact.keep !== undefined && Boolean(e.keep) !== fact.keep) return `${fact.entity} kept: ${Boolean(e.keep)}`;
+    // in: the ground under the entity; notIn: grounds that it is not on; mist: it is in the mist.
+    const g = e.position ? session.env.groundAt(e.position.x, e.position.z) : null;
+    if (fact.in !== undefined && g !== fact.in) return `${fact.entity} is on ${g}, not ${fact.in}`;
+    if (fact.notIn && fact.notIn.includes(g)) return `${fact.entity} is on ${g}`;
+    if (fact.mist !== undefined && ((session.env.mistAt?.(e.position.x / 2, e.position.z / 2) ?? 0) > 0) !== fact.mist) return `${fact.entity} in the mist: ${!fact.mist}`;
     return null;
   }
   if (fact.event) {
@@ -388,6 +424,20 @@ export function checkFact(fact, ctx) {
     if (f.losses !== undefined && !compare(raid.losses, f.losses)) return `${raid.losses} losses, not ${f.losses}`;
     return null;
   }
+  if (fact.edits) {
+    // The changes of the land that the save keeps (src/world/terrain.js, edits): chunks (the count
+    // of the changed chunks), felled (the felled things), and dug (the digs, one for each block).
+    const f = fact.edits;
+    const saved = Object.values(session.terrain?.edits?.() ?? {});
+    const ones = (runs) => runs.reduce((n, r, k) => n + (k % 2 ? r : 0), 0);
+    const got = {
+      chunks: saved.length,
+      felled: saved.reduce((n, e) => n + ones(e.felled ?? []), 0),
+      dug: saved.reduce((n, e) => n + (e.dug ?? []).reduce((m, runs) => m + ones(runs), 0), 0),
+    };
+    for (const k of ['chunks', 'felled', 'dug']) if (f[k] !== undefined && !compare(got[k], f[k])) return `${got[k]} ${k} in the changes of the land, not ${f[k]}`;
+    return null;
+  }
   return `an unknown fact ${JSON.stringify(fact)}`;
 }
 
@@ -397,11 +447,13 @@ export function createLaws({ texts, limits }) {
   const i18n = Object.fromEntries(Object.entries(texts).map(([lang, dict]) => [lang, createI18n(dict, lang)]));
 
   // No NaN, no entity outside the map, the hero and the people on free ground, the count of the
-  // entities under the limit, and the save of the world loads back to the same world.
+  // entities and of the live chunks under the limits, and the save of the world loads back to the
+  // same world.
   function step(session) {
     const problems = [];
     const { state, env, tileMap } = session;
     if (state.entities.length > limits.entities) problems.push(`${state.entities.length} entities, more than ${limits.entities}`);
+    if (limits.liveChunks && session.live && session.live.length > limits.liveChunks) problems.push(`${session.live.length} live chunks, more than ${limits.liveChunks}`);
     for (const e of state.entities) {
       const q = e.position;
       if (!q) continue;
@@ -414,7 +466,7 @@ export function createLaws({ texts, limits }) {
       if (e.hidden || e.fall || e.swim || e.climb || (e.id !== 'hero' && !e.person)) continue;
       const tx = Math.floor(q.x / 2);
       const ty = Math.floor(q.z / 2);
-      if (tileMap.groundAt(tx, ty) === 'water') problems.push(`${e.id} stands in deep water (${tx}, ${ty})`);
+      if (['water', 'sea'].includes(tileMap.groundAt(tx, ty))) problems.push(`${e.id} stands in deep water (${tx}, ${ty})`);
       else if (tileMap.isBlocked(tx, ty)) problems.push(`${e.id} stands in a blocked cell (${tx}, ${ty})`);
     }
     const saved = JSON.stringify(saveWorld(state));
@@ -509,6 +561,9 @@ export async function playStory(story, io) {
       const to = Array.isArray(s.pour.at) ? { x: s.pour.at[0], y: s.pour.at[1] } : e ? { x: e.x / 2, y: e.z / 2 } : null;
       if (!to) fail(i, `no place to pour for ${JSON.stringify(s.pour)}`);
       else await io.send({ type: 'pour', source: s.pour.from, x: to.x, y: to.y }, to);
+    } else if (s.walk) {
+      const problem = await walkFar(io, s.walk);
+      if (problem) fail(i, problem);
     } else if (s.read) {
       const choices = Array.isArray(s.read) ? [...s.read] : [];
       for (let n = 0; n < 60 && ['dialogue', 'say'].includes(io.session().screen); n++) {
@@ -543,6 +598,32 @@ export async function playStory(story, io) {
   }
   stop();
   return failures;
+}
+
+// A walk to a far cell: the way on the tile map, and a tap each `leg` cells on it. Return a
+// message when the hero did not come there, or null.
+async function walkFar(io, spec) {
+  const session = io.session();
+  const hero = () => getEntity(io.session().state, 'hero').position;
+  const h = hero();
+  const goal = { x: Math.floor(spec.to[0]), y: Math.floor(spec.to[1]) };
+  const way = findPath(session.tileMap, { x: Math.floor(h.x / 2), y: Math.floor(h.z / 2) }, goal, { maxNodes: 600000 });
+  if (!way) return `no way to ${spec.to.join(', ')}`;
+  const leg = spec.leg ?? 20;
+  const points = way.filter((_, k) => (k + 1) % leg === 0 || k === way.length - 1);
+  for (const p of points) {
+    const at = { x: p.x + 0.5, y: p.y + 0.5 };
+    const near = () => Math.hypot(hero().x / 2 - at.x, hero().z / 2 - at.y) < 1.5;
+    for (let tries = 0; tries < 3 && !near(); tries++) {
+      // A line of a trigger zone on the way: read it, and go on.
+      for (let n = 0; n < 10 && ['dialogue', 'say'].includes(io.session().screen); n++) await io.send({ type: 'next' }, null);
+      const tap = tapTarget(io.session(), { cell: [at.x, at.y] });
+      await io.send({ type: 'tap', target: tap.target }, tap.point);
+      await io.advance(leg / 2, () => near() || ['dialogue', 'say'].includes(io.session().screen));
+    }
+    if (!near()) return `the walk stopped at ${(hero().x / 2).toFixed(1)}, ${(hero().z / 2).toFixed(1)} on the way to ${spec.to.join(', ')}`;
+  }
+  return null;
 }
 
 export { STEP };

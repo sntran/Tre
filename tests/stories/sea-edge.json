@@ -1,0 +1,25 @@
+{
+  "name": "sea-edge",
+  "about": {
+    "vi": "Ở bờ biển phía đông: em lội ra chỗ nước ngang gối, rồi dừng lại, quay lại hai bước: biển sâu quá. Nghé đứng lại trên bờ. Câu nói chỉ hiện một lần trong ngày.",
+    "en": "At the coast in the east: the hero wades out to the knee, then stops and takes two steps back: the sea is too deep. Nghé stays on the shore. The line shows once in a day."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "clock": 540,
+  "at": [11399.5, 7128.5],
+  "steps": [
+    { "wait": 1 },
+    { "tap": { "cell": [11420.5, 7128.5] } },
+    { "until": { "event": "arrived", "timeout": 20 } },
+    { "expect": [{ "hero": { "in": "surf", "cell": [11411.5, 7128.5], "within": 1.5 } }, { "entity": "friend:nghe", "notIn": ["surf", "sea"] }] },
+    { "do": { "type": "move", "dx": 1, "dz": 0, "strength": 1 } },
+    { "until": { "event": "edge", "with": { "kind": "sea" }, "timeout": 10 } },
+    { "until": { "event": "open", "with": { "screen": "say", "textKey": "edge.sea" }, "timeout": 10 } },
+    { "read": true },
+    { "expect": [{ "hero": { "cell": [11409.5, 7128.5], "within": 2 } }, { "entity": "friend:nghe", "notIn": ["surf", "sea"] }] },
+    { "do": { "type": "move", "dx": 1, "dz": 0, "strength": 1 } },
+    { "until": { "event": "edge", "with": { "kind": "sea" }, "timeout": 10 } },
+    { "wait": 3 },
+    { "expect": [{ "event": "open", "with": { "textKey": "edge.sea" }, "not": true }, { "screen": null }] }
+  ]
+}

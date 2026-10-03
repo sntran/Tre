@@ -5,9 +5,8 @@
     "en": "On the road to Thăng Long: over the Red River on the ferry, into Văn Miếu, and back out next to its gate."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.done": true } },
-  "map": "road-thanglong",
   "clock": 540,
-  "place": [70, 40],
+  "at": ["road-thanglong", 70, 40],
   "steps": [
     { "tap": { "cell": [55, 40] } },
     { "until": { "event": "open", "with": { "screen": "say", "textKey": "map.ferry" }, "timeout": 40 } },
@@ -19,6 +18,6 @@
     { "expect": [{ "screen": "vanmieu" }] },
     { "do": { "type": "closed" } },
     { "wait": 0.5 },
-    { "expect": [{ "screen": null }, { "hero": { "map": "road-thanglong", "cell": [3.5, 40], "within": 1 } }] }
+    { "expect": [{ "screen": null }, { "hero": { "cell": ["road-thanglong", 3.5, 40], "within": 1 } }] }
   ]
 }

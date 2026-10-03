@@ -5,9 +5,8 @@
     "en": "The raid at the foot of Trâu Sơn: the smith brings his forge to the crossroads; fire makes the soldiers raise wet shields, and lightning into the wet ground shocks them; then the Ân general lifts his staff, the iron staff breaks, and Gióng pulls up bamboo to drive the enemy away."
   },
   "profile": {"name": "An", "grade": 3, "lang": "vi", "seed": 9, "flags": {"intro.seen": true, "giong.grown": true, "soldier1.won": true, "soldier2.won": true, "boss.staffs": true, "raid.tool.sling": true, "raid.tool.gate": true, "raid.tool.traps": true, "raid.tool.helpers": true, "raid.tool.nghe": true, "raid.tool.water": true, "raid.tool.fire": true}, "items": {"coin": 5}},
-  "map": "trau-son",
   "clock": 600,
-  "place": [98, 19],
+  "at": ["trau-son", 98, 19],
   "steps": [
     {"tap": {"entity": "encounter:boss"}},
     {"until": {"event": "open", "with": {"screen": "say"}, "timeout": 30}},

@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createTileMap } from '../src/core/tilemap.js';
-import { buildTerrain, pickGround, columnTop, WATER } from '../src/world/terrain.js';
+import { createTileMap, createPlaneTileMap } from '../src/core/tilemap.js';
+import { buildTerrain, createTerrain, pickGround, columnTop, WATER, CHUNK } from '../src/world/terrain.js';
 import { colorName } from '../src/world/voxel.js';
-import { load, mapOf } from './helpers.js';
+import { load, mapOf, planeOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
 
@@ -94,12 +94,27 @@ test('a ray from the camera picks the first column that it meets', () => {
   assert.equal(pickGround({ x: 1, y: 10, z: 1 }, { x: 0, y: 1, z: 0 }, topAt, W, H, 8), null);
 });
 
-test('every map of the game builds its terrain, and each object has blocks', () => {
-  const world = load('data/world/regions.json');
-  for (const id of world.regions.flatMap((r) => r.maps)) {
-    const m = mapOf(id);
-    const t = buildTerrain(m, tiles, createTileMap(m, tiles));
-    const ids = new Set(t.objects.map((o) => o.id));
-    for (const o of m.layers.objects) assert.ok(ids.has(o.id), `${id}: ${o.id} has blocks`);
-  }
+test('every place of the game builds its terrain on the plane, and each object has blocks', () => {
+  const { map, terrain } = planeOf(1, { r: 0 });
+  for (const o of map.layers.objects) terrain.chunk(Math.floor(o.x / CHUNK), Math.floor(o.y / CHUNK));
+  const ids = new Set(terrain.objects.map((o) => o.id));
+  for (const o of map.layers.objects) assert.ok(ids.has(o.id), `${o.place}: ${o.id} has blocks`);
+});
+
+test('a page that was made before its land was ready is made again when the land is ready', () => {
+  // The land of a tile waits for its height tiles (map.ready): here, until `ready` is true.
+  const base = mapOf('giong', 1);
+  let ready = false;
+  const map = Object.create(base, { ready: { value: (tx, tz) => ready && base.ready(tx, tz) } });
+  const t = createTerrain(map, tiles, createPlaneTileMap(map, tiles));
+  const { at } = planeOf(1, { places: [] });
+  const [x, z] = at('phu-dong', 31, 27);
+  const cx = Math.floor(x / CHUNK);
+  const cz = Math.floor(z / CHUNK);
+  assert.equal(t.chunk(cx, cz).partial, true);
+  assert.equal(t.ground.top(x, z), -1, 'no ground while the land waits');
+  ready = true;
+  const page = t.chunk(cx, cz);
+  assert.equal(page.partial, false);
+  assert.ok(t.ground.top(x, z) >= 1, 'the ground is there when the land is ready');
 });

@@ -1164,5 +1164,8 @@
   "event.duck.start": "Đàn vịt của cô có {need} con, con nào cũng lông trắng, đầu xanh. Vài con lạc mất rồi. Vịt lông nâu là vịt nhà khác đấy. Cháu tìm vịt của cô mang về chuồng, rồi gọi cô đếm nhé.",
   "event.duck.short": "Cô đếm chưa đủ đàn. Vẫn còn con lạc.",
   "event.duck.over": "Vịt lông nâu là vịt nhà khác, cháu ạ. Cô thả nó về nhà nó nhé.",
-  "event.duck.done": "Đủ đàn rồi! Cảm ơn cháu."
+  "event.duck.done": "Đủ đàn rồi! Cảm ơn cháu.",
+  "edge.sea": "Biển sâu quá.",
+  "edge.mist": "Phía nam còn mù sương.",
+  "edge.mist.far": "Phía trước còn mù sương."
 }

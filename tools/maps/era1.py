@@ -5,7 +5,7 @@
 # On every map, north is map -y (the screen up and right), and east is map +x.
 import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
-from maplib import M, ore_triggers, dump, window_def
+from maplib import M, ore_triggers, dump, place_def
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "..", "data", "maps")
 NORTH = [0, -1]
@@ -324,73 +324,26 @@ D.triggers = [
     {'id': 'field-west', 'x': 2, 'y': 2, 'w': 8, 'h': 6, 'on': 'tap', 'action': {'textKey': 'map.field'}},
 ]
 
-# ---------------------------------------------------------------- The region plane
-# Each map is a window on one plane (cells, x to the east, y to the south). Phù Đổng is at the
-# middle; Núi Trâu is to the east (and a little north), Sóc Sơn to the north (and a little west),
-# and the road to Văn Miếu goes west over the Red River. The windows touch, so that the land goes
-# on from one map to the next. The hand-made story places are stamps (tiles: x, y, w, h); the land
-# around them comes from data/geo/vietnam.json, the rules, and the seed (src/core/gen/).
-WINDOWS = [
-    # map, window (region cells), size (cells), offset of the hand-made map (cells), stamps (tiles)
-    (A, (0, 0), (80, 88), (0, 0), [(0, 0, 33, 31), (0, 29, 40, 15), (31, 0, 9, 20)]),
-    (B, (-56, -120), (120, 120), (8, 4), [(0, 0, 30, 30)]),
-    (C, (80, -40), (200, 84), (64, 4), [(0, 0, 30, 31)]),
-    (D, (-120, 40), (120, 64), (0, 16), [(0, 0, 28, 24)]),
+# ---------------------------------------------------------------- The places on the plane
+# Each map is the frame of a place on the plane (cells, x to the east, y to the south). The hand-made
+# story places are stamps (tiles: x, y, w, h); the land around them comes from data/geo/vietnam.json,
+# the rules, and the seed (src/core/gen/).
+PLACES = [
+    # map, size of the frame (cells), offset of the hand-made map (cells), stamps (tiles)
+    (A, (80, 88), (0, 0), [(0, 0, 33, 31), (0, 29, 40, 15), (31, 0, 9, 20)]),
+    (B, (120, 120), (8, 4), [(0, 0, 30, 30)]),
+    (C, (200, 84), (64, 4), [(0, 0, 30, 31)]),
+    (D, (120, 64), (0, 16), [(0, 0, 28, 24)]),
 ]
 
-# The anchors of the warp: a cell of the plane and its real place. The places are in
-# data/geo/vietnam.json; the points on the rivers are on the real lines of the Đuống and the Hồng,
-# at the ends of the rivers of the stamps. The tops of Núi Trâu and of the hill of Sóc Sơn (núi Vệ
-# Linh) are the highest values of the fine heights there (data/geo/heights/). Núi Trâu rises east
-# of the fields of its stamp; the stamp of Sóc Sơn rises with its hill (lift).
-ANCHORS = [
-    {'cell': [32, 20], 'at': [105.953, 21.059], 'note': 'Phù Đổng: the đình'},
-    {'cell': [232, -22], 'at': [106.1, 21.145], 'note': 'Núi Trâu: the top of the hill'},
-    {'cell': [-18, -100], 'at': [105.825, 21.29], 'lift': True, 'note': 'Sóc Sơn: the top of the hill'},
-    {'cell': [-120, 80], 'at': [105.836, 21.029], 'note': 'Văn Miếu: the gate'},
-    {'cell': [0, 71], 'at': [105.94, 21.059], 'river': 'duong', 'note': 'the Đuống, west end of Phù Đổng'},
-    {'cell': [-36, 68], 'at': [105.92, 21.07], 'river': 'duong', 'note': 'the Đuống, west of Phù Đổng'},
-    {'cell': [80, 71], 'at': [105.966, 21.0541], 'river': 'duong', 'note': 'the Đuống, east end of Phù Đổng'},
-    {'cell': [-79, 56], 'at': [105.8628, 21.0451], 'river': 'hong', 'note': 'the Hồng, north of the ferry'},
-    {'cell': [-79, 104], 'at': [105.8772, 21.0281], 'river': 'hong', 'note': 'the Hồng, south of the ferry'},
-]
-
-LAND = {
-    '_about': ('The land of the region of Thánh Gióng (src/core/gen/land.js). anchors: cells of the region plane and their '
-               'real places, for the warp between the plane and data/geo/vietnam.json. rivers: the real rivers that cross '
-               'the land (id in data/geo/vietnam.json; water and bank: widths in cells; bend: how far the river winds). '
-               'roads: the roads between the stamps (points in region cells; the road winds between its points by the '
-               'seed; width in cells; on a hill the road turns back and forth). tiles: the fine height tiles of the land '
-               '(data/geo/heights/, made by tools/geo/build.mjs). base: the height of the low land (steps). relief: the '
-               'curve from meters to steps: k x the square root of the meters over low (the land under low is flat). '
-               'road: steep (the most steps for each cell that a road climbs without a cost), climb (the cost of a '
-               'steeper climb), keep (the cost of each cell away from the line of the road). An anchor with lift is the '
-               'top of a hill under a stamp: the stamp rises to the real height there. wet: the rice paddies (scale of '
-               'the noise, near: cells from water, over: the least score, terrace: cells from a hamlet where paddies '
-               'are terraces over the low land). blend: cells over which the land comes to the height of a stamp. dike: '
-               'the size of a paddy block. '
-               'Made by tools/maps/era1.py; do not change it by hand.'),
-    'id': 'giong',
-    'tiles': ['N21E105', 'N21E106'],
-    'base': 2,
-    'anchors': ANCHORS,
-    'rivers': [
-        {'id': 'duong', 'water': 10, 'bank': 2, 'bend': 2},
-        {'id': 'hong', 'water': 26, 'bank': 2, 'bend': 3},
-    ],
-    'roads': [
-        {'id': 'east', 'width': 4, 'points': [[80, 30], [104, 22], [126, 4], [144, -6]]},
-        {'id': 'north', 'width': 4, 'points': [[46, 0], [38, -18], [10, -38], [-16, -56]]},
-        {'id': 'west', 'width': 4, 'points': [[0, 80], [-22, 78], [-44, 82], [-64, 80]]},
-        # The path from the yard at the foot of Núi Trâu to its top: the soldiers come down it.
-        {'id': 'trau', 'width': 2, 'bend': 2, 'points': [[203, -19], [232, -22]]},
-    ],
-    'relief': {'low': 16, 'k': 0.8},
-    'road': {'steep': 0.7, 'climb': 40, 'keep': 0.06},
-    'wet': {'scale': 22, 'near': 14, 'over': 0.15, 'terrace': 18},
-    'blend': 10,
-    'dike': 5,
-}
+# The fine height tiles of the land (data/geo/heights/, made by tools/geo/build.mjs): the land of
+# the era is the land of Vietnam north of the line of the era (18.0 degrees in Era 1), and the mist
+# goes a little farther. A tile that SRTM does not have is sea.
+RAW = os.path.join(os.path.dirname(__file__), '..', 'geo', 'raw', 'srtm')
+TILES = [f'N{la:02d}E{lo:03d}' for la in range(17, 24) for lo in range(102, 109)
+         if not os.path.isdir(RAW) or os.path.exists(os.path.join(RAW, f'N{la:02d}E{lo:03d}.hgt'))]
+# The tiles that the game loads at the start: the stamps and the roads between them are there.
+START_TILES = ['N20E105', 'N20E106', 'N21E105', 'N21E106']
 
 # The plane of the land (src/core/gen/plane.js, src/core/gen/tiles.js): one plane for the whole
 # country, at one scale (meters for each cell), the same in both directions. Each map is the frame
@@ -405,13 +358,22 @@ PLANE = {
                'real land for each cell, the same in both directions). frames: the place of each map on the plane (cell: a '
                'cell of the frame of the map; at: its real place; lift: the stamp under the cell rises to the real height '
                'there). pins: the ends of the rivers of the stamps (frame and cell): the real river bends to meet them. '
-               'rivers: the widths of the real rivers (cells). roads: the roads between the stamps (points: frame and cell; '
+               'rivers: the widths of the real rivers (cells; from: the main river of a branch, where the branch begins). roads: the roads between the stamps (points: frame and cell; '
                'the road winds between its points by the seed; on a hill it turns back and forth). tiles: the fine height '
-               'tiles (data/geo/heights/). base, relief, road, wet, blend, dike: as in the old land file. Made by '
+               'tiles (data/geo/heights/); startTiles: the tiles that the game loads at the start (the game loads the others '
+               'when the hero comes near them). base: the height of the low land (steps). relief: the curve from meters to '
+               'steps: k x the square root of the meters over low (the land under low is flat). road: steep (the most steps '
+               'for each cell that a road climbs without a cost), climb (the cost of a steeper climb), keep (the cost of '
+               'each cell away from the line of the road). wet: the rice paddies (scale of the noise, near: cells from '
+               'water, over: the least score, terrace: cells from a hamlet where paddies are terraces over the low land). '
+               'blend: cells over which the land comes to the height of a stamp. dike: the size of a paddy block. mist: '
+               'the land out of the land of the era (cells): fade (the land fades into the paper over these cells), walk '
+               '(the hero walks this far into the mist, then turns back). sea: surf (cells of sea to the knee). Made by '
                'tools/maps/era1.py; do not change it by hand.'),
     'id': 'giong',
     'plane': {'origin': [102.0, 23.5], 'trueLat': 16, 'scale': 45},
-    'tiles': ['N21E105', 'N21E106'],
+    'tiles': TILES,
+    'startTiles': START_TILES,
     'frames': [
         {'id': 'phu-dong', 'cell': [32, 20], 'at': [105.953, 21.059], 'note': 'the đình'},
         {'id': 'soc-son', 'cell': [38, 20], 'at': [105.825, 21.29], 'lift': True, 'note': 'the top of núi Vệ Linh'},
@@ -427,7 +389,7 @@ PLANE = {
     'base': 2,
     'relief': {'low': 16, 'k': 0.8},
     'rivers': [
-        {'id': 'duong', 'water': 10, 'bank': 2, 'bend': 2},
+        {'id': 'duong', 'water': 10, 'bank': 2, 'bend': 2, 'from': 'hong'},
         {'id': 'hong', 'water': 26, 'bank': 2, 'bend': 3},
     ],
     'roads': [
@@ -440,14 +402,13 @@ PLANE = {
     'wet': {'scale': 22, 'near': 14, 'over': 0.15, 'terrace': 14},
     'blend': 10,
     'dike': 5,
+    'mist': {'fade': 12, 'walk': 4},
 }
 
 os.makedirs(OUT, exist_ok=True)
-for m, window, size, offset, stamps in WINDOWS:
+for m, size, offset, stamps in PLACES:
     with open(os.path.join(OUT, f'{m.id}.json'), 'w') as f:
-        f.write(dump(window_def(m, 'giong', window, size, offset, stamps)) + '\n')
+        f.write(dump(place_def(m, 'giong', size, offset, stamps)) + '\n')
     print(m.id, size)
 with open(os.path.join(OUT, '..', 'world', 'land-giong.json'), 'w') as f:
-    f.write(dump(LAND) + '\n')
-with open(os.path.join(OUT, '..', 'world', 'plane-giong.json'), 'w') as f:
     f.write(dump(PLANE) + '\n')

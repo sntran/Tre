@@ -13,13 +13,14 @@ import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, rainbowAt, starOn } 
 import { rainOf } from '../core/world/systems/sky.js';
 import { whenOn } from '../core/world/systems/joys.js';
 import { createSession, middleOf } from '../core/session.js';
-import { buildTerrain, columnTop } from '../world/terrain.js';
+import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { heroLook } from '../world/figures.js';
 import { h, img, button } from './dom.js';
 import { t, tn } from './i18n.js';
 import { speak } from './speak.js';
 import { createDialogueBox } from './dialogue.js';
 import { createRaidView } from './raid.js';
+import { createStream } from './stream.js';
 
 const STICK_R = 56; // the radius of the virtual stick, in screen pixels
 // The color of the dusk wash at full night: the hue of indigo (#2f4668) in the palette.
@@ -32,6 +33,7 @@ const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW',
 let drawing = null;
 const terrains = new Map();
 const worlds = new Map();
+const streams = new Map(); // the streams of the land (src/ui/stream.js), by the key of the map
 
 async function loadDrawing() {
   drawing ??= Promise.all([import('../render/voxel.js'), import('../render/figure3d.js'), import('../render/ambient3d.js')])
@@ -43,7 +45,6 @@ async function loadDrawing() {
   return drawing;
 }
 
-// The terrain of a map, made once.
 // A shooting star crosses the sky in this many game minutes (about two seconds of play).
 const STAR_MINUTES = 6;
 
@@ -56,12 +57,13 @@ function riverOf(water) {
   return { x: x + 0.5, y: deep[0].y + 1, z: z + 0.5, r: 14 };
 }
 
+// The terrain of a map, made once for a map and its seed (its pages are pure; a new session loads
+// the changes of its save into it).
 export function terrainOf(map, tileTypes, tileMap, blocks = null) {
-  // A terrain that a story changed (a felled tree, a dig) is built again for a new start.
-  const key = map.key ?? map.id; // a generated map: one terrain for each seed
-  if (!terrains.has(key) || terrains.get(key).edited) {
-    for (const k of terrains.keys()) if (k !== key && k.startsWith(`${map.id}:`)) terrains.delete(k);
-    terrains.set(key, buildTerrain(map, tileTypes, tileMap, blocks));
+  const key = map.key ?? map.id;
+  if (!terrains.has(key)) {
+    for (const k of terrains.keys()) if (k.startsWith(`${map.id}:`)) terrains.delete(k);
+    terrains.set(key, createTerrain(map, tileTypes, tileMap, blocks));
   }
   return terrains.get(key);
 }
@@ -91,11 +93,21 @@ export function villageSession(ctx) {
   });
 }
 
+// Load the height tiles of the land tiles around a cell of a map on the plane (5 x 5 land tiles,
+// as the stream asks for them: src/ui/stream.js).
+async function loadHeightsNear(data, map, x, y) {
+  if (!map.land?.needs || !data.moreHeights) return;
+  const tx = Math.floor(x / 64);
+  const tz = Math.floor(y / 64);
+  const names = new Set();
+  for (let dz = -2; dz <= 2; dz++) for (let dx = -2; dx <= 2; dx++) for (const n of map.land.needs(tx + dx, tz + dz)) if (!data.heights.has(n)) names.add(n);
+  if (names.size) await data.moreHeights([...names]);
+}
+
 // params: map, at, facing, after (talks after the start), arrive (the map name shows), and
 // session (a session that already started, after an exit to this map).
 export async function mountVillage(ctx, params = {}) {
   const { data, profile } = ctx;
-  const worldMap = data.world;
   const canvas = ctx.voxel;
 
   let D;
@@ -109,15 +121,36 @@ export async function mountVillage(ctx, params = {}) {
   canvas.hidden = false;
 
   const session = params.session ?? villageSession(ctx);
-  if (!params.session) session.start(params.map ?? null, { at: params.at, facing: params.facing, after: params.after });
+  if (!params.session) {
+    // The height tiles of the land around the start come first (the land of a tile waits for them).
+    const where = session.startPlace(params.map ?? null, { at: params.at });
+    await loadHeightsNear(data, where.map, where.x, where.y);
+    session.start(params.map ?? null, { at: params.at, facing: params.facing, after: params.after });
+  }
   const mapData = session.map;
   const tileMap = session.tileMap;
   const terrain = session.terrain;
   const state = session.state;
-  // One view for each map, made once for its terrain (a terrain that was built again gets a new view).
+  // One view for each map, made once for its terrain. The far land and the mist fade into the
+  // paper (mistAt: 0 in the land of the era, 1 deep in the mist).
+  const fadeCells = mapData.mist?.fade ?? 12;
+  const waterKind = { water: 'river', bridge: 'river', shallow: 'ford', sea: 'sea', surf: 'sea' };
+  // The land around the hero is made in a worker before the hero and the view need it.
+  if (!streams.has(mapData.key)) {
+    for (const [k, st] of streams) {
+      st.dispose();
+      streams.delete(k);
+    }
+    streams.set(mapData.key, createStream(mapData, data));
+  }
+  const stream = streams.get(mapData.key);
   if (worlds.get(mapData.id)?.terrain !== terrain) {
     worlds.get(mapData.id)?.view.dispose();
-    worlds.set(mapData.id, { terrain, view: D.createVoxelWorld(canvas, terrain) });
+    worlds.set(mapData.id, { terrain, view: D.createVoxelWorld(canvas, terrain, {
+      ready: (cx, cz) => stream.ready(cx * CHUNK - 10, cz * CHUNK - 10, cx * CHUNK + CHUNK + 10, cz * CHUNK + CHUNK + 10),
+      mistAt: (x, z) => Math.min(1, (session.tileMap.mistAt?.(Math.floor(x), Math.floor(z)) ?? 0) / fadeCells),
+      waterAt: (x, z) => waterKind[session.tileMap.type(Math.floor(x), Math.floor(z))] ?? null,
+    }) });
   }
   const view = worlds.get(mapData.id).view;
   const looks = data.figures.figures;
@@ -129,23 +162,47 @@ export async function mountVillage(ctx, params = {}) {
   // The world at rest: the smoke of the kitchens, the steam of the rice pot, the incense of the đình,
   // butterflies, a dragonfly, and a fish at the ford (src/render/ambient3d.js).
   const places = session.env.places;
-  const objWorld = (kinds) => terrain.objects.filter((o) => kinds.includes(o.kind) && !o.gone).map((o) => terrain.boxOf(o));
+  // The things near the hero (the pages change as the hero walks: the lists come again then).
+  const nearHero = (list, x = (o) => o.x, z = (o) => o.z) => {
+    const h = getEntity(state, 'hero')?.position;
+    return h ? list.filter((o) => Math.abs(x(o) - h.x / 2) < CHUNK * 3 && Math.abs(z(o) - h.z / 2) < CHUNK * 3) : list;
+  };
+  let near = null;
+  let nearVersion = -1;
+  const nearby = () => {
+    const h = getEntity(state, 'hero')?.position;
+    const at = `${terrain.version}:${Math.floor((h?.x ?? 0) / 2 / CHUNK)},${Math.floor((h?.z ?? 0) / 2 / CHUNK)}`;
+    if (at !== nearVersion) {
+      nearVersion = at;
+      const objWorld = (kinds) => terrain.objects.filter((o) => kinds.includes(o.kind) && !o.gone).map((o) => terrain.boxOf(o));
+      near = {
+        // The smoke comes out at the ridge of the roof, a little off its middle (fine units in the roof).
+        kitchens: nearHero(terrain.roofs
+          .filter((r) => terrain.objects.some((o) => o.who === r.who && ['house', 'giong-house', 'hut'].includes(o.kind)))
+          .map((r) => ({ x: (r.x0 + r.x1) / 4 + 0.8, y: (r.y + r.ridgeH) / 2 + 0.2, z: (r.z0 + r.z1) / 4 }))),
+        incense: objWorld(['dinh']).map((b) => ({ x: (b.x0 + b.x1) / 2, y: b.y0 + 4.3, z: b.z1 - 3 })),
+        flowers: nearHero(terrain.flowers),
+        paddies: nearHero(terrain.paddies),
+        fords: nearHero(terrain.water.filter((w) => w.ford)),
+        crowns: nearHero(terrain.smooth.filter((c) => c.kind === 'crown').map((c) => ({ x: c.x, y: c.y, z: c.z, r: c.r }))),
+        river: riverOf(nearHero(terrain.water.filter((w) => !w.sea))),
+      };
+    }
+    return near;
+  };
   const motes = D.createAmbient(view.scene, {
-    // The smoke comes out at the ridge of the roof, a little off its middle (fine units in the roof).
-    kitchens: terrain.roofs
-      .filter((r) => terrain.objects.some((o) => o.who === r.who && !o.gone && ['house', 'giong-house', 'hut'].includes(o.kind)))
-      .map((r) => ({ x: (r.x0 + r.x1) / 4 + 0.8, y: (r.y + r.ridgeH) / 2 + 0.2, z: (r.z0 + r.z1) / 4 })),
+    get kitchens() { return nearby().kitchens; },
     pots: places['giong-pot'] ? [{ x: places['giong-pot'].x / 2 + 0.5, y: places['giong-pot'].y / 2 + 1.1, z: places['giong-pot'].z / 2 + 0.6 }] : [],
-    incense: objWorld(['dinh']).map((b) => ({ x: (b.x0 + b.x1) / 2, y: b.y0 + 4.3, z: b.z1 - 3 })),
-    flowers: terrain.flowers ?? [],
-    paddies: terrain.paddies ?? [],
-    fords: (terrain.water ?? []).filter((w) => w.ford),
+    get incense() { return nearby().incense; },
+    get flowers() { return nearby().flowers; },
+    get paddies() { return nearby().paddies; },
+    get fords() { return nearby().fords; },
     // The small joys of the view: the pot of bánh chưng at Tết, the doors of the houses (couplets),
     // the crowns of the trees (peach blossoms), and the middle of the river (the rainbow).
     tetPots: state.entities.filter((e) => e.kind === 'banh-chung').map((e) => ({ x: e.position.x / 2, y: e.position.y / 2 + 2.2, z: e.position.z / 2 })),
-    doors: Object.values(session.env.homes).map((w) => ({ x: w.door.x / 2, y: w.door.y / 2, z: w.door.z / 2 })),
-    crowns: (terrain.smooth ?? []).filter((c) => c.kind === 'crown').map((c) => ({ x: c.x, y: c.y, z: c.z, r: c.r })),
-    river: riverOf(terrain.water ?? []),
+    get doors() { return nearHero(Object.values(session.env.homes).map((w) => ({ x: w.door.x / 2, y: w.door.y / 2, z: w.door.z / 2 }))); },
+    get crowns() { return nearby().crowns; },
+    get river() { return nearby().river; },
   });
   // A villager of a generated hamlet has a look from parts in the map (by its id).
   const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : looks[key] ?? mapData.looks?.[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level });
@@ -163,7 +220,6 @@ export async function mountVillage(ctx, params = {}) {
   let tapFx = null;
   let busy = session.busy; // true while a dialogue or a panel is open
   let alive = true;
-  let leaving = false; // true after the hero walks into an exit
   ctx.syncWorld = session.syncSave;
 
   // HUD
@@ -179,7 +235,7 @@ export async function mountVillage(ctx, params = {}) {
   // The country map. The world waits while it is open.
   const mapBtn = button(null, () => {
     ctx.log('action', { kind: 'travel' });
-    if (!busy && !leaving) send({ type: 'travel' });
+    if (!busy) send({ type: 'travel' });
   }, { cls: 'icon-btn map-btn', icon: 'ui/map', aria: t('ui.worldmap') });
   hud.append(heroFace, goalBtn, counts, mapBtn, menuBtn);
   // Buttons that turn the view in steps of 90°.
@@ -261,26 +317,21 @@ export async function mountVillage(ctx, params = {}) {
     const flags = profile.flags;
     const list = stepGoal.targets ?? (stepGoal.target ? [{ npc: stepGoal.target }] : []);
     const here = persons();
-    // A target on another map: the marker is on the exit that leads there.
-    const markExit = (mapId) => {
-      const exit = mapId && mapId !== mapData.id ? worldMap.firstExit(mapData.id, mapId) : null;
-      if (exit && !out.some((m) => m.exit === exit.id)) {
-        // An exit at an edge marks the road that crosses it.
-        const x = exit.mark ? exit.mark.x + 0.5 : exit.x + exit.w / 2;
-        const y = exit.mark ? exit.mark.y + 0.5 : exit.y + exit.h / 2;
-        out.push({ exit: exit.id, x, y, h: groundY(Math.min(x, mapData.width - 1), Math.min(y, mapData.height - 1)) + 3 });
-      }
+    // A person of the quest away from the live chunks: the marker is at the place of the person on
+    // the map (the arrow at the edge of the screen shows the way).
+    const away = (kind, id) => {
+      const item = (kind === 'npc' ? mapData.npcs : mapData.encounters).find((x) => x.id === id);
+      if (item) out.push({ x: item.x, y: item.y, h: groundY(item.x, item.y) + 3 });
     };
     for (const tg of list) {
       if (tg.unless && flags[tg.unless]) continue;
       if (tg.if && !flags[tg.if]) continue;
-      for (const kind of ['npc', 'encounter', 'object']) {
-        if (tg[kind]) markExit(worldMap.whereIs(kind, tg[kind]));
-      }
       for (const kind of ['npc', 'encounter']) {
-        const p = tg[kind] ? here.find((x) => x.kind === kind && x.ref === tg[kind]) : null;
+        if (!tg[kind]) continue;
+        const p = here.find((x) => x.kind === kind && x.ref === tg[kind]);
         const top = p ? figureTop(p.entity) : null;
         if (top !== null) out.push({ x: p.x, y: p.y, h: top });
+        else if (!p) away(kind, tg[kind]);
       }
       if (tg.object) {
         const o = mapData.layers.objects.find((x) => x.id === tg.object);
@@ -289,7 +340,6 @@ export async function mountVillage(ctx, params = {}) {
       }
     }
     if (stepGoal.place && (stepGoal.place.map ?? mapData.id) === mapData.id) out.push({ x: stepGoal.place.x + 1, y: stepGoal.place.y + 0.5, h: groundY(stepGoal.place.x, stepGoal.place.y) + 3 });
-    else if (stepGoal.place) markExit(stepGoal.place.map);
     return out;
   }
 
@@ -600,7 +650,7 @@ export async function mountVillage(ctx, params = {}) {
   // keys, or a held finger. A tap walk goes in as a "walk" command (in the session).
   let moving = false;
   function sendInput() {
-    if (busy || leaving) return;
+    if (busy) return;
     const toMap = (s) => {
       if (!s.dx && !s.dy) return null;
       const m = screenToMap(s.dx, s.dy, view.angle);
@@ -666,7 +716,7 @@ export async function mountVillage(ctx, params = {}) {
     acc += dt * (book?.speed ?? 1);
     // The finger of the storybook moves to a tap: the world waits for it.
     if (book?.hold) acc = 0;
-    while (acc >= STEP && alive && !leaving) {
+    while (acc >= STEP && alive) {
       session.step();
       figures.sync(state);
       flush();
@@ -690,17 +740,6 @@ export async function mountVillage(ctx, params = {}) {
       since = now;
     }
     requestAnimationFrame(frame);
-  }
-
-  // The hero walked into an exit, and the session is on the next map now: the screen goes dark,
-  // and the scene of the next map opens with the same session.
-  function goThrough() {
-    leaving = true;
-    dropInput();
-    fade.classList.add('on');
-    setTimeout(() => {
-      if (alive) ctx.go('village', { session, facing: hero().position.facing, arrive: true });
-    }, 260);
   }
 
   // A coin that an enemy took at the gate: it flies from its counter in the HUD to the enemy.
@@ -779,10 +818,7 @@ export async function mountVillage(ctx, params = {}) {
   // The events of the session and of the world: the screens, the sounds, the HUD, and the
   // bursts of the world.
   function flush() {
-    for (const ev of session.events()) {
-      if (leaving) return;
-      handle(ev);
-    }
+    for (const ev of session.events()) handle(ev);
   }
   function handle(ev) {
     switch (ev.type) {
@@ -809,7 +845,6 @@ export async function mountVillage(ctx, params = {}) {
           for (let i = 0; i < n; i++) flyToCounter(ev.from, item, ev.delay + i * 0.15);
         }
         return;
-      case 'map': goThrough(); return;
       case 'raid':
         ctx.bus.emit('raid', ev.on);
         raidView.event(ev);
@@ -1059,6 +1094,10 @@ export async function mountVillage(ctx, params = {}) {
       hero: heroAt ? { ...heroAt, facing: hero()?.position.facing ?? 0 } : null,
       horn: ngheAt ? { x: ngheAt.x, y: ngheAt.y + ngheAt.height, z: ngheAt.z } : null,
     });
+    const hp = hero().position;
+    const hm = hero().motion;
+    const speed = Math.hypot(hm?.vx ?? 0, hm?.vz ?? 0) || 1;
+    stream.update(hp.x / 2, hp.z / 2, { x: (hm?.vx ?? 0) / speed, y: (hm?.vz ?? 0) / speed });
     view.render(dt, raidView.focus(figures.placeOf('hero')), time, state.sky, ambient);
     drawSky();
     raidView.draw(dt, w, hh);
@@ -1141,7 +1180,7 @@ export async function mountVillage(ctx, params = {}) {
       alive = false;
       if (ctx.activeVillage === api) ctx.activeVillage = null;
       box?.close();
-      if (!leaving) session.leave();
+      session.leave();
       if (ctx.syncWorld === session.syncSave) ctx.syncWorld = null;
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);

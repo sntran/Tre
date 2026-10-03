@@ -5,9 +5,8 @@
     "en": "The map only pauses the raid; with nobody to stop them, the soldiers reach the crossroads and leave; at grade one they take nothing, and they come again at the next dawn."
   },
   "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 2, "flags": { "intro.seen": true, "giong.grown": true }, "items": { "coin": 5 } },
-  "map": "trau-son",
   "clock": 600,
-  "place": [89, 38],
+  "at": ["trau-son", 89, 38],
   "steps": [
     { "tap": { "entity": "encounter:soldier2" } },
     { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },

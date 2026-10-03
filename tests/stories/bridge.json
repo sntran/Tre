@@ -5,9 +5,8 @@
     "en": "The broken bridge: the prediction, then a short, a long, and an exact bridge; the flags of each commit."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [46, 61],
+  "at": ["phu-dong", 46, 61],
   "steps": [
     { "wait": 1 },
     { "expect": [{ "zone": "bridge-gap", "state": "open", "gap": 12, "planks": 0 }, { "count": { "entities": "plank-ghost", "min": 6 } }] },

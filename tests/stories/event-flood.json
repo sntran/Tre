@@ -13,12 +13,8 @@
       "intro.seen": true
     }
   },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [
-    57.5,
-    85.5
-  ],
+  "at": ["phu-dong", 57.5, 85.5],
   "steps": [
     {
       "do": {

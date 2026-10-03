@@ -19,6 +19,7 @@ const FACES = [
 //   other(x, y, z): true when a block of another grid fills this place (so the face is hidden),
 //   shade(x, y, z): a factor for the color of the top face (for shadows), 1 for none,
 //   ink: false to make no ink lines,
+//   origin: [x, y, z] in blocks, added to each position (a grid of a part of the world),
 // }
 // Return { positions, colors, owners, indices, segments, segOwners, segOuter, faces }. Each segment
 // is six numbers: the two ends of an ink line. segOwners has the owner of each line, and segOuter
@@ -34,6 +35,7 @@ export function meshGrid(grid, opts = {}) {
   const other = opts.other ?? (() => false);
   const shade = opts.shade ?? null;
   const withInk = opts.ink !== false;
+  const [ox, oy, oz] = opts.origin ?? [0, 0, 0];
   const at = grid.get;
   const solid = (x, y, z) => at(x, y, z) > 0 || other(x, y, z);
   const positions = [];
@@ -55,7 +57,7 @@ export function meshGrid(grid, opts = {}) {
       return;
     }
     seen.set(k1, segOwners.length);
-    segments.push(a[0] * s, a[1] * s, a[2] * s, b[0] * s, b[1] * s, b[2] * s);
+    segments.push((a[0] + ox) * s, (a[1] + oy) * s, (a[2] + oz) * s, (b[0] + ox) * s, (b[1] + oy) * s, (b[2] + oz) * s);
     segOwners.push(who);
     segOuter.push(outer ? 1 : 0);
   };
@@ -74,7 +76,7 @@ export function meshGrid(grid, opts = {}) {
           if (f.key === 'py' && shade) tone *= shade(x, y, z);
           const [r, g, b] = toneRgb(c, tone);
           for (const v of f.v) {
-            positions.push((x + v[0]) * s, (y + v[1]) * s, (z + v[2]) * s);
+            positions.push((x + v[0] + ox) * s, (y + v[1] + oy) * s, (z + v[2] + oz) * s);
             colors.push(r, g, b);
             owners.push(who);
           }

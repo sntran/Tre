@@ -1164,5 +1164,8 @@
   "event.duck.start": "My flock has {need} ducks, all white with green heads, and some are lost. The brown ducks are from another farm. Find my ducks, bring them to the pen, and call me to count.",
   "event.duck.short": "I count, and the flock is not all here. Some are still lost.",
   "event.duck.over": "A brown duck is from another farm. I let it go home.",
-  "event.duck.done": "The whole flock is home! Thank you."
+  "event.duck.done": "The whole flock is home! Thank you.",
+  "edge.sea": "The sea is too deep.",
+  "edge.mist": "The south is still in the mist.",
+  "edge.mist.far": "The land ahead is still in the mist."
 }

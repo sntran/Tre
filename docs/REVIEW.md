@@ -289,10 +289,30 @@ New texts, in `i18n/vi.json` and `i18n/en.json`:
 
 Facts and looks to check:
 
-- The generated hamlets (`docs/WORLD.md`, "The generated land") have no names and are not historical places. A history reviewer checks their houses on stilts, the areca palms (cây cau), the boats with a cover (mui), and the clothes of the villagers from parts (`villagers` in `data/figures.json`): shirts and trousers or skirts, a nón or a head band.
+- The generated hamlets (`docs/WORLD.md`, "One continuous world") have no names and are not historical places. A history reviewer checks their houses on stilts, the areca palms (cây cau), the boats with a cover (mui), and the clothes of the villagers from parts (`villagers` in `data/figures.json`): shirts and trousers or skirts, a nón or a head band.
 - The real directions of the story places of Era 1 on the plane of the region (`data/world/land-giong.json`): Núi Trâu to the east-northeast, Sóc Sơn to the north-northwest, and Văn Miếu to the west-southwest of Phù Đổng, over the Đuống and the Hồng. The Đuống flows west from Phù Đổng and joins the Hồng north of the ferry.
-- The real hills (`docs/WORLD.md`, "The generated land"): Núi Trâu is the hill of the battle in Bắc Ninh (the top in the SRTM tiles at 106.100 E, 21.145 N, about 130 m), with the fields at its foot; the hill of Sóc Sơn is núi Vệ Linh with Đền Sóc (the top at 105.825 E, 21.290 N, about 262 m). Please check that these are the right hills.
+- The real hills (`docs/WORLD.md`, "One continuous world"): Núi Trâu is the hill of the battle in Bắc Ninh (the top in the SRTM tiles at 106.100 E, 21.145 N, about 130 m), with the fields at its foot; the hill of Sóc Sơn is núi Vệ Linh with Đền Sóc (the top at 105.825 E, 21.290 N, about 262 m). Please check that these are the right hills.
 - After the review: the suggested lines are in: `event.cart.start` ("Bánh xe bò của bác lún xuống bùn rồi. Phải chèn {need} hòn đá vào hố mới được. ..."), `event.flood.start` ("Mưa to quá, ruộng của cô ngập rồi. Phải đổ {need} thùng nước ra mương. Cháu xách nước ra mương, rồi gọi cô nhé.") and `event.flood.short`. New: `event.duck.start` ("Đàn vịt của cô có {need} con, con nào cũng lông trắng, đầu xanh. Vài con lạc mất rồi. Vịt lông nâu là vịt nhà khác đấy. ...") and `event.duck.over` ("Vịt lông nâu là vịt nhà khác, cháu ạ. Cô thả nó về nhà nó nhé."). The story `event-duck` has a new about line.
 - The round roof of the hamlets (a low dome of thatch, from the houses on the bronze drums) and the big jar of water by a pond: please check the look.
 - The story `climb-nui-trau` (new text in `tests/stories/climb-nui-trau.json`): "Từ sân dưới chân núi Trâu, đi theo đường mòn lên đỉnh núi: đường mòn lượn theo sườn núi, qua rừng và vách đá." Please check "đường mòn" (a path) and "vách đá" (a rock face).
 
+
+## 13. The continuous world (#18)
+
+New texts, in `i18n/vi.json` and `i18n/en.json`. The hero says them at an edge of the world, once in a game day for each edge:
+
+- `edge.sea`: "Biển sâu quá." ("The sea is too deep."), at the deep sea, after the hero wades to the knee and takes two steps back.
+- `edge.mist`: "Phía nam còn mù sương." ("The south is still in the mist."), at the south end of the land of the era (18° N in Era 1).
+- `edge.mist.far`: "Phía trước còn mù sương." ("The land ahead is still in the mist."), at the land of another country.
+
+New about lines of the stories (in `tests/stories/`):
+
+- `walk-soc-son`: "Đi bộ từ đình Phù Đổng lên đỉnh núi Sóc Sơn, theo con đường về phía bắc, không qua cửa chuyển cảnh nào; Nghé đi theo suốt đường." Please check "cửa chuyển cảnh" (a change of scene).
+- `sea-edge`: "Ở bờ biển phía đông: em lội ra chỗ nước ngang gối, rồi dừng lại, quay lại hai bước: biển sâu quá. Nghé đứng lại trên bờ. Câu nói chỉ hiện một lần trong ngày."
+- `mist-edge`: "Ở cuối phía nam của vùng đất thời này: em đi vào màn sương, bước chậm lại; Nghé dừng lại và kêu; em quay lại hai bước: phía nam còn mù sương."
+- `save-chunks`: "Bản lưu giữ những gì đã thay đổi ở từng vùng: chặt một cây, đi xa bốn vùng rồi quay lại, lưu và mở lại. Cây vẫn không còn, và không có gì khác thay đổi." Please check "vùng" for a chunk of the world.
+
+Facts to check:
+
+- The line of the land of Era 1 at 18° N (near Hà Tĩnh and Quảng Bình): the land of Văn Lang in the legends reaches about there. See `QUESTIONS.md`, question 99.
+- The scale: one cell is 45 m of real land, and the story places stand at their real places (the đình of Phù Đổng, núi Vệ Linh, Núi Trâu, Văn Miếu). See `docs/WORLD.md`, "The scale".

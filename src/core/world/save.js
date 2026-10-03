@@ -9,8 +9,8 @@ import { CLOCK } from './clock.js';
 
 export const TRANSIENT = Object.freeze(['route', 'intent']);
 
-// The world part of a new profile.
-export function newWorldSave(profileSeed, map = 'phu-dong') {
+// The world part of a new profile (map: the map of the start region on the plane).
+export function newWorldSave(profileSeed, map = 'giong') {
   return { seed: hashSeed(`${profileSeed}:world`), map, clock: { minutes: CLOCK.start }, entities: [] };
 }
 

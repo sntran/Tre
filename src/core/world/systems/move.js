@@ -4,7 +4,8 @@
 // Nghé (riding) the hero is faster. motion.idle counts the seconds that the hero stands still.
 // A hero who falls into the water (fall) does not walk: the place system moves the hero.
 // Each step sends the event "step" with the ground under the foot (grass, wood, or water). A heavy
-// thing in the hands (item.pace, such as a tray of five bowls) makes the walk slower.
+// thing in the hands (item.pace, such as a tray of five bowls) makes the walk slower, and so does
+// the mist of the land of a later era.
 export const WRITES = ['position', 'motion', 'events'];
 
 import { query, getEntity } from '../state.js';
@@ -12,6 +13,7 @@ import { stepBody, moveCircle, MOVE } from '../move.js';
 
 export const RIDE_SPEED = 1.35; // the speed factor on the back of Nghé
 const STRIDE = 2.4; // half blocks between two steps
+const MIST_SLOW = 0.6; // the most that the mist takes from the speed
 
 // The speed factor of the thing in the hands (1 for a light thing or empty hands).
 function paceOf(world, e) {
@@ -27,7 +29,9 @@ export function move(world, dt, rng, env) {
     const m = e.motion;
     const i = world.paused ? null : e.intent;
     // The helpers work in map cells: one cell is 2 half blocks.
-    const body = { x: p.x / 2, y: p.z / 2, vx: m.vx / 2, vy: m.vz / 2, facing: p.facing, speedFactor: (e.riding ? RIDE_SPEED : 1) * paceOf(world, e) };
+    // In the mist of the land of a later era the walk is slow, slower the deeper it goes.
+    const mist = Math.min(MIST_SLOW, (env.mistAt?.(p.x / 2, p.z / 2) ?? 0) * 0.15);
+    const body = { x: p.x / 2, y: p.z / 2, vx: m.vx / 2, vy: m.vz / 2, facing: p.facing, speedFactor: (e.riding ? RIDE_SPEED : 1) * paceOf(world, e) * (1 - mist) };
     stepBody(body, i ? { dx: i.dx, dy: i.dz, strength: i.strength, run: i.run } : { dx: 0, dy: 0, strength: 0 }, dt, env.near(body.x, body.y));
     for (const s of solids) {
       if (s === e || (e.riding && s.pushable)) continue;
@@ -54,7 +58,7 @@ export function move(world, dt, rng, env) {
     if (m.stride > STRIDE) {
       m.stride = 0;
       const ground = env.groundAt?.(p.x, p.z);
-      world.events.push({ type: 'step', id: e.id, sound: ground === 'shallow' || ground === 'water' ? 'step-water' : ground === 'bridge' ? 'step-wood' : 'step-grass' });
+      world.events.push({ type: 'step', id: e.id, sound: ground === 'shallow' || ground === 'surf' || ground === 'water' ? 'step-water' : ground === 'bridge' ? 'step-wood' : 'step-grass' });
     }
   }
 }

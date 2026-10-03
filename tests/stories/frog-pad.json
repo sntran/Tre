@@ -5,9 +5,8 @@
     "en": "A frog sits on a lily pad by the sand. When the hero comes near, it jumps into the river, and after a while it climbs back onto the pad. Nothing to count, and no reward."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [8, 60],
+  "at": ["phu-dong", 8, 60],
   "steps": [
     { "wait": 2 },
     { "expect": [{ "entity": "life:22:0", "hidden": false }] },

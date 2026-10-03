@@ -238,10 +238,11 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
         }
       }
       for (const p of geo.places.filter((x) => x.kind === 'islands')) label(p.at, p.name, true);
-      // The hero: a small red diamond at the real place of the map of the hero.
-      const mapGeo = world.map(hereMap)?.geo;
-      if (mapGeo) {
-        const m = proj.toMap(mapGeo.at);
+      // The hero: a small red diamond at the real place of the hero on the plane.
+      const heroEnt = profile.world?.entities?.find((e) => e.id === 'hero');
+      const heroGeo = heroEnt ? world.geoAt(hereMap, heroEnt.position.x / 2, heroEnt.position.z / 2) : null;
+      if (heroGeo) {
+        const m = proj.toMap(heroGeo);
         const d = 5 * k;
         labels.append(el('path', { d: `M${m.x},${m.y - d}L${m.x + d},${m.y}L${m.x},${m.y + d}L${m.x - d},${m.y}Z`, fill: C.vermilion, stroke: C.ink, 'stroke-width': 1.2, 'vector-effect': 'non-scaling-stroke' }));
       }

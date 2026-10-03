@@ -3,17 +3,8 @@
 // world hold on every step: no NaN, no entity outside the map, the hero and the people on free
 // ground, the count of the entities under the limit, the save of the world loads back to the
 // same world, and no text of the village has a digit, an operator, or a question mark.
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
-import { runHeadless } from './story-run.js';
+// The stories are in three parts (this file and tests/stories-2.test.js, tests/stories-3.test.js),
+// so that node:test plays the parts at the same time.
+import { storyTests } from './story-run.js';
 
-const dir = new URL('./stories/', import.meta.url);
-const stories = readdirSync(dir).filter((f) => f.endsWith('.json')).sort().map((f) => JSON.parse(readFileSync(new URL(f, dir), 'utf8')));
-
-for (const story of stories) {
-  test(`story ${story.name}: ${story.about?.en ?? ''}`, async () => {
-    const failures = await runHeadless(story);
-    assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
-  });
-}
+storyTests(0, 3);

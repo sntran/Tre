@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createTileMap, findPath, pathNextTo, footprint } from '../src/core/tilemap.js';
+import { createTileMap, createPlaneTileMap, findPath, pathNextTo, footprint } from '../src/core/tilemap.js';
 import { createTriggers } from '../src/core/triggers.js';
 import { createDialogue, checkDialogue } from '../src/core/dialogue.js';
 import { check } from '../src/core/conditions.js';
 import { questState, currentGoal } from '../src/core/quests.js';
 import { applyEffects, pickTalk, isPresent } from '../src/core/game.js';
 import { createProfile } from '../src/core/profile.js';
-import { load, mapOf } from './helpers.js';
+import { load, mapOf, worldOf } from './helpers.js';
 import { spriteAt, edgeMarker } from '../src/core/hit.js';
 import { freeSpot } from '../src/core/session.js';
 
@@ -163,85 +163,65 @@ test('talk rules pick the first dialogue whose condition is true', () => {
   assert.equal(isPresent({ when: { notFlags: ['x'] } }, p), false);
 });
 
-// The maps of the Era 1 region
+// The places of the Era 1 region (the map files: the frames of the places on the plane)
 
 const regions = load('data/world/regions.json');
 const mapIds = regions.regions.flatMap((r) => r.maps);
-const maps = new Map(mapIds.map((id) => [id, mapOf(id)]));
+const maps = new Map(mapIds.map((id) => [id, load(`data/maps/${id}.json`)]));
 
-test('each map is valid, and each person and place on it can be reached', () => {
-  for (const [id, m] of maps) {
-    const map = createTileMap(m, tiles);
-    const L = m.layers;
-    const tile = (p) => ({ x: Math.floor(p.x), y: Math.floor(p.y) });
-    const start = tile(m.spawn);
+test('each place is valid, and each person and thing of it can be reached on the plane', () => {
+  const m = mapOf('giong');
+  const map = createPlaneTileMap(m, tiles);
+  const tile = (p) => ({ x: Math.floor(p.x), y: Math.floor(p.y) });
+  const L = m.layers;
+  for (const [id, def] of maps) {
+    const [ox, oy] = worldOf().at(id, 0, 0);
+    const start = tile({ x: def.spawn.x + ox, y: def.spawn.y + oy });
     // A ferry moves the hero over a river: the places on the other side are reached from its landing.
-    const starts = [start, ...L.triggers.filter((z) => z.action?.move).map((z) => tile(z.action.move))];
-    const reach = (target, fn) => starts.some((st) => fn(st, target));
-    assert.equal(m.id, id);
+    const starts = [start, ...L.triggers.filter((z) => z.place === id && z.action?.move).map((z) => tile(z.action.move))];
+    const reach = (target) => starts.some((st) => pathNextTo(map, st, target));
     assert.ok(map.walkable(start.x, start.y), `${id}: spawn`);
-    for (const row of L.ground) assert.equal(row.length, m.width, `${id}: row length`);
-    assert.equal(L.ground.length, m.height);
-    for (const key of ['ground', 'objects', 'collision', 'zones', 'paths', 'exits', 'triggers']) assert.ok(L[key], `${id}: layer ${key}`);
-    for (const o of L.objects) {
-      assert.ok(o.x >= 0 && o.y >= 0 && o.x + o.w <= m.width && o.y + o.h <= m.height, `${id}: ${o.id} is on the map`);
-    }
+    for (const key of ['objects', 'collision', 'zones', 'paths', 'triggers']) assert.ok(def.layers[key], `${id}: layer ${key}`);
+    for (const o of def.layers.objects) assert.ok(o.x >= 0 && o.y >= 0 && o.x + o.w <= def.width && o.y + o.h <= def.height, `${id}: ${o.id} is in the frame`);
     const targets = [
-      ...m.npcs.map((n) => ({ ...n, what: `npc ${n.id}` })),
-      ...m.encounters.map((e) => ({ ...e, what: `encounter ${e.id}` })),
+      ...m.npcs.filter((n) => n.place === id).map((n) => ({ ...n, what: `npc ${n.id}` })),
+      ...m.encounters.filter((e) => e.place === id).map((e) => ({ ...e, what: `encounter ${e.id}` })),
     ];
     for (const t of targets) {
       assert.ok(!map.isBlocked(Math.floor(t.x), Math.floor(t.y)), `${id}: ${t.what} stands on a free tile`);
-      assert.ok(reach(tile(t), (st, g) => pathNextTo(map, st, g)), `${id}: ${t.what} can be reached`);
+      assert.ok(reach(tile(t)), `${id}: ${t.what} can be reached`);
     }
-    for (const t of L.triggers.filter((z) => z.on === 'tap' && z.w === undefined)) {
-      assert.ok(reach(t, (st, g) => pathNextTo(map, st, g)), `${id}: ${t.id} can be reached`);
-    }
-    // Each exit can be reached, and the hero arrives on a free tile that is not an exit.
-    for (const e of L.exits) {
-      const cells = [];
-      for (let y = e.y; y < e.y + e.h; y++) for (let x = e.x; x < e.x + e.w; x++) if (map.walkable(x, y)) cells.push({ x, y });
-      assert.ok(cells.some((c) => findPath(map, start, c)), `${id}: exit ${e.id} can be reached`);
-      const target = maps.get(e.to.map);
-      assert.ok(target, `${id}: exit ${e.id} goes to a known map`);
-      const tmap = createTileMap(target, tiles);
-      for (const c of cells) {
-        const x = typeof e.to.x === 'number' ? e.to.x : c.x + 0.5 + (e.to.dx ?? 0);
-        const y = typeof e.to.y === 'number' ? e.to.y : c.y + 0.5 + (e.to.dy ?? 0);
-        if (!findPath(map, start, c)) continue;
-        // Where a river crosses the edge at a slant, the hero lands on the nearest free cell.
-        const spot = freeSpot(tmap, { x, y });
-        assert.ok(spot && Math.hypot(spot.x - x, spot.y - y) < 4, `${id}: exit ${e.id} at ${c.x},${c.y} lands near a free tile of ${e.to.map}`);
-        assert.ok(!target.layers.exits.some((z) => Math.floor(x) >= z.x && Math.floor(x) < z.x + z.w && Math.floor(y) >= z.y && Math.floor(y) < z.y + z.h),
-          `${id}: exit ${e.id} does not land on an exit`);
-      }
-    }
-    for (const [pid, line] of Object.entries(L.paths)) {
-      for (const [x, y] of line) assert.ok(!map.isBlocked(Math.floor(x), Math.floor(y)), `${id}: path ${pid} at ${x},${y}`);
-    }
+    for (const t of L.triggers.filter((z) => z.place === id && z.on === 'tap' && z.w === undefined)) assert.ok(reach(t), `${id}: ${t.id} can be reached`);
+  }
+  for (const [pid, line] of Object.entries(L.paths)) {
+    for (const [x, y] of line) assert.ok(!map.isBlocked(Math.floor(x), Math.floor(y)), `path ${pid} at ${x},${y}`);
   }
 });
 
-test('Era 1 has the real layout: the Đuống south of Phù Đổng, and the way to Văn Miếu goes south-west', () => {
-  const m = maps.get('phu-dong');
-  const map = createTileMap(m, tiles);
-  // The river is on the south side of the village (map +y is south).
+test('Era 1 has the real layout: the Đuống south of Phù Đổng, and the way to Văn Miếu goes south-west over the ford', () => {
+  const m = mapOf('giong');
+  const map = createPlaneTileMap(m, tiles);
+  const at = (place, x, y) => worldOf().at(place, x, y);
+  // The river is on the south side of the village (+y is south).
   const home = m.layers.objects.find((o) => o.id === 'home');
-  const riverRows = m.layers.ground.map((row, y) => (row.includes('~') ? y : -1)).filter((y) => y >= 0);
+  const pd = load('data/maps/phu-dong.json');
+  const [, oy] = at('phu-dong', 0, 0);
+  const riverRows = pd.stamps.flatMap((s) => s.ground.map((row, y) => (row.includes('~') ? s.y + y + oy : -1))).filter((y) => y >= 0);
   assert.ok(Math.min(...riverRows) > home.y + home.h, 'the Đuống is south of the houses');
   // The bridge is broken: the way over the Đuống goes through the ford.
   const gap = m.layers.zones.find((z) => z.id === 'bridge-gap');
   assert.ok(map.isBlocked(gap.x, gap.y));
-  const west = m.layers.exits.find((e) => e.id === 'west:road-thanglong');
-  const path = findPath(map, { x: 10, y: 26 }, west.mark);
-  assert.ok(path, 'the road south-west');
+  const ferry = m.layers.triggers.find((z) => z.id === 'ferry-east');
+  const [sx, sy] = at('phu-dong', 10, 26);
+  const path = findPath(map, { x: Math.floor(sx), y: Math.floor(sy) }, { x: ferry.x + ferry.w, y: ferry.y + Math.floor(ferry.h / 2) }, { maxNodes: 400000 });
+  assert.ok(path, 'the road south-west to the ferry');
   assert.ok(path.some((p) => map.groundAt(p.x, p.y) === 'shallow'), 'the road goes through the ford');
-  // The exits: north to Sóc Sơn, east to Núi Trâu, south-west to Thăng Long.
-  const to = Object.fromEntries(m.layers.exits.map((e) => [e.to.map, e]));
-  assert.ok(to['soc-son'].y === 0, 'Sóc Sơn is north');
-  assert.ok(to['trau-son'].x + to['trau-son'].w === m.width, 'Núi Trâu is east');
-  assert.ok(to['road-thanglong'].x === 0 && to['road-thanglong'].mark.y > gap.y, 'Thăng Long is south-west, across the river');
-  // Each map has its real center and the direction of north; north is map -y.
+  // Sóc Sơn is north, Núi Trâu east, and Thăng Long south-west, at their real places.
+  const o = (id) => at(id, 0, 0);
+  assert.ok(o('soc-son')[1] < o('phu-dong')[1] - 400, 'Sóc Sơn is north');
+  assert.ok(o('trau-son')[0] > o('phu-dong')[0] + 150, 'Núi Trâu is east');
+  assert.ok(o('road-thanglong')[0] < o('phu-dong')[0] && o('road-thanglong')[1] > o('phu-dong')[1], 'Thăng Long is south-west');
+  // Each place has its real center and the direction of north; north is -y.
   for (const [id, mm] of maps) {
     assert.equal(mm.geo.at.length, 2, id);
     assert.deepEqual(mm.geo.north, [0, -1], id);
@@ -259,60 +239,45 @@ test('the hero steps up or down one step; a higher step is a cliff', () => {
   assert.equal(findPath(map, { x: 0, y: 0 }, { x: 3, y: 0 }), null, 'a cliff on the way');
 });
 
-test('the ground of the maps has depth: river steps, sunken paddies, the dinh mound, and terraces', () => {
-  const at = (id) => createTileMap(maps.get(id), tiles);
-  for (const [id, m] of maps) {
-    assert.equal(m.layers.height.length, m.height, id);
-    for (const row of m.layers.height) assert.match(row, new RegExp(`^[0-9a-z]{${m.width}}$`), id);
-  }
+test('the ground of the places has depth: river steps, sunken paddies, the dinh mound', () => {
+  const m = mapOf('giong');
+  const map = createPlaneTileMap(m, tiles);
+  for (const [id, def] of maps) for (const st of def.stamps) for (const row of st.height) assert.match(row, new RegExp(`^[0-9a-z]{${st.w}}$`), id);
+  const pd = (x, y) => worldOf().at('phu-dong', x, y);
+  const ground = (p) => [map.groundAt(...p), map.heightAt(...p)];
   // The river bank drops two steps to the water: ground 2, sand 1, water 0.
-  const river = at('phu-dong');
-  assert.deepEqual([60, 62, 68].map((y) => [river.groundAt(30, y), river.heightAt(30, y)]), [['grass', 2], ['sand', 1], ['water', 0]]);
+  assert.deepEqual([60, 62, 68].map((y) => ground(pd(30, y))), [['grass', 2], ['sand', 1], ['water', 0]]);
   // The road and the bridge stay high over the bank, as a causeway.
-  assert.equal(river.heightAt(44, 62), 2);
-  assert.equal(river.heightAt(44, 66), 2);
-  // The paddies are one step lower than the dikes and roads around them.
-  for (const [id, m] of maps) {
-    const map = at(id);
-    for (let y = 0; y < m.height; y++) {
-      for (let x = 0; x < m.width; x++) {
+  assert.equal(map.heightAt(...pd(44, 62)), 2);
+  assert.equal(map.heightAt(...pd(44, 66)), 2);
+  // The paddies are one step lower than the roads around them.
+  for (const s of m.land.stamps) {
+    for (let y = s.y; y < s.y + s.h; y++) {
+      for (let x = s.x; x < s.x + s.w; x++) {
         if (map.groundAt(x, y) !== 'field') continue;
         for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
-          if (map.groundAt(nx, ny) === 'path') assert.ok(map.heightAt(nx, ny) > map.heightAt(x, y), `${id}: paddy ${x},${y}`);
+          if (map.groundAt(nx, ny) === 'path') assert.ok(map.heightAt(nx, ny) > map.heightAt(x, y), `${s.place}: paddy ${x},${y}`);
         }
       }
     }
   }
   // The dinh stands on a mound.
-  const village = at('phu-dong');
-  const dinh = maps.get('phu-dong').layers.objects.find((o) => o.id === 'dinh');
-  assert.ok(village.heightAt(dinh.x, dinh.y) > village.heightAt(dinh.x, dinh.y + dinh.h + 2));
-  // The edges of the generated land rise in terraces where no map is beyond them (roads and water
-  // go through): the north edge of Sóc Sơn.
-  const hills = at('soc-son');
-  let up = 0;
-  let n = 0;
-  for (let x = 80; x < 114; x++) {
-    if (hills.groundAt(x, 0) !== 'grass' || hills.groundAt(x, 4) !== 'grass') continue;
-    n += 1;
-    if (hills.heightAt(x, 0) > hills.heightAt(x, 4)) up += 1;
-  }
-  assert.ok(n > 10 && up / n > 0.8, `${up} of ${n}`);
+  const dinh = m.layers.objects.find((o) => o.id === 'dinh');
+  assert.ok(map.heightAt(dinh.x, dinh.y) > map.heightAt(dinh.x, dinh.y + dinh.h + 2));
 });
 
-test('the animals of each map live in their medium: ducks and fish on water or a paddy, a lily pad and its frog on the water, the others on land', () => {
+test('the animals of each place live in their medium: ducks and fish on water or a paddy, a lily pad and its frog on the water, the others on land', () => {
   const life = load('data/world/life.json');
+  const m = mapOf('giong');
+  const map = createPlaneTileMap(m, tiles);
   let count = 0;
-  for (const [id, m] of maps) {
-    const map = createTileMap(m, tiles);
-    for (const g of m.layers.life ?? []) {
-      assert.ok(life.kinds[g.kind], `${id}: the kind ${g.kind}`);
-      count += g.n;
-      const ground = map.groundAt(Math.floor(g.x), Math.floor(g.y));
-      const water = ['water', 'shallow', 'field'].includes(ground);
-      const def = life.kinds[g.kind];
-      assert.equal(water, def.steer?.medium === 'water' || def.float !== undefined, `${id}: ${g.kind} at ${g.x},${g.y} is on ${ground}`);
-    }
+  for (const g of m.layers.life) {
+    assert.ok(life.kinds[g.kind], `${g.place}: the kind ${g.kind}`);
+    count += g.n;
+    const ground = map.groundAt(Math.floor(g.x), Math.floor(g.y));
+    const water = ['water', 'shallow', 'field'].includes(ground);
+    const def = life.kinds[g.kind];
+    assert.equal(water, def.steer?.medium === 'water' || def.float !== undefined, `${g.place}: ${g.kind} at ${g.x},${g.y} is on ${ground}`);
   }
   assert.ok(count >= 20, 'a village full of animals');
 });

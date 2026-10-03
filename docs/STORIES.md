@@ -4,13 +4,14 @@
 
 ## The session of the village
 
-`src/core/session.js` is the story logic of the village, with no DOM and no WebGL. It owns the profile, the world state of the current map, the trigger zones, the people, the walks of the taps, the talks and their effects, the exits between maps, the time limit, and what the commits at the placements give to the learner and to the learning log.
+`src/core/session.js` is the story logic of the village, with no DOM and no WebGL. It owns the profile, the world state of the map of the region (one continuous land, `docs/WORLD.md`), the live chunks, the trigger zones, the people, the walks of the taps, the talks and their effects, the edges of the world, the time limit, and what the commits at the placements give to the learner and to the learning log.
 
 | Function | What it does |
 | --- | --- |
-| `start(mapId, params)` | Starts on a map (or the map of the save). `params`: `at` (the hero cell), `facing`, `after` (talks after the start). |
+| `start(mapId, params)` | Starts on a map (or the map of the save). `params`: `at` (the hero cell on the plane), `facing`, `after` (talks after the start). |
+| `startPlace(mapId, params)` | The map and the hero cell of a start, before the start (the view loads the height tiles there first). |
 | `command(cmd)` | A command (see below). |
-| `step()` | One step of the world (1/30 second), then the events of the step, the exits, and the trigger zones. |
+| `step()` | One step of the world (1/30 second), then the events of the step, the live chunks (they wake and sleep), the edges, and the trigger zones. |
 | `events()` | The events since the last call (the view takes them). |
 | `listen(fn)` | Also sends each event to `fn` (the runner of a story). |
 | `opening()` | The events of the last start. |
@@ -34,19 +35,20 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 | `name` | The name (the name of the file). |
 | `about` | `{ vi, en }`: one line in each language. |
 | `profile` | `name`, `grade`, `lang`, `seed`, `flags`, `items`, `party`, `timeLimit`, `played` (minutes of play today). |
-| `map` | The map of the start. |
+| `map` | The map of the start (the map of the region of `at`, when it is not there). |
 | `clock` | The game clock in minutes (day 0 starts at 0; 540 is 9:00). |
-| `place` | `[x, y]`: the hero cell. Or `state`: a saved world. |
+| `at` | The hero cell: `[place, x, y]` (a cell in the frame of a place, as in `data/maps/<place>.json`), or `[x, y]` (a cell of the plane). With `[place, x, y]`, the cells `[x, y]` of the steps and the facts are cells of that place too; a cell of another place is `[place, x, y]`. With `[x, y]`, they are cells of the plane. Or `state`: a saved world. |
 | `steps` | The steps. |
 
 ### Steps
 
 | Step | What it does |
 | --- | --- |
-| `{ "do": <command> }` | Sends a command to the session. The tools of a later era are commands too: `{ "type": "fell", "id": "tree8" }` takes away an object of the map (a tree and its crown), and `{ "type": "dig", "at": [8, 29] }` takes the top block of a column (`docs/WORLD.md`, "Mining and taking apart"). `{ "type": "event", "id": "cart" }` brings a small event of the day today, at the first spot of its kind on the map (`docs/WORLD.md`, "The small events of each day"). |
+| `{ "do": <command> }` | Sends a command to the session. The tools of a later era are commands too: `{ "type": "fell", "id": "tree8" }` takes away an object of the map (a tree and its crown), and `{ "type": "dig", "at": [8, 29] }` takes the top block of a column (`docs/WORLD.md`, "Mining and taking apart"). `{ "type": "event", "id": "cart" }` brings a small event of the day today, at the nearest spot of its kind (`docs/WORLD.md`, "The small events of each day"). |
 | `{ "wait": 2 }` | The world goes on for two seconds. |
 | `{ "until": { "event": "put", "with": {...}, "timeout": 20 } }` | The world goes on until the event comes (after the last command). |
 | `{ "at": { "hour": 18.5 } }` | The world goes on until the next 18:30. |
+| `{ "walk": { "to": [place, x, y], "leg": 20 } }` | A walk to a far cell, as a child taps ahead again and again: the way on the tile map, and a tap each `leg` cells on it. A line of a trigger zone on the way is read. The walk fails when the hero stops before the cell. |
 | `{ "tap": ... }` | A tap, as the scene sends it: `{ "cell": [x, y] }`, `{ "entity": id }`, `{ "thing": id }`, `{ "item": "rod" }` (the first thing of a kind in a heap or a pile; `"size"` and `"stray"` choose among them: a duck of another farm is a stray), `{ "plank": 4 }` (a plank of this size on a pile), `{ "guess": 3 }` (a plank outline), `{ "zone": id }` (the middle of the zone of a task, or the gap of a span), `{ "span": id }` (the last plank on a span), `{ "stem": 4 }` (a place along the stem of the woodcutter), `{ "culm": 0, "at": 5 }` (a standing culm of the bamboo clump of the staffs, at a height in half blocks), `{ "line": 8 }` (a place on the line of the fish trap), `{ "raid": "gate" }` (the gate bar, the bamboo, or a spot such as `spot:1` in a raid), `{ "post": 20 }` (a post before the first shot: the prediction), or `{ "hero": true }`. |
 | `{ "shoot": { "count": 16 } }` or `{ "shoot": { "at": "first", "kind", "off", "lead", "wait" } }` | The slingshot: a pull of this count (half blocks along the road), or the count for an enemy of the raid (`first`: the nearest one to the gate; `kind`: only enemies of this kind): its distance where it will be after `lead` seconds, and `off` more. With `wait`, no enemy in reach is no failure (the world goes on for a second). |
 | `{ "pour": { "from": "brazier", "at": "first" } }` | The drag of an element from a source of the raid to an enemy (or to a cell `[x, y]`). |
@@ -60,8 +62,8 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 
 | Fact | True when |
 | --- | --- |
-| `{ "hero": { "in": "water", "map", "near": id, "within", "cell": [x, y], "holding", "falls", "riding" } }` | The hero is so. |
-| `{ "entity": id, "near": id, "within", "act", "look", "hidden", "keep", "gone" }` | The entity is so (`gone`: it is not in the world). |
+| `{ "hero": { "in": "water", "map", "near": id, "within", "cell": [x, y], "holding", "falls", "riding", "mist" } }` | The hero is so (`mist`: in the mist of the land of a later era). |
+| `{ "entity": id, "near": id, "within", "act", "look", "hidden", "keep", "gone", "in", "notIn": [...], "mist" }` | The entity is so (`gone`: it is not in the world; `in` and `notIn`: the ground under it; `mist`: in the mist). |
 | `{ "event": type, "with": {...}, "not": true }` | The event came (or did not come) since the last expect. |
 | `{ "flag": name, "is": false }` | The flag is set (or not). |
 | `{ "item": "coin", "count": ">= 1" }` | The count of a thing. |
@@ -76,17 +78,18 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 | `{ "count": { "entities": "chicken", "min", "max" } }` | The count of entities of a kind or a look. |
 | `{ "all": { "of": "people", "plan", "home", "near": "spot", "within", "hidden" } }` | All of a group are near a place of their day. |
 | `{ "raid": { "on": true, "phase": "general", "enemies": ">= 1", "losses": 0 } }` | The raid now: it goes on, its phase, the enemies that did not retreat, and the losses. |
+| `{ "edits": { "chunks": 1, "felled": 1, "dug": 0 } }` | The changes of the land that the save keeps: the changed chunks, the felled things, and the digs. |
 
-Numbers in `count`, `pL`, `planks`, `enemies`, and `losses` can be a comparison such as `">= 3"`.
+Numbers in `count`, `pL`, `planks`, `enemies`, `losses`, and `edits` can be a comparison such as `">= 3"`.
 
 ## The laws of the world
 
 The runner checks the laws on every step of every story (`createLaws` in `src/core/story.js`):
 
 - No `NaN`, and no entity outside the map.
-- The hero and the people never stand in a blocked cell or in deep water. A thing that falls, a thing that swims, and a person on the ladder of a house are the exceptions.
+- The hero and the people never stand in a blocked cell or in deep water (a river or the deep sea). A thing that falls, a thing that swims, and a person on the ladder of a house are the exceptions.
 - **The rule of the world:** no text that the session shows in the village or a raid (a talk line, a choice, a line of text, a callout) has a digit, an operator (`+ − × ÷ =`), or a question mark, in Vietnamese or in English, with its values. The practice with the teacher and Văn Miếu are other screens, so the rule does not check them. The rule is about the math of the task: a fact of history (a key `history.*`, with its year) and a place name (`place.*`, `region.*`) are not checked.
-- The count of the entities stays under the limit in `data/config/limits.json`.
+- The count of the entities stays under the limit in `data/config/limits.json`, and the count of the live chunks under `liveChunks`.
 - The save of the world loads back to the same world. At the end of a story, the save of the whole profile loads back to the same world.
 
 ## The storybook in the browser
@@ -106,7 +109,6 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `day` | A whole day: the spots at 10:00, the well at noon, home at night, out in the morning; the chickens in the coop. |
 | `rain` | The river rises, the ford closes, Nghé shakes its head, the ford opens one game hour after the rain. |
 | `bridge-save` | Save in the middle of the bridge, load, and go on. |
-| `exits` | Over the north edge to Sóc Sơn and back. |
 | `vanmieu-gate` | The ferry over the Red River, Văn Miếu, and back out next to its gate. |
 | `time-limit` | The time is over, but the rest waits until the hero leaves the bridge. |
 | `reactions` | A chicken flees, a villager greets, a pot gives a coin. |
@@ -132,6 +134,10 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `event-flood` | A flooded field: five pails of water to the ditch. |
 | `event-market` | Market day: two strings of ten and three single coins pay the price; the coins leave the purse only then. |
 | `event-duck` | Lost ducks: one is not enough; with the second, the flock is whole. |
-| `walk-trau-son` | From the gate of Phù Đổng over the east edge, through the generated land, to the fields of Núi Trâu. |
-| `walk-vanmieu` | From Phù Đổng over the ford and the west edge, through the generated land, over the Red River on the ferry, to Văn Miếu. |
+| `walk-trau-son` | From the gate of Phù Đổng on the east road, through the generated land, to the fields of Núi Trâu, with no change of scene. |
+| `walk-vanmieu` | From Phù Đổng over the ford and the west road, through the generated land, over the Red River on the ferry, to Văn Miếu. |
 | `climb-nui-trau` | From the yard at the foot of Núi Trâu up the path to the top of the hill (a real hill from the fine heights), past the rock faces. |
+| `walk-soc-son` | From the đình of Phù Đổng on the north road to the top of the hill of Sóc Sơn, with no change of scene; Nghé comes along. The live chunks stay under the limit on the whole walk. |
+| `sea-edge` | At the coast in the east: the hero wades to the knee, then stops, turns, and takes two steps back: "Biển sâu quá". Nghé stays on the sand. The line shows once in a day. |
+| `mist-edge` | At the south end of the land of the era: the hero walks into the mist and slows; Nghé stops and lows; the hero turns back two steps: "Phía nam còn mù sương". |
+| `save-chunks` | Fell a tree, walk four chunks away and back, save and load: the tree is still gone, and nothing else changed. |

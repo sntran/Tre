@@ -13,7 +13,7 @@
 // region (made one time for a seed, from the data only). Pure functions, no DOM.
 import { createPlane, frameOrigins } from './plane.js';
 import { fbm, hash2 } from './noise.js';
-import { stepsOf } from './heights.js';
+import { stepsOf, tileOf } from './heights.js';
 import { distanceField, createHeap, segDist, dense, wind } from './geom.js';
 import { hamletOf } from './hamlets.js';
 import { hashSeed } from '../rng.js';
@@ -23,9 +23,11 @@ const PAD = 56;
 const CAP = 16; // distances are capped (cells): no rule reads farther
 const SITE = 32; // one hamlet site at most in each square of SITE cells (two squares in a tile side)
 export const HAMLET = Object.freeze({ w: 22, h: 16 });
-export const LETTER = Object.freeze({ grass: '.', path: '=', sand: '_', water: '~', field: 'f', dike: 'd', bridge: 'B', rock: 'r', yard: 'y', hedge: 'h' });
+export const LETTER = Object.freeze({ grass: '.', path: '=', sand: '_', water: '~', field: 'f', dike: 'd', bridge: 'B', rock: 'r', yard: 'y', hedge: 'h', surf: ':', sea: '^' });
 const CODE = Object.fromEntries(Object.entries(LETTER).map(([k, v]) => [k, v.charCodeAt(0)]));
-const FIXED = { none: 0, stamp: 1, river: 2, claim: 3 };
+const FIXED = { none: 0, stamp: 1, river: 2, claim: 3, sea: 4 };
+const SURF = 3; // cells of shallow sea (to the knee) next to the land; farther, the sea is deep
+const SEA_LOW = 5; // meters: a cell out of all rings of the land is sea only when the land there is this low
 // A height is one digit of base 36 in the height rows (0 to 9, then a to z).
 export const MAX_LEVEL = 35;
 export const digit = (ch) => parseInt(ch, 36);
@@ -77,6 +79,47 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
   const stampAt = (x, y) => stamps.find((s) => x >= s.x && y >= s.y && x < s.x + s.w && y < s.y + s.h) ?? null;
   const stampLevel = (s, x, y) => Math.min(MAX_LEVEL, digit(s.height[y - s.y][x - s.x]) + s.lift);
 
+  // The coast and the borders: the rings of the land (data/geo/vietnam.json) on the plane, by bands
+  // of rows, so that a row finds the edges that cross it fast. Vietnam is the land of the eras; the
+  // land of the other countries is the land of no era (mist). The south line of the land of the era
+  // (eraLand, a latitude) is a row of the plane (Mercator keeps a latitude on one row).
+  const BAND = 16;
+  const ringBands = { vn: new Map(), other: new Map() };
+  for (const [code, list] of Object.entries(geo.land ?? {})) {
+    const bands = code === 'VNM' ? ringBands.vn : ringBands.other;
+    for (const ring of list) {
+      const pts = ring.map((p) => plane.toCell(p));
+      for (let k = 0; k < pts.length; k++) {
+        const a = pts[k];
+        const b = pts[(k + 1) % pts.length];
+        if (a[1] === b[1]) continue;
+        for (let band = Math.floor(Math.min(a[1], b[1]) / BAND); band <= Math.floor(Math.max(a[1], b[1]) / BAND); band++) {
+          if (!bands.has(band)) bands.set(band, []);
+          bands.get(band).push([a[0], a[1], b[0], b[1]]);
+        }
+      }
+    }
+  }
+  // The x of the edges that cross the middle of a row, in order.
+  const crossings = (bands, row) => {
+    const yc = row + 0.5;
+    const xs = [];
+    for (const [ax, ay, bx, by] of bands.get(Math.floor(yc / BAND)) ?? []) if ((ay > yc) !== (by > yc)) xs.push(ax + ((bx - ax) * (yc - ay)) / (by - ay));
+    return xs.sort((p, q) => p - q);
+  };
+  // Is x inside the rings on a row? (an odd count of edges to the east of x)
+  const insideRow = (xs, x) => {
+    let lo = 0;
+    let hi = xs.length;
+    while (lo < hi) {
+      const m = (lo + hi) >> 1;
+      if (xs[m] <= x) lo = m + 1;
+      else hi = m;
+    }
+    return (xs.length - lo) % 2 === 1;
+  };
+  const eraRow = def.eraLand !== undefined ? plane.toCell([0, def.eraLand])[1] : Infinity;
+
   // The segments of the lines (rivers, roads) by tile, so that a window finds its segments fast.
   const bucketKey = (bx, by) => `${bx},${by}`;
   const index = (segs, reach) => {
@@ -102,14 +145,24 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
   // The rivers: the real lines on the plane, pulled through the pins (the ends of the rivers of the
   // stamps), with a small seeded bend away from the stamps.
   const widthOf = (id) => ({ water: 8, bank: 2, bend: 3, ...((def.rivers ?? []).find((r) => r.id === id) ?? {}) });
+  // A branch (from: the id of its main river) begins on the line of its main river.
   const rivers = [];
-  for (const data of geo.rivers ?? []) {
+  const lines = new Map();
+  const order = [...(geo.rivers ?? [])].sort((a, b) => Number(Boolean(widthOf(a.id).from)) - Number(Boolean(widthOf(b.id).from)));
+  for (const data of order) {
     const w = widthOf(data.id);
     const pins = (def.pins ?? []).filter((p) => p.river === data.id).map((p) => toPlane([p.frame, ...p.cell]));
     for (const raw of data.lines) {
       let line = dense(raw, 0.004).map((p) => plane.toCell(p));
       if (pins.length) line = pull(line, pins, 160);
       line = wind(dense(line, 1.5), sd(`river:${data.id}`), w.bend, 40, ([x, y]) => smooth(stampDist(x, y), 16));
+      const main = w.from ? lines.get(w.from) : null;
+      if (main) {
+        let best = main[0];
+        for (const q of main) if (Math.hypot(q[0] - line[0][0], q[1] - line[0][1]) < Math.hypot(best[0] - line[0][0], best[1] - line[0][1])) best = q;
+        line = [...dense([best, line[0]], 1.5).slice(0, -1), ...line];
+      }
+      if (!lines.has(data.id)) lines.set(data.id, line);
       const segs = [];
       for (let k = 1; k < line.length; k++) segs.push([line[k - 1][0], line[k - 1][1], line[k][0], line[k][1]]);
       const reach = w.water / 2 + w.bank;
@@ -236,9 +289,10 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
 
   // The tiles, made when they are first asked for (the last ones stay).
   const cache = new Map();
-  const MAX_TILES = 96;
+  const MAX_TILES = 256;
+  const keyOf = (tx, tz) => tx * 65536 + tz;
   function tile(tx, tz) {
-    const key = `${tx},${tz}`;
+    const key = keyOf(tx, tz);
     let t = cache.get(key);
     if (t) {
       cache.delete(key);
@@ -276,6 +330,40 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       }
     }
     const toStamp = distanceField(W, W, (i) => fixed[i] === FIXED.stamp);
+    // The sea and the land of no era. A cell is sea when it is out of all rings of the land and low
+    // (a small gap between the rings of two countries in the hills stays land); the coast wobbles by
+    // the seed. Land of another country, and land south of the line of the era, is mist.
+    const SEA = 1;
+    const FOREIGN = 2;
+    const kindOf = new Uint8Array(N);
+    if (geo.land) {
+      const rows = new Map();
+      const rowOf = (row) => {
+        if (!rows.has(row)) rows.set(row, { vn: crossings(ringBands.vn, row), other: crossings(ringBands.other, row) });
+        return rows.get(row);
+      };
+      const wob = sd('coast');
+      for (let i = 0; i < N; i++) {
+        const x = plx(i);
+        const y = plz(i);
+        const r = rowOf(Math.round(y + 5 * fbm(wob + 1, x, y, { scale: 24, octaves: 2 })));
+        const xx = x + 0.5 + 5 * fbm(wob, x, y, { scale: 24, octaves: 2 });
+        const vn = insideRow(r.vn, xx);
+        const other = !vn && insideRow(r.other, xx);
+        if (!vn && !other && meters(x, y) <= SEA_LOW) kindOf[i] = SEA;
+        else if (other) kindOf[i] = FOREIGN;
+      }
+    }
+    const toLand = distanceField(W, W, (i) => kindOf[i] !== SEA);
+    const toSea = distanceField(W, W, (i) => kindOf[i] === SEA);
+    const toEra = distanceField(W, W, (i) => kindOf[i] !== FOREIGN && plz(i) < eraRow);
+    for (let i = 0; i < N; i++) {
+      if (kindOf[i] !== SEA || fixed[i]) continue;
+      const surf = toLand.dist[i] <= SURF;
+      letter[i] = surf ? CODE.surf : CODE.sea;
+      level[i] = surf ? 1 : 0;
+      fixed[i] = FIXED.sea;
+    }
 
     // The rivers: water, and a bank of sand.
     const riverDist = new Float32Array(N).fill(Infinity);
@@ -393,6 +481,11 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
     const bank = bound(isRoad, 2);
     for (let i = 0; i < N; i++) if (!fixed[i] && !isRoad(i) && letter[i] !== CODE.bridge) level[i] = bank(i, level[i]);
 
+    // At the edge of a stamp no cliff: the land next to it (a road too) is one step from it at most
+    // for each cell of distance.
+    const byStamp = bound((i) => fixed[i] === FIXED.stamp, 4);
+    for (let i = 0; i < N; i++) if (!fixed[i] && letter[i] !== CODE.bridge) level[i] = byStamp(i, level[i]);
+
     const toWater = distanceField(W, W, (i) => letter[i] === CODE.water);
     const nearRoad = distanceField(W, W, (i) => letter[i] === CODE.path || letter[i] === CODE.bridge);
     const cap = (d) => Math.min(CAP, d);
@@ -500,6 +593,8 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
         }
       }
     }
+    // A beach of sand along the sea.
+    for (let i = 0; i < N; i++) if (!letter[i] && toSea.dist[i] <= 2) letter[i] = CODE.sand;
     for (let i = 0; i < N; i++) if (!letter[i]) letter[i] = CODE.grass;
     // A rock face: free grass that is two steps or more over a cell next to it (a cliff).
     for (let y = 1; y < W - 1; y++) {
@@ -533,6 +628,7 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       road: new Uint8Array(T * T),
       field: new Uint8Array(T * T),
       nearStamp: new Uint8Array(T * T),
+      mist: new Uint8Array(T * T),
       objects: [],
       life: [],
       villagers: [],
@@ -549,6 +645,7 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       out.road[o] = cap(toRoad.dist[i]);
       out.field[o] = cap(toField.dist[i]);
       out.nearStamp[o] = cap(toStamp.dist[i]);
+      out.mist[o] = cap(toEra.dist[i]);
     }
     for (const hm of hamlets) {
       if (!inTile(hm.site.x, hm.site.y)) continue;
@@ -592,11 +689,11 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       level: t.level[o],
       stamp: t.fixed[o] === FIXED.stamp,
       taken: t.fixed[o] === FIXED.claim,
-      edge: false,
       water: t.water[o],
       road: t.road[o],
       field: t.field[o],
       nearStamp: t.nearStamp[o],
+      mist: t.mist[o],
     };
   }
 
@@ -616,6 +713,28 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
     cell,
     // The tile of a plane cell.
     tileOf: (x, y) => [Math.floor(x / TILE), Math.floor(y / TILE)],
+    // The height tiles (of the land file) that a tile reads: make the tile only when they are there.
+    needs(tx, tz) {
+      const [lonA, latA] = plane.toGeo([tx * TILE - PAD, tz * TILE - PAD]);
+      const [lonB, latB] = plane.toGeo([(tx + 1) * TILE + PAD, (tz + 1) * TILE + PAD]);
+      const out = [];
+      for (let la = Math.floor(latB); la <= Math.floor(latA); la++) {
+        for (let lo = Math.floor(lonA); lo <= Math.floor(lonB); lo++) {
+          const name = tileOf(lo, la);
+          if ((def.tiles ?? []).includes(name)) out.push(name);
+        }
+      }
+      return out;
+    },
+    // Forget a tile (a worker gave its arrays away).
+    forget: (tx, tz) => cache.delete(keyOf(tx, tz)),
+    // Is a tile made (it is in the cache)?
+    has: (tx, tz) => cache.has(keyOf(tx, tz)),
+    // Put a tile that a worker made into the cache (the same tile as tile(tx, tz) makes).
+    put(t) {
+      cache.set(keyOf(t.tx, t.tz), t);
+      if (cache.size > MAX_TILES) cache.delete(cache.keys().next().value);
+    },
   };
 }
 

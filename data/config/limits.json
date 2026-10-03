@@ -1,7 +1,9 @@
 {
-  "_about": "Limits of the game. entities: the most entities in the world state of one map (Phù Đổng has about 120); the laws of the world check it on every step of every story (src/core/story.js). figureParts: the most parts of one figure of each kind at the fine level of detail (src/world/fine.js); all parts of all figures draw as one instanced mesh, so the count is the cost. frameTriangles: the most triangles of the world (the ground, the things, the smooth looks, and their ink) in the three by three chunks around the start of a map (src/world/chunks.js); a test checks it on every map.",
+  "_about": "Limits of the game. entities: the most entities in the world state of one map (Phù Đổng has about 120); the laws of the world check it on every step of every story (src/core/story.js). figureParts: the most parts of one figure of each kind at the fine level of detail (src/world/fine.js); all parts of all figures draw as one instanced mesh, so the count is the cost. frameTriangles: the most triangles of the world (the ground, the things, the smooth looks, and their ink) in the three by three chunks around the start of a place (src/world/chunks.js); a test checks it at every place. ringTriangles: the most triangles of the ring of chunks that the view draws (9 x 9 chunks: the 5 x 5 near ones at the full level, the others at the coarse level); a test checks it on the walk from Phù Đổng to Sóc Sơn. liveChunks: the most live chunks (where the entities move and the systems run) around the hero; the laws of the world check it on every step of every story.",
   "entities": 400,
   "frameTriangles": 60000,
+  "ringTriangles": 280000,
+  "liveChunks": 25,
   "figureParts": {
     "biped": 64,
     "quadruped": 48,

@@ -5,9 +5,8 @@
     "en": "The trial of the fisher: stakes in a row before the tide; with a space too wide the fish swim out, and with the full row they stay in the trap."
   },
   "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [27, 64.5],
+  "at": ["phu-dong", 27, 64.5],
   "steps": [
     { "tap": { "entity": "npc:fisher" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },

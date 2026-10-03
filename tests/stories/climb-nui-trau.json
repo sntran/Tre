@@ -13,12 +13,8 @@
       "intro.seen": true
     }
   },
-  "map": "trau-son",
   "clock": 540,
-  "place": [
-    112.5,
-    21.5
-  ],
+  "at": ["trau-son", 112.5, 21.5],
   "steps": [
     {
       "tap": {
@@ -38,7 +34,6 @@
       "expect": [
         {
           "hero": {
-            "map": "trau-son",
             "cell": [
               152.5,
               18.5

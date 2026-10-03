@@ -5,9 +5,8 @@
     "en": "The bridge, mashing: three sizes in a sweep at one place, fast; the commit gives no evidence, and Nghé shows the gap."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [46, 61],
+  "at": ["phu-dong", 46, 61],
   "steps": [
     { "tap": { "plank": 3 } },
     { "until": { "event": "pick", "timeout": 20 } },

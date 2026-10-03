@@ -21,6 +21,27 @@ export function stepAt(plan, hour) {
   return out;
 }
 
+// Put an entity at the place of its plan at an hour (when its chunk wakes, it is where its day put
+// it: a villager whose day put her at the well is at the well; a person at home is in the house).
+export function placeBySchedule(e, hour, env) {
+  const sc = e.schedule;
+  if (!sc || !e.position) return;
+  const at = stepAt(sc.plan, hour).at;
+  const home = sc.home ? env.homes[sc.home] : null;
+  let p = null;
+  if (at === 'home' && home && !sc.stay) {
+    p = home.base;
+    e.hidden = true;
+  } else if (at === 'gone') e.hidden = true;
+  else if (at === 'spot' || at === 'home') p = sc.spot;
+  else if (at === 'bed') p = sc.bed;
+  else if (env.places[at]) p = { x: env.places[at].x + (sc.offset?.x ?? 0), z: env.places[at].z + (sc.offset?.z ?? 0) };
+  if (!p) return;
+  e.position.x = p.x;
+  e.position.z = p.z;
+  e.position.y = env.groundY(p.x / 2, p.z / 2);
+}
+
 export function schedule(world, dt, rng, env) {
   const hour = (world.clock.minutes % DAY_MINUTES) / 60;
   const night = world.sky?.night ?? 0;

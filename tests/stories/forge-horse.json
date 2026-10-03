@@ -5,9 +5,8 @@
     "en": "The iron horse: carry ore into the forge and tap the bellows; with five lumps the fire dies, with seven the extra lump rolls out, and with exactly six the fire burns high; the child waits by the anvil until the iron glows, and the glowing iron in the water becomes the iron horse."
   },
   "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "items": { "iron": 6 }, "flags": { "intro.seen": true, "prologue.started": true, "trial.smith.done": true, "giong.messenger": true, "giong.spoke": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [53, 45],
+  "at": ["phu-dong", 53, 45],
   "steps": [
     { "tap": { "entity": "npc:smith" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },

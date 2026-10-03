@@ -14,11 +14,11 @@ const en = load('i18n/en.json');
 const testWorld = createWorld({
   start: { region: 'a', map: 'a1' },
   regions: [
-    { id: 'a', place: 'pa', maps: ['a1'], entry: { map: 'a1', x: 1.5, y: 1.5 } },
-    { id: 'b', place: 'pb', maps: ['b1'], entry: { map: 'b1', x: 2.5, y: 3.5 } },
+    { id: 'a', place: 'pa', maps: ['a1'], entry: { at: ['a1', 1.5, 1.5] } },
+    { id: 'b', place: 'pb', maps: ['b1'], entry: { at: ['b1', 2.5, 3.5] } },
     { id: 'c', place: 'pc', maps: [] },
   ],
-}, new Map([['a1', { layers: { exits: [] } }], ['b1', { layers: { exits: [] } }]]), {
+}, new Map([['a1', { layers: {} }], ['b1', { layers: {} }]]), {
   places: [{ id: 'pa', at: [105, 21] }, { id: 'pb', at: [106, 21] }, { id: 'pc', at: [106, 20] }],
   routes: { speeds: { road: 4, river: 6 }, walkHours: 8, routes: [{ from: 'pa', to: 'pb', mode: 'road' }, { from: 'pb', to: 'pc', mode: 'river' }] },
 });

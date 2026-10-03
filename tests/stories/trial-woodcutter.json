@@ -5,9 +5,8 @@
     "en": "The trial of the woodcutter: chalk marks for two equal sticks; marks off the middle and the short stick breaks, equal sticks go to the wood pile by the bridge."
   },
   "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [51, 8.5],
+  "at": ["phu-dong", 51, 8.5],
   "steps": [
     { "tap": { "entity": "npc:woodcutter" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },

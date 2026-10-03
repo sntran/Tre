@@ -2,7 +2,7 @@
 // each kind of fact, and the laws of the world (src/core/story.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { storyProfile, tapTarget, checkFact, createLaws, STORY_EPOCH } from '../src/core/story.js';
+import { storyProfile, storyOnPlane, tapTarget, checkFact, createLaws, STORY_EPOCH } from '../src/core/story.js';
 import { createSession } from '../src/core/session.js';
 import { getEntity, query } from '../src/core/world/state.js';
 import { runHeadless, data } from './story-run.js';
@@ -11,52 +11,55 @@ import { load } from './helpers.js';
 const texts = { vi: load('i18n/vi.json'), en: load('i18n/en.json') };
 const limits = load('data/config/limits.json');
 
+// A cell of the frame of Phù Đổng on the plane.
+const pd = (x, y) => data.world.at('phu-dong', x, y);
 function sessionOf(story) {
-  const session = createSession({ data, profile: storyProfile(story) });
+  const session = createSession({ data, profile: storyProfile(storyOnPlane(story, data.world)) });
   session.start();
   return session;
 }
 
 test('the profile of a story: the flags, the things, the party, the place, the clock, and the time of play', () => {
-  const p = storyProfile({ name: 't', profile: { grade: 3, seed: 5, flags: { 'intro.seen': true }, items: { coin: 4 }, timeLimit: 20, played: 19 }, map: 'soc-son', clock: 700, place: [30, 40] });
+  const p = storyProfile(storyOnPlane({ name: 't', profile: { grade: 3, seed: 5, flags: { 'intro.seen': true }, items: { coin: 4 }, timeLimit: 20, played: 19 }, at: ['soc-son', 30, 40], clock: 700 }, data.world));
   assert.equal(p.grade, 3);
   assert.equal(p.flags['intro.seen'], true);
   assert.equal(p.flags['friend.nghe'], true, 'Nghé is a friend from the start');
   assert.equal(p.inventory.coin, 4);
   assert.equal(p.settings.timeLimit, 20);
   assert.equal(p.time.usedMs, 19 * 60000);
-  assert.equal(p.world.map, 'soc-son');
+  assert.equal(p.world.map, 'giong');
   assert.equal(p.world.clock.minutes, 700);
   const hero = p.world.entities.find((e) => e.id === 'hero');
-  assert.deepEqual([hero.position.x, hero.position.z], [60, 80]);
+  const [sx, sy] = data.world.at('soc-son', 30, 40);
+  assert.deepEqual([hero.position.x, hero.position.z], [sx * 2, sy * 2]);
   // With no place, the hero starts at the spawn of the map.
-  const s = sessionOf({ name: 'u', profile: { flags: { 'intro.seen': true } }, map: 'phu-dong' });
+  const s = sessionOf({ name: 'u', profile: { flags: { 'intro.seen': true } } });
   const c = s.heroCell();
   assert.deepEqual([Math.floor(c.x), Math.floor(c.y)], [Math.floor(s.map.spawn.x), Math.floor(s.map.spawn.y)]);
 });
 
 test('the targets of the taps: a cell, a person, a plank of a size, a plank outline, the gap, the last plank, and the hero', () => {
-  const s = sessionOf({ name: 't', profile: { flags: { 'intro.seen': true } }, map: 'phu-dong', clock: 540, place: [46, 61] });
+  const s = sessionOf({ name: 't', profile: { flags: { 'intro.seen': true } }, at: ['phu-dong', 46, 61], clock: 540 });
   s.step();
-  assert.ok(tapTarget(s, { cell: [40, 58] }).target.ground);
+  assert.ok(tapTarget(s, { cell: pd(40, 58) }).target.ground);
   assert.deepEqual(tapTarget(s, { entity: 'npc:fisher' }).target, { person: 'npc:fisher' });
   const plank = tapTarget(s, { plank: 4 });
   assert.equal(getEntity(s.state, plank.target.thing).item.size, 4);
   assert.equal(tapTarget(s, { plank: 9 }), null, 'no plank of that size');
   assert.deepEqual(tapTarget(s, { guess: 2 }).target, { guess: { zone: 'bridge-gap', n: 2 } });
   const gap = tapTarget(s, { zone: 'bridge-gap' });
-  assert.ok(gap.target.ground && gap.point.y >= 66);
+  assert.ok(gap.target.ground && gap.point.y >= pd(0, 66)[1]);
   assert.equal(tapTarget(s, { span: 'bridge-gap' }), null, 'no plank on the gap yet');
   assert.deepEqual(tapTarget(s, { hero: true }).target, { hero: true });
 });
 
 test('each kind of fact: true and false', () => {
-  const s = sessionOf({ name: 't', profile: { flags: { 'intro.seen': true }, items: { coin: 2 } }, map: 'phu-dong', clock: 600, place: [46, 61] });
+  const s = sessionOf({ name: 't', profile: { flags: { 'intro.seen': true }, items: { coin: 2 } }, at: ['phu-dong', 46, 61], clock: 600 });
   s.step();
   const ctx = { session: s, events: [{ type: 'open', screen: 'callout', textKey: 'world.greet.1' }, { type: 'skill', skill: 'math.add.20', solved: true, parts: [4, 4, 4] }], learner: { entry: () => ({ p: 0.6 }) }, data };
   const ok = (fact) => assert.equal(checkFact(fact, ctx), null, JSON.stringify(fact));
   const no = (fact) => assert.equal(typeof checkFact(fact, ctx), 'string', JSON.stringify(fact));
-  ok({ hero: { map: 'phu-dong', cell: [46, 61], holding: false, falls: false, riding: false } });
+  ok({ hero: { cell: pd(46, 61), holding: false, falls: false, riding: false } });
   no({ hero: { in: 'water' } });
   ok({ hero: { in: 'path' } });
   no({ hero: { near: 'npc:grandma', within: 3 } });
@@ -87,6 +90,8 @@ test('each kind of fact: true and false', () => {
   no({ count: { entities: 'chicken', max: 1 } });
   ok({ all: { of: 'people', near: 'spot', within: 40 } });
   no({ all: { of: 'people', hidden: true } });
+  ok({ edits: { chunks: 0, felled: 0, dug: 0 } });
+  no({ edits: { felled: '>= 1' } });
   no({ nothing: 1 });
 });
 
@@ -110,7 +115,7 @@ test('the laws: a text of the world with a digit, an operator, or a question mar
 
 test('the laws: no NaN, nothing outside the map, nobody in a blocked cell or deep water, the limit, and the save', () => {
   const laws = createLaws({ texts, limits });
-  const s = sessionOf({ name: 't', profile: { flags: { 'intro.seen': true } }, map: 'phu-dong', clock: 540, place: [46, 61] });
+  const s = sessionOf({ name: 't', profile: { flags: { 'intro.seen': true } }, at: ['phu-dong', 46, 61], clock: 540 });
   s.step();
   assert.deepEqual(laws.step(s), []);
   const hero = getEntity(s.state, 'hero');
@@ -119,7 +124,7 @@ test('the laws: no NaN, nothing outside the map, nobody in a blocked cell or dee
   assert.match(laws.step(s).join(), /not a number/);
   Object.assign(hero.position, at, { x: -4 });
   assert.match(laws.step(s).join(), /outside the map/);
-  Object.assign(hero.position, at, { x: 30 * 2 + 1, z: 70 * 2 + 1 });
+  Object.assign(hero.position, at, { x: pd(30, 70)[0] * 2 + 1, z: pd(30, 70)[1] * 2 + 1 });
   assert.match(laws.step(s).join(), /deep water/);
   hero.fall = { t: 0 };
   assert.deepEqual(laws.step(s), [], 'a hero who falls may be in the water');
@@ -129,7 +134,8 @@ test('the laws: no NaN, nothing outside the map, nobody in a blocked cell or dee
   assert.match(tight.step(s).join(), /more than 10/);
   // A person in a house.
   const person = query(s.state, 'person').find((p) => !p.hidden);
-  const blocked = { x: 45, y: 70 };
+  const [bx, by] = pd(45, 70);
+  const blocked = { x: bx, y: by };
   assert.ok(s.tileMap.isBlocked(blocked.x, blocked.y));
   Object.assign(person.position, { x: blocked.x * 2 + 1, z: blocked.y * 2 + 1 });
   assert.match(laws.step(s).join(), /blocked cell/);
@@ -140,7 +146,7 @@ test('each kind of step: do, wait, until, at, tap, read, reload, and expect; a f
   const story = {
     name: 'steps',
     profile: { flags: {} },
-    map: 'phu-dong',
+    at: ['phu-dong', 11, 26.6],
     clock: 540,
     steps: [
       { expect: [{ screen: 'dialogue' }] },
@@ -184,7 +190,7 @@ test('the page of the stories lists each story with its about lines and a link t
 });
 
 test('the tap targets of the trials: a thing, the first thing of a kind, a place on the stem, a place on the line, and a zone of a task', () => {
-  const s = sessionOf({ name: 't', profile: { grade: 1, flags: { 'intro.seen': true, 'prologue.started': true } }, map: 'phu-dong', clock: 540, place: [50, 8] });
+  const s = sessionOf({ name: 't', profile: { grade: 1, flags: { 'intro.seen': true, 'prologue.started': true } }, at: ['phu-dong', 50, 8], clock: 540 });
   for (const id of ['scholar', 'fisher', 'woodcutter', 'healer']) s.startTrial(id);
   s.step();
   assert.deepEqual(tapTarget(s, { thing: 'band:scholar' }).target, { thing: 'band:scholar' });
@@ -205,9 +211,8 @@ test('the repeat step plays its steps again and again', async () => {
   const story = {
     name: 'repeat',
     profile: { grade: 1, flags: { 'intro.seen': true, 'prologue.started': true } },
-    map: 'phu-dong',
+    at: ['phu-dong', 54, 27],
     clock: 540,
-    place: [54, 27],
     steps: [
       { do: { type: 'talk', dialogue: 'teacher.trial' } },
       { read: true },

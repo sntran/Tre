@@ -1,7 +1,7 @@
 // Play a story headless on a session of the village, as tests/stories.test.js does. The laws of
 // the world run on every step (src/core/story.js).
 import { createSession } from '../src/core/session.js';
-import { storyProfile, playStory, createLaws, STORY_EPOCH, STEP } from '../src/core/story.js';
+import { storyProfile, storyOnPlane, playStory, createLaws, STORY_EPOCH, STEP } from '../src/core/story.js';
 import { createSkillGraph } from '../src/core/skills.js';
 import { createLearner } from '../src/core/learner.js';
 import { createLogger } from '../src/core/logger.js';
@@ -9,21 +9,26 @@ import { createRng } from '../src/core/rng.js';
 import { serialize, deserialize } from '../src/core/save.js';
 import { saveWorld } from '../src/core/world/save.js';
 import { addPoint, restorePoint, whereOf } from '../src/core/restore.js';
-import { buildTerrain } from '../src/world/terrain.js';
+import { createTerrain } from '../src/world/terrain.js';
 import { loadGameData, load } from './helpers.js';
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
 
 const data = await loadGameData();
 const graph = createSkillGraph(data.skills);
 const laws = createLaws({ texts: { vi: load('i18n/vi.json'), en: load('i18n/en.json') }, limits: load('data/config/limits.json') });
 const terrains = new Map();
+// One terrain for each map and seed (its pages are pure; a new session loads its own changes).
 const terrainOf = (map, tileMap) => {
-  const key = map.key ?? map.id; // one terrain for each map and seed
-  if (!terrains.has(key) || terrains.get(key).edited) terrains.set(key, buildTerrain(map, data.tiles.types, tileMap, data.blocks));
+  const key = map.key ?? map.id;
+  if (!terrains.has(key)) terrains.set(key, createTerrain(map, data.tiles.types, tileMap, data.blocks));
   return terrains.get(key);
 };
 
 // Play a story headless. Return the failures of the steps and of the laws.
-export async function runHeadless(story, { onSession = null } = {}) {
+export async function runHeadless(raw, { onSession = null } = {}) {
+  const story = storyOnPlane(raw, data.world);
   let elapsed = 0;
   const now = () => STORY_EPOCH + elapsed * 1000;
   let profile = storyProfile(story);
@@ -100,11 +105,13 @@ export async function runHeadless(story, { onSession = null } = {}) {
     points: () => record.points.map(({ day, era, at, before = false }) => ({ day, era, at, before })),
     async reload() {
       session.syncSave();
+      // The save keeps the kept entities by chunk: the order of the entities is not part of it.
+      const sorted = (w) => JSON.stringify({ ...w, entities: [...w.entities].sort((a, b) => String(a.id).localeCompare(String(b.id))) });
       const before = saveWorld(session.state);
       profile = deserialize(serialize(profile, now()));
       begin();
       const after = saveWorld(session.state);
-      return JSON.stringify(after) === JSON.stringify(before) ? null : 'the loaded world is not the same as the saved world';
+      return sorted(after) === sorted(before) ? null : 'the loaded world is not the same as the saved world';
     },
   };
   const failures = await playStory(story, io);
@@ -117,3 +124,18 @@ export async function runHeadless(story, { onSession = null } = {}) {
 }
 
 export { data };
+
+// The tests of one part of the stories in tests/stories/: the stories in name order, dealt into
+// the parts one by one, as cards.
+export function storyTests(part, parts) {
+  const dir = new URL('./stories/', import.meta.url);
+  const files = readdirSync(dir).filter((f) => f.endsWith('.json')).sort();
+  for (const [i, f] of files.entries()) {
+    if (i % parts !== part) continue;
+    const story = JSON.parse(readFileSync(new URL(f, dir), 'utf8'));
+    test(`story ${story.name}: ${story.about?.en ?? ''}`, async () => {
+      const failures = await runHeadless(story);
+      assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
+    });
+  }
+}

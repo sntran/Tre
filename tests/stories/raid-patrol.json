@@ -5,9 +5,8 @@
     "en": "The scouts come back: the bamboo traps are new, and the elder asks for a trap at the third post; a trap at that post is counting, a trap anywhere else is play."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 6, "flags": { "intro.seen": true, "giong.farewell": true, "scouts.won": true, "raid.tool.sling": true, "raid.tool.gate": true }, "items": { "coin": 5 } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [61, 29],
+  "at": ["phu-dong", 61, 29],
   "steps": [
     { "tap": { "entity": "encounter:patrol" } },
     { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },

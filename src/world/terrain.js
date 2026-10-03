@@ -1,15 +1,34 @@
-// Build the voxel world of a map: the ground grid (full blocks, one column for each map cell),
-// the fine grid (half-size blocks for props), the water, the paddies, and the boxes of the
-// objects. Pure, no DOM, no WebGL.
+// The voxel world of a map, in pages: one page for each chunk of CHUNK x CHUNK ground columns. A page
+// holds the ground blocks (full blocks, one column for each map cell), the fine blocks (half-size
+// blocks for the props), the water, the paddies, the flowers, the roofs and the other smooth looks,
+// and the objects whose cell is in the chunk. A page is made when it is first asked for, from the
+// map and its land only: the same map and the same chunk give the same page, whatever page was made
+// before. A map on the plane has no end: pages come and go with the hero. Pure, no DOM, no WebGL.
 //
 // Map cells: x to the east, y (map) to the south = z in the world. A ground column of height h
 // fills the blocks 0 to h - 1, so its top is at world y = h. h = the height digit of the map + 1.
+//
+// A page keeps one cell (and one fine block) of the chunks around it (the apron), so that the faces
+// and the ink at the edge of a chunk come out right. The props of the objects near a chunk are all
+// built into it in one fixed order, and only their blocks in the page stay.
 import { createGrid, hashSeed, seeded } from './voxel.js';
 import { fbm } from '../core/gen/noise.js';
 import { buildProp } from './props/index.js';
-import { dig, fell } from './chunks.js';
 
-export const WATER = Object.freeze({ river: 0.6, paddy: 0.55 }); // the water over the bed, in blocks
+export const WATER = Object.freeze({ river: 0.6, paddy: 0.55, sea: 2.5 }); // over the bed (blocks); sea: the surface (world y)
+export const CHUNK = 16; // ground columns along x and z
+export const chunkKey = (cx, cz) => `${cx},${cz}`;
+// The chunk of a ground column, and of a fine block (half blocks).
+export const chunkOf = (x, z) => chunkKey(Math.floor(x / CHUNK), Math.floor(z / CHUNK));
+export const chunkOfFine = (fx, fz) => chunkOf(Math.floor(fx / 2), Math.floor(fz / 2));
+
+// Cells: how far the blocks of a prop reach out of the cells of its object (its eaves, its crown).
+// The props of the objects this near a chunk are built into its page. A test checks the reach.
+export const REACH = Object.freeze({ school: 10, tree: 7, banyan: 5, banana: 3, areca: 3, default: 2 });
+const MARGIN = Math.max(...Object.values(REACH));
+const FINE_Y = 136; // fine blocks: the highest place of a prop
+const FINE_UP = 80; // fine blocks over the highest ground of a page
+const SEA = new Set(['sea', 'surf']);
 
 // The top of the ground of a cell (world y), from the height layer.
 export const columnTop = (digit) => digit + 1;
@@ -64,168 +83,495 @@ export function kindAt(blocks, depth, seed) {
   return base;
 }
 
-// blocks: data/world/blocks.json; with it, the ground keeps the kind of each block (kinds), so that a
-// dig knows what it takes (src/world/chunks.js).
-export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
+// Run lengths of a list of bits (0 or 1), starting with a run of 0s: [3, 2, 5] is 0 0 0 1 1 0 0 0 0 0.
+export function runsOf(bits) {
+  const out = [];
+  let v = 0;
+  let n = 0;
+  for (const b of bits) {
+    if ((b ? 1 : 0) === v) n += 1;
+    else {
+      out.push(n);
+      v = 1 - v;
+      n = 1;
+    }
+  }
+  out.push(n);
+  return out;
+}
+// The bits of run lengths (size: the count of bits).
+export function bitsOf(runs, size) {
+  const out = new Uint8Array(size);
+  let i = 0;
+  runs.forEach((n, k) => {
+    if (k % 2) out.fill(1, i, Math.min(size, i + n));
+    i += n;
+  });
+  return out;
+}
+
+// map: a map (data/maps/ for a small map with all its cells, or a map on the plane from
+// src/world/regions.js). tileTypes: data/tiles.json. tileMap: the tile map of the map
+// (src/core/tilemap.js). blocks: data/world/blocks.json; with it, the ground keeps the kind of each
+// block, so that a dig knows what it takes.
+export function createTerrain(map, tileTypes, tileMap, blocks = null) {
+  const plane = Boolean(map.plane);
   const W = map.width;
   const H = map.height;
-  const L = map.layers;
-  const typeAt = (x, z) => tileMap.type(x, z);
-  const topAt = (x, z) => (tileMap.inside(x, z) ? columnTop(tileMap.heightAt(x, z)) : 0);
-  let maxTop = 0;
-  for (let z = 0; z < H; z++) for (let x = 0; x < W; x++) maxTop = Math.max(maxTop, topAt(x, z));
-
-  const ground = createGrid(W, maxTop + 1, H);
-  // The kind of each ground block: an index into the kinds of blocks.json (+1; 0 is none).
+  const id = map.id;
   const kindNames = blocks ? Object.keys(blocks.kinds) : [];
-  const kinds = blocks ? new Uint8Array(ground.data.length) : null;
-  const fine = createGrid(W * 2, maxTop * 2 + 64, H * 2, { owners: true });
-  const shadows = new Set();
-  const shadow = (x, z) => shadows.add(z * W + x);
+  const typeAt = (x, z) => (tileMap.inside(x, z) ? tileMap.type(x, z) : null);
+  // The top of the ground of a cell (the deck of a bridge), with no digs.
+  const baseTop = (x, z) => (tileMap.inside(x, z) ? columnTop(tileMap.heightAt(x, z)) : 0);
+  const spans = (map.layers.zones ?? []).filter((r) => r.task);
+  const inSpan = (x, z) => spans.some((r) => x >= r.x && x < r.x + r.w && z >= r.y && z < r.y + r.h);
+
+  // The changes of the player, for each chunk: dug (the count of blocks dug in each column) and
+  // felled (a bit for the cell of each object that was taken away).
+  let edits = new Map();
+  const recordOf = (x, z, make = false) => {
+    const k = chunkOf(x, z);
+    if (!edits.has(k) && make) edits.set(k, { dug: new Uint8Array(CHUNK * CHUNK), felled: new Uint8Array(CHUNK * CHUNK) });
+    return edits.get(k) ?? null;
+  };
+  const local = (x, z) => (z - Math.floor(z / CHUNK) * CHUNK) * CHUNK + (x - Math.floor(x / CHUNK) * CHUNK);
+  const dugAt = (x, z) => recordOf(x, z)?.dug[local(x, z)] ?? 0;
+  const isFelled = (o) => {
+    const x = Math.floor(o.x);
+    const z = Math.floor(o.y);
+    return Boolean(recordOf(x, z)?.felled[local(x, z)]);
+  };
+
+  // The number of each object (who) for the fade and the picks: the same number while a page with
+  // a block of the object stays.
+  const whoOf = new Map();
+  const refs = new Map();
+  const free = [];
+  let next = 1;
+  const take = (key) => {
+    let w = whoOf.get(key);
+    if (!w) {
+      w = free.pop() ?? next++;
+      whoOf.set(key, w);
+      refs.set(w, 0);
+    }
+    refs.set(w, refs.get(w) + 1);
+    return w;
+  };
+  const release = (key) => {
+    const w = whoOf.get(key);
+    if (!w) return;
+    const n = refs.get(w) - 1;
+    if (n > 0) {
+      refs.set(w, n);
+      return;
+    }
+    whoOf.delete(key);
+    refs.delete(w);
+    free.push(w);
+  };
+
+  // The objects near a box (cells; x1, z1 not included), in one fixed order.
+  const near = map.plane
+    ? (x0, z0, x1, z1) => map.objectsNear(x0, z0, x1, z1)
+    : (x0, z0, x1, z1) => map.layers.objects.filter((o) => o.x < x1 && o.y < z1 && o.x + o.w > x0 && o.y + o.h > z0);
+
+  const pages = new Map();
+  const holds = new Map();
+  let version = 0;
+  const homes = {};
+
+  function buildPage(cx, cz) {
+    const x0 = cx * CHUNK;
+    const z0 = cz * CHUNK;
+    const GW = CHUNK + 2;
+    // The ground columns of the page (with the apron).
+    const tops = new Int16Array(GW * GW);
+    let maxTop = 0;
+    let minTop = Infinity;
+    for (let gz = 0; gz < GW; gz++) {
+      for (let gx = 0; gx < GW; gx++) {
+        const x = x0 - 1 + gx;
+        const z = z0 - 1 + gz;
+        const type = typeAt(x, z);
+        let h = type === 'bridge' ? 1 : baseTop(x, z);
+        h = Math.max(0, h - dugAt(x, z));
+        tops[gz * GW + gx] = h;
+        maxTop = Math.max(maxTop, baseTop(x, z));
+        minTop = Math.min(minTop, h);
+      }
+    }
+    const ground = createGrid(GW, maxTop + 1, GW);
+    const kinds = blocks ? new Uint8Array(ground.data.length) : null;
+    const water = [];
+    const paddies = [];
+    const bridges = [];
+    const inChunk = (x, z) => x >= x0 && z >= z0 && x < x0 + CHUNK && z < z0 + CHUNK;
+    for (let gz = 0; gz < GW; gz++) {
+      for (let gx = 0; gx < GW; gx++) {
+        const x = x0 - 1 + gx;
+        const z = z0 - 1 + gz;
+        const type = typeAt(x, z);
+        if (!type) continue;
+        const def = tileTypes[type] ?? {};
+        const h = tops[gz * GW + gx];
+        const full = type === 'bridge' ? 1 : baseTop(x, z);
+        const top = type === 'bridge' ? 'yellowPale' : rut(x, z) ? 'ashLight' : def.color ?? 'greenPale';
+        const under = def.under ?? 'wood';
+        for (let y = 0; y < h; y++) {
+          // The depth under the first top of the column (a dug column keeps the kinds of its blocks).
+          const depth = full - 1 - y;
+          const hash = hashSeed(`${id}:${x}:${y}:${z}`);
+          // A face of stone (a rock face): rock under the top, in the colors of the face by a seeded
+          // rule, so that the ink draws the cracks.
+          const kind = blocks ? (def.face && depth > 0 ? 'rock' : kindAt(blocks, depth, hash)) : null;
+          // The top and the block under it keep the colors of the ground type; deeper blocks show
+          // their kind.
+          const color = depth === 0 ? top : def.face ? def.face[hash % def.face.length] : depth === 1 ? under : kind ? blocks.kinds[kind].color : 'wood';
+          ground.set(gx, y, gz, color);
+          if (kinds) kinds[ground.index(gx, y, gz)] = kindNames.indexOf(kind) + 1;
+        }
+        if (!inChunk(x, z)) continue;
+        if (type === 'bridge') {
+          // A bridge is a deck of planks over the water; the ground under it is the river bed.
+          bridges.push({ x, z, y: baseTop(x, z) });
+          water.push({ x, z, y: 1 + WATER.river });
+        }
+        if (type === 'water' || type === 'shallow') water.push({ x, z, y: baseTop(x, z) + WATER.river, ...(type === 'shallow' ? { ford: true } : {}) });
+        if (SEA.has(type)) water.push({ x, z, y: WATER.sea, sea: true });
+        if (type === 'field') paddies.push({ x, z, y: baseTop(x, z) + WATER.paddy });
+      }
+    }
+
+    // The fine blocks of the page, with one fine block of the apron on each side.
+    const FW = CHUNK * 2 + 2;
+    const fy0 = Math.max(0, minTop * 2 - 2);
+    const fine = createGrid(FW, Math.max(1, Math.min(FINE_Y, maxTop * 2 + FINE_UP) - fy0), FW, { owners: true });
+    const fx0 = x0 * 2 - 1;
+    const fz0 = z0 * 2 - 1;
+    // The props write in fine units of the map; only the blocks of the page stay.
+    const writer = {
+      inside: (x, y, z) => y >= 0 && y < FINE_Y && (plane || (x >= 0 && z >= 0 && x < W * 2 && z < H * 2)),
+      get: (x, y, z) => fine.get(x - fx0, y - fy0, z - fz0),
+      set: (x, y, z, color, who) => fine.set(x - fx0, y - fy0, z - fz0, color, who),
+    };
+    const shadows = new Set();
+    const world = {
+      fine: writer,
+      groundTop: (fx, fz) => baseTop(Math.floor(fx / 2), Math.floor(fz / 2)) * 2,
+      shadow: (x, z) => { if (inChunk(x, z)) shadows.add(`${x},${z}`); },
+    };
+    const page = { cx, cz, key: chunkKey(cx, cz), x0, z0, ground, kinds, fine, fy0, fx0, fz0, objects: [], roofs: [], smooth: [], water, paddies, flowers: [], shadows, used: [], maxTop, partial: !landReady(cx, cz) };
+    const here = (fx, fz) => inChunk(Math.floor(fx / 2), Math.floor(fz / 2));
+    const add = (prop, key, info) => {
+      const who = take(key);
+      page.used.push(key);
+      const r = buildProp(world, prop, who);
+      if (!r.box) return;
+      if (info) page.objects.push({ ...info, who, kind: prop.kind, box: r.box, ...(r.info?.home ? { home: r.info.home } : {}) });
+      for (const roof of r.roofs) if (here(Math.floor((roof.x0 + roof.x1) / 2), Math.floor((roof.z0 + roof.z1) / 2))) page.roofs.push(roof);
+      for (const s of r.smooth) {
+        const k = s.ownerGrid === 'ground' ? 2 : 1;
+        if (s.owner && here(s.owner[0] * k, s.owner[2] * k)) page.smooth.push(s);
+      }
+    };
+
+    // Planks of the bridges. The deck in a placement zone (the broken bridge) comes from the world
+    // state, so the terrain leaves it out.
+    for (const b of bridges) {
+      if (inSpan(b.x, b.z)) continue;
+      const fy = b.y * 2 - 1;
+      for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) writer.set(b.x * 2 + dx, fy, b.z * 2 + dz, (b.z * 2 + dz) % 2 ? 'wood' : 'ochre');
+    }
+    // The objects of the map near the chunk.
+    for (const o of near(x0 - MARGIN, z0 - MARGIN, x0 + CHUNK + MARGIN, z0 + CHUNK + MARGIN)) {
+      const m = REACH[o.prop] ?? REACH.default;
+      if (isFelled(o) || o.x - m >= x0 + CHUNK || o.y - m >= z0 + CHUNK || o.x + o.w + m <= x0 || o.y + o.h + m <= z0) continue;
+      const mine = inChunk(Math.floor(o.x), Math.floor(o.y));
+      add({ ...o, kind: o.prop, fx: o.x * 2, fz: o.y * 2, fw: o.w * 2, fd: o.h * 2, seed: o.seed ?? hashSeed(o.id) }, `o:${o.id}`, mine ? { id: o.id, x: o.x, y: o.y, w: o.w, h: o.h, solid: o.solid !== false, gen: Boolean(o.gen) } : null);
+    }
+    // Plants that grow on the ground: bamboo on the hedge, low bushes on the low hedge. A clump
+    // stands on every fourth cell of every third row (the rows move by two in turn), so that the
+    // ground shows between the clumps.
+    for (let z = z0 - 2; z < z0 + CHUNK + 2; z++) {
+      for (let x = x0 - 2; x < x0 + CHUNK + 2; x++) {
+        const grows = tileTypes[typeAt(x, z)]?.grows;
+        if (!grows || ((z % 3) + 3) % 3 || (((x + (((z % 6) + 6) % 6 ? 2 : 0)) % 4) + 4) % 4) continue;
+        const o = { x, y: z };
+        if (isFelled(o)) continue;
+        add({ kind: grows, fx: x * 2, fz: z * 2, fw: 2, fd: 2, seed: hashSeed(`${id}:${x}:${z}`) }, `g:${x}:${z}`, inChunk(x, z) ? { id: null, x, y: z, w: 1, h: 1, solid: true, grow: true } : null);
+      }
+    }
+    // Flowers on open grass: small patches of three to seven of one color, where a noise lets them
+    // grow (never in a grid, never on a road, a dike, or a paddy). They are smooth looks owned by the
+    // top block of their ground column (a dig takes them). The flowers are a list too (world units),
+    // for the butterflies by day.
+    const r = seeded(hashSeed(`${id}:flowers:${cx}:${cz}`));
+    const meadow = hashSeed(`${id}:meadow`) & 0x7fffffff;
+    const grassy = (x, z) => ['grass', 'flowers'].includes(typeAt(x, z));
+    const edge = (x, z) => !plane && (x < 2 || z < 2 || x > W - 3 || z > H - 3);
+    for (let i = 0; i < 2; i++) {
+      // The middle of a patch keeps its flowers in the chunk.
+      const cxx = x0 + r.int(2, CHUNK - 3);
+      const czz = z0 + r.int(2, CHUNK - 3);
+      const go = r.next() < 0.32;
+      const color = r.pick(['vermilion', 'yellow', 'diep']);
+      const n = r.int(3, 7);
+      const spots = Array.from({ length: n }, () => [cxx + r.next() * 3 - 1.5, czz + r.next() * 3 - 1.5, r.int(1, 2147483646)]);
+      if (!go || edge(cxx, czz) || !grassy(cxx, czz) || fbm(meadow, cxx, czz, { scale: 14, octaves: 2 }) < 0) continue;
+      for (const [x, z, seed] of spots) {
+        const tx = Math.floor(x);
+        const tz = Math.floor(z);
+        if (!inChunk(tx, tz) || !grassy(tx, tz) || writer.get(Math.floor(x * 2), world.groundTop(x * 2, z * 2), Math.floor(z * 2))) continue;
+        const y = baseTop(tx, tz);
+        page.smooth.push({ kind: 'flower', x, y, z, color, seed, who: 0, owner: [tx, y - 1, tz], ownerGrid: 'ground' });
+        page.flowers.push({ x, y: y + 0.2, z });
+      }
+    }
+    for (const o of page.objects) if (o.home && o.id) homes[o.id] = o.home;
+    return page;
+  }
 
   // Ruts along a road: the second and the second-last row across a road that is long in one way.
   const isRoad = (x, z) => typeAt(x, z) === 'path';
   const run = (x, z, dx, dz) => {
     let back = 0;
-    while (isRoad(x - dx * (back + 1), z - dz * (back + 1))) back += 1;
+    while (back < 8 && isRoad(x - dx * (back + 1), z - dz * (back + 1))) back += 1;
     let n = back + 1;
-    while (isRoad(x + dx * (n - back), z + dz * (n - back))) n += 1;
+    while (n < 16 && isRoad(x + dx * (n - back), z + dz * (n - back))) n += 1;
     return { n, i: back };
   };
-  const rut = (x, z) => {
+  function rut(x, z) {
+    if (!isRoad(x, z)) return false;
     const along = run(x, z, 1, 0);
     const across = run(x, z, 0, 1);
     if (along.n >= 6 && across.n >= 3 && across.n <= 6) return across.i === 1 || across.i === across.n - 2;
     if (across.n >= 6 && along.n >= 3 && along.n <= 6) return along.i === 1 || along.i === along.n - 2;
     return false;
+  }
+
+  // The page of a chunk (made when it is first asked for).
+  // Is the land of a page and of the objects near it made? On the plane, the land of a tile can
+  // wait for its height tiles (map.ready); a page that was made before that is made again when it
+  // is next asked for. The box of a page and its objects is smaller than a tile, so its corners
+  // name all its tiles.
+  function landReady(cx, cz) {
+    if (!map.plane) return true;
+    const a = [cx * CHUNK - 1 - MARGIN, cz * CHUNK - 1 - MARGIN];
+    const b = [cx * CHUNK + CHUNK + MARGIN, cz * CHUNK + CHUNK + MARGIN];
+    return [[a[0], a[1]], [b[0], a[1]], [a[0], b[1]], [b[0], b[1]]].every(([x, z]) => tileMap.inside(x, z));
+  }
+  function chunk(cx, cz) {
+    const k = chunkKey(cx, cz);
+    let p = pages.get(k);
+    if (p?.partial && landReady(cx, cz)) {
+      rebuild(k);
+      p = pages.get(k);
+    }
+    if (!p) {
+      p = buildPage(cx, cz);
+      pages.set(k, p);
+      version += 1;
+    }
+    return p;
+  }
+  function drop(k) {
+    const p = pages.get(k);
+    if (!p) return;
+    for (const key of p.used) release(key);
+    pages.delete(k);
+    version += 1;
+  }
+  // Build a page again (after a change): the new page first, so that the numbers of its objects stay.
+  function rebuild(k) {
+    const old = pages.get(k);
+    if (!old) return;
+    pages.set(k, buildPage(old.cx, old.cz));
+    for (const key of old.used) release(key);
+    version += 1;
+  }
+  const pageOf = (x, z) => pages.get(chunkOf(x, z)) ?? null;
+
+  // The ground and the fine blocks of the pages, in map units (0 out of the pages).
+  const groundView = {
+    get(x, y, z) {
+      const p = pageOf(x, z);
+      return p ? p.ground.get(x - p.x0 + 1, y, z - p.z0 + 1) : 0;
+    },
+    top(x, z) {
+      const p = pageOf(x, z);
+      return p ? p.ground.top(x - p.x0 + 1, z - p.z0 + 1) : -1;
+    },
+  };
+  const fineView = {
+    get(x, y, z) {
+      const p = pageOf(Math.floor(x / 2), Math.floor(z / 2));
+      return p ? p.fine.get(x - p.fx0, y - p.fy0, z - p.fz0) : 0;
+    },
+    ownerAt(x, y, z) {
+      const p = pageOf(Math.floor(x / 2), Math.floor(z / 2));
+      return p ? p.fine.ownerAt(x - p.fx0, y - p.fy0, z - p.fz0) : 0;
+    },
   };
 
-  const water = [];
-  const paddies = [];
-  const bridges = [];
-  for (let z = 0; z < H; z++) {
-    for (let x = 0; x < W; x++) {
-      const type = typeAt(x, z);
-      const def = tileTypes[type] ?? {};
-      let h = topAt(x, z);
-      if (type === 'bridge') {
-        // A bridge is a deck of planks over the water; the ground under it is the river bed.
-        bridges.push({ x, z, y: h });
-        h = 1;
-        water.push({ x, z, y: h + WATER.river });
-      }
-      const top = type === 'bridge' ? 'yellowPale' : rut(x, z) ? 'ashLight' : def.color ?? 'greenPale';
-      const under = def.under ?? 'wood';
-      for (let y = 0; y < h; y++) {
-        const depth = h - 1 - y;
-        const hash = hashSeed(`${map.id}:${x}:${y}:${z}`);
-        // A face of stone (a rock face): rock under the top, in the colors of the face by a seeded
-        // rule, so that the ink draws the cracks.
-        const kind = blocks ? (def.face && depth > 0 ? 'rock' : kindAt(blocks, depth, hash)) : null;
-        // The top and the block under it keep the colors of the ground type; deeper blocks show
-        // their kind.
-        const color = depth === 0 ? top : def.face ? def.face[hash % def.face.length] : depth === 1 ? under : kind ? blocks.kinds[kind].color : 'wood';
-        ground.set(x, y, z, color);
-        if (kinds) kinds[ground.index(x, y, z)] = kindNames.indexOf(kind) + 1;
-      }
-      if (type === 'water' || type === 'shallow') water.push({ x, z, y: h + WATER.river, ...(type === 'shallow' ? { ford: true } : {}) });
-      if (type === 'field') paddies.push({ x, z, y: h + WATER.paddy });
+  // The lists of all pages, made again when the pages change.
+  let lists = null;
+  let listVersion = -1;
+  const all = () => {
+    if (listVersion !== version) {
+      const ps = [...pages.values()];
+      lists = {
+        objects: ps.flatMap((p) => p.objects),
+        roofs: ps.flatMap((p) => p.roofs),
+        smooth: ps.flatMap((p) => p.smooth),
+        water: ps.flatMap((p) => p.water),
+        paddies: ps.flatMap((p) => p.paddies),
+        flowers: ps.flatMap((p) => p.flowers),
+      };
+      listVersion = version;
     }
-  }
-
-  const groundTop = (fx, fz) => topAt(Math.floor(fx / 2), Math.floor(fz / 2)) * 2;
-  const world = { fine, groundTop, shadow };
-  const objects = [];
-  const roofs = [];
-  const smooth = [];
-  const add = (prop, id, solid = true) => {
-    const who = objects.length + 1;
-    const r = buildProp(world, prop, who);
-    if (!r.box) return;
-    objects.push({ id, who, kind: prop.kind, box: r.box, solid, ...(r.info?.home ? { home: r.info.home } : {}) });
-    roofs.push(...r.roofs);
-    smooth.push(...r.smooth);
+    return lists;
   };
 
-  // Planks of the bridges. The deck in a placement zone (the broken bridge) comes from the world
-  // state, so the terrain leaves it out.
-  const spans = (L.zones ?? []).filter((r) => r.task);
-  const inSpan = (x, z) => spans.some((r) => x >= r.x && x < r.x + r.w && z >= r.y && z < r.y + r.h);
-  for (const b of bridges) {
-    if (inSpan(b.x, b.z)) continue;
-    const fy = b.y * 2 - 1;
-    for (let dz = 0; dz < 2; dz++) for (let dx = 0; dx < 2; dx++) fine.set(b.x * 2 + dx, fy, b.z * 2 + dz, (b.z * 2 + dz) % 2 ? 'wood' : 'ochre');
+  // The chunks that a change at a ground column touches: its own chunk, and the chunk next to it
+  // when the column is at an edge (a face of that chunk can show now).
+  function touched(x, z) {
+    const keys = new Set([chunkOf(x, z)]);
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) keys.add(chunkOf(x + dx, z + dz));
+    return [...keys].filter((k) => pages.has(k));
   }
 
-  // The objects of the map.
-  for (const o of L.objects) {
-    add({ ...o, kind: o.prop, fx: o.x * 2, fz: o.y * 2, fw: o.w * 2, fd: o.h * 2, seed: o.seed ?? hashSeed(o.id) }, o.id, o.solid !== false);
-  }
-  // Plants that grow on the ground: bamboo on the hedge, low bushes on the low hedge. A clump
-  // stands on every fourth cell of every third row (the rows move by two in turn), so that the ground shows
-  // between the clumps.
-  for (let z = 0; z < H; z++) {
-    for (let x = 0; x < W; x++) {
-      const grows = tileTypes[typeAt(x, z)]?.grows;
-      if (!grows || z % 3 || (x + (z % 6 ? 2 : 0)) % 4) continue;
-      add({ kind: grows, fx: x * 2, fz: z * 2, fw: 2, fd: 2, seed: hashSeed(`${map.id}:${x}:${z}`) }, null);
+  // Dig the top block of a column. Return null when there is nothing to dig, else { kind, drops,
+  // at: [x, y, z], chunks } (the chunks to build again).
+  function dig(x, z) {
+    chunk(Math.floor(x / CHUNK), Math.floor(z / CHUNK));
+    const y = groundView.top(x, z);
+    if (y < 0) return null;
+    const p = pageOf(x, z);
+    const i = p.ground.index(x - p.x0 + 1, y, z - p.z0 + 1);
+    const kind = p.kinds ? kindNames[p.kinds[i] - 1] ?? 'soil' : 'soil';
+    recordOf(x, z, true).dug[local(x, z)] += 1;
+    // The block goes from every page that keeps it (its own, and the aprons of the pages around).
+    for (const q of pages.values()) {
+      const lx = x - q.x0 + 1;
+      const lz = z - q.z0 + 1;
+      if (lx < 0 || lz < 0 || lx >= CHUNK + 2 || lz >= CHUNK + 2) continue;
+      q.ground.set(lx, y, lz, 0);
+      if (q.kinds) q.kinds[q.ground.index(lx, y, lz)] = 0;
     }
+    return { kind, drops: { ...(blocks.kinds[kind]?.drops ?? {}) }, at: [x, y, z], chunks: touched(x, z) };
   }
-  // Flowers on open grass: small patches of three to seven of one color, where a noise lets them
-  // grow (never in a grid, never on a road, a dike, or a paddy). They are smooth looks owned by the
-  // top block of their ground column (a dig takes them). The flowers are a list too (world units),
-  // for the butterflies by day.
-  const flowers = [];
-  const r = seeded(hashSeed(`${map.id}:flowers`));
-  const meadow = hashSeed(`${map.id}:meadow`) & 0x7fffffff;
-  const grassy = (x, z) => ['grass', 'flowers'].includes(typeAt(x, z));
-  for (let i = 0; i < W * H * 0.0025; i++) {
-    const cx = r.int(2, W - 3);
-    const cz = r.int(2, H - 3);
-    if (!grassy(cx, cz) || fbm(meadow, cx, cz, { scale: 14, octaves: 2 }) < 0) continue;
-    const color = r.pick(['vermilion', 'yellow', 'diep']);
-    const n = r.int(3, 7);
-    for (let k = 0; k < n; k++) {
-      const x = cx + r.next() * 3 - 1.5;
-      const z = cz + r.next() * 3 - 1.5;
-      const tx = Math.floor(x);
-      const tz = Math.floor(z);
-      if (!grassy(tx, tz) || fine.get(Math.floor(x * 2), groundTop(x * 2, z * 2), Math.floor(z * 2))) continue;
-      const y = topAt(tx, tz);
-      smooth.push({ kind: 'flower', x, y, z, color, seed: r.int(1, 2147483646), who: 0, owner: [tx, y - 1, tz], ownerGrid: 'ground' });
-      flowers.push({ x, y: y + 0.2, z });
+
+  // Fell a tree (or take away another object of the map): its blocks go, and the smooth looks that
+  // they own go with them. Return null for no such object, else { blocks (the count), drops, chunks }.
+  function fell(objectId) {
+    const o = all().objects.find((x) => x.id === objectId);
+    if (!o) return null;
+    const key = `o:${objectId}`;
+    let count = 0;
+    const keys = [];
+    for (const p of pages.values()) {
+      if (!p.used.includes(key)) continue;
+      keys.push(p.key);
+      // The blocks of the object in the chunk (not in the apron).
+      for (let y = 0; y < p.fine.sy; y++) {
+        for (let z = 1; z <= CHUNK * 2; z++) for (let x = 1; x <= CHUNK * 2; x++) if (p.fine.ownerAt(x, y, z) === o.who && p.fine.get(x, y, z)) count += 1;
+      }
     }
+    const fx = Math.floor(o.x);
+    const fz = Math.floor(o.y);
+    recordOf(fx, fz, true).felled[local(fx, fz)] = 1;
+    for (const k of keys) rebuild(k);
+    const per = blocks.kinds.trunk?.drops ?? {};
+    const drops = Object.fromEntries(Object.entries(per).map(([k, n]) => [k, Math.max(1, Math.round((n * count) / 8))]));
+    return { blocks: count, drops, chunks: keys };
   }
 
   // A shadow makes the top of the ground a little darker.
-  const shade = (x, y, z) => (shadows.has(z * W + x) ? 0.8 : 1);
+  const shade = (x, y, z) => (pageOf(x, z)?.shadows.has(`${x},${z}`) ? 0.8 : 1);
+  const topAt = (x, z) => Math.max(0, baseTop(x, z) - dugAt(x, z));
+
   const terrain = {
-    width: W, height: H, ground, fine, shade, objects, roofs, smooth, water, paddies, flowers, kinds, kindNames,
+    width: W,
+    height: H,
+    plane,
+    ground: groundView,
+    fine: fineView,
+    shade,
     topAt,
-    maxTop,
-    // The ways into the houses (fine units = half blocks), by the id of the house.
-    homes: Object.fromEntries(objects.filter((o) => o.home && o.id).map((o) => [o.id, o.home])),
+    baseTop,
+    // The highest top of the ground (for a ray from the camera).
+    get maxTop() { return plane ? 40 : Math.max(0, ...[...pages.values()].map((p) => p.maxTop)); },
+    get objects() { return all().objects; },
+    get roofs() { return all().roofs; },
+    get smooth() { return all().smooth; },
+    get water() { return all().water; },
+    get paddies() { return all().paddies; },
+    get flowers() { return all().flowers; },
+    // The ways into the houses (fine units = half blocks), by the id of the house. A house of a
+    // chunk that was made once stays here.
+    homes,
+    kindNames,
+    get version() { return version; },
+    chunk,
+    has: (cx, cz) => pages.has(chunkKey(cx, cz)),
+    page: (k) => pages.get(k) ?? null,
+    get pages() { return [...pages.values()]; },
+    // Hold the pages of these chunks (keys) for a user (the session, the view); a page that no
+    // user holds goes.
+    hold(user, keys) {
+      holds.set(user, new Set(keys));
+      for (const k of keys) chunk(...k.split(',').map(Number));
+      for (const k of [...pages.keys()]) if (![...holds.values()].some((set) => set.has(k))) drop(k);
+    },
+    drop,
+    isFelled,
+    // The object of a number (the owner of a block), or null.
+    objectOf: (who) => all().objects.find((o) => o.who === who) ?? null,
     // World units: one ground block is 1 unit; a fine block is 0.5.
     boxOf: (o) => ({ x0: o.box.x0 / 2, y0: o.box.y0 / 2, z0: o.box.z0 / 2, x1: o.box.x1 / 2, y1: o.box.y1 / 2, z1: o.box.z1 / 2 }),
-    edited: false,
-    // A change of the terrain (src/world/chunks.js), for the stories and the tools of a later era:
-    // { type: 'fell', id } takes away an object of the map (a tree and its crown); { type: 'dig',
-    // at: [x, z] } takes the top block of a column. Return the result (with the chunks to build
-    // again), or null. A changed terrain is marked, so that a cache builds it again for a new start.
+    // A change of the terrain, for the stories and the tools of a later era: { type: 'fell', id }
+    // takes away an object of the map (a tree and its crown); { type: 'dig', at: [x, z] } takes the
+    // top block of a column. Return the result (with the chunks to build again), or null.
     edit(cmd) {
       if (!blocks) return null;
-      let r = null;
-      if (cmd.type === 'fell') {
-        const o = objects.find((x) => x.id === cmd.id && !x.gone);
-        r = o ? fell(terrain, blocks, o.who) : null;
-      } else if (cmd.type === 'dig') {
-        const [x, z] = cmd.at;
-        const y = ground.top(x, z);
-        r = y >= 0 ? { ...dig(terrain, blocks, x, y, z), at: [x, y, z] } : null;
+      if (cmd.type === 'fell') return fell(cmd.id);
+      if (cmd.type === 'dig') return dig(cmd.at[0], cmd.at[1]);
+      return null;
+    },
+    // The changes of the player, for the save: { key: { dug: [runs, ...] (a list of bits for each
+    // depth: the columns dug at least once, twice, ...), felled: runs } }, only for changed chunks.
+    edits() {
+      const out = {};
+      for (const [k, e] of edits) {
+        const most = Math.max(0, ...e.dug);
+        const felled = e.felled.some(Boolean);
+        if (!most && !felled) continue;
+        out[k] = {
+          ...(most ? { dug: Array.from({ length: most }, (_, d) => runsOf(e.dug.map((n) => (n > d ? 1 : 0)))) } : {}),
+          ...(felled ? { felled: runsOf(e.felled) } : {}),
+        };
       }
-      if (r) terrain.edited = true;
-      return r;
+      return out;
+    },
+    // Start again from the changes of a save (edits() gives this form). All pages are made again.
+    loadEdits(saved = {}) {
+      edits = new Map();
+      const n = CHUNK * CHUNK;
+      for (const [k, e] of Object.entries(saved ?? {})) {
+        const dug = new Uint8Array(n);
+        for (const runs of e.dug ?? []) bitsOf(runs, n).forEach((b, i) => { dug[i] += b; });
+        edits.set(k, { dug, felled: e.felled ? bitsOf(e.felled, n) : new Uint8Array(n) });
+      }
+      for (const k of [...pages.keys()]) rebuild(k);
     },
   };
   return terrain;
+}
+
+// The terrain of a small map with all its cells (data/maps/ form): all its pages are made.
+export function buildTerrain(map, tileTypes, tileMap, blocks = null) {
+  const t = createTerrain(map, tileTypes, tileMap, blocks);
+  for (let cz = 0; cz * CHUNK < map.height; cz++) for (let cx = 0; cx * CHUNK < map.width; cx++) t.chunk(cx, cz);
+  return t;
 }

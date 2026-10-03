@@ -94,7 +94,8 @@ export function stepBody(body, input, dt, world, cfg = MOVE) {
   const len = Math.hypot(input.dx ?? 0, input.dy ?? 0);
   const dir = len ? { x: input.dx / len, y: input.dy / len } : { x: 0, y: 0 };
   const strength = input.strength ?? (dir.x || dir.y ? 1 : 0);
-  const shallow = world.groundAt?.(Math.floor(body.x), Math.floor(body.y)) === 'shallow';
+  const ground = world.groundAt?.(Math.floor(body.x), Math.floor(body.y));
+  const shallow = ground === 'shallow' || ground === 'surf'; // a ford, or the sea to the knee
   const speed = (input.run ? cfg.run : cfg.walk) * strength * (shallow ? cfg.shallow : 1) * (body.speedFactor ?? 1);
   const k = 1 - Math.exp(-cfg.accel * dt);
   body.vx = (body.vx ?? 0) + (dir.x * speed - (body.vx ?? 0)) * k;

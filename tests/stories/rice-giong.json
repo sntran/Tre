@@ -5,9 +5,8 @@
     "en": "Rice for Gióng: carry the trays of three bowls and of five bowls to the pot; with ten bowls Gióng eats and grows one head taller; with twelve bowls, two bowls stay in the pot."
   },
   "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "giong.messenger": true, "giong.spoke": true, "horse.forged": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [24, 28],
+  "at": ["phu-dong", 24, 28],
   "steps": [
     { "tap": { "entity": "npc:mother" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },

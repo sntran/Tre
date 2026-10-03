@@ -55,7 +55,7 @@ npm test
 
 Add tests for each change to `src/core/`. All tests must pass before we merge a pull request.
 
-The use paths of the game are stories in `tests/stories/`: data files with a start state, commands, and the facts to check. `tests/stories.test.js` runs them headless, and `?story=<name>&play` plays one in the browser. Every new use path (a task, a raid, a quest step, a screen) comes with its story in the same commit. The stories test the paths; the unit tests test the parts. A new kind of step or fact goes into `src/core/story.js` with a test of its own in `tests/story.test.js`. After a change to a story, run `python3 tools/stories.py` to make `docs/reference/stories.html` again. `docs/STORIES.md` tells how to write a story.
+The use paths of the game are stories in `tests/stories/`: data files with a start state, commands, and the facts to check. `tests/stories.test.js`, `tests/stories-2.test.js`, and `tests/stories-3.test.js` run them headless (each file a third of the stories, so that they run at the same time), and `?story=<name>&play` plays one in the browser. Every new use path (a task, a raid, a quest step, a screen) comes with its story in the same commit. The stories test the paths; the unit tests test the parts. A new kind of step or fact goes into `src/core/story.js` with a test of its own in `tests/story.test.js`. After a change to a story, run `python3 tools/stories.py` to make `docs/reference/stories.html` again. `docs/STORIES.md` tells how to write a story. A story starts at a cell of a place (`"at": ["phu-dong", 31, 27]`) or of the plane (`"at": [x, y]`), and a long walk is one step (`{ "walk": { "to": ["soc-son", 40, 18] } }`).
 
 ## How to pick up work
 

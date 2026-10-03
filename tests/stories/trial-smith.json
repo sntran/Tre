@@ -5,9 +5,8 @@
     "en": "The trial of the smith: ore to the forge and water to the trough; the iron dropped too early bends, and dropped while it glows it becomes hard."
   },
   "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [53, 43],
+  "at": ["phu-dong", 53, 43],
   "steps": [
     { "tap": { "entity": "npc:smith" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },

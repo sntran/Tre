@@ -5,9 +5,10 @@ import { createPlane } from '../src/core/gen/plane.js';
 import { createLandPlane, TILE } from '../src/core/gen/tiles.js';
 import { stepsOf } from '../src/core/gen/heights.js';
 
-const def = load('data/world/plane-giong.json');
+const def = load('data/world/land-giong.json');
 const places = ['phu-dong', 'soc-son', 'trau-son', 'road-thanglong'].map((id) => load(`data/maps/${id}.json`));
-const geo = { rivers: load('data/geo/vietnam.json').rivers, heights: heightsOf(def.tiles) };
+const world = load('data/geo/vietnam.json');
+const geo = { rivers: world.rivers, land: world.land, heights: heightsOf(def.tiles) };
 const rules = load('data/world/scatter.json');
 const parts = load('data/figures.json').villagers;
 const make = (seed) => createLandPlane(def, places, geo, seed, rules, parts);

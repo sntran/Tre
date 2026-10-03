@@ -27,11 +27,14 @@ export function parseHeightTile(bytes) {
 }
 
 // The heights of a set of tiles: at(lon, lat) gives the meters at a point (bilinear between the
-// four values around it, from the tile of the point only), or null where no tile is loaded.
-export function createHeights(tiles) {
+// four values around it, from the tile of the point only), or null where no tile is loaded. More
+// tiles can come later (add), when the hero comes near them.
+export function createHeights(tiles = []) {
   const byName = new Map(tiles.map((t) => [t.tile, t]));
   return {
-    tiles: [...byName.keys()],
+    get tiles() { return [...byName.keys()]; },
+    has: (name) => byName.has(name),
+    add(t) { byName.set(t.tile, t); },
     at(lon, lat) {
       const t = byName.get(tileOf(lon, lat));
       if (!t) return null;

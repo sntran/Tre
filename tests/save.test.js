@@ -8,7 +8,7 @@ import {
 import { createRng } from '../src/core/rng.js';
 import { readFileSync } from 'node:fs';
 import { heroPlace, setHeroPlace, saveWorld, loadWorld } from '../src/core/world/save.js';
-import { load, mapOf } from './helpers.js';
+import { load, planeOf } from './helpers.js';
 
 function sample() {
   const p = createProfile({ id: 'p1', name: 'Tí Sún', gender: 'girl', grade: 2, now: 1000 });
@@ -137,12 +137,12 @@ test('the version 3 migration moves the hero home on the new isometric map', () 
   const v2 = sample();
   v2.place = { map: 'phu-dong', x: 16, y: 25 };
   const done = migrate({ format: SAVE_FORMAT, version: 2, savedAt: 0, profile: v2 }).profile;
-  assert.deepEqual(heroPlace(done.world), { map: 'phu-dong', x: null, y: null });
+  assert.deepEqual(heroPlace(done.world), { map: 'giong', x: null, y: null });
   assert.equal(done.flags['trial.smith.done'], true, 'the story stays');
-  // A place on the new map can have a fraction.
+  // A place on the plane can have a fraction.
   const p = sample();
-  setHeroPlace(p.world, 'phu-dong', 5.5, 13.25);
-  assert.deepEqual(heroPlace(importCode(exportCode(p)).world), { map: 'phu-dong', x: 5.5, y: 13.25 });
+  setHeroPlace(p.world, 'giong', 9362.5, 6259.25);
+  assert.deepEqual(heroPlace(importCode(exportCode(p)).world), { map: 'giong', x: 9362.5, y: 6259.25 });
 });
 
 test('the version 4 migration adds the game clock and the state of each map', () => {
@@ -153,86 +153,90 @@ test('the version 4 migration adds the game clock and the state of each map', ()
   const done = migrate({ format: SAVE_FORMAT, version: 3, savedAt: 0, profile: v3 }).profile;
   assert.deepEqual(done.world.clock, { minutes: 420 });
   assert.deepEqual(done.maps, {});
-  assert.deepEqual(heroPlace(done.world), { map: 'phu-dong', x: null, y: null });
+  assert.deepEqual(heroPlace(done.world), { map: 'giong', x: null, y: null });
   // The state of visited maps goes through the export code; bad values do not load.
   const p = sample();
   p.world.clock = { minutes: 5000.5 };
-  p.maps = { 'phu-dong': { first: 420, last: 900, at: { x: 5.5, y: 13.3 }, things: { pot1: 'broken', plank: 3 } } };
+  p.maps = { giong: { first: 420, last: 900, at: { x: 9362.5, y: 6259.3 }, things: { pot1: 'broken', plank: 3 } } };
   assert.deepEqual(importCode(exportCode(p)).maps, p.maps);
   const bad = sample();
-  bad.maps = { 'phu-dong': { at: { x: 'far', y: 1 } } };
+  bad.maps = { giong: { at: { x: 'far', y: 1 } } };
   assert.throws(() => importCode(exportCode(bad)), (e) => e.reason === 'shape');
   const badClock = sample();
   badClock.world.clock = { minutes: -5 };
   assert.throws(() => importCode(exportCode(badClock)), (e) => e.reason === 'shape');
 });
 
-test('the save keeps what the player changed in the land of a map: a felled thing and a dug block', () => {
+test('the save keeps what the player changed in the land of a map: for each changed chunk its cells and its kept entities', () => {
   const p = sample();
-  p.maps = { 'phu-dong': { first: 420, last: 500, things: {}, edits: [{ type: 'fell', id: 'tree8' }, { type: 'dig', at: [8, 29] }] } };
+  const pot = { id: 'life:3:0', keep: true, position: { x: 18724, y: 6, z: 12512, facing: 0 }, look: 'pot-broken' };
+  p.maps = { giong: { first: 420, last: 500, things: {}, chunks: { '585,391': { dug: [[20, 1, 235], [20, 1, 235]], felled: [40, 1, 215], entities: [pot] } } } };
   assert.deepEqual(importCode(exportCode(p)).maps, p.maps);
-  for (const bad of [[{ type: 'burn', id: 'tree8' }], [{ type: 'dig', at: [8] }], [{ type: 'dig', at: [8, -1] }], [{ type: 'fell' }], 'tree8']) {
+  for (const bad of [{ x: { dug: [[1]] } }, { '1,2': { dug: [[200, 100]] } }, { '1,2': { felled: [-1, 2] } }, { '1,2': { dug: 'a' } }, { '1,2': { entities: [{ position: { x: 1, y: 2, z: 3 } }] } }, { '1,2': 5 }]) {
     const q = sample();
-    q.maps = { 'phu-dong': { edits: bad } };
+    q.maps = { giong: { chunks: bad } };
     assert.throws(() => validate(q), SaveError, JSON.stringify(bad));
   }
 });
 
 test('the save keeps the state of every visited map, and the place on the last map', () => {
   const p = sample();
-  p.maps = {
+  p.maps = { giong: { first: 420, last: 1300, at: { x: 9113.5, y: 6330.5 }, things: { pot1: 'broken', ferry: true } } };
+  setHeroPlace(p.world, 'giong', 9113.5, 6330.5);
+  p.world.clock = { minutes: 1300 };
+  const back = importCode(exportCode(p));
+  assert.deepEqual(back.maps, p.maps);
+  assert.deepEqual(heroPlace(back.world), { map: 'giong', x: 9113.5, y: 6330.5 });
+  assert.equal(back.world.clock.minutes, 1300);
+  // An old save of version 4 keeps its maps, its place, and its clock through the migrations: the
+  // maps of Era 1 go into the map of the region on the plane (version 8).
+  const v4 = structuredClone(p);
+  delete v4.world;
+  v4.maps = {
     'phu-dong': { first: 420, last: 1300, at: { x: 5.5, y: 13.3 }, things: { pot1: 'broken' } },
     'soc-son': { first: 900, last: 950, at: { x: 16, y: 7.4 }, things: {} },
     'trau-son': { first: 1000, last: 1100, at: { x: 12.5, y: 10.8 }, things: { trap1: 3 } },
     'road-thanglong': { first: 1200, last: 1250, at: { x: 1.5, y: 11.5 }, things: { ferry: true } },
   };
-  setHeroPlace(p.world, 'road-thanglong', 1.5, 11.5);
-  p.world.clock = { minutes: 1300 };
-  const back = importCode(exportCode(p));
-  assert.deepEqual(back.maps, p.maps);
-  assert.deepEqual(heroPlace(back.world), { map: 'road-thanglong', x: 1.5, y: 11.5 });
-  assert.equal(back.world.clock.minutes, 1300);
-  // An old save of version 4 keeps its maps, its place, and its clock through the migrations.
-  const v4 = structuredClone(p);
-  delete v4.world;
   v4.place = { map: 'road-thanglong', x: 1.5, y: 11.5 };
   v4.clock = { minutes: 1300 };
   const old = migrate({ format: SAVE_FORMAT, version: 4, savedAt: 0, profile: v4 }).profile;
-  // The story part of three maps moved in their windows in version 7 (see the migration).
-  const moved = structuredClone(p.maps);
-  moved['soc-son'].at = { x: 24, y: 11.4 };
-  moved['trau-son'].at = { x: 76.5, y: 14.8 };
-  moved['road-thanglong'].at = { x: 1.5, y: 27.5 };
-  assert.deepEqual(old.maps, moved);
-  assert.deepEqual(heroPlace(old.world), { map: 'road-thanglong', x: 1.5, y: 27.5 });
+  // The story part of Văn Miếu moved 16 cells in its window in version 7; its frame is at 9112,
+  // 6303 on the plane (version 8).
+  assert.deepEqual(old.maps, { giong: { first: 420, last: 1300, at: { x: 9113.5, y: 6330.5 }, things: { pot1: 'broken', trap1: 3, ferry: true } } });
+  assert.deepEqual(heroPlace(old.world), { map: 'giong', x: 9113.5, y: 6330.5 });
   assert.equal(old.world.clock.minutes, 1300);
   assert.equal(old.place, undefined);
   assert.equal(old.clock, undefined);
 });
 
-test('the version 7 migration moves a place on a map whose story part moved in its window', () => {
+test('the versions 7 and 8 put a place of a map of Era 1 on the plane, and the kept entities into their chunks', () => {
   const p = sample();
   p.world.map = 'trau-son';
   p.world.entities = [{ id: 'hero', keep: true, control: true, position: { x: 50, y: 4, z: 60, facing: 0 }, motion: { vx: 0, vz: 0, speed: 0 }, look: 'hero' }];
   p.world.away = { 'road-thanglong': [{ id: 'thing', keep: true, position: { x: 10, y: 4, z: 20, facing: 0 } }], 'phu-dong': [{ id: 'pot', keep: true, position: { x: 10, y: 4, z: 20, facing: 0 } }] };
   p.maps = { 'soc-son': { first: 1, last: 2, at: { x: 16, y: 7.4 }, things: {} }, 'phu-dong': { first: 1, last: 2, at: { x: 5, y: 13 }, things: {} } };
   const done = migrate({ format: SAVE_FORMAT, version: 6, savedAt: 0, profile: p }).profile;
-  assert.deepEqual(heroPlace(done.world), { map: 'trau-son', x: 25 + 64, y: 30 + 4 });
-  assert.deepEqual(done.world.away['road-thanglong'][0].position, { x: 10, y: 4, z: 20 + 32, facing: 0 });
-  assert.deepEqual(done.world.away['phu-dong'][0].position, { x: 10, y: 4, z: 20, facing: 0 }, 'Phù Đổng did not move');
-  assert.deepEqual(done.maps['soc-son'].at, { x: 24, y: 11.4 });
-  assert.deepEqual(done.maps['phu-dong'].at, { x: 5, y: 13 });
+  // Núi Trâu: 64, 4 in its window (version 7), and its frame at 9563, 6027 on the plane (version 8).
+  assert.deepEqual(heroPlace(done.world), { map: 'giong', x: 25 + 64 + 9563, y: 30 + 4 + 6027 });
+  assert.equal(done.world.away, undefined);
+  const chunks = done.maps.giong.chunks;
+  // Văn Miếu: 16 cells down in its window, its frame at 9112, 6303; Phù Đổng at 9357, 6246.
+  assert.deepEqual(chunks['569,395'].entities[0].position, { x: 10 + 9112 * 2, y: 4, z: 20 + 32 + 6303 * 2, facing: 0 });
+  assert.deepEqual(chunks['585,391'].entities[0].position, { x: 10 + 9357 * 2, y: 4, z: 20 + 6246 * 2, facing: 0 });
+  assert.equal(done.maps['soc-son'], undefined);
+  assert.deepEqual(done.maps.giong.things, {});
+  assert.equal(validate(done), true);
 });
 
 test('the version 6 save keeps the world state: the seed, the map, the clock, and the kept entities', async () => {
-  const { createTileMap } = await import('../src/core/tilemap.js');
   const { envFor } = await import('../src/core/world/env.js');
   const { addHero, addFriend, syncPeople, addLifeLayer } = await import('../src/core/world/populate.js');
   const { step, STEP } = await import('../src/core/world/step.js');
   const { command } = await import('../src/core/world/state.js');
   const tiles = load('data/tiles.json').types;
-  const map = mapOf('phu-dong');
-  const env = envFor(createTileMap(map, tiles));
+  const { map, tileMap } = planeOf(1, { r: 0 });
+  const env = envFor(tileMap);
   // Build a world, play it, and save it.
   const make = (w) => {
     if (!w.entities.some((e) => e.id === 'hero')) addHero(w, env, map.spawn);

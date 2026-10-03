@@ -1,105 +1,16 @@
 {
   "name": "walk-trau-son",
   "about": {
-    "vi": "Đi bộ từ cổng làng Phù Đổng sang phía đông, qua vùng đất mới tạo, tới cánh đồng dưới chân núi Trâu.",
-    "en": "A walk from the gate of Phù Đổng to the east, through the generated land, to the fields at the foot of Núi Trâu."
+    "vi": "Đi bộ từ cổng làng Phù Đổng sang phía đông, qua vùng đất mới tạo, tới cánh đồng dưới chân núi Trâu, không qua cửa chuyển cảnh nào.",
+    "en": "A walk from the gate of Phù Đổng to the east, through the generated land, to the fields at the foot of Núi Trâu, with no change of scene."
   },
-  "profile": {
-    "name": "An",
-    "grade": 2,
-    "lang": "vi",
-    "seed": 7,
-    "flags": {
-      "intro.seen": true
-    }
-  },
-  "map": "phu-dong",
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
   "clock": 540,
-  "place": [
-    70.5,
-    29.5
-  ],
+  "at": ["phu-dong", 70.5, 29.5],
   "steps": [
-    {
-      "tap": {
-        "cell": [
-          79.5,
-          30.5
-        ]
-      }
-    },
-    {
-      "until": {
-        "event": "map",
-        "with": {
-          "map": "trau-son"
-        },
-        "timeout": 30
-      }
-    },
-    {
-      "wait": 1
-    },
-    {
-      "expect": [
-        {
-          "hero": {
-            "map": "trau-son",
-            "cell": [
-              2.6,
-              70.5
-            ],
-            "within": 2
-          }
-        },
-        {
-          "entity": "friend:nghe",
-          "near": "hero",
-          "within": 4
-        }
-      ]
-    },
-    {
-      "tap": {
-        "cell": [
-          45.5,
-          44.5
-        ]
-      }
-    },
-    {
-      "until": {
-        "event": "arrived",
-        "timeout": 60
-      }
-    },
-    {
-      "tap": {
-        "cell": [
-          89.5,
-          36.5
-        ]
-      }
-    },
-    {
-      "until": {
-        "event": "arrived",
-        "timeout": 60
-      }
-    },
-    {
-      "expect": [
-        {
-          "hero": {
-            "map": "trau-son",
-            "cell": [
-              89.5,
-              36.5
-            ],
-            "within": 2
-          }
-        }
-      ]
-    }
+    { "walk": { "to": ["trau-son", 66.5, 33.5] } },
+    { "expect": [{ "hero": { "cell": ["trau-son", 66.5, 33.5], "within": 2 } }, { "entity": "friend:nghe", "near": "hero", "within": 4 }] },
+    { "walk": { "to": ["trau-son", 89.5, 36.5] } },
+    { "expect": [{ "hero": { "cell": ["trau-son", 89.5, 36.5], "within": 2 } }, { "entity": "friend:nghe", "near": "hero", "within": 4 }] }
   ]
 }

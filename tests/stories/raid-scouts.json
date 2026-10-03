@@ -5,9 +5,8 @@
     "en": "The scouts at the gate: tap the post nearest the scout, pull the slingshot a count of steps, correct a miss, and bar the gate before a torch lands."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 3, "flags": { "intro.seen": true, "giong.spoke": true }, "items": { "coin": 5 } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [61, 29],
+  "at": ["phu-dong", 61, 29],
   "steps": [
     { "tap": { "entity": "encounter:scouts" } },
     { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },

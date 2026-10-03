@@ -5,9 +5,8 @@
     "en": "The trial of the teacher: tie the counting rods into bundles of ten; a bundle of nine snaps its band; then the reward."
   },
   "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [54, 27],
+  "at": ["phu-dong", 54, 27],
   "steps": [
     { "tap": { "entity": "npc:teacher" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },

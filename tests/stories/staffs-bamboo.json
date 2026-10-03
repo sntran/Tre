@@ -5,9 +5,8 @@
     "en": "Bamboo staffs for the men of the village: the child slashes each culm of the clump at the height of the hand, and the piece is as long as the height of the cut; a piece that is not equal to the others breaks and its culm grows again; with four equal pieces, the staffs tie into a bundle."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "trial.woodcutter.done": true, "giong.grown": true, "soldier1.won": true, "soldier2.won": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [48, 8],
+  "at": ["phu-dong", 48, 8],
   "steps": [
     { "tap": { "entity": "npc:woodcutter" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },

@@ -10,10 +10,15 @@ const WATER = new Set(['water', 'shallow', 'field']); // a paddy is still water 
 
 // The named places of a map (layers.places, in map cells) on the half-block grid, with the
 // height of each (the ground and h over it).
+// The height comes when a place is first read (on a land with no end, its tile is made then).
 export function placesOf(map, tileMap) {
   const out = {};
   for (const [name, p] of Object.entries(map.layers.places ?? {})) {
-    out[name] = { x: p.x * 2, z: p.y * 2, y: (tileMap.heightAt(Math.floor(p.x), Math.floor(p.y)) + 1) * 2 + (p.h ?? 0) };
+    let v = null;
+    Object.defineProperty(out, name, {
+      enumerable: true,
+      get: () => (v ??= { x: p.x * 2, z: p.y * 2, y: (tileMap.heightAt(Math.floor(p.x), Math.floor(p.y)) + 1) * 2 + (p.h ?? 0) }),
+    });
   }
   return out;
 }
@@ -25,12 +30,21 @@ export function envFor(tileMap, extra = {}) {
   const cell = (v) => Math.floor(v / 2);
   // The tile map for walks of the world: only the ground and the objects block.
   const ground = { width: tileMap.width, inside: tileMap.inside, walkable: (x, y) => tileMap.inside(x, y) && !tileMap.isBlocked(x, y), canStep: tileMap.canStep };
-  // The cells of the fords (shallow water that people walk through).
-  const fords = [];
-  for (let y = 0; y < tileMap.height; y++) for (let x = 0; x < tileMap.width; x++) if (tileMap.groundAt(x, y) === 'shallow') fords.push({ x, y });
+  // The cells of the fords (shallow water that people walk through). A land with no end gives
+  // them (extra.fords: the fords of the stamps).
+  const fords = extra.fords ?? [];
+  if (!extra.fords && !tileMap.plane) for (let y = 0; y < tileMap.height; y++) for (let x = 0; x < tileMap.width; x++) if (tileMap.groundAt(x, y) === 'shallow') fords.push({ x, y });
+  const mistAt = (x, y) => tileMap.mistAt?.(Math.floor(x), Math.floor(y)) ?? 0;
   const env = {
     // The world as a body at the map point (x, y) sees it (a cliff blocks too).
     near: (x, y) => worldFor(tileMap, x, y),
+    // The world as Nghé sees it: Nghé does not go into the sea, nor into the mist.
+    nearFriend(x, y) {
+      const w = worldFor(tileMap, x, y);
+      return { ...w, isBlocked: (tx, ty) => w.isBlocked(tx, ty) || tileMap.groundAt(tx, ty) === 'surf' || mistAt(tx, ty) > 0 };
+    },
+    // How deep a point (map cells) is in the mist of the land of a later era (0: not in it).
+    mistAt,
     // The top of the ground of a cell, in half blocks (the height digit + 1, in blocks).
     groundY: (x, y) => (tileMap.inside(Math.floor(x), Math.floor(y)) ? (tileMap.heightAt(Math.floor(x), Math.floor(y)) + 1) * 2 : 2),
     isBlocked: (tx, ty) => tileMap.isBlocked(tx, ty),

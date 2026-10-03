@@ -1,107 +1,21 @@
 {
   "name": "walk-vanmieu",
   "about": {
-    "vi": "Đi bộ từ Phù Đổng qua bến cạn sông Đuống, sang phía tây qua vùng đất mới tạo, qua đò sông Hồng, tới cổng Văn Miếu.",
-    "en": "A walk from Phù Đổng over the ford of the Đuống, west through the generated land, over the Red River on the ferry, to the gate of Văn Miếu."
+    "vi": "Đi bộ từ Phù Đổng qua bến cạn sông Đuống, sang phía tây qua vùng đất mới tạo, qua đò sông Hồng, tới cổng Văn Miếu, không qua cửa chuyển cảnh nào.",
+    "en": "A walk from Phù Đổng over the ford of the Đuống, west through the generated land, over the Red River on the ferry, to the gate of Văn Miếu, with no change of scene."
   },
-  "profile": {
-    "name": "An",
-    "grade": 2,
-    "lang": "vi",
-    "seed": 7,
-    "flags": {
-      "intro.seen": true,
-      "prologue.done": true
-    }
-  },
-  "map": "phu-dong",
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.done": true } },
   "clock": 540,
-  "place": [
-    17.5,
-    60.5
-  ],
+  "at": ["phu-dong", 17.5, 60.5],
   "steps": [
-    {
-      "tap": {
-        "cell": [
-          0.5,
-          80.5
-        ]
-      }
-    },
-    {
-      "until": {
-        "event": "map",
-        "with": {
-          "map": "road-thanglong"
-        },
-        "timeout": 60
-      }
-    },
-    {
-      "wait": 1
-    },
-    {
-      "expect": [
-        {
-          "hero": {
-            "map": "road-thanglong",
-            "cell": [
-              117.4,
-              40.5
-            ],
-            "within": 5
-          }
-        }
-      ]
-    },
-    {
-      "tap": {
-        "cell": [
-          55,
-          40
-        ]
-      }
-    },
-    {
-      "until": {
-        "event": "open",
-        "with": {
-          "screen": "say",
-          "textKey": "map.ferry"
-        },
-        "timeout": 90
-      }
-    },
-    {
-      "read": true
-    },
-    {
-      "wait": 0.5
-    },
-    {
-      "tap": {
-        "cell": [
-          0.6,
-          40
-        ]
-      }
-    },
-    {
-      "until": {
-        "event": "open",
-        "with": {
-          "screen": "vanmieu"
-        },
-        "timeout": 60
-      }
-    },
-    {
-      "expect": [
-        {
-          "screen": "vanmieu"
-        }
-      ]
-    }
+    { "walk": { "to": ["road-thanglong", 58, 40] } },
+    { "expect": [{ "hero": { "cell": ["road-thanglong", 58, 40], "within": 2 } }, { "entity": "friend:nghe", "near": "hero", "within": 4 }] },
+    { "tap": { "cell": ["road-thanglong", 55, 40] } },
+    { "until": { "event": "open", "with": { "screen": "say", "textKey": "map.ferry" }, "timeout": 90 } },
+    { "read": true },
+    { "wait": 0.5 },
+    { "tap": { "cell": ["road-thanglong", 0.6, 40] } },
+    { "until": { "event": "open", "with": { "screen": "vanmieu" }, "timeout": 60 } },
+    { "expect": [{ "screen": "vanmieu" }] }
   ]
 }

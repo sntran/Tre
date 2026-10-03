@@ -1,6 +1,5 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createTileMap } from '../src/core/tilemap.js';
 import { createWorldState, getEntity, query, command } from '../src/core/world/state.js';
 import { step, STEP } from '../src/core/world/step.js';
 import { envFor, placesOf } from '../src/core/world/env.js';
@@ -8,20 +7,18 @@ import { addHero, addFriend, addLifeLayer } from '../src/core/world/populate.js'
 import { rainOf } from '../src/core/world/systems/sky.js';
 import { whenOn, catchAt } from '../src/core/world/systems/joys.js';
 import { rareOn } from '../src/core/world/ambient.js';
-import { buildTerrain } from '../src/world/terrain.js';
-import { load, mapOf } from './helpers.js';
+import { load, planeOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
 const life = load('data/world/life.json');
 const dayData = load('data/world/day.json');
 const A = dayData.ambient;
-const map = mapOf('phu-dong');
-const tileMap = createTileMap(map, tiles);
-const terrain = buildTerrain(map, tiles, tileMap);
+const { map, tileMap, terrain, at: cellAt } = planeOf(1);
+const [farX, farY] = cellAt('phu-dong', 78, 1); // a cell far from the animals
 const env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes, day: dayData, joys: life.joys });
 
 // The village with its animals and the small joys; the hero stands at a map cell.
-function village(minutes, at = { x: 78, y: 1 }, seed = 11) {
+function village(minutes, at = { x: farX, y: farY }, seed = 11) {
   const w = createWorldState({ seed, map: map.id, clock: { minutes } });
   addHero(w, env, at);
   addLifeLayer(w, map, env, life);
@@ -104,7 +101,7 @@ test('a frog on a lily pad jumps into the river when the hero comes near, and co
   assert.ok(events.some((e) => e.type === 'hop' && e.id === frog.id));
   assert.ok(events.some((e) => e.type === 'dive' && e.id === frog.id));
   assert.equal(frog.hidden, true, 'under the water');
-  put(w, 'hero', 156, 2);
+  put(w, 'hero', farX * 2, farY * 2);
   run(w, life.kinds.frog.react.away + 1);
   assert.equal(frog.hidden, undefined, 'back on the lily pad');
   assert.ok(Math.hypot(frog.position.x - home.x, frog.position.z - home.z) < 0.01);

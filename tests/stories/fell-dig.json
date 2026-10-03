@@ -5,9 +5,8 @@
     "en": "The world can be dug and felled: a tree near the start is felled (its crown goes with its trunk), and one block of the path is dug. The save keeps the changes."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [9, 27],
+  "at": ["phu-dong", 9, 27],
   "steps": [
     { "wait": 1 },
     { "do": { "type": "fell", "id": "tree8" } },

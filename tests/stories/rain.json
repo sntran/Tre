@@ -5,9 +5,8 @@
     "en": "Rain: the river rises, the ford closes, Nghé shakes its head at the edge, and the ford opens one game hour after the rain."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
   "clock": 3600,
-  "place": [17.5, 62],
+  "at": ["phu-dong", 17.5, 62],
   "steps": [
     { "expect": [{ "ford": "open" }] },
     { "at": { "hour": 12.6 } },

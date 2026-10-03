@@ -1,22 +1,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createTileMap } from '../src/core/tilemap.js';
 import { createWorldState, getEntity, query } from '../src/core/world/state.js';
 import { step, STEP } from '../src/core/world/step.js';
 import { envFor, placesOf } from '../src/core/world/env.js';
 import { addHero, syncPeople, addLifeLayer, addLanterns } from '../src/core/world/populate.js';
 import { nightAt, rainOf, sky } from '../src/core/world/systems/sky.js';
 import { stepAt } from '../src/core/world/systems/schedule.js';
-import { buildTerrain } from '../src/world/terrain.js';
-import { load, mapOf } from './helpers.js';
+import { load, planeOf } from './helpers.js';
 
 const tiles = load('data/tiles.json').types;
 const life = load('data/world/life.json');
 const days = load('data/world/people.json');
 const dayData = load('data/world/day.json');
-const map = mapOf('phu-dong');
-const tileMap = createTileMap(map, tiles);
-const terrain = buildTerrain(map, tiles, tileMap);
+const { map, tileMap, terrain, at } = planeOf(1, { places: ['phu-dong', 'soc-son', 'trau-son', 'road-thanglong'] });
+const far = at('phu-dong', 78, 1); // a cell far from everybody
 const env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes, day: dayData });
 
 test('the light of the day: day, dusk, night, and dawn; the rain of some days, from the seed', () => {
@@ -51,7 +48,7 @@ test('the light of the day: day, dusk, night, and dawn; the rain of some days, f
 // The whole village from 6 in the morning: the hero stands far from everybody.
 function village(minutes) {
   const w = createWorldState({ seed: 11, map: map.id, clock: { minutes } });
-  addHero(w, env, { x: 78, y: 1 });
+  addHero(w, env, { x: far[0], y: far[1] });
   syncPeople(w, map, env, () => true, life.people, days);
   addLifeLayer(w, map, env, life);
   addLanterns(w, env);
@@ -139,12 +136,13 @@ test('a knock at a lit house at night: the lantern flickers and a soft sound com
 
 test('in the morning grandma sets a new pot for the pot that the hero broke, with a small sigh', () => {
   const w = village(10 * 60);
-  const pot = query(w, 'kind').find((e) => e.kind === 'pot' && Math.hypot(e.position.x - 26.4, e.position.z - 46.4) < 1);
+  const potAt = at('phu-dong', 13.2, 23.2);
+  const pot = query(w, 'kind').find((e) => e.kind === 'pot' && Math.hypot(e.position.x - potAt[0] * 2, e.position.z - potAt[1] * 2) < 1);
   const hero = getEntity(w, 'hero');
   Object.assign(hero.position, { x: pot.position.x + 1, z: pot.position.z });
   step(w, STEP, env);
   assert.equal(pot.look, 'pot-broken');
-  Object.assign(hero.position, { x: 156, z: 2 });
+  Object.assign(hero.position, { x: far[0] * 2, z: far[1] * 2 });
   // The same day: still broken.
   runTo(w, 16);
   assert.equal(pot.look, 'pot-broken');

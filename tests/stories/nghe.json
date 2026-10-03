@@ -5,9 +5,8 @@
     "en": "Pet and ride Nghé; on the back of Nghé the hero pushes the cart, then gets off."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
   "clock": 540,
-  "place": [37, 37],
+  "at": ["phu-dong", 37, 37],
   "steps": [
     { "wait": 1 },
     { "do": { "type": "pet", "id": "friend:nghe" } },

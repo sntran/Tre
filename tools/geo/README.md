@@ -4,7 +4,7 @@
 
 ## The fine height tiles
 
-A tile is 1 × 1 degree, with a value every 0.005 degree (about 550 m): 201 × 201 values with both edges, so that a point in the tile needs no other tile. Each value is 0.6 × the highest + 0.4 × the mean of the 7 × 7 SRTM samples of its square, so that a hill smaller than the square keeps most of its height. Sea and voids are 0. The file (`<name>.bin`, about 80 KB) is the length of a JSON header (4 bytes, little-endian), the header (`tile`, `lon0`, `lat1`, `step`, `cols`, `rows`, `unit`, `filter`, `source`), and the values (16-bit, little-endian, in meters, row by row from the north). The game reads it with `fetch(...).arrayBuffer()`, the tests with `fs` (`src/core/gen/heights.js`). For a new region, add its tiles to its land file and build again.
+A tile is 1 × 1 degree, with a value every 0.005 degree (about 550 m): 201 × 201 values with both edges, so that a point in the tile needs no other tile. Each value is 0.6 × the highest + 0.4 × the mean of the 7 × 7 SRTM samples of its square, so that a hill smaller than the square keeps most of its height. Sea and voids are 0. The file (`<name>.bin`, about 80 KB) is the length of a JSON header (4 bytes, little-endian), the header (`tile`, `lon0`, `lat1`, `step`, `cols`, `rows`, `unit`, `filter`, `source`), and the values (16-bit, little-endian, in meters, row by row from the north). The game reads it with `fetch(...).arrayBuffer()`, the tests with `fs` (`src/core/gen/heights.js`). For a new region, add its tiles to its land file and build again. The game loads the tiles of `startTiles` (the story places) at the start, and the other tiles when the hero comes near them (`src/ui/data.js`, `src/ui/stream.js`); the land of a tile waits for its height tiles.
 
 ## Steps
 

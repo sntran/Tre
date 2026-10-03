@@ -6,7 +6,7 @@
 import { createRng } from '../rng.js';
 import { villagerLook } from './people.js';
 
-// The hamlet of one site (region cells; site: { map, x, y, w, h, seed }): the ground of its cells
+// The hamlet of one site (plane cells; site: { x, y, w, h, seed }): the ground of its cells
 // (claims: { x, y, letter, drop }), its objects, its life, and its villagers. Pure: the same site
 // gives the same hamlet.
 export function hamletOf(site, parts) {
@@ -39,20 +39,5 @@ export function hamletOf(site, parts) {
   add('coop', hx + 11, hy + H - 4);
   add(hr.chance(0.5) ? 'banana' : 'areca', hx + W - 5, hy + H - 4);
   out.life.push({ map: mi, kind: 'chicken', n: hr.int(2, 4), x: hx + 12, y: hy + H - 6, r: 1.5 });
-  return out;
-}
-
-// land: createLand() with the sites of the hamlets. maps: the maps of the region. parts: the
-// villagers of data/figures.json. Return { objects, life, villagers } in region cells; the cells
-// of each hamlet are claimed in the land (the scatter leaves them).
-export function placeHamlets(land, maps, parts) {
-  const out = { objects: [], life: [], villagers: [] };
-  for (const site of land.sites ?? []) {
-    const h = hamletOf(site, parts);
-    for (const c of h.claims) land.claim(c.x, c.y, c.letter, c.drop);
-    out.objects.push(...h.objects);
-    out.life.push(...h.life);
-    out.villagers.push(...h.villagers);
-  }
   return out;
 }

@@ -5,9 +5,8 @@
     "en": "At noon the buffalo of another family lie down in the shade of a tree and snore now and then. A tap on one makes it flick an ear, and it sleeps on. Nothing to count, and no reward."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "map": "phu-dong",
   "clock": 675,
-  "place": [68, 33],
+  "at": ["phu-dong", 68, 33],
   "steps": [
     { "at": { "hour": 11.7 } },
     { "wait": 20 },

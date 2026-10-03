@@ -172,10 +172,10 @@ class M:
         }
 
 
-def window_def(m, region, window, size, offset, stamps):
-    """The map as a window on the region plane. window: the place of the window (region cells);
-    size: its width and height (cells); offset: the place of the hand-made map in the window
-    (cells); stamps: the parts of the hand-made map that stay (tiles: x, y, w, h). The land
+def place_def(m, region, size, offset, stamps):
+    """The map as the frame of a place on the plane (the land file puts the frame at its real place).
+    size: the width and height of the frame (cells); offset: the place of the hand-made map in the
+    frame (cells); stamps: the parts of the hand-made map that stay (tiles: x, y, w, h). The land
     outside the stamps comes from the rules of the region (src/core/gen/). The objects and the
     groups of animals outside the stamps go: the scatter rules make new ones there."""
     d = m.data(region)
@@ -203,7 +203,6 @@ def window_def(m, region, window, size, offset, stamps):
         'region': region,
         'nameKey': d['nameKey'],
         'geo': d['geo'],
-        'window': {'x': window[0], 'y': window[1]},
         'width': size[0],
         'height': size[1],
         'legend': d['legend'],
