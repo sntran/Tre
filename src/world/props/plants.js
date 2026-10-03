@@ -35,8 +35,8 @@ export function areca(ctx, o) {
   const r = ctx.rng;
   const { x, z } = center(o);
   const g = ctx.ground(x, z);
-  const h = 16 + r.int(0, 6);
-  for (let y = g; y < g + h; y++) ctx.set(x, y, z, y % 4 === 0 ? 'ash' : 'ashLight');
+  const h = 12 + r.int(0, 4);
+  for (let y = g; y < g + h; y++) ctx.set(x, y, z, (y - g) % 3 === 2 ? 'greenDeep' : 'ashLight');
   ctx.smooth({ kind: 'banana', x: (x + 0.5) / 2, y: (g + h + 1) / 2, z: (z + 0.5) / 2 }, [2.8, 1.5, 1.4]);
   ctx.shadowDisc(x, z, 2, Math.round(h * 0.4));
 }

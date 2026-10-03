@@ -73,10 +73,9 @@ export function scatter(land, rules, maps, seed) {
     const stands = (bx, by) => {
       const x = x0 + bx;
       const y = y0 + by;
-      if (rule.patch && fbm(patch, x, y, { scale: rule.patch.scale, octaves: 2 }) < rule.patch.over) return false;
-      if (rule.chance !== undefined && roll(`${name}:chance`, x, y) >= rule.chance) return false;
       const first = land.cell(x, y);
-      if (!first) return false;
+      if (!first || !fits(rule, first)) return false;
+      if (rule.patch && fbm(patch, x, y, { scale: rule.patch.scale, octaves: 2 }) < rule.patch.over) return false;
       const m = maps[first.map];
       for (let dy = -1; dy <= sh; dy++) {
         for (let dx = -1; dx <= sw; dx++) {
@@ -90,12 +89,14 @@ export function scatter(land, rules, maps, seed) {
       return true;
     };
     const found = localSamples(w, h, rule.spacing, stands, hashSeed(`${seed}:${name}`) & 0x7fffffff, x0, y0);
-    for (const [bx, by] of found) {
+    // The chance thins the samples (after the choice, so that it makes fewer things).
+    const kept = found.filter(([bx, by]) => rule.chance === undefined || roll(`${name}:chance`, x0 + bx, y0 + by) < rule.chance);
+    for (const [bx, by] of kept) {
       const x = x0 + bx;
       const y = y0 + by;
       objects.push({ map: land.cell(x, y).map, prop: rule.prop, x, y, w: sw, h: sh, seed: 1 + Math.floor(roll(`${name}:seed`, x, y) * 2147483645) });
     }
-    for (const o of objects.slice(objects.length - found.length)) for (let dy = 0; dy < o.h; dy++) for (let dx = 0; dx < o.w; dx++) taken.add(key(o.x + dx, o.y + dy));
+    for (const o of objects.slice(objects.length - kept.length)) for (let dy = 0; dy < o.h; dy++) for (let dx = 0; dx < o.w; dx++) taken.add(key(o.x + dx, o.y + dy));
   });
   (rules.life ?? []).forEach((rule, ri) => {
     const name = `life:${rule.kind}:${ri}`;
@@ -103,12 +104,12 @@ export function scatter(land, rules, maps, seed) {
       const x = x0 + bx;
       const y = y0 + by;
       const c = land.cell(x, y);
-      if (!c || !fits(rule, c) || taken.has(key(x, y)) || !inside(maps[c.map], x, y)) return false;
-      return rule.chance === undefined || roll(`${name}:chance`, x, y) < rule.chance;
+      return Boolean(c) && fits(rule, c) && !taken.has(key(x, y)) && inside(maps[c.map], x, y);
     };
     for (const [bx, by] of localSamples(w, h, rule.spacing, ok, hashSeed(`${seed}:${name}`) & 0x7fffffff, x0, y0)) {
       const x = x0 + bx;
       const y = y0 + by;
+      if (rule.chance !== undefined && roll(`${name}:chance`, x, y) >= rule.chance) continue;
       const n = rule.n[0] + Math.floor(roll(`${name}:n`, x, y) * (rule.n[1] - rule.n[0] + 1));
       life.push({ map: land.cell(x, y).map, kind: rule.kind, n, x: x + 0.5, y: y + 0.5, r: rule.r ?? 2 });
     }

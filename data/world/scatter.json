@@ -12,7 +12,7 @@
   { "prop": "boat", "spacing": 24, "size": [6, 2], "on": ["_"], "water": [1, 2], "chance": 0.7 }
  ],
  "life": [
-  { "kind": "grass", "spacing": 14, "n": [6, 12], "r": 2.5, "on": ["."], "road": [2, 999] },
+  { "kind": "grass", "spacing": 24, "n": [5, 9], "r": 2.5, "on": ["."], "road": [2, 999] },
   { "kind": "duck", "spacing": 40, "n": [2, 3], "r": 2, "on": ["f"], "chance": 0.6 },
   { "kind": "duck", "spacing": 40, "n": [2, 3], "r": 2.5, "on": ["~"], "water": [0, 0], "chance": 0.7 },
   { "kind": "buffalo", "spacing": 60, "n": [1, 2], "r": 1.5, "on": ["."], "field": [2, 6], "road": [3, 999], "chance": 0.6 },
