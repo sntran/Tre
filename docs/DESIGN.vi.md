@@ -80,12 +80,13 @@ Tre là một thế giới isometric sống động duy nhất. Trẻ đi lại,
 - **Nét mực chỉ ở nơi có ý nghĩa:** nơi một mặt gặp màu khác, một cạnh hở, hoặc một nếp gấp. Không bao giờ viền quanh mọi khối. Nét mảnh hơn trên các khối nhỏ.
 - **Mái là tranh lợp mượt,** không phải khối bậc thang: mặt dốc với sống mái cong hình thuyền của nhà Đông Sơn, nét mực vẽ đường tranh, và đầu chim trang trí trên đình.
 - **Nước có hoa văn sóng** của tranh in. Ruộng lúa là nước lặng với mạ cấy thành hàng.
+- **Mặt đất được in, không phải một màu phẳng.** Cỏ có hai sắc xanh thành từng mảng mềm và những nét cỏ ngắn như nét in; đường đất có hạt, sỏi nhỏ và vết bánh xe; đường trong làng lát gạch hoặc đá; cát có gợn. Hoa văn nằm trong shader và không tốn thêm hình khối. Mặt đất cũng có hình dáng: đường qua ruộng chạy trên bờ thấp, đường trên đất khô thấp hơn cỏ hai bên một chút, và vùng đồng bằng có gò, mương, ao, và những khóm cỏ ở mép.
 - **Một nguồn sáng từ phía trước bên trái.** Mọi vật cao đều đổ bóng phẳng về phía sau bên phải trên các khối mặt đất. Nhà sàn đổ bóng dưới sàn.
 - **Một lớp vân giấy và viền mờ nhẹ** phủ lên toàn khung hình.
 - **Nhân vật luôn nhìn thấy được.** Bất cứ thứ gì nằm giữa camera và nhân vật đều mờ đi thành bóng ma: giữ đường viền, bỏ màu. Cả vật thể mờ đi, không phải từng phần.
 - **Hoàng hôn** là một lớp phủ màu chàm lên toàn cảnh, với những vũng sáng ấm từ đèn lồng và đom đóm bên mặt nước. Nét mực dịu đi một chút vào ban đêm.
 - **Nhân vật được ghép từ các bộ phận** (đầu, thân, tay, chân) có thể xoay, nên chu kỳ đi bộ, gặm cỏ, vẫy tay và ngồi là hoạt ảnh của các bộ phận, không phải sprite mới. Bước đi có tay và chân đánh so le, hơi nghiêng người, và nhấc lên mỗi bước. Thú bốn chân bước với hai chân chéo nhau cùng lúc.
-- **Nhân vật mịn hơn mặt đất.** Người và thú được dựng trên lưới một phần tư khối, nên một người cao 14 đến 16 đơn vị: đầu tròn bậc thang, mặt có mắt và miệng, tóc có khối, tay áo, bàn tay cầm được đồ, bàn chân, và bước đi có gập gối. Mặt đất giữ khối đầy và nửa khối. Mọi bộ phận nhân vật vẽ bằng một instanced mesh; nhân vật ngoài khung hình được loại bỏ (culling), và nhân vật ở xa vẽ bản thô.
+- **Nhân vật mịn hơn mặt đất.** Người và thú được dựng trên lưới một phần tư khối, nên một người cao 14 đến 16 đơn vị: đầu có mặt phẳng rộng và tai, mắt có đốm sáng, tóc có khối với kiểu tóc nhìn rõ từ phía trước, tay áo, bàn tay cầm được đồ, bàn chân, và bước đi có gập gối. **Trẻ con trông ra trẻ con:** mắt thấp dưới vầng trán rộng, mắt to và đen, lông mày mảnh, miệng nhỏ gần mắt, nửa dưới khuôn mặt ngắn và tròn, má hồng, và không có mũi. Người lớn có mắt ở giữa đầu, có quai hàm và mũi. Cổ là một khúc ngắn trong bóng, không bao giờ là một chồng bậc. Mặt đất giữ khối đầy và nửa khối. Mọi bộ phận nhân vật vẽ bằng một instanced mesh; nhân vật ngoài khung hình được loại bỏ (culling), và nhân vật ở xa vẽ bản thô.
 
 **Năm quy tắc**
 
