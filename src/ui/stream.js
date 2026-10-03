@@ -5,6 +5,7 @@
 // the same tile). Without workers, one tile is made in each frame.
 
 const RADIUS = 2; // tiles around the tile of the hero (a tile is 64 cells)
+const RETRY = 5000; // ms: a tile whose height tiles did not load (offline) asks again after this
 
 // map: a map on the plane (src/world/regions.js). data: the data of the game (heights, heightBytes,
 // moreHeights, geo, scatter, figures).
@@ -12,6 +13,8 @@ export function createStream(map, data) {
   const land = map.land;
   const asked = new Set();
   const queue = [];
+  // The tiles whose height tiles did not load: they show the paper of the mist until they load.
+  const waiting = new Map();
   let worker = null;
   try {
     worker = new Worker(new URL('./gen-worker.js', import.meta.url), { type: 'module' });
@@ -54,6 +57,12 @@ export function createStream(map, data) {
     asked.add(key);
     const need = land.needs(tx, tz).filter((n) => !data.heights.has(n));
     if (need.length) await data.moreHeights(need);
+    if (need.some((n) => !data.heights.has(n))) {
+      asked.delete(key);
+      waiting.set(key, [tx, tz, Date.now() + RETRY]);
+      return;
+    }
+    waiting.delete(key);
     share();
     if (land.has(tx, tz)) {
       asked.delete(key);
@@ -76,6 +85,13 @@ export function createStream(map, data) {
         for (let dz = -RADIUS; dz <= RADIUS; dz++) for (let dx = -RADIUS; dx <= RADIUS; dx++) want.push([cx + dx, cy + dz, dx * dx + dz * dz]);
         want.sort((a, b) => a[2] - b[2]);
         for (const [tx, tz] of want) ask(tx, tz);
+      }
+      // Ask again for the tiles whose height tiles did not load.
+      const now = Date.now();
+      for (const [k, [tx, tz, when]] of waiting) {
+        if (when > now) continue;
+        waiting.delete(k);
+        ask(tx, tz);
       }
       // Without a worker: one tile in each frame.
       const next = queue.shift();

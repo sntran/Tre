@@ -162,6 +162,22 @@ test('every prop builds blocks, and the same seed builds the same prop', () => {
   assert.notDeepEqual([a.fine.data, ta.smooth], [b.fine.data, tb.smooth]);
 });
 
+test('a crown is at least about 2.5 times as wide as its trunk, for each size of the forest', () => {
+  for (const crown of [2, 3, 5]) {
+    const g = world();
+    const r = buildProp(g, { kind: 'tree', fx: 12, fz: 12, fw: 4, fd: 4, seed: 3, crown }, 1);
+    // The width of the trunk in fine blocks: the wood blocks in the lowest layer of the tree.
+    const xs = new Set();
+    let low = Infinity;
+    for (let y = 0; y < g.fine.h && low === Infinity; y++) {
+      for (let z = 0; z < g.fine.d; z++) for (let x = 0; x < g.fine.w; x++) if (colorName(g.fine.get(x, y, z)) === 'wood') { low = y; xs.add(x); }
+    }
+    const crownLook = r.smooth.find((s) => s.kind === 'crown');
+    // The crown radius is in ground blocks; a fine block is half a ground block.
+    assert.ok((crownLook.r * 2) / (xs.size / 2) >= 2.5, `crown ${crown}: ${crownLook.r * 2} wide over a trunk of ${xs.size / 2}`);
+  }
+});
+
 test('the hero is made of parts from the choices at the start', () => {
   const boy = person(heroLook({ gender: 'boy', skin: 3, face: 2, hair: 2, clothes: 2 }, HERO));
   const names = boy.parts.map((p) => p.name);

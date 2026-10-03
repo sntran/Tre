@@ -18,7 +18,10 @@ export function tree(ctx, o, opts = {}) {
   const h = opts.trunk ?? (size ? Math.round(2 + size * 0.9) + r.int(0, 1) : 5 + r.int(0, 2));
   const rad = size ?? 3 + r.int(0, 1);
   const blobs = size ? (size <= 2 ? 1 : size <= 3 ? 2 : 4) : undefined;
-  ctx.box(x - 1, g, z - 1, x, g + h, z, 'wood');
+  // A small crown has a trunk of one fine block (half as wide), so that the crown is at least about
+  // 2.5 times as wide as its trunk and the tree does not look like a lollipop.
+  if (size && size <= 2) ctx.box(x, g, z, x, g + h, z, 'wood');
+  else ctx.box(x - 1, g, z - 1, x, g + h, z, 'wood');
   const cy = g + h + Math.round(rad * 0.6);
   const leaf = opts.leaf ?? r.pick(['green', 'green', 'greenDeep']);
   const R = (rad / 2) * 1.15;

@@ -751,12 +751,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (getEntity(state, id)) continue;
       const half = (q) => ({ x: q.x * 2, z: q.y * 2 });
       const a = half(f.a);
+      const position = { x: a.x, y: env.groundY(f.a.x, f.a.y) + 1.2, z: a.z, facing: Math.atan2(f.b.x - f.a.x, f.b.y - f.a.y) };
       addEntity(state, {
         id,
-        ferry: { a, b: half(f.b), landA: half(f.landA), landB: half(f.landB), side: 'a', state: 'wait', riders: [], from: [], t: 0 },
-        position: { x: a.x, y: env.groundY(f.a.x, f.a.y) + 1.2, z: a.z, facing: Math.atan2(f.b.x - f.a.x, f.b.y - f.a.y) },
+        ferry: { a, b: half(f.b), landA: half(f.landA), landB: half(f.landB), side: 'a', state: 'wait', riders: [], from: [], t: 0, man: `ferryman:${f.id}` },
+        position,
         look: 'ferry',
       });
+      // The ferryman stands at the stern with his pole (the ferry system keeps him there).
+      if (!getEntity(state, `ferryman:${f.id}`)) addEntity(state, { id: `ferryman:${f.id}`, position: { ...position }, look: 'ferryman', aboard: id });
     }
   }
   // The ferries of the roads of the land (map.land.ferries) have no trigger zone: the hero calls the

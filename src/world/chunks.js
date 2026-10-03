@@ -75,11 +75,13 @@ export function chunkMesh(terrain, cx, cz, { coarse = false } = {}) {
     if (!coarse) ink.push({ segs: m.segs, w: 0.11, owners: m.outer.map(() => r.who ?? 0), outer: m.outer });
   }
   // The smooth looks (crowns, culms, leaves, haystacks, flowers) whose owner block is in this chunk.
+  // The lines at the edges of a leaf are inner lines: on a thin leaf they are most of the leaf, so
+  // they fade with their owner. Only the hull stays as the outline of a faded look.
   for (const s of p.smooth) {
     if ((coarse && s.kind === 'flower') || !ownerThere(terrain, s.owner, s.ownerGrid)) continue;
     const m = shift(smoothMesh(s, { coarse }), ox, oz);
     append(m);
-    if (!coarse) ink.push({ who: s.who ?? 0, sway: m.segSway, segs: m.segs, w: 0.09, owners: m.segs.length ? Array(m.segs.length / 6).fill(s.who ?? 0) : [], outer: Array(m.segs.length / 6).fill(1), hull: m.hull });
+    if (!coarse) ink.push({ who: s.who ?? 0, sway: m.segSway, segs: m.segs, w: 0.09, owners: m.segs.length ? Array(m.segs.length / 6).fill(s.who ?? 0) : [], outer: Array(m.segs.length / 6).fill(0), hull: m.hull });
   }
   let triangles = (ground.indices.length + things.indices.length) / 3;
   for (const k of ink) triangles += (k.segs.length / 6) * 2 + (k.hull ? k.hull.indices.length / 3 : 0);

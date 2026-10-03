@@ -1,12 +1,14 @@
 // The service worker: the game works offline after the first visit.
 // It keeps a copy of all game files. When the network works, it gets the newest file
 // first (so that updates arrive at once); without a network, it uses the copy.
+// The install keeps only the height tiles of the start of the era (startTiles in the lands); the
+// others go into the copy when the land asks for them.
 
-const CACHE = 'tre-v7';
+const CACHE = 'tre-v8';
 // three.js, the one file from another site, at a fixed version (see the import map in index.html).
 const THREE = 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js';
 
-// All game files. A test checks that this list has each file that the site ships.
+// All game files but the height tiles that the game loads later. A test checks the list.
 const FILES = [
   './',
   'LICENSE',
@@ -71,51 +73,10 @@ const FILES = [
   'data/dialogue/village.json',
   'data/figures.json',
   'data/friends.json',
-  'data/geo/heights/N17E102.bin',
-  'data/geo/heights/N17E103.bin',
-  'data/geo/heights/N17E104.bin',
-  'data/geo/heights/N17E105.bin',
-  'data/geo/heights/N17E106.bin',
-  'data/geo/heights/N17E107.bin',
-  'data/geo/heights/N18E102.bin',
-  'data/geo/heights/N18E103.bin',
-  'data/geo/heights/N18E104.bin',
-  'data/geo/heights/N18E105.bin',
-  'data/geo/heights/N18E106.bin',
-  'data/geo/heights/N18E108.bin',
-  'data/geo/heights/N19E102.bin',
-  'data/geo/heights/N19E103.bin',
-  'data/geo/heights/N19E104.bin',
-  'data/geo/heights/N19E105.bin',
-  'data/geo/heights/N19E106.bin',
-  'data/geo/heights/N19E108.bin',
-  'data/geo/heights/N20E102.bin',
-  'data/geo/heights/N20E103.bin',
-  'data/geo/heights/N20E104.bin',
   'data/geo/heights/N20E105.bin',
   'data/geo/heights/N20E106.bin',
-  'data/geo/heights/N20E107.bin',
-  'data/geo/heights/N21E102.bin',
-  'data/geo/heights/N21E103.bin',
-  'data/geo/heights/N21E104.bin',
   'data/geo/heights/N21E105.bin',
   'data/geo/heights/N21E106.bin',
-  'data/geo/heights/N21E107.bin',
-  'data/geo/heights/N21E108.bin',
-  'data/geo/heights/N22E102.bin',
-  'data/geo/heights/N22E103.bin',
-  'data/geo/heights/N22E104.bin',
-  'data/geo/heights/N22E105.bin',
-  'data/geo/heights/N22E106.bin',
-  'data/geo/heights/N22E107.bin',
-  'data/geo/heights/N22E108.bin',
-  'data/geo/heights/N23E102.bin',
-  'data/geo/heights/N23E103.bin',
-  'data/geo/heights/N23E104.bin',
-  'data/geo/heights/N23E105.bin',
-  'data/geo/heights/N23E106.bin',
-  'data/geo/heights/N23E107.bin',
-  'data/geo/heights/N23E108.bin',
   'data/geo/vietnam.json',
   'data/hero.json',
   'data/items.json',
@@ -299,19 +260,8 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Wait for the network for some time only. Then use the copy.
-function fromNetwork(request, ms) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('timeout')), ms);
-    fetch(request).then((response) => {
-      clearTimeout(timer);
-      resolve(response);
-    }, (error) => {
-      clearTimeout(timer);
-      reject(error);
-    });
-  });
-}
+// The time to wait for the network before the copy is used (when there is a copy).
+const WAIT = 4000;
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
@@ -330,18 +280,31 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
-    try {
-      const response = await fromNetwork(request, 4000);
-      if (response.ok && response.type === 'basic') cache.put(request, response.clone());
-      return response;
-    } catch {
+    const copyOf = async () => {
       const copy = await cache.match(request, { ignoreSearch: true });
       if (copy) return copy;
-      if (request.mode === 'navigate') {
-        const page = await cache.match('index.html');
-        if (page) return page;
-      }
-      return new Response('', { status: 504 });
+      if (request.mode === 'navigate') return (await cache.match('index.html')) ?? null;
+      return null;
+    };
+    const network = fetch(request).then((response) => {
+      if (response.ok && response.type === 'basic') cache.put(request, response.clone());
+      return response;
+    });
+    // A network that does not answer in time: the copy, when there is one. With no copy, wait
+    // for the network (a slow first visit still gets each file).
+    network.catch(() => {});
+    let timer;
+    const late = new Promise((resolve) => { timer = setTimeout(() => resolve(null), WAIT); });
+    try {
+      const first = await Promise.race([network, late]);
+      if (first) return first;
+      const copy = await copyOf();
+      if (copy) return copy;
+      return await network;
+    } catch {
+      return (await copyOf()) ?? new Response('', { status: 504 });
+    } finally {
+      clearTimeout(timer);
     }
   })());
 });

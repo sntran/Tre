@@ -4,7 +4,8 @@
 // States: idle, walk, run, graze (four legs, after some idle time), rest (sit or lie down),
 // wave (a person waves an arm), swim (a float or a serpent in the water). want 'shake': Nghé
 // shakes its head (no); 'stretch': Nghé stretches its neck toward something; 'horns': Nghé
-// lowers its horns; 'lift': a person lifts the right arm high. The fine figures (src/world/fine.js)
+// lowers its horns; 'lift': a person lifts the right arm high; 'pole': a ferryman pushes his
+// pole. The fine figures (src/world/fine.js)
 // have knees and feet: a knee bends while its leg swings through, the heel lifts behind, and the
 // head bobs a little with each step. The coarse figures have no shins and no feet, so these
 // rotations change nothing on them.
@@ -58,8 +59,17 @@ export function animate(a, input) {
     rot.armR = [sw * 0.8 - a.wave * 0.2, 0, -a.wave * (1.9 + Math.sin(a.time * 8) * 0.35)];
     // Lift: the arm with the staff goes up high (the general before a big blow).
     if (input.want === 'lift') rot.armR = [-2.9 + Math.sin(a.time * 6) * 0.08, 0, 0];
+    // Pole: the ferryman pushes his pole down and back in time with the boat, with both hands.
+    if (input.want === 'pole') {
+      const push = Math.sin(a.time * 2.4);
+      rot.armR = [-1.1 + push * 0.45, 0, 0.15];
+      rot.armL = [-1.3 + push * 0.45, 0, -0.35];
+      // The pole leans back from the hands, so that its foot pushes on the bed behind the boat.
+      rot.item = [1.1 - push * 0.45 + 0.4, 0, 0];
+      lean = 0.15 + Math.max(0, push) * 0.15;
+    }
     lift = Math.abs(Math.cos(a.phase)) * 0.18 * s;
-    lean = 0.08 * s;
+    lean = input.want === 'pole' ? lean : 0.08 * s;
     sink = a.rest * 1.2;
     const look = moving ? 0 : (input.lookAt ?? Math.sin(a.idle * 0.8) * 0.35 * Math.min(1, a.idle / 2));
     // The head bobs a little with each step.

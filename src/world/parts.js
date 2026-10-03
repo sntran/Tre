@@ -23,6 +23,8 @@ export function heldItem(item, at, k, hand = 'armR', off = 'armL') {
   const out = [];
   if (!item) return out;
   if (item === 'staff') out.push(R('item', [0.3, 6, 0.3], 'wood', 0, 1.5, 0.2));
+  // The long pole of a ferryman, held at its middle: it turns about the hand (animate: 'pole').
+  if (item === 'pole') out.push(R('item', [0.25, 10, 0.25], 'wood', 0, 0, 0.3));
   if (item === 'hammer') out.push(R('item', [0.25, 1.8, 0.25], 'wood', 0, -0.4, 0.3), R('head2', [0.9, 0.6, 0.6], 'ash', 0, -1.3, 0.3));
   if (item === 'axe') out.push(R('item', [0.25, 2.2, 0.25], 'wood', 0, -0.5, 0.3), R('blade', [0.2, 0.8, 0.8], 'ashLight', 0, -1.4, 0.7));
   if (item === 'net') out.push(R('item', [1.4, 1.4, 0.2], 'paperDeep', 0, -0.6, 0.4));

@@ -39,7 +39,7 @@ Write all text in ASD-STE100 Simplified Technical English. This rule applies to 
 - Keep the world state as plain data in `src/core/world/`: entities are plain objects with optional components, and systems are pure functions that change the state in a fixed order (`src/core/world/step.js`). The renderer only reads the state. Do not add an ECS library.
 - Use only relative paths. The game must work at `/Tre/` on GitHub Pages and on a local static server.
 - Do not send requests to other sites, except the one request for three.js. Do not add ads, analytics, cookies, or accounts.
-- When you add or remove a game file, change the list `FILES` in `sw.js`. The service worker uses the list for offline play. A test fails when the list and the files are not the same.
+- When you add or remove a game file, change the list `FILES` in `sw.js`. The service worker uses the list for offline play. The list has all game files except the height tiles in `data/geo/heights/` that are not in `startTiles` of a land: the service worker keeps those when the land asks for them. A test fails when the list and the files are not the same.
 
 ## Art
 

@@ -414,9 +414,9 @@ export function cart() {
   return { kind: 'still', parts, scale: 0.7, height: 3, shadow: 1.8 };
 }
 
-// The boat of a ferry: a long dugout with a deck, a rim, a bird-head prow (as the boats on the
-// bronze drums), and the pole of the ferryman. It lies along +z; the deck is at 0.6 units (the
-// riders stand there), and the hull goes under the water.
+// The boat of a ferry: a long dugout with a deck, a rim, and a bird-head prow (as the boats on the
+// bronze drums). The ferryman stands at the stern with his pole (an entity of its own). It lies
+// along +z; the deck is at 0.6 units (the riders stand there), and the hull goes under the water.
 export function ferryBoat() {
   const parts = [
     P('hull', [4, 1, 10], 'wood', [0, -0.1, 0]),
@@ -426,7 +426,6 @@ export function ferryBoat() {
     P('stern', [3.2, 0.8, 0.5], 'wood', [0, 0.7, -4.9]),
     P('prow', [0.7, 2.2, 0.7], 'ochre', [0, 1.2, 5.1]),
     P('head', [0.7, 0.7, 1.2], 'vermilion', [0, 2.3, 5.5]),
-    P('pole', [0.25, 7, 0.25], 'wood', [1.3, 3.5, -3.9]),
   ];
   return { kind: 'still', parts, scale: 1, height: 2, shadow: 0 };
 }

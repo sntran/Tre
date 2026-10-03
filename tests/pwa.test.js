@@ -26,8 +26,58 @@ function swFiles() {
   return [...list.matchAll(/'([^']+)'/g)].map((m) => m[1]).sort();
 }
 
-test('the service worker keeps a copy of each file that the site ships', () => {
-  assert.deepEqual(swFiles(), shipped());
+// The height tiles of the start of the era (startTiles in the lands): the install keeps only these.
+function startTiles() {
+  const out = new Set();
+  for (const f of readdirSync(join(root, 'data/world')).filter((n) => n.startsWith('land-'))) {
+    const land = JSON.parse(readFileSync(join(root, 'data/world', f), 'utf8'));
+    for (const t of land.startTiles ?? land.tiles ?? []) out.add(`data/geo/heights/${t}.bin`);
+  }
+  return out;
+}
+
+test('the service worker keeps a copy of each file that the site ships, but the height tiles of later', () => {
+  const start = startTiles();
+  assert.ok(start.size > 0);
+  assert.deepEqual(swFiles(), shipped().filter((f) => !f.startsWith('data/geo/heights/') || start.has(f)));
+});
+
+// Run sw.js with a fake worker scope: a cache in a Map, and a fetch that the test controls.
+async function serviceWorker(fetchOf, cached = {}) {
+  const store = new Map(Object.entries(cached));
+  const handlers = {};
+  const cache = {
+    match: async (r) => store.get(typeof r === 'string' ? r : new URL(r.url).pathname.slice(1)) ?? undefined,
+    put: async (r, res) => { store.set(new URL(r.url).pathname.slice(1), res); },
+    addAll: async () => {},
+  };
+  const scope = {
+    location: { origin: 'https://tre.test' },
+    addEventListener: (type, fn) => { handlers[type] = fn; },
+    skipWaiting: () => {},
+    clients: { claim: () => {} },
+  };
+  const text = readFileSync(join(root, 'sw.js'), 'utf8').replace('const WAIT = 4000;', 'const WAIT = 50;');
+  new Function('self', 'caches', 'fetch', 'Response', text)(scope, { open: async () => cache, keys: async () => [] }, fetchOf, Response);
+  return async (path) => {
+    let answer;
+    handlers.fetch({ request: { method: 'GET', url: `https://tre.test/${path}`, mode: 'cors' }, respondWith: (p) => { answer = p; } });
+    return answer;
+  };
+}
+
+test('a fetch slower than the time to wait still gives the file when the cache has no copy', async () => {
+  const slow = () => new Promise((resolve) => setTimeout(() => resolve(new Response('icon')), 150));
+  const get = await serviceWorker(slow);
+  const res = await get('art/icon.svg');
+  assert.equal(res.status, 200);
+  assert.equal(await res.text(), 'icon');
+  // With a copy, the copy comes after the time to wait.
+  const withCopy = await serviceWorker(slow, { 'art/icon.svg': new Response('copy') });
+  assert.equal(await (await withCopy('art/icon.svg')).text(), 'copy');
+  // No network and no copy: an empty answer.
+  const offline = await serviceWorker(() => Promise.reject(new Error('offline')));
+  assert.equal((await offline('art/icon.svg')).status, 504);
 });
 
 test('the manifest and the page use relative paths only', () => {

@@ -157,6 +157,17 @@ test('every smooth look has an owner block, and a felled tree takes its crown an
   assert.ok(!again.objects.some((o) => o.id === tree.id), 'the tree stays felled after a load');
 });
 
+test('the edge lines of the leaves fade with their owner; only the hull stays as the outline', () => {
+  const { t } = terrainAt('phu-dong', 30, 30);
+  const bamboo = t.smooth.find((s) => s.kind === 'bamboo' || s.kind === 'banana');
+  assert.ok(bamboo, 'the village has bamboo or banana leaves');
+  const key = chunkOf(Math.floor(bamboo.owner[0] / 2), Math.floor(bamboo.owner[2] / 2));
+  const [cx, cz] = key.split(',').map(Number);
+  const groups = chunkMesh(t, cx, cz).ink.filter((k) => k.hull && k.segs.length);
+  assert.ok(groups.length > 0, 'smooth looks with leaf lines');
+  for (const g of groups) assert.ok(g.outer.every((o) => o === 0), 'a leaf line is an inner line');
+});
+
 test('the triangles of the 3 x 3 chunks around the start of every place stay under the budget', () => {
   const limit = load('data/config/limits.json').frameTriangles;
   for (const id of ['phu-dong', 'soc-son', 'trau-son', 'road-thanglong']) {

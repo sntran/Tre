@@ -3,7 +3,7 @@
 // step onto it (board), the boat crosses the river with them (cross), and they step off at the
 // other landing (land). A rider is `aboard` while it rides: its position is the deck of the boat.
 // Units: half blocks and seconds.
-export const WRITES = ['ferry', 'position', 'motion', 'aboard', 'route', 'events'];
+export const WRITES = ['ferry', 'position', 'motion', 'aboard', 'route', 'act', 'events'];
 
 import { query, getEntity } from '../state.js';
 
@@ -11,6 +11,7 @@ const SPEED = 4; // half blocks a second: two cells a second over the water
 const STEP_TIME = 0.8; // seconds to step onto the boat or off it
 const DECK = 0.7; // half blocks: the deck over the water
 const SURFACE = 1.2; // half blocks: the surface of a river over its bed
+const STERN = 3.6; // half blocks: the place of the ferryman behind the middle of the boat
 
 // The spot of the boat on a side, and the place where the riders step off there.
 const spotOf = (f, side) => (side === 'a' ? f.a : f.b);
@@ -19,13 +20,25 @@ const landOf = (f, side) => (side === 'a' ? f.landA : f.landB);
 export function ferry(world, dt, rng, env) {
   for (const e of query(world, 'ferry', 'position')) {
     const f = e.ferry;
-    if (f.state === 'wait') continue;
     const p = e.position;
-    // The deck places of the riders: the hero in the middle, Nghé behind (along the way across).
+    // The ferryman stands at the stern and pushes his pole while the boat moves.
+    const man = f.man ? getEntity(world, f.man) : null;
+    if (man) {
+      man.position.x = p.x - Math.sin(p.facing ?? 0) * STERN;
+      man.position.z = p.z - Math.cos(p.facing ?? 0) * STERN;
+      man.position.y = p.y + DECK;
+      man.position.facing = p.facing ?? 0;
+      man.aboard = e.id;
+      if (f.state === 'call' || f.state === 'cross') man.act = 'pole';
+      else delete man.act;
+    }
+    if (f.state === 'wait') continue;
+    // The deck places of the riders: the hero a little in front of the middle and Nghé behind
+    // (along the way across), so that the ferryman has room at the stern.
     const axis = { x: f.b.x - f.a.x, z: f.b.z - f.a.z };
     const len = Math.hypot(axis.x, axis.z) || 1;
     const u = { x: axis.x / len, z: axis.z / len };
-    const deck = (i) => ({ x: p.x - u.x * i * 1.6, y: p.y + DECK, z: p.z - u.z * i * 1.6 });
+    const deck = (i) => ({ x: p.x - u.x * (i * 1.6 - 0.8), y: p.y + DECK, z: p.z - u.z * (i * 1.6 - 0.8) });
     const riders = f.riders.map((id) => getEntity(world, id)).filter(Boolean);
     const put = (r, q, facing) => {
       r.position.x = q.x;

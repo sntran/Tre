@@ -12,7 +12,7 @@
     { "until": { "event": "open", "with": { "screen": "say", "textKey": "map.ferry" }, "timeout": 40 } },
     { "read": true },
     { "wait": 3 },
-    { "expect": [{ "hero": { "in": "water" } }, { "entity": "ferry:red", "near": "hero", "within": 1.5 }, { "entity": "friend:nghe", "near": "hero", "within": 2 }, { "event": "ferried", "not": true }] },
+    { "expect": [{ "hero": { "in": "water" } }, { "entity": "ferry:red", "near": "hero", "within": 1.5 }, { "entity": "friend:nghe", "near": "hero", "within": 2 }, { "entity": "ferryman:red", "near": "hero", "within": 3 }, { "event": "ferried", "not": true }] },
     { "until": { "event": "ferried", "timeout": 30 } },
     { "expect": [{ "hero": { "cell": [24.8, 40], "within": 1 } }, { "entity": "friend:nghe", "near": "hero", "within": 3 }, { "entity": "ferry:red", "near": "hero", "within": 6 }] },
     { "tap": { "cell": [27, 40] } },
