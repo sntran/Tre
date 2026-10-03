@@ -22,17 +22,18 @@ export const FACE_FRAMES = Object.freeze({
 });
 
 // The frame of a face: the middle (y) and the half height of the image, in world units. headY: the
-// middle of the head; top: the top of the hair. The chin is 0.8 of the way from the top to the
-// middle below the middle (a head of seven units with a cap of hair one unit thick). The head fills
-// its share of the height, with a small margin over the hair; the rest is the neck and the
-// shoulders down to the collarbone (bust), or only the neck (head).
+// middle of the head; top: the top of the head (the cap of the hair or the hat, not a knot over
+// it). The chin is 0.7 of the way from the top to the middle below the middle (a large flat face
+// under a cap of hair). The head fills its share of the height, with a small margin over the hair;
+// the rest is the neck and the shoulders down to the collarbone (bust), or only the neck (head).
+const CHIN = 0.7;
 export function faceFrame(framing, { headY, top }) {
   const f = FACE_FRAMES[framing] ?? FACE_FRAMES.bust;
   const r = Math.max(0.01, top - headY);
-  const head = 1.8 * r;
+  const head = (1 + CHIN) * r;
   const height = head / f.share;
   const frameTop = top + 0.03 * height;
-  return { y: frameTop - height / 2, half: height / 2, chin: headY - 0.8 * r };
+  return { y: frameTop - height / 2, half: height / 2, chin: headY - CHIN * r };
 }
 export const CACHE_SIZE = 64;
 

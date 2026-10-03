@@ -26,6 +26,7 @@ export function villagerLook(rng, parts) {
     look.child = true;
     look.scale = age.scale;
   }
+  if (look.hair === 'grey' && body.grey) look.hairStyle = body.grey;
   if (age.age === 'old' && bodyName === 'man' && rng.chance(0.5)) look.beard = true;
   return look;
 }

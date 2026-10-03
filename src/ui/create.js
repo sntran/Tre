@@ -161,19 +161,20 @@ export async function mountCreate(ctx) {
     } else if (name === 'look') {
       stage.append(title('create.look'));
       // A small rendered picture of the hero with one choice changed: the head (skin, face, hair) or
-      // the whole hero (clothes).
-      const thumb = (change, framing = 'head') => {
-        const el = portraitCanvas(ctx, heroLook({ ...hero, ...change }, opts), { framing, size: 56 });
+      // the whole hero (clothes). The hair choices turn the head about 30 degrees, so that a bun or
+      // long hair shows.
+      const thumb = (change, framing = 'head', facing = null) => {
+        const el = portraitCanvas(ctx, heroLook({ ...hero, ...change }, opts), { framing, size: 56, facing });
         return h('span', { class: 'thumb' }, [el]);
       };
-      const row = (values, key, labelKey, framing) => {
-        const r = choiceRow(values, () => hero[key], (v) => thumb({ [key]: v }, framing), (v) => { hero[key] = v; }, labelKey);
+      const row = (values, key, labelKey, framing, facing) => {
+        const r = choiceRow(values, () => hero[key], (v) => thumb({ [key]: v }, framing, facing), (v) => { hero[key] = v; }, labelKey);
         for (const b of r.querySelector('.option-grid').children) b.thumbed = true;
         return r;
       };
       stage.append(row(count(opts.skins), 'skin', 'create.skin'));
       stage.append(row(count(opts.faces), 'face', 'create.face'));
-      stage.append(row(count(opts.hairs), 'hair', 'create.hair'));
+      stage.append(row(count(opts.hairs), 'hair', 'create.hair', 'head', (30 * Math.PI) / 180));
       stage.append(row(count(opts.clothes), 'clothes', 'create.clothes', 'full'));
       stage.append(button(t('ui.next'), () => show(3), { cls: 'btn big red' }));
     } else if (name === 'grade') {

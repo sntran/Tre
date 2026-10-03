@@ -329,3 +329,7 @@ Facts to check:
 - The rivers of Era 1 on the plane: the Hồng, the Đuống, the Thái Bình, the Bạch Đằng, the Mã, and the Cả, each with a width from its size. The Hồng has ferries, and a smaller river has a ford or a bamboo bridge. See `QUESTIONS.md`, question 103.
 - The line of the land of Era 1 at 18° N (near Hà Tĩnh and Quảng Bình): the land of Văn Lang in the legends reaches about there. See `QUESTIONS.md`, question 99.
 - The scale: one cell is 45 m of real land, and the story places stand at their real places (the đình of Phù Đổng, núi Vệ Linh, Núi Trâu, Văn Miếu). See `docs/WORLD.md`, "The scale".
+
+## 14. The faces and the hair (#19)
+
+No new texts. Please check the hair styles of the people for the time of the Hùng Kings (`docs/ART.md`, section 15): a fringe parted on the side (`short`), the hair pulled back to a knot on the crown with a red tie (`topknot`), long hair with a part in the middle, two braids with red ties, a low bun with a pin, and the tuft of a child (trái đào) on a short crop. The grey hair of grandma and the healer is a bun; the elders with a beard have short grey hair.

@@ -95,7 +95,7 @@ export function createPortraits(canvas) {
       half = Math.max(s.y, Math.hypot(s.x, s.z) * 0.8) * 0.58;
     } else if (face && fig.head) {
       // The head (and the neck, or the shoulders) fills its share of the image (src/world/portraits.js).
-      const f = faceFrame(framing, { headY: fig.head.y, top: fig.height });
+      const f = faceFrame(framing, { headY: fig.head.y, top: fig.crown ?? fig.height });
       center.set(fig.head.x, f.y, fig.head.z);
       half = f.half;
     } else {

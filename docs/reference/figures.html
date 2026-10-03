@@ -30,15 +30,16 @@
   <header>
     <h1>The figures of Tre</h1>
     <p>Every person and animal of the village, built on a grid of quarter blocks (<code>src/world/fine.js</code>). Each row: at rest and mid-step, from the front and at three-quarter; in the wind (at rest, with the breeze at full strength blowing to the left, into the faces: the hair, the cloth, and the tails move, <code>src/world/sway.js</code>); the last column is the far level (the coarse figure that the game draws for a figure far from the hero: 30 blocks at the near zoom, 45 at the far zoom). The people are at their true size; the animals are drawn larger.</p>
-    <p>The last sheet is a record of a comparison: the same bodies, with the head and the hair as smooth low balls (an icosphere of level 1 in the flat tones, with the ink at the outline) in place of the stepped blocks. The owner chose the stepped heads; the game draws them.</p>
+    <p>A head is a rounded box with a large flat face. A child (the hero, Gióng as a boy, the children of the hamlets) has the face of a child: the eyes lower and larger, thin short brows, rosy cheeks, and no nose. The sheet of the hair shows the six hair choices of hero creation, which differ from the front, and the sheet of the hats shows each hat on a grown-up.</p>
   </header>
   <h2>People</h2>
   <div class="sheet" id="people"></div>
   <h2>Animals</h2>
   <div class="sheet" id="animals"></div>
-  <h2>Stepped heads and smooth heads</h2>
-  <div class="sheet" id="smooth"></div>
-  <div class="sheet" id="smooth-nghe"></div>
+  <h2>The hair choices</h2>
+  <div class="sheet" id="hair"></div>
+  <h2>The hats</h2>
+  <div class="sheet" id="hats"></div>
   <script type="module">
     import * as THREE from 'three';
     import { createFigureLayer } from '../../src/render/figure3d.js';
@@ -51,6 +52,10 @@
       'hero (boy)': heroLook({ gender: 'boy', skin: 2, face: 2, hair: 2, clothes: 1 }, data.hero),
       'hero (girl)': heroLook({ gender: 'girl', skin: 3, face: 1, hair: 4, clothes: 3 }, data.hero),
     };
+    // The six hair choices on the hero, and each hat on a grown-up.
+    data.hero.hairs.forEach((hair, i) => { heroes[`hair: ${hair}`] = heroLook({ gender: i % 2 ? 'girl' : 'boy', skin: 2, face: 1, hair: i + 1, clothes: 1 }, data.hero); });
+    const grown = { skin: 'skin2', top: 'indigo', bottom: 'indigo', sash: 'vermilion', topKind: 'shirt', bottomKind: 'trousers', face: 1 };
+    for (const [hat, hair] of [['non', 'short'], ['non', 'long'], ['band', 'bun'], ['helmet', 'topknot'], ['plume', 'braids']]) heroes[`${hat}, ${hair}`] = { ...grown, hat, hair };
     const lookOf = (key) => heroes[key] ?? looks[key] ?? {};
     const COLUMNS = [
       { name: 'at rest, front', facing: 0, step: false },
@@ -66,7 +71,7 @@
     const STEP_DT = Math.PI / 2 / (4 * 1.9);
 
     // One sheet: rows of figures in one scene, drawn by the figure layer of the game.
-    // rows: keys, or { key, detail, label } (detail: 'fine' or 'smooth' for the first four columns).
+    // rows: keys, or { key, detail, label } (detail: 'fine' for the first columns).
     function sheet(el, rows, { px, cell, rowH }) {
       rows = rows.map((r) => (typeof r === 'string' ? { key: r, detail: 'fine', label: r } : r));
       const scene = new THREE.Scene();
@@ -74,7 +79,7 @@
       // One layer for each level, and one more for each fine level in the wind.
       const layers = {};
       const worlds = {};
-      for (const d of ['fine', 'smooth', 'coarse', 'fine+wind', 'smooth+wind']) {
+      for (const d of ['fine', 'coarse', 'fine+wind']) {
         layers[d] = createFigureLayer(scene, lookOf, { detail: d.replace('+wind', '') });
         worlds[d] = { entities: [], wind: d.endsWith('+wind') ? WIND : null };
       }
@@ -121,9 +126,8 @@
 
     sheet(document.getElementById('people'), ['hero (boy)', 'hero (girl)', 'grandma', 'mother', 'giong-boy', 'giong-boy-3', 'giong-hero', 'teacher', 'elder', 'socson-elder', 'messenger', 'smith', 'healer', 'woodcutter', 'fisher', 'scout', 'soldier', 'general'], { px: 44, cell: 4, rowH: 4.6 });
     sheet(document.getElementById('animals'), ['nghe', 'buffalo', 'dog', 'chicken', 'chicken-brown', 'duck', 'fish'], { px: 85, cell: 2.6, rowH: 2.4 });
-    const pair = (key) => [{ key, detail: 'fine', label: `${key}, stepped` }, { key, detail: 'smooth', label: `${key}, smooth` }];
-    sheet(document.getElementById('smooth'), [...pair('hero (boy)'), ...pair('mother'), ...pair('grandma')], { px: 55, cell: 4, rowH: 4.4 });
-    sheet(document.getElementById('smooth-nghe'), pair('nghe'), { px: 85, cell: 2.6, rowH: 2.4 });
+    sheet(document.getElementById('hair'), data.hero.hairs.map((h) => `hair: ${h}`), { px: 55, cell: 4, rowH: 4.4 });
+    sheet(document.getElementById('hats'), ['non, short', 'non, long', 'band, bun', 'helmet, topknot', 'plume, braids'], { px: 50, cell: 4, rowH: 4.8 });
     document.body.dataset.ready = '1';
   </script>
 </body>

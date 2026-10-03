@@ -82,9 +82,9 @@ test('the parts that hang have a kind and one pivot, and stay one part', () => {
   const look = { skin: 'skin2', top: 'indigo', bottom: 'ink', bottomKind: 'skirt', topKind: 'shirt', sash: 'vermilion', hair: 'braids', hat: 'non' };
   const kinds = (fig) => Object.fromEntries(fig.parts.filter((p) => p.hang).map((p) => [p.name, p.hang]));
   const girl = kinds(personFine(look));
-  assert.deepEqual(girl, { skirt: 'cloth', sashTail: 'hang', cuffL: 'cloth', cuffR: 'cloth', fringe: 'lift', 'braid-1': 'hang', braid1: 'hang', stringL: 'hang', stringR: 'hang' });
+  assert.deepEqual(girl, { skirt: 'cloth', sashTail: 'hang', cuffL: 'cloth', cuffR: 'cloth', 'braid-1': 'hang', braid1: 'hang', stringL: 'hang', stringR: 'hang' });
   for (const p of personFine(look).parts.filter((x) => x.hang && x.hang !== 'bob')) assert.ok(p.pivotTop, `${p.name} hangs from its top`);
   assert.deepEqual(kinds(ngheFine()), { earL: 'ear', earR: 'ear', tail: 'tail' });
   assert.equal(chickenFine().parts.find((p) => p.name === 'tailF').pivotBottom, true, 'the tail of a rooster stands up from its base');
-  assert.equal(personFine({ ...look, hair: 'topknot' }).parts.find((p) => p.name === 'knot').hang, 'bob');
+  assert.equal(personFine({ ...look, hair: 'topknot', hat: null }).parts.find((p) => p.name === 'knot').hang, 'bob');
 });

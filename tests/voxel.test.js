@@ -261,28 +261,145 @@ test('the fine figures: a quarter-block grid, the same size in the world, and pa
   const boy = personFine(heroLook({ gender: 'boy', skin: 3, face: 2, hair: 2, clothes: 2 }, HERO));
   assert.equal(boy.grid, 0.25);
   const names = new Set(boy.parts.map((p) => p.name));
-  for (const n of ['skull', 'skullX', 'skullT', 'eyeWL', 'eyeL', 'browL', 'mouth', 'cheekL', 'handR', 'shinL', 'footL', 'toeLa', 'toeLb', 'knot', 'fringe', 'hairT', 'sashTail', 'waist']) assert.ok(names.has(n), n);
-  // The head is a ball of seven units: its layers are 7, 5, and 3 units wide, from the middle out,
-  // on both sides; the hair is a cap one unit out of it, with no flat top of the width of the head.
-  const skull = boy.parts.filter((p) => p.name.startsWith('skull'));
-  const widthAt = (y) => Math.max(...skull.filter((p) => Math.abs(p.at[1] - y) < p.size[1] / 2).map((p) => p.size[0]));
-  assert.deepEqual([widthAt(0), widthAt(2), widthAt(3)], [7, 5, 3]);
-  assert.equal(Math.max(...skull.map((p) => p.at[1] + p.size[1] / 2)), 3.5);
-  const hairTop = boy.parts.find((p) => p.name === 'hairT');
-  assert.ok(hairTop.size[0] < 7 && hairTop.at[1] - hairTop.size[1] / 2 >= 3.5, 'the top of the hair is round, over the head');
-  // The torso: the chest one unit narrower than the hips at the sash, and a waist.
+  for (const n of ['skull', 'skullX', 'skullTop', 'earL', 'eyeWL', 'eyeL', 'shineL', 'browL', 'mouth', 'cheekL', 'neck', 'handR', 'shinL', 'footL', 'toeLa', 'toeLb', 'knot', 'hairTop', 'sashTail', 'waist']) assert.ok(names.has(n), n);
+  // The torso: the chest one unit narrower than the hips at the sash, a waist, and some depth.
   const size = (n) => boy.parts.find((p) => p.name === n).size;
   assert.equal(size('hips')[0] - size('torso')[0], 1);
   assert.ok(size('waist')[0] < size('torso')[0]);
-  // The smooth variant: the head and the hair are balls on the same body.
-  const round = personFine(heroLook({ gender: 'boy', hair: 2 }, HERO), { smooth: true });
-  assert.deepEqual(round.parts.filter((p) => p.shape === 'ball').map((p) => p.name).sort(), ['hair', 'skull']);
-  assert.ok(round.parts.some((p) => p.name === 'waist'));
+  assert.equal(size('hips')[2], 4, 'the body of a child is 4 units deep');
+  assert.equal(personFine({ ...boy.look, child: false, skin: 'skin2', hair: 'short' }).parts.find((p) => p.name === 'hips').size[2], 4.5);
   // A thing in the hands hangs on the hand, not on the arm.
   const smith = figureOf({ ...looks.smith }, 'fine');
   assert.equal(smith.parts.find((p) => p.name === 'item').parent, 'handR');
   const calf = ngheFine();
   for (const n of ['shinFL', 'hoofBR', 'hornL1', 'hornL3', 'tuft', 'eyeWL']) assert.ok(calf.parts.some((p) => p.name === n), n);
+});
+
+// The box of a part in the coordinates of its head (the parts of a head hang on 'head'; a part
+// that hangs on another part of the head adds its place). pivotTop: the box hangs down from `at`.
+function headBoxes(fig) {
+  const byName = Object.fromEntries(fig.parts.map((p) => [p.name, p]));
+  const origin = (p) => {
+    if (p.parent === 'head') return [0, 0, 0];
+    const up = byName[p.parent];
+    const o = up && up.name !== 'head' ? origin(up) : null;
+    return o ? o.map((v, i) => v + up.at[i]) : null;
+  };
+  const out = [];
+  for (const p of fig.parts) {
+    const o = origin(p);
+    if (!o || !p.color) continue;
+    const c = p.at.map((v, i) => v + o[i]);
+    const [w, h, d] = p.size;
+    const y0 = p.pivotTop ? c[1] - h : p.pivotBottom ? c[1] : c[1] - h / 2;
+    out.push({ name: p.name, color: p.color, x0: c[0] - w / 2, x1: c[0] + w / 2, y0, y1: y0 + h, z0: c[2] - d / 2, z1: c[2] + d / 2 });
+  }
+  return out;
+}
+const STYLES = ['short', 'topknot', 'long', 'braids', 'bun', 'tufts'];
+const lookOf = (extra) => ({ skin: 'skin2', top: 'indigo', bottom: 'indigo', topKind: 'shirt', bottomKind: 'trousers', face: 1, ...extra });
+
+test('a child has the face of a child: the eyes lower and larger, no nose, and thinner brows', async () => {
+  const { personFine } = await import('../src/world/fine.js');
+  const part = (fig, n) => fig.parts.find((p) => p.name === n);
+  const child = personFine(lookOf({ child: true, hair: 'tufts' }));
+  const grown = personFine(lookOf({ hair: 'short' }));
+  assert.ok(part(child, 'eyeWL').at[1] < part(grown, 'eyeWL').at[1], 'the eyes of a child are lower on the head');
+  assert.ok(part(child, 'eyeWL').size[0] > part(grown, 'eyeWL').size[0] && part(child, 'eyeL').size[1] > part(grown, 'eyeL').size[1], 'larger and darker eyes');
+  assert.ok(!part(child, 'nose') && part(grown, 'nose'), 'a child has no nose');
+  assert.equal(part(grown, 'nose').noInk, true, 'the nose has no ink');
+  assert.ok(part(child, 'browL').size[1] < part(grown, 'browL').size[1] && part(child, 'browL').size[0] < part(grown, 'browL').size[0], 'thin short brows');
+  assert.equal(part(child, 'cheekL').color, 'vermilionPale', 'rosy cheeks');
+  for (const fig of [child, grown]) assert.ok(part(fig, 'shineL') && part(fig, 'shineR'), 'a highlight in each eye');
+});
+
+test('nothing between the chin and the shoulders but the neck, in a darker tone of the skin', async () => {
+  const { personFine } = await import('../src/world/fine.js');
+  for (const child of [true, false]) {
+    for (const skin of ['skin1', 'skin2', 'skin3', 'skin4']) {
+      const fig = personFine(lookOf({ child, skin, hair: 'bald' }));
+      const head = fig.parts.find((p) => p.name === 'head').at[1];
+      const skull = headBoxes(fig).filter((b) => b.color === skin);
+      const chin = head + Math.min(...skull.map((b) => b.y0));
+      const neck = fig.parts.find((p) => p.name === 'neck');
+      assert.notEqual(neck.color, skin, 'the neck is in the shadow under the chin');
+      const shoulder = fig.parts.find((p) => p.name === 'shoulders');
+      const shoulderTop = shoulder.at[1] + shoulder.size[1] / 2;
+      // The parts of the body and the head in the gap: only the neck.
+      const span = (p) => (p.pivotTop ? [p.at[1] - p.size[1], p.at[1]] : p.pivotBottom ? [p.at[1], p.at[1] + p.size[1]] : [p.at[1] - p.size[1] / 2, p.at[1] + p.size[1] / 2]);
+      const inGap = fig.parts.filter((p) => p.color && p.parent === 'body' && span(p)[1] > shoulderTop + 0.01 && span(p)[0] < chin - 0.01);
+      assert.deepEqual(inGap.map((p) => p.name), ['neck'], `${skin}: ${inGap.map((p) => p.name)}`);
+      // No layer of the skull hangs under the chin.
+      assert.ok(skull.every((b) => head + b.y0 >= chin - 1e-9));
+    }
+  }
+});
+
+test('each hair style has a different set of parts that show from the front', async () => {
+  const { personFine, HAIR_CAP } = await import('../src/world/fine.js');
+  for (const child of [true, false]) {
+    const seen = new Map();
+    for (const style of STYLES) {
+      const fig = personFine(lookOf({ child, hair: style }));
+      // In front of the ears (z over the ears), over the cap of the hair, or out at the sides.
+      const front = headBoxes(fig).filter((b) => !HAIR_CAP.includes(b.name) && /^(fringe|curtain|lock|braid|sweep|knot|tuft|tail|pin)/.test(b.name) && (b.z1 > 1 || b.y1 > 4.7 || Math.max(-b.x0, b.x1) > 3.7));
+      const key = front.map((b) => b.name).sort().join(',');
+      assert.ok(key, `${style}: parts that show from the front`);
+      assert.ok(!seen.has(key), `${style} and ${seen.get(key)} look the same from the front`);
+      seen.set(key, style);
+    }
+  }
+});
+
+test('no hair goes through a hat, for each hat and each hair style', async () => {
+  const { personFine } = await import('../src/world/fine.js');
+  const HATS = { non: ['hat', 'hat2', 'hat3'], band: ['band'], helmet: ['helmet', 'helmetTop'], plume: ['helmet', 'helmetTop', 'plume'] };
+  const eps = 1e-6;
+  for (const [hat, names] of Object.entries(HATS)) {
+    for (const style of STYLES) {
+      for (const child of [true, false]) {
+        const boxes = headBoxes(personFine(lookOf({ child, hair: style, hat })));
+        const hats = boxes.filter((b) => names.includes(b.name));
+        const hair = boxes.filter((b) => b.color === 'ink');
+        for (const h of hair) {
+          for (const t of hats) {
+            const meet = h.x0 < t.x1 - eps && h.x1 > t.x0 + eps && h.y0 < t.y1 - eps && h.y1 > t.y0 + eps && h.z0 < t.z1 - eps && h.z1 > t.z0 + eps;
+            if (!meet) continue;
+            // A hair part at the height of a hat stays inside the hat.
+            assert.ok(h.x0 >= t.x0 - eps && h.x1 <= t.x1 + eps && h.z0 >= t.z0 - eps && h.z1 <= t.z1 + eps, `${hat}, ${style}: ${h.name} sticks out of ${t.name}`);
+          }
+          // A hat that covers the top: no hair over it.
+          if (hat !== 'band') {
+            const over = hats.filter((t) => h.x0 < t.x1 && h.x1 > t.x0 && h.z0 < t.z1 && h.z1 > t.z0);
+            if (over.length) assert.ok(h.y1 <= Math.max(...over.map((t) => t.y1)) + eps, `${hat}, ${style}: ${h.name} over the hat`);
+          }
+        }
+      }
+    }
+  }
+});
+
+test('no scalp shows: the cap of the hair covers the top of the skull to its front edge', async () => {
+  const { personFine } = await import('../src/world/fine.js');
+  for (const child of [true, false]) {
+    for (const style of STYLES) {
+      const boxes = headBoxes(personFine(lookOf({ child, hair: style, skin: 'skin3' })));
+      const skull = boxes.filter((b) => b.color === 'skin3' && b.name.startsWith('skull'));
+      const hair = boxes.filter((b) => b.color === 'ink');
+      // Points on the top face of each layer of the skull: each one has hair over it or around it.
+      for (const b of skull) {
+        for (let i = 0; i <= 4; i++) {
+          for (let k = 0; k <= 4; k++) {
+            const x = b.x0 + ((b.x1 - b.x0) * i) / 4;
+            const z = b.z0 + ((b.z1 - b.z0) * k) / 4;
+            // A point under the top of another layer of the skull is inside the head.
+            if (skull.some((o) => o !== b && x > o.x0 && x < o.x1 && z > o.z0 && z < o.z1 && o.y1 > b.y1)) continue;
+            assert.ok(hair.some((h) => x >= h.x0 && x <= h.x1 && z >= h.z0 && z <= h.z1 && h.y1 >= b.y1), `${style}: scalp at ${x.toFixed(2)}, ${z.toFixed(2)} of ${b.name}`);
+          }
+        }
+      }
+    }
+  }
 });
 
 test('the level of detail follows the distance with a small hysteresis, and the view culls figures', async () => {

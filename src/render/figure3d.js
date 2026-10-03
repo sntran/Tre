@@ -57,38 +57,8 @@ function partsMaterial() {
   });
 }
 
-// The material of the smooth parts (a low icosphere): the tone of each flat face comes from its
-// normal, as the tones of the faces of a box (the top lit, the sides darker), so that a ball is
-// drawn in the same three flat tones.
-function ballsMaterial() {
-  const ink = new THREE.Color(C.ink);
-  const T = FACE_TONES;
-  return new THREE.ShaderMaterial({
-    uniforms: { uInk: { value: new THREE.Vector3(ink.r, ink.g, ink.b) } },
-    vertexShader: `
-      varying vec3 vColor; varying vec3 vPos;
-      void main() {
-        vColor = instanceColor;
-        vec4 p = modelMatrix * instanceMatrix * vec4(position, 1.0);
-        vPos = p.xyz;
-        gl_Position = projectionMatrix * viewMatrix * p;
-      }`,
-    fragmentShader: `
-      uniform vec3 uInk;
-      varying vec3 vColor; varying vec3 vPos;
-      void main() {
-        vec3 n = normalize(cross(dFdx(vPos), dFdy(vPos)));
-        vec3 a = abs(n);
-        float tone = a.y >= a.x && a.y >= a.z ? (n.y > 0.0 ? ${T.py.toFixed(3)} : ${T.ny.toFixed(3)})
-          : a.x >= a.z ? (n.x > 0.0 ? ${T.px.toFixed(3)} : ${T.nx.toFixed(3)})
-          : (n.z > 0.0 ? ${T.pz.toFixed(3)} : ${T.nz.toFixed(3)});
-        gl_FragColor = vec4(vColor * tone + uInk * (1.0 - tone), 1.0);
-      }`,
-  });
-}
-
 // One figure as meshes in its rest pose, for a portrait (src/render/portrait.js): the parts with the
-// same flat tones as in the world, their ink outline, and the smooth parts. look: a look of
+// same flat tones as in the world, and their ink outline. look: a look of
 // data/figures.json; facing: the turn of the figure (radians). Return { group, head (the point of
 // the head in the world, or null), height, dispose }.
 export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
@@ -111,46 +81,32 @@ export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
   root.rotation.y = facing;
   root.updateMatrixWorld(true);
   const box = unitBox();
-  const n = list.filter((x) => x.p.shape !== 'ball').length;
+  const n = list.length;
   const plain = new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, n)), 1);
   box.setAttribute('plain', plain);
   const parts = new THREE.InstancedMesh(box, partsMaterial(), Math.max(1, n));
   parts.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, n) * 3), 3);
   const hulls = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.ink), side: THREE.BackSide }), Math.max(1, n));
-  const ico = new THREE.IcosahedronGeometry(0.5, 1);
-  const nb = Math.max(1, list.length - n);
-  const balls = new THREE.InstancedMesh(ico, ballsMaterial(), nb);
-  balls.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(nb * 3), 3);
-  const ballHulls = new THREE.InstancedMesh(ico, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.ink), side: THREE.BackSide }), nb);
   const hull = HULL / unit;
   const m4 = new THREE.Matrix4();
   const local = new THREE.Matrix4();
   const tmp = new THREE.Matrix4();
   const color = new THREE.Color();
   let i = 0;
-  let o = 0;
   for (const { node, p, rgb } of list) {
     const [w, h, d] = p.size;
     m4.multiplyMatrices(node.matrixWorld, local.makeTranslation(0, p.pivotTop ? -h / 2 : p.pivotBottom ? h / 2 : 0, 0));
-    if (p.shape === 'ball') {
-      balls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
-      ballHulls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
-      balls.setColorAt(o, color.setRGB(rgb[0], rgb[1], rgb[2]));
-      o += 1;
-      continue;
-    }
     parts.setMatrixAt(i, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
-    hulls.setMatrixAt(i, p.mark ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
+    // A mark and a part with noInk (a nose) have no ink outline.
+    hulls.setMatrixAt(i, p.mark || p.noInk ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
     parts.setColorAt(i, color.setRGB(rgb[0], rgb[1], rgb[2]));
     plain.array[i] = p.mark ? 1 : 0;
     i += 1;
   }
   parts.count = i;
   hulls.count = i;
-  balls.count = o;
-  ballHulls.count = o;
   const group = new THREE.Group();
-  for (const m of [parts, hulls, balls, ballHulls]) {
+  for (const m of [parts, hulls]) {
     m.frustumCulled = false;
     if (m.count) group.add(m);
   }
@@ -159,10 +115,10 @@ export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
     group,
     head,
     height: figure.height * unit,
+    crown: (figure.crown ?? figure.height) * unit,
     dispose() {
-      for (const m of [parts, hulls, balls, ballHulls]) m.material.dispose();
+      for (const m of [parts, hulls]) m.material.dispose();
       box.dispose();
-      ico.dispose();
     },
   };
 }
@@ -197,13 +153,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   const shadows = new THREE.InstancedMesh(disc, new THREE.MeshBasicMaterial({
     color: new THREE.Color(C.ink), transparent: true, opacity: 0.32, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
   }), MAX_FIGURES);
-  // The smooth parts (the smooth heads of the comparison on docs/reference/figures.html): a low
-  // icosphere, and its ink outline. They draw only when a figure has them.
-  const ico = new THREE.IcosahedronGeometry(0.5, 1);
-  const balls = new THREE.InstancedMesh(ico, ballsMaterial(), MAX_FIGURES);
-  balls.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAX_FIGURES * 3), 3);
-  const ballHulls = new THREE.InstancedMesh(ico, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.ink), side: THREE.BackSide }), MAX_FIGURES);
-  for (const m of [parts, hulls, shadows, balls, ballHulls]) {
+  for (const m of [parts, hulls, shadows]) {
     m.frustumCulled = false;
     m.count = 0;
     scene.add(m);
@@ -245,7 +195,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       (nodes[p.parent] ?? body).add(node);
       nodes[p.name] = node;
       if (!p.color) continue;
-      list.push({ node, size: p.size, pivotTop: p.pivotTop, pivotBottom: p.pivotBottom, mark: p.mark, ball: p.shape === 'ball', rgb: toneRgb(colorIndex(p.color), 1) });
+      list.push({ node, size: p.size, pivotTop: p.pivotTop, pivotBottom: p.pivotBottom, mark: p.mark, noInk: p.noInk, rgb: toneRgb(colorIndex(p.color), 1) });
     }
     // The parts that hang: the node, its kind, and its side (an ear on the left turns the other way).
     const hangs = figure.parts.filter((p) => p.hang && nodes[p.name]).map((p) => ({ name: p.name, node: nodes[p.name], kind: p.hang, up: p.pivotBottom, side: p.at[0] < 0 ? -1 : 1 }));
@@ -318,7 +268,6 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     draw(t, dt) {
       let n = 0;
       let s = 0;
-      let o = 0;
       // The planes of the view, for the culling (plain numbers for src/world/lod.js).
       if (camera) {
         camera.updateMatrixWorld();
@@ -390,16 +339,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
           if (n >= MAX_PARTS) break;
           const [w, h, d] = p.size;
           m4.multiplyMatrices(p.node.matrixWorld, local.makeTranslation(0, p.pivotTop ? -h / 2 : p.pivotBottom ? h / 2 : 0, 0));
-          if (p.ball) {
-            if (o >= MAX_FIGURES) continue;
-            balls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
-            ballHulls.setMatrixAt(o, tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
-            balls.setColorAt(o, tint(p.rgb));
-            o += 1;
-            continue;
-          }
           parts.setMatrixAt(n, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
-          hulls.setMatrixAt(n, p.mark ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
+          hulls.setMatrixAt(n, p.mark || p.noInk ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
           parts.setColorAt(n, tint(p.rgb));
           plain.array[n] = p.mark ? 1 : 0;
           n += 1;
@@ -443,13 +384,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       parts.count = n;
       hulls.count = n;
       shadows.count = s;
-      balls.count = o;
-      ballHulls.count = o;
-      balls.visible = o > 0;
-      ballHulls.visible = o > 0;
-      for (const m of [parts, hulls, shadows, balls, ballHulls]) m.instanceMatrix.needsUpdate = true;
+      for (const m of [parts, hulls, shadows]) m.instanceMatrix.needsUpdate = true;
       parts.instanceColor.needsUpdate = true;
-      balls.instanceColor.needsUpdate = true;
       plain.needsUpdate = true;
     },
     // A burst at a point (world units): 'splash' (drops of water) or 'dust' (a puff of dust, for
@@ -471,13 +407,12 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       return f?.at ? { ...f.at, height: f.height } : null;
     },
     dispose() {
-      for (const m of [parts, hulls, shadows, dust, spray, balls, ballHulls]) {
+      for (const m of [parts, hulls, shadows, dust, spray]) {
         scene.remove(m);
         m.material.dispose();
         m.dispose();
       }
       box.dispose();
-      ico.dispose();
       disc.dispose();
       figures.clear();
     },
