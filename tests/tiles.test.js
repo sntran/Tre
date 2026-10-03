@@ -46,7 +46,7 @@ test('one tile alone gives the same land as the same tile inside a ring', () => 
       const alone = make(seed).tile(tx, tz);
       for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) if (dx || dz) A.tile(tx + dx, tz + dz);
       const ring = A.tile(tx, tz);
-      for (const k of ['letter', 'level', 'fixed', 'water', 'road', 'roadDx', 'roadDz', 'roadOff', 'field', 'nearStamp']) assert.deepEqual([...alone[k]], [...ring[k]], `seed ${seed}, tile ${tx},${tz}: ${k}`);
+      for (const k of ['letter', 'level', 'fixed', 'water', 'road', 'roadDx', 'roadDz', 'roadOff', 'bank', 'field', 'nearStamp']) assert.deepEqual([...alone[k]], [...ring[k]], `seed ${seed}, tile ${tx},${tz}: ${k}`);
       for (const k of ['objects', 'life', 'villagers', 'sites', 'spots']) assert.deepEqual(alone[k], ring[k], `seed ${seed}, tile ${tx},${tz}: ${k}`);
     }
   }
@@ -81,4 +81,39 @@ test('the hills on the plane: Sóc Sơn rises with its hill, Núi Trâu is east 
   // The fields of the stamp of Núi Trâu stay low, west of the hill.
   assert.ok(L.cell(...L.toPlane(['trau-son', 80, 30])).level <= 2);
   assert.ok(TILE === 64);
+});
+
+test('a road through paddies runs on a bank: one step over the paddies on both sides, with a shoulder of grass', () => {
+  for (const seed of [1, 7]) {
+    const L = make(seed);
+    let checked = 0;
+    for (const r of L.roads) {
+      for (let k = 0; k < r.line.length; k += 3) {
+        const [x, y] = r.line[k].map(Math.floor);
+        const c = L.cell(x, y);
+        if (c.bank !== 1 || !c.roadDir) continue;
+        // Out from the line on each side: the road, the shoulder at the height of the road, then the
+        // land one step down; the dikes of the paddies are one step under the road.
+        const [dx, dz] = c.roadDir;
+        for (const side of [-1, 1]) {
+          let shoulder = false;
+          for (let d = 1; d <= 9; d++) {
+            const q = L.cell(Math.round(x + 0.5 - dz * side * d - 0.5), Math.round(y + 0.5 + dx * side * d - 0.5));
+            if (q.letter === '=' || q.letter === 'B' || q.letter === 'k' || q.letter === 's') continue;
+            if (q.bank === 2) {
+              shoulder = true;
+              assert.ok(q.level >= c.level, `seed ${seed}, ${r.id} at ${x},${y}: the shoulder at the height of the road`);
+              continue;
+            }
+            if (q.letter === 'd') assert.ok(q.level <= c.level - 1, `seed ${seed}, ${r.id} at ${x},${y}: a dike one step under the road`);
+            if (q.letter === 'f') assert.ok(q.level <= c.level - 2, `seed ${seed}, ${r.id} at ${x},${y}: the water of a paddy under the dike`);
+            if (shoulder && q.letter === '.') assert.ok(q.level <= c.level - 1, `seed ${seed}, ${r.id} at ${x},${y}: the land beside the shoulder is lower`);
+            break;
+          }
+        }
+        checked += 1;
+      }
+    }
+    assert.ok(checked > 20, `seed ${seed}: ${checked} points of roads on a bank`);
+  }
 });

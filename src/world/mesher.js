@@ -22,6 +22,9 @@ const FACES = [
 //   origin: [x, y, z] in blocks, added to each position (a grid of a part of the world),
 //   top(x, y, z): the surface of a top face (six numbers, see surface in src/world/terrain.js), or
 //     null; the other faces have zeros,
+//   inset(x, z): how much lower the top of a column is drawn (a road on dry land lies a little under
+//     the grass beside it; the mesh only), 0 for none. The faces and the lines at the top of the
+//     column come down, and the column next to it shows a strip of its side down to it,
 // }
 // Return { positions, colors, owners, indices, segments, segOwners, segOuter, faces, surface } (six
 // numbers for each vertex when opts.top is given). Each segment
@@ -38,6 +41,7 @@ export function meshGrid(grid, opts = {}) {
   const other = opts.other ?? (() => false);
   const shade = opts.shade ?? null;
   const top = opts.top ?? null;
+  const inset = opts.inset ?? null;
   const surface = top ? [] : null;
   const NONE = [0, 0, 0, 0, 0, 0];
   const withInk = opts.ink !== false;
@@ -74,16 +78,36 @@ export function meshGrid(grid, opts = {}) {
         const c = at(x, y, z);
         if (!c) continue;
         const who = grid.ownerAt(x, y, z);
+        // The top block of a column with an inset comes down at its top.
+        const isTop = inset && !solid(x, y + 1, z);
+        const drop = isTop ? inset(x, z) : 0;
         for (const f of FACES) {
           const [nx, ny, nz] = f.n;
-          if (solid(x + nx, y + ny, z + nz)) continue;
+          if (solid(x + nx, y + ny, z + nz)) {
+            // A strip of the side down to the top of a lower-drawn column next to this one.
+            if (!isTop || ny || solid(x + nx, y + 1, z + nz) || !at(x + nx, y, z + nz)) continue;
+            const down = inset(x + nx, z + nz);
+            if (down <= drop) continue;
+            const [r, g, b] = toneRgb(c, FACE_TONES[f.key]);
+            for (const v of f.v) {
+              const vy = v[1] ? y + 1 - drop : y + 1 - down;
+              positions.push((x + v[0] + ox) * s, (vy + oy) * s, (z + v[2] + oz) * s);
+              colors.push(r, g, b);
+              owners.push(who);
+              if (surface) surface.push(...NONE);
+            }
+            indices.push(n, n + 1, n + 2, n, n + 2, n + 3);
+            n += 4;
+            faces += 1;
+            continue;
+          }
           faces += 1;
           let tone = FACE_TONES[f.key];
           if (f.key === 'py' && shade) tone *= shade(x, y, z);
           const [r, g, b] = toneRgb(c, tone);
           const sf = top ? (f.key === 'py' ? top(x, y, z) ?? NONE : NONE) : null;
           for (const v of f.v) {
-            positions.push((x + v[0] + ox) * s, (y + v[1] + oy) * s, (z + v[2] + oz) * s);
+            positions.push((x + v[0] + ox) * s, (y + v[1] - (v[1] ? drop : 0) + oy) * s, (z + v[2] + oz) * s);
             colors.push(r, g, b);
             owners.push(who);
             if (sf) surface.push(...sf);
@@ -106,6 +130,8 @@ export function meshGrid(grid, opts = {}) {
               a[t] += side;
               const b = [...a];
               b[u] += 1;
+              // A line at the top of a column with an inset comes down with it.
+              if (drop) for (const e of [a, b]) if (e[1] === y + 1) e[1] -= drop;
               addSeg(a, b, who, ownerAt(w[0], w[1], w[2]) !== who);
             }
           }

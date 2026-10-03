@@ -115,6 +115,50 @@ test('the kind of the ground and the direction of a road reach each top face of 
   assert.ok(paved && paved[0] === SURFACE.paved && Math.abs(Math.hypot(paved[1], paved[2]) - 1) < 1e-6, 'a paved path of the village');
 });
 
+test('a road on dry land lies a quarter block under the grass in the mesh, and keeps its height for movement', () => {
+  const map = mapOf('giong', 7);
+  const tileMap = createPlaneTileMap(map, tiles);
+  const t = createTerrain(map, tiles, tileMap, blocks);
+  // A cell of a road of the land, off the stamps and off any bank, with grass next to it.
+  const [px, py] = worldOf().at('phu-dong', 31, 2);
+  let cell = null;
+  for (let d = 0; d < 400 && !cell; d++) {
+    for (const [x, z] of [[px, py - d], [px + d, py], [px - d, py]]) {
+      const c = map.land.cell(x, z);
+      if (c.letter === '=' && !c.stamp && !c.bank && tileMap.type(x + 1, z) === 'grass' && t.topAt(x + 1, z) === t.topAt(x, z)) { cell = [x, z]; break; }
+    }
+  }
+  assert.ok(cell, 'a road cell on dry land next to grass');
+  const [x, z] = cell;
+  assert.equal(t.inset(x, z), 0.25);
+  const cx = Math.floor(x / CHUNK);
+  const cz = Math.floor(z / CHUNK);
+  const g = chunkMesh(t, cx, cz).ground;
+  const lx = x - cx * CHUNK;
+  const lz = z - cz * CHUNK;
+  // The top face of the road cell is a quarter block down; the cell keeps its height for movement.
+  const top = t.topAt(x, z);
+  let found = null;
+  for (let v = 0; v < g.positions.length / 3; v += 4) {
+    const P = [0, 1, 2, 3].map((k) => g.positions.slice((v + k) * 3, (v + k) * 3 + 3));
+    if (P.every((p) => p[0] >= lx && p[0] <= lx + 1 && p[2] >= lz && p[2] <= lz + 1) && P.every((p) => p[1] === P[0][1]) && g.positions[v * 3 + 2] > g.positions[(v + 2) * 3 + 2]) found = P[0][1];
+  }
+  assert.equal(found, top - 0.25, 'the road is drawn a quarter block down');
+  assert.equal(tileMap.heightAt(x, z), map.land.cell(x, z).level, 'the height of the cell for movement is its level');
+  // The grass beside it shows a strip of its side down to the road.
+  const strip = [];
+  for (let v = 0; v < g.positions.length / 3; v += 4) {
+    const P = [0, 1, 2, 3].map((k) => g.positions.slice((v + k) * 3, (v + k) * 3 + 3));
+    const ys = P.map((p) => p[1]);
+    if (P.every((p) => p[0] === lx + 1) && Math.max(...ys) === top && Math.min(...ys) === top - 0.25) strip.push(P);
+  }
+  assert.ok(strip.length >= 1 || lx + 1 >= CHUNK, 'a strip of the side of the grass');
+  // A road on a bank over the paddies has no inset.
+  let bank = null;
+  for (const r of map.land.roads) for (const [bx, bz] of r.line) if (!bank && map.land.cell(Math.floor(bx), Math.floor(bz)).bank === 1) bank = [Math.floor(bx), Math.floor(bz)];
+  assert.ok(bank && t.inset(...bank) === 0, 'no inset on a bank');
+});
+
 test('the blocks of every prop stay within its reach of its cells (the pages build the props near them)', () => {
   const fine = { inside: () => true, get: () => 0, set: () => {} };
   const objects = ['phu-dong', 'soc-son', 'trau-son', 'road-thanglong'].flatMap((id) => load(`data/maps/${id}.json`).layers.objects);

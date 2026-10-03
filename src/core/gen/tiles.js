@@ -739,6 +739,51 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
         }
       }
     }
+    // In the low land a road runs on a low bank over the paddies, as the roads on the dikes of the
+    // delta: a road cell with paddies near it is one step up, and so is the edge of grass beside it
+    // (a shoulder, whose face of grass goes down to the dikes). Near a crossing of a river the road
+    // stays down, so that it comes to the water; a road cell is never two steps from the next.
+    const ROAD_BANK = { fields: 5, width: 4, crossing: 3 };
+    const toPaddy = distanceField(W, W, (i) => letter[i] === CODE.field);
+    const toCrossing = distanceField(W, W, (i) => letter[i] === CODE.water || letter[i] === CODE.shallow || letter[i] === CODE.bridge || letter[i] === CODE.bamboo);
+    const onBank = new Uint8Array(N);
+    const roadCell = (i) => letter[i] === CODE.path && fixed[i] !== FIXED.stamp;
+    // The road cells near paddies, and then all the width of the road around them.
+    const nearPaddy = distanceField(W, W, (i) => roadCell(i) && level[i] <= base + 1 && toPaddy.dist[i] <= ROAD_BANK.fields);
+    for (let i = 0; i < N; i++) {
+      if (roadCell(i) && level[i] <= base + 1 && nearPaddy.dist[i] <= ROAD_BANK.width && toCrossing.dist[i] > ROAD_BANK.crossing) onBank[i] = 1;
+    }
+    for (let i = 0; i < N; i++) if (onBank[i]) level[i] += 1;
+    for (let pass = 0; pass < 4; pass++) {
+      let changed = false;
+      for (let y = 1; y < W - 1; y++) for (let x = 1; x < W - 1; x++) {
+        const i = y * W + x;
+        if (!roadCell(i) || onBank[i]) continue;
+        for (const [dx, dy] of NB) {
+          const j = i + dy * W + dx;
+          if (onBank[j] && level[j] - level[i] >= 2) {
+            level[i] += 1;
+            onBank[i] = 1;
+            changed = true;
+            break;
+          }
+        }
+      }
+      if (!changed) break;
+    }
+    // The shoulder: the free land next to a road on its bank comes up to the road.
+    for (let y = 1; y < W - 1; y++) for (let x = 1; x < W - 1; x++) {
+      const i = y * W + x;
+      if (fixed[i] || letter[i]) continue;
+      for (const [dx, dy] of NB) {
+        const j = i + dy * W + dx;
+        if (onBank[j] && roadCell(j)) {
+          level[i] = Math.max(level[i], level[j]);
+          onBank[i] = 2;
+          break;
+        }
+      }
+    }
     // A beach of sand along the sea.
     for (let i = 0; i < N; i++) if (!letter[i] && toSea.dist[i] <= 2) letter[i] = CODE.sand;
     for (let i = 0; i < N; i++) if (!letter[i]) letter[i] = CODE.grass;
@@ -777,6 +822,8 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       roadDx: new Int8Array(T * T),
       roadDz: new Int8Array(T * T),
       roadOff: new Int8Array(T * T),
+      // 1 for a road cell on a bank over the paddies, 2 for the shoulder of grass beside it.
+      bank: new Uint8Array(T * T),
       field: new Uint8Array(T * T),
       nearStamp: new Uint8Array(T * T),
       mist: new Uint8Array(T * T),
@@ -797,6 +844,7 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       out.roadDx[o] = Math.round(roadDx[i] * 100);
       out.roadDz[o] = Math.round(roadDz[i] * 100);
       out.roadOff[o] = Math.max(-127, Math.min(127, Math.round(roadOff[i] * 40)));
+      out.bank[o] = onBank[i];
       out.field[o] = cap(toField.dist[i]);
       out.nearStamp[o] = cap(toStamp.dist[i]);
       out.mist[o] = cap(toEra.dist[i]);
@@ -847,6 +895,7 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       road: t.road[o],
       roadDir: t.roadDx[o] || t.roadDz[o] ? [t.roadDx[o] / 100, t.roadDz[o] / 100] : null,
       roadOff: t.roadOff[o] / 40,
+      bank: t.bank[o],
       field: t.field[o],
       nearStamp: t.nearStamp[o],
       mist: t.mist[o],

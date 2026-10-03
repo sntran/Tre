@@ -552,6 +552,15 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     }
     return [kind, dx, dz, off, wet, density];
   }
+  // How much lower the top of a cell is drawn: an earth road of the land on dry land lies a quarter
+  // block under the grass beside it (the mesh only; the cell keeps its height for movement). A road
+  // on a bank over the paddies has none.
+  const INSET = 0.25;
+  function inset(x, z) {
+    if (typeAt(x, z) !== 'path') return 0;
+    const c = map.land?.cell?.(x, z);
+    return c && !c.stamp && !c.bank ? INSET : 0;
+  }
   const topAt = (x, z) => Math.max(0, baseTop(x, z) - dugAt(x, z));
 
   const terrain = {
@@ -562,6 +571,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     fine: fineView,
     shade,
     surface,
+    inset,
     topAt,
     baseTop,
     // The highest top of the ground (for a ray from the camera).
