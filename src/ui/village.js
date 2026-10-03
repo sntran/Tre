@@ -786,6 +786,12 @@ export async function mountVillage(ctx, params = {}) {
   // Greetings over the heads of the people, and the coins of broken pots.
   const bubbles = [];
   function showBubble(id, text) {
+    // A new line of a person takes the place of the last one (a mentor counts aloud, one word at a time).
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      if (bubbles[i].id !== id) continue;
+      bubbles[i].el.remove();
+      bubbles.splice(i, 1);
+    }
     const el = h('div', { class: 'world-bubble', text });
     marks.append(el);
     bubbles.push({ id, el, age: 0 });

@@ -373,7 +373,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const away = { x: p.x - task.at.x, z: p.z - task.at.z };
     const n = Math.hypot(away.x, away.z) || 1;
     const dirs = [[away.x / n, away.z / n], [-away.z / n, away.x / n], [away.z / n, -away.x / n], [1, 0], [0, 1], [-1, 0], [0, -1]];
-    for (const r of [5, 4, 6, 3]) {
+    for (const r of [8, 7, 6, 5, 4]) {
       for (const [dx, dz] of dirs) {
         const q = { x: Math.round(p.x + dx * r), z: Math.round(p.z + dz * r) };
         const cx = Math.floor(q.x / 2);
