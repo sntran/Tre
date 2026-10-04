@@ -36,10 +36,16 @@ test('each activity has its texts, its trial, its skills, its place, and its sto
     assert.ok(!ids.has(a.id), `${a.id} twice`);
     ids.add(a.id);
     for (const key of [a.titleKey, a.lineKey]) assert.ok(vi[key] && en[key], `${a.id}: ${key}`);
-    const def = trials.find((t) => t.id === a.trial);
-    assert.ok(def, `${a.id}: trial ${a.trial}`);
-    assert.equal(a.person, def.npc, `${a.id}: the person of the trial`);
-    assert.deepEqual([...a.skills].sort(), [...new Set(def.levels.map((l) => l.skill))].sort(), `${a.id}: the skills of the trial`);
+    if (a.task === 'planting') {
+      // The planting of Xóm Ruộng (docs/PLANTING.md): the planter, or no person for the whole hamlet.
+      assert.ok(a.person === 'planter' || a.person === null, `${a.id}: the person of the planting`);
+      assert.deepEqual([...a.skills].sort(), [data.planting.skill, data.planting.divide].sort(), `${a.id}: the skills of the planting`);
+    } else {
+      const def = trials.find((t) => t.id === a.trial);
+      assert.ok(def, `${a.id}: trial ${a.trial}`);
+      assert.equal(a.person, def.npc, `${a.id}: the person of the trial`);
+      assert.deepEqual([...a.skills].sort(), [...new Set(def.levels.map((l) => l.skill))].sort(), `${a.id}: the skills of the trial`);
+    }
     assert.ok(Number.isInteger(a.set) && a.set >= 1, `${a.id}: set`);
     assert.equal(a.story, `practice-${a.id}`);
     assert.ok(existsSync(new URL(`./stories/${a.story}.json`, import.meta.url)), `${a.id}: story`);

@@ -371,6 +371,24 @@ export function validate(profile, { grades = null } = {}) {
       int(r.sets, `practice ${id}.sets`, 0, 1e9);
     }
   }
+  // The memory of the facts of each skill (src/core/planting.js): a × b and b × a as one fact.
+  if (profile.facts !== undefined) {
+    for (const [skill, mem] of entries(profile.facts, 'facts')) {
+      for (const [key, e] of entries(mem, `facts ${skill}`)) {
+        if (!/^\d{1,2}x\d{1,2}$/.test(key) || !isObj(e)) fail(`facts ${skill}.${key}`);
+        for (const k of ['box', 'due', 'n', 'miss', 'last']) if (e[k] !== undefined) int(e[k], `facts ${skill}.${key}.${k}`, 0, 1e9);
+        if (e.again !== undefined && (!isObj(e.again) || !Number.isInteger(e.again.set) || !Number.isInteger(e.again.after))) fail(`facts ${skill}.${key}.again`);
+      }
+    }
+  }
+  // The planting of Xóm Ruộng (src/core/planting-session.js): the sets, and the set that goes on.
+  if (profile.planting !== undefined) {
+    const pl = profile.planting;
+    if (!isObj(pl)) fail('planting');
+    for (const k of ['sets', 'set', 'index']) int(pl[k] ?? 0, `planting.${k}`, 0, 1e9);
+    for (const k of ['used', 'done']) list(pl[k] ?? [], `planting.${k}`, 100);
+    for (const [, n] of entries(pl.counts ?? {}, 'planting.counts')) int(n, 'planting.counts', 0, 1e9);
+  }
   // Time
   const time = profile.time;
   if (time.day !== null && time.day !== undefined) str(time.day, 'time.day', 20);

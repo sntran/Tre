@@ -3,94 +3,378 @@
   "mastery": 0.95,
   "ready": 0.8,
   "top": 3,
-  "handover": [1, 3],
+  "handover": [
+    1,
+    3
+  ],
   "families": {
     "groups": {
-      "reader": "sum", "slip": 3, "fastUnit": 0.8, "slowUnit": 2.5, "idleStart": 20, "offerAfter": 30, "look": 6, "frustrated": 3, "bored": 3,
+      "reader": "sum",
+      "slip": 3,
+      "fastUnit": 0.8,
+      "slowUnit": 2.5,
+      "idleStart": 20,
+      "offerAfter": 30,
+      "look": 6,
+      "frustrated": 3,
+      "bored": 3,
       "ladders": {
-        "unsure": ["show"],
-        "missing": ["mark", "demo", "smaller", "share"],
-        "units": ["demo", "mark", "picture", "share"],
-        "slip": ["wait", "mark", "demo", "share"],
-        "guess": ["mark", "demo", "share"],
-        "stuck": ["smaller", "demo", "share"],
-        "miss": ["mark", "demo", "smaller", "share"],
-        "frustrated": ["share", "break"],
-        "counting": ["wait", "demo"],
-        "bored": ["raise", "picture"],
-        "ready": ["raise"]
+        "unsure": [
+          "show"
+        ],
+        "missing": [
+          "mark",
+          "demo",
+          "smaller",
+          "share"
+        ],
+        "units": [
+          "demo",
+          "mark",
+          "picture",
+          "share"
+        ],
+        "slip": [
+          "wait",
+          "mark",
+          "demo",
+          "share"
+        ],
+        "guess": [
+          "mark",
+          "demo",
+          "share"
+        ],
+        "stuck": [
+          "smaller",
+          "demo",
+          "share"
+        ],
+        "miss": [
+          "mark",
+          "demo",
+          "smaller",
+          "share"
+        ],
+        "frustrated": [
+          "share",
+          "break"
+        ],
+        "counting": [
+          "wait",
+          "demo"
+        ],
+        "bored": [
+          "raise",
+          "picture"
+        ],
+        "ready": [
+          "raise"
+        ]
       }
     },
     "span": {
-      "reader": "sum", "slip": 2, "fastUnit": 0.8, "slowUnit": 2.5, "idleStart": 25, "offerAfter": 30, "look": 6, "frustrated": 3, "bored": 3,
+      "reader": "sum",
+      "slip": 2,
+      "fastUnit": 0.8,
+      "slowUnit": 2.5,
+      "idleStart": 25,
+      "offerAfter": 30,
+      "look": 6,
+      "frustrated": 3,
+      "bored": 3,
       "ladders": {
-        "unsure": ["show"],
-        "missing": ["mark", "cue", "demo", "picture"],
-        "units": ["demo", "mark", "picture"],
-        "slip": ["wait", "mark", "cue", "demo"],
-        "guess": ["cue", "mark", "demo"],
-        "stuck": ["cue", "demo", "picture"],
-        "miss": ["mark", "cue", "demo", "picture"],
-        "frustrated": ["break", "picture"],
-        "counting": ["wait", "demo"],
-        "bored": ["raise", "picture"],
-        "ready": ["raise"]
+        "unsure": [
+          "show"
+        ],
+        "missing": [
+          "mark",
+          "cue",
+          "demo",
+          "picture"
+        ],
+        "units": [
+          "demo",
+          "mark",
+          "picture"
+        ],
+        "slip": [
+          "wait",
+          "mark",
+          "cue",
+          "demo"
+        ],
+        "guess": [
+          "cue",
+          "mark",
+          "demo"
+        ],
+        "stuck": [
+          "cue",
+          "demo",
+          "picture"
+        ],
+        "miss": [
+          "mark",
+          "cue",
+          "demo",
+          "picture"
+        ],
+        "frustrated": [
+          "break",
+          "picture"
+        ],
+        "counting": [
+          "wait",
+          "demo"
+        ],
+        "bored": [
+          "raise",
+          "picture"
+        ],
+        "ready": [
+          "raise"
+        ]
       }
     },
     "bundle": {
-      "reader": "sum", "slip": 3, "fastUnit": 0.6, "slowUnit": 2.5, "idleStart": 20, "offerAfter": 30, "look": 6, "frustrated": 3, "bored": 3,
+      "reader": "sum",
+      "slip": 3,
+      "fastUnit": 0.6,
+      "slowUnit": 2.5,
+      "idleStart": 20,
+      "offerAfter": 30,
+      "look": 6,
+      "frustrated": 3,
+      "bored": 3,
       "ladders": {
-        "unsure": ["show"],
-        "missing": ["mark", "demo", "smaller"],
-        "slip": ["mark", "demo", "smaller"],
-        "guess": ["mark", "demo"],
-        "stuck": ["smaller", "demo"],
-        "miss": ["mark", "demo", "smaller"],
-        "frustrated": ["share", "break"],
-        "counting": ["wait", "demo"],
-        "bored": ["raise", "picture"],
-        "ready": ["raise"]
+        "unsure": [
+          "show"
+        ],
+        "missing": [
+          "mark",
+          "demo",
+          "smaller"
+        ],
+        "slip": [
+          "mark",
+          "demo",
+          "smaller"
+        ],
+        "guess": [
+          "mark",
+          "demo"
+        ],
+        "stuck": [
+          "smaller",
+          "demo"
+        ],
+        "miss": [
+          "mark",
+          "demo",
+          "smaller"
+        ],
+        "frustrated": [
+          "share",
+          "break"
+        ],
+        "counting": [
+          "wait",
+          "demo"
+        ],
+        "bored": [
+          "raise",
+          "picture"
+        ],
+        "ready": [
+          "raise"
+        ]
       }
     },
     "basket": {
-      "reader": "each", "slip": 1, "fastUnit": 0.8, "slowUnit": 3, "idleStart": 20, "offerAfter": 30, "look": 6, "frustrated": 3, "bored": 3,
+      "reader": "each",
+      "slip": 1,
+      "fastUnit": 0.8,
+      "slowUnit": 3,
+      "idleStart": 20,
+      "offerAfter": 30,
+      "look": 6,
+      "frustrated": 3,
+      "bored": 3,
       "ladders": {
-        "unsure": ["show"],
-        "slip": ["mark", "smaller", "share"],
-        "guess": ["mark", "share"],
-        "stuck": ["smaller", "share"],
-        "miss": ["mark", "smaller", "share"],
-        "frustrated": ["share", "break"],
-        "counting": ["wait"],
-        "bored": ["raise", "picture"],
-        "ready": ["raise"]
+        "unsure": [
+          "show"
+        ],
+        "slip": [
+          "mark",
+          "smaller",
+          "share"
+        ],
+        "guess": [
+          "mark",
+          "share"
+        ],
+        "stuck": [
+          "smaller",
+          "share"
+        ],
+        "miss": [
+          "mark",
+          "smaller",
+          "share"
+        ],
+        "frustrated": [
+          "share",
+          "break"
+        ],
+        "counting": [
+          "wait"
+        ],
+        "bored": [
+          "raise",
+          "picture"
+        ],
+        "ready": [
+          "raise"
+        ]
       }
     },
     "plain": {
-      "reader": "plain", "slip": 0, "fastUnit": 0.8, "slowUnit": 4, "idleStart": 25, "offerAfter": 30, "look": 6, "frustrated": 3, "bored": 3,
+      "reader": "plain",
+      "slip": 0,
+      "fastUnit": 0.8,
+      "slowUnit": 4,
+      "idleStart": 25,
+      "offerAfter": 30,
+      "look": 6,
+      "frustrated": 3,
+      "bored": 3,
       "ladders": {
-        "unsure": ["show"],
-        "guess": ["mark", "picture"],
-        "stuck": ["mark", "picture"],
-        "miss": ["wait", "mark", "picture", "break"],
-        "frustrated": ["break", "picture"],
-        "counting": ["wait"],
-        "bored": ["raise", "picture"],
-        "ready": ["raise"]
+        "unsure": [
+          "show"
+        ],
+        "guess": [
+          "mark",
+          "picture"
+        ],
+        "stuck": [
+          "mark",
+          "picture"
+        ],
+        "miss": [
+          "wait",
+          "mark",
+          "picture",
+          "break"
+        ],
+        "frustrated": [
+          "break",
+          "picture"
+        ],
+        "counting": [
+          "wait"
+        ],
+        "bored": [
+          "raise",
+          "picture"
+        ],
+        "ready": [
+          "raise"
+        ]
       }
     }
   },
   "mentors": {
-    "bridge": { "family": "span", "person": "npc:fisher", "demo": { "thing": "plank", "prop": null }, "picture": "mentor.picture.bridge" },
-    "event-cart": { "family": "groups", "person": "event:cart", "demo": { "thing": "stones", "prop": "cart", "target": "mud" }, "picture": "mentor.picture.cart" },
-    "event-flood": { "family": "groups", "person": "event:flood", "demo": { "thing": "pails", "prop": null, "target": "ditch" }, "picture": "mentor.picture.flood" },
-    "event-market": { "family": "groups", "person": "event:market", "demo": { "thing": "coins", "prop": null, "target": null }, "picture": "mentor.picture.market" },
-    "event-duck": { "family": "groups", "person": "event:duck", "demo": null, "picture": "mentor.picture.duck" },
-    "trial-scholar": { "family": "bundle", "person": "npc:teacher", "demo": { "thing": "rod", "prop": null, "target": null, "same": true }, "picture": "mentor.picture.scholar" },
-    "trial-smith": { "family": "plain", "person": "npc:smith", "demo": null, "picture": "mentor.picture.smith" },
-    "trial-fisher": { "family": "plain", "person": "npc:fisher", "demo": null, "picture": "mentor.picture.fisher" },
-    "trial-healer": { "family": "basket", "person": "npc:healer", "demo": null, "picture": "mentor.picture.healer" },
-    "trial-woodcutter": { "family": "plain", "person": "npc:woodcutter", "demo": null, "picture": "mentor.picture.woodcutter" }
+    "bridge": {
+      "family": "span",
+      "person": "npc:fisher",
+      "demo": {
+        "thing": "plank",
+        "prop": null
+      },
+      "picture": "mentor.picture.bridge"
+    },
+    "event-cart": {
+      "family": "groups",
+      "person": "event:cart",
+      "demo": {
+        "thing": "stones",
+        "prop": "cart",
+        "target": "mud"
+      },
+      "picture": "mentor.picture.cart"
+    },
+    "event-flood": {
+      "family": "groups",
+      "person": "event:flood",
+      "demo": {
+        "thing": "pails",
+        "prop": null,
+        "target": "ditch"
+      },
+      "picture": "mentor.picture.flood"
+    },
+    "event-market": {
+      "family": "groups",
+      "person": "event:market",
+      "demo": {
+        "thing": "coins",
+        "prop": null,
+        "target": null
+      },
+      "picture": "mentor.picture.market"
+    },
+    "event-duck": {
+      "family": "groups",
+      "person": "event:duck",
+      "demo": null,
+      "picture": "mentor.picture.duck"
+    },
+    "trial-scholar": {
+      "family": "bundle",
+      "person": "npc:teacher",
+      "demo": {
+        "thing": "rod",
+        "prop": null,
+        "target": null,
+        "same": true
+      },
+      "picture": "mentor.picture.scholar"
+    },
+    "trial-smith": {
+      "family": "plain",
+      "person": "npc:smith",
+      "demo": null,
+      "picture": "mentor.picture.smith"
+    },
+    "trial-fisher": {
+      "family": "plain",
+      "person": "npc:fisher",
+      "demo": null,
+      "picture": "mentor.picture.fisher"
+    },
+    "trial-healer": {
+      "family": "basket",
+      "person": "npc:healer",
+      "demo": null,
+      "picture": "mentor.picture.healer"
+    },
+    "trial-woodcutter": {
+      "family": "plain",
+      "person": "npc:woodcutter",
+      "demo": null,
+      "picture": "mentor.picture.woodcutter"
+    },
+    "trial-plant": {
+      "family": "groups",
+      "person": "npc:planter",
+      "demo": {
+        "thing": "bundle",
+        "prop": null,
+        "target": null
+      },
+      "picture": "mentor.picture.planter"
+    }
   },
   "lines": {
     "show": "mentor.show",

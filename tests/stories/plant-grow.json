@@ -1,0 +1,157 @@
+{
+  "name": "plant-grow",
+  "about": {
+    "vi": "An cấy một ô ruộng với cô Cấy ở Xóm Ruộng. Sáng hôm sau ô ruộng đã xanh; lưu rồi mở lại, ô ruộng vẫn còn; hai ngày sau lúa đã cao.",
+    "en": "An plants a plot with the planter in Xóm Ruộng. The next morning the plot is green; after a save and a load the plot is still there; two days later the rice is tall."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    }
+  },
+  "clock": 480,
+  "at": [
+    "xom-ruong",
+    26,
+    24.5
+  ],
+  "steps": [
+    {
+      "do": {
+        "type": "talk",
+        "dialogue": "planter.trial"
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:planter"
+      }
+    },
+    {
+      "until": {
+        "event": "planted",
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "planted",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "at": {
+        "hour": 8
+      }
+    },
+    {
+      "expect": [
+        {
+          "entity": "prow:18810:12321:1:0",
+          "look": "seedlings-2-green"
+        }
+      ]
+    },
+    {
+      "reload": true
+    },
+    {
+      "expect": [
+        {
+          "entity": "prow:18810:12321:1:0",
+          "look": "seedlings-2-green"
+        }
+      ]
+    },
+    {
+      "at": {
+        "hour": 8
+      }
+    },
+    {
+      "at": {
+        "hour": 8
+      }
+    },
+    {
+      "expect": [
+        {
+          "entity": "prow:18810:12321:1:0",
+          "look": "seedlings-2-tall"
+        }
+      ]
+    }
+  ]
+}

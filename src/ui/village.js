@@ -16,7 +16,7 @@ import { createSession, middleOf } from '../core/session.js';
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
-import { heroLook } from '../world/figures.js';
+import { heroLook, thingLook } from '../world/figures.js';
 import { h, img, button } from './dom.js';
 import { t, tn } from './i18n.js';
 import { speak } from './speak.js';
@@ -212,7 +212,7 @@ export async function mountVillage(ctx, params = {}) {
     get river() { return nearby().river; },
   });
   // A villager of a generated hamlet has a look from parts in the map (by its id).
-  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : looks[key] ?? mapData.looks?.[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level, mistAt: (x, z) => Math.min(1, (session.tileMap.mistAt?.(Math.floor(x), Math.floor(z)) ?? 0) / fadeCells) });
+  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : looks[key] ?? thingLook(key) ?? mapData.looks?.[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level, mistAt: (x, z) => Math.min(1, (session.tileMap.mistAt?.(Math.floor(x), Math.floor(z)) ?? 0) / fadeCells) });
 
   // The height of the ground under a map point (world units).
   const groundY = (x, y) => columnTop(tileMap.heightAt(Math.floor(x), Math.floor(y)));

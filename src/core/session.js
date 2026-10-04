@@ -49,6 +49,8 @@ import { setupTrial, clearTrial, addToHeap } from './world/systems/work.js';
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring } from './mentoring.js';
+import { createPlanting } from './planting-session.js';
+import { plotsOf } from './world/systems/plant.js';
 import { jumpLength, planJump } from './world/jump.js';
 import { MOVE } from './world/move.js';
 import { createRaid, raidLevel } from './world/raids.js';
@@ -109,6 +111,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (practice && key === `trial-${practice.trial}`) practice.level = Math.min(2, practice.level + 1);
       const scholar = trialDef('scholar');
       if (key === 'trial-scholar' && scholar) addToHeap(state, 'trial-scholar', 'rods', 'rod', (scholar.bundle ?? 10) * 2);
+    },
+  });
+
+  // The planting of Xóm Ruộng (docs/PLANTING.md): its sets, rounds, lines, and paddies.
+  const planting = createPlanting({
+    data, profile, learner, emit, mentoring, world: () => state, env: () => env, map: () => map,
+    seed: () => state.seed, clock: () => state.clock.minutes, rain: () => state.sky?.rain ?? 0,
+    say: (...a) => say(...a), talk: (id) => talk(id), save: (why) => save(why), busy: () => busy,
+    // The end of a set of a practice of the planting: the practice ends there.
+    setDone: () => {
+      if (practice?.task !== 'planting') return false;
+      plantPracticeEnd();
+      return true;
     },
   });
 
@@ -196,8 +211,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     updateLive(true);
     refreshPeople();
     placeEvents();
-    // A practice has no prologue: the person of the activity is ready and starts the task.
-    if (practice) talk(`${practice.person}.trial`);
+    planting.grow();
+    // A practice has no prologue: the person of the activity is ready and starts the task (a
+    // practice of a whole place has no person: the child walks to any station).
+    if (practice?.person) talk(`${practice.person}.trial`);
     else if (!profile.flags['intro.seen']) talk('grandma.intro');
     for (const id of params.after ?? []) talk(id);
   }
@@ -439,6 +456,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       startTrial(c.id);
       return;
     }
+    // The planting of Xóm Ruộng: a set of plots (docs/PLANTING.md).
+    if (c.open === 'planting') {
+      planting.start();
+      return;
+    }
     // The choice at the end of a set of a practice: stay and play on, or go back.
     if (c.open === 'practice-stay' || c.open === 'practice-back') {
       practiceChoice(c.open === 'practice-stay');
@@ -623,6 +645,37 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       work(def.id, def.task === 'basket' ? 'give' : 'cut');
     });
     return true;
+  }
+
+  // A tap on the planter while the planting is on: the commit (seedlings at the edge of a plot),
+  // or a short line. Return true when the tap was for the planting.
+  function tapPlanter(person) {
+    if (person.ref !== 'planter') return false;
+    const t = planting.tapPlanter();
+    if (!t) return false;
+    if (t === 'busy') return true;
+    walkToThing(person, () => {
+      worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 });
+      if (t === 'commit') work('plant', 'plant');
+      else say('plant.wait', {}, null, 'planter');
+    });
+    return true;
+  }
+  // A tap on a stake of a plot of a choose round: the commit of that plot.
+  function tapPlotStake(t) {
+    const e = getEntity(state, t.id);
+    if (!e) return;
+    walkNear(e.position, () => work('plant', 'choose', { plot: t.plot, which: t.which }));
+  }
+  // The end of a set of a practice of the planting: the reward, and the choice to stay or go back.
+  function plantPracticeEnd() {
+    const rec = (profile.practice ??= {})[practice.id] ??= { level: practice.level ?? 0, sets: 0 };
+    rec.sets += 1;
+    applyEffects(profile, [{ give: { coin: 3 } }]);
+    save('practice');
+    emit({ type: 'gift', from: 'npc:planter', give: { coin: 3 }, delay: 0.3 });
+    emit({ type: 'practice', id: practice.id, sets: rec.sets, level: rec.level });
+    talk('planter.practice.end');
   }
 
   // The small events of each day (data/world/events.json, src/core/world/days.js) -------------
@@ -1329,11 +1382,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       worldCommand(state, { type: 'poke', id: target.sleeper });
       return;
     }
+    if (target.plotStake) {
+      tapPlotStake(target.plotStake);
+      return;
+    }
     if (target.person) {
       const person = persons().find((p) => p.entity === target.person);
       if (!person || (person.kind === 'encounter' && raidOn())) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
-      if (person.kind === 'npc' && (tapGift(person) || tapTrialPerson(person))) return;
+      if (person.kind === 'npc' && (tapGift(person) || tapTrialPerson(person) || tapPlanter(person))) return;
       walkToThing(person, () => interact({ kind: person.kind, id: person.ref }, person));
       return;
     }
@@ -1427,6 +1484,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       consider(e.item.fixed ? { thing: e.id, along } : { thing: e.id }, d, 1.2);
     }
     for (const q of persons()) if (!getEntity(state, q.entity)?.hidden) consider({ person: q.entity }, Math.hypot(q.x - x, q.y - y) * 2, 1.6);
+    // A stake of a plot of a choose round of the planting.
+    const plantRound = getEntity(state, 'zone:trial-plant')?.zone.round;
+    if (plantRound && !plantRound.anim && plotsOf(state)[0]?.plot.form === 'choose') {
+      for (const e of query(state, 'plotPart', 'position')) {
+        if (e.plotPart.which === 'plot' || e.plotPart.which === 'decoy') consider({ plotStake: { id: e.id, plot: e.plotPart.plot, which: e.plotPart.which } }, distHb(p, e.position), 1.2);
+      }
+    }
     if (best) return best.target;
     // A sleeping animal (the buffalo in the shade at noon).
     for (const e of query(state, 'act', 'position')) if (e.act === 'sleep' && !e.hidden) consider({ sleeper: e.id }, distHb(p, e.position), 3);
@@ -1471,6 +1535,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         parts: ev.parts, resets: ev.resets, latencies: ev.latencies, hint: ev.hint, hintSeen: ev.hintSeen, pBefore, pAfter, retry: false, harder: false, map: map.id,
       });
     }
+    if (ev.type === 'planted') planting.planted(ev);
     if (ev.type === 'trial' && ev.done && String(ev.trial).startsWith('event-')) eventDone(ev.trial.slice(6));
     else if (ev.type === 'trial' && ev.done) trialDone(ev.trial);
     // A small event of the day: too few on the place, or too many (the last things go back).
@@ -1562,6 +1627,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (ev.type === 'dawn') {
           refreshPeople();
           placeEvents();
+          planting.grow();
           save('dawn');
         }
         // After a rain, the land is wet: a flood can come.
@@ -1582,6 +1648,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
     }
     mentoring.tick();
+    planting.tick(STEP);
     checkRest();
     checkEdge();
     checkLandFerries();

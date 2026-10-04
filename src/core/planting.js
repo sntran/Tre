@@ -48,9 +48,10 @@ export function recordFact(mem, key, { ok, day, set, index, form }, data) {
 }
 
 // The facts of a level: the factor ranges of the level of the skill (data/skills.json).
+// A plot of one row or one column is no array: the facts with a factor of one stay out.
 export function factPool(range) {
   const keys = new Set();
-  for (let a = range.minA; a <= range.maxA; a++) for (let b = range.minB; b <= range.maxB; b++) keys.add(factKey(a, b));
+  for (let a = Math.max(2, range.minA); a <= range.maxA; a++) for (let b = Math.max(2, range.minB); b <= range.maxB; b++) keys.add(factKey(a, b));
   return [...keys];
 }
 
@@ -75,6 +76,7 @@ export function chooseFact(ctx, rng) {
   const { mem, day, set, index, prev, hard = 0 } = ctx;
   const not = new Set(ctx.not ?? []);
   let pool = ctx.pool.filter((k) => !not.has(k));
+  if (!pool.length) pool = ctx.pool.slice();
   // Never two plots of the same table one after another (interleaved, not blocked).
   const other = pool.filter((k) => k !== prev && !shares(k, prev));
   if (other.length) pool = other;
@@ -261,14 +263,15 @@ export function eventOf(seed, set, last, data) {
 // The offers of the next round: the plot of the schedule, and (for the forms where the child
 // chooses) another plot of the band, and a bigger plot at some levels. ctx: { data, level (1 to
 // the levels of the skill), ranges (the factor ranges of the levels of the skill), mem, day, set,
-// index, prev, used, counts, divideOpen, seed }.
+// index, prev, used, counts, divideOpen, seed, done (the facts done right in this set) }.
 export function nextOffers(ctx) {
-  const { data, level, ranges, mem, day, set, index, prev, used = [], counts = {}, divideOpen = false, seed } = ctx;
+  const { data, level, ranges, mem, day, set, index, prev, used = [], counts = {}, divideOpen = false, seed, done = [] } = ctx;
   const levelData = data.levels[Math.min(level, data.levels.length) - 1];
   const range = ranges[Math.min(level, ranges.length) - 1];
   const rng = plotRng(seed, set, index);
   const pool = factPool(range);
-  const key = chooseFact({ pool, mem, day, set, index, prev, hard: levelData.hard }, rng);
+  // A fact that the child did right in this set does not come again in the set.
+  const key = chooseFact({ pool, mem, day, set, index, prev, hard: levelData.hard, not: done }, rng);
   const forms = [...levelData.forms, ...(divideOpen && level >= 2 ? ['divide'] : [])];
   // A plot of the first round of a set is a plain plot.
   let form = index === 0 ? forms[0] : chooseForm({ forms, used, counts, avoid: mem[key]?.again?.form ?? null }, rng);
@@ -278,7 +281,7 @@ export function nextOffers(ctx) {
   const offers = [main];
   if (main.form === 'product' || main.form === 'rest') {
     for (let i = 1; i < data.offers; i++) {
-      const alt = chooseFact({ pool, mem, day, set, index, prev, hard: levelData.hard, not: [key] }, rng);
+      const alt = chooseFact({ pool, mem, day, set, index, prev, hard: levelData.hard, not: [key, ...done] }, rng);
       offers.push(makePlot({ key: alt, form: main.form, range, levelData, rng, id: `plot-${i}` }));
     }
     if (data.bigger.includes(level)) {

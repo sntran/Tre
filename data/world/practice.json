@@ -1,31 +1,134 @@
 {
-  "_about": "The practice links (src/core/practice.js; docs/WORLD.md, 'Practice links'). A parent sends a link ?practice=<id> from the parent page, and the child plays one activity of the world at once, with the own profile of the child. The link holds only the id. For each activity: titleKey and lineKey (the title and a one-line description, in i18n/), at (the place: a frame and a cell on the plane, where the hero and Nghé stand at the start), person (the person of the activity, who is ready there), trial (the task of the world that it runs: a trial of data/trials.json, played again as practice), skills (the skills that the task measures), set (the rounds of a set: at the end of a set, the person thanks the child, and the child chooses to stay or to go back), and story (the story that plays a set, tests/stories/<story>.json). hours: the visit starts in these game hours; at other hours (the night, and the dusk when the people go home), the night goes by and the visit starts at the first hour of the next morning.",
-  "hours": [7, 17],
+  "_about": "The practice links (src/core/practice.js; docs/WORLD.md, 'Practice links'). A parent sends a link ?practice=<id> from the parent page, and the child plays one activity of the world at once, with the own profile of the child. The link holds only the id. For each activity: titleKey and lineKey (the title and a one-line description, in i18n/), at (the place: a frame and a cell on the plane, where the hero and Nghé stand at the start), person (the person of the activity, who is ready there), trial (the task of the world that it runs: a trial of data/trials.json, played again as practice) or task (planting: the planting of Xóm Ruộng, docs/PLANTING.md); person null: a practice of a whole place, where the child walks to any station, skills (the skills that the task measures), set (the rounds of a set: at the end of a set, the person thanks the child, and the child chooses to stay or to go back), and story (the story that plays a set, tests/stories/<story>.json). hours: the visit starts in these game hours; at other hours (the night, and the dusk when the people go home), the night goes by and the visit starts at the first hour of the next morning.",
+  "hours": [
+    7,
+    17
+  ],
   "activities": [
     {
-      "id": "bo-que", "titleKey": "practiceLink.bo-que.title", "lineKey": "practiceLink.bo-que.line",
-      "at": ["phu-dong", 54, 27], "person": "teacher", "trial": "scholar",
-      "skills": ["math.count.120", "math.place.1000"], "set": 2, "story": "practice-bo-que"
+      "id": "bo-que",
+      "titleKey": "practiceLink.bo-que.title",
+      "lineKey": "practiceLink.bo-que.line",
+      "at": [
+        "phu-dong",
+        54,
+        27
+      ],
+      "person": "teacher",
+      "trial": "scholar",
+      "skills": [
+        "math.count.120",
+        "math.place.1000"
+      ],
+      "set": 2,
+      "story": "practice-bo-que"
     },
     {
-      "id": "ren-sat", "titleKey": "practiceLink.ren-sat.title", "lineKey": "practiceLink.ren-sat.line",
-      "at": ["phu-dong", 53, 43], "person": "smith", "trial": "smith",
-      "skills": ["sci.matter.states", "sci.matter.materials"], "set": 2, "story": "practice-ren-sat"
+      "id": "ren-sat",
+      "titleKey": "practiceLink.ren-sat.title",
+      "lineKey": "practiceLink.ren-sat.line",
+      "at": [
+        "phu-dong",
+        53,
+        43
+      ],
+      "person": "smith",
+      "trial": "smith",
+      "skills": [
+        "sci.matter.states",
+        "sci.matter.materials"
+      ],
+      "set": 2,
+      "story": "practice-ren-sat"
     },
     {
-      "id": "cam-coc", "titleKey": "practiceLink.cam-coc.title", "lineKey": "practiceLink.cam-coc.line",
-      "at": ["phu-dong", 27, 64.5], "person": "fisher", "trial": "fisher",
-      "skills": ["math.add.20"], "set": 2, "story": "practice-cam-coc"
+      "id": "cam-coc",
+      "titleKey": "practiceLink.cam-coc.title",
+      "lineKey": "practiceLink.cam-coc.line",
+      "at": [
+        "phu-dong",
+        27,
+        64.5
+      ],
+      "person": "fisher",
+      "trial": "fisher",
+      "skills": [
+        "math.add.20"
+      ],
+      "set": 2,
+      "story": "practice-cam-coc"
     },
     {
-      "id": "hai-thuoc", "titleKey": "practiceLink.hai-thuoc.title", "lineKey": "practiceLink.hai-thuoc.line",
-      "at": ["phu-dong", 33, 44], "person": "healer", "trial": "healer",
-      "skills": ["math.count.120", "math.add.20", "math.mul.10"], "set": 2, "story": "practice-hai-thuoc"
+      "id": "hai-thuoc",
+      "titleKey": "practiceLink.hai-thuoc.title",
+      "lineKey": "practiceLink.hai-thuoc.line",
+      "at": [
+        "phu-dong",
+        33,
+        44
+      ],
+      "person": "healer",
+      "trial": "healer",
+      "skills": [
+        "math.count.120",
+        "math.add.20",
+        "math.mul.10"
+      ],
+      "set": 2,
+      "story": "practice-hai-thuoc"
     },
     {
-      "id": "chat-tre", "titleKey": "practiceLink.chat-tre.title", "lineKey": "practiceLink.chat-tre.line",
-      "at": ["phu-dong", 51, 8.5], "person": "woodcutter", "trial": "woodcutter",
-      "skills": ["math.add.20"], "set": 2, "story": "practice-chat-tre"
+      "id": "chat-tre",
+      "titleKey": "practiceLink.chat-tre.title",
+      "lineKey": "practiceLink.chat-tre.line",
+      "at": [
+        "phu-dong",
+        51,
+        8.5
+      ],
+      "person": "woodcutter",
+      "trial": "woodcutter",
+      "skills": [
+        "math.add.20"
+      ],
+      "set": 2,
+      "story": "practice-chat-tre"
+    },
+    {
+      "id": "cay-lua",
+      "titleKey": "practiceLink.cay-lua.title",
+      "lineKey": "practiceLink.cay-lua.line",
+      "at": [
+        "xom-ruong",
+        26,
+        24.5
+      ],
+      "person": "planter",
+      "task": "planting",
+      "skills": [
+        "math.mul.10",
+        "math.div.10"
+      ],
+      "set": 1,
+      "story": "practice-cay-lua"
+    },
+    {
+      "id": "xom-ruong",
+      "titleKey": "practiceLink.xom-ruong.title",
+      "lineKey": "practiceLink.xom-ruong.line",
+      "at": [
+        "xom-ruong",
+        34.5,
+        24.5
+      ],
+      "person": null,
+      "task": "planting",
+      "skills": [
+        "math.mul.10",
+        "math.div.10"
+      ],
+      "set": 1,
+      "story": "practice-xom-ruong"
     }
   ]
 }

@@ -82,7 +82,7 @@ export function input(world, dt, rng, env) {
       const { type, id, ...o } = c;
       e.orders = [...(e.orders ?? []), o];
     } else if (c.type === 'work') {
-      e.work = { trial: c.trial, act: c.act, item: c.item ?? null, at: c.at ?? null, culm: c.culm ?? null };
+      e.work = { trial: c.trial, act: c.act, item: c.item ?? null, at: c.at ?? null, culm: c.culm ?? null, plot: c.plot ?? null, which: c.which ?? null };
     } else if (c.type === 'poke' && e.act === 'sleep') {
       e.flick = 0.8;
       world.events.push({ type: 'flick', id: e.id, sound: 'huff' });

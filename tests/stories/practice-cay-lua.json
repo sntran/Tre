@@ -1,0 +1,744 @@
+{
+  "name": "practice-cay-lua",
+  "about": {
+    "vi": "Luyện tập cấy lúa: đường link đưa An đến bờ ruộng của cô Cấy ở Xóm Ruộng. Một lượt sáu ô: một ô thiếu mạ (An mang thêm), một ô thừa mạ, các ô khác vừa đủ; cô cảm ơn, An về chỗ cũ.",
+    "en": "Practice of the planting: the link takes An to the dike of the planter in Xóm Ruộng. One set of six plots: one with too few seedlings (An brings the rest), one with too many, and the others just right; the planter says thank you, and An goes back."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "practice": "cay-lua",
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:planter"
+      }
+    },
+    {
+      "until": {
+        "event": "planted",
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "planted",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:planter"
+      }
+    },
+    {
+      "until": {
+        "event": "planted",
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "planted",
+          "with": {
+            "result": "few"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:planter"
+      }
+    },
+    {
+      "until": {
+        "event": "planted",
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "planted",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 3
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 3
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 3
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 3
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:planter"
+      }
+    },
+    {
+      "until": {
+        "event": "planted",
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "planted",
+          "with": {
+            "result": "many"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:planter"
+      }
+    },
+    {
+      "until": {
+        "event": "planted",
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "planted",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 3
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 3
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 3
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:planter"
+      }
+    },
+    {
+      "until": {
+        "event": "planted",
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "planted",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "entity": "pstake:p0:plot:c0"
+      }
+    },
+    {
+      "until": {
+        "event": "planted",
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "planted",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "practice",
+          "with": {
+            "id": "cay-lua",
+            "sets": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "dlg.planter.practice.end.n1"
+          }
+        },
+        {
+          "item": "coin",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "read": [
+        1
+      ]
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "cell": [
+              53,
+              43
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    53,
+    43
+  ]
+}

@@ -533,8 +533,46 @@ export function gapMarks(n) {
 const still = (parts, height, shadow = 0) => ({ kind: 'still', parts, scale: 1, height, shadow });
 const HERBS = { ngai: ['greenPale', 'ashLight'], tiato: ['vermilionPale', 'greenDeep'], rauma: ['green', 'greenPale'] };
 const IRON = ['ash', 'vermilionPale', 'vermilion', 'yellowPale'];
+// The looks of the planting of Xóm Ruộng that come from their key (docs/PLANTING.md): a row of n
+// seedlings at a stage of growth (seedlings-<n>-<stage>), a bundle of n seedlings tied with straw
+// (bundle-<n>), a loose bunch (bunch-<n>), and a bamboo stake of a plot (plot-stake). Null for
+// another key.
+export function thingLook(key) {
+  const k = String(key);
+  let m = /^seedlings-(\d+)-([a-z]+)$/.exec(k);
+  if (m) return { kind: 'seedlings', n: Number(m[1]), stage: m[2] };
+  m = /^(bundle|bunch)-(\d+)$/.exec(k);
+  if (m) return { kind: `seed-${m[1]}`, n: Number(m[2]) };
+  if (k === 'plot-stake') return { kind: 'plot-stake' };
+  return null;
+}
+const STAGES = { planted: ['greenPale', 0.55], green: ['green', 0.8], tall: ['greenDeep', 1.15], gold: ['yellow', 1.25] };
+
 export function workThing(look) {
   switch (look.kind) {
+    // A row of seedlings, one on each half block along +x from the first one: young and pale,
+    // then green, then tall, then gold.
+    case 'seedlings': {
+      const [color, h] = STAGES[look.stage] ?? STAGES.planted;
+      const parts = [];
+      for (let i = 0; i < Math.max(1, Math.min(14, look.n ?? 1)); i++) {
+        parts.push(P(`s${i}`, [0.18, h, 0.18], color, [i, h / 2, 0]));
+        parts.push(P(`l${i}`, [0.34, 0.1, 0.1], color, [i + 0.08, h * 0.75, 0.05]));
+      }
+      return still(parts, h);
+    }
+    // A bundle of seedlings (bó mạ): green blades tied with straw, wider for more seedlings.
+    case 'seed-bundle': {
+      const w = Math.min(0.9, 0.3 + (look.n ?? 1) * 0.06);
+      return still([P('blades', [w, 0.9, w], 'green', [0, 0.45, 0]), P('roots', [w * 0.9, 0.15, w * 0.9], 'ochre', [0, 0.07, 0]), P('band', [w + 0.06, 0.12, w + 0.06], 'yellowPale', [0, 0.35, 0])], 0.9);
+    }
+    // A loose bunch of seedlings: a few blades.
+    case 'seed-bunch': {
+      const w = Math.min(0.6, 0.18 + (look.n ?? 1) * 0.04);
+      return still([P('blades', [w, 0.6, w], 'greenPale', [0, 0.3, 0]), P('roots', [w, 0.1, w], 'ochre', [0, 0.05, 0])], 0.6);
+    }
+    // A thin bamboo stake at the edge of a plot: one for each row, one for each column.
+    case 'plot-stake': return still([P('pole', [0.18, 1.6, 0.18], 'yellow', [0, 0.8, 0]), P('top', [0.24, 0.12, 0.24], 'ochre', [0, 1.62, 0])], 1.7);
     // A counting rod: a thin stick of bamboo.
     case 'rod': return still([P('stick', [0.22, 0.22, 1.2], 'yellow', [0, 0.11, 0]), P('endA', [0.22, 0.22, 0.12], 'ochre', [0, 0.11, 0.66]), P('endB', [0.22, 0.22, 0.12], 'ochre', [0, 0.11, -0.66])], 0.25);
     // Ten rods tied with a red band.

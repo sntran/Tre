@@ -64,7 +64,7 @@ export function practiceStart(data, profile, activity) {
     map: data.world.regionOf(frame),
     at: { x: px, y: py },
     clock: visitClock(profile.world.clock.minutes, data.practice?.hours),
-    practice: { id: activity.id, trial: activity.trial, person: activity.person, set: activity.set, level, back },
+    practice: { id: activity.id, trial: activity.trial, task: activity.task, person: activity.person, set: activity.set, level, back },
   };
 }
 

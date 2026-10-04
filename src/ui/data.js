@@ -37,6 +37,7 @@ export const FILES = {
   events: 'data/world/events.json',
   practice: 'data/world/practice.json',
   mentors: 'data/world/mentors.json',
+  planting: 'data/world/planting.json',
 };
 
 async function fetchJson(path) {

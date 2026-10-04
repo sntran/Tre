@@ -458,7 +458,7 @@
       "nameKey": "npc.planter.name",
       "talk": [
         {
-          "dialogue": "planter.idle"
+          "dialogue": "planter.trial"
         }
       ]
     },

@@ -550,16 +550,6 @@
       }
     },
     {
-      "id": "planter.idle",
-      "start": "n1",
-      "nodes": {
-        "n1": {
-          "speaker": "planter",
-          "textKey": "dlg.planter.idle.n1"
-        }
-      }
-    },
-    {
       "id": "duck-girl.idle",
       "start": "n1",
       "nodes": {
@@ -586,6 +576,83 @@
         "n1": {
           "speaker": "drummer",
           "textKey": "dlg.drummer.idle.n1"
+        }
+      }
+    },
+    {
+      "id": "planter.trial",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "planter",
+          "textKey": "dlg.planter.trial.n1",
+          "effects": [
+            {
+              "open": "planting"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "planter.set.field",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "planter",
+          "textKey": "dlg.planter.set.field.n1",
+          "mood": "happy"
+        }
+      }
+    },
+    {
+      "id": "planter.set.noon",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "planter",
+          "textKey": "dlg.planter.set.noon.n1",
+          "mood": "happy"
+        }
+      }
+    },
+    {
+      "id": "planter.set.rain",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "planter",
+          "textKey": "dlg.planter.set.rain.n1",
+          "mood": "happy"
+        }
+      }
+    },
+    {
+      "id": "planter.practice.end",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "planter",
+          "textKey": "dlg.planter.practice.end.n1",
+          "mood": "happy",
+          "choices": [
+            {
+              "textKey": "dlg.practice.end.stay",
+              "effects": [
+                {
+                  "open": "practice-stay"
+                }
+              ]
+            },
+            {
+              "textKey": "dlg.practice.end.back",
+              "effects": [
+                {
+                  "open": "practice-back"
+                }
+              ]
+            }
+          ]
         }
       }
     }

@@ -1,0 +1,85 @@
+{
+  "name": "practice-xom-ruong",
+  "about": {
+    "vi": "Luyện tập ở Xóm Ruộng: đường link đưa An đến sân xóm. An đi tới bờ ruộng, chạm vào cô Cấy, và cô bắt đầu một lượt cấy lúa.",
+    "en": "Practice in Xóm Ruộng: the link takes An to the yard of the hamlet. An walks to the dike of the paddy, taps the planter, and she starts a set of the planting."
+  },
+  "practice": "xom-ruong",
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    53,
+    43
+  ],
+  "steps": [
+    {
+      "wait": 1
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "cell": [
+              "xom-ruong",
+              34.5,
+              24.5
+            ],
+            "within": 1.5
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "entity": "npc:planter"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.planter.trial.n1"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "expect": [
+        {
+          "entity": "zone:plant-edge-p0"
+        },
+        {
+          "count": {
+            "entities": "seedling",
+            "min": 4
+          }
+        }
+      ]
+    }
+  ]
+}
