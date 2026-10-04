@@ -1,5 +1,5 @@
 {
-  "_about": "The activities of Xóm Ruộng after the planting (docs/HAMLET.md): feeding the ducks, the fish traps, and the drum dance, and the feast of the new rice that links them. All of them use the memory of the facts of the planting (src/core/planting.js) and the factor ranges of the levels of math.mul.10 (data/skills.json). ducks: rate (scoops a second while the child holds the jar), notch (a small notch on the trough for each so many scoops, and a big one for each bigger), forms of each level, big (how many times a big duck eats), mixed (the shares of the two kinds of ducks in a mixed line, and the most ducks of a kind), maxDucks. traps: sizes (the fish of each size of trap: the rings on it), spots (places for traps along the stream, from the place trap-spots of the map down the stream), step (half blocks from one spot to the next), forms of each level, extra (traps of each size more than the answer needs), given (the most traps of a given form). drum: period (seconds from one beat to the next at the start), slower and faster (the change of the period after a miss and after a clean run), fastest (the shortest period), window (the part of a beat in which a tap counts for the beat), to (the last multiple: to × the number of the group), from (the first multiple of the form middle), forms of each level, looks (the look of the dancers of each group). feast: the hour of the feast (dusk), and how long it lasts (hours). set: the commits of a set of each activity. events: the small events of each activity (at most one in a set, never the same in two sets in a row), and chance. eventsInfo: for each small event, the line of the person of the station, and a thing that comes for the round (a look, at a place of the map, dx and dz in half blocks). stations: the person of each activity.",
+  "_about": "The activities of Xóm Ruộng after the planting (docs/HAMLET.md): feeding the ducks, the fish traps, and the drum dance, and the feast of the new rice that links them. All of them use the memory of the facts of the planting (src/core/planting.js) and the factor ranges of the levels of math.mul.10 (data/skills.json). ducks: rate (scoops a second while the child holds the jar), notch (a small notch on the trough for each so many scoops, and a big one for each bigger), forms of each level, big (how many times a big duck eats), mixed (the shares of the two kinds of ducks in a mixed line, and the most ducks of a kind), maxDucks. traps: sizes (the fish of each size of trap: the rings on it), spots (places for traps along the stream, from the place trap-spots of the map down the stream), step (half blocks from one spot to the next), forms of each level, extra (traps of each size more than the answer needs), given (the most traps of a given form). drum: period (seconds from one beat to the next at the start), slower and faster (the change of the period after a miss and after a clean run), fastest (the shortest period), window (the part of a beat in which a tap counts for the beat), to (the last multiple: to × the number of the group), from (the first multiple of the form middle), forms of each level, looks (the look of the dancers of each group). feast: the hour of the feast (dusk), how long it lasts (hours), near (half blocks: the child is this near to the yard), table (the place of the feast table from the place yard of the map, half blocks), ring (half blocks from the table to the inner ring of the dancers), and dancers (the looks of the people who dance at the feast). set: the commits of a set of each activity. events: the small events of each activity (at most one in a set, never the same in two sets in a row), and chance. eventsInfo: for each small event, the line of the person of the station, and a thing that comes for the round (a look, at a place of the map, dx and dz in half blocks). stations: the person of each activity.",
   "ducks": {
     "rate": 2.5,
     "notch": [
@@ -104,7 +104,23 @@
   },
   "feast": {
     "hour": 18,
-    "hours": 1.5
+    "hours": 1.5,
+    "near": 60,
+    "table": [
+      0,
+      -4
+    ],
+    "ring": 5,
+    "dancers": [
+      "dancer-red",
+      "dancer-blue",
+      "dancer-red",
+      "dancer-blue",
+      "duck-girl",
+      "fisher-uncle",
+      "planter",
+      "dancer-child"
+    ]
   },
   "events": {
     "ducks": [

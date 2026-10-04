@@ -552,6 +552,8 @@ export function thingLook(key) {
   m = /^lo-(\d+)(-full)?$/.exec(k);
   if (m) return { kind: 'lo', n: Number(m[1]), full: Boolean(m[2]) };
   if (k === 'feed-jar' || k === 'trap-spot' || k === 'bronze-drum') return { kind: k };
+  m = /^feast-table-(\d+)-(\d+)-(\d+)$/.exec(k);
+  if (m) return { kind: 'feast-table', eggs: Number(m[1]), fish: Number(m[2]), sheaves: Number(m[3]) };
   if (k === 'weir-shut' || k === 'weir-open') return { kind: 'weir', open: k === 'weir-open' };
   return null;
 }
@@ -619,6 +621,15 @@ export function workThing(look) {
       const parts = [P('beam', [8, 0.25, 0.25], 'wood', [0, 1.2, 0])];
       for (let i = 0; i < 9; i++) if (!look.open || i < 3 || i > 5) parts.push(P(`slat${i}`, [0.7, 1.4, 0.2], 'yellow', [-4 + i * 1, 0.5, 0]));
       return still(parts, 1.4);
+    }
+    // The feast table in the yard: a low table of wood with a tray of eggs, dried fish on a rack, and
+    // sheaves of the new rice (each up to a few, so that the table shows what the activities gave).
+    case 'feast-table': {
+      const parts = [P('top', [5, 0.25, 2.6], 'wood', [0, 0.9, 0]), P('legA', [0.3, 0.8, 0.3], 'ochre', [-2.2, 0.4, -1]), P('legB', [0.3, 0.8, 0.3], 'ochre', [2.2, 0.4, -1]), P('legC', [0.3, 0.8, 0.3], 'ochre', [-2.2, 0.4, 1]), P('legD', [0.3, 0.8, 0.3], 'ochre', [2.2, 0.4, 1])];
+      for (let i = 0; i < (look.eggs ?? 0); i++) parts.push(P(`egg${i}`, [0.32, 0.4, 0.32], 'paper', [-2 + (i % 3) * 0.42, 1.23, -0.8 + Math.floor(i / 3) * 0.42]));
+      for (let i = 0; i < (look.fish ?? 0); i++) parts.push(P(`fish${i}`, [0.3, 0.2, 1], 'ash', [-0.4 + (i % 5) * 0.4, 1.13, -0.6 + Math.floor(i / 5) * 1.2]));
+      for (let i = 0; i < (look.sheaves ?? 0); i++) parts.push(P(`sheaf${i}`, [0.4, 1.1, 0.4], 'yellow', [1.6 + (i % 2) * 0.5, 1.58, -0.9 + Math.floor(i / 2) * 0.6]), P(`band${i}`, [0.44, 0.12, 0.44], 'vermilion', [1.6 + (i % 2) * 0.5, 1.4, -0.9 + Math.floor(i / 2) * 0.6]));
+      return still(parts, 2.2);
     }
     // The bronze drum (trống đồng) of the dance: a low wide drum with a star on its face.
     case 'bronze-drum': return still([P('body', [1.6, 0.8, 1.6], 'ochre', [0, 0.4, 0]), P('waist', [1.3, 0.3, 1.3], 'wood', [0, 0.15, 0]), P('face', [1.7, 0.1, 1.7], 'yellow', [0, 0.85, 0]), P('star', [0.5, 0.04, 0.5], 'vermilion', [0, 0.92, 0])], 0.95);

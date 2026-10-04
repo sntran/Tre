@@ -120,6 +120,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     data, profile, learner, emit, mentoring, world: () => state, env: () => env, map: () => map,
     seed: () => state.seed, clock: () => state.clock.minutes, rain: () => state.sky?.rain ?? 0,
     say: (...a) => say(...a), talk: (id) => talk(id), save: (why) => save(why), busy: () => busy,
+    // The planter points to another station at the end of a set.
+    point: () => hamlet.point('planting'),
+    // A plot is full: a sheaf of the new rice goes to the feast table.
+    sheaf: () => hamlet.sheaf(),
     // The end of a set of a practice of the planting: the practice ends there.
     setDone: () => {
       if (practice?.task !== 'planting') return false;
@@ -226,6 +230,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     refreshPeople();
     placeEvents();
     planting.grow();
+    hamlet.showTable();
     // A practice has no prologue: the person of the activity is ready and starts the task (a
     // practice of a whole place has no person: the child walks to any station).
     if (practice?.person) talk(`${practice.person}.trial`);
@@ -1705,6 +1710,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           refreshPeople();
           placeEvents();
           planting.grow();
+          hamlet.dawn();
           save('dawn');
         }
         // After a rain, the land is wet: a flood can come.

@@ -406,6 +406,19 @@ export function validate(profile, { grades = null } = {}) {
       if (a.period !== undefined) num(a.period, `hamlet.acts.${act}.period`, 0.1, 10);
     }
     for (const [, n] of entries(hm.plays ?? {}, 'hamlet.plays')) int(n, 'hamlet.plays', 0, 1e9);
+    // The feast table: eggs, fish, sheaves, the eggs that the ducks lay at the next dawn, and the
+    // day of the last feast.
+    if (hm.table !== undefined) {
+      const t = hm.table;
+      if (!isObj(t)) fail('hamlet.table');
+      for (const k of ['eggs', 'fish', 'sheaves']) int(t[k] ?? 0, `hamlet.table.${k}`, 0, 1e6);
+      if (t.laying !== null && t.laying !== undefined) {
+        if (!isObj(t.laying)) fail('hamlet.table.laying');
+        int(t.laying.day, 'hamlet.table.laying.day', 0, 1e9);
+        int(t.laying.n, 'hamlet.table.laying.n', 0, 1e6);
+      }
+      if (t.feast !== null && t.feast !== undefined) int(t.feast, 'hamlet.table.feast', 0, 1e9);
+    }
   }
   // Time
   const time = profile.time;

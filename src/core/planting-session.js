@@ -12,7 +12,9 @@ const DAY = 1440;
 
 // deps: { data, profile, world (fn), env (fn), map (fn), learner (fn), seed (fn), clock (fn: the
 // minutes of the game clock), rain (fn: the rain now, 0 to 1), say (key, params, mark, speaker),
-// talk (dialogue id), emit, save (reason), mentoring, setDone (fn: the set ends, for a practice) }.
+// talk (dialogue id), emit, save (reason), mentoring, setDone (fn: the set ends, for a practice),
+// point (fn: the planter points to another station), sheaf (fn: a plot is full: a sheaf of the new
+// rice goes to the feast table) }.
 export function createPlanting(deps) {
   const { data, profile } = deps;
   const def = data.planting;
@@ -188,6 +190,7 @@ export function createPlanting(deps) {
     recordFact(mem, ev.key, { ok, day: today(), set: s.set, index: s.index, form: ev.form, round: profile.factRound ?? 0, activity: 'planting' }, def);
     profile.factRound = (profile.factRound ?? 0) + 1;
     if (ok) (s.done ??= []).push(ev.key);
+    deps.sheaf?.();
     s.used.push(ev.form);
     s.counts[ev.form] = (s.counts[ev.form] ?? 0) + 1;
     s.prev = ev.key;
@@ -218,7 +221,10 @@ export function createPlanting(deps) {
     for (const id of decor) removeEntity(w, id);
     decor = [];
     deps.save('plant');
-    if (!deps.setDone?.(why)) deps.talk(`planter.set.${why}`);
+    if (!deps.setDone?.(why)) {
+      deps.talk(`planter.set.${why}`);
+      deps.point?.();
+    }
   }
 
   // Each step: the next round after the line of the last planting.

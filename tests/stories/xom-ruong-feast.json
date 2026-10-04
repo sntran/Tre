@@ -1,0 +1,604 @@
+{
+  "name": "xom-ruong-feast",
+  "about": {
+    "vi": "Lễ cơm mới ở Xóm Ruộng: sáng đầu An cho vịt ăn; tối đó chưa có cỗ vì chưa có trứng. Sáng hôm sau vịt đẻ trứng; An đặt lờ bắt cá, cấy một ô ruộng, gõ trống cho các bạn múa; chiều tối mâm cỗ đủ trứng, cá, cơm mới, cả xóm vào lễ và múa theo trống, rồi mâm cỗ trống lại.",
+    "en": "The feast of the new rice in Xóm Ruộng: on the first morning An feeds the ducks; that dusk there is no feast, because there are no eggs yet. The next morning the ducks lay eggs; An puts traps for the fish, plants a plot, and taps the drum for the dancers; at dusk the table has eggs, fish, and new rice, the hamlet has the feast and dances to the drum, and then the table is empty again."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 450,
+  "at": [
+    "xom-ruong",
+    35,
+    12.5
+  ],
+  "steps": [
+    {
+      "do": {
+        "type": "talk",
+        "dialogue": "duck-girl.trial"
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "entity": "hamlet:jar"
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 1.8
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "fed",
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "fed",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "at": {
+        "hour": 19
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "feast",
+          "not": true
+        }
+      ]
+    },
+    {
+      "at": {
+        "hour": 7
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "eggs"
+        }
+      ]
+    },
+    {
+      "do": {
+        "type": "talk",
+        "dialogue": "fisher-uncle.trial"
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:fisher-uncle"
+      }
+    },
+    {
+      "until": {
+        "event": "caught",
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "caught",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "do": {
+        "type": "talk",
+        "dialogue": "planter.trial"
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "seedling",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "plant-edge-p0"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:planter"
+      }
+    },
+    {
+      "until": {
+        "event": "planted",
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "planted",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "do": {
+        "type": "talk",
+        "dialogue": "drummer.trial"
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "dance",
+        "timeout": 30
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 2
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 2
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 4
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 4
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 6
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 6
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 8
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 8
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 10
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 10
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 12
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 12
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 14
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 14
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 16
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 16
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 18
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 18
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 20
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 20
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "danced",
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "walk": {
+        "to": [
+          "xom-ruong",
+          34,
+          25
+        ]
+      }
+    },
+    {
+      "at": {
+        "hour": 18
+      }
+    },
+    {
+      "until": {
+        "event": "feast",
+        "with": {
+          "on": true
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "feast",
+          "with": {
+            "on": true
+          }
+        },
+        {
+          "text": {
+            "shown": "hamlet.feast"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "until": {
+        "event": "feast",
+        "with": {
+          "on": false
+        },
+        "timeout": 3600
+      }
+    }
+  ]
+}
