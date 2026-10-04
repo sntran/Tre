@@ -23,14 +23,19 @@ async function play(name, at, steps) {
 test('the teacher: a tap on a rod of the heap puts it on the mat; a tap on the rods on the mat ties; a drag to the heap takes a rod back', async () => {
   await play('task-teacher', [54, 27], [
     ...start('teacher'),
-    { expect: [{ action: { act: 'tie', icon: 'rope' } }] },
-    { tap: { item: 'rod' } },
+    // The teacher showed the first step and took the rod back: the mat is empty.
+    { expect: [{ zone: 'mat', planks: 0 }] },
+    { tap: { thing: 'rod:scholar:2' } },
     { until: { event: 'add', timeout: 10 } },
-    { do: { type: 'drag', item: 'rod:scholar:0', zone: 'rods' } },
+    { expect: [{ zone: 'mat', planks: 1 }, { action: { act: 'tie', icon: 'rope' } }] },
+    { do: { type: 'drag', item: 'rod:scholar:2', zone: 'rods' } },
     { until: { event: 'back', timeout: 10 } },
-    { tap: { thing: 'rod:scholar:1' } },
+    { expect: [{ zone: 'mat', planks: 0 }] },
+    { tap: { thing: 'rod:scholar:3' } },
+    { until: { event: 'add', timeout: 10 } },
+    { tap: { thing: 'rod:scholar:3' } },
     { until: { event: 'snap', timeout: 10 } },
-    { expect: [{ event: 'skill', with: { solved: false } }] },
+    { expect: [{ event: 'skill', with: { solved: false, parts: [1] } }] },
   ]);
 });
 
@@ -47,18 +52,31 @@ test('the smith: a tap on the forge with ore in the hands puts the ore; the acti
   ]);
 });
 
-test('the healer: a tap on an herb in the basket takes it back; a tap on the full basket gives it; so does the action button', async () => {
+test('the healer: a tap on the basket or on a bunch in it gives the basket, and so does the action button; a drag of a bunch to its bed takes it back', async () => {
   await play('task-healer', [33, 44], [
     ...start('healer'),
-    // The healer put one herb into the basket: a tap on it takes it back into the hands.
-    { tap: { thing: 'herb-ngai:healer:0' } },
+    // The healer showed the first step and took the bunch back: the basket is empty.
+    { expect: [{ zone: 'basket', planks: 0 }] },
+    { tap: { thing: 'herb-ngai:healer:1' } },
     { until: { event: 'pick', timeout: 15 } },
-    { expect: [{ hero: { holding: true } }] },
     { tap: { zone: 'basket' } },
     { until: { event: 'put', timeout: 15 } },
-    { expect: [{ action: { act: 'give', icon: 'basket' } }] },
+    { tap: { thing: 'herb-ngai:healer:2' } },
+    { until: { event: 'pick', timeout: 15 } },
     { tap: { zone: 'basket' } },
+    { until: { event: 'put', timeout: 15 } },
+    { expect: [{ zone: 'basket', planks: 2 }, { action: { act: 'give', icon: 'basket' } }] },
+    { do: { type: 'drag', item: 'herb-ngai:healer:2', zone: 'bed-ngai' } },
+    { until: { event: 'back', timeout: 10 } },
+    { expect: [{ zone: 'basket', planks: 1 }, { hero: { holding: false } }] },
+    // A tap on the bunch in the basket gives the basket (it never takes the bunch back).
+    { tap: { thing: 'herb-ngai:healer:1' } },
     { until: { event: 'nope', timeout: 15 } },
+    { expect: [{ hero: { holding: false } }] },
+    { tap: { thing: 'herb-ngai:healer:3' } },
+    { until: { event: 'pick', timeout: 15 } },
+    { tap: { zone: 'basket' } },
+    { until: { event: 'put', timeout: 15 } },
     { do: { type: 'hands' } },
     { until: { event: 'nope', timeout: 15 } },
     { expect: [{ event: 'pulse', with: { id: 'basket:healer' } }, { flag: 'trial.healer.done', is: false }] },
@@ -86,13 +104,15 @@ test('the woodcutter: a tap on the stem puts a chalk mark, a tap on the mark tak
 test('the fisher: a tap on a stake in the line takes it back while the tide is low', async () => {
   await play('task-fisher', [27, 64.5], [
     ...start('fisher'),
-    { tap: { item: 'stake' } },
+    // The fisher showed the first step and took the stake back: the line is empty.
+    { expect: [{ zone: 'line', planks: 0 }] },
+    { tap: { thing: 'stake:fisher:2' } },
     { until: { event: 'pick', timeout: 15 } },
     { tap: { line: 8 } },
     { until: { event: 'put', timeout: 15 } },
     { expect: [{ hero: { holding: false } }] },
-    // The stake that the fisher put into the line (the first step) comes back into the hands.
-    { tap: { thing: 'stake:fisher:0' } },
+    { expect: [{ zone: 'line', planks: 1 }] },
+    { tap: { thing: 'stake:fisher:2' } },
     { until: { event: 'pick', timeout: 15 } },
     { expect: [{ hero: { holding: true } }] },
   ]);

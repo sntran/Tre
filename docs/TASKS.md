@@ -8,7 +8,7 @@ Every task in the world must be clear to a child of six. A child of this age tap
 
 ### The three rules
 
-1. **A tap on a thing does the job of that thing, and only one job.** A tap never does two opposite things on the same thing. A rare undo is a drag, or a tap on the thing in its place (it comes back into the hands).
+1. **A tap on a thing does the job of that thing, and only one job.** A tap never does two opposite things on the same thing. A rare undo is a drag, or a tap on the thing in its place (it comes back into the hands). Where a tap on a part in the place does the finish (the rods on the mat, the bunches in the basket), the undo is a drag of the part to its heap.
 2. **The action button does the hands**, as Space does on a keyboard: it picks up the nearest thing, puts the thing in the hands, and does the finish of the task in reach.
 3. **A tap on a person** talks when the person has no task for the child. During the task of the person, it asks for help: one short line, and the person shows the next step (the mentor, `docs/MENTOR.md`). It never opens the start talk again.
 
@@ -22,7 +22,7 @@ Every task in the world must be clear to a child of six. A child of this age tap
 
 ### The next step shows itself
 
-- **The first step, one time.** At the start of a task, the person shows the first step on the real things and says it (the move `first` in `src/core/mentoring.js`). The teacher puts one rod on the mat; the smith puts one lump of ore into the forge and pours one bucket into the trough; the healer puts one bunch into the basket; the fisher puts one stake on the line. A task with no heap (the woodcutter, the ducks, the drum): the person points at the place and says what to do. A task of exact rounds (the planting, the fish traps): the person only points at the heap and at the place, so that each round stays the child's. The person shows the first step one time in a visit; the later rounds of a practice start with no demonstration.
+- **The first step, one time.** At the start of a task, the person shows the first step on the real things and says it (the move `first` in `src/core/mentoring.js`). The teacher puts one rod on the mat, the healer puts one bunch into the basket, and the fisher puts one stake on the line; then the person says "Như thế này nhé." and takes the thing back to its heap, so that the place is empty when the child starts. The first step never leaves a part of the answer (rule 25 of `docs/DESIGN.md`). The smith keeps his first step (one lump of ore in the forge and one bucket in the trough), because the ore and the water are not the skill of his trial (the skill is the quench). A task with no heap (the woodcutter, the ducks, the drum): the person points at the place and says what to do. A task of exact rounds (the planting, the fish traps): the person only points at the heap and at the place. The person shows the first step one time in a visit; the later rounds of a practice start with no demonstration.
 - **The cue.** When the child does nothing for six seconds in a task, the thing to touch next glows softly: a warm disc under it that breathes, and a small breath of the thing (the event `cue`; `glow()` in `src/render/figure3d.js`). Any action of the child stops it. The cue shows how to go on, never how many: it never glows on a commit that counts.
 - After the cue, the mentor goes on as before (`docs/MENTOR.md`).
 
@@ -39,7 +39,7 @@ Every task in the world must be clear to a child of six. A child of this age tap
 | The teacher (rods) | A rod of the heap: it goes on the mat. | The rope: a tap on the rods on the mat or on the straw rope. | Drag a rod from the mat to the heap. | The heap, while the mat is empty. |
 | The smith (forge) | Ore of the heap, then the forge: the ore goes in. A bucket, then the trough: the water goes in. | The drop of water: a tap on the glowing iron. | More ore than the forge needs rolls back to the heap. A bent iron goes back into the fire. | The ore heap while the forge needs ore; the bucket while the trough is dry; the iron while it glows. |
 | The fisher (stakes) | A stake, then the line in the river: it goes on the line. | The tide comes by time. | A tap on a stake on the line (at low tide): it comes back into the hands. | The stakes, while the line is empty. |
-| The healer (herbs) | A bunch, then the basket: it goes into its part. | The basket: a tap on the full basket. | A tap on a bunch in the basket: it comes back into the hands. | A heap of bunches, while the basket is empty. |
+| The healer (herbs) | A bunch, then the basket: it goes into its part. | The basket: a tap on the basket or on a bunch in it. | Drag a bunch from the basket to its bed. | A heap of bunches, while the basket is empty. |
 | The woodcutter (stem) | The stem: a chalk mark there. | The knife: only the action button. | A tap on a chalk mark takes it away. | The stem, before the first mark. |
 | The iron horse (story) | Lumps, then the hearth. | Fire: a tap on the bellows; then the drop of water: a tap on the glowing iron. | A tap on a lump in the cold hearth: it comes back. | The heap, while the hearth is empty; the iron while it glows. |
 | Rice for Gióng (story) | A tray of bowls, then the pot. | Each ten bowls in the pot: Gióng eats. | None (each tray counts). | The trays, while the pot is empty. |

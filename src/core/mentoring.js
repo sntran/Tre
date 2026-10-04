@@ -331,9 +331,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     addEntity(w, { id: `script:${key}`, script: { key, move, t: 0, i: 0, steps, spawned: [], ...(keyAt !== undefined ? { keyAt } : {}) } });
   }
 
-  // The first step, one time at the start of a task: the person takes one thing from a heap and
-  // puts it into its place (def.first: [{ from, to }] zone ids; else the first heap and the place
-  // of the task). A task with no heap: the person points at the place and says what to do. A task
+  // The first step, one time at the start of a task: the person takes one thing from a heap, puts
+  // it into its place, and takes it back to the heap (def.first: [{ from, to, keep }] zone ids;
+  // else the first heap and the place of the task). keep: the thing stays (the ore and the water of
+  // the smith are not the skill of his trial). A task with no heap: the person points at the place and says what to do. A task
   // of exact rounds (def.first 'point'): the person only points, so that each round stays the child's.
   function firstSteps(task, def, s, t) {
     const w = world();
@@ -347,7 +348,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       return t + 3;
     }
     const pairs = (Array.isArray(def.first) ? def.first : task.piles[0] && task.place ? [{ from: task.piles[0].zone.id, to: task.place.zone.id }] : [])
-      .map((p) => ({ heap: getEntity(w, `zone:${p.from}`), place: getEntity(w, `zone:${p.to}`) }))
+      .map((p) => ({ heap: getEntity(w, `zone:${p.from}`), place: getEntity(w, `zone:${p.to}`), keep: Boolean(p.keep) }))
       .filter((p) => p.heap && p.place);
     s.say(t, lineOf(task.key, 'first'));
     if (!pairs.length) {
@@ -356,7 +357,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       return t + 2.5;
     }
     t += 0.6;
-    for (const { heap, place } of pairs) {
+    for (const { heap, place, keep } of pairs) {
       const thing = itemsOf(heap).find((e) => !e.item.held && !e.item.set && !e.item.stray);
       if (!thing) continue;
       const to = place.zone.rect ? { x: (place.zone.rect.x0 + place.zone.rect.x1) / 2, z: (place.zone.rect.z0 + place.zone.rect.z1) / 2 } : { x: place.zone.x, z: place.zone.z };
@@ -366,6 +367,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       s.steps.push({ at: t + 1, put: { zone: place.id, item: thing.id, person: task.person?.id ?? 'hero' } });
       s.mark(t + 1, to, 1.6);
       t += 2.2;
+      if (keep) continue;
+      // The thing goes back to its heap, so that the place is empty when the child starts: the
+      // first step never leaves a part of the answer (rule 25).
+      s.say(t, 'mentor.first.back');
+      s.point(t, heap.position, 1);
+      s.steps.push({ at: t + 0.6, back: { item: thing.id } });
+      t += 1.6;
     }
     s.say(t, 'mentor.first.you');
     return t + 1.5;

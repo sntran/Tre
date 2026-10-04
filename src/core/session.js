@@ -622,6 +622,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       walkNear(mat.position, () => work(trial, thing.item.zone === 'mat' ? 'tie' : 'add', { item: thing.id }));
       return true;
     }
+    if (thing.item.zone === 'basket') {
+      // A bunch in the basket of the healer: the tap gives the basket, as a tap on the basket.
+      atPerson('healer', () => work(trial, 'give'));
+      return true;
+    }
     if (thing.item.kind === 'band') {
       walkNear(zoneOf('mat').position, () => work(trial, 'tie'));
       return true;
@@ -720,18 +725,26 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (distHb(hero().position, jar.position) <= REACH + 1) work('ducks', 'pour');
     else walkNear(jar.position, () => {});
   }
-  // A drag of a thing (the undo of a task): a rod from the mat to the heap goes back on the heap.
-  // cmd: { item, zone (the zone where the finger let go), or x and y (map cells of that point) }.
+  // The places where a tap on a part does the finish, so that a drag is the undo (docs/TASKS.md):
+  // the rods on the mat of the teacher, and the bunches in the basket of the healer.
+  const DRAG_BACK = new Set(['bundle', 'basket']);
+  // The place of a thing that a drag can take back to its heap, or null.
+  function dragPlace(thing) {
+    const place = thing?.item?.home && thing.item.task?.startsWith('trial-') ? zoneOf(thing.item.zone) : null;
+    return place && DRAG_BACK.has(place.zone.rule) && !trialZone(thing.item.task.slice(6))?.zone.done ? place : null;
+  }
+  // A drag of a thing (the undo of a task): a rod from the mat to the heap, or a bunch from the
+  // basket to its bed, goes back to its heap. cmd: { item, zone (the zone where the finger let go),
+  // or x and y (map cells of that point) }.
   function dragThing(cmd) {
     const thing = getEntity(state, cmd.item);
-    if (!thing?.item || thing.item.kind !== 'rod' || thing.item.zone !== 'mat') return;
-    const heap = zoneOf('rods');
-    const mat = zoneOf('mat');
-    if (!heap || !mat) return;
+    const place = dragPlace(thing);
+    const heap = place ? zoneOf(thing.item.home) : null;
+    if (!heap) return;
     const at = cmd.x !== undefined ? { x: cmd.x * 2, z: cmd.y * 2 } : null;
-    const toHeap = cmd.zone ? cmd.zone === 'rods' : at && distHb(at, heap.position) < distHb(at, mat.position);
+    const toHeap = cmd.zone ? cmd.zone === heap.zone.id : at && distHb(at, heap.position) < distHb(at, place.position);
     if (!toHeap) return;
-    walkNear(mat.position, () => work(thing.item.task.slice(6), 'back', { item: thing.id }));
+    walkNear(place.position, () => work(thing.item.task.slice(6), 'back', { item: thing.id }));
   }
   // The end of a set of a practice: the reward, and the choice to stay or go back.
   function practiceEnd(person) {
@@ -2049,6 +2062,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     middleOf,
     // Is a place of a task (with its pad) at a map point? A tap there comes before a person.
     taskPlaceAt: (x, y) => Boolean(workZoneAt(x * 2, y * 2)),
+    // A drag of this thing takes it back to its heap (the view starts a drag on it).
+    dragsBack: (id) => Boolean(dragPlace(getEntity(state, id))),
     // The action of the hands now, for the action button: { act, icon, target, hold } or null.
     action() {
       const a = action();

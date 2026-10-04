@@ -346,8 +346,8 @@
       "person": "npc:smith",
       "demo": null,
       "first": [
-        { "from": "ore", "to": "forge" },
-        { "from": "bucket", "to": "trough" }
+        { "from": "ore", "to": "forge", "keep": true },
+        { "from": "bucket", "to": "trough", "keep": true }
       ],
       "picture": "mentor.picture.smith"
     },

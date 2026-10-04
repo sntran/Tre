@@ -325,6 +325,16 @@ export function toHeap(world, thing) {
   packHeap(world, home.zone);
 }
 
+// A thing goes back from its place to its own heap: the end of the first step that a person
+// shows (src/core/world/systems/mentor.js), and the undo of a drag. Return true when it went back.
+export function backHome(world, thing) {
+  if (!thing?.item?.home || thing.item.held || thing.item.zone === thing.item.home) return false;
+  takeOut(world, thing);
+  delete thing.item.slot;
+  toHeap(world, thing);
+  return true;
+}
+
 // More things of a kind on a heap of a task (a move raise of the mentor: a bigger heap). Return
 // the count of new things.
 export function addToHeap(world, owner, heapId, kind, n, look = kind) {
@@ -513,7 +523,16 @@ function act(world, e, want, env) {
   const task = taskFor(env, tz.zone);
   if (!task) return;
   const near = (p, r = REACH + 2) => p && dist(e.position, p) <= r;
-  if (want.act === 'add' || want.act === 'back') {
+  const thing = want.item ? getEntity(world, want.item) : null;
+  if (want.act === 'back' && thing?.item && thing.item.kind !== 'rod') {
+    // A drag of a thing from its place back to its own heap (a bunch from the basket to its bed).
+    const place = thing.item.zone ? zoneEnt(world, thing.item.zone) : null;
+    if (!place || place.zone.rule === 'heap') return;
+    if (!near(place.position, REACH + 3)) return say(world, 'far', e.id);
+    if (!backHome(world, thing)) return;
+    tz.zone.resets = (tz.zone.resets ?? 0) + 1;
+    say(world, 'back', place.id, { item: thing.id, sound: 'tap' });
+  } else if (want.act === 'add' || want.act === 'back') {
     const rod = getEntity(world, want.item);
     const mat = zoneEnt(world, 'mat');
     if (!rod || !mat || !near(mat.position, REACH + 3)) return say(world, 'far', e.id);
