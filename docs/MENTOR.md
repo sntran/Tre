@@ -42,7 +42,7 @@ After each commit (and after a plank too long on the bridge, which the world jud
 | `smaller` | The person puts one part into the place, and the child does the rest. |
 | `share` | The person puts about half of what is still missing, and the child does the rest. Never the whole task. |
 | `picture` | The person says that another station is there (the child is never sent; the child chooses). |
-| `raise` | A bigger task, once in a task: the teacher brings rods for two more bundles; the next round of a practice is one level higher; the next event of the same kind is one level higher. |
+| `raise` | A bigger task next time, once in a task: the next round of a practice is one level higher, and the next event of the same kind is one level higher. A move never makes the task in progress bigger (#32); a help move can make it smaller, and says so. |
 | `break` | A break in the story (a rice ball). |
 | `tryFirst` | The answer to a wave before any try: the person watches. |
 | `offer` | A small offer of help to a child who is stuck after a miss and does not wave (after `offerAfter` seconds). |

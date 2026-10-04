@@ -152,7 +152,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `practice-chat-tre` | The practice link of the bamboo: two rounds of equal sticks; go back. |
 | `mentor-bridge` | A missing plank: the fisher counts the planks aloud and marks the empty part; the next try is right, and the help level goes down to only watching. |
 | `mentor-cart` | All the nets of stones in the mud, as if each net is one stone; the carter shows it on another cart, counting on, stone by stone; then the cart rolls on. |
-| `mentor-bored` | Three bundles in a row, fast and right; the teacher brings rods for two more bundles. |
+| `mentor-bored` | Three bundles in a row, fast and right; the teacher says that next time there is a bigger task, and the heap of this time stays the same. |
 | `mentor-share` | Three misses in a row at the cart; the carter shares the task and puts about half of what is missing. |
 | `jump-puddles` | On a day of rain at the ford of Phù Đổng: a jump on the path, then from stone to stone across the ford; when the river rises, the ford closes, and a jump at its edge is only a hop. |
 | `jump-bridge-gap` | A grade twelve hero jumps at a repair of the bridge with a run: the jump ends in the water, Nghé pulls the hero out at the near end, and the planks are still the way across. |

@@ -45,7 +45,7 @@ import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
 import { REACH, learnerRecord, canPut } from './world/zones.js';
-import { setupTrial, clearTrial, addToHeap, freeSlot } from './world/systems/work.js';
+import { setupTrial, clearTrial, freeSlot } from './world/systems/work.js';
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring } from './mentoring.js';
@@ -110,12 +110,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The mentors of the tasks: the person who gives a task watches the child and answers (docs/MENTOR.md).
   const mentoring = createMentoring({
     data, profile, learner, log, emit, world: () => state, env: () => env,
-    // A bigger task: the next round of a practice is one level higher, and the teacher brings more
-    // rods (two bundles more on the heap).
+    // A bigger task: the next round of a practice is one level higher. A move never makes the task in
+    // progress bigger (its line says "next time"); the memory of the mentor (lift) raises the next
+    // small event one level.
     raise: (key) => {
       if (practice && key === `trial-${practice.trial}`) practice.level = Math.min(2, practice.level + 1);
-      const scholar = trialDef('scholar');
-      if (key === 'trial-scholar' && scholar) addToHeap(state, 'trial-scholar', 'rods', 'rod', (scholar.bundle ?? 10) * 2);
     },
   });
 
@@ -1972,6 +1971,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A story or the debug panel brings a small event today (at its first spot on this map).
     if (type === 'event') {
       placeEvents(cmd.id);
+      return;
+    }
+    // A story or the debug panel makes a move of the mentor of a task now (key, move).
+    if (type === 'mentor') {
+      mentoring.move(cmd.key, cmd.move);
       return;
     }
     if (type === 'fell' || type === 'dig') {
