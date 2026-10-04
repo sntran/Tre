@@ -140,6 +140,8 @@ test('a road of the land is a strip along its line: the width of the road, a sha
       const [lx, lz] = [Math.floor(ax), Math.floor(az)];
       const c = map.land.cell(lx, lz);
       if (c.letter !== '=' || c.stamp || !flat(lx, lz, t.topAt(lx, lz))) continue;
+      // At a junction the strip belongs to the nearest road: leave out the points near another road.
+      if (map.land.roads.some((o) => o !== r && o.segs.some(([px, pz, qx, qz]) => Math.hypot((px + qx) / 2 - ax, (pz + qz) / 2 - az) < o.half + r.half + 3))) continue;
       assert.ok(t.roadAt(ax, az), `${r.id} at ${ax.toFixed(1)},${az.toFixed(1)}: the line is on the strip`);
       for (const side of [-1, 1]) {
         const at = (d) => [ax + across[0] * d * side, az + across[1] * d * side];

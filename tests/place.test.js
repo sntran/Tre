@@ -461,7 +461,7 @@ test('the save keeps the bridge, and keeps it while the hero is on another map',
 test('each plank, each part of the old deck, and each mark of a gap of the bridge in the map has a look', () => {
   const looks = load('data/figures.json').figures;
   const phu = mapOf('phu-dong');
-  for (const rect of phu.layers.zones.filter((r) => r.task)) {
+  for (const rect of phu.layers.zones.filter((r) => zones[r.task]?.rule === 'span')) {
     const def = zones[rect.task];
     const length = rect.h * 2;
     for (let n = 1; n <= length; n++) assert.ok(looks[`deck-${n}`], `deck-${n}`);

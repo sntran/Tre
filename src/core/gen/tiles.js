@@ -73,7 +73,7 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
         const [ax, ay] = toPlane([p.id, ...frame.cell]);
         if (ax >= x && ay >= y && ax < x + s.w && ay < y + s.h) lift = Math.max(0, Math.round(natural(ax, ay) - digit(s.height[ay - y][ax - x])));
       }
-      stamps.push({ place: p.id, x, y, w: s.w, h: s.h, ground: s.ground, height: s.height, lift });
+      stamps.push({ place: p.id, x, y, w: s.w, h: s.h, ground: s.ground, height: s.height, lift, quiet: frame?.quiet ?? 0 });
     }
   }
   const stampDist = (px, py) => {
@@ -719,6 +719,13 @@ export function createLandPlane(def, places, geo, seed, rules = {}, parts = null
       }
     }
     function good(x, y) {
+      // A quiet place (quiet in its frame: cells) has no hamlet of the land near it.
+      for (const q of stamps) {
+        if (!q.quiet) continue;
+        const dx = Math.max(q.x - (x + HAMLET.w), 0, x - (q.x + q.w));
+        const dy = Math.max(q.y - (y + HAMLET.h), 0, y - (q.y + q.h));
+        if (Math.hypot(dx, dy) < q.quiet) return false;
+      }
       let lo = Infinity;
       let hi = -Infinity;
       for (let yy = y - 1; yy <= y + HAMLET.h; yy++) {

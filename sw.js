@@ -86,6 +86,7 @@ const FILES = [
   'data/maps/road-thanglong.json',
   'data/maps/soc-son.json',
   'data/maps/trau-son.json',
+  'data/maps/xom-ruong.json',
   'data/npcs.json',
   'data/questions/science.json',
   'data/quests.json',

@@ -4,7 +4,7 @@
  "regions": [
   { "id": "lac-long", "place": "tay-bac", "chapter": 1, "seeds": [[103.2,22.0],[104.3,21.0],[104.9,22.7],[106.2,22.6],[105.7,22.2],[106.7,21.9]], "nameKey": "region.lac-long", "maps": [] },
   { "id": "van-lang", "place": "nghia-linh", "chapter": 2, "seeds": [[105.1,21.6],[105.3,22.0]], "nameKey": "region.van-lang", "maps": [] },
-  { "id": "giong", "place": "phu-dong", "chapter": 3, "nameKey": "region.giong", "eraKey": "era.hung-vuong", "land": "land-giong", "maps": ["phu-dong", "soc-son", "trau-son", "road-thanglong"], "places": ["phu-dong", "soc-son", "nui-trau", "van-mieu"],
+  { "id": "giong", "place": "phu-dong", "chapter": 3, "nameKey": "region.giong", "eraKey": "era.hung-vuong", "land": "land-giong", "maps": ["phu-dong", "soc-son", "trau-son", "road-thanglong", "xom-ruong"], "places": ["phu-dong", "soc-son", "nui-trau", "van-mieu"],
     "entry": { "at": ["phu-dong", 5.5, 13.3] } },
   { "id": "co-loa", "place": "co-loa", "chapter": 4, "nameKey": "region.co-loa", "maps": [] },
   { "id": "me-linh", "place": "me-linh", "chapter": 5, "nameKey": "region.me-linh", "maps": [] },

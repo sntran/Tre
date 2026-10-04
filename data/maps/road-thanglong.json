@@ -22,7 +22,8 @@
   "d": "dike",
   "h": "hedge",
   "l": "hedge-low",
-  "r": "rock"
+  "r": "rock",
+  "c": "ditch"
  },
  "spawn": {
   "x": 77.0,

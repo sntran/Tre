@@ -95,6 +95,22 @@
     "fisher": {
       "home": "hut-fisher",
       "plan": "early"
+    },
+    "planter": {
+      "home": "house-planter",
+      "plan": "keeper"
+    },
+    "duck-girl": {
+      "home": "house-duck",
+      "plan": "keeper"
+    },
+    "fisher-uncle": {
+      "home": "house-fisher-uncle",
+      "plan": "keeper"
+    },
+    "drummer": {
+      "home": "dinh-xom",
+      "plan": "keeper"
     }
   },
   "default": {

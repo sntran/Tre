@@ -1257,5 +1257,14 @@
   "research.move.offer": "Offer help",
   "ui.wave": "Wave for help",
   "ui.jump": "Jump",
-  "ui.keys": "Keys: the arrows or W A S D to walk, Shift to run, J to jump, Space to pick up or put down, Q and E to turn the view. On a touch screen: the stick at the bottom left, and the jump button at the bottom right."
+  "ui.keys": "Keys: the arrows or W A S D to walk, Shift to run, J to jump, Space to pick up or put down, Q and E to turn the view. On a touch screen: the stick at the bottom left, and the jump button at the bottom right.",
+  "place.xomruong": "Xóm Ruộng, the hamlet of the paddies",
+  "npc.planter.name": "The planter",
+  "npc.duck-girl.name": "The duck girl",
+  "npc.fisher-uncle.name": "The fisher uncle",
+  "npc.drummer.name": "The old drummer",
+  "dlg.planter.idle.n1": "I will need your help tomorrow.",
+  "dlg.duck-girl.idle.n1": "I will need your help tomorrow.",
+  "dlg.fisher-uncle.idle.n1": "I will need your help tomorrow.",
+  "dlg.drummer.idle.n1": "I will need your help tomorrow."
 }

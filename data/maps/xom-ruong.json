@@ -1,0 +1,93 @@
+{
+ "_about": "A map of the voxel world: a window on the plane of its region. Map x is east, map y is south (world z). One cell is one ground block. window: the place of the map on the region plane (cells); the maps of a region touch at their edges, and the land goes on from one map to the next. stamps: the hand-made story places, which stay as they are: ground (one letter for each cell, see legend) and height (one digit for each cell, the height of the ground in steps: water 0, river bank 1, rice paddy 1, ground 2; the top of a column is the digit + 1 blocks). The land outside the stamps comes from the rules of the region and the seed of the world (src/core/gen/, data/world/land-<region>.json, data/world/scatter.json). The hero steps up or down one step; a higher step is a cliff. layers.objects: props that the code builds from blocks (prop: the kind, seed: the variation), on a footprint of w x h cells that they block (solid: a list of [dx, dy], or false); the scatter rules add more. layers.collision: rectangles that block (block: true) or open (block: false) cells. layers.zones: placement zones. layers.paths: walk lines in cells. The exits come from the windows: an edge that touches another map takes the hero there (src/world/regions.js). layers.places: named map points for the plans of the day (h: the height over the ground in half blocks). layers.spots: the spots of the small events of the day in the stamps (road, field, yard; cells; the land adds more). layers.life: groups of animals (kind in data/world/life.json, n of them, around a map point within r cells); the code places them by the seed of the world. figure: the look of a person or an enemy in data/figures.json. geo: the real place of the middle of the map ([longitude, latitude]) and the map direction of north ([dx, dy]). The maps are made by tools/maps/era1.py; do not change them by hand.",
+ "id": "xom-ruong",
+ "region": "giong",
+ "nameKey": "place.xomruong",
+ "geo": {
+  "at": [105.97, 21.1],
+  "north": [0, -1]
+ },
+ "width": 56,
+ "height": 44,
+ "legend": {
+  ".": "grass",
+  ",": "flowers",
+  "=": "path",
+  "y": "yard",
+  "_": "sand",
+  "B": "bridge",
+  "~": "water",
+  "s": "shallow",
+  "f": "field",
+  "d": "dike",
+  "h": "hedge",
+  "l": "hedge-low",
+  "r": "rock",
+  "c": "ditch"
+ },
+ "spawn": {
+  "x": 34.0,
+  "y": 24.0
+ },
+ "stamps": [
+  {"x": 0, "y": 0, "w": 56, "h": 44, "ground": ["................................................~~~~....", "................................................~~~~....", "................................................~~~~....", "................................................~~~~....", "........cccccccccccccccccccc......~~~~~~~~..,,..~~~~....", "........cccccccccccccccccccc......~~~~~~~~..,,..~~~~....", "........cccccccccccccccccccc......~~~~~~~~......~~~~....", "........cccccccccccccccccccc......~~~~~~~~......~~~~....", "......,,cccccccccccccccccccc......~~~~~~~~......~~~~....", "......,,cccccccccccccccccccc......~~~~~~~~......~~~~....", "........cccccccccccccccccccc........==........,,~~~~....", "........cccccccccccccccccccc........==........,,~~~~....", "........cccccccccccccccccccc........==..........~~~~....", "........dddddddddddddddddddd........==..........~~~~....", "........cccccccccccccccccccc........==..........~~~~....", "........cccccccccccccccccccc........==..........~~~~....", "........cccccccccccccccccccc........==..,,......~~~~....", "........cccccccccccccccccccc........==..,,......~~~~....", "........ccccccccccccccccccccyyyyyyyyyyyy........~~~~....", "........ccccccccccccccccccccyyyyyyyyyyyy........~~~~....", "........ccccccccccccccccccccyyyyyyyyyyyy========BBBB====", "........ccccccccccccccccccccyyyyyyyyyyyy========BBBB====", "........ccccccccccccccccccccyyyyyyyyyyyy========BBBB====", "........ccccccccccccccccccccyyyyyyyyyyyy========BBBB====", "........ddddddddddddddddddddyyyyyyyyyyyy........~~~~....", "........ddddddddddddddddddddyyyyyyyyyyyy........~~~~....", "..,,....,,..ffffff..........yyyyyyyyyyyy........~~~~....", "..,,....,,..ffffff..........yyyyyyyyyyyy........~~~~....", "............ffffff..........==..====............~~~~....", "............ffffff..........==..====............~~~~....", "............................==..====,,..........~~~~....", "............................==..====,,..........~~~~....", "..,,........................==yyyyyyyyyy........~~~~....", "..,,........................==yyyyyyyyyy........~~~~....", "............................==yyyyyyyyyy........~~~~....", "............................==yyyyyyyyyy........~~~~....", "............................==yyyyyyyyyy........~~~~....", "............................==yyyyyyyyyy........~~~~....", "..............,,............==..................~~~~....", "..............,,............==..................~~~~....", "............................==..................~~~~....", "............................==..................~~~~....", "............................==..................~~~~....", "............................==..................~~~~...."], "height": ["22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222111111111111111111112222220000000022222200002222", "22222222111111111111111111112222220000000022222200002222", "22222222111111111111111111112222220000000022222200002222", "22222222111111111111111111112222220000000022222200002222", "22222222111111111111111111112222220000000022222200002222", "22222222111111111111111111112222220000000022222200002222", "22222222111111111111111111112222222222222222222200002222", "22222222111111111111111111112222222222222222222200002222", "22222222111111111111111111112222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222111111111111111111112222222222222222222200002222", "22222222111111111111111111112222222222222222222200002222", "22222222111111111111111111112222222222222222222200002222", "22222222111111111111111111112222222222222222222200002222", "22222222111111111111111111112222222222222222222200002222", "22222222111111111111111111112222222222222222222200002222", "22222222111111111111111111112222222222222222222222222222", "22222222111111111111111111112222222222222222222222222222", "22222222111111111111111111112222222222222222222222222222", "22222222111111111111111111112222222222222222222222222222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222211111122222222222222222222222222222200002222", "22222222222211111122222222222222222222222222222200002222", "22222222222211111122222222222222222222222222222200002222", "22222222222211111122222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222", "22222222222222222222222222222222222222222222222200002222"]}
+ ],
+ "layers": {
+  "objects": [
+   {"id": "house-duck", "prop": "house", "x": 28, "y": 10, "w": 6, "h": 6, "seed": 1670407521},
+   {"id": "house-fisher-uncle", "prop": "house", "x": 42, "y": 10, "w": 6, "h": 6, "seed": 135237699},
+   {"id": "house-planter", "prop": "house", "x": 22, "y": 28, "w": 6, "h": 6, "seed": 1375630306},
+   {"id": "dinh-xom", "prop": "dinh", "x": 30, "y": 38, "w": 8, "h": 6, "seed": 1022386356},
+   {"id": "drum-xom", "prop": "drum", "x": 36, "y": 32, "w": 2, "h": 2, "seed": 2027476392},
+   {"id": "xom-tree1", "prop": "tree", "x": 2, "y": 2, "w": 2, "h": 2, "seed": 855249890},
+   {"id": "xom-tree2", "prop": "tree", "x": 2, "y": 36, "w": 2, "h": 2, "seed": 737362520},
+   {"id": "xom-tree3", "prop": "tree", "x": 52, "y": 4, "w": 2, "h": 2, "seed": 1559524046},
+   {"id": "xom-tree4", "prop": "tree", "x": 52, "y": 36, "w": 2, "h": 2, "seed": 1116792685},
+   {"id": "xom-tree5", "prop": "tree", "x": 44, "y": 36, "w": 2, "h": 2, "seed": 899143675},
+   {"id": "xom-tree6", "prop": "tree", "x": 16, "y": 36, "w": 2, "h": 2, "seed": 748586561},
+   {"id": "xom-bamboo1", "prop": "bamboo", "x": 24, "y": 0, "w": 2, "h": 2, "seed": 1348284132},
+   {"id": "xom-bamboo2", "prop": "bamboo", "x": 44, "y": 2, "w": 2, "h": 2, "seed": 1230274398},
+   {"id": "xom-bamboo3", "prop": "bamboo", "x": 2, "y": 18, "w": 2, "h": 2, "seed": 1045647304},
+   {"id": "xom-banana1", "prop": "banana", "x": 26, "y": 36, "w": 2, "h": 2, "seed": 436845667},
+   {"id": "xom-banana2", "prop": "banana", "x": 42, "y": 30, "w": 2, "h": 2, "seed": 50392537}
+  ],
+  "collision": [],
+  "zones": [
+   {"id": "paddy", "x": 8, "y": 4, "w": 20, "h": 20, "task": "paddy"}
+  ],
+  "paths": {
+
+  },
+  "life": [
+   {"kind": "duck", "n": 5, "x": 37.0, "y": 6.0, "r": 2.4},
+   {"kind": "chicken", "n": 3, "x": 32.0, "y": 17.0, "r": 2.0},
+   {"kind": "fish", "n": 3, "x": 49.0, "y": 30.0, "r": 3.0}
+  ],
+  "places": {
+   "plant-seedbed": {
+    "x": 15.0,
+    "y": 25.2
+   },
+   "yard": {
+    "x": 34.0,
+    "y": 24.0
+   }
+  },
+  "triggers": [
+   {"id": "field", "x": 8, "y": 4, "w": 20, "h": 20, "on": "tap", "action": {"textKey": "map.field"}}
+  ],
+  "ferries": [],
+  "spots": {
+   "yard": [
+    [34, 24]
+   ]
+  }
+ },
+ "npcs": [
+  {"id": "planter", "x": 24.0, "y": 24.5},
+  {"id": "duck-girl", "x": 37.0, "y": 13.0},
+  {"id": "fisher-uncle", "x": 45.5, "y": 25.0},
+  {"id": "drummer", "x": 33.0, "y": 33.0}
+ ],
+ "encounters": []
+}

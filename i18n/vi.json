@@ -1257,5 +1257,14 @@
   "research.move.offer": "Hỏi con có cần giúp",
   "ui.wave": "Vẫy tay gọi người giúp",
   "ui.jump": "Nhảy",
-  "ui.keys": "Phím: mũi tên hoặc W A S D để đi, Shift để chạy, J để nhảy, phím cách để cầm lên hoặc đặt xuống, Q và E để xoay góc nhìn. Trên màn hình cảm ứng: cần điều khiển ở góc dưới bên trái, nút nhảy ở góc dưới bên phải."
+  "ui.keys": "Phím: mũi tên hoặc W A S D để đi, Shift để chạy, J để nhảy, phím cách để cầm lên hoặc đặt xuống, Q và E để xoay góc nhìn. Trên màn hình cảm ứng: cần điều khiển ở góc dưới bên trái, nút nhảy ở góc dưới bên phải.",
+  "place.xomruong": "Xóm Ruộng",
+  "npc.planter.name": "Cô Cấy",
+  "npc.duck-girl.name": "Chị Vịt",
+  "npc.fisher-uncle.name": "Chú Lưới",
+  "npc.drummer.name": "Ông Trống",
+  "dlg.planter.idle.n1": "Mai cô mới cần cháu giúp.",
+  "dlg.duck-girl.idle.n1": "Mai chị mới cần em giúp nhé.",
+  "dlg.fisher-uncle.idle.n1": "Mai chú mới cần cháu giúp.",
+  "dlg.drummer.idle.n1": "Mai ông mới cần cháu giúp."
 }

@@ -1,470 +1,493 @@
 {
- "_about": "People of the village. talk: the first rule whose condition is true gives the dialogue. when: the person is on the map only when the condition is true.",
- "npcs": {
-  "elder": {
-   "voice": "elderMan",
-   
-   "talk": [
-    {
-     "when": {
-      "notFlags": [
-       "prologue.started"
-      ]
-     },
-     "dialogue": "elder.intro"
-    },
-    {
-     "when": {
-      "flags": [
-       "trial.scholar.done",
-       "trial.smith.done",
-       "trial.fisher.done",
-       "trial.healer.done",
-       "trial.woodcutter.done"
-      ],
-      "notFlags": [
-       "prologue.done"
-      ]
-     },
-     "dialogue": "elder.trials.done"
-    },
-    {
-     "when": {
-      "notFlags": [
-       "prologue.done"
-      ]
-     },
-     "dialogue": "elder.trials.wait"
-    },
-    {
-     "when": {
-      "grade": {
-       "min": 3
-      },
-      "notFlags": [
-       "placement.done"
-      ]
-     },
-     "dialogue": "elder.placement.wait"
-    },
-    {
-     "when": {
-      "notFlags": [
-       "giong.messenger"
-      ]
-     },
-     "dialogue": "elder.drum"
-    },
-    {
-     "when": {
-      "flags": [
-       "giong.farewell"
-      ],
-      "notFlags": [
-       "exam.era1.passed"
-      ]
-     },
-     "dialogue": "elder.go.exam"
-    },
-    {
-     "when": {
-      "notFlags": [
-       "giong.farewell"
-      ]
-     },
-     "dialogue": "elder.busy"
-    },
-    {
-     "dialogue": "elder.idle"
-    }
-   ],
-   "nameKey": "npc.elder.name"
-  },
-  "teacher": {
-   "voice": "man",
-   
-   "talk": [
-    {
-     "when": {
-      "notFlags": [
-       "prologue.started"
-      ]
-     },
-     "dialogue": "teacher.wait"
-    },
-    {
-     "when": {
-      "notFlags": [
-       "trial.scholar.done"
-      ]
-     },
-     "dialogue": "teacher.trial"
-    },
-    {
-     "dialogue": "teacher.practice"
-    }
-   ],
-   "nameKey": "npc.teacher.name"
-  },
-  "smith": {
-   "voice": "man",
-   
-   "talk": [
-    {
-     "when": {
-      "notFlags": [
-       "prologue.started"
-      ]
-     },
-     "dialogue": "smith.wait"
-    },
-    {
-     "when": {
-      "notFlags": [
-       "trial.smith.done"
-      ]
-     },
-     "dialogue": "smith.trial"
-    },
-    {
-     "when": {
-      "flags": [
-       "giong.spoke"
-      ],
-      "notFlags": [
-       "horse.forged"
-      ],
-      "any": [
-       {
-        "items": {
-         "iron": 6
+  "_about": "People of the village. talk: the first rule whose condition is true gives the dialogue. when: the person is on the map only when the condition is true.",
+  "npcs": {
+    "elder": {
+      "voice": "elderMan",
+      "talk": [
+        {
+          "when": {
+            "notFlags": [
+              "prologue.started"
+            ]
+          },
+          "dialogue": "elder.intro"
+        },
+        {
+          "when": {
+            "flags": [
+              "trial.scholar.done",
+              "trial.smith.done",
+              "trial.fisher.done",
+              "trial.healer.done",
+              "trial.woodcutter.done"
+            ],
+            "notFlags": [
+              "prologue.done"
+            ]
+          },
+          "dialogue": "elder.trials.done"
+        },
+        {
+          "when": {
+            "notFlags": [
+              "prologue.done"
+            ]
+          },
+          "dialogue": "elder.trials.wait"
+        },
+        {
+          "when": {
+            "grade": {
+              "min": 3
+            },
+            "notFlags": [
+              "placement.done"
+            ]
+          },
+          "dialogue": "elder.placement.wait"
+        },
+        {
+          "when": {
+            "notFlags": [
+              "giong.messenger"
+            ]
+          },
+          "dialogue": "elder.drum"
+        },
+        {
+          "when": {
+            "flags": [
+              "giong.farewell"
+            ],
+            "notFlags": [
+              "exam.era1.passed"
+            ]
+          },
+          "dialogue": "elder.go.exam"
+        },
+        {
+          "when": {
+            "notFlags": [
+              "giong.farewell"
+            ]
+          },
+          "dialogue": "elder.busy"
+        },
+        {
+          "dialogue": "elder.idle"
         }
-       },
-       {
-        "flags": [
-         "horse.iron"
+      ],
+      "nameKey": "npc.elder.name"
+    },
+    "teacher": {
+      "voice": "man",
+      "talk": [
+        {
+          "when": {
+            "notFlags": [
+              "prologue.started"
+            ]
+          },
+          "dialogue": "teacher.wait"
+        },
+        {
+          "when": {
+            "notFlags": [
+              "trial.scholar.done"
+            ]
+          },
+          "dialogue": "teacher.trial"
+        },
+        {
+          "dialogue": "teacher.practice"
+        }
+      ],
+      "nameKey": "npc.teacher.name"
+    },
+    "smith": {
+      "voice": "man",
+      "talk": [
+        {
+          "when": {
+            "notFlags": [
+              "prologue.started"
+            ]
+          },
+          "dialogue": "smith.wait"
+        },
+        {
+          "when": {
+            "notFlags": [
+              "trial.smith.done"
+            ]
+          },
+          "dialogue": "smith.trial"
+        },
+        {
+          "when": {
+            "flags": [
+              "giong.spoke"
+            ],
+            "notFlags": [
+              "horse.forged"
+            ],
+            "any": [
+              {
+                "items": {
+                  "iron": 6
+                }
+              },
+              {
+                "flags": [
+                  "horse.iron"
+                ]
+              }
+            ]
+          },
+          "dialogue": "smith.forge"
+        },
+        {
+          "when": {
+            "flags": [
+              "giong.spoke"
+            ],
+            "notFlags": [
+              "horse.forged"
+            ]
+          },
+          "dialogue": "smith.need.iron"
+        },
+        {
+          "dialogue": "smith.idle"
+        }
+      ],
+      "nameKey": "npc.smith.name"
+    },
+    "fisher": {
+      "voice": "man",
+      "talk": [
+        {
+          "when": {
+            "notFlags": [
+              "prologue.started"
+            ]
+          },
+          "dialogue": "fisher.wait"
+        },
+        {
+          "when": {
+            "notFlags": [
+              "trial.fisher.done"
+            ]
+          },
+          "dialogue": "fisher.trial"
+        },
+        {
+          "when": {
+            "flags": [
+              "giong.spoke"
+            ],
+            "notFlags": [
+              "river.calmed"
+            ]
+          },
+          "dialogue": "fisher.river"
+        },
+        {
+          "dialogue": "fisher.idle"
+        }
+      ],
+      "nameKey": "npc.fisher.name"
+    },
+    "healer": {
+      "voice": "elderWoman",
+      "talk": [
+        {
+          "when": {
+            "notFlags": [
+              "prologue.started"
+            ]
+          },
+          "dialogue": "healer.wait"
+        },
+        {
+          "when": {
+            "notFlags": [
+              "trial.healer.done"
+            ]
+          },
+          "dialogue": "healer.trial"
+        },
+        {
+          "dialogue": "healer.idle"
+        }
+      ],
+      "nameKey": "npc.healer.name"
+    },
+    "woodcutter": {
+      "voice": "man",
+      "talk": [
+        {
+          "when": {
+            "notFlags": [
+              "prologue.started"
+            ]
+          },
+          "dialogue": "woodcutter.wait"
+        },
+        {
+          "when": {
+            "notFlags": [
+              "trial.woodcutter.done"
+            ]
+          },
+          "dialogue": "woodcutter.trial"
+        },
+        {
+          "when": {
+            "flags": [
+              "soldier1.won",
+              "soldier2.won"
+            ],
+            "notFlags": [
+              "boss.staffs"
+            ]
+          },
+          "dialogue": "woodcutter.staffs"
+        },
+        {
+          "when": {
+            "flags": [
+              "giong.spoke"
+            ],
+            "notFlags": [
+              "horse.ore1"
+            ]
+          },
+          "dialogue": "woodcutter.ore"
+        },
+        {
+          "dialogue": "woodcutter.idle"
+        }
+      ],
+      "nameKey": "npc.woodcutter.name"
+    },
+    "grandma": {
+      "voice": "elderWoman",
+      "talk": [
+        {
+          "dialogue": "grandma.home"
+        }
+      ],
+      "nameKey": "npc.grandma.name"
+    },
+    "mother": {
+      "voice": "woman",
+      "talk": [
+        {
+          "when": {
+            "flags": [
+              "giong.messenger"
+            ],
+            "notFlags": [
+              "giong.spoke"
+            ]
+          },
+          "dialogue": "giong.speaks"
+        },
+        {
+          "when": {
+            "flags": [
+              "horse.forged"
+            ],
+            "notFlags": [
+              "giong.grown"
+            ]
+          },
+          "dialogue": "giong.rice"
+        },
+        {
+          "when": {
+            "notFlags": [
+              "giong.messenger"
+            ]
+          },
+          "dialogue": "mother.worry"
+        },
+        {
+          "dialogue": "mother.idle"
+        }
+      ],
+      "nameKey": "npc.mother.name"
+    },
+    "giong-boy": {
+      "voice": "boy",
+      "child": true,
+      "when": {
+        "notFlags": [
+          "giong.grown"
         ]
-       }
-      ]
-     },
-     "dialogue": "smith.forge"
-    },
-    {
-     "when": {
-      "flags": [
-       "giong.spoke"
+      },
+      "talk": [
+        {
+          "when": {
+            "flags": [
+              "giong.messenger"
+            ],
+            "notFlags": [
+              "giong.spoke"
+            ]
+          },
+          "dialogue": "giong.speaks"
+        },
+        {
+          "when": {
+            "flags": [
+              "horse.forged"
+            ]
+          },
+          "dialogue": "giong.rice"
+        },
+        {
+          "when": {
+            "flags": [
+              "giong.spoke"
+            ]
+          },
+          "dialogue": "giong.wait"
+        },
+        {
+          "dialogue": "giong.silent"
+        }
       ],
-      "notFlags": [
-       "horse.forged"
-      ]
-     },
-     "dialogue": "smith.need.iron"
+      "nameKey": "npc.giong-boy.name"
     },
-    {
-     "dialogue": "smith.idle"
-    }
-   ],
-   "nameKey": "npc.smith.name"
-  },
-  "fisher": {
-   "voice": "man",
-   
-   "talk": [
-    {
-     "when": {
-      "notFlags": [
-       "prologue.started"
-      ]
-     },
-     "dialogue": "fisher.wait"
-    },
-    {
-     "when": {
-      "notFlags": [
-       "trial.fisher.done"
-      ]
-     },
-     "dialogue": "fisher.trial"
-    },
-    {
-     "when": {
-      "flags": [
-       "giong.spoke"
+    "giong-hero": {
+      "voice": "man",
+      "scale": 0.5,
+      "when": {
+        "flags": [
+          "giong.grown"
+        ],
+        "notFlags": [
+          "era1.boss.won"
+        ]
+      },
+      "talk": [
+        {
+          "when": {
+            "flags": [
+              "soldier1.won",
+              "soldier2.won"
+            ]
+          },
+          "dialogue": "giong.boss"
+        },
+        {
+          "dialogue": "giong.ready"
+        }
       ],
-      "notFlags": [
-       "river.calmed"
-      ]
-     },
-     "dialogue": "fisher.river"
+      "nameKey": "npc.giong-hero.name"
     },
-    {
-     "dialogue": "fisher.idle"
-    }
-   ],
-   "nameKey": "npc.fisher.name"
-  },
-  "healer": {
-   "voice": "elderWoman",
-   
-   "talk": [
-    {
-     "when": {
-      "notFlags": [
-       "prologue.started"
-      ]
-     },
-     "dialogue": "healer.wait"
-    },
-    {
-     "when": {
-      "notFlags": [
-       "trial.healer.done"
-      ]
-     },
-     "dialogue": "healer.trial"
-    },
-    {
-     "dialogue": "healer.idle"
-    }
-   ],
-   "nameKey": "npc.healer.name"
-  },
-  "woodcutter": {
-   "voice": "man",
-   
-   "talk": [
-    {
-     "when": {
-      "notFlags": [
-       "prologue.started"
-      ]
-     },
-     "dialogue": "woodcutter.wait"
-    },
-    {
-     "when": {
-      "notFlags": [
-       "trial.woodcutter.done"
-      ]
-     },
-     "dialogue": "woodcutter.trial"
-    },
-    {
-     "when": {
-      "flags": [
-       "soldier1.won",
-       "soldier2.won"
+    "messenger": {
+      "voice": "man",
+      "when": {
+        "flags": [
+          "prologue.done"
+        ],
+        "notFlags": [
+          "giong.spoke"
+        ],
+        "any": [
+          {
+            "grade": {
+              "max": 2
+            }
+          },
+          {
+            "flags": [
+              "placement.done"
+            ]
+          }
+        ]
+      },
+      "talk": [
+        {
+          "dialogue": "messenger.call"
+        }
       ],
-      "notFlags": [
-       "boss.staffs"
-      ]
-     },
-     "dialogue": "woodcutter.staffs"
+      "nameKey": "npc.messenger.name"
     },
-    {
-     "when": {
-      "flags": [
-       "giong.spoke"
-      ],
-      "notFlags": [
-       "horse.ore1"
+    "giong-sky": {
+      "voice": "man",
+      "scale": 0.5,
+      "nameKey": "npc.giong-hero.name",
+      "when": {
+        "flags": [
+          "era1.boss.won"
+        ],
+        "notFlags": [
+          "giong.farewell"
+        ]
+      },
+      "talk": [
+        {
+          "dialogue": "giong.farewell"
+        }
       ]
-     },
-     "dialogue": "woodcutter.ore"
     },
-    {
-     "dialogue": "woodcutter.idle"
+    "socson-elder": {
+      "voice": "elderMan",
+      "nameKey": "npc.socson-elder.name",
+      "talk": [
+        {
+          "when": {
+            "flags": [
+              "giong.farewell"
+            ]
+          },
+          "dialogue": "socson.elder.legend"
+        },
+        {
+          "dialogue": "socson.elder.wait"
+        }
+      ]
+    },
+    "planter": {
+      "voice": "woman",
+      "nameKey": "npc.planter.name",
+      "talk": [
+        {
+          "dialogue": "planter.idle"
+        }
+      ]
+    },
+    "duck-girl": {
+      "voice": "girl",
+      "nameKey": "npc.duck-girl.name",
+      "talk": [
+        {
+          "dialogue": "duck-girl.idle"
+        }
+      ]
+    },
+    "fisher-uncle": {
+      "voice": "man",
+      "nameKey": "npc.fisher-uncle.name",
+      "talk": [
+        {
+          "dialogue": "fisher-uncle.idle"
+        }
+      ]
+    },
+    "drummer": {
+      "voice": "elderMan",
+      "nameKey": "npc.drummer.name",
+      "talk": [
+        {
+          "dialogue": "drummer.idle"
+        }
+      ]
     }
-   ],
-   "nameKey": "npc.woodcutter.name"
-  },
-  "grandma": {
-   "voice": "elderWoman",
-   
-   "talk": [
-    {
-     "dialogue": "grandma.home"
-    }
-   ],
-   "nameKey": "npc.grandma.name"
-  },
-  "mother": {
-   "voice": "woman",
-   
-   "talk": [
-    {
-     "when": {
-      "flags": [
-       "giong.messenger"
-      ],
-      "notFlags": [
-       "giong.spoke"
-      ]
-     },
-     "dialogue": "giong.speaks"
-    },
-    {
-     "when": {
-      "flags": [
-       "horse.forged"
-      ],
-      "notFlags": [
-       "giong.grown"
-      ]
-     },
-     "dialogue": "giong.rice"
-    },
-    {
-     "when": {
-      "notFlags": [
-       "giong.messenger"
-      ]
-     },
-     "dialogue": "mother.worry"
-    },
-    {
-     "dialogue": "mother.idle"
-    }
-   ],
-   "nameKey": "npc.mother.name"
-  },
-  "giong-boy": {
-   "voice": "boy",
-   
-   "child": true,
-   "when": {
-    "notFlags": [
-     "giong.grown"
-    ]
-   },
-   "talk": [
-    {
-     "when": {
-      "flags": [
-       "giong.messenger"
-      ],
-      "notFlags": [
-       "giong.spoke"
-      ]
-     },
-     "dialogue": "giong.speaks"
-    },
-    {
-     "when": {
-      "flags": [
-       "horse.forged"
-      ]
-     },
-     "dialogue": "giong.rice"
-    },
-    {
-     "when": {
-      "flags": [
-       "giong.spoke"
-      ]
-     },
-     "dialogue": "giong.wait"
-    },
-    {
-     "dialogue": "giong.silent"
-    }
-   ],
-   "nameKey": "npc.giong-boy.name"
-  },
-  "giong-hero": {
-   "voice": "man",
-   
-   "scale": 0.5,
-   "when": {
-    "flags": [
-     "giong.grown"
-    ],
-    "notFlags": [
-     "era1.boss.won"
-    ]
-   },
-   "talk": [
-    {
-     "when": {
-      "flags": [
-       "soldier1.won",
-       "soldier2.won"
-      ]
-     },
-     "dialogue": "giong.boss"
-    },
-    {
-     "dialogue": "giong.ready"
-    }
-   ],
-   "nameKey": "npc.giong-hero.name"
-  },
-  "messenger": {
-   "voice": "man",
-   
-   "when": {
-    "flags": [
-     "prologue.done"
-    ],
-    "notFlags": [
-     "giong.spoke"
-    ],
-    "any": [
-     {
-      "grade": {
-       "max": 2
-      }
-     },
-     {
-      "flags": [
-       "placement.done"
-      ]
-     }
-    ]
-   },
-   "talk": [
-    {
-     "dialogue": "messenger.call"
-    }
-   ],
-   "nameKey": "npc.messenger.name"
-  },
-  "giong-sky": {
-   "voice": "man",
-   
-   "scale": 0.5,
-   "nameKey": "npc.giong-hero.name",
-   "when": {
-    "flags": [
-     "era1.boss.won"
-    ],
-    "notFlags": [
-     "giong.farewell"
-    ]
-   },
-   "talk": [
-    {
-     "dialogue": "giong.farewell"
-    }
-   ]
-  },
-  "socson-elder": {
-   "voice": "elderMan",
-   
-   "nameKey": "npc.socson-elder.name",
-   "talk": [
-    {
-     "when": {
-      "flags": [
-       "giong.farewell"
-      ]
-     },
-     "dialogue": "socson.elder.legend"
-    },
-    {
-     "dialogue": "socson.elder.wait"
-    }
-   ]
   }
- }
 }

@@ -59,6 +59,19 @@ export function jar(ctx, o) {
   ctx.shadowDisc(x, z, 1, 1);
 }
 
+// A bronze drum (trống đồng) on a low wooden stand in the yard of a đình: a wide body that comes in
+// at the waist, and a flat top with a star in the middle.
+export function drum(ctx, o) {
+  const { x, z } = center(o);
+  const g = ctx.ground(x, z);
+  ctx.box(x - 1, g, z - 1, x, g, z, 'wood');
+  ctx.box(x - 2, g + 1, z - 2, x + 1, g + 1, z + 1, 'ochre');
+  ctx.box(x - 1, g + 2, z - 1, x, g + 2, z, 'ochre');
+  ctx.box(x - 2, g + 3, z - 2, x + 1, g + 3, z + 1, 'ochre');
+  ctx.box(x - 1, g + 3, z - 1, x, g + 3, z, 'yellow');
+  ctx.shadowDisc(x, z, 2, 2);
+}
+
 // A fallen log by the road: a low trunk of wood, one fine block high, with pale ends and a short
 // branch. It is low enough to jump over (data/hero.json, jump.low).
 export function log(ctx, o) {

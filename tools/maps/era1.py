@@ -326,6 +326,69 @@ D.triggers = [
     {'id': 'field-west', 'x': 2, 'y': 2, 'w': 8, 'h': 6, 'on': 'tap', 'action': {'textKey': 'map.field'}},
 ]
 
+# ---------------------------------------------------------------- Xóm Ruộng, a quiet hamlet north of Phù Đổng
+# A small hand-made hamlet for the activities of multiplication (docs/PLANTING.md), the same in
+# every world: three houses on stilts around one open yard, a paddy field with a seedbed, a duck
+# pond, a stream with a small bamboo bridge, and a đình yard with a bronze drum. Each station is
+# 8 to 12 cells from the middle of the yard, on a wide straight path with no prop in the way.
+E = M('xom-ruong', 'place.xomruong', 28, 22)
+E.geo = {'at': [105.97, 21.1], 'north': NORTH}
+E.flowers(18, 31)
+# The paddy field of the plots, its dike, and the seedbed south of the dike.
+E.fill(4, 2, 10, 10, 'f')
+E.fill(4, 12, 10, 1, 'd')
+E.fill(6, 13, 3, 2, 'f')
+# The yard, and the paths from the yard to each station (wide and straight).
+E.fill(14, 9, 6, 5, 'y')
+E.fill(18, 5, 1, 4, '=')
+E.fill(20, 10, 4, 2, '=')
+E.fill(16, 14, 2, 2, '=')
+E.fill(26, 10, 2, 2, '=')
+E.fill(14, 14, 1, 8, '=')
+# The duck pond to the north, the stream to the east with its bamboo bridge, and the đình yard to
+# the south.
+E.fill(17, 2, 4, 3, '~')
+E.fill(24, 0, 2, 22, '~')
+E.fill(24, 10, 2, 2, 'B')
+E.fill(15, 16, 5, 3, 'y')
+# The field of the plots is still water with no seedlings and no small dikes (the ground of a
+# ditch), until the child and the farmer plant it; one dike goes across it between two bands of
+# plots. The seedbed is a field with no small dikes (cells, not tiles).
+E.cells += [(x, z, 'd' if z == 13 else 'c', 2 if z == 13 else 1) for x in range(8, 28) for z in range(4, 24)]
+E.cells += [(x, z, 'f', 1) for x in range(12, 18) for z in range(26, 30)]
+E.obj('house-duck', 'house', 14, 5, 3, 3)
+E.obj('house-fisher-uncle', 'house', 21, 5, 3, 3)
+E.obj('house-planter', 'house', 11, 14, 3, 3)
+E.obj('dinh-xom', 'dinh', 15, 19, 4, 3)
+E.obj('drum-xom', 'drum', 18, 16)
+E.many('xom-tree', 'tree', [(1, 1), (1, 18), (26, 2), (26, 18), (22, 18), (8, 18)])
+E.many('xom-bamboo', 'bamboo', [(12, 0), (22, 1), (1, 9)])
+E.many('xom-banana', 'banana', [(13, 18), (21, 15)])
+E.spawn = {'x': 17.0, 'y': 12.0}
+# The people of the stations: the farmer on the dike by the seedbed, the duck girl at the pond,
+# the fisher uncle at the stream by the bridge, and the old drummer in the đình yard.
+E.npcs = [
+    {'id': 'planter', 'x': 12.0, 'y': 12.25},
+    {'id': 'duck-girl', 'x': 18.5, 'y': 6.5},
+    {'id': 'fisher-uncle', 'x': 22.75, 'y': 12.5},
+    {'id': 'drummer', 'x': 16.5, 'y': 16.5},
+]
+E.places = {
+    # The bundles of seedlings lie on the dike by the seedbed.
+    'plant-seedbed': {'x': 7.5, 'y': 12.6},
+    'yard': {'x': 17.0, 'y': 12.0},
+}
+E.zones = [{'id': 'paddy', 'x': 4, 'y': 2, 'w': 10, 'h': 10, 'task': 'paddy'}]
+E.life = [
+    {'kind': 'duck', 'n': 5, 'x': 18.5, 'y': 3.0, 'r': 1.2},
+    {'kind': 'chicken', 'n': 3, 'x': 16.0, 'y': 8.5, 'r': 1.0},
+    {'kind': 'fish', 'n': 3, 'x': 24.5, 'y': 15.0, 'r': 1.5},
+]
+E.spots = {'yard': [[34, 24]]}
+E.triggers = [
+    {'id': 'field', 'x': 4, 'y': 2, 'w': 10, 'h': 10, 'on': 'tap', 'action': {'textKey': 'map.field'}},
+]
+
 # ---------------------------------------------------------------- The places on the plane
 # Each map is the frame of a place on the plane (cells, x to the east, y to the south). The hand-made
 # story places are stamps (tiles: x, y, w, h); the land around them comes from data/geo/vietnam.json,
@@ -336,6 +399,7 @@ PLACES = [
     (B, (120, 120), (8, 4), [(0, 0, 30, 30)]),
     (C, (200, 84), (64, 4), [(0, 0, 30, 31)]),
     (D, (120, 64), (0, 16), [(0, 0, 28, 24)]),
+    (E, (56, 44), (0, 0), [(0, 0, 28, 22)]),
 ]
 
 # The fine height tiles of the land (data/geo/heights/, made by tools/geo/build.mjs): the land of
@@ -359,7 +423,7 @@ PLANE = {
                '(Mercator; origin: the real place of the cell 0, 0; trueLat: the latitude of true scale; scale: meters of '
                'real land for each cell, the same in both directions). frames: the place of each map on the plane (cell: a '
                'cell of the frame of the map; at: its real place; lift: the stamp under the cell rises to the real height '
-               'there). pins: the ends of the rivers of the stamps (frame and cell): the real river bends to meet them. '
+               'there; quiet: no hamlet of the land within these cells of the stamps). pins: the ends of the rivers of the stamps (frame and cell): the real river bends to meet them. '
                'rivers: the widths of the real rivers (cells; from: the main river of a branch, where the branch begins). roads: the roads between the stamps (points: frame and cell; '
                'the road winds between its points by the seed; on a hill it turns back and forth). tiles: the fine height '
                'tiles (data/geo/heights/); startTiles: the tiles that the game loads at the start (the game loads the others '
@@ -381,6 +445,7 @@ PLANE = {
         {'id': 'soc-son', 'cell': [38, 20], 'at': [105.825, 21.29], 'lift': True, 'note': 'the top of núi Vệ Linh'},
         {'id': 'trau-son', 'cell': [176, 20], 'at': [106.1, 21.145], 'note': 'the top of Núi Trâu, east of the fields'},
         {'id': 'road-thanglong', 'cell': [0, 40], 'at': [105.836, 21.029], 'note': 'the gate of Văn Miếu'},
+        {'id': 'xom-ruong', 'cell': [34, 24], 'at': [105.97, 21.1], 'quiet': 16, 'note': 'the yard of Xóm Ruộng, north of Phù Đổng (quiet: no hamlet of the land within 16 cells)'},
     ],
     'pins': [
         {'river': 'duong', 'frame': 'phu-dong', 'cell': [0, 71]},
@@ -405,6 +470,7 @@ PLANE = {
         {'id': 'east', 'width': 4, 'points': [['phu-dong', 79, 30], ['trau-son', 64, 33]]},
         {'id': 'north', 'width': 4, 'points': [['phu-dong', 46, 0], ['soc-son', 39, 63]]},
         {'id': 'west', 'width': 4, 'points': [['phu-dong', 0, 80], ['road-thanglong', 55, 39]]},
+        {'id': 'xom-ruong', 'width': 2, 'bend': 0, 'points': [['phu-dong', 46, 0], ['xom-ruong', 29, 43]]},
         {'id': 'trau', 'width': 2, 'bend': 2, 'points': [['trau-son', 123, 19], ['trau-son', 176, 20]]},
     ],
     'road': {'steep': 0.7, 'climb': 40, 'keep': 0.06},

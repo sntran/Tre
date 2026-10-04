@@ -4,7 +4,7 @@
 import json, random, sys, os, zlib
 
 LEGEND = {'.': 'grass', ',': 'flowers', '=': 'path', 'y': 'yard', '_': 'sand', 'B': 'bridge',
-          '~': 'water', 's': 'shallow', 'f': 'field', 'd': 'dike', 'h': 'hedge', 'l': 'hedge-low', 'r': 'rock'}
+          '~': 'water', 's': 'shallow', 'f': 'field', 'd': 'dike', 'h': 'hedge', 'l': 'hedge-low', 'r': 'rock', 'c': 'ditch'}
 # The scripts place things on tiles; the maps have S x S cells for each tile. One cell is one
 # ground block of the voxel world.
 S = 2

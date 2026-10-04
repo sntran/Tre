@@ -2,245 +2,1236 @@
   "_about": "The looks of the people, the enemies, and the animals of the world. The code builds each figure from parts (src/world/figures.js). A person: child, skin (skin1 to skin4), top, bottom, sash (palette colors), topKind (shirt, yem, bare, robe), bottomKind (shorts, skirt, trousers, robe), hair (short, topknot, long, braids, bun, tufts, grey, bald), hairStyle (the shape of grey hair: short, topknot, long, braids, or bun), beard (true or a color), hat (non, band, helmet, plume), item (staff, fish, lantern, hammer, axe, net, basket, scroll, fan, drum, or plank-3 to plank-5 on the shoulder), face (1 to 4), scale. An animal: kind (nghe, duck, serpent); a duck has a coat (white with a green head, or brown: the ducks of another farm). The small joys: kind (duckling, frog, lily-pad, kingfisher, golden-shoot, puddle, banh-chung, lion). A thing: kind (pot, lantern, cart, plank: a plank of n half blocks with a dot on each, deck: a part of the bridge deck, n half blocks long and w wide; plank-ghost: the outline of a plank for the prediction, on: filled; gap: the marks of n missing units of a gap). The keys are the ids of people in npcs.json, the figure of an encounter or a decor point on a map, and the ids of friends in friends.json. The things of the Five Trials (workThing in src/world/figures.js): rod, rod-bundle, mat, band, ore, bucket, trough, iron (glow 0 to 3, bent, blade), stake, float, tide (n), fish-trap, herb (ngai, tiato, rauma), basket, stem (n), chalk, and sticks (n).",
   "_heroAbout": "hero: the choices of hero creation. The profile keeps the number of each choice (1 is the first). genders: the clothes of a boy and of a girl; skins, faces, and hairs: the skin colors, the faces (1 to 4), and the hair styles; clothes: the colors of the top, the bottom, and the sash.",
   "hero": {
-    "genders": { "boy": { "topKind": "shirt", "bottomKind": "shorts" }, "girl": { "topKind": "yem", "bottomKind": "skirt" } },
-    "skins": ["skin1", "skin2", "skin3", "skin4"],
-    "faces": [1, 2, 3, 4],
-    "hairs": ["short", "topknot", "long", "braids", "bun", "tufts"],
+    "genders": {
+      "boy": {
+        "topKind": "shirt",
+        "bottomKind": "shorts"
+      },
+      "girl": {
+        "topKind": "yem",
+        "bottomKind": "skirt"
+      }
+    },
+    "skins": [
+      "skin1",
+      "skin2",
+      "skin3",
+      "skin4"
+    ],
+    "faces": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "hairs": [
+      "short",
+      "topknot",
+      "long",
+      "braids",
+      "bun",
+      "tufts"
+    ],
     "clothes": [
-      { "top": "indigo", "bottom": "indigo", "sash": "vermilion" },
-      { "top": "ochre", "bottom": "wood", "sash": "yellow" },
-      { "top": "vermilionPale", "bottom": "indigo", "sash": "green" },
-      { "top": "green", "bottom": "wood", "sash": "vermilion" }
+      {
+        "top": "indigo",
+        "bottom": "indigo",
+        "sash": "vermilion"
+      },
+      {
+        "top": "ochre",
+        "bottom": "wood",
+        "sash": "yellow"
+      },
+      {
+        "top": "vermilionPale",
+        "bottom": "indigo",
+        "sash": "green"
+      },
+      {
+        "top": "green",
+        "bottom": "wood",
+        "sash": "vermilion"
+      }
     ]
   },
   "_villagersAbout": "villagers: the parts of the people of the generated hamlets (src/core/gen/people.js). Each villager takes one choice of each part from the seed of the world, so that no two hamlets look the same: an age (grown, child, or old; a child is smaller, an old person has grey hair and sometimes a beard), a body (the clothes of a man or a woman), a skin, clothes (the colors of the top, the bottom, and the sash), a hair for each body (grey: the shape of the grey hair of an old person of the body), a hat (or none), an item in the hand (or none), and a face. The villagers of the hamlets are not people of the story: they have no names and no talks, and they are not historical people.",
   "villagers": {
-    "ages": [{ "age": "grown", "weight": 6 }, { "age": "child", "weight": 2, "scale": 0.8 }, { "age": "old", "weight": 2, "hair": "grey" }],
-    "bodies": {
-      "man": { "topKind": "shirt", "bottomKind": "trousers", "hairs": ["short", "topknot", "bald"], "grey": "short" },
-      "woman": { "topKind": "shirt", "bottomKind": "skirt", "hairs": ["bun", "long", "braids"], "grey": "bun" }
-    },
-    "skins": ["skin1", "skin2", "skin3", "skin4"],
-    "clothes": [
-      { "top": "indigo", "bottom": "ink", "sash": "vermilion" },
-      { "top": "wood", "bottom": "indigo", "sash": "yellow" },
-      { "top": "ochre", "bottom": "wood", "sash": "green" },
-      { "top": "green", "bottom": "indigo", "sash": "yellowPale" },
-      { "top": "ash", "bottom": "ink", "sash": "ochre" },
-      { "top": "vermilionPale", "bottom": "wood", "sash": "diep" }
+    "ages": [
+      {
+        "age": "grown",
+        "weight": 6
+      },
+      {
+        "age": "child",
+        "weight": 2,
+        "scale": 0.8
+      },
+      {
+        "age": "old",
+        "weight": 2,
+        "hair": "grey"
+      }
     ],
-    "hats": [null, null, "non", "non", "band"],
-    "items": [null, null, "basket", "net", "fan", "staff"],
-    "faces": [1, 2, 3, 4]
+    "bodies": {
+      "man": {
+        "topKind": "shirt",
+        "bottomKind": "trousers",
+        "hairs": [
+          "short",
+          "topknot",
+          "bald"
+        ],
+        "grey": "short"
+      },
+      "woman": {
+        "topKind": "shirt",
+        "bottomKind": "skirt",
+        "hairs": [
+          "bun",
+          "long",
+          "braids"
+        ],
+        "grey": "bun"
+      }
+    },
+    "skins": [
+      "skin1",
+      "skin2",
+      "skin3",
+      "skin4"
+    ],
+    "clothes": [
+      {
+        "top": "indigo",
+        "bottom": "ink",
+        "sash": "vermilion"
+      },
+      {
+        "top": "wood",
+        "bottom": "indigo",
+        "sash": "yellow"
+      },
+      {
+        "top": "ochre",
+        "bottom": "wood",
+        "sash": "green"
+      },
+      {
+        "top": "green",
+        "bottom": "indigo",
+        "sash": "yellowPale"
+      },
+      {
+        "top": "ash",
+        "bottom": "ink",
+        "sash": "ochre"
+      },
+      {
+        "top": "vermilionPale",
+        "bottom": "wood",
+        "sash": "diep"
+      }
+    ],
+    "hats": [
+      null,
+      null,
+      "non",
+      "non",
+      "band"
+    ],
+    "items": [
+      null,
+      null,
+      "basket",
+      "net",
+      "fan",
+      "staff"
+    ],
+    "faces": [
+      1,
+      2,
+      3,
+      4
+    ]
   },
   "_viewsAbout": "views: the props of the world that a screen shows as a rendered view (src/world/portraits.js, propMesh): the kind of prop, its size in map cells (w, h), and a seed.",
   "views": {
-    "vanmieu-gate": { "prop": "vanmieu-gate", "w": 2, "h": 8, "seed": 1 },
-    "stele": { "prop": "stele", "w": 4, "h": 4, "seed": 1 }
+    "vanmieu-gate": {
+      "prop": "vanmieu-gate",
+      "w": 2,
+      "h": 8,
+      "seed": 1
+    },
+    "stele": {
+      "prop": "stele",
+      "w": 4,
+      "h": 4,
+      "seed": 1
+    }
   },
   "figures": {
-    "grandma": { "skin": "skin2", "top": "wood", "bottom": "indigo", "sash": "ochre", "topKind": "shirt", "bottomKind": "skirt", "hair": "grey", "hairStyle": "bun", "item": "fan", "face": 2 },
-    "mother": { "skin": "skin2", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "yem", "bottomKind": "skirt", "hair": "bun", "face": 2 },
-    "giong-boy": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1 },
-    "teacher": { "skin": "skin2", "top": "indigo", "bottom": "indigo", "sash": "paperDeep", "topKind": "robe", "bottomKind": "robe", "hair": "topknot", "beard": "ink", "item": "scroll", "face": 1 },
-    "elder": { "skin": "skin2", "top": "vermilionPale", "bottom": "vermilionPale", "sash": "yellow", "topKind": "robe", "bottomKind": "robe", "hair": "grey", "hairStyle": "short", "beard": true, "item": "staff", "face": 1 },
-    "socson-elder": { "skin": "skin3", "top": "green", "bottom": "green", "sash": "ochre", "topKind": "robe", "bottomKind": "robe", "hair": "grey", "hairStyle": "short", "beard": true, "item": "staff", "face": 1 },
-    "messenger": { "skin": "skin3", "top": "vermilion", "bottom": "indigo", "sash": "yellow", "topKind": "shirt", "bottomKind": "trousers", "hair": "short", "hat": "band", "item": "drum", "face": 2 },
-    "smith": { "skin": "skin4", "top": "wood", "bottom": "wood", "sash": "ash", "topKind": "bare", "bottomKind": "trousers", "hair": "short", "hat": "band", "item": "hammer", "face": 1 },
-    "healer": { "skin": "skin2", "top": "green", "bottom": "indigo", "sash": "yellowPale", "topKind": "shirt", "bottomKind": "skirt", "hair": "grey", "hairStyle": "bun", "item": "basket", "face": 2 },
-    "woodcutter": { "skin": "skin4", "top": "ochre", "bottom": "wood", "sash": "green", "topKind": "shirt", "bottomKind": "trousers", "hair": "short", "item": "axe", "face": 1 },
-    "fisher": { "skin": "skin3", "top": "indigo", "bottom": "wood", "sash": "diep", "topKind": "shirt", "bottomKind": "shorts", "hair": "short", "hat": "non", "item": "net", "face": 2 },
-    "giong-hero": { "skin": "skin3", "top": "ash", "bottom": "ash", "sash": "vermilion", "topKind": "shirt", "bottomKind": "trousers", "hair": "topknot", "hat": "band", "item": "staff", "face": 1, "scale": 0.86 },
-    "giong-sky": { "skin": "skin3", "top": "ash", "bottom": "ash", "sash": "vermilion", "topKind": "shirt", "bottomKind": "trousers", "hair": "topknot", "hat": "band", "item": "staff", "face": 1, "scale": 0.86 },
-    "scout": { "skin": "skin2", "top": "ash", "bottom": "ink", "sash": "vermilion", "topKind": "shirt", "bottomKind": "trousers", "hair": "short", "hat": "helmet", "item": "staff", "face": 3 },
-    "soldier": { "skin": "skin2", "top": "ink", "bottom": "ash", "sash": "vermilion", "topKind": "shirt", "bottomKind": "trousers", "hair": "short", "hat": "helmet", "item": "staff", "face": 3 },
-    "general": { "skin": "skin2", "top": "vermilion", "bottom": "ink", "sash": "yellow", "topKind": "robe", "bottomKind": "robe", "hair": "short", "beard": "ink", "hat": "plume", "item": "staff", "face": 3, "scale": 0.8 },
-    "river-serpent": { "kind": "serpent" },
-    "song": { "kind": "serpent", "scale": 0.5, "belly": "yellowPale" },
-    "mentor-scholar": { "skin": "skin2", "top": "indigo", "bottom": "indigo", "sash": "paperDeep", "topKind": "robe", "bottomKind": "robe", "hair": "grey", "hairStyle": "short", "beard": true, "item": "scroll", "face": 1 },
-    "mentor-smith": { "skin": "skin3", "top": "wood", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "trousers", "hair": "short", "hat": "band", "item": "hammer", "face": 2 },
-    "mentor-fisher": { "skin": "skin3", "top": "indigo", "bottom": "indigo", "sash": "diep", "topKind": "bare", "bottomKind": "shorts", "hair": "topknot", "item": "net", "face": 2 },
-    "mentor-healer": { "skin": "skin2", "top": "ochre", "bottom": "ochre", "sash": "wood", "topKind": "robe", "bottomKind": "robe", "hair": "bald", "item": "basket", "face": 1 },
-    "mentor-woodcutter": { "skin": "skin3", "top": "green", "bottom": "wood", "sash": "ochre", "topKind": "bare", "bottomKind": "shorts", "hair": "long", "item": "axe", "face": 2 },
-    "examiner": { "skin": "skin2", "top": "indigo", "bottom": "indigo", "sash": "yellow", "topKind": "robe", "bottomKind": "robe", "hair": "topknot", "beard": "ink", "item": "scroll", "face": 3 },
-    "nghe": { "kind": "nghe" },
-    "duck": { "kind": "duck" },
-    "duck-brown": { "kind": "duck", "coat": "brown" },
-    "chicken": { "kind": "chicken", "color": "diep" },
-    "chicken-brown": { "kind": "chicken", "color": "ochre" },
-    "fish": { "kind": "fish" },
-    "buffalo": { "kind": "buffalo" },
-    "dog": { "kind": "dog" },
-    "pot": { "kind": "pot" },
-    "pot-broken": { "kind": "pot", "broken": true },
-    "grass": { "kind": "grass" },
-    "duckling": { "kind": "duckling" },
-    "frog": { "kind": "frog" },
-    "lily-pad": { "kind": "lily-pad" },
-    "kingfisher": { "kind": "kingfisher" },
-    "golden-shoot": { "kind": "golden-shoot" },
-    "puddle": { "kind": "puddle" },
-    "banh-chung": { "kind": "banh-chung" },
-    "lion": { "kind": "lion" },
-    "owl": { "kind": "owl" },
-    "bird": { "kind": "bird" },
-    "lantern": { "kind": "lantern" },
-    "lantern-lit": { "kind": "lantern", "lit": true },
-    "cart": { "kind": "cart" },
-    "ferry": { "kind": "ferry" },
-    "plank-3": { "kind": "plank", "n": 3 },
-    "plank-4": { "kind": "plank", "n": 4 },
-    "plank-5": { "kind": "plank", "n": 5 },
-    "deck-1": { "kind": "deck", "n": 1 },
-    "deck-2": { "kind": "deck", "n": 2 },
-    "deck-3": { "kind": "deck", "n": 3 },
-    "deck-4": { "kind": "deck", "n": 4 },
-    "deck-5": { "kind": "deck", "n": 5 },
-    "deck-6": { "kind": "deck", "n": 6 },
-    "deck-7": { "kind": "deck", "n": 7 },
-    "deck-8": { "kind": "deck", "n": 8 },
-    "deck-9": { "kind": "deck", "n": 9 },
-    "deck-10": { "kind": "deck", "n": 10 },
-    "deck-11": { "kind": "deck", "n": 11 },
-    "deck-12": { "kind": "deck", "n": 12 },
-    "deck-13": { "kind": "deck", "n": 13 },
-    "deck-14": { "kind": "deck", "n": 14 },
-    "deck-15": { "kind": "deck", "n": 15 },
-    "deck-16": { "kind": "deck", "n": 16 },
-    "deck-17": { "kind": "deck", "n": 17 },
-    "deck-18": { "kind": "deck", "n": 18 },
-    "deck-19": { "kind": "deck", "n": 19 },
-    "deck-20": { "kind": "deck", "n": 20 },
-    "plank-ghost": { "kind": "plank-ghost" },
-    "plank-ghost-on": { "kind": "plank-ghost", "on": true },
-    "gap-1": { "kind": "gap", "n": 1 },
-    "gap-2": { "kind": "gap", "n": 2 },
-    "gap-3": { "kind": "gap", "n": 3 },
-    "gap-4": { "kind": "gap", "n": 4 },
-    "gap-5": { "kind": "gap", "n": 5 },
-    "gap-6": { "kind": "gap", "n": 6 },
-    "gap-7": { "kind": "gap", "n": 7 },
-    "gap-8": { "kind": "gap", "n": 8 },
-    "gap-9": { "kind": "gap", "n": 9 },
-    "gap-10": { "kind": "gap", "n": 10 },
-    "gap-11": { "kind": "gap", "n": 11 },
-    "gap-12": { "kind": "gap", "n": 12 },
-    "gap-13": { "kind": "gap", "n": 13 },
-    "gap-14": { "kind": "gap", "n": 14 },
-    "gap-15": { "kind": "gap", "n": 15 },
-    "gap-16": { "kind": "gap", "n": 16 },
-    "gap-17": { "kind": "gap", "n": 17 },
-    "gap-18": { "kind": "gap", "n": 18 },
-    "rod": { "kind": "rod" },
-    "rod-bundle": { "kind": "rod-bundle" },
-    "mat": { "kind": "mat" },
-    "band": { "kind": "band" },
-    "ore": { "kind": "ore" },
-    "ore-hot": { "kind": "ore", "hot": true },
-    "bellows": { "kind": "bellows" },
-    "iron-horse": { "kind": "iron", "horse": true },
-    "bucket": { "kind": "bucket" },
-    "trough": { "kind": "trough" },
-    "trough-full": { "kind": "trough", "full": true },
-    "iron-0": { "kind": "iron", "glow": 0 },
-    "iron-1": { "kind": "iron", "glow": 1 },
-    "iron-2": { "kind": "iron", "glow": 2 },
-    "iron-3": { "kind": "iron", "glow": 3 },
-    "iron-bent": { "kind": "iron", "bent": true },
-    "blade": { "kind": "iron", "blade": true },
-    "stake": { "kind": "stake" },
-    "stake-set": { "kind": "stake", "set": true },
-    "end-mark": { "kind": "float" },
-    "mentor-mark": { "kind": "mentor-mark" },
-    "tide-0": { "kind": "tide", "n": 0 },
-    "tide-1": { "kind": "tide", "n": 1 },
-    "tide-2": { "kind": "tide", "n": 2 },
-    "tide-3": { "kind": "tide", "n": 3 },
-    "fish-in": { "kind": "fish-trap", "in": true },
-    "fish-out": { "kind": "fish-trap" },
-    "herb-ngai": { "kind": "herb", "herb": "ngai" },
-    "herb-tiato": { "kind": "herb", "herb": "tiato" },
-    "herb-rauma": { "kind": "herb", "herb": "rauma" },
-    "basket": { "kind": "basket" },
-    "basket-full": { "kind": "basket", "full": true },
-    "stem-8": { "kind": "stem", "n": 8 },
-    "stem-12": { "kind": "stem", "n": 12 },
-    "culm-12": { "kind": "culm", "n": 12 },
-    "stump-1": { "kind": "culm", "n": 1, "cut": true },
-    "stump-2": { "kind": "culm", "n": 2, "cut": true },
-    "stump-3": { "kind": "culm", "n": 3, "cut": true },
-    "stump-4": { "kind": "culm", "n": 4, "cut": true },
-    "stump-5": { "kind": "culm", "n": 5, "cut": true },
-    "stump-6": { "kind": "culm", "n": 6, "cut": true },
-    "staffs-2": { "kind": "sticks", "n": 2, "long": true },
-    "staffs-4": { "kind": "sticks", "n": 4, "long": true },
-    "staffs-6": { "kind": "sticks", "n": 6, "long": true },
-    "coin": { "kind": "coin" },
-    "ferryman": { "skin": "skin4", "top": "wood", "bottom": "indigo", "sash": "ochre", "topKind": "shirt", "bottomKind": "trousers", "hair": "short", "hat": "non", "item": "pole", "face": 3 },
-    "carter": { "skin": "skin4", "top": "ochre", "bottom": "wood", "sash": "ink", "topKind": "shirt", "bottomKind": "trousers", "hair": "short", "hat": "non", "face": 3 },
-    "farmer": { "skin": "skin3", "top": "indigo", "bottom": "ink", "sash": "vermilion", "topKind": "shirt", "bottomKind": "skirt", "hair": "bun", "hat": "non", "face": 2 },
-    "seller": { "skin": "skin2", "top": "vermilionPale", "bottom": "indigo", "sash": "yellow", "topKind": "shirt", "bottomKind": "skirt", "hair": "long", "item": "basket", "face": 4 },
-    "stones-1": { "kind": "stones", "n": 1 },
-    "stones-2": { "kind": "stones", "n": 2 },
-    "stones-5": { "kind": "stones", "n": 5 },
-    "pails-1": { "kind": "pails", "n": 1 },
-    "pails-2": { "kind": "pails", "n": 2 },
-    "pails-3": { "kind": "pails", "n": 3 },
-    "pails-5": { "kind": "pails", "n": 5 },
-    "coins-1": { "kind": "coins", "n": 1 },
-    "coins-5": { "kind": "coins", "n": 5 },
-    "coins-10": { "kind": "coins", "n": 10 },
-    "mud": { "kind": "mud" },
-    "ditch": { "kind": "ditch" },
-    "seller-mat": { "kind": "share-mat" },
-    "pen": { "kind": "pen" },
-    "share-mat": { "kind": "share-mat" },
-    "gift-1": { "kind": "gift", "n": 1 },
-    "gift-2": { "kind": "gift", "n": 2 },
-    "chalk": { "kind": "chalk" },
-    "sticks-2": { "kind": "sticks", "n": 2 },
-    "sticks-3": { "kind": "sticks", "n": 3 },
-    "sticks-4": { "kind": "sticks", "n": 4 },
-    "stone": { "kind": "stone" },
-    "riceball": { "kind": "riceball" },
-    "torch": { "kind": "torch" },
-    "fire": { "kind": "fire" },
-    "puddle": { "kind": "puddle", "r": 3 },
-    "puddle-small": { "kind": "puddle", "r": 2.5 },
-    "post-1": { "kind": "post", "n": 1 },
-    "post-1-lit": { "kind": "post", "n": 1, "lit": true },
-    "post-2": { "kind": "post", "n": 2 },
-    "post-2-lit": { "kind": "post", "n": 2, "lit": true },
-    "post-3": { "kind": "post", "n": 3 },
-    "post-3-lit": { "kind": "post", "n": 3, "lit": true },
-    "post-4": { "kind": "post", "n": 4 },
-    "post-4-lit": { "kind": "post", "n": 4, "lit": true },
-    "trap": { "kind": "trap" },
-    "trap-sprung": { "kind": "trap", "sprung": true },
-    "bar-up": { "kind": "bar" },
-    "bar-down": { "kind": "bar", "down": true },
-    "spot": { "kind": "spot" },
-    "jar": { "kind": "jar" },
-    "brazier": { "kind": "brazier" },
-    "forge": { "kind": "forge" },
-    "bamboo-clump": { "kind": "bamboo" },
-    "bamboo-pulled": { "kind": "bamboo", "pulled": true },
-    "bowls-3": { "kind": "bowls", "n": 3 },
-    "bowls-5": { "kind": "bowls", "n": 5 },
-    "rice-pot-0": { "kind": "rice-pot", "n": 0 },
-    "rice-pot-1": { "kind": "rice-pot", "n": 1 },
-    "rice-pot-2": { "kind": "rice-pot", "n": 2 },
-    "rice-pot-3": { "kind": "rice-pot", "n": 3 },
-    "rice-pot-4": { "kind": "rice-pot", "n": 4 },
-    "rice-pot-5": { "kind": "rice-pot", "n": 5 },
-    "rice-pot-6": { "kind": "rice-pot", "n": 6 },
-    "rice-pot-7": { "kind": "rice-pot", "n": 7 },
-    "rice-pot-8": { "kind": "rice-pot", "n": 8 },
-    "rice-pot-9": { "kind": "rice-pot", "n": 9 },
-    "giong-boy-1": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.67 },
-    "giong-boy-2": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.74 },
-    "giong-boy-3": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.81 },
-    "giong-boy-4": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.88 },
-    "giong-boy-5": { "child": true, "skin": "skin3", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.95 }
+    "grandma": {
+      "skin": "skin2",
+      "top": "wood",
+      "bottom": "indigo",
+      "sash": "ochre",
+      "topKind": "shirt",
+      "bottomKind": "skirt",
+      "hair": "grey",
+      "hairStyle": "bun",
+      "item": "fan",
+      "face": 2
+    },
+    "mother": {
+      "skin": "skin2",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "yem",
+      "bottomKind": "skirt",
+      "hair": "bun",
+      "face": 2
+    },
+    "giong-boy": {
+      "child": true,
+      "skin": "skin3",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "bare",
+      "bottomKind": "shorts",
+      "hair": "tufts",
+      "face": 1
+    },
+    "teacher": {
+      "skin": "skin2",
+      "top": "indigo",
+      "bottom": "indigo",
+      "sash": "paperDeep",
+      "topKind": "robe",
+      "bottomKind": "robe",
+      "hair": "topknot",
+      "beard": "ink",
+      "item": "scroll",
+      "face": 1
+    },
+    "elder": {
+      "skin": "skin2",
+      "top": "vermilionPale",
+      "bottom": "vermilionPale",
+      "sash": "yellow",
+      "topKind": "robe",
+      "bottomKind": "robe",
+      "hair": "grey",
+      "hairStyle": "short",
+      "beard": true,
+      "item": "staff",
+      "face": 1
+    },
+    "socson-elder": {
+      "skin": "skin3",
+      "top": "green",
+      "bottom": "green",
+      "sash": "ochre",
+      "topKind": "robe",
+      "bottomKind": "robe",
+      "hair": "grey",
+      "hairStyle": "short",
+      "beard": true,
+      "item": "staff",
+      "face": 1
+    },
+    "messenger": {
+      "skin": "skin3",
+      "top": "vermilion",
+      "bottom": "indigo",
+      "sash": "yellow",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "short",
+      "hat": "band",
+      "item": "drum",
+      "face": 2
+    },
+    "smith": {
+      "skin": "skin4",
+      "top": "wood",
+      "bottom": "wood",
+      "sash": "ash",
+      "topKind": "bare",
+      "bottomKind": "trousers",
+      "hair": "short",
+      "hat": "band",
+      "item": "hammer",
+      "face": 1
+    },
+    "healer": {
+      "skin": "skin2",
+      "top": "green",
+      "bottom": "indigo",
+      "sash": "yellowPale",
+      "topKind": "shirt",
+      "bottomKind": "skirt",
+      "hair": "grey",
+      "hairStyle": "bun",
+      "item": "basket",
+      "face": 2
+    },
+    "woodcutter": {
+      "skin": "skin4",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "green",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "short",
+      "item": "axe",
+      "face": 1
+    },
+    "fisher": {
+      "skin": "skin3",
+      "top": "indigo",
+      "bottom": "wood",
+      "sash": "diep",
+      "topKind": "shirt",
+      "bottomKind": "shorts",
+      "hair": "short",
+      "hat": "non",
+      "item": "net",
+      "face": 2
+    },
+    "giong-hero": {
+      "skin": "skin3",
+      "top": "ash",
+      "bottom": "ash",
+      "sash": "vermilion",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "topknot",
+      "hat": "band",
+      "item": "staff",
+      "face": 1,
+      "scale": 0.86
+    },
+    "giong-sky": {
+      "skin": "skin3",
+      "top": "ash",
+      "bottom": "ash",
+      "sash": "vermilion",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "topknot",
+      "hat": "band",
+      "item": "staff",
+      "face": 1,
+      "scale": 0.86
+    },
+    "scout": {
+      "skin": "skin2",
+      "top": "ash",
+      "bottom": "ink",
+      "sash": "vermilion",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "short",
+      "hat": "helmet",
+      "item": "staff",
+      "face": 3
+    },
+    "soldier": {
+      "skin": "skin2",
+      "top": "ink",
+      "bottom": "ash",
+      "sash": "vermilion",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "short",
+      "hat": "helmet",
+      "item": "staff",
+      "face": 3
+    },
+    "general": {
+      "skin": "skin2",
+      "top": "vermilion",
+      "bottom": "ink",
+      "sash": "yellow",
+      "topKind": "robe",
+      "bottomKind": "robe",
+      "hair": "short",
+      "beard": "ink",
+      "hat": "plume",
+      "item": "staff",
+      "face": 3,
+      "scale": 0.8
+    },
+    "river-serpent": {
+      "kind": "serpent"
+    },
+    "song": {
+      "kind": "serpent",
+      "scale": 0.5,
+      "belly": "yellowPale"
+    },
+    "mentor-scholar": {
+      "skin": "skin2",
+      "top": "indigo",
+      "bottom": "indigo",
+      "sash": "paperDeep",
+      "topKind": "robe",
+      "bottomKind": "robe",
+      "hair": "grey",
+      "hairStyle": "short",
+      "beard": true,
+      "item": "scroll",
+      "face": 1
+    },
+    "mentor-smith": {
+      "skin": "skin3",
+      "top": "wood",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "bare",
+      "bottomKind": "trousers",
+      "hair": "short",
+      "hat": "band",
+      "item": "hammer",
+      "face": 2
+    },
+    "mentor-fisher": {
+      "skin": "skin3",
+      "top": "indigo",
+      "bottom": "indigo",
+      "sash": "diep",
+      "topKind": "bare",
+      "bottomKind": "shorts",
+      "hair": "topknot",
+      "item": "net",
+      "face": 2
+    },
+    "mentor-healer": {
+      "skin": "skin2",
+      "top": "ochre",
+      "bottom": "ochre",
+      "sash": "wood",
+      "topKind": "robe",
+      "bottomKind": "robe",
+      "hair": "bald",
+      "item": "basket",
+      "face": 1
+    },
+    "mentor-woodcutter": {
+      "skin": "skin3",
+      "top": "green",
+      "bottom": "wood",
+      "sash": "ochre",
+      "topKind": "bare",
+      "bottomKind": "shorts",
+      "hair": "long",
+      "item": "axe",
+      "face": 2
+    },
+    "examiner": {
+      "skin": "skin2",
+      "top": "indigo",
+      "bottom": "indigo",
+      "sash": "yellow",
+      "topKind": "robe",
+      "bottomKind": "robe",
+      "hair": "topknot",
+      "beard": "ink",
+      "item": "scroll",
+      "face": 3
+    },
+    "nghe": {
+      "kind": "nghe"
+    },
+    "duck": {
+      "kind": "duck"
+    },
+    "duck-brown": {
+      "kind": "duck",
+      "coat": "brown"
+    },
+    "chicken": {
+      "kind": "chicken",
+      "color": "diep"
+    },
+    "chicken-brown": {
+      "kind": "chicken",
+      "color": "ochre"
+    },
+    "fish": {
+      "kind": "fish"
+    },
+    "buffalo": {
+      "kind": "buffalo"
+    },
+    "dog": {
+      "kind": "dog"
+    },
+    "pot": {
+      "kind": "pot"
+    },
+    "pot-broken": {
+      "kind": "pot",
+      "broken": true
+    },
+    "grass": {
+      "kind": "grass"
+    },
+    "duckling": {
+      "kind": "duckling"
+    },
+    "frog": {
+      "kind": "frog"
+    },
+    "lily-pad": {
+      "kind": "lily-pad"
+    },
+    "kingfisher": {
+      "kind": "kingfisher"
+    },
+    "golden-shoot": {
+      "kind": "golden-shoot"
+    },
+    "puddle": {
+      "kind": "puddle",
+      "r": 3
+    },
+    "banh-chung": {
+      "kind": "banh-chung"
+    },
+    "lion": {
+      "kind": "lion"
+    },
+    "owl": {
+      "kind": "owl"
+    },
+    "bird": {
+      "kind": "bird"
+    },
+    "lantern": {
+      "kind": "lantern"
+    },
+    "lantern-lit": {
+      "kind": "lantern",
+      "lit": true
+    },
+    "cart": {
+      "kind": "cart"
+    },
+    "ferry": {
+      "kind": "ferry"
+    },
+    "plank-3": {
+      "kind": "plank",
+      "n": 3
+    },
+    "plank-4": {
+      "kind": "plank",
+      "n": 4
+    },
+    "plank-5": {
+      "kind": "plank",
+      "n": 5
+    },
+    "deck-1": {
+      "kind": "deck",
+      "n": 1
+    },
+    "deck-2": {
+      "kind": "deck",
+      "n": 2
+    },
+    "deck-3": {
+      "kind": "deck",
+      "n": 3
+    },
+    "deck-4": {
+      "kind": "deck",
+      "n": 4
+    },
+    "deck-5": {
+      "kind": "deck",
+      "n": 5
+    },
+    "deck-6": {
+      "kind": "deck",
+      "n": 6
+    },
+    "deck-7": {
+      "kind": "deck",
+      "n": 7
+    },
+    "deck-8": {
+      "kind": "deck",
+      "n": 8
+    },
+    "deck-9": {
+      "kind": "deck",
+      "n": 9
+    },
+    "deck-10": {
+      "kind": "deck",
+      "n": 10
+    },
+    "deck-11": {
+      "kind": "deck",
+      "n": 11
+    },
+    "deck-12": {
+      "kind": "deck",
+      "n": 12
+    },
+    "deck-13": {
+      "kind": "deck",
+      "n": 13
+    },
+    "deck-14": {
+      "kind": "deck",
+      "n": 14
+    },
+    "deck-15": {
+      "kind": "deck",
+      "n": 15
+    },
+    "deck-16": {
+      "kind": "deck",
+      "n": 16
+    },
+    "deck-17": {
+      "kind": "deck",
+      "n": 17
+    },
+    "deck-18": {
+      "kind": "deck",
+      "n": 18
+    },
+    "deck-19": {
+      "kind": "deck",
+      "n": 19
+    },
+    "deck-20": {
+      "kind": "deck",
+      "n": 20
+    },
+    "plank-ghost": {
+      "kind": "plank-ghost"
+    },
+    "plank-ghost-on": {
+      "kind": "plank-ghost",
+      "on": true
+    },
+    "gap-1": {
+      "kind": "gap",
+      "n": 1
+    },
+    "gap-2": {
+      "kind": "gap",
+      "n": 2
+    },
+    "gap-3": {
+      "kind": "gap",
+      "n": 3
+    },
+    "gap-4": {
+      "kind": "gap",
+      "n": 4
+    },
+    "gap-5": {
+      "kind": "gap",
+      "n": 5
+    },
+    "gap-6": {
+      "kind": "gap",
+      "n": 6
+    },
+    "gap-7": {
+      "kind": "gap",
+      "n": 7
+    },
+    "gap-8": {
+      "kind": "gap",
+      "n": 8
+    },
+    "gap-9": {
+      "kind": "gap",
+      "n": 9
+    },
+    "gap-10": {
+      "kind": "gap",
+      "n": 10
+    },
+    "gap-11": {
+      "kind": "gap",
+      "n": 11
+    },
+    "gap-12": {
+      "kind": "gap",
+      "n": 12
+    },
+    "gap-13": {
+      "kind": "gap",
+      "n": 13
+    },
+    "gap-14": {
+      "kind": "gap",
+      "n": 14
+    },
+    "gap-15": {
+      "kind": "gap",
+      "n": 15
+    },
+    "gap-16": {
+      "kind": "gap",
+      "n": 16
+    },
+    "gap-17": {
+      "kind": "gap",
+      "n": 17
+    },
+    "gap-18": {
+      "kind": "gap",
+      "n": 18
+    },
+    "rod": {
+      "kind": "rod"
+    },
+    "rod-bundle": {
+      "kind": "rod-bundle"
+    },
+    "mat": {
+      "kind": "mat"
+    },
+    "band": {
+      "kind": "band"
+    },
+    "ore": {
+      "kind": "ore"
+    },
+    "ore-hot": {
+      "kind": "ore",
+      "hot": true
+    },
+    "bellows": {
+      "kind": "bellows"
+    },
+    "iron-horse": {
+      "kind": "iron",
+      "horse": true
+    },
+    "bucket": {
+      "kind": "bucket"
+    },
+    "trough": {
+      "kind": "trough"
+    },
+    "trough-full": {
+      "kind": "trough",
+      "full": true
+    },
+    "iron-0": {
+      "kind": "iron",
+      "glow": 0
+    },
+    "iron-1": {
+      "kind": "iron",
+      "glow": 1
+    },
+    "iron-2": {
+      "kind": "iron",
+      "glow": 2
+    },
+    "iron-3": {
+      "kind": "iron",
+      "glow": 3
+    },
+    "iron-bent": {
+      "kind": "iron",
+      "bent": true
+    },
+    "blade": {
+      "kind": "iron",
+      "blade": true
+    },
+    "stake": {
+      "kind": "stake"
+    },
+    "stake-set": {
+      "kind": "stake",
+      "set": true
+    },
+    "end-mark": {
+      "kind": "float"
+    },
+    "mentor-mark": {
+      "kind": "mentor-mark"
+    },
+    "tide-0": {
+      "kind": "tide",
+      "n": 0
+    },
+    "tide-1": {
+      "kind": "tide",
+      "n": 1
+    },
+    "tide-2": {
+      "kind": "tide",
+      "n": 2
+    },
+    "tide-3": {
+      "kind": "tide",
+      "n": 3
+    },
+    "fish-in": {
+      "kind": "fish-trap",
+      "in": true
+    },
+    "fish-out": {
+      "kind": "fish-trap"
+    },
+    "herb-ngai": {
+      "kind": "herb",
+      "herb": "ngai"
+    },
+    "herb-tiato": {
+      "kind": "herb",
+      "herb": "tiato"
+    },
+    "herb-rauma": {
+      "kind": "herb",
+      "herb": "rauma"
+    },
+    "basket": {
+      "kind": "basket"
+    },
+    "basket-full": {
+      "kind": "basket",
+      "full": true
+    },
+    "stem-8": {
+      "kind": "stem",
+      "n": 8
+    },
+    "stem-12": {
+      "kind": "stem",
+      "n": 12
+    },
+    "culm-12": {
+      "kind": "culm",
+      "n": 12
+    },
+    "stump-1": {
+      "kind": "culm",
+      "n": 1,
+      "cut": true
+    },
+    "stump-2": {
+      "kind": "culm",
+      "n": 2,
+      "cut": true
+    },
+    "stump-3": {
+      "kind": "culm",
+      "n": 3,
+      "cut": true
+    },
+    "stump-4": {
+      "kind": "culm",
+      "n": 4,
+      "cut": true
+    },
+    "stump-5": {
+      "kind": "culm",
+      "n": 5,
+      "cut": true
+    },
+    "stump-6": {
+      "kind": "culm",
+      "n": 6,
+      "cut": true
+    },
+    "staffs-2": {
+      "kind": "sticks",
+      "n": 2,
+      "long": true
+    },
+    "staffs-4": {
+      "kind": "sticks",
+      "n": 4,
+      "long": true
+    },
+    "staffs-6": {
+      "kind": "sticks",
+      "n": 6,
+      "long": true
+    },
+    "coin": {
+      "kind": "coin"
+    },
+    "ferryman": {
+      "skin": "skin4",
+      "top": "wood",
+      "bottom": "indigo",
+      "sash": "ochre",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "short",
+      "hat": "non",
+      "item": "pole",
+      "face": 3
+    },
+    "carter": {
+      "skin": "skin4",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "ink",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "short",
+      "hat": "non",
+      "face": 3
+    },
+    "farmer": {
+      "skin": "skin3",
+      "top": "indigo",
+      "bottom": "ink",
+      "sash": "vermilion",
+      "topKind": "shirt",
+      "bottomKind": "skirt",
+      "hair": "bun",
+      "hat": "non",
+      "face": 2
+    },
+    "seller": {
+      "skin": "skin2",
+      "top": "vermilionPale",
+      "bottom": "indigo",
+      "sash": "yellow",
+      "topKind": "shirt",
+      "bottomKind": "skirt",
+      "hair": "long",
+      "item": "basket",
+      "face": 4
+    },
+    "stones-1": {
+      "kind": "stones",
+      "n": 1
+    },
+    "stones-2": {
+      "kind": "stones",
+      "n": 2
+    },
+    "stones-5": {
+      "kind": "stones",
+      "n": 5
+    },
+    "pails-1": {
+      "kind": "pails",
+      "n": 1
+    },
+    "pails-2": {
+      "kind": "pails",
+      "n": 2
+    },
+    "pails-3": {
+      "kind": "pails",
+      "n": 3
+    },
+    "pails-5": {
+      "kind": "pails",
+      "n": 5
+    },
+    "coins-1": {
+      "kind": "coins",
+      "n": 1
+    },
+    "coins-5": {
+      "kind": "coins",
+      "n": 5
+    },
+    "coins-10": {
+      "kind": "coins",
+      "n": 10
+    },
+    "mud": {
+      "kind": "mud"
+    },
+    "ditch": {
+      "kind": "ditch"
+    },
+    "seller-mat": {
+      "kind": "share-mat"
+    },
+    "pen": {
+      "kind": "pen"
+    },
+    "share-mat": {
+      "kind": "share-mat"
+    },
+    "gift-1": {
+      "kind": "gift",
+      "n": 1
+    },
+    "gift-2": {
+      "kind": "gift",
+      "n": 2
+    },
+    "chalk": {
+      "kind": "chalk"
+    },
+    "sticks-2": {
+      "kind": "sticks",
+      "n": 2
+    },
+    "sticks-3": {
+      "kind": "sticks",
+      "n": 3
+    },
+    "sticks-4": {
+      "kind": "sticks",
+      "n": 4
+    },
+    "stone": {
+      "kind": "stone"
+    },
+    "riceball": {
+      "kind": "riceball"
+    },
+    "torch": {
+      "kind": "torch"
+    },
+    "fire": {
+      "kind": "fire"
+    },
+    "puddle-small": {
+      "kind": "puddle",
+      "r": 2.5
+    },
+    "post-1": {
+      "kind": "post",
+      "n": 1
+    },
+    "post-1-lit": {
+      "kind": "post",
+      "n": 1,
+      "lit": true
+    },
+    "post-2": {
+      "kind": "post",
+      "n": 2
+    },
+    "post-2-lit": {
+      "kind": "post",
+      "n": 2,
+      "lit": true
+    },
+    "post-3": {
+      "kind": "post",
+      "n": 3
+    },
+    "post-3-lit": {
+      "kind": "post",
+      "n": 3,
+      "lit": true
+    },
+    "post-4": {
+      "kind": "post",
+      "n": 4
+    },
+    "post-4-lit": {
+      "kind": "post",
+      "n": 4,
+      "lit": true
+    },
+    "trap": {
+      "kind": "trap"
+    },
+    "trap-sprung": {
+      "kind": "trap",
+      "sprung": true
+    },
+    "bar-up": {
+      "kind": "bar"
+    },
+    "bar-down": {
+      "kind": "bar",
+      "down": true
+    },
+    "spot": {
+      "kind": "spot"
+    },
+    "jar": {
+      "kind": "jar"
+    },
+    "brazier": {
+      "kind": "brazier"
+    },
+    "forge": {
+      "kind": "forge"
+    },
+    "bamboo-clump": {
+      "kind": "bamboo"
+    },
+    "bamboo-pulled": {
+      "kind": "bamboo",
+      "pulled": true
+    },
+    "bowls-3": {
+      "kind": "bowls",
+      "n": 3
+    },
+    "bowls-5": {
+      "kind": "bowls",
+      "n": 5
+    },
+    "rice-pot-0": {
+      "kind": "rice-pot",
+      "n": 0
+    },
+    "rice-pot-1": {
+      "kind": "rice-pot",
+      "n": 1
+    },
+    "rice-pot-2": {
+      "kind": "rice-pot",
+      "n": 2
+    },
+    "rice-pot-3": {
+      "kind": "rice-pot",
+      "n": 3
+    },
+    "rice-pot-4": {
+      "kind": "rice-pot",
+      "n": 4
+    },
+    "rice-pot-5": {
+      "kind": "rice-pot",
+      "n": 5
+    },
+    "rice-pot-6": {
+      "kind": "rice-pot",
+      "n": 6
+    },
+    "rice-pot-7": {
+      "kind": "rice-pot",
+      "n": 7
+    },
+    "rice-pot-8": {
+      "kind": "rice-pot",
+      "n": 8
+    },
+    "rice-pot-9": {
+      "kind": "rice-pot",
+      "n": 9
+    },
+    "giong-boy-1": {
+      "child": true,
+      "skin": "skin3",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "bare",
+      "bottomKind": "shorts",
+      "hair": "tufts",
+      "face": 1,
+      "scale": 0.67
+    },
+    "giong-boy-2": {
+      "child": true,
+      "skin": "skin3",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "bare",
+      "bottomKind": "shorts",
+      "hair": "tufts",
+      "face": 1,
+      "scale": 0.74
+    },
+    "giong-boy-3": {
+      "child": true,
+      "skin": "skin3",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "bare",
+      "bottomKind": "shorts",
+      "hair": "tufts",
+      "face": 1,
+      "scale": 0.81
+    },
+    "giong-boy-4": {
+      "child": true,
+      "skin": "skin3",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "bare",
+      "bottomKind": "shorts",
+      "hair": "tufts",
+      "face": 1,
+      "scale": 0.88
+    },
+    "giong-boy-5": {
+      "child": true,
+      "skin": "skin3",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "bare",
+      "bottomKind": "shorts",
+      "hair": "tufts",
+      "face": 1,
+      "scale": 0.95
+    },
+    "planter": {
+      "skin": "skin3",
+      "top": "diep",
+      "bottom": "ink",
+      "sash": "green",
+      "topKind": "shirt",
+      "bottomKind": "skirt",
+      "hair": "bun",
+      "hat": "non",
+      "face": 3
+    },
+    "duck-girl": {
+      "child": true,
+      "skin": "skin2",
+      "top": "yellowPale",
+      "bottom": "indigo",
+      "sash": "vermilion",
+      "topKind": "yem",
+      "bottomKind": "shorts",
+      "hair": "braids",
+      "face": 4
+    },
+    "fisher-uncle": {
+      "skin": "skin4",
+      "top": "wood",
+      "bottom": "indigo",
+      "sash": "diep",
+      "topKind": "shirt",
+      "bottomKind": "shorts",
+      "hair": "short",
+      "hat": "non",
+      "item": "net",
+      "face": 1
+    },
+    "drummer": {
+      "skin": "skin2",
+      "top": "indigo",
+      "bottom": "indigo",
+      "sash": "vermilion",
+      "topKind": "robe",
+      "bottomKind": "robe",
+      "hair": "grey",
+      "hairStyle": "topknot",
+      "beard": true,
+      "item": "drum",
+      "face": 1
+    }
   }
 }
