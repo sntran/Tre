@@ -1,0 +1,55 @@
+{
+  "_about": "The activities of Xóm Ruộng after the planting (docs/HAMLET.md): feeding the ducks, the fish traps, and the drum dance, and the feast of the new rice that links them. All of them use the memory of the facts of the planting (src/core/planting.js) and the factor ranges of the levels of math.mul.10 (data/skills.json). ducks: rate (scoops a second while the child holds the jar), notch (a small notch on the trough for each so many scoops, and a big one for each bigger), forms of each level, big (how many times a big duck eats), mixed (the shares of the two kinds of ducks in a mixed line, and the most ducks of a kind), maxDucks. traps: sizes (the fish of each size of trap: the rings on it), spots (places for traps along the stream), forms of each level, extra (traps of each size more than the answer needs), given (the most traps of a given form). drum: period (seconds from one beat to the next at the start), slower and faster (the change of the period after a miss and after a clean run), fastest (the shortest period), window (the part of a beat in which a tap counts for the beat), to (the last multiple: to × the number of the group), from (the first multiple of the form middle), forms of each level. feast: the hour of the feast (dusk), and how long it lasts (hours). set: the commits of a set of each activity. events: the small events of each activity (at most one in a set, never the same in two sets in a row), and chance.",
+  "ducks": {
+    "rate": 2.5,
+    "notch": [5, 10],
+    "levels": [
+      { "forms": ["groups"] },
+      { "forms": ["groups", "double"] },
+      { "forms": ["groups", "double", "mixed"] }
+    ],
+    "big": 2,
+    "mixed": { "shares": [2, 5], "most": 5 },
+    "maxDucks": 10,
+    "set": 4
+  },
+  "traps": {
+    "sizes": [2, 5, 10],
+    "spots": 12,
+    "levels": [
+      { "forms": ["one"] },
+      { "forms": ["one", "two"] },
+      { "forms": ["one", "two", "given"] }
+    ],
+    "extra": 2,
+    "set": 4
+  },
+  "drum": {
+    "period": 1.1,
+    "slower": 1.15,
+    "faster": 0.95,
+    "fastest": 0.55,
+    "window": 0.35,
+    "to": 10,
+    "from": 5,
+    "levels": [
+      { "forms": ["one"] },
+      { "forms": ["one", "middle"] },
+      { "forms": ["one", "middle", "two"] }
+    ],
+    "set": 3
+  },
+  "feast": { "hour": 18, "hours": 1.5 },
+  "events": {
+    "ducks": ["duck-runs"],
+    "traps": ["kingfisher"],
+    "drum": ["child-joins"]
+  },
+  "chance": 0.5,
+  "stations": {
+    "ducks": "duck-girl",
+    "traps": "fisher-uncle",
+    "drum": "drummer",
+    "planting": "planter"
+  }
+}
