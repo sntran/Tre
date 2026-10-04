@@ -166,11 +166,13 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   shadows.renderOrder = 1;
   // The cue: the thing to touch next glows softly, with a warm disc under it that breathes (the
   // things in glowing, the places in glowSpots).
-  const glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(C.yellow), transparent: true, opacity: 0.3, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+  // The disc draws over a roof or a stair in front of it (no depth test), so that a thing behind a
+  // house still shows where it is.
+  const glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(C.yellow), transparent: true, opacity: 0.3, depthWrite: false, depthTest: false });
   const glows = new THREE.InstancedMesh(disc, glowMat, MAX_GLOWS);
   glows.frustumCulled = false;
   glows.count = 0;
-  glows.renderOrder = 2;
+  glows.renderOrder = 10;
   scene.add(glows);
   let glowing = new Set();
   let glowSpots = [];
@@ -296,7 +298,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       let g = 0;
       glowT += dt;
       const breath = 0.5 - 0.5 * Math.cos((2 * Math.PI * glowT) / GLOW_BEAT);
-      glowMat.opacity = 0.2 + 0.35 * breath;
+      glowMat.opacity = 0.3 + 0.4 * breath;
       // The planes of the view, for the culling (plain numbers for src/world/lod.js).
       if (camera) {
         camera.updateMatrixWorld();
@@ -344,7 +346,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         const glow = glowing.has(f.id);
         L.root.scale.setScalar((f.pulse > 0 ? 1 + 0.18 * Math.sin(Math.PI * (1 - f.pulse / PULSE)) : 1) * (glow ? 1 + 0.08 * breath : 1));
         if (glow && g < MAX_GLOWS) {
-          const r = Math.max(0.6, Math.min(1.6, L.height * 0.6));
+          const r = Math.max(1, Math.min(1.8, L.height * 0.7)) * (0.9 + 0.2 * breath);
           glows.setMatrixAt(g++, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.06, f.at.z));
         }
         for (const [name, r] of Object.entries(pose.rot)) L.nodes[name]?.rotation.set(r[0], r[1], r[2]);
