@@ -15,10 +15,10 @@ Every task in the world must be clear to a child of six. A child of this age tap
 ### The action button
 
 - A large round button at the bottom right, next to the jump button and larger than it. It always stands in the same place.
-- It shows a picture of what it does now, with no words: a hand (pick up or put), a rope (tie), a drop of water (quench), fire (blow the bellows), a basket (give), a knife (cut), a seedling (plant), the weir (open), the drum (a beat), and the jar (pour, while the button is down).
+- It shows a picture of what it does now, with no words: a hand that holds a thing (pick up), a hand that sets a thing down (put), a hand that holds a thing out (give at a small event), a rope (tie), a drop of water (quench), fire (blow the bellows), a basket (give), a knife (cut), a seedling (plant), the weir (open), the drum (a beat), and the jar (pour, while the button is down).
 - With nothing to do, it is dim and has no picture.
 - When it acts, the thing that it acted on pulses once.
-- The session gives the action now (`action()` in `src/core/session.js`: the finishes in reach first, then the hands). The command `hands` (the button, or Space) does it. The view (`src/ui/village.js`) shows the picture (`art/ui/*.svg`).
+- The session gives the action now (`action()` in `src/core/session.js`: the finishes in reach first, then the hands). The command `hands` (the button, or Space) does it. The view (`src/ui/village.js`) shows the picture (`art/ui/*.svg`). The raised hand is only the wave button (ask for help): no two buttons on the screen have the same picture.
 
 ### The next step shows itself
 

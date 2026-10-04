@@ -1492,7 +1492,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (z.zone.rule !== 'exact' || !String(z.zone.task).startsWith('trial-event-')) continue;
         const id = z.zone.task.slice(12);
         if (!open(`event-${id}`) || !z.zone.items.some((i) => !getEntity(state, i)?.item.fixed) || !near(z.position, REACH + 6)) continue;
-        return { act: 'give', icon: 'hand', target: z.id, run: () => work(`event-${id}`, 'exact') };
+        return { act: 'give', icon: 'hand-give', target: z.id, run: () => work(`event-${id}`, 'exact') };
       }
       // Xóm Ruộng: the planter plants; the fisher uncle opens the weir; the bronze drum; the jar.
       if (planting.ready() === 'commit' && (near(getEntity(state, 'npc:planter')?.position, REACH + 8) || plotsOf(state).some((p) => near({ x: p.ox, z: p.oz + p.depth }, REACH + 8)))) return { act: 'plant', icon: 'seedling', target: 'npc:planter', run: toPerson('planter', () => work('plant', 'plant')) };
@@ -1509,9 +1509,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (ducks && !ducks.done && !ducks.eat && jar && near(jar.position, REACH + 1)) return { act: 'pour', icon: 'jar', target: jar.id, hold: true, run: () => hold(true) };
     }
     // The hands: put the thing in reach of a place, or pick up the nearest thing.
-    if (held) return { act: 'put', icon: 'hand', target: held.id, run: handsKey };
+    if (held) return { act: 'put', icon: 'hand-put', target: held.id, run: handsKey };
     const thing = nearestThing(hp);
-    return thing ? { act: 'pick', icon: 'hand', target: thing.id, run: handsKey } : null;
+    return thing ? { act: 'pick', icon: 'hand-pick', target: thing.id, run: handsKey } : null;
   }
   // The action button (or Space): do the action of the hands, and the thing pulses once.
   function act() {

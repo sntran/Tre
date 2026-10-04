@@ -3,6 +3,7 @@
 // headless (tests/story-run.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, existsSync } from 'node:fs';
 import { runHeadless } from './story-run.js';
 
 const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
@@ -116,4 +117,19 @@ test('the fisher: a tap on a stake in the line takes it back while the tide is l
     { until: { event: 'pick', timeout: 15 } },
     { expect: [{ hero: { holding: true } }] },
   ]);
+});
+
+test('no two buttons on the screen have the same picture: the action button never shows the wave hand or the jump', () => {
+  // The pictures of the action button (the icons of action() in the session), and of the other
+  // buttons beside it.
+  const icons = [...new Set([...readFileSync('src/core/session.js', 'utf8').matchAll(/icon: '([a-z-]+)'/g)].map((m) => m[1]))];
+  const others = [...readFileSync('src/ui/village.js', 'utf8').matchAll(/img\('ui\/([a-z-]+)', 'btn-icon'\)/g)].map((m) => m[1]).filter((n) => !icons.includes(n));
+  assert.ok(others.includes('wave') && others.includes('jump'));
+  const art = (n) => readFileSync(`art/ui/${n}.svg`, 'utf8');
+  for (const n of [...icons, ...others]) assert.ok(existsSync(`art/ui/${n}.svg`), `art/ui/${n}.svg`);
+  const all = [...icons, ...others];
+  for (let i = 0; i < all.length; i++) {
+    for (let j = i + 1; j < all.length; j++) assert.notEqual(art(all[i]), art(all[j]), `${all[i]} and ${all[j]} have the same picture`);
+  }
+  for (const act of ['pick', 'put']) assert.ok(icons.includes(`hand-${act}`));
 });

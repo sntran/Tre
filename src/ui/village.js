@@ -262,7 +262,7 @@ export async function mountVillage(ctx, params = {}) {
   // The action button (docs/TASKS.md): the hands, and the finish of a task in reach, as Space. It
   // shows a picture of what it will do now, and it is dim when there is nothing to do. While the
   // jar of feed is in reach, the button pours as long as the finger stays on it.
-  const actIcon = img('ui/hand', 'btn-icon');
+  const actIcon = img('ui/hand-pick', 'btn-icon');
   const actBtn = h('button', { class: 'turn-btn act-btn dim', type: 'button', 'aria-label': t('ui.action'), title: t('ui.action') }, [actIcon]);
   let actNow = null;
   let actHold = false;
@@ -287,7 +287,7 @@ export async function mountVillage(ctx, params = {}) {
     if (actWait > 0) return;
     actWait = 0.15;
     const a = busy ? null : session.action();
-    const icon = a?.icon ?? 'hand';
+    const icon = a?.icon ?? 'hand-pick';
     if (icon !== actNow?.icon) actIcon.src = actIcon.src.replace(/ui\/[a-z-]+\.svg/, `ui/${icon}.svg`);
     actBtn.classList.toggle('dim', !a);
     actNow = a;
