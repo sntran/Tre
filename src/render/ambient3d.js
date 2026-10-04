@@ -1,9 +1,8 @@
 // The world at rest, in three.js: smoke from the kitchens at the meals, steam from the rice pot,
 // a thin thread of incense at the đình, butterflies over the flowers by day, a dragonfly over the
-// paddies, and a fish that jumps at the ford now and then. The small joys that need no state: a
-// rainbow over the river after the rain, footprints in the wet ground that fade, peach blossoms on
-// the trees and red couplets at the doors at Tết, and a firefly that lands on the horn of Nghé on
-// a rare night. Renderer only: no state, and no reward.
+// paddies, and a fish that jumps at the ford now and then. The small joys that need no state: peach
+// blossoms on the trees and red couplets at the doors at Tết, and a firefly that lands on the horn
+// of Nghé on a rare night. Renderer only: no state, and no reward.
 // All of them are small boxes in one instanced mesh (one draw call), and they move in steps, as a
 // print (docs/ART.md, "The world breathes").
 import * as THREE from 'three';
@@ -19,10 +18,8 @@ const hash = (n) => {
 };
 
 // scene: the scene of the world. emit: { kitchens, pots, incense, tetPots, doors: [{ x, y, z }],
-// crowns: [{ x, y, z, r }], river: { x, y, z, r } (the middle and the half width of the rainbow),
-// flowers, paddies, fords } in world units (paddies and fords: the cells of src/world/terrain.js).
-// The colors of the rainbow, from the outside in.
-const BANDS = ['vermilion', 'ochre', 'yellow', 'green', 'indigoPale', 'indigo'];
+// crowns: [{ x, y, z, r }], flowers, paddies, fords } in world units (paddies and fords: the cells
+// of src/world/terrain.js).
 export function createAmbient(scene, emit) {
   const box = new THREE.BoxGeometry(1, 1, 1);
   const mesh = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: 0xffffff }), MAX);
@@ -36,8 +33,6 @@ export function createAmbient(scene, emit) {
   const scl = new THREE.Vector3();
   const color = new THREE.Color();
   let n = 0;
-  const prints = []; // the footprints of the hero in the wet ground: { x, y, z, turn, age }
-  let last = null;
   const put = (x, y, z, sx, sy, sz, c, turn = 0) => {
     if (n >= MAX) return;
     q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), turn);
@@ -47,10 +42,9 @@ export function createAmbient(scene, emit) {
   };
 
   return {
-    // One frame. now: { t (seconds), dt, night, wind: { x, z }, meal (a meal time), tet (a day of
-    // Tết), rainbow (after a rain), wet (the ground is wet), hero: { x, y, z, facing }, horn: the top
-    // of the head of Nghé { x, y, z } on a night of the firefly, or null }.
-    draw({ t, dt = 0, night = 0, wind = null, meal = false, tet = false, rainbow = false, wet = false, hero = null, horn = null }) {
+    // One frame. now: { t (seconds), night, wind: { x, z }, meal (a meal time), tet (a day of Tết),
+    // horn: the top of the head of Nghé { x, y, z } on a night of the firefly, or null }.
+    draw({ t, night = 0, wind = null, meal = false, tet = false, horn = null }) {
       n = 0;
       const wx = wind?.x ?? 0.8;
       const wz = wind?.z ?? 0.6;
@@ -85,36 +79,6 @@ export function createAmbient(scene, emit) {
           }
         });
         for (const d of emit.doors ?? []) for (const side of [-1, 1]) put(d.x + side * 0.75, d.y + 0.9, d.z + 0.08, 0.22, 1.2, 0.05, 'vermilion');
-      }
-      // The rainbow over the river after the rain: six bands in steps, as a print.
-      const rb = emit.river;
-      if (rainbow && rb) {
-        BANDS.forEach((c, b) => {
-          const r = rb.r - b * 0.5;
-          for (let i = 0; i <= 24; i++) {
-            const a = (i / 24) * Math.PI;
-            put(rb.x + Math.cos(a) * r, rb.y + Math.sin(a) * r * 0.7, rb.z, 0.9, 0.5, 0.2, c, 0);
-          }
-        });
-      }
-      // Footprints in the wet ground: a print each half block of the walk, which fades (shrinks).
-      if (wet && hero) {
-        if (!last || Math.hypot(hero.x - last.x, hero.z - last.z) > 0.55) {
-          last = { x: hero.x, z: hero.z };
-          const side = prints.length % 2 ? 1 : -1;
-          prints.push({ x: hero.x + Math.cos(hero.facing) * 0.15 * side, y: hero.y + 0.03, z: hero.z - Math.sin(hero.facing) * 0.15 * side, turn: hero.facing, age: 0 });
-          if (prints.length > 40) prints.shift();
-        }
-      }
-      for (let i = prints.length - 1; i >= 0; i--) {
-        const f = prints[i];
-        f.age += dt;
-        if (f.age > 25) {
-          prints.splice(i, 1);
-          continue;
-        }
-        const k = f.age < 15 ? 1 : 1 - Math.floor((f.age - 15) / 2.5) * 0.25;
-        put(f.x, f.y, f.z, 0.18 * k, 0.03, 0.3 * k, 'wood', f.turn);
       }
       // A firefly on the horn of Nghé: it blinks in two steps.
       if (horn && night > 0.5) put(horn.x, horn.y + 0.1, horn.z, 0.14, 0.14, 0.14, Math.floor(t * 2) % 2 ? 'yellow' : 'yellowPale');

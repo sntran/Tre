@@ -9,9 +9,8 @@ import { portraitCanvas, heroLookOf, speakerLookOf, prerender, portraitStats } f
 import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../core/world/move.js';
 import { getEntity, query } from '../core/world/state.js';
 import { STEP } from '../core/world/step.js';
-import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, rainbowAt, starOn, puddlesAt } from '../core/world/ambient.js';
+import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, starOn, puddlesAt } from '../core/world/ambient.js';
 import { rainOf } from '../core/world/systems/sky.js';
-import { whenOn } from '../core/world/systems/joys.js';
 import { createSession, middleOf } from '../core/session.js';
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
@@ -51,15 +50,6 @@ async function loadDrawing() {
 
 // A shooting star crosses the sky in this many game minutes (about two seconds of play).
 const STAR_MINUTES = 6;
-
-// The middle of the river and the half width of a rainbow over it (world units), or null.
-function riverOf(water) {
-  const deep = water.filter((w) => !w.ford);
-  if (!deep.length) return null;
-  const x = deep.reduce((a, w) => a + w.x, 0) / deep.length;
-  const z = deep.reduce((a, w) => a + w.z, 0) / deep.length;
-  return { x: x + 0.5, y: deep[0].y + 1, z: z + 0.5, r: 14 };
-}
 
 // The terrain of a map, made once for a map and its seed (its pages are pure; a new session loads
 // the changes of its save into it).
@@ -194,7 +184,6 @@ export async function mountVillage(ctx, params = {}) {
         paddies: nearHero(terrain.paddies),
         fords: nearHero(terrain.water.filter((w) => w.ford)),
         crowns: nearHero(terrain.smooth.filter((c) => c.kind === 'crown').map((c) => ({ x: c.x, y: c.y, z: c.z, r: c.r }))),
-        river: riverOf(nearHero(terrain.water.filter((w) => !w.sea))),
       };
     }
     return near;
@@ -207,11 +196,10 @@ export async function mountVillage(ctx, params = {}) {
     get paddies() { return nearby().paddies; },
     get fords() { return nearby().fords; },
     // The small joys of the view: the pot of bánh chưng at Tết, the doors of the houses (couplets),
-    // the crowns of the trees (peach blossoms), and the middle of the river (the rainbow).
+    // and the crowns of the trees (peach blossoms).
     tetPots: state.entities.filter((e) => e.kind === 'banh-chung').map((e) => ({ x: e.position.x / 2, y: e.position.y / 2 + 2.2, z: e.position.z / 2 })),
     get doors() { return nearHero(Object.values(session.env.homes).map((w) => ({ x: w.door.x / 2, y: w.door.y / 2, z: w.door.z / 2 }))); },
     get crowns() { return nearby().crowns; },
-    get river() { return nearby().river; },
   });
   // A villager of a generated hamlet has a look from parts in the map (by its id).
   const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : looks[key] ?? thingLook(key) ?? mapData.looks?.[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level, mistAt: (x, z) => Math.min(1, (session.tileMap.mistAt?.(Math.floor(x), Math.floor(z)) ?? 0) / fadeCells) });
@@ -1193,22 +1181,17 @@ export async function mountVillage(ctx, params = {}) {
     const amb = data.day?.ambient;
     const ambient = { gusts: gustsAt(state.seed, seconds, amb), wind: state.wind, windy: windyOn(state.seed, dayIndex(state.clock.minutes), amb) };
     const hour = (state.clock.minutes % 1440) / 60;
-    // The small joys of the view (src/render/ambient3d.js): Tết, the rainbow and the wet ground after
-    // a rain, and the firefly on the horn of Nghé on its rare night.
+    // The small joys of the view (src/render/ambient3d.js): Tết, and the firefly on the horn of Nghé
+    // on its rare night.
     const today = dayIndex(state.clock.minutes);
     const nghe = state.entities.find((e) => e.follow);
     const ngheAt = nghe && rareOn(state.seed, today, amb).includes('firefly-horn') ? figures.placeOf(nghe.id) : null;
-    const heroAt = figures.placeOf('hero');
     motes.draw({
       t: time,
-      dt,
       night: state.sky?.night ?? 0,
       wind: state.wind,
       meal: mealAt(hour, amb),
       tet: isTet(today, amb),
-      rainbow: rainbowAt(rainOf(state.seed, today, data.day ?? undefined), hour, amb),
-      wet: whenOn({ wet: 4 }, state.seed, state.clock.minutes, amb, data.day ?? undefined),
-      hero: heroAt ? { ...heroAt, facing: hero()?.position.facing ?? 0 } : null,
       horn: ngheAt ? { x: ngheAt.x, y: ngheAt.y + ngheAt.height, z: ngheAt.z } : null,
     });
     const hp = hero().position;

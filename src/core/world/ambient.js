@@ -11,7 +11,6 @@ export const DEFAULT_AMBIENT = Object.freeze({
   year: { days: 40, tet: [20, 21] },
   rare: { chance: 0.05, kinds: ['kingfisher', 'golden-shoot', 'firefly-horn'] },
   star: { chance: 0.2, hour: [21, 3] },
-  rainbow: 3,
   windy: 0.35,
 });
 
@@ -84,6 +83,3 @@ export function puddlesAt(rainOf, minutes) {
   return Boolean((today && hour >= today.start) || (yesterday && hour < yesterday.end));
 }
 
-// A rainbow over the river for a while after a rain. rain: the rain of the day ({ start, end } in
-// hours, or null, from rainOf in systems/sky.js). Return true at the hour.
-export const rainbowAt = (rain, hour, a = DEFAULT_AMBIENT) => Boolean(rain) && hour >= rain.end && hour < rain.end + a.rainbow;

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { gustAt, gustsAt, mealAt, isTet, dayIndex, rareOn, starOn, windyOn, rainbowAt, DEFAULT_AMBIENT } from '../src/core/world/ambient.js';
+import { gustAt, gustsAt, mealAt, isTet, dayIndex, rareOn, starOn, windyOn, DEFAULT_AMBIENT } from '../src/core/world/ambient.js';
 import { load } from './helpers.js';
 
 const A = load('data/world/day.json').ambient;
@@ -21,7 +21,7 @@ test('a gust crosses the paddies first, then the hedge, then the trees', () => {
   assert.notDeepEqual([...Array(300).keys()].map((t) => gustAt(7, t, 'tree', A)), [...Array(300).keys()].map((t) => gustAt(8, t, 'tree', A)), 'another seed, other gusts');
 });
 
-test('the meals, the days of Tết on the calendar, and the rainbow after a rain', () => {
+test('the meals and the days of Tết on the calendar', () => {
   assert.equal(mealAt(6.5, A), true);
   assert.equal(mealAt(9, A), false);
   assert.equal(mealAt(17.2, A), true);
@@ -29,9 +29,6 @@ test('the meals, the days of Tết on the calendar, and the rainbow after a rain
   for (let d = 0; d < 2 * A.year.days; d++) if (isTet(d, A)) tet.push(d);
   assert.deepEqual(tet, [A.year.tet[0], A.year.tet[1], A.year.days + A.year.tet[0], A.year.days + A.year.tet[1]], 'two days, once a year');
   assert.equal(dayIndex(1440 * 20 + 600), 20);
-  assert.equal(rainbowAt({ start: 12, end: 14 }, 15, A), true);
-  assert.equal(rainbowAt({ start: 12, end: 14 }, 13, A), false, 'not while it rains');
-  assert.equal(rainbowAt(null, 15, A), false);
 });
 
 test('the rare things and the shooting stars come from the seed: the same seed gives the same days', () => {

@@ -139,13 +139,13 @@ Events: `jump { kind }` (`jump`, `hop`, or `fall`), `land { at }`, `splash`, and
 
 The world moves when the child does nothing, and it hides small joys for the child who looks. Nothing here teaches, counts, or gives: no reward, no count, no notebook entry, and no text. The child finds them or does not.
 
-- **Ambient motion** is in the renderer only, with no state (`src/render/voxel.js`, `src/render/ambient3d.js`; the look is in `docs/ART.md`). The pure rules are in `src/core/world/ambient.js`: the gusts (a gust crosses the paddies, then the hedge, then the trees), the meal times (smoke from the kitchens, steam from the rice pot), the year of the game (40 days; Tết on two of them), the rare days, the shooting star, the windy days (a kite), and the rainbow after a rain. All of them come from the seed and the clock, so the same seed gives the same days.
+- **Ambient motion** is in the renderer only, with no state (`src/render/voxel.js`, `src/render/ambient3d.js`; the look is in `docs/ART.md`). The pure rules are in `src/core/world/ambient.js`: the gusts (a gust crosses the paddies, then the hedge, then the trees), the meal times (smoke from the kitchens, steam from the rice pot), the year of the game (40 days; Tết on two of them), the rare days, the shooting star, and the windy days (a kite). All of them come from the seed and the clock, so the same seed gives the same days.
 - **Small joys with state** are entities of the life layer (`data/world/life.json`, placed by `tools/maps/era1.py`):
   - The buffalo of another family sleeps in the shade at noon and snores (the plan of the buffalo). A tap on a sleeping animal (target `sleeper`, command `poke`) makes it flick an ear (`flick`), and it sleeps on.
   - The ducklings by the paddies follow a hero who walks past (react `follow` with `when: walk`), and then go back.
   - A frog on a lily pad by the sand jumps into the river when the hero comes near (`hop`, `dive`) and comes back after a while.
   - Now and then the net of the fisher comes up with a fish, and he holds it up (`haul`; `joys.catch`).
-  - After the rain: puddles on the roads that splash (`splash`) while the ground is wet, footprints that fade, and a rainbow over the river for about a minute (the last two are in the renderer).
+  - After the rain: puddles on the roads that splash (`splash`) while the ground is wet. (The footprints in the wet ground and the rainbow are gone: the owner took them for bugs, #32. A rainbow comes back only as a soft painted arc in the print style, after the owner sees a picture of it.)
   - The earth roads keep flat puddles in their ruts from the start of a rain until a game day after its end (`puddlesAt` in `ambient.js`; the shader of the ground draws them).
   - At night: a shooting star on about one night in five.
   - Rare things from the seed, each on about one day in twenty: a kingfisher on a stake by the ford, a golden bamboo shoot in the low hedge, and a firefly on the horn of Nghé (in the renderer).
