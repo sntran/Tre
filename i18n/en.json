@@ -805,6 +805,8 @@
   "world.bridge.long": "Too long! It sticks out over there.",
   "ui.parents": "For parents",
   "ui.loading": "Loading...",
+  "loading.going": "On the way to {place}…",
+  "loading.slow": "The game is still getting the land ready. Wait a little.",
   "ui.saved": "Saved",
   "ui.save.exit": "Save and go to the title screen",
   "ui.continue": "Continue",

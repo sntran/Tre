@@ -15,22 +15,26 @@ import { planTravel, applyTravel } from '../world/travel.js';
 import { timeOfDay } from '../core/world/clock.js';
 import { createProjection, regionAreas, layoutSeals, heightBand } from '../world/geo.js';
 
-const NS = 'http://www.w3.org/2000/svg';
+export const SVG_NS = 'http://www.w3.org/2000/svg';
+const NS = SVG_NS;
 const FILLS = [C.greenPale, C.yellowPale, C.vermilionPale];
 const SEAL_PX = 20; // the largest radius of a seal on the screen; a small map has smaller seals
 const LABEL_PX = 15; // the size of a name on the screen
 
-function el(tag, attrs = {}, children = []) {
+export function svgEl(tag, attrs = {}, children = []) {
   const node = document.createElementNS(NS, tag);
   for (const [k, v] of Object.entries(attrs)) if (v !== null && v !== undefined) node.setAttribute(k, v);
   for (const c of children) if (c) node.append(c);
   return node;
 }
 
+const el = svgEl;
+
 const pathOf = (rings) => rings.map((r) => `M${r.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join('L')}Z`).join('');
 
-// The fixed parts of the map, made one time: land, regions, heights, rivers, and islands.
-function drawBase(svg, ctx, proj, eraSouth) {
+// The fixed parts of the map, made one time: land, regions, heights, rivers, and islands. The
+// loading screen draws the same map (src/ui/loading.js).
+export function drawBase(svg, ctx, proj, eraSouth) {
   const { data } = ctx;
   const geo = data.geo;
   const toMap = proj.toMap;
@@ -365,5 +369,5 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
   applyTravel(profile, plan);
   await ctx.save('travel');
   await say(ctx, 'world.arrive', { hours: plan.hours });
-  await ctx.go('village', { map: plan.entry.map, at: { x: plan.entry.x, y: plan.entry.y }, arrive: true });
+  await ctx.go('village', { map: plan.entry.map, at: { x: plan.entry.x, y: plan.entry.y }, arrive: true, from: here });
 });

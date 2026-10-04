@@ -1050,10 +1050,30 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     get angle() { return state.az; },
     // Put the camera at a point, and build the near chunks around it now (the start, a jump); the
     // far ones come in the next frames.
-    jump(x, y, z) {
+    jump(x, y, z, { build = true } = {}) {
       focus.set(x, y, z);
       place();
-      update(x, z, Infinity, 'full');
+      if (build) update(x, z, Infinity, 'full');
+    },
+    // Compile the shaders of the scene before the first frame, so that the first frame does not
+    // wait for them (the loading screen waits).
+    prepare() {
+      return Promise.resolve(renderer.compileAsync?.(scene, cam)).catch(() => {});
+    },
+    // Before the first frame (the loading screen): build the near chunks whose land is made, for
+    // at most ms milliseconds (all of them, with the land made at once, when ms is Infinity).
+    // Returns the counts of the near chunks: { total, ready (land made), built }.
+    warm(x, z, ms) {
+      update(x, z, ms, 'full');
+      const out = { total: 0, ready: 0, built: 0 };
+      for (const c of ring) {
+        if (c.level !== 'full') continue;
+        out.total += 1;
+        const built = chunks.get(c.key)?.level === 'full';
+        if (built || ready(c.cx, c.cz)) out.ready += 1;
+        if (built) out.built += 1;
+      }
+      return out;
     },
     // One frame: turn, follow, build the chunks of the ring, fade, and draw.
     // sky: { night, flood } from the world state. ambient: { gusts: { paddy, hedge, tree }, wind

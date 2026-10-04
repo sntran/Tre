@@ -22,6 +22,7 @@ import { startTimer, isTimeOver } from './rest.js';
 import { scenes, modals, registerScene, registerModal } from './registry.js';
 import { mountCreate } from './create.js';
 import { mountVillage } from './village.js';
+import { showLoading } from './loading.js';
 import { startStory } from './storybook.js';
 
 // The scenes of play: a session of the learning log is open in them.
@@ -111,7 +112,11 @@ export async function startApp(root) {
       if (going) return null;
       if (!machine.send(name)) throw new Error(`No scene change from ${machine.state} to ${name}`);
       going = true;
+      // A new world for the village: the loading screen shows at once, until the world is drawn.
+      const loading = name === 'village' && !params.session ? ctx.beginLoading({ profile: ctx.profile, map: params.map ?? null, at: params.at ?? null, from: params.from ?? null, practice: params.practice ?? null }) : null;
       try {
+        // The screen draws before the work of the load.
+        if (loading) await loading.painted;
         if (current) current.unmount();
         current = null;
         ui.replaceChildren();
@@ -125,7 +130,12 @@ export async function startApp(root) {
           ctx.save('session');
         }
         current = await MOUNT[name](ctx, params);
+        // Only the village ends the loading screen itself, when its first frame is drawn.
+        if (name !== 'village') ctx.endLoading();
         if (ctx.logger && !ctx.logger.open && PLAY.has(name) && document.visibilityState !== 'hidden') ctx.logger.startSession({ practice: ctx.practiceId });
+      } catch (e) {
+        ctx.endLoading();
+        throw e;
       } finally {
         going = false;
       }
@@ -198,7 +208,31 @@ export async function startApp(root) {
       delete p.predictions;
     },
 
+    // The loading screen (src/ui/loading.js): it shows at once in the frame of the tap, and the
+    // village ends it when the world is drawn with the hero. opts: see showLoading.
+    loading: null,
+    loadTimes: null, // the times of the steps of the last load (ms), for the ?fps meter
+    beginLoading(opts = {}) {
+      if (ctx.loading && !ctx.loading.finished) {
+        if (opts.profile) ctx.loading.setProfile(opts.profile);
+        return ctx.loading;
+      }
+      ctx.loading = showLoading(ctx, opts);
+      return ctx.loading;
+    },
+    endLoading() {
+      const l = ctx.loading;
+      if (!l) return;
+      ctx.loading = null;
+      l.finish();
+      ctx.loadTimes = l.times();
+    },
+
     async startProfile(profile, isNew = false) {
+      // The loading screen first, in the frame of the tap.
+      const practice = ctx.practiceLink;
+      const loading = ctx.beginLoading({ profile, practice });
+      loading.report('data');
       ctx.profile = profile;
       // The questions of this play session: quizzes and exams avoid repeats.
       ctx.seen = createSeen();
@@ -208,11 +242,12 @@ export async function startApp(root) {
       await ctx.setLanguage(profile.settings.lang);
       setVoiceEnabled(profile.settings.voice);
       bus.emit('settings', profile.settings);
+      await loading.painted;
       ctx.startLog();
       ctx.makeLearner();
-      if (isNew) await ctx.save('new');
+      // The saves go one after the other, so the world does not wait for the first save.
+      if (isNew) ctx.save('new');
       // A practice link: the visit goes straight to the activity (the rules of the parent hold).
-      const practice = ctx.practiceLink;
       ctx.practiceLink = null;
       ctx.practiceNote = null;
       await ctx.go(isTimeOver(ctx) ? 'rest' : 'village', practice ? { practice } : {});
@@ -220,8 +255,11 @@ export async function startApp(root) {
     },
 
     async playProfile(id) {
+      // The loading screen shows in the frame of the tap; the profile loads after it.
+      ctx.beginLoading({ practice: ctx.practiceLink });
       const profile = await loadProfile(id);
       if (profile) await ctx.startProfile(profile);
+      else ctx.endLoading();
     },
 
     // Open a screen that a story effect asks for. Return true when the village stays.

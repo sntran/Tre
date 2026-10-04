@@ -22,10 +22,13 @@ import { speak } from './speak.js';
 import { createDialogueBox } from './dialogue.js';
 import { createRaidView } from './raid.js';
 import { createStream } from './stream.js';
+import { formatTimes } from '../core/loading.js';
 
 const STICK_R = 56; // the radius of the virtual stick, in screen pixels
 // The color of the dusk wash at full night: the hue of indigo (#2f4668) in the palette.
 const DUSK = Object.freeze({ hue: 215, saturation: 45, lightness: 42 });
+const WARM_MS = 40; // the time to build near chunks in each frame of the loading screen
+const WARM_WAIT_MS = 6000; // after this time, the near land that did not come is made at once
 const HOLD_MS = 220; // a press this long is a hold (walk toward the finger), not a tap
 const PERSON_PAD = 10; // screen pixels around the box of a person, for small fingers
 const PERSON_PAD_AT_PLACE = -6; // next to a place of a task: only the body of the person
@@ -64,6 +67,7 @@ export function terrainOf(map, tileTypes, tileMap, blocks = null) {
 
 // A clear message when the device cannot draw the world.
 function noWorld(ctx) {
+  ctx.endLoading();
   const box = h('div', { class: 'screen no-webgl' }, [
     h('div', { class: 'panel' }, [
       h('p', { text: t('ui.webgl.missing') }),
@@ -98,24 +102,36 @@ async function loadHeightsNear(data, map, x, y) {
   if (names.size) await data.moreHeights([...names]);
 }
 
+// The stream of the land of a map (one map at a time).
+function streamOf(map, data) {
+  if (!streams.has(map.key)) {
+    for (const [k, st] of streams) {
+      st.dispose();
+      streams.delete(k);
+    }
+    streams.set(map.key, createStream(map, data));
+  }
+  return streams.get(map.key);
+}
+
 // params: map, at, facing, after (talks after the start), arrive (the map name shows), session (a
 // session that already started, after an exit to this map), and practice (the activity of a
 // practice link: the visit starts at its place, src/core/practice.js).
 export async function mountVillage(ctx, params = {}) {
   const { data, profile } = ctx;
   const canvas = ctx.voxel;
-
-  let D;
-  try {
-    D = await loadDrawing();
-  } catch (e) {
-    console.error('The drawing code did not load', e);
-    return noWorld(ctx);
-  }
-  if (!D.hasWebGL()) return noWorld(ctx);
-  canvas.hidden = false;
+  // The loading screen (src/ui/loading.js) shows the steps of the load; each step lets one frame
+  // draw the screen before it goes on.
+  const loading = ctx.loading ?? null;
+  const nextFrame = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+  const next = async (step) => {
+    if (!loading) return;
+    loading.report(step);
+    await nextFrame();
+  };
 
   const session = params.session ?? villageSession(ctx);
+  let begin = null; // the start of the session, after the land around the hero is made
   if (!params.session) {
     // A visit from a practice link: the place, the clock, and the practice of the activity.
     const visit = params.practice ? practiceStart(data, profile, params.practice) : null;
@@ -124,9 +140,41 @@ export async function mountVillage(ctx, params = {}) {
     const at = visit?.at ?? params.at;
     // The height tiles of the land around the start come first (the land of a tile waits for them).
     const where = session.startPlace(mapId, { at });
+    await next('heights');
     await loadHeightsNear(data, where.map, where.x, where.y);
-    session.start(mapId, { at, facing: params.facing, after: params.after, ...(visit ? { clock: visit.clock, practice: visit.practice } : {}) });
+    // The workers make the land around the start while the drawing code loads.
+    streamOf(where.map, data).update(where.x, where.y);
+    begin = { mapId, where, opts: { at, facing: params.facing, after: params.after, ...(visit ? { clock: visit.clock, practice: visit.practice } : {}) } };
   }
+
+  let D;
+  try {
+    await next('code');
+    D = await loadDrawing();
+  } catch (e) {
+    console.error('The drawing code did not load', e);
+    return noWorld(ctx);
+  }
+  if (!D.hasWebGL()) return noWorld(ctx);
+
+  if (begin) {
+    // The land tiles around the hero, from the workers; land that does not come in time (no
+    // worker, no height tiles offline) is made at once by the start of the session.
+    if (loading) {
+      const stream = streamOf(begin.where.map, data);
+      const t0 = performance.now();
+      for (;;) {
+        stream.update(begin.where.x, begin.where.y);
+        const n = stream.near(begin.where.x, begin.where.y, 2);
+        loading.report('land', n.ready / n.total);
+        if (n.ready === n.total || performance.now() - t0 > WARM_WAIT_MS) break;
+        await nextFrame();
+      }
+    }
+    await next('world');
+    session.start(begin.mapId, begin.opts);
+  }
+  canvas.hidden = false;
   const mapData = session.map;
   const tileMap = session.tileMap;
   const terrain = session.terrain;
@@ -134,15 +182,8 @@ export async function mountVillage(ctx, params = {}) {
   // One view for each map, made once for its terrain. The far land and the mist fade into the
   // paper (mistAt: 0 in the land of the era, 1 deep in the mist).
   const fadeCells = mapData.mist?.fade ?? 12;
-  // The land around the hero is made in a worker before the hero and the view need it.
-  if (!streams.has(mapData.key)) {
-    for (const [k, st] of streams) {
-      st.dispose();
-      streams.delete(k);
-    }
-    streams.set(mapData.key, createStream(mapData, data));
-  }
-  const stream = streams.get(mapData.key);
+  // The land around the hero is made in the workers before the hero and the view need it.
+  const stream = streamOf(mapData, data);
   if (worlds.get(mapData.id)?.terrain !== terrain) {
     worlds.get(mapData.id)?.view.dispose();
     worlds.set(mapData.id, { terrain, view: D.createVoxelWorld(canvas, terrain, {
@@ -153,11 +194,13 @@ export async function mountVillage(ctx, params = {}) {
   }
   const view = worlds.get(mapData.id).view;
   const looks = data.figures.figures;
-  // The portraits of the hero, Nghé, and the people of this map, before any dialogue opens.
-  prerender(ctx, [
+  // The portraits of the hero, Nghé, and the people of this map, before any dialogue opens (after
+  // the loading screen, so that they do not take the frames of the load).
+  const prerenderAll = () => prerender(ctx, [
     { look: heroLookOf(ctx), size: 44 },
     ...['hero', 'nghe', ...mapData.npcs.map((n) => n.id)].map((id) => ({ look: speakerLookOf(ctx, id), size: 96 })),
   ]);
+  if (!loading) prerenderAll();
   // The world at rest: the smoke of the kitchens, the steam of the rice pot, the incense of the đình,
   // butterflies, a dragonfly, and a fish at the ford (src/render/ambient3d.js).
   const places = session.env.places;
@@ -794,8 +837,45 @@ export async function mountVillage(ctx, params = {}) {
     ctx.ui.append(debugPanel);
     debugPanel.replaceChildren(h('b', { text: 'skill events' }));
   }
+  // Before the first frame: the near chunks around the hero (the land of each from the workers),
+  // for at most WARM_MS in each frame, then the shaders of the view. The world waits. Then the
+  // first frame draws the world with the hero, and the loading screen goes in the frame after it.
+  let warming = loading ? 'chunks' : null;
+  let warmStart = performance.now();
+  let shaders = null; // 'wait' while the shaders compile, then 'ready'
+  function warmUp(now) {
+    const hp = hero().position;
+    stream.update(hp.x / 2, hp.z / 2);
+    // Land that does not come (no worker, no height tiles offline) is made at once after a time.
+    const ms = now - warmStart > WARM_WAIT_MS ? Infinity : WARM_MS;
+    const w = view.warm(hp.x / 2, hp.z / 2, ms);
+    loading.report('chunks', (w.ready + w.built * 2) / (w.total * 3));
+    if (w.built < w.total) return false;
+    if (!shaders) {
+      shaders = 'wait';
+      loading.report('figures');
+      view.prepare().then(() => { shaders = 'ready'; });
+    }
+    return shaders === 'ready';
+  }
+
   function frame(now) {
     if (!alive) return;
+    if (warming === 'done') {
+      // The first frame of the world is on the screen.
+      warming = null;
+      ctx.endLoading();
+      prerenderAll();
+    } else if (warming) {
+      if (!warmUp(now)) {
+        last = now;
+        requestAnimationFrame(frame);
+        return;
+      }
+      warming = 'done';
+      // The events of the start (a talk) show with the first frame.
+      flush();
+    }
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     time += dt;
@@ -827,6 +907,8 @@ export async function mountVillage(ctx, params = {}) {
       // The time of the last portrait render (src/render/portrait.js), for the check on a phone.
       portraitStats(ctx).then((p) => { portraitMs = p?.renders ? p.lastMs : null; });
       meter.textContent = `${Math.round((frames * 1000) / (now - since))} fps · ${s.calls} calls · ${Math.round(s.triangles / 1000)}k triangles${portraitMs === null ? '' : ` · portrait ${portraitMs.toFixed(1)} ms`}`;
+      // The times of the steps of the load (src/core/loading.js).
+      if (ctx.loadTimes) meter.textContent += `\nload: ${formatTimes(ctx.loadTimes)}`;
       frames = 0;
       since = now;
     }
@@ -1261,7 +1343,9 @@ export async function mountVillage(ctx, params = {}) {
   view.resize(size.width, size.height);
   figures.draw(1, 0);
   const h0 = hero().position;
-  view.jump(h0.x / 2, h0.y / 2 + 1.5, h0.z / 2);
+  // With the loading screen, the near chunks are built in the next frames (warmUp), so that the
+  // screen can draw the progress; with no loading screen, they are built now.
+  view.jump(h0.x / 2, h0.y / 2 + 1.5, h0.z / 2, { build: !loading });
   requestAnimationFrame(frame);
   // Show the new language in the top bar after a change in the parent area.
   const offLang = ctx.bus.on('lang', () => {
@@ -1276,12 +1360,13 @@ export async function mountVillage(ctx, params = {}) {
   });
   // The events of the start (the intro, the talks after a map change).
   queueMicrotask(() => {
-    if (alive) flush();
+    if (alive && !warming) flush();
   });
 
   return {
     unmount() {
       alive = false;
+      if (warming) ctx.endLoading();
       if (ctx.activeVillage === api) ctx.activeVillage = null;
       box?.close();
       session.leave();

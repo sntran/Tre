@@ -805,6 +805,8 @@
   "world.bridge.long": "Dài quá rồi, cháu ơi! Thừa ra đằng kia kìa.",
   "ui.parents": "Dành cho bố mẹ",
   "ui.loading": "Đang tải...",
+  "loading.going": "Đang đến {place}…",
+  "loading.slow": "Đất còn đang được dựng. Em chờ thêm một chút nhé.",
   "ui.saved": "Đã lưu",
   "ui.save.exit": "Lưu và về màn hình đầu",
   "ui.continue": "Chơi tiếp",
