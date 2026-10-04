@@ -30,7 +30,9 @@ export function factTable(mem = {}) {
 // Record a commit on a fact. ok: an efficient first-try success. day: the game day. set and
 // index: the set and the plot of the set, so that a missed fact comes back in the same set, after
 // `again` plots, in another form than `form`.
-export function recordFact(mem, key, { ok, day, set, index, form }, data) {
+// round: the count of the commits of all the activities of the skill (profile.factRound), so that a
+// missed fact comes back soon in any activity (activity: where it was missed).
+export function recordFact(mem, key, { ok, day, set, index, form, round, activity }, data) {
   const e = (mem[key] ??= { box: 0, due: 0, n: 0, miss: 0 });
   e.n += 1;
   e.last = day;
@@ -42,7 +44,7 @@ export function recordFact(mem, key, { ok, day, set, index, form }, data) {
     e.miss = (e.miss ?? 0) + 1;
     e.box = 0;
     e.due = day;
-    e.again = { set, after: index + data.again, form };
+    e.again = { set, after: index + data.again, form, ...(round !== undefined ? { round: round + data.again } : {}), ...(activity ? { activity } : {}) };
   }
   return e;
 }
@@ -71,7 +73,8 @@ const shares = (key, prev) => {
 };
 
 // Choose the fact of the next plot. ctx: { pool, mem, day, set, index, prev (the key of the last
-// plot), hard (the part of hard facts), not (keys to leave out) }.
+// plot), hard (the part of hard facts), not (keys to leave out), round (the round of all the
+// activities, optional) }.
 export function chooseFact(ctx, rng) {
   const { mem, day, set, index, prev, hard = 0 } = ctx;
   const not = new Set(ctx.not ?? []);
@@ -84,7 +87,9 @@ export function chooseFact(ctx, rng) {
   const e = (k) => mem[k];
   const weight = (k) => (hardFact(k) ? 1 + 3 * hard : 1);
   // A missed fact of this set comes back after `again` plots.
-  const back = pool.filter((k) => e(k)?.again?.set === set && e(k).again.after <= index).sort((x, y) => e(x).again.after - e(y).again.after);
+  // With the round of all the activities (ctx.round), a fact missed in any activity comes back.
+  const due = (k) => (ctx.round !== undefined && e(k)?.again?.round !== undefined ? e(k).again.round <= ctx.round : e(k)?.again?.set === set && e(k).again.after <= index);
+  const back = pool.filter((k) => e(k)?.again && due(k)).sort((x, y) => (e(x).again.round ?? e(x).again.after) - (e(y).again.round ?? e(y).again.after));
   if (back.length) return back[0];
   // The first plot of a set: a sure fact (the highest box), else the easiest new fact.
   if (index === 0) {
@@ -263,15 +268,16 @@ export function eventOf(seed, set, last, data) {
 // The offers of the next round: the plot of the schedule, and (for the forms where the child
 // chooses) another plot of the band, and a bigger plot at some levels. ctx: { data, level (1 to
 // the levels of the skill), ranges (the factor ranges of the levels of the skill), mem, day, set,
-// index, prev, used, counts, divideOpen, seed, done (the facts done right in this set) }.
+// index, prev, used, counts, divideOpen, seed, done (the facts done right in this set), round (the
+// round of all the activities) }.
 export function nextOffers(ctx) {
-  const { data, level, ranges, mem, day, set, index, prev, used = [], counts = {}, divideOpen = false, seed, done = [] } = ctx;
+  const { data, level, ranges, mem, day, set, index, prev, used = [], counts = {}, divideOpen = false, seed, done = [], round } = ctx;
   const levelData = data.levels[Math.min(level, data.levels.length) - 1];
   const range = ranges[Math.min(level, ranges.length) - 1];
   const rng = plotRng(seed, set, index);
   const pool = factPool(range);
   // A fact that the child did right in this set does not come again in the set.
-  const key = chooseFact({ pool, mem, day, set, index, prev, hard: levelData.hard, not: done }, rng);
+  const key = chooseFact({ pool, mem, day, set, index, prev, hard: levelData.hard, not: done, round }, rng);
   const forms = [...levelData.forms, ...(divideOpen && level >= 2 ? ['divide'] : [])];
   // A plot of the first round of a set is a plain plot.
   let form = index === 0 ? forms[0] : chooseForm({ forms, used, counts, avoid: mem[key]?.again?.form ?? null }, rng);
@@ -281,7 +287,7 @@ export function nextOffers(ctx) {
   const offers = [main];
   if (main.form === 'product' || main.form === 'rest') {
     for (let i = 1; i < data.offers; i++) {
-      const alt = chooseFact({ pool, mem, day, set, index, prev, hard: levelData.hard, not: [key, ...done] }, rng);
+      const alt = chooseFact({ pool, mem, day, set, index, prev, hard: levelData.hard, not: [key, ...done], round }, rng);
       offers.push(makePlot({ key: alt, form: main.form, range, levelData, rng, id: `plot-${i}` }));
     }
     if (data.bigger.includes(level)) {

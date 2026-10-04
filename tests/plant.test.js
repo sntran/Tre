@@ -36,6 +36,9 @@ test('the commit in the world: just right fills the plot; too few leaves the emp
   const mem = ses.profile.facts['math.mul.10'];
   assert.ok(Object.keys(mem).length >= 3);
   assert.ok(Object.values(mem).some((e) => e.miss >= 1), 'the missed facts are in the memory');
+  // One round for all the activities: a missed fact comes back in any of them (docs/HAMLET.md).
+  assert.equal(ses.profile.factRound, seen.filter((r) => r.full).length);
+  assert.ok(Object.values(mem).filter((e) => e.again).every((e) => e.again.activity === 'planting' && Number.isInteger(e.again.round)));
   assert.equal(ses.profile.planting.sets, 1);
 });
 

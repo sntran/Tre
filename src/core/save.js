@@ -378,9 +378,13 @@ export function validate(profile, { grades = null } = {}) {
         if (!/^\d{1,2}x\d{1,2}$/.test(key) || !isObj(e)) fail(`facts ${skill}.${key}`);
         for (const k of ['box', 'due', 'n', 'miss', 'last']) if (e[k] !== undefined) int(e[k], `facts ${skill}.${key}.${k}`, 0, 1e9);
         if (e.again !== undefined && (!isObj(e.again) || !Number.isInteger(e.again.set) || !Number.isInteger(e.again.after))) fail(`facts ${skill}.${key}.again`);
+        if (e.again?.round !== undefined) int(e.again.round, `facts ${skill}.${key}.again.round`, 0, 1e9);
+        if (e.again?.activity !== undefined && !/^[a-z-]{1,24}$/.test(String(e.again.activity))) fail(`facts ${skill}.${key}.again.activity`);
       }
     }
   }
+  // The round of all the activities that use the memory of the facts (the commits so far).
+  if (profile.factRound !== undefined) int(profile.factRound, 'factRound', 0, 1e9);
   // The planting of Xóm Ruộng (src/core/planting-session.js): the sets, and the set that goes on.
   if (profile.planting !== undefined) {
     const pl = profile.planting;

@@ -100,7 +100,7 @@ export function createPlanting(deps) {
     const level = Math.max(1, Math.min(mul.levels.length, l?.levelFor(def.skill) ?? 1));
     const mem = ((profile.facts ??= {})[def.skill] ??= {});
     const divideOpen = Boolean(skillOf(def.divide) && l?.unlocked?.(def.divide));
-    const { offers, levelData } = nextOffers({ data: def, level, ranges: mul.levels, mem, day: today(), set: s.set, index: s.index, prev: s.prev, used: s.used, counts: s.counts, divideOpen, seed: deps.seed(), done: s.done ?? [] });
+    const { offers, levelData } = nextOffers({ data: def, level, ranges: mul.levels, mem, day: today(), set: s.set, index: s.index, prev: s.prev, used: s.used, counts: s.counts, divideOpen, seed: deps.seed(), done: s.done ?? [], round: profile.factRound ?? 0 });
     // The neighbor child planted one row yesterday: the plot of the event is a plot with a row in.
     const placed = placeOffers(offers);
     if (!placed.length) return;
@@ -185,7 +185,8 @@ export function createPlanting(deps) {
     }
     const mem = ((profile.facts ??= {})[def.skill] ??= {});
     const ok = ev.result === 'exact' && ev.commits === 1;
-    recordFact(mem, ev.key, { ok, day: today(), set: s.set, index: s.index, form: ev.form }, def);
+    recordFact(mem, ev.key, { ok, day: today(), set: s.set, index: s.index, form: ev.form, round: profile.factRound ?? 0, activity: 'planting' }, def);
+    profile.factRound = (profile.factRound ?? 0) + 1;
     if (ok) (s.done ??= []).push(ev.key);
     s.used.push(ev.form);
     s.counts[ev.form] = (s.counts[ev.form] ?? 0) + 1;
