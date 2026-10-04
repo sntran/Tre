@@ -80,8 +80,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "event:duck"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -134,8 +134,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "event:duck"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -188,8 +188,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "event:duck"
+      "do": {
+        "type": "hands"
       }
     },
     {

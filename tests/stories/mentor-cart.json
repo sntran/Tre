@@ -77,8 +77,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "event:cart"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -170,8 +170,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "event:cart"
+      "do": {
+        "type": "hands"
       }
     },
     {

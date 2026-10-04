@@ -885,8 +885,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function tapEvent(id) {
     const tz = trialZone(`event-${id}`);
     if (tz?.zone.done) return;
+    // During the task, a tap on the person asks for help (docs/TASKS.md); the action button is the
+    // commit, and a tap on the place with empty hands is a check.
     if (tz) {
-      work(`event-${id}`, 'exact');
+      const key = `event-${id}`;
+      const r = mentoring.wave(key);
+      if (!r || r.move === 'wait' || r.move === 'tryFirst') mentoring.move(key, 'show');
       return;
     }
     const def = eventDef(id);

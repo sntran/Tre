@@ -88,8 +88,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "event:market"
+      "do": {
+        "type": "hands"
       }
     },
     {

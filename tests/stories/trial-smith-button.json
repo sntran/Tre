@@ -1,0 +1,32 @@
+{
+  "name": "trial-smith-button",
+  "about": {
+    "vi": "Thử thách của bác thợ rèn chỉ với nút hành động: An đi đến đống quặng, bấm nút để nhặt, đi đến lò, bấm nút để bỏ quặng vào; khi sắt đỏ rực, nút có hình giọt nước và An bấm nút để tôi sắt.",
+    "en": "The trial of the smith with the action button only: An walks to the ore heap and presses the button to pick up, walks to the forge and presses it to put the ore in; when the iron glows, the button shows the drop of water, and An presses it to quench the iron."
+  },
+  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "clock": 540,
+  "at": ["phu-dong", 53, 43],
+  "steps": [
+    { "expect": [{ "action": null }] },
+    { "tap": { "entity": "npc:smith" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "until": { "event": "call", "with": { "key": "mentor.first.you" }, "timeout": 15 } },
+    { "expect": [{ "entity": "trough:smith", "look": "trough-full" }] },
+    { "walk": { "to": [58.5, 41.5] } },
+    { "expect": [{ "action": { "act": "pick", "icon": "hand" } }] },
+    { "do": { "type": "hands" } },
+    { "until": { "event": "pick", "timeout": 5 } },
+    { "walk": { "to": [50.5, 43.5] } },
+    { "expect": [{ "action": { "act": "put", "icon": "hand" } }] },
+    { "do": { "type": "hands" } },
+    { "until": { "event": "fire", "timeout": 5 } },
+    { "expect": [{ "action": { "act": "quench", "icon": "water" } }] },
+    { "until": { "event": "glow", "timeout": 15 } },
+    { "do": { "type": "hands" } },
+    { "until": { "event": "hiss", "timeout": 5 } },
+    { "expect": [{ "event": "pulse", "with": { "id": "iron:smith" } }, { "entity": "iron:smith", "look": "blade" }, { "flag": "trial.smith.done" }] },
+    { "read": true }
+  ]
+}

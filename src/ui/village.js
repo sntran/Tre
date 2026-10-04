@@ -28,6 +28,8 @@ const STICK_R = 56; // the radius of the virtual stick, in screen pixels
 // The color of the dusk wash at full night: the hue of indigo (#2f4668) in the palette.
 const DUSK = Object.freeze({ hue: 215, saturation: 45, lightness: 42 });
 const HOLD_MS = 220; // a press this long is a hold (walk toward the finger), not a tap
+const PERSON_PAD = 10; // screen pixels around the box of a person, for small fingers
+const PERSON_PAD_AT_PLACE = -6; // next to a place of a task: only the body of the person
 const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyQ', 'KeyE', 'KeyJ', 'Space']);
 
 // three.js and the drawing code load only when the village opens, so that the other screens
@@ -635,13 +637,13 @@ export async function mountVillage(ctx, params = {}) {
   }
 
   // The person or enemy under a screen point: the nearest one to the camera.
-  function personAt(p) {
+  // pad: screen pixels around the box of a person (smaller next to a place of a task).
+  function personAt(p, pad = 10) {
     let best = null;
     for (const q of persons()) {
       const f = figures.placeOf(q.entity);
       if (!f) continue;
       const b = view.screenBox({ x0: f.x - 0.7, x1: f.x + 0.7, y0: f.y, y1: f.y + f.height + 0.2, z0: f.z - 0.7, z1: f.z + 0.7 });
-      const pad = 10;
       if (p.x < b.x0 - pad || p.x > b.x1 + pad || p.y < b.y0 - pad || p.y > b.y1 + pad) continue;
       const near = view.nearness(f.x, f.y, f.z);
       if (!best || near > best.near) best = { q, near };
@@ -719,10 +721,11 @@ export async function mountVillage(ctx, params = {}) {
     const plank = thingAt(p);
     if (plank) return plank.item.fixed ? { thing: plank.id, along: plank.along } : { thing: plank.id };
     // During a task, a place of the task (the forge, the trough, the basket) comes before a person
-    // who stands next to it (docs/TASKS.md).
+    // who stands next to it: the box of the person has no pad there and is a little smaller, so
+    // that only a tap on the body of the person is for the person (docs/TASKS.md).
     const hit = view.pick(p.x, p.y, { things: true });
     const place = hit && session.taskPlaceAt(hit.x, hit.y);
-    const person = place ? null : personAt(p);
+    const person = personAt(p, place ? PERSON_PAD_AT_PLACE : PERSON_PAD);
     if (person) return { person: person.entity };
     if (!hit) return null;
     const thing = hit.who ? terrain.objects.find((o) => o.who === hit.who) : null;

@@ -75,8 +75,8 @@
       "wait": 2
     },
     {
-      "tap": {
-        "entity": "event:cart"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -104,8 +104,8 @@
       "wait": 3
     },
     {
-      "tap": {
-        "entity": "event:cart"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -133,8 +133,8 @@
       "wait": 3
     },
     {
-      "tap": {
-        "entity": "event:cart"
+      "do": {
+        "type": "hands"
       }
     },
     {

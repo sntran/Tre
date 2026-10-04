@@ -89,8 +89,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "event:cart"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -155,8 +155,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "event:cart"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -184,8 +184,8 @@
       "read": true
     },
     {
-      "tap": {
-        "entity": "event:cart"
+      "do": {
+        "type": "hands"
       }
     },
     {

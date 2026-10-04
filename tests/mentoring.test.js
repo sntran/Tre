@@ -43,7 +43,7 @@ test('a check at the place, then a change before the commit, is a self-correctio
     { until: { event: 'check', timeout: 5 } },
     ...put,
     { expect: [{ event: 'selfFix', with: { key: 'event-cart' } }] },
-    { tap: { entity: 'event:cart' } },
+    { do: { type: 'hands' } },
     { until: { event: 'open', with: { screen: 'say' }, timeout: 30 } },
     { read: true },
   ]), { log: true, onEnd: (x) => { end = x; } });

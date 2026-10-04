@@ -34,7 +34,7 @@ After the planting (`docs/PLANTING.md`), Xóm Ruộng has three more activities.
 
 - The talk of the fisher uncle opens a set. In a bubble he says the fish that the feast needs ("Mâm cỗ cần hai mươi con cá."). His traps lie on the bank. A small trap catches two fish, a middle one five, and a big one ten: the rings on a trap show its size.
 - **The child carries traps** to the stakes in the stream (the place system and the zone rule `spots`: one trap at each stake, the free stake nearest to the tap). A tap on a trap in the stream takes it up again.
-- A tap on the fisher opens the gate of the small weir upstream. The traps fill one after another, each with its number of fish:
+- A tap on the weir, or the action button (the weir), opens the gate of the small weir upstream; the fisher uncle opens it. The traps fill one after another, each with its number of fish:
   - **just right:** the fish are what the feast needs, and no trap is empty;
   - **too few:** the full traps stay; the fisher waits for another trap;
   - **too many:** the fisher keeps the fish of the feast, and the extra fish swim on, free.

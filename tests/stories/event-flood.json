@@ -85,8 +85,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "event:flood"
+      "do": {
+        "type": "hands"
       }
     },
     {

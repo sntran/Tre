@@ -18,7 +18,7 @@
 //   feed (rice for Gióng): each ten bowls in the pot, Gióng eats and grows one head taller.
 //   exact (a small event of the day, ../days.js): things of sizes go on a place (stones under the
 //     wheel of a cart, pails of water into the ditch, coins on the mat of a seller, lost ducks into
-//     the pen); a tap on the person is the commit of the sum. Exact: done. Too few: the person
+//     the pen); the action button is the commit of the sum (a tap on the person asks for help). Exact: done. Too few: the person
 //     waits. Too many: the last things go back to the pile.
 // When a task is done, the event "trial" goes out (the session sets the flag and gives the reward).
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'events'];

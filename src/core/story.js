@@ -323,6 +323,14 @@ export function checkFact(fact, ctx) {
     if (found === (fact.not ?? false)) return fact.not ? `an event ${fact.event} came` : `no event ${fact.event} ${JSON.stringify(fact.with ?? {})}`;
     return null;
   }
+  if (fact.action !== undefined) {
+    // The action button: what it does now and its picture (null: dim, with nothing to do).
+    const a = session.action();
+    if (fact.action === null) return a ? `the action button does ${a.act}` : null;
+    if (!a) return 'the action button is dim';
+    for (const k of ['act', 'icon']) if (fact.action[k] !== undefined && a[k] !== fact.action[k]) return `the action button has the ${k} ${a[k]}, not ${fact.action[k]}`;
+    return null;
+  }
   if (fact.flag) {
     const want = fact.is ?? true;
     if (Boolean(session.profile.flags[fact.flag]) !== want) return `the flag ${fact.flag} is not ${want}`;

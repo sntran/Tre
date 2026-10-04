@@ -369,3 +369,10 @@ Facts to check:
 - The fish trap (lờ) of bamboo, the small weir of bamboo across a stream, and feeding ducks from a trough are old customs of the Red River delta. The sizes of the traps (two, five, and ten fish, shown by rings) are a picture for the game, not a real measure.
 - The feast of the new rice (lễ cơm mới) is an old custom after the harvest; in the game it comes when the table has eggs, fish, and the new rice, on any day of the year.
 - The bronze drum (trống đồng) and a dance to it: the drums of the Đông Sơn culture show dancers with feathers. The dancers of the game wear the clothes of the hamlet; please check them for the time of the Hùng Kings (`docs/ART.md`).
+
+## 18. Taps, the action button, and the next step (#31)
+
+New texts to check (keys in `i18n/vi.json` and `i18n/en.json`):
+
+- The action button: `ui.action` (its name for a screen reader; the button itself has a picture and no words) and the help of the keys `ui.keys` (Space does the hands, as the action button).
+- The first step that a person shows at the start of a task: `mentor.first` ("Watch: take one from the heap there, and put it here."), `mentor.first.you` (after it), and the lines of the tasks with no heap: `mentor.woodcutter.first`, `mentor.ducks.first`, `mentor.drum.first`. These lines are common to many people: check that they fit the teacher, the smith, the healer, and the fisher, who say "cháu" to the child elsewhere.
