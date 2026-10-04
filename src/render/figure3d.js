@@ -128,6 +128,7 @@ export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
 // kneels, the general lifts his staff; Nghé lowers her horns in a charge; the fisher holds up a
 // fish).
 const WANTS = { point: 'point', catch: 'lift', sit: 'rest', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns', pole: 'pole', laugh: 'happy' };
+const PULSE = 0.4; // seconds: a figure pulses once when the action button acts on it
 const HOP = 0.5; // seconds of the hop of a dancer (the hop of src/core/world/systems/hamlet.js)
 const HOP_UP = 0.7; // blocks: the height of the hop
 
@@ -321,6 +322,9 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         if (planes && !inView(planes, { x: f.at.x, y: f.at.y + L.height / 2, z: f.at.z }, Math.max(1, L.height))) continue;
         L.root.position.set(f.at.x, f.at.y, f.at.z);
         L.root.rotation.y = lerpAngle(a.facing, b.facing, t);
+        // The thing that the action button acted on pulses once (a little bigger, then back).
+        if (f.pulse > 0) f.pulse = Math.max(0, f.pulse - dt);
+        L.root.scale.setScalar(f.pulse > 0 ? 1 + 0.18 * Math.sin(Math.PI * (1 - f.pulse / PULSE)) : 1);
         for (const [name, r] of Object.entries(pose.rot)) L.nodes[name]?.rotation.set(r[0], r[1], r[2]);
         if (L.hangs.length) {
           // The parts that hang follow the air that the figure feels, with a lag, on top of the pose.
@@ -414,6 +418,11 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       }
     },
     // The place of an entity as it is drawn now (world units), and its height.
+    // The figure of an entity pulses once (the action button acted on it).
+    pulse(id) {
+      const f = figures.get(id);
+      if (f) f.pulse = PULSE;
+    },
     placeOf(id) {
       const f = figures.get(id);
       return f?.at ? { ...f.at, height: f.height } : null;

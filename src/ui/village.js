@@ -257,7 +257,40 @@ export async function mountVillage(ctx, params = {}) {
   // The jump (src/core/world/jump.js): a round button at the bottom right, and the key J.
   const jumpBtn = h('button', { class: 'turn-btn jump-btn', type: 'button', 'aria-label': t('ui.jump'), title: t('ui.jump') }, [img('ui/jump', 'btn-icon')]);
   jumpBtn.addEventListener('click', () => send({ type: 'jump' }));
-  const turns = h('div', { class: 'turns' }, [waveBtn, turnLeft, turnRight, jumpBtn]);
+  // The action button (docs/TASKS.md): the hands, and the finish of a task in reach, as Space. It
+  // shows a picture of what it will do now, and it is dim when there is nothing to do. While the
+  // jar of feed is in reach, the button pours as long as the finger stays on it.
+  const actIcon = img('ui/hand', 'btn-icon');
+  const actBtn = h('button', { class: 'turn-btn act-btn dim', type: 'button', 'aria-label': t('ui.action'), title: t('ui.action') }, [actIcon]);
+  let actNow = null;
+  let actHold = false;
+  actBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (busy || !actNow) return;
+    if (actNow.hold) {
+      actHold = true;
+      send({ type: 'hold', on: true });
+    } else send({ type: 'hands' });
+  });
+  const actUp = () => {
+    if (!actHold) return;
+    actHold = false;
+    send({ type: 'hold', on: false });
+  };
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actBtn.addEventListener(ev, actUp);
+  // The picture of the button follows the hands and the task in reach.
+  let actWait = 0;
+  function updateAction(dt) {
+    actWait -= dt;
+    if (actWait > 0) return;
+    actWait = 0.15;
+    const a = busy ? null : session.action();
+    const icon = a?.icon ?? 'hand';
+    if (icon !== actNow?.icon) actIcon.src = actIcon.src.replace(/ui\/[a-z-]+\.svg/, `ui/${icon}.svg`);
+    actBtn.classList.toggle('dim', !a);
+    actNow = a;
+  }
+  const turns = h('div', { class: 'turns' }, [waveBtn, turnLeft, turnRight, jumpBtn, actBtn]);
   // The paper of the print over the world: grain and a soft vignette.
   const paper = h('div', { class: 'world-paper' });
   // The dusk over the world: an indigo wash with warm pools around the lanterns, and the rain.
@@ -595,6 +628,8 @@ export async function mountVillage(ctx, params = {}) {
       keys.add(e.code);
       e.preventDefault();
     } else {
+      // Space up: the pour of the jar stops (as the finger leaves the action button).
+      if (e.code === 'Space') send({ type: 'hold', on: false });
       keys.delete(e.code);
     }
   }
@@ -770,6 +805,7 @@ export async function mountVillage(ctx, params = {}) {
     last = now;
     time += dt;
     sendInput();
+    updateAction(dt);
     // The world moves in fixed steps; the drawing is smooth between two steps. A story of the
     // storybook can play faster (&speed=4).
     acc += dt * (book?.speed ?? 1);
@@ -906,6 +942,7 @@ export async function mountVillage(ctx, params = {}) {
       case 'hud': updateHud(); return;
       case 'sound': ctx.bus.emit('sound', ev.sound); return;
       case 'tapfx': showTap(ev.x, ev.y, ev.h); return;
+      case 'pulse': figures.pulse(ev.id); return;
       case 'gift':
         for (const [item, n] of Object.entries(ev.give)) {
           for (let i = 0; i < n; i++) flyToCounter(ev.from, item, ev.delay + i * 0.15);

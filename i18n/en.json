@@ -1257,7 +1257,7 @@
   "research.move.offer": "Offer help",
   "ui.wave": "Wave for help",
   "ui.jump": "Jump",
-  "ui.keys": "Keys: the arrows or W A S D to walk, Shift to run, J to jump, Space to pick up or put down, Q and E to turn the view. On a touch screen: the stick at the bottom left, and the jump button at the bottom right.",
+  "ui.keys": "Keys: the arrows or W A S D to walk, Shift to run, J to jump, Space for the hands (pick up, put down, or finish the task in reach, as the action button), Q and E to turn the view. On a touch screen: the stick at the bottom left; the jump button and the large action button at the bottom right. The picture on the action button shows what it will do.",
   "place.xomruong": "Xóm Ruộng, the hamlet of the paddies",
   "npc.planter.name": "The planter",
   "npc.duck-girl.name": "The duck girl",
@@ -1465,5 +1465,6 @@
   "hamlet.point.ducks": "The duck girl at the pond needs help to feed the ducks.",
   "hamlet.point.traps": "The fisher uncle at the stream needs help with the traps.",
   "hamlet.point.drum": "The old drummer in the đình yard waits for a child at the bronze drum.",
-  "hamlet.feast": "Dusk, and the table is full: eggs, fish, and the new rice. The feast of the new rice begins, and everyone dances to the drum!"
+  "hamlet.feast": "Dusk, and the table is full: eggs, fish, and the new rice. The feast of the new rice begins, and everyone dances to the drum!",
+  "ui.action": "The hands"
 }

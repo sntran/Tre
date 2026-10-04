@@ -1424,6 +1424,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else worldCommand(state, { type: 'drop', id: 'hero' });
       return;
     }
+    const best = nearestThing(hp);
+    if (best) worldCommand(state, { type: 'pick', id: 'hero', item: best.id });
+  }
+  // The nearest thing in reach that the hands can pick up (on a span, only its last plank).
+  function nearestThing(hp) {
     let best = null;
     for (const e of query(state, 'item', 'position')) {
       if (e.hidden || e.item.set || e.item.fixed || e.item.kind === 'rod') continue;
@@ -1433,7 +1438,80 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const d = inSpan ? distHb(hp, zone.position) : distHb(hp, middleOf(e)) - e.item.size / 2;
       if (d <= REACH && (!best || d < best.d)) best = { e, d };
     }
-    if (best) worldCommand(state, { type: 'pick', id: 'hero', item: best.e.id });
+    return best?.e ?? null;
+  }
+
+  // The action of the hands now (the action button, and Space; docs/TASKS.md): { act, icon,
+  // target (the entity that pulses when it acts), run, hold (the act goes on while the button is
+  // down) }, or null when there is nothing to do. The finish of a task in reach comes first; then
+  // the hands put the thing that they hold, or pick up the nearest thing.
+  function action() {
+    if (screen || busy || hero().fall || raidOn()) return null;
+    const hp = hero().position;
+    const near = (p, r = REACH + 3) => Boolean(p) && distHb(hp, p) <= r;
+    const open = (id) => {
+      const tz = trialZone(id);
+      return tz && !tz.zone.done ? tz : null;
+    };
+    const person = (ref) => persons().find((q) => q.kind === 'npc' && q.ref === ref) ?? null;
+    // Walk to a person of a task, turn to the person, and do the work.
+    const toPerson = (ref, fn) => () => {
+      const q = person(ref);
+      if (!q) return fn();
+      walkToThing(q, () => {
+        worldCommand(state, { type: 'face', id: 'hero', x: q.x * 2, z: q.y * 2 });
+        fn();
+      });
+    };
+    const held = getEntity(state, holding());
+    if (!held) {
+      // The teacher: tie the rods on the mat.
+      const mat = zoneOf('mat');
+      if (open('scholar') && mat?.zone.items.length && near(mat.position)) return { act: 'tie', icon: 'rope', target: 'band:scholar', run: () => work('scholar', 'tie') };
+      // The smith and the iron horse: quench the glowing iron; blow the bellows on the lumps.
+      for (const id of ['smith', 'horse']) {
+        const tz = open(id);
+        if (tz && tz.zone.heat !== null && tz.zone.heat !== undefined && !tz.zone.bent && near(tz.zone.anvil)) return { act: 'quench', icon: 'water', target: tz.zone.iron ?? 'iron:smith', run: () => work(id, 'quench') };
+      }
+      const hearth = zoneOf('hearth');
+      if (open('horse')?.zone.heat === null && hearth?.zone.items.length && near(hearth.position)) return { act: 'blow', icon: 'fire', target: hearth.id, run: () => work('horse', 'blow') };
+      // The healer takes the basket; the woodcutter cuts at the marks.
+      const basket = zoneOf('basket');
+      if (open('healer') && basket?.zone.items.length && (near(basket.position, REACH + 6) || near(getEntity(state, 'npc:healer')?.position))) return { act: 'give', icon: 'basket', target: 'basket:healer', run: toPerson('healer', () => work('healer', 'give')) };
+      const wood = open('woodcutter');
+      if (wood?.zone.marks?.length && !wood.zone.cut && (near(wood.zone.stem, REACH + 8) || near(getEntity(state, 'npc:woodcutter')?.position))) return { act: 'cut', icon: 'knife', target: 'stem:woodcutter', run: toPerson('woodcutter', () => work('woodcutter', 'cut')) };
+      // A small event of the day: the things on its place are the commit.
+      for (const z of query(state, 'zone')) {
+        if (z.zone.rule !== 'exact' || !String(z.zone.task).startsWith('trial-event-')) continue;
+        const id = z.zone.task.slice(12);
+        if (!open(`event-${id}`) || !z.zone.items.some((i) => !getEntity(state, i)?.item.fixed) || !near(z.position, REACH + 6)) continue;
+        return { act: 'give', icon: 'hand', target: z.id, run: () => work(`event-${id}`, 'exact') };
+      }
+      // Xóm Ruộng: the planter plants; the fisher uncle opens the weir; the bronze drum; the jar.
+      if (planting.tapPlanter() === 'commit' && (near(getEntity(state, 'npc:planter')?.position, REACH + 8) || plotsOf(state).some((p) => near({ x: p.ox, z: p.oz + p.depth }, REACH + 8)))) return { act: 'plant', icon: 'seedling', target: 'npc:planter', run: toPerson('planter', () => work('plant', 'plant')) };
+      const traps = hamlet.round('traps');
+      const fresh = (getEntity(state, 'zone:traps-stream')?.zone.items ?? []).some((i) => !getEntity(state, i)?.item.set);
+      if (traps && !traps.done && !traps.fill && fresh) return { act: 'open', icon: 'weir', target: 'hamlet:weir', run: toPerson(hamlet.personOf('traps'), () => work('traps', 'open')) };
+      const drum = hamlet.round('drum');
+      if (drum && !drum.done) {
+        const d = query(state, 'hamletTap', 'position').filter((e) => e.hamletTap.act === 'drum' && near(e.position, REACH + 1)).sort((a, b) => distHb(hp, a.position) - distHb(hp, b.position))[0];
+        if (d) return { act: 'drum', icon: 'drum', target: d.id, run: () => work('drum', 'tap', { which: d.hamletTap.which ?? 0 }) };
+      }
+      const ducks = hamlet.round('ducks');
+      const jar = getEntity(state, 'hamlet:jar');
+      if (ducks && !ducks.done && !ducks.eat && jar && near(jar.position, REACH + 1)) return { act: 'pour', icon: 'jar', target: jar.id, hold: true, run: () => hold(true) };
+    }
+    // The hands: put the thing in reach of a place, or pick up the nearest thing.
+    if (held) return { act: 'put', icon: 'hand', target: held.id, run: handsKey };
+    const thing = nearestThing(hp);
+    return thing ? { act: 'pick', icon: 'hand', target: thing.id, run: handsKey } : null;
+  }
+  // The action button (or Space): do the action of the hands, and the thing pulses once.
+  function act() {
+    const a = action();
+    if (!a) return;
+    a.run();
+    emit({ type: 'pulse', id: a.target });
   }
 
   // A tap: the hero, a plank outline, a plank, a person, a thing with a trigger zone, or a place
@@ -1852,7 +1930,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (type === 'tap') tap(cmd.target ?? {});
-    else if (type === 'hands') handsKey();
+    else if (type === 'hands') act();
     // A wave: the child calls the person of the task (docs/MENTOR.md).
     else if (type === 'wave') mentoring.wave();
     else if (type === 'jump') jump();
@@ -1907,6 +1985,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     heroCell,
     holding,
     middleOf,
+    // The action of the hands now, for the action button: { act, icon, target, hold } or null.
+    action() {
+      const a = action();
+      return a ? { act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold) } : null;
+    },
     get state() { return state; },
     get map() { return map; },
     get tileMap() { return tileMap; },
