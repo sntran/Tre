@@ -556,8 +556,8 @@ export function workThing(look) {
       const [color, h] = STAGES[look.stage] ?? STAGES.planted;
       const parts = [];
       for (let i = 0; i < Math.max(1, Math.min(14, look.n ?? 1)); i++) {
-        parts.push(P(`s${i}`, [0.18, h, 0.18], color, [i, h / 2, 0]));
-        parts.push(P(`l${i}`, [0.34, 0.1, 0.1], color, [i + 0.08, h * 0.75, 0.05]));
+        parts.push(P(`s${i}`, [0.34, h, 0.34], color, [i, h / 2, 0]));
+        parts.push(P(`l${i}`, [0.62, 0.16, 0.2], color, [i, h * 0.8, 0]));
       }
       return still(parts, h);
     }
