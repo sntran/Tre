@@ -352,3 +352,20 @@ Facts to check:
 - Xóm Ruộng is not a historical place, and its people are not real people. Rice planting by hand from bundles of seedlings (bó mạ) from a seedbed (ruộng mạ), and the planting song (hò cấy), are old customs of the Red River delta; please check the clothes and the tools of the planter for the time of the Hùng Kings (`docs/ART.md`).
 - The bronze drum (trống đồng) in the đình yard: the drums of the Đông Sơn culture are from the time of the Hùng Kings; the đình itself is a later building (see question 24 in `QUESTIONS.md`).
 
+
+## 17. The ducks, the fish traps, the drum dance, and the feast (#23)
+
+New texts to check (keys in `i18n/vi.json` and `i18n/en.json`):
+
+- The duck girl: `dlg.duck-girl.trial.n1`, `ducks.show.groups`, `ducks.show.double`, `ducks.show.mixed`, `ducks.exact`, `ducks.few`, `ducks.many`, the ends of a set (`dlg.duck-girl.set.done.n1`, `dlg.duck-girl.set.stop.n1`, `dlg.duck-girl.practice.end.n1`). She says "chị" and the child is "em".
+- The fisher uncle: `dlg.fisher-uncle.trial.n1`, `traps.need`, `traps.need.given`, `traps.exact`, `traps.few`, `traps.many`, `traps.wait`, the ends of a set (`dlg.fisher-uncle.set.*`, `dlg.fisher-uncle.practice.end.n1`).
+- The old drummer: `dlg.drummer.trial.n1`, `drum.show.one`, `drum.show.middle`, `drum.show.two`, `drum.clean`, `drum.done`, `drum.wait`, the ends of a set (`dlg.drummer.set.*`, `dlg.drummer.practice.end.n1`).
+- The small events (`hamlet.event.duck-runs`, `hamlet.event.kingfisher`, `hamlet.event.child-joins`), the lines that point to another station (`hamlet.point.*`), the feast (`hamlet.feast`), and the lines of the mentors (`mentor.ducks.mark`, `mentor.traps.*`, `mentor.drum.mark`, `mentor.picture.duck-girl`, `mentor.picture.fisher-uncle`, `mentor.picture.drummer`).
+- The practice links: `practiceLink.cho-vit-an.*`, `practiceLink.dat-lo.*`, `practiceLink.mua-trong.*`.
+- Removed: the one line of each person who was not ready (`dlg.duck-girl.idle.n1`, `dlg.fisher-uncle.idle.n1`, `dlg.drummer.idle.n1`).
+
+Facts to check:
+
+- The fish trap (lờ) of bamboo, the small weir of bamboo across a stream, and feeding ducks from a trough are old customs of the Red River delta. The sizes of the traps (two, five, and ten fish, shown by rings) are a picture for the game, not a real measure.
+- The feast of the new rice (lễ cơm mới) is an old custom after the harvest; in the game it comes when the table has eggs, fish, and the new rice, on any day of the year.
+- The bronze drum (trống đồng) and a dance to it: the drums of the Đông Sơn culture show dancers with feathers. The dancers of the game wear the clothes of the hamlet; please check them for the time of the Hùng Kings (`docs/ART.md`).

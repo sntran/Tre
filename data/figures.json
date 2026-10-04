@@ -1235,7 +1235,8 @@
     },
     "duck-big": {
       "kind": "duck",
-      "big": true
+      "big": true,
+      "size": 1.3
     },
     "dancer-red": {
       "skin": "skin2",
@@ -1267,6 +1268,15 @@
       "bottomKind": "shorts",
       "hair": "tufts",
       "face": 1
+    },
+    "duck-feed": {
+      "kind": "duck",
+      "size": 1.3
+    },
+    "duck-feed-brown": {
+      "kind": "duck",
+      "coat": "brown",
+      "size": 1.3
     }
   }
 }

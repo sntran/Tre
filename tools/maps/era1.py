@@ -390,7 +390,7 @@ E.places = {
     # of the đình (a second group stands behind the first).
     'drum-bronze': {'x': 17.4, 'y': 15.2},
     'drum-bronze-2': {'x': 18.6, 'y': 15.2},
-    'dancers': {'x': 15.4, 'y': 17.2},
+    'dancers': {'x': 15.3, 'y': 18.0},
 }
 E.zones = [{'id': 'paddy', 'x': 4, 'y': 2, 'w': 10, 'h': 10, 'task': 'paddy'}]
 E.life = [

@@ -560,7 +560,7 @@ export function thingLook(key) {
 // The feed of one scoop takes this length of the trough (half blocks): a notch on the side of the
 // trough for each fifth scoop, and a bigger notch for each tenth.
 export const SCOOP_LENGTH = 0.2;
-const RINGS = { 2: 1.2, 5: 1.8, 10: 2.6 }; // the length of a fish trap (half blocks) for its rings
+const RINGS = { 2: 1.6, 5: 2.4, 10: 3.4 }; // the length of a fish trap (half blocks) for its rings
 const STAGES = { planted: ['greenPale', 0.8], green: ['green', 1.2], tall: ['greenDeep', 1.7], gold: ['yellow', 1.9] };
 // The water of a paddy stands over the ground (WATER.paddy in src/world/terrain.js): a seedling
 // rises from under the water.
@@ -609,13 +609,13 @@ export function workThing(look) {
     // A fish trap (a lờ) of bamboo, lying along +z: a cone with a ring for each fish that it holds.
     case 'lo': {
       const len = RINGS[look.n] ?? 1.2 + look.n * 0.14;
-      const parts = [P('cone', [0.7, 0.7, len], 'yellow', [0, 0.35, 0]), P('mouth', [0.9, 0.9, 0.15], 'ochre', [0, 0.45, len / 2])];
-      for (let i = 0; i < look.n; i++) parts.push(P(`ring${i}`, [0.76, 0.76, 0.05], 'wood', [0, 0.35, -len / 2 + (len * (i + 0.5)) / look.n]));
-      if (look.full) parts.push(P('fish', [0.4, 0.3, len * 0.7], 'ashLight', [0, 0.75, 0]), P('fishB', [0.3, 0.25, len * 0.5], 'ash', [0.2, 0.85, -0.1]));
-      return still(parts, 0.9);
+      const parts = [P('cone', [1, 1, len], 'yellow', [0, 0.5, 0]), P('mouth', [1.3, 1.3, 0.2], 'ochre', [0, 0.6, len / 2])];
+      for (let i = 0; i < look.n; i++) parts.push(P(`ring${i}`, [1.08, 1.08, 0.08], 'wood', [0, 0.5, -len / 2 + (len * (i + 0.5)) / look.n]));
+      if (look.full) parts.push(P('fish', [0.5, 0.35, len * 0.7], 'ashLight', [0, 1.1, 0]), P('fishB', [0.4, 0.3, len * 0.5], 'ash', [0.25, 1.2, -0.1]));
+      return still(parts, 1.3);
     }
     // A stake in the stream: a spot for a trap.
-    case 'trap-spot': return still([P('pole', [0.16, 1.4, 0.16], 'wood', [-0.6, 0.5, 0]), P('top', [0.22, 0.1, 0.22], 'ochre', [-0.6, 1.2, 0])], 1.3);
+    case 'trap-spot': return still([P('pole', [0.2, 2.6, 0.2], 'wood', [-0.8, 0.6, 0]), P('top', [0.28, 0.12, 0.28], 'ochre', [-0.8, 1.95, 0])], 2);
     // The small weir of bamboo across the stream: shut, or with its gate open.
     case 'weir': {
       const parts = [P('beam', [8, 0.25, 0.25], 'wood', [0, 1.2, 0])];
@@ -861,9 +861,11 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'deck') return deck(look.n, look.w);
   if (look.kind === 'nghe') return fine ? ngheFine() : nghe();
   if (look.kind === 'duck') {
-    // A big duck of the feeding (it eats twice the share of a small duck) is half as big again.
+    // A duck of the feeding stands out a little (size); a big duck (it eats twice the share of a
+    // small duck) is half as big again.
     const f = fine ? duckFine(look.coat) : duck(look.coat);
-    return look.big ? { ...f, scale: f.scale * 1.5 } : f;
+    const k = (look.size ?? 1) * (look.big ? 1.5 : 1);
+    return k === 1 ? f : { ...f, scale: f.scale * k };
   }
   if (look.kind === 'serpent') return serpent(look);
   if (look.kind === 'chicken') return fine ? chickenFine(look) : chicken(look);

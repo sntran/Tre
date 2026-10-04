@@ -255,6 +255,7 @@ Xóm Ruộng is a quiet hand-made hamlet north of Phù Đổng (the map `xom-ruo
 - A frame can be **quiet** (`quiet` in `data/world/land-giong.json`): no hamlet of the land comes within so many cells of its stamps.
 - The map script can set one cell (not a tile) with its ground and height (`cells` in `tools/maps/maplib.py`): the stepping stones of the ford of Phù Đổng, and the field of the plots of Xóm Ruộng (the ground of a ditch: still water with no seedlings).
 - The system `plant` (before `work`) takes the commands of the planting and plants row by row; the event `planted` ends a planting.
+- The other activities of the hamlet (the ducks, the fish traps, the drum dance) and the feast of the new rice: see `docs/HAMLET.md`. The system `hamlet` (before `work`) takes their commands and plays their timed parts; the events `fed`, `caught`, and `danced` end a commit. The zone rule `spots` holds one thing at each spot (a trap at a stake in the stream).
 
 ## The save
 

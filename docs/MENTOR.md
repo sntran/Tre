@@ -66,7 +66,7 @@ After each commit (and after a plank too long on the bridge, which the world jud
 
 ## The first users
 
-The bridge (the fisher, and Nghé for the cue), the small events of each day (the carter, the farmer, the seller), and the Five Trials (the teacher, the smith, the fisher, the healer, the woodcutter). The planter of Xóm Ruộng (`trial-plant`, `docs/PLANTING.md`) is one too; the other people of the hamlet come in #23.
+The bridge (the fisher, and Nghé for the cue), the small events of each day (the carter, the farmer, the seller), and the Five Trials (the teacher, the smith, the fisher, the healer, the woodcutter). The planter of Xóm Ruộng (`trial-plant`, `docs/PLANTING.md`) is one too, and so are the duck girl (`trial-ducks`), the fisher uncle (`trial-traps`), and the old drummer (`trial-drum`; `docs/HAMLET.md`). A mentor can have its own line for a move (`lines` of the mentor), in place of the common line.
 
 ## Tests and stories
 

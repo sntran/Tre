@@ -11,6 +11,7 @@ import { setupDucks, setupTraps, setupDrum, clearActivity, tzOf, ACTIVITIES } fr
 const NEXT = 2.5; // seconds from the end of a commit to the next round
 const DAY = 1440;
 const TASKS = { ducks: duckTask, traps: trapTask, drum: drumTask };
+const WATER_UP = 1; // half blocks: the surface of the stream over its bed (WATER.river in src/world/terrain.js)
 
 // deps: { data, profile, world (fn), env (fn), learner (fn), seed (fn), clock (fn: the minutes of
 // the game clock), rain (fn: the rain now, 0 to 1), say (key, params, mark, speaker), talk
@@ -95,7 +96,8 @@ export function createHamlet(deps) {
       const weir = at('weir');
       if (!first || !pile || !weir) return;
       const spots = Array.from({ length: def.traps.spots }, (_, k) => ({ x: first.x, z: first.z + k * def.traps.step }));
-      setupTraps(deps.world(), { index: s.index, level, key, task, pile, spots, y: first.y, weir });
+      // The traps float at the surface of the stream (the water stands over the bed).
+      setupTraps(deps.world(), { index: s.index, level, key, task, pile, spots, y: first.y + WATER_UP, weir: { ...weir, y: weir.y + WATER_UP } });
     } else {
       const drums = [at('drum-bronze'), at('drum-bronze-2')].filter(Boolean);
       const line = at('dancers');

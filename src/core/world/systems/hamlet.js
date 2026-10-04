@@ -65,7 +65,7 @@ export function setupDucks(world, round) {
   part(world, 'ducks', 'hamlet:trough', tr, `duck-trough-${t.ducks.length}`);
   part(world, 'ducks', 'hamlet:feed', tr, 'trough-feed-0');
   part(world, 'ducks', 'hamlet:jar', round.jar, 'feed-jar', { hamletTap: { act: 'ducks', what: 'jar' } });
-  t.ducks.forEach((d, i) => part(world, 'ducks', `hamlet:duck:${i}`, { x: tr.x + 1 + i * DUCK_STEP, y: tr.y, z: tr.z - 1.4 }, d.big ? (t.form === 'mixed' ? 'duck-brown' : 'duck-big') : 'duck'));
+  t.ducks.forEach((d, i) => part(world, 'ducks', `hamlet:duck:${i}`, { x: tr.x + 1 + i * DUCK_STEP, y: tr.y, z: tr.z - 1.4 }, d.big ? (t.form === 'mixed' ? 'duck-feed-brown' : 'duck-big') : 'duck-feed'));
   return tz;
 }
 
@@ -259,7 +259,7 @@ export function setupDrum(world, round) {
   t.groups.forEach((n, g) => {
     const d = round.drums[g] ?? round.drums[0];
     part(world, 'drum', `hamlet:drum:${g}`, d, 'bronze-drum', { hamletTap: { act: 'drum', what: 'drum', which: g } });
-    for (let k = 0; k < n; k++) part(world, 'drum', `hamlet:dancer:${g}:${k}`, { x: round.line.x + k * 1.6, y: round.line.y, z: round.line.z + g * 2.2, facing: Math.PI }, round.looks[g % round.looks.length]);
+    for (let k = 0; k < n; k++) part(world, 'drum', `hamlet:dancer:${g}:${k}`, { x: round.line.x + k * 2.2, y: round.line.y, z: round.line.z + g * 2.2, facing: Math.PI }, round.looks[g % round.looks.length]);
   });
   return tz;
 }

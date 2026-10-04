@@ -127,7 +127,9 @@ export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
 // The pose that the act of an entity asks for (a raid: an enemy on a trap sits, a stunned general
 // kneels, the general lifts his staff; Nghé lowers her horns in a charge; the fisher holds up a
 // fish).
-const WANTS = { point: 'point', catch: 'lift', sit: 'rest', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns', pole: 'pole' };
+const WANTS = { point: 'point', catch: 'lift', sit: 'rest', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns', pole: 'pole', laugh: 'happy' };
+const HOP = 0.5; // seconds of the hop of a dancer (the hop of src/core/world/systems/hamlet.js)
+const HOP_UP = 0.7; // blocks: the height of the hop
 
 // camera: the camera of the view (for the culling); without it, every figure draws. detail: one
 // level for all figures ('fine' or 'coarse', for the page of the figures); without it, the level
@@ -254,6 +256,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         // A rider sits on the back of Nghé; a swimmer at the ford is a little lower in the water;
         // in the surf the feet sink into the sand, so that the water comes to the knee.
         f.offset = (e.riding ? RIDER : 0) - (e.motion?.wade ? WADE : e.motion?.shallow && !e.control ? 0.3 : 0);
+        // A dancer of the drum dance hops on its beat: up and down in a short arc.
+        if (e.hop) f.offset += Math.sin(Math.PI * Math.min(1, e.hop.t / HOP)) * HOP_UP;
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
         // A mentor that points (the gesture of a move) comes before the act of the plan.
         // A jump: a crouch, then the pose in the air. At the landing, a puff of dust at the feet.
@@ -262,7 +266,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         }
         f.jumping = Boolean(e.jump);
         const jump = e.jump ? (e.jump.crouch > 0 ? 'crouch' : 'jump') : null;
-        f.want = e.riding ? 'ride' : jump ?? WANTS[e.gesture?.act ?? e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
+        f.want = e.riding ? 'ride' : jump ?? (e.hop ? 'jump' : null) ?? WANTS[e.gesture?.act ?? e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
         f.bend = e.react?.bend ?? null;
         // A tap on a sleeping animal: its ear flicks (in two held positions, as a print).
         f.flick = e.flick ?? 0;

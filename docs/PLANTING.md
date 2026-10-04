@@ -1,6 +1,6 @@
 # Xóm Ruộng and the planting of a paddy
 
-Xóm Ruộng is a quiet hamlet north of Phù Đổng for the activities of multiplication. Its first activity is the planting of a paddy (cấy lúa): the child brings just enough seedlings for a marked plot, and the planter plants them row by row. Rows of seedlings are an array, the picture of multiplication. The other activities of the hamlet (the ducks, the fish, the drum) come in #23; they share the memory of the facts.
+Xóm Ruộng is a quiet hamlet north of Phù Đổng for the activities of multiplication. Its first activity is the planting of a paddy (cấy lúa): the child brings just enough seedlings for a marked plot, and the planter plants them row by row. Rows of seedlings are an array, the picture of multiplication. The other activities of the hamlet (the ducks, the fish traps, the drum dance) and the feast of the new rice that links them are in `docs/HAMLET.md`; they share the memory of the facts. Each plot that the child plants gives a sheaf of the new rice to the feast table.
 
 | Part | File |
 | --- | --- |
@@ -18,7 +18,7 @@ Xóm Ruộng is a quiet hamlet north of Phù Đổng for the activities of multi
 - **A small hand-made stamp near Phù Đổng**, the same in every world (not a historical place, no name of a real person): three houses on stilts around one open yard, a paddy field with a seedbed, a duck pond, a stream with a small bamboo bridge, and a đình yard with a bronze drum (the prop `drum`). A small road goes from the north gate of Phù Đổng to the south edge of the hamlet.
 - **Quiet and easy to walk.** Each station is 8 to 12 cells from the middle of the yard, on a wide straight path with no prop in the way. Only the people of the stations live there, and each one stays at the station by day: the planter on the dike of the paddy, the duck girl at the pond, the fisher uncle at the stream, and the old drummer in the đình yard. The frame is quiet (`quiet` in `data/world/land-giong.json`): no hamlet of the land comes within 16 cells of it.
 - **The field** of the plots is still water with no seedlings (the ground of a ditch) until the child and the planter plant it. A dike goes across it, so that the field has two bands of plots; each plot stands on a dike, where the child can reach its edge. The seedbed is a field south of the dike, and the bundles lie on the dike by it.
-- **The practice links:** `xom-ruong` starts in the yard, and the child walks to any station; `cay-lua` starts at the planter (`data/world/practice.json`). In this issue only the planting works; the other people say one line ("Mai cô mới cần cháu giúp.").
+- **The practice links:** `xom-ruong` starts in the yard, and the child walks to any station; `cay-lua` starts at the planter (`data/world/practice.json`). The other people start their own activities (`docs/HAMLET.md`).
 
 ## What the child does
 
