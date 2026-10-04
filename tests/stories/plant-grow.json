@@ -76,8 +76,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:planter"
+      "do": {
+        "type": "hands"
       }
     },
     {

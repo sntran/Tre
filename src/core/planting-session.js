@@ -156,7 +156,7 @@ export function createPlanting(deps) {
 
   // A tap on the planter while the planting is on: the commit, when there are seedlings at the edge
   // of a plot (or row stakes); else a short line. Return 'commit', 'wait', or null (no planting).
-  function tapPlanter() {
+  function ready() {
     const t = tz();
     if (!t || t.zone.done) return null;
     const r = t.zone.round;
@@ -249,7 +249,7 @@ export function createPlanting(deps) {
   }
 
   return {
-    start, tapPlanter, planted, tick, grow,
+    start, ready, planted, tick, grow,
     get active() { return Boolean(tz()); },
     get state() { return { ...state() }; },
   };

@@ -75,8 +75,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:planter"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -180,8 +180,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:planter"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -236,8 +236,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:planter"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -364,8 +364,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:planter"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -515,8 +515,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:planter"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -620,8 +620,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:planter"
+      "do": {
+        "type": "hands"
       }
     },
     {

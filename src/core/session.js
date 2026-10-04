@@ -64,6 +64,7 @@ import { TILE } from './gen/tiles.js';
 
 export { STEP };
 
+const ZONE_PAD = 2; // half blocks: a place of a task answers a tap this far outside its box
 const WORLD = new Set(['move', 'stop', 'pet', 'ride', 'aim', 'pick', 'put', 'drop', 'guess', 'face']);
 const GREETS = ['world.greet.1', 'world.greet.2', 'world.greet.3'];
 const CALM_CELLS = 2; // the hero is on the bridge when nearer than this to a span that is not solid
@@ -594,9 +595,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'goBack', id: practice.id, to: practice.back });
   }
   // The zone of a task under a point on the ground (half blocks).
-  const workZoneAt = (x, z) => query(state, 'zone').find((e) => {
+  // The zone of a task under a point on the ground (half blocks). A place of a task answers a tap
+  // on its whole box with a pad around it (ZONE_PAD), so that a finger near the edge hits it.
+  const workZoneAt = (x, z, pad = ZONE_PAD) => query(state, 'zone').find((e) => {
     const r = e.zone.rect;
-    return r && x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1 && e.zone.task?.startsWith('trial-') && !trialZone(e.zone.task.slice(6))?.zone.done;
+    return r && x >= r.x0 - pad && x <= r.x1 + pad && z >= r.z0 - pad && z <= r.z1 + pad && e.zone.task?.startsWith('trial-') && !trialZone(e.zone.task.slice(6))?.zone.done;
   }) ?? null;
   const work = (trial, act, extra = {}) => worldCommand(state, { type: 'work', id: 'hero', trial, act, ...extra });
   // Walk near a point (half blocks) and then do something.
@@ -644,8 +647,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     return false;
   }
-  // A tap on the ground in the zone of a trial: put the thing in the hands there. Return true when
-  // the tap was for the trial.
+  // A tap on the ground in the zone of a trial: put the thing in the hands there; with empty hands,
+  // a tap on the full basket of the healer gives it (one job for each thing: docs/TASKS.md).
+  // Return true when the tap was for the trial.
   function tapTrialZone(hit) {
     const wz = workZoneAt(hit.x * 2, hit.y * 2);
     if (!wz) return false;
@@ -660,36 +664,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       walkNear(stand, () => worldCommand(state, { type: 'put', id: 'hero', zone: wz.zone.id, at }));
       return true;
     }
+    if (!held && trial === 'healer' && wz.zone.rule === 'basket' && wz.zone.items.length) {
+      const healer = persons().find((q) => q.kind === 'npc' && q.ref === 'healer');
+      if (healer) walkToThing(healer, () => work('healer', 'give'));
+      else walkNear(wz.position, () => work('healer', 'give'));
+      return true;
+    }
     return false;
-  }
-  // A tap on a person of a trial with work to give: the healer takes the basket; the woodcutter
-  // cuts at the marks. Return true when the tap was for the trial.
-  function tapTrialPerson(person) {
-    const def = data.trials?.trials.find((t) => t.npc === person.ref);
-    const tz = def ? trialZone(def.id) : null;
-    if (!tz || tz.zone.done) return false;
-    const ready = (def.task === 'basket' && zoneOf('basket')?.zone.items.length) || (def.task === 'cut' && tz.zone.marks?.length);
-    if (!ready) return false;
-    walkToThing(person, () => {
-      worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 });
-      work(def.id, def.task === 'basket' ? 'give' : 'cut');
-    });
-    return true;
-  }
-
-  // A tap on the planter while the planting is on: the commit (seedlings at the edge of a plot),
-  // or a short line. Return true when the tap was for the planting.
-  function tapPlanter(person) {
-    if (person.ref !== 'planter') return false;
-    const t = planting.tapPlanter();
-    if (!t) return false;
-    if (t === 'busy') return true;
-    walkToThing(person, () => {
-      worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 });
-      if (t === 'commit') work('plant', 'plant');
-      else say('plant.wait', {}, null, 'planter');
-    });
-    return true;
   }
   // A tap on a stake of a plot of a choose round: the commit of that plot.
   function tapPlotStake(t) {
@@ -697,28 +678,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!e) return;
     walkNear(e.position, () => work('plant', 'choose', { plot: t.plot, which: t.which }));
   }
-  // The fisher uncle opens the weir when there are new traps in the stream; else a short line.
-  // Return true when the tap was for the traps.
-  function tapFisherUncle(person) {
-    if (person.ref !== hamlet.personOf('traps')) return false;
-    const r = hamlet.round('traps');
-    if (!r) return false;
-    if (r.done || r.fill) return true;
-    const fresh = (getEntity(state, 'zone:traps-stream')?.zone.items ?? []).some((id) => !getEntity(state, id)?.item.set);
-    walkToThing(person, () => {
-      worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 });
-      if (fresh) work('traps', 'open');
-      else say('traps.wait', {}, null, person.ref);
-    });
-    return true;
-  }
-  // A tap on a thing of an activity: the jar of feed (the hero walks to it), or a bronze drum (a
+  // A tap on a thing of an activity: the jar of feed (the hero walks to it), the weir (the fisher
+  // uncle opens it when there are new traps in the stream; else a short line), or a bronze drum (a
   // beat of the dance, when the hero stands at the drum; else the hero walks there first).
   function tapHamlet(t) {
     const e = getEntity(state, t.id);
     if (!e) return;
     if (t.act === 'ducks') {
       walkNear(e.position, () => {});
+      return;
+    }
+    if (t.act === 'traps') {
+      const r = hamlet.round('traps');
+      if (!r || r.done || r.fill) return;
+      const who = hamlet.personOf('traps');
+      const fresh = (getEntity(state, 'zone:traps-stream')?.zone.items ?? []).some((id) => !getEntity(state, id)?.item.set);
+      atPerson(who, () => (fresh ? work('traps', 'open') : say('traps.wait', {}, null, who)));
       return;
     }
     const r = hamlet.round('drum');
@@ -1085,7 +1060,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function interact(who, at) {
     log('action', { kind: 'talk' });
     worldCommand(state, { type: 'face', id: 'hero', x: at.x * 2, z: at.y * 2 });
-    if (who.kind === 'npc') talk(pickTalk(data.npcs.npcs[who.id], profile));
+    if (who.kind === 'npc') {
+      // During the task of the person, a tap asks for help: the mentor answers with one move. It
+      // never opens the start talk again (docs/TASKS.md).
+      const key = mentoring.taskOfPerson(`npc:${who.id}`);
+      if (key) {
+        // Before a try, or after a right one, the person shows the next step on the real things.
+        const r = mentoring.wave(key);
+        if (!r || r.move === 'wait' || r.move === 'tryFirst') mentoring.move(key, 'show');
+        return;
+      }
+      talk(pickTalk(data.npcs.npcs[who.id], profile));
+    }
     else if (who.kind === 'event') tapEvent(who.id);
     else if (who.kind === 'encounter') {
       const enc = map.encounters.find((e) => e.id === who.id);
@@ -1441,6 +1427,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return best?.e ?? null;
   }
 
+  // Walk to a person of a task, turn to the person, and do the work (fn).
+  function atPerson(ref, fn) {
+    const q = persons().find((p) => p.kind === 'npc' && p.ref === ref);
+    if (!q) return fn();
+    walkToThing(q, () => {
+      worldCommand(state, { type: 'face', id: 'hero', x: q.x * 2, z: q.y * 2 });
+      fn();
+    });
+  }
+
   // The action of the hands now (the action button, and Space; docs/TASKS.md): { act, icon,
   // target (the entity that pulses when it acts), run, hold (the act goes on while the button is
   // down) }, or null when there is nothing to do. The finish of a task in reach comes first; then
@@ -1453,16 +1449,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const tz = trialZone(id);
       return tz && !tz.zone.done ? tz : null;
     };
-    const person = (ref) => persons().find((q) => q.kind === 'npc' && q.ref === ref) ?? null;
-    // Walk to a person of a task, turn to the person, and do the work.
-    const toPerson = (ref, fn) => () => {
-      const q = person(ref);
-      if (!q) return fn();
-      walkToThing(q, () => {
-        worldCommand(state, { type: 'face', id: 'hero', x: q.x * 2, z: q.y * 2 });
-        fn();
-      });
-    };
+    const toPerson = (ref, fn) => () => atPerson(ref, fn);
     const held = getEntity(state, holding());
     if (!held) {
       // The teacher: tie the rods on the mat.
@@ -1479,7 +1466,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const basket = zoneOf('basket');
       if (open('healer') && basket?.zone.items.length && (near(basket.position, REACH + 6) || near(getEntity(state, 'npc:healer')?.position))) return { act: 'give', icon: 'basket', target: 'basket:healer', run: toPerson('healer', () => work('healer', 'give')) };
       const wood = open('woodcutter');
-      if (wood?.zone.marks?.length && !wood.zone.cut && (near(wood.zone.stem, REACH + 8) || near(getEntity(state, 'npc:woodcutter')?.position))) return { act: 'cut', icon: 'knife', target: 'stem:woodcutter', run: toPerson('woodcutter', () => work('woodcutter', 'cut')) };
+      if (wood?.zone.marks?.length && !wood.zone.cut && (near({ x: wood.zone.stem.x + wood.zone.stem.length / 2, z: wood.zone.stem.z }, REACH + 2 + wood.zone.stem.length / 2) || near(getEntity(state, 'npc:woodcutter')?.position))) return { act: 'cut', icon: 'knife', target: 'stem:woodcutter', run: toPerson('woodcutter', () => work('woodcutter', 'cut')) };
       // A small event of the day: the things on its place are the commit.
       for (const z of query(state, 'zone')) {
         if (z.zone.rule !== 'exact' || !String(z.zone.task).startsWith('trial-event-')) continue;
@@ -1488,7 +1475,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         return { act: 'give', icon: 'hand', target: z.id, run: () => work(`event-${id}`, 'exact') };
       }
       // Xóm Ruộng: the planter plants; the fisher uncle opens the weir; the bronze drum; the jar.
-      if (planting.tapPlanter() === 'commit' && (near(getEntity(state, 'npc:planter')?.position, REACH + 8) || plotsOf(state).some((p) => near({ x: p.ox, z: p.oz + p.depth }, REACH + 8)))) return { act: 'plant', icon: 'seedling', target: 'npc:planter', run: toPerson('planter', () => work('plant', 'plant')) };
+      if (planting.ready() === 'commit' && (near(getEntity(state, 'npc:planter')?.position, REACH + 8) || plotsOf(state).some((p) => near({ x: p.ox, z: p.oz + p.depth }, REACH + 8)))) return { act: 'plant', icon: 'seedling', target: 'npc:planter', run: toPerson('planter', () => work('plant', 'plant')) };
       const traps = hamlet.round('traps');
       const fresh = (getEntity(state, 'zone:traps-stream')?.zone.items ?? []).some((i) => !getEntity(state, i)?.item.set);
       if (traps && !traps.done && !traps.fill && fresh) return { act: 'open', icon: 'weir', target: 'hamlet:weir', run: toPerson(hamlet.personOf('traps'), () => work('traps', 'open')) };
@@ -1560,7 +1547,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const person = persons().find((p) => p.entity === target.person);
       if (!person || (person.kind === 'encounter' && raidOn())) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
-      if (person.kind === 'npc' && (tapGift(person) || tapTrialPerson(person) || tapPlanter(person) || tapFisherUncle(person))) return;
+      if (person.kind === 'npc' && tapGift(person)) return;
       walkToThing(person, () => interact({ kind: person.kind, id: person.ref }, person));
       return;
     }
@@ -1656,7 +1643,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const { d, along } = segment(p, e);
       consider(e.item.fixed ? { thing: e.id, along } : { thing: e.id }, d, 1.2);
     }
-    for (const q of persons()) if (!getEntity(state, q.entity)?.hidden) consider({ person: q.entity }, Math.hypot(q.x - x, q.y - y) * 2, 1.6);
     // A stake of a plot of a choose round of the planting.
     const plantRound = getEntity(state, 'zone:trial-plant')?.zone.round;
     if (plantRound && !plantRound.anim && plotsOf(state)[0]?.plot.form === 'choose') {
@@ -1664,6 +1650,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (e.plotPart.which === 'plot' || e.plotPart.which === 'decoy') consider({ plotStake: { id: e.id, plot: e.plotPart.plot, which: e.plotPart.which } }, distHb(p, e.position), 1.2);
       }
     }
+    if (best) return best.target;
+    // During a task, a place of the task comes before a person who stands next to it.
+    if (workZoneAt(p.x, p.z)) return { ground: { x, y, h: groundY(x, y), thing: false, object: null } };
+    for (const q of persons()) if (!getEntity(state, q.entity)?.hidden) consider({ person: q.entity }, Math.hypot(q.x - x, q.y - y) * 2, 1.6);
     if (best) return best.target;
     // A sleeping animal (the buffalo in the shade at noon).
     for (const e of query(state, 'act', 'position')) if (e.act === 'sleep' && !e.hidden) consider({ sleeper: e.id }, distHb(p, e.position), 3);
@@ -1985,6 +1975,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     heroCell,
     holding,
     middleOf,
+    // Is a place of a task (with its pad) at a map point? A tap there comes before a person.
+    taskPlaceAt: (x, y) => Boolean(workZoneAt(x * 2, y * 2)),
     // The action of the hands now, for the action button: { act, icon, target, hold } or null.
     action() {
       const a = action();

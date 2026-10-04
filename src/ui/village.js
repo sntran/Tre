@@ -718,9 +718,12 @@ export async function mountVillage(ctx, params = {}) {
     if (hamletTap) return hamletTap;
     const plank = thingAt(p);
     if (plank) return plank.item.fixed ? { thing: plank.id, along: plank.along } : { thing: plank.id };
-    const person = personAt(p);
-    if (person) return { person: person.entity };
+    // During a task, a place of the task (the forge, the trough, the basket) comes before a person
+    // who stands next to it (docs/TASKS.md).
     const hit = view.pick(p.x, p.y, { things: true });
+    const place = hit && session.taskPlaceAt(hit.x, hit.y);
+    const person = place ? null : personAt(p);
+    if (person) return { person: person.entity };
     if (!hit) return null;
     const thing = hit.who ? terrain.objects.find((o) => o.who === hit.who) : null;
     return { ground: { x: hit.x, y: hit.y, h: hit.h, thing: Boolean(hit.who), object: thing?.id ?? null } };

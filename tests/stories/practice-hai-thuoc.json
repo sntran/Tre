@@ -141,8 +141,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "npc:healer"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -152,8 +152,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:healer"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -271,8 +271,8 @@
       ]
     },
     {
-      "tap": {
-        "entity": "npc:healer"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -282,8 +282,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:healer"
+      "do": {
+        "type": "hands"
       }
     },
     {

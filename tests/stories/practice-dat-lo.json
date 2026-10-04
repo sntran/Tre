@@ -76,7 +76,7 @@
     },
     {
       "tap": {
-        "entity": "npc:fisher-uncle"
+        "entity": "hamlet:weir"
       }
     },
     {
@@ -158,7 +158,7 @@
     },
     {
       "tap": {
-        "entity": "npc:fisher-uncle"
+        "entity": "hamlet:weir"
       }
     },
     {
@@ -214,7 +214,7 @@
     },
     {
       "tap": {
-        "entity": "npc:fisher-uncle"
+        "entity": "hamlet:weir"
       }
     },
     {
@@ -365,7 +365,7 @@
     },
     {
       "tap": {
-        "entity": "npc:fisher-uncle"
+        "entity": "hamlet:weir"
       }
     },
     {
@@ -516,7 +516,7 @@
     },
     {
       "tap": {
-        "entity": "npc:fisher-uncle"
+        "entity": "hamlet:weir"
       }
     },
     {

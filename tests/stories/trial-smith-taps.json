@@ -1,0 +1,21 @@
+{
+  "name": "trial-smith-taps",
+  "about": {
+    "vi": "Trong lúc làm việc của bác thợ rèn, chạm vào bác nhiều lần thì bác chỉ giúp, không mở lại lời mở đầu.",
+    "en": "During the work of the smith, many taps on him ask for help; they never open the start talk again."
+  },
+  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "clock": 540,
+  "at": ["phu-dong", 53, 43],
+  "steps": [
+    { "tap": { "entity": "npc:smith" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "dlg.smith.trial.n1" } }] },
+    { "repeat": 10, "steps": [
+      { "tap": { "entity": "npc:smith" } },
+      { "wait": 1.5 },
+      { "expect": [{ "screen": null }, { "event": "open", "with": { "screen": "dialogue" }, "not": true }, { "event": "mentor", "with": { "key": "trial-smith" } }, { "event": "open", "with": { "screen": "callout" } }] }
+    ] }
+  ]
+}

@@ -9,7 +9,7 @@
 //   last ducks are hungry, and the next pour goes on from where it stopped. Too much: the extra
 //   feed stays at the end of the trough.
 //   The traps: the child carries traps from the pile of the fisher to the spots in the stream (the
-//   place system and the zone rule spots). A tap on the fisher (act open) opens the weir: each
+//   place system and the zone rule spots). A tap on the weir, or the action button (act open), opens the weir: each
 //   trap fills with its number of fish, one after another. Too few: the full traps stay, and the
 //   fisher waits for more traps. Too many: the extra fish swim on.
 //   The drum: the first tap on a bronze drum starts the beat of the drummer. The dancers of a
@@ -183,7 +183,7 @@ export function setupTraps(world, round) {
     position: { x: mid.x, y: round.y, z: mid.z, facing: 0 },
   });
   round.spots.forEach((q, k) => part(world, 'traps', `hamlet:spot:${k}`, { x: q.x, y: round.y, z: q.z }, 'trap-spot'));
-  part(world, 'traps', 'hamlet:weir', round.weir, 'weir-shut');
+  part(world, 'traps', 'hamlet:weir', round.weir, 'weir-shut', { hamletTap: { act: 'traps', what: 'weir' } });
   return tz;
 }
 

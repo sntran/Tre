@@ -204,15 +204,23 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return best?.key ?? null;
   }
 
-  // A wave: the child calls the person of the task. A demonstration that showed its key part ends.
-  function wave() {
+  // The task of a person that goes on now (its mentor key), or null: a tap on the person during
+  // the task asks for help (docs/TASKS.md).
+  function taskOfPerson(entityId) {
+    if (!cfg) return null;
+    return Object.keys(cfg.mentors).find((key) => defOf(key).person === entityId && key !== 'bridge' && taskOf(key)) ?? null;
+  }
+
+  // A wave: the child calls the person of the task (key: that task; else the task nearest to the
+  // hero). A demonstration that showed its key part ends.
+  function wave(forKey = null) {
     for (const s of query(world(), 'script')) {
       if (s.script.keyAt !== undefined && s.script.t >= s.script.keyAt) {
         endScript(world(), s);
         return { skipped: s.script.key };
       }
     }
-    const key = activeKey();
+    const key = forKey ?? activeKey();
     if (!key) return null;
     const task = taskOf(key);
     const st = stateOf(key, task);
@@ -429,6 +437,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     worldEvent,
     checkAt,
     wave,
+    taskOfPerson,
+    // A move of the mentor of a task now (for example show: the next step on the real things).
+    move: (key, move) => doMove(key, move, {}),
     tick,
     activeKey,
     // The mentor of a task (for the tests and the debug panel).

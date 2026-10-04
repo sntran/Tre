@@ -69,8 +69,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:woodcutter"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -94,8 +94,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:woodcutter"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -159,8 +159,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:woodcutter"
+      "do": {
+        "type": "hands"
       }
     },
     {
@@ -184,8 +184,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "npc:woodcutter"
+      "do": {
+        "type": "hands"
       }
     },
     {
