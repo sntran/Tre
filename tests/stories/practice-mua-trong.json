@@ -1,0 +1,822 @@
+{
+  "name": "practice-mua-trong",
+  "about": {
+    "vi": "Luyện tập múa trống: đường link đưa An đến sân đình của ông trống ở Xóm Ruộng. Một lượt ba điệu múa: một điệu An gõ sớm một nhịp (các bạn dừng lại cười, ông đánh lại từ cú nhảy đúng gần nhất, chậm hơn), hai điệu không lỡ nhịp nào; ông cảm ơn, An về chỗ cũ.",
+    "en": "Practice of the drum dance: the link takes An to the đình yard of the old drummer in Xóm Ruộng. One set of three dances: in one An taps one beat early (the dancers stop with a laugh, and the drummer starts again from the last good jump, slower), and two dances with no missed beat; the drummer says thank you, and An goes back."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "practice": "mua-trong",
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "dance",
+        "timeout": 30
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 2
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 2
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 4
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 4
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 6
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 6
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 8
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 8
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 10
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 10
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 12
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 12
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 14
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 14
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 16
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 16
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 18
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 18
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 20
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 20
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "danced",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "danced",
+          "with": {
+            "clean": true
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "dance",
+        "timeout": 30
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 5
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 5
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 10
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 10
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 14
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "miss",
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 15
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 15
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 20
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 20
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 25
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 25
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 30
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 30
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 35
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 35
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 40
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 40
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 45
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 45
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 50
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 50
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "danced",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "danced",
+          "with": {
+            "clean": false
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "dance",
+        "timeout": 30
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 50
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 50
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 60
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 60
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 70
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 70
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 80
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 80
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 90
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 90
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "beat",
+        "with": {
+          "beat": 100
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "hamlet:drum:0"
+      }
+    },
+    {
+      "until": {
+        "event": "jump",
+        "with": {
+          "beat": 100
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "danced",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "danced",
+          "with": {
+            "clean": true
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "practice",
+          "with": {
+            "id": "mua-trong",
+            "sets": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "dlg.drummer.practice.end.n1"
+          }
+        },
+        {
+          "item": "coin",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "read": [
+        1
+      ]
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "cell": [
+              11,
+              26.5
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

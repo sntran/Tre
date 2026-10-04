@@ -40,6 +40,11 @@ test('each activity has its texts, its trial, its skills, its place, and its sto
       // The planting of Xóm Ruộng (docs/PLANTING.md): the planter, or no person for the whole hamlet.
       assert.ok(a.person === 'planter' || a.person === null, `${a.id}: the person of the planting`);
       assert.deepEqual([...a.skills].sort(), [data.planting.skill, data.planting.divide].sort(), `${a.id}: the skills of the planting`);
+    } else if (['ducks', 'traps', 'drum'].includes(a.task)) {
+      // An activity of the hamlet (docs/HAMLET.md): the person of its station, and the skill of
+      // the memory of the facts.
+      assert.equal(a.person, data.hamlet.stations[a.task], `${a.id}: the person of the activity`);
+      assert.ok(a.skills.includes(data.planting.skill), `${a.id}: the skills of the activity`);
     } else {
       const def = trials.find((t) => t.id === a.trial);
       assert.ok(def, `${a.id}: trial ${a.trial}`);

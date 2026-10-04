@@ -21,7 +21,8 @@ import { cueHint } from './place.js';
 let made = 0;
 
 export function mentor(world, dt, rng, env) {
-  // A pointing person turns to what it points at, until the end of the gesture.
+  // A pointing person turns to what it points at, until the end of the gesture (a gesture with no
+  // point, as a duck that pecks or a drummer who laughs, keeps the facing).
   for (const e of query(world, 'gesture', 'position')) {
     const g = e.gesture;
     g.t -= dt;
@@ -29,7 +30,7 @@ export function mentor(world, dt, rng, env) {
       delete e.gesture;
       continue;
     }
-    e.position.facing = faceOf(g.x - e.position.x, g.z - e.position.z);
+    if (g.x !== undefined) e.position.facing = faceOf(g.x - e.position.x, g.z - e.position.z);
   }
   // The marks go after their time.
   for (const m of query(world, 'mentorMark')) {

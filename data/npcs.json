@@ -467,7 +467,7 @@
       "nameKey": "npc.duck-girl.name",
       "talk": [
         {
-          "dialogue": "duck-girl.idle"
+          "dialogue": "duck-girl.trial"
         }
       ]
     },
@@ -476,7 +476,7 @@
       "nameKey": "npc.fisher-uncle.name",
       "talk": [
         {
-          "dialogue": "fisher-uncle.idle"
+          "dialogue": "fisher-uncle.trial"
         }
       ]
     },
@@ -485,7 +485,7 @@
       "nameKey": "npc.drummer.name",
       "talk": [
         {
-          "dialogue": "drummer.idle"
+          "dialogue": "drummer.trial"
         }
       ]
     }

@@ -395,6 +395,23 @@ function packExact(world, zone) {
   });
 }
 
+// The free spot of a zone of spots nearest to a point (half blocks), or the first free spot with
+// no point. Return its index, or -1 when every spot has a thing.
+export function freeSlot(world, zone, at = null) {
+  const taken = new Set(zone.items.map((id) => getEntity(world, id)?.item.slot));
+  let best = -1;
+  let bestD = Infinity;
+  zone.slots.forEach((q, k) => {
+    if (taken.has(k)) return;
+    const d = at ? Math.hypot(q.x - at.x, q.z - at.z) : k;
+    if (d < bestD) {
+      best = k;
+      bestD = d;
+    }
+  });
+  return best;
+}
+
 // Can the hero take this thing? A thing that is set (the stakes of the fisher, a stem) cannot
 // move; the stakes on the line wait for the tide while the tide is in.
 export function canTakeWork(world, thing) {
@@ -467,6 +484,14 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packExact(world, zone);
+  } else if (zone.rule === 'spots') {
+    // A spot for one thing (a fish trap in the stream): the free spot nearest to the tap.
+    const k = freeSlot(world, zone, at);
+    if (k < 0) return false;
+    thing.item.zone = zone.id;
+    thing.item.slot = k;
+    zone.items.push(thing.id);
+    thing.position = { x: zone.slots[k].x, y: zone.y, z: zone.slots[k].z, facing: 0 };
   } else if (zone.rule === 'woodpile') {
     thing.item.zone = zone.id;
     thing.item.set = true;

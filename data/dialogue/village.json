@@ -550,36 +550,6 @@
       }
     },
     {
-      "id": "duck-girl.idle",
-      "start": "n1",
-      "nodes": {
-        "n1": {
-          "speaker": "duck-girl",
-          "textKey": "dlg.duck-girl.idle.n1"
-        }
-      }
-    },
-    {
-      "id": "fisher-uncle.idle",
-      "start": "n1",
-      "nodes": {
-        "n1": {
-          "speaker": "fisher-uncle",
-          "textKey": "dlg.fisher-uncle.idle.n1"
-        }
-      }
-    },
-    {
-      "id": "drummer.idle",
-      "start": "n1",
-      "nodes": {
-        "n1": {
-          "speaker": "drummer",
-          "textKey": "dlg.drummer.idle.n1"
-        }
-      }
-    },
-    {
       "id": "planter.trial",
       "start": "n1",
       "nodes": {
@@ -634,6 +604,204 @@
         "n1": {
           "speaker": "planter",
           "textKey": "dlg.planter.practice.end.n1",
+          "mood": "happy",
+          "choices": [
+            {
+              "textKey": "dlg.practice.end.stay",
+              "effects": [
+                {
+                  "open": "practice-stay"
+                }
+              ]
+            },
+            {
+              "textKey": "dlg.practice.end.back",
+              "effects": [
+                {
+                  "open": "practice-back"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "duck-girl.trial",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "duck-girl",
+          "textKey": "dlg.duck-girl.trial.n1",
+          "effects": [
+            {
+              "open": "ducks"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "duck-girl.set.done",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "duck-girl",
+          "textKey": "dlg.duck-girl.set.done.n1",
+          "mood": "happy"
+        }
+      }
+    },
+    {
+      "id": "duck-girl.set.stop",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "duck-girl",
+          "textKey": "dlg.duck-girl.set.stop.n1",
+          "mood": "happy"
+        }
+      }
+    },
+    {
+      "id": "duck-girl.practice.end",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "duck-girl",
+          "textKey": "dlg.duck-girl.practice.end.n1",
+          "mood": "happy",
+          "choices": [
+            {
+              "textKey": "dlg.practice.end.stay",
+              "effects": [
+                {
+                  "open": "practice-stay"
+                }
+              ]
+            },
+            {
+              "textKey": "dlg.practice.end.back",
+              "effects": [
+                {
+                  "open": "practice-back"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "fisher-uncle.trial",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "fisher-uncle",
+          "textKey": "dlg.fisher-uncle.trial.n1",
+          "effects": [
+            {
+              "open": "traps"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "fisher-uncle.set.done",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "fisher-uncle",
+          "textKey": "dlg.fisher-uncle.set.done.n1",
+          "mood": "happy"
+        }
+      }
+    },
+    {
+      "id": "fisher-uncle.set.stop",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "fisher-uncle",
+          "textKey": "dlg.fisher-uncle.set.stop.n1",
+          "mood": "happy"
+        }
+      }
+    },
+    {
+      "id": "fisher-uncle.practice.end",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "fisher-uncle",
+          "textKey": "dlg.fisher-uncle.practice.end.n1",
+          "mood": "happy",
+          "choices": [
+            {
+              "textKey": "dlg.practice.end.stay",
+              "effects": [
+                {
+                  "open": "practice-stay"
+                }
+              ]
+            },
+            {
+              "textKey": "dlg.practice.end.back",
+              "effects": [
+                {
+                  "open": "practice-back"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "drummer.trial",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "drummer",
+          "textKey": "dlg.drummer.trial.n1",
+          "effects": [
+            {
+              "open": "drum"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "drummer.set.done",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "drummer",
+          "textKey": "dlg.drummer.set.done.n1",
+          "mood": "happy"
+        }
+      }
+    },
+    {
+      "id": "drummer.set.stop",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "drummer",
+          "textKey": "dlg.drummer.set.stop.n1",
+          "mood": "happy"
+        }
+      }
+    },
+    {
+      "id": "drummer.practice.end",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "drummer",
+          "textKey": "dlg.drummer.practice.end.n1",
           "mood": "happy",
           "choices": [
             {

@@ -544,8 +544,21 @@ export function thingLook(key) {
   m = /^(bundle|bunch)-(\d+)$/.exec(k);
   if (m) return { kind: `seed-${m[1]}`, n: Number(m[2]) };
   if (k === 'plot-stake') return { kind: 'plot-stake' };
+  // The things of the ducks, the fish traps, and the drum dance (docs/HAMLET.md).
+  m = /^duck-trough-(\d+)$/.exec(k);
+  if (m) return { kind: 'duck-trough', n: Number(m[1]) };
+  m = /^trough-feed-(\d+)$/.exec(k);
+  if (m) return { kind: 'trough-feed', n: Number(m[1]) };
+  m = /^lo-(\d+)(-full)?$/.exec(k);
+  if (m) return { kind: 'lo', n: Number(m[1]), full: Boolean(m[2]) };
+  if (k === 'feed-jar' || k === 'trap-spot' || k === 'bronze-drum') return { kind: k };
+  if (k === 'weir-shut' || k === 'weir-open') return { kind: 'weir', open: k === 'weir-open' };
   return null;
 }
+// The feed of one scoop takes this length of the trough (half blocks): a notch on the side of the
+// trough for each fifth scoop, and a bigger notch for each tenth.
+export const SCOOP_LENGTH = 0.2;
+const RINGS = { 2: 1.2, 5: 1.8, 10: 2.6 }; // the length of a fish trap (half blocks) for its rings
 const STAGES = { planted: ['greenPale', 0.8], green: ['green', 1.2], tall: ['greenDeep', 1.7], gold: ['yellow', 1.9] };
 // The water of a paddy stands over the ground (WATER.paddy in src/world/terrain.js): a seedling
 // rises from under the water.
@@ -574,6 +587,41 @@ export function workThing(look) {
       const w = Math.min(0.6, 0.18 + (look.n ?? 1) * 0.04);
       return still([P('blades', [w, 0.6, w], 'greenPale', [0, 0.3, 0]), P('roots', [w, 0.1, w], 'ochre', [0, 0.05, 0])], 0.6);
     }
+    // The long wooden trough of the ducks along +x (a duck for each two half blocks), with a notch
+    // on its south side for each fifth scoop of feed and a bigger notch for each tenth.
+    case 'duck-trough': {
+      const len = Math.max(3, (look.n ?? 1) * 2 + 1);
+      const parts = [P('floor', [len, 0.2, 1], 'wood', [len / 2, 0.1, 0]), P('sideN', [len, 0.5, 0.15], 'ochre', [len / 2, 0.25, -0.45]), P('sideS', [len, 0.5, 0.15], 'ochre', [len / 2, 0.25, 0.45]), P('endW', [0.15, 0.5, 1], 'ochre', [0, 0.25, 0]), P('endE', [0.15, 0.5, 1], 'ochre', [len, 0.25, 0])];
+      for (let k = 5; k * SCOOP_LENGTH < len - 0.4 && parts.length < 60; k += 5) parts.push(P(`notch${k}`, [0.06, k % 10 ? 0.25 : 0.45, 0.04], 'ink', [0.4 + k * SCOOP_LENGTH, k % 10 ? 0.37 : 0.28, 0.53]));
+      return still(parts, 0.5);
+    }
+    // The feed in the trough: one strip that grows one scoop at a time from the head of the trough.
+    case 'trough-feed': {
+      const n = look.n ?? 0;
+      if (!n) return still([P('none', [0.01, 0.01, 0.01], 'wood', [0, 0, 0])], 0.01);
+      const len = n * SCOOP_LENGTH;
+      return still([P('feed', [len, 0.18, 0.7], 'yellowPale', [0.4 + len / 2, 0.29, 0]), P('grain', [len, 0.06, 0.4], 'ochre', [0.4 + len / 2, 0.4, 0])], 0.45);
+    }
+    // The clay jar of feed (a vại) by the head of the trough: the child holds it to pour.
+    case 'feed-jar': return still([P('body', [1.2, 1.1, 1.2], 'wood', [0, 0.55, 0]), P('belly', [1.35, 0.5, 1.35], 'wood', [0, 0.6, 0]), P('neck', [0.9, 0.2, 0.9], 'ochre', [0, 1.2, 0]), P('feed', [0.7, 0.08, 0.7], 'yellowPale', [0, 1.3, 0])], 1.35);
+    // A fish trap (a lờ) of bamboo, lying along +z: a cone with a ring for each fish that it holds.
+    case 'lo': {
+      const len = RINGS[look.n] ?? 1.2 + look.n * 0.14;
+      const parts = [P('cone', [0.7, 0.7, len], 'yellow', [0, 0.35, 0]), P('mouth', [0.9, 0.9, 0.15], 'ochre', [0, 0.45, len / 2])];
+      for (let i = 0; i < look.n; i++) parts.push(P(`ring${i}`, [0.76, 0.76, 0.05], 'wood', [0, 0.35, -len / 2 + (len * (i + 0.5)) / look.n]));
+      if (look.full) parts.push(P('fish', [0.4, 0.3, len * 0.7], 'ashLight', [0, 0.75, 0]), P('fishB', [0.3, 0.25, len * 0.5], 'ash', [0.2, 0.85, -0.1]));
+      return still(parts, 0.9);
+    }
+    // A stake in the stream: a spot for a trap.
+    case 'trap-spot': return still([P('pole', [0.16, 1.4, 0.16], 'wood', [-0.6, 0.5, 0]), P('top', [0.22, 0.1, 0.22], 'ochre', [-0.6, 1.2, 0])], 1.3);
+    // The small weir of bamboo across the stream: shut, or with its gate open.
+    case 'weir': {
+      const parts = [P('beam', [8, 0.25, 0.25], 'wood', [0, 1.2, 0])];
+      for (let i = 0; i < 9; i++) if (!look.open || i < 3 || i > 5) parts.push(P(`slat${i}`, [0.7, 1.4, 0.2], 'yellow', [-4 + i * 1, 0.5, 0]));
+      return still(parts, 1.4);
+    }
+    // The bronze drum (trống đồng) of the dance: a low wide drum with a star on its face.
+    case 'bronze-drum': return still([P('body', [1.6, 0.8, 1.6], 'ochre', [0, 0.4, 0]), P('waist', [1.3, 0.3, 1.3], 'wood', [0, 0.15, 0]), P('face', [1.7, 0.1, 1.7], 'yellow', [0, 0.85, 0]), P('star', [0.5, 0.04, 0.5], 'vermilion', [0, 0.92, 0])], 0.95);
     // A thin bamboo stake at the edge of a plot: one for each row, one for each column.
     case 'plot-stake': return still([P('pole', [0.18, 1.6, 0.18], 'yellow', [0, 0.8, 0]), P('top', [0.24, 0.12, 0.24], 'ochre', [0, 1.62, 0])], 1.7);
     // A counting rod: a thin stick of bamboo.
@@ -801,7 +849,11 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'gap') return gapMarks(look.n);
   if (look.kind === 'deck') return deck(look.n, look.w);
   if (look.kind === 'nghe') return fine ? ngheFine() : nghe();
-  if (look.kind === 'duck') return fine ? duckFine(look.coat) : duck(look.coat);
+  if (look.kind === 'duck') {
+    // A big duck of the feeding (it eats twice the share of a small duck) is half as big again.
+    const f = fine ? duckFine(look.coat) : duck(look.coat);
+    return look.big ? { ...f, scale: f.scale * 1.5 } : f;
+  }
   if (look.kind === 'serpent') return serpent(look);
   if (look.kind === 'chicken') return fine ? chickenFine(look) : chicken(look);
   if (look.kind === 'fish') return fine ? fishFine() : fish();

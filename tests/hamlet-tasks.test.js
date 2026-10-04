@@ -38,7 +38,7 @@ test('the ducks: big ducks eat twice the share that the duck girl shows; a mixed
     const double = duckTask({ key, form: 'double', data: data.ducks, rng });
     assert.ok(double.ducks.every((d) => d.big && d.share === double.show * data.ducks.big));
     assert.equal(double.need, double.ducks.reduce((s, d) => s + d.share, 0));
-    assert.ok(double.ducks.length <= data.ducks.maxDucks);
+    assert.ok(double.ducks.length <= data.ducks.maxDucks / 2);
     const mixed = duckTask({ key, form: 'mixed', data: data.ducks, rng });
     const kinds = [...new Set(mixed.ducks.map((d) => d.share))].sort((a, b) => a - b);
     assert.deepEqual(kinds, data.ducks.mixed.shares);

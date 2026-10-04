@@ -347,7 +347,7 @@ E.fill(26, 10, 2, 2, '=')
 E.fill(14, 14, 1, 8, '=')
 # The duck pond to the north, the stream to the east with its bamboo bridge, and the đình yard to
 # the south.
-E.fill(17, 2, 4, 3, '~')
+E.fill(17, 1, 5, 3, '~')
 E.fill(24, 0, 2, 22, '~')
 E.fill(24, 10, 2, 2, 'B')
 E.fill(15, 16, 5, 3, 'y')
@@ -356,7 +356,7 @@ E.fill(15, 16, 5, 3, 'y')
 # plots. The seedbed is a field with no small dikes (cells, not tiles).
 E.cells += [(x, z, 'd' if z == 13 else 'c', 2 if z == 13 else 1) for x in range(8, 28) for z in range(4, 24)]
 E.cells += [(x, z, 'f', 1) for x in range(12, 18) for z in range(26, 30)]
-E.obj('house-duck', 'house', 15, 5, 3, 3)
+E.obj('house-duck', 'house', 14, 5, 3, 3)
 E.obj('house-fisher-uncle', 'house', 21, 5, 3, 3)
 E.obj('house-planter', 'house', 11, 14, 3, 3)
 E.obj('dinh-xom', 'dinh', 15, 19, 4, 3)
@@ -369,7 +369,7 @@ E.spawn = {'x': 17.0, 'y': 12.0}
 # the fisher uncle at the stream by the bridge, and the old drummer in the đình yard.
 E.npcs = [
     {'id': 'planter', 'x': 12.0, 'y': 12.25},
-    {'id': 'duck-girl', 'x': 18.5, 'y': 6.5},
+    {'id': 'duck-girl', 'x': 18.5, 'y': 6.0},
     {'id': 'fisher-uncle', 'x': 22.75, 'y': 12.5},
     {'id': 'drummer', 'x': 16.5, 'y': 16.5},
 ]
@@ -377,10 +377,24 @@ E.places = {
     # The bundles of seedlings lie on the dike by the seedbed.
     'plant-seedbed': {'x': 7.5, 'y': 12.6},
     'yard': {'x': 17.0, 'y': 12.0},
+    # The ducks (docs/HAMLET.md): the head of the trough on the shore of the pond, and the jar of
+    # feed by it; the ducks stand in a line along the trough, to the east.
+    'duck-trough': {'x': 17.4, 'y': 4.6},
+    'duck-jar': {'x': 17.0, 'y': 5.3},
+    # The fish traps: the traps of the fisher on the bank, the first spot for a trap in the stream
+    # (the spots go down the stream from it), and the small weir upstream of the bridge.
+    'trap-pile': {'x': 22.2, 'y': 13.6},
+    'trap-spots': {'x': 24.3, 'y': 13.2},
+    'weir': {'x': 24.9, 'y': 7.5},
+    # The drum dance: the bronze drums of the child, and the first dancer of the line in the yard
+    # of the đình (a second group stands behind the first).
+    'drum-bronze': {'x': 17.4, 'y': 15.2},
+    'drum-bronze-2': {'x': 18.6, 'y': 15.2},
+    'dancers': {'x': 15.4, 'y': 17.2},
 }
 E.zones = [{'id': 'paddy', 'x': 4, 'y': 2, 'w': 10, 'h': 10, 'task': 'paddy'}]
 E.life = [
-    {'kind': 'duck', 'n': 5, 'x': 18.5, 'y': 3.0, 'r': 1.2},
+    {'kind': 'duck', 'n': 5, 'x': 19.0, 'y': 2.0, 'r': 1.2},
     {'kind': 'chicken', 'n': 3, 'x': 16.0, 'y': 8.5, 'r': 1.0},
     {'kind': 'fish', 'n': 3, 'x': 24.5, 'y': 15.0, 'r': 1.5},
 ]

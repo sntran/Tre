@@ -45,11 +45,12 @@ import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
 import { REACH, learnerRecord, canPut } from './world/zones.js';
-import { setupTrial, clearTrial, addToHeap } from './world/systems/work.js';
+import { setupTrial, clearTrial, addToHeap, freeSlot } from './world/systems/work.js';
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring } from './mentoring.js';
 import { createPlanting } from './planting-session.js';
+import { createHamlet } from './hamlet-session.js';
 import { plotsOf } from './world/systems/plant.js';
 import { jumpLength, planJump } from './world/jump.js';
 import { MOVE } from './world/move.js';
@@ -122,7 +123,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The end of a set of a practice of the planting: the practice ends there.
     setDone: () => {
       if (practice?.task !== 'planting') return false;
-      plantPracticeEnd();
+      practiceEnd('planter');
+      return true;
+    },
+  });
+  // The ducks, the fish traps, and the drum dance of Xóm Ruộng (docs/HAMLET.md).
+  const hamlet = createHamlet({
+    data, profile, learner, emit, mentoring, world: () => state, env: () => env,
+    seed: () => state.seed, clock: () => state.clock.minutes, rain: () => state.sky?.rain ?? 0,
+    say: (...a) => say(...a), talk: (id) => talk(id), save: (why) => save(why), busy: () => busy,
+    callout: (textKey, params, who) => emit({ type: 'open', screen: 'callout', id: `npc:${who}`, textKey, params }),
+    // The end of a set of a practice of an activity: the practice ends there.
+    setDone: (act) => {
+      if (practice?.task !== act) return false;
+      practiceEnd(hamlet.personOf(act));
       return true;
     },
   });
@@ -461,6 +475,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       planting.start();
       return;
     }
+    // The ducks, the fish traps, or the drum dance (docs/HAMLET.md).
+    if (c.open === 'ducks' || c.open === 'traps' || c.open === 'drum') {
+      hamlet.start(c.open);
+      return;
+    }
     // The choice at the end of a set of a practice: stay and play on, or go back.
     if (c.open === 'practice-stay' || c.open === 'practice-back') {
       practiceChoice(c.open === 'practice-stay');
@@ -560,7 +579,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (stay) {
       practice.stayed = true;
       save('practice');
-      startTrial(practice.trial);
+      if (practice.task === 'planting') planting.start();
+      else if (practice.task) hamlet.start(practice.task);
+      else startTrial(practice.trial);
       return;
     }
     syncSave();
@@ -626,7 +647,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const held = getEntity(state, holding());
     if (held && canPut(wz.zone, held)) {
       const at = { x: Math.round(hit.x * 2), z: Math.round(hit.y * 2) };
-      const stand = wz.zone.rule === 'line' ? { x: at.x, z: wz.position.z } : wz.position;
+      // A spot in the stream: the hero walks to the bank by the free spot nearest to the tap.
+      const spot = wz.zone.rule === 'spots' ? wz.zone.slots[freeSlot(state, wz.zone, at)] : null;
+      if (wz.zone.rule === 'spots' && !spot) return false;
+      const stand = wz.zone.rule === 'line' ? { x: at.x, z: wz.position.z } : spot ?? wz.position;
       walkNear(stand, () => worldCommand(state, { type: 'put', id: 'hero', zone: wz.zone.id, at }));
       return true;
     }
@@ -667,15 +691,60 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!e) return;
     walkNear(e.position, () => work('plant', 'choose', { plot: t.plot, which: t.which }));
   }
-  // The end of a set of a practice of the planting: the reward, and the choice to stay or go back.
-  function plantPracticeEnd() {
+  // The fisher uncle opens the weir when there are new traps in the stream; else a short line.
+  // Return true when the tap was for the traps.
+  function tapFisherUncle(person) {
+    if (person.ref !== hamlet.personOf('traps')) return false;
+    const r = hamlet.round('traps');
+    if (!r) return false;
+    if (r.done || r.fill) return true;
+    const fresh = (getEntity(state, 'zone:traps-stream')?.zone.items ?? []).some((id) => !getEntity(state, id)?.item.set);
+    walkToThing(person, () => {
+      worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 });
+      if (fresh) work('traps', 'open');
+      else say('traps.wait', {}, null, person.ref);
+    });
+    return true;
+  }
+  // A tap on a thing of an activity: the jar of feed (the hero walks to it), or a bronze drum (a
+  // beat of the dance, when the hero stands at the drum; else the hero walks there first).
+  function tapHamlet(t) {
+    const e = getEntity(state, t.id);
+    if (!e) return;
+    if (t.act === 'ducks') {
+      walkNear(e.position, () => {});
+      return;
+    }
+    const r = hamlet.round('drum');
+    if (!r || r.done) return;
+    const near = distHb(hero().position, e.position) <= REACH + 1;
+    if (near) work('drum', 'tap', { which: t.which ?? 0 });
+    // While the dance goes on, a tap from far away is only a walk.
+    else walkNear(e.position, () => { if (!r.dance || r.paused) work('drum', 'tap', { which: t.which ?? 0 }); });
+  }
+  // The child holds the jar of feed (on) or lets it go (off). The feed pours only while the hero
+  // stands at the jar; from far away the hero walks there first.
+  function hold(on) {
+    const r = hamlet.round('ducks');
+    const jar = getEntity(state, 'hamlet:jar');
+    if (!r || !jar) return;
+    if (!on) {
+      if (r.pouring) work('ducks', 'stop');
+      return;
+    }
+    if (r.done || r.eat || busy) return;
+    if (distHb(hero().position, jar.position) <= REACH + 1) work('ducks', 'pour');
+    else walkNear(jar.position, () => {});
+  }
+  // The end of a set of a practice: the reward, and the choice to stay or go back.
+  function practiceEnd(person) {
     const rec = (profile.practice ??= {})[practice.id] ??= { level: practice.level ?? 0, sets: 0 };
     rec.sets += 1;
     applyEffects(profile, [{ give: { coin: 3 } }]);
     save('practice');
-    emit({ type: 'gift', from: 'npc:planter', give: { coin: 3 }, delay: 0.3 });
+    emit({ type: 'gift', from: `npc:${person}`, give: { coin: 3 }, delay: 0.3 });
     emit({ type: 'practice', id: practice.id, sets: rec.sets, level: rec.level });
-    talk('planter.practice.end');
+    talk(`${person}.practice.end`);
   }
 
   // The small events of each day (data/world/events.json, src/core/world/days.js) -------------
@@ -1386,11 +1455,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       tapPlotStake(target.plotStake);
       return;
     }
+    if (target.hamlet) {
+      tapHamlet(target.hamlet);
+      return;
+    }
     if (target.person) {
       const person = persons().find((p) => p.entity === target.person);
       if (!person || (person.kind === 'encounter' && raidOn())) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
-      if (person.kind === 'npc' && (tapGift(person) || tapTrialPerson(person) || tapPlanter(person))) return;
+      if (person.kind === 'npc' && (tapGift(person) || tapTrialPerson(person) || tapPlanter(person) || tapFisherUncle(person))) return;
       walkToThing(person, () => interact({ kind: person.kind, id: person.ref }, person));
       return;
     }
@@ -1477,6 +1550,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The things of a raid that a tap is for: the gate, a spot, the bamboo.
     for (const e of query(state, 'raidTap', 'position')) consider({ raid: e.raidTap }, distHb(p, e.position), 2.2);
     if (best) return best.target;
+    // The jar of feed of the ducks, and the bronze drums of the dance.
+    for (const e of query(state, 'hamletTap', 'position')) consider({ hamlet: { ...e.hamletTap, id: e.id } }, distHb(p, e.position), 1.6);
+    if (best) return best.target;
     for (const e of query(state, 'item', 'position')) {
       // A standing culm needs the height of the finger: only the view (or a story) taps it.
       if (e.hidden || (e.item.set && !e.item.fixed) || e.item.kind === 'culm' || e.item.kind === 'stump') continue;
@@ -1536,6 +1612,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       });
     }
     if (ev.type === 'planted') planting.planted(ev);
+    hamlet.worldEvent(ev);
     if (ev.type === 'trial' && ev.done && String(ev.trial).startsWith('event-')) eventDone(ev.trial.slice(6));
     else if (ev.type === 'trial' && ev.done) trialDone(ev.trial);
     // A small event of the day: too few on the place, or too many (the last things go back).
@@ -1649,6 +1726,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     mentoring.tick();
     planting.tick(STEP);
+    hamlet.tick(STEP);
     checkRest();
     checkEdge();
     checkLandFerries();
@@ -1731,7 +1809,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       emit({ type: type === 'fell' ? 'felled' : 'dug', id: cmd.id ?? null, at: r.at ?? null, kind: r.kind ?? null, drops: r.drops, chunks: r.chunks });
       return;
     }
+    // The hold of the jar of feed: letting go always counts, even while a line shows.
+    if (type === 'hold' && !cmd.on) {
+      hold(false);
+      return;
+    }
     if (busy) return;
+    if (type === 'hold') {
+      hold(true);
+      return;
+    }
     // In a raid, a tap on Nghé is the charge only when Nghé is a tool of this raid.
     const charges = type === 'pet' && raidEnt()?.raid.tools.includes('nghe');
     if (raidOn() && (type === 'shoot' || type === 'pour' || charges)) {

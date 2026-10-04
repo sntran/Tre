@@ -393,6 +393,20 @@ export function validate(profile, { grades = null } = {}) {
     for (const k of ['used', 'done']) list(pl[k] ?? [], `planting.${k}`, 100);
     for (const [, n] of entries(pl.counts ?? {}, 'planting.counts')) int(n, 'planting.counts', 0, 1e9);
   }
+  // The ducks, the fish traps, and the drum dance of Xóm Ruộng (src/core/hamlet-session.js): the
+  // sets of each activity, the beat of the drummer, and the plays of each activity.
+  if (profile.hamlet !== undefined) {
+    const hm = profile.hamlet;
+    if (!isObj(hm)) fail('hamlet');
+    for (const [act, a] of entries(hm.acts ?? {}, 'hamlet.acts')) {
+      if (!['ducks', 'traps', 'drum'].includes(act) || !isObj(a)) fail(`hamlet.acts.${act}`);
+      for (const k of ['sets', 'set', 'index']) int(a[k] ?? 0, `hamlet.acts.${act}.${k}`, 0, 1e9);
+      for (const k of ['used', 'done']) list(a[k] ?? [], `hamlet.acts.${act}.${k}`, 100);
+      for (const [, n] of entries(a.counts ?? {}, `hamlet.acts.${act}.counts`)) int(n, `hamlet.acts.${act}.counts`, 0, 1e9);
+      if (a.period !== undefined) num(a.period, `hamlet.acts.${act}.period`, 0.1, 10);
+    }
+    for (const [, n] of entries(hm.plays ?? {}, 'hamlet.plays')) int(n, 'hamlet.plays', 0, 1e9);
+  }
   // Time
   const time = profile.time;
   if (time.day !== null && time.day !== undefined) str(time.day, 'time.day', 20);

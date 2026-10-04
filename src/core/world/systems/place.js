@@ -27,11 +27,11 @@ import {
   REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, sizesOf, sum, openRound, openGap, reachOf, oldDeck,
 } from '../zones.js';
 import { isMashing } from '../../learnlog.js';
-import { putWork, canTakeWork, toHeap } from './work.js';
+import { putWork, canTakeWork, toHeap, freeSlot } from './work.js';
 import { putRaid } from './raid.js';
 
 // The zones of the tasks of the trials: the work system puts the things there.
-const WORK = new Set(['heap', 'bundle', 'forge', 'trough', 'line', 'basket', 'woodpile', 'feed', 'hearth', 'share', 'road', 'exact']);
+const WORK = new Set(['heap', 'bundle', 'forge', 'trough', 'line', 'basket', 'woodpile', 'feed', 'hearth', 'share', 'road', 'exact', 'spots']);
 
 const TIP = 0.3; // seconds: the last plank dips under the hero
 const DROP = 0.35; // seconds: the hero falls into the water
@@ -156,7 +156,8 @@ function put(world, e, zoneEnt, env, dt, at = null) {
   if (WORK.has(zone.rule)) {
     // A zone of a trial or a raid: near its reach point, or near the point of the tap on a line of
     // stakes or on the road.
-    const target = zone.rule === 'line' && at ? { x: at.x, z: zone.z } : zone.rule === 'road' && at ? at : zoneEnt.position;
+    const slot = zone.rule === 'spots' ? zone.slots[freeSlot(world, zone, at)] : null;
+    const target = zone.rule === 'line' && at ? { x: at.x, z: zone.z } : zone.rule === 'road' && at ? at : slot ?? zoneEnt.position;
     if (dist(e.position, target) > REACH + 2) return say(world, 'far', e.id);
     release(e, thing);
     const done = zone.task === 'raid' ? putRaid(world, e, zone, thing, at, env) : putWork(world, e, zone, thing, at, env);

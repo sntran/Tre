@@ -1,0 +1,345 @@
+{
+  "name": "practice-cho-vit-an",
+  "about": {
+    "vi": "Luyện tập cho vịt ăn: đường link đưa An đến ao của chị Vịt ở Xóm Ruộng. Một lượt bốn máng: một máng thiếu cám (An đổ thêm, đổ tiếp từ chỗ dừng), một máng thừa cám, các máng khác vừa đủ; chị cảm ơn, An về chỗ cũ.",
+    "en": "Practice of feeding the ducks: the link takes An to the pond of the duck girl in Xóm Ruộng. One set of four troughs: one with too little feed (An pours more, on from where the pour stopped), one with too much, and the others just right; the duck girl says thank you, and An goes back."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "practice": "cho-vit-an",
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "entity": "hamlet:jar"
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 1.8
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "fed",
+        "timeout": 90
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "fed",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "entity": "hamlet:jar"
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 4.2
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "fed",
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "fed",
+          "with": {
+            "result": "few"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "entity": "hamlet:jar"
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 2.2
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "fed",
+        "timeout": 90
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "fed",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "entity": "hamlet:jar"
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 4.6
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "fed",
+        "timeout": 90
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "fed",
+          "with": {
+            "result": "many"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "entity": "hamlet:jar"
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 10.2
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "fed",
+        "timeout": 90
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "fed",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "practice",
+          "with": {
+            "id": "cho-vit-an",
+            "sets": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "dlg.duck-girl.practice.end.n1"
+          }
+        },
+        {
+          "item": "coin",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "read": [
+        1
+      ]
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "cell": [
+              11,
+              26.5
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1232,6 +1232,41 @@
       "beard": true,
       "item": "drum",
       "face": 1
+    },
+    "duck-big": {
+      "kind": "duck",
+      "big": true
+    },
+    "dancer-red": {
+      "skin": "skin2",
+      "top": "vermilion",
+      "bottom": "ink",
+      "sash": "yellow",
+      "topKind": "shirt",
+      "bottomKind": "skirt",
+      "hair": "bun",
+      "face": 3
+    },
+    "dancer-blue": {
+      "skin": "skin3",
+      "top": "indigo",
+      "bottom": "ink",
+      "sash": "vermilion",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "band",
+      "face": 2
+    },
+    "dancer-child": {
+      "child": true,
+      "skin": "skin2",
+      "top": "yellowPale",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "shirt",
+      "bottomKind": "shorts",
+      "hair": "tufts",
+      "face": 1
     }
   }
 }

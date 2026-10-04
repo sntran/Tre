@@ -1,0 +1,600 @@
+{
+  "name": "practice-dat-lo",
+  "about": {
+    "vi": "Luyện tập đặt lờ: đường link đưa An đến suối của chú đánh cá ở Xóm Ruộng. Một lượt bốn mâm cá: một lần thiếu lờ (An đặt thêm), một lần thừa lờ (cá thừa bơi đi), các lần khác vừa đủ; chú cảm ơn, An về chỗ cũ.",
+    "en": "Practice of the fish traps: the link takes An to the stream of the fisher uncle in Xóm Ruộng. One set of four catches: one with too few traps (An puts more), one with too many (the extra fish swim on), and the others just right; the fisher uncle says thank you, and An goes back."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "practice": "dat-lo",
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:fisher-uncle"
+      }
+    },
+    {
+      "until": {
+        "event": "caught",
+        "timeout": 90
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "caught",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:fisher-uncle"
+      }
+    },
+    {
+      "until": {
+        "event": "caught",
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "caught",
+          "with": {
+            "result": "few"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:fisher-uncle"
+      }
+    },
+    {
+      "until": {
+        "event": "caught",
+        "timeout": 90
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "caught",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 2
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:fisher-uncle"
+      }
+    },
+    {
+      "until": {
+        "event": "caught",
+        "timeout": 90
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "caught",
+          "with": {
+            "result": "many"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "item": "lo",
+        "size": 5
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "zone": "traps-stream"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 30
+      }
+    },
+    {
+      "tap": {
+        "entity": "npc:fisher-uncle"
+      }
+    },
+    {
+      "until": {
+        "event": "caught",
+        "timeout": 90
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "caught",
+          "with": {
+            "result": "exact"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "practice",
+          "with": {
+            "id": "dat-lo",
+            "sets": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "dlg.fisher-uncle.practice.end.n1"
+          }
+        },
+        {
+          "item": "coin",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "read": [
+        1
+      ]
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "cell": [
+              11,
+              26.5
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

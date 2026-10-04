@@ -9,7 +9,7 @@ import { endScript } from './world/systems/mentor.js';
 import { STEP } from './world/step.js';
 
 // The zones where the parts of a try go, in the order of the search.
-const PLACES = ['exact', 'bundle', 'basket', 'line', 'forge', 'woodpile'];
+const PLACES = ['exact', 'bundle', 'basket', 'line', 'forge', 'woodpile', 'spots'];
 const NEAR = 28; // half blocks: the hero is at the station when nearer than this to its place
 const LEAVE = 40; // half blocks: farther than this soon after a miss, the hero left the station
 const LEAVE_TIME = 15; // seconds after a miss
@@ -30,6 +30,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   const now = () => (world()?.tick ?? 0) * STEP;
   const defOf = (key) => cfg?.mentors?.[key] ?? null;
   const famOf = (key) => cfg.families[defOf(key).family];
+  // The line of a move: the own line of the mentor of the task, else the common line.
+  const lineOf = (key, move) => defOf(key)?.lines?.[move] ?? cfg.lines[move];
   const memoryOf = (key) => {
     profile.mentors ??= {};
     return (profile.mentors[key] ??= newMemory());
@@ -268,7 +270,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (needsPlace && !task) return;
     if (move === 'show') {
       const pile = task.piles[0]?.position ?? task.at;
-      say(t, cfg.lines.show);
+      say(t, lineOf(key, 'show'));
       point(t, pile, 1.4);
       mark(t, pile, 2.5);
       point(t + 1.6, task.at, 1.4);
@@ -293,13 +295,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       say(t, def.picture);
       t += 2;
     } else if (move === 'raise') {
-      say(t, cfg.lines.raise);
+      say(t, lineOf(key, 'raise'));
       const mem = memoryOf(key);
       mem.lift = Math.min(2, (mem.lift ?? 0) + 1);
       raise(key);
       t += 2;
     } else {
-      say(t, cfg.lines[move]);
+      say(t, lineOf(key, move));
       t += 2;
     }
     if (!steps.length) return;
@@ -312,7 +314,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // Mark what matters: count the parts on the place aloud, one at a time (each with the running
   // total as a word), then mark the empty part or the part too many.
   function markSteps(task, fam, info, s, t) {
-    s.say(t, cfg.lines.mark);
+    s.say(t, lineOf(task.key, 'mark'));
     const parts = itemsOf(task.place);
     let total = 0;
     if (fam.reader === 'sum' && parts.length) {
@@ -339,7 +341,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   function demoSteps(task, def, info, s, t) {
     const d = def.demo;
     if (!d) {
-      s.say(t, cfg.lines.mark);
+      s.say(t, lineOf(task.key, 'mark'));
       return { t: t + 2 };
     }
     const sizes = sizesOf(task);
@@ -347,7 +349,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const other = d.same ? target : demoTarget(target, sizes.length ? sizes : [1]);
     const parts = demoParts(other, sizes.length ? sizes : [1]);
     const spot = demoSpot(task);
-    s.say(t, cfg.lines.demo);
+    s.say(t, lineOf(task.key, 'demo'));
     t += 1.2;
     if (d.prop) s.steps.push({ at: t, spawn: { look: d.prop, x: spot.x - 3, z: spot.z, facing: Math.PI / 2 } });
     if (d.target) s.steps.push({ at: t, spawn: { look: d.target, x: spot.x, z: spot.z } });
@@ -387,7 +389,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // The person puts some parts into the place for the child: one part (smaller) or about half
   // (share). Never the whole task.
   function shareSteps(task, fam, move, info, s, t) {
-    s.say(t, cfg.lines[move]);
+    s.say(t, lineOf(task.key, move));
     t += 1.2;
     const free = task.piles.flatMap(itemsOf).filter((e) => !e.item.held && !e.item.set && !e.item.stray);
     let picks = [];

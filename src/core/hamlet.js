@@ -15,27 +15,31 @@ export const activityRng = (seed, activity, n, salt = '') => createRng(hashSeed(
 // The fact and the form of the next task of an activity. ctx: { range (the factor range of the
 // level), pool (optional: the facts that the activity can show), forms (of the level), mem, day,
 // index (the task of this set), round (the round of all the activities), prev (the key of the last
-// task), used (the forms of this set), counts, not (keys to leave out) }.
+// task), used (the forms of this set), counts, not (keys to leave out), form (optional: the form,
+// when the activity chose it first) }.
 export function nextTask(ctx, rng) {
   const pool = ctx.pool ?? factPool(ctx.range);
   const key = chooseFact({ pool, mem: ctx.mem, day: ctx.day, set: null, index: ctx.index ?? 0, round: ctx.round, prev: ctx.prev, hard: ctx.hard ?? 0, not: ctx.not ?? [] }, rng);
-  const form = (ctx.used ?? []).length === 0 ? ctx.forms[0] : chooseForm({ forms: ctx.forms, used: ctx.used, counts: ctx.counts ?? {}, avoid: ctx.mem[key]?.again?.form ?? null }, rng);
+  const form = ctx.form ?? ((ctx.used ?? []).length === 0 ? ctx.forms[0] : chooseForm({ forms: ctx.forms, used: ctx.used, counts: ctx.counts ?? {}, avoid: ctx.mem[key]?.again?.form ?? null }, rng));
   return { key, form };
 }
 
 // ---------------------------------------------------------------- Feeding the ducks
 // A line of ducks along a trough. Each duck eats its share (scoops). Forms:
 //   groups: a ducks, b scoops each (a × b);
-//   double: big ducks eat twice what a small duck eats (the duck girl shows the small share);
+//   double: big ducks eat twice what a small duck eats (the duck girl shows the small share; at
+//     most half a line of ducks);
 //   mixed: two kinds of ducks in one line (some eat two, some eat five: the sum of two products).
 // Return { form, ducks: [{ share, big }], need, show (the share that the duck girl shows), facts }.
 export function duckTask({ key, form, data, rng }) {
   let [a, b] = factorsOf(key);
   if (a > data.maxDucks) [a, b] = [b, a];
   if (form === 'double') {
+    // At most half the line of ducks, so that the pour is not too long.
+    const n = Math.max(1, Math.min(a, Math.floor(data.maxDucks / 2)));
     const small = Math.max(1, Math.min(b, Math.floor(10 / data.big)));
-    const ducks = Array.from({ length: a }, () => ({ share: small * data.big, big: true }));
-    return { form, ducks, need: a * small * data.big, show: small, facts: [factKey(a, small * data.big)] };
+    const ducks = Array.from({ length: n }, () => ({ share: small * data.big, big: true }));
+    return { form, ducks, need: n * small * data.big, show: small, facts: [factKey(n, small * data.big)] };
   }
   if (form === 'mixed') {
     const [s1, s2] = data.mixed.shares;

@@ -452,6 +452,22 @@ export async function mountVillage(ctx, params = {}) {
     }
     // A thing under the finger (a plank, a rod, the stem) wins over Nghé beside it.
     hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false, friend: thingAt(p) || guessAt(p) ? null : friendAt(p) };
+    // A finger on the jar of feed of the ducks pours while it stays down (docs/HAMLET.md).
+    if (hamletAt(p)?.hamlet.act === 'ducks') {
+      hold.jar = true;
+      send({ type: 'hold', on: true });
+    }
+  }
+
+  // A thing of an activity of the hamlet under a screen point (the jar of feed, a bronze drum).
+  function hamletAt(p) {
+    for (const e of query(state, 'hamletTap', 'position')) {
+      const f = figures.placeOf(e.id);
+      if (!f) continue;
+      const b = view.screenBox({ x0: f.x - 0.6, x1: f.x + 0.6, y0: f.y, y1: f.y + Math.max(0.6, f.height), z0: f.z - 0.6, z1: f.z + 0.6 });
+      if (p.x >= b.x0 - 10 && p.x <= b.x1 + 10 && p.y >= b.y0 - 10 && p.y <= b.y1 + 10) return { hamlet: { ...e.hamletTap, id: e.id } };
+    }
+    return null;
   }
 
   // Nghé (or the hero on the back of Nghé) under a screen point: a tap pets, a hold rides.
@@ -516,7 +532,13 @@ export async function mountVillage(ctx, params = {}) {
     if (hold && hold.id === e.pointerId) {
       const wasHeld = hold.held;
       const friend = hold.friend;
+      const jar = hold.jar;
       hold = null;
+      // The finger leaves the jar of feed: the pour stops (and the ducks eat).
+      if (jar) {
+        send({ type: 'hold', on: false });
+        return;
+      }
       if (wasHeld || e.type !== 'pointerup' || busy) return;
       if (friend) {
         ctx.bus.emit('sound', 'tap');
@@ -647,6 +669,8 @@ export async function mountVillage(ctx, params = {}) {
     if (ghost) return { guess: { zone: ghost.guess.zone, n: ghost.guess.n } };
     const raidTap = raidView.targetAt(p);
     if (raidTap) return raidTap;
+    const hamletTap = hamletAt(p);
+    if (hamletTap) return hamletTap;
     const plank = thingAt(p);
     if (plank) return plank.item.fixed ? { thing: plank.id, along: plank.along } : { thing: plank.id };
     const person = personAt(p);
