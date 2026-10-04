@@ -1,11 +1,14 @@
 // The land streams with the hero: the tiles of the land around the hero (and ahead of the walk) are
-// made in a Web Worker (src/ui/gen-worker.js) before the hero and the view need them, and the height
-// tiles that they read are loaded first. A tile from the worker goes into the land of the map; a
-// tile that the game needs before the worker sends it is made at once (the generator is pure: it is
+// made in Web Workers (src/ui/gen-worker.js) before the hero and the view need them, and the height
+// tiles that they read are loaded first. A tile from a worker goes into the land of the map; a
+// tile that the game needs before a worker sends it is made at once (the generator is pure: it is
 // the same tile). Without workers, one tile is made in each frame.
 
 const RADIUS = 2; // tiles around the tile of the hero (a tile is 64 cells)
 const RETRY = 5000; // ms: a tile whose height tiles did not load (offline) asks again after this
+// The workers that make tiles at the same time: at the start, the tiles around the hero come
+// before the world starts (the loading screen waits for them, src/ui/village.js).
+const WORKERS = Math.max(1, Math.min(3, ((globalThis.navigator?.hardwareConcurrency ?? 2) - 1)));
 
 // map: a map on the plane (src/world/regions.js). data: the data of the game (heights, heightBytes,
 // moreHeights, geo, scatter, figures).
@@ -15,41 +18,49 @@ export function createStream(map, data) {
   const queue = [];
   // The tiles whose height tiles did not load: they show the paper of the mist until they load.
   const waiting = new Map();
-  let worker = null;
+  // The workers, and the tiles that each one makes now.
+  let workers = [];
+  const init = {
+    type: 'init',
+    def: map.source.def,
+    places: map.source.places,
+    seed: map.source.seed,
+    rivers: data.geo.rivers,
+    land: data.geo.land,
+    rules: data.scatter ?? {},
+    parts: data.figures.villagers ?? null,
+    heights: [...data.heightBytes.values()],
+  };
   try {
-    worker = new Worker(new URL('./gen-worker.js', import.meta.url), { type: 'module' });
-    worker.postMessage({
-      type: 'init',
-      def: map.source.def,
-      places: map.source.places,
-      seed: map.source.seed,
-      rivers: data.geo.rivers,
-      land: data.geo.land,
-      rules: data.scatter ?? {},
-      parts: data.figures.villagers ?? null,
-      heights: [...data.heightBytes.values()],
-    });
-    worker.onmessage = (e) => {
-      const m = e.data;
-      if (m.type !== 'tile') return;
-      if (!land.has(m.tile.tx, m.tile.tz)) land.put(m.tile);
-      asked.delete(m.key);
-    };
-    worker.onerror = () => {
-      worker = null;
-      asked.clear();
-    };
+    for (let i = 0; i < WORKERS; i++) {
+      const w = { worker: new Worker(new URL('./gen-worker.js', import.meta.url), { type: 'module' }), busy: 0 };
+      w.worker.postMessage(init);
+      w.worker.onmessage = (e) => {
+        const m = e.data;
+        if (m.type !== 'tile') return;
+        w.busy -= 1;
+        if (!land.has(m.tile.tx, m.tile.tz)) land.put(m.tile);
+        asked.delete(m.key);
+      };
+      w.worker.onerror = () => {
+        w.worker.terminate();
+        workers = workers.filter((x) => x !== w);
+        asked.clear();
+      };
+      workers.push(w);
+    }
   } catch {
-    worker = null;
+    for (const w of workers) w.worker.terminate();
+    workers = [];
   }
   const sent = new Set(data.heightBytes.keys());
-  // Send the new height tiles to the worker.
+  // Send the new height tiles to the workers.
   const share = () => {
-    if (!worker) return;
+    if (!workers.length) return;
     const tiles = [...data.heightBytes.entries()].filter(([n]) => !sent.has(n));
     if (!tiles.length) return;
     for (const [n] of tiles) sent.add(n);
-    worker.postMessage({ type: 'heights', tiles: tiles.map(([, b]) => b) });
+    for (const w of workers) w.worker.postMessage({ type: 'heights', tiles: tiles.map(([, b]) => b) });
   };
   async function ask(tx, tz) {
     const key = `${tx},${tz}`;
@@ -68,8 +79,12 @@ export function createStream(map, data) {
       asked.delete(key);
       return;
     }
-    if (worker) worker.postMessage({ type: 'tile', tx, tz, key });
-    else queue.push([tx, tz, key]);
+    // The worker with the fewest tiles to make.
+    const w = workers.reduce((a, b) => (b.busy < a.busy ? b : a), workers[0] ?? null);
+    if (w) {
+      w.busy += 1;
+      w.worker.postMessage({ type: 'tile', tx, tz, key });
+    } else queue.push([tx, tz, key]);
   }
   let at = null;
   return {
@@ -93,12 +108,23 @@ export function createStream(map, data) {
         waiting.delete(k);
         ask(tx, tz);
       }
-      // Without a worker: one tile in each frame.
+      // Without workers: one tile in each frame.
       const next = queue.shift();
       if (next) {
         land.tile(next[0], next[1]);
         asked.delete(next[2]);
       }
+    },
+    // The tiles around a cell that are made: { total, ready } (radius in tiles).
+    near(x, y, radius = 1) {
+      const out = { total: 0, ready: 0 };
+      const cx = Math.floor(x / 64);
+      const cy = Math.floor(y / 64);
+      for (let dz = -radius; dz <= radius; dz++) for (let dx = -radius; dx <= radius; dx++) {
+        out.total += 1;
+        if (land.has(cx + dx, cy + dz)) out.ready += 1;
+      }
+      return out;
     },
     // Are the tiles of a box of cells made?
     ready(x0, y0, x1, y1) {
@@ -106,8 +132,8 @@ export function createStream(map, data) {
       return true;
     },
     dispose() {
-      worker?.terminate();
-      worker = null;
+      for (const w of workers) w.worker.terminate();
+      workers = [];
     },
   };
 }
