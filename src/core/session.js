@@ -610,9 +610,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const tz = trialZone(trial);
     if (!tz || tz.zone.done) return false;
     if (thing.item.kind === 'rod') {
-      // A rod of the heap goes on the mat; a rod on the mat goes back on the heap.
+      // A rod of the heap goes on the mat; a tap on the rods on the mat ties them (one job for
+      // each thing: docs/TASKS.md). A drag of a rod from the mat to the heap takes it back.
       const mat = zoneOf('mat');
-      walkNear(mat.position, () => work(trial, thing.item.zone === 'mat' ? 'back' : 'add', { item: thing.id }));
+      walkNear(mat.position, () => work(trial, thing.item.zone === 'mat' ? 'tie' : 'add', { item: thing.id }));
       return true;
     }
     if (thing.item.kind === 'band') {
@@ -740,6 +741,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (r.done || r.eat || busy) return;
     if (distHb(hero().position, jar.position) <= REACH + 1) work('ducks', 'pour');
     else walkNear(jar.position, () => {});
+  }
+  // A drag of a thing (the undo of a task): a rod from the mat to the heap goes back on the heap.
+  // cmd: { item, zone (the zone where the finger let go), or x and y (map cells of that point) }.
+  function dragThing(cmd) {
+    const thing = getEntity(state, cmd.item);
+    if (!thing?.item || thing.item.kind !== 'rod' || thing.item.zone !== 'mat') return;
+    const heap = zoneOf('rods');
+    const mat = zoneOf('mat');
+    if (!heap || !mat) return;
+    const at = cmd.x !== undefined ? { x: cmd.x * 2, z: cmd.y * 2 } : null;
+    const toHeap = cmd.zone ? cmd.zone === 'rods' : at && distHb(at, heap.position) < distHb(at, mat.position);
+    if (!toHeap) return;
+    walkNear(mat.position, () => work(thing.item.task.slice(6), 'back', { item: thing.id }));
   }
   // The end of a set of a practice: the reward, and the choice to stay or go back.
   function practiceEnd(person) {
@@ -1823,6 +1837,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (busy) return;
     if (type === 'hold') {
       hold(true);
+      return;
+    }
+    if (type === 'drag') {
+      dragThing(cmd);
       return;
     }
     // In a raid, a tap on Nghé is the charge only when Nghé is a tool of this raid.

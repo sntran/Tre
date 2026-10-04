@@ -1,0 +1,121 @@
+{
+  "name": "trial-teacher-tap",
+  "about": {
+    "vi": "Thử thách của thầy đồ, bằng những cú chạm rõ ràng: chạm một que trên đống thì que lên chiếu; kéo một que từ chiếu về đống thì que về đống; chạm vào bó que trên chiếu thì buộc bó.",
+    "en": "The trial of the teacher with clear taps: a tap on a rod of the heap puts it on the mat; a drag of a rod from the mat to the heap takes it back; a tap on the rods on the mat ties the bundle."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    54,
+    27
+  ],
+  "steps": [
+    {
+      "tap": {
+        "entity": "npc:teacher"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "repeat": 10,
+      "steps": [
+        {
+          "tap": {
+            "item": "rod"
+          }
+        },
+        {
+          "until": {
+            "event": "add",
+            "timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "do": {
+        "type": "drag",
+        "item": "rod:scholar:9",
+        "zone": "rods"
+      }
+    },
+    {
+      "until": {
+        "event": "back",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "back"
+        },
+        {
+          "event": "skill",
+          "not": true
+        }
+      ]
+    },
+    {
+      "tap": {
+        "item": "rod"
+      }
+    },
+    {
+      "until": {
+        "event": "add",
+        "timeout": 10
+      }
+    },
+    {
+      "tap": {
+        "thing": "rod:scholar:0"
+      }
+    },
+    {
+      "until": {
+        "event": "tie",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.count.120",
+            "solved": true
+          }
+        },
+        {
+          "count": {
+            "entities": "rod-bundle",
+            "min": 1
+          }
+        }
+      ]
+    }
+  ]
+}

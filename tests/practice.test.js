@@ -154,7 +154,7 @@ test('a rod taken back from the mat in a practice is no "go back": the visit goe
     steps: [
       { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } }, { read: true },
       { tap: { thing: 'rod:scholar:0' } }, { until: { event: 'add', timeout: 10 } },
-      { tap: { thing: 'rod:scholar:0' } }, { until: { event: 'back', timeout: 10 } },
+      { do: { type: 'drag', item: 'rod:scholar:0', zone: 'rods' } }, { until: { event: 'back', timeout: 10 } },
       { wait: 2 },
       { expect: [{ zone: 'trial-scholar', state: 'open' }, { hero: { near: 'npc:teacher', within: 12 } }] },
     ],

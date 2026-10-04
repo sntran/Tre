@@ -451,7 +451,10 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     // A thing under the finger (a plank, a rod, the stem) wins over Nghé beside it.
-    hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false, friend: thingAt(p) || guessAt(p) ? null : friendAt(p) };
+    const under = thingAt(p);
+    hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false, friend: under || guessAt(p) ? null : friendAt(p) };
+    // A rod on the mat of the teacher can be dragged back to the heap (the undo of the task).
+    if (under?.item?.kind === 'rod' && under.item.zone === 'mat') hold.drag = under.id;
     // A finger on the jar of feed of the ducks pours while it stays down (docs/HAMLET.md).
     if (hamletAt(p)?.hamlet.act === 'ducks') {
       hold.jar = true;
@@ -533,7 +536,14 @@ export async function mountVillage(ctx, params = {}) {
       const wasHeld = hold.held;
       const friend = hold.friend;
       const jar = hold.jar;
+      const drag = hold.drag;
       hold = null;
+      // A drag of a rod ends where the finger lets go: on the heap, the rod goes back.
+      if (drag && wasHeld) {
+        const hit = view.pick(p.x, p.y, { things: true });
+        if (hit) send({ type: 'drag', item: drag, x: hit.x, y: hit.y });
+        return;
+      }
       // The finger leaves the jar of feed: the pour stops (and the ducks eat).
       if (jar) {
         send({ type: 'hold', on: false });
