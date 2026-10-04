@@ -42,6 +42,10 @@ export function move(world, dt, rng, env) {
     stepBody(body, i ? { dx: i.dx, dy: i.dz, strength: i.strength, run: i.run } : { dx: 0, dy: 0, strength: 0 }, dt, env.near(body.x, body.y));
     for (const s of solids) {
       if (s === e || (e.riding && s.pushable)) continue;
+      if (s.solid.rect) {
+        pushOutOfRect(body, s.solid.rect, env);
+        continue;
+      }
       const dx = body.x - s.position.x / 2;
       const dy = body.y - s.position.z / 2;
       const d = Math.hypot(dx, dy);
@@ -69,6 +73,22 @@ export function move(world, dt, rng, env) {
       world.events.push({ type: 'step', id: e.id, sound: ground === 'shallow' || ground === 'surf' || ground === 'water' ? 'step-water' : ground === 'bridge' || ground === 'bamboo' ? 'step-wood' : 'step-grass' });
     }
   }
+}
+
+// A solid box of a thing of a task (a trough, a heap; rect in half blocks): the body goes out of it
+// on the shortest way, as out of a wall.
+function pushOutOfRect(body, rect, env) {
+  const r = MOVE.radius;
+  const x0 = rect.x0 / 2 - r;
+  const x1 = rect.x1 / 2 + r;
+  const z0 = rect.z0 / 2 - r;
+  const z1 = rect.z1 / 2 + r;
+  if (body.x <= x0 || body.x >= x1 || body.y <= z0 || body.y >= z1) return;
+  const ways = [[x0 - body.x, 0], [x1 - body.x, 0], [0, z0 - body.y], [0, z1 - body.y]];
+  const [dx, dy] = ways.sort((a, b) => Math.abs(a[0] + a[1]) - Math.abs(b[0] + b[1]))[0];
+  const out = moveCircle(body, dx * 1.001, dy * 1.001, r, env.near(body.x, body.y).isBlocked);
+  body.x = out.x;
+  body.y = out.y;
 }
 
 // One step of a jump: the crouch, then the arc. At the end: the landing (a puff of dust, or a

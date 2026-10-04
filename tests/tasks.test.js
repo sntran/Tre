@@ -164,3 +164,40 @@ test('from the first camera angle, no house or roof covers a place of a trial, a
   const smith = trials.find((t) => t.id === 'smith');
   for (const name of ['ore', 'forge', 'anvil', 'trough'].map((k) => smith.places[k])) assert.deepEqual(covers(places[name], null), [], `something covers the place ${name} of the smith`);
 });
+
+test('the things of the trials are solid: the hero walks into the trough, the heap, and the anvil, and stays outside them', async () => {
+  const { getEntity } = await import('../src/core/world/state.js');
+  const inside = (p, r) => p.x > r.x0 && p.x < r.x1 && p.z > r.z0 && p.z < r.z1;
+  // The hero walks with the stick (dx, dz) for some seconds, then stops.
+  const walk = (dx, dz, s) => [{ do: { type: 'move', dx, dz, strength: 1 } }, { wait: s }, { do: { type: 'move', dx: 0, dz: 0, strength: 0 } }];
+  const bad = [];
+  const touched = new Set();
+  const failures = await runHeadless({ name: 'task-solid', profile, clock: 540, at: ['phu-dong', 53, 43], steps: [
+    ...start('smith'), ...carry('ore', 'forge').slice(0, 3), { until: { event: 'fire', timeout: 15 } },
+    // From the north into the trough, from the west into the ore heap, from the north into the anvil.
+    { walk: { to: [54.9, 44.1] } }, ...walk(-0.2, 1, 2),
+    { walk: { to: [48.8, 44] } }, ...walk(1, 0, 1),
+    { walk: { to: [54.2, 41.6] } }, ...walk(0, 1, 2),
+  ] }, { onSession: (s) => {
+    s.listen(() => {
+      const hero = getEntity(s.state, 'hero');
+      for (const id of ['trough:smith', 'zone:ore', 'iron:smith']) {
+        const rect = getEntity(s.state, id)?.solid?.rect;
+        if (!rect) continue;
+        if (inside(hero.position, rect)) bad.push(id);
+        if (inside(hero.position, { x0: rect.x0 - 1.2, x1: rect.x1 + 1.2, z0: rect.z0 - 1.2, z1: rect.z1 + 1.2 })) touched.add(id);
+      }
+    });
+  } });
+  assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
+  assert.deepEqual([...new Set(bad)], [], 'the hero stood inside a solid thing');
+  assert.ok(touched.has('trough:smith') && touched.has('iron:smith'), `the hero came to the trough and the anvil: ${[...touched]}`);
+  // The forge and the well are things of the map that block their cells.
+  const { planeOf } = await import('./helpers.js');
+  const { map, tileMap } = planeOf(1);
+  for (const id of ['forge', 'well']) {
+    const o = map.layers.objects.find((x) => x.id === id && x.place === 'phu-dong') ?? map.layers.objects.find((x) => x.id === id);
+    assert.ok(o, id);
+    assert.ok(tileMap.isBlocked(Math.floor(o.x + o.w / 2), Math.floor(o.y + o.h / 2)), `${id} blocks its cells`);
+  }
+});

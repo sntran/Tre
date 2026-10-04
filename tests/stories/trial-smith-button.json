@@ -22,6 +22,7 @@
     { "expect": [{ "action": { "act": "put", "icon": "hand-put" } }] },
     { "do": { "type": "hands" } },
     { "until": { "event": "fire", "timeout": 5 } },
+    { "walk": { "to": [54.8, 41.9] } },
     { "expect": [{ "action": { "act": "quench", "icon": "water" } }] },
     { "until": { "event": "glow", "timeout": 15 } },
     { "do": { "type": "hands" } },

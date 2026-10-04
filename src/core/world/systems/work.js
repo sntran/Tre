@@ -21,7 +21,7 @@
 //     the pen); the action button is the commit of the sum (a tap on the person asks for help). Exact: done. Too few: the person
 //     waits. Too many: the last things go back to the pile.
 // When a task is done, the event "trial" goes out (the session sets the flag and gives the reward).
-export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'events'];
+export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'solid', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { REACH } from '../zones.js';
@@ -107,6 +107,13 @@ export function setupTrial(world, def, level, env) {
       zone.zone.items.push(id);
     }
     packHeap(world, zone.zone);
+    // A heap of a trial is solid: the hero stands next to it, never in it (the box of its full rows).
+    if (def.kind === 'task') return;
+    const z = zone.zone;
+    const step = z.step ?? 1;
+    const cols = Math.min(z.cols ?? 4, z.items.length);
+    const rows = Math.ceil(z.items.length / (z.cols ?? 4));
+    zone.solid = { rect: { x0: z.x - 0.25, x1: z.x + (cols - 1) * step + 0.25, z0: z.z - 0.25, z1: z.z + (rows - 1) * step + 0.25 } };
   };
   const rect = (p, w, d) => ({ x0: p.x - 1, x1: p.x + w + 1, z0: p.z - 1, z1: p.z + d + 1 });
 
@@ -127,7 +134,7 @@ export function setupTrial(world, def, level, env) {
     things(bucket, 'bucket', 1);
     const t = P(def.places.trough);
     addEntity(world, { id: 'zone:trough', keep: true, zone: { id: 'trough', task: owner, rule: 'trough', accepts: 'bucket', items: [], full: false, x: t.x, y: t.y, z: t.z, rect: rect(t, 3, 2) }, position: { x: t.x + 1.5, y: t.y, z: t.z + 2, facing: 0 } });
-    addEntity(world, { id: 'trough:smith', keep: true, position: { x: t.x, y: t.y, z: t.z, facing: 0 }, look: 'trough' });
+    addEntity(world, { id: 'trough:smith', keep: true, position: { x: t.x, y: t.y, z: t.z, facing: 0 }, look: 'trough', solid: { rect: { x0: t.x - 0.2, x1: t.x + 3.4, z0: t.z, z1: t.z + 2 } } });
     const a = P(def.places.anvil);
     tz.zone.anvil = { x: a.x, y: a.y, z: a.z };
     tz.zone.heat = null;
@@ -608,7 +615,7 @@ function act(world, e, want, env) {
       for (const id of hearth.zone.items) removeEntity(world, id);
       hearth.zone.items = [];
       const a = tz.zone.anvil;
-      addEntity(world, { id: tz.zone.iron, keep: true, item: { kind: 'iron', size: 2, task: `trial-${tz.zone.trial}`, zone: null, held: null, set: true, fixed: true }, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'iron-0' });
+      addEntity(world, { id: tz.zone.iron, keep: true, item: { kind: 'iron', size: 2, task: `trial-${tz.zone.trial}`, zone: null, held: null, set: true, fixed: true }, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'iron-0', solid: { rect: { x0: a.x - 0.8, x1: a.x + 0.8, z0: a.z - 0.8, z1: a.z + 0.8 } } });
       tz.zone.heat = 0;
       say(world, 'fire', tz.id, { sound: 'lantern' });
     } else if (r.short) {
@@ -783,7 +790,7 @@ function readyIron(world, tz) {
   const trough = zoneEnt(world, 'trough');
   if (!forge || !trough || forge.zone.items.length < forge.zone.need || !trough.zone.full || getEntity(world, 'iron:smith')) return;
   const a = tz.zone.anvil;
-  addEntity(world, { id: 'iron:smith', keep: true, item: { kind: 'iron', size: 2, task: 'trial-smith', zone: null, held: null, set: true, fixed: true }, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'iron-0' });
+  addEntity(world, { id: 'iron:smith', keep: true, item: { kind: 'iron', size: 2, task: 'trial-smith', zone: null, held: null, set: true, fixed: true }, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'iron-0', solid: { rect: { x0: a.x - 0.8, x1: a.x + 0.8, z0: a.z - 0.8, z1: a.z + 0.8 } } });
   tz.zone.heat = 0;
   say(world, 'fire', tz.id, { sound: 'lantern' });
 }

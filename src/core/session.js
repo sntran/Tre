@@ -1285,9 +1285,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const c = heroCell();
     return { x: Math.floor(c.x), y: Math.floor(c.y) };
   };
+  // The tile map for the walks of the hero: the cells under a solid box of a thing of a task (a
+  // trough, a heap) are blocked too, so that a walk goes around them.
+  function pathMap() {
+    const boxes = query(state, 'solid', 'position').filter((e) => e.solid.rect && !e.hidden).map((e) => e.solid.rect);
+    if (!boxes.length) return tileMap;
+    const inBox = (x, y) => boxes.some((b) => (x + 0.5) * 2 > b.x0 - 0.5 && (x + 0.5) * 2 < b.x1 + 0.5 && (y + 0.5) * 2 > b.z0 - 0.5 && (y + 0.5) * 2 < b.z1 + 0.5);
+    return Object.assign(Object.create(tileMap), {
+      walkable: (x, y) => tileMap.walkable(x, y) && !inBox(x, y),
+      isBlocked: (x, y) => tileMap.isBlocked(x, y) || inBox(x, y),
+    });
+  }
   function walkToThing(target, onArrive) {
     const tile = { x: Math.floor(target.x), y: Math.floor(target.y) };
-    walkPath(pathNextTo(tileMap, heroFrom(), tile), null, onArrive, { x: target.x, y: target.y, d: 2.2 });
+    walkPath(pathNextTo(pathMap(), heroFrom(), tile), null, onArrive, { x: target.x, y: target.y, d: 2.2 });
   }
   function walkToPerson(id) {
     const p = persons().find((x) => x.kind === 'npc' && x.ref === id);
@@ -1298,7 +1309,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // Walk to a point (map cells) and then along more points, and then do something.
   function walkTo(points, onArrive) {
     const [first] = points;
-    const path = findPath(tileMap, heroFrom(), { x: Math.floor(first.x), y: Math.floor(first.y) });
+    const path = findPath(pathMap(), heroFrom(), { x: Math.floor(first.x), y: Math.floor(first.y) });
     if (!path) return false;
     walkPath(path.slice(0, -1), points, onArrive);
     return true;
@@ -1673,7 +1684,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A tap on a free cell of the zone (the ford, a dike in the field) is a walk.
     const onGround = tileMap.isBlocked(tile.x, tile.y) ? triggers.fire('tap', tile.x, tile.y, cond()) : null;
     if (onGround) {
-      walkPath(pathNextTo(tileMap, from, tile), null, () => doAction(onGround), { x: hit.x, y: hit.y, d: 2.2 });
+      walkPath(pathNextTo(pathMap(), from, tile), null, () => doAction(onGround), { x: hit.x, y: hit.y, d: 2.2 });
       return;
     }
     log('action', { kind: 'walk' });
@@ -1683,8 +1694,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (stop) walkPath(findPath(tileMap, from, stop)?.slice(0, -1), { x: stop.x + 0.5, y: stop.y + 0.5 }, null);
       return;
     }
-    if (tileMap.walkable(tile.x, tile.y)) walkPath(findPath(tileMap, from, tile)?.slice(0, -1), { x: hit.x, y: hit.y }, null);
-    else walkPath(pathNextTo(tileMap, from, tile), null, null);
+    const paths = pathMap();
+    if (paths.walkable(tile.x, tile.y)) walkPath(findPath(paths, from, tile)?.slice(0, -1), { x: hit.x, y: hit.y }, null);
+    else walkPath(pathNextTo(paths, from, tile), null, null);
   }
 
   // The last free cell before an edge on the line from the hero to a point (map cells), or null.

@@ -31,6 +31,7 @@ Every task in the world must be clear to a child of six. A child of this age tap
 - During a task, the places and things of the task come before a person (`targetAt` in the session, `targetUnder` in the view).
 - A place of a task answers a tap on its whole box, with a pad of two half blocks (`ZONE_PAD`).
 - The work of each trial is in the open: from the first angle of the camera, no house or roof covers a place of a trial, and nothing at all covers the forge, the ore, the anvil, and the trough of the smith (a test in `tests/tasks.test.js`).
+- The things of the trials are solid (#32): the forge and the well block their cells on the map; the trough, the anvil (with the iron on it), and each heap of a trial have a solid box (`solid.rect`), so that the hero stands next to them, never in them. The walks of the hero go around these boxes (`pathMap` in the session, and the slide along a side in `src/core/world/systems/route.js`).
 - Next to a place of a task, the box of a person has no pad and is a little smaller (`PERSON_PAD_AT_PLACE`), so that only a tap on the body is for the person.
 
 ### The table of the tasks
