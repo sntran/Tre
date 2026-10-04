@@ -546,7 +546,10 @@ export function thingLook(key) {
   if (k === 'plot-stake') return { kind: 'plot-stake' };
   return null;
 }
-const STAGES = { planted: ['greenPale', 0.55], green: ['green', 0.8], tall: ['greenDeep', 1.15], gold: ['yellow', 1.25] };
+const STAGES = { planted: ['greenPale', 0.8], green: ['green', 1.2], tall: ['greenDeep', 1.7], gold: ['yellow', 1.9] };
+// The water of a paddy stands over the ground (WATER.paddy in src/world/terrain.js): a seedling
+// rises from under the water.
+const PADDY_WATER = 1.1;
 
 export function workThing(look) {
   switch (look.kind) {
@@ -556,10 +559,10 @@ export function workThing(look) {
       const [color, h] = STAGES[look.stage] ?? STAGES.planted;
       const parts = [];
       for (let i = 0; i < Math.max(1, Math.min(14, look.n ?? 1)); i++) {
-        parts.push(P(`s${i}`, [0.34, h, 0.34], color, [i, h / 2, 0]));
-        parts.push(P(`l${i}`, [0.62, 0.16, 0.2], color, [i, h * 0.8, 0]));
+        parts.push(P(`s${i}`, [0.34, h + 0.3, 0.34], color, [i, PADDY_WATER - 0.3 + (h + 0.3) / 2, 0]));
+        parts.push(P(`l${i}`, [0.62, 0.16, 0.2], color, [i, PADDY_WATER + h * 0.8, 0]));
       }
-      return still(parts, h);
+      return still(parts, PADDY_WATER + h);
     }
     // A bundle of seedlings (bó mạ): green blades tied with straw, wider for more seedlings.
     case 'seed-bundle': {
