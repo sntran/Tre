@@ -66,18 +66,19 @@ A.obj('ore1', 'ore', 25, 2)
 # The gate: two posts, open in the middle. The depth box is the middle line.
 A.obj('gate', 'gate', 31, 13, 1, 3, solid=[[0, 0], [0, 2]], depth=[0.5, 0, 0.5, 3])
 # Small houses of the villagers who have no other house, and the coops of the yards. Each hut
-# stands next to the work of its owner: the smith by the forge, the fisher on the river bank, the
-# teacher by the school, the healer by the herbs, and the woodcutter by the bamboo hedge.
+# stands near the work of its owner: the smith across the road from the forge, the fisher on the
+# river bank, the teacher by the school, the healer by the herbs, and the woodcutter by the bamboo
+# hedge. No hut stands in front of the work of a trial, as the camera sees it at its first angle
+# (a test in tests/tasks.test.js), so that the child sees the work with nothing in front.
 A.obj('hut-elder', 'hut', 5, 5, 3, 3)
-A.obj('hut-teacher', 'hut', 26, 5, 3, 3)
+A.obj('hut-teacher', 'hut', 24, 5, 3, 3)
 A.obj('hut-woodcutter', 'hut', 9, 2, 3, 3)
-A.obj('hut-smith', 'hut', 28, 17, 3, 3)
-A.obj('hut-healer', 'hut', 15, 23, 3, 3)
+A.obj('hut-smith', 'hut', 19, 17, 3, 3)
+A.obj('hut-healer', 'hut', 11, 23, 3, 3)
 A.obj('hut-fisher', 'hut', 17, 29, 3, 3)
 A.obj('coop1', 'coop', 7, 12)
 A.obj('coop2', 'coop', 29, 12)
 A.obj('hay1', 'haystack', 7, 10)
-A.obj('hay2', 'haystack', 12, 22)
 A.obj('rice1', 'rice-stack', 11, 18)
 A.many('fence', 'fence', [(3, 18), (4, 18), (5, 18)])
 A.obj('rock1', 'rock', 10, 16)
@@ -85,11 +86,19 @@ A.obj('boat', 'boat', 12, 31, 2, 1)
 A.obj('ore2', 'ore', 3, 31)
 A.obj('rock2', 'rock', 33, 31)
 A.obj('sign', 'signpost', 20, 41)
-A.many('tree', 'tree', [(3, 3), (6, 4), (12, 5), (14, 3), (21, 6), (28, 4), (29, 7), (2, 16), (20, 17), (29, 23),
+# The trees, the banana plants, and the bamboo clumps. A plant in front of the work of a trial (as the
+# camera sees it at its first angle) is gone, so that the work is in the open; the others keep
+# their numbers (the ids in a save).
+GONE = {(28, 4), (29, 7), (20, 17), (29, 23), (26, 25), (14, 25), (18, 23), (20, 20), (36, 30)}
+def plants(prefix, art, points):
+    for i, p in enumerate(points, 1):
+        if p not in GONE:
+            A.obj(f'{prefix}{i}', art, *p)
+plants('tree', 'tree', [(3, 3), (6, 4), (12, 5), (14, 3), (21, 6), (28, 4), (29, 7), (2, 16), (20, 17), (29, 23),
                         (26, 25), (6, 26), (14, 25), (18, 23), (33, 13), (37, 16), (3, 27), (16, 30), (27, 30),
                         (12, 42), (19, 42), (38, 38)])
-A.many('banana', 'banana', [(8, 3), (10, 6), (20, 20), (2, 11), (28, 27), (34, 29), (24, 42)])
-A.many('bamboo', 'bamboo', [(12, 27), (36, 30), (5, 30), (14, 41), (38, 40)])
+plants('banana', 'banana', [(8, 3), (10, 6), (20, 20), (2, 11), (28, 27), (34, 29), (24, 42)])
+plants('bamboo', 'bamboo', [(12, 27), (36, 30), (5, 30), (14, 41), (38, 40)])
 A.spawn = {'x': 5.5, 'y': 13.3}
 # Named places for the plans of the day (data/world/people.json). h: the height over the ground
 # in half blocks.
@@ -109,25 +118,25 @@ A.places = {
     # the healer; the fallen bamboo stem by the woodcutter, and the wood pile by the bridge.
     'school-rods': {'x': 25.3, 'y': 13.05},
     'school-mat': {'x': 27.6, 'y': 13.1},
-    'smith-ore': {'x': 29.1, 'y': 20.3},
+    'smith-ore': {'x': 25.2, 'y': 21.9},
     'smith-forge': {'x': 24.3, 'y': 20.1},
     'smith-anvil': {'x': 27.1, 'y': 21.5},
-    'smith-trough': {'x': 27.7, 'y': 21.3},
-    'horse-ore': {'x': 25.6, 'y': 22.6},
-    'well-bucket': {'x': 21.3, 'y': 11.8},
+    'smith-trough': {'x': 26.6, 'y': 22.4},
+    'horse-ore': {'x': 24.4, 'y': 22.8},
+    'well-bucket': {'x': 21.0, 'y': 10.0},
     'fisher-stakes': {'x': 10.5, 'y': 31.7},
     'fisher-line': {'x': 12.0, 'y': 33.25},
     'healer-bed-1': {'x': 13.2, 'y': 21.4},
     'healer-bed-2': {'x': 14.7, 'y': 21.4},
     'healer-bed-3': {'x': 16.2, 'y': 21.4},
     'healer-basket': {'x': 17.6, 'y': 20.7},
-    'woodcutter-stem': {'x': 25.0, 'y': 3.25},
+    'woodcutter-stem': {'x': 26.6, 'y': 3.6},
     'staffs-clump': {'x': 12.5, 'y': 16.25},
     'woodpile': {'x': 26.1, 'y': 30.2},
     # Rice for Gióng: the trays of bowls on the path of the paddies, and the pot in front of the
     # house of Gióng.
-    'rice-trays': {'x': 7.6, 'y': 17.6},
-    'giong-pot': {'x': 10.7, 'y': 12.4},
+    'rice-trays': {'x': 8.8, 'y': 16.6},
+    'giong-pot': {'x': 10.7, 'y': 13.2},
     'buffalo-shade': {'x': 37.6, 'y': 17.5},
 }
 # The spots of the small events of the day in the village (cells): the road on the south bank,
@@ -143,8 +152,8 @@ A.npcs = [
     {'id': 'messenger', 'x': 17.7, 'y': 12.9},
     {'id': 'smith', 'x': 26.5, 'y': 20.7},
     {'id': 'healer', 'x': 15.5, 'y': 20.7},
-    {'id': 'woodcutter', 'x': 24.6, 'y': 4.4},
-    {'id': 'giong-hero', 'x': 28.5, 'y': 16.8},
+    {'id': 'woodcutter', 'x': 25.8, 'y': 4.2},
+    {'id': 'giong-hero', 'x': 30.0, 'y': 17.6},
     {'id': 'fisher', 'x': 14.6, 'y': 31.6},
 ]
 A.encounters = [

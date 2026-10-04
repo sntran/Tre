@@ -133,3 +133,34 @@ test('no two buttons on the screen have the same picture: the action button neve
   }
   for (const act of ['pick', 'put']) assert.ok(icons.includes(`hand-${act}`));
 });
+
+// The places of the trials from the first angle of the camera (src/world/view.js): the line from a
+// place to the camera crosses no house or roof. A building counts within its eaves (two cells
+// around its cells), so that the kite over the school, high in the sky, is not a roof.
+test('from the first camera angle, no house or roof covers a place of a trial, and nothing covers the work of the smith', async () => {
+  const { planeOf, load } = await import('./helpers.js');
+  const { placesOf } = await import('../src/core/world/env.js');
+  const { rayHits, toCamera } = await import('../src/world/fade.js');
+  const { VIEW } = await import('../src/world/view.js');
+  const { map, tileMap, terrain } = planeOf(1, { blocks: load('data/world/blocks.json') });
+  const places = placesOf(map, tileMap);
+  const toCam = toCamera(Math.PI / 4, VIEW.elevation);
+  const BUILDINGS = new Set(['house', 'hut', 'giong-house', 'dinh', 'school', 'forge']);
+  const EAVES = 2;
+  const boxOf = (o) => {
+    const b = terrain.boxOf(o);
+    if (!BUILDINGS.has(o.kind)) return b;
+    return { ...b, x0: Math.max(b.x0, o.x - EAVES), x1: Math.min(b.x1, o.x + o.w + EAVES), z0: Math.max(b.z0, o.y - EAVES), z1: Math.min(b.z1, o.y + o.h + EAVES) };
+  };
+  // The things of the work lie on the ground, and they are about a block high.
+  const covers = (p, kinds) => terrain.objects.filter((o) => (!kinds || kinds.has(o.kind)) && [0.3, 1].some((h) => rayHits(boxOf(o), { x: p.x / 2, y: p.y / 2 + h, z: p.z / 2 }, toCam))).map((o) => o.id ?? o.kind);
+  const trials = load('data/trials.json').trials;
+  for (const t of trials) {
+    for (const name of Object.values(t.places ?? {}).flat()) {
+      if (!places[name]) continue;
+      assert.deepEqual(covers(places[name], BUILDINGS), [], `${t.id}: a building covers the place ${name}`);
+    }
+  }
+  const smith = trials.find((t) => t.id === 'smith');
+  for (const name of ['ore', 'forge', 'anvil', 'trough'].map((k) => smith.places[k])) assert.deepEqual(covers(places[name], null), [], `something covers the place ${name} of the smith`);
+});

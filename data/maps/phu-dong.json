@@ -49,15 +49,14 @@
    {"id": "ore1", "prop": "ore", "x": 50, "y": 4, "w": 2, "h": 2, "seed": 2126600272},
    {"id": "gate", "prop": "gate", "x": 62, "y": 26, "w": 2, "h": 6, "seed": 449502059, "solid": [[0, 0], [0, 1], [1, 0], [1, 1], [0, 4], [0, 5], [1, 4], [1, 5]]},
    {"id": "hut-elder", "prop": "hut", "x": 10, "y": 10, "w": 6, "h": 6, "seed": 2025734685},
-   {"id": "hut-teacher", "prop": "hut", "x": 52, "y": 10, "w": 6, "h": 6, "seed": 444209579},
+   {"id": "hut-teacher", "prop": "hut", "x": 48, "y": 10, "w": 6, "h": 6, "seed": 444209579},
    {"id": "hut-woodcutter", "prop": "hut", "x": 18, "y": 4, "w": 6, "h": 6, "seed": 1975333105},
-   {"id": "hut-smith", "prop": "hut", "x": 56, "y": 34, "w": 6, "h": 6, "seed": 163647075},
-   {"id": "hut-healer", "prop": "hut", "x": 30, "y": 46, "w": 6, "h": 6, "seed": 66392962},
+   {"id": "hut-smith", "prop": "hut", "x": 38, "y": 34, "w": 6, "h": 6, "seed": 163647075},
+   {"id": "hut-healer", "prop": "hut", "x": 22, "y": 46, "w": 6, "h": 6, "seed": 66392962},
    {"id": "hut-fisher", "prop": "hut", "x": 34, "y": 58, "w": 6, "h": 6, "seed": 18262075},
    {"id": "coop1", "prop": "coop", "x": 14, "y": 24, "w": 2, "h": 2, "seed": 1799349962},
    {"id": "coop2", "prop": "coop", "x": 58, "y": 24, "w": 2, "h": 2, "seed": 1916188528},
    {"id": "hay1", "prop": "haystack", "x": 14, "y": 20, "w": 2, "h": 2, "seed": 453058717},
-   {"id": "hay2", "prop": "haystack", "x": 24, "y": 44, "w": 2, "h": 2, "seed": 34107687},
    {"id": "rice1", "prop": "rice-stack", "x": 22, "y": 36, "w": 2, "h": 2, "seed": 763041876},
    {"id": "fence1", "prop": "fence", "x": 6, "y": 36, "w": 2, "h": 2, "seed": 443584753},
    {"id": "fence2", "prop": "fence", "x": 8, "y": 36, "w": 2, "h": 2, "seed": 58310987},
@@ -72,15 +71,8 @@
    {"id": "tree3", "prop": "tree", "x": 24, "y": 10, "w": 2, "h": 2, "seed": 1335894260},
    {"id": "tree4", "prop": "tree", "x": 28, "y": 6, "w": 2, "h": 2, "seed": 1371845975},
    {"id": "tree5", "prop": "tree", "x": 42, "y": 12, "w": 2, "h": 2, "seed": 650347969},
-   {"id": "tree6", "prop": "tree", "x": 56, "y": 8, "w": 2, "h": 2, "seed": 1070257275},
-   {"id": "tree7", "prop": "tree", "x": 58, "y": 14, "w": 2, "h": 2, "seed": 1221453037},
    {"id": "tree8", "prop": "tree", "x": 4, "y": 32, "w": 2, "h": 2, "seed": 1483929980},
-   {"id": "tree9", "prop": "tree", "x": 40, "y": 34, "w": 2, "h": 2, "seed": 796248554},
-   {"id": "tree10", "prop": "tree", "x": 58, "y": 46, "w": 2, "h": 2, "seed": 2096245638},
-   {"id": "tree11", "prop": "tree", "x": 52, "y": 50, "w": 2, "h": 2, "seed": 200612624},
    {"id": "tree12", "prop": "tree", "x": 12, "y": 52, "w": 2, "h": 2, "seed": 318524074},
-   {"id": "tree13", "prop": "tree", "x": 28, "y": 50, "w": 2, "h": 2, "seed": 1710979644},
-   {"id": "tree14", "prop": "tree", "x": 36, "y": 46, "w": 2, "h": 2, "seed": 2074079135},
    {"id": "tree15", "prop": "tree", "x": 66, "y": 26, "w": 2, "h": 2, "seed": 211345161},
    {"id": "tree16", "prop": "tree", "x": 74, "y": 32, "w": 2, "h": 2, "seed": 361860787},
    {"id": "tree17", "prop": "tree", "x": 6, "y": 54, "w": 2, "h": 2, "seed": 1654046245},
@@ -91,13 +83,11 @@
    {"id": "tree22", "prop": "tree", "x": 76, "y": 76, "w": 2, "h": 2, "seed": 970004841},
    {"id": "banana1", "prop": "banana", "x": 16, "y": 6, "w": 2, "h": 2, "seed": 986005910},
    {"id": "banana2", "prop": "banana", "x": 20, "y": 12, "w": 2, "h": 2, "seed": 600576044},
-   {"id": "banana3", "prop": "banana", "x": 40, "y": 40, "w": 2, "h": 2, "seed": 1422598330},
    {"id": "banana4", "prop": "banana", "x": 4, "y": 22, "w": 2, "h": 2, "seed": 1253029145},
    {"id": "banana5", "prop": "banana", "x": 56, "y": 54, "w": 2, "h": 2, "seed": 1034454415},
    {"id": "banana6", "prop": "banana", "x": 68, "y": 58, "w": 2, "h": 2, "seed": 614585397},
    {"id": "banana7", "prop": "banana", "x": 48, "y": 84, "w": 2, "h": 2, "seed": 1403446435},
    {"id": "bamboo1", "prop": "bamboo", "x": 24, "y": 54, "w": 2, "h": 2, "seed": 1888604945},
-   {"id": "bamboo2", "prop": "bamboo", "x": 72, "y": 60, "w": 2, "h": 2, "seed": 1771602603},
    {"id": "bamboo3", "prop": "bamboo", "x": 10, "y": 60, "w": 2, "h": 2, "seed": 513782333},
    {"id": "bamboo4", "prop": "bamboo", "x": 28, "y": 82, "w": 2, "h": 2, "seed": 16459678},
    {"id": "bamboo5", "prop": "bamboo", "x": 76, "y": 80, "w": 2, "h": 2, "seed": 2013009672}
@@ -181,8 +171,8 @@
     "y": 26.2
    },
    "smith-ore": {
-    "x": 58.2,
-    "y": 40.6
+    "x": 50.4,
+    "y": 43.8
    },
    "smith-forge": {
     "x": 48.6,
@@ -193,16 +183,16 @@
     "y": 43.0
    },
    "smith-trough": {
-    "x": 55.4,
-    "y": 42.6
+    "x": 53.2,
+    "y": 44.8
    },
    "horse-ore": {
-    "x": 51.2,
-    "y": 45.2
+    "x": 48.8,
+    "y": 45.6
    },
    "well-bucket": {
-    "x": 42.6,
-    "y": 23.6
+    "x": 42.0,
+    "y": 20.0
    },
    "fisher-stakes": {
     "x": 21.0,
@@ -229,8 +219,8 @@
     "y": 41.4
    },
    "woodcutter-stem": {
-    "x": 50.0,
-    "y": 6.5
+    "x": 53.2,
+    "y": 7.2
    },
    "staffs-clump": {
     "x": 25.0,
@@ -241,12 +231,12 @@
     "y": 60.4
    },
    "rice-trays": {
-    "x": 15.2,
-    "y": 35.2
+    "x": 17.6,
+    "y": 33.2
    },
    "giong-pot": {
     "x": 21.4,
-    "y": 24.8
+    "y": 26.4
    },
    "buffalo-shade": {
     "x": 75.2,
@@ -293,8 +283,8 @@
   {"id": "messenger", "x": 35.4, "y": 25.8},
   {"id": "smith", "x": 53.0, "y": 41.4},
   {"id": "healer", "x": 31.0, "y": 41.4},
-  {"id": "woodcutter", "x": 49.2, "y": 8.8},
-  {"id": "giong-hero", "x": 57.0, "y": 33.6},
+  {"id": "woodcutter", "x": 51.6, "y": 8.4},
+  {"id": "giong-hero", "x": 60.0, "y": 35.2},
   {"id": "fisher", "x": 29.2, "y": 63.2}
  ],
  "encounters": [

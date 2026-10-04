@@ -30,6 +30,7 @@ Every task in the world must be clear to a child of six. A child of this age tap
 
 - During a task, the places and things of the task come before a person (`targetAt` in the session, `targetUnder` in the view).
 - A place of a task answers a tap on its whole box, with a pad of two half blocks (`ZONE_PAD`).
+- The work of each trial is in the open: from the first angle of the camera, no house or roof covers a place of a trial, and nothing at all covers the forge, the ore, the anvil, and the trough of the smith (a test in `tests/tasks.test.js`).
 - Next to a place of a task, the box of a person has no pad and is a little smaller (`PERSON_PAD_AT_PLACE`), so that only a tap on the body is for the person.
 
 ### The table of the tasks
