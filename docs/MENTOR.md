@@ -66,7 +66,7 @@ After each commit (and after a plank too long on the bridge, which the world jud
 
 ## The first users
 
-The bridge (the fisher, and Nghé for the cue), the small events of each day (the carter, the farmer, the seller), and the Five Trials (the teacher, the smith, the fisher, the healer, the woodcutter). The hamlet of #22 and #23 adds its people in `data/world/mentors.json`.
+The bridge (the fisher, and Nghé for the cue), the small events of each day (the carter, the farmer, the seller), and the Five Trials (the teacher, the smith, the fisher, the healer, the woodcutter). The planter of Xóm Ruộng (`trial-plant`, `docs/PLANTING.md`) is one too; the other people of the hamlet come in #23.
 
 ## Tests and stories
 

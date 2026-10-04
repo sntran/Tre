@@ -248,6 +248,14 @@ A parent sends a link `?practice=<id>` (the tab "Practice links" of the parent p
 - **What is saved:** the learner (P(L) and the ratings of each commit), the learning log (the session has the practice id: `practice` in `data/config/learnlog.json`), the reward, the changes of the world, and `profile.practice[<id>]`: the level of the next round and the count of sets. The next visit goes on from that level. The flag of the trial of the story does not change: a practice is not the story. (The notebook of prints is not in the game yet; it will save with the profile too.)
 - **Stories:** each activity has a story `tests/stories/practice-<id>.json` (`"practice": "<id>"`) that opens the link with a profile and plays a set (`?story=practice-<id>&play`). `tests/practice.test.js` tests the link, the data, the night, the levels, a device with no profile, the save after "go back", and the links of the parent page.
 
+## Xóm Ruộng and the planting
+
+Xóm Ruộng is a quiet hand-made hamlet north of Phù Đổng (the map `xom-ruong`, a frame of the region with its own small road from the north gate). Its first activity is the planting of a paddy: the child brings just enough seedlings for a plot with row stakes and column stakes, and the planter plants them row by row. The planted plots stay as paddies that grow on the next days. See `docs/PLANTING.md`.
+
+- A frame can be **quiet** (`quiet` in `data/world/land-giong.json`): no hamlet of the land comes within so many cells of its stamps.
+- The map script can set one cell (not a tile) with its ground and height (`cells` in `tools/maps/maplib.py`): the stepping stones of the ford of Phù Đổng, and the field of the plots of Xóm Ruộng (the ground of a ditch: still water with no seedlings).
+- The system `plant` (before `work`) takes the commands of the planting and plants row by row; the event `planted` ends a planting.
+
 ## The save
 
 `profile.world` (save version 8) holds the seed, the map, the clock, the hero, and a thing that travels with the hero (`src/core/world/save.js`). The rest of the world is saved by chunk: `profile.maps[<map>].chunks[<chunk>]` holds, for each chunk that the player changed, its changed cells and its kept entities (the zones, the planks, a broken pot), without their routes and intents:

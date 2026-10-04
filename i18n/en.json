@@ -1410,5 +1410,11 @@
   "practiceLink.cay-lua.title": "Planting rice",
   "practiceLink.cay-lua.line": "Bring just enough seedlings for each plot with its row stakes and column stakes: multiplication.",
   "practiceLink.xom-ruong.title": "Xóm Ruộng",
-  "practiceLink.xom-ruong.line": "A small quiet hamlet with many tasks for multiplication. It starts in the yard of the hamlet."
+  "practiceLink.xom-ruong.line": "A small quiet hamlet with many tasks for multiplication. It starts in the yard of the hamlet.",
+  "parent.facts": "The multiplication table",
+  "parent.facts.none": "Your child has not met a fact of multiplication yet. The table shows when your child plants rice in Xóm Ruộng.",
+  "parent.facts.exploring": "Exploring",
+  "parent.facts.getting": "Getting there",
+  "parent.facts.confident": "Confident",
+  "parent.facts.none.cell": "Not met yet"
 }

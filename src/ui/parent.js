@@ -10,6 +10,7 @@ import { registerModal } from './registry.js';
 import { saveProfile, deleteProfile, listProfiles, loadProfile, listRestorePoints, restoreProfile } from './storage.js';
 import { gameDay } from '../core/restore.js';
 import { h, img, button } from './dom.js';
+import { factTable } from '../core/planting.js';
 import { portraitCanvas, heroLookOf } from './portraits.js';
 import { t, lang } from './i18n.js';
 import { formatNumber } from '../core/i18n.js';
@@ -323,6 +324,7 @@ async function parentArea(ctx, opts = {}) {
       );
       const practice = learner.toPractice();
       body.append(h('h3', { text: t('parent.practice') }), h('p', { text: practice.length ? practice.map((id) => t(`skill.${id}`)).join(t('ui.list.sep')) : t('parent.practice.none') }));
+      drawFacts(p);
       body.append(h('h3', { text: t('parent.exams') }));
       if (!p.learning.exams.length) body.append(h('p', { class: 'muted', text: t('parent.exams.none') }));
       else {
@@ -353,6 +355,24 @@ async function parentArea(ctx, opts = {}) {
         }
         body.append(table);
       }
+    }
+
+    // The table of the facts of multiplication (one memory for all the activities of the skill,
+    // src/core/planting.js), in three states (rule 27): exploring, getting there, confident.
+    function drawFacts(p) {
+      const skill = data.planting?.skill ?? 'math.mul.10';
+      const grid = factTable(p.facts?.[skill] ?? {});
+      body.append(h('h3', { text: t('parent.facts') }));
+      if (!grid.flat().some(Boolean)) {
+        body.append(h('p', { class: 'muted', text: t('parent.facts.none') }));
+        return;
+      }
+      const table = h('table', { class: 'facts' });
+      table.append(h('tr', {}, [h('th', { text: '×' }), ...grid.map((_, j) => h('th', { text: String(j + 1) }))]));
+      grid.forEach((row, i) => {
+        table.append(h('tr', {}, [h('th', { text: String(i + 1) }), ...row.map((state, j) => h('td', { class: `fact ${state ?? 'none'}`, title: `${i + 1} × ${j + 1}: ${t(`parent.facts.${state ?? 'none.cell'}`)}` }))]));
+      });
+      body.append(table, h('p', { class: 'facts-key' }, ['exploring', 'getting', 'confident'].map((k) => h('span', { class: `chip fact-${k}`, text: t(`parent.facts.${k}`) }))));
     }
 
     function drawSettings() {

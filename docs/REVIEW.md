@@ -337,3 +337,18 @@ No new texts. Please check the hair styles of the people for the time of the Hù
 ## 15. The ground (#20)
 
 No new texts. Please check the ground of the Red River delta for the time of the Hùng Kings (`docs/ART.md`, section 18): earth roads with wheel ruts on low banks through the paddies, village paths and yards of packed earth, mounds (gò) with bamboo or a tree among the paddies, and short ditches (mương) of still water. The paths were of brick first; bricks are later than the time (the brick tombs of the Red River region are of the Han time), so the paths are packed earth now. The owner keeps the carts and their ruts.
+
+## 16. Xóm Ruộng and the planting (#22)
+
+New texts to check (keys in `i18n/vi.json` and `i18n/en.json`):
+
+- The place and the people: `place.xomruong`, `npc.planter.name` (Cô Cấy), `npc.duck-girl.name` (Chị Vịt), `npc.fisher-uncle.name` (Chú Lưới), `npc.drummer.name` (Ông Trống), and the one line of each person who is not ready yet (`dlg.duck-girl.idle.n1`, `dlg.fisher-uncle.idle.n1`, `dlg.drummer.idle.n1`).
+- The planter: `dlg.planter.trial.n1` (the start), `plant.wait`, `plant.exact` (the total as a word: "{n} cây, vừa đủ!"), `plant.turned`, `plant.few`, `plant.many`, `plant.choose.no`, `plant.divide.few`, `plant.divide.many`, the ends of a set (`dlg.planter.set.field.n1`, `dlg.planter.set.noon.n1`, `dlg.planter.set.rain.n1`, `dlg.planter.practice.end.n1`), the small events (`plant.event.*`), and the picture of the mentor (`mentor.picture.planter`).
+- The number words from 31 to 150 (`num.31` to `num.150`): "mốt" after twenty, "lăm" for five after ten, "lẻ" after a hundred ("một trăm lẻ năm").
+- The practice links: `practiceLink.cay-lua.*` and `practiceLink.xom-ruong.*`; the parent page: `parent.facts*`.
+
+Facts to check:
+
+- Xóm Ruộng is not a historical place, and its people are not real people. Rice planting by hand from bundles of seedlings (bó mạ) from a seedbed (ruộng mạ), and the planting song (hò cấy), are old customs of the Red River delta; please check the clothes and the tools of the planter for the time of the Hùng Kings (`docs/ART.md`).
+- The bronze drum (trống đồng) in the đình yard: the drums of the Đông Sơn culture are from the time of the Hùng Kings; the đình itself is a later building (see question 24 in `QUESTIONS.md`).
+

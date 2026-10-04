@@ -1410,5 +1410,11 @@
   "practiceLink.cay-lua.title": "Cấy lúa",
   "practiceLink.cay-lua.line": "Mang mạ vừa đủ cho từng ô ruộng có cọc hàng và cọc cột: phép nhân.",
   "practiceLink.xom-ruong.title": "Xóm Ruộng",
-  "practiceLink.xom-ruong.line": "Một xóm nhỏ yên tĩnh, nhiều việc cho phép nhân. Bắt đầu ở sân xóm."
+  "practiceLink.xom-ruong.line": "Một xóm nhỏ yên tĩnh, nhiều việc cho phép nhân. Bắt đầu ở sân xóm.",
+  "parent.facts": "Bảng nhân",
+  "parent.facts.none": "Con chưa gặp phép nhân nào. Bảng sẽ hiện khi con cấy lúa ở Xóm Ruộng.",
+  "parent.facts.exploring": "Đang tìm hiểu",
+  "parent.facts.getting": "Đang tiến bộ",
+  "parent.facts.confident": "Vững vàng",
+  "parent.facts.none.cell": "Chưa gặp"
 }
