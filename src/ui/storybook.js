@@ -107,7 +107,7 @@ async function playInBrowser(ctx, story) {
       // "Go back" at the end of a practice opens the village again: wait for the new session.
       const old = v.session;
       let back = false;
-      const stop = old.listen((ev) => { if (ev.type === 'back') back = true; });
+      const stop = old.listen((ev) => { if (ev.type === 'goBack') back = true; });
       v.send(cmd);
       stop();
       book.hold = false;

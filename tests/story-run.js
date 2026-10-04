@@ -81,7 +81,7 @@ export async function runHeadless(raw, { onSession = null, log: keepLog = false,
       for (const p of laws.text(ev, textParams())) breakLaw(`a text of the world: ${p}`);
     });
     session.listen((ev) => {
-      if (ev.type === 'back') back = ev;
+      if (ev.type === 'goBack') back = ev;
     });
     session.start(map, params);
     logger.startSession({ practice: params.practice?.id ?? null });

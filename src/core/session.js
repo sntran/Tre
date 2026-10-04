@@ -586,7 +586,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     syncSave();
     save('practice');
-    emit({ type: 'back', id: practice.id, to: practice.back });
+    emit({ type: 'goBack', id: practice.id, to: practice.back });
   }
   // The zone of a task under a point on the ground (half blocks).
   const workZoneAt = (x, z) => query(state, 'zone').find((e) => {

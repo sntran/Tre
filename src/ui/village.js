@@ -908,7 +908,7 @@ export async function mountVillage(ctx, params = {}) {
       case 'lose':
         for (const [item, n] of Object.entries(ev.take)) for (let i = 0; i < n; i++) flyFromCounter(ev.to, item, i * 0.15);
         return;
-      case 'back':
+      case 'goBack':
         // "Go back" at the end of a practice: a short change to the place before the visit (or
         // to the start of the game, when the profile had no place).
         fade.classList.add('on');

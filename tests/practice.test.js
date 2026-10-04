@@ -144,3 +144,22 @@ test('the parent page lists every activity, and each link opens its activity', (
     assert.deepEqual(r.skills, a.skills);
   }
 });
+
+test('a rod taken back from the mat in a practice is no "go back": the visit goes on', async () => {
+  // The world event of a rod back to the heap had the same name as the end of a visit, and the
+  // village started again at the tap.
+  const sessions = new Set();
+  const story = {
+    name: 'rod-back', profile: { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } }, practice: 'bo-que',
+    steps: [
+      { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } }, { read: true },
+      { tap: { thing: 'rod:scholar:0' } }, { until: { event: 'add', timeout: 10 } },
+      { tap: { thing: 'rod:scholar:0' } }, { until: { event: 'back', timeout: 10 } },
+      { wait: 2 },
+      { expect: [{ zone: 'trial-scholar', state: 'open' }, { hero: { near: 'npc:teacher', within: 12 } }] },
+    ],
+  };
+  const failures = await runHeadless(story, { onSession: (s) => sessions.add(s) });
+  assert.deepEqual(failures, []);
+  assert.equal(sessions.size, 1, 'one session: the village did not start again');
+});
