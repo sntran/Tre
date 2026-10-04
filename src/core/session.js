@@ -65,6 +65,9 @@ import { TILE } from './gen/tiles.js';
 export { STEP };
 
 const ZONE_PAD = 2; // half blocks: a place of a task answers a tap this far outside its box
+const CUE_IDLE = 6; // seconds with no action in a task before the next thing glows
+// The commands that are an action of the child (they stop the cue).
+const CHILD_ACTS = new Set(['tap', 'hands', 'drag', 'hold', 'wave', 'jump', 'move', 'pet', 'talkTo']);
 const WORLD = new Set(['move', 'stop', 'pet', 'ride', 'aim', 'pick', 'put', 'drop', 'guess', 'face']);
 const GREETS = ['world.greet.1', 'world.greet.2', 'world.greet.3'];
 const CALM_CELLS = 2; // the hero is on the bridge when nearer than this to a span that is not solid
@@ -1501,6 +1504,69 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'pulse', id: a.target });
   }
 
+  // The cue: when the child does nothing for CUE_IDLE seconds in a task, the thing to touch next
+  // glows softly (the first rung of help; docs/TASKS.md). It shows how to go on, never how many:
+  // the place of the thing in the hands; the glowing iron; the heap of a place that needs more
+  // (the forge, the trough); the heap of a place that is still empty. It stops when the child acts.
+  let idleT = 0;
+  let cue = [];
+  // ids: the things that glow; a place (a zone) glows as a soft disc on the ground (spots, in half
+  // blocks: { x, z, r }).
+  function setCue(ids) {
+    if (ids.join() === cue.join()) return;
+    cue = ids;
+    const spots = ids.map((id) => getEntity(state, id)?.zone).filter(Boolean).map((z) => {
+      const r = z.rect;
+      return r ? { x: (r.x0 + r.x1) / 2, y: z.y, z: (r.z0 + r.z1) / 2, r: Math.max(r.x1 - r.x0, r.z1 - r.z0) / 2 } : { x: z.x, y: z.y, z: z.z, r: 2 };
+    });
+    emit({ type: 'cue', ids, spots });
+  }
+  function acted() {
+    idleT = 0;
+    setCue([]);
+  }
+  function updateCue() {
+    if (screen || busy || raidOn() || hero().fall || (hero().motion?.speed ?? 0) > 0.5) {
+      acted();
+      return;
+    }
+    idleT += STEP;
+    if (idleT >= CUE_IDLE) setCue(cueIds());
+  }
+  function cueIds() {
+    const key = mentoring.activeKey();
+    if (!key || key === 'bridge') return [];
+    const owner = key.startsWith('event-') ? `trial-${key}` : key;
+    const zones = query(state, 'zone').filter((z) => z.zone.task === owner);
+    const fits = (z, kind) => [].concat(z.zone.accepts ?? []).includes(kind);
+    const held = getEntity(state, holding());
+    if (held) {
+      const z = zones.find((x) => x.zone.rule !== 'heap' && fits(x, held.item.kind));
+      return z ? [z.id] : [];
+    }
+    // The iron while it glows (the smith and the iron horse).
+    for (const id of ['smith', 'horse']) {
+      const tz = trialZone(id);
+      const iron = tz && !tz.zone.done && tz.zone.heat !== null && !tz.zone.bent ? getEntity(state, tz.zone.iron ?? 'iron:smith') : null;
+      if (iron && `trial-${id}` === owner && (iron.glow ?? 0) >= (trialDef(id)?.glow?.hot ?? 1)) return [iron.id];
+    }
+    // The woodcutter: the stem, before the first chalk mark.
+    const wood = owner === 'trial-woodcutter' ? trialZone('woodcutter') : null;
+    if (wood && !wood.zone.done && !wood.zone.marks?.length && !wood.zone.cut) return ['stem:woodcutter'];
+    // A place that needs more (the forge, the trough), or a place that is still empty: its heap.
+    const needs = (z) => (z.zone.rule === 'forge' ? z.zone.items.length < z.zone.need : z.zone.rule === 'trough' ? !z.zone.full : !z.zone.items.length && !z.zone.set);
+    for (const z of zones) {
+      if (z.zone.rule === 'heap' || z.zone.rule === 'trial' || !needs(z)) continue;
+      const heap = zones.find((h) => h.zone.rule === 'heap' && !h.id.includes('-stray-') && h.zone.items.length && [].concat(h.zone.accepts).some((k) => fits(z, k)));
+      if (heap) return [...heap.zone.items];
+    }
+    // The activities of Xóm Ruộng with no heap: the jar of feed, the bronze drum.
+    const act = owner.startsWith('trial-') ? owner.slice(6) : null;
+    const r = act && ['ducks', 'drum'].includes(act) ? hamlet.round(act) : null;
+    if (r && !r.done && !r.pouring && !r.eat && !r.dance) return query(state, 'hamletTap').filter((e) => e.hamletTap.act === act).map((e) => e.id);
+    return [];
+  }
+
   // A tap: the hero, a plank outline, a plank, a person, a thing with a trigger zone, or a place
   // on the ground.
   function tap(target) {
@@ -1813,6 +1879,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
     }
     mentoring.tick();
+    updateCue();
     planting.tick(STEP);
     hamlet.tick(STEP);
     checkRest();
@@ -1861,6 +1928,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   function command(cmd) {
     const type = cmd.type;
+    if (CHILD_ACTS.has(type)) acted();
     if (type === 'next' || type === 'choose') {
       if (screen?.screen === 'dialogue') showLine(screen, screen.runner.next(type === 'choose' ? cmd.n : null));
       else if (screen?.screen === 'say') closeScreen();

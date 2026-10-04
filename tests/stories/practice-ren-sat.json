@@ -1,8 +1,8 @@
 {
   "name": "practice-ren-sat",
   "about": {
-    "vi": "Luyện tập rèn sắt lúc đêm: đêm trôi qua, buổi thăm bắt đầu lúc sáng sớm ở lò rèn; hai lượt; bác thợ rèn cảm ơn, An về chỗ cũ.",
-    "en": "Practice at the forge at night: the night goes by, and the visit starts in the early morning at the forge; two rounds; the smith says thank you, and An goes back."
+    "vi": "Luyện tập rèn sắt lúc đêm: đêm trôi qua, buổi thăm bắt đầu lúc sáng sớm ở lò rèn; hai lượt (lượt đầu bác làm mẫu một cục quặng và một xô nước); bác thợ rèn cảm ơn, An về chỗ cũ.",
+    "en": "Practice at the forge at night: the night goes by, and the visit starts in the early morning at the forge; two rounds (in the first round the smith shows one lump of ore and one bucket); the smith says thank you, and An goes back."
   },
   "practice": "ren-sat",
   "profile": {
@@ -71,52 +71,42 @@
       ]
     },
     {
-      "repeat": 2,
-      "steps": [
-        {
-          "tap": {
-            "item": "ore"
-          }
+      "until": {
+        "event": "call",
+        "with": {
+          "key": "mentor.first.you"
         },
+        "timeout": 15
+      }
+    },
+    {
+      "expect": [
         {
-          "until": {
-            "event": "pick",
-            "timeout": 15
-          }
-        },
-        {
-          "tap": {
-            "zone": "forge"
-          }
-        },
-        {
-          "until": {
-            "event": "put",
-            "timeout": 15
-          }
+          "entity": "trough:smith",
+          "look": "trough-full"
         }
       ]
     },
     {
       "tap": {
-        "item": "bucket"
+        "item": "ore"
       }
     },
     {
       "until": {
         "event": "pick",
-        "timeout": 40
+        "timeout": 15
       }
     },
     {
       "tap": {
-        "zone": "trough"
+        "zone": "forge"
       }
     },
     {
       "until": {
         "event": "fire",
-        "timeout": 40
+        "timeout": 15
       }
     },
     {

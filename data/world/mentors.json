@@ -345,6 +345,10 @@
       "family": "plain",
       "person": "npc:smith",
       "demo": null,
+      "first": [
+        { "from": "ore", "to": "forge" },
+        { "from": "bucket", "to": "trough" }
+      ],
       "picture": "mentor.picture.smith"
     },
     "trial-fisher": {
@@ -363,11 +367,15 @@
       "family": "plain",
       "person": "npc:woodcutter",
       "demo": null,
-      "picture": "mentor.picture.woodcutter"
+      "picture": "mentor.picture.woodcutter",
+      "lines": {
+        "first": "mentor.woodcutter.first"
+      }
     },
     "trial-plant": {
       "family": "groups",
       "person": "npc:planter",
+      "first": "point",
       "demo": {
         "thing": "bundle",
         "prop": null,
@@ -381,12 +389,14 @@
       "demo": null,
       "picture": "mentor.picture.duck-girl",
       "lines": {
-        "mark": "mentor.ducks.mark"
+        "mark": "mentor.ducks.mark",
+        "first": "mentor.ducks.first"
       }
     },
     "trial-traps": {
       "family": "groups",
       "person": "npc:fisher-uncle",
+      "first": "point",
       "demo": {
         "thing": "lo",
         "prop": null,
@@ -405,11 +415,13 @@
       "demo": null,
       "picture": "mentor.picture.drummer",
       "lines": {
-        "mark": "mentor.drum.mark"
+        "mark": "mentor.drum.mark",
+        "first": "mentor.drum.first"
       }
     }
   },
   "lines": {
+    "first": "mentor.first",
     "show": "mentor.show",
     "mark": "mentor.mark",
     "cue": null,

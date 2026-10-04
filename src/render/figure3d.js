@@ -129,6 +129,8 @@ export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
 // fish).
 const WANTS = { point: 'point', catch: 'lift', sit: 'rest', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns', pole: 'pole', laugh: 'happy' };
 const PULSE = 0.4; // seconds: a figure pulses once when the action button acts on it
+const GLOW_BEAT = 1.4; // seconds: one slow breath of the glow of the thing to touch next
+const MAX_GLOWS = 64;
 const HOP = 0.5; // seconds of the hop of a dancer (the hop of src/core/world/systems/hamlet.js)
 const HOP_UP = 0.7; // blocks: the height of the hop
 
@@ -162,6 +164,17 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     scene.add(m);
   }
   shadows.renderOrder = 1;
+  // The cue: the thing to touch next glows softly, with a warm disc under it that breathes (the
+  // things in glowing, the places in glowSpots).
+  const glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(C.yellow), transparent: true, opacity: 0.3, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+  const glows = new THREE.InstancedMesh(disc, glowMat, MAX_GLOWS);
+  glows.frustumCulled = false;
+  glows.count = 0;
+  glows.renderOrder = 2;
+  scene.add(glows);
+  let glowing = new Set();
+  let glowSpots = [];
+  let glowT = 0;
   // Dust puffs: small pale boxes behind a running hero.
   const dust = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.paperDeep), transparent: true, opacity: 0.7, depthWrite: false }), MAX_PUFFS);
   dust.frustumCulled = false;
@@ -233,7 +246,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
           f = null;
         }
         if (!f) {
-          f = { look: key, lookData: lookOf(e.look, e.carry), levels: {}, detail: null };
+          f = { id: e.id, look: key, lookData: lookOf(e.look, e.carry), levels: {}, detail: null };
           const coarse = figureOf(f.lookData, 'coarse');
           f.anim = createAnimator(coarse.kind);
           // The lift and the sink of a pose are in the units of the coarse figure.
@@ -280,6 +293,10 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     draw(t, dt) {
       let n = 0;
       let s = 0;
+      let g = 0;
+      glowT += dt;
+      const breath = 0.5 - 0.5 * Math.cos((2 * Math.PI * glowT) / GLOW_BEAT);
+      glowMat.opacity = 0.2 + 0.35 * breath;
       // The planes of the view, for the culling (plain numbers for src/world/lod.js).
       if (camera) {
         camera.updateMatrixWorld();
@@ -324,7 +341,12 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         L.root.rotation.y = lerpAngle(a.facing, b.facing, t);
         // The thing that the action button acted on pulses once (a little bigger, then back).
         if (f.pulse > 0) f.pulse = Math.max(0, f.pulse - dt);
-        L.root.scale.setScalar(f.pulse > 0 ? 1 + 0.18 * Math.sin(Math.PI * (1 - f.pulse / PULSE)) : 1);
+        const glow = glowing.has(f.id);
+        L.root.scale.setScalar((f.pulse > 0 ? 1 + 0.18 * Math.sin(Math.PI * (1 - f.pulse / PULSE)) : 1) * (glow ? 1 + 0.08 * breath : 1));
+        if (glow && g < MAX_GLOWS) {
+          const r = Math.max(0.6, Math.min(1.6, L.height * 0.6));
+          glows.setMatrixAt(g++, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.06, f.at.z));
+        }
         for (const [name, r] of Object.entries(pose.rot)) L.nodes[name]?.rotation.set(r[0], r[1], r[2]);
         if (L.hangs.length) {
           // The parts that hang follow the air that the figure feels, with a lag, on top of the pose.
@@ -397,6 +419,13 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       }
       spray.count = r;
       spray.instanceMatrix.needsUpdate = true;
+      for (const p of glowSpots) {
+        if (g >= MAX_GLOWS) break;
+        const r = p.r / 2 + 0.4;
+        glows.setMatrixAt(g++, tmp.makeScale(r, 1, r).setPosition(p.x / 2, (p.y ?? 0) / 2 + 0.06, p.z / 2));
+      }
+      glows.count = g;
+      glows.instanceMatrix.needsUpdate = true;
       parts.count = n;
       hulls.count = n;
       shadows.count = s;
@@ -423,12 +452,18 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       const f = figures.get(id);
       if (f) f.pulse = PULSE;
     },
+    // The cue: these things glow (entity ids), and these places glow on the ground (spots in half
+    // blocks: { x, y, z, r }). Empty lists stop the glow.
+    glow(ids = [], spots = []) {
+      glowing = new Set(ids);
+      glowSpots = spots;
+    },
     placeOf(id) {
       const f = figures.get(id);
       return f?.at ? { ...f.at, height: f.height } : null;
     },
     dispose() {
-      for (const m of [parts, hulls, shadows, dust, spray]) {
+      for (const m of [parts, hulls, shadows, glows, dust, spray]) {
         scene.remove(m);
         m.material.dispose();
         m.dispose();

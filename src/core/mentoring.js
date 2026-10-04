@@ -14,6 +14,7 @@ const NEAR = 28; // half blocks: the hero is at the station when nearer than thi
 const LEAVE = 40; // half blocks: farther than this soon after a miss, the hero left the station
 const LEAVE_TIME = 15; // seconds after a miss
 const COUNT_PACE = 0.9; // seconds between two counted parts (counting pace)
+const FIRST_DELAY = 0.5; // seconds after the start of a task: the person shows the first step
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
@@ -26,6 +27,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   const states = new Map(); // key -> the mentor of the task
   const tracks = new Map(); // key -> { startT, firstAct, lastAct, lastCommit, acted, left, round }
   let delayed = []; // moves that wait: { at, key, move, info }
+  const firstShown = new Set(); // the tasks whose first step the person showed in this visit
   let lastSkill = null;
   const now = () => (world()?.tick ?? 0) * STEP;
   const defOf = (key) => cfg?.mentors?.[key] ?? null;
@@ -69,7 +71,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const place = PLACES.map((r) => zones.find((z) => z.zone.rule === r)).find(Boolean) ?? null;
     const piles = zones.filter((z) => z.zone.rule === 'heap' && !z.zone.id.includes('-stray-'));
     const p = place?.zone ?? tz.position;
-    const at = place?.zone.rect ? { x: (place.zone.rect.x0 + place.zone.rect.x1) / 2, z: (place.zone.rect.z0 + place.zone.rect.z1) / 2 } : { x: p.x, z: p.z };
+    // The woodcutter works at the stem (the sticks go to the woodpile after the cut).
+    const stem = tz.zone.stem;
+    const at = stem ? { x: stem.x + stem.length / 2, z: stem.z } : place?.zone.rect ? { x: (place.zone.rect.x0 + place.zone.rect.x1) / 2, z: (place.zone.rect.z0 + place.zone.rect.z1) / 2 } : { x: p.x, z: p.z };
     return { key, tz, place, piles, person, at, done: false, round: 0 };
   }
 
@@ -90,6 +94,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     tracks.set(key, { startT: now(), firstAct: null, lastAct: now(), lastCommit: null, acted: false, left: false });
     delayed = delayed.filter((d) => d.key !== key);
     endScript(world(), getEntity(world(), `script:${key}`));
+    // At the start of a task, the person shows the first step one time on the real things.
+    // One time in a visit: the rounds of a practice after the first one start with no demonstration.
+    if (round === 0 && key.startsWith('trial-') && defOf(key).first !== false && !firstShown.has(key)) {
+      firstShown.add(key);
+      delayed.push({ at: now() + FIRST_DELAY, key, move: 'first', info: {} });
+    }
     return st;
   }
   function stateOf(key, task = null) {
@@ -274,9 +284,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       t = 2.2;
     }
     let keyAt;
-    const needsPlace = ['show', 'mark', 'cue', 'demo', 'smaller', 'share'].includes(move);
+    const needsPlace = ['first', 'show', 'mark', 'cue', 'demo', 'smaller', 'share'].includes(move);
     if (needsPlace && !task) return;
-    if (move === 'show') {
+    if (move === 'first') {
+      t = firstSteps(task, def, { say, point, mark, steps }, t);
+    } else if (move === 'show') {
       const pile = task.piles[0]?.position ?? task.at;
       say(t, lineOf(key, 'show'));
       point(t, pile, 1.4);
@@ -317,6 +329,46 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     steps.push({ at: t + 0.5, end: true });
     steps.sort((a, b) => a.at - b.at);
     addEntity(w, { id: `script:${key}`, script: { key, move, t: 0, i: 0, steps, spawned: [], ...(keyAt !== undefined ? { keyAt } : {}) } });
+  }
+
+  // The first step, one time at the start of a task: the person takes one thing from a heap and
+  // puts it into its place (def.first: [{ from, to }] zone ids; else the first heap and the place
+  // of the task). A task with no heap: the person points at the place and says what to do. A task
+  // of exact rounds (def.first 'point'): the person only points, so that each round stays the child's.
+  function firstSteps(task, def, s, t) {
+    const w = world();
+    // def.first 'point': the person only points at the heap and at the place (a task of exact rounds).
+    if (def.first === 'point' && task.piles[0] && task.place) {
+      s.say(t, lineOf(task.key, 'show'));
+      s.point(t, task.piles[0].position, 1.4);
+      s.mark(t, task.piles[0].position, 2.5);
+      s.point(t + 1.6, task.at, 1.4);
+      s.mark(t + 1.6, task.at, 2.5);
+      return t + 3;
+    }
+    const pairs = (Array.isArray(def.first) ? def.first : task.piles[0] && task.place ? [{ from: task.piles[0].zone.id, to: task.place.zone.id }] : [])
+      .map((p) => ({ heap: getEntity(w, `zone:${p.from}`), place: getEntity(w, `zone:${p.to}`) }))
+      .filter((p) => p.heap && p.place);
+    s.say(t, lineOf(task.key, 'first'));
+    if (!pairs.length) {
+      s.point(t, task.at, 2);
+      s.mark(t, task.at, 3);
+      return t + 2.5;
+    }
+    t += 0.6;
+    for (const { heap, place } of pairs) {
+      const thing = itemsOf(heap).find((e) => !e.item.held && !e.item.set && !e.item.stray);
+      if (!thing) continue;
+      const to = place.zone.rect ? { x: (place.zone.rect.x0 + place.zone.rect.x1) / 2, z: (place.zone.rect.z0 + place.zone.rect.z1) / 2 } : { x: place.zone.x, z: place.zone.z };
+      s.point(t, heap.position, 1);
+      s.mark(t, heap.position, 1.6);
+      s.point(t + 1, to, 1.2);
+      s.steps.push({ at: t + 1, put: { zone: place.id, item: thing.id, person: task.person?.id ?? 'hero' } });
+      s.mark(t + 1, to, 1.6);
+      t += 2.2;
+    }
+    s.say(t, 'mentor.first.you');
+    return t + 1.5;
   }
 
   // Mark what matters: count the parts on the place aloud, one at a time (each with the running
