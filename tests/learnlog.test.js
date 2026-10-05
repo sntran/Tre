@@ -10,7 +10,7 @@ const schema = load('data/config/learnlog.json');
 const T0 = Date.UTC(2026, 8, 1, 9); // a morning (UTC)
 
 // Events of two days and two variants: bridge commits, a prediction, reviews, exams, sessions.
-const attempt = (t, x) => ({ type: 'attempt', t, variant: 'base', task: 'bridge', skill: 'math.add.20', phase: 'commit', success: false, efficient: false, first: false, mashing: false, parts: [4, 4], resets: 0, latencies: [2, 3], hint: 0, hintSeen: null, pBefore: 0.5, pAfter: 0.4, play: 10, retry: false, harder: false, map: 'phu-dong', ...x });
+const attempt = (t, x) => ({ type: 'attempt', t, variant: 'base', task: 'bridge', skill: 'math.add.20', phase: 'commit', success: false, efficient: false, first: false, mashing: false, parts: [4, 4], resets: 0, latencies: [2, 3], hint: 0, hintSeen: null, pBefore: 0.5, pAfter: 0.4, play: 10, retry: false, harder: false, map: 'phu-dong', off: null, ...x });
 const DAY1 = [
   { type: 'session', t: T0, variant: 'base', start: T0 - 12 * 60000, end: T0, endedBy: 'child', quests: 1, place: 'phu-dong', afterQuest: false, first: 'walk', practice: null },
   attempt(T0 + 1000, { first: true, mashing: true }),

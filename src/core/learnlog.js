@@ -70,7 +70,7 @@ export function rollDay(log, schema) {
   log.day = null;
 }
 
-const optionsOf = (log, schema) => ({ tz: log.tz, first: log.first ?? 0, mastered: schema.mastered ?? 0.95, shortHint: schema.shortHint ?? 1 });
+const optionsOf = (log, schema) => ({ tz: log.tz, first: log.first ?? 0, mastered: schema.mastered ?? 0.95, shortHint: schema.shortHint ?? 1, signals: schema.signals, activities: schema.activities });
 
 // The roll-ups of the stored days and of the raw events of today, together.
 export function currentRollups(log, schema) {
@@ -92,6 +92,8 @@ export function emptyRollup() {
     helps: {},
     checks: [0, 0], // checks, and checks with a change after them (self-corrections)
     asks: { before: 0, after: 0 },
+    // The weeks of play (#25): { [week]: a week } (weekOf), for the weekly note of the parents.
+    weeks: {},
   };
 }
 
@@ -112,7 +114,7 @@ function addPoint(curve, day, value) {
 }
 
 // The roll-ups of a list of raw events: { [variant]: roll-up }.
-export function rollupEvents(events, { tz = 0, first = 0, mastered = 0.95, shortHint = 1 } = {}) {
+export function rollupEvents(events, { tz = 0, first = 0, mastered = 0.95, shortHint = 1, signals = SIGNALS, activities = {} } = {}) {
   const out = {};
   const days = {};
   for (const ev of [...events].sort((a, b) => a.t - b.t)) {
@@ -198,6 +200,7 @@ export function rollupEvents(events, { tz = 0, first = 0, mastered = 0.95, short
     }
   }
   for (const [variant, set] of Object.entries(days)) out[variant].days = set.size;
+  for (const [variant, weeks] of Object.entries(weekRollups(events, { tz, signals, activities }))) out[variant].weeks = weeks;
   return out;
 }
 
@@ -276,12 +279,189 @@ export function mergeRollups(a, b) {
   }
   out.checks = addPairs(a.checks ?? [0, 0], b.checks ?? [0, 0]);
   out.asks = addMap(a.asks ?? { before: 0, after: 0 }, b.asks ?? { before: 0, after: 0 });
+  out.weeks = deepAdd(a.weeks ?? {}, b.weeks ?? {});
   return out;
 }
 
 // All the variants together.
 export function allVariants(rollups) {
   return Object.values(rollups).reduce((a, b) => mergeRollups(a, b), emptyRollup());
+}
+
+// The weeks of play (#25; docs/LEARNING.md, "The weekly note"). A week starts on Monday, in the
+// local time of the device: weekOf(t, tz) is the number of the week since 1970.
+export const weekOf = (t, tz = 0) => Math.floor((dayOf(t, tz) + 3) / 7);
+
+// The definitions of the signals (data/config/learnlog.json, signals): seconds and counts.
+export const SIGNALS = Object.freeze({ fast: 3, idle: 60, gap: 300, leave: 20, missRun: 3, hop: 60, near: 1, recall: [2, 4, 6, 10, 20], few: 3 });
+
+// The activity of a task or a mentor key (data/config/learnlog.json, activities): a task id, or a
+// beginning of task ids that ends with "-"; the task itself when the list does not have it.
+export function activityOf(task, activities = {}) {
+  if (activities[task]) return activities[task];
+  const pre = Object.keys(activities).filter((k) => k.endsWith('-') && String(task).startsWith(k)).sort((a, b) => b.length - a.length)[0];
+  return pre ? activities[pre] : task;
+}
+
+// How far a commit was from the target, in groups: 0 is exact, at most 1 is a near miss (off by
+// one group), more is a far miss. parts: the sizes of the commit; target: the number; null when the
+// event has no target.
+export function offOf(parts, target) {
+  if (!Array.isArray(parts) || !parts.length || typeof target !== 'number') return null;
+  const sum = parts.reduce((a, b) => a + b, 0);
+  const group = Math.max(1, Math.abs(parts[parts.length - 1]));
+  return Math.abs(sum - target) / group;
+}
+
+const emptyAct = () => ({ commits: 0, ok: 0, near: 0, far: 0, fast: 0, idle: 0, resets: 0, missRuns: 0, again: 0, changed: 0, left: 0, sessions: 0, self: 0, sent: 0, first: 0, stops: 0, sets: 0, stay: 0, minutes: 0 });
+const emptyWeek = () => ({
+  sessions: 0, self: 0, sent: 0, minutes: 0, hops: 0,
+  day: [0, 0, 0, 0, 0, 0, 0], // minutes of play on each day of the week, Monday first
+  acts: {},
+  // Learning to learn: checks before a commit, self-corrections, waves before and after a try,
+  // predictions and their error, the moves of the people, and the moves that check for the child.
+  l2l: { checks: 0, selfFix: 0, before: 0, after: 0, predN: 0, predErr: 0, helps: 0, marks: 0 },
+  recall: [0, 0, 0, 0, 0, 0], // the seconds of right commits of the facts of the table, in buckets
+  quiz: [0, 0], // the short questions of the teacher on the facts: [questions, right]
+  quizKnown: [0, 0], // the same, on the facts that are confident in the world
+});
+
+// Add two plain values: numbers add, lists of numbers add item by item, objects add key by key.
+export function deepAdd(a, b) {
+  if (typeof a === 'number' && typeof b === 'number') return a + b;
+  if (Array.isArray(a) && Array.isArray(b)) return Array.from({ length: Math.max(a.length, b.length) }, (_, i) => (a[i] ?? 0) + (b[i] ?? 0));
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    const out = { ...a };
+    for (const [k, v] of Object.entries(b)) out[k] = k in a ? deepAdd(a[k], v) : structuredClone(v);
+    return out;
+  }
+  return b ?? a;
+}
+
+const MARKS = new Set(['show', 'mark', 'cue', 'demo']); // the people check or show for the child
+
+// The weeks of the raw events of a day: { [variant]: { [week]: a week } }. The attempts of a
+// session are the attempts between its start and its end. The signals of an activity:
+//   commits, ok: the commits, and the right ones.
+//   near, far: the misses off by at most one group, and the misses farther off.
+//   fast, idle: the commits less than signals.fast seconds after the commit before (careless), and
+//     the commits more than signals.idle seconds after it (a long pause).
+//   resets, missRuns: the resets of the commits, and the runs of signals.missRun misses in a row.
+//   again, changed, left: after a miss, the next commit of the same activity (and with other
+//     parts), or no more commit of it: the session ended or the child went to another activity
+//     within signals.leave seconds.
+//   sessions, self, sent, first, stops: the sessions with commits of the activity (started by the
+//     child or by a practice link), the sessions that it began, and the sessions that it ended.
+//   sets, stay: the sets of a practice done, and the times the child played on after a set.
+//   minutes: the time between the commits of the activity (each gap at most signals.gap seconds).
+// hops: a commit of another activity less than signals.hop seconds after a commit.
+export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {} } = {}) {
+  const sig = { ...SIGNALS, ...signals };
+  const out = {};
+  const sorted = [...events].sort((a, b) => a.t - b.t);
+  const byVariant = {};
+  for (const ev of sorted) (byVariant[ev.variant] ??= []).push(ev);
+  for (const [variant, list] of Object.entries(byVariant)) {
+    const weeks = (out[variant] = {});
+    const W = (t) => (weeks[weekOf(t, tz)] ??= emptyWeek());
+    const act = (w, a) => (w.acts[a] ??= emptyAct());
+    const sessions = list.filter((e) => e.type === 'session');
+    const sessionOf = (t) => sessions.find((s) => s.start <= t && t <= s.end) ?? null;
+    const seen = new Map(); // a session: { acts: Set, first, last, lastT }
+    let prev = null; // the last commit: { a, t, ok, parts, session }
+    const missRun = {};
+    const closeMiss = (p, how) => {
+      const w = W(p.t);
+      act(w, p.a)[how] += 1;
+    };
+    for (const ev of list) {
+      const w = W(ev.t);
+      if (ev.type === 'attempt' && ev.phase === 'commit') {
+        const a = activityOf(ev.task, activities);
+        const r = act(w, a);
+        const s = sessionOf(ev.t);
+        const ok = Boolean(ev.success);
+        r.commits += 1;
+        r.ok += ok ? 1 : 0;
+        r.resets += ev.resets ?? 0;
+        const off = ok ? 0 : (ev.off ?? offOf(ev.parts, ev.target));
+        if (!ok && off !== null) r[off <= sig.near ? 'near' : 'far'] += 1;
+        // The signals that join two commits count only within one session (a day of the roll-up
+        // ends with its sessions), so that the roll-ups of the days add up to the roll-up of all.
+        const inSession = Boolean(prev && s && prev.session === s);
+        const last = inSession && prev.a === a ? prev : null;
+        if (last) {
+          const secs = (ev.t - last.t) / 1000;
+          if (secs < sig.fast) r.fast += 1;
+          if (secs > sig.idle) r.idle += 1;
+          r.minutes += Math.min(secs, sig.gap) / 60;
+          if (ok && String(ev.skill).startsWith('math.mul')) {
+            const i = sig.recall.findIndex((x) => secs <= x);
+            w.recall[i < 0 ? sig.recall.length : i] += 1;
+          }
+        }
+        // After a miss: the same activity again (with other parts or not), or another one soon.
+        if (inSession && !prev.ok) {
+          if (prev.a === a) closeMiss(prev, JSON.stringify(prev.parts) === JSON.stringify(ev.parts) ? 'again' : 'changed');
+          else if ((ev.t - prev.t) / 1000 < sig.leave) closeMiss(prev, 'left');
+        }
+        if (inSession && prev.a !== a && (ev.t - prev.t) / 1000 < sig.hop) w.hops += 1;
+        if (!inSession) for (const k of Object.keys(missRun)) delete missRun[k];
+        missRun[a] = ok ? 0 : (missRun[a] ?? 0) + 1;
+        if (missRun[a] === sig.missRun) r.missRuns += 1;
+        if (s) {
+          const k = seen.get(s) ?? { acts: new Set(), first: a, last: a, lastT: ev.t };
+          k.acts.add(a);
+          k.last = a;
+          k.lastT = ev.t;
+          seen.set(s, k);
+        }
+        prev = { a, t: ev.t, ok, parts: ev.parts, session: s };
+      } else if (ev.type === 'session') {
+        const k = seen.get(ev);
+        // A miss as the last commit of a session, a little before its end: the child left.
+        if (prev && !prev.ok && prev.session === ev && (ev.end - prev.t) / 1000 < sig.leave) closeMiss(prev, 'left');
+        const min = Math.max(0, ev.end - ev.start) / 60000;
+        w.sessions += 1;
+        w.minutes += min;
+        w[ev.practice ? 'sent' : 'self'] += 1;
+        w.day[(dayOf(ev.start, tz) + 3) % 7] += min;
+        if (k) {
+          for (const a of k.acts) {
+            const r = act(w, a);
+            r.sessions += 1;
+            r[ev.practice ? 'sent' : 'self'] += 1;
+          }
+          act(w, k.first).first += 1;
+          act(w, k.last).stops += 1;
+        }
+        prev = null;
+      } else if (ev.type === 'set') {
+        const r = act(w, ev.activity);
+        if (ev.end === 'done') r.sets += 1;
+        if (ev.end === 'stay') r.stay += 1;
+      } else if (ev.type === 'check') {
+        w.l2l.checks += 1;
+        w.l2l.selfFix += ev.changed ? 1 : 0;
+      } else if (ev.type === 'ask') {
+        w.l2l[ev.when] += 1;
+      } else if (ev.type === 'help') {
+        w.l2l.helps += 1;
+        w.l2l.marks += MARKS.has(ev.move) ? 1 : 0;
+      } else if (ev.type === 'prediction' && ev.guess !== null) {
+        w.l2l.predN += 1;
+        w.l2l.predErr += Math.abs(ev.guess - ev.used);
+      } else if (ev.type === 'quiz') {
+        w.quiz[0] += 1;
+        w.quiz[1] += ev.correct ? 1 : 0;
+        if (ev.known) {
+          w.quizKnown[0] += 1;
+          w.quizKnown[1] += ev.correct ? 1 : 0;
+        }
+      }
+    }
+  }
+  return out;
 }
 
 const rate = (ok, n) => (n ? ok / n : null);
@@ -458,6 +638,7 @@ export function summarize(log, { grade, variant }, schema) {
       helps: r.helps,
       checks: r.checks,
       asks: r.asks,
+      weeks: JSON.parse(JSON.stringify(r.weeks ?? {}), (k, v) => round(v)),
     };
   }
   return out;

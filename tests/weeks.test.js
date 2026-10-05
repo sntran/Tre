@@ -1,0 +1,132 @@
+// The weeks of play for the weekly note of the parents (#25): the signals of each activity, from
+// the actions of the child only (src/core/learnlog.js, weekRollups; data/config/learnlog.json).
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { rollupEvents, mergeRollups, weekOf, activityOf, offOf, checkEvent, DAY_MS, emptyRollup } from '../src/core/learnlog.js';
+import { load } from './helpers.js';
+
+const schema = load('data/config/learnlog.json');
+const opts = { signals: schema.signals, activities: schema.activities };
+// Monday, 7 September 2026, 9:00 (UTC).
+const MON = Date.UTC(2026, 8, 7, 9);
+const S = 1000;
+const commit = (t, task, x = {}) => ({ type: 'attempt', t, variant: 'base', task, skill: 'math.mul.10', phase: 'commit', success: false, efficient: false, first: false, mashing: false, parts: [3, 3], resets: 0, latencies: [], hint: 0, hintSeen: null, pBefore: null, pAfter: null, play: 1, retry: false, harder: false, map: 'xom-ruong', off: null, ...x });
+const session = (start, end, practice = null) => ({ type: 'session', t: end, variant: 'base', start, end, endedBy: 'child', quests: 0, place: 'xom-ruong', afterQuest: false, first: 'walk', practice });
+const week = (events) => Object.values(rollupEvents(events, opts).base.weeks)[0];
+
+test('a week starts on Monday; a task or a mentor key has its activity; a miss is near or far by groups', () => {
+  assert.equal(weekOf(MON), weekOf(MON + 6 * DAY_MS + 3 * 3600 * S));
+  assert.equal(weekOf(MON - 3600 * S * 10), weekOf(MON) - 1, 'Sunday is the week before');
+  assert.equal(activityOf('trial-drum', opts.activities), 'mua-trong');
+  assert.equal(activityOf('trial-plant', opts.activities), 'cay-lua');
+  assert.equal(activityOf('trial-event-cart', opts.activities), 'events');
+  assert.equal(activityOf('event-cart', opts.activities), 'events');
+  assert.equal(activityOf('folk-rope', opts.activities), 'nhay-day');
+  assert.equal(activityOf('raid-scouts', opts.activities), 'raids');
+  assert.equal(offOf([3, 3, 3], 12), 1, 'one group short: near');
+  assert.equal(offOf([3], 12), 3, 'far');
+  assert.equal(offOf([], 12), null);
+  for (const ev of [commit(MON, 'trial-drum', { off: 1 }), { type: 'set', t: MON, variant: 'base', activity: 'mua-trong', end: 'done' }, { type: 'quiz', t: MON, variant: 'base', skill: 'math.mul.10', fact: '3x7', known: true, correct: true }]) assert.ok(checkEvent(ev, schema));
+});
+
+test('bored: fast careless commits and far misses; hopping between stations within a minute', () => {
+  const t = MON;
+  const w = week([
+    commit(t + 10 * S, 'trial-drum', { off: 3 }),
+    commit(t + 11 * S, 'trial-drum', { off: 4 }),
+    commit(t + 12 * S, 'trial-drum', { off: 2.5 }),
+    commit(t + 40 * S, 'trial-ducks', { success: true, off: 0 }),
+    session(t, t + 120 * S),
+  ]);
+  const d = w.acts['mua-trong'];
+  assert.equal(d.far, 3);
+  assert.equal(d.near, 0);
+  assert.equal(d.fast, 2, 'two commits came less than three seconds after the one before');
+  assert.equal(w.hops, 1);
+  assert.equal(d.missRuns, 1, 'three misses in a row');
+  assert.equal(d.left, 0, 'the ducks came twenty-eight seconds after the last miss: not a leave');
+});
+
+test('frustrated: misses in a row and leaving right after a miss; the time of a commit grows', () => {
+  const t = MON;
+  const w = week([
+    commit(t + 10 * S, 'trial-traps', { off: 1 }),
+    commit(t + 30 * S, 'trial-traps', { off: 1, parts: [5, 5] }),
+    commit(t + 100 * S, 'trial-traps', { off: 2, resets: 2 }),
+    session(t, t + 105 * S),
+  ]);
+  const d = w.acts['dat-lo'];
+  assert.equal(d.missRuns, 1);
+  assert.equal(d.left, 1, 'the session ended five seconds after a miss');
+  assert.equal(d.changed, 2, 'after each miss the next try had other parts');
+  assert.equal(d.idle, 1, 'seventy seconds before the third commit');
+  assert.equal(d.resets, 2);
+  assert.equal(d.near, 2);
+});
+
+test('into it: near misses, right commits of the facts and their seconds, sets finished and play after a set', () => {
+  const t = MON;
+  const w = week([
+    commit(t + 10 * S, 'trial-plant', { off: 0.5 }),
+    commit(t + 15 * S, 'trial-plant', { success: true, off: 0, parts: [3, 3, 3, 3] }),
+    commit(t + 18 * S, 'trial-plant', { success: true, off: 0, parts: [4, 4] }),
+    commit(t + 30 * S, 'trial-plant', { success: true, off: 0, parts: [5, 5] }),
+    { type: 'set', t: t + 40 * S, variant: 'base', activity: 'cay-lua', end: 'done' },
+    { type: 'set', t: t + 45 * S, variant: 'base', activity: 'cay-lua', end: 'stay' },
+    session(t, t + 600 * S, 'cay-lua'),
+  ]);
+  const d = w.acts['cay-lua'];
+  assert.equal(d.near, 1);
+  assert.equal(d.changed, 1, 'after the near miss, another try');
+  assert.equal(d.left, 0);
+  assert.deepEqual(w.recall, [0, 1, 1, 0, 1, 0], 'three right commits: 5, 3, and 12 seconds after the one before');
+  assert.equal(d.sets, 1);
+  assert.equal(d.stay, 1);
+  assert.equal(d.sent, 1, 'a session from a practice link');
+  assert.equal(w.sent, 1);
+  assert.equal(w.self, 0);
+  assert.ok(Math.abs(d.minutes - 20 / 60) < 1e-9, 'twenty seconds between the commits');
+});
+
+test('self-started or sent; first and last activity of a session; minutes of each day of the week', () => {
+  const t = MON + DAY_MS * 2; // Wednesday
+  const w = week([
+    commit(t + 10 * S, 'trial-ducks', { success: true, off: 0 }),
+    commit(t + 400 * S, 'trial-drum', { success: true, off: 0 }),
+    session(t, t + 12 * 60 * S),
+    commit(t + 3600 * S + 10 * S, 'trial-drum', { success: true, off: 0 }),
+    session(t + 3600 * S, t + 3600 * S + 6 * 60 * S, 'mua-trong'),
+  ]);
+  assert.equal(w.sessions, 2);
+  assert.equal(w.self, 1);
+  assert.equal(w.sent, 1);
+  assert.equal(w.acts['cho-vit-an'].first, 1);
+  assert.equal(w.acts['mua-trong'].stops, 2);
+  assert.equal(w.acts['mua-trong'].self, 1);
+  assert.equal(w.acts['mua-trong'].sent, 1);
+  assert.equal(w.day[2], 18, 'eighteen minutes on Wednesday');
+  assert.equal(w.minutes, 18);
+});
+
+test('learning to learn and the questions of the teacher, each week; the weeks of two days merge as one', () => {
+  const t = MON;
+  const ev = (x) => ({ variant: 'base', ...x });
+  const day1 = [
+    ev({ type: 'check', t: t + S, task: 'trial-plant', changed: true }),
+    ev({ type: 'check', t: t + 2 * S, task: 'trial-plant', changed: false }),
+    ev({ type: 'ask', t: t + 3 * S, task: 'trial-plant', when: 'after', move: 'show' }),
+    ev({ type: 'help', t: t + 4 * S, task: 'trial-plant', diagnosis: 'missing', move: 'mark', pBefore: null, success: true, efficient: false }),
+    ev({ type: 'prediction', t: t + 5 * S, task: 'bridge', gap: 12, guess: 3, used: 4, solved: false }),
+    ev({ type: 'quiz', t: t + 6 * S, skill: 'math.mul.10', fact: '3x7', known: true, correct: true }),
+    ev({ type: 'quiz', t: t + 7 * S, skill: 'math.mul.10', fact: '6x8', known: false, correct: false }),
+  ];
+  const day2 = day1.map((e) => ({ ...e, t: e.t + DAY_MS }));
+  const a = rollupEvents(day1, opts).base;
+  const b = rollupEvents(day2, opts).base;
+  const both = mergeRollups(mergeRollups(emptyRollup(), a), b);
+  const w = both.weeks[weekOf(t)];
+  assert.deepEqual(w.l2l, { checks: 4, selfFix: 2, before: 0, after: 2, predN: 2, predErr: 2, helps: 2, marks: 2 });
+  assert.deepEqual(w.quiz, [4, 2]);
+  assert.deepEqual(w.quizKnown, [2, 2]);
+  assert.deepEqual(both.weeks, rollupEvents([...day1, ...day2], opts).base.weeks, 'the same as the roll-up of all the events');
+});

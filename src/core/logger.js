@@ -42,7 +42,7 @@ export function createLogger({ profile, schema, label = () => 'base', quests = [
     record,
     // A commit (or a free try) at a task. The time of play is added here.
     attempt(fields) {
-      return record('attempt', { play: Math.round(playMinutes() * 10) / 10, ...fields });
+      return record('attempt', { play: Math.round(playMinutes() * 10) / 10, off: null, ...fields });
     },
     // A session of play starts. practice: the id of the activity of a practice link, or null.
     startSession({ practice = null } = {}) {

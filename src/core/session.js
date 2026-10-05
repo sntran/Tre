@@ -35,6 +35,7 @@
 import { findPath, pathNextTo, createPlaneTileMap, footprint } from './tilemap.js';
 import { createTriggers } from './triggers.js';
 import { currentGoal } from './quests.js';
+import { offOf } from './learnlog.js';
 import { clueLine as clueOf, hiddenAt, areaOf, inArea } from './clues.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
 import { createDialogue } from './dialogue.js';
@@ -663,12 +664,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (Object.keys(def.reward ?? {}).length) emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: def.reward, delay: 0.3 });
     emit({ type: 'hud' });
     emit({ type: 'practice', id: practice.id, sets: rec.sets, level: practice.level });
+    log('set', { activity: practice.id, end: 'done' });
     talk(`${def.npc}.practice.end`);
   }
   // Stay: the position of the profile is here from now on, and a new set starts. Go back: the hero
   // goes to the place before the visit (the view shows a short change), or to the start of the game
   // when the profile had no place.
   function practiceChoice(stay) {
+    log('set', { activity: practice.id, end: stay ? 'stay' : 'back' });
     if (stay) {
       practice.stayed = true;
       save('practice');
@@ -743,6 +746,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     save('practice');
     emit({ type: 'gift', from: `npc:${person}`, give: { rice: 3 }, delay: 0.3 });
     emit({ type: 'practice', id: practice.id, sets: rec.sets, level: rec.level });
+    log('set', { activity: practice.id, end: 'done' });
     talk(`${person}.practice.end`);
   }
 
@@ -1953,7 +1957,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const pAfter = l?.entry(ev.skill).p ?? null;
     log('attempt', {
       task: ev.task, skill: ev.skill, phase: 'commit', success: ev.solved, efficient: ev.efficient, first: ev.first, mashing: ev.mashing,
-      parts: ev.parts, resets: ev.resets, latencies: ev.latencies, hint: ev.hint, hintSeen: ev.hintSeen, pBefore, pAfter, retry: false, harder: false, map: map.id,
+      parts: ev.parts ?? [], resets: ev.resets ?? 0, latencies: ev.latencies ?? [], hint: ev.hint ?? 0, hintSeen: ev.hintSeen ?? null, pBefore, pAfter, retry: false, harder: false, map: map.id,
+      off: ev.solved ? 0 : offOf(ev.parts, ev.target),
     });
   }
   function worldEvent(ev) {
