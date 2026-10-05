@@ -107,7 +107,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 
 | Story | The use path |
 | --- | --- |
-| `new-profile` | A new profile to the village, the intro, a name for Nghé, and the first talk with the elder. |
+| `new-profile` | A new profile to the village, the intro, a name for Nghé (the screen of the name opens before the next line of grandma), and the first talk with the elder. |
 | `bridge` | The prediction, then a short, a long, and an exact bridge; the flags of each commit. |
 | `bridge-mashing` | Three sizes in a sweep, fast: no evidence, and Nghé shows the gap. |
 | `day` | A whole day: the spots at 10:00, the well at noon, home at night, out in the morning; the chickens in the coop. |
@@ -159,7 +159,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `jump-puddles` | On a day of rain at the ford of Phù Đổng: a jump on the path, then from stone to stone across the ford; when the river rises, the ford closes, and a jump at its edge is only a hop. |
 | `jump-bridge-gap` | A grade twelve hero jumps at a repair of the bridge with a run: the jump ends in the water, Nghé pulls the hero out at the near end, and the planks are still the way across. |
 | `walk-xom-ruong` | From the north gate of Phù Đổng on the small road to Xóm Ruộng; Nghé comes along. In the yard, each person of a station is at the station: the planter on the dike, the duck girl at the pond, the fisher uncle at the stream, and the old drummer in the đình yard. |
-| `practice-xom-ruong` | The practice link of the hamlet: An starts in the yard, walks to the planter, and she starts a set of the planting. |
+| `practice-xom-ruong` | The practice link of the hamlet with a new profile: no prologue; the head of the hamlet greets An and points at the four stations; An walks to the planter, she plants a small example plot, and then she starts a set of the planting. |
 | `practice-cay-lua` | The practice link of the planting: one set of six plots. One plot gets too few seedlings (the empty cells stay, and An brings the rest), one gets too many (the extra lies on the dike), and the others are just right; the last one is a choose plot. The planter says thank you, and An goes back. |
 | `practice-cho-vit-an` | The practice link of the ducks: one set of four troughs. One gets too little feed (the last ducks look at An, and the next pour goes on from where it stopped), one gets too much (the chickens come), and the others are just right. The duck girl says thank you, and An goes back. |
 | `practice-dat-lo` | The practice link of the fish traps: one set of four catches. One has too few traps (the full traps stay, and An puts one more), one has too many (the extra fish swim on), and the others are just right. The fisher uncle says thank you, and An goes back. |
