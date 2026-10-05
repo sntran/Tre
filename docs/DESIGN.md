@@ -486,6 +486,7 @@ Battles stay open at all stages. An older player can fight, build, or do both.
 - All text is in language files with keys. There is no text in the code.
 - Names of people, places, and titles stay in Vietnamese with marks in both languages, for example Thánh Gióng and Văn Miếu. English mode shows a short meaning the first time.
 - Voice uses the Web Speech API first. Recorded voice files can replace it later, key by key.
+- **People are named as their place and time name them.** In a village, a person is called by a word of kinship and the order of birth ("cô Năm", "chú Tư"), never by a nickname made from the work. The word for the order follows the region and the era of the map: in the north, and in all regions before the 18th century, the first child is Cả and the second Hai; in the center and the south from the 18th century on, the first child is Hai (Nguyễn Nhạc, the eldest Tây Sơn brother, was "anh Hai Trầu" before 1771; [Biên khảo](https://sites.google.com/site/bienkhao/t%E1%BA%A1i-sao-ng%C6%B0%E1%BB%9Di-mi%E1%BB%81n-nam-g%E1%BB%8Di-anh-c%E1%BA%A3-l%C3%A0-anh-hai)). A person in the data has a word of kinship and an order of birth; the name comes from the way of naming of the region (#38).
 
 ## History and sensitivity rules
 
