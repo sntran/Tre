@@ -417,3 +417,14 @@ The people of the center and the south say the words of their region; the people
 - **The things of a time** (`data/world/origins.json`): maize from 1597 (the earlier year of the two sources). No corn on the houses of Era 1: sheaves of rice or gourds in its place. Chili, sweet potato, cassava, pineapple, papaya, peanut, tobacco, and pumpkin are not in the game, and have no year yet: each needs a year with a source before it comes into the world.
 - **The year of each region** (`year` in `data/world/regions.json`): the last year of the time of its chapter; the legend chapters have 258 BC, the end of the Hùng Kings as the old books put it.
 
+
+## The folk games of the children (#30)
+
+Nhảy lò cò by the road outside the east gate of Phù Đổng, and nhảy dây at the feast of Xóm Ruộng (`docs/FOLKGAMES.md`). Please check the words of the children (keys in `i18n/vi.json` and `i18n/en.json`):
+
+- **The names:** `npc.loco-child.name` (Tí, a boy of Phù Đổng) and `npc.rope-child.name` (Cò, a girl of Xóm Ruộng): small names of village children (tên tục, #41). The children call the hero "bạn" and say "tụi mình".
+- **Nhảy lò cò:** `loco.invite`, `loco.join`, `loco.start` ("Hôm nay sân bắt đầu từ {n} nhé."), `loco.call` ("Ô {n}!"), `loco.call.near` ("Ô {base}, rồi thêm {more} ô nữa!"), `loco.in`, `loco.other`, `loco.line`, `loco.out`, `loco.pick`, `loco.fail.shard`, `loco.fail.line`, `loco.fail.skip`, `loco.demo`, `loco.slow`, `loco.good`, `loco.done`, `loco.leave`. The numbers of the squares are the words `num.*`.
+- **Nhảy dây:** `rope.invite`, `rope.goal` ("Nhảy đến {n} nhé! Dây chạm đất thì nhảy."), `rope.miss`, `rope.miss.from`, `rope.slow`, `rope.good`, `rope.done`, `rope.leave`.
+- **The end of a practice:** `dlg.loco-child.practice.end.n1`, `dlg.rope-child.practice.end.n1`; the links `practiceLink.nhay-lo-co.*` and `practiceLink.nhay-day.*`.
+- **The line for the parents** (the weekly note of #25): `folk.real.nhay-lo-co`, `folk.real.nhay-day`.
+- **Please check:** "mảnh sành" for the tile of the game (some places say "mảnh ngói" or "hòn cuội"); the half circle to rest at the top of the court; "Ô năm, rồi thêm hai ô nữa!" as the way a child says "two more than five".
