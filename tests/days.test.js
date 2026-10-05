@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { eventsOfDay, isEventDay, notAgain, eventLevel, eventTask, exactResult, purse, dayOf } from '../src/core/world/days.js';
+import { eventsOfDay, isEventDay, notAgain, eventLevel, eventTask, barterTask, exactResult, dayOf } from '../src/core/world/days.js';
 import { createRng } from '../src/core/rng.js';
 import { load, mapOf } from './helpers.js';
 
@@ -46,7 +46,7 @@ test('the level of an event: the grade, one step up for a skill the child knows,
 });
 
 test('the pile of an event can always make the need exactly, and too many too', () => {
-  for (const def of defs.events) {
+  for (const def of defs.events.filter((d) => !d.barter)) {
     for (let level = 0; level < 3; level++) {
       for (let s = 1; s <= 40; s++) {
         const t = eventTask(def, level, createRng(s));
@@ -67,17 +67,31 @@ test('the pile of an event can always make the need exactly, and too many too', 
   assert.deepEqual(exactResult(8, 5), { solved: false, short: false, over: 3 });
 });
 
-test('the purse for a market: strings and single coins that make any price up to all the coins', () => {
-  for (const sizes of [[1], [1, 5], [1, 10]]) {
-    for (let coins = 0; coins <= 30; coins++) {
-      const p = purse(coins, sizes);
-      assert.ok(p.length <= 24);
-      assert.equal(p.reduce((a, b) => a + b, 0), Math.min(coins, sizes.length === 1 ? 24 : coins));
-      const reach = new Set([0]);
-      for (const x of p) for (const v of [...reach]) reach.add(v + x);
-      for (let price = 1; price <= Math.min(coins, 24); price++) assert.ok(reach.has(price), `${sizes}: ${price} from ${coins}`);
+test('a market day is barter: the seller trades all her goods at the rate of the level, and the rice of the basket pays', () => {
+  const market = defs.events.find((e) => e.id === 'market');
+  assert.ok(market.barter && !market.pay && !market.reward, 'no coins and no price');
+  for (let level = 0; level < 3; level++) {
+    for (let s = 0; s < 40; s++) {
+      const t = barterTask(market, level, createRng(s), 40);
+      const [a, b] = t.rate;
+      assert.ok(market.levels[level].rates.some(([x, y]) => x === a && y === b));
+      assert.ok(market.goods.includes(t.goods));
+      assert.equal(t.need, t.lots * a, 'the rice for all the lots');
+      assert.equal(t.k, t.lots * b, 'all the goods of the seller');
+      assert.equal(t.pile.length, t.need + market.extra, 'the measures by the mat, with some more');
+      assert.ok(t.pile.every((x) => x === 1));
+      assert.ok(t.k <= 20 && t.need <= 20, 'small numbers');
     }
   }
+  // One for one (count), two for one (doubles), and rates such as five for two (groups).
+  assert.deepEqual(market.levels.map((l) => l.skill), ['math.count.120', 'math.add.20', 'math.mul.10']);
+  assert.deepEqual(market.levels[0].rates, [[1, 1]]);
+  assert.deepEqual(market.levels[1].rates, [[2, 1]]);
+  // Little rice: fewer lots, and only the rice of the basket lies by the mat.
+  const few = barterTask(market, 1, createRng(3), 7);
+  assert.equal(few.lots, 3);
+  assert.equal(few.pile.length, 7);
+  assert.equal(barterTask(market, 1, createRng(3), 5), null, 'too little rice: no barter');
 });
 
 test('the land has spots for the events: roads, paddies, and the yards of the hamlets', () => {

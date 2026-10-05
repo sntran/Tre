@@ -943,17 +943,9 @@
       "kind": "pails",
       "n": 5
     },
-    "coins-1": {
-      "kind": "coins",
+    "rice-1": {
+      "kind": "measure",
       "n": 1
-    },
-    "coins-5": {
-      "kind": "coins",
-      "n": 5
-    },
-    "coins-10": {
-      "kind": "coins",
-      "n": 10
     },
     "mud": {
       "kind": "mud"

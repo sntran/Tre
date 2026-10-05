@@ -1,0 +1,216 @@
+{
+  "name": "market-barter",
+  "about": {
+    "vi": "Phiên chợ là đổi hàng: cô bán hàng đổi hai quả trứng lấy năm đấu gạo, và cô có sáu quả trứng. Em mang mười bốn đấu ra chiếu: chưa đủ. Em mang thêm một đấu: đủ mười lăm. Gạo chỉ rời thúng khi đổi xong, và trứng vào thúng.",
+    "en": "Market day is barter: the seller trades two eggs for five measures of rice, and she has six eggs. The hero puts fourteen measures on the mat: not enough. One more measure makes fifteen. The rice leaves the basket only when the trade is done, and the eggs go to the basket."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    },
+    "items": {
+      "rice": 30
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    22.5,
+    28.5
+  ],
+  "steps": [
+    {
+      "do": {
+        "type": "event",
+        "id": "market"
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "press": {
+        "entity": "event:market"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.market.start.egg.many"
+          }
+        },
+        {
+          "count": {
+            "entities": "rice-1",
+            "min": 19
+          }
+        },
+        {
+          "count": {
+            "entities": "wares-egg-6",
+            "min": 1
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 14,
+      "steps": [
+        {
+          "press": {
+            "item": "rice"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 30
+          }
+        },
+        {
+          "press": {
+            "zone": "event-market-place"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    {
+      "press": {
+        "entity": "event:market"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.market.short"
+          }
+        },
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.mul.10",
+            "solved": false,
+            "target": 15
+          }
+        },
+        {
+          "item": "rice",
+          "count": 30
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "repeat": 1,
+      "steps": [
+        {
+          "press": {
+            "item": "rice"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 30
+          }
+        },
+        {
+          "press": {
+            "zone": "event-market-place"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    {
+      "press": {
+        "entity": "event:market"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "event.market.done"
+          }
+        },
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.mul.10",
+            "solved": true,
+            "target": 15
+          }
+        },
+        {
+          "event": "lose",
+          "with": {
+            "take": {
+              "rice": 15
+            }
+          }
+        },
+        {
+          "item": "rice",
+          "count": 15
+        },
+        {
+          "item": "egg",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "read": true
+    }
+  ]
+}

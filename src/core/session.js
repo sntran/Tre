@@ -65,7 +65,7 @@ import { createRaid, raidLevel } from './world/raids.js';
 import { setupRaid, roadPoint } from './world/systems/raid.js';
 import { lossLevel } from './profile.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from './world/save.js';
-import { dayOf, eventsOfDay, isEventDay, notAgain, eventLevel, eventTask, purse } from './world/days.js';
+import { dayOf, eventsOfDay, isEventDay, notAgain, eventLevel, eventTask, barterTask } from './world/days.js';
 import { createRng, hashSeed } from './rng.js';
 import { TILE } from './gen/tiles.js';
 
@@ -753,7 +753,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function clearEvent(id) {
     const owner = `trial-event-${id}`;
     for (const e of [...state.entities]) {
-      const mine = e.id === `zone:${owner}` || e.item?.task === owner || e.zone?.task === owner || e.id === `mark:event-${id}` || e.dayEvent?.id === id;
+      const mine = e.id === `zone:${owner}` || e.item?.task === owner || e.zone?.task === owner || e.id === `mark:event-${id}` || e.id === `wares:event-${id}` || e.dayEvent?.id === id;
       if (mine && e.id !== holding()) removeEntity(state, e.id);
     }
   }
@@ -906,17 +906,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const lift = mem?.lift ?? 0;
     if (mem) mem.lift = 0;
     const level = Math.max(0, Math.min(def.levels.length - 1, eventLevel(data.events, levelFor(data.trials ?? { grades: {} }, profile.grade), p) + lift));
-    const task = eventTask(def, level, rng);
-    let pile = task.pile;
-    if (def.pay) {
-      // The coins of the purse of the hero lie on the mat side; they leave the purse only at the end.
-      const coins = profile.inventory.coin ?? 0;
-      if (coins < task.need) {
-        say(def.lines.poor, {}, null, def.person);
-        return;
-      }
-      pile = purse(coins, def.levels[level].sizes);
+    // A market day is barter: the rice of the basket of the hero lies by the mat; it leaves the
+    // basket only at the end.
+    const task = def.barter ? barterTask(def, level, rng, profile.inventory.rice ?? 0) : eventTask(def, level, rng);
+    if (!task) {
+      say(def.lines.poor, {}, null, def.person);
+      return;
     }
+    let pile = task.pile;
     // The places: the work at the spot, the pile a few cells away, and each lost duck further.
     const target = { x: ent.dayEvent.at[0] + 0.5, y: ent.dayEvent.at[1] + 0.5 };
     const placeAt = tileMap.walkable(Math.floor(target.x), Math.floor(target.y)) ? target : nearFree(ent.dayEvent.at, 1, 4, rng) ?? target;
@@ -947,9 +944,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       id: `event-${id}`, task: 'exact', thing: def.thing, target: def.target, pile, keep: task.keep, lost: task.lost,
       need: task.need, skill: task.skill, level: task.level, day, event: id, levels: [{}],
       at: { target: hb(placeAt), pile: hb(pileAt), lost: lost.map(hb), strays: strays.map(hb) }, strayLook: def.strayLook,
+      give: task.goods ? { [task.goods]: task.k } : null,
     }, 0, env);
     mentoring.start(`event-${id}`);
-    say(def.lines.start, { need: { key: `num.${task.need}` } }, null, def.person);
+    const num = (n) => ({ key: `num.${n}` });
+    if (task.goods) {
+      // The seller says the rate and her goods as words: one for one, one for more, or more for more.
+      const [a, b] = task.rate;
+      const form = b > 1 ? 'many' : a > 1 ? 'one' : 'same';
+      say(`${def.lines.start}.${task.goods}.${form}`, { a: num(a), b: num(b), k: num(task.k) }, null, def.person);
+    } else say(def.lines.start, { need: num(task.need) }, null, def.person);
     emit({ type: 'hud' });
   }
   // An event is done: the reward flies to the counter, the person says thanks, and the event goes.
@@ -959,13 +963,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!def || !tz) return;
     visit.things[`event.${id}`] = tz.zone.day;
     const from = `event:${id}`;
-    if (def.pay) {
-      const k = Math.min(profile.inventory.coin ?? 0, tz.zone.need);
-      profile.inventory.coin = (profile.inventory.coin ?? 0) - k;
-      emit({ type: 'lose', to: from, take: { coin: k } });
+    // Barter: the rice on the mat leaves the basket, and the goods of the seller go to it.
+    const give = tz.zone.give ?? def.reward;
+    if (tz.zone.give) {
+      const k = Math.min(profile.inventory.rice ?? 0, tz.zone.need);
+      profile.inventory.rice = (profile.inventory.rice ?? 0) - k;
+      emit({ type: 'lose', to: from, take: { rice: k } });
     }
-    applyEffects(profile, [{ give: def.reward }]);
-    emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: def.reward, delay: 0.3 });
+    applyEffects(profile, [{ give }]);
+    emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give, delay: 0.3 });
     emit({ type: 'hud' });
     save('event');
     say(def.lines.done, {}, null, def.person);

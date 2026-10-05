@@ -557,6 +557,9 @@ export function thingLook(key) {
   if (k === 'weir-shut' || k === 'weir-open') return { kind: 'weir', open: k === 'weir-open' };
   // The shard of a broken pot of nhảy lò cò (docs/FOLKGAMES.md).
   if (k === 'shard') return { kind: 'shard' };
+  // The goods of a seller on a market day (barter, #26): fish, eggs, or pots on a tray.
+  m = /^wares-([a-z]+)-(\d+)$/.exec(k);
+  if (m) return { kind: 'wares', goods: m[1], n: Number(m[2]) };
   return null;
 }
 // The feed of one scoop takes this length of the trough (half blocks): a notch on the side of the
@@ -606,9 +609,23 @@ export function workThing(look) {
       const len = n * SCOOP_LENGTH;
       return still([P('feed', [len, 0.18, 0.7], 'yellowPale', [0.4 + len / 2, 0.29, 0]), P('grain', [len, 0.06, 0.4], 'ochre', [0.4 + len / 2, 0.4, 0])], 0.45);
     }
-    // The clay jar of feed (a vại) by the head of the trough: the child holds it to pour.
     // The shard of a broken pot: a flat piece of fired clay.
     case 'shard': return still([P('shard', [0.8, 0.12, 0.6], 'vermilionPale', [0, 0.06, 0]), P('edge', [0.5, 0.1, 0.2], 'ochre', [0.1, 0.1, 0.3])], 0.2);
+    // The goods of a seller on a flat tray of woven bamboo, in rows of five, so that the child
+    // sees how many there are: fish, eggs, or small clay pots.
+    case 'wares': {
+      const n = Math.max(1, Math.min(20, look.n ?? 1));
+      const rows = Math.ceil(n / 5);
+      const parts = [P('tray', [3, 0.12, rows * 0.6 + 0.4], 'yellow', [0, 0.06, 0])];
+      for (let i = 0; i < n; i++) {
+        const at = [-1.2 + (i % 5) * 0.6, 0, -(rows - 1) * 0.3 + Math.floor(i / 5) * 0.6];
+        if (look.goods === 'fish') parts.push(P(`fish${i}`, [0.22, 0.18, 0.5], 'ash', [at[0], 0.21, at[2]]));
+        else if (look.goods === 'egg') parts.push(P(`egg${i}`, [0.26, 0.32, 0.26], 'paper', [at[0], 0.28, at[2]]));
+        else parts.push(P(`pot${i}`, [0.4, 0.4, 0.4], 'vermilionPale', [at[0], 0.32, at[2]]), P(`neck${i}`, [0.24, 0.1, 0.24], 'ochre', [at[0], 0.56, at[2]]));
+      }
+      return still(parts, 0.6);
+    }
+    // The clay jar of feed (a vại) by the head of the trough: the child holds it to pour.
     case 'feed-jar': return still([P('body', [1.2, 1.1, 1.2], 'wood', [0, 0.55, 0]), P('belly', [1.35, 0.5, 1.35], 'wood', [0, 0.6, 0]), P('neck', [0.9, 0.2, 0.9], 'ochre', [0, 1.2, 0]), P('feed', [0.7, 0.08, 0.7], 'yellowPale', [0, 1.3, 0])], 1.35);
     // A fish trap (a lờ) of bamboo, lying along +z: a cone with a ring for each fish that it holds.
     case 'lo': {
@@ -734,7 +751,7 @@ export function workThing(look) {
     case 'share-mat': return still([P('mat', [2.2, 0.08, 2.2], 'yellowPale', [0, 0.04, 0]), P('edgeN', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, -1.05]), P('edgeS', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, 1.05])], 0.1);
     // The things of the small events of the day: each shows its units, so that its size is seen
     // and never written. Stones in a net (one, two, or five), pails of water on a carrying pole,
-    // and coins on a string.
+    // and measures of rice.
     case 'stones': {
       const n = look.n ?? 1;
       const parts = [];
@@ -751,13 +768,8 @@ export function workThing(look) {
       for (let i = 0; i < n; i++) parts.push(P(`pail${i}`, [0.55, 0.6, 0.55], 'wood', [(i - (n - 1) / 2) * 0.8, 0.3, 0]), P(`water${i}`, [0.45, 0.05, 0.45], 'indigoPale', [(i - (n - 1) / 2) * 0.8, 0.62, 0]));
       return still(parts, 1.2);
     }
-    case 'coins': {
-      const n = look.n ?? 1;
-      const parts = [];
-      for (let i = 0; i < n; i++) parts.push(P(`coin${i}`, [0.12, 0.45, 0.45], 'yellow', [(i - (n - 1) / 2) * 0.16, 0.25, 0]), P(`hole${i}`, [0.13, 0.15, 0.15], 'ink', [(i - (n - 1) / 2) * 0.16, 0.25, 0]));
-      parts.push(P('string', [n * 0.16 + 0.3, 0.06, 0.06], 'vermilion', [0, 0.25, 0]));
-      return still(parts, 0.5);
-    }
+    // A measure of rice (đấu): a small square box of wood, full of rice (#26).
+    case 'measure': return still([P('box', [0.7, 0.45, 0.7], 'wood', [0, 0.22, 0]), P('rice', [0.56, 0.06, 0.56], 'paper', [0, 0.47, 0]), P('rim', [0.76, 0.06, 0.76], 'ochre', [0, 0.42, 0])], 0.5);
     // The mud under the wheel of a stuck cart.
     case 'mud': return still([P('mud', [2.6, 0.06, 2], 'wood', [0, 0.03, 0]), P('wet', [1.6, 0.07, 1.2], 'ink', [0.2, 0.04, 0.1]), P('rut', [0.5, 0.08, 2.2], 'ochre', [-0.8, 0.05, 0])], 0.1);
     // A small ditch at the side of a paddy, where the water goes.

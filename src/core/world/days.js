@@ -106,12 +106,20 @@ export function exactResult(sum, need) {
   return { solved: sum === need, short: sum < need, over: Math.max(0, sum - need) };
 }
 
-// The purse of the hero as coins of the sizes of a level (strings of ten or five, and single
-// coins): the coins that the child has, for a market. The single coins are always enough to make
-// any price up to all the coins (at most one string less), and the purse has at most `most` things.
-export function purse(coins, sizes, most = 24) {
-  const big = Math.max(...sizes);
-  const strings = big > 1 ? Math.floor(Math.max(0, coins - (big - 1)) / big) : 0;
-  const singles = Math.min(coins - strings * big, most - strings);
-  return [...Array(strings).fill(big), ...Array(Math.max(0, singles)).fill(1)];
+// The work of a market day: barter (#26; Era 1 has no coins). The seller has goods (one of
+// def.goods) and wants rice for them at a rate that the level sets: [a, b] is a measures of rice
+// for b goods. She trades all her goods in lots of the rate: she has k = lots × b goods and needs
+// lots × a measures. rice: the measures of rice in the basket of the hero. The lots are never more
+// than the rice can pay, and the pile is the rice of the basket (with extra measures, so that too
+// many is possible). null: the rice cannot pay the fewest lots.
+export function barterTask(def, level, rng, rice) {
+  const l = def.levels[Math.max(0, Math.min(def.levels.length - 1, level))];
+  const goods = rng.pick(def.goods);
+  const [a, b] = rng.pick(l.rates);
+  const most = Math.min(l.lots[1], Math.floor(rice / a));
+  if (most < l.lots[0]) return null;
+  const lots = rng.int(l.lots[0], most);
+  const need = lots * a;
+  const pile = Array(Math.min(rice, need + (def.extra ?? 0))).fill(1);
+  return { need, keep: 0, pile, skill: l.skill, level: l.level ?? 1, lost: false, goods, rate: [a, b], lots, k: lots * b };
 }

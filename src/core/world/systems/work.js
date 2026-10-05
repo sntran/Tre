@@ -261,7 +261,12 @@ export function setupTrial(world, def, level, env, opts = {}) {
     addEntity(world, { id: `mark:${def.id}`, keep: true, position: { ...t, facing: 0 }, look: def.target });
     for (let i = 0; i < (def.keep ?? 0); i++) add(place, 1, { set: true, fixed: true });
     packExact(world, place.zone);
-    Object.assign(tz.zone, { work: { id: def.id, skill: def.skill, level: def.level, need: def.need }, need: def.need, day: def.day, event: def.event });
+    // The goods of a seller (barter) lie on her side of the mat, for all to see.
+    if (def.give) {
+      const [goods, n] = Object.entries(def.give)[0];
+      addEntity(world, { id: `wares:${def.id}`, keep: true, position: { x: t.x, y: t.y, z: t.z - 3.5, facing: 0 }, look: `wares-${goods}-${n}` });
+    }
+    Object.assign(tz.zone, { work: { id: def.id, skill: def.skill, level: def.level, need: def.need }, need: def.need, day: def.day, event: def.event, give: def.give ?? null });
   } else if (def.task === 'slash') {
     const c = P(def.places.clump);
     Object.assign(tz.zone, { clump: { x: c.x, y: c.y, z: c.z }, pieces: Array(task.parts).fill(null) });
