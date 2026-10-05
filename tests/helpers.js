@@ -36,15 +36,17 @@ export function loadGameData() {
 // The world of the regions on the plane (src/world/regions.js), with all the height tiles.
 let world = null;
 export function worldOf() {
-  world ??= (() => {
-    const regions = load('data/world/regions.json');
-    const defs = new Map(regions.regions.flatMap((r) => r.maps).map((id) => [id, load(`data/maps/${id}.json`)]));
-    const geo = load('data/geo/vietnam.json');
-    const lands = new Map(regions.regions.filter((r) => r.land).map((r) => [r.land, load(`data/world/${r.land}.json`)]));
-    const tiles = [...new Set([...lands.values()].flatMap((l) => l.tiles ?? []))];
-    return createWorld(regions, defs, { routes: load('data/world/routes.json'), places: geo.places, rivers: geo.rivers, land: geo.land, heights: heightsOf(tiles), lands, scatter: load('data/world/scatter.json'), villagers: load('data/figures.json').villagers, seeds: 24 });
-  })();
+  world ??= newWorld();
   return world;
+}
+// A new world, with no land tile made yet (the store of the land tiles, #36).
+export function newWorld() {
+  const regions = load('data/world/regions.json');
+  const defs = new Map(regions.regions.flatMap((r) => r.maps).map((id) => [id, load(`data/maps/${id}.json`)]));
+  const geo = load('data/geo/vietnam.json');
+  const lands = new Map(regions.regions.filter((r) => r.land).map((r) => [r.land, load(`data/world/${r.land}.json`)]));
+  const tiles = [...new Set([...lands.values()].flatMap((l) => l.tiles ?? []))];
+  return createWorld(regions, defs, { routes: load('data/world/routes.json'), places: geo.places, rivers: geo.rivers, land: geo.land, heights: heightsOf(tiles), lands, scatter: load('data/world/scatter.json'), villagers: load('data/figures.json').villagers, seeds: 24 });
 }
 
 // The fine heights of these tiles (data/geo/heights/), read by fs.

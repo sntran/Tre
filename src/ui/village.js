@@ -22,6 +22,7 @@ import { speak } from './speak.js';
 import { createDialogueBox } from './dialogue.js';
 import { createRaidView } from './raid.js';
 import { createStream } from './stream.js';
+import { landStore } from './landstore.js';
 import { formatTimes } from '../core/loading.js';
 import { keyAct } from '../core/keys.js';
 
@@ -109,7 +110,7 @@ function streamOf(map, data) {
       st.dispose();
       streams.delete(k);
     }
-    streams.set(map.key, createStream(map, data));
+    streams.set(map.key, createStream(map, data, { store: landStore() }));
   }
   return streams.get(map.key);
 }
@@ -130,6 +131,9 @@ export async function mountVillage(ctx, params = {}) {
     await nextFrame();
   };
 
+  // The drawing code loads from the start, at the same time as the data and the land (#36).
+  const drawingCode = loadDrawing();
+  drawingCode.catch(() => {});
   const session = params.session ?? villageSession(ctx);
   let begin = null; // the start of the session, after the land around the hero is made
   if (!params.session) {
@@ -140,17 +144,18 @@ export async function mountVillage(ctx, params = {}) {
     const at = visit?.at ?? params.at;
     // The height tiles of the land around the start come first (the land of a tile waits for them).
     const where = session.startPlace(mapId, { at });
+    // The land of the first view: the tiles that the device keeps come at once; the workers make
+    // the others (each one loads its height tiles first) while the drawing code loads.
+    streamOf(where.map, data).update(where.x, where.y);
     await next('heights');
     await loadHeightsNear(data, where.map, where.x, where.y);
-    // The workers make the land around the start while the drawing code loads.
-    streamOf(where.map, data).update(where.x, where.y);
     begin = { mapId, where, opts: { at, facing: params.facing, after: params.after, ...(visit ? { clock: visit.clock, practice: visit.practice } : {}) } };
   }
 
   let D;
   try {
     await next('code');
-    D = await loadDrawing();
+    D = await drawingCode;
   } catch (e) {
     console.error('The drawing code did not load', e);
     return noWorld(ctx);
@@ -158,14 +163,15 @@ export async function mountVillage(ctx, params = {}) {
   if (!D.hasWebGL()) return noWorld(ctx);
 
   if (begin) {
-    // The land tiles around the hero, from the workers; land that does not come in time (no
-    // worker, no height tiles offline) is made at once by the start of the session.
+    // The land tiles of the first view around the hero, from the store of the device or from the
+    // workers (the rest of the ring comes after the first frame); land that does not come in time
+    // (no worker, no height tiles offline) is made at once by the start of the session.
     if (loading) {
       const stream = streamOf(begin.where.map, data);
       const t0 = performance.now();
       for (;;) {
         stream.update(begin.where.x, begin.where.y);
-        const n = stream.near(begin.where.x, begin.where.y, 2);
+        const n = stream.firstView(begin.where.x, begin.where.y);
         loading.report('land', n.ready / n.total);
         if (n.ready === n.total || performance.now() - t0 > WARM_WAIT_MS) break;
         await nextFrame();

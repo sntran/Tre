@@ -18,6 +18,11 @@ import { distanceField, createHeap, segDist, dense, wind } from './geom.js';
 import { hamletOf } from './hamlets.js';
 import { hashSeed } from '../rng.js';
 
+// The version of the land code: the key of the land tiles kept on the device has it
+// (src/world/tilestore.js). Make it one more for each change of the land that the code or its data
+// (the geography, the height tiles) makes; a test (tests/tilestore.test.js) checks the fingerprint
+// of these files, and tells when to change it.
+export const LAND_VERSION = 1;
 export const TILE = 64;
 const PAD = 56;
 const CAP = 16; // distances are capped (cells): no rule reads farther

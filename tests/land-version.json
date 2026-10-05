@@ -1,0 +1,5 @@
+{
+  "_about": "The fingerprint of the files that make the land, and LAND_VERSION in src/core/gen/tiles.js (tests/tilestore.test.js). When the land code changes, make the version one more and write the new fingerprint here.",
+  "version": 1,
+  "fingerprint": "d716e85132d413fb"
+}
