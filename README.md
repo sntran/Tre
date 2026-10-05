@@ -49,6 +49,7 @@ npm test
 
 - [Game design](docs/DESIGN.md) ([tiếng Việt](docs/DESIGN.vi.md))
 - [Research: learning by doing in games](docs/research/learning-by-doing.md) ([tiếng Việt](docs/research/learning-by-doing.vi.md))
+- [The making of Tre: what we found and why](docs/devlog/README.md) ([tiếng Việt](docs/devlog/README.vi.md))
 - [Art and UI style guide](docs/ART.md)
 - [Open questions](docs/QUESTIONS.md)
 - [Text and history review](docs/REVIEW.md)
