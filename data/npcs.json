@@ -1,5 +1,5 @@
 {
-  "_about": "People of the village. talk: the first rule whose condition is true gives the dialogue. when: the person is on the map only when the condition is true. nameKey: the name of the person (the people of Phù Đổng keep a name of work and kinship, as Bác thợ rèn). kin and order: the person is called by a word of kinship to the child and the order of birth in the family, by the way of naming of the region (data/world/naming.json, src/core/naming.js; cô Năm in the north, #38).",
+  "_about": "People of the village. talk: the first rule whose condition is true gives the dialogue. when: the person is on the map only when the condition is true. nameKey: the name of the person (the people of Phù Đổng keep a name of work and kinship, as Bác thợ rèn). kin, order, age, child, and name: the person is called by a word of kinship to the child and a word after it, by the way of naming of the region and the age of the person (data/world/naming.json, src/core/naming.js): the order of birth in the family (cô Năm, #38), the name of the first child (ông Dương, #41), or the own small name (chị Hến, #41). age: elder, grown, or young; child: the name of the first child; name: the own small name.",
   "npcs": {
     "elder": {
       "voice": "elderMan",
@@ -455,7 +455,7 @@
     },
     "planter": {
       "voice": "woman",
-      "kin": "co", "order": 5,
+      "kin": "co", "order": 5, "age": "grown",
       "talk": [
         {
           "dialogue": "planter.trial"
@@ -464,7 +464,7 @@
     },
     "duck-girl": {
       "voice": "girl",
-      "kin": "chi", "order": 3,
+      "kin": "chi", "order": 3, "age": "young", "name": "Hến",
       "talk": [
         {
           "dialogue": "duck-girl.trial"
@@ -473,7 +473,7 @@
     },
     "fisher-uncle": {
       "voice": "man",
-      "kin": "chu", "order": 4,
+      "kin": "chu", "order": 4, "age": "grown",
       "talk": [
         {
           "dialogue": "fisher-uncle.trial"
@@ -491,7 +491,7 @@
     },
     "drummer": {
       "voice": "elderMan",
-      "kin": "ong", "order": 1,
+      "kin": "ong", "order": 1, "age": "elder", "child": "Dương",
       "talk": [
         {
           "dialogue": "drummer.trial"

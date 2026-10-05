@@ -1,5 +1,5 @@
-// The names of the people by the region and the era (#38): data/world/naming.json, the way of
-// naming of each region, and src/core/naming.js.
+// The names of the people by the region, the era, and the age (#38, #41): data/world/naming.json,
+// the way of naming of each region, and src/core/naming.js.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -22,8 +22,8 @@ test('every region has a way of naming: north for the north and before the 18th 
   assert.equal(wayOf(regions, 'giong'), 'north');
   for (const id of ['tay-son', 'gia-dinh']) assert.equal(wayOf(regions, id), 'south');
   for (const r of regions.regions.filter((x) => x.chapter <= 11)) assert.equal(r.naming, 'north', r.id);
-  // Every word of kinship has a text in both languages, with the word of the order.
-  for (const k of naming.kin) for (const i18n of [vi, en]) assert.match(i18n.raw(`kin.${k}`) ?? '', /\{order\}/, k);
+  // Every word of kinship has a text in both languages, with the word after it.
+  for (const k of Object.keys(naming.kin)) for (const i18n of [vi, en]) assert.match(i18n.raw(`kin.${k}`) ?? '', /\{word\}/, k);
 });
 
 test('the same person (ông, the first child) is Ông Cả in a region of the north and Ông Hai in a region of the south', () => {
@@ -37,14 +37,36 @@ test('the same person (ông, the first child) is Ông Cả in a region of the no
   // A name at the start of a line starts with a capital letter.
   const n = namesOf({ npcs: { npcs }, regions, naming }, 'giong');
   assert.equal(vi.t('hamlet.point.planting', { who: n.planter }), 'Cô Năm ngoài đồng đang cần người mang mạ đấy.');
-  assert.equal(en.t('hamlet.point.ducks', { who: n['duck-girl'] }), 'Chị Ba, the duck girl, needs help to feed the ducks at the pond.');
+  assert.equal(en.t('hamlet.point.ducks', { who: n['duck-girl'] }), 'Chị Hến, the duck girl, needs help to feed the ducks at the pond.');
 });
 
-test('Xóm Ruộng: Cô Năm, Chị Ba, Chú Tư, and Ông Cả; the head of the hamlet stays Bà trưởng xóm', () => {
+const sayAll = (i18n, names) => Object.fromEntries(Object.entries(names).map(([id, p]) => [id, say(i18n, p)]));
+
+test('Xóm Ruộng in the north: Cô Năm, Chị Hến, Chú Tư, and Ông Dương; in a region of the south the same people are Cô Sáu, Chị Tư, Chú Năm, and Ông Hai', () => {
   const n = namesOf({ npcs: { npcs }, regions, naming }, 'giong');
-  assert.deepEqual(Object.fromEntries(Object.entries(n).map(([id, p]) => [id, say(vi, p)])), { planter: 'cô Năm', 'duck-girl': 'chị Ba', 'fisher-uncle': 'chú Tư', drummer: 'ông Cả' });
+  assert.deepEqual(sayAll(en, n), { planter: 'Cô Năm', 'duck-girl': 'Chị Hến', 'fisher-uncle': 'Chú Tư', drummer: 'Ông Dương' });
   assert.equal(vi.t('npc.hamlet-head.name'), 'Bà trưởng xóm');
-  assert.equal(vi.t('hamlet.greet', { planter: n.planter, duckGirl: n['duck-girl'], fisherUncle: n['fisher-uncle'], drummer: n.drummer }), 'Chào cháu! Ở xóm này ai cũng có việc cần cháu giúp: cô Năm, chị Ba, chú Tư và ông Cả.');
+  assert.equal(vi.t('hamlet.greet', { planter: n.planter, duckGirl: n['duck-girl'], fisherUncle: n['fisher-uncle'], drummer: n.drummer }), 'Chào cháu! Ở xóm này ai cũng có việc cần cháu giúp: cô Năm, chị Hến, chú Tư và ông Dương.');
+  const s = namesOf({ npcs: { npcs }, regions, naming }, 'gia-dinh');
+  assert.deepEqual(sayAll(en, s), { planter: 'Cô Sáu', 'duck-girl': 'Chị Tư', 'fisher-uncle': 'Chú Năm', drummer: 'Ông Hai' });
+});
+
+test('a person with no field for the rule of the age gets the order: an elder with no child, a young person with no own name', () => {
+  assert.equal(say(vi, personName({ kin: 'ong', order: 2, age: 'elder' }, 'north', naming)), 'ông Hai');
+  assert.equal(say(vi, personName({ kin: 'chi', order: 3, age: 'young' }, 'north', naming)), 'chị Ba');
+  assert.equal(say(vi, personName({ kin: 'chu', order: 4 }, 'north', naming)), 'chú Tư', 'no age: the order');
+  assert.equal(say(vi, personName({ kin: 'ong', order: 2, age: 'elder', child: 'Dương' }, 'north', naming)), 'ông Dương');
+  assert.equal(say(vi, personName({ kin: 'chi', order: 3, age: 'young', name: 'Hến' }, 'north', naming)), 'chị Hến');
+});
+
+test('no two people of one place have the same name: the south adds the name of the first child after the order, the north uses the name of the first child', () => {
+  for (const r of regions.regions) {
+    const said = Object.values(namesOf({ npcs: { npcs }, regions, naming }, r.id)).map((p) => say(vi, p));
+    assert.equal(new Set(said).size, said.length, `${r.id}: ${said.join(', ')}`);
+  }
+  const twins = { a: { kin: 'chi', order: 1, age: 'grown', child: 'Tùng' }, b: { kin: 'chi', order: 1, age: 'grown', child: 'Lan' }, c: { kin: 'chu', order: 1, age: 'grown' } };
+  assert.deepEqual(sayAll(vi, namesOf({ npcs: { npcs: twins }, regions, naming }, 'gia-dinh')), { a: 'chị Hai Tùng', b: 'chị Hai Lan', c: 'chú Hai' });
+  assert.deepEqual(sayAll(vi, namesOf({ npcs: { npcs: twins }, regions, naming }, 'giong')), { a: 'chị Tùng', b: 'chị Lan', c: 'chú Cả' });
 });
 
 test('no text names a person Cấy, Vịt, Lưới, or Trống', () => {
@@ -65,5 +87,5 @@ test('in the game, the greeting of the hamlet names the people by the way of the
   };
   const failures = await runHeadless(story, { onSession: (s) => s.listen((ev) => { if (ev.textKey === 'hamlet.greet' && ev.screen === 'callout') line = vi.t(ev.textKey, ev.params); }) });
   assert.deepEqual(failures, []);
-  assert.equal(line, 'Chào cháu! Ở xóm này ai cũng có việc cần cháu giúp: cô Năm, chị Ba, chú Tư và ông Cả.');
+  assert.equal(line, 'Chào cháu! Ở xóm này ai cũng có việc cần cháu giúp: cô Năm, chị Hến, chú Tư và ông Dương.');
 });
