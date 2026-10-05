@@ -228,3 +228,9 @@ These questions need a person who knows Vietnamese history and geography. Until 
     - **Answer (owner):** Keep 45 m. Three minutes on the road is at the top of the one to three minutes of the design, and the hero can run, the road has hamlets and events, and the country map (#8) lets the child travel to a place that the child has seen. Note: at 21° N one cell is about 43.7 m of real land, not 49 m (`metersAt` in `src/core/gen/plane.js` is right; the text of this question is not).
 105. **The place of Trâu Sơn.** The sources put Trâu Sơn near the village of Châu Cầu (the old commune of Châu Phong, Quế Võ, now a part of Phù Lãng), and the fine heights have one line of low hills there, at 106.215–106.25 E, 21.13–21.15 N, with its highest top at 106.230 E, 21.140 N. The anchor now (106.10 E, 21.145 N) is very probably Núi Dạm (Đại Lãm). Is the village of Châu Cầu next to that line of low hills?
     - **Answer (owner):** Go with the choice: move Trâu Sơn to the top at 106.230 E, 21.140 N (#27). A check of the sources agrees: the old commune of Châu Phong is now a part of Phù Lãng, and Phù Lãng is in the east of Quế Võ, on the right bank of the Cầu, about 4 km from Lục Đầu, among low hills ("những ngọn núi trập trùng", [Làng gốm Phù Lãng](https://bktt.vn/L%C3%A0ng_g%E1%BB%91m_Ph%C3%B9_L%C3%A3ng)). The fine heights have no other hills there.
+
+
+## Questions about the names of people (#38)
+
+106. **The names of the people of a Cham village.** In the time of chapter 11 (1460 to 1497), many people of the center are Cham. A Cham village does not use the Việt words of kinship and the order of birth (`data/world/naming.json`). When the region of chapter 11 gets its places, its Cham people need their own way of naming, with sources. Which way, and from which sources?
+

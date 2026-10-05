@@ -113,3 +113,44 @@ test('a person at work makes no small talk: the greeting of a person near the he
   for (let i = 0; i < 30; i++) session.step();
   assert.equal(smallTalk, 0, 'no small talk while the example goes on');
 });
+
+test('during the example of the planter, a bystander two cells from the hero has its greeting due: no small talk shows, and the line of the planter stays', async () => {
+  let session = null;
+  const record = [];
+  const story = {
+    name: 'bystander', practice: 'cay-lua',
+    profile: { name: 'An', grade: 2, lang: 'vi', seed: 7, flags: {} },
+    steps: [
+      { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 10 } },
+      { read: true },
+      { until: { event: 'shows', timeout: 10 } },
+    ],
+  };
+  await runHeadless(story, {
+    onSession: (s) => {
+      session = s;
+      s.listen((ev) => {
+        if (ev.type !== 'open' || ev.screen !== 'callout') return;
+        const hero = s.state.entities.find((e) => e.id === 'hero').position;
+        const at = s.state.entities.find((e) => e.id === ev.id)?.position;
+        record.push({ t: s.state.tick * STEP, id: ev.id, key: ev.textKey, near: nearHero(at, hero) });
+      });
+    },
+  });
+  // The duck girl comes two cells from the hero, and her greeting is due.
+  const hero = session.state.entities.find((e) => e.id === 'hero').position;
+  const girl = session.state.entities.find((e) => e.id === 'npc:duck-girl');
+  Object.assign(girl.position, { x: hero.x + 4, z: hero.z });
+  const greet = [girl.react].flat().find((r) => r?.kind === 'greet');
+  assert.ok(greet, 'the duck girl greets people who pass');
+  greet.cool = 0;
+  const from = record.length;
+  for (let i = 0; i < 45; i++) session.step();
+  assert.ok(session.state.entities.some((e) => e.id === 'script:example-planting'), 'the example still goes on');
+  const after = record.slice(from);
+  assert.deepEqual(after.filter((r) => SMALL_TALK.test(r.key ?? '')).map((r) => `${r.id} ${r.key}`), [], 'no small talk during the work');
+  // The last line of the planter stays over her head: no line of another person took it away.
+  const lines = linesOnScreen(record);
+  const last = lines.at(-1);
+  assert.ok(last.ids.includes('npc:planter') && last.ids.every((id) => id === 'npc:planter'), JSON.stringify(last));
+});

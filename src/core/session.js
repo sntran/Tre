@@ -54,6 +54,7 @@ import { createMentoring } from './mentoring.js';
 import { playExample, stopExample } from './examples.js';
 import { endScript } from './world/systems/mentor.js';
 import { namesOf } from './naming.js';
+import { nearHero as talksNear } from './lines.js';
 import { createPlanting } from './planting-session.js';
 import { createHamlet } from './hamlet-session.js';
 import { plotsOf } from './world/systems/plant.js';
@@ -1865,21 +1866,29 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // Events of a step ------------------------------------------------------------------
 
   // What the world did in a step, for the story: callouts, gifts, and the skill events.
-  // A person at work (#38): the person of a script (an example, a first step, a move of a mentor,
+  // The people at work (#38): the person of a script (an example, a first step, a move of a mentor,
   // the greeting of a place), or of a task that goes on. A person at work says only the lines of
   // the work; the small talk of the day waits until the work ends.
-  function atWork(id) {
-    for (const s of query(state, 'script')) if (s.script.steps.some((st) => st.say?.id === id || st.point?.id === id)) return true;
+  function workers() {
+    const ids = new Set();
+    for (const s of query(state, 'script')) for (const st of s.script.steps) for (const id of [st.say?.id, st.point?.id]) if (id) ids.add(id);
     for (const [key, def] of Object.entries(data.mentors?.mentors ?? {})) {
-      if (def.person !== id) continue;
       const tz = getEntity(state, `zone:${key.startsWith('event-') ? `trial-${key}` : key}`);
-      if (tz?.zone && !tz.zone.done) return true;
+      if (tz?.zone && !tz.zone.done && def.person) ids.add(def.person);
     }
-    return false;
+    return ids;
+  }
+  // While a person near the hero is at work, the small talk of every person near the hero waits:
+  // a line of small talk never takes away a line of the work (src/core/lines.js).
+  function quietForWork(id) {
+    const at = workers();
+    if (at.has(id)) return true;
+    const hp = hero().position;
+    return [...at].some((w) => talksNear(getEntity(state, w)?.position, hp));
   }
 
   function worldEvent(ev) {
-    if (ev.type === 'greet' && !busy && !atWork(ev.id)) {
+    if (ev.type === 'greet' && !busy && !quietForWork(ev.id)) {
       const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
       emit({ type: 'open', screen: 'callout', id: ev.id, textKey: marketLine() ?? GREETS[n % GREETS.length], params: { name: profile.hero.name } });
     }
