@@ -33,7 +33,8 @@ test('the story places stand at their real places: a walk of one to three minute
   const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
   const dinh = at('phu-dong', 32, 20);
   assert.ok(Math.abs(dist(dinh, at('road-thanglong', 0, 40)) - 280) < 30, 'to Văn Miếu');
-  assert.ok(Math.abs(dist(dinh, at('trau-son', 176, 20)) - 400) < 40, 'to Núi Trâu');
+  // The line of low hills of Trâu Sơn near Châu Cầu (#27): about 30 km, near the walk to Sóc Sơn.
+  assert.ok(Math.abs(dist(dinh, at('trau-son', 176, 20)) - 690) < 40, 'to Núi Trâu');
   assert.ok(Math.abs(dist(dinh, at('soc-son', 38, 20)) - 640) < 50, 'to Sóc Sơn');
 });
 

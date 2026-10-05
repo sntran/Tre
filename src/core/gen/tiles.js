@@ -22,7 +22,7 @@ import { hashSeed } from '../rng.js';
 // (src/world/tilestore.js). Make it one more for each change of the land that the code or its data
 // (the geography, the height tiles) makes; a test (tests/tilestore.test.js) checks the fingerprint
 // of these files, and tells when to change it.
-export const LAND_VERSION = 1;
+export const LAND_VERSION = 2;
 export const TILE = 64;
 const PAD = 56;
 const CAP = 16; // distances are capped (cells): no rule reads farther

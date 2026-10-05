@@ -6,7 +6,7 @@ import { newWorldSave } from './world/save.js';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
 
 export const SAVE_FORMAT = 'tre-save';
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 export const CODE_PREFIX = 'TRE1';
 
 // MIGRATIONS[n] changes a save of version n into version n + 1.
@@ -179,6 +179,49 @@ export const MIGRATIONS = {
     };
     drop(out.world);
     for (const m of Object.values(out.maps ?? {})) for (const c of Object.values(m?.chunks ?? {})) drop(c);
+    return out;
+  },
+  // Version 10: Trâu Sơn is the line of low hills near Châu Cầu (#27). Its frame moved from the
+  // cell 9563, 6027 of the plane to 9871, 6040 (its size: 200 x 84 cells). A hero or a kept thing in
+  // the old frame moves to the same place of the new frame (the save keeps half blocks), and a kept
+  // thing goes into the chunk of its new place.
+  9: (profile) => {
+    const out = structuredClone(profile);
+    const OLD = [9563, 6027];
+    const BY = [9871 - 9563, 6040 - 6027];
+    const SIZE = [200, 84];
+    const inOld = (e) => {
+      const p = e?.position;
+      if (!p || typeof p.x !== 'number' || typeof p.z !== 'number') return false;
+      const x = p.x / 2 - OLD[0];
+      const y = p.z / 2 - OLD[1];
+      return x >= 0 && x < SIZE[0] && y >= 0 && y < SIZE[1];
+    };
+    const move = (e) => {
+      e.position.x += BY[0] * 2;
+      e.position.z += BY[1] * 2;
+    };
+    const w = out.world;
+    if (w && typeof w === 'object' && w.map === 'giong' && Array.isArray(w.entities)) for (const e of w.entities) if (inOld(e)) move(e);
+    const m = out.maps?.giong;
+    if (m && typeof m === 'object') {
+      if (m.at && typeof m.at.x === 'number' && typeof m.at.y === 'number' && inOld({ position: { x: m.at.x * 2, z: m.at.y * 2 } })) {
+        m.at = { x: m.at.x + BY[0], y: m.at.y + BY[1] };
+      }
+      if (m.chunks && typeof m.chunks === 'object') {
+        const moved = [];
+        for (const c of Object.values(m.chunks)) {
+          if (!c || !Array.isArray(c.entities)) continue;
+          moved.push(...c.entities.filter(inOld));
+          c.entities = c.entities.filter((e) => !inOld(e));
+        }
+        for (const e of moved) {
+          move(e);
+          const k = `${Math.floor(e.position.x / 32)},${Math.floor(e.position.z / 32)}`;
+          ((m.chunks[k] ??= {}).entities ??= []).push(e);
+        }
+      }
+    }
     return out;
   },
 };

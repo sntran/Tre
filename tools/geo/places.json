@@ -3,7 +3,7 @@
  "places": [
   { "id": "phu-dong", "name": "Phù Đổng", "at": [105.953, 21.059], "note": "Đền Phù Đổng (Đền Gióng), on the north bank of the Đuống" },
   { "id": "soc-son", "name": "Sóc Sơn", "at": [105.826, 21.272], "note": "Đền Sóc on núi Vệ Linh, where the legend says Gióng rose into the sky", "check": true },
-  { "id": "nui-trau", "name": "Núi Trâu", "at": [106.10, 21.13], "note": "Trâu Sơn in Bắc Ninh, where the legend puts the battle", "check": true },
+  { "id": "nui-trau", "name": "Núi Trâu", "at": [106.23, 21.14], "note": "Trâu Sơn in Bắc Ninh, where the legend puts the battle: the line of low hills near Châu Cầu (Quế Võ); nobody knows which hill (#27)", "check": true },
   { "id": "van-mieu", "name": "Văn Miếu", "at": [105.836, 21.029], "note": "Văn Miếu – Quốc Tử Giám, Hà Nội" },
   { "id": "thang-long", "name": "Thăng Long", "at": [105.840, 21.035], "note": "Hoàng thành Thăng Long" },
   { "id": "nghia-linh", "name": "Nghĩa Lĩnh", "at": [105.322, 21.369], "note": "Đền Hùng on núi Nghĩa Lĩnh, Phú Thọ" },

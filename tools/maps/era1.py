@@ -254,7 +254,7 @@ B.triggers = [
 
 # ---------------------------------------------------------------- The foot of Núi Trâu, to the east
 C = M('trau-son', 'place.trauson', 32, 31)
-C.geo = {'at': [106.10, 21.13], 'north': NORTH}
+C.geo = {'at': [106.23, 21.14], 'north': NORTH}
 C.fill(2, 2, 22, 11, 'f')
 C.fill(2, 17, 22, 11, 'f')
 C.fill(0, 14, 13, 2, '=')
@@ -446,8 +446,9 @@ START_TILES = ['N20E105', 'N20E106', 'N21E105', 'N21E106']
 # The plane of the land (src/core/gen/plane.js, src/core/gen/tiles.js): one plane for the whole
 # country, at one scale (meters for each cell), the same in both directions. Each map is the frame
 # of a place: its anchor is a cell of the frame and its real place. Phù Đổng: the đình. Sóc Sơn: the
-# top of núi Vệ Linh (the stamp rises with the hill). Núi Trâu: the top of the hill, east of the
-# fields of the stamp. Văn Miếu: the gate. The pins are the ends of the rivers of the stamps: the
+# top of núi Vệ Linh (the stamp rises with the hill). Núi Trâu: the highest top of the line of low hills
+# near Châu Cầu (#27), east of the fields of the stamp; Núi Dạm, the tall hill to the west, is land with no
+# name in Era 1. Văn Miếu: the gate. The pins are the ends of the rivers of the stamps: the
 # real rivers bend to meet them. The roads join the roads of the stamps (points in the cells of the
 # frames).
 PLANE = {
@@ -475,7 +476,7 @@ PLANE = {
     'frames': [
         {'id': 'phu-dong', 'cell': [32, 20], 'at': [105.953, 21.059], 'note': 'the đình'},
         {'id': 'soc-son', 'cell': [38, 20], 'at': [105.825, 21.29], 'lift': True, 'note': 'the top of núi Vệ Linh'},
-        {'id': 'trau-son', 'cell': [176, 20], 'at': [106.1, 21.145], 'note': 'the top of Núi Trâu, east of the fields'},
+        {'id': 'trau-son', 'cell': [176, 20], 'at': [106.23, 21.14], 'note': 'the highest top of the line of low hills of Trâu Sơn near Châu Cầu (#27), east of the fields'},
         {'id': 'road-thanglong', 'cell': [0, 40], 'at': [105.836, 21.029], 'note': 'the gate of Văn Miếu'},
         {'id': 'xom-ruong', 'cell': [34, 24], 'at': [105.97, 21.1], 'quiet': 16, 'note': 'the yard of Xóm Ruộng, north of Phù Đổng (quiet: no hamlet of the land within 16 cells)'},
     ],

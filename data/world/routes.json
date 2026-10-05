@@ -4,7 +4,7 @@
  "walkHours": 8,
  "routes": [
   { "from": "phu-dong", "to": "thang-long", "mode": "road", "via": [[105.915, 21.045], [105.875, 21.040]] },
-  { "from": "phu-dong", "to": "nui-trau", "mode": "road", "via": [[106.02, 21.09]] },
+  { "from": "phu-dong", "to": "nui-trau", "mode": "road", "via": [[106.02, 21.09], [106.15, 21.12]] },
   { "from": "phu-dong", "to": "soc-son", "mode": "road", "via": [[105.90, 21.15], [105.85, 21.22]] },
   { "from": "phu-dong", "to": "co-loa", "mode": "road", "via": [[105.91, 21.09]] },
   { "from": "thang-long", "to": "co-loa", "mode": "road", "via": [[105.855, 21.08]] },

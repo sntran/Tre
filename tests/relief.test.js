@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { load, heightsOf, worldOf, mapOf, planeOf } from './helpers.js';
 import { createHeights, parseHeightTile, stepsOf, tileOf } from '../src/core/gen/heights.js';
 import { encodeTile } from '../tools/geo/build.mjs';
+import { createPlane } from '../src/core/gen/plane.js';
 
 const def = load('data/world/land-giong.json');
 const both = heightsOf(['N21E105', 'N21E106']);
@@ -49,7 +50,8 @@ test('Núi Trâu and the hill of Sóc Sơn rise several steps over Phù Đổng,
     const want = Math.round(def.base + stepsOf(both.at(...f.at), def.relief));
     const got = L.cell(...worldOf().at(id, ...f.cell)).level;
     assert.ok(Math.abs(got - want) <= 1, `${id}: ${got}, the data gives ${want}`);
-    assert.ok(want - low >= 6, `${id}: ${want - low} steps over Phù Đổng`);
+    // Trâu Sơn is a line of low hills (#27): its top is 71 m, a few steps over the delta.
+    assert.ok(want - low >= (id === 'trau-son' ? 4 : 6), `${id}: ${want - low} steps over Phù Đổng`);
   }
   // The stamp of Sóc Sơn rose with its hill; the fields of Núi Trâu stay low, at the foot.
   assert.deepEqual(L.stamps.filter((s) => s.lift > 0).map((s) => s.place), ['soc-son']);
@@ -105,7 +107,21 @@ test('the soldiers come down a path from the top of Núi Trâu: the hero can wal
 
 test('the heights of the fine data keep the tops: the top of Núi Trâu is a hill, the delta is flat', () => {
   const h = createHeights(def.startTiles.map((n) => parseHeightTile(readFileSync(new URL(`../data/geo/heights/${n}.bin`, import.meta.url)))));
-  assert.ok(h.at(...frame('trau-son').at) > 90);
+  // Trâu Sơn is the line of low hills near Châu Cầu (#27): the frame and the place of the country
+  // map are less than 1 km from its highest top, and the top is 50 m or more.
+  const TOP = [106.23, 21.14];
+  const km = ([a, b]) => Math.hypot((a - TOP[0]) * 111.32 * Math.cos((TOP[1] * Math.PI) / 180), (b - TOP[1]) * 110.57);
+  assert.ok(km(frame('trau-son').at) < 1, 'the frame');
+  assert.ok(km(load('data/geo/vietnam.json').places.find((p) => p.id === 'nui-trau').at) < 1, 'the place nui-trau');
+  assert.ok(h.at(...frame('trau-son').at) >= 50);
+  // Núi Dạm, the tall hill to the west (130 m), is land with no name, out of the frame of Trâu Sơn.
+  const DAM = [106.10, 21.145];
+  assert.ok(h.at(...DAM) > 90);
+  const plane = createPlane(def.plane);
+  const [dx, dy] = plane.toCell(DAM);
+  const [x0, y0] = worldOf().at('trau-son', 0, 0);
+  const [x1, y1] = worldOf().at('trau-son', 200, 84);
+  assert.ok(dx < x0 || dx > x1 || dy < y0 || dy > y1, 'Núi Dạm is not in the frame of Trâu Sơn');
   assert.ok(h.at(...frame('soc-son').at) > 200);
   assert.ok(stepsOf(h.at(...frame('phu-dong').at), def.relief) < 0.5, 'Phù Đổng is on the flat delta');
 });

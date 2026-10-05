@@ -5,14 +5,14 @@
     "en": "Today is the market day of the hamlet to the east: grandma in the village greets the hero and says that there is a market. The hero walks east to the yard of the hamlet, and the seller waits there."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
-  "clock": 4860,
+  "clock": 540,
   "at": ["phu-dong", 10.5, 31],
   "steps": [
     { "tap": { "entity": "npc:grandma" } },
     { "until": { "event": "greet", "timeout": 30 } },
     { "expect": [{ "event": "open", "with": { "screen": "callout", "textKey": "world.market.east" } }] },
     { "read": true },
-    { "walk": { "to": ["phu-dong", 99, -11] } },
+    { "walk": { "to": ["phu-dong", 99, 5] } },
     { "wait": 1 },
     { "expect": [{ "entity": "event:market", "near": "hero", "within": 12 }] }
   ]

@@ -8,7 +8,7 @@ import {
 import { createRng } from '../src/core/rng.js';
 import { readFileSync } from 'node:fs';
 import { heroPlace, setHeroPlace, saveWorld, loadWorld } from '../src/core/world/save.js';
-import { load, planeOf } from './helpers.js';
+import { load, planeOf, worldOf } from './helpers.js';
 
 function sample() {
   const p = createProfile({ id: 'p1', name: 'Tí Sún', gender: 'girl', grade: 2, now: 1000 });
@@ -210,6 +210,24 @@ test('the save keeps the state of every visited map, and the place on the last m
   assert.equal(old.clock, undefined);
 });
 
+test('the version 10 moves a hero and the kept things in the old frame of Trâu Sơn to the same place of the new frame', () => {
+  const p = sample();
+  p.world.map = 'giong';
+  // The hero at the cell 89, 30 of the old frame (9563, 6027), and a pot at Phù Đổng.
+  p.world.entities = [{ id: 'hero', keep: true, control: true, position: { x: (9563 + 89) * 2, y: 4, z: (6027 + 30) * 2, facing: 0 }, motion: { vx: 0, vz: 0, speed: 0 }, look: 'hero' }];
+  const pot = { id: 'pot', keep: true, position: { x: 9400 * 2, y: 4, z: 6260 * 2, facing: 0 } };
+  const pile = { id: 'pile', keep: true, position: { x: (9563 + 86) * 2, y: 4, z: (6027 + 36) * 2, facing: 0 } };
+  p.maps = { giong: { first: 1, last: 2, things: {}, at: { x: 9563 + 89, y: 6027 + 30 }, chunks: { '587,391': { entities: [pot, pile] } } } };
+  const done = migrate({ format: SAVE_FORMAT, version: 9, savedAt: 0, profile: p }).profile;
+  assert.deepEqual(heroPlace(done.world), { map: 'giong', x: worldOf().at('trau-son', 89, 30)[0], y: worldOf().at('trau-son', 89, 30)[1] });
+  assert.deepEqual(done.maps.giong.at, { x: 9871 + 89, y: 6040 + 30 });
+  assert.deepEqual(done.maps.giong.chunks['587,391'].entities.map((e) => e.id), ['pot']);
+  const [px, pz] = worldOf().at('trau-son', 86, 36).map((v) => v * 2);
+  const key = `${Math.floor(px / 32)},${Math.floor(pz / 32)}`;
+  assert.deepEqual(done.maps.giong.chunks[key].entities[0].position, { x: px, y: 4, z: pz, facing: 0 });
+  assert.equal(validate(done), true);
+});
+
 test('the version 9 makes the coins of the household measures of rice, and a market that was not done goes', () => {
   const p = sample();
   p.inventory = { coin: 12, rice: 3, iron: 1 };
@@ -238,8 +256,9 @@ test('the versions 7 and 8 put a place of a map of Era 1 on the plane, and the k
   p.world.away = { 'road-thanglong': [{ id: 'thing', keep: true, position: { x: 10, y: 4, z: 20, facing: 0 } }], 'phu-dong': [{ id: 'pot', keep: true, position: { x: 10, y: 4, z: 20, facing: 0 } }] };
   p.maps = { 'soc-son': { first: 1, last: 2, at: { x: 16, y: 7.4 }, things: {} }, 'phu-dong': { first: 1, last: 2, at: { x: 5, y: 13 }, things: {} } };
   const done = migrate({ format: SAVE_FORMAT, version: 6, savedAt: 0, profile: p }).profile;
-  // Núi Trâu: 64, 4 in its window (version 7), and its frame at 9563, 6027 on the plane (version 8).
-  assert.deepEqual(heroPlace(done.world), { map: 'giong', x: 25 + 64 + 9563, y: 30 + 4 + 6027 });
+  // Núi Trâu: 64, 4 in its window (version 7), its frame at 9563, 6027 on the plane (version 8),
+  // and at 9871, 6040 on the line of low hills (version 10).
+  assert.deepEqual(heroPlace(done.world), { map: 'giong', x: 25 + 64 + 9871, y: 30 + 4 + 6040 });
   assert.equal(done.world.away, undefined);
   const chunks = done.maps.giong.chunks;
   // Văn Miếu: 16 cells down in its window, its frame at 9112, 6303; Phù Đổng at 9357, 6246.

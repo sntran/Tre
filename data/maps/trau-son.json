@@ -4,7 +4,7 @@
  "region": "giong",
  "nameKey": "place.trauson",
  "geo": {
-  "at": [106.1, 21.13],
+  "at": [106.23, 21.14],
   "north": [0, -1]
  },
  "width": 200,
