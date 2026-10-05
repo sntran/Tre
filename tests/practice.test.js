@@ -132,7 +132,7 @@ test('after a set and "go back": the hero is back; P(L), the log with the practi
   const [bx, by] = data.world.at(...raw.at);
   const place = heroPlace(profile.world);
   assert.ok(Math.hypot(place.x - bx, place.y - by) < 2, `the hero of the save is at ${place.x}, ${place.y}`);
-  assert.equal(profile.inventory.coin, 3, 'the reward of the set');
+  assert.equal(profile.inventory.rice, 3, 'the reward of the set: rice for the basket');
   assert.deepEqual(profile.practice['bo-que'], { level: 2, sets: 1 });
   assert.equal(profile.flags['trial.scholar.done'], undefined, 'the trial of the story stays as it is');
   assert.ok(profile.learning.skills['math.count.120'].p > 0.2, 'P(L) of the skill of the task');

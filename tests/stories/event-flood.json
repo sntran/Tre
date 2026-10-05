@@ -114,7 +114,7 @@
           "event": "gift",
           "with": {
             "give": {
-              "coin": 2
+              "rice": 2
             }
           }
         }

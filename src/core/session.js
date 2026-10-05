@@ -30,7 +30,7 @@
 // worldmap, vanmieu, ...), close { screen }, map { map } (the hero went to another map), gift
 // { from, give }, tapfx { x, y, h }, sound { sound }, busy { on }, hud (the counts or the goal
 // changed), halt (a trigger zone stopped the hero: the view drops the input), raid { on, id } (a
-// raid starts or its things went away), and lose { to, take } (the coins that an enemy took fly
+// raid starts or its things went away), and lose { to, take } (the goods that an enemy took fly
 // from the counter to it).
 import { findPath, pathNextTo, createPlaneTileMap, footprint } from './tilemap.js';
 import { createTriggers } from './triggers.js';
@@ -738,9 +738,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function practiceEnd(person) {
     const rec = (profile.practice ??= {})[practice.id] ??= { level: practice.level ?? 0, sets: 0 };
     rec.sets += 1;
-    applyEffects(profile, [{ give: { coin: 3 } }]);
+    applyEffects(profile, [{ give: { rice: 3 } }]);
     save('practice');
-    emit({ type: 'gift', from: `npc:${person}`, give: { coin: 3 }, delay: 0.3 });
+    emit({ type: 'gift', from: `npc:${person}`, give: { rice: 3 }, delay: 0.3 });
     emit({ type: 'practice', id: practice.id, sets: rec.sets, level: rec.level });
     talk(`${person}.practice.end`);
   }
@@ -1129,7 +1129,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   const order = (o) => worldCommand(state, { type: 'raid', id: 'raid', ...o });
   // The end of a raid: a win gives its flags, its gifts, and its talks; a loss keeps the raid for
-  // another time (the enemies took some coins, and nothing else).
+  // another time (the enemies took some rice, and nothing else).
   function raidEnd(ev) {
     const r = raidEnt();
     const def = data.raids.raids[r?.raid.id];
@@ -1157,7 +1157,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     emit({ type: 'hud' });
   }
-  // An enemy at the gate took some coins: they leave the counter (never below nothing).
+  // An enemy at the gate took some goods: they leave the basket (never below nothing).
   function raidTake(ev) {
     const took = {};
     for (const [item, n] of Object.entries(ev.take ?? {})) {
@@ -1185,14 +1185,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'hud' });
   }
   let shareAfter = [];
-  // The share is fair: the coins of the hero go to the counter, the rest stays for the village,
-  // and the things of the share go away.
+  // The share is fair: the sacks of the hero go to the basket as measures of rice, the rest stays
+  // for the village, and the things of the share go away.
   function shareDone() {
-    const coins = getEntity(state, 'zone:share-hero')?.zone.items.length ?? 0;
+    const sacks = getEntity(state, 'zone:share-hero')?.zone.items.length ?? 0;
     const rest = zoneOf('loot')?.zone.items.length ?? 0;
-    if (coins) {
-      applyEffects(profile, [{ give: { coin: coins } }]);
-      emit({ type: 'gift', from: 'hero', give: { coin: coins }, delay: 0.3 });
+    if (sacks) {
+      applyEffects(profile, [{ give: { rice: sacks } }]);
+      emit({ type: 'gift', from: 'hero', give: { rice: sacks }, delay: 0.3 });
     }
     save('share');
     for (const e of [...state.entities]) {
@@ -1205,7 +1205,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const id of shareAfter) talk(id);
     shareAfter = [];
   }
-  // The rest of the loot: a red cloth with the coins goes into the hands of the hero. The child
+  // The rest of the loot: a red cloth with the sacks goes into the hands of the hero. The child
   // carries it to one of the people of the rest in the village (giveGift).
   function giveRest(n) {
     const h = hero();
@@ -1950,7 +1950,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const key = def?.lines[ev.type === 'short' ? 'short' : 'over'];
       if (key) say(key, {}, null, def.person);
     }
-    // The raid: the talks of the phases of the boss, the coins at the gate, and the end.
+    // The raid: the talks of the phases of the boss, the rice at the gate, and the end.
     if (ev.type === 'phase' && ev.dialogue) talk(ev.dialogue);
     if (ev.type === 'take') raidTake(ev);
     if (ev.type === 'end' && ev.id === 'raid') raidEnd(ev);

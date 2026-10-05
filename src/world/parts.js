@@ -44,11 +44,11 @@ export function heldItem(item, at, k, hand = 'armR', off = 'armL') {
     const n = Number(item.slice(6));
     out.push(R('item', [n * 0.5 + 0.4, 0.5, 1], 'wood', 0, -0.3, 0.6), R('bowls', [n * 0.5, 0.4, 0.8], 'diep', 0, 0.05, 0.6));
   }
-  // The rest of the loot: a red cloth with the coins on it, for a place of the village.
+  // The rest of the loot: a red cloth with small sacks of rice on it, for a place of the village.
   if (String(item).startsWith('gift-')) {
     const n = Number(item.slice(5));
     out.push(R('item', [1.4, 0.2, 1.1], 'vermilion', 0, -0.4, 0.5));
-    for (let i = 0; i < n; i++) out.push(R(`coin${i}`, [0.35, 0.12, 0.35], 'yellow', (i - (n - 1) / 2) * 0.45, -0.24, 0.5));
+    for (let i = 0; i < n; i++) out.push(R(`sack${i}`, [0.4, 0.45, 0.4], 'yellowPale', (i - (n - 1) / 2) * 0.5, -0.1, 0.5));
   }
   // A thing of a trial in the hands.
   const carried = { ore: 'ash', bucket: 'wood', stake: 'ochre', sticks: 'green' }[String(item).replace(/-.*$/, '')] ?? (String(item).startsWith('herb-') ? 'greenPale' : null);

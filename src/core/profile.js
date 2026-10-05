@@ -143,7 +143,7 @@ export function lossLevel(profile) {
 }
 
 // Take some small items after a lost raid. Friends, machines, and titles stay.
-// rules: { small: { share: 0.1, max: 3 }, normal: { share: 0.25, max: 10 } }, items: ['coin', ...]
+// rules: { small: { share: 0.1, max: 3 }, normal: { share: 0.25, max: 10 } }, items: ['rice', ...]
 export function applyLoss(profile, level, rules, lossItems) {
   const rule = rules[level];
   const lost = {};

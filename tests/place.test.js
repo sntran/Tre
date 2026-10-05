@@ -198,7 +198,7 @@ test('to put planks and take them back is free: no skill event until the hero st
   assert.equal(hero(w).hands.holds, null);
 });
 
-test('exactly right: at the commit the bridge becomes solid, with a drum, coins, and an efficient first success', () => {
+test('exactly right: at the commit the bridge becomes solid, with a drum, fish from the fisher, and an efficient first success', () => {
   const w = world();
   lay(w, 4);
   lay(w, 4);
@@ -206,7 +206,7 @@ test('exactly right: at the commit the bridge becomes solid, with a drum, coins,
   const events = cross(w);
   const solid = events.find((e) => e.type === 'solid');
   assert.equal(solid.sound, 'drum');
-  assert.deepEqual(solid.give, { coin: 3 });
+  assert.deepEqual(solid.give, { fish: 3 });
   assert.deepEqual(skills(events).map((e) => [e.skill, e.solved, e.efficient, e.first, e.evidence]), [['math.add.20', true, true, true, true], ['math.mul.10', true, true, true, true]]);
   const z = gap(w);
   assert.ok(z.set);

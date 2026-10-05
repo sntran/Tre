@@ -867,8 +867,8 @@
       "n": 6,
       "long": true
     },
-    "coin": {
-      "kind": "coin"
+    "sack": {
+      "kind": "sack"
     },
     "ferryman": {
       "skin": "skin4",

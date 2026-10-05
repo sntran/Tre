@@ -3,7 +3,7 @@
   "grades": { "-1": 1, "0": 1, "1": 1, "2": 2, "3": 3 },
   "trials": [
     {
-      "id": "scholar", "npc": "teacher", "calling": "scholar", "flag": "trial.scholar.done", "reward": { "coin": 3 },
+      "id": "scholar", "npc": "teacher", "calling": "scholar", "flag": "trial.scholar.done", "reward": { "rice": 3 },
       "task": "bundle",
       "_task": "Sort the counting rods into bundles of ten for the teacher. A tap on a rod of the heap puts it on the mat (from near the mat). A tap on the straw rope by the mat ties the rods on the mat: ten rods tie into a bundle; more or fewer, and the band snaps and the rods fall back on the heap (the commit). The task is done when fewer than ten rods are left on the heap.",
       "bundle": 10,
@@ -15,7 +15,7 @@
       "places": { "heap": "school-rods", "mat": "school-mat" }
     },
     {
-      "id": "smith", "npc": "smith", "calling": "smith", "flag": "trial.smith.done", "reward": { "coin": 3 },
+      "id": "smith", "npc": "smith", "calling": "smith", "flag": "trial.smith.done", "reward": { "rice": 3 },
       "task": "forge",
       "_task": "The fire burns when the child comes: the ore is in the forge (this many lumps) and the water is in the trough. The smith quenches one piece himself first. Then the iron on the anvil glows (rise), stays hot (hold), and dims (dim), again and again. The action button at the anvil drops the iron into the water (the commit): while it is hot (glow at or over hot), it hisses and becomes hard; too early or too late, it bends and goes back into the fire.",
       "glow": { "rise": 2.5, "dim": 2.5, "cold": 1.5, "hot": 0.6 },
@@ -27,7 +27,7 @@
       "places": { "forge": "smith-forge", "anvil": "smith-anvil", "trough": "smith-trough" }
     },
     {
-      "id": "fisher", "npc": "fisher", "calling": "fisher", "flag": "trial.fisher.done", "reward": { "coin": 3 },
+      "id": "fisher", "npc": "fisher", "calling": "fisher", "flag": "trial.fisher.done", "reward": { "fish": 3 },
       "task": "stakes",
       "_task": "A fish trap: stakes in a row in the river, from the first stake to the end mark, before the tide comes in. The fisher puts the first two stakes, so the space between them shows the space of the row. The child carries stakes from the bank and puts each one on the line (it snaps to the half-block grid), and can take one back. When the tide comes in (tide: seconds after the start, and again after each tide), the row is the commit: no space between two stakes wider than the space of the row, and the last stake at the end mark. Then the tide goes out: the fish stay in the trap, or they swim out through the widest space. The fewest stakes is efficient.",
       "levels": [
@@ -39,7 +39,7 @@
       "places": { "stakes": "fisher-stakes", "line": "fisher-line" }
     },
     {
-      "id": "healer", "npc": "healer", "calling": "healer", "flag": "trial.healer.done", "reward": { "coin": 3 },
+      "id": "healer", "npc": "healer", "calling": "healer", "flag": "trial.healer.done", "reward": { "egg": 3 },
       "task": "basket",
       "_task": "Three kinds of herbs grow in three beds. The healer needs each (this many) of each kind. The child carries herbs to the basket (each kind goes to its part of the basket) and can take one back. A tap on the healer gives the basket (the commit): every part has each, or the healer gives the basket back and the herbs over the number fly back to their beds.",
       "kinds": ["ngai", "tiato", "rauma"],
@@ -52,7 +52,7 @@
       "places": { "beds": ["healer-bed-1", "healer-bed-2", "healer-bed-3"], "basket": "healer-basket" }
     },
     {
-      "id": "woodcutter", "npc": "woodcutter", "calling": "woodcutter", "flag": "trial.woodcutter.done", "reward": { "coin": 3 },
+      "id": "woodcutter", "npc": "woodcutter", "calling": "woodcutter", "flag": "trial.woodcutter.done", "reward": { "rice": 3 },
       "task": "cut",
       "_task": "A fallen bamboo stem lies on the ground (length). The woodcutter needs it in this many equal sticks (parts). A tap on the stem puts a chalk mark there (it snaps to the half-block grid), and a tap on a mark takes it away. A tap on the woodcutter cuts at the marks (the commit): equal sticks are tied into a bundle, and the child carries it to the wood pile by the bridge; sticks that are not equal break, and a new stem comes.",
       "levels": [
@@ -87,7 +87,7 @@
     {
       "id": "share", "kind": "task", "task": "share", "reward": {}, "who": ["hero", "nghe", "giong"],
       "rest": { "elder": "gift.thanks.elder", "smith": "gift.thanks.smith", "mother": "gift.thanks.mother" },
-      "_task": "The loot after a won raid (loot in data/raids.json): a pile of coins behind the wall, and three mats: the basket of the hero, Nghé, and Gióng. The child carries coins from the pile to the mats, and from a mat back. When the hands are empty and the pile has fewer coins than friends, and the pile cannot even out the mats, the share is the commit: equal mats make all happy, and the coins of the hero go to the counter; if not, Nghé turns away and sulks until the share is fair. The rest in the pile (fewer coins than friends) becomes a small red cloth with the coins in the hands of the hero: the child carries it to the village, to one of the people of rest (the elder at the đình, the smith, or the mother of Gióng), and the person says one line of thanks. The cloth goes with the hero to other maps; nothing is scored.",
+      "_task": "The loot after a won raid (loot in data/raids.json): a pile of small sacks of rice behind the wall (Era 1 has no coins, #26), and three mats: the basket of the hero, Nghé, and Gióng. The child carries sacks from the pile to the mats, and from a mat back. When the hands are empty and the pile has fewer sacks than friends, and the pile cannot even out the mats, the share is the commit: equal mats make all happy, and the sacks of the hero go to the basket as measures of rice; if not, Nghé turns away and sulks until the share is fair. The rest in the pile (fewer sacks than friends) becomes a small red cloth with the sacks in the hands of the hero: the child carries it to the village, to one of the people of rest (the elder at the đình, the smith, or the mother of Gióng), and the person says one line of thanks. The cloth goes with the hero to other maps; nothing is scored.",
       "levels": [
         { "skill": "math.share.equal", "level": 1 },
         { "skill": "math.share.equal", "level": 2 },

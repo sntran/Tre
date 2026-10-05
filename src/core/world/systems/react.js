@@ -3,15 +3,16 @@
 //   flee: chickens run from a hero who runs at them; ducks and fish swim away from the hero.
 //   greet: people turn to the hero, wave, and greet, then wait some time before the next greeting.
 //   follow: the dog follows the hero for a while, and then goes home.
-//   break: a pot breaks when the hero walks into it, and gives a coin. The next morning the
-//     mender (grandma) sets a new pot. A broken pot is a change of the player, so the save keeps it.
+//   break: a pot breaks when the hero walks into it. It gives nothing (Era 1 has no coins, #26):
+//     a few grains spill, and the chickens near it come to peck them. The next morning the mender
+//     (grandma) sets a new pot. A broken pot is a change of the player, so the save keeps it.
 //   bend: tall grass bends away from the hero and rustles.
 //   hop: a frog on a lily pad jumps into the water when the hero comes near, and comes back after
 //     a while (the small joys, docs/WORLD.md).
 //   splash: a puddle after the rain splashes when the hero walks into it.
 //   follow with when: walk: the ducklings follow a hero who walks past, not one who runs.
-// The sounds and the story (a greeting, a coin) go out as events.
-export const WRITES = ['react', 'steer', 'position', 'look', 'broken', 'keep', 'solid', 'hidden', 'events'];
+// The sounds and the story (a greeting, a broken pot) go out as events.
+export const WRITES = ['react', 'steer', 'position', 'look', 'broken', 'keep', 'solid', 'hidden', 'peck', 'events'];
 
 import { query, getEntity } from '../state.js';
 import { faceOf } from '../move.js';
@@ -19,6 +20,7 @@ import { DAY_MINUTES } from '../clock.js';
 
 export const RUN_SPEED = 11; // half blocks a second: faster than this, the hero runs
 export const HOP_SECONDS = 0.6; // the jump of a frog into the water
+export const SPILL = { radius: 24, seconds: 6 }; // the chickens that come to the grains of a broken pot
 const TURN = 5; // radians a second
 
 export function react(world, dt) {
@@ -29,6 +31,14 @@ export function react(world, dt) {
   const today = Math.floor(world.clock.minutes / DAY_MINUTES);
   const menders = query(world, 'schedule').some((m) => m.schedule.mends);
   const walking = !running && (hero.motion?.speed ?? 0) > 0.5;
+  // The chickens at the grains of a broken pot go back to their flock after a while.
+  for (const c of query(world, 'peck')) {
+    c.peck -= dt;
+    if (c.peck <= 0) {
+      delete c.peck;
+      if (c.steer) c.steer.goal = null;
+    }
+  }
   for (const e of query(world, 'react', 'position')) {
     const r = e.react;
     // A frog under the water comes back to its lily pad after a while.
@@ -102,7 +112,14 @@ export function react(world, dt) {
         e.look = r.broken;
         e.keep = true;
         delete e.solid;
-        say('break', { give: r.give });
+        say('break', { spill: true });
+        // The grains of the pot: the chickens near it come and peck for a while.
+        for (const c of query(world, 'steer', 'position')) {
+          if (c.kind !== 'chicken' || Math.hypot(c.position.x - p.x, c.position.z - p.z) > SPILL.radius) continue;
+          const a = (c.position.x * 7 + c.position.z * 3) % (Math.PI * 2);
+          c.steer.goal = { x: p.x + Math.cos(a) * 1.2, z: p.z + Math.sin(a) * 1.2 };
+          c.peck = SPILL.seconds;
+        }
       }
     } else if (r.kind === 'hop') {
       if (r.hop !== undefined) {

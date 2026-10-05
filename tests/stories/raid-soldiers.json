@@ -1,8 +1,8 @@
 {
   "name": "raid-soldiers",
   "about": {
-    "vi": "Lính Ân từ cánh đồng tới ngã tư: người làng ra đứng ở lá cờ rơm, một cái bẫy ở cột thứ ba bác thợ rèn nói, Nghé lao vào một lần, rồi bắn ná cho tới khi chúng lui. Rồi chia tiền, và đồng tiền lẻ về tay bác thợ rèn trong làng.",
-    "en": "Ân soldiers come from the field to the crossroads: a villager at a straw flag, a trap at the third post that the smith names, Nghé charges once, and the slingshot turns them back. Then the share of the loot, and the coin that is left goes back to the smith in the village."
+    "vi": "Lính Ân từ cánh đồng tới ngã tư: người làng ra đứng ở lá cờ rơm, một cái bẫy ở cột thứ ba bác thợ rèn nói, Nghé lao vào một lần, rồi bắn ná cho tới khi chúng lui. Rồi chia những bao gạo, và bao gạo lẻ về tay bác thợ rèn trong làng.",
+    "en": "Ân soldiers come from the field to the crossroads: a villager at a straw flag, a trap at the third post that the smith names, Nghé charges once, and the slingshot turns them back. Then the share of the loot (sacks of rice), and the sack that is left goes back to the smith in the village."
   },
   "profile": {
     "name": "An",
@@ -16,7 +16,7 @@
       "raid.tool.gate": true
     },
     "items": {
-      "coin": 5
+      "rice": 5
     }
   },
   "clock": 600,
@@ -258,7 +258,7 @@
         },
         {
           "count": {
-            "entities": "coin",
+            "entities": "sack",
             "min": 7
           }
         },
@@ -276,7 +276,7 @@
       "steps": [
         {
           "press": {
-            "item": "coin"
+            "item": "sack"
           }
         },
         {
@@ -303,7 +303,7 @@
       "steps": [
         {
           "press": {
-            "item": "coin"
+            "item": "sack"
           }
         },
         {
@@ -330,7 +330,7 @@
       "steps": [
         {
           "press": {
-            "item": "coin"
+            "item": "sack"
           }
         },
         {
@@ -379,7 +379,7 @@
       "steps": [
         {
           "press": {
-            "thing": "coin:share:2"
+            "thing": "sack:share:2"
           }
         },
         {
@@ -434,7 +434,7 @@
           "event": "gift",
           "with": {
             "give": {
-              "coin": 2
+              "rice": 2
             }
           }
         },

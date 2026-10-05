@@ -87,14 +87,19 @@ test('the dog follows the hero for a while and then goes home', () => {
   assert.ok(Math.hypot(dog.position.x - 8, dog.position.z - 12) < 5, 'the dog is home again');
 });
 
-test('a pot breaks when the hero walks into it, gives a coin, stays broken in the save, and is whole the next day', () => {
+test('a pot breaks when the hero walks into it, gives nothing, spills grains for the chickens, stays broken in the save, and is whole the next day', () => {
   const w = world({ x: 10, z: 10 });
   const pot = thing(w, 'pot', 'pot', 13, 10, { solid: { r: 1.4 } });
+  // A chicken near the pot, and one far away.
+  const near = addEntity(w, { id: 'hen-near', kind: 'chicken', position: { x: 20, y: 6, z: 14, facing: 0 }, steer: { goal: null } });
+  const far = addEntity(w, { id: 'hen-far', kind: 'chicken', position: { x: 60, y: 6, z: 10, facing: 0 }, steer: { goal: null } });
   step(w);
   assert.equal(pot.broken, undefined);
   getEntity(w, 'hero').position.x = 11.8;
   step(w);
-  assert.deepEqual(w.events.map((e) => [e.type, e.give]), [['break', { coin: 1 }]]);
+  assert.deepEqual(w.events.map((e) => [e.type, e.give, e.spill]), [['break', undefined, true]]);
+  assert.ok(near.steer.goal && Math.hypot(near.steer.goal.x - 13, near.steer.goal.z - 10) < 2, 'the chicken near the pot comes to the grains');
+  assert.equal(far.steer.goal, null, 'a chicken far away does not');
   assert.equal(pot.look, 'pot-broken');
   assert.equal(pot.solid, undefined);
   assert.ok(saveWorld(w).entities.some((e) => e.id === 'pot'), 'the save keeps the broken pot');

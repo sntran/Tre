@@ -127,11 +127,11 @@ test('the bamboo staffs: each level has a culm for each staff, and the hand reac
 });
 
 test('the loot: the share is fair with equal mats, and it waits while the pile can still even them out', () => {
-  assert.deepEqual(shareResult([2, 2, 2], 1), { settled: true, fair: true, short: 0 }, 'seven coins: two each, one for the village');
-  assert.equal(shareResult([4, 4, 2], 2).settled, false, 'two coins in the pile can still go to the short mat');
-  assert.equal(shareResult([2, 2, 2], 3).settled, false, 'one more coin for each is in the pile');
+  assert.deepEqual(shareResult([2, 2, 2], 1), { settled: true, fair: true, short: 0 }, 'seven sacks: two each, one for the village');
+  assert.equal(shareResult([4, 4, 2], 2).settled, false, 'two sacks in the pile can still go to the short mat');
+  assert.equal(shareResult([2, 2, 2], 3).settled, false, 'one more sack for each is in the pile');
   const unfair = shareResult([3, 1, 2], 1);
-  assert.ok(unfair.settled && !unfair.fair, 'one coin cannot even out three and one: Nghé sulks');
+  assert.ok(unfair.settled && !unfair.fair, 'one sack cannot even out three and one: Nghé sulks');
   const raids = load('data/raids.json').raids;
   for (const id of ['soldier1', 'soldier2', 'boss']) assert.ok(raids[id].loot >= 3, `${id} has loot to share`);
 });

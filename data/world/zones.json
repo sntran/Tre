@@ -75,7 +75,7 @@
       "exact": {
         "sound": "drum",
         "give": {
-          "coin": 3
+          "fish": 3
         }
       },
       "long": {

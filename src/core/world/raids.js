@@ -4,7 +4,7 @@
 //
 //   Enemies walk on a straight path from their start to the gate, and never run. An enemy that is
 //   hit enough times retreats (a creature becomes calm and swims away). An enemy at the gate takes
-//   a coin and leaves (nothing at the lowest level). Nobody is hurt.
+//   a measure of rice from the store and leaves (nothing at the lowest level; Era 1 has no coins, #26). Nobody is hurt.
 //   The slingshot: the child pulls back and lets go. The pull counts in steps of one half block
 //   (the band has a tick at each step and a red band at every fifth, the same marks as the posts),
 //   and the stone lands exactly at the count along the road, on a real arc at one angle. Short or
@@ -33,7 +33,7 @@ const DRY = 14; // seconds: a wet zone dries
 const FLAME = 3; // half blocks: the reach of fire at a point
 const BURN = 9; // seconds: a torch on the road burns
 const CHARGE = 0.7; // seconds: Nghé runs to the first enemy
-const STEAL = 1.2; // seconds: an enemy at an open gate takes a coin
+const STEAL = 1.2; // seconds: an enemy at an open gate takes a measure of rice
 const HELPER = 2; // half blocks each second: a villager walks to a spot
 const PAUSE = 2.5; // seconds: an enemy stops in front of a villager
 const NEAR_SPOT = 5; // half blocks: an enemy stops when it passes this near a villager
@@ -133,7 +133,7 @@ export function createRaid(raids, id, level = 0, loss = null) {
     losses: 0,
     taken: {},
     allow: def.allow ?? 1,
-    take: def.take ?? { coin: 1 },
+    take: def.take ?? { rice: 1 },
     loss: loss ?? (level > 0 ? 'small' : 'none'),
     aims: {},
     bamboo: null,
@@ -256,12 +256,12 @@ function tickEnemy(raid, e, dt, ctx, out) {
       return;
     }
     if (e.t > 0) return;
-    // The enemy takes a coin at the open gate, and leaves (nothing at the lowest level).
+    // The enemy takes rice from the store at the open gate, and leaves (nothing at the lowest level).
     raid.losses += 1;
     const give = {};
     if (raid.loss !== 'none') for (const [k, n] of Object.entries(raid.take)) give[k] = n * (raid.loss === 'normal' ? 2 : 1);
     for (const [k, n] of Object.entries(give)) raid.taken[k] = (raid.taken[k] ?? 0) + n;
-    out.push({ type: 'take', id: e.id, take: give, sound: 'coin' });
+    out.push({ type: 'take', id: e.id, take: give, sound: 'pickup' });
     if (kind.boss) {
       // The general does not leave: he steps back and comes again.
       e.state = 'back';

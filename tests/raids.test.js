@@ -113,7 +113,7 @@ test('a first shot with no tap on a post skips the prediction', () => {
   assert.deepEqual(predict(raid, 10), [], 'too late for a prediction');
 });
 
-test('an enemy hit twice retreats and goes away; an enemy at the gate takes a coin and leaves', () => {
+test('an enemy hit twice retreats and goes away; an enemy at the gate takes rice from the store and leaves', () => {
   const raid = createRaid(raids, 'scouts', 1);
   run(raid, 0.1);
   const e = enemy(raid);
@@ -130,7 +130,7 @@ test('an enemy hit twice retreats and goes away; an enemy at the gate takes a co
   // The second scout walks to the gate (the gate is open).
   const walk = until(raid, 'take', 60);
   const take = walk.find((x) => x.type === 'take');
-  assert.deepEqual(take.take, { coin: 1 });
+  assert.deepEqual(take.take, { rice: 1 });
   assert.equal(raid.losses >= 1, true);
   // At the lowest level the enemy takes nothing.
   const low = createRaid(raids, 'scouts', 0);
@@ -330,7 +330,7 @@ test('a raid is won when the enemies are turned back, and lost when too many rea
   const lost = createRaid(raids, 'scouts', 1);
   const evs = run(lost, 150);
   assert.equal(evs.find((x) => x.type === 'end').won, false);
-  assert.ok(lost.taken.coin >= 2);
+  assert.ok(lost.taken.rice >= 2);
   assert.deepEqual(run(lost, 1), [], 'a raid that is over does not go on');
 });
 

@@ -10,7 +10,7 @@
     { "need": [8, 13], "sizes": [1, 2], "skill": "math.add.20", "level": 1 },
     { "need": [12, 20], "sizes": [2, 5], "skill": "math.add.20", "level": 2 }
    ],
-   "extra": 3, "reward": { "coin": 2 },
+   "extra": 3, "reward": { "rice": 2 },
    "lines": { "start": "event.cart.start", "short": "event.cart.short", "over": "event.cart.over", "done": "event.cart.done" }
   },
   {
@@ -20,7 +20,7 @@
     { "need": [7, 12], "sizes": [2, 3], "skill": "math.add.20", "level": 1 },
     { "need": [12, 18], "sizes": [3, 5], "skill": "math.add.20", "level": 2 }
    ],
-   "extra": 3, "reward": { "coin": 2 },
+   "extra": 3, "reward": { "rice": 2 },
    "lines": { "start": "event.flood.start", "short": "event.flood.short", "over": "event.flood.over", "done": "event.flood.done" }
   },
   {
@@ -40,7 +40,7 @@
     { "need": [7, 9], "lost": 3, "sizes": [1], "skill": "math.count.120", "level": 1 },
     { "need": [10, 14], "lost": 4, "sizes": [1], "skill": "math.count.120", "level": 2 }
    ],
-   "extra": 0, "reward": { "coin": 1 },
+   "extra": 0, "reward": { "egg": 1 },
    "lines": { "start": "event.duck.start", "short": "event.duck.short", "over": "event.duck.over", "done": "event.duck.done" }
   }
  ]

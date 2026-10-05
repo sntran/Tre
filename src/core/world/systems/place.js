@@ -5,7 +5,7 @@
 // A span (the broken bridge) is a free place to try: to put planks and to take them back is
 // exploration and is never an error. The commit is the step of the hero on the last plank. Then
 // the world answers, never with a text:
-//   exact: the span becomes solid, a drum sounds, and coins come.
+//   exact: the span becomes solid, a drum sounds, and the fisher gives fish.
 //   short: the last plank dips, and the hero falls into the water. The planks and the marks of the
 //     empty part of the gap stay for some seconds, so that the child sees how much was missing.
 //     Nghé comes to the edge and pulls the hero out. The last plank floats back to the pile.
@@ -282,7 +282,7 @@ function commit(world, zoneEnt, def, hero) {
   for (const s of events) say(world, 'skill', zoneEnt.id, s);
 }
 
-// The span becomes solid: the planks turn into deck, a drum sounds, and coins come.
+// The span becomes solid: the planks turn into deck, a drum sounds, and the fisher gives fish.
 function setSpan(world, zoneEnt, def) {
   const zone = zoneEnt.zone;
   const out = def.outcomes.exact;

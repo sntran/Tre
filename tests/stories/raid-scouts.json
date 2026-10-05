@@ -14,7 +14,7 @@
       "giong.spoke": true
     },
     "items": {
-      "coin": 5
+      "rice": 5
     }
   },
   "clock": 540,
@@ -290,7 +290,7 @@
           "with": {
             "give": {
               "iron": 2,
-              "coin": 2
+              "rice": 2
             }
           }
         },

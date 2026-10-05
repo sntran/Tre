@@ -56,7 +56,7 @@
     { "expect": [
       { "zone": "bridge-gap", "state": "solid" },
       { "event": "skill", "with": { "skill": "math.add.20", "solved": true, "first": false, "efficient": false, "mashing": false } },
-      { "item": "coin", "count": ">= 1" }
+      { "item": "fish", "count": ">= 1" }
     ] }
   ]
 }

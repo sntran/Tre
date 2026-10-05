@@ -3,7 +3,7 @@
  "events": [
   { "id": "merchant", "textKey": "road.merchant", "weight": 3, "give": { "rice": 1 } },
   { "id": "rain", "textKey": "road.rain", "weight": 2, "hours": 2 },
-  { "id": "cart", "textKey": "road.cart", "weight": 2, "give": { "coin": 1 } },
+  { "id": "cart", "textKey": "road.cart", "weight": 2, "give": { "rice": 1 } },
   { "id": "ferry", "textKey": "road.ferry", "weight": 2 },
   { "id": "song", "textKey": "road.song", "weight": 2, "hours": -1 }
  ]

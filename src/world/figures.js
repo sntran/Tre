@@ -722,13 +722,13 @@ export function workThing(look) {
       parts.push(P('leaves', [2.6, 1.4, 2.6], 'greenPale', [0, look.n + 0.4, 0]), P('leavesTop', [1.4, 1, 1.4], 'green', [0, look.n + 1.4, 0]));
       return still(parts, look.n + 1.9);
     }
-    // An old coin of bronze with a square hole.
-    case 'coin': return still([P('coin', [0.6, 0.12, 0.6], 'yellow', [0, 0.06, 0]), P('rim', [0.66, 0.08, 0.66], 'ochre', [0, 0.03, 0]), P('hole', [0.2, 0.14, 0.2], 'ink', [0, 0.07, 0])], 0.15);
+    // A small sack of rice tied at the top (the loot of a raid; Era 1 has no coins, #26).
+    case 'sack': return still([P('sack', [0.7, 0.6, 0.6], 'yellowPale', [0, 0.3, 0]), P('neck', [0.35, 0.2, 0.3], 'yellowPale', [0, 0.68, 0]), P('tie', [0.4, 0.08, 0.35], 'ochre', [0, 0.62, 0])], 0.8);
     // The rest of the loot on a red cloth, when the child puts it down on the way.
     case 'gift': {
       const parts = [P('cloth', [1.4, 0.08, 1.1], 'vermilion', [0, 0.04, 0]), P('knot', [0.3, 0.2, 0.3], 'vermilionPale', [0.6, 0.1, -0.45])];
-      for (let i = 0; i < look.n; i++) parts.push(P(`coin${i}`, [0.4, 0.12, 0.4], 'yellow', [(i - (look.n - 1) / 2) * 0.5, 0.14, 0]));
-      return still(parts, 0.2);
+      for (let i = 0; i < look.n; i++) parts.push(P(`sack${i}`, [0.45, 0.45, 0.4], 'yellowPale', [(i - (look.n - 1) / 2) * 0.55, 0.3, 0]));
+      return still(parts, 0.55);
     }
     // A small reed mat for a share of the loot.
     case 'share-mat': return still([P('mat', [2.2, 0.08, 2.2], 'yellowPale', [0, 0.04, 0]), P('edgeN', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, -1.05]), P('edgeS', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, 1.05])], 0.1);

@@ -17,7 +17,7 @@
       "raid.tool.gate": true
     },
     "items": {
-      "coin": 5
+      "rice": 5
     }
   },
   "clock": 540,
@@ -223,7 +223,7 @@
           "event": "gift",
           "with": {
             "give": {
-              "coin": 2,
+              "rice": 2,
               "bamboo": 1
             }
           }

@@ -4,7 +4,7 @@
     "vi": "Em mở bản đồ thì trận chỉ dừng lại; không ai chặn thì lính tới ngã tư rồi đi; ở lớp một, giặc không lấy gì, và sáng hôm sau chúng quay lại.",
     "en": "The map only pauses the raid; with nobody to stop them, the soldiers reach the crossroads and leave; at grade one they take nothing, and they come again at the next dawn."
   },
-  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 2, "flags": { "intro.seen": true, "giong.grown": true }, "items": { "coin": 5 } },
+  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 2, "flags": { "intro.seen": true, "giong.grown": true }, "items": { "rice": 5 } },
   "clock": 600,
   "at": ["trau-son", 89, 38],
   "steps": [
@@ -18,9 +18,9 @@
     { "expect": [{ "event": "come", "not": true }, { "event": "gate", "not": true }] },
     { "do": { "type": "closed" } },
     { "until": { "event": "take", "timeout": 60 } },
-    { "expect": [{ "event": "take", "with": { "take": {} } }, { "item": "coin", "count": 5 }] },
+    { "expect": [{ "event": "take", "with": { "take": {} } }, { "item": "rice", "count": 5 }] },
     { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 90 } },
-    { "expect": [{ "event": "end", "with": { "won": false } }, { "text": { "shown": "raid.lost" } }, { "flag": "soldier2.won", "is": false }, { "item": "coin", "count": 5 }] },
+    { "expect": [{ "event": "end", "with": { "won": false } }, { "text": { "shown": "raid.lost" } }, { "flag": "soldier2.won", "is": false }, { "item": "rice", "count": 5 }] },
     { "read": true },
     { "wait": 3 },
     { "expect": [{ "raid": { "on": false } }, { "flag": "raid.soldier2.back" }, { "entity": "encounter:soldier2", "gone": true }] },

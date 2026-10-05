@@ -14,10 +14,10 @@
 //   slash (bamboo staffs for the boss): the child slashes each standing culm of a clump at the
 //     height of the hand; the piece is as long as the height of the cut. Equal pieces tie into a
 //     bundle of staffs; if not, the pieces that are not equal break, and their culms grow again.
-//   share (the loot after a raid): equal coins on the mats make all happy; if not, Nghé sulks.
+//   share (the loot after a raid): equal sacks of rice on the mats make all happy; if not, Nghé sulks.
 //   feed (rice for Gióng): each ten bowls in the pot, Gióng eats and grows one head taller.
 //   exact (a small event of the day, ../days.js): things of sizes go on a place (stones under the
-//     wheel of a cart, pails of water into the ditch, coins on the mat of a seller, lost ducks into
+//     wheel of a cart, pails of water into the ditch, goods on the mat of a seller, lost ducks into
 //     the pen); the action button is the commit of the sum (a tap on the person asks for help). Exact: done. Too few: the person
 //     waits. Too many: the last things go back to the pile.
 // When a task is done, the event "trial" goes out (the session sets the flag and gives the reward).
@@ -208,11 +208,11 @@ export function setupTrial(world, def, level, env, opts = {}) {
     const back = { x: -def.dir.x, z: -def.dir.z };
     const side = { x: -def.dir.z, z: def.dir.x };
     const pt = (b, s) => { const x = def.at.x + back.x * b + side.x * s; const z = def.at.z + back.z * b + side.z * s; return { x, y: gy(x, z), z }; };
-    const pile = heap('loot', pt(3, 0), 'coin', { cols: 4, step: 0.7 });
-    things(pile, 'coin', def.loot);
+    const pile = heap('loot', pt(3, 0), 'sack', { cols: 4, step: 0.9 });
+    things(pile, 'sack', def.loot);
     def.who.forEach((who, i) => {
       const m = pt(7, (i - 1) * 3.5);
-      addEntity(world, { id: `zone:share-${who}`, keep: true, zone: { id: `share-${who}`, task: owner, rule: 'share', accepts: 'coin', who, items: [], x: m.x, y: m.y, z: m.z, rect: { x0: m.x - 1.4, x1: m.x + 1.4, z0: m.z - 1.4, z1: m.z + 1.4 } }, position: { x: m.x - back.x * 2, y: m.y, z: m.z - back.z * 2, facing: 0 } });
+      addEntity(world, { id: `zone:share-${who}`, keep: true, zone: { id: `share-${who}`, task: owner, rule: 'share', accepts: 'sack', who, items: [], x: m.x, y: m.y, z: m.z, rect: { x0: m.x - 1.4, x1: m.x + 1.4, z0: m.z - 1.4, z1: m.z + 1.4 } }, position: { x: m.x - back.x * 2, y: m.y, z: m.z - back.z * 2, facing: 0 } });
       addEntity(world, { id: `mat:share-${who}`, keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: 'share-mat' });
       // A friend stands behind the mat; where the ground there is not level with the mat (a paddy),
       // in front of it.
@@ -384,11 +384,11 @@ export function takeOut(world, thing) {
   if (z.zone.rule === 'exact') packExact(world, z.zone);
 }
 
-// The coins on a mat lie in a stack.
+// The sacks on a mat lie in rows of three, and then in a second layer.
 function packShare(world, zone) {
   zone.items.forEach((id, i) => {
     const e = getEntity(world, id);
-    if (e) e.position = { x: zone.x + (i % 2) * 0.7 - 0.35, y: zone.y + 0.15 + Math.floor(i / 2) * 0.2, z: zone.z, facing: 0 };
+    if (e) e.position = { x: zone.x + (i % 3) * 0.8 - 0.8, y: zone.y + 0.1 + Math.floor(i / 6) * 0.9, z: zone.z + (Math.floor(i / 3) % 2) * 0.8 - 0.4, facing: 0 };
   });
 }
 
@@ -877,7 +877,7 @@ function addCulm(world, tz, task, i) {
 // Nghé follows the hero (the friend of the hero).
 const friendOf = (world) => query(world, 'follow', 'position').find((f) => f.follow.target === 'hero') ?? null;
 
-// The share of the loot: when the hands are empty and the pile has fewer coins than friends, the
+// The share of the loot: when the hands are empty and the pile has fewer sacks than friends, the
 // share is the commit (once for each new share). Fair: all are happy, and the friends go home
 // after a moment. If not, Nghé turns away and shakes her head.
 function tickShare(world, tz, dt, env) {
