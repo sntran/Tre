@@ -43,12 +43,14 @@ test('the same person (ông, the first child) is Ông Cả in a region of the no
 const sayAll = (i18n, names) => Object.fromEntries(Object.entries(names).map(([id, p]) => [id, say(i18n, p)]));
 
 test('Xóm Ruộng in the north: Cô Năm, Chị Hến, Chú Tư, and Ông Dương; in a region of the south the same people are Cô Sáu, Chị Tư, Chú Năm, and Ông Hai', () => {
+  const hamlet = ['planter', 'duck-girl', 'fisher-uncle', 'drummer'];
+  const only = (all) => Object.fromEntries(hamlet.map((id) => [id, all[id]]));
   const n = namesOf({ npcs: { npcs }, regions, naming }, 'giong');
-  assert.deepEqual(sayAll(en, n), { planter: 'Cô Năm', 'duck-girl': 'Chị Hến', 'fisher-uncle': 'Chú Tư', drummer: 'Ông Dương' });
+  assert.deepEqual(sayAll(en, only(n)), { planter: 'Cô Năm', 'duck-girl': 'Chị Hến', 'fisher-uncle': 'Chú Tư', drummer: 'Ông Dương' });
   assert.equal(vi.t('npc.hamlet-head.name'), 'Bà trưởng xóm');
   assert.equal(vi.t('hamlet.greet', { planter: n.planter, duckGirl: n['duck-girl'], fisherUncle: n['fisher-uncle'], drummer: n.drummer }), 'Chào cháu! Ở xóm này ai cũng có việc cần cháu giúp: cô Năm, chị Hến, chú Tư và ông Dương.');
   const s = namesOf({ npcs: { npcs }, regions, naming }, 'gia-dinh');
-  assert.deepEqual(sayAll(en, s), { planter: 'Cô Sáu', 'duck-girl': 'Chị Tư', 'fisher-uncle': 'Chú Năm', drummer: 'Ông Hai' });
+  assert.deepEqual(sayAll(en, only(s)), { planter: 'Cô Sáu', 'duck-girl': 'Chị Tư', 'fisher-uncle': 'Chú Năm', drummer: 'Ông Hai' });
 });
 
 test('a person with no field for the rule of the age gets the order: an elder with no child, a young person with no own name', () => {

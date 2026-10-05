@@ -1224,6 +1224,19 @@
       "hat": "non",
       "face": 3
     },
+    "dam-elder": {
+      "skin": "skin4",
+      "top": "wood",
+      "bottom": "indigo",
+      "sash": "ochre",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "grey",
+      "hairStyle": "topknot",
+      "beard": true,
+      "item": "axe",
+      "face": 1
+    },
     "drummer": {
       "skin": "skin2",
       "top": "indigo",

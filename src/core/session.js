@@ -35,6 +35,7 @@
 import { findPath, pathNextTo, createPlaneTileMap, footprint } from './tilemap.js';
 import { createTriggers } from './triggers.js';
 import { currentGoal } from './quests.js';
+import { clueLine as clueOf, hiddenAt, areaOf, inArea } from './clues.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
 import { createDialogue } from './dialogue.js';
 import { timeStatus, addPlayTime } from './timelimit.js';
@@ -805,6 +806,34 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         addEntity(state, { id: `event:${ev.id}:cart`, chunk: chunkOf(ev.at[0], ev.at[1]), dayEvent: { id: ev.id, day, at: ev.at }, position: { x: ev.at[0] * 2 + 1, y: env.groundY(ev.at[0], ev.at[1]) - 0.5, z: ev.at[1] * 2 + 1, facing: 0.3 }, solid: { r: 2.2 }, look: 'cart' });
       }
     }
+  }
+  // Find a place by real clues (#27; src/core/clues.js): a person who greets the hero on the way
+  // says the next clue, when the quest leads to the place (a target of the step of the quest is in
+  // its area); a person at a wrong place says why it is not the place. Return the text key, or null.
+  function clueLine(who) {
+    if (!data.clues || !data.world?.at) return null;
+    const goal = currentGoal(data.quests.quests, cond());
+    const targets = goal?.step?.targets ?? [];
+    const leads = (find) => {
+      const a = areaOf(find, data.world.at);
+      return targets.some((tg) => map.encounters.some((e) => e.id === tg.encounter && inArea(a, e.x, e.y)));
+    };
+    const line = clueOf(data.clues, data.world.at, profile.flags, who, heroCell(), leads);
+    if (!line) return null;
+    Object.assign(profile.flags, line.set ?? {});
+    emit({ type: 'clue', id: who, textKey: line.textKey });
+    return line.textKey;
+  }
+  // The hero stands in the area of a place to find for the first time: the place is found, and the
+  // arrow of the quest shows it again.
+  function checkFound() {
+    if (!data.clues || !data.world?.at) return;
+    const c = heroCell();
+    const find = hiddenAt(data.clues, data.world.at, profile.flags, c.x, c.y);
+    if (!find) return;
+    profile.flags[find.flag] = true;
+    emit({ type: 'found', id: find.id });
+    emit({ type: 'hud' });
   }
   // The market of today near a place: on the market day of a hamlet in the 3 x 3 tiles of the land
   // around the place, the first person of the place who greets the hero says so, once a day, with
@@ -1930,7 +1959,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function worldEvent(ev) {
     if (ev.type === 'greet' && !busy && !quietForWork(ev.id)) {
       const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
-      emit({ type: 'open', screen: 'callout', id: ev.id, textKey: marketLine() ?? GREETS[n % GREETS.length], params: { name: profile.hero.name } });
+      emit({ type: 'open', screen: 'callout', id: ev.id, textKey: clueLine(ev.id) ?? marketLine() ?? GREETS[n % GREETS.length], params: { name: profile.hero.name } });
     }
     // A person calls out: the fisher when a plank is too long, and the lines of the mentors.
     if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {} });
@@ -2065,6 +2094,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     planting.tick(STEP);
     hamlet.tick(STEP);
     folk.tick(STEP);
+    checkFound();
     checkRest();
     checkEdge();
     checkLandFerries();

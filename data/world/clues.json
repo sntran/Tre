@@ -1,0 +1,30 @@
+{
+  "_about": "Find a place by real clues, not by a mark (#27; src/core/clues.js; docs/WORLD.md, \"Finding Trâu Sơn\"). The hero has never seen the place. A find: flag (set when the hero first stands in the area), frame and area (the cells of the frame of the place: x0, y0, x1, y1), toward (the way of the arrow of the quest before the hero finds the place: [1, 0] is east, toward the sunrise), way (the people on the way: east of the column x of the frame), clues (in order, each from another person who greets the hero on the way, once, when the quest leads to the place), and wrong (a person at a wrong place says why it is not the place). Each line has its source. No line gives or takes anything: the world answers, with no fail and no score.",
+  "finds": [
+    {
+      "id": "trau-son",
+      "flag": "trauson.found",
+      "frame": "trau-son",
+      "area": [60, -10, 210, 94],
+      "toward": [1, 0],
+      "way": { "frame": "phu-dong", "x": 80 },
+      "clues": [
+        {
+          "textKey": "clue.trau.sunrise",
+          "source": "Đại Nam nhất thống chí: \"Núi Trâu Sơn còn gọi là núi Vũ Ninh ở phía Đông huyện Quế Dương 12 dặm\" (east of the district of Quế Dương). Quoted in https://huvi.wordpress.com/2019/03/08/nhung-dieu-moi-biet-ve-ma-co-tien-o-chau-son/"
+        },
+        {
+          "textKey": "clue.trau.line",
+          "source": "Đại Nam nhất thống chí: \"núi non liên tiếp kéo dài\" (hills one after another, in a long line). Quoted in https://huvi.wordpress.com/2019/03/08/nhung-dieu-moi-biet-ve-ma-co-tien-o-chau-son/"
+        }
+      ],
+      "wrong": [
+        {
+          "npc": "dam-elder",
+          "textKey": "clue.trau.dam",
+          "source": "The fine heights (data/geo/heights/N21E106.bin): Núi Dạm is one compact hill with a top of 130 m at 106.10 E, 21.145 N; the hills near Châu Cầu are a line about 4 km long, from north-west to south-east, with tops of 51 to 71 m, at 106.215 to 106.25 E."
+        }
+      ]
+    }
+  ]
+}

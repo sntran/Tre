@@ -501,6 +501,14 @@
       "nameKey": "npc.rope-child.name",
       "talk": []
     },
+    "dam-elder": {
+      "voice": "elderMan",
+      "kin": "bac",
+      "order": 3,
+      "age": "elder",
+      "child": "Sẻ",
+      "talk": [{ "when": { "flags": ["trauson.found"] }, "dialogue": "dam-elder.found" }, { "dialogue": "dam-elder.hill" }]
+    },
     "drummer": {
       "voice": "elderMan",
       "kin": "ong", "order": 1, "age": "elder", "child": "Dương",

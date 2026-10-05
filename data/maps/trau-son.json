@@ -82,7 +82,9 @@
 
   }
  },
- "npcs": [],
+ "npcs": [
+  {"id": "dam-elder", "x": -132.5, "y": 8.5}
+ ],
  "encounters": [
   {"id": "soldier1", "raid": "soldier1", "x": 89.0, "y": 23.0, "figure": "soldier", "when": {"flags": ["giong.grown"], "notFlags": ["soldier1.won"]}},
   {"id": "soldier2", "raid": "soldier2", "x": 89.0, "y": 47.0, "figure": "soldier", "when": {"flags": ["giong.grown"], "notFlags": ["soldier2.won"]}},

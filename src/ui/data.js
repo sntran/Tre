@@ -42,6 +42,7 @@ export const FILES = {
   folkgames: 'data/world/folkgames.json',
   naming: 'data/world/naming.json',
   origins: 'data/world/origins.json',
+  clues: 'data/world/clues.json',
   speech: 'data/world/speech.json',
 };
 

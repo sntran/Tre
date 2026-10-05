@@ -1,0 +1,261 @@
+{
+  "name": "find-trau-son",
+  "about": {
+    "vi": "Em đi về phía đông tìm núi Trâu, chưa từng thấy núi ấy. Mũi tên chỉ đường về phía mặt trời mọc. Một người trên đường nói núi Trâu ở phía mặt trời mọc, một người khác nói đó là những ngọn đồi thấp nối nhau thành dải. Em leo lên ngọn núi cao đứng một mình, và ông lão đốn củi ở đó nói đồi Trâu còn xa hơn về phía mặt trời mọc. Em đi tiếp tới dải đồi thấp, và trận đánh bắt đầu như trước.",
+    "en": "The hero walks east to find Trâu Sơn and has never seen it. The arrow shows only the way toward the sunrise. One person on the way says that Trâu Sơn is toward the sunrise; another says that it is low hills, one after another, in a long line. The hero climbs the tall hill that stands alone, and the old man who gathers wood there says that the hills of Trâu are farther toward the sunrise. The hero walks on to the line of low hills, and the battle starts as before."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 5,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true,
+      "trial.scholar.done": true,
+      "trial.smith.done": true,
+      "trial.fisher.done": true,
+      "trial.healer.done": true,
+      "trial.woodcutter.done": true,
+      "prologue.done": true,
+      "giong.messenger": true,
+      "giong.spoke": true,
+      "horse.forged": true,
+      "giong.grown": true,
+      "raid.tool.sling": true,
+      "raid.tool.gate": true
+    },
+    "items": {
+      "rice": 5
+    }
+  },
+  "clock": 420,
+  "at": [
+    "phu-dong",
+    82.5,
+    30.5
+  ],
+  "steps": [
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          -417.5,
+          214.5
+        ]
+      }
+    },
+    {
+      "until": {
+        "event": "clue",
+        "with": {
+          "textKey": "clue.trau.sunrise"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "open",
+          "with": {
+            "screen": "callout",
+            "textKey": "clue.trau.sunrise"
+          }
+        },
+        {
+          "flag": "trauson.found",
+          "is": false
+        }
+      ]
+    },
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          -417.5,
+          224.5
+        ]
+      }
+    },
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          -384.5,
+          190.5
+        ]
+      }
+    },
+    {
+      "until": {
+        "event": "clue",
+        "with": {
+          "textKey": "clue.trau.line"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "open",
+          "with": {
+            "screen": "callout",
+            "textKey": "clue.trau.line"
+          }
+        }
+      ]
+    },
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          -383.5,
+          201.5
+        ]
+      }
+    },
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          -250,
+          30
+        ]
+      }
+    },
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          -160,
+          20
+        ]
+      }
+    },
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          -133.5,
+          8.5
+        ]
+      }
+    },
+    {
+      "until": {
+        "event": "clue",
+        "with": {
+          "textKey": "clue.trau.dam"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "open",
+          "with": {
+            "screen": "callout",
+            "id": "npc:dam-elder",
+            "textKey": "clue.trau.dam"
+          }
+        },
+        {
+          "flag": "trauson.found",
+          "is": false
+        },
+        {
+          "item": "rice",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          -140,
+          22
+        ]
+      }
+    },
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          -40,
+          30
+        ]
+      }
+    },
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          66.5,
+          33.5
+        ]
+      }
+    },
+    {
+      "walk": {
+        "to": [
+          "trau-son",
+          86,
+          31
+        ]
+      }
+    },
+    {
+      "until": {
+        "event": "found",
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "found",
+          "with": {
+            "id": "trau-son"
+          }
+        },
+        {
+          "flag": "trauson.found"
+        },
+        {
+          "item": "rice",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "press": {
+        "entity": "encounter:soldier1"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "raid.soldier.intro"
+          }
+        }
+      ]
+    }
+  ]
+}

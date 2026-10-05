@@ -3,6 +3,7 @@
 // into commands, and reacts to the events: the dialogue box, the screens, the sounds, the HUD,
 // and the marks over the world.
 import { currentGoal } from '../core/quests.js';
+import { questMark } from '../core/clues.js';
 import { conditionState } from '../core/game.js';
 import { edgeMarker } from '../core/hit.js';
 import { portraitCanvas, heroLookOf, speakerLookOf, prerender, portraitStats } from './portraits.js';
@@ -488,7 +489,10 @@ export async function mountVillage(ctx, params = {}) {
       }
     }
     if (stepGoal.place && (stepGoal.place.map ?? mapData.id) === mapData.id) out.push({ x: stepGoal.place.x + 1, y: stepGoal.place.y + 0.5, h: groundY(stepGoal.place.x, stepGoal.place.y) + 3 });
-    return out;
+    // A place that the hero did not find yet (Trâu Sơn, #27): the mark shows only the way.
+    if (!data.clues || !data.world?.at) return out;
+    const h = hero().position;
+    return out.map((m) => questMark(data.clues, data.world.at, flags, m, { x: h.x / 2, y: h.z / 2 }));
   }
 
   // Screens: the session opens them, the view shows them and tells the session when they close.

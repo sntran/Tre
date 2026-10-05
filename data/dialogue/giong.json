@@ -344,6 +344,28 @@
     }
    },
    "mark": "legend"
+  },
+  {
+   "id": "dam-elder.hill",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "dam-elder",
+     "textKey": "clue.trau.dam",
+     "source": "The fine heights (data/geo/heights/N21E106.bin): Núi Dạm is one compact hill with a top of 130 m at 106.10 E, 21.145 N; the hills near Châu Cầu are a line about 4 km long, from north-west to south-east, with tops of 51 to 71 m, at 106.215 to 106.25 E."
+    }
+   }
+  },
+  {
+   "id": "dam-elder.found",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "dam-elder",
+     "textKey": "dlg.dam-elder.found.n1",
+     "mood": "happy"
+    }
+   }
   }
  ]
 }

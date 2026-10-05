@@ -255,6 +255,10 @@ B.triggers = [
 # ---------------------------------------------------------------- The foot of Núi Trâu, to the east
 C = M('trau-son', 'place.trauson', 32, 31)
 C.geo = {'at': [106.23, 21.14], 'north': NORTH}
+# An old man gathers wood on the top of Núi Dạm, the tall hill to the west of Trâu Sơn (#27; the frame
+# cell -132.5, 8.5, one cell from the top; the map is at 64, 4 in the frame, two cells to a cell of the
+# hand-made map). He says that the hills of Trâu are farther toward the sunrise (data/world/clues.json).
+C.npcs = [{'id': 'dam-elder', 'x': -98.25, 'y': 2.25}]
 C.fill(2, 2, 22, 11, 'f')
 C.fill(2, 17, 22, 11, 'f')
 C.fill(0, 14, 13, 2, '=')
