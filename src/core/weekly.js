@@ -62,7 +62,8 @@ export function weeklyNote(rollups, profile, week, data = {}) {
   const snap = profile.factSnap?.week === week ? profile.factSnap : null;
   const cur = snap?.cur?.[skill] ?? null;
   const prev = snap ? snap.prev?.[skill] ?? null : profile.factSnap?.cur?.[skill] ?? null;
-  const count = (s) => (s ? [...s].filter((c) => c === 'c').length : 0);
+  // A fact a × b and b × a is one fact: the cells on and over the diagonal.
+  const count = (s) => (s ? [...s].filter((c, i) => c === 'c' && i % 10 >= Math.floor(i / 10)).length : 0);
   const newer = cur ? [...cur].map((c, i) => (c === 'c' && (!prev || prev[i] !== 'c') ? factKey(Math.floor(i / 10) + 1, (i % 10) + 1) : null)).filter(Boolean) : [];
   const stillNew = [];
   if (cur) {
@@ -109,7 +110,7 @@ export function weeklyNote(rollups, profile, week, data = {}) {
   // 4. The signs, for each activity, with what the game did.
   for (const [id, r] of list) {
     const signs = signsOf(r, sig.few);
-    if (signs.includes('frustrated')) say('parent.week.frustrated', { act: title(id), n: r.left || r.missRuns });
+    if (signs.includes('frustrated')) say('parent.week.frustrated', { act: title(id), n: Math.max(r.left, r.missRuns) });
     if (signs.includes('restless')) say('parent.week.restless', { act: title(id) });
     if (r.sets && r.stay) say('parent.week.stay', { act: title(id), sets: r.sets, stay: r.stay });
   }

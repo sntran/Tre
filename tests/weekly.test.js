@@ -47,16 +47,16 @@ test('the note of a week in plain words, in both languages: plays, the activity 
   for (const k of ['parent.week.played', 'parent.week.sent', 'parent.week.first', 'parent.week.back', 'parent.week.facts', 'parent.week.frustrated', 'parent.week.stay', 'parent.week.checks', 'parent.week.together.mua-trong']) assert.ok(keys.includes(k), k);
   const e = text(en, note);
   const v = text(vi, note);
-  assert.match(e, /Nam played 3 times/);
+  assert.match(e, /Plays of Nam this week: 3/);
   assert.match(e, /Nam chose this first most often: The drum dance/);
-  assert.match(e, /2 facts of the table are confident for Nam now \(1 last week\)/);
-  assert.match(e, /Fish traps: Nam stopped right after a miss 2 times/);
+  assert.match(e, /Facts of the table that are confident for Nam now: 1 \(1 last week\)/);
+  assert.match(e, /Fish traps: Nam stopped right after a miss \(2 times\)/);
   assert.match(e, /Try the drum dance together/);
-  assert.match(v, /Nam chơi 3 lần/);
+  assert.match(v, /Số lần Nam chơi tuần này: 3/);
   assert.match(v, /Thử múa trống cùng nhau/);
   for (const l of note.lines) assert.ok(!/\{|undefined|NaN/.test(en.t(l.key, l.params) + vi.t(l.key, l.params)), l.key);
   // The facts: this week and last week, and the new confident fact.
-  assert.equal(note.facts.confident, 2);
+  assert.equal(note.facts.confident, 1, 'three by seven and seven by three are one fact');
   assert.equal(note.facts.confidentBefore, 1);
   assert.deepEqual(note.facts.newer, ['3x7'], 'the cell seven by three is new this week');
   // The line of each activity, with its signs, and the facts first right there last week that stayed.
