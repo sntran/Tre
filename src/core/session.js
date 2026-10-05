@@ -53,6 +53,7 @@ import { nextLevel } from './practice.js';
 import { createMentoring } from './mentoring.js';
 import { playExample, stopExample } from './examples.js';
 import { endScript } from './world/systems/mentor.js';
+import { namesOf } from './naming.js';
 import { createPlanting } from './planting-session.js';
 import { createHamlet } from './hamlet-session.js';
 import { plotsOf } from './world/systems/plant.js';
@@ -115,7 +116,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   let practice = null;
   // The mentors of the tasks: the person who gives a task watches the child and answers (docs/MENTOR.md).
   const mentoring = createMentoring({
-    data, profile, learner, log, emit, world: () => state, env: () => env,
+    data, profile, learner, log, emit, world: () => state, env: () => env, nameOf: (id) => nameOf(id),
     // A bigger task: the next round of a practice is one level higher. A move never makes the task in
     // progress bigger (its line says "next time"); the memory of the mentor (lift) raises the next
     // small event one level.
@@ -124,6 +125,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     },
   });
 
+  // The names of the people of the region of the map (src/core/naming.js, #38): id -> a text
+  // parameter ("cô Năm" in the north).
+  const names = () => namesOf(data, map?.region);
+  const nameOf = (id) => names()[id] ?? { key: `npc.${id}.name` };
   // The small example of a station before its first round in this visit (#37; src/core/examples.js).
   const shownExamples = new Set();
   const examples = {
@@ -158,7 +163,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   });
   // The ducks, the fish traps, and the drum dance of Xóm Ruộng (docs/HAMLET.md).
   const hamlet = createHamlet({
-    data, profile, learner, emit, mentoring, examples, world: () => state, env: () => env,
+    data, profile, learner, emit, mentoring, examples, nameOf, world: () => state, env: () => env,
     seed: () => state.seed, clock: () => state.clock.minutes, rain: () => state.sky?.rain ?? 0,
     say: (...a) => say(...a), talk: (id) => talk(id), save: (why) => save(why), busy: () => busy,
     callout: (textKey, params, who) => emit({ type: 'open', screen: 'callout', id: `npc:${who}`, textKey, params }),
@@ -275,7 +280,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!greeter) return;
     const hp = hero().position;
     greeter.position.facing = Math.atan2(hp.x - greeter.position.x, hp.z - greeter.position.z);
-    const steps = [{ at: GREET.say, say: { id: greeter.id, key: 'hamlet.greet' } }];
+    const n = names();
+    const steps = [{ at: GREET.say, say: { id: greeter.id, key: 'hamlet.greet', params: { planter: n.planter, duckGirl: n['duck-girl'], fisherUncle: n['fisher-uncle'], drummer: n.drummer } } }];
     let t = GREET.first;
     for (const id of practice.stations ?? []) {
       const p = getEntity(state, `npc:${id}`)?.position;

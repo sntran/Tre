@@ -1,5 +1,5 @@
 {
-  "_about": "The mentors of the tasks (src/core/mentor.js; docs/MENTOR.md). The person who gives a task watches the child, reads the error, and chooses one move after each commit, and on idle time. mastery: at this P(L) the person only watches. ready: P(L) over this, with fast right commits, is ready for more. top: the highest help level. handover: the self-corrections of the child after which the person first waits before a mark (the first number), and then only watches (the second). families: how a family of tasks reads its commits. reader: sum (the sum of the parts against the target), each (each part against the target: the kinds of the basket), or plain (only right or not). slip: an error of at most this many units is a slip. fastUnit: seconds for each unit of the target (each part, for plain); a try faster than this is fast. slowUnit: seconds for each unit of the target; a right try slower than this is counting all. idleStart: seconds with no action at the start of a task (does not know what to do). offerAfter: seconds of idle time after a miss, with no wave, before the person offers help. look: the seconds that the person waits after a miss for the child to look first (the second stage of the handover). frustrated: misses in a row; bored: fast clean commits in a row (the same number, so that boredom gets a response as soon as frustration). ladders: for each diagnosis, the moves in the order of the help level. mentors: the mentor of each task (the task id of its skill events): its family, its person (the entity that acts), demo (the other instance of a demonstration: thing, the look of its things with their sizes; prop and target, the looks of the props there; same: the instance has the same number, as each bundle is ten), picture (the line that sends the child to another station), and lines (optional: the own line of the person for a move, in place of the common line). lines: the line of each move (the person says it in a bubble). again: the line of a move that helped this child before (the person says it as information).",
+  "_about": "The mentors of the tasks (src/core/mentor.js; docs/MENTOR.md). The person who gives a task watches the child, reads the error, and chooses one move after each commit, and on idle time. mastery: at this P(L) the person only watches. ready: P(L) over this, with fast right commits, is ready for more. top: the highest help level. handover: the self-corrections of the child after which the person first waits before a mark (the first number), and then only watches (the second). families: how a family of tasks reads its commits. reader: sum (the sum of the parts against the target), each (each part against the target: the kinds of the basket), or plain (only right or not). slip: an error of at most this many units is a slip. fastUnit: seconds for each unit of the target (each part, for plain); a try faster than this is fast. slowUnit: seconds for each unit of the target; a right try slower than this is counting all. idleStart: seconds with no action at the start of a task (does not know what to do). offerAfter: seconds of idle time after a miss, with no wave, before the person offers help. look: the seconds that the person waits after a miss for the child to look first (the second stage of the handover). frustrated: misses in a row; bored: fast clean commits in a row (the same number, so that boredom gets a response as soon as frustration). ladders: for each diagnosis, the moves in the order of the help level. mentors: the mentor of each task (the task id of its skill events): its family, its person (the entity that acts), demo (the other instance of a demonstration: thing, the look of its things with their sizes; prop and target, the looks of the props there; same: the instance has the same number, as each bundle is ten), picture (the line that sends the child to another station; pictureWho: the person of that station, whom the line names by the name of the region, #38), and lines (optional: the own line of the person for a move, in place of the common line). lines: the line of each move (the person says it in a bubble). again: the line of a move that helped this child before (the person says it as information).",
   "mastery": 0.95,
   "ready": 0.8,
   "top": 3,
@@ -379,13 +379,13 @@
         "prop": null,
         "target": null
       },
-      "picture": "mentor.picture.planter"
+      "picture": "mentor.picture.planter", "pictureWho": "duck-girl"
     },
     "trial-ducks": {
       "family": "plain",
       "person": "npc:duck-girl",
       "demo": null,
-      "picture": "mentor.picture.duck-girl",
+      "picture": "mentor.picture.duck-girl", "pictureWho": "fisher-uncle",
       "lines": {
         "mark": "mentor.ducks.mark",
         "first": "mentor.ducks.first"
@@ -400,7 +400,7 @@
         "prop": null,
         "target": null
       },
-      "picture": "mentor.picture.fisher-uncle",
+      "picture": "mentor.picture.fisher-uncle", "pictureWho": "duck-girl",
       "lines": {
         "mark": "mentor.traps.mark",
         "smaller": "mentor.traps.smaller",
@@ -411,7 +411,7 @@
       "family": "plain",
       "person": "npc:drummer",
       "demo": null,
-      "picture": "mentor.picture.drummer",
+      "picture": "mentor.picture.drummer", "pictureWho": "planter",
       "lines": {
         "mark": "mentor.drum.mark",
         "first": "mentor.drum.first"

@@ -26,10 +26,15 @@ test('each dialogue is valid and has unique ids', () => {
   for (const d of dialogues) assert.deepEqual(checkDialogue(d), [], d.id);
 });
 
-test('each speaker has a name', () => {
+test('each speaker has a name: a name key, or a word of kinship and an order of birth (#38)', () => {
   for (const d of dialogues) {
     for (const n of Object.values(d.nodes)) {
       if (!n.speaker || n.speaker === 'narrator' || n.speaker === 'hero') continue;
+      const p = npcs[n.speaker];
+      if (p?.kin) {
+        assert.ok(`kin.${p.kin}` in vi && Number.isInteger(p.order), `${d.id}: speaker ${n.speaker}`);
+        continue;
+      }
       assert.ok(`npc.${n.speaker}.name` in vi, `${d.id}: speaker ${n.speaker}`);
     }
   }

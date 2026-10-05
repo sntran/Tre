@@ -1,0 +1,8 @@
+{
+  "_about": "The ways of naming people in a village (#38; src/core/naming.js; docs/WORLD.md). A person is called by a word of kinship to the child and the order of birth in the family (cô Năm, chú Tư), never by a nickname from the work. orders: the word for the first, second, ... child; youngest: the youngest child. north: the first child is Cả and the second Hai (the north, and all regions before the 18th century). south: the first child is Hai (the center and the south from the 18th century on; Nguyễn Nhạc, the eldest Tây Sơn brother, was anh Hai Trầu before 1771). Each region of data/world/regions.json names its way (naming). The words of kinship are the keys kin.<id> of the language files. Sources: Báo Cà Mau, https://baocamau.vn/tai-sao-nguoi-mien-nam-goi-anh-ca-la-anh-hai--a5375.html; Báo Pháp Luật, https://baophapluat.vn/thu-vi-su-khac-biet-cua-gia-dinh-viet-cac-vung-mien-post221458.html; Biên khảo, https://sites.google.com/site/bienkhao/t%E1%BA%A1i-sao-ng%C6%B0%E1%BB%9Di-mi%E1%BB%81n-nam-g%E1%BB%8Di-anh-c%E1%BA%A3-l%C3%A0-anh-hai.",
+  "kin": ["co", "chu", "bac", "ong", "ba", "anh", "chi", "cau", "di"],
+  "ways": {
+    "north": { "orders": ["Cả", "Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "Tám", "Chín", "Mười"], "youngest": "Út" },
+    "south": { "orders": ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "Tám", "Chín", "Mười"], "youngest": "Út" }
+  }
+}

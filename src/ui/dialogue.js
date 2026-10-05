@@ -6,6 +6,8 @@ import { h, img, button } from './dom.js';
 import { t, tg } from './i18n.js';
 import { speak, stop } from './speak.js';
 import { voiceOf } from '../core/voices.js';
+import { personName, wayOf } from '../core/naming.js';
+import { capitalize } from '../core/i18n.js';
 
 // The data for the voice of a speaker.
 function voiceData(ctx) {
@@ -31,6 +33,14 @@ export function speakerName(ctx, speaker) {
   if (speaker === 'hero') return ctx.profile.hero.name;
   // A friend with a name that the player chose.
   if (ctx.profile.friendNames?.[speaker]) return ctx.profile.friendNames[speaker];
+  // A person of a village: a word of kinship and the order of birth, by the way of naming of the
+  // region of the map (src/core/naming.js, #38).
+  const npc = ctx.data?.npcs?.npcs?.[speaker];
+  if (npc?.kin && ctx.data.naming) {
+    const region = ctx.activeVillage?.session?.map?.region ?? ctx.data.regions?.start?.region;
+    const name = personName(npc, wayOf(ctx.data.regions, region), ctx.data.naming);
+    if (name) return capitalize(t(name.key, name.params));
+  }
   return t(`npc.${speaker}.name`);
 }
 

@@ -1,5 +1,5 @@
 {
-  "_about": "People of the village. talk: the first rule whose condition is true gives the dialogue. when: the person is on the map only when the condition is true.",
+  "_about": "People of the village. talk: the first rule whose condition is true gives the dialogue. when: the person is on the map only when the condition is true. nameKey: the name of the person (the people of Phù Đổng keep a name of work and kinship, as Bác thợ rèn). kin and order: the person is called by a word of kinship to the child and the order of birth in the family, by the way of naming of the region (data/world/naming.json, src/core/naming.js; cô Năm in the north, #38).",
   "npcs": {
     "elder": {
       "voice": "elderMan",
@@ -455,7 +455,7 @@
     },
     "planter": {
       "voice": "woman",
-      "nameKey": "npc.planter.name",
+      "kin": "co", "order": 5,
       "talk": [
         {
           "dialogue": "planter.trial"
@@ -464,7 +464,7 @@
     },
     "duck-girl": {
       "voice": "girl",
-      "nameKey": "npc.duck-girl.name",
+      "kin": "chi", "order": 3,
       "talk": [
         {
           "dialogue": "duck-girl.trial"
@@ -473,7 +473,7 @@
     },
     "fisher-uncle": {
       "voice": "man",
-      "nameKey": "npc.fisher-uncle.name",
+      "kin": "chu", "order": 4,
       "talk": [
         {
           "dialogue": "fisher-uncle.trial"
@@ -491,7 +491,7 @@
     },
     "drummer": {
       "voice": "elderMan",
-      "nameKey": "npc.drummer.name",
+      "kin": "ong", "order": 1,
       "talk": [
         {
           "dialogue": "drummer.trial"

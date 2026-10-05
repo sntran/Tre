@@ -17,6 +17,7 @@ const WATER_UP = 1; // half blocks: the surface of the stream over its bed (WATE
 // the game clock), rain (fn: the rain now, 0 to 1), say (key, params, mark, speaker), talk
 // (dialogue id), callout (key, params, speaker: a line in a bubble), emit, save (reason),
 // mentoring, examples ({ play, stop }: the small example of the station, src/core/examples.js),
+// nameOf (fn: the name of a person, a text parameter),
 // busy (fn), setDone (fn (act, why): the set ends,
 // for a practice; true when the practice takes the end) }.
 export function createHamlet(deps) {
@@ -226,7 +227,8 @@ export function createHamlet(deps) {
     const plays = { ...(root().plays ?? {}), planting: profile.planting?.sets ?? 0 };
     const to = pointTo(profile.facts?.[memDef.skill] ?? {}, plays, here, ['planting', ...ACTIVITIES]);
     const who = here === 'planting' ? def.stations.planting : personOf(here);
-    if (to) deps.callout(`hamlet.point.${to}`, {}, who);
+    // The line names the person of the other station, by the name of the region (#38).
+    if (to) deps.callout(`hamlet.point.${to}`, { who: deps.nameOf?.(to === 'planting' ? def.stations.planting : personOf(to)) ?? '' }, who);
   }
 
   // ------------------------------------------------------------ The feast of the new rice

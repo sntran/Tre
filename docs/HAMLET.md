@@ -73,7 +73,7 @@ At the start of the first round of a visit, the person of a station does the wor
 ## One memory, and the people point to each other
 
 - All four activities use the memory of the facts of the planting (`profile.facts['math.mul.10']`). There is one round of the commits of all the activities (`profile.factRound`). A missed fact comes back in a few commits, in any activity and in another picture: a fact missed as an array comes back as equal groups.
-- At the end of a set, the person of the station points to another station in one bubble ("Chị Vịt ở ao đang cần người cho vịt ăn đấy."). The line points to the activity of a missed fact, but never to the station where the child missed it; with no missed fact, it points to the station that the child played least. The child is never sent; the child chooses.
+- At the end of a set, the person of the station points to another station in one bubble ("Chị Ba ở ao đang cần người cho vịt ăn đấy."). The line points to the activity of a missed fact, but never to the station where the child missed it; with no missed fact, it points to the station that the child played least. The child is never sent; the child chooses.
 - **The mentors** (`data/world/mentors.json`, `docs/MENTOR.md`): the duck girl (`trial-ducks`, the plain family; she counts the scoops of the first duck aloud), the fisher uncle (`trial-traps`, the groups family; he counts the rings of the traps in the stream, puts one trap or some traps for the child, or shows other traps on the bank), and the old drummer (`trial-drum`, the plain family; he counts the beats with the child). Each one says another station when a picture fits the error better, helps less after each success, and remembers what helped this child.
 
 ## The feast of the new rice

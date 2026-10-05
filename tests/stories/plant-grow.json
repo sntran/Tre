@@ -1,7 +1,7 @@
 {
   "name": "plant-grow",
   "about": {
-    "vi": "An cấy một ô ruộng với cô Cấy ở Xóm Ruộng. Sáng hôm sau ô ruộng đã xanh; lưu rồi mở lại, ô ruộng vẫn còn; hai ngày sau lúa đã cao.",
+    "vi": "An cấy một ô ruộng với cô Năm ở Xóm Ruộng. Sáng hôm sau ô ruộng đã xanh; lưu rồi mở lại, ô ruộng vẫn còn; hai ngày sau lúa đã cao.",
     "en": "An plants a plot with the planter in Xóm Ruộng. The next morning the plot is green; after a save and a load the plot is still there; two days later the rice is tall."
   },
   "profile": {

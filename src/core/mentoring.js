@@ -22,8 +22,8 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 // data: the data of the game; profile: the profile (profile.mentors keeps the memory); learner():
 // the learner or null; log(kind, fields): the learning log; emit(ev): an event of the session;
 // world(): the world state; env(): the facts of the map; raise(key): the task asks for a bigger
-// task (a move raise), returns nothing.
-export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {} }) {
+// task (a move raise), returns nothing; nameOf(id): the name of a person (a text parameter).
+export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {}, nameOf = () => '' }) {
   const cfg = data.mentors;
   const states = new Map(); // key -> the mentor of the task
   const tracks = new Map(); // key -> { startT, firstAct, lastAct, lastCommit, acted, left, round }
@@ -330,7 +330,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     } else if (move === 'smaller' || move === 'share') {
       t = shareSteps(task, famOf(key), move, info, { say, point, steps }, t);
     } else if (move === 'picture') {
-      say(t, def.picture);
+      // The line names the person of another station (pictureWho), by the name of the region.
+      say(t, def.picture, def.pictureWho ? { who: nameOf(def.pictureWho) } : {});
       t += 2;
     } else if (move === 'raise') {
       say(t, lineOf(key, 'raise'));

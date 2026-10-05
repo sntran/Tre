@@ -342,7 +342,7 @@ No new texts. Please check the ground of the Red River delta for the time of the
 
 New texts to check (keys in `i18n/vi.json` and `i18n/en.json`):
 
-- The place and the people: `place.xomruong`, `npc.planter.name` (Cô Cấy), `npc.duck-girl.name` (Chị Vịt), `npc.fisher-uncle.name` (Chú Lưới), `npc.drummer.name` (Ông Trống), and the one line of each person who is not ready yet (`dlg.duck-girl.idle.n1`, `dlg.fisher-uncle.idle.n1`, `dlg.drummer.idle.n1`).
+- The place and the people: `place.xomruong`, the names of the people (now by the region and the era, section on #38), and the one line of each person who is not ready yet (`dlg.duck-girl.idle.n1`, `dlg.fisher-uncle.idle.n1`, `dlg.drummer.idle.n1`).
 - The planter: `dlg.planter.trial.n1` (the start), `plant.wait`, `plant.exact` (the total as a word: "{n} cây, vừa đủ!"), `plant.turned`, `plant.few`, `plant.many`, `plant.choose.no`, `plant.divide.few`, `plant.divide.many`, the ends of a set (`dlg.planter.set.field.n1`, `dlg.planter.set.noon.n1`, `dlg.planter.set.rain.n1`, `dlg.planter.practice.end.n1`), the small events (`plant.event.*`), and the picture of the mentor (`mentor.picture.planter`).
 - The number words from 31 to 150 (`num.31` to `num.150`): "mốt" after twenty, "lăm" for five after ten, "lẻ" after a hundred ("một trăm lẻ năm").
 - The practice links: `practiceLink.cay-lua.*` and `practiceLink.xom-ruong.*`; the parent page: `parent.facts*`.
@@ -376,3 +376,13 @@ New texts to check (keys in `i18n/vi.json` and `i18n/en.json`):
 
 - The action button: `ui.action` (its name for a screen reader; the button itself has a picture and no words) and the help of the keys `ui.keys` (E does the hands, as the action button; Space jumps).
 - The first step that a person shows at the start of a task: `mentor.first` ("Watch: take one from the heap there, and put it here."), `mentor.first.back` ("Như thế này nhé.", when the person takes the thing back), `mentor.first.you` (after it), and the lines of the tasks with no heap: `mentor.woodcutter.first`, `mentor.ducks.first`, `mentor.drum.first`. These lines are common to many people: check that they fit the teacher, the smith, the healer, and the fisher, who say "cháu" to the child elsewhere.
+
+## The names of the people by the region and the era (#38)
+
+People of a village are called by a word of kinship to the child and the order of birth in the family, never by a nickname from the work. The word for the order follows the way of naming of the region of the map (`data/world/naming.json`, `naming` in `data/world/regions.json`, `src/core/naming.js`).
+
+- **The ways of naming:** north (1 Cả, 2 Hai, 3 Ba, 4 Tư, 5 Năm, 6 Sáu, 7 Bảy, 8 Tám, 9 Chín, 10 Mười, the youngest Út) and south (1 Hai, 2 Ba, 3 Tư, 4 Năm, 5 Sáu, 6 Bảy, 7 Tám, 8 Chín, 9 Mười, the youngest Út). The regions of chapters 1 to 11 use north; Tây Sơn (chapter 12) and Gia Định (chapter 13) use south. Please check Thuận Quảng (chapter 11, the center before the 18th century): it uses north now.
+- **Xóm Ruộng** (north, the time of the Hùng Kings): the planter is Cô Năm (cô, order 5), the duck girl Chị Ba (chị, 3), the fisher uncle Chú Tư (chú, 4), and the old drummer Ông Cả (ông, 1). The head of the hamlet stays Bà trưởng xóm. In a region of the south, the same people would be Cô Sáu, Chị Tư, Chú Năm, and Ông Hai.
+- **The words of kinship:** `kin.co` (cô), `kin.chu` (chú), `kin.bac` (bác), `kin.ong` (ông), `kin.ba` (bà), `kin.anh` (anh), `kin.chi` (chị), `kin.cau` (cậu), `kin.di` (dì), each with the word of the order (`{order}`). In English the name is the same, with a capital word of kinship ("Cô Năm").
+- **Lines that name them** (the name is the parameter `{who}`, or the four names in the greeting): `hamlet.greet`, `hamlet.point.planting`, `hamlet.point.ducks`, `hamlet.point.traps`, `hamlet.point.drum`, `mentor.picture.planter`, `mentor.picture.duck-girl`, `mentor.picture.fisher-uncle`, `mentor.picture.drummer`. In English each of these lines says the work with the name ("Cô Năm, the planter").
+
