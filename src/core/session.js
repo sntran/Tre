@@ -13,7 +13,7 @@
 //   { guess: { zone, n } }, { thing: id, along }, { person: entity id }, { sleeper: entity id } (a
 //   sleeping animal), or { ground: { x, y, h, thing, object } } (a point on the ground in map
 //   cells; object: the id of a map object there, or null);
-// - hands: the action button (or Space) acts on its target; hold { on }: the button stays down
+// - hands: the action button (or E) acts on its target; hold { on }: the button stays down
 //   (the jar of feed pours, the mark of a slash goes up a culm) or goes up.
 //   targetAt(x, y) gives the target at a map cell, as a tap there;
 // - talkTo { id }: walk to a person and talk;
@@ -1542,7 +1542,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     };
     return list.reduce((a, b) => (score(b) < score(a) ? b : a));
   }
-  // The action button (or Space): do the act of the target, and the target pulses once. An act
+  // The action button (or E): do the act of the target, and the target pulses once. An act
   // that goes on while the button is down starts here, and ends with the hold of the button.
   function act() {
     const a = action();

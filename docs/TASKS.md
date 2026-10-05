@@ -9,8 +9,9 @@ Every task in the world must be clear to a child of six. Young children need lar
 ### The controls
 
 - **Move:** the stick, the arrow keys (or W A S D), or a tap on the ground: the hero walks there.
-- **The action button** (Space on a keyboard): it does every step of every task.
-- **The jump** (J) and **the wave** (ask for help, `docs/MENTOR.md`).
+- **The action button** (E or Enter on a keyboard): it does every step of every task.
+- **The jump** (Space, or J) and **the wave** (ask for help, `docs/MENTOR.md`).
+- **The view** turns with the buttons at the bottom right, or with Z and C (`src/core/keys.js`).
 - **A tap on a thing or a person** walks the hero to it and makes it the target. A tap never does a step of a task, and a tap on a person never starts a talk: the button does. A tap on Nghé still pets her.
 
 ### The target

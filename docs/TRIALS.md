@@ -17,7 +17,7 @@ The four tasks of the story after the trials (the iron horse, rice for Gióng, t
 ## How a trial goes
 
 1. The child talks to the person (after the elder starts the prologue). The talk says the work in words, with the numbers of the level as words (`num.<n>`: "ten", "four"), and it starts the task: its things lie at their places near the person. No screen opens.
-2. The child walks to a thing and presses the action button (or Space): one button does every step (`docs/TASKS.md`). Every try is free until the commit. The commit is one skill event for the learner (the child never sees it).
+2. The child walks to a thing and presses the action button (or E): one button does every step (`docs/TASKS.md`). Every try is free until the commit. The commit is one skill event for the learner (the child never sees it).
 3. When the work is done, the flag of the trial is set, three coins fly from the person to the counter, and the person says the done line. It names the calling of the trial.
 4. After the five trials, the elder opens the way to Văn Miếu, where the child chooses a calling (as before).
 

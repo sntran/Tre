@@ -23,6 +23,7 @@ import { createDialogueBox } from './dialogue.js';
 import { createRaidView } from './raid.js';
 import { createStream } from './stream.js';
 import { formatTimes } from '../core/loading.js';
+import { keyAct } from '../core/keys.js';
 
 const STICK_R = 56; // the radius of the virtual stick, in screen pixels
 // The color of the dusk wash at full night: the hue of indigo (#2f4668) in the palette.
@@ -32,7 +33,6 @@ const WARM_WAIT_MS = 6000; // after this time, the near land that did not come i
 const HOLD_MS = 220; // a press this long is a hold (walk toward the finger), not a tap
 const PERSON_PAD = 10; // screen pixels around the box of a person, for small fingers
 const PERSON_PAD_AT_PLACE = -6; // next to a place of a task: only the body of the person
-const KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'KeyQ', 'KeyE', 'KeyJ', 'Space']);
 
 // three.js and the drawing code load only when the village opens, so that the other screens
 // work without them. The terrain of a map takes some time to make: keep it for the next visit.
@@ -287,10 +287,10 @@ export async function mountVillage(ctx, params = {}) {
   // at a task with a mentor.
   const waveBtn = h('button', { class: 'turn-btn wave-btn', type: 'button', hidden: true, 'aria-label': t('ui.wave'), title: t('ui.wave') }, [img('ui/wave', 'btn-icon')]);
   waveBtn.addEventListener('click', () => send({ type: 'wave' }));
-  // The jump (src/core/world/jump.js): a round button at the bottom right, and the key J.
+  // The jump (src/core/world/jump.js): a round button at the bottom right, and Space (or J).
   const jumpBtn = h('button', { class: 'turn-btn jump-btn', type: 'button', 'aria-label': t('ui.jump'), title: t('ui.jump') }, [img('ui/jump', 'btn-icon')]);
   jumpBtn.addEventListener('click', () => send({ type: 'jump' }));
-  // The action button (docs/TASKS.md): the hands, and the finish of a task in reach, as Space. It
+  // The action button (docs/TASKS.md): the hands, and the finish of a task in reach, as E. It
   // shows a picture of what it will do now, and it is dim when there is nothing to do. While the
   // jar of feed is in reach, the button pours as long as the finger stays on it.
   const actIcon = img('ui/hand-pick', 'btn-icon');
@@ -616,31 +616,22 @@ export async function mountVillage(ctx, params = {}) {
     view.setZoom(e.deltaY > 0 ? 1 : 0);
   }
 
+  // The keys (src/core/keys.js): Space (or J) jumps, E (or Enter) acts, Z and C turn the view.
   function onKey(e) {
-    if (!KEYS.has(e.code)) return;
+    const what = keyAct(e.code);
+    if (!what) return;
     if (e.target instanceof HTMLElement && e.target.closest('input, textarea, select')) return;
     if (e.type === 'keydown') {
       if (busy) return;
-      if (e.code === 'KeyQ' || e.code === 'KeyE') {
-        if (!e.repeat) view.turn(e.code === 'KeyQ' ? -1 : 1);
-        e.preventDefault();
-        return;
-      }
-      if (e.code === 'KeyJ') {
-        if (!e.repeat) send({ type: 'jump' });
-        e.preventDefault();
-        return;
-      }
-      if (e.code === 'Space') {
-        if (!e.repeat) send({ type: 'hands' });
-        e.preventDefault();
-        return;
-      }
-      keys.add(e.code);
       e.preventDefault();
+      if (what === 'move') keys.add(e.code);
+      else if (e.repeat) return;
+      else if (what === 'turnLeft' || what === 'turnRight') view.turn(what === 'turnLeft' ? -1 : 1);
+      else if (what === 'jump') send({ type: 'jump' });
+      else send({ type: 'hands' });
     } else {
-      // Space up: the pour of the jar stops (as the finger leaves the action button).
-      if (e.code === 'Space') send({ type: 'hold', on: false });
+      // The action key up: the pour of the jar stops (as the finger leaves the action button).
+      if (what === 'act') send({ type: 'hold', on: false });
       keys.delete(e.code);
     }
   }

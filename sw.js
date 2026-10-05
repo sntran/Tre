@@ -153,6 +153,7 @@ const FILES = [
   'src/core/grades.js',
   'src/core/hit.js',
   'src/core/i18n.js',
+  'src/core/keys.js',
   'src/core/learner.js',
   'src/core/learnlog.js',
   'src/core/loading.js',

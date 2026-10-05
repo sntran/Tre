@@ -194,7 +194,7 @@ The world is made of blocks and drawn with three.js (`src/render/voxel.js`). The
 - **The ferry:** a dugout with a bird-head prow, as the boats on the bronze drums. The ferryman stands at the stern in a nón with a long pole; while the boat moves, he pushes the pole down and back with both hands.
 - **The sea:** the same wave plane as the river, over a bed that goes down in steps: the surf (three cells, to the knee) and then the deep sea. The surf and a ford are lighter than deep water. In the surf the legs of a figure go under the water line. A line of foam lies on the sand at the edge of the water and moves up and back in held steps (`foam` in `src/render/voxel.js`). The beach is sand.
 - **The things of the small events:** each thing shows its units, so that its size is seen and never written: stones in a net (one, two, or five), pails of water on a carrying pole (one, two, three, or five), and coins on a red string (one, five, or ten). The mud under a stuck cart, a small ditch, a reed mat, and a low pen of woven bamboo show where the things go.
-- **Camera:** orthographic, from the front-left and above. It turns in steps of 90° (the buttons at the bottom right, or Q and E), and it has two zoom levels (pinch, or the wheel). It follows the hero with a soft lag.
+- **Camera:** orthographic, from the front-left and above. It turns in steps of 90° (the buttons at the bottom right, or Z and C), and it has two zoom levels (pinch, or the wheel). It follows the hero with a soft lag.
 
 ## 12. The country map
 

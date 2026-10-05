@@ -374,5 +374,5 @@ Facts to check:
 
 New texts to check (keys in `i18n/vi.json` and `i18n/en.json`):
 
-- The action button: `ui.action` (its name for a screen reader; the button itself has a picture and no words) and the help of the keys `ui.keys` (Space does the hands, as the action button).
+- The action button: `ui.action` (its name for a screen reader; the button itself has a picture and no words) and the help of the keys `ui.keys` (E does the hands, as the action button; Space jumps).
 - The first step that a person shows at the start of a task: `mentor.first` ("Watch: take one from the heap there, and put it here."), `mentor.first.back` ("Như thế này nhé.", when the person takes the thing back), `mentor.first.you` (after it), and the lines of the tasks with no heap: `mentor.woodcutter.first`, `mentor.ducks.first`, `mentor.drum.first`. These lines are common to many people: check that they fit the teacher, the smith, the healer, and the fisher, who say "cháu" to the child elsewhere.
