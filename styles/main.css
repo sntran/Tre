@@ -583,6 +583,8 @@ p { line-height: 1.45; margin: 0.4em 0; }
 
 .parent { font-size: var(--text-small); }
 .parent h3 { margin: 1em 0 0.4em; font-size: var(--text); }
+.parent-diary { margin: 1em 0 0; padding-top: 0.6em; border-top: var(--thin); }
+.parent-diary a { color: var(--vermilion); font-weight: 600; }
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--gap); }
 .tabs .btn[aria-pressed="true"] { background: var(--vermilion); color: var(--diep); }
 .table { width: 100%; border-collapse: collapse; }

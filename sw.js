@@ -12,6 +12,7 @@ const THREE = 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min
 const FILES = [
   './',
   'LICENSE',
+  'diary.html',
   'art/fx/bubble.svg',
   'art/fx/fire.svg',
   'art/fx/ice.svg',
@@ -240,6 +241,7 @@ const FILES = [
   'src/ui/create.js',
   'src/ui/data.js',
   'src/ui/dialogue.js',
+  'src/ui/diary.js',
   'src/ui/dom.js',
   'src/ui/gen-worker.js',
   'src/ui/i18n.js',
@@ -288,6 +290,7 @@ const FILES = [
   'src/world/travel.js',
   'src/world/view.js',
   'src/world/voxel.js',
+  'styles/diary.css',
   'styles/main.css',
   'styles/palette.css',
 ];

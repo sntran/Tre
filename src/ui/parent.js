@@ -123,6 +123,15 @@ function formatDate(ms) {
   }
 }
 
+// The link to the diary of the making of Tre (diary.html, #40), under every tab. It opens in a new
+// tab, in the language of the game, so that the game stays where it is.
+function diaryLink() {
+  return h('p', { class: 'parent-diary' }, [
+    h('a', { href: `diary.html?lang=${lang()}`, target: '_blank', rel: 'noopener', text: t('diary.title') }),
+    h('span', { class: 'muted', text: ` · ${t('parent.diary.about')}` }),
+  ]);
+}
+
 // opts: { tab, profile, action }: open a tab, and an action (rename, export, delete) on a profile.
 async function parentArea(ctx, opts = {}) {
   const { data } = ctx;
@@ -149,7 +158,7 @@ async function parentArea(ctx, opts = {}) {
         return b;
       }));
     };
-    panel.append(h('div', { class: 'panel-head' }, [h('h2', { text: t('parent.title') }), button(null, close, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') })]), tabBar, body);
+    panel.append(h('div', { class: 'panel-head' }, [h('h2', { text: t('parent.title') }), button(null, close, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') })]), tabBar, body, diaryLink());
     layer.append(panel);
     ctx.ui.append(layer);
 

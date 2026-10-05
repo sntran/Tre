@@ -1,0 +1,43 @@
+/* The page of the diary of the making of Tre (diary.html, #40): the paper and the fonts of the game,
+   a column of text that fits a phone, and tables that scroll inside their box. */
+
+html:has(body.diary), body.diary {
+  height: auto;
+  overflow: auto;
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
+  touch-action: auto;
+}
+body.diary { font-size: 18px; line-height: 1.6; padding: 0 16px calc(32px + var(--safe-bottom)); }
+#diary { max-width: 720px; margin: 0 auto; }
+.diary-top, .diary-steps {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: calc(12px + var(--safe-top)) 0 12px; border-bottom: var(--line);
+}
+.diary-steps { border-bottom: 0; border-top: var(--line); margin-top: 32px; padding-top: 12px; }
+.diary-home { font-family: var(--display); font-weight: 700; font-size: 22px; color: var(--ink); text-decoration: none; }
+.diary-lang {
+  border: var(--line); border-radius: var(--corner); padding: 4px 12px; background: var(--diep);
+  color: var(--ink); text-decoration: none; box-shadow: var(--press);
+}
+.diary a { color: var(--vermilion); overflow-wrap: anywhere; }
+.diary-entry h1 { font-size: 32px; margin: 24px 0 8px; }
+.diary-entry h2 { font-size: 24px; margin: 28px 0 8px; color: var(--indigo); }
+.diary-entry h3 { font-size: 20px; margin: 20px 0 6px; }
+.diary-entry p, .diary-entry li { overflow-wrap: break-word; }
+.diary-entry ul, .diary-entry ol { padding-left: 1.3em; }
+.diary-entry li { margin: 6px 0; }
+.diary-entry code { font-size: 0.85em; background: var(--diep); padding: 0 4px; border-radius: 3px; overflow-wrap: anywhere; }
+/* A table scrolls inside its box, not the page. */
+.diary-entry .table { overflow-x: auto; max-width: 100%; border: var(--line); border-radius: var(--corner); background: var(--diep); }
+.diary-entry table { border-collapse: collapse; width: 100%; font-size: 16px; }
+.diary-entry th, .diary-entry td { text-align: left; vertical-align: top; padding: 6px 10px; border-bottom: var(--thin); }
+.diary-entry th { white-space: nowrap; }
+.diary-entry td:first-child { white-space: nowrap; }
+.diary-game { margin-top: 16px; text-align: center; }
+@media (max-width: 480px) {
+  body.diary { font-size: 17px; }
+  .diary-entry h1 { font-size: 26px; }
+  .diary-entry h2 { font-size: 21px; }
+}

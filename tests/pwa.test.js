@@ -8,7 +8,7 @@ const root = new URL('../', import.meta.url).pathname;
 
 // The files that the workflow ships (see .github/workflows/pages.yml).
 function shipped() {
-  const out = ['./', 'index.html', 'manifest.webmanifest', 'LICENSE', 'content/LICENSE'];
+  const out = ['./', 'index.html', 'diary.html', 'manifest.webmanifest', 'LICENSE', 'content/LICENSE'];
   const walk = (dir) => {
     for (const name of readdirSync(join(root, dir))) {
       const rel = `${dir}/${name}`;
