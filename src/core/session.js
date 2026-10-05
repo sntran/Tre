@@ -1438,7 +1438,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       const fin = finishOf(mentoring.taskOfPerson(q.entity));
       if (fin) add({ ...base, ...fin, rank: 0 }, REACH + 3);
-      else add({ ...base, act: 'talk', icon: 'speak', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
+      else add({ ...base, act: 'talk', icon: 'talk', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
     }
     if (!held) {
       // The acts of things: the glowing iron (quench), the bellows on the lumps (blow), a bronze

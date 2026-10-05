@@ -198,6 +198,14 @@ test('no two buttons on the screen have the same picture: the action button neve
   for (const act of ['pick', 'put']) assert.ok(icons.includes(`hand-${act}`));
 });
 
+test('the act talk has its own picture, a speech bubble; the loudspeaker is only for the voice, and no act of the button uses it (#38)', () => {
+  const src = readFileSync('src/core/session.js', 'utf8');
+  assert.match(src, /act: 'talk', icon: 'talk'/);
+  assert.ok(existsSync('art/ui/talk.svg'));
+  assert.ok(![...src.matchAll(/icon: '([a-z-]+)'/g)].some((m) => m[1] === 'speak'), 'no act shows the loudspeaker');
+  assert.match(readFileSync('src/ui/dialogue.js', 'utf8'), /icon: 'ui\/speak', aria: t\('ui\.listen'\)/, 'the loudspeaker reads a line aloud');
+});
+
 // The places of the trials from the first angle of the camera (src/world/view.js): the line from a
 // place to the camera crosses no house or roof. A building counts within its eaves (two cells
 // around its cells), so that the kite over the school, high in the sky, is not a roof.

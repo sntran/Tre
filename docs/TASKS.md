@@ -40,7 +40,7 @@ Every task in the world must be clear to a child of six. Young children need lar
 | A plank outline of the guess at the bridge (the outline in front of the hero) | Choose it: the bridge takes that many planks. | A tick (`check`) |
 | The stem of the woodcutter | A chalk mark at the ghost; at a mark, the mark comes away. | Chalk (`chalk`), or the clear sign (`clear`) |
 | A gift in the hands, at a person who takes the rest of the loot | Give it. | A hand that holds a thing out (`hand-give`) |
-| A person with no task for the child | Talk. | The speech mark (`speak`) |
+| A person with no task for the child | Talk. | The speech bubble (`talk`; the loudspeaker `speak` is only for the voice: it reads a line aloud) |
 | Nghé | Get on. | `ride` |
 | On Nghé | Get off. | `ride-off` |
 
