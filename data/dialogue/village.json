@@ -759,6 +759,17 @@
       }
     },
     {
+      "id": "hamlet-head.greet",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "hamlet-head",
+          "textKey": "dlg.hamlet-head.greet.n1",
+          "mood": "happy"
+        }
+      }
+    },
+    {
       "id": "drummer.trial",
       "start": "n1",
       "nodes": {

@@ -402,8 +402,14 @@ export async function mountVillage(ctx, params = {}) {
   };
   const objectOf = (id) => terrain.objects.find((o) => o.id === id);
 
-  // The quest markers: world points { x, y (map), h (height) }.
+  // The quest markers: world points { x, y (map), h (height) }. In a practice of a whole place, the
+  // star of a task is over the person of each station (#37).
   function markers() {
+    const stationIds = session.stations();
+    if (stationIds.length) {
+      return persons().filter((p) => p.kind === 'npc' && stationIds.includes(p.ref)).map((p) => ({ p, top: figureTop(p.entity) }))
+        .filter((m) => m.top !== null).map(({ p, top }) => ({ x: p.x, y: p.y, h: top }));
+    }
     const goal = currentGoal(data.quests.quests, conditionState(profile));
     if (!goal) return [];
     const stepGoal = goal.step;

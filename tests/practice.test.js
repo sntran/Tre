@@ -166,3 +166,33 @@ test('a rod taken back from the mat in a practice is no "go back": the visit goe
   assert.deepEqual(failures, []);
   assert.equal(sessions.size, 1, 'one session: the village did not start again');
 });
+
+test('a practice of the whole hamlet: no prologue; the head of the hamlet greets the child and points at the four stations; a star over each station; the nearest station glows when the child waits', async () => {
+  const events = [];
+  let session = null;
+  const story = {
+    name: 'greet', practice: 'xom-ruong',
+    // A new profile: no intro was seen.
+    profile: { name: 'An', grade: 2, lang: 'vi', seed: 7, flags: {} },
+    steps: [
+      { until: { event: 'call', with: { key: 'hamlet.greet' }, timeout: 5 } },
+      { wait: 9 },
+      { expect: [{ flag: 'intro.seen', is: false }, { event: 'open', with: { screen: 'dialogue' }, not: true }] },
+    ],
+  };
+  let script = null;
+  const failures = await runHeadless(story, { onSession: (s) => { session = s; script = structuredClone(s.state.entities.find((e) => e.id === 'script:greet')?.script ?? null); s.listen((ev) => events.push(ev)); } });
+  assert.deepEqual(failures, []);
+  assert.equal(events.find((e) => e.type === 'call')?.id, 'npc:hamlet-head');
+  // The head of the hamlet pointed at each station, in its order, and a mark lay at each one.
+  const stations = load('data/world/practice.json').activities.find((a) => a.id === 'xom-ruong').stations;
+  assert.deepEqual(stations, ['planter', 'duck-girl', 'fisher-uncle', 'drummer']);
+  assert.deepEqual(session.stations(), stations);
+  const npc = (id) => session.state.entities.find((e) => e.id === `npc:${id}`).position;
+  const points = script.steps.filter((st) => st.point);
+  assert.deepEqual(points.map((st) => [st.point.x, st.point.z]), stations.map((id) => [npc(id).x, npc(id).z]), 'the head points at each station, in order');
+  assert.equal(script.steps.filter((st) => st.mark).length, stations.length);
+  // The child waited: the person of the nearest station glows (the cue).
+  const cue = events.filter((e) => e.type === 'cue' && e.ids.length).at(-1);
+  assert.ok(cue && stations.some((id) => cue.ids.includes(`npc:${id}`)), JSON.stringify(cue));
+});

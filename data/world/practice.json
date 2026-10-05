@@ -1,5 +1,5 @@
 {
-  "_about": "The practice links (src/core/practice.js; docs/WORLD.md, 'Practice links'). A parent sends a link ?practice=<id> from the parent page, and the child plays one activity of the world at once, with the own profile of the child. The link holds only the id. For each activity: titleKey and lineKey (the title and a one-line description, in i18n/), at (the place: a frame and a cell on the plane, where the hero and Nghé stand at the start), person (the person of the activity, who is ready there), trial (the task of the world that it runs: a trial of data/trials.json, played again as practice) or task (planting: the planting of Xóm Ruộng, docs/PLANTING.md; ducks, traps, or drum: an activity of the hamlet, docs/HAMLET.md); person null: a practice of a whole place, where the child walks to any station, skills (the skills that the task measures), set (the rounds of a set: at the end of a set, the person thanks the child, and the child chooses to stay or to go back), and story (the story that plays a set, tests/stories/<story>.json). hours: the visit starts in these game hours; at other hours (the night, and the dusk when the people go home), the night goes by and the visit starts at the first hour of the next morning.",
+  "_about": "The practice links (src/core/practice.js; docs/WORLD.md, 'Practice links'). A parent sends a link ?practice=<id> from the parent page, and the child plays one activity of the world at once, with the own profile of the child. The link holds only the id. For each activity: titleKey and lineKey (the title and a one-line description, in i18n/), at (the place: a frame and a cell on the plane, where the hero and Nghé stand at the start), person (the person of the activity, who is ready there), trial (the task of the world that it runs: a trial of data/trials.json, played again as practice) or task (planting: the planting of Xóm Ruộng, docs/PLANTING.md; ducks, traps, or drum: an activity of the hamlet, docs/HAMLET.md); person null: a practice of a whole place, where the child walks to any station: greeter (the person who greets the child at the start and points out the stations) and stations (the persons of the stations, in the order of the pointing), skills (the skills that the task measures), set (the rounds of a set: at the end of a set, the person thanks the child, and the child chooses to stay or to go back), and story (the story that plays a set, tests/stories/<story>.json). hours: the visit starts in these game hours; at other hours (the night, and the dusk when the people go home), the night goes by and the visit starts at the first hour of the next morning.",
   "hours": [
     7,
     17
@@ -128,7 +128,14 @@
         "math.div.10"
       ],
       "set": 1,
-      "story": "practice-xom-ruong"
+      "story": "practice-xom-ruong",
+      "greeter": "hamlet-head",
+      "stations": [
+        "planter",
+        "duck-girl",
+        "fisher-uncle",
+        "drummer"
+      ]
     },
     {
       "id": "cho-vit-an",

@@ -1,8 +1,8 @@
 {
   "name": "practice-xom-ruong",
   "about": {
-    "vi": "Luyện tập ở Xóm Ruộng: đường link đưa An đến sân xóm. An đi tới bờ ruộng, chạm vào cô Cấy, và cô bắt đầu một lượt cấy lúa.",
-    "en": "Practice in Xóm Ruộng: the link takes An to the yard of the hamlet. An walks to the dike of the paddy, taps the planter, and she starts a set of the planting."
+    "vi": "Luyện tập ở Xóm Ruộng với hồ sơ mới: không có đoạn mở đầu. Bà trưởng xóm chào An và chỉ bốn chỗ làm. An đi tới bờ ruộng, chạm vào cô Cấy, và cô bắt đầu một lượt cấy lúa.",
+    "en": "Practice in Xóm Ruộng with a new profile: no prologue. The head of the hamlet greets An and points at the four stations. An walks to the dike of the paddy, taps the planter, and she starts a set of the planting."
   },
   "practice": "xom-ruong",
   "profile": {
@@ -10,10 +10,7 @@
     "grade": 3,
     "lang": "vi",
     "seed": 7,
-    "flags": {
-      "intro.seen": true,
-      "prologue.started": true
-    }
+    "flags": {}
   },
   "clock": 540,
   "at": [
@@ -23,7 +20,25 @@
   ],
   "steps": [
     {
-      "wait": 1
+      "until": {
+        "event": "call",
+        "with": {
+          "id": "npc:hamlet-head",
+          "key": "hamlet.greet"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "screen": null
+        },
+        {
+          "flag": "intro.seen",
+          "is": false
+        }
+      ]
     },
     {
       "expect": [

@@ -46,7 +46,7 @@ test('the hamlet has houses on stilts, a paddy with a seedbed, a duck pond, a st
   assert.ok(map.layers.places['plant-seedbed'], 'the bundles of the seedbed');
 });
 
-test('only the people of the stations live in the hamlet, and each stays at the station by day', () => {
+test('only the people of the stations and the head of the hamlet (who greets a practice) live in the hamlet, and each person of a station stays at the station by day', () => {
   const w = worldOf();
   const [x0, y0] = w.at('xom-ruong', 0, 0);
   const inHamlet = ([x, y]) => x >= x0 && y >= y0 && x < x0 + map.width && y < y0 + map.height;
@@ -57,7 +57,8 @@ test('only the people of the stations live in the hamlet, and each stays at the 
     for (const n of other.npcs) assert.ok(!inHamlet(w.at(id, n.x, n.y)), `${n.id} of ${id}`);
     for (const [name, p] of Object.entries(other.layers.places ?? {})) assert.ok(!inHamlet(w.at(id, p.x, p.y)), `the place ${name} of ${id}`);
   }
-  assert.deepEqual(map.npcs.map((n) => n.id).sort(), [...STATIONS].sort());
+  assert.deepEqual(map.npcs.map((n) => n.id).sort(), [...STATIONS, 'hamlet-head'].sort());
+  assert.ok(npcs['hamlet-head'], 'the head of the hamlet talks');
   for (const id of STATIONS) {
     assert.ok(npcs[id], `${id} talks`);
     const plan = people.plans[people.people[id].plan];

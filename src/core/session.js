@@ -238,12 +238,38 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     placeEvents();
     planting.grow();
     hamlet.showTable();
-    // A practice has no prologue: the person of the activity is ready and starts the task (a
-    // practice of a whole place has no person: the child walks to any station).
+    // A practice never has the prologue, and it does not set intro.seen (#37): the person of the
+    // activity is ready and starts the task; in a practice of a whole place (no person) a person
+    // of the place greets the child and points out the stations.
     if (practice?.person) talk(`${practice.person}.trial`);
+    else if (practice) greetPlace();
     else if (!profile.flags['intro.seen']) talk('grandma.intro');
     for (const id of params.after ?? []) talk(id);
   }
+
+  // The start of a practice of a whole place (#37): the person who greets turns to the child, says
+  // in one line that each person here has work, and points at the stations one after the other
+  // (a mark on the ground at each one). The script plays in the world (src/core/world/systems/
+  // mentor.js); a tap or a walk of the child does not stop it.
+  const GREET = { say: 0.6, first: 2.4, each: 1.8 };
+  function greetPlace() {
+    const greeter = getEntity(state, `npc:${practice.greeter}`);
+    if (!greeter) return;
+    const hp = hero().position;
+    greeter.position.facing = Math.atan2(hp.x - greeter.position.x, hp.z - greeter.position.z);
+    const steps = [{ at: GREET.say, say: { id: greeter.id, key: 'hamlet.greet' } }];
+    let t = GREET.first;
+    for (const id of practice.stations ?? []) {
+      const p = getEntity(state, `npc:${id}`)?.position;
+      if (!p) continue;
+      steps.push({ at: t, point: { id: greeter.id, x: p.x, z: p.z, time: 1.5 } }, { at: t, mark: { x: p.x, z: p.z, ttl: 2.5 } });
+      t += GREET.each;
+    }
+    steps.push({ at: t + 0.5, end: true });
+    addEntity(state, { id: 'script:greet', script: { key: 'greet', move: 'greet', t: 0, i: 0, steps, spawned: [] } });
+  }
+  // The persons of the stations of a practice of a whole place (a star over each one).
+  const stations = () => (practice && !practice.person ? practice.stations ?? [] : []);
 
   // The fords of the stamps of a map (the cells of shallow water that people walk through).
   // The stepping stones in a ford (rock with shallow water beside it) close with it.
@@ -1605,6 +1631,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   function cueIds() {
     const key = mentoring.activeKey();
+    // A practice of a whole place, with no task now: the person of the nearest station glows.
+    if (!key && stations().length) {
+      const hp = hero().position;
+      const near = stations().map((id) => getEntity(state, `npc:${id}`)).filter((e) => e && !e.hidden)
+        .reduce((a, b) => (!a || distHb(hp, b.position) < distHb(hp, a.position) ? b : a), null);
+      return near ? [near.id] : [];
+    }
     if (!key || key === 'bridge') return [];
     const owner = key.startsWith('event-') ? `trial-${key}` : key;
     const zones = query(state, 'zone').filter((z) => z.zone.task === owner);
@@ -2144,6 +2177,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     get profile() { return profile; },
     // The task with a mentor that the hero works on now (the view shows the wave), or null.
     get mentorTask() { return mentoring.activeKey(); },
+    // The persons of the stations of a practice of a whole place (#37): the view puts a star over each.
+    stations: () => [...stations()],
     // The mentor of a task (for the tests and the debug panel).
     mentorOf: (key) => mentoring.stateOf(key),
     // The practice of the visit (a copy), or null.

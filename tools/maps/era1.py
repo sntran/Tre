@@ -379,6 +379,8 @@ E.npcs = [
     {'id': 'duck-girl', 'x': 18.5, 'y': 6.0},
     {'id': 'fisher-uncle', 'x': 22.75, 'y': 12.5},
     {'id': 'drummer', 'x': 16.5, 'y': 16.5},
+    # The head of the hamlet greets a child of a practice in the yard, and points out the stations.
+    {'id': 'hamlet-head', 'x': 18.2, 'y': 11.6},
 ]
 E.places = {
     # The bundles of seedlings lie on the dike by the seedbed.

@@ -119,7 +119,8 @@
   {"id": "planter", "x": 24.0, "y": 24.5},
   {"id": "duck-girl", "x": 37.0, "y": 12.0},
   {"id": "fisher-uncle", "x": 45.5, "y": 25.0},
-  {"id": "drummer", "x": 33.0, "y": 33.0}
+  {"id": "drummer", "x": 33.0, "y": 33.0},
+  {"id": "hamlet-head", "x": 36.4, "y": 23.2}
  ],
  "encounters": []
 }

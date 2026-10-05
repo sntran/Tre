@@ -1220,6 +1220,18 @@
       "item": "net",
       "face": 1
     },
+    "hamlet-head": {
+      "skin": "skin1",
+      "top": "vermilionPale",
+      "bottom": "indigo",
+      "sash": "green",
+      "topKind": "shirt",
+      "bottomKind": "skirt",
+      "hair": "grey",
+      "hairStyle": "bun",
+      "hat": "non",
+      "face": 3
+    },
     "drummer": {
       "skin": "skin2",
       "top": "indigo",
