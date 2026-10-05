@@ -1,0 +1,845 @@
+{
+  "name": "practice-nhay-lo-co",
+  "about": {
+    "vi": "Luyện tập nhảy lò cò: đường link đưa An đến sân lò cò bên đình Phù Đổng. Tụi trẻ gọi ô; An nhấn giữ để ném mảnh sành, rồi nhảy lò cò từng ô, nhảy xa qua ô có mảnh sành, và tụi trẻ đọc số của ô An đứng (đếm tiếp). Lần đầu An nhảy vội nên chạm vạch, lượt sang bạn khác, rồi An chơi lại. Ba lượt về đích; Tí cảm ơn, An về chỗ cũ.",
+    "en": "Practice of hopscotch: the link takes An to the court by the đình of Phù Đổng. The children call a square; An holds the button to throw the shard, then hops square by square, takes a big hop over the square of the shard, and the children say the number of each square where An lands (count on). The first time An hops too soon and lands on a line; the turn goes to another child, and An plays again. Three rounds home; Tí says thank you, and An goes back."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "practice": "nhay-lo-co",
+  "steps": [
+    {
+      "until": {
+        "event": "folkCall",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 0.63
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "throw",
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "throw",
+          "with": {
+            "result": "in"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hops",
+        "timeout": 5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.15
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "until": {
+        "event": "turn",
+        "with": {
+          "end": "line"
+        },
+        "timeout": 3
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "loco.fail.line"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "folkCall",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 0.63
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "throw",
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "throw",
+          "with": {
+            "result": "in"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hops",
+        "timeout": 5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "until": {
+        "event": "round",
+        "with": {
+          "rounds": 1
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "folkCall",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 3.54
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "throw",
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "throw",
+          "with": {
+            "result": "in"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hops",
+        "timeout": 5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "until": {
+        "event": "round",
+        "with": {
+          "rounds": 2
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "folkCall",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 1.46
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "throw",
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "throw",
+          "with": {
+            "result": "in"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hops",
+        "timeout": 5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "until": {
+        "event": "round",
+        "with": {
+          "rounds": 3
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "practice",
+          "with": {
+            "id": "nhay-lo-co",
+            "sets": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "dlg.loco-child.practice.end.n1"
+          }
+        },
+        {
+          "item": "coin",
+          "count": 3
+        }
+      ]
+    }
+  ]
+}

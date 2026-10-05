@@ -834,6 +834,64 @@
           ]
         }
       }
+    },
+    {
+      "id": "loco-child.practice.end",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "loco-child",
+          "textKey": "dlg.loco-child.practice.end.n1",
+          "mood": "happy",
+          "choices": [
+            {
+              "textKey": "dlg.practice.end.stay",
+              "effects": [
+                {
+                  "open": "practice-stay"
+                }
+              ]
+            },
+            {
+              "textKey": "dlg.practice.end.back",
+              "effects": [
+                {
+                  "open": "practice-back"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "rope-child.practice.end",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "rope-child",
+          "textKey": "dlg.rope-child.practice.end.n1",
+          "mood": "happy",
+          "choices": [
+            {
+              "textKey": "dlg.practice.end.stay",
+              "effects": [
+                {
+                  "open": "practice-stay"
+                }
+              ]
+            },
+            {
+              "textKey": "dlg.practice.end.back",
+              "effects": [
+                {
+                  "open": "practice-back"
+                }
+              ]
+            }
+          ]
+        }
+      }
     }
   ]
 }

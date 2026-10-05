@@ -43,7 +43,8 @@ test('each speaker has a name: a name key, or a word of kinship and an order of 
 test('each talk rule names a known dialogue', () => {
   for (const [id, npc] of Object.entries(npcs)) {
     for (const rule of npc.talk) assert.ok(byId.has(rule.dialogue), `${id}: ${rule.dialogue}`);
-    assert.ok(village.npcs.some((n) => n.id === id), `${id} is on the map`);
+    // A child of a folk game stands by its court or its rope, not on the list of the map.
+    assert.ok(npc.folk || village.npcs.some((n) => n.id === id), `${id} is on the map`);
   }
 });
 

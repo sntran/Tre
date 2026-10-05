@@ -27,6 +27,8 @@ A.fill(8, 26, 2, 5, '=')
 A.fill(31, 13, 1, 3, '=')
 for r in [(3, 12, 4, 2), (9, 12, 4, 2), (13, 12, 7, 2), (25, 12, 4, 2), (24, 16, 6, 6), (13, 18, 6, 4)]:
     A.fill(*r, 'y')
+# The packed earth of the court of nhảy lò cò, south of the road by the đình (docs/FOLKGAMES.md).
+A.fill(14, 16, 4, 2, 'y')
 # Fields outside the gate.
 A.fill(33, 2, 6, 10, 'f')
 A.fill(33, 18, 6, 9, 'f')
@@ -136,6 +138,9 @@ A.places = {
     'rice-trays': {'x': 9.8, 'y': 14.4},
     'giong-pot': {'x': 10.7, 'y': 13.2},
     'buffalo-shade': {'x': 37.6, 'y': 17.5},
+    # Nhảy lò cò (docs/FOLKGAMES.md): the start line of the court, and the way that it goes (east).
+    'hopscotch': {'x': 14.3, 'y': 16.75},
+    'hopscotch-to': {'x': 17.8, 'y': 16.75},
 }
 # The spots of the small events of the day in the village (cells): the road on the south bank,
 # the paddies on the south bank by the river (they can flood) and by the home, and the yard in
@@ -400,6 +405,10 @@ E.places = {
     'drum-bronze': {'x': 17.4, 'y': 15.2},
     'drum-bronze-2': {'x': 18.6, 'y': 15.2},
     'dancers': {'x': 15.3, 'y': 18.0},
+    # Nhảy dây at the feast (docs/FOLKGAMES.md): the middle of the rope at the west of the yard, and
+    # the way to one of the two children who turn it.
+    'rope': {'x': 14.9, 'y': 10.8},
+    'rope-to': {'x': 14.9, 'y': 9.0},
 }
 E.zones = [{'id': 'paddy', 'x': 4, 'y': 2, 'w': 10, 'h': 10, 'task': 'paddy'}]
 E.life = [

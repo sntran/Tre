@@ -555,6 +555,8 @@ export function thingLook(key) {
   m = /^feast-table-(\d+)-(\d+)-(\d+)$/.exec(k);
   if (m) return { kind: 'feast-table', eggs: Number(m[1]), fish: Number(m[2]), sheaves: Number(m[3]) };
   if (k === 'weir-shut' || k === 'weir-open') return { kind: 'weir', open: k === 'weir-open' };
+  // The shard of a broken pot of nhảy lò cò (docs/FOLKGAMES.md).
+  if (k === 'shard') return { kind: 'shard' };
   return null;
 }
 // The feed of one scoop takes this length of the trough (half blocks): a notch on the side of the
@@ -605,6 +607,8 @@ export function workThing(look) {
       return still([P('feed', [len, 0.18, 0.7], 'yellowPale', [0.4 + len / 2, 0.29, 0]), P('grain', [len, 0.06, 0.4], 'ochre', [0.4 + len / 2, 0.4, 0])], 0.45);
     }
     // The clay jar of feed (a vại) by the head of the trough: the child holds it to pour.
+    // The shard of a broken pot: a flat piece of fired clay.
+    case 'shard': return still([P('shard', [0.8, 0.12, 0.6], 'vermilionPale', [0, 0.06, 0]), P('edge', [0.5, 0.1, 0.2], 'ochre', [0.1, 0.1, 0.3])], 0.2);
     case 'feed-jar': return still([P('body', [1.2, 1.1, 1.2], 'wood', [0, 0.55, 0]), P('belly', [1.35, 0.5, 1.35], 'wood', [0, 0.6, 0]), P('neck', [0.9, 0.2, 0.9], 'ochre', [0, 1.2, 0]), P('feed', [0.7, 0.08, 0.7], 'yellowPale', [0, 1.3, 0])], 1.35);
     // A fish trap (a lờ) of bamboo, lying along +z: a cone with a ring for each fish that it holds.
     case 'lo': {

@@ -1,10 +1,12 @@
 {
-  "_about": "The folk games of the village children (#30; src/core/folkgames.js; docs/FOLKGAMES.md). loCo: nhảy lò cò (hopscotch) in Phù Đổng. The court is a line of squares: up one side and back down the other (1 to 5 up, 6 to 10 down, and a half circle to rest at the top; Du lịch Việt Nam, https://www.dulichvn.org.vn/index.php/item/14698). No numeral is on the court: the children say the number of each square where the hero lands (count on; Laski & Siegler 2014). rate: the squares of a throw for each second of a hold of the action button; line: the part of a square at each edge that is a line; settle: the seconds after a landing that the hero needs to stand (a press before that is a landing on a line); long: the seconds of a press of the jump that hops two squares; rounds: the good rounds of a set; other: the seconds of the turn of another child. levels: for each skill, the courts that the children draw (start: the first number, or starts: one of them; step: the step from a square to the next; squares; near: the called square is said as a number more than another one). rope: nhảy dây at the feast of Xóm Ruộng. period: the seconds of a turn of the rope (the rope is at the bottom at each beat); window: the seconds around a beat for a good jump; pause: the seconds that the rope stops after a miss; slower and faster: the change of the period after a miss and after a clean round; groups: the counts of one jump, with the jumps of a round (to: the times the group).",
+  "_about": "The folk games of the village children (#30; src/core/folkgames.js; docs/FOLKGAMES.md). loCo: nhảy lò cò (hopscotch) in Phù Đổng. The court is a line of squares: up one side and back down the other (1 to 5 up, 6 to 10 down, and a half circle to rest at the top; Du lịch Việt Nam, https://www.dulichvn.org.vn/index.php/item/14698). No numeral is on the court: the children say the number of each square where the hero lands (count on; Laski & Siegler 2014). rate: the squares of a throw for each second of a hold of the action button; line: the part of a square at each edge that is a line; settle: the seconds after a landing that the hero needs to stand (a press before that is a landing on a line); long: the seconds of a press of the jump that hops two squares; short: the squares of a shorter court (after two presses too soon); hop: the seconds of a hop; rounds: the good rounds of a set; other: the seconds of the turn of another child; children: the looks of the children (data/figures.json; the first one talks, npc loco-child). levels: for each skill, the courts that the children draw (start: the first number, or starts: one of them; step: the step from a square to the next; squares; near: the called square is said as a number more than another one). rope: nhảy dây at the feast of Xóm Ruộng. period: the seconds of a turn of the rope (the rope is at the bottom at each beat); window: the seconds around a beat for a good jump; pause: the seconds that the rope stops after a miss; slower and faster: the change of the period after a miss and after a clean round; rounds: the rounds of a set; children: the looks of the two children who turn the rope (the first one talks, npc rope-child); levels: for each skill, the group of one jump and the jumps of a round (to).",
   "loCo": {
     "rate": 2.4,
     "line": 0.14,
-    "settle": 0.3,
-    "hop": 0.32,
+    "settle": 0.45,
+    "hop": 0.3,
+    "short": 8,
+    "children": ["loco-child", "loco-child-2", "loco-child-3"],
     "long": 0.35,
     "rounds": 3,
     "other": 3,
@@ -25,10 +27,11 @@
     "faster": 0.95,
     "fastest": 0.8,
     "rounds": 2,
+    "children": ["rope-child", "rope-child-2"],
     "levels": {
       "math.count.120": [{ "group": 2, "to": 10 }],
       "math.add.10": [{ "group": 2, "to": 10 }],
-      "math.add.20": [{ "group": 2, "to": 10 }, { "group": 5, "to": 4 }],
+      "math.add.20": [{ "group": 2, "to": 10 }, { "group": 5, "to": 10 }],
       "math.addsub.100": [{ "group": 5, "to": 10 }, { "group": 10, "to": 10 }],
       "math.place.1000": [{ "group": 10, "to": 10 }, { "group": 5, "to": 10 }],
       "math.mul.10": [{ "group": 3, "to": 10 }, { "group": 4, "to": 10 }],

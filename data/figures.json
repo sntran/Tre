@@ -1270,6 +1270,11 @@
       "hair": "band",
       "face": 2
     },
+    "loco-child": {"child": true, "skin": "skin2", "top": "ochre", "bottom": "wood", "sash": "vermilion", "topKind": "bare", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.86},
+    "loco-child-2": {"child": true, "skin": "skin3", "top": "yellowPale", "bottom": "indigo", "sash": "green", "topKind": "yem", "bottomKind": "shorts", "hair": "braids", "face": 4, "scale": 0.82},
+    "loco-child-3": {"child": true, "skin": "skin2", "top": "indigoPale", "bottom": "wood", "sash": "vermilion", "topKind": "shirt", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.94},
+    "rope-child": {"child": true, "skin": "skin2", "top": "vermilionPale", "bottom": "indigo", "sash": "yellow", "topKind": "yem", "bottomKind": "shorts", "hair": "braids", "face": 4, "scale": 0.88},
+    "rope-child-2": {"child": true, "skin": "skin3", "top": "greenPale", "bottom": "wood", "sash": "vermilion", "topKind": "shirt", "bottomKind": "shorts", "hair": "tufts", "face": 1, "scale": 0.9},
     "dancer-child": {
       "child": true,
       "skin": "skin2",

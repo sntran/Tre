@@ -40,6 +40,13 @@ test('each activity has its texts, its trial, its skills, its place, and its sto
       // The planting of Xóm Ruộng (docs/PLANTING.md): the planter, or no person for the whole hamlet.
       assert.ok(a.person === 'planter' || a.person === null, `${a.id}: the person of the planting`);
       assert.deepEqual([...a.skills].sort(), [data.planting.skill, data.planting.divide].sort(), `${a.id}: the skills of the planting`);
+    } else if (a.task === 'loco' || a.task === 'rope') {
+      // A folk game of the children (docs/FOLKGAMES.md): the child who talks, the skills of the
+      // levels of the game, and the line of the weekly note that says to play it for real.
+      const def = a.task === 'loco' ? data.folkgames.loCo : data.folkgames.rope;
+      assert.equal(a.person, `${a.task}-child`, `${a.id}: the child of the game`);
+      assert.deepEqual([...a.skills].sort(), Object.keys(def.levels).sort(), `${a.id}: the skills of the game`);
+      assert.ok(vi[a.real] && en[a.real], `${a.id}: the line of the real game`);
     } else if (['ducks', 'traps', 'drum'].includes(a.task)) {
       // An activity of the hamlet (docs/HAMLET.md): the person of its station, and the skill of
       // the memory of the facts.

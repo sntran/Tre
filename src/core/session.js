@@ -54,6 +54,7 @@ import { createMentoring } from './mentoring.js';
 import { playExample, stopExample } from './examples.js';
 import { endScript } from './world/systems/mentor.js';
 import { namesOf } from './naming.js';
+import { createFolk } from './folk-session.js';
 import { nearHero as talksNear } from './lines.js';
 import { createPlanting } from './planting-session.js';
 import { createHamlet } from './hamlet-session.js';
@@ -176,6 +177,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     },
   });
 
+  // The folk games of the village children: nhảy lò cò in Phù Đổng and nhảy dây at the feast of
+  // Xóm Ruộng (docs/FOLKGAMES.md).
+  const folk = createFolk({
+    data: data.folkgames, profile, learner, emit, world: () => state, env: () => env, seed: () => state.seed,
+    callout: (textKey, params, id) => emit({ type: 'open', screen: 'callout', id, textKey, params }),
+    command: (c) => worldCommand(state, c), goTo: (p) => goTo(p, null), skill: (ev) => skillEvent(ev),
+    feastOn: () => Boolean(hamlet.feast), practice: () => practice?.task ?? null, busy: () => busy || Boolean(screen), day: () => today(),
+    setDone: (game) => {
+      if (practice?.task !== game) return false;
+      practiceEnd(practice.person);
+      return true;
+    },
+  });
+  const FOLK = new Set(['loco', 'rope']);
+
   const hero = () => getEntity(state, 'hero');
   const heroCell = () => ({ x: hero().position.x / 2, y: hero().position.z / 2 });
   const groundY = (x, y) => env.groundY(x, y) / 2; // the top of the ground of a cell, in blocks
@@ -262,10 +278,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     placeEvents();
     planting.grow();
     hamlet.showTable();
+    folk.mapStart();
     // A practice never has the prologue, and it does not set intro.seen (#37): the person of the
     // activity is ready and starts the task; in a practice of a whole place (no person) a person
     // of the place greets the child and points out the stations.
-    if (practice?.person) talk(`${practice.person}.trial`);
+    if (FOLK.has(practice?.task)) folk.join(practice.task);
+    else if (practice?.person) talk(`${practice.person}.trial`);
     else if (practice) greetPlace();
     else if (!profile.flags['intro.seen']) talk('grandma.intro');
     for (const id of params.after ?? []) talk(id);
@@ -654,6 +672,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       practice.stayed = true;
       save('practice');
       if (practice.task === 'planting') planting.start();
+      else if (FOLK.has(practice.task)) folk.join(practice.task);
       else if (practice.task) hamlet.start(practice.task);
       else startTrial(practice.trial);
       return;
@@ -1462,6 +1481,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else add({ ...base, act: 'talk', icon: 'talk', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
     }
     if (!held) {
+      // The folk games of the children: join them, and the throw of the shard (a hold).
+      folk.candidates(add, REACH);
       // The acts of things: the glowing iron (quench), the bellows on the lumps (blow), a bronze
       // drum (a beat), the jar of feed (pour while the button is down).
       for (const id of ['smith', 'horse']) {
@@ -1887,6 +1908,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return [...at].some((w) => talksNear(getEntity(state, w)?.position, hp));
   }
 
+  // A commit at a placement or a turn of a game: a skill event for the learner (see
+  // learnerRecord). The commit goes into the learning log too, with P(L) before and after.
+  function skillEvent(ev) {
+    const l = learner();
+    const pBefore = l?.entry(ev.skill).p ?? null;
+    const rec = learnerRecord(ev);
+    if (rec) l?.record({ skill: ev.skill, level: rec.level }, rec.correct);
+    const pAfter = l?.entry(ev.skill).p ?? null;
+    log('attempt', {
+      task: ev.task, skill: ev.skill, phase: 'commit', success: ev.solved, efficient: ev.efficient, first: ev.first, mashing: ev.mashing,
+      parts: ev.parts, resets: ev.resets, latencies: ev.latencies, hint: ev.hint, hintSeen: ev.hintSeen, pBefore, pAfter, retry: false, harder: false, map: map.id,
+    });
+  }
   function worldEvent(ev) {
     if (ev.type === 'greet' && !busy && !quietForWork(ev.id)) {
       const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
@@ -1905,19 +1939,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       save(ev.type === 'solid' ? 'bridge' : 'pot');
       emit({ type: 'gift', from: ev.type === 'solid' ? ev.at : ev.id, give: ev.give, delay: ev.type === 'solid' ? 0.5 : 0 });
     }
-    // A commit at a placement: a skill event for the learner (see learnerRecord). The commit goes
-    // into the learning log too, with P(L) before and after.
-    if (ev.type === 'skill') {
-      const l = learner();
-      const pBefore = l?.entry(ev.skill).p ?? null;
-      const rec = learnerRecord(ev);
-      if (rec) l?.record({ skill: ev.skill, level: rec.level }, rec.correct);
-      const pAfter = l?.entry(ev.skill).p ?? null;
-      log('attempt', {
-        task: ev.task, skill: ev.skill, phase: 'commit', success: ev.solved, efficient: ev.efficient, first: ev.first, mashing: ev.mashing,
-        parts: ev.parts, resets: ev.resets, latencies: ev.latencies, hint: ev.hint, hintSeen: ev.hintSeen, pBefore, pAfter, retry: false, harder: false, map: map.id,
-      });
-    }
+    if (ev.type === 'skill') skillEvent(ev);
     if (ev.type === 'planted') planting.planted(ev);
     hamlet.worldEvent(ev);
     if (ev.type === 'trial' && ev.done && String(ev.trial).startsWith('event-')) eventDone(ev.trial.slice(6));
@@ -2036,6 +2058,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     updateCue();
     planting.tick(STEP);
     hamlet.tick(STEP);
+    folk.tick(STEP);
     checkRest();
     checkEdge();
     checkLandFerries();
@@ -2146,7 +2169,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     else if (type === 'hands') act();
     // A wave: the child calls the person of the task (docs/MENTOR.md).
     else if (type === 'wave') mentoring.wave();
-    else if (type === 'jump') jump();
+    else if (type === 'jump') { if (!folk.jump()) jump(); }
+    // The end of a press of the jump: a hop on the court of nhảy lò cò (a long press hops two squares).
+    else if (type === 'jumpUp') folk.jumpUp(Number(cmd.held) || 0);
     else if (type === 'talkTo') walkToPerson(cmd.id);
     // In a raid the map only pauses: it says where the enemies are, and it has no travel.
     else if (type === 'travel') queue(() => openCommand(raidOn() ? { open: 'worldmap', pauseKey: data.raids.raids[raidEnt().raid.id].pauseKey ?? null } : { open: 'worldmap' }));
@@ -2179,6 +2204,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     startPlace,
     command,
     step,
+    // The folk game that goes on: { kind, phase, rounds, skill, call, count, court }, or null.
+    folk: () => folk.stateOf(),
     // The events since the last call.
     events: () => out.splice(0),
     // The events of the last start (the intro, the talks after a map change), also when the view

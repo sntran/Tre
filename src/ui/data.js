@@ -39,6 +39,7 @@ export const FILES = {
   mentors: 'data/world/mentors.json',
   planting: 'data/world/planting.json',
   hamlet: 'data/world/hamlet.json',
+  folkgames: 'data/world/folkgames.json',
   naming: 'data/world/naming.json',
   origins: 'data/world/origins.json',
   speech: 'data/world/speech.json',
