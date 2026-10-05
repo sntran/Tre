@@ -173,8 +173,8 @@ The world of a region is one continuous land. The hero walks from Phù Đổng t
 ### The scale
 
 - **One plane for the whole country** (`src/core/gen/plane.js`): Mercator (a conformal projection, so the shapes of the hills and the rivers stay), true scale at 16° N, and **45 m of real land for each cell**. The cell 0, 0 is at 102° E, 23.5° N; x goes to the east and y to the south. North of 16° N, one cell is a little less than 45 m of real land (about 43.7 m at 21° N), so a real distance there takes a few more cells; south of 16° N, one cell is a little more (`metersAt`).
-- A cell is one block of the voxel world (`docs/ART.md`), and the hero walks 4.6 cells in a second (`src/core/world/move.js`). The walks of Era 1 (straight lines, in cells): Phù Đổng to Văn Miếu about 290, to the top of Núi Trâu about 410, and to the top of Sóc Sơn about 660 (on the road, about 900). So a walk between two story places takes one to four minutes.
-- **The places are frames on the plane** (`frames` in `data/world/land-giong.json`): each place is at its real place (the đình of Phù Đổng, the top of núi Vệ Linh, the top of Núi Trâu, the gate of Văn Miếu). The cells of a place (`data/maps/<place>.json`) are cells of its frame; `world.at(place, x, y)` gives the cell on the plane. A story, a raid, a quest, a trigger, and a person name their place and their cell in it, and the game puts them on the plane.
+- A cell is one block of the voxel world (`docs/ART.md`), and the hero walks 4.6 cells in a second (`src/core/world/move.js`). The walks of Era 1 (straight lines, in cells): Phù Đổng to Văn Miếu about 290, to the highest top of the low hills of Trâu Sơn about 690 (#27; on the road to the fields at their foot, about 540), and to the top of Sóc Sơn about 660 (on the road, about 900). So a walk between two story places takes one to four minutes.
+- **The places are frames on the plane** (`frames` in `data/world/land-giong.json`): each place is at its real place (the đình of Phù Đổng, the top of núi Vệ Linh, the highest top of the low hills of Trâu Sơn, the gate of Văn Miếu). The cells of a place (`data/maps/<place>.json`) are cells of its frame; `world.at(place, x, y)` gives the cell on the plane. A story, a raid, a quest, a trigger, and a person name their place and their cell in it, and the game puts them on the plane.
 
 ### The land, tile by tile
 
@@ -235,6 +235,20 @@ Each day, the seed of the world and the day choose some small events on each map
 - A market day is barter (see "Barter" below). The measures of rice come from the basket of the hero, and leave it only when the trade is done. A child with too little rice hears one line and comes back another day.
 - An event that the child did today does not come again today (`profile.maps[<map>].things["event.<id>"]` holds the day). At the next dawn, the events of the day before go, with their things.
 - The stories `event-cart`, `event-flood`, `market-barter`, and `event-duck` play them; the command `{ "type": "event", "id": <id> }` brings an event today.
+
+### Finding Trâu Sơn
+
+The sources put Trâu Sơn in the low hills near the village of Châu Cầu (Quế Võ): the *Đại Nam nhất thống chí* says "east of the district of Quế Dương, 12 dặm; hills one after another, in a long line" (#27; question 105). Nobody knows which hill top it was. The game says so, and the child finds the hills by real clues (`data/world/clues.json`, `src/core/clues.js`):
+
+- **The place:** the frame `trau-son` is at the highest top of the line of low hills (106.230 E, 21.140 N, 71 m). The fields of the battle are at their foot, to the west. Núi Dạm (Đại Lãm, 130 m), one tall hill that stands alone to the west, is land with no name in Era 1 (its name and its pagoda come with the Lý). No battle and no story place is on it.
+- **The arrow of the quest** shows only the way toward the sunrise (east of the hero) until the hero first stands at the foot of the low hills or on them (the area of the find: the frame from x 60, the flag `trauson.found`). Then it shows the soldiers again.
+- **Two clues on the way:** when the quest leads to Trâu Sơn, a person who greets the hero on the way east (east of the east gate of Phù Đổng) says the first clue ("Trâu Sơn is toward the sunrise from here."), and another person says the second ("It is not one tall hill. It is low hills, one after another, in a long line."). Each clue comes once, from another person; the flag `clue.trau-son.<n>` keeps who said it.
+- **The tall hill:** an old man who gathers wood on the top of Núi Dạm (`dam-elder`) says: "This hill is tall and stands alone. The hills of Trâu go on, one after another, farther toward the sunrise." No fail, no lost goods, and no score: the world answers.
+- **Sources:** each line has a `source` field (the clues in `data/world/clues.json`, the talk of the old man in `data/dialogue/giong.json`): the two clues from the *Đại Nam nhất thống chí*, and the line of the old man from the fine heights (the real shapes of the two hills).
+- **The note of the battle** (the mark Legend, at the end of the battle): "The old story puts this battle at the foot of Trâu Sơn. Today, people put Trâu Sơn in the low hills near the village of Châu Cầu, in Quế Võ. Nobody knows which hill it was." No general note says that the game may not be accurate. The book of the clue is from the 19th century: it does not come into Era 1; only the narrator says the doubt.
+- **The save:** version 10 moves a hero or a kept thing in the old frame (cell 9563, 6027 of the plane) to the same place of the new frame (9871, 6040).
+- **Later (not now):** the clue "12 dặm east of Quế Dương" can be a task of measurement for the upper grades in chapter 13 (the scholars); the length of one dặm (444.44 m or 576 m) and the seat of Quế Dương need sources first.
+- Tests: `tests/clues.test.js` and the story `find-trau-son`.
 
 ### Barter
 
