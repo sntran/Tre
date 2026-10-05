@@ -8,6 +8,13 @@
       "note": "Maize came from the Americas. A legend says Phùng Khắc Khoan brought it back from China in 1597; Lê Quý Đôn (Vân đài loại ngữ) says Trần Thế Vinh brought it from the Qing in the Kangxi years, 1662 to 1723. The year here is the earlier one.",
       "sources": ["https://thethaovanhoa.vn/chu-va-nghia-tu-ngo-den-bap-20251105052428822.htm"]
     },
+    "coin": {
+      "from": 968,
+      "vi": ["tiền", "tiền đồng", "đồng xu", "xu"],
+      "en": ["coin", "coins"],
+      "note": "The first coins of Vietnam were the Thái Bình Hưng Bảo of the Đinh dynasty (968 to 981). For two more centuries the common people traded mostly by barter. The world of the Hùng Kings trades by barter only (#26). The word đồng alone is not here: it also means a field and bronze.",
+      "sources": ["https://en.wikipedia.org/wiki/Vietnamese_cash"]
+    },
     "chili": { "from": null, "vi": ["ớt"], "en": ["chili", "chilli"], "note": "From the Americas. The year in Vietnam is not checked yet.", "sources": [] },
     "sweet-potato": { "from": null, "vi": ["khoai lang"], "en": ["sweet potato"], "note": "From the Americas. The year in Vietnam is not checked yet.", "sources": [] },
     "cassava": { "from": null, "vi": ["sắn", "khoai mì"], "en": ["cassava"], "note": "From the Americas. The year in Vietnam is not checked yet.", "sources": [] },

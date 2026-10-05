@@ -86,7 +86,7 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 11. **work**: after the hands: the tasks of the Five Trials answer the work of the hands (a rod on the mat, a tie, the iron into the water, the basket to the healer, a chalk mark, a cut), and their timed parts go on (the glow of the iron, the tide). See `docs/TRIALS.md`.
 12. **raid**: after the hands and Nghé: the orders of the child go to the raid (a shot, the gate bar, a villager to a spot, the charge of Nghé, an element, the bamboo), the enemies answer the traps on the road and the hero where the hero stands now, and the raid puts its enemies, stones, torches, fires, and wet ground into the world. The raid waits while the world waits. See `docs/RAIDS.md`.
 13. **push**: after the hero moves: on the back of Nghé the hero pushes the cart out of the way.
-14. **react**: after the hero moves, so that things react to where the hero is now, and before steering, so that a flight starts in the same step. Chickens flee a running hero, ducks and fish swim away, people turn, wave, and greet, the dog follows for a while, the ducklings follow a hero who walks (not one who runs), a frog jumps off its lily pad, a puddle splashes, pots break and give a coin, and tall grass bends.
+14. **react**: after the hero moves, so that things react to where the hero is now, and before steering, so that a flight starts in the same step. Chickens flee a running hero, ducks and fish swim away, people turn, wave, and greet, the dog follows for a while, the ducklings follow a hero who walks (not one who runs), a frog jumps off its lily pad, a puddle splashes, pots break and spill a few grains (they give nothing; the chickens near the pot come to peck), and tall grass bends.
 15. **joys**: after the plans and Nghé: the small joys show or hide by their days and hours, the lion dances, the fisher holds up a fish over his plan, and Nghé turns its head over its walk (see "The world at rest" below).
 16. **flock**: the pull of each flock (alignment with the near neighbors, cohesion to the middle of the flock, and the range of its place) goes into `steer.bias` before the animals move.
 17. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance).
@@ -104,7 +104,7 @@ A **zone** is an entity `zone:<id>` with `keep` (the save keeps it). Its kind (`
 
 - **pile**: things lie in rows, one row for each size (the planks on the bank).
 - **span**: things go end to end across a gap, from the near end. Only the last thing can come back. To put planks and to take them back is free exploration and is never an error (rule 5). The **commit** is the step of the hero on the last plank. Then the world answers:
-  - exact: the planks turn into deck, a drum sounds, and coins come (event `solid`).
+  - exact: the planks turn into deck, a drum sounds, and fish come (event `solid`).
   - too short: the last plank dips (`tip`), and the hero falls into the water with a splash (`fall`, no damage). The planks stay on their marks, and red marks show each missing unit of the gap (the entity `why:<zone>`, look `gap-N`) for two seconds, so that the child sees how much was missing (rule 12). Nghé comes to the edge and pulls the hero out (`pulled`). Then the plank floats back to the pile (`float`).
   - A plank that is too long answers at once, because it sticks out past the far end: it wobbles, the fisher calls out (`call`), and it slides back into the water and floats back to the pile. It is not a commit. Nothing is lost, so that the two failures cost the same.
   - **Predict, then commit** (rule 4): when the hero comes near a new gap, a row of plank outlines (entities `guess:<zone>:<n>`) lies on the bank, and Nghé goes beside them and looks at the hero. The hero walks along the row; the outline in front of the hero is the target, and the action button chooses it (command `guess`): the outlines up to n fill, with no numeral. A tap on an outline only walks there. A first plank without a guess skips the prediction, and Nghé glances once at the outlines. The first commit sends `prediction` (the guess, the planks used, and the result); the village keeps it in `profile.predictions` until the learning log exists.
@@ -229,12 +229,30 @@ Each day, the seed of the world and the day choose some small events on each map
 - **Lost ducks:** the farmer says the size of her flock and how her ducks look (white with a green head). The pen holds the ducks at home; some lost ducks are near, and the others are farther, out of view from the pen. Two or three brown ducks of another farm stay near their own yard. A brown duck in the pen is never right: the farmer says why, and it goes back to its yard.
 
 - A person stands at the spot (the carter, the farmer, or the seller; `data/figures.json`). The action button at the person starts the work (a tap only walks there), with one line that says the number as a word ("The hole takes seven stones").
-- The work is the task `exact` of the work system: things of sizes lie on a pile (stones in a net of one, two, or five; pails on a pole; coins on a string of one, five, or ten; a lost duck alone), and the child carries them to the place (the mud under the wheel, the ditch, the mat of the seller, the pen). Each thing shows its units, so its size is seen and never written.
+- The work is the task `exact` of the work system: things of sizes lie on a pile (stones in a net of one, two, or five; pails on a pole; measures of rice from the basket of the hero; a lost duck alone), and the child carries them to the place (the mud under the wheel, the ditch, the mat of the seller, the pen). Each thing shows its units, so its size is seen and never written.
 - The action button at the person is the commit of the sum (the person checks the place; one skill event for the learner); the wave asks for help (`docs/TASKS.md`). Exact: done, and the reward flies to the counter. Too few: the person says so and waits. Too many: the last things go back to the pile (a thing of another owner goes back to its own place).
-- The level of the work: the level of the grade, one step up when P(L) of the skill of the event is over 0.8, one step down when it is under 0.3 (`up` and `down` in the data). The levels go from counting to sums of two sizes to place value (strings of ten at the market).
-- The coins of a market come from the purse of the hero, and leave it only when the price is paid. A child with too few coins hears one line and comes back another day.
+- The level of the work: the level of the grade, one step up when P(L) of the skill of the event is over 0.8, one step down when it is under 0.3 (`up` and `down` in the data). The levels go from counting to sums of two sizes to groups (the rates of a barter at the market).
+- A market day is barter (see "Barter" below). The measures of rice come from the basket of the hero, and leave it only when the trade is done. A child with too little rice hears one line and comes back another day.
 - An event that the child did today does not come again today (`profile.maps[<map>].things["event.<id>"]` holds the day). At the next dawn, the events of the day before go, with their things.
-- The stories `event-cart`, `event-flood`, `event-market`, and `event-duck` play them; the command `{ "type": "event", "id": <id> }` brings an event today.
+- The stories `event-cart`, `event-flood`, `market-barter`, and `event-duck` play them; the command `{ "type": "event", "id": <id> }` brings an event today.
+
+### Barter
+
+Era 1 trades by barter, with no coins (#26; question 91). The first coins of Vietnam were the Thái Bình Hưng Bảo of the Đinh dynasty (968 to 981), and even then the common people traded mostly by barter for two more centuries ([Vietnamese cash](https://en.wikipedia.org/wiki/Vietnamese_cash)).
+
+- **The goods** (`data/items.json`, `src/core/items.js`): rice (a measure of rice), rice balls, fish, eggs, and clay pots. Each item has the first year of its time (`from`); the coin is an item of the Đinh (968) and of `data/world/origins.json`, so that no item, counter, or line of text of Era 1 names it (`tests/items.test.js`, `tests/origins.test.js`).
+- **The basket of the household:** the first counter of the HUD is a basket with the count of the measures of rice. A tap opens the basket with all the goods and their counts. Goods that fly to the HUD fly to the basket.
+- **Who gives what:** the trials give three goods of their work (rice, fish, or eggs; `data/trials.json`), the bridge gives fish, the cart and the flood give rice, and a lost duck gives an egg. A won raid leaves small sacks of rice to share; the sacks of the hero go to the basket as measures of rice. An enemy at the gate takes a measure of rice from the store. A broken pot gives nothing: a few grains spill, and the chickens near it come to peck (`spill` in `src/core/world/systems/react.js`).
+- **The market day** (`barter` in `data/world/events.json`, `barterTask` in `src/core/world/days.js`): the seller has goods (fish, eggs, or clay pots) on a tray, in rows of five, and wants measures of rice for them at the rate of the level. She trades all her goods, and says the rate and her goods as words ("Two eggs for five measures of rice. I have six eggs."):
+
+| Level | Rate | Skill of the commit |
+| --- | --- | --- |
+| 0 | one for one (three to six goods): count | `math.count.120` |
+| 1 | two measures for one good (three to seven goods): doubles | `math.add.20` |
+| 2 | five for two, three for two, or four for three (two to four lots): groups | `math.mul.10` |
+
+  The child carries measures of rice from the basket (a pile by the mat) to the mat, and the action button at the seller is the commit (the exact task: too few, the seller waits; too many, the last measures go back). The rice leaves the basket only when the trade is done, and the goods go to the basket. With too little rice for the fewest lots, the seller says so, and the child comes back another day.
+- **The save:** version 9 turns the coins of an old save into measures of rice, one for one, and a market that was not done goes (`MIGRATIONS[8]` in `src/core/save.js`).
 
 ## Practice links
 

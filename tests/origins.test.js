@@ -10,6 +10,7 @@ import { load, mapOf } from './helpers.js';
 
 const origins = load('data/world/origins.json');
 const regions = load('data/world/regions.json').regions;
+const items = load('data/items.json');
 
 test('a thing of a known time has its first year and a source; a thing with no year is not in the world yet', () => {
   for (const [id, t] of Object.entries(origins.things)) {
@@ -50,8 +51,10 @@ const hasWord = (text, word) => new RegExp(`(?<!\\p{L})${word}(?!\\p{L})`, 'iu')
 
 test('no line of text names a thing before its year: the texts of the game are of Era 1', () => {
   const year = Math.min(...regions.filter((r) => r.maps.length).map((r) => r.year));
+  // The names of the items of a later time (the coin, data/items.json) are not texts of Era 1.
+  const later = new Set(Object.values(items.items).filter((it) => it.from !== null && it.from > year).map((it) => it.nameKey));
   for (const lang of ['vi', 'en']) {
-    const texts = Object.values(load(`i18n/${lang}.json`)).join('\n');
+    const texts = Object.entries(load(`i18n/${lang}.json`)).filter(([k]) => !later.has(k)).map(([, v]) => v).join('\n');
     for (const w of wordsBefore(origins, year, lang)) assert.ok(!hasWord(texts, w.normalize('NFC')), `${lang}: ${w}`);
   }
   for (const f of readdirSync('data/dialogue')) {

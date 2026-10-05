@@ -20,7 +20,7 @@
 
 **Commands:** the world commands `move`, `stop`, `pet`, `ride`, `aim`, `pick`, `put`, `drop`, `guess`, and `face`; `tap { target }`; `hands` (the action button, or the E key); `talkTo { id }`; `talk { dialogue }`; `travel` (the country map); `refresh`; `next` and `choose { n }` (the open talk); `wave` (the child calls the person of the task); `jump` (the key J or the jump button; `docs/WORLD.md`, "The jump"); `closed` (the view closed a screen). In a raid: `shoot { count }` (the slingshot at the wall), `pour { source, x, y }` (an element to a map point), and `pet` (Nghé charges, when Nghé is a tool of the raid). See `docs/RAIDS.md`.
 
-**Events:** the events of the world, and `open { screen, ... }` (a talk line, a line of text, a callout over a head, the rest, or a screen of a story effect such as `worldmap`, `vanmieu`, or `nameFriend`), `close`, `map` (the hero went to another map), `gift` (things fly to their counter), `practice` (a set of a practice is done), `mentor` (a move of the mentor of a task: key, diagnosis, move, level; `docs/MENTOR.md`), `check` and `selfFix` (a check of the child, and a change after it), `plantRow` and `planted` (a row of the planting, and the end of a planting: result, empty, extra, full; `docs/PLANTING.md`), `jump { kind }`, `land`, and `splash` (a jump of the hero), `goBack` ("go back" at the end of a practice: the view opens the village at `to`, the place before the visit, or at the start of the game; the world event `back` is a rod back on the heap), `scoop`, `eat`, and `fed` (a scoop of the pour, a duck that eats, and the end of a feeding: result, hungry, extra, full; `docs/HAMLET.md`), `fill` and `caught` (a trap that fills, and the end of a catch), `dance`, `beat`, `jump`, `miss`, and `danced` (the drum dance), `eggs` (the eggs at dawn), `feast { on }` (the feast of the new rice starts or ends), `lose` (coins that an enemy took fly from the counter to it), `raid` (a raid starts or ends), `tapfx`, `sound`, `busy`, `hud`, and `halt`.
+**Events:** the events of the world, and `open { screen, ... }` (a talk line, a line of text, a callout over a head, the rest, or a screen of a story effect such as `worldmap`, `vanmieu`, or `nameFriend`), `close`, `map` (the hero went to another map), `gift` (things fly to their counter), `practice` (a set of a practice is done), `mentor` (a move of the mentor of a task: key, diagnosis, move, level; `docs/MENTOR.md`), `check` and `selfFix` (a check of the child, and a change after it), `plantRow` and `planted` (a row of the planting, and the end of a planting: result, empty, extra, full; `docs/PLANTING.md`), `jump { kind }`, `land`, and `splash` (a jump of the hero), `goBack` ("go back" at the end of a practice: the view opens the village at `to`, the place before the visit, or at the start of the game; the world event `back` is a rod back on the heap), `scoop`, `eat`, and `fed` (a scoop of the pour, a duck that eats, and the end of a feeding: result, hungry, extra, full; `docs/HAMLET.md`), `fill` and `caught` (a trap that fills, and the end of a catch), `dance`, `beat`, `jump`, `miss`, and `danced` (the drum dance), `eggs` (the eggs at dawn), `feast { on }` (the feast of the new rice starts or ends), `lose` (goods that leave the basket fly from the counter: the rice that an enemy took, or the rice of a barter), `raid` (a raid starts or ends), `tapfx`, `sound`, `busy`, `hud`, and `halt`.
 
 The screens are events, not calls. The world waits while a screen is open, and the view sends `closed` when the child closes it. A talk is one `open` event for each line; the view sends `next` or `choose`.
 
@@ -68,7 +68,7 @@ A story is a JSON file in `tests/stories/`. The name of the file is the name of 
 | `{ "entity": id, "near": id, "within", "act", "look", "hidden", "keep", "gone", "in", "notIn": [...], "mist" }` | The entity is so (`gone`: it is not in the world; `in` and `notIn`: the ground under it; `mist`: in the mist). |
 | `{ "event": type, "with": {...}, "not": true }` | The event came (or did not come) since the last expect. |
 | `{ "flag": name, "is": false }` | The flag is set (or not). |
-| `{ "item": "coin", "count": ">= 1" }` | The count of a thing. |
+| `{ "item": "rice", "count": ">= 1" }` | The count of a thing. |
 | `{ "learner": { "skill", "pL": ">= 0.5" } }` | P(L) of a skill. |
 | `{ "clock": { "between": [18, 19] } }` | The hour of the game clock. |
 | `{ "day": 2 }` | The game day (day 0 is the first). |
@@ -115,7 +115,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `bridge-save` | Save in the middle of the bridge, load, and go on. |
 | `vanmieu-gate` | The ferry over the Red River, Văn Miếu, and back out next to its gate. |
 | `time-limit` | The time is over, but the rest waits until the hero leaves the bridge. |
-| `reactions` | A chicken flees, a villager greets, a pot gives a coin. |
+| `reactions` | A chicken flees, a villager greets, a pot breaks and gives nothing, and the chickens near it come to peck the grains. |
 | `nghe` | Pet and ride Nghé; push the cart. |
 | `trial-scholar` | Rods on the mat, ten tie into a bundle, nine snap the band; the reward. |
 | `trial-smith` | Ore to the forge, water to the trough; the iron too early bends, while it glows it hardens. |
@@ -125,8 +125,8 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `calling` | After the five trials, the elder opens the way to Văn Miếu. |
 | `raid-scouts` | The first raid: the lines of the slingshot and the gate, a tap on the post nearest the scout, a short pull and its correction by count, and the gate bar before a torch lands (no skill event). |
 | `raid-patrol` | The traps: the elder names the third post; a trap there is counting, a trap one post on is play. |
-| `raid-soldiers` | The first soldiers: a villager at a straw flag, a trap at the post that the smith names, and the charge of Nghé. Then the loot: three, one, and two coins make Nghé sulk; a coin from the basket of the hero to Nghé makes it fair. |
-| `raid-boss` | The forge of the smith: fire makes the soldiers raise wet shields, lightning into the wet ground shocks them; the general and his blow, the iron staff breaks, and Gióng pulls up the bamboo. The fact of history keeps its year. Then twelve coins, four on each mat, and the farewell of Gióng. |
+| `raid-soldiers` | The first soldiers: a villager at a straw flag, a trap at the post that the smith names, and the charge of Nghé. Then the loot: three, one, and two sacks make Nghé sulk; a sack from the basket of the hero to Nghé makes it fair. |
+| `raid-boss` | The forge of the smith: fire makes the soldiers raise wet shields, lightning into the wet ground shocks them; the general and his blow, the iron staff breaks, and Gióng pulls up the bamboo. The fact of history keeps its year. Then twelve sacks, four on each mat, and the farewell of Gióng. |
 | `raid-lost` | The map only pauses the raid, with one line; nobody stops the soldiers; at grade 1 they take nothing, and they come again at the next dawn. |
 | `raid-river` | Rice balls from the same pull: two little river serpents eat two each and swim away calm; the talks of Sóng. |
 | `restore-point` | A point at each dawn, only the last three; a parent goes back to yesterday morning (before the talk with the elder), and then back to where the game was. |
@@ -136,7 +136,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `fell-dig` | A tree is felled and a block is dug; after a save and a load, the tree stays felled. |
 | `event-cart` | A cart stuck on the road: three stones are too few, five roll one back, four lift the cart. |
 | `event-flood` | A flooded field: five pails of water to the ditch. |
-| `event-market` | Market day: two strings of ten and three single coins pay the price; the coins leave the purse only then. |
+| `market-barter` | Market day is barter: two eggs for five measures of rice, and the seller has six eggs. Fourteen measures are not enough; fifteen are. The rice leaves the basket only then, and the eggs go to it. |
 | `event-duck` | Lost ducks: one is not enough; with the second, the flock is whole. |
 | `walk-trau-son` | From the gate of Phù Đổng on the east road, through the generated land, to the fields of Núi Trâu, with no change of scene. |
 | `walk-vanmieu` | From Phù Đổng over the ford and the west road, through the generated land, over the Red River on the ferry (the story waits for `ferried`), to Văn Miếu. |

@@ -428,3 +428,13 @@ Nhảy lò cò by the road outside the east gate of Phù Đổng, and nhảy dâ
 - **The end of a practice:** `dlg.loco-child.practice.end.n1`, `dlg.rope-child.practice.end.n1`; the links `practiceLink.nhay-lo-co.*` and `practiceLink.nhay-day.*`.
 - **The line for the parents** (the weekly note of #25): `folk.real.nhay-lo-co`, `folk.real.nhay-day`.
 - **Please check:** "mảnh sành" for the tile of the game (some places say "mảnh ngói" or "hòn cuội"); the half circle to rest at the top of the court; "Ô năm, rồi thêm hai ô nữa!" as the way a child says "two more than five".
+
+## Barter and the goods of the household (#26)
+
+Era 1 trades by barter, with no coins (question 91; `docs/WORLD.md`, "Barter"). New and changed texts, in `i18n/vi.json` and `i18n/en.json`:
+
+- **The basket of the HUD:** `basket.title` ("Giỏ của nhà"), and the names of the goods `item.riceball.name` ("Nắm cơm"), `item.fish.name` ("Cá"), `item.egg.name` ("Trứng"), `item.pot.name` ("Nồi đất"). `item.coin.name` stays for the Đinh, a later era; no text of Era 1 shows it.
+- **The market day:** `event.market.start.<goods>.<form>` for the goods `fish`, `egg`, and `pot`, and the forms `same` (one for one), `one` (one good for more measures), and `many` (more goods for more measures), for example "Hôm nay có phiên chợ. Cô đổi trứng lấy gạo: {b} quả trứng lấy {a} đấu gạo. Cô có {k} quả trứng. Cô đổi hết. Cháu mang gạo đặt lên chiếu cho đủ, rồi gọi cô nhé." Also `event.market.short` ("Chưa đủ gạo {w:đâu} cháu."), `event.market.done` ("Đủ rồi! Hàng của cháu đây, cháu bỏ vào giỏ nhé."), and `event.market.poor` ("Giỏ của cháu chưa đủ gạo để đổi. Hôm khác quay lại nhé."). `event.market.start` is the line with no rate.
+- **The loot and its rest:** `share.start` ("Quân giặc bỏ lại một đống bao gạo. ..."), `share.rest` ("Còn mấy bao gạo lẻ. ..."), `gift.thanks.elder` ("Gạo {w:này} để đổi lấy tranh lợp mái đình."), `gift.thanks.smith` ("Bác sẽ đổi gạo lấy thêm than cho lò.").
+- **Other lines:** `road.cart` ("... Bác cho em một đấu gạo."), `mentor.picture.flood` ("Ra chợ xem người ta đổi hàng một lát, ..."), `q.legend.rice.c3` ("Để đổi lấy cá").
+- **Please check:** "đấu" as the measure of rice (a small square box of wood; some places say "bơ" or "lon" for a smaller measure); "Cô đổi hết." for "I trade them all"; the classifiers "con cá", "quả trứng", "cái nồi"; and the rates of the higher levels ("hai quả trứng lấy năm đấu gạo"). A history reviewer checks that rice, fish, eggs, and clay pots are fair goods of a market of the Hùng Kings.

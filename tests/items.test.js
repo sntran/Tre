@@ -31,3 +31,19 @@ test('Era 1 has no coin: the coin comes with the Đinh (968), and all the goods 
   for (const id of items.basket) assert.ok(itemsOf(items, ERA1).includes(id), id);
   assert.ok(items.hud.every((id) => itemIn(items, id, ERA1)), 'no counter of the HUD in Era 1 is a coin');
 });
+
+test('no text of Era 1 says coins or a price in đồng; the coin is a thing of a later time', () => {
+  const origins = load('data/world/origins.json');
+  const numbers = Object.entries(vi).filter(([k]) => /^num\.\d+$/.test(k)).map(([, v]) => v.toLowerCase());
+  assert.equal(origins.things.coin.from, items.items.coin.from, 'the item and the thing of the coin have one year');
+  for (const [lang, texts] of [['vi', vi], ['en', en]]) {
+    for (const [k, v] of Object.entries(texts)) {
+      if (k === items.items.coin.nameKey) continue;
+      assert.ok(!/(?<!\p{L})(coins?|tiền|xu)(?!\p{L})/iu.test(v), `${lang} ${k}: a coin word`);
+      // A price: a parameter, the word giá (a price), or a number word before đồng.
+      assert.ok(!/(\}|giá)\s+đồng(?!\p{L})/iu.test(v) && !numbers.some((n) => v.toLowerCase().includes(`${n} đồng`)), `${lang} ${k}: a price in đồng`);
+    }
+  }
+  // No market line names a price: the seller says a rate of goods.
+  for (const k of Object.keys(vi).filter((x) => x.startsWith('event.market'))) assert.ok(!/đồng/iu.test(vi[k]) && !/coin|cost|price/i.test(en[k]), k);
+});
