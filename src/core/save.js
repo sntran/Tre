@@ -441,8 +441,20 @@ export function validate(profile, { grades = null } = {}) {
         if (e.again !== undefined && (!isObj(e.again) || !Number.isInteger(e.again.set) || !Number.isInteger(e.again.after))) fail(`facts ${skill}.${key}.again`);
         if (e.again?.round !== undefined) int(e.again.round, `facts ${skill}.${key}.again.round`, 0, 1e9);
         if (e.again?.activity !== undefined && !/^[a-z-]{1,24}$/.test(String(e.again.activity))) fail(`facts ${skill}.${key}.again.activity`);
+        // The history of the fact (#25): the activity and the week of its first right commit, and the
+        // later week when it was still right.
+        if (e.from !== undefined && !/^[a-z-]{1,24}$/.test(String(e.from))) fail(`facts ${skill}.${key}.from`);
+        for (const k of ['fromWk', 'kept']) if (e[k] !== undefined) int(e[k], `facts ${skill}.${key}.${k}`, 0, 1e9);
       }
     }
+  }
+  // The tables of the facts of this week and of the week before (src/core/planting.js, snapFacts).
+  if (profile.factSnap !== undefined) {
+    const f = profile.factSnap;
+    if (!isObj(f) || !isObj(f.cur) || !isObj(f.prev)) fail('factSnap');
+    int(f.week, 'factSnap.week', 0, 1e9);
+    if (f.prevWeek !== null) int(f.prevWeek, 'factSnap.prevWeek', 0, 1e9);
+    for (const t of [f.cur, f.prev]) for (const [k, v] of Object.entries(t)) if (!/^[a-z0-9.]{1,40}$/.test(k) || !/^[-egc]{100}$/.test(String(v))) fail(`factSnap.${k}`);
   }
   // The round of all the activities that use the memory of the facts (the commits so far).
   if (profile.factRound !== undefined) int(profile.factRound, 'factRound', 0, 1e9);

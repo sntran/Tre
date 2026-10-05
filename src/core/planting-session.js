@@ -4,7 +4,7 @@
 // The rules of the plots are in src/core/planting.js; the world part is in
 // src/core/world/systems/plant.js.
 import { getEntity, query, addEntity, removeEntity } from './world/state.js';
-import { nextOffers, recordFact, seedbedFor, eventOf, stageOf } from './planting.js';
+import { nextOffers, recordFact, seedbedFor, eventOf, stageOf, snapFacts } from './planting.js';
 import { setupPlant, plotsOf } from './world/systems/plant.js';
 
 const NEXT = 2.5; // seconds from the end of a planting to the next round
@@ -197,8 +197,9 @@ export function createPlanting(deps) {
     }
     const mem = ((profile.facts ??= {})[def.skill] ??= {});
     const ok = ev.result === 'exact' && ev.commits === 1;
-    recordFact(mem, ev.key, { ok, day: today(), set: s.set, index: s.index, form: ev.form, round: profile.factRound ?? 0, activity: 'planting' }, def);
+    recordFact(mem, ev.key, { ok, day: today(), set: s.set, index: s.index, form: ev.form, round: profile.factRound ?? 0, activity: 'planting', week: deps.week?.() }, def);
     profile.factRound = (profile.factRound ?? 0) + 1;
+    if (deps.week) snapFacts(profile, deps.week());
     if (ok) (s.done ??= []).push(ev.key);
     deps.sheaf?.();
     s.used.push(ev.form);

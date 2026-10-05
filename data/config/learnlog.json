@@ -85,8 +85,8 @@
     "fast": 3, "idle": 60, "gap": 300, "leave": 20, "missRun": 3, "hop": 60, "near": 1, "recall": [2, 4, 6, 10, 20], "few": 3
   },
   "activities": {
-    "_about": "The activity of a task or a mentor key (src/core/learnlog.js, activityOf): the ids of the practice links (data/world/practice.json), the bridge, the small events, and the raids. A key that ends with - is the beginning of task ids.",
-    "trial-scholar": "bo-que", "trial-smith": "ren-sat", "trial-fisher": "cam-coc", "trial-healer": "hai-thuoc", "trial-woodcutter": "chat-tre", "trial-plant": "cay-lua", "trial-ducks": "cho-vit-an", "trial-traps": "dat-lo", "trial-drum": "mua-trong", "folk-loco": "nhay-lo-co", "folk-rope": "nhay-day", "bridge": "bridge", "trial-event-": "events", "event-": "events", "raid-": "raids"
+    "_about": "The activity of a task or a mentor key (src/core/learnlog.js, activityOf): the ids of the practice links (data/world/practice.json), the bridge, the small events, and the raids. A key that ends with - is the beginning of task ids. planting, ducks, traps, and drum are the activities of the memory of the facts (src/core/planting.js, from).",
+    "trial-scholar": "bo-que", "trial-smith": "ren-sat", "trial-fisher": "cam-coc", "trial-healer": "hai-thuoc", "trial-woodcutter": "chat-tre", "trial-plant": "cay-lua", "trial-ducks": "cho-vit-an", "trial-traps": "dat-lo", "trial-drum": "mua-trong", "folk-loco": "nhay-lo-co", "folk-rope": "nhay-day", "bridge": "bridge", "trial-event-": "events", "event-": "events", "raid-": "raids", "planting": "cay-lua", "ducks": "cho-vit-an", "traps": "dat-lo", "drum": "mua-trong"
   },
   "summary": [
     "v", "grade", "days", "variant",

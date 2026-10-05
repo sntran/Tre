@@ -130,3 +130,40 @@ test('learning to learn and the questions of the teacher, each week; the weeks o
   assert.deepEqual(w.quizKnown, [2, 2]);
   assert.deepEqual(both.weeks, rollupEvents([...day1, ...day2], opts).base.weeks, 'the same as the roll-up of all the events');
 });
+
+test('the history of the facts: where a fact was first right, if it stayed a week later, and the table of last week', async () => {
+  const { recordFact, snapFacts, factString } = await import('../src/core/planting.js');
+  const { validate } = await import('../src/core/save.js');
+  const { createProfile } = await import('../src/core/profile.js');
+  const data = load('data/world/planting.json');
+  const p = createProfile({ id: 'p1', name: 'An', gender: 'girl', grade: 2, now: 1000 });
+  const mem = ((p.facts ??= {})['math.mul.10'] = {});
+  const w = weekOf(MON);
+  const rec = (key, ok, week, activity = 'drum') => recordFact(mem, key, { ok, day: 1, set: 0, index: 0, form: 'rows', round: 0, activity, week }, data);
+  rec('3x7', false, w);
+  assert.equal(mem['3x7'].from, undefined, 'a miss is not learning');
+  rec('3x7', true, w);
+  assert.equal(mem['3x7'].from, 'drum');
+  assert.equal(mem['3x7'].fromWk, w);
+  rec('3x7', true, w, 'ducks');
+  assert.equal(mem['3x7'].from, 'drum', 'the first activity stays');
+  assert.equal(mem['3x7'].kept, undefined, 'the same week is not a later check');
+  rec('3x7', true, w + 1, 'ducks');
+  assert.equal(mem['3x7'].kept, w + 1, 'still right a week later');
+  assert.equal(factString(mem).length, 100);
+  assert.equal(factString(mem)[2 * 10 + 6], 'c', 'row three, column seven: confident after three right commits');
+  // The table of this week, and of the week before.
+  snapFacts(p, w);
+  rec('6x8', true, w + 1);
+  const snap = snapFacts(p, w + 1);
+  assert.equal(snap.prevWeek, w);
+  assert.equal(snap.prev['math.mul.10'][5 * 10 + 7], '-', 'last week: six times eight was not met yet');
+  assert.equal(snap.cur['math.mul.10'][5 * 10 + 7], 'g');
+  assert.equal(validate(p), true, 'the save keeps the history');
+});
+
+test('a question of the teacher on a fact of the table goes to the log, with the fact and whether the world knows it', async () => {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync('src/ui/quiz.js', 'utf8');
+  assert.match(src, /ctx\.log\?\.\('quiz', \{ skill: problem\.skill, fact, known, correct: ok \}\)/);
+});

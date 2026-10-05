@@ -4,7 +4,7 @@
 // the natural end of a set. No DOM, no WebGL. The rules are in src/core/hamlet.js; the world part
 // is in src/core/world/systems/hamlet.js.
 import { getEntity, addEntity, removeEntity } from './world/state.js';
-import { recordFact, factPool, chooseForm } from './planting.js';
+import { recordFact, factPool, chooseForm, snapFacts } from './planting.js';
 import { nextTask, duckTask, trapTask, trapPool, drumTask, activityRng, hamletEvent, newTable, feedDucks, dawnTable, feastNow, serveFeast, pointTo } from './hamlet.js';
 import { setupDucks, setupTraps, setupDrum, clearActivity, tzOf, ACTIVITIES } from './world/systems/hamlet.js';
 
@@ -167,8 +167,9 @@ export function createHamlet(deps) {
     }
     const mem = ((profile.facts ??= {})[memDef.skill] ??= {});
     const record = (key, ok) => {
-      recordFact(mem, key, { ok, day: today(), set: s.set, index: s.index, form: ev.form, round: profile.factRound ?? 0, activity: act }, memDef);
+      recordFact(mem, key, { ok, day: today(), set: s.set, index: s.index, form: ev.form, round: profile.factRound ?? 0, activity: act, week: deps.week?.() }, memDef);
       profile.factRound = (profile.factRound ?? 0) + 1;
+      if (deps.week) snapFacts(profile, deps.week());
     };
     if (act === 'drum') {
       // The dance: the fact of the group, and the fact of each beat that the child missed.

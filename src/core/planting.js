@@ -27,15 +27,41 @@ export function factTable(mem = {}) {
   return Array.from({ length: 10 }, (_, i) => Array.from({ length: 10 }, (_, j) => factState(mem[factKey(i + 1, j + 1)])));
 }
 
+// The table as one string of 100 letters, row by row (a from one to ten, then b): - (not met
+// yet), e (exploring), g (getting there), c (confident).
+export const factString = (mem = {}) => factTable(mem).flat().map((st) => (st ? st[0] : '-')).join('');
+
+// Keep the table of each skill of this week, and of the week before (the last week with play),
+// so that the parent page shows last week beside this week (#25). week: weekOf of the device.
+export function snapFacts(profile, week) {
+  const snap = (profile.factSnap ??= { week, cur: {}, prev: {}, prevWeek: null });
+  if (snap.week !== week) {
+    snap.prev = snap.cur;
+    snap.prevWeek = snap.week;
+    snap.week = week;
+  }
+  snap.cur = Object.fromEntries(Object.entries(profile.facts ?? {}).map(([skill, mem]) => [skill, factString(mem)]));
+  return snap;
+}
+
 // Record a commit on a fact. ok: an efficient first-try success. day: the game day. set and
 // index: the set and the plot of the set, so that a missed fact comes back in the same set, after
 // `again` plots, in another form than `form`.
 // round: the count of the commits of all the activities of the skill (profile.factRound), so that a
 // missed fact comes back soon in any activity (activity: where it was missed).
-export function recordFact(mem, key, { ok, day, set, index, form, round, activity }, data) {
+// week: the week of the device (src/core/learnlog.js, weekOf), for the weekly note of the parents
+// (#25): the first right commit of a fact keeps its activity and week (from, fromWk), and a right
+// commit in a later week keeps that week (kept): the fact stayed.
+export function recordFact(mem, key, { ok, day, set, index, form, round, activity, week }, data) {
   const e = (mem[key] ??= { box: 0, due: 0, n: 0, miss: 0 });
   e.n += 1;
   e.last = day;
+  if (ok && week !== undefined) {
+    if (e.from === undefined) {
+      e.from = activity ?? 'planting';
+      e.fromWk = week;
+    } else if (e.kept === undefined && week > e.fromWk) e.kept = week;
+  }
   if (ok) {
     e.box = Math.min((e.box ?? 0) + 1, data.boxes.length);
     e.due = day + data.boxes[e.box - 1];

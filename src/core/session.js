@@ -35,7 +35,8 @@
 import { findPath, pathNextTo, createPlaneTileMap, footprint } from './tilemap.js';
 import { createTriggers } from './triggers.js';
 import { currentGoal } from './quests.js';
-import { offOf } from './learnlog.js';
+import { offOf, weekOf } from './learnlog.js';
+import { snapFacts } from './planting.js';
 import { clueLine as clueOf, hiddenAt, areaOf, inArea } from './clues.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
 import { createDialogue } from './dialogue.js';
@@ -149,9 +150,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     },
     stop: (act) => stopExample(state, act),
   };
+  // The week of the device (src/core/learnlog.js, weekOf), for the history of the facts (#25).
+  const week = () => weekOf(now(), profile.log?.tz ?? 0);
+  if (profile.facts) snapFacts(profile, week());
   // The planting of Xóm Ruộng (docs/PLANTING.md): its sets, rounds, lines, and paddies.
   const planting = createPlanting({
-    data, profile, learner, emit, mentoring, examples, world: () => state, env: () => env, map: () => map,
+    data, profile, learner, emit, mentoring, examples, week, world: () => state, env: () => env, map: () => map,
     seed: () => state.seed, clock: () => state.clock.minutes, rain: () => state.sky?.rain ?? 0,
     say: (...a) => say(...a), talk: (id) => talk(id), save: (why) => save(why), busy: () => busy,
     // The planter points to another station at the end of a set.
@@ -167,7 +171,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   });
   // The ducks, the fish traps, and the drum dance of Xóm Ruộng (docs/HAMLET.md).
   const hamlet = createHamlet({
-    data, profile, learner, emit, mentoring, examples, nameOf, world: () => state, env: () => env,
+    data, profile, learner, emit, mentoring, examples, nameOf, week, world: () => state, env: () => env,
     seed: () => state.seed, clock: () => state.clock.minutes, rain: () => state.sky?.rain ?? 0,
     say: (...a) => say(...a), talk: (id) => talk(id), save: (why) => save(why), busy: () => busy,
     callout: (textKey, params, who) => emit({ type: 'open', screen: 'callout', id: `npc:${who}`, textKey, params }),

@@ -5,6 +5,7 @@ import { h, img, button, wait } from './dom.js';
 import { t, tg } from './i18n.js';
 import { speak, whenQuiet } from './speak.js';
 import { renderQuestion, feedbackLine, textOf, answerText } from './question.js';
+import { factKey, factState } from '../core/planting.js';
 import { portrait } from './dialogue.js';
 import { portraitCanvas } from './portraits.js';
 import { checkAnswer } from '../core/solver.js';
@@ -86,6 +87,14 @@ export function runQuiz(ctx, opts) {
       recorded = true;
       const change = ctx.learner.record(problem, ok);
       ctx.profile.stats[ok ? 'correct' : 'mistakes'] += 1;
+      // The outside check of the facts of the table (#25, rule 26): the fact, and whether the child
+      // knows it in the world (confident in the memory of the facts).
+      if (/^math\.mul\./.test(problem.skill) && problem.expr?.op === 'mul') {
+        const { a, b } = problem.expr;
+        const fact = a >= 1 && a <= 10 && b >= 1 && b <= 10 ? factKey(a, b) : null;
+        const known = Boolean(fact && Object.values(ctx.profile.facts ?? {}).some((mem) => factState(mem[fact]) === 'confident'));
+        ctx.log?.('quiz', { skill: problem.skill, fact, known, correct: ok });
+      }
       opts.onEach?.({ problem, ok, change });
     }
 
