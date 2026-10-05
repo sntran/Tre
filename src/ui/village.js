@@ -8,6 +8,7 @@ import { edgeMarker } from '../core/hit.js';
 import { portraitCanvas, heroLookOf, speakerLookOf, prerender, portraitStats } from './portraits.js';
 import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../core/world/move.js';
 import { getEntity, query } from '../core/world/state.js';
+import { basketOf } from '../core/items.js';
 import { STEP } from '../core/world/step.js';
 import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, starOn, puddlesAt } from '../core/world/ambient.js';
 import { rainOf } from '../core/world/systems/sky.js';
@@ -280,6 +281,9 @@ export async function mountVillage(ctx, params = {}) {
   const hud = h('div', { class: 'hud' });
   const goalBtn = h('button', { class: 'goal', type: 'button' });
   const counts = h('div', { class: 'counts' });
+  // The counter of rice shows the basket of the household; the other goods of the basket fly to it.
+  const BASKET = data.items.basket?.[0] ?? null;
+  const slotOf = (item) => (data.items.basket?.includes(item) ? BASKET : item);
   const heroFace = h('button', { class: 'hud-hero', type: 'button', 'aria-label': t('ui.home') }, [
     h('span', { class: 'mini-portrait' }, [portraitCanvas(ctx, heroLookOf(ctx), { size: 44 })]),
     h('span', { class: 'hud-name', text: profile.hero.name }),
@@ -408,13 +412,36 @@ export async function mountVillage(ctx, params = {}) {
       ? [h('span', { class: 'goal-pips', 'aria-hidden': 'true' }, Array.from({ length: goal.progress.need }, (_, i) => h('i', { class: `pip pip-${goal.step.pip}${i < goal.progress.have ? ' on' : ''}` })))]
       : [];
     goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), h('span', { class: 'goal-text', text: tn(goalKey, goalParams) }), ...pips);
-    // A coin on its way to the bag is not in the count yet: the count ticks up when it lands.
-    counts.replaceChildren(...data.items.hud.map((item) => h('span', { class: 'count', dataset: { item } }, [
-      img(data.items.items[item].art, 'count-icon'),
-      h('span', { text: String((profile.inventory[item] ?? 0) - (flying[item] ?? 0)) }),
-    ])));
+    // A thing on its way to the basket is not in the count yet: the count ticks up when it lands.
+    // The counter of rice is the basket of the household (#26): a tap opens it.
+    counts.replaceChildren(...data.items.hud.map((item) => {
+      const basket = item === BASKET;
+      const el = h(basket ? 'button' : 'span', { class: `count${basket ? ' basket' : ''}`, dataset: { item }, ...(basket ? { type: 'button', 'aria-label': t('basket.title') } : {}) }, [
+        img(basket ? data.items.basketArt : data.items.items[item].art, 'count-icon'),
+        h('span', { text: String((profile.inventory[item] ?? 0) - (flying[item] ?? 0)) }),
+      ]);
+      if (basket) el.addEventListener('click', openBasket);
+      return el;
+    }));
   }
   goalBtn.addEventListener('click', () => speak(goalKey, goalParams, { force: true }));
+  // The basket of the household: all the goods of barter, with the count of each (#26).
+  function openBasket() {
+    ctx.log('action', { kind: 'basket' });
+    const layer = h('div', { class: 'modal-layer' });
+    const close = () => layer.remove();
+    const rows = basketOf(data.items, profile.inventory).map(({ id, n }) => h('li', { class: 'basket-row' }, [
+      img(data.items.items[id].art, 'count-icon'),
+      h('span', { class: 'basket-name', text: t(data.items.items[id].nameKey) }),
+      h('span', { class: 'basket-n', text: String(n) }),
+    ]));
+    layer.append(h('div', { class: 'panel basket-panel' }, [
+      h('div', { class: 'panel-head' }, [h('h2', { text: t('basket.title') }), button(null, close, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') })]),
+      h('ul', { class: 'basket-list' }, rows),
+    ]));
+    layer.addEventListener('click', (e) => { if (e.target === layer) close(); });
+    ctx.ui.append(layer);
+  }
 
   // The top of a figure, for its quest star (world units).
   const figureTop = (id) => {
@@ -918,7 +945,7 @@ export async function mountVillage(ctx, params = {}) {
   // A coin that an enemy took at the gate: it flies from its counter in the HUD to the enemy.
   function flyFromCounter(toId, item, delay) {
     const f = figures.placeOf(toId);
-    const counter = counts.querySelector(`[data-item="${item}"] .count-icon`);
+    const counter = counts.querySelector(`[data-item="${slotOf(item)}"] .count-icon`);
     updateHud();
     if (!f || !counter || !data.items.items[item]) return;
     const box = counter.getBoundingClientRect();
@@ -985,7 +1012,7 @@ export async function mountVillage(ctx, params = {}) {
     // the place of its entity.
     const q = getEntity(state, fromId)?.position;
     const f = figures.placeOf(fromId) ?? (q ? { x: q.x / 2, y: q.y / 2, z: q.z / 2 } : null);
-    const counter = counts.querySelector(`[data-item="${item}"]`);
+    const counter = counts.querySelector(`[data-item="${slotOf(item)}"]`);
     if (!f || !counter || !data.items.items[item]) {
       updateHud();
       return;
@@ -997,7 +1024,7 @@ export async function mountVillage(ctx, params = {}) {
     marks.append(el);
     const t0 = performance.now() + delay * 1000;
     const tick = (now) => {
-      const box = counts.querySelector(`[data-item="${item}"] .count-icon`)?.getBoundingClientRect();
+      const box = counts.querySelector(`[data-item="${slotOf(item)}"] .count-icon`)?.getBoundingClientRect();
       const base = canvas.getBoundingClientRect();
       const end = box ? { x: box.left + box.width / 2 - base.left, y: box.top + box.height / 2 - base.top } : { x: start.x, y: 0 };
       const k = Math.max(0, Math.min(1, (now - t0) / 700));
@@ -1014,7 +1041,7 @@ export async function mountVillage(ctx, params = {}) {
       if (!alive) return;
       updateHud();
       ctx.bus.emit('sound', 'pickup');
-      const c = counts.querySelector(`[data-item="${item}"]`);
+      const c = counts.querySelector(`[data-item="${slotOf(item)}"]`);
       c?.classList.add('tick');
       setTimeout(() => c?.classList.remove('tick'), 300);
     };

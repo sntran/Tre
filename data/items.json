@@ -1,10 +1,16 @@
 {
-  "_about": "Items and materials. loss: the item can be lost after a lost battle (see config/game.json).",
+  "_about": "Items and materials, and the goods of barter (#26; docs/WORLD.md, 'Barter'). from: the first year of the item in the world (null: always). Era 1 (the time of the Hùng Kings) trades by barter: the goods of the household are rice (a measure of rice), rice balls, fish, eggs, and clay pots. The coin comes with the Đinh (968 to 981, the Thái Bình Hưng Bảo; https://en.wikipedia.org/wiki/Vietnamese_cash), so it is not in Era 1; it is kept here for a later era. basket: the goods of the household, in the order of the basket panel (the first one, rice, is the counter of the basket in the HUD, with the picture basketArt). hud: the counters of the HUD; the counter of rice shows the basket, and a tap on it opens the basket. loss: the items that can be lost after a lost battle (see config/game.json).",
   "items": {
-    "coin": { "art": "item/coin", "nameKey": "item.coin.name" },
-    "iron": { "art": "item/iron", "nameKey": "item.iron.name" },
-    "bamboo": { "art": "item/bamboo", "nameKey": "item.bamboo.name" },
-    "rice": { "art": "item/rice", "nameKey": "item.rice.name" }
+    "coin": { "art": "item/coin", "nameKey": "item.coin.name", "from": 968 },
+    "iron": { "art": "item/iron", "nameKey": "item.iron.name", "from": null },
+    "bamboo": { "art": "item/bamboo", "nameKey": "item.bamboo.name", "from": null },
+    "rice": { "art": "item/rice", "nameKey": "item.rice.name", "from": null },
+    "riceball": { "art": "item/riceball", "nameKey": "item.riceball.name", "from": null },
+    "fish": { "art": "item/fish", "nameKey": "item.fish.name", "from": null },
+    "egg": { "art": "item/egg", "nameKey": "item.egg.name", "from": null },
+    "pot": { "art": "item/pot", "nameKey": "item.pot.name", "from": null }
   },
-  "hud": ["coin", "iron", "bamboo"]
+  "basket": ["rice", "riceball", "fish", "egg", "pot"],
+  "basketArt": "item/basket",
+  "hud": ["rice", "iron", "bamboo"]
 }
