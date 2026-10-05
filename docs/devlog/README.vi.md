@@ -10,6 +10,7 @@ Chúng tôi viết cho các bậc cha mẹ và cho bất kỳ ai muốn biết v
 
 | Ngày | Bài viết |
 | --- | --- |
+| 5/10/2026 | [Ông Dương và chị Hến: cách gọi tên ở miền Bắc](2026-10-05-names-in-the-north.vi.md) |
 | 5/10/2026 | [Cô Năm, chứ không phải cô Cấy: tên gọi, từ ngữ, và bắp ngô](2026-10-05-names-words-and-corn.vi.md) |
 | 5/10/2026 | [Làm mẫu một lần, rồi lùi lại](2026-10-05-show-once-then-step-back.vi.md) |
 | 4/10/2026 | [Không bao giờ là một trang trắng](2026-10-04-never-a-blank-page.vi.md) |
