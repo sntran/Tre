@@ -4,6 +4,9 @@
 // in the form { key: "other.key", params: {...} }.
 // The text "[[id]]" is a glossary mark. It shows the name "gloss.<id>.name".
 // In English mode, the first mark of an id also shows "gloss.<id>.meaning".
+// The text "{w:đâu}" in a line of a person is a word that can change: it shows the word of the way
+// of speaking of the region (setSpeech; src/core/speech.js), or the word itself.
+import { speak as speakWay } from './speech.js';
 
 const PARAM = /\{([a-zA-Z0-9_]+)\}/g;
 const GLOSS = /\[\[([a-z0-9_-]+)\]\]/g;
@@ -35,6 +38,7 @@ export function capitalize(text) {
 }
 
 export function createI18n(dict, lang, fallback = null) {
+  let speech = null; // the words of the way of speaking of the region of the map (null: the whole country)
   function has(key) {
     return Object.prototype.hasOwnProperty.call(dict, key) ||
       (fallback !== null && Object.prototype.hasOwnProperty.call(fallback, key));
@@ -59,8 +63,9 @@ export function createI18n(dict, lang, fallback = null) {
   // "?", or "…") starts with a capital letter, for example "{name} is calm." -> "The scout is calm."
   function t(key, params) {
     params = params ?? {};
-    const text = raw(key);
-    if (text === null) return key;
+    const marked = raw(key);
+    if (marked === null) return key;
+    const text = speakWay(marked, speech);
     return text.replace(PARAM, (all, name, offset) => {
       if (!Object.prototype.hasOwnProperty.call(params, name)) return all;
       const v = value(params[name]);
@@ -93,5 +98,8 @@ export function createI18n(dict, lang, fallback = null) {
     });
   }
 
-  return { lang, t, has, gloss, plain, raw };
+  // The way of speaking of the region of the map: a table of words (null: the whole country).
+  const setSpeech = (table) => { speech = table && Object.keys(table).length ? table : null; };
+
+  return { lang, t, has, gloss, plain, raw, setSpeech };
 }

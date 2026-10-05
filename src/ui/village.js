@@ -20,9 +20,10 @@ import { workBoxes, workTurn } from '../world/fade.js';
 import { VIEW, viewSize, inView } from '../world/view.js';
 import { heroLook, thingLook } from '../world/figures.js';
 import { h, img, button } from './dom.js';
-import { t, tn } from './i18n.js';
+import { t, tn, setSpeech } from './i18n.js';
+import { speechTable, speechWay } from '../core/speech.js';
 import { speak } from './speak.js';
-import { createDialogueBox } from './dialogue.js';
+import { createDialogueBox, glossLine } from './dialogue.js';
 import { createRaidView } from './raid.js';
 import { createStream } from './stream.js';
 import { landStore } from './landstore.js';
@@ -187,6 +188,8 @@ export async function mountVillage(ctx, params = {}) {
   const mapData = session.map;
   const tileMap = session.tileMap;
   const terrain = session.terrain;
+  // The people of the region speak the words of its way (data/world/speech.json, #39).
+  setSpeech(speechTable(data.speech, speechWay(data.regions, session.map.region)));
   const state = session.state;
   // One view for each map, made once for its terrain. The far land and the mist fade into the
   // paper (mistAt: 0 in the land of the era, 1 deep in the mist).
@@ -459,7 +462,9 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     if (ev.screen === 'callout') {
-      showBubble(ev.id, t(ev.textKey, ev.params));
+      // The first time of a word of a region, its gloss shows in the bubble too (#39).
+      const gloss = glossLine(ctx, ev.textKey);
+      showBubble(ev.id, gloss ? `${t(ev.textKey, ev.params)}\n${gloss}` : t(ev.textKey, ev.params));
       return;
     }
     // A story that plays in the storybook stays in the village: the other screens show as a
@@ -1376,6 +1381,7 @@ export async function mountVillage(ctx, params = {}) {
   return {
     unmount() {
       alive = false;
+      setSpeech(null);
       if (warming) ctx.endLoading();
       if (ctx.activeVillage === api) ctx.activeVillage = null;
       box?.close();

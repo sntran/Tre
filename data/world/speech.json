@@ -1,0 +1,9 @@
+{
+  "_about": "The ways of speaking of the people of a region (#39; src/core/speech.js; docs/WORLD.md). A line of a person marks a word that can change ({w:đâu}); the game puts the word of the way of speaking of the region of the map (speech in data/world/regions.json). north speaks the words of the whole country (từ ngữ toàn dân), with no change: the north, and every region before the 18th century. center and south are the center and the south from the 18th century on. The narrator, the screens, the menus, the parent page, the lines of the hero, and the words of the math never change: they have no marks. The first time a child meets a word of a region, a small gloss shows under the line (mô = đâu). people: the keys of the language files that are lines of people (a dialogue line is a line of a person when its speaker is a person). Sources: VietJack, https://vietjack.com/tai-lieu-tieng-viet/phan-biet-tu-ngu-toan-dan-va-tu-ngu-dia-phuong-pbtv.jsp; Ngữ văn 8, Từ ngữ địa phương và biệt ngữ xã hội.",
+  "ways": {
+    "north": { "words": {} },
+    "center": { "words": { "đâu": "mô", "gì": "chi", "sao": "răng", "thế": "rứa", "kia": "tê", "này": "ni", "mẹ": "mạ", "cô": "o" } },
+    "south": { "words": { "mẹ": "má", "bố": "ba", "hoa": "bông", "lợn": "heo", "quả": "trái", "tôi": "tui", "ngô": "bắp" } }
+  },
+  "people": ["dlg.", "mentor.", "event.", "plant.", "hamlet.", "ducks.", "traps.", "drum.", "example.", "smith.", "gift.", "world.greet.", "world.market."]
+}

@@ -1273,6 +1273,7 @@
   "ui.jump": "Jump",
   "ui.keys": "Keys: the arrows or W A S D to walk, Shift to run, Space (or J) to jump, E (or Enter) as the action button, Z and C to turn the view. A touch on a place walks you there. The action button works with the thing in front of you (the thing with the thick outline): pick up, put down, take back, talk, or ask a person to check the work. The picture on the button shows what it will do. On a touch screen: the stick at the bottom left; the jump button and the large action button at the bottom right.",
   "place.xomruong": "Xóm Ruộng, the hamlet of the paddies",
+  "speech.gloss": "“{local}” = “{word}”",
   "kin.co": "Cô {order}",
   "kin.chu": "Chú {order}",
   "kin.bac": "Bác {order}",

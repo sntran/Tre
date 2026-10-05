@@ -1,11 +1,24 @@
 // Load the language files and put text into the DOM.
 import { createI18n } from '../core/i18n.js';
+import { glossesOf } from '../core/speech.js';
 
 const dicts = {};
 let active = createI18n({}, 'vi');
 const seenGloss = new Set();
 // Values that all texts can use, for example the name of the hero.
 let globals = {};
+// The words of the way of speaking of the region of the map (#39): null for the whole country.
+let speech = null;
+
+export function setSpeech(table) {
+  speech = table ?? null;
+  active.setSpeech(speech);
+}
+
+// The words of a region in a line (the marks of its text): [{ word, local }], for the gloss.
+export function regionalWords(key) {
+  return glossesOf(active.raw(key) ?? '', speech);
+}
 
 export function setGlobalParams(values) {
   globals = { ...values };
@@ -24,6 +37,7 @@ export async function setLanguage(lang) {
   // Use the other language only when a key is missing. A test makes sure this does not occur.
   const other = lang === 'vi' ? 'en' : 'vi';
   active = createI18n(dict, lang, dicts[other] ?? null);
+  active.setSpeech(speech);
   document.documentElement.lang = lang;
   applyText(document.body);
   return active;

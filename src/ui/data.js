@@ -41,6 +41,7 @@ export const FILES = {
   hamlet: 'data/world/hamlet.json',
   naming: 'data/world/naming.json',
   origins: 'data/world/origins.json',
+  speech: 'data/world/speech.json',
 };
 
 async function fetchJson(path) {

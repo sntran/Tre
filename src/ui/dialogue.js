@@ -3,10 +3,11 @@
 import { createDialogue } from '../core/dialogue.js';
 import { applyEffects, conditionState } from '../core/game.js';
 import { h, img, button } from './dom.js';
-import { t, tg } from './i18n.js';
+import { t, tg, regionalWords } from './i18n.js';
 import { speak, stop } from './speak.js';
 import { voiceOf } from '../core/voices.js';
 import { personName, wayOf } from '../core/naming.js';
+import { newGlosses } from '../core/speech.js';
 import { capitalize } from '../core/i18n.js';
 
 // The data for the voice of a speaker.
@@ -26,6 +27,13 @@ export function portrait(ctx, speaker, mood = 'calm') {
   const look = speakerLookOf(ctx, speaker);
   if (!look) return null;
   return h('div', { class: 'portrait' }, [portraitCanvas(ctx, look, { framing: 'bust', mood: mood ?? 'calm', size: 96 })]);
+}
+
+// The small gloss under a line of a person, the first time that the child meets a word of a region
+// ("mô = đâu", #39): one time for each word (profile.seenGloss). Null when there is none.
+export function glossLine(ctx, textKey) {
+  const fresh = newGlosses(regionalWords(textKey), (ctx.profile.seenGloss ??= []));
+  return fresh.length ? fresh.map((g) => t('speech.gloss', { local: g.local, word: g.word })).join(' · ') : null;
 }
 
 export function speakerName(ctx, speaker) {
@@ -65,9 +73,11 @@ export function createDialogueBox(ctx, { next, choose }) {
     if (line.mark) box.append(h('div', { class: `mark mark-${line.mark}`, text: t(`mark.${line.mark}`) }));
     const face = portrait(ctx, line.speaker, line.mood);
     if (face) box.append(face);
+    const gloss = narrator ? null : glossLine(ctx, line.textKey);
     const body = h('div', { class: 'dialogue-body' }, [
       narrator ? null : h('div', { class: 'speaker', text: speakerName(ctx, line.speaker) }),
       h('p', { class: narrator ? 'line narrator' : 'line', text }),
+      gloss ? h('p', { class: 'speech-gloss', text: gloss }) : null,
     ]);
     box.append(body);
     const tools = h('div', { class: 'dialogue-tools' }, [
