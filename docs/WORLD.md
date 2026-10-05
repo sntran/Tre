@@ -249,6 +249,15 @@ A parent sends a link `?practice=<id>` (the tab "Practice links" of the parent p
 - **What is saved:** the learner (P(L) and the ratings of each commit), the learning log (the session has the practice id: `practice` in `data/config/learnlog.json`), the reward, the changes of the world, and `profile.practice[<id>]`: the level of the next round and the count of sets. The next visit goes on from that level. The flag of the trial of the story does not change: a practice is not the story. (The notebook of prints is not in the game yet; it will save with the profile too.)
 - **Stories:** each activity has a story `tests/stories/practice-<id>.json` (`"practice": "<id>"`) that opens the link with a profile and plays a set (`?story=practice-<id>&play`). `tests/practice.test.js` tests the link, the data, the night, the levels, a device with no profile, the save after "go back", and the links of the parent page.
 
+## The names of people
+
+A person of a village is called by a word of kinship to the child and the order of birth in the family ("cô Năm", "chú Tư"), never by a nickname from the work (#38). The word for the order follows the way of naming of the region of the map: `naming` of each region in `data/world/regions.json`, and the ways in `data/world/naming.json`. In the north, and in all regions before the 18th century, the first child is Cả and the second Hai; in the center and the south from the 18th century on (Tây Sơn, Gia Định), the first child is Hai.
+
+- **Data, not text:** a person in `data/npcs.json` has `kin` (cô, chú, bác, ông, bà, anh, chị, cậu, dì: the keys `kin.<id>`) and `order` (1, 2, ..., or `youngest`). `personName` in `src/core/naming.js` makes the name as a text parameter (`{ key: 'kin.co', params: { order: 'Năm' } }`), and the session gives the names of the region of the map to the lines that name people (`{who}`, and the four names of `hamlet.greet`). The dialogue box shows the name with a capital letter.
+- **English** uses the same Vietnamese names, with a capital word of kinship ("Cô Năm"), and the lines that name a person also say the work ("Cô Năm, the planter").
+- **Xóm Ruộng** (north): Cô Năm (the planter), Chị Ba (the duck girl), Chú Tư (the fisher uncle), Ông Cả (the old drummer). The head of the hamlet is Bà trưởng xóm. The people of Phù Đổng keep their names of work and kinship ("Bác thợ rèn", "Bà lang").
+- `tests/naming.test.js`: every region has a way; the same person (ông, the first child) is Ông Cả in the north and Ông Hai in the south; no text names a person Cấy, Vịt, Lưới, or Trống; the greeting of the hamlet in the game.
+
 ## Xóm Ruộng and the planting
 
 Xóm Ruộng is a quiet hand-made hamlet north of Phù Đổng (the map `xom-ruong`, a frame of the region with its own small road from the north gate). Its first activity is the planting of a paddy: the child brings just enough seedlings for a plot with row stakes and column stakes, and the planter plants them row by row. The planted plots stay as paddies that grow on the next days. See `docs/PLANTING.md`.

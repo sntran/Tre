@@ -16,7 +16,8 @@ After the planting (`docs/PLANTING.md`), Xóm Ruộng has three more activities.
 | The activities in the world: the trough, the traps, the dance | `src/core/world/systems/hamlet.js` (the system `hamlet`, before `work`) |
 | The sets in the session, the memory, the lines, the feast table, the feast | `src/core/hamlet-session.js` |
 | The small example of each station (the numbers, the script, the places) | `src/core/examples.js`, `examples` in `data/world/hamlet.json` |
-| The places on the map (trough, jar, traps, spots, weir, drums, dancers) | map E in `tools/maps/era1.py`, `data/maps/xom-ruong.json` |
+| The places on the map (trough, jar, traps, spots, weir, drums, dancers) | map E in `tools/maps/era1.py`, `data/maps/xom-ruong.json` (the houses of the duck girl and of the planter stand away from the stations, so that the view can see each station with no house in front, #38) |
+| The names of the people (Cô Năm, Chị Ba, Chú Tư, Ông Cả) | `kin` and `order` in `data/npcs.json`, `data/world/naming.json` (`docs/WORLD.md`, "The names of people") |
 | The looks: trough, feed, jar, traps, spots, weir, bronze drum, feast table, dancers | `thingLook` and `workThing` in `src/world/figures.js`, `data/figures.json` |
 | The hop of a dancer | `src/render/figure3d.js` |
 

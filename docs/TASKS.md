@@ -79,6 +79,13 @@ The raised hand is only the wave button, and the jump has its own picture: no tw
 - **The cue.** When the child does nothing for six seconds in a task, the thing to touch next glows softly: a warm disc under it that breathes, and a small breath of the thing (the event `cue`; `glow()` in `src/render/figure3d.js`). Any action of the child stops it. The cue shows how to go on, never how many: it never glows on a commit that counts.
 - After the cue, the mentor goes on as before (`docs/MENTOR.md`).
 
+### The work in sight, and one voice at a time (#38)
+
+- **The view turns to the work.** When a task or a small example starts, the session sends the points of the work (the event `workView`: its places, and its person when the person stands at the work; for an example, its things). The view turns in its steps of 90 degrees to the first angle where no house or roof covers these points, and where the person and the example stay on the screen, also on a phone held upright (`workTurn` in `src/world/fade.js`). When the angle now shows the work, the view stays. Each trial and each station has such an angle from each of the four angles (`tests/workview.test.js`); in Xóm Ruộng the houses of the duck girl and of the planter moved out of the stations for this.
+- **One person talks at a time.** A new line of a person near the hero takes away the lines of the other people over their heads, and a line in the box of a talk does too (`src/core/lines.js`). When the child starts a station while the head of the hamlet greets, the greeting ends at once, with its marks.
+- **No small talk during the work.** The person of an example, a first step, a move of a mentor, or a task that goes on says only the lines of the work; the greeting of the day and the market line wait until the work ends (`atWork` in `src/core/session.js`).
+- **The picture of talk** is a speech bubble (`art/ui/talk.svg`). The loudspeaker (`speak`) only reads a line aloud.
+
 ### Tests and stories
 
 - `tests/tasks.test.js`: for the teacher, the smith, the healer, the woodcutter, and the fisher, the act and the picture of the button at each target, one press for one thing, the take back with empty hands, and the finish at the person; a tap on a rod, the mat, the basket, the stem, or the iron only walks; Nghé on and off; the places close and apart.
