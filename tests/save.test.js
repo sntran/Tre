@@ -210,6 +210,27 @@ test('the save keeps the state of every visited map, and the place on the last m
   assert.equal(old.clock, undefined);
 });
 
+test('the version 9 makes the coins of the household measures of rice, and a market that was not done goes', () => {
+  const p = sample();
+  p.inventory = { coin: 12, rice: 3, iron: 1 };
+  p.world.entities = [
+    { id: 'hero', keep: true, control: true, position: { x: 50, y: 4, z: 60, facing: 0 }, motion: { vx: 0, vz: 0, speed: 0 }, look: 'hero' },
+    { id: 'zone:trial-event-market', keep: true, zone: { id: 'trial-event-market', rule: 'trial' }, position: { x: 1, y: 4, z: 1, facing: 0 } },
+    { id: 'coins:event-market:0', keep: true, item: { kind: 'coins', size: 10, task: 'trial-event-market' }, position: { x: 1, y: 4, z: 1, facing: 0 }, look: 'coins-10' },
+    { id: 'pot', keep: true, position: { x: 2, y: 4, z: 2, facing: 0 } },
+  ];
+  p.maps = { giong: { first: 1, last: 2, things: {}, chunks: { '0,0': { entities: [{ id: 'mark:event-market', keep: true, position: { x: 3, y: 4, z: 3, facing: 0 } }] } } } };
+  const done = migrate({ format: SAVE_FORMAT, version: 8, savedAt: 0, profile: p }).profile;
+  assert.deepEqual(done.inventory, { rice: 15, iron: 1 });
+  assert.deepEqual(done.world.entities.map((e) => e.id), ['hero', 'pot']);
+  assert.deepEqual(done.maps.giong.chunks['0,0'].entities, []);
+  assert.equal(validate(done), true);
+  // No coins: nothing changes.
+  const none = sample();
+  none.inventory = { rice: 2 };
+  assert.deepEqual(migrate({ format: SAVE_FORMAT, version: 8, savedAt: 0, profile: none }).profile.inventory, { rice: 2 });
+});
+
 test('the versions 7 and 8 put a place of a map of Era 1 on the plane, and the kept entities into their chunks', () => {
   const p = sample();
   p.world.map = 'trau-son';

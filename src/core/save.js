@@ -6,7 +6,7 @@ import { newWorldSave } from './world/save.js';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
 
 export const SAVE_FORMAT = 'tre-save';
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 export const CODE_PREFIX = 'TRE1';
 
 // MIGRATIONS[n] changes a save of version n into version n + 1.
@@ -161,6 +161,24 @@ export const MIGRATIONS = {
       if (Object.keys(chunks).length) merged.chunks = chunks;
       if (any) out.maps[REGION] = merged;
     }
+    return out;
+  },
+  // Version 9: Era 1 has no coins (#26). The coins of the household become measures of rice, one
+  // for one, and a market day that was not done (the coins on the mat) goes: the market of today
+  // comes again as barter.
+  8: (profile) => {
+    const out = structuredClone(profile);
+    const inv = out.inventory;
+    if (inv && typeof inv === 'object' && typeof inv.coin === 'number') {
+      if (inv.coin > 0) inv.rice = (typeof inv.rice === 'number' ? inv.rice : 0) + inv.coin;
+      delete inv.coin;
+    }
+    const market = (e) => e?.item?.kind === 'coins' || e?.zone?.task === 'trial-event-market' || /^(zone|mark):(trial-)?event-market/.test(String(e?.id ?? ''));
+    const drop = (o) => {
+      if (o && typeof o === 'object' && Array.isArray(o.entities)) o.entities = o.entities.filter((e) => !market(e));
+    };
+    drop(out.world);
+    for (const m of Object.values(out.maps ?? {})) for (const c of Object.values(m?.chunks ?? {})) drop(c);
     return out;
   },
 };
