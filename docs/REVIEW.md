@@ -448,3 +448,13 @@ New and changed texts, in `i18n/vi.json` and `i18n/en.json` (`docs/WORLD.md`, "F
 - **The old man on Núi Dạm** (`dam-elder`, "bác Sẻ" by the naming of the north): `clue.trau.dam` ("Ngọn này cao mà đứng một mình. Đồi Trâu thì nối nhau từng ngọn, xa hơn về phía mặt trời mọc."), and after the hero finds the hills, `dlg.dam-elder.found.n1` ("Cháu thấy đồi Trâu rồi à. Cháu đi đường cẩn thận nhé.").
 - **Please check:** "núi Trâu" and "đồi Trâu" in the lines of the people (the narrator says "núi Trâu"); "bác" for an old man who gathers wood; and that a person of a hamlet on the way would say "phía mặt trời mọc" for east.
 
+## The weekly note of the parents (#25)
+
+New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly note"). They are for parents: plain, and they must not judge the child.
+
+- **The tab:** `parent.tab.week` ("Tuần này"), `parent.week.title`, `parent.week.about`, and `parent.week.research`.
+- **The lines of the note:** `parent.week.*`, for example `parent.week.played` ("Số lần {name} chơi tuần này: {n}, mỗi lần khoảng {minutes} phút."), `parent.week.frustrated` ("{act}: {name} dừng ngay sau khi sai ({n} lần). Sau những lần như vậy, người ở đó cho việc nhỏ hơn."), and `parent.week.together.*` (a thing to play at home with beans or a drum).
+- **The tables:** `parent.week.facts.title`, `parent.week.thisWeek`, `parent.week.lastWeek`, `parent.week.acts.title`, `parent.week.act.line`, `parent.week.learned`, `parent.week.sign.*`, and `parent.week.check*`.
+- **The names of the activities and of the moves of the people:** `parent.act.*` ("Cây cầu", "Việc nhỏ trong ngày", "Giữ làng") and `parent.move.*` (for example "thử trước rồi mới giúp").
+- **Please check:** "đã chắc" for a confident fact; "có lúc chán" and "có lúc nản" for restless and frustrated; "say mê" for keen; and that no line sounds like a grade or a judgment of the child.
+

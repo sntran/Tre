@@ -26,7 +26,7 @@ Each event has `type`, `t` (the time), and `variant`, and the fields of its kind
 
 | Kind | Fields | Sent by |
 | --- | --- | --- |
-| `attempt` | task, skill, phase (explore or commit), success, efficient, first, mashing, parts, resets, latencies, hint, hintSeen, pBefore, pAfter, play, retry, harder, map | the village, for each skill event of a commit on the bridge |
+| `attempt` | task, skill, phase (explore or commit), success, efficient, first, mashing, parts, resets, latencies, hint, hintSeen, off (how far the commit was from the target, in groups: 0 is exact), pBefore, pAfter, play, retry, harder, map | the village, for each skill event of a commit on the bridge |
 | `session` | start, end, endedBy (device, parent, or child), quests, place, afterQuest, first (the first action), practice (the id of the activity of a practice link, or null) | the app, at the end of a session |
 | `review` | skill, due, gap (days since the last practice), result | the learner, for an answer for a mastered skill that is due |
 | `exam` | skill, correct, p (P(L) before the answer) | Văn Miếu, for each exam item |
@@ -35,6 +35,8 @@ Each event has `type`, `t` (the time), and `variant`, and the fields of its kind
 | `check` | task, changed (a part put or taken back after the check, before the commit: a self-correction) | the session, at the commit after the check |
 | `ask` | task, when (before or after a try), move | the session, when the child waves for help |
 | `carry` | task, size (the size of the load, such as a tray of three or five bowls), seconds (the walk from the pick-up to the put) | the village, when a load of rice goes into the pot |
+| `set` | activity, end (done: the set is done; stay: the child plays one more set; back: the child goes back) | the session, at the end of each set of a practice activity |
+| `quiz` | skill, fact (null when the question is not a fact of the table), known (the fact is confident in the world), correct | the quiz of the teacher, for each short question (the outside check of rule 26) |
 
 The scenes never write the log. They call `ctx.log(kind, fields)`, the one way in (`src/core/logger.js`). The logger adds the time and the variant, keeps the open session, and counts the time of play.
 
@@ -79,3 +81,39 @@ The learning tab (`src/ui/research.js`) has three parts:
 - **The experiment:** the variant of this child, and a choice when an experiment is active.
 - **The researcher view:** one small block for each of the nine questions, in words and simple bars, from the roll-ups of this device, in Vietnamese and English. HTML and CSS only.
 - **Share a learning summary:** it makes a small JSON of the roll-ups (rounded rates, counts, and times; the grade, not the age; no name), shows all of it, and offers to copy it or to save it as a file. Nothing is sent. The summary has only the fields in `summary` of `data/config/learnlog.json`; a test checks it.
+
+## The weekly note
+
+The parent page has a tab "Tuần này" (`parent.tab.week`, the first tab). It answers two questions in plain words: does the practice work, and does the child like it. `src/core/weekly.js` (`weeklyNote`) makes the note; it is pure and gives a list of text keys with their params, and `src/ui/parent.js` (`drawWeek`) shows them in the language of the parent.
+
+**The weeks.** A week starts on Monday, in the local time of the device (`weekOf`). When the raw events of a day roll up, `weekRollups` adds them to the roll-up of their week (`weeks` in the roll-up of each variant). A week keeps:
+
+| Field | What it holds |
+| --- | --- |
+| `sessions`, `self`, `sent`, `minutes` | the sessions; the sessions that the child started, and the sessions from a practice link; the minutes of play |
+| `day` | the minutes of play on each day, Monday first |
+| `hops` | changes to another activity within `hop` seconds |
+| `acts` | for each activity: `commits`, `ok`, `near` and `far` (misses by at most `near` groups, and the others), `fast` and `idle` (commits less than `fast` or more than `idle` seconds after the commit before), `resets`, `missRuns` (`missRun` misses in a row), `again`, `changed`, and `left` (after a miss: the same commit again, another commit, or the child left within `leave` seconds), `sessions`, `self`, `sent`, `first` (the first activity of a session), `stops` (the last activity of a session), `sets`, `stay` (one more set after a set), and `minutes` |
+| `l2l` | learning to learn: `checks` and `selfFix` (a check before a commit, and a change after it), `before` and `after` (a wave for help before or after a try), `predN` and `predErr` (predictions and their error), `helps` (moves of the people), and `marks` (moves that check for the child) |
+| `recall` | the seconds of the right commits of the facts of the table, in the buckets of `recall` |
+| `quiz`, `quizKnown` | the short questions of the teacher: [questions, right], and the same on the facts that are confident in the world |
+
+The activity of a task comes from `activities` in `data/config/learnlog.json` (`activityOf`). The numbers of the signals are in `signals` there. A signal that joins two commits (a fast commit, a run of misses, a change after a miss) counts only within one session.
+
+**The memory of the facts.** Each fact of the table (`src/core/planting.js`) keeps `from` (the activity of its first right commit), `fromWk` (the week of it), and `kept` (the week when it was right again after that week). At the first session of a new week, the session keeps the table of the week before (`profile.factSnap`: `cur`, `prev`, `week`, `prevWeek`; a table is a string of 100 letters: `-` not met, `e` emerging, `g` growing, `c` confident).
+
+**The note.** In this order, and only the lines that have something to say:
+
+1. How much: the sessions and their length, "too few to tell" under `few` sessions, and who started them (the child, or a practice link).
+2. The activities: the activity that the child chose first most, and an activity that the child came back to with no link.
+3. The facts: the confident facts now and last week (a × b and b × a are one fact), the factors with no confident fact, and the median seconds of a right fact against last week.
+4. The signs of each activity: frustrated (the child left after a miss, or runs of misses), restless (many fast or far commits), and the sets with one more set; hops, and shorter sessions at the end of the week. Each line says what the game did (for example, a smaller task after a miss).
+5. Learning to learn: checks and self-corrections, the handover (fewer moves that check for the child than last week), waves before and after a try, what the child did after a miss, and the error of the predictions.
+6. What helped: the move of the people with the best next commit, of all the weeks, when it has at least `few` uses.
+7. The real game of a folk game (`docs/FOLKGAMES.md`), and one thing to play together at home.
+
+Under the note: the table of the facts of this week next to last week, the line of each activity (minutes, sets, chosen first, started by the child, stops, the signs, and the facts first learned there last week that are still right), and the outside check (the short questions of the teacher, and the same on the facts that are confident in the world).
+
+The note never judges the child, never ranks, never compares with other children, and gives no score of a grade. A longer session is not better: the note names the healthy signs (comes back, finishes, chooses to play on) and warns about restless or frustrated play.
+
+**A test profile.** `node tools/week-profile.mjs out.json` plays the practice stories at speed on days of last week and this week, joins them into one profile with the log on, and adds short questions of the teacher. Load the profile in the browser to see the note.

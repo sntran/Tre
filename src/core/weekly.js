@@ -1,4 +1,4 @@
-// The weekly note of the parents (#25; docs/LEARNING.md, "The weekly note"): does the practice
+// The weekly note of the parents (#25; docs/LEARNLOG.md, "The weekly note"): does the practice
 // work, and does the child like it. Made from the roll-ups of the weeks (src/core/learnlog.js,
 // weekRollups), the memory of the facts and its history (src/core/planting.js), and the mentors.
 // Pure: the note is a list of text keys with their params; the parent page says them in the

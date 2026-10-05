@@ -288,7 +288,7 @@ export function allVariants(rollups) {
   return Object.values(rollups).reduce((a, b) => mergeRollups(a, b), emptyRollup());
 }
 
-// The weeks of play (#25; docs/LEARNING.md, "The weekly note"). A week starts on Monday, in the
+// The weeks of play (#25; docs/LEARNLOG.md, "The weekly note"). A week starts on Monday, in the
 // local time of the device: weekOf(t, tz) is the number of the week since 1970.
 export const weekOf = (t, tz = 0) => Math.floor((dayOf(t, tz) + 3) / 7);
 
