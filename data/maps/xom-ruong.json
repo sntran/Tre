@@ -34,9 +34,9 @@
  ],
  "layers": {
   "objects": [
-   {"id": "house-duck", "prop": "house", "x": 28, "y": 10, "w": 6, "h": 6, "seed": 1670407521},
+   {"id": "house-duck", "prop": "house", "x": 0, "y": 30, "w": 6, "h": 6, "seed": 1670407521},
    {"id": "house-fisher-uncle", "prop": "house", "x": 42, "y": 10, "w": 6, "h": 6, "seed": 135237699},
-   {"id": "house-planter", "prop": "house", "x": 22, "y": 28, "w": 6, "h": 6, "seed": 1375630306},
+   {"id": "house-planter", "prop": "house", "x": 14, "y": 30, "w": 6, "h": 6, "seed": 1375630306},
    {"id": "dinh-xom", "prop": "dinh", "x": 30, "y": 38, "w": 8, "h": 6, "seed": 1022386356},
    {"id": "drum-xom", "prop": "drum", "x": 36, "y": 32, "w": 2, "h": 2, "seed": 2027476392},
    {"id": "xom-tree1", "prop": "tree", "x": 2, "y": 2, "w": 2, "h": 2, "seed": 855249890},

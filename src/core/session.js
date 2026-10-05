@@ -127,7 +127,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The small example of a station before its first round in this visit (#37; src/core/examples.js).
   const shownExamples = new Set();
   const examples = {
-    play: (act, task) => playExample(state, env, data, act, task, shownExamples),
+    play: (act, task) => {
+      const shows = playExample(state, env, data, act, task, shownExamples);
+      // The view turns so that nothing covers the example and its person (#38).
+      const sc = shows ? getEntity(state, `script:example-${act}`)?.script : null;
+      if (sc) {
+        const who = getEntity(state, sc.steps.find((st) => st.say)?.say.id)?.position;
+        const pts = [...sc.steps.filter((st) => st.spawn).map((st) => ({ x: st.spawn.x, y: env.groundY(st.spawn.x / 2, st.spawn.z / 2), z: st.spawn.z })), ...(who ? [who] : [])];
+        emit({ type: 'workView', key: `example-${act}`, points: pts, sight: pts });
+      }
+      return shows;
+    },
     stop: (act) => stopExample(state, act),
   };
   // The planting of Xóm Ruộng (docs/PLANTING.md): its sets, rounds, lines, and paddies.

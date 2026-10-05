@@ -363,9 +363,9 @@ E.fill(15, 16, 5, 3, 'y')
 # plots. The seedbed is a field with no small dikes (cells, not tiles).
 E.cells += [(x, z, 'd' if z == 13 else 'c', 2 if z == 13 else 1) for x in range(8, 28) for z in range(4, 24)]
 E.cells += [(x, z, 'f', 1) for x in range(12, 18) for z in range(26, 30)]
-E.obj('house-duck', 'house', 14, 5, 3, 3)
+E.obj('house-duck', 'house', 0, 15, 3, 3)
 E.obj('house-fisher-uncle', 'house', 21, 5, 3, 3)
-E.obj('house-planter', 'house', 11, 14, 3, 3)
+E.obj('house-planter', 'house', 7, 15, 3, 3)
 E.obj('dinh-xom', 'dinh', 15, 19, 4, 3)
 E.obj('drum-xom', 'drum', 18, 16)
 E.many('xom-tree', 'tree', [(1, 1), (1, 18), (26, 2), (26, 18), (22, 18), (8, 18)])

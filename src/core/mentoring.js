@@ -15,6 +15,7 @@ const LEAVE = 40; // half blocks: farther than this soon after a miss, the hero 
 const LEAVE_TIME = 15; // seconds after a miss
 const COUNT_PACE = 0.9; // seconds between two counted parts (counting pace)
 const FIRST_DELAY = 0.5; // seconds after the start of a task: the person shows the first step
+const WORK_NEAR = 24; // half blocks: a person this near the place of a task stands at the work
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
@@ -85,9 +86,26 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return [...new Set(all.map((e) => e.item.size ?? 1))].sort((a, b) => a - b);
   }
 
+  // The points of the work of a task (half blocks): its zones, its place, and its person when the
+  // person stands at the work. The view turns so that nothing covers them (the event workView, #38).
+  function workPoints(key) {
+    const task = taskOf(key);
+    if (!task) return [];
+    const owner = key.startsWith('event-') ? `trial-${key}` : key;
+    const pts = [task.at, ...query(world(), 'zone').filter((z) => z.zone.task === owner && z.position).map((z) => z.position)];
+    const p = task.person?.position;
+    if (p && dist(p, task.at) <= WORK_NEAR) pts.push(p);
+    return pts.filter(Boolean).map((q) => (q === p ? q : { x: q.x, y: q.y ?? env()?.groundY(q.x / 2, q.z / 2) ?? 0, z: q.z }));
+  }
+
   // A mentor starts again for a task (a new trial, a new event, a new round of the bridge).
   function start(key, round = 0) {
     if (!defOf(key)) return null;
+    if (key !== 'bridge') {
+      const points = workPoints(key);
+      const person = taskOf(key)?.person?.position;
+      emit({ type: 'workView', key, points, sight: person && points.includes(person) ? [person] : [] });
+    }
     const st = newMentor(key);
     st.round = round;
     states.set(key, st);

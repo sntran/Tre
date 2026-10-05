@@ -61,3 +61,38 @@ export function stepFade(fade, hit, dt) {
 
 // The stipple of a fade: 0 under FADE_MIN (the thing draws whole), else the fade itself.
 export const stippleOf = (fade) => (fade < FADE_MIN ? 0 : fade);
+
+// ---------------------------------------------------------------- The work in sight (#38)
+// When a task or an example starts, the view turns (in its steps of 90 degrees) to an angle where
+// no house or roof covers the places of the work and its person.
+export const BUILDINGS = new Set(['house', 'hut', 'giong-house', 'dinh', 'school', 'forge']);
+const EAVES = 2; // cells: a building counts within its eaves (not a kite high over a school)
+const REACH = 30; // cells: farther buildings never cover the work
+const WORK_HEIGHTS = [0.3, 1.2]; // over the ground: a thing of the work, and the body of a person
+
+// The boxes of the buildings near the points of the work (world units: x, z in cells, y in blocks
+// over the ground, as terrain.boxOf).
+export function workBoxes(terrain, points) {
+  const near = (o) => points.some((p) => Math.abs(o.x + o.w / 2 - p.x) < REACH && Math.abs(o.y + o.h / 2 - p.z) < REACH);
+  return terrain.objects.filter((o) => BUILDINGS.has(o.kind) && !o.gone && near(o)).map((o) => {
+    const b = terrain.boxOf(o);
+    return { ...b, x0: Math.max(b.x0, o.x - EAVES), x1: Math.min(b.x1, o.x + o.w + EAVES), z0: Math.max(b.z0, o.y - EAVES), z1: Math.min(b.z1, o.y + o.h + EAVES), id: o.id ?? o.kind };
+  });
+}
+
+// The boxes that cover a point of the work from the angle az. points: { x, y, z } (world units, y:
+// the ground).
+export function workCovers(boxes, points, az, elevation) {
+  const d = toCamera(az, elevation);
+  return boxes.filter((b) => points.some((p) => WORK_HEIGHTS.some((h) => rayHits(b, { x: p.x, y: p.y + h, z: p.z }, d))));
+}
+
+// The turn (in steps of 90 degrees) to the first angle that shows the work with nothing in front:
+// none when the angle now shows it, then one step either way, then the back. inSight(az): the
+// person and the example are on the screen from that angle (the screen of a phone held upright is
+// narrow); an angle with them in sight comes first. 0 when no angle is clear (the view stays).
+export function workTurn(boxes, points, az, elevation, inSight = () => true) {
+  const order = [0, 1, -1, 2];
+  const clear = order.filter((steps) => !workCovers(boxes, points, az + (steps * Math.PI) / 2, elevation).length);
+  return clear.find((steps) => inSight(az + (steps * Math.PI) / 2)) ?? clear[0] ?? 0;
+}

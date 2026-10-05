@@ -16,6 +16,8 @@ import { LINE_LIFE, lineLife, linesAfter, nearHero as talksNear } from '../core/
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
+import { workBoxes, workTurn } from '../world/fade.js';
+import { VIEW, viewSize, inView } from '../world/view.js';
 import { heroLook, thingLook } from '../world/figures.js';
 import { h, img, button } from './dom.js';
 import { t, tn } from './i18n.js';
@@ -913,6 +915,20 @@ export async function mountVillage(ctx, params = {}) {
     requestAnimationFrame(tick);
   }
 
+  // A task or an example starts: the view turns (in its steps) so that no house or roof covers the
+  // work and its person (src/world/fade.js, #38). points: half blocks.
+  // sight: the points that stay on the screen (the person and the example).
+  function turnToWork(points, sight = []) {
+    const wu = (p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 });
+    const pts = (points ?? []).map(wu);
+    if (!pts.length) return;
+    const focus = wu(hero().position);
+    const scr = viewSize(size.width, size.height, view.state.level);
+    const inSight = (az) => sight.map(wu).every((p) => inView({ x0: p.x - 0.5, x1: p.x + 0.5, y0: p.y, y1: p.y + 1, z0: p.z - 0.5, z1: p.z + 0.5 }, focus, { az, size: scr }));
+    const steps = workTurn(workBoxes(terrain, pts), pts, view.angle, VIEW.elevation, inSight);
+    if (steps) view.turn(steps);
+  }
+
   // Greetings over the heads of the people, and the coins of broken pots.
   let bubbles = [];
   // Take away the lines of the other people when a person near the hero says a new line: one person
@@ -1009,6 +1025,7 @@ export async function mountVillage(ctx, params = {}) {
       case 'tapfx': showTap(ev.x, ev.y, ev.h); return;
       case 'pulse': figures.pulse(ev.id); return;
       case 'cue': figures.glow(ev.ids, ev.spots); return;
+      case 'workView': turnToWork(ev.points, ev.sight); return;
       case 'gift':
         for (const [item, n] of Object.entries(ev.give)) {
           for (let i = 0; i < n; i++) flyToCounter(ev.from, item, ev.delay + i * 0.15);
