@@ -7,6 +7,7 @@
 // { word } }), so that each language writes it: "cô {word}" in Vietnamese (a capital at the start
 // of a sentence), and the same name with a capital word of kinship in English ("Cô {word}").
 // Pure: no DOM.
+import { capitalize } from './i18n.js';
 
 // The way of naming of a region (north when the region names none).
 export function wayOf(regions, regionId) {
@@ -34,7 +35,8 @@ function wordBy(rule, person, way, naming) {
 // The name of a person as a text parameter, or null for a person with no word of kinship (the
 // people of Phù Đổng keep their names of work and kinship, as "Bác thợ rèn"). The way of the region
 // gives a rule for the age of the person (#41); a person with no field for the rule gets the order.
-// rule: another rule (the rule of the way for two people with the same name).
+// rule: another rule (the rule of the way for two people with the same name). The parameter has the
+// English gloss of the name too (gloss: a text parameter; nameGlosses).
 export function personName(person, way, naming, rule = null) {
   if (!person?.kin) return null;
   const w = naming.ways[way] ?? naming.ways.north;
@@ -45,7 +47,13 @@ export function personName(person, way, naming, rule = null) {
     word = wordBy(by, person, way, naming);
   }
   if (!word) return null;
-  return { key: `kin.${person.kin}`, params: { word } };
+  const pronoun = naming.kin?.[person.kin] ?? 'they';
+  const ord = person.order === undefined ? '' : { key: `ord.${person.order}` };
+  return {
+    key: `kin.${person.kin}`,
+    params: { word },
+    gloss: { key: `name.gloss.${by === 'child' && person.age === 'elder' ? 'elder' : by}.${pronoun}`, params: { ord, child: person.child ?? '', own: person.name ?? '' } },
+  };
 }
 
 // The names of all the people with a word of kinship, for the region of a map: id -> parameter.
@@ -70,3 +78,23 @@ export function namesOf(data, regionId) {
   }
   return out;
 }
+
+// The short meanings of the names in a line (#41): in English only, one time for each name
+// (seen: the list of the glosses that the child saw, profile.seenGloss). names: name parameters
+// (personName); i18n: { lang, t }. "Ông Dương: an old man is called by the name of his first child, Dương."
+export function nameGlosses(names, seen, { lang, t }) {
+  if (lang !== 'en') return [];
+  const out = [];
+  for (const n of names) {
+    if (!n?.gloss) continue;
+    const name = capitalize(t(n.key, n.params));
+    const id = `name:${name}`;
+    if (seen.includes(id)) continue;
+    seen.push(id);
+    out.push(t(n.gloss.key, { ...n.gloss.params, name }));
+  }
+  return out;
+}
+
+// The name parameters in the parameters of a line.
+export const namesIn = (params) => Object.values(params ?? {}).filter((v) => v && typeof v === 'object' && v.gloss);

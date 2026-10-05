@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
-import { orderWord, personName, wayOf, namesOf } from '../src/core/naming.js';
+import { orderWord, personName, wayOf, namesOf, nameGlosses, namesIn } from '../src/core/naming.js';
 import { createI18n } from '../src/core/i18n.js';
 import { load } from './helpers.js';
 import { runHeadless } from './story-run.js';
@@ -67,6 +67,29 @@ test('no two people of one place have the same name: the south adds the name of 
   const twins = { a: { kin: 'chi', order: 1, age: 'grown', child: 'Tùng' }, b: { kin: 'chi', order: 1, age: 'grown', child: 'Lan' }, c: { kin: 'chu', order: 1, age: 'grown' } };
   assert.deepEqual(sayAll(vi, namesOf({ npcs: { npcs: twins }, regions, naming }, 'gia-dinh')), { a: 'chị Hai Tùng', b: 'chị Hai Lan', c: 'chú Hai' });
   assert.deepEqual(sayAll(vi, namesOf({ npcs: { npcs: twins }, regions, naming }, 'giong')), { a: 'chị Tùng', b: 'chị Lan', c: 'chú Cả' });
+});
+
+test('the gloss of a name shows one time, in English only', () => {
+  const n = namesOf({ npcs: { npcs }, regions, naming }, 'giong');
+  const seen = [];
+  const params = { planter: n.planter, duckGirl: n['duck-girl'], fisherUncle: n['fisher-uncle'], drummer: n.drummer, count: 3 };
+  assert.deepEqual(namesIn(params).length, 4);
+  assert.deepEqual(nameGlosses(namesIn(params), seen, en), [
+    'Cô Năm: the fifth child of her family.',
+    'Chị Hến: a young person is called by her own small name, Hến.',
+    'Chú Tư: the fourth child of his family.',
+    'Ông Dương: an old man is called by the name of his first child, Dương.',
+  ]);
+  assert.deepEqual(nameGlosses(namesIn(params), seen, en), [], 'one time for each name');
+  assert.deepEqual(nameGlosses(namesIn(params), [], vi), [], 'no gloss in Vietnamese');
+  // In the south, the same old man has another name, and so another gloss.
+  const s = namesOf({ npcs: { npcs }, regions, naming }, 'gia-dinh');
+  assert.deepEqual(nameGlosses([s.drummer], seen, en), ['Ông Hai: the first child of his family.']);
+  const twin = personName({ kin: 'chi', order: 'youngest', child: 'Tùng' }, 'south', naming, 'order-child');
+  assert.deepEqual(nameGlosses([twin], [], en), ['Chị Út Tùng: the youngest child of her family; her first child is Tùng.']);
+  // Every gloss has a text in both languages, and the words of the order go to the tenth child.
+  for (const rule of ['order', 'elder', 'child', 'own', 'order-child']) for (const pr of new Set(Object.values(naming.kin))) for (const i18n of [vi, en]) assert.ok(i18n.raw(`name.gloss.${rule}.${pr}`), `${rule}.${pr}`);
+  for (const o of [...naming.ways.north.orders.keys()].map((i) => i + 1).concat('youngest')) assert.ok(en.raw(`ord.${o}`), o);
 });
 
 test('no text names a person Cấy, Vịt, Lưới, or Trống', () => {

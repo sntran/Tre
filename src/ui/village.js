@@ -462,8 +462,8 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     if (ev.screen === 'callout') {
-      // The first time of a word of a region, its gloss shows in the bubble too (#39).
-      const gloss = glossLine(ctx, ev.textKey);
+      // The first time of a word of a region (#39) or of a name (#41), its gloss shows in the bubble too.
+      const gloss = glossLine(ctx, ev.textKey, { params: ev.params });
       showBubble(ev.id, gloss ? `${t(ev.textKey, ev.params)}\n${gloss}` : t(ev.textKey, ev.params));
       return;
     }
