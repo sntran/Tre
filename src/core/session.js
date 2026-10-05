@@ -51,6 +51,7 @@ import { setupTrial, clearTrial, freeSlot, canTakeWork } from './world/systems/w
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring } from './mentoring.js';
+import { playExample, stopExample } from './examples.js';
 import { createPlanting } from './planting-session.js';
 import { createHamlet } from './hamlet-session.js';
 import { plotsOf } from './world/systems/plant.js';
@@ -122,9 +123,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     },
   });
 
+  // The small example of a station before its first round in this visit (#37; src/core/examples.js).
+  const shownExamples = new Set();
+  const examples = {
+    play: (act, task) => playExample(state, env, data, act, task, shownExamples),
+    stop: (act) => stopExample(state, act),
+  };
   // The planting of Xóm Ruộng (docs/PLANTING.md): its sets, rounds, lines, and paddies.
   const planting = createPlanting({
-    data, profile, learner, emit, mentoring, world: () => state, env: () => env, map: () => map,
+    data, profile, learner, emit, mentoring, examples, world: () => state, env: () => env, map: () => map,
     seed: () => state.seed, clock: () => state.clock.minutes, rain: () => state.sky?.rain ?? 0,
     say: (...a) => say(...a), talk: (id) => talk(id), save: (why) => save(why), busy: () => busy,
     // The planter points to another station at the end of a set.
@@ -140,7 +147,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   });
   // The ducks, the fish traps, and the drum dance of Xóm Ruộng (docs/HAMLET.md).
   const hamlet = createHamlet({
-    data, profile, learner, emit, mentoring, world: () => state, env: () => env,
+    data, profile, learner, emit, mentoring, examples, world: () => state, env: () => env,
     seed: () => state.seed, clock: () => state.clock.minutes, rain: () => state.sky?.rain ?? 0,
     say: (...a) => say(...a), talk: (id) => talk(id), save: (why) => save(why), busy: () => busy,
     callout: (textKey, params, who) => emit({ type: 'open', screen: 'callout', id: `npc:${who}`, textKey, params }),

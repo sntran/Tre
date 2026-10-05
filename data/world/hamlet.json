@@ -162,5 +162,12 @@
     "traps": "fisher-uncle",
     "drum": "drummer",
     "planting": "planter"
+  },
+  "examples": {
+    "_about": "The small example of each station (#37; src/core/examples.js): at the place named by at, moved by dx and dz (half blocks): on free ground that the camera sees (the traps: on the stream, upstream of the plank bridge and of the spots of the child), away from the places of the child and from where the child stands to talk. tries: the numbers of the example, in order: the first try that the round of the child does not have. planting: rows and seedlings in a row; ducks: ducks and scoops for each duck; traps: traps and fish in each trap; drum: the group of the dancers (they jump three times).",
+    "planting": { "at": "plant-seedbed", "dx": 27, "dz": -0.5, "tries": [[2, 2], [2, 3], [3, 2], [2, 4]] },
+    "ducks": { "at": "duck-trough", "dx": 6.5, "dz": 11, "tries": [[2, 2], [2, 3], [2, 4], [3, 2]] },
+    "traps": { "at": "trap-spots", "dx": 2.4, "dz": -17.5, "tries": [[2, 2], [2, 5], [3, 2]] },
+    "drum": { "at": "drum-bronze", "dx": -10, "dz": -7, "tries": [[2, 3], [3, 3], [4, 3]] }
   }
 }

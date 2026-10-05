@@ -12,7 +12,8 @@ const DAY = 1440;
 
 // deps: { data, profile, world (fn), env (fn), map (fn), learner (fn), seed (fn), clock (fn: the
 // minutes of the game clock), rain (fn: the rain now, 0 to 1), say (key, params, mark, speaker),
-// talk (dialogue id), emit, save (reason), mentoring, setDone (fn: the set ends, for a practice),
+// talk (dialogue id), emit, save (reason), mentoring, examples ({ play, stop }: the small example of
+// the station, src/core/examples.js), setDone (fn: the set ends, for a practice),
 // point (fn: the planter points to another station), sheaf (fn: a plot is full: a sheaf of the new
 // rice goes to the feast table) }.
 export function createPlanting(deps) {
@@ -103,6 +104,14 @@ export function createPlanting(deps) {
     const mem = ((profile.facts ??= {})[def.skill] ??= {});
     const divideOpen = Boolean(skillOf(def.divide) && l?.unlocked?.(def.divide));
     const { offers, levelData } = nextOffers({ data: def, level, ranges: mul.levels, mem, day: today(), set: s.set, index: s.index, prev: s.prev, used: s.used, counts: s.counts, divideOpen, seed: deps.seed(), done: s.done ?? [], round: profile.factRound ?? 0 });
+    // The first round of a visit: the planter plants a small example first, and the round of the
+    // child comes after it (#37). The offers of the round are the same then (from the seed).
+    const shows = deps.examples?.play('planting', offers) ?? 0;
+    if (shows > 0) {
+      wait = shows;
+      return;
+    }
+    deps.examples?.stop('planting');
     // The neighbor child planted one row yesterday: the plot of the event is a plot with a row in.
     const placed = placeOffers(offers);
     if (!placed.length) return;
@@ -151,7 +160,8 @@ export function createPlanting(deps) {
   function start() {
     const s = state();
     if (!s.active) newSet();
-    if (!tz()) round();
+    // While the example plays, the round of the child waits for its end.
+    if (!tz() && wait === null) round();
   }
 
   // A tap on the planter while the planting is on: the commit, when there are seedlings at the edge

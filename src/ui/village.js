@@ -912,16 +912,18 @@ export async function mountVillage(ctx, params = {}) {
 
   // Greetings over the heads of the people, and the coins of broken pots.
   const bubbles = [];
-  function showBubble(id, text) {
+  // icon: the button picture of an act (the example of a station, #37), in a bubble of its own over
+  // the line of the person.
+  function showBubble(id, text, icon = null) {
     // A new line of a person takes the place of the last one (a mentor counts aloud, one word at a time).
     for (let i = bubbles.length - 1; i >= 0; i--) {
-      if (bubbles[i].id !== id) continue;
+      if (bubbles[i].id !== id || Boolean(bubbles[i].icon) !== Boolean(icon)) continue;
       bubbles[i].el.remove();
       bubbles.splice(i, 1);
     }
-    const el = h('div', { class: 'world-bubble', text });
+    const el = icon ? h('div', { class: 'world-bubble icon' }, [img(`ui/${icon}`, 'bubble-icon')]) : h('div', { class: 'world-bubble', text });
     marks.append(el);
-    bubbles.push({ id, el, age: 0 });
+    bubbles.push({ id, el, age: 0, icon });
   }
   // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
   // up when it lands.
@@ -1024,6 +1026,8 @@ export async function mountVillage(ctx, params = {}) {
     }
     if (ev.sound) ctx.bus.emit('sound', ev.sound);
     if (ev.type === 'petted') showBubble(ev.id, '♥');
+    // The example of a station: the button picture of each act over the person.
+    if (ev.type === 'shows') showBubble(ev.id, null, ev.icon);
     raidView.event(ev);
     // A raid: dust where a stone lands, a trap snaps, or Gióng strikes; water and lightning splash.
     if (ev.type === 'land' || ev.type === 'water' || ev.type === 'shock' || ev.type === 'spark' || ev.type === 'flame') {
@@ -1116,7 +1120,7 @@ export async function mountVillage(ctx, params = {}) {
         continue;
       }
       const q = view.project(f.x, f.y + f.height + 0.4, f.z);
-      b.el.style.transform = `translate(${q.x}px, ${q.y - b.age * 10}px) translate(-50%, -100%)`;
+      b.el.style.transform = `translate(${q.x}px, ${q.y - b.age * 10 - (b.icon ? 40 : 0)}px) translate(-50%, -100%)`;
       b.el.style.opacity = String(Math.min(1, (2.2 - b.age) * 2));
     }
     for (let i = arrows; i < arrowPool.length; i++) arrowPool[i].hidden = true;

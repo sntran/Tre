@@ -16,7 +16,8 @@ const WATER_UP = 1; // half blocks: the surface of the stream over its bed (WATE
 // deps: { data, profile, world (fn), env (fn), learner (fn), seed (fn), clock (fn: the minutes of
 // the game clock), rain (fn: the rain now, 0 to 1), say (key, params, mark, speaker), talk
 // (dialogue id), callout (key, params, speaker: a line in a bubble), emit, save (reason),
-// mentoring, busy (fn), setDone (fn (act, why): the set ends,
+// mentoring, examples ({ play, stop }: the small example of the station, src/core/examples.js),
+// busy (fn), setDone (fn (act, why): the set ends,
 // for a practice; true when the practice takes the end) }.
 export function createHamlet(deps) {
   const { data, profile } = deps;
@@ -79,6 +80,14 @@ export function createHamlet(deps) {
   function round(act) {
     const s = state(act);
     const { level, key, task } = taskOf(act);
+    // The first round of a visit: the person does a small example first, and the round of the
+    // child comes after it (#37). The task of the round is the same then (from the seed).
+    const shows = deps.examples?.play(act, task) ?? 0;
+    if (shows > 0) {
+      waits[act] = shows;
+      return;
+    }
+    deps.examples?.stop(act);
     const at = (name, dx = 0, dz = 0) => {
       const p = place(name);
       if (!p) return null;
@@ -138,7 +147,8 @@ export function createHamlet(deps) {
   function start(act) {
     const s = state(act);
     if (!s.active) newSet(act);
-    if (!tzOf(deps.world(), act)) round(act);
+    // While the example plays, the round of the child waits for its end.
+    if (!tzOf(deps.world(), act) && waits[act] === undefined) round(act);
   }
 
   // The end of a commit of an activity (the events fed, caught, and danced of the world).

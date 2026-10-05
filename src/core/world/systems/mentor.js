@@ -6,14 +6,21 @@
 //   point { id, x, z, time }: the person turns and points (the gesture of the person).
 //   say { id, key, params }: a line in a bubble over the person (the event call).
 //   mark { x, z, ttl }: a mark on the ground (a red ring and a flag).
-//   spawn { look, x, z, facing }: a thing of a demonstration (it goes at the end of the script).
+//   spawn { look, x, z, facing, dy }: a thing of a demonstration (it goes at the end of the script;
+//     dy: half blocks over the ground, as a trap on the water).
+//   look { k, look }: the k-th thing of the demonstration takes another look (a bundle that becomes
+//     a row of seedlings, the feed in a trough, a trap full of fish).
+//   hop { k }, gesture { k, act, t }: the k-th thing of the demonstration hops, or pecks.
+//   shows { id, icon }: the button picture of an act over the person (the event shows).
+//   sound { id, sound }: a sound of the demonstration (the event example; at the end of the
+//     script of an example, the event example with done).
 //   put { zone, item, person }: the person puts a thing of the pile into the place.
 //   back { item }: the thing that the person put goes back from the place to its own heap (the
 //     end of a first step).
 //   cue { zone }: Nghé shows the gap of the bridge (the hint of the place system).
 //   nudge { x, z, time }: Nghé goes next to a place and stretches its neck toward it.
 //   end: the things of the demonstration go, and the script ends.
-export const WRITES = ['script', 'gesture', 'position', 'mentorMark', 'follow', 'item', 'zone', 'hidden', 'hands', 'carry', 'look', 'events'];
+export const WRITES = ['script', 'gesture', 'position', 'mentorMark', 'follow', 'item', 'zone', 'hidden', 'hands', 'carry', 'look', 'hop', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { faceOf } from '../move.js';
@@ -61,9 +68,15 @@ function play(world, ent, dt, env) {
     if (st.spawn) {
       const id = `demo:${sc.key}:${made++}`;
       const y = env.groundY(st.spawn.x / 2, st.spawn.z / 2);
-      addEntity(world, { id, demo: { key: sc.key }, position: { x: st.spawn.x, y, z: st.spawn.z, facing: st.spawn.facing ?? 0 }, look: st.spawn.look });
+      addEntity(world, { id, demo: { key: sc.key }, position: { x: st.spawn.x, y: y + (st.spawn.dy ?? 0), z: st.spawn.z, facing: st.spawn.facing ?? 0 }, look: st.spawn.look });
       sc.spawned.push(id);
     }
+    const spawned = (k) => getEntity(world, sc.spawned[k]);
+    if (st.look && spawned(st.look.k)) spawned(st.look.k).look = st.look.look;
+    if (st.hop && spawned(st.hop.k)) spawned(st.hop.k).hop = { t: 0 };
+    if (st.gesture && spawned(st.gesture.k)) spawned(st.gesture.k).gesture = { act: st.gesture.act, t: st.gesture.t ?? 1 };
+    if (st.shows) world.events.push({ type: 'shows', id: st.shows.id, icon: st.shows.icon });
+    if (st.sound) world.events.push({ type: 'example', id: st.sound.id, sound: st.sound.sound });
     if (st.put) {
       const person = getEntity(world, st.put.person) ?? { id: st.put.person, position: null };
       const thing = getEntity(world, st.put.item);
@@ -92,6 +105,8 @@ export function endScript(world, ent) {
 
 function end(world, ent) {
   for (const id of ent.script.spawned) removeEntity(world, id);
+  // The example of a station ends (src/core/examples.js): the round of the child comes next.
+  if (ent.script.move === 'example') world.events.push({ type: 'example', key: ent.script.key, done: true });
   for (const f of query(world, 'follow')) if (f.follow.goal?.nudge) delete f.follow.goal;
   removeEntity(world, ent.id);
 }

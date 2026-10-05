@@ -31,6 +31,18 @@
       "read": true
     },
     {
+      "until": {
+        "event": "example",
+        "with": {
+          "done": true
+        },
+        "timeout": 40
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
       "tap": {
         "entity": "hamlet:jar"
       }
@@ -114,6 +126,18 @@
     },
     {
       "read": true
+    },
+    {
+      "until": {
+        "event": "example",
+        "with": {
+          "done": true
+        },
+        "timeout": 40
+      }
+    },
+    {
+      "wait": 0.5
     },
     {
       "press": {
@@ -204,6 +228,18 @@
       "read": true
     },
     {
+      "until": {
+        "event": "example",
+        "with": {
+          "done": true
+        },
+        "timeout": 40
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
       "press": {
         "item": "seedling",
         "size": 2
@@ -286,6 +322,18 @@
     },
     {
       "read": true
+    },
+    {
+      "until": {
+        "event": "example",
+        "with": {
+          "done": true
+        },
+        "timeout": 40
+      }
+    },
+    {
+      "wait": 0.5
     },
     {
       "press": { "entity": "hamlet:drum:0" }

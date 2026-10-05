@@ -29,6 +29,18 @@
       "read": true
     },
     {
+      "until": {
+        "event": "example",
+        "with": {
+          "done": true
+        },
+        "timeout": 40
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
       "press": { "entity": "hamlet:drum:0" }
     },
     {

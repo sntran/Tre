@@ -163,6 +163,7 @@ const FILES = [
   'src/core/mentoring.js',
   'src/core/parentgate.js',
   'src/core/hamlet.js',
+  'src/core/examples.js',
   'src/core/hamlet-session.js',
   'src/core/planting.js',
   'src/core/planting-session.js',
