@@ -1470,6 +1470,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const e = spread ? things.reduce((a, b) => (distHb(front, b.position) < distHb(front, a.position) ? b : a)) : things[things.length - 1];
         add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [z.id, ...things.map((x) => x.id)], at: spread ? e.position : z.position, rank: 1.5, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH + 2);
       }
+      // The guess at the bridge: the plank outline in front of the hero (or the outline of the last
+      // tap). A press chooses it: the bridge takes that many planks.
+      const outlines = query(state, 'guess', 'position').filter((g) => g.guess.left === undefined);
+      if (outlines.length) {
+        const ahead = frontOf(hp);
+        const g = outlines.find((x) => x.id === chosen?.id) ?? outlines.reduce((a, b) => (distHb(ahead, b.position) < distHb(ahead, a.position) ? b : a));
+        add({ act: 'guess', icon: 'check', target: g.id, at: g.position, rank: 0.5, run: () => worldCommand(state, { type: 'guess', id: 'hero', zone: g.guess.zone, n: g.guess.n }) }, REACH);
+      }
       // Nghé: get on its back (only when nothing else is in reach).
       const nghe = query(state, 'follow', 'position').find((e) => e.follow?.target === 'hero' && !e.hidden);
       if (nghe && !raidOn()) add({ act: 'ride', icon: 'ride', target: nghe.id, at: nghe.position, rank: 6, run: () => worldCommand(state, { type: 'ride', id: 'hero', mount: nghe.id }) }, REACH + 2);
@@ -1622,9 +1630,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function tap(target) {
     emit({ type: 'sound', sound: 'tap' });
     if (hero().fall) return;
-    // The prediction: a tap on the n-th plank outline says that the bridge takes n planks.
+    // A plank outline of the guess at the bridge: the hero walks to it, and it is the target (the
+    // action button chooses it).
     if (target.guess) {
-      worldCommand(state, { type: 'guess', id: 'hero', zone: target.guess.zone, n: target.guess.n });
+      const g = getEntity(state, `guess:${target.guess.zone}:${target.guess.n}`);
+      if (g) {
+        emit({ type: 'tapfx', x: g.position.x / 2, y: g.position.z / 2, h: groundY(g.position.x / 2, g.position.z / 2) });
+        goTo(g.position, g.id);
+      }
       return;
     }
     if (target.raid) {

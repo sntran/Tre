@@ -9,7 +9,7 @@
   "at": ["phu-dong", 46, 61],
   "steps": [
     { "wait": 1 },
-    { "tap": { "guess": 3 } },
+    { "press": { "guess": 3 } },
     { "wait": 2 },
     { "press": { "plank": 4 } },
     { "until": { "event": "pick", "timeout": 20 } },

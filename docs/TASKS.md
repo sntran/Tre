@@ -37,6 +37,7 @@ Every task in the world must be clear to a child of six. Young children need lar
 | The jar of feed | Pour while the button is down. | The jar (`jar`) |
 | A standing culm of the staffs | While the button is down, the mark goes up the culm; when it goes up, the slash is at the mark. | A knife (`knife`) |
 | A stake of a plot in a choose round | Choose that plot. | A tick (`check`) |
+| A plank outline of the guess at the bridge (the outline in front of the hero) | Choose it: the bridge takes that many planks. | A tick (`check`) |
 | The stem of the woodcutter | A chalk mark at the ghost; at a mark, the mark comes away. | Chalk (`chalk`), or the clear sign (`clear`) |
 | A gift in the hands, at a person who takes the rest of the loot | Give it. | A hand that holds a thing out (`hand-give`) |
 | A person with no task for the child | Talk. | The speech mark (`speak`) |
@@ -58,7 +59,7 @@ The raised hand is only the wave button, and the jump has its own picture: no tw
 | Rice for Gióng (story) | A tray: pick up. The pot: put. | Each ten bowls in the pot: Gióng eats. | The trays, while the pot is empty. |
 | Bamboo staffs (story) | A standing culm: hold the button, let go at the height. | The pieces tie when all are cut. | None. |
 | The loot (story) | A coin: pick up. A mat: put; with empty hands, take one back. The rest of the loot: give it to a person. | All coins on the mats. | The coins, while the mats are empty. |
-| The bridge | A plank of a pile: pick up. The gap: put at the ghost; with empty hands at the edge, take the last plank back. | The gap is full. | Nghé shows the gap (the mentor). |
+| The bridge | Before the first plank, a plank outline on the bank: the guess. A plank of a pile: pick up. The gap: put at the ghost; with empty hands at the edge, take the last plank back. | The gap is full. | Nghé shows the gap (the mentor). |
 | The small events of the day | A thing of the pile: pick up. The place: put; with empty hands, take one back. | The person of the event checks the place (`check`). | The pile, while the place is empty. |
 | The planting | A bundle of the seedbed: pick up. The edge of a plot: put; with empty hands, take one back. A stake of a plot in a choose round: choose. | The planter looks at the plots (`seedling`). | The seedbed, while the edges are empty. |
 | Feeding the ducks | The jar: hold the button to pour; let go at the total. | The ducks eat. | The jar, before a pour. |

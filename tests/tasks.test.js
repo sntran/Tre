@@ -297,3 +297,20 @@ test('the heap and the place of a task stand close, and two targets that the chi
     assert.ok(d >= MIN, `${npc} is only ${d.toFixed(1)} blocks from ${place}`);
   }
 });
+
+test('the guess at the bridge: a tap on an outline only walks there; the outline in front gets the light, and the button chooses it', async () => {
+  const story = {
+    name: 'task-guess', profile: { name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true } }, clock: 540, at: ['phu-dong', 46, 61],
+    steps: [
+      { wait: 1 },
+      { tap: { guess: 4 } },
+      { wait: 4 },
+      { expect: [{ event: 'guess', not: true }, { action: { act: 'guess', icon: 'check' } }] },
+      { press: true },
+      { until: { event: 'guess', timeout: 3 } },
+      { expect: [{ event: 'guess', with: { n: 4 } }] },
+    ],
+  };
+  const failures = await runHeadless(story);
+  assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
+});

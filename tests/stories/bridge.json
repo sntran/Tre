@@ -10,7 +10,7 @@
   "steps": [
     { "wait": 1 },
     { "expect": [{ "zone": "bridge-gap", "state": "open", "gap": 12, "planks": 0 }, { "count": { "entities": "plank-ghost", "min": 6 } }] },
-    { "tap": { "guess": 3 } },
+    { "press": { "guess": 3 } },
     { "until": { "event": "guess", "timeout": 3 } },
     { "wait": 2 },
     { "press": { "plank": 4 } },
