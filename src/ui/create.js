@@ -98,10 +98,12 @@ export async function mountCreate(ctx) {
     return h('div', { class: 'dots', 'aria-hidden': 'true' }, steps.map((_, i) => h('span', { class: i <= step ? 'on' : '' })));
   }
 
-  function choiceRow(values, current, render, onPick, labelKey) {
+  // words: the choices are words (boy or girl, the grade): each button is as wide as its word
+  // needs (#37); the other choices are square pictures.
+  function choiceRow(values, current, render, onPick, labelKey, { words = false } = {}) {
     const row = h('div', { class: 'option-grid', role: 'group', 'aria-label': t(labelKey) });
     for (const v of values) {
-      const b = h('button', { class: 'tile-btn', type: 'button', 'aria-pressed': String(v === current()), 'aria-label': `${t(labelKey)} ${v}` }, [render(v)]);
+      const b = h('button', { class: words ? 'tile-btn word' : 'tile-btn', type: 'button', 'aria-pressed': String(v === current()), 'aria-label': `${t(labelKey)} ${v}` }, [render(v)]);
       b.addEventListener('click', () => {
         onPick(v);
         for (const x of row.children) x.setAttribute('aria-pressed', String(x === b));
@@ -149,7 +151,7 @@ export async function mountCreate(ctx) {
       const input = h('input', { class: 'name-input', type: 'text', maxlength: String(opts.nameMax), autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', 'aria-label': t('create.name') });
       input.value = hero.name;
       stage.append(input);
-      stage.append(choiceRow(genders, () => hero.gender, (g) => h('span', { text: t(`create.${g}`) }), (g) => { hero.gender = g; }, 'create.gender'));
+      stage.append(choiceRow(genders, () => hero.gender, (g) => h('span', { text: t(`create.${g}`) }), (g) => { hero.gender = g; }, 'create.gender', { words: true }));
       const go = button(t('ui.next'), () => {
         hero.name = input.value.trim().slice(0, opts.nameMax);
         if (!hero.name) {
@@ -184,7 +186,7 @@ export async function mountCreate(ctx) {
       stage.append(button(t('ui.next'), next, { cls: 'btn big red' }));
     } else if (name === 'grade') {
       stage.append(title('create.grade'));
-      stage.append(choiceRow(gradeIds(grades), () => grade, (v) => h('span', { text: t(gradeShort(v, grades).key, gradeShort(v, grades).params) }), (v) => { grade = v; }, 'create.grade.label'));
+      stage.append(choiceRow(gradeIds(grades), () => grade, (v) => h('span', { text: t(gradeShort(v, grades).key, gradeShort(v, grades).params) }), (v) => { grade = v; }, 'create.grade.label', { words: true }));
       stage.append(h('p', { class: 'center muted', text: t('create.grade.note') }));
       stage.append(button(t('create.start'), finish, { cls: 'btn big red' }));
     }
