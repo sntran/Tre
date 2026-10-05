@@ -11,6 +11,8 @@ import { saveProfile, deleteProfile, listProfiles, loadProfile, listRestorePoint
 import { gameDay } from '../core/restore.js';
 import { h, img, button } from './dom.js';
 import { factTable } from '../core/planting.js';
+import { currentRollups, weekOf } from '../core/learnlog.js';
+import { weeklyNote } from '../core/weekly.js';
 import { portraitCanvas, heroLookOf } from './portraits.js';
 import { t, lang } from './i18n.js';
 import { formatNumber } from '../core/i18n.js';
@@ -140,7 +142,7 @@ async function parentArea(ctx, opts = {}) {
     const panel = h('div', { class: 'panel parent' });
     const body = h('div');
     const close = () => { layer.remove(); resolve(); };
-    const tabs = ctx.profile ? ['progress', 'learning', 'settings', 'questions', 'games', 'links', 'code'] : ['games', 'links', 'code'];
+    const tabs = ctx.profile ? ['week', 'progress', 'learning', 'settings', 'questions', 'games', 'links', 'code'] : ['games', 'links', 'code'];
     let tab = tabs.includes(opts.tab) ? opts.tab : tabs[0];
     // Leave the parent area and go on with a profile (after a restore or an import), or to the title.
     const leave = async (profile) => {
@@ -164,6 +166,7 @@ async function parentArea(ctx, opts = {}) {
 
     const draw = () => {
       body.replaceChildren();
+      if (tab === 'week') drawWeek();
       if (tab === 'progress') drawProgress();
       if (tab === 'learning') drawLearning(body, ctx);
       if (tab === 'settings') drawSettings();
@@ -364,6 +367,59 @@ async function parentArea(ctx, opts = {}) {
         }
         body.append(table);
       }
+    }
+
+    // The note of the week (#25; src/core/weekly.js): whether the practice works and whether the
+    // child likes it, in plain words, from what the child does; the table of the facts with last week
+    // beside it; a line for each activity; and the outside check (the questions of the teacher).
+    function drawWeek() {
+      const p = ctx.profile;
+      const name = p.hero.name;
+      const rollups = p.log ? currentRollups(p.log, data.learnlog) : {};
+      const note = weeklyNote(rollups, p, weekOf(Date.now(), p.log?.tz ?? 0), data);
+      const say = (l) => t(l.key, l.params);
+      body.append(
+        h('h3', { text: t('parent.week.title') }),
+        h('ul', { class: 'week-note' }, note.lines.map((l) => h('li', { text: say(l) }))),
+        h('p', { class: 'muted', text: t('parent.week.about', { name }) }),
+      );
+      // The table of this week and of last week, side by side.
+      body.append(h('h3', { text: t('parent.week.facts.title') }));
+      const grid = (str) => {
+        const table = h('table', { class: 'facts small' });
+        table.append(h('tr', {}, [h('th', { text: '×' }), ...Array.from({ length: 10 }, (_, j) => h('th', { text: String(j + 1) }))]));
+        for (let i = 0; i < 10; i++) {
+          const cells = Array.from({ length: 10 }, (_, j) => {
+            const c = str[i * 10 + j];
+            const state = { e: 'exploring', g: 'getting', c: 'confident' }[c] ?? null;
+            return h('td', { class: `fact ${state ?? 'none'}`, title: `${i + 1} × ${j + 1}: ${t(`parent.facts.${state ?? 'none.cell'}`)}` });
+          });
+          table.append(h('tr', {}, [h('th', { text: String(i + 1) }), ...cells]));
+        }
+        return table;
+      };
+      if (!note.facts.cur) body.append(h('p', { class: 'muted', text: t('parent.facts.none') }));
+      else {
+        body.append(h('div', { class: 'facts-pair' }, [
+          h('div', {}, [h('h4', { text: t('parent.week.thisWeek') }), grid(note.facts.cur)]),
+          h('div', {}, [h('h4', { text: t('parent.week.lastWeek') }), note.facts.prev ? grid(note.facts.prev) : h('p', { class: 'muted', text: t('parent.week.lastWeek.none') })]),
+        ]), h('p', { class: 'facts-key' }, ['exploring', 'getting', 'confident'].map((k) => h('span', { class: `chip fact-${k}`, text: t(`parent.facts.${k}`) }))));
+      }
+      // A line for each activity.
+      if (note.acts.length) {
+        body.append(h('h3', { text: t('parent.week.acts.title') }));
+        for (const a of note.acts) {
+          const signs = a.signs.map((x) => t(`parent.week.sign.${x}`)).join(t('ui.list.sep'));
+          body.append(h('div', { class: 'week-act', dataset: { act: a.id } }, [
+            h('h4', { text: t(a.titleKey) }),
+            h('p', { text: t('parent.week.act.line', { minutes: a.minutes, sets: a.sets, first: a.first, self: a.self, stops: a.stops, signs }) }),
+            a.learned ? h('p', { class: 'muted', text: t('parent.week.learned', { n: a.learned[0], kept: a.learned[1] }) }) : null,
+          ]));
+        }
+      }
+      // The outside check: the short questions of the teacher on the facts (rule 26).
+      body.append(h('h3', { text: t('parent.week.check.title') }), h('p', { text: note.check.n ? t('parent.week.check', { n: note.check.n, ok: note.check.ok, kn: note.check.known[0], kok: note.check.known[1] }) : t('parent.week.check.none') }));
+      body.append(h('p', { class: 'muted', text: t('parent.week.research') }));
     }
 
     // The table of the facts of multiplication (one memory for all the activities of the skill,

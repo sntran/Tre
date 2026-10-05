@@ -608,6 +608,16 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .fact.getting, .chip.fact-getting { background: var(--yellow-pale); }
 .fact.confident, .chip.fact-confident { background: var(--green-pale); }
 .facts-key { display: flex; gap: 8px; flex-wrap: wrap; }
+/* The note of the week (#25): the lines, two small tables side by side, and a box for each activity. */
+.week-note { margin: 6px 0 4px; padding-left: 1.2em; line-height: 1.45; }
+.week-note li { margin: 3px 0; }
+.facts-pair { display: flex; gap: 16px; flex-wrap: wrap; }
+.facts-pair h4 { margin: 4px 0 0; }
+.facts.small td { width: 15px; height: 15px; }
+.facts.small th { font-size: 0.7em; padding: 0 2px; }
+.week-act { border-top: 1px solid var(--ink); padding: 4px 0; }
+.week-act h4 { margin: 4px 0 2px; }
+.week-act p { margin: 2px 0; }
 .field { display: flex; flex-direction: column; gap: 4px; margin: 8px 0; }
 .field label { font-weight: 700; }
 .field input, .field select, .field textarea {

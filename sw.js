@@ -156,6 +156,7 @@ const FILES = [
   'src/core/folk-session.js',
   'src/core/folkgames.js',
   'src/core/clues.js',
+  'src/core/weekly.js',
   'src/core/fresh.js',
   'src/core/fsm.js',
   'src/core/game.js',
