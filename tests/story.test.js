@@ -151,6 +151,7 @@ test('each kind of step: do, wait, until, at, press, tap, read, reload, and expe
       { expect: [{ screen: 'dialogue' }] },
       { read: true },
       { do: { type: 'closed' } },
+      { read: true },
       { wait: 0.5 },
       { at: { hour: 9.2 } },
       { expect: [{ clock: { between: [9.19, 9.25] } }] },
@@ -167,7 +168,7 @@ test('each kind of step: do, wait, until, at, press, tap, read, reload, and expe
   };
   const failures = await runHeadless(story, { onSession: (s) => { session = s; } });
   assert.ok(session);
-  assert.deepEqual(failures.map((f) => f.step), [11, 12, 13, 14]);
+  assert.deepEqual(failures.map((f) => f.step), [12, 13, 14, 15]);
   assert.match(failures[0].message, /no event solid/);
   assert.match(failures[1].message, /prologue.done/);
   assert.match(failures[2].message, /nothing to tap/);

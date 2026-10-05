@@ -68,6 +68,8 @@ export { STEP };
 
 const ZONE_PAD = 2; // half blocks: a place of a task answers a tap this far outside its box
 const CUE_IDLE = 6; // seconds with no action in a task before the next thing glows
+// The screens of a talk that the child fills in: they open at once, and the talk waits for them.
+const INPUT_SCREENS = new Set(['nameFriend']);
 // The commands that are an action of the child (they stop the cue).
 const CHILD_ACTS = new Set(['tap', 'hands', 'hold', 'wave', 'jump', 'move', 'pet', 'talkTo']);
 const WORLD = new Set(['move', 'stop', 'pet', 'ride', 'aim', 'pick', 'put', 'drop', 'guess', 'face']);
@@ -459,6 +461,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   function showLine(d, view) {
     takeEffects(d);
+    // A screen that the child fills in (the name of Nghé) opens at once, and the talk goes on only
+    // when the child closes it (#37). The other screens of a talk open at its end.
+    const now = view ? d.opens.filter((c) => INPUT_SCREENS.has(c.open)) : [];
+    if (now.length) {
+      d.opens = d.opens.filter((c) => !INPUT_SCREENS.has(c.open));
+      pending.unshift(...now.map((c) => () => openCommand(c)), () => showLine(d, view));
+      if (screen === d) closeScreen();
+      else runPending();
+      return;
+    }
     if (!view) {
       // The end of the talk: then the screens that it asked for, one after the other.
       pending.unshift(...d.opens.map((c) => () => openCommand(c)));

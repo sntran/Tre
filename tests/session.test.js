@@ -42,11 +42,19 @@ test('a new profile: the intro opens as lines; the choice and the next screen co
     session.command(last?.choices?.length ? { type: 'choose', n: 0 } : { type: 'next' });
   }
   seen = [...seen, ...opens(session.events())];
-  assert.ok(profile.flags['intro.seen']);
+  // The name of Nghé comes before the next line (#37): the talk waits while the screen is open.
   assert.equal(session.screen, 'nameFriend', 'the talk asks for the name of Nghé');
   assert.ok(seen.some((e) => e.choices.length), 'a line with a choice');
-  // The view closes the screen: the world goes on.
+  assert.ok(!seen.some((e) => e.textKey === 'dlg.grandma.intro.n4'), 'no line after the naming yet');
+  session.step();
+  assert.equal(session.screen, 'nameFriend');
+  // The view closes the name screen: the talk goes on with its next line.
   session.command({ type: 'closed' });
+  assert.equal(session.screen, 'dialogue');
+  assert.equal(opens(session.events()).at(-1).textKey, 'dlg.grandma.intro.n4');
+  session.command({ type: 'next' });
+  assert.ok(profile.flags['intro.seen']);
+  // The talk ended: the world goes on.
   assert.equal(session.screen, null);
   assert.equal(session.busy, false);
   session.step();
@@ -58,6 +66,7 @@ test('a tap on a person: the hero walks there, and the action button opens the t
   const { session } = newSession();
   readAll(session);
   session.command({ type: 'closed' });
+  readAll(session);
   session.events();
   const elder = session.persons().find((p) => p.ref === 'elder');
   const target = session.targetAt(elder.x, elder.y);

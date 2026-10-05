@@ -9,9 +9,11 @@
   "steps": [
     { "expect": [{ "screen": "dialogue" }, { "text": { "shown": "dlg.grandma.intro.n1" } }] },
     { "read": true },
-    { "expect": [{ "flag": "intro.seen" }, { "screen": "nameFriend" }] },
+    { "expect": [{ "screen": "nameFriend" }] },
     { "do": { "type": "closed" } },
-    { "expect": [{ "screen": null }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] },
+    { "expect": [{ "screen": "dialogue" }] },
+    { "read": true },
+    { "expect": [{ "flag": "intro.seen" }, { "screen": null }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] },
     { "press": { "entity": "npc:elder" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 40 } },
     { "expect": [{ "hero": { "near": "npc:elder", "within": 3 } }, { "text": { "shown": "dlg.elder.intro.n1" } }] },
