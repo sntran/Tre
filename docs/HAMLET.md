@@ -5,9 +5,9 @@ After the planting (`docs/PLANTING.md`), Xóm Ruộng has three more activities.
 | Activity | The picture of multiplication | The action of the child | The person |
 | --- | --- | --- | --- |
 | The planting | Rows and columns (an array) | Carry bundles to the plot | The planter |
-| Feeding the ducks (cho vịt ăn) | Equal groups (each duck eats the same) | Hold the jar to pour feed into a trough | The duck girl |
+| Feeding the ducks (cho vịt ăn) | Equal groups (each duck eats the same) | Hold the action button at the jar to pour feed into a trough | The duck girl |
 | The fish traps (đặt lờ) | A missing factor (how many traps) | Put traps at the stakes in the stream | The fisher uncle |
-| The drum dance (múa trống) | Skip counting (the multiples, in time) | Tap the bronze drum on the beats | The old drummer |
+| The drum dance (múa trống) | Skip counting (the multiples, in time) | Press the action button at the bronze drum on the beats | The old drummer |
 
 | Part | File |
 | --- | --- |
@@ -33,8 +33,8 @@ After the planting (`docs/PLANTING.md`), Xóm Ruộng has three more activities.
 ## The fish traps
 
 - The talk of the fisher uncle opens a set. In a bubble he says the fish that the feast needs ("Mâm cỗ cần hai mươi con cá."). His traps lie on the bank. A small trap catches two fish, a middle one five, and a big one ten: the rings on a trap show its size.
-- **The child carries traps** to the stakes in the stream (the place system and the zone rule `spots`: one trap at each stake, the free stake nearest to the tap). A tap on a trap in the stream takes it up again.
-- A tap on the weir, or the action button (the weir), opens the gate of the small weir upstream; the fisher uncle opens it. The traps fill one after another, each with its number of fish:
+- **The child carries traps** to the stakes in the stream (the place system and the zone rule `spots`: one trap at each stake; a ghost of the trap shows at the free stake in front of the hero, and the button puts it there). With empty hands, the button at a trap in the stream takes it up again.
+- The action button at the fisher uncle (the weir) opens the gate of the small weir upstream; the fisher uncle opens it. The traps fill one after another, each with its number of fish:
   - **just right:** the fish are what the feast needs, and no trap is empty;
   - **too few:** the full traps stay; the fisher waits for another trap;
   - **too many:** the fisher keeps the fish of the feast, and the extra fish swim on, free.
@@ -45,12 +45,12 @@ After the planting (`docs/PLANTING.md`), Xóm Ruộng has three more activities.
 ## The drum dance
 
 - The talk of the old drummer opens a set. The dancers stand in a line in the đình yard, and the number of dancers in a group is its number. In a bubble, the drummer says the group ("Nhóm này có ba người. Cứ ba nhịp thì nhảy một lần.").
-- The first tap on the bronze drum starts the slow beat of the drummer on his small drum. **The child taps the bronze drum on the beats where the dancers jump** (three, six, nine, and on, up to ten times the number). A tap counts for a beat in the window of the beat.
-  - On a right tap, the dancers of the group jump.
+- The first press of the button at the bronze drum starts the slow beat of the drummer on his small drum. **The child presses the button at the bronze drum on the beats where the dancers jump** (three, six, nine, and on, up to ten times the number). A press counts for a beat in the window of the beat.
+  - On a right beat, the dancers of the group jump.
   - On a missed or wrong beat, the dancers stop with a laugh, and the drummer starts again from the last good jump, a little slower.
-  - When the child does not tap for two targets, the drummer stops and waits; the next tap starts again from the last good jump.
+  - When the child does not press for two targets, the drummer stops and waits; the next press starts again from the last good jump.
 - No score and no fail. The beat follows the child: slower after a miss, a little faster after a clean run, never faster than the fastest beat. The beat stays for the next dance (`period` in the profile).
-- **Forms:** one group (the multiples of one number); the middle of the song (from five times the number); two groups at once, each with its bronze drum: on a common multiple a tap on either drum makes both groups jump.
+- **Forms:** one group (the multiples of one number); the middle of the song (from five times the number); two groups at once, each with its bronze drum: on a common multiple a beat on either drum makes both groups jump.
 - **The memory:** a dance is one commit. The fact of the group goes to the memory (right when the run is clean), and so does the fact of each beat that the child missed.
 
 ## One memory, and the people point to each other
@@ -82,7 +82,7 @@ No question, no number field, no digit, and no score in the world. The numbers a
 `tests/hamlet-tasks.test.js` covers these rules:
 - the ducks: the share of each duck, the hungry ducks, the extra feed, and the pour that goes on;
 - the traps: the fish of each trap, more than one right placement, the extra fish, and the given traps;
-- the drum: a tap right only on a multiple, a miss that starts again from the last good jump, slower, a clean run that ends faster, and two groups together on the common multiples;
+- the drum: a beat right only on a multiple, a miss that starts again from the last good jump, slower, a clean run that ends faster, and two groups together on the common multiples;
 - the feast: the eggs at the next dawn, and the feast only at dusk of a day with all three;
 - one memory: a fact missed in the planting comes back in the ducks;
 - the small events.

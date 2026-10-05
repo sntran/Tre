@@ -25,7 +25,7 @@ Xóm Ruộng is a quiet hamlet north of Phù Đổng for the activities of multi
 1. The talk of the planter opens a set. A round has two plots that are ready (and a bigger plot at levels two and three, for pride, never needed): each one has a bamboo stake for each row along one edge and one for each column along the dike. The child sees the rows and the columns and can count them; nothing is written.
 2. The bundles (bó mạ) lie on the dike by the seedbed: at the first level, a bundle has the size of one row of a plot; at the higher levels, bundles of ten and loose bunches of one.
 3. The child carries bundles to the edge of a plot (the place rule `exact` of the work system).
-4. The action button (the seedling) is the commit; a tap on the planter asks for help (`docs/TASKS.md`). The planter plants row by row from the bundles at the edge, with a soft sound for each row:
+4. The action button at the planter (the seedling) is the commit; the wave asks for help (`docs/TASKS.md`). The planter plants row by row from the bundles at the edge, with a soft sound for each row:
    - **Just right:** the plot is full and no seedling is left; the planter says the total as a word ("Hai mươi bốn cây, vừa đủ!").
    - **Too few:** the planting stops where the seedlings end, the empty cells show, and the planter waits for the rest.
    - **Too many:** the plot is full, and the extra seedlings lie on the dike; the planter takes them back to the seedbed.
