@@ -387,3 +387,16 @@ People of a village are called by a word of kinship to the child and the order o
 - **The words of kinship:** `kin.co` (cô), `kin.chu` (chú), `kin.bac` (bác), `kin.ong` (ông), `kin.ba` (bà), `kin.anh` (anh), `kin.chi` (chị), `kin.cau` (cậu), `kin.di` (dì), each with the word of the order (`{order}`). In English the name is the same, with a capital word of kinship ("Cô Năm").
 - **Lines that name them** (the name is the parameter `{who}`, or the four names in the greeting): `hamlet.greet`, `hamlet.point.planting`, `hamlet.point.ducks`, `hamlet.point.traps`, `hamlet.point.drum`, `mentor.picture.planter`, `mentor.picture.duck-girl`, `mentor.picture.fisher-uncle`, `mentor.picture.drummer`. In English each of these lines says the work with the name ("Cô Năm, the planter").
 
+## The words of a region and the things of a time (#39)
+
+The people of the center and the south say the words of their region; the people of the north, the narrator, and the math keep the words of the whole country. Please check the words and the marked lines.
+
+- **The words** (`data/world/speech.json`):
+  - center: đâu → mô, gì → chi, sao → răng, thế → rứa, kia → tê, này → ni, mẹ → mạ, cô → o.
+  - south: mẹ → má, bố → ba, hoa → bông, lợn → heo, quả → trái, tôi → tui, ngô → bắp.
+  - north: no change. The issue asks about "u" (mẹ) and "thầy" (bố) in the speech of the old villages of the north: they are not in the table. Do you want them?
+- **The marked lines** (21 words): `dlg.grandma.intro.nghe1` (đâu), `event.market.short` (đâu), `dlg.smith.idle.n1` (gì), `ducks.few` (gì), `dlg.woodcutter.trial.n1`, `dlg.giong.speaks.n9`, `dlg.socson.elder.wait.n1` (two), `gift.thanks.elder`, `mentor.mark`, `hamlet.greet`, `plant.turned`, `plant.choose.no` (này), `mentor.first`, `mentor.show`, `plant.choose.no`, `plant.few`, `traps.many` (kia), `dlg.messenger.call.n4` (tôi), `dlg.giong.speaks.n2` (mẹ, two). Not marked on purpose: "xem sao" and "như thế này" (a word for a word would not be natural: the center says "như ri"), "Xem này" as a call to look, and "cô" (the planter calls herself "cô"; "o" is the sister of a father in the center).
+- **The gloss:** "“mô” = “đâu”", one time for each word.
+- **The things of a time** (`data/world/origins.json`): maize from 1597 (the earlier year of the two sources). No corn on the houses of Era 1: sheaves of rice or gourds in its place. Chili, sweet potato, cassava, pineapple, papaya, peanut, tobacco, and pumpkin are not in the game, and have no year yet: each needs a year with a source before it comes into the world.
+- **The year of each region** (`year` in `data/world/regions.json`): the last year of the time of its chapter; the legend chapters have 258 BC, the end of the Hùng Kings as the old books put it.
+
