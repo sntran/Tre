@@ -12,6 +12,7 @@ import { STEP } from '../core/world/step.js';
 import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, starOn, puddlesAt } from '../core/world/ambient.js';
 import { rainOf } from '../core/world/systems/sky.js';
 import { createSession, middleOf } from '../core/session.js';
+import { LINE_LIFE, lineLife, linesAfter, nearHero as talksNear } from '../core/lines.js';
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
@@ -449,6 +450,8 @@ export async function mountVillage(ctx, params = {}) {
   let bookScreen = null;
   function openScreen(ev) {
     if (ev.screen === 'dialogue' || ev.screen === 'say') {
+      // A line in the box is a new line of its speaker: the lines of the other people go.
+      talkOver(`npc:${ev.speaker}`);
       box ??= createDialogueBox(ctx, { next: () => send({ type: 'next' }), choose: (n) => send({ type: 'choose', n }) });
       box.show(ev);
       return;
@@ -911,11 +914,20 @@ export async function mountVillage(ctx, params = {}) {
   }
 
   // Greetings over the heads of the people, and the coins of broken pots.
-  const bubbles = [];
-  const BUBBLE_LIFE = 2.2; // seconds: a short line over a head
+  let bubbles = [];
+  // Take away the lines of the other people when a person near the hero says a new line: one person
+  // talks at a time (src/core/lines.js, #38).
+  function talkOver(id) {
+    const near = talksNear(getEntity(state, id)?.position, hero().position);
+    const stay = linesAfter(bubbles, id, near);
+    for (const b of bubbles) if (!stay.includes(b)) b.el.remove();
+    bubbles = stay;
+  }
   // icon: the button picture of an act (the example of a station, #37), in a bubble of its own over
   // the line of the person.
   function showBubble(id, text, icon = null) {
+    // A heart over Nghé is no line of a person.
+    if (!icon && !String(id).startsWith('friend:')) talkOver(id);
     // A new line of a person takes the place of the last one (a mentor counts aloud, one word at a time).
     for (let i = bubbles.length - 1; i >= 0; i--) {
       if (bubbles[i].id !== id || Boolean(bubbles[i].icon) !== Boolean(icon)) continue;
@@ -925,7 +937,7 @@ export async function mountVillage(ctx, params = {}) {
     const el = icon ? h('div', { class: 'world-bubble icon' }, [img(`ui/${icon}`, 'bubble-icon')]) : h('div', { class: 'world-bubble', text });
     marks.append(el);
     // A longer line stays longer (a greeting of one line), and wraps (styles/main.css).
-    bubbles.push({ id, el, age: 0, icon, life: Math.max(BUBBLE_LIFE, 0.8 + (text?.length ?? 0) * 0.06), width: el.offsetWidth });
+    bubbles.push({ id, el, age: 0, icon, life: lineLife(icon ? '' : text), width: el.offsetWidth });
   }
   // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
   // up when it lands.
@@ -1125,7 +1137,7 @@ export async function mountVillage(ctx, params = {}) {
       // The bubble stays on the screen: near an edge, it moves in from the edge.
       const half = b.width / 2 + 8;
       const x = Math.max(half, Math.min(size.width - half, q.x));
-      b.el.style.transform = `translate(${x}px, ${q.y - Math.min(b.age, BUBBLE_LIFE) * 10 - (b.icon ? 40 : 0)}px) translate(-50%, -100%)`;
+      b.el.style.transform = `translate(${x}px, ${q.y - Math.min(b.age, LINE_LIFE) * 10 - (b.icon ? 40 : 0)}px) translate(-50%, -100%)`;
       b.el.style.opacity = String(Math.min(1, (b.life - b.age) * 2));
     }
     for (let i = arrows; i < arrowPool.length; i++) arrowPool[i].hidden = true;

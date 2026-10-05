@@ -63,7 +63,9 @@ function play(world, ent, dt, env) {
     if (st.say) world.events.push({ type: 'call', id: st.say.id, key: st.say.key, params: st.say.params ?? {} });
     if (st.mark) {
       const y = env.groundY(st.mark.x / 2, st.mark.z / 2);
-      addEntity(world, { id: `mark:mentor:${made++}`, mentorMark: { ttl: st.mark.ttl ?? 3 }, position: { x: st.mark.x, y, z: st.mark.z, facing: 0 }, look: 'mentor-mark' });
+      const id = `mark:mentor:${made++}`;
+      addEntity(world, { id, mentorMark: { ttl: st.mark.ttl ?? 3 }, position: { x: st.mark.x, y, z: st.mark.z, facing: 0 }, look: 'mentor-mark' });
+      (sc.marks ??= []).push(id);
     }
     if (st.spawn) {
       const id = `demo:${sc.key}:${made++}`;
@@ -98,9 +100,12 @@ function play(world, ent, dt, env) {
   }
 }
 
-// The end of a script: the things of its demonstration go.
-export function endScript(world, ent) {
-  if (ent?.script) end(world, ent);
+// The end of a script: the things of its demonstration go. early: the script stops before its
+// end (the greeting of a place when the child starts a station, #38): its marks go too.
+export function endScript(world, ent, { early = false } = {}) {
+  if (!ent?.script) return;
+  if (early) for (const id of ent.script.marks ?? []) removeEntity(world, id);
+  end(world, ent);
 }
 
 function end(world, ent) {

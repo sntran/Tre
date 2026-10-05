@@ -52,6 +52,7 @@ import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring } from './mentoring.js';
 import { playExample, stopExample } from './examples.js';
+import { endScript } from './world/systems/mentor.js';
 import { createPlanting } from './planting-session.js';
 import { createHamlet } from './hamlet-session.js';
 import { plotsOf } from './world/systems/plant.js';
@@ -1032,6 +1033,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     log('action', { kind: 'talk' });
     worldCommand(state, { type: 'face', id: 'hero', x: at.x * 2, z: at.y * 2 });
     if (who.kind === 'npc') {
+      // The child starts a station while the greeting of the place goes on: the greeting ends at
+      // once, with its marks, and only the person of the station talks (#38).
+      if (who.id !== practice?.greeter) endScript(state, getEntity(state, 'script:greet'), { early: true });
       // During the task of the person, a tap asks for help: the mentor answers with one move. It
       // never opens the start talk again (docs/TASKS.md).
       const key = mentoring.taskOfPerson(`npc:${who.id}`);
@@ -1845,8 +1849,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // Events of a step ------------------------------------------------------------------
 
   // What the world did in a step, for the story: callouts, gifts, and the skill events.
+  // A person at work (#38): the person of a script (an example, a first step, a move of a mentor,
+  // the greeting of a place), or of a task that goes on. A person at work says only the lines of
+  // the work; the small talk of the day waits until the work ends.
+  function atWork(id) {
+    for (const s of query(state, 'script')) if (s.script.steps.some((st) => st.say?.id === id || st.point?.id === id)) return true;
+    for (const [key, def] of Object.entries(data.mentors?.mentors ?? {})) {
+      if (def.person !== id) continue;
+      const tz = getEntity(state, `zone:${key.startsWith('event-') ? `trial-${key}` : key}`);
+      if (tz?.zone && !tz.zone.done) return true;
+    }
+    return false;
+  }
+
   function worldEvent(ev) {
-    if (ev.type === 'greet' && !busy) {
+    if (ev.type === 'greet' && !busy && !atWork(ev.id)) {
       const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
       emit({ type: 'open', screen: 'callout', id: ev.id, textKey: marketLine() ?? GREETS[n % GREETS.length], params: { name: profile.hero.name } });
     }
