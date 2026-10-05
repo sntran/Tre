@@ -9,6 +9,7 @@ import { check } from '../core/conditions.js';
 import { createRoutes } from './travel.js';
 import { createLandPlane, LETTER, TILE } from '../core/gen/tiles.js';
 import { createPlane, frameOrigins } from '../core/gen/plane.js';
+import { thingsOf } from '../core/origins.js';
 
 // The size of the plane (cells): an index of a cell is y * PLANE_SIZE + x.
 export const PLANE_SIZE = 65536;
@@ -101,6 +102,10 @@ export function createWorld(world, defs, geo = null) {
       region: regionId,
       plane: true,
       nameKey: r.nameKey,
+      // The year of the time of the region, and the things of the data that are in the world then
+      // (data/world/origins.json, #39): no corn under the eaves in the time of the Hùng Kings.
+      year: r.year ?? null,
+      things: thingsOf(geo?.origins, r.year ?? null),
       width: PLANE_SIZE,
       height: PLANE_SIZE,
       legend,

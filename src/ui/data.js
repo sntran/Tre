@@ -40,6 +40,7 @@ export const FILES = {
   planting: 'data/world/planting.json',
   hamlet: 'data/world/hamlet.json',
   naming: 'data/world/naming.json',
+  origins: 'data/world/origins.json',
 };
 
 async function fetchJson(path) {
@@ -99,7 +100,7 @@ export async function loadData(onProgress = () => {}, read = fetchJson, readByte
   // Load more height tiles (names); the land of a tile can be made when its height tiles are there.
   // Return the names that came.
   out.moreHeights = addHeights;
-  out.world = createWorld(out.regions, out.maps, { routes: out.routes, places: out.geo.places, rivers: out.geo.rivers, land: out.geo.land, heights, lands, scatter: out.scatter, villagers: out.figures.villagers, seeds: options.seeds ?? 2 });
+  out.world = createWorld(out.regions, out.maps, { routes: out.routes, places: out.geo.places, rivers: out.geo.rivers, land: out.geo.land, heights, lands, scatter: out.scatter, villagers: out.figures.villagers, origins: out.origins, seeds: options.seeds ?? 2 });
   // The raids and the quests name places on the plane: their cells in the frame of a place (data/
   // raids.json, data/quests.json) become cells of the plane, and their map the map of the region.
   for (const def of Object.values(out.raids?.raids ?? {})) placeRaid(out.world, def);

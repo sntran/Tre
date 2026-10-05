@@ -123,6 +123,9 @@ export function bitsOf(runs, size) {
 // block, so that a dig knows what it takes.
 export function createTerrain(map, tileTypes, tileMap, blocks = null) {
   const plane = Boolean(map.plane);
+  // The things of the time of the map (data/world/origins.json, #39): a prop shows a thing of a
+  // later time only when the map has it.
+  const timeThings = new Set(map.things ?? []);
   const W = map.width;
   const H = map.height;
   const id = map.id;
@@ -272,6 +275,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
       fine: writer,
       groundTop: (fx, fz) => baseTop(Math.floor(fx / 2), Math.floor(fz / 2)) * 2,
       shadow: (x, z) => { if (inChunk(x, z)) shadows.add(`${x},${z}`); },
+      things: timeThings,
     };
     const page = { cx, cz, key: chunkKey(cx, cz), x0, z0, ground, kinds, fine, fy0, fx0, fz0, objects: [], roofs: [], smooth: [], water, paddies, flowers: [], shadows, used: [], maxTop, partial: !landReady(cx, cz) };
     const here = (fx, fz) => inChunk(Math.floor(fx / 2), Math.floor(fz / 2));

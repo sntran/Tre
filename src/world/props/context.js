@@ -5,7 +5,8 @@ import { seeded } from '../voxel.js';
 
 // fine: the fine grid. groundTop(fx, fz): the first free fine y over the ground at a fine x, z.
 // shadow(cx, cz): mark a ground cell (full-size) as in shadow.
-export function propContext(fine, groundTop, shadow, { who = 0, seed = 1 } = {}) {
+// things: the things of the time of the map (data/world/origins.json): ctx.has(thing).
+export function propContext(fine, groundTop, shadow, { who = 0, seed = 1, things = null } = {}) {
   const box = { x0: Infinity, y0: Infinity, z0: Infinity, x1: -Infinity, y1: -Infinity, z1: -Infinity };
   const roofs = [];
   let last = null; // the last block set: the owner of a roof that comes after it
@@ -20,6 +21,8 @@ export function propContext(fine, groundTop, shadow, { who = 0, seed = 1 } = {})
   const ctx = {
     rng: seeded(seed),
     who,
+    // Is a thing of a known time (maize) in the world of the map? Not when the map names none.
+    has: (thing) => Boolean(things?.has(thing)),
     ground: groundTop,
     set(x, y, z, color) {
       if (!fine.inside(x, y, z)) return;

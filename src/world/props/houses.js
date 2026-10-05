@@ -96,24 +96,33 @@ export const HOUSE_PARTS = Object.freeze({
   ridge: ['yellow', 'ochre', 'wood'],
   door: ['wood', 'indigo', 'greenDeep', 'ochre'],
   sweep: [0.5, 1, 1.5],
-  extras: ['firewood', 'corn', 'baskets', 'jar'],
+  extras: ['firewood', 'sheaves', 'gourds', 'baskets', 'jar', 'corn'],
 });
 
-// A variant of a house from its seed: one choice of each part, and one or two extras.
-export function houseVariant(rng) {
+// An extra that needs a thing of a known time (data/world/origins.json, #39): corn under the eaves
+// only after maize came to Vietnam (1597), never in the time of the Hùng Kings.
+export const EXTRA_NEEDS = Object.freeze({ corn: 'maize' });
+
+// A variant of a house from its seed: one choice of each part, and one or two extras. has(thing):
+// the thing of a known time is in the world of the map (an extra that needs another thing is not).
+export function houseVariant(rng, has = () => false) {
   const pick = (k) => rng.pick(HOUSE_PARTS[k]);
-  const first = pick('extras');
-  const second = pick('extras');
+  const extrasNow = HOUSE_PARTS.extras.filter((e) => !EXTRA_NEEDS[e] || has(EXTRA_NEEDS[e]));
+  const first = rng.pick(extrasNow);
+  const second = rng.pick(extrasNow);
   const extras = rng.chance(0.5) && second !== first ? [first, second] : [first];
   return { walls: pick('walls'), band: pick('band'), roof: pick('roof'), ridge: pick('ridge'), door: pick('door'), sweep: pick('sweep'), extras };
 }
 
-// The extras around a house (fine units): firewood under the floor, corn under the eaves, baskets
-// on the veranda, a water jar at the side of the ladder.
+// The extras around a house (fine units): firewood under the floor, sheaves of rice or corn under
+// the eaves, gourds at a corner of the eaves, baskets on the veranda, a water jar at the side of the
+// ladder.
 function extrasOf(ctx, h, list) {
   for (const e of list) {
     if (e === 'firewood') ctx.box(h.wx1 - 3, h.gy, h.wz0 + 1, h.wx1 - 1, h.gy + 1, h.wz0 + 2, 'wood');
     if (e === 'corn') for (let x = h.wx0 + 1; x < h.wx1; x += 2) ctx.set(x, h.fy - 1, h.wz1 + 2, 'yellow');
+    if (e === 'sheaves') for (let x = h.wx0 + 1; x < h.wx1; x += 3) ctx.box(x, h.fy - 2, h.wz1 + 2, x, h.fy - 1, h.wz1 + 2, 'ochre');
+    if (e === 'gourds') for (const x of [h.wx0, h.wx1 - 1]) ctx.box(x, h.fy - 2, h.wz1 + 2, x, h.fy - 1, h.wz1 + 2, 'green');
     if (e === 'baskets') ctx.box(h.wx0, h.fy + 1, h.wz1 + 1, h.wx0, h.fy + 2, h.wz1 + 1, 'ochre');
     if (e === 'jar') ctx.box(h.dx + 3, h.gy, h.wz1 + 3, h.dx + 3, h.gy + 1, h.wz1 + 3, 'vermilionPale');
   }
@@ -122,7 +131,7 @@ function extrasOf(ctx, h, list) {
 // A house on stilts. A house of the generated land (gen) has a round roof in some hamlets, from its
 // own seed (the houses of the stamps keep their look).
 export function house(ctx, o) {
-  const v = houseVariant(ctx.rng);
+  const v = houseVariant(ctx.rng, ctx.has);
   const round = Boolean(o.gen) && seeded(hashSeed(`${o.seed}:form`)).chance(0.4);
   const h = stiltHouse(ctx, o, { ...v, round });
   extrasOf(ctx, h, v.extras);
@@ -152,7 +161,7 @@ export function dinh(ctx, o) {
 
 // A small hut. Some huts have laundry on a line between two posts at the side.
 export function hut(ctx, o) {
-  const v = houseVariant(ctx.rng);
+  const v = houseVariant(ctx.rng, ctx.has);
   const h = stiltHouse(ctx, o, { ...v, postH: 5, wallH: 3 });
   extrasOf(ctx, h, v.extras.slice(0, 1));
   if (!ctx.rng.chance(0.5)) return;

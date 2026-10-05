@@ -46,7 +46,7 @@ export function newWorld() {
   const geo = load('data/geo/vietnam.json');
   const lands = new Map(regions.regions.filter((r) => r.land).map((r) => [r.land, load(`data/world/${r.land}.json`)]));
   const tiles = [...new Set([...lands.values()].flatMap((l) => l.tiles ?? []))];
-  return createWorld(regions, defs, { routes: load('data/world/routes.json'), places: geo.places, rivers: geo.rivers, land: geo.land, heights: heightsOf(tiles), lands, scatter: load('data/world/scatter.json'), villagers: load('data/figures.json').villagers, seeds: 24 });
+  return createWorld(regions, defs, { routes: load('data/world/routes.json'), places: geo.places, rivers: geo.rivers, land: geo.land, heights: heightsOf(tiles), lands, scatter: load('data/world/scatter.json'), villagers: load('data/figures.json').villagers, origins: load('data/world/origins.json'), seeds: 24 });
 }
 
 // The fine heights of these tiles (data/geo/heights/), read by fs.

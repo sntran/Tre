@@ -19,7 +19,7 @@ export const PROPS = Object.freeze({
 export function buildProp(world, prop, who) {
   const fn = PROPS[prop.kind];
   if (!fn) throw new Error(`Unknown prop ${prop.kind}`);
-  const ctx = propContext(world.fine, world.groundTop, world.shadow, { who, seed: prop.seed ?? 1 });
+  const ctx = propContext(world.fine, world.groundTop, world.shadow, { who, seed: prop.seed ?? 1, things: world.things });
   fn(ctx, prop);
   return { ...ctx.result(), info: ctx.info ?? null };
 }

@@ -1,0 +1,20 @@
+{
+  "_about": "The things of the world that came at a known time (#39; src/core/origins.js; docs/WORLD.md). A thing has the first year when it was in Vietnam (from: a year, negative before the Common Era), the words for it (vi: in the language files and the lines of people; en), and the sources. The world of a region has only the things whose year is not after the year of the region (year in data/world/regions.json): no house, field, market, or line of text has a thing before its year. A thing with no year (from: null) came from far away at a time that we did not check yet: it does not appear in the world until it has a year with a source.",
+  "things": {
+    "maize": {
+      "from": 1597,
+      "vi": ["ngô", "bắp", "bắp ngô"],
+      "en": ["corn", "maize"],
+      "note": "Maize came from the Americas. A legend says Phùng Khắc Khoan brought it back from China in 1597; Lê Quý Đôn (Vân đài loại ngữ) says Trần Thế Vinh brought it from the Qing in the Kangxi years, 1662 to 1723. The year here is the earlier one.",
+      "sources": ["https://thethaovanhoa.vn/chu-va-nghia-tu-ngo-den-bap-20251105052428822.htm"]
+    },
+    "chili": { "from": null, "vi": ["ớt"], "en": ["chili", "chilli"], "note": "From the Americas. The year in Vietnam is not checked yet.", "sources": [] },
+    "sweet-potato": { "from": null, "vi": ["khoai lang"], "en": ["sweet potato"], "note": "From the Americas. The year in Vietnam is not checked yet.", "sources": [] },
+    "cassava": { "from": null, "vi": ["sắn", "khoai mì"], "en": ["cassava"], "note": "From the Americas. The year in Vietnam is not checked yet.", "sources": [] },
+    "pineapple": { "from": null, "vi": ["dứa", "thơm", "khóm"], "en": ["pineapple"], "note": "From the Americas. The year in Vietnam is not checked yet.", "sources": [] },
+    "papaya": { "from": null, "vi": ["đu đủ"], "en": ["papaya"], "note": "From the Americas. The year in Vietnam is not checked yet.", "sources": [] },
+    "peanut": { "from": null, "vi": ["đậu phộng", "củ lạc", "lạc rang"], "en": ["peanut"], "note": "From the Americas. The year in Vietnam is not checked yet. The word lạc alone is also the word for lost, so the check uses the longer words.", "sources": [] },
+    "tobacco": { "from": null, "vi": ["thuốc lá", "thuốc lào"], "en": ["tobacco"], "note": "From the Americas. The year in Vietnam is not checked yet.", "sources": [] },
+    "pumpkin": { "from": null, "vi": ["bí ngô", "bí đỏ"], "en": ["pumpkin"], "note": "From the Americas. The year in Vietnam is not checked yet.", "sources": [] }
+  }
+}
