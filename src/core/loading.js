@@ -163,3 +163,40 @@ export function roadTo(world, target, from = null) {
   if (line.length < 2) line.unshift([target.at[0] - 0.5, target.at[1] - 0.3]);
   return line;
 }
+
+// The view of the map at a progress p (0 to 1): the whole country at the start, and a slow zoom
+// toward the view of the start (`end`) as the load goes on. all and end: { x, y, w, h } boxes of
+// the same aspect. The width shrinks by the same ratio for each part of the zoom, and the middle of
+// the view moves with the width, from the middle of the country to the middle of the end. road: the drawn part of the road (it draws in the
+// last part of the zoom); seal: the strength of the seal (it shows at the end).
+export const ROAD_FROM = 0.55;
+export const SEAL_FROM = 0.9;
+export function zoomView(all, end, p) {
+  const t = Math.max(0, Math.min(1, p));
+  const z = t * t * (3 - 2 * t);
+  const w = all.w * (end.w / all.w) ** z;
+  const k = Math.abs(all.w - end.w) < 1e-9 ? 1 : (w - end.w) / (all.w - end.w);
+  const cx = end.x + end.w / 2 + (all.x + all.w / 2 - (end.x + end.w / 2)) * k;
+  const cy = end.y + end.h / 2 + (all.y + all.h / 2 - (end.y + end.h / 2)) * k;
+  const h = w * (end.h / end.w);
+  return {
+    x: cx - w / 2,
+    y: cy - h / 2,
+    w,
+    h,
+    road: Math.max(0, Math.min(1, (t - ROAD_FROM) / (1 - ROAD_FROM))),
+    seal: Math.max(0, Math.min(1, (t - SEAL_FROM) / (1 - SEAL_FROM))),
+  };
+}
+
+// A box around points (and a margin) with the aspect h / w of the screen.
+export function boxOf(points, aspect, margin = 1.1, minW = 0) {
+  const b = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  for (const p of points) {
+    b.x0 = Math.min(b.x0, p.x); b.y0 = Math.min(b.y0, p.y);
+    b.x1 = Math.max(b.x1, p.x); b.y1 = Math.max(b.y1, p.y);
+  }
+  const w = Math.max(minW, (b.x1 - b.x0) * margin, ((b.y1 - b.y0) * margin) / aspect);
+  const h = w * aspect;
+  return { x: (b.x0 + b.x1) / 2 - w / 2, y: (b.y0 + b.y1) / 2 - h / 2, w, h };
+}

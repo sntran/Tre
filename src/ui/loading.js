@@ -1,19 +1,23 @@
 // The loading screen: the map of Vietnam on dó paper (the same drawing as the country map,
-// src/ui/worldmap.js), from the tap that starts the game to the first frame of the world. A red
-// seal marks the place of the start, a dashed road draws toward it, and the hero walks on the
-// road with Nghé. The road is the real progress of the load (src/core/loading.js). Under the map
+// src/ui/worldmap.js, with softer colors of the regions), from the tap that starts the game to the
+// first frame of the world. It opens on the whole country and zooms slowly toward the place of the
+// start; in the last part of the zoom a dashed road draws toward it with the hero and Nghé on it,
+// and a red seal marks the place at the end. The zoom and the road are the real progress of the
+// load (src/core/loading.js). Under the map
 // one line names the place; after ten seconds it adds that the land is still not ready. At the
 // end the screen fades into the world. No facts and no questions show here (docs/LOADING.md).
 import { h } from './dom.js';
 import { t } from './i18n.js';
 import { C } from '../render/palette.js';
 import { createProjection } from '../world/geo.js';
-import { createLoadProgress, partOfLine, startTarget, roadTo } from '../core/loading.js';
+import { createLoadProgress, partOfLine, startTarget, roadTo, zoomView, boxOf } from '../core/loading.js';
 import { drawBase, svgEl as el, SVG_NS } from './worldmap.js';
 import { portraitImage, heroLookOf, speakerLookOf } from './portraits.js';
 
 const MIN_VIEW = 4; // the smallest width of the view of the map (degrees of longitude)
 const FADE_MS = 450;
+const HOLD_MS = 500; // the last view, with the seal, before the fade
+const EASE = 2.5; // the shown progress comes to the real progress at this rate (each second)
 
 // Show the loading screen at once, over the scenes. opts: profile (or null until it loads),
 // practice (the activity of a practice link), map and at (the arrival of a travel), from (the
@@ -43,7 +47,7 @@ export function showLoading(ctx, opts = {}) {
   const proj = createProjection(geo.bbox);
   const chapter = world.region(target.region)?.chapter;
   const eraSouth = world.eraLand?.byChapter?.[chapter] ?? geo.bbox.lat0;
-  drawBase(svg, ctx, proj, eraSouth);
+  drawBase(svg, ctx, proj, eraSouth, { soft: true });
 
   // The road, the seal of the place, and the hero with Nghé on top of the map.
   const roadBack = el('path', { fill: 'none', stroke: C.diep, 'stroke-width': 7, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' });
@@ -53,61 +57,54 @@ export function showLoading(ctx, opts = {}) {
   top.append(roadBack, road, seal, walker);
 
   // The small map of the whole country, with a red frame on the part that the big map shows.
-  const all = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  const land = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
   const vnm = geo.land.VNM.map((r) => r.map(proj.toMap));
   for (const ring of vnm) for (const p of ring) {
-    all.x0 = Math.min(all.x0, p.x); all.y0 = Math.min(all.y0, p.y);
-    all.x1 = Math.max(all.x1, p.x); all.y1 = Math.max(all.y1, p.y);
+    land.x0 = Math.min(land.x0, p.x); land.y0 = Math.min(land.y0, p.y);
+    land.x1 = Math.max(land.x1, p.x); land.y1 = Math.max(land.y1, p.y);
   }
-  inset.setAttribute('viewBox', `${all.x0 - 4} ${all.y0 - 4} ${all.x1 - all.x0 + 8} ${all.y1 - all.y0 + 8}`);
+  inset.setAttribute('viewBox', `${land.x0 - 4} ${land.y0 - 4} ${land.x1 - land.x0 + 8} ${land.y1 - land.y0 + 8}`);
   inset.append(el('path', { d: vnm.map((r) => `M${r.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('L')}Z`).join(''), fill: C.diep, stroke: C.ink, 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' }));
   const frame = el('rect', { fill: 'none', stroke: C.vermilion, 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke' });
   inset.append(frame);
 
   let points = [];
-  let view = null;
-  const unitsPerPx = () => (view ? Math.max(view.w / (svg.clientWidth || 1), view.h / (svg.clientHeight || 1)) : 1);
+  let all = null; // the view of the whole country
+  let end = null; // the view of the road and the place of the start
+  let view = null; // the view now
+  let shown = 0; // the progress that the view shows (it follows the real progress softly)
   const face = { hero: null, nghe: null };
+  const aspect = () => (svg.clientHeight || 3) / (svg.clientWidth || 4);
+  // Screen pixels to map units in the view now.
+  const unitsPerPx = () => (view ? view.w / (svg.clientWidth || 1) : 1);
 
-  // The road and the view for the target now.
+  // The road, the seal, and the two views for the target now.
   function layout() {
     points = roadTo(world, target, opts.from ?? null).map(proj.toMap);
-    const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
-    for (const p of points) {
-      box.x0 = Math.min(box.x0, p.x); box.y0 = Math.min(box.y0, p.y);
-      box.x1 = Math.max(box.x1, p.x); box.y1 = Math.max(box.y1, p.y);
-    }
-    const end = points[points.length - 1];
     const minW = proj.toMap([geo.bbox.lon0 + MIN_VIEW, 0]).x - proj.toMap([geo.bbox.lon0, 0]).x;
-    const aspect = (svg.clientHeight || 3) / (svg.clientWidth || 4);
-    let w = Math.max(minW, (box.x1 - box.x0) * 1.5, ((box.y1 - box.y0) * 1.5) / aspect);
-    const cx = (box.x0 + box.x1) / 2;
-    const cy = (box.y0 + box.y1) / 2;
-    view = { x: cx - w / 2, y: cy - (w * aspect) / 2, w, h: w * aspect };
-    for (const s of [svg, top]) s.setAttribute('viewBox', `${view.x} ${view.y} ${view.w} ${view.h}`);
-    frame.setAttribute('x', view.x);
-    frame.setAttribute('y', view.y);
-    frame.setAttribute('width', view.w);
-    frame.setAttribute('height', view.h);
+    // The views stay on the sheet in the west and the north (the land of the other countries ends
+    // at its edges); past the east and the south there is only sea.
+    const onSheet = (v) => ({ ...v, x: Math.max(0, v.x), y: Math.max(0, v.y) });
+    all = onSheet(boxOf(vnm.flat(), aspect(), 1.08));
+    end = onSheet(boxOf(points, aspect(), 1.5, minW));
     roadBack.setAttribute('d', dOf(points));
-    // The seal of the place of the start: a red square stamp with a thin inner line.
-    const k = unitsPerPx();
-    const r = 13 * k;
+    // The seal of the place of the start: a red square stamp with a thin inner line, in screen
+    // pixels (the group scales with the view).
+    const r = 13;
     seal.replaceChildren(
-      el('rect', { x: end.x - r, y: end.y - r, width: r * 2, height: r * 2, rx: r * 0.2, fill: C.vermilion, stroke: C.ink, 'stroke-width': 1.5, 'vector-effect': 'non-scaling-stroke' }),
-      el('rect', { x: end.x - r * 0.72, y: end.y - r * 0.72, width: r * 1.44, height: r * 1.44, fill: 'none', stroke: C.diep, 'stroke-width': 1.2, 'vector-effect': 'non-scaling-stroke' }),
+      el('rect', { x: -r, y: -r, width: r * 2, height: r * 2, rx: r * 0.2, fill: C.vermilion, stroke: C.ink, 'stroke-width': 1.5, 'vector-effect': 'non-scaling-stroke' }),
+      el('rect', { x: -r * 0.72, y: -r * 0.72, width: r * 1.44, height: r * 1.44, fill: 'none', stroke: C.diep, 'stroke-width': 1.2, 'vector-effect': 'non-scaling-stroke' }),
     );
-    const name = el('text', { x: end.x + r * 1.4, y: end.y + r * 0.4, 'font-size': 17 * k, class: 'place-name big' });
+    const name = el('text', { x: r * 1.4, y: r * 0.4, 'font-size': 17, class: 'place-name big' });
     name.textContent = target.name;
     seal.append(name);
     drawWalker();
   }
 
   // The hero and Nghé: two round faces at the end of the drawn road (a red diamond until the
-  // portraits are ready).
+  // portraits are ready), in screen pixels.
   function drawWalker() {
-    const k = unitsPerPx();
-    const r = 15 * k;
+    const r = 15;
     walker.replaceChildren();
     const one = (href, dx, size, id) => {
       const g = el('g', { transform: `translate(${dx} 0)` });
@@ -127,20 +124,32 @@ export function showLoading(ctx, opts = {}) {
     place();
   }
 
+  // The view, the road, the hero, and the seal for the shown progress.
+  let drawnAt = -1;
+  function place() {
+    const v = zoomView(all, end, shown);
+    view = v;
+    for (const s of [svg, top]) s.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`);
+    frame.setAttribute('x', v.x);
+    frame.setAttribute('y', v.y);
+    frame.setAttribute('width', v.w);
+    frame.setAttribute('height', v.h);
+    const k = unitsPerPx();
+    const part = partOfLine(points, v.road);
+    road.setAttribute('d', dOf(part));
+    roadBack.setAttribute('opacity', v.road > 0 ? 1 : 0);
+    const at = part[part.length - 1];
+    walker.setAttribute('transform', `translate(${at.x} ${at.y}) scale(${k})`);
+    walker.setAttribute('opacity', v.road > 0 ? 1 : 0);
+    const last = points[points.length - 1];
+    seal.setAttribute('transform', `translate(${last.x} ${last.y}) scale(${k})`);
+    seal.setAttribute('opacity', v.seal);
+    drawnAt = shown;
+  }
+
   function setLine() {
     line.textContent = t('loading.going', { place: target.name });
     slowLine.textContent = t('loading.slow');
-  }
-
-  // Draw the road up to the progress, and put the hero at its end.
-  let drawnAt = -1;
-  function place() {
-    const p = progress.progress;
-    const part = partOfLine(points, p);
-    road.setAttribute('d', dOf(part));
-    const at = part[part.length - 1];
-    walker.setAttribute('transform', `translate(${at.x} ${at.y})`);
-    drawnAt = p;
   }
 
   function loadFaces() {
@@ -155,9 +164,16 @@ export function showLoading(ctx, opts = {}) {
 
   let alive = true;
   let raf = 0;
+  let last = performance.now();
   function tick() {
     if (!alive) return;
-    if (progress.progress !== drawnAt) place();
+    const now = performance.now();
+    const dt = (now - last) / 1000;
+    last = now;
+    // The shown progress follows the real progress softly (also when the frames are far apart
+    // while the load works), and never goes back.
+    shown = Math.max(shown, progress.progress - (progress.progress - shown) * Math.exp(-dt * EASE));
+    if (Math.abs(shown - drawnAt) > 0.002) place();
     if (progress.slow && slowLine.hidden) slowLine.hidden = false;
     raf = requestAnimationFrame(tick);
   }
@@ -203,13 +219,17 @@ export function showLoading(ctx, opts = {}) {
     finish() {
       if (!alive) return;
       progress.finish();
+      shown = 1;
       place();
       alive = false;
       cancelAnimationFrame(raf);
       offLang?.();
       window.removeEventListener('resize', onResize);
-      layer.classList.add('out');
-      setTimeout(() => layer.remove(), FADE_MS);
+      // The last view (the whole road and the seal) stays for a moment, then fades.
+      setTimeout(() => {
+        layer.classList.add('out');
+        setTimeout(() => layer.remove(), FADE_MS);
+      }, HOLD_MS);
     },
   };
 }

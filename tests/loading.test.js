@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createLoadProgress, LOAD_STEPS, SLOW_MS, formatTimes, partOfLine, startTarget, roadTo } from '../src/core/loading.js';
+import { createLoadProgress, LOAD_STEPS, SLOW_MS, formatTimes, partOfLine, startTarget, roadTo, zoomView, boxOf, ROAD_FROM, SEAL_FROM } from '../src/core/loading.js';
+import { createProjection } from '../src/world/geo.js';
 import { createProfile } from '../src/core/profile.js';
 import { activityOf } from '../src/core/practice.js';
 import { loadGameData, load } from './helpers.js';
@@ -153,4 +154,43 @@ test('each kind of start shows the loading screen before its first wait, and onl
   const ends = [...village.matchAll(/ctx\.endLoading\(\)/g)].length;
   assert.equal(ends, 3, 'the first frame, no world, and the unmount');
   assert.match(village, /if \(warming === 'done'\) \{\s*\/\/ The first frame of the world is on the screen\.\s*warming = null;\s*ctx\.endLoading\(\);/);
+});
+
+test('the first view shows the whole country; the zoom grows with the progress and never goes back; the road draws in the last part, and the seal shows at the end', () => {
+  const proj = createProjection(data.geo.bbox);
+  const land = data.geo.land.VNM.flatMap((r) => r.map(proj.toMap));
+  const aspect = 3 / 4;
+  const all = boxOf(land, aspect, 1.08);
+  const start = startTarget(data, { profile: createProfile({ id: 'p', name: 'Mai', grade: 2, lang: 'vi', now: 0, seed: 7 }) });
+  const road = roadTo(data.world, start).map(proj.toMap);
+  const end = boxOf(road, aspect, 1.5);
+  // The first view holds the whole land of Vietnam.
+  const first = zoomView(all, end, 0);
+  for (const p of land) assert.ok(p.x >= first.x && p.x <= first.x + first.w && p.y >= first.y && p.y <= first.y + first.h, 'the whole country is in the first view');
+  assert.equal(first.road, 0);
+  assert.equal(first.seal, 0);
+  // The last view is the view of the road and the place.
+  const last = zoomView(all, end, 1);
+  for (const k of ['x', 'y', 'w', 'h']) assert.ok(Math.abs(last[k] - end[k]) < 1e-6, k);
+  assert.equal(last.road, 1);
+  assert.equal(last.seal, 1);
+  // The zoom only grows, and the place of the start stays in the view.
+  let w = Infinity;
+  const place = road[road.length - 1];
+  for (let i = 0; i <= 20; i++) {
+    const p = i / 20;
+    const v = zoomView(all, end, p);
+    assert.ok(v.w <= w + 1e-9, `the view never grows wider at ${p.toFixed(2)}`);
+    w = v.w;
+    assert.ok(place.x >= v.x && place.x <= v.x + v.w && place.y >= v.y && place.y <= v.y + v.h, `the place is in the view at ${p.toFixed(2)}`);
+    assert.equal(v.road > 0, p > ROAD_FROM + 1e-9, `the road at ${p.toFixed(2)}`);
+    assert.equal(v.seal > 0, p > SEAL_FROM + 1e-9, `the seal at ${p.toFixed(2)}`);
+  }
+});
+
+test('the loading screen draws the map with soft colors of the regions, and its shown progress never goes back', () => {
+  const src = readFileSync('src/ui/loading.js', 'utf8');
+  assert.match(src, /drawBase\(svg, ctx, proj, eraSouth, \{ soft: true \}\)/);
+  assert.match(src, /zoomView\(all, end, shown\)/);
+  assert.match(src, /shown = Math\.max\(shown,/);
 });

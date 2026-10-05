@@ -18,6 +18,7 @@ import { createProjection, regionAreas, layoutSeals, heightBand } from '../world
 export const SVG_NS = 'http://www.w3.org/2000/svg';
 const NS = SVG_NS;
 const FILLS = [C.greenPale, C.yellowPale, C.vermilionPale];
+const SOFT = 0.4; // the opacity of the colors of the regions on the loading screen
 const SEAL_PX = 20; // the largest radius of a seal on the screen; a small map has smaller seals
 const LABEL_PX = 15; // the size of a name on the screen
 
@@ -34,7 +35,10 @@ const pathOf = (rings) => rings.map((r) => `M${r.map((p) => `${p.x.toFixed(2)},$
 
 // The fixed parts of the map, made one time: land, regions, heights, rivers, and islands. The
 // loading screen draws the same map (src/ui/loading.js).
-export function drawBase(svg, ctx, proj, eraSouth) {
+// opts.soft: the loading screen: softer colors of the regions, so that the land, the rivers, the
+// coast, and the road stand out, and the sea past the east and the south of the sheet (with no
+// frame line at the edge of the sheet).
+export function drawBase(svg, ctx, proj, eraSouth, opts = {}) {
   const { data } = ctx;
   const geo = data.geo;
   const toMap = proj.toMap;
@@ -50,7 +54,12 @@ export function drawBase(svg, ctx, proj, eraSouth) {
   ]);
   svg.append(defs);
   // The sheet of the map: the sea inside a frame; outside the frame is the paper of the panel.
-  svg.append(el('rect', { x: 0, y: 0, width: proj.width, height: proj.height, fill: 'url(#sea-waves)' }));
+  // With opts.soft (the loading screen), the sea goes on past the east and the south of the sheet:
+  // there is only sea there, and the first view of the whole country is wider than the sheet.
+  const sea = opts.soft ? 2 : 1;
+  // The color of the sea under the waves, so that the sea shows before the picture of the waves loads.
+  svg.append(el('rect', { x: 0, y: 0, width: proj.width * sea, height: proj.height * sea, fill: C.indigoPale }));
+  svg.append(el('rect', { x: 0, y: 0, width: proj.width * sea, height: proj.height * sea, fill: 'url(#sea-waves)' }));
 
   const stroke = { stroke: C.ink, 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke', 'stroke-linejoin': 'round' };
   for (const code of ['CHN', 'LAO', 'KHM', 'THA']) {
@@ -69,7 +78,7 @@ export function drawBase(svg, ctx, proj, eraSouth) {
   const regionPaths = new Map();
   for (const r of data.world.regions) {
     const d = pathOf(areas.get(r.id));
-    const path = el('path', { d, fill: FILLS[r.chapter % FILLS.length], class: 'region-area', 'data-region': r.id });
+    const path = el('path', { d, fill: FILLS[r.chapter % FILLS.length], ...(opts.soft ? { 'fill-opacity': SOFT } : {}), class: 'region-area', 'data-region': r.id });
     eraGroup.append(path);
     southGroup.append(el('path', { d, fill: C.diep }));
     regionPaths.set(r.id, path);
@@ -141,7 +150,7 @@ export function drawBase(svg, ctx, proj, eraSouth) {
     islands.append(el('circle', { cx: m.x, cy: m.y, r: 0.9, fill: C.paper, stroke: C.ink, 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' }));
   }
   svg.append(islands);
-  svg.append(el('rect', { x: 0, y: 0, width: proj.width, height: proj.height, fill: 'none', stroke: C.ink, 'stroke-width': 2.5, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
+  if (!opts.soft) svg.append(el('rect', { x: 0, y: 0, width: proj.width, height: proj.height, fill: 'none', stroke: C.ink, 'stroke-width': 2.5, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
   return { regionPaths, eraY, place };
 }
 
