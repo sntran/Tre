@@ -912,6 +912,7 @@ export async function mountVillage(ctx, params = {}) {
 
   // Greetings over the heads of the people, and the coins of broken pots.
   const bubbles = [];
+  const BUBBLE_LIFE = 2.2; // seconds: a short line over a head
   // icon: the button picture of an act (the example of a station, #37), in a bubble of its own over
   // the line of the person.
   function showBubble(id, text, icon = null) {
@@ -923,7 +924,8 @@ export async function mountVillage(ctx, params = {}) {
     }
     const el = icon ? h('div', { class: 'world-bubble icon' }, [img(`ui/${icon}`, 'bubble-icon')]) : h('div', { class: 'world-bubble', text });
     marks.append(el);
-    bubbles.push({ id, el, age: 0, icon });
+    // A longer line stays longer (a greeting of one line), and wraps (styles/main.css).
+    bubbles.push({ id, el, age: 0, icon, life: Math.max(BUBBLE_LIFE, 0.8 + (text?.length ?? 0) * 0.06), width: el.offsetWidth });
   }
   // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
   // up when it lands.
@@ -1114,14 +1116,17 @@ export async function mountVillage(ctx, params = {}) {
       const b = bubbles[i];
       b.age += 1 / 60;
       const f = figures.placeOf(b.id);
-      if (!f || b.age > 2.2) {
+      if (!f || b.age > b.life) {
         b.el.remove();
         bubbles.splice(i, 1);
         continue;
       }
       const q = view.project(f.x, f.y + f.height + 0.4, f.z);
-      b.el.style.transform = `translate(${q.x}px, ${q.y - b.age * 10 - (b.icon ? 40 : 0)}px) translate(-50%, -100%)`;
-      b.el.style.opacity = String(Math.min(1, (2.2 - b.age) * 2));
+      // The bubble stays on the screen: near an edge, it moves in from the edge.
+      const half = b.width / 2 + 8;
+      const x = Math.max(half, Math.min(size.width - half, q.x));
+      b.el.style.transform = `translate(${x}px, ${q.y - Math.min(b.age, BUBBLE_LIFE) * 10 - (b.icon ? 40 : 0)}px) translate(-50%, -100%)`;
+      b.el.style.opacity = String(Math.min(1, (b.life - b.age) * 2));
     }
     for (let i = arrows; i < arrowPool.length; i++) arrowPool[i].hidden = true;
     if (tapFx && tapFx.age < 0.6) {
