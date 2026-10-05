@@ -138,7 +138,7 @@ export async function mountCreate(ctx) {
       stage.append(title('create.lang'));
       for (const code of ['vi', 'en']) {
         const b = button(t(`lang.${code}`), async () => {
-          await ctx.setLanguage(code);
+          await ctx.chooseLanguage(code);
           next();
         }, { cls: `btn big ${lang() === code ? 'red' : 'paper'}` });
         stage.append(b);

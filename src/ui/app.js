@@ -1,6 +1,6 @@
 // The app: load the data, keep the current profile, switch scenes, and save.
 import { setLanguage as loadLanguage, t, useSeenGloss, seenGlossList, setGlobalParams, setChosenNames } from './i18n.js';
-import { chosenGlossNames } from '../core/profile.js';
+import { chosenGlossNames, startLanguage } from '../core/profile.js';
 import { loadRecordedKeys, setVoiceEnabled, setVoiceProfiles, speak } from './speak.js';
 import { loadData } from './data.js';
 import { createSeen } from '../core/fresh.js';
@@ -96,6 +96,13 @@ export async function startApp(root) {
       if (kind === 'action') return l.action(fields.kind);
       if (kind === 'questStep') return l.questStep();
       return l.record(kind, fields);
+    },
+
+    // The child chose a language (the switch of the title screen, or hero creation): the next start
+    // of a profile uses it (startLanguage in src/core/profile.js).
+    async chooseLanguage(code) {
+      ctx.langChosen = code;
+      await ctx.setLanguage(code);
     },
 
     async setLanguage(code) {
@@ -239,7 +246,11 @@ export async function startApp(root) {
       setGlobalParams({ name: profile.hero.name });
       setChosenNames(chosenGlossNames(profile, data.friends.friends));
       useSeenGloss(profile.seenGloss);
-      await ctx.setLanguage(profile.settings.lang);
+      const code = startLanguage(profile, ctx.langChosen);
+      ctx.langChosen = null;
+      const changed = code !== profile.settings.lang;
+      profile.settings.lang = code;
+      await ctx.setLanguage(code);
       setVoiceEnabled(profile.settings.voice);
       bus.emit('settings', profile.settings);
       await loading.painted;
@@ -247,6 +258,7 @@ export async function startApp(root) {
       ctx.makeLearner();
       // The saves go one after the other, so the world does not wait for the first save.
       if (isNew) ctx.save('new');
+      else if (changed) ctx.save('settings');
       // A practice link: the visit goes straight to the activity (the rules of the parent hold).
       ctx.practiceLink = null;
       ctx.practiceNote = null;

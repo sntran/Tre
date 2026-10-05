@@ -49,6 +49,13 @@ export function createProfile({ id, name, gender = 'boy', skin = 1, face = 1, ha
 
 // Inventory
 
+// The language of a start (#36): the language that the child chose on the title screen or in hero
+// creation right before the start wins, and the profile keeps it; with no choice, the profile keeps
+// its own language (two children of one family can play in two languages).
+export function startLanguage(profile, chosen = null) {
+  return chosen ?? profile.settings.lang;
+}
+
 export function itemCount(profile, item) {
   return profile.inventory[item] ?? 0;
 }

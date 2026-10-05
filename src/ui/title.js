@@ -78,7 +78,7 @@ export async function mountTitle(ctx) {
 
   const langSwitch = h('div', { class: 'lang-switch' }, ['vi', 'en'].map((code) => {
     const b = button(t(`lang.${code}`), async () => {
-      await ctx.setLanguage(code);
+      await ctx.chooseLanguage(code);
       ctx.go('title');
     }, { cls: 'btn small paper' });
     b.setAttribute('aria-pressed', String(lang() === code));
