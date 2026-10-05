@@ -179,7 +179,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   let glowT = 0;
   // The target of the action button: a thicker ink outline and a soft, still light under it (or on
   // its place); a ghost: a pale figure where a thing will go on a line (docs/TASKS.md).
-  const lightMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(C.diep), transparent: true, opacity: 0.55, depthWrite: false, depthTest: false });
+  const lightMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(C.diep), transparent: true, opacity: 0.55, depthWrite: false });
   const light = new THREE.InstancedMesh(disc, lightMat, 1);
   light.frustumCulled = false;
   light.count = 0;
