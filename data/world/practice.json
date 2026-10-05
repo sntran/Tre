@@ -189,7 +189,7 @@
       "set": 1,
       "story": "practice-mua-trong"
     },
-    {"id": "nhay-lo-co", "titleKey": "practiceLink.nhay-lo-co.title", "lineKey": "practiceLink.nhay-lo-co.line", "at": ["phu-dong", 27, 34], "person": "loco-child", "task": "loco", "skills": ["math.count.120", "math.add.10", "math.add.20", "math.addsub.100", "math.place.1000", "math.mul.10"], "set": 1, "story": "practice-nhay-lo-co", "real": "folk.real.nhay-lo-co"},
+    {"id": "nhay-lo-co", "titleKey": "practiceLink.nhay-lo-co.title", "lineKey": "practiceLink.nhay-lo-co.line", "at": ["phu-dong", 66, 28], "person": "loco-child", "task": "loco", "skills": ["math.count.120", "math.add.10", "math.add.20", "math.addsub.100", "math.place.1000", "math.mul.10"], "set": 1, "story": "practice-nhay-lo-co", "real": "folk.real.nhay-lo-co"},
     {"id": "nhay-day", "titleKey": "practiceLink.nhay-day.title", "lineKey": "practiceLink.nhay-day.line", "at": ["xom-ruong", 30, 24], "person": "rope-child", "task": "rope", "skills": ["math.count.120", "math.add.10", "math.add.20", "math.addsub.100", "math.place.1000", "math.mul.10", "math.mul.fluent"], "set": 1, "story": "practice-nhay-day", "real": "folk.real.nhay-day"}
   ]
 }

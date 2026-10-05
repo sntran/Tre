@@ -71,7 +71,7 @@ export function createFolk(deps) {
       const court = courtOf({ start: 1, step: 1, squares: 10 });
       setCourt(court);
       def.loCo.children.forEach((look, k) => {
-        const p = along(f, (1 + k * 1.5) * S, 2.2 * S);
+        const p = along(f, (0.5 + k * 1.6) * S, -2.1 * S);
         addEntity(world(), { id: k === 0 ? 'npc:loco-child' : `folk:child:${k}`, keep: false, folkChild: 'loco', look, position: at(p, facingOf(p, along(f, (1 + k * 1.5) * S))) });
       });
       addEntity(world(), { id: 'folk:shard', keep: false, look: 'shard', hidden: true, position: at(along(f, -0.3 * S, -0.5 * S)) });
@@ -92,8 +92,8 @@ export function createFolk(deps) {
     const has = getEntity(world(), 'folk:rope');
     if (on && !has) {
       const f = geo.rope;
-      const a = along(f, 3.2);
-      const b = along(f, -3.2);
+      const a = along(f, 5.2);
+      const b = along(f, -5.2);
       addEntity(world(), { id: 'npc:rope-child', keep: false, folkChild: 'rope', look: def.rope.children[0], position: at(a, facingOf(a, b)) });
       addEntity(world(), { id: 'folk:turner:1', keep: false, folkChild: 'rope', look: def.rope.children[1], position: at(b, facingOf(b, a)) });
       addEntity(world(), { id: 'folk:rope', keep: false, position: at(f.o), folkRope: { a, b, turn: 0, period: def.rope.period, still: false } });
@@ -119,6 +119,9 @@ export function createFolk(deps) {
       const plan = courtPlan(def.loCo.levels, skill, rngOf('court'));
       game = { kind, skill, level: levelOf(skill), plan, court: courtOf(plan), rounds: 0, misses: {}, demoed: false, call: null, prev: null, phase: 'walk', wait: 8, retry: false, first: true };
       setCourt(game.court);
+      // The view turns so that no house covers the court (the event workView, #38).
+      const pts = courtPoints(geo.loco, game.court);
+      deps.emit({ type: 'workView', key: 'folk-loco', points: [...pts.squares, pts.rest, pts.start].map((p) => at(p)), sight: [at(pts.start)] });
       if (plan.start !== 1) say('loco.start', { n: num(plan.start) });
       else say('loco.join', {});
       walkToStart();
@@ -128,6 +131,8 @@ export function createFolk(deps) {
       game = { kind, skill, level: levelOf(skill), rounds: 0, phase: 'walk', wait: 6, period: def.rope.period, offBeat: 0 };
       newRope();
       deps.goTo(along(geo.rope, 0, 1.2));
+      const r = getEntity(world(), 'folk:rope')?.folkRope;
+      if (r) deps.emit({ type: 'workView', key: 'folk-rope', points: [r.a, r.b, geo.rope.o].map((p) => at(p)), sight: [at(geo.rope.o)] });
     }
     played(kind);
     deps.emit({ type: 'folk', game: kind, on: true });

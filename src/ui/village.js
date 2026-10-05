@@ -47,8 +47,8 @@ const worlds = new Map();
 const streams = new Map(); // the streams of the land (src/ui/stream.js), by the key of the map
 
 async function loadDrawing() {
-  drawing ??= Promise.all([import('../render/voxel.js'), import('../render/figure3d.js'), import('../render/ambient3d.js')])
-    .then(([voxel, figure, ambient]) => ({ ...voxel, ...figure, ...ambient }))
+  drawing ??= Promise.all([import('../render/voxel.js'), import('../render/figure3d.js'), import('../render/ambient3d.js'), import('../render/folk3d.js')])
+    .then(([voxel, figure, ambient, folk]) => ({ ...voxel, ...figure, ...ambient, ...folk }))
     .catch((e) => {
       drawing = null;
       throw e;
@@ -243,6 +243,8 @@ export async function mountVillage(ctx, params = {}) {
     }
     return near;
   };
+  // The lines of the court of nhảy lò cò and the rope of nhảy dây (src/render/folk3d.js).
+  const folkLayer = D.createFolkLayer(view.scene);
   const motes = D.createAmbient(view.scene, {
     get kitchens() { return nearby().kitchens; },
     pots: places['giong-pot'] ? [{ x: places['giong-pot'].x / 2 + 0.5, y: places['giong-pot'].y / 2 + 1.1, z: places['giong-pot'].z / 2 + 0.6 }] : [],
@@ -301,7 +303,20 @@ export async function mountVillage(ctx, params = {}) {
   waveBtn.addEventListener('click', () => send({ type: 'wave' }));
   // The jump (src/core/world/jump.js): a round button at the bottom right, and Space (or J).
   const jumpBtn = h('button', { class: 'turn-btn jump-btn', type: 'button', 'aria-label': t('ui.jump'), title: t('ui.jump') }, [img('ui/jump', 'btn-icon')]);
-  jumpBtn.addEventListener('click', () => send({ type: 'jump' }));
+  // A press jumps at once; its end tells the length of the press (on the court of nhảy lò cò a long
+  // press hops two squares, over the shard).
+  let jumpDown = null;
+  jumpBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    jumpDown = performance.now();
+    send({ type: 'jump' });
+  });
+  const jumpEnd = () => {
+    if (jumpDown === null) return;
+    send({ type: 'jumpUp', held: (performance.now() - jumpDown) / 1000 });
+    jumpDown = null;
+  };
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) jumpBtn.addEventListener(ev, jumpEnd);
   // The action button (docs/TASKS.md): the hands, and the finish of a task in reach, as E. It
   // shows a picture of what it will do now, and it is dim when there is nothing to do. While the
   // jar of feed is in reach, the button pours as long as the finger stays on it.
@@ -649,9 +664,12 @@ export async function mountVillage(ctx, params = {}) {
       if (what === 'move') keys.add(e.code);
       else if (e.repeat) return;
       else if (what === 'turnLeft' || what === 'turnRight') view.turn(what === 'turnLeft' ? -1 : 1);
-      else if (what === 'jump') send({ type: 'jump' });
-      else send({ type: 'hands' });
+      else if (what === 'jump') {
+        jumpDown = performance.now();
+        send({ type: 'jump' });
+      } else send({ type: 'hands' });
     } else {
+      if (what === 'jump') jumpEnd();
       // The action key up: the pour of the jar stops (as the finger leaves the action button).
       if (what === 'act') send({ type: 'hold', on: false });
       keys.delete(e.code);
@@ -1291,6 +1309,8 @@ export async function mountVillage(ctx, params = {}) {
       tet: isTet(today, amb),
       horn: ngheAt ? { x: ngheAt.x, y: ngheAt.y + ngheAt.height, z: ngheAt.z } : null,
     });
+    const rope = getEntity(state, 'folk:rope');
+    folkLayer.draw({ court: getEntity(state, 'folk:court')?.folkCourt ?? null, rope: rope?.folkRope ?? null, ropeY: rope?.position.y ?? 0 });
     const hp = hero().position;
     const hm = hero().motion;
     const speed = Math.hypot(hm?.vx ?? 0, hm?.vz ?? 0) || 1;

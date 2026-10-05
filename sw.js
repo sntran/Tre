@@ -236,6 +236,7 @@ const FILES = [
   'src/render/ambient3d.js',
   'src/render/assets.js',
   'src/render/figure3d.js',
+  'src/render/folk3d.js',
   'src/render/gl.js',
   'src/render/palette.js',
   'src/render/portrait.js',
