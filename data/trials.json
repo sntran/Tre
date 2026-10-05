@@ -17,14 +17,14 @@
     {
       "id": "smith", "npc": "smith", "calling": "smith", "flag": "trial.smith.done", "reward": { "coin": 3 },
       "task": "forge",
-      "_task": "Bring ore to the forge (it needs this many; more rolls back to the heap) and a bucket of water from the well to the trough. Then the iron on the anvil glows (rise), stays hot (hold), and dims (dim), again and again. A tap on the iron drops it into the water (the commit): while it is hot (glow at or over hot), it hisses and becomes hard; too early or too late, it bends and goes back into the fire.",
+      "_task": "The fire burns when the child comes: the ore is in the forge (this many lumps) and the water is in the trough. The smith quenches one piece himself first. Then the iron on the anvil glows (rise), stays hot (hold), and dims (dim), again and again. The action button at the anvil drops the iron into the water (the commit): while it is hot (glow at or over hot), it hisses and becomes hard; too early or too late, it bends and goes back into the fire.",
       "glow": { "rise": 2.5, "dim": 2.5, "cold": 1.5, "hot": 0.6 },
       "levels": [
         { "ore": 2, "hold": 3, "skill": "sci.matter.states", "level": 1 },
         { "ore": 3, "hold": 2, "skill": "sci.matter.states", "level": 2 },
         { "ore": 4, "hold": 1.4, "skill": "sci.matter.materials", "level": 2 }
       ],
-      "places": { "ore": "smith-ore", "forge": "smith-forge", "anvil": "smith-anvil", "trough": "smith-trough", "bucket": "well-bucket" }
+      "places": { "forge": "smith-forge", "anvil": "smith-anvil", "trough": "smith-trough" }
     },
     {
       "id": "fisher", "npc": "fisher", "calling": "fisher", "flag": "trial.fisher.done", "reward": { "coin": 3 },

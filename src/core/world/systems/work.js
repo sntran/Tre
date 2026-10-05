@@ -33,6 +33,10 @@ const TIDE_IN = 2.5; // seconds: the tide stands high over the stakes
 const TIDE_OUT = 3; // seconds: the tide goes out and shows the trap
 const NEW_STEM = 1.2; // seconds: a new stem (or culm) comes after sticks that are not equal
 const CULM_STEP = 2.5; // half blocks between two culms of the bamboo clump (a row along -z)
+const AIM_RISE = 0.45; // seconds: the mark of a slash goes up one half block of the culm in this time
+const MAT_MAX = 14; // the most rods on the mat of the teacher
+const DEMO_WAIT = 0.8; // seconds: the smith quenches his demo piece this long after it turns hot
+const DEMO_NEXT = 1.6; // seconds: then the iron of the child comes on the anvil
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const say = (world, type, id, extra = {}) => world.events.push({ type, id, ...extra });
@@ -79,7 +83,8 @@ function finish(world, tz) {
 
 // Set up the things of a trial in the world, at the named places of the map (env.places).
 // level: the level of the task (0, 1, or 2). A trial that has its things already stays as it is.
-export function setupTrial(world, def, level, env) {
+// opts: demo (false: the smith does not show his quench again, in a later round of a practice).
+export function setupTrial(world, def, level, env, opts = {}) {
   if (trialZone(world, def.id)) return trialZone(world, def.id);
   const task = taskOf(def, level);
   const P = (name) => env.places[name];
@@ -126,18 +131,26 @@ export function setupTrial(world, def, level, env) {
     // A coil of straw rope by the mat: a tap on it ties the rods on the mat.
     addEntity(world, { id: 'band:scholar', keep: true, item: { kind: 'band', size: 1, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: m.x + 4.6, y: m.y, z: m.z + 1, facing: 0 }, look: 'band' });
   } else if (def.task === 'forge') {
-    const ore = heap('ore', P(def.places.ore), 'ore', { cols: 3 });
-    things(ore, 'ore', task.ore + 2);
+    // The quench is the skill of this trial (#34): the fire burns when the child comes. The ore is
+    // in the forge and the water is in the trough. The smith quenches one piece himself first (the
+    // demo), and then the iron of the child goes on the anvil.
     const f = P(def.places.forge);
-    addEntity(world, { id: 'zone:forge', keep: true, zone: { id: 'forge', task: owner, rule: 'forge', accepts: 'ore', items: [], need: task.ore, x: f.x, y: f.y, z: f.z, rect: rect(f, 3, 2) }, position: { x: f.x + 1, y: f.y, z: f.z + 2, facing: 0 } });
-    const bucket = heap('bucket', P(def.places.bucket), 'bucket');
-    things(bucket, 'bucket', 1);
+    const forge = addEntity(world, { id: 'zone:forge', keep: true, zone: { id: 'forge', task: owner, rule: 'forge', accepts: 'ore', items: [], need: task.ore, x: f.x, y: f.y, z: f.z, rect: rect(f, 3, 2) }, position: { x: f.x + 1, y: f.y, z: f.z + 2, facing: 0 } });
+    for (let i = 0; i < task.ore; i++) {
+      const id = `ore:${def.id}:${tz.zone.made++}`;
+      addEntity(world, { id, keep: true, item: { kind: 'ore', size: 1, task: owner, zone: 'forge', held: null, set: true, fixed: true }, position: { x: f.x + 0.5 + i * 0.8, y: f.y + 1, z: f.z + 0.8, facing: 0 }, look: 'ore-hot' });
+      forge.zone.items.push(id);
+    }
     const t = P(def.places.trough);
-    addEntity(world, { id: 'zone:trough', keep: true, zone: { id: 'trough', task: owner, rule: 'trough', accepts: 'bucket', items: [], full: false, x: t.x, y: t.y, z: t.z, rect: rect(t, 3, 2) }, position: { x: t.x + 1.5, y: t.y, z: t.z + 2, facing: 0 } });
-    addEntity(world, { id: 'trough:smith', keep: true, position: { x: t.x, y: t.y, z: t.z, facing: 0 }, look: 'trough', solid: { rect: { x0: t.x - 0.2, x1: t.x + 3.4, z0: t.z, z1: t.z + 2 } } });
+    addEntity(world, { id: 'zone:trough', keep: true, zone: { id: 'trough', task: owner, rule: 'trough', accepts: 'bucket', items: [], full: true, x: t.x, y: t.y, z: t.z, rect: rect(t, 3, 2) }, position: { x: t.x + 1.5, y: t.y, z: t.z + 2, facing: 0 } });
+    addEntity(world, { id: 'trough:smith', keep: true, position: { x: t.x, y: t.y, z: t.z, facing: 0 }, look: 'trough-full', solid: { rect: { x0: t.x - 0.2, x1: t.x + 3.4, z0: t.z, z1: t.z + 2 } } });
     const a = P(def.places.anvil);
-    tz.zone.anvil = { x: a.x, y: a.y, z: a.z };
-    tz.zone.heat = null;
+    Object.assign(tz.zone, { anvil: { x: a.x, y: a.y, z: a.z }, heat: 0 });
+    if (opts.demo === false) addIron(world, tz, 'iron:smith');
+    else {
+      Object.assign(tz.zone, { demo: true, iron: 'iron:smith-demo' });
+      addIron(world, tz, 'iron:smith-demo');
+    }
   } else if (def.task === 'horse') {
     // The done trial of the smith leaves its forge: its ore, its bucket, and its blade go.
     if (def.clears) {
@@ -358,8 +371,8 @@ export function handPut(world, person, thing, zoneEnt, env) {
   return putWork(world, person, zone, thing, null, env);
 }
 
-// Take a thing out of the zone where it lies.
-function takeOut(world, thing) {
+// Take a thing out of the zone where it lies (a take back with the hands too: src/core/world/systems/place.js).
+export function takeOut(world, thing) {
   const z = thing.item.zone ? zoneEnt(world, thing.item.zone) : null;
   if (!z) return;
   z.zone.items = z.zone.items.filter((i) => i !== thing.id);
@@ -437,18 +450,11 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packHeap(world, zone);
-  } else if (zone.rule === 'forge') {
+  } else if (zone.rule === 'bundle') {
+    if (zone.items.length >= MAT_MAX) return false;
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
-    if (zone.items.length > zone.need) {
-      // The forge is full: the extra ore rolls back to the heap.
-      zone.items.pop();
-      toHeap(world, thing);
-      say(world, 'roll', `zone:${zone.id}`, { item: thing.id, sound: 'plank-down' });
-      return true;
-    }
-    thing.position = { x: zone.x + 0.5 + (zone.items.length - 1) * 0.8, y: zone.y + 1, z: zone.z + 0.8, facing: 0 };
-    thing.look = 'ore-hot';
+    packMat(world, zone);
   } else if (zone.rule === 'hearth') {
     if (tz.zone.heat !== null) return false;
     thing.item.zone = zone.id;
@@ -459,13 +465,6 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packShare(world, zone);
-  } else if (zone.rule === 'trough') {
-    // The water goes into the trough, and the bucket goes back to the well.
-    zone.full = true;
-    const trough = getEntity(world, 'trough:smith');
-    if (trough) trough.look = 'trough-full';
-    toHeap(world, thing);
-    say(world, 'pour', `zone:${zone.id}`, { sound: 'splash' });
   } else if (zone.rule === 'line') {
     if (tz.zone.tide?.phase !== 'low') return false;
     const slot = Math.max(1, Math.min(zone.length, Math.round((at?.x ?? zone.x) - zone.x)));
@@ -501,14 +500,14 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.position = { x: zone.x + 0.5, y: zone.y, z: zone.z + 0.5, facing: Math.PI / 2 };
     finish(world, tz);
   } else return false;
-  if (tz.zone.task === 'forge') readyIron(world, tz);
   say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: 'plank-down' });
   return true;
 }
 
-// The work of the hands: add (a rod from the heap to the mat), back (a rod from the mat to the
-// heap), tie (the rods on the mat), quench (the iron into the water), give (the basket to the
-// healer), mark (a chalk mark on the stem, or away), and cut (the woodcutter cuts at the marks).
+// The work of the hands: tie (the teacher ties the rods on the mat), exact (the person of a small
+// event checks the place), blow (the bellows), quench (the iron into the water), give (the basket
+// to the healer), mark (a chalk mark on the stem, or away), aim and slash (a culm of the staffs),
+// and cut (the woodcutter cuts at the marks).
 function act(world, e, want, env) {
   const tz = trialZone(world, want.trial);
   if (!tz || tz.zone.done) return;
@@ -516,33 +515,11 @@ function act(world, e, want, env) {
   if (!task) return;
   const near = (p, r = REACH + 2) => p && dist(e.position, p) <= r;
   const thing = want.item ? getEntity(world, want.item) : null;
-  if (want.act === 'back' && thing?.item && thing.item.kind !== 'rod') {
-    // A drag of a thing from its place back to its own heap (a bunch from the basket to its bed).
-    const place = thing.item.zone ? zoneEnt(world, thing.item.zone) : null;
-    if (!place || place.zone.rule === 'heap') return;
-    if (!near(place.position, REACH + 3)) return say(world, 'far', e.id);
-    if (!backHome(world, thing)) return;
-    tz.zone.resets = (tz.zone.resets ?? 0) + 1;
-    say(world, 'back', place.id, { item: thing.id, sound: 'tap' });
-  } else if (want.act === 'add' || want.act === 'back') {
-    const rod = getEntity(world, want.item);
+  if (want.act === 'tie') {
+    // The teacher ties the rods on the mat (the hero stands at the teacher, or at the mat).
     const mat = zoneEnt(world, 'mat');
-    if (!rod || !mat || !near(mat.position, REACH + 3)) return say(world, 'far', e.id);
-    if (want.act === 'add' && rod.item.zone === 'rods' && mat.zone.items.length < 14) {
-      takeOut(world, rod);
-      rod.item.zone = 'mat';
-      mat.zone.items.push(rod.id);
-      packMat(world, mat.zone);
-      say(world, 'add', mat.id, { item: rod.id, sound: 'tap' });
-    } else if (want.act === 'back' && rod.item.zone === 'mat') {
-      takeOut(world, rod);
-      tz.zone.resets += 1;
-      toHeap(world, rod);
-      say(world, 'back', mat.id, { item: rod.id, sound: 'tap' });
-    }
-  } else if (want.act === 'tie') {
-    const mat = zoneEnt(world, 'mat');
-    if (!mat || !mat.zone.items.length || !near(mat.position, REACH + 3)) return;
+    const teacher = query(world, 'person').find((p) => p.person.ref === 'teacher');
+    if (!mat || !mat.zone.items.length || !(near(mat.position, REACH + 3) || near(teacher?.position, REACH + 3))) return;
     const n = mat.zone.items.length;
     const solved = tieResult(n, task.bundle);
     commit(world, tz, task, { solved, parts: [n], target: task.bundle });
@@ -565,9 +542,9 @@ function act(world, e, want, env) {
       say(world, 'snap', mat.id, { count: n, sound: 'plank-down' });
     }
   } else if (want.act === 'exact') {
-    // A tap on the person of a small event: the sum of the sizes on the place is the commit.
+    // The person of a small event checks the work: the sum of the sizes on the place is the commit.
     const place = zoneEnt(world, `${task.id}-place`);
-    if (!place || !near(place.position, REACH + 6)) return;
+    if (!place || !(near(place.position, REACH + 6) || near(getEntity(world, `event:${task.id}`)?.position, REACH + 3))) return;
     const things = place.zone.items.map((id) => getEntity(world, id)).filter(Boolean);
     const brought = things.filter((t) => !t.item.fixed);
     if (!brought.length) return say(world, 'short', place.id, { sound: 'tap' });
@@ -631,7 +608,7 @@ function act(world, e, want, env) {
     }
   } else if (want.act === 'quench') {
     const iron = getEntity(world, tz.zone.iron ?? 'iron:smith');
-    if (!iron || tz.zone.heat === null || tz.zone.bent || !near(tz.zone.anvil, REACH + 3)) return;
+    if (!iron || tz.zone.heat === null || tz.zone.bent || tz.zone.demo || !near(tz.zone.anvil, REACH + 3)) return;
     const value = glowAt(tz.zone.heat, task.glow, task.hold);
     const solved = quenchResult(value, task.glow);
     if (tz.zone.quenches !== undefined) tz.zone.quenches += 1;
@@ -695,6 +672,12 @@ function act(world, e, want, env) {
       addEntity(world, { id, keep: true, position: { x: s.x + at, y: s.y + 0.6, z: s.z, facing: 0 }, look: 'chalk' });
     }
     say(world, 'mark', stem.id, { at, sound: 'tap' });
+  } else if (want.act === 'aim') {
+    // While the button is down, the mark of the slash goes up the culm, one ring at a time.
+    const culm = getEntity(world, `culm:staffs:${want.culm}`);
+    if (!culm || tz.zone.cut) return;
+    tz.zone.aim = { culm: want.culm, at: 1, t: 0 };
+    addEntity(world, { id: 'aim:staffs', position: { ...culm.position, y: culm.position.y + 1 }, look: 'chalk' });
   } else if (want.act === 'slash') {
     // A slash at the height of the hand on a standing culm: the top falls away, and the piece from
     // the ground to the cut stands in its place (the staff). The pieces stand side by side in the
@@ -702,7 +685,12 @@ function act(world, e, want, env) {
     const c = tz.zone.clump;
     const i = want.culm;
     const culm = getEntity(world, `culm:staffs:${i}`);
-    const at = Math.round(want.at);
+    // The height of the slash: the mark that went up while the button was down.
+    const aim = tz.zone.aim;
+    delete tz.zone.aim;
+    removeEntity(world, 'aim:staffs');
+    if (want.at === undefined && aim?.culm !== i) return;
+    const at = Math.round(want.at ?? aim.at);
     if (!c || !culm || tz.zone.cut || at < 1 || at >= task.height) return;
     if (at > task.reach) return say(world, 'high', tz.id, { culm: i, sound: 'tap' });
     removeEntity(world, culm.id);
@@ -784,18 +772,22 @@ function feed(world, tz, thing, env) {
   if (tz.zone.heads >= task.heads) finish(world, tz);
 }
 
-// The iron goes into the fire when the forge has its ore and the trough has water.
-function readyIron(world, tz) {
-  const forge = zoneEnt(world, 'forge');
-  const trough = zoneEnt(world, 'trough');
-  if (!forge || !trough || forge.zone.items.length < forge.zone.need || !trough.zone.full || getEntity(world, 'iron:smith')) return;
+// A glowing iron on the anvil of the smith (the demo piece of the smith, or the iron of the child).
+function addIron(world, tz, id) {
   const a = tz.zone.anvil;
-  addEntity(world, { id: 'iron:smith', keep: true, item: { kind: 'iron', size: 2, task: 'trial-smith', zone: null, held: null, set: true, fixed: true }, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'iron-0', solid: { rect: { x0: a.x - 0.8, x1: a.x + 0.8, z0: a.z - 0.8, z1: a.z + 0.8 } } });
-  tz.zone.heat = 0;
+  addEntity(world, { id, keep: true, item: { kind: 'iron', size: 2, task: 'trial-smith', zone: null, held: null, set: true, fixed: true }, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'iron-0', solid: { rect: { x0: a.x - 0.8, x1: a.x + 0.8, z0: a.z - 0.8, z1: a.z + 0.8 } } });
   say(world, 'fire', tz.id, { sound: 'lantern' });
 }
 
 function tickForge(world, tz, dt, env) {
+  // After the demo of the smith, the iron of the child comes on the anvil.
+  if (tz.zone.next) {
+    tz.zone.next -= dt;
+    if (tz.zone.next > 0) return;
+    delete tz.zone.next;
+    tz.zone.heat = 0;
+    addIron(world, tz, 'iron:smith');
+  }
   const iron = getEntity(world, tz.zone.iron ?? 'iron:smith');
   if (!iron || tz.zone.heat === null) return;
   const task = taskFor(env, tz.zone);
@@ -809,8 +801,25 @@ function tickForge(world, tz, dt, env) {
   const value = glowAt(tz.zone.heat, task.glow, task.hold);
   // The iron turns hot: a sound, so that the child hears the moment too.
   if ((iron.glow ?? 0) < task.glow.hot && quenchResult(value, task.glow)) say(world, 'glow', iron.id, { sound: 'lantern' });
-  iron.glow = Math.round(value * 100) / 100;
+  // Round down, so that a glow at or over hot is truly hot (the cue reads it).
+  iron.glow = Math.floor(value * 100) / 100;
   iron.look = `iron-${Math.round(value * 3)}`;
+  // The demo: a moment after the iron turns hot, the smith drops it into the water and says when.
+  if (!tz.zone.demo || !quenchResult(value, task.glow)) return;
+  tz.zone.demoHot = (tz.zone.demoHot ?? 0) + dt;
+  if (tz.zone.demoHot < DEMO_WAIT) return;
+  const a = tz.zone.anvil;
+  iron.look = task.made ?? 'blade';
+  iron.position = { x: a.x - 2.4, y: a.y, z: a.z + 0.6, facing: Math.PI / 2 };
+  delete iron.solid;
+  delete iron.glow;
+  delete tz.zone.demo;
+  delete tz.zone.demoHot;
+  delete tz.zone.iron;
+  tz.zone.heat = null;
+  tz.zone.next = DEMO_NEXT;
+  say(world, 'hiss', iron.id, { sound: 'splash', at: iron.position });
+  say(world, 'call', 'npc:smith', { key: 'smith.quench.show' });
 }
 
 // The tide: it comes in after some seconds; the row of stakes is the commit. Then it goes out and
@@ -900,8 +909,18 @@ function tickShare(world, tz, dt, env) {
   } else say(world, 'sulk', friend?.id ?? tz.id, { counts, sound: 'tap' });
 }
 
-// After the pieces that are not equal break, their culms grow again.
+// The mark of a slash goes up the culm while the button is down (up to the reach of the hand);
+// after the pieces that are not equal break, their culms grow again.
 function tickSlash(world, tz, dt, env) {
+  const aim = tz.zone.aim;
+  if (aim) {
+    const task = taskFor(env, tz.zone);
+    aim.t += dt;
+    aim.at = Math.min(task.reach, 1 + Math.floor(aim.t / AIM_RISE));
+    const culm = getEntity(world, `culm:staffs:${aim.culm}`);
+    const mark = getEntity(world, 'aim:staffs');
+    if (culm && mark) mark.position = { ...culm.position, y: culm.position.y + aim.at };
+  }
   if (!tz.zone.cut) return;
   tz.zone.cut -= dt;
   if (tz.zone.cut > 0) return;

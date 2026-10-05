@@ -29,7 +29,7 @@
       "wait": 0.5
     },
     {
-      "tap": {
+      "press": {
         "entity": "event:market"
       }
     },
@@ -64,7 +64,7 @@
       "repeat": 5,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "coins"
           }
         },
@@ -75,7 +75,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "event-market-place"
           }
         },
@@ -87,11 +87,7 @@
         }
       ]
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "event:market" } },
     {
       "until": {
         "event": "open",

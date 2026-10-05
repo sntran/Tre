@@ -4,73 +4,507 @@
     "vi": "Lính Ân từ cánh đồng tới ngã tư: người làng ra đứng ở lá cờ rơm, một cái bẫy ở cột thứ ba bác thợ rèn nói, Nghé lao vào một lần, rồi bắn ná cho tới khi chúng lui. Rồi chia tiền, và đồng tiền lẻ về tay bác thợ rèn trong làng.",
     "en": "Ân soldiers come from the field to the crossroads: a villager at a straw flag, a trap at the third post that the smith names, Nghé charges once, and the slingshot turns them back. Then the share of the loot, and the coin that is left goes back to the smith in the village."
   },
-  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 5, "flags": { "intro.seen": true, "giong.grown": true, "raid.tool.sling": true, "raid.tool.gate": true }, "items": { "coin": 5 } },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 5,
+    "flags": {
+      "intro.seen": true,
+      "giong.grown": true,
+      "raid.tool.sling": true,
+      "raid.tool.gate": true
+    },
+    "items": {
+      "coin": 5
+    }
+  },
   "clock": 600,
-  "at": ["trau-son", 89, 30],
+  "at": [
+    "trau-son",
+    89,
+    30
+  ],
   "steps": [
-    { "tap": { "entity": "encounter:soldier1" } },
-    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },
-    { "read": true },
-    { "expect": [{ "text": { "shown": "raid.soldier.intro" } }, { "text": { "shown": "raid.tool.traps" } }, { "text": { "shown": "raid.tool.helpers" } }, { "text": { "shown": "raid.tool.nghe" } }, { "text": { "shown": "raid.trap.ask" } }] },
-    { "wait": 0.5 },
-    { "expect": [{ "raid": { "on": true } }, { "hero": { "cell": [89, 34], "within": 1 } }, { "count": { "entities": "spot-mark", "min": 2 } }, { "count": { "entities": "source", "max": 0 } }] },
-    { "tap": { "raid": "spot:1" } },
-    { "tap": { "item": "trap" } },
-    { "until": { "event": "pick", "timeout": 15 } },
-    { "tap": { "cell": [89, 26.5] } },
-    { "until": { "event": "put", "with": { "zone": "raid-road" }, "timeout": 15 } },
-    { "expect": [{ "event": "skill", "with": { "skill": "math.count.120", "task": "raid-soldier1", "parts": [15] } }] },
-    { "tap": { "cell": [89, 34] } },
-    { "until": { "event": "snap", "timeout": 40 } },
-    { "do": { "type": "pet" } },
-    { "until": { "event": "butt", "timeout": 10 } },
-    { "expect": [{ "event": "charge" }, { "event": "hit", "with": { "by": "nghe" } }] },
-    { "until": { "event": "pause", "timeout": 40 } },
-    { "repeat": 10, "steps": [
-      { "shoot": { "at": "first", "lead": 1.2, "wait": true } },
-      { "wait": 1.4 }
-    ] },
-    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 60 } },
-    { "expect": [{ "event": "end", "with": { "won": true } }, { "flag": "soldier1.won" }, { "text": { "shown": "raid.soldier.note" } }] },
-    { "read": true },
-    { "wait": 3 },
-    { "expect": [{ "raid": { "on": false } }, { "text": { "shown": "share.start" } }, { "count": { "entities": "coin", "min": 7 } }, { "entity": "by:share-giong", "look": "giong-hero" }] },
-    { "read": true },
-    { "repeat": 3, "steps": [
-      { "tap": { "item": "coin" } },
-      { "until": { "event": "pick", "timeout": 20 } },
-      { "tap": { "zone": "share-hero" } },
-      { "until": { "event": "put", "timeout": 20 } }
-    ] },
-    { "repeat": 1, "steps": [
-      { "tap": { "item": "coin" } },
-      { "until": { "event": "pick", "timeout": 20 } },
-      { "tap": { "zone": "share-nghe" } },
-      { "until": { "event": "put", "timeout": 20 } }
-    ] },
-    { "repeat": 2, "steps": [
-      { "tap": { "item": "coin" } },
-      { "until": { "event": "pick", "timeout": 20 } },
-      { "tap": { "zone": "share-giong" } },
-      { "until": { "event": "put", "timeout": 20 } }
-    ] },
-    { "wait": 1 },
-    { "expect": [{ "event": "sulk" }, { "event": "skill", "with": { "skill": "math.share.equal", "solved": false, "parts": [3, 1, 2] } }] },
-    { "repeat": 1, "steps": [
-      { "tap": { "thing": "coin:share:2" } },
-      { "until": { "event": "pick", "timeout": 20 } },
-      { "tap": { "zone": "share-nghe" } },
-      { "until": { "event": "put", "timeout": 20 } }
-    ] },
-    { "until": { "event": "happy", "timeout": 5 } },
-    { "expect": [{ "event": "skill", "with": { "solved": true, "parts": [2, 2, 2] } }] },
-    { "until": { "event": "gift", "timeout": 8 } },
-    { "expect": [{ "event": "gift", "with": { "give": { "coin": 2 } } }, { "entity": "mat:share-nghe", "gone": true }, { "text": { "shown": "share.rest" } }, { "hero": { "holding": true } }] },
-    { "read": true },
-    { "walk": { "to": ["phu-dong", 52, 40] } },
-    { "expect": [{ "hero": { "holding": true } }] },
-    { "tap": { "entity": "npc:smith" } },
-    { "until": { "event": "gave", "timeout": 40 } },
-    { "expect": [{ "event": "gave", "with": { "to": "smith" } }, { "text": { "shown": "gift.thanks.smith" } }, { "hero": { "holding": false } }] }
+    {
+      "press": {
+        "entity": "encounter:soldier1"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "raid.soldier.intro"
+          }
+        },
+        {
+          "text": {
+            "shown": "raid.tool.traps"
+          }
+        },
+        {
+          "text": {
+            "shown": "raid.tool.helpers"
+          }
+        },
+        {
+          "text": {
+            "shown": "raid.tool.nghe"
+          }
+        },
+        {
+          "text": {
+            "shown": "raid.trap.ask"
+          }
+        }
+      ]
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "expect": [
+        {
+          "raid": {
+            "on": true
+          }
+        },
+        {
+          "hero": {
+            "cell": [
+              89,
+              34
+            ],
+            "within": 1
+          }
+        },
+        {
+          "count": {
+            "entities": "spot-mark",
+            "min": 2
+          }
+        },
+        {
+          "count": {
+            "entities": "source",
+            "max": 0
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "raid": "spot:1"
+      }
+    },
+    {
+      "press": {
+        "item": "trap"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 15
+      }
+    },
+    {
+      "press": {
+        "cell": [
+          89,
+          26.5
+        ]
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "with": {
+          "zone": "raid-road"
+        },
+        "timeout": 15
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.count.120",
+            "task": "raid-soldier1",
+            "parts": [
+              15
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "tap": {
+        "cell": [
+          89,
+          34
+        ]
+      }
+    },
+    {
+      "until": {
+        "event": "snap",
+        "timeout": 40
+      }
+    },
+    {
+      "do": {
+        "type": "pet"
+      }
+    },
+    {
+      "until": {
+        "event": "butt",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "charge"
+        },
+        {
+          "event": "hit",
+          "with": {
+            "by": "nghe"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "pause",
+        "timeout": 40
+      }
+    },
+    {
+      "repeat": 10,
+      "steps": [
+        {
+          "shoot": {
+            "at": "first",
+            "lead": 1.2,
+            "wait": true
+          }
+        },
+        {
+          "wait": 1.4
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "end",
+          "with": {
+            "won": true
+          }
+        },
+        {
+          "flag": "soldier1.won"
+        },
+        {
+          "text": {
+            "shown": "raid.soldier.note"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 3
+    },
+    {
+      "expect": [
+        {
+          "raid": {
+            "on": false
+          }
+        },
+        {
+          "text": {
+            "shown": "share.start"
+          }
+        },
+        {
+          "count": {
+            "entities": "coin",
+            "min": 7
+          }
+        },
+        {
+          "entity": "by:share-giong",
+          "look": "giong-hero"
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "press": {
+            "item": "coin"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 20
+          }
+        },
+        {
+          "press": {
+            "zone": "share-hero"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 20
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "steps": [
+        {
+          "press": {
+            "item": "coin"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 20
+          }
+        },
+        {
+          "press": {
+            "zone": "share-nghe"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 20
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "steps": [
+        {
+          "press": {
+            "item": "coin"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 20
+          }
+        },
+        {
+          "press": {
+            "zone": "share-giong"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 20
+          }
+        }
+      ]
+    },
+    {
+      "wait": 1
+    },
+    {
+      "expect": [
+        {
+          "event": "sulk"
+        },
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.share.equal",
+            "solved": false,
+            "parts": [
+              3,
+              1,
+              2
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 1,
+      "steps": [
+        {
+          "press": {
+            "thing": "coin:share:2"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 20
+          }
+        },
+        {
+          "press": {
+            "zone": "share-nghe"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 20
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "happy",
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "skill",
+          "with": {
+            "solved": true,
+            "parts": [
+              2,
+              2,
+              2
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "gift",
+        "timeout": 8
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "gift",
+          "with": {
+            "give": {
+              "coin": 2
+            }
+          }
+        },
+        {
+          "entity": "mat:share-nghe",
+          "gone": true
+        },
+        {
+          "text": {
+            "shown": "share.rest"
+          }
+        },
+        {
+          "hero": {
+            "holding": true
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "walk": {
+        "to": [
+          "phu-dong",
+          52,
+          40
+        ]
+      }
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "holding": true
+          }
+        }
+      ]
+    },
+    {
+      "press": {
+        "entity": "npc:smith"
+      }
+    },
+    {
+      "until": {
+        "event": "gave",
+        "timeout": 40
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "gave",
+          "with": {
+            "to": "smith"
+          }
+        },
+        {
+          "text": {
+            "shown": "gift.thanks.smith"
+          }
+        },
+        {
+          "hero": {
+            "holding": false
+          }
+        }
+      ]
+    }
   ]
 }

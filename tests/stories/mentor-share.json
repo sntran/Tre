@@ -33,7 +33,7 @@
       "wait": 0.5
     },
     {
-      "tap": {
+      "press": {
         "entity": "event:cart"
       }
     },
@@ -50,7 +50,7 @@
       "read": true
     },
     {
-      "tap": {
+      "press": {
         "item": "stones"
       }
     },
@@ -61,7 +61,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "event-cart-place"
       }
     },
@@ -74,11 +74,7 @@
     {
       "wait": 2
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "event:cart" } },
     {
       "until": {
         "event": "open",
@@ -103,11 +99,7 @@
     {
       "wait": 3
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "event:cart" } },
     {
       "until": {
         "event": "open",
@@ -132,11 +124,7 @@
     {
       "wait": 3
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "event:cart" } },
     {
       "until": {
         "event": "open",

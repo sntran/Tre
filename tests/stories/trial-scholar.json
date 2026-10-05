@@ -4,28 +4,257 @@
     "vi": "Thử thách của thầy đồ: bó que tính thành từng bó mười que; một bó chín que thì lạt đứt; xong thì được thưởng.",
     "en": "The trial of the teacher: tie the counting rods into bundles of ten; a bundle of nine snaps its band; then the reward."
   },
-  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
   "clock": 540,
-  "at": ["phu-dong", 54, 27],
+  "at": [
+    "phu-dong",
+    54,
+    27
+  ],
   "steps": [
-    { "tap": { "entity": "npc:teacher" } },
-    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
-    { "expect": [{ "text": { "shown": "dlg.teacher.trial.n1" } }] },
-    { "read": true },
-    { "expect": [{ "count": { "entities": "rod", "min": 24 } }, { "zone": "trial-scholar", "state": "open" }] },
-    { "repeat": 10, "steps": [{ "tap": { "item": "rod" } }, { "until": { "event": "add", "timeout": 10 } }] },
-    { "tap": { "thing": "band:scholar" } },
-    { "until": { "event": "tie", "timeout": 10 } },
-    { "expect": [{ "event": "skill", "with": { "skill": "math.count.120", "solved": true, "efficient": true, "first": true } }, { "count": { "entities": "rod-bundle", "min": 1 } }] },
-    { "repeat": 9, "steps": [{ "tap": { "item": "rod" } }, { "until": { "event": "add", "timeout": 10 } }] },
-    { "tap": { "thing": "band:scholar" } },
-    { "until": { "event": "snap", "timeout": 10 } },
-    { "expect": [{ "event": "skill", "with": { "solved": false, "parts": [9] } }, { "count": { "entities": "rod-bundle", "max": 1 } }] },
-    { "repeat": 10, "steps": [{ "tap": { "item": "rod" } }, { "until": { "event": "add", "timeout": 10 } }] },
-    { "tap": { "thing": "band:scholar" } },
-    { "until": { "event": "trial", "timeout": 10 } },
-    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
-    { "expect": [{ "flag": "trial.scholar.done" }, { "item": "coin", "count": 3 }, { "text": { "shown": "dlg.teacher.trial.done.n1" } }, { "count": { "entities": "rod-bundle", "min": 2 } }] },
-    { "read": true }
+    {
+      "press": {
+        "entity": "npc:teacher"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.teacher.trial.n1"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "until": {
+        "event": "call",
+        "with": {
+          "key": "mentor.first.you"
+        },
+        "timeout": 15
+      }
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "rod",
+            "min": 24
+          }
+        },
+        {
+          "zone": "trial-scholar",
+          "state": "open"
+        }
+      ]
+    },
+    {
+      "repeat": 10,
+      "steps": [
+        {
+          "press": {
+            "item": "rod"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 10
+          }
+        },
+        {
+          "press": {
+            "zone": "mat"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "press": {
+        "entity": "npc:teacher"
+      }
+    },
+    {
+      "until": {
+        "event": "tie",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.count.120",
+            "solved": true,
+            "efficient": true,
+            "first": true
+          }
+        },
+        {
+          "count": {
+            "entities": "rod-bundle",
+            "min": 1
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 9,
+      "steps": [
+        {
+          "press": {
+            "item": "rod"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 10
+          }
+        },
+        {
+          "press": {
+            "zone": "mat"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "press": {
+        "entity": "npc:teacher"
+      }
+    },
+    {
+      "until": {
+        "event": "snap",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "skill",
+          "with": {
+            "solved": false,
+            "parts": [
+              9
+            ]
+          }
+        },
+        {
+          "count": {
+            "entities": "rod-bundle",
+            "max": 1
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 10,
+      "steps": [
+        {
+          "press": {
+            "item": "rod"
+          }
+        },
+        {
+          "until": {
+            "event": "pick",
+            "timeout": 10
+          }
+        },
+        {
+          "press": {
+            "zone": "mat"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
+            "timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "press": {
+        "entity": "npc:teacher"
+      }
+    },
+    {
+      "until": {
+        "event": "trial",
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "flag": "trial.scholar.done"
+        },
+        {
+          "item": "coin",
+          "count": 3
+        },
+        {
+          "text": {
+            "shown": "dlg.teacher.trial.done.n1"
+          }
+        },
+        {
+          "count": {
+            "entities": "rod-bundle",
+            "min": 2
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    }
   ]
 }

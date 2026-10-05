@@ -1,30 +1,161 @@
 {
   "name": "trial-smith",
   "about": {
-    "vi": "Thử thách của bác thợ rèn: bác làm mẫu một lần (một cục quặng vào lò, một xô nước vào máng); An mang nốt quặng vào lò; thả sắt vào nước quá sớm thì sắt cong, đúng lúc sắt đỏ rực thì sắt cứng.",
-    "en": "The trial of the smith: the smith shows the first step one time (one lump of ore to the forge, one bucket to the trough); An brings the rest of the ore; the iron dropped too early bends, and dropped while it glows it becomes hard."
+    "vi": "Thử thách của bác thợ rèn: lửa đã cháy, quặng đã ở trong lò, nước đã ở trong máng; bác nhúng một miếng sắt của bác trước; An nhúng sắt quá sớm thì sắt cong, nhúng khi sắt đỏ rực thì sắt cứng.",
+    "en": "The trial of the smith: the fire burns, the ore is in the forge, and the water is in the trough; the smith quenches one piece of his own first; An drops the iron too early and it bends, and drops it while it glows and it becomes hard."
   },
-  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
   "clock": 540,
-  "at": ["phu-dong", 53, 43],
+  "at": [
+    "phu-dong",
+    53,
+    43
+  ],
   "steps": [
-    { "tap": { "entity": "npc:smith" } },
-    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
-    { "read": true },
-    { "expect": [{ "text": { "shown": "dlg.smith.trial.n1" } }, { "count": { "entities": "ore", "min": 4 } }] },
-    { "until": { "event": "call", "with": { "key": "mentor.first.you" }, "timeout": 15 } },
-    { "expect": [{ "event": "call", "with": { "key": "mentor.first" } }, { "event": "pour" }, { "entity": "trough:smith", "look": "trough-full" }] },
-    { "tap": { "item": "ore" } },
-    { "until": { "event": "pick", "timeout": 15 } },
-    { "tap": { "zone": "forge" } },
-    { "until": { "event": "fire", "timeout": 15 } },
-    { "tap": { "thing": "iron:smith" } },
-    { "until": { "event": "bend", "timeout": 10 } },
-    { "expect": [{ "event": "skill", "with": { "skill": "sci.matter.states", "solved": false, "first": true } }] },
-    { "wait": 4.5 },
-    { "tap": { "thing": "iron:smith" } },
-    { "until": { "event": "hiss", "timeout": 10 } },
-    { "expect": [{ "event": "skill", "with": { "solved": true, "efficient": false } }, { "entity": "iron:smith", "look": "blade" }, { "flag": "trial.smith.done" }, { "text": { "shown": "dlg.smith.trial.done.n1" } }] },
-    { "read": true }
+    {
+      "press": {
+        "entity": "npc:smith"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.smith.trial.n1"
+          }
+        },
+        {
+          "zone": "forge",
+          "planks": ">= 2"
+        },
+        {
+          "entity": "trough:smith",
+          "look": "trough-full"
+        },
+        {
+          "count": {
+            "entities": "bucket",
+            "max": 0
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "call",
+        "with": {
+          "key": "smith.quench.watch"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "call",
+          "with": {
+            "key": "smith.quench.show"
+          }
+        },
+        {
+          "event": "skill",
+          "not": true
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "fire",
+        "timeout": 10
+      }
+    },
+    {
+      "press": {
+        "thing": "iron:smith"
+      }
+    },
+    {
+      "until": {
+        "event": "bend",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "skill",
+          "with": {
+            "skill": "sci.matter.states",
+            "solved": false,
+            "first": true
+          }
+        }
+      ]
+    },
+    {
+      "wait": 4.5
+    },
+    {
+      "press": true
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "skill",
+          "with": {
+            "solved": true,
+            "efficient": false
+          }
+        },
+        {
+          "entity": "iron:smith",
+          "look": "blade"
+        },
+        {
+          "flag": "trial.smith.done"
+        },
+        {
+          "text": {
+            "shown": "dlg.smith.trial.done.n1"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    }
   ]
 }

@@ -98,7 +98,7 @@
       ]
     },
     {
-      "tap": {
+      "press": {
         "plank": 4
       }
     },
@@ -109,7 +109,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "bridge-gap"
       }
     },
@@ -123,7 +123,7 @@
       "wait": 1.5
     },
     {
-      "tap": {
+      "press": {
         "plank": 4
       }
     },
@@ -134,7 +134,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "bridge-gap"
       }
     },
@@ -148,7 +148,7 @@
       "wait": 1.5
     },
     {
-      "tap": {
+      "press": {
         "plank": 4
       }
     },
@@ -159,7 +159,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "bridge-gap"
       }
     },
@@ -173,7 +173,7 @@
       "wait": 1.5
     },
     {
-      "tap": {
+      "press": {
         "zone": "bridge-gap"
       }
     },

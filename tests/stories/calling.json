@@ -8,7 +8,7 @@
   "clock": 540,
   "at": ["phu-dong", 31, 27],
   "steps": [
-    { "tap": { "entity": "npc:elder" } },
+    { "press": { "entity": "npc:elder" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
     { "read": true },
     { "expect": [{ "text": { "shown": "dlg.elder.trials.done.n1" } }, { "flag": "prologue.done" }, { "screen": null }] }

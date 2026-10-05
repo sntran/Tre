@@ -13,7 +13,7 @@
     { "expect": [{ "points": 1 }] },
     { "at": { "hour": 6.5 } },
     { "expect": [{ "points": 2 }, { "day": 1 }, { "flag": "prologue.started", "is": false }] },
-    { "tap": { "entity": "npc:elder" } },
+    { "press": { "entity": "npc:elder" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 60 } },
     { "read": true },
     { "expect": [{ "flag": "prologue.started" }] },

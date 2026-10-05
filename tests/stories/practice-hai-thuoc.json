@@ -63,7 +63,7 @@
       "repeat": 3,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "herb-ngai"
           }
         },
@@ -74,7 +74,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "basket"
           }
         },
@@ -90,7 +90,7 @@
       "repeat": 2,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "herb-tiato"
           }
         },
@@ -101,7 +101,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "basket"
           }
         },
@@ -117,7 +117,7 @@
       "repeat": 2,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "herb-rauma"
           }
         },
@@ -128,7 +128,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "basket"
           }
         },
@@ -140,22 +140,14 @@
         }
       ]
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:healer" } },
     {
       "until": {
         "event": "nope",
         "timeout": 15
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:healer" } },
     {
       "until": {
         "event": "given",
@@ -193,7 +185,7 @@
       "repeat": 3,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "herb-ngai"
           }
         },
@@ -204,7 +196,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "basket"
           }
         },
@@ -220,7 +212,7 @@
       "repeat": 2,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "herb-tiato"
           }
         },
@@ -231,7 +223,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "basket"
           }
         },
@@ -247,7 +239,7 @@
       "repeat": 2,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "herb-rauma"
           }
         },
@@ -258,7 +250,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "basket"
           }
         },
@@ -270,22 +262,14 @@
         }
       ]
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:healer" } },
     {
       "until": {
         "event": "nope",
         "timeout": 15
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:healer" } },
     {
       "until": {
         "event": "given",

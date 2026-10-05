@@ -140,8 +140,8 @@
     "bundle": {
       "reader": "sum",
       "slip": 3,
-      "fastUnit": 0.6,
-      "slowUnit": 2.5,
+      "fastUnit": 3,
+      "slowUnit": 6,
       "idleStart": 20,
       "offerAfter": 30,
       "look": 6,
@@ -345,10 +345,8 @@
       "family": "plain",
       "person": "npc:smith",
       "demo": null,
-      "first": [
-        { "from": "ore", "to": "forge", "keep": true },
-        { "from": "bucket", "to": "trough", "keep": true }
-      ],
+      "first": [],
+      "lines": { "first": "smith.quench.watch" },
       "picture": "mentor.picture.smith"
     },
     "trial-fisher": {

@@ -17,10 +17,10 @@
 //   { until: { event, with, timeout } }      (an event after the last command)
 //   { at: { hour } }
 //   { tap: { cell: [x, y] } | { entity } | { thing } | { item: <kind>, size } | { plank: <size> } | { guess: <n> } |
-//          { zone } | { span } | { stem: <along> } | { culm: <n>, at: <height> } | { line: <along> } | { hero: true } |
+//          { zone } | { span } | { stem: <along> } | { culm: <n>, at: <height> } | { line: <along> } |
 //          { raid: 'gate' | 'bamboo' | <spot id> } | { post: 10 } (a post before the first shot) }
 //     (item: the first thing of a kind (and size) in a heap or a pile; plank: a plank of this size on a pile;
-//     zone: the middle of the zone of a task, or the gap of a span; span: the last plank on a
+//     zone: the middle of the zone of a task, the first thing of a heap, or the gap of a span; span: the last plank on a
 //     span; stem: a place along the stem of the woodcutter; culm: a standing culm of the bamboo
 //     clump of the staffs (its place in the row), at a height in half blocks; line: a place on the
 //     fish trap line)
@@ -29,6 +29,9 @@
 //     (of this kind): off is how much farther (or nearer, below 0); lead: where the enemy will be
 //     after so many seconds; wait: when no enemy is there, the world goes on for a second)
 //   { pour: { from: <source id>, at: 'first' | <enemy id> | [x, y] } }  (the drag of an element)
+//   { press: <a target of a tap step> | true }  (the hero walks to the target as a tap does, and then the
+//                                             action button; with true, only the button. culm with
+//                                             at: the button stays down until the mark comes to at)
 //   { walk: { to: [x, y], leg } }            (a walk to a far cell, as a child taps ahead again and
 //                                             again: a tap each `leg` cells (20) on the way; a line
 //                                             of a trigger zone on the way is read)
@@ -69,6 +72,7 @@ export function storyOnPlane(story, world) {
     for (const st of list ?? []) {
       if (st.steps) steps(st.steps);
       if (st.tap?.cell) st.tap.cell = cell(st.tap.cell);
+      if (st.press?.cell) st.press.cell = cell(st.press.cell);
       if (Array.isArray(st.do?.at)) st.do.at = cell(st.do.at);
       if (Array.isArray(st.pour?.at)) st.pour.at = cell(st.pour.at);
       if (st.walk?.to) st.walk.to = cell(st.walk.to);
@@ -108,7 +112,6 @@ export function tapTarget(session, spec) {
   const state = session.state;
   const at = (e) => ({ x: e.position.x / 2, y: e.position.z / 2 });
   if (spec.cell) return { target: session.targetAt(spec.cell[0], spec.cell[1]), point: { x: spec.cell[0], y: spec.cell[1] } };
-  if (spec.hero) return { target: { hero: true }, point: at(getEntity(state, 'hero')) };
   if (spec.post !== undefined) {
     // A distance post of the raid, before the first shot (the prediction).
     const e = query(state, 'raidTap', 'position').find((x) => x.raidTap.what === 'post' && x.raidTap.id === spec.post);
@@ -201,6 +204,12 @@ export function tapTarget(session, spec) {
       const x = (z.rect.x0 + z.rect.x1) / 4;
       const y = (z.rect.z0 + z.rect.z1) / 4;
       return { target: { ground: { x, y, h: session.env.groundY(x, y) / 2, thing: false, object: null } }, point: { x, y } };
+    }
+    // A heap or a pile: a tap on its first thing.
+    if (z.rule === 'heap' || z.rule === 'pile') {
+      const e = getEntity(state, z.items[0]);
+      if (e) return { target: { thing: e.id }, point: { x: e.position.x / 2, y: e.position.z / 2 } };
+      return { target: { ground: { x: z.x / 2, y: z.z / 2, h: session.env.groundY(z.x / 2, z.z / 2) / 2, thing: false, object: null } }, point: { x: z.x / 2, y: z.z / 2 } };
     }
     // The broken part of a bridge (a span that is not solid): a tap on the water of the gap.
     const x = (z.x0 + z.x1 + 1) / 2;
@@ -329,6 +338,8 @@ export function checkFact(fact, ctx) {
     if (fact.action === null) return a ? `the action button does ${a.act}` : null;
     if (!a) return 'the action button is dim';
     for (const k of ['act', 'icon']) if (fact.action[k] !== undefined && a[k] !== fact.action[k]) return `the action button has the ${k} ${a[k]}, not ${fact.action[k]}`;
+    // ghost: a pale thing shows where the thing in the hands goes (a place on a line).
+    if (fact.action.ghost !== undefined && Boolean(a.ghost) !== fact.action.ghost) return `the action button shows ${a.ghost ? 'a' : 'no'} ghost`;
     return null;
   }
   if (fact.flag) {
@@ -561,7 +572,7 @@ export async function playStory(story, io) {
     io.onStep?.(i, s);
     rebind();
     const session = io.session();
-    if (s.do || s.tap || s.read || s.shoot || s.pour) mark = events.length;
+    if (s.do || s.tap || s.press || s.read || s.shoot || s.pour) mark = events.length;
     if (s.do) await io.send(s.do, null);
     else if (s.wait !== undefined) await io.advance(s.wait, null);
     else if (s.until) {
@@ -579,6 +590,9 @@ export async function playStory(story, io) {
       const tap = tapTarget(session, s.tap);
       if (!tap?.target) fail(i, `nothing to tap for ${JSON.stringify(s.tap)}`);
       else await io.send({ type: 'tap', target: tap.target }, tap.point);
+    } else if (s.press) {
+      const problem = await press(io, s.press);
+      if (problem) fail(i, problem);
     } else if (s.shoot) {
       const cmd = shootCommand(session, s.shoot);
       // wait: no enemy now is no failure; the world goes on for a second.
@@ -626,6 +640,29 @@ export async function playStory(story, io) {
   }
   stop();
   return failures;
+}
+
+// A press step: the walk of a tap to the target, the end of the walk, and the action button (held
+// down until the mark of a slash comes to the height `at` on a culm). Return a message, or null.
+async function press(io, spec) {
+  const hero = () => getEntity(io.session().state, 'hero');
+  if (spec !== true) {
+    const tap = tapTarget(io.session(), spec);
+    if (!tap?.target) return `nothing to walk to for ${JSON.stringify(spec)}`;
+    await io.send({ type: 'tap', target: tap.target }, tap.point);
+    await io.advance(0.2, null);
+    await io.advance(20, () => !hero().route);
+    await io.advance(0.15, null);
+  }
+  if (spec.culm !== undefined && spec.at !== undefined) {
+    await io.send({ type: 'hold', on: true }, null);
+    const aim = () => getEntity(io.session().state, 'zone:trial-staffs')?.zone.aim;
+    const ok = await io.advance(15, () => (aim()?.at ?? 0) >= spec.at);
+    await io.send({ type: 'hold', on: false }, null);
+    return ok ? null : `the mark of the slash did not come to ${spec.at}`;
+  }
+  await io.send({ type: 'hands' }, null);
+  return null;
 }
 
 // A walk to a far cell: the way on the tile map, and a tap each `leg` cells on it. Return a

@@ -8,7 +8,7 @@
   "clock": 600,
   "at": ["trau-son", 89, 38],
   "steps": [
-    { "tap": { "entity": "encounter:soldier2" } },
+    { "press": { "entity": "encounter:soldier2" } },
     { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },
     { "read": true },
     { "wait": 4 },

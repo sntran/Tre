@@ -9,9 +9,9 @@ const cart = (steps) => ({
   name: 'x', about: { vi: '-', en: '-' },
   profile: { name: 'An', grade: 3, lang: 'vi', seed: 7, flags: { 'intro.seen': true }, skills: { 'math.add.20': 0.4 } },
   clock: 540, at: ['phu-dong', 14.5, 80.5],
-  steps: [{ do: { type: 'event', id: 'cart' } }, { wait: 0.5 }, { tap: { entity: 'event:cart' } }, { until: { event: 'open', with: { screen: 'say' }, timeout: 30 } }, { read: true }, ...steps],
+  steps: [{ do: { type: 'event', id: 'cart' } }, { wait: 0.5 }, { press: { entity: 'event:cart' } }, { until: { event: 'open', with: { screen: 'say' }, timeout: 30 } }, { read: true }, ...steps],
 });
-const put = [{ tap: { item: 'stones' } }, { until: { event: 'pick', timeout: 30 } }, { tap: { zone: 'event-cart-place' } }, { until: { event: 'put', timeout: 30 } }];
+const put = [{ press: { item: 'stones' } }, { until: { event: 'pick', timeout: 30 } }, { press: { zone: 'event-cart-place' } }, { until: { event: 'put', timeout: 30 } }];
 
 test('every move is logged with the outcome of the next commit', async () => {
   let end = null;
@@ -43,7 +43,8 @@ test('a check at the place, then a change before the commit, is a self-correctio
     { until: { event: 'check', timeout: 5 } },
     ...put,
     { expect: [{ event: 'selfFix', with: { key: 'event-cart' } }] },
-    { do: { type: 'hands' } },
+    // The person of the event checks the place.
+    { press: { entity: 'event:cart' } },
     { until: { event: 'open', with: { screen: 'say' }, timeout: 30 } },
     { read: true },
   ]), { log: true, onEnd: (x) => { end = x; } });
@@ -53,8 +54,8 @@ test('a check at the place, then a change before the commit, is a self-correctio
 });
 
 test('a raise never makes the round in progress bigger: the heap and the goal stay, and the next round is bigger', async () => {
-  const bundle = { repeat: 10, steps: [{ tap: { item: 'rod' } }, { until: { event: 'add', timeout: 10 } }] };
-  const tie = [{ tap: { thing: 'band:scholar' } }, { until: { event: 'tie', timeout: 10 } }];
+  const bundle = { repeat: 10, steps: [{ press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }, { press: { zone: 'mat' } }, { until: { event: 'put', timeout: 10 } }] };
+  const tie = [{ press: { entity: 'npc:teacher' } }, { until: { event: 'tie', timeout: 10 } }];
   const failures = await runHeadless({
     name: 'x', about: { vi: '-', en: '-' }, practice: 'bo-que',
     profile: { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } },

@@ -8,12 +8,14 @@
 // Commands (command(cmd)):
 // - the world commands move, stop, pet, ride, aim, pick, put, drop, guess, and face go to the
 //   world state (with id 'hero' when there is no id);
-// - tap { target }: the child tapped a thing. target is one of { hero: true }, { guess: { zone, n } },
-//   { thing: id } (a plank), { person: entity id }, { sleeper: entity id } (a sleeping animal), or
-//   { ground: { x, y, h, thing, object } }
-//   (a point on the ground in map cells; object: the id of a map object there, or null).
+// - tap { target }: the child tapped a thing. A tap only walks: the hero walks there, and a thing,
+//   a place, or a person becomes the target of the action button. target is one of
+//   { guess: { zone, n } }, { thing: id, along }, { person: entity id }, { sleeper: entity id } (a
+//   sleeping animal), or { ground: { x, y, h, thing, object } } (a point on the ground in map
+//   cells; object: the id of a map object there, or null);
+// - hands: the action button (or Space) acts on its target; hold { on }: the button stays down
+//   (the jar of feed pours, the mark of a slash goes up a culm) or goes up.
 //   targetAt(x, y) gives the target at a map cell, as a tap there;
-// - hands: the key of the hands (put the plank in reach, or pick up the nearest plank);
 // - talkTo { id }: walk to a person and talk;
 // - talk { dialogue }: a talk now; travel: open the country map; refresh: the people again;
 // - next, choose { n }: the next line of the open talk, or a choice;
@@ -44,8 +46,8 @@ import { placeBySchedule } from './world/systems/schedule.js';
 import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
-import { REACH, learnerRecord, canPut } from './world/zones.js';
-import { setupTrial, clearTrial, freeSlot } from './world/systems/work.js';
+import { REACH, learnerRecord, canPut, canTake, spanSlot } from './world/zones.js';
+import { setupTrial, clearTrial, freeSlot, canTakeWork } from './world/systems/work.js';
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring } from './mentoring.js';
@@ -67,7 +69,7 @@ export { STEP };
 const ZONE_PAD = 2; // half blocks: a place of a task answers a tap this far outside its box
 const CUE_IDLE = 6; // seconds with no action in a task before the next thing glows
 // The commands that are an action of the child (they stop the cue).
-const CHILD_ACTS = new Set(['tap', 'hands', 'drag', 'hold', 'wave', 'jump', 'move', 'pet', 'talkTo']);
+const CHILD_ACTS = new Set(['tap', 'hands', 'hold', 'wave', 'jump', 'move', 'pet', 'talkTo']);
 const WORLD = new Set(['move', 'stop', 'pet', 'ride', 'aim', 'pick', 'put', 'drop', 'guess', 'face']);
 const GREETS = ['world.greet.1', 'world.greet.2', 'world.greet.3'];
 const CALM_CELLS = 2; // the hero is on the bridge when nearer than this to a span that is not solid
@@ -531,7 +533,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (practicing || trialZone(id)?.zone.done) clearTrial(state, id);
     // The things that the child brought go into the task (the iron for the horse).
     if (def.take && !trialZone(id)) applyEffects(profile, [{ take: def.take }, ...(def.startSet ? [{ set: def.startSet }] : [])]);
-    setupTrial(state, def, practicing ? practice.level : levelFor(data.trials, profile.grade), env);
+    // In a later round of a practice, the smith does not show his quench again.
+    setupTrial(state, def, practicing ? practice.level : levelFor(data.trials, profile.grade), env, { demo: !(practicing && practice.round > 0) });
     mentoring.start(`trial-${id}`);
     emit({ type: 'hud' });
   }
@@ -604,146 +607,50 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return r && x >= r.x0 - pad && x <= r.x1 + pad && z >= r.z0 - pad && z <= r.z1 + pad && e.zone.task?.startsWith('trial-') && !trialZone(e.zone.task.slice(6))?.zone.done;
   }) ?? null;
   const work = (trial, act, extra = {}) => worldCommand(state, { type: 'work', id: 'hero', trial, act, ...extra });
-  // Walk near a point (half blocks) and then do something.
-  const walkNear = (p, fn) => {
-    if (distHb(hero().position, p) <= REACH + 1) return fn();
-    walkToThing({ x: p.x / 2, y: p.z / 2 }, fn);
-  };
-  // A tap on a thing of a trial. Return true when the tap was for the trial.
-  function tapTrialThing(thing, along = null) {
-    const trial = thing.item.task.slice(6);
-    const tz = trialZone(trial);
-    if (!tz || tz.zone.done) return false;
-    if (thing.item.kind === 'rod') {
-      // A rod of the heap goes on the mat; a tap on the rods on the mat ties them (one job for
-      // each thing: docs/TASKS.md). A drag of a rod from the mat to the heap takes it back.
-      const mat = zoneOf('mat');
-      walkNear(mat.position, () => work(trial, thing.item.zone === 'mat' ? 'tie' : 'add', { item: thing.id }));
-      return true;
-    }
-    if (thing.item.zone === 'basket') {
-      // A bunch in the basket of the healer: the tap gives the basket, as a tap on the basket.
-      atPerson('healer', () => work(trial, 'give'));
-      return true;
-    }
-    if (thing.item.kind === 'band') {
-      walkNear(zoneOf('mat').position, () => work(trial, 'tie'));
-      return true;
-    }
-    if (thing.item.kind === 'bellows') {
-      walkNear(zoneOf('hearth').position, () => work(trial, 'blow'));
-      return true;
-    }
-    if (thing.item.kind === 'iron') {
-      walkNear(tz.zone.anvil, () => work(trial, 'quench'));
-      return true;
-    }
-    if (thing.item.kind === 'culm') {
-      // A standing culm of the bamboo clump: the hero walks to it and slashes at that height.
-      const at = along ?? 1;
-      walkNear({ x: thing.position.x + 2, z: thing.position.z }, () => work(trial, 'slash', { culm: thing.item.slot, at }));
-      return true;
-    }
-    // A cut piece stands still in the clump.
-    if (thing.item.kind === 'stump') return true;
-    if (thing.item.kind === 'stem') {
-      // On the stem of the woodcutter a tap puts a chalk mark.
-      const at = along ?? thing.item.size / 2;
-      walkNear({ x: thing.position.x + at, z: thing.position.z - 2 }, () => work(trial, 'mark', { at }));
-      return true;
-    }
-    return false;
+  // A tap only walks: on a thing, a place, or a person, the hero walks there and turns to it, and
+  // it becomes the target of the action button (docs/TASKS.md). A tap never does a step of a task.
+  let chosen = null; // the last tap: { id (an entity), along (a place along a stem or a line) }
+  // p: the point of the target (half blocks); stand: where the hero walks to (p when not given).
+  function goTo(p, id, along = null, stand = p) {
+    chosen = { id, along };
+    const face = () => worldCommand(state, { type: 'face', id: 'hero', x: p.x, z: p.z });
+    // Near enough to act there: only a turn to it.
+    if (distHb(hero().position, stand) <= REACH - 1) return face();
+    walkToThing({ x: stand.x / 2, y: stand.z / 2 }, face);
   }
-  // A tap on the ground in the zone of a trial: put the thing in the hands there; with empty hands,
-  // a tap on the full basket of the healer gives it (one job for each thing: docs/TASKS.md).
-  // Return true when the tap was for the trial.
-  function tapTrialZone(hit) {
+  // A tap on a place of a task: the hero walks to it, and it is the target. On the line of stakes,
+  // the place of the tap along the line is the target place.
+  function tapTaskPlace(hit) {
     const wz = workZoneAt(hit.x * 2, hit.y * 2);
     if (!wz) return false;
-    const trial = wz.zone.task.slice(6);
-    const held = getEntity(state, holding());
-    if (held && canPut(wz.zone, held)) {
-      const at = { x: Math.round(hit.x * 2), z: Math.round(hit.y * 2) };
-      // A spot in the stream: the hero walks to the bank by the free spot nearest to the tap.
-      const spot = wz.zone.rule === 'spots' ? wz.zone.slots[freeSlot(state, wz.zone, at)] : null;
-      if (wz.zone.rule === 'spots' && !spot) return false;
-      const stand = wz.zone.rule === 'line' ? { x: at.x, z: wz.position.z } : spot ?? wz.position;
-      walkNear(stand, () => worldCommand(state, { type: 'put', id: 'hero', zone: wz.zone.id, at }));
-      return true;
-    }
-    if (!held && trial === 'healer' && wz.zone.rule === 'basket' && wz.zone.items.length) {
-      const healer = persons().find((q) => q.kind === 'npc' && q.ref === 'healer');
-      if (healer) walkToThing(healer, () => work('healer', 'give'));
-      else walkNear(wz.position, () => work('healer', 'give'));
-      return true;
-    }
-    return false;
+    const z = wz.zone;
+    if (z.rule === 'line') {
+      const along = Math.max(1, Math.min(z.length, Math.round(hit.x * 2 - z.x)));
+      goTo({ x: z.x + along, z: z.z }, wz.id, along, { x: z.x + along, z: wz.position.z });
+    } else if (z.rule === 'spots') {
+      // A spot in the stream: the free spot nearest to the tap is the target place.
+      const k = freeSlot(state, z, { x: hit.x * 2, z: hit.y * 2 });
+      if (k >= 0) goTo(z.slots[k], wz.id, k);
+      else goTo(wz.position, wz.id);
+    } else goTo(wz.position, wz.id);
+    return true;
   }
-  // A tap on a stake of a plot of a choose round: the commit of that plot.
-  function tapPlotStake(t) {
-    const e = getEntity(state, t.id);
-    if (!e) return;
-    walkNear(e.position, () => work('plant', 'choose', { plot: t.plot, which: t.which }));
-  }
-  // A tap on a thing of an activity: the jar of feed (the hero walks to it), the weir (the fisher
-  // uncle opens it when there are new traps in the stream; else a short line), or a bronze drum (a
-  // beat of the dance, when the hero stands at the drum; else the hero walks there first).
-  function tapHamlet(t) {
-    const e = getEntity(state, t.id);
-    if (!e) return;
-    if (t.act === 'ducks') {
-      walkNear(e.position, () => {});
-      return;
-    }
-    if (t.act === 'traps') {
-      const r = hamlet.round('traps');
-      if (!r || r.done || r.fill) return;
-      const who = hamlet.personOf('traps');
-      const fresh = (getEntity(state, 'zone:traps-stream')?.zone.items ?? []).some((id) => !getEntity(state, id)?.item.set);
-      atPerson(who, () => (fresh ? work('traps', 'open') : say('traps.wait', {}, null, who)));
-      return;
-    }
-    const r = hamlet.round('drum');
-    if (!r || r.done) return;
-    const near = distHb(hero().position, e.position) <= REACH + 1;
-    if (near) work('drum', 'tap', { which: t.which ?? 0 });
-    // While the dance goes on, a tap from far away is only a walk.
-    else walkNear(e.position, () => { if (!r.dance || r.paused) work('drum', 'tap', { which: t.which ?? 0 }); });
-  }
-  // The child holds the jar of feed (on) or lets it go (off). The feed pours only while the hero
-  // stands at the jar; from far away the hero walks there first.
+  // The hold of the action button (the jar of feed, the slash at a culm): the act goes on while the
+  // button is down, and its end comes when the button goes up.
+  let holdAct = null;
   function hold(on) {
-    const r = hamlet.round('ducks');
-    const jar = getEntity(state, 'hamlet:jar');
-    if (!r || !jar) return;
     if (!on) {
-      if (r.pouring) work('ducks', 'stop');
+      const a = holdAct;
+      holdAct = null;
+      a?.release?.();
       return;
     }
-    if (r.done || r.eat || busy) return;
-    if (distHb(hero().position, jar.position) <= REACH + 1) work('ducks', 'pour');
-    else walkNear(jar.position, () => {});
-  }
-  // The places where a tap on a part does the finish, so that a drag is the undo (docs/TASKS.md):
-  // the rods on the mat of the teacher, and the bunches in the basket of the healer.
-  const DRAG_BACK = new Set(['bundle', 'basket']);
-  // The place of a thing that a drag can take back to its heap, or null.
-  function dragPlace(thing) {
-    const place = thing?.item?.home && thing.item.task?.startsWith('trial-') ? zoneOf(thing.item.zone) : null;
-    return place && DRAG_BACK.has(place.zone.rule) && !trialZone(thing.item.task.slice(6))?.zone.done ? place : null;
-  }
-  // A drag of a thing (the undo of a task): a rod from the mat to the heap, or a bunch from the
-  // basket to its bed, goes back to its heap. cmd: { item, zone (the zone where the finger let go),
-  // or x and y (map cells of that point) }.
-  function dragThing(cmd) {
-    const thing = getEntity(state, cmd.item);
-    const place = dragPlace(thing);
-    const heap = place ? zoneOf(thing.item.home) : null;
-    if (!heap) return;
-    const at = cmd.x !== undefined ? { x: cmd.x * 2, z: cmd.y * 2 } : null;
-    const toHeap = cmd.zone ? cmd.zone === heap.zone.id : at && distHb(at, heap.position) < distHb(at, place.position);
-    if (!toHeap) return;
-    walkNear(place.position, () => work(thing.item.task.slice(6), 'back', { item: thing.id }));
+    const a = action();
+    if (!a?.hold || busy) return;
+    holdAct = a;
+    a.run();
+    acted();
+    emit({ type: 'pulse', id: a.target });
   }
   // The end of a set of a practice: the reward, and the choice to stay or go back.
   function practiceEnd(person) {
@@ -1214,7 +1121,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     shareAfter = [];
   }
   // The rest of the loot: a red cloth with the coins goes into the hands of the hero. The child
-  // carries it to one of the people of the rest in the village (tapGift).
+  // carries it to one of the people of the rest in the village (giveGift).
   function giveRest(n) {
     const h = hero();
     const id = `gift:${state.tick}`;
@@ -1223,26 +1130,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     h.hands.holds = id;
     h.carry = look;
     say('share.rest');
-  }
-  // A tap on a person of the rest with the cloth in the hands: the person takes it and says one
-  // line of thanks. Nothing is scored.
-  function tapGift(person) {
-    const held = getEntity(state, holding());
-    const key = held?.item.kind === 'gift' ? trialDef('share')?.rest?.[person.ref] : null;
-    if (!key) return false;
-    walkToThing(person, () => {
-      worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 });
-      const h = hero();
-      if (h.hands.holds !== held.id) return;
-      h.hands.holds = null;
-      delete h.carry;
-      removeEntity(state, held.id);
-      emit({ type: 'sound', sound: 'pickup' });
-      emit({ type: 'gave', id: person.entity, to: person.ref });
-      emit({ type: 'open', screen: 'callout', id: person.entity, textKey: key, params: { name: profile.hero.name } });
-      save('gift');
-    });
-    return true;
   }
   function raidOver() {
     const fig = raidEnc ? getEntity(state, raidEnc) : null;
@@ -1258,14 +1145,35 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (distHb(hero().position, wall) <= 2) order({ act: 'shoot', count });
     else walkTo([{ x: wall.x / 2, y: wall.z / 2 }], () => order({ act: 'shoot', count }));
   }
-  // A tap on the road with a trap in the hands: the trap goes there (the hero walks near first).
+  // A tap on the road with a trap in the hands: the hero walks there, and the place on the road is
+  // the target of the button.
   function tapRaidRoad(hit) {
     const held = getEntity(state, holding());
     if (held?.item.kind !== 'trap') return false;
     const at = roadPoint(state, { x: hit.x * 2, z: hit.y * 2 });
     if (!at) return false;
-    walkNear(at, () => worldCommand(state, { type: 'put', id: 'hero', zone: 'raid-road', at: { x: at.x, z: at.z } }));
+    // The hero stays at the wall when the place is in reach from there.
+    if (distHb(hero().position, at) <= REACH + 2) {
+      chosen = { id: 'zone:raid-road', along: { x: at.x, z: at.z } };
+      worldCommand(state, { type: 'face', id: 'hero', x: at.x, z: at.z });
+    } else goTo(at, 'zone:raid-road', { x: at.x, z: at.z });
     return true;
+  }
+  // The button in a raid: pick up a trap at the heap of traps; put the trap in the hands on the road
+  // (at the place of the tap, or in front of the hero), where a ghost shows it.
+  function raidAction() {
+    const hp = hero().position;
+    const held = getEntity(state, holding());
+    if (held?.item.kind === 'trap') {
+      const at = chosen?.id === 'zone:raid-road' && chosen.along ? chosen.along : roadPoint(state, frontOf(hp, 3));
+      if (!at || distHb(hp, at) > REACH + 2) return null;
+      const point = { x: at.x, z: at.z };
+      return { act: 'put', icon: 'hand-put', target: 'zone:raid-road', ghost: { look: held.look, x: at.x, y: hp.y, z: at.z, facing: 0 }, run: () => worldCommand(state, { type: 'put', id: 'hero', zone: 'raid-road', at: point }) };
+    }
+    if (held) return null;
+    const traps = query(state, 'item', 'position').filter((e) => e.item.kind === 'trap' && !e.item.set && !e.item.held && !e.hidden && e.item.zone !== 'raid-road' && distHb(hp, e.position) <= REACH);
+    const trap = traps.sort((a, b) => distHb(hp, a.position) - distHb(hp, b.position))[0];
+    return trap ? { act: 'pick', icon: 'hand-pick', target: trap.id, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: trap.id }) } : null;
   }
 
   // Walks -------------------------------------------------------------------------
@@ -1366,16 +1274,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const itemsSum = (zone) => zone.items.reduce((a, id) => a + (getEntity(state, id)?.item?.size ?? 0), 0);
   // The span that has this cell, if it is not solid yet.
   const spanAt = (x, y) => spans().find(({ zone: z }) => !z.set && x >= z.x0 && x <= z.x1 && y >= z.start / 2 && y < z.end / 2);
-  // The pile of the task of a thing.
-  const pileFor = (thing) => zoneOf(data.zones[zoneOf(thing?.item.task)?.zone.task]?.pile);
   const reachCell = (z) => ({ x: z.position.x / 2, y: z.position.z / 2 });
-  // Put the plank in the hands at the end of the planks of a span.
-  function goPut(z) {
-    walkTo([reachCell(z)], () => {
-      worldCommand(state, { type: 'face', id: 'hero', x: z.zone.lane, z: z.zone.end });
-      worldCommand(state, { type: 'put', id: 'hero', zone: z.zone.id });
-    });
-  }
   // Walk out on the planks of a span, to the point `to` (half blocks, along the gap).
   function goOnSpan(z, to) {
     const pts = [reachCell(z)];
@@ -1384,77 +1283,32 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   function tapSpan(z) {
     const covered = z.zone.items.reduce((a, id) => a + (getEntity(state, id)?.item.size ?? 0), 0);
-    if (holding()) goPut(z);
+    chosen = { id: z.id, along: null };
+    if (holding()) walkTo([reachCell(z)], () => worldCommand(state, { type: 'face', id: 'hero', x: z.zone.lane, z: z.zone.end }));
     else goOnSpan(z, z.zone.from + covered - 0.5);
   }
+  // A tap on a thing: the hero walks to it, and it is the target of the button.
   function tapThing(thing, along = null) {
     log('action', { kind: 'place' });
     const m = middleOf(thing);
     emit({ type: 'tapfx', x: m.x / 2, y: m.z / 2, h: thing.position.y / 2 + 0.4 });
-    if (thing.item.task?.startsWith('trial-') && tapTrialThing(thing, along)) return;
-    if (thing.item.fixed || (thing.item.set && (thing.item.task === 'raid' || !zoneOf(thing.item.zone)))) return;
+    if (thing.item.kind === 'stump') return;
     const zone = zoneOf(thing.item.zone);
     if (zone?.zone.rule === 'span') {
+      // A plank on a span: the hero walks out on the planks to it; the last plank is the target.
       const last = zone.zone.items[zone.zone.items.length - 1] === thing.id;
-      // At the edge, a tap on the last plank takes it back; from elsewhere the hero walks on it.
-      if (!holding() && last && distHb(hero().position, zone.position) <= REACH) worldCommand(state, { type: 'pick', id: 'hero', item: thing.id });
-      else if (holding()) goPut(zone);
+      if (holding()) tapSpan(zone);
+      else if (last) goTo(zone.position, thing.id);
       else goOnSpan(zone, thing.position.z + thing.item.size - 0.5);
       return;
     }
-    const pick = () => worldCommand(state, { type: 'pick', id: 'hero', item: thing.id });
-    const target = { x: m.x / 2, y: m.z / 2 };
-    const held = getEntity(state, holding());
-    // The child chose this plank now (the time to choose is a sign for the model); the hero walks.
+    // The child chose this plank now (the time to choose is a sign for the model).
     worldCommand(state, { type: 'aim', id: 'hero', item: thing.id });
-    if (!held) return walkToThing(target, pick);
-    if (held.id === thing.id) return;
-    // The hands are full: put that thing back on its pile (or down), then take this one.
-    const pile = zoneOf(held.item.home) ?? pileFor(held);
-    walkToThing(target, () => {
-      if (pile && thing.item.zone === pile.zone.id) worldCommand(state, { type: 'put', id: 'hero', zone: pile.zone.id });
-      else worldCommand(state, { type: 'drop', id: 'hero' });
-      later.push(pick);
-    });
-  }
-  // The key of the hands (Space): put the plank in reach, or pick up the nearest plank in reach.
-  function handsKey() {
-    if (hero().fall) return;
-    const hp = hero().position;
-    const held = getEntity(state, holding());
-    if (held) {
-      // A zone of a trial in reach that takes this thing.
-      const wz = query(state, 'zone').find((z) => z.zone.rect && canPut(z.zone, held) && distHb(hp, z.position) <= REACH + 2);
-      if (wz && wz.zone.rule !== 'line') {
-        worldCommand(state, { type: 'put', id: 'hero', zone: wz.zone.id });
-        return;
-      }
-      const span = spans().find((z) => !z.zone.set && distHb(hp, z.position) <= REACH);
-      const pile = zoneOf(held.item.home) ?? pileFor(held);
-      const nearPile = pile && pile.zone.items.some((id) => {
-        const e = getEntity(state, id);
-        return e && distHb(hp, middleOf(e)) <= REACH + 3;
-      });
-      if (span) worldCommand(state, { type: 'put', id: 'hero', zone: span.zone.id });
-      else if (nearPile) worldCommand(state, { type: 'put', id: 'hero', zone: pile.zone.id });
-      else worldCommand(state, { type: 'drop', id: 'hero' });
-      return;
-    }
-    const best = nearestThing(hp);
-    if (best) worldCommand(state, { type: 'pick', id: 'hero', item: best.id });
-  }
-  // The nearest thing in reach that the hands can pick up (on a span, only its last plank).
-  function nearestThing(hp) {
-    let best = null;
-    for (const e of query(state, 'item', 'position')) {
-      if (e.hidden || e.item.set || e.item.fixed || e.item.kind === 'rod') continue;
-      const zone = zoneOf(e.item.zone);
-      const inSpan = zone?.zone.rule === 'span';
-      if (inSpan && zone.zone.items[zone.zone.items.length - 1] !== e.id) continue;
-      const d = inSpan ? distHb(hp, zone.position) : distHb(hp, middleOf(e)) - e.item.size / 2;
-      if (d <= REACH && (!best || d < best.d)) best = { e, d };
-    }
-    return best?.e ?? null;
+    if (thing.item.kind === 'stem') return goTo({ x: thing.position.x + (along ?? thing.item.size / 2), z: thing.position.z }, thing.id, along === null ? null : Math.round(along));
+    // A standing culm: the hero stands at its side of the road (the clump is dense).
+    if (thing.item.kind === 'culm') return goTo(thing.position, thing.id, null, { x: thing.position.x + 2, z: thing.position.z });
+    const tz = thing.item.kind === 'iron' ? trialZone(thing.item.task.slice(6)) : null;
+    goTo(tz?.zone.anvil ?? m, thing.id);
   }
 
   // Walk to a person of a task, turn to the person, and do the work (fn).
@@ -1467,85 +1321,254 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     });
   }
 
-  // The action of the hands now (the action button, and Space; docs/TASKS.md): { act, icon,
-  // target (the entity that pulses when it acts), run, hold (the act goes on while the button is
-  // down) }, or null when there is nothing to do. The finish of a task in reach comes first; then
-  // the hands put the thing that they hold, or pick up the nearest thing.
-  function action() {
-    if (screen || busy || hero().fall || raidOn()) return null;
-    const hp = hero().position;
-    const near = (p, r = REACH + 3) => Boolean(p) && distHb(hp, p) <= r;
+  // The rest of the loot (a small red cloth in the hands) goes to a person who takes it.
+  function giveGift(q) {
+    const held = getEntity(state, holding());
+    const key = held?.item.kind === 'gift' ? trialDef('share')?.rest?.[q.ref] : null;
+    if (!key) return;
+    const h = hero();
+    h.hands.holds = null;
+    delete h.carry;
+    removeEntity(state, held.id);
+    emit({ type: 'sound', sound: 'pickup' });
+    emit({ type: 'gave', id: q.entity, to: q.ref });
+    emit({ type: 'open', screen: 'callout', id: q.entity, textKey: key, params: { name: profile.hero.name } });
+    save('gift');
+  }
+
+  // The finish of the task of a person when there is work to check (the person checks it):
+  // { act, icon, run }, or null. The work system checks the rest.
+  function finishOf(key) {
     const open = (id) => {
       const tz = trialZone(id);
       return tz && !tz.zone.done ? tz : null;
     };
-    const toPerson = (ref, fn) => () => atPerson(ref, fn);
+    if (key === 'trial-scholar' && open('scholar') && zoneOf('mat')?.zone.items.length) return { act: 'tie', icon: 'rope', run: () => work('scholar', 'tie') };
+    if (key === 'trial-healer' && open('healer') && zoneOf('basket')?.zone.items.length) return { act: 'give', icon: 'basket', run: () => work('healer', 'give') };
+    const wood = key === 'trial-woodcutter' ? open('woodcutter') : null;
+    if (wood?.zone.marks?.length && !wood.zone.cut) return { act: 'cut', icon: 'knife', run: () => work('woodcutter', 'cut') };
+    if (key === 'trial-plant' && planting.ready() === 'commit' && plotsOf(state)[0]?.plot.form !== 'choose') return { act: 'plant', icon: 'seedling', run: () => work('plant', 'plant') };
+    if (key === 'trial-traps') {
+      const r = hamlet.round('traps');
+      const fresh = (zoneOf('traps-stream')?.zone.items ?? []).some((i) => !getEntity(state, i)?.item.set);
+      if (r && !r.done && !r.fill && fresh) return { act: 'open', icon: 'weir', run: () => work('traps', 'open') };
+    }
+    if (key?.startsWith('event-') && open(key)) {
+      const place = zoneOf(`${key}-place`);
+      if (place?.zone.items.some((i) => !getEntity(state, i)?.item.fixed)) return { act: 'check', icon: 'check', run: () => work(key, 'exact') };
+    }
+    return null;
+  }
+
+  // The places that the hands take a thing back from (the opposite of a put).
+  const TAKE_BACK = new Set(['bundle', 'basket', 'line', 'exact', 'share', 'spots', 'hearth']);
+  // The point in front of the hero (half blocks), for the places on a line.
+  const frontOf = (hp, d = 2) => ({ x: hp.x + Math.sin(hp.facing ?? 0) * d, z: hp.z + Math.cos(hp.facing ?? 0) * d });
+
+  // All that the action button can act on now around the hero, with the distance of each: the
+  // finish of a task at its person, the acts of things, the hands (pick up, put, take back), a
+  // talk, and Nghé. Each: { act, icon, target (the entity that the outline marks), keys (the ids
+  // that a tap makes the target), at (half blocks), d, rank, run, hold, release, ghost }.
+  function candidates() {
+    const h = hero();
+    const hp = h.position;
+    const out = [];
+    const add = (c, reach) => {
+      const d = distHb(hp, c.at) - (c.size ?? 0);
+      if (d <= reach) out.push({ rank: 1, keys: [c.target], ...c, d });
+    };
+    const open = (id) => {
+      const tz = trialZone(id);
+      return tz && !tz.zone.done ? tz : null;
+    };
     const held = getEntity(state, holding());
+    // People: the finish of the task of the person, or a talk (during the task: a call for help).
+    for (const q of persons()) {
+      const e = getEntity(state, q.entity);
+      if (!e || e.hidden || (q.kind === 'encounter' && raidOn())) continue;
+      const base = { target: q.entity, at: e.position };
+      if (held) {
+        if (held.item.kind === 'gift' && q.kind === 'npc' && trialDef('share')?.rest?.[q.ref]) add({ ...base, act: 'give', icon: 'hand-give', rank: 0, run: () => giveGift(q) }, REACH + 3);
+        continue;
+      }
+      const fin = finishOf(mentoring.taskOfPerson(q.entity));
+      if (fin) add({ ...base, ...fin, rank: 0 }, REACH + 3);
+      else add({ ...base, act: 'talk', icon: 'speak', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
+    }
     if (!held) {
-      // The teacher: tie the rods on the mat.
-      const mat = zoneOf('mat');
-      if (open('scholar') && mat?.zone.items.length && near(mat.position)) return { act: 'tie', icon: 'rope', target: 'band:scholar', run: () => work('scholar', 'tie') };
-      // The smith and the iron horse: quench the glowing iron; blow the bellows on the lumps.
+      // The acts of things: the glowing iron (quench), the bellows on the lumps (blow), a bronze
+      // drum (a beat), the jar of feed (pour while the button is down).
       for (const id of ['smith', 'horse']) {
         const tz = open(id);
-        if (tz && tz.zone.heat !== null && tz.zone.heat !== undefined && !tz.zone.bent && near(tz.zone.anvil)) return { act: 'quench', icon: 'water', target: tz.zone.iron ?? 'iron:smith', run: () => work(id, 'quench') };
+        // While the smith shows the quench on his own piece, the iron is his.
+        const iron = tz?.zone.heat !== null && tz?.zone.heat !== undefined && !tz.zone.bent && !tz.zone.demo ? getEntity(state, tz.zone.iron ?? 'iron:smith') : null;
+        if (iron) add({ act: 'quench', icon: 'water', target: iron.id, at: tz.zone.anvil, rank: 0, run: () => work(id, 'quench') }, REACH + 3);
       }
       const hearth = zoneOf('hearth');
-      if (open('horse')?.zone.heat === null && hearth?.zone.items.length && near(hearth.position)) return { act: 'blow', icon: 'fire', target: hearth.id, run: () => work('horse', 'blow') };
-      // The healer takes the basket; the woodcutter cuts at the marks.
-      const basket = zoneOf('basket');
-      if (open('healer') && basket?.zone.items.length && (near(basket.position, REACH + 6) || near(getEntity(state, 'npc:healer')?.position))) return { act: 'give', icon: 'basket', target: 'basket:healer', run: toPerson('healer', () => work('healer', 'give')) };
-      const wood = open('woodcutter');
-      if (wood?.zone.marks?.length && !wood.zone.cut && (near({ x: wood.zone.stem.x + wood.zone.stem.length / 2, z: wood.zone.stem.z }, REACH + 2 + wood.zone.stem.length / 2) || near(getEntity(state, 'npc:woodcutter')?.position))) return { act: 'cut', icon: 'knife', target: 'stem:woodcutter', run: toPerson('woodcutter', () => work('woodcutter', 'cut')) };
-      // A small event of the day: the things on its place are the commit.
-      for (const z of query(state, 'zone')) {
-        if (z.zone.rule !== 'exact' || !String(z.zone.task).startsWith('trial-event-')) continue;
-        const id = z.zone.task.slice(12);
-        if (!open(`event-${id}`) || !z.zone.items.some((i) => !getEntity(state, i)?.item.fixed) || !near(z.position, REACH + 6)) continue;
-        return { act: 'give', icon: 'hand-give', target: z.id, run: () => work(`event-${id}`, 'exact') };
-      }
-      // Xóm Ruộng: the planter plants; the fisher uncle opens the weir; the bronze drum; the jar.
-      if (planting.ready() === 'commit' && (near(getEntity(state, 'npc:planter')?.position, REACH + 8) || plotsOf(state).some((p) => near({ x: p.ox, z: p.oz + p.depth }, REACH + 8)))) return { act: 'plant', icon: 'seedling', target: 'npc:planter', run: toPerson('planter', () => work('plant', 'plant')) };
-      const traps = hamlet.round('traps');
-      const fresh = (getEntity(state, 'zone:traps-stream')?.zone.items ?? []).some((i) => !getEntity(state, i)?.item.set);
-      if (traps && !traps.done && !traps.fill && fresh) return { act: 'open', icon: 'weir', target: 'hamlet:weir', run: toPerson(hamlet.personOf('traps'), () => work('traps', 'open')) };
+      const bellows = query(state, 'item', 'position').find((e) => e.item.kind === 'bellows' && !e.hidden);
+      if (open('horse')?.zone.heat === null && hearth?.zone.items.length) add({ act: 'blow', icon: 'fire', target: bellows?.id ?? hearth.id, keys: [bellows?.id, hearth.id], at: bellows?.position ?? hearth.position, rank: 0, run: () => work('horse', 'blow') }, REACH + 3);
       const drum = hamlet.round('drum');
       if (drum && !drum.done) {
-        const d = query(state, 'hamletTap', 'position').filter((e) => e.hamletTap.act === 'drum' && near(e.position, REACH + 1)).sort((a, b) => distHb(hp, a.position) - distHb(hp, b.position))[0];
-        if (d) return { act: 'drum', icon: 'drum', target: d.id, run: () => work('drum', 'tap', { which: d.hamletTap.which ?? 0 }) };
+        for (const e of query(state, 'hamletTap', 'position')) if (e.hamletTap.act === 'drum') add({ act: 'drum', icon: 'drum', target: e.id, at: e.position, rank: 0, run: () => work('drum', 'tap', { which: e.hamletTap.which ?? 0 }) }, REACH + 1);
       }
       const ducks = hamlet.round('ducks');
       const jar = getEntity(state, 'hamlet:jar');
-      if (ducks && !ducks.done && !ducks.eat && jar && near(jar.position, REACH + 1)) return { act: 'pour', icon: 'jar', target: jar.id, hold: true, run: () => hold(true) };
+      if (ducks && !ducks.done && !ducks.eat && jar) {
+        add({ act: 'pour', icon: 'jar', target: jar.id, at: jar.position, rank: 0, hold: true, run: () => work('ducks', 'pour'), release: () => { if (hamlet.round('ducks')?.pouring) work('ducks', 'stop'); } }, REACH + 1);
+      }
+      // A stake of a plot of a choose round of the planting: the choice of that plot.
+      const round = getEntity(state, 'zone:trial-plant')?.zone.round;
+      if (round && !round.anim && plotsOf(state)[0]?.plot.form === 'choose') {
+        for (const e of query(state, 'plotPart', 'position')) {
+          if (e.plotPart.which !== 'plot' && e.plotPart.which !== 'decoy') continue;
+          add({ act: 'choose', icon: 'check', target: e.id, at: e.position, rank: 0, run: () => work('plant', 'choose', { plot: e.plotPart.plot, which: e.plotPart.which }) }, REACH + 1);
+        }
+      }
+      // The standing culms of the staffs: while the button is down, the mark of the slash goes up
+      // the culm; when it goes up, the slash is at the mark.
+      const staffs = open('staffs');
+      if (staffs && !staffs.zone.cut) {
+        for (const e of query(state, 'item', 'position')) {
+          if (e.item.kind !== 'culm' || e.hidden) continue;
+          const culm = e.item.slot;
+          add({ act: 'slash', icon: 'knife', target: e.id, at: e.position, rank: 0, hold: true, run: () => work('staffs', 'aim', { culm }), release: () => work('staffs', 'slash', { culm }) }, REACH + 2);
+        }
+      }
+      // The stem of the woodcutter: a chalk mark at the place in front of the hero (or at the place
+      // of the tap); with a mark there, the mark comes away.
+      const wood = open('woodcutter');
+      const stem = getEntity(state, 'stem:woodcutter');
+      if (wood && stem && !stem.hidden && !wood.zone.cut) {
+        const s = wood.zone.stem;
+        const tapped = chosen?.id === stem.id && chosen.along !== null ? chosen.along : null;
+        const at = Math.max(1, Math.min(s.length - 1, tapped ?? Math.round(frontOf(hp).x - s.x)));
+        const point = { x: s.x + at, z: s.z };
+        const marked = wood.zone.marks.includes(at);
+        add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z }, run: () => work('woodcutter', 'mark', { at }) }, REACH + 2);
+      }
+      // The hands: pick up a thing (on a span, only its last plank); take one back from a place.
+      for (const e of query(state, 'item', 'position')) {
+        if (e.hidden || e.item.held || e.item.set || e.item.fixed) continue;
+        const zone = zoneOf(e.item.zone);
+        const rule = zone?.zone.rule;
+        if (rule === 'span') {
+          if (!canTake(zone.zone, e.id)) continue;
+          add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [e.id, zone.id], at: zone.position, rank: 1, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
+          continue;
+        }
+        if (zone && rule !== 'heap' && rule !== 'pile') continue;
+        add({ act: 'pick', icon: 'hand-pick', target: e.id, at: middleOf(e), size: (e.item.size ?? 0) / 2, rank: 1, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
+      }
+      // Take back: the last thing put on a place (on a line or in the stream: the thing in front),
+      // from where the hero stands to put (the opposite of a put).
+      const front = frontOf(hp);
+      for (const z of query(state, 'zone')) {
+        if (!TAKE_BACK.has(z.zone.rule)) continue;
+        const things = z.zone.items.map((id) => getEntity(state, id)).filter((e) => e && !e.hidden && !e.item.held && !e.item.set && !e.item.fixed && canTakeWork(state, e));
+        if (!things.length) continue;
+        const spread = z.zone.rule === 'line' || z.zone.rule === 'spots';
+        const e = spread ? things.reduce((a, b) => (distHb(front, b.position) < distHb(front, a.position) ? b : a)) : things[things.length - 1];
+        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [z.id, ...things.map((x) => x.id)], at: spread ? e.position : z.position, rank: 1.5, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH + 2);
+      }
+      // Nghé: get on its back (only when nothing else is in reach).
+      const nghe = query(state, 'follow', 'position').find((e) => e.follow?.target === 'hero' && !e.hidden);
+      if (nghe && !raidOn()) add({ act: 'ride', icon: 'ride', target: nghe.id, at: nghe.position, rank: 6, run: () => worldCommand(state, { type: 'ride', id: 'hero', mount: nghe.id }) }, REACH + 2);
+      return out;
     }
-    // The hands: put the thing in reach of a place, or pick up the nearest thing.
-    if (held) return { act: 'put', icon: 'hand-put', target: held.id, run: handsKey };
-    const thing = nearestThing(hp);
-    return thing ? { act: 'pick', icon: 'hand-pick', target: thing.id, run: handsKey } : null;
+    // A thing in the hands: the places that take it (a ghost shows where it goes on a line).
+    const front = frontOf(hp);
+    for (const z of query(state, 'zone')) {
+      const zone = z.zone;
+      if (!canPut(zone, held)) continue;
+      const put = (at, opts = {}) => worldCommand(state, { type: 'put', id: 'hero', zone: zone.id, ...(at ? { at } : {}), ...opts });
+      if (zone.rule === 'span') {
+        const before = zone.items.reduce((a, id) => a + (getEntity(state, id)?.item.size ?? 0), 0);
+        const slot = spanSlot(zone, before, held.item.size);
+        add({ act: 'put', icon: 'hand-put', target: z.id, at: z.position, rank: 0, ghost: { look: held.look, x: slot.x, y: slot.y, z: slot.z, facing: 0 }, run: () => put(null) }, REACH);
+      } else if (zone.rule === 'line') {
+        if (trialZone('fisher')?.zone.tide?.phase !== 'low') continue;
+        const tapped = chosen?.id === z.id && chosen.along !== null ? chosen.along : null;
+        const slot = Math.max(1, Math.min(zone.length, tapped ?? Math.round(front.x - zone.x)));
+        if (zone.items.some((id) => getEntity(state, id)?.item.slot === slot)) continue;
+        const at = { x: zone.x + slot, z: zone.z };
+        add({ act: 'put', icon: 'hand-put', target: z.id, at, rank: 0, ghost: { look: held.look, x: at.x, y: zone.y, z: at.z, facing: 0 }, run: () => put(at) }, REACH + 2);
+      } else if (zone.rule === 'spots') {
+        const tapped = chosen?.id === z.id && chosen.along !== null && freeSlot(state, zone, zone.slots[chosen.along]) === chosen.along ? chosen.along : null;
+        const k = tapped ?? freeSlot(state, zone, front);
+        if (k < 0) continue;
+        const at = { x: zone.slots[k].x, z: zone.slots[k].z };
+        add({ act: 'put', icon: 'hand-put', target: z.id, at, rank: 0, ghost: { look: held.look, x: at.x, y: zone.y, z: at.z, facing: 0 }, run: () => put(at) }, REACH + 2);
+      } else if (zone.rule === 'pile') {
+        // A pile is long: near the pile or near one of its planks.
+        // A tap on a plank of the pile makes the pile the target too.
+        const near = [z.position, ...zone.items.map((id) => getEntity(state, id)).filter(Boolean).map(middleOf)];
+        const at = near.reduce((a, b) => (distHb(hp, b) < distHb(hp, a) ? b : a));
+        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at, rank: 0.5, run: () => put(null) }, REACH + 3);
+      } else if (zone.rule === 'heap') {
+        if (held.item.home !== zone.id) continue;
+        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: z.position, rank: 0.5, run: () => put(null) }, REACH + 2);
+      } else if (zone.rule === 'road') {
+        continue;
+      } else {
+        if (zone.rule === 'hearth' && trialZone('horse')?.zone.heat !== null) continue;
+        add({ act: 'put', icon: 'hand-put', target: z.id, at: z.position, rank: 0, run: () => put(null) }, REACH + 2);
+      }
+    }
+    // Anywhere else: put it down on the ground in front of the hero.
+    out.push({ act: 'put', icon: 'hand-put', target: held.id, keys: [], at: hp, d: 0, rank: 10, run: () => worldCommand(state, { type: 'drop', id: 'hero' }) });
+    return out;
   }
-  // The action button (or Space): do the action of the hands, and the thing pulses once.
+
+  // The target of the action button now (docs/TASKS.md): the thing in reach in front of the hero
+  // that the button can act on, the target of the last tap first. On Nghé, the only target is
+  // the way down. null: the button is dim.
+  function action() {
+    const h = hero();
+    if (screen || busy || h.fall) return null;
+    if (raidOn()) return raidAction();
+    if (h.riding) return { act: 'ride-off', icon: 'ride-off', target: h.riding, run: () => worldCommand(state, { type: 'ride', id: 'hero' }) };
+    const list = candidates();
+    if (!list.length) return null;
+    const f = h.position.facing ?? 0;
+    const score = (c) => {
+      const dx = c.at.x - h.position.x;
+      const dz = c.at.z - h.position.z;
+      const len = Math.hypot(dx, dz);
+      // In front of the hero comes first; behind the hero comes last.
+      const front = len < 0.5 ? 1 : (dx * Math.sin(f) + dz * Math.cos(f)) / len;
+      const turn = front < -0.2 ? 6 : front < 0.4 ? 2 : 0;
+      const tapped = chosen && c.keys.includes(chosen.id) ? 8 : 0;
+      return Math.max(0, c.d) + c.rank * 0.5 + turn - tapped;
+    };
+    return list.reduce((a, b) => (score(b) < score(a) ? b : a));
+  }
+  // The action button (or Space): do the act of the target, and the target pulses once. An act
+  // that goes on while the button is down starts here, and ends with the hold of the button.
   function act() {
     const a = action();
     if (!a) return;
+    if (a.hold) return hold(true);
     a.run();
     emit({ type: 'pulse', id: a.target });
   }
 
   // The cue: when the child does nothing for CUE_IDLE seconds in a task, the thing to touch next
   // glows softly (the first rung of help; docs/TASKS.md). It shows how to go on, never how many:
-  // the place of the thing in the hands; the glowing iron; the heap of a place that needs more
-  // (the forge, the trough); the heap of a place that is still empty. It stops when the child acts.
+  // the place of the thing in the hands; the glowing iron; the heap of a place that is still
+  // empty. It stops when the child acts.
   let idleT = 0;
   let cue = [];
   // ids: the things that glow; a place (a zone) glows as a soft disc on the ground (spots, in half
   // blocks: { x, z, r }).
+  // A place on the ground (half blocks: { x, y, z, r }) for the glow of a zone.
+  const spotOf = (z) => {
+    const r = z.rect;
+    return r ? { x: (r.x0 + r.x1) / 2, y: z.y, z: (r.z0 + r.z1) / 2, r: Math.max(r.x1 - r.x0, r.z1 - r.z0) / 2 } : { x: z.x, y: z.y, z: z.z, r: 2 };
+  };
   function setCue(ids) {
     if (ids.join() === cue.join()) return;
     cue = ids;
-    const spots = ids.map((id) => getEntity(state, id)?.zone).filter(Boolean).map((z) => {
-      const r = z.rect;
-      return r ? { x: (r.x0 + r.x1) / 2, y: z.y, z: (r.z0 + r.z1) / 2, r: Math.max(r.x1 - r.x0, r.z1 - r.z0) / 2 } : { x: z.x, y: z.y, z: z.z, r: 2 };
-    });
+    const spots = ids.map((id) => getEntity(state, id)?.zone).filter(Boolean).map(spotOf);
     emit({ type: 'cue', ids, spots });
   }
   function acted() {
@@ -1574,14 +1597,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The iron while it glows (the smith and the iron horse).
     for (const id of ['smith', 'horse']) {
       const tz = trialZone(id);
-      const iron = tz && !tz.zone.done && tz.zone.heat !== null && !tz.zone.bent ? getEntity(state, tz.zone.iron ?? 'iron:smith') : null;
+      const iron = tz && !tz.zone.done && tz.zone.heat !== null && !tz.zone.bent && !tz.zone.demo ? getEntity(state, tz.zone.iron ?? 'iron:smith') : null;
       if (iron && `trial-${id}` === owner && (iron.glow ?? 0) >= (trialDef(id)?.glow?.hot ?? 1)) return [iron.id];
     }
     // The woodcutter: the stem, before the first chalk mark.
     const wood = owner === 'trial-woodcutter' ? trialZone('woodcutter') : null;
     if (wood && !wood.zone.done && !wood.zone.marks?.length && !wood.zone.cut) return ['stem:woodcutter'];
-    // A place that needs more (the forge, the trough), or a place that is still empty: its heap.
-    const needs = (z) => (z.zone.rule === 'forge' ? z.zone.items.length < z.zone.need : z.zone.rule === 'trough' ? !z.zone.full : !z.zone.items.length && !z.zone.set);
+    // A place that is still empty: its heap.
+    const needs = (z) => z.zone.rule !== 'forge' && z.zone.rule !== 'trough' && !z.zone.items.length && !z.zone.set;
     for (const z of zones) {
       if (z.zone.rule === 'heap' || z.zone.rule === 'trial' || !needs(z)) continue;
       const heap = zones.find((h) => h.zone.rule === 'heap' && !h.id.includes('-stray-') && h.zone.items.length && [].concat(h.zone.accepts).some((k) => fits(z, k)));
@@ -1599,10 +1622,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function tap(target) {
     emit({ type: 'sound', sound: 'tap' });
     if (hero().fall) return;
-    if (target.hero) {
-      if (holding()) worldCommand(state, { type: 'drop', id: 'hero' });
-      return;
-    }
     // The prediction: a tap on the n-th plank outline says that the bridge takes n planks.
     if (target.guess) {
       worldCommand(state, { type: 'guess', id: 'hero', zone: target.guess.zone, n: target.guess.n });
@@ -1628,27 +1647,26 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       worldCommand(state, { type: 'poke', id: target.sleeper });
       return;
     }
-    if (target.plotStake) {
-      tapPlotStake(target.plotStake);
-      return;
-    }
-    if (target.hamlet) {
-      tapHamlet(target.hamlet);
+    // A stake of a plot, the jar of feed, a bronze drum, or the weir: the hero walks there.
+    const part = target.plotStake ?? target.hamlet;
+    if (part) {
+      const e = getEntity(state, part.id);
+      if (e) goTo(e.position, e.id);
       return;
     }
     if (target.person) {
       const person = persons().find((p) => p.entity === target.person);
       if (!person || (person.kind === 'encounter' && raidOn())) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
-      if (person.kind === 'npc' && tapGift(person)) return;
-      walkToThing(person, () => interact({ kind: person.kind, id: person.ref }, person));
+      chosen = { id: person.entity, along: null };
+      walkToThing(person, () => worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 }));
       return;
     }
     const hit = target.ground;
     if (!hit) return;
     // With empty hands, a tap at the place of a task is a check (the hero walks there and looks).
     if (!holding()) mentoring.checkAt(hit.x * 2, hit.y * 2);
-    if (tapTrialZone(hit) || (raidOn() && tapRaidRoad(hit))) {
+    if (tapTaskPlace(hit) || (raidOn() && tapRaidRoad(hit))) {
       emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.h });
       return;
     }
@@ -1688,6 +1706,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     log('action', { kind: 'walk' });
+    chosen = null;
     // A tap past an edge of the world (the deep sea, the mist): the walk stops at the edge.
     if (edgeAt(tile.x, tile.y)) {
       const stop = edgeStop(from, hit);
@@ -1998,7 +2017,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       emit({ type: type === 'fell' ? 'felled' : 'dug', id: cmd.id ?? null, at: r.at ?? null, kind: r.kind ?? null, drops: r.drops, chunks: r.chunks });
       return;
     }
-    // The hold of the jar of feed: letting go always counts, even while a line shows.
+    // The end of a hold of the button: letting go always counts, even while a line shows.
     if (type === 'hold' && !cmd.on) {
       hold(false);
       return;
@@ -2006,10 +2025,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (busy) return;
     if (type === 'hold') {
       hold(true);
-      return;
-    }
-    if (type === 'drag') {
-      dragThing(cmd);
       return;
     }
     // In a raid, a tap on Nghé is the charge only when Nghé is a tool of this raid.
@@ -2030,7 +2045,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     else if (type === 'travel') queue(() => openCommand(raidOn() ? { open: 'worldmap', pauseKey: data.raids.raids[raidEnt().raid.id].pauseKey ?? null } : { open: 'worldmap' }));
     else if (WORLD.has(type)) {
       // A walk with the stick or the keys ends a walk of a tap.
-      if (type === 'move' && cmd.strength) arrivals.clear();
+      if (type === 'move' && cmd.strength) {
+        arrivals.clear();
+        chosen = null;
+      }
       worldCommand(state, { id: 'hero', ...cmd });
     }
   }
@@ -2078,12 +2096,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     middleOf,
     // Is a place of a task (with its pad) at a map point? A tap there comes before a person.
     taskPlaceAt: (x, y) => Boolean(workZoneAt(x * 2, y * 2)),
-    // A drag of this thing takes it back to its heap (the view starts a drag on it).
-    dragsBack: (id) => Boolean(dragPlace(getEntity(state, id))),
-    // The action of the hands now, for the action button: { act, icon, target, hold } or null.
+    // All that the action button can act on now, with the distance of each (for tests and the
+    // debug panel): [{ act, icon, target, d, rank }].
+    targets: () => (screen || busy ? [] : candidates().map((c) => ({ act: c.act, icon: c.icon, target: c.target, d: Math.round(c.d * 10) / 10, rank: c.rank }))),
+    // The target of the action button now: { act, icon, target, hold, ghost } or null.
     action() {
       const a = action();
-      return a ? { act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold) } : null;
+      if (!a) return null;
+      const zone = getEntity(state, a.target)?.zone;
+      return { act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold), ghost: a.ghost ?? null, spot: zone && zone.rule !== 'span' ? spotOf(zone) : null };
     },
     get state() { return state; },
     get map() { return map; },

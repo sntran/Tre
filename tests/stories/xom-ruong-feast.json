@@ -116,7 +116,7 @@
       "read": true
     },
     {
-      "tap": {
+      "press": {
         "item": "lo",
         "size": 2
       }
@@ -128,7 +128,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "traps-stream"
       }
     },
@@ -139,7 +139,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "lo",
         "size": 2
       }
@@ -151,7 +151,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "traps-stream"
       }
     },
@@ -162,8 +162,8 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:weir"
+      "press": {
+        "entity": "npc:fisher-uncle"
       }
     },
     {
@@ -204,7 +204,7 @@
       "read": true
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 2
       }
@@ -216,7 +216,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -227,7 +227,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 2
       }
@@ -239,7 +239,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -249,11 +249,7 @@
         "timeout": 30
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:planter" } },
     {
       "until": {
         "event": "planted",
@@ -292,9 +288,7 @@
       "read": true
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": { "entity": "hamlet:drum:0" }
     },
     {
       "until": {
@@ -312,9 +306,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -335,9 +327,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -358,9 +348,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -381,9 +369,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -404,9 +390,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -427,9 +411,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -450,9 +432,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -473,9 +453,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -496,9 +474,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -519,9 +495,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {

@@ -5,31 +5,256 @@
     "en": "Practice of the bundles: the link takes An to the teacher, with no prologue; two rounds of bundles, the second one harder; the teacher says thank you, and An goes back."
   },
   "practice": "bo-que",
-  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
   "clock": 540,
-  "at": ["phu-dong", 40, 30],
+  "at": [
+    "phu-dong",
+    40,
+    30
+  ],
   "steps": [
-    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
-    { "expect": [{ "text": { "shown": "dlg.teacher.trial.n1" } }, { "hero": { "near": "npc:teacher", "within": 8 } }] },
-    { "read": true },
-    { "expect": [{ "count": { "entities": "rod", "min": 24 } }, { "zone": "trial-scholar", "state": "open" }] },
-    { "repeat": 2, "steps": [
-      { "repeat": 10, "steps": [{ "tap": { "item": "rod" } }, { "until": { "event": "add", "timeout": 10 } }] },
-      { "tap": { "thing": "band:scholar" } },
-      { "until": { "event": "tie", "timeout": 10 } }
-    ] },
-    { "until": { "event": "open", "with": { "screen": "say", "textKey": "practiceLink.again" }, "timeout": 10 } },
-    { "expect": [{ "flag": "trial.scholar.done", "is": false }, { "practice": { "id": "bo-que", "sets": 0, "level": 1 } }] },
-    { "read": true },
-    { "expect": [{ "count": { "entities": "rod", "min": 37 } }, { "zone": "trial-scholar", "state": "open" }] },
-    { "repeat": 3, "steps": [
-      { "repeat": 10, "steps": [{ "tap": { "item": "rod" } }, { "until": { "event": "add", "timeout": 10 } }] },
-      { "tap": { "thing": "band:scholar" } },
-      { "until": { "event": "tie", "timeout": 10 } }
-    ] },
-    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 10 } },
-    { "expect": [{ "event": "practice", "with": { "id": "bo-que", "sets": 1 } }, { "text": { "shown": "dlg.teacher.practice.end.n1" } }, { "item": "coin", "count": 3 }, { "practice": { "id": "bo-que", "sets": 1, "level": 2 } }] },
-    { "read": [1] },
-    { "expect": [{ "hero": { "cell": [40, 30] } }, { "screen": null }] }
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.teacher.trial.n1"
+          }
+        },
+        {
+          "hero": {
+            "near": "npc:teacher",
+            "within": 8
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "until": {
+        "event": "call",
+        "with": {
+          "key": "mentor.first.you"
+        },
+        "timeout": 15
+      }
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "rod",
+            "min": 24
+          }
+        },
+        {
+          "zone": "trial-scholar",
+          "state": "open"
+        }
+      ]
+    },
+    {
+      "repeat": 2,
+      "steps": [
+        {
+          "repeat": 10,
+          "steps": [
+            {
+              "press": {
+                "item": "rod"
+              }
+            },
+            {
+              "until": {
+                "event": "pick",
+                "timeout": 10
+              }
+            },
+            {
+              "press": {
+                "zone": "mat"
+              }
+            },
+            {
+              "until": {
+                "event": "put",
+                "timeout": 10
+              }
+            }
+          ]
+        },
+        {
+          "press": {
+            "entity": "npc:teacher"
+          }
+        },
+        {
+          "until": {
+            "event": "tie",
+            "timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say",
+          "textKey": "practiceLink.again"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "flag": "trial.scholar.done",
+          "is": false
+        },
+        {
+          "practice": {
+            "id": "bo-que",
+            "sets": 0,
+            "level": 1
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "rod",
+            "min": 37
+          }
+        },
+        {
+          "zone": "trial-scholar",
+          "state": "open"
+        }
+      ]
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "repeat": 10,
+          "steps": [
+            {
+              "press": {
+                "item": "rod"
+              }
+            },
+            {
+              "until": {
+                "event": "pick",
+                "timeout": 10
+              }
+            },
+            {
+              "press": {
+                "zone": "mat"
+              }
+            },
+            {
+              "until": {
+                "event": "put",
+                "timeout": 10
+              }
+            }
+          ]
+        },
+        {
+          "press": {
+            "entity": "npc:teacher"
+          }
+        },
+        {
+          "until": {
+            "event": "tie",
+            "timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "practice",
+          "with": {
+            "id": "bo-que",
+            "sets": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "dlg.teacher.practice.end.n1"
+          }
+        },
+        {
+          "item": "coin",
+          "count": 3
+        },
+        {
+          "practice": {
+            "id": "bo-que",
+            "sets": 1,
+            "level": 2
+          }
+        }
+      ]
+    },
+    {
+      "read": [
+        1
+      ]
+    },
+    {
+      "expect": [
+        {
+          "hero": {
+            "cell": [
+              40,
+              30
+            ]
+          }
+        },
+        {
+          "screen": null
+        }
+      ]
+    }
   ]
 }

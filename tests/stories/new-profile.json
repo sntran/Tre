@@ -12,7 +12,7 @@
     { "expect": [{ "flag": "intro.seen" }, { "screen": "nameFriend" }] },
     { "do": { "type": "closed" } },
     { "expect": [{ "screen": null }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] },
-    { "tap": { "entity": "npc:elder" } },
+    { "press": { "entity": "npc:elder" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 40 } },
     { "expect": [{ "hero": { "near": "npc:elder", "within": 3 } }, { "text": { "shown": "dlg.elder.intro.n1" } }] },
     { "read": true },

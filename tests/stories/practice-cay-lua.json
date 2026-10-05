@@ -29,7 +29,7 @@
       "read": true
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 2
       }
@@ -41,7 +41,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -52,7 +52,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 2
       }
@@ -64,7 +64,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -74,11 +74,7 @@
         "timeout": 30
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:planter" } },
     {
       "until": {
         "event": "planted",
@@ -111,7 +107,7 @@
       "wait": 3
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 5
       }
@@ -123,7 +119,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -134,7 +130,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 5
       }
@@ -146,7 +142,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -157,7 +153,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 5
       }
@@ -169,7 +165,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -179,11 +175,7 @@
         "timeout": 30
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:planter" } },
     {
       "until": {
         "event": "planted",
@@ -213,7 +205,7 @@
       "read": true
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 5
       }
@@ -225,7 +217,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -235,11 +227,7 @@
         "timeout": 30
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:planter" } },
     {
       "until": {
         "event": "planted",
@@ -272,7 +260,7 @@
       "wait": 3
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 3
       }
@@ -284,7 +272,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -295,7 +283,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 3
       }
@@ -307,7 +295,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -318,7 +306,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 3
       }
@@ -330,7 +318,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -341,7 +329,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 3
       }
@@ -353,7 +341,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -363,11 +351,7 @@
         "timeout": 30
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:planter" } },
     {
       "until": {
         "event": "planted",
@@ -400,7 +384,7 @@
       "wait": 3
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 4
       }
@@ -412,7 +396,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -423,7 +407,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 4
       }
@@ -435,7 +419,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -446,7 +430,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 4
       }
@@ -458,7 +442,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -469,7 +453,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 4
       }
@@ -481,7 +465,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -492,7 +476,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 4
       }
@@ -504,7 +488,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -514,11 +498,7 @@
         "timeout": 30
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:planter" } },
     {
       "until": {
         "event": "planted",
@@ -551,7 +531,7 @@
       "wait": 3
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 3
       }
@@ -563,7 +543,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -574,7 +554,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 3
       }
@@ -586,7 +566,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -597,7 +577,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "seedling",
         "size": 3
       }
@@ -609,7 +589,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "plant-edge-p0"
       }
     },
@@ -619,11 +599,7 @@
         "timeout": 30
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:planter" } },
     {
       "until": {
         "event": "planted",
@@ -656,7 +632,7 @@
       "wait": 3
     },
     {
-      "tap": {
+      "press": {
         "entity": "pstake:p0:plot:c0"
       }
     },

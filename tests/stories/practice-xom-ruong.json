@@ -40,7 +40,7 @@
       ]
     },
     {
-      "tap": {
+      "press": {
         "entity": "npc:planter"
       }
     },

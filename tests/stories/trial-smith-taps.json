@@ -8,12 +8,12 @@
   "clock": 540,
   "at": ["phu-dong", 53, 43],
   "steps": [
-    { "tap": { "entity": "npc:smith" } },
+    { "press": { "entity": "npc:smith" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
     { "read": true },
     { "expect": [{ "text": { "shown": "dlg.smith.trial.n1" } }] },
     { "repeat": 10, "steps": [
-      { "tap": { "entity": "npc:smith" } },
+      { "press": { "entity": "npc:smith" } },
       { "wait": 1.5 },
       { "expect": [{ "screen": null }, { "event": "open", "with": { "screen": "dialogue" }, "not": true }, { "event": "mentor", "with": { "key": "trial-smith" } }, { "event": "open", "with": { "screen": "callout" } }] }
     ] }

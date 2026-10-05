@@ -1,8 +1,8 @@
 {
   "name": "practice-ren-sat",
   "about": {
-    "vi": "Luyện tập rèn sắt lúc đêm: đêm trôi qua, buổi thăm bắt đầu lúc sáng sớm ở lò rèn; hai lượt (lượt đầu bác làm mẫu một cục quặng và một xô nước); bác thợ rèn cảm ơn, An về chỗ cũ.",
-    "en": "Practice at the forge at night: the night goes by, and the visit starts in the early morning at the forge; two rounds (in the first round the smith shows one lump of ore and one bucket); the smith says thank you, and An goes back."
+    "vi": "Luyện tập ở lò rèn vào ban đêm: đêm qua đi, buổi luyện bắt đầu lúc sáng sớm ở lò rèn; hai lượt (lượt đầu bác nhúng miếng sắt của bác trước, lượt sau thì không); bác cảm ơn, rồi An trở về.",
+    "en": "Practice at the forge at night: the night goes by, and the visit starts in the early morning at the forge; two rounds (in the first round the smith quenches his own piece first, in the second he does not); the smith says thank you, and An goes back."
   },
   "practice": "ren-sat",
   "profile": {
@@ -63,24 +63,9 @@
     {
       "expect": [
         {
-          "count": {
-            "entities": "ore",
-            "min": 4
-          }
-        }
-      ]
-    },
-    {
-      "until": {
-        "event": "call",
-        "with": {
-          "key": "mentor.first.you"
+          "zone": "forge",
+          "planks": ">= 2"
         },
-        "timeout": 15
-      }
-    },
-    {
-      "expect": [
         {
           "entity": "trough:smith",
           "look": "trough-full"
@@ -88,29 +73,33 @@
       ]
     },
     {
-      "tap": {
-        "item": "ore"
-      }
-    },
-    {
       "until": {
-        "event": "pick",
-        "timeout": 15
+        "event": "hiss",
+        "timeout": 30
       }
     },
     {
-      "tap": {
-        "zone": "forge"
-      }
+      "expect": [
+        {
+          "event": "call",
+          "with": {
+            "key": "smith.quench.show"
+          }
+        },
+        {
+          "event": "skill",
+          "not": true
+        }
+      ]
     },
     {
       "until": {
         "event": "fire",
-        "timeout": 15
+        "timeout": 10
       }
     },
     {
-      "tap": {
+      "press": {
         "thing": "iron:smith"
       }
     },
@@ -124,9 +113,7 @@
       "wait": 4.5
     },
     {
-      "tap": {
-        "thing": "iron:smith"
-      }
+      "press": true
     },
     {
       "until": {
@@ -148,70 +135,22 @@
       "read": true
     },
     {
+      "wait": 0.5
+    },
+    {
       "expect": [
         {
           "entity": "trough:smith",
-          "look": "trough"
+          "look": "trough-full"
         },
         {
-          "count": {
-            "entities": "ore",
-            "min": 4
-          }
+          "zone": "forge",
+          "planks": ">= 2"
         }
       ]
     },
     {
-      "repeat": 2,
-      "steps": [
-        {
-          "tap": {
-            "item": "ore"
-          }
-        },
-        {
-          "until": {
-            "event": "pick",
-            "timeout": 15
-          }
-        },
-        {
-          "tap": {
-            "zone": "forge"
-          }
-        },
-        {
-          "until": {
-            "event": "put",
-            "timeout": 15
-          }
-        }
-      ]
-    },
-    {
-      "tap": {
-        "item": "bucket"
-      }
-    },
-    {
-      "until": {
-        "event": "pick",
-        "timeout": 40
-      }
-    },
-    {
-      "tap": {
-        "zone": "trough"
-      }
-    },
-    {
-      "until": {
-        "event": "fire",
-        "timeout": 40
-      }
-    },
-    {
-      "tap": {
+      "press": {
         "thing": "iron:smith"
       }
     },
@@ -225,9 +164,7 @@
       "wait": 4.5
     },
     {
-      "tap": {
-        "thing": "iron:smith"
-      }
+      "press": true
     },
     {
       "until": {

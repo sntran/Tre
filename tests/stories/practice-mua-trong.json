@@ -29,9 +29,7 @@
       "read": true
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": { "entity": "hamlet:drum:0" }
     },
     {
       "until": {
@@ -49,9 +47,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -72,9 +68,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -95,9 +89,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -118,9 +110,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -141,9 +131,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -164,9 +152,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -187,9 +173,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -210,9 +194,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -233,9 +215,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -256,9 +236,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -301,9 +279,7 @@
       "wait": 3
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -321,9 +297,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -344,9 +318,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -367,9 +339,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -387,9 +357,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -410,9 +378,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -433,9 +399,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -456,9 +420,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -479,9 +441,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -502,9 +462,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -525,9 +483,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -548,9 +504,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -593,9 +547,7 @@
       "wait": 3
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -613,9 +565,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -636,9 +586,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -659,9 +607,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -682,9 +628,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -705,9 +649,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {
@@ -728,9 +670,7 @@
       }
     },
     {
-      "tap": {
-        "entity": "hamlet:drum:0"
-      }
+      "press": true
     },
     {
       "until": {

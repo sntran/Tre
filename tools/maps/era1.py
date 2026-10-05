@@ -112,30 +112,28 @@ A.places = {
     'bridge-pile': {'x': 24.5, 'y': 31.25},
     'bridge-guess': {'x': 18.5, 'y': 32},
     # The things of the Five Trials (data/trials.json), near each person: the heap of counting
-    # rods and the mat in the school yard; the ore, the forge, the anvil, and the trough in the
-    # yard of the smith, and the bucket at the well; the stakes on the sand and the line of the
+    # rods and the mat in the school yard; the forge, the anvil, and the trough in the yard of
+    # the smith; the stakes on the sand and the line of the
     # fish trap in the river by the fisher; the three herb beds and the basket in the yard of
     # the healer; the fallen bamboo stem by the woodcutter, and the wood pile by the bridge.
-    'school-rods': {'x': 25.3, 'y': 13.05},
-    'school-mat': {'x': 27.6, 'y': 13.1},
-    'smith-ore': {'x': 25.2, 'y': 21.9},
+    'school-rods': {'x': 25.6, 'y': 13.05},
+    'school-mat': {'x': 27.0, 'y': 13.1},
     'smith-forge': {'x': 24.3, 'y': 20.1},
     'smith-anvil': {'x': 27.1, 'y': 21.5},
     'smith-trough': {'x': 26.6, 'y': 22.4},
-    'horse-ore': {'x': 24.4, 'y': 22.8},
-    'well-bucket': {'x': 21.0, 'y': 10.0},
-    'fisher-stakes': {'x': 10.5, 'y': 31.7},
+    'horse-ore': {'x': 24.4, 'y': 21.5},
+    'fisher-stakes': {'x': 11.0, 'y': 32.2},
     'fisher-line': {'x': 12.0, 'y': 33.25},
     'healer-bed-1': {'x': 13.2, 'y': 21.4},
     'healer-bed-2': {'x': 14.7, 'y': 21.4},
     'healer-bed-3': {'x': 16.2, 'y': 21.4},
-    'healer-basket': {'x': 17.6, 'y': 20.7},
+    'healer-basket': {'x': 14.7, 'y': 22.6},
     'woodcutter-stem': {'x': 26.6, 'y': 3.6},
     'staffs-clump': {'x': 12.5, 'y': 16.25},
     'woodpile': {'x': 26.1, 'y': 30.2},
     # Rice for Gióng: the trays of bowls on the path of the paddies, and the pot in front of the
     # house of Gióng.
-    'rice-trays': {'x': 8.8, 'y': 16.6},
+    'rice-trays': {'x': 9.8, 'y': 14.4},
     'giong-pot': {'x': 10.7, 'y': 13.2},
     'buffalo-shade': {'x': 37.6, 'y': 17.5},
 }
@@ -147,7 +145,7 @@ A.npcs = [
     {'id': 'grandma', 'x': 4.5, 'y': 12.7},
     {'id': 'mother', 'x': 11.5, 'y': 12.7},
     {'id': 'giong-boy', 'x': 9.6, 'y': 12.9},
-    {'id': 'teacher', 'x': 26.5, 'y': 12.7},
+    {'id': 'teacher', 'x': 28.1, 'y': 12.6},
     {'id': 'elder', 'x': 15.5, 'y': 12.8},
     {'id': 'messenger', 'x': 17.7, 'y': 12.9},
     {'id': 'smith', 'x': 26.5, 'y': 20.7},
@@ -392,7 +390,7 @@ E.places = {
     'duck-jar': {'x': 17.0, 'y': 5.3},
     # The fish traps: the traps of the fisher on the bank, the first spot for a trap in the stream
     # (the spots go down the stream from it), and the small weir upstream of the bridge.
-    'trap-pile': {'x': 22.2, 'y': 13.6},
+    'trap-pile': {'x': 22.9, 'y': 13.5},
     'trap-spots': {'x': 24.3, 'y': 13.2},
     'weir': {'x': 24.9, 'y': 7.5},
     # The drum dance: the bronze drums of the child, and the first dancer of the line in the yard

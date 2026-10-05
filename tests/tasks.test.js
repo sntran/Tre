@@ -1,122 +1,186 @@
-// The table of the tasks (docs/TASKS.md): for each trial, the tap of each thing does its one job,
-// the finish works with the action button, and the undo works. Each row plays a short story
-// headless (tests/story-run.js).
+// The table of the tasks (docs/TASKS.md): one action button does every step of every task. A tap
+// only walks, and makes a thing the target. For each task: at each target, the act and the picture
+// of the button; one press is one thing; empty hands at a place take one back; the finish at the
+// person. Each row plays a short story headless (tests/story-run.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { runHeadless } from './story-run.js';
 
 const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
 // The start of a trial: the talk of the person, and the first step that the person shows.
+const FIRST = { woodcutter: 'mentor.woodcutter.first', smith: 'smith.quench.watch' };
 const start = (npc) => [
-  { tap: { entity: `npc:${npc}` } },
+  { press: { entity: `npc:${npc}` } },
   { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 20 } },
   { read: true },
-  { until: { event: 'call', with: { key: npc === 'woodcutter' ? 'mentor.woodcutter.first' : 'mentor.first.you' }, timeout: 15 } },
+  { until: { event: 'call', with: { key: FIRST[npc] ?? 'mentor.first.you' }, timeout: 15 } },
 ];
-const carry = (item, zone) => [{ tap: { item } }, { until: { event: 'pick', timeout: 15 } }, { tap: { zone } }, { until: { event: 'put', timeout: 15 } }];
+const carry = (item, zone) => [{ press: { item } }, { until: { event: 'pick', timeout: 15 } }, { press: { zone } }, { until: { event: 'put', timeout: 15 } }];
 
 async function play(name, at, steps) {
   const failures = await runHeadless({ name, profile, clock: 540, at: ['phu-dong', ...at], steps });
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
 }
 
-test('the teacher: a tap on a rod of the heap puts it on the mat; a tap on the rods on the mat ties; a drag to the heap takes a rod back', async () => {
+test('the teacher: the button picks up one rod at the heap and puts it on the mat; with empty hands at the mat it takes one back; at the teacher, the teacher ties', async () => {
   await play('task-teacher', [54, 27], [
     ...start('teacher'),
     // The teacher showed the first step and took the rod back: the mat is empty.
     { expect: [{ zone: 'mat', planks: 0 }] },
-    { tap: { thing: 'rod:scholar:2' } },
-    { until: { event: 'add', timeout: 10 } },
-    { expect: [{ zone: 'mat', planks: 1 }, { action: { act: 'tie', icon: 'rope' } }] },
-    { do: { type: 'drag', item: 'rod:scholar:2', zone: 'rods' } },
-    { until: { event: 'back', timeout: 10 } },
-    { expect: [{ zone: 'mat', planks: 0 }] },
-    { tap: { thing: 'rod:scholar:3' } },
-    { until: { event: 'add', timeout: 10 } },
-    { tap: { thing: 'rod:scholar:3' } },
+    { press: { thing: 'rod:scholar:2' } },
+    { until: { event: 'pick', timeout: 10 } },
+    { expect: [{ hero: { holding: true } }, { zone: 'mat', planks: 0 }] },
+    { tap: { zone: 'mat' } },
+    { wait: 2 },
+    { expect: [{ action: { act: 'put', icon: 'hand-put' } }] },
+    { press: true },
+    { until: { event: 'put', timeout: 10 } },
+    { expect: [{ zone: 'mat', planks: 1 }, { hero: { holding: false } }, { action: { act: 'pick', icon: 'hand-pick' } }] },
+    // Empty hands at the mat: one rod comes back into the hands, and goes back on the heap.
+    { press: { zone: 'mat' } },
+    { until: { event: 'pick', timeout: 10 } },
+    { expect: [{ zone: 'mat', planks: 0 }, { hero: { holding: true } }] },
+    { press: { zone: 'rods' } },
+    { until: { event: 'put', timeout: 10 } },
+    ...carry('rod', 'mat'),
+    { press: { entity: 'npc:teacher' } },
     { until: { event: 'snap', timeout: 10 } },
-    { expect: [{ event: 'skill', with: { solved: false, parts: [1] } }] },
+    { expect: [{ event: 'skill', with: { solved: false, parts: [1] } }, { event: 'pulse', with: { id: 'npc:teacher' } }] },
   ]);
 });
 
-test('the smith: a tap on the forge with ore in the hands puts the ore; the action button quenches the glowing iron', async () => {
+test('the smith: the fire is ready at the start; the smith quenches his own piece; the button quenches the iron of the child at the anvil', async () => {
   await play('task-smith', [53, 43], [
-    ...start('smith'),
-    ...carry('ore', 'forge').slice(0, 3),
-    { until: { event: 'fire', timeout: 15 } },
-    { expect: [{ action: { act: 'quench', icon: 'water' } }] },
+    { press: { entity: 'npc:smith' } },
+    { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 20 } },
+    { read: true },
+    // The ore is in the forge and the water is in the trough: no heap, no bucket.
+    { expect: [{ zone: 'forge', planks: '>= 2' }, { count: { entities: 'bucket', max: 0 } }, { entity: 'trough:smith', look: 'trough-full' }] },
+    { tap: { thing: 'iron:smith-demo' } },
+    { until: { event: 'hiss', timeout: 20 } },
+    { expect: [{ event: 'call', with: { key: 'smith.quench.show' } }, { event: 'skill', not: true }, { flag: 'trial.smith.done', is: false }] },
+    { until: { event: 'fire', timeout: 10 } },
+    { tap: { thing: 'iron:smith' } },
     { until: { event: 'glow', timeout: 15 } },
-    { do: { type: 'hands' } },
+    { expect: [{ action: { act: 'quench', icon: 'water' } }] },
+    { press: true },
     { until: { event: 'hiss', timeout: 5 } },
     { expect: [{ event: 'pulse', with: { id: 'iron:smith' } }, { flag: 'trial.smith.done' }] },
   ]);
 });
 
-test('the healer: a tap on the basket or on a bunch in it gives the basket, and so does the action button; a drag of a bunch to its bed takes it back', async () => {
+test('the healer: the button puts a bunch into the basket, takes one back with empty hands, and at the healer the healer takes the basket', async () => {
   await play('task-healer', [33, 44], [
     ...start('healer'),
     // The healer showed the first step and took the bunch back: the basket is empty.
     { expect: [{ zone: 'basket', planks: 0 }] },
-    { tap: { thing: 'herb-ngai:healer:1' } },
-    { until: { event: 'pick', timeout: 15 } },
-    { tap: { zone: 'basket' } },
-    { until: { event: 'put', timeout: 15 } },
-    { tap: { thing: 'herb-ngai:healer:2' } },
-    { until: { event: 'pick', timeout: 15 } },
-    { tap: { zone: 'basket' } },
-    { until: { event: 'put', timeout: 15 } },
-    { expect: [{ zone: 'basket', planks: 2 }, { action: { act: 'give', icon: 'basket' } }] },
-    { do: { type: 'drag', item: 'herb-ngai:healer:2', zone: 'bed-ngai' } },
-    { until: { event: 'back', timeout: 10 } },
-    { expect: [{ zone: 'basket', planks: 1 }, { hero: { holding: false } }] },
-    // A tap on the bunch in the basket gives the basket (it never takes the bunch back).
-    { tap: { thing: 'herb-ngai:healer:1' } },
+    ...carry('herb-ngai', 'basket'),
+    ...carry('herb-ngai', 'basket'),
+    { expect: [{ zone: 'basket', planks: 2 }, { hero: { holding: false } }] },
+    // Empty hands at the basket: one bunch comes back into the hands.
+    { press: { zone: 'basket' } },
+    { until: { event: 'pick', timeout: 10 } },
+    { expect: [{ zone: 'basket', planks: 1 }, { hero: { holding: true } }] },
+    { press: { zone: 'basket' } },
+    { until: { event: 'put', timeout: 10 } },
+    { tap: { entity: 'npc:healer' } },
+    { wait: 3 },
+    { expect: [{ action: { act: 'give', icon: 'basket' } }] },
+    { press: true },
     { until: { event: 'nope', timeout: 15 } },
-    { expect: [{ hero: { holding: false } }] },
-    { tap: { thing: 'herb-ngai:healer:3' } },
-    { until: { event: 'pick', timeout: 15 } },
-    { tap: { zone: 'basket' } },
-    { until: { event: 'put', timeout: 15 } },
-    { do: { type: 'hands' } },
-    { until: { event: 'nope', timeout: 15 } },
-    { expect: [{ event: 'pulse', with: { id: 'basket:healer' } }, { flag: 'trial.healer.done', is: false }] },
+    { expect: [{ event: 'pulse', with: { id: 'npc:healer' } }, { flag: 'trial.healer.done', is: false }] },
   ]);
 });
 
-test('the woodcutter: a tap on the stem puts a chalk mark, a tap on the mark takes it away; only the action button cuts', async () => {
+test('the woodcutter: the button puts a chalk mark at the place in front of the hero, takes it away at a mark, and the woodcutter cuts', async () => {
   await play('task-woodcutter', [51, 8.5], [
     ...start('woodcutter'),
-    { expect: [{ action: null }] },
-    { tap: { stem: 3 } },
+    { press: { stem: 3 } },
     { until: { event: 'mark', timeout: 10 } },
-    { expect: [{ count: { entities: 'chalk', min: 1, max: 1 } }, { action: { act: 'cut', icon: 'knife' } }] },
-    { tap: { stem: 3 } },
+    { expect: [{ count: { entities: 'chalk', min: 1, max: 1 } }, { action: { act: 'unmark', icon: 'clear' } }] },
+    { press: { stem: 3 } },
     { until: { event: 'mark', timeout: 10 } },
-    { expect: [{ count: { entities: 'chalk', max: 0 } }] },
-    { tap: { stem: 4 } },
+    { expect: [{ count: { entities: 'chalk', max: 0 } }, { action: { act: 'mark', icon: 'chalk' } }] },
+    { press: { stem: 4 } },
     { until: { event: 'mark', timeout: 10 } },
-    { do: { type: 'hands' } },
+    { press: { entity: 'npc:woodcutter' } },
     { until: { event: 'chop', timeout: 10 } },
-    { expect: [{ event: 'pulse', with: { id: 'stem:woodcutter' } }, { event: 'skill', with: { solved: true } }] },
+    { expect: [{ event: 'pulse', with: { id: 'npc:woodcutter' } }, { event: 'skill', with: { solved: true } }] },
   ]);
 });
 
-test('the fisher: a tap on a stake in the line takes it back while the tide is low', async () => {
+test('the fisher: the button puts a stake on the line at the ghost, and with empty hands at a stake it takes the stake back while the tide is low', async () => {
   await play('task-fisher', [27, 64.5], [
     ...start('fisher'),
     // The fisher showed the first step and took the stake back: the line is empty.
     { expect: [{ zone: 'line', planks: 0 }] },
-    { tap: { thing: 'stake:fisher:2' } },
+    { press: { thing: 'stake:fisher:2' } },
     { until: { event: 'pick', timeout: 15 } },
     { tap: { line: 8 } },
+    { wait: 3 },
+    { expect: [{ action: { act: 'put', icon: 'hand-put', ghost: true } }] },
+    { press: true },
     { until: { event: 'put', timeout: 15 } },
-    { expect: [{ hero: { holding: false } }] },
-    { expect: [{ zone: 'line', planks: 1 }] },
-    { tap: { thing: 'stake:fisher:2' } },
+    { expect: [{ hero: { holding: false } }, { zone: 'line', planks: 1 }] },
+    { press: { thing: 'stake:fisher:2' } },
     { until: { event: 'pick', timeout: 15 } },
-    { expect: [{ hero: { holding: true } }] },
+    { expect: [{ hero: { holding: true } }, { zone: 'line', planks: 0 }] },
   ]);
+});
+
+test('a tap on a rod, the mat, the basket, the stem, or the iron only walks the hero there: it changes nothing in the task', async () => {
+  const quiet = { event: 'pick', not: true };
+  await play('task-taps-teacher', [54, 27], [
+    ...start('teacher'),
+    { tap: { thing: 'rod:scholar:2' } }, { wait: 3 },
+    { tap: { zone: 'mat' } }, { wait: 3 },
+    { expect: [quiet, { event: 'put', not: true }, { event: 'tie', not: true }, { zone: 'mat', planks: 0 }, { hero: { holding: false } }] },
+  ]);
+  await play('task-taps-healer', [33, 44], [
+    ...start('healer'),
+    { tap: { zone: 'basket' } }, { wait: 3 },
+    { expect: [quiet, { event: 'nope', not: true }, { event: 'given', not: true }] },
+  ]);
+  await play('task-taps-woodcutter', [51, 8.5], [
+    ...start('woodcutter'),
+    { tap: { stem: 3 } }, { wait: 3 },
+    { expect: [{ event: 'mark', not: true }, { count: { entities: 'chalk', max: 0 } }] },
+  ]);
+  await play('task-taps-smith', [53, 43], [
+    { press: { entity: 'npc:smith' } },
+    { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 20 } },
+    { read: true },
+    { until: { event: 'fire', timeout: 30 } },
+    { until: { event: 'glow', timeout: 15 } },
+    { tap: { thing: 'iron:smith' } }, { wait: 1 },
+    { expect: [{ event: 'skill', not: true }, { flag: 'trial.smith.done', is: false }] },
+  ]);
+});
+
+test('Nghé: the button gets on Nghé, and on Nghé the button shows the way down and gets off', async () => {
+  await play('task-nghe', [40, 30], [
+    { wait: 2 },
+    { tap: { entity: 'friend:nghe' } },
+    { wait: 2 },
+    { expect: [{ action: { act: 'ride', icon: 'ride' } }] },
+    { press: true },
+    { until: { event: 'mount', timeout: 5 } },
+    { expect: [{ hero: { riding: true } }, { action: { act: 'ride-off', icon: 'ride-off' } }] },
+    { press: true },
+    { until: { event: 'dismount', timeout: 5 } },
+    { expect: [{ hero: { riding: false } }] },
+  ]);
+});
+
+test('every story plays with moves and the action button only: no story taps a thing or a place of a task', () => {
+  const taps = [];
+  for (const f of readdirSync('tests/stories').filter((n) => n.endsWith('.json'))) {
+    const text = readFileSync(`tests/stories/${f}`, 'utf8');
+    for (const m of text.matchAll(/"tap":\s*\{\s*"(item|thing|plank|zone|span|stem|culm|line)"/g)) taps.push(`${f}: ${m[1]}`);
+    for (const m of text.matchAll(/"type":\s*"drag"/g)) taps.push(`${f}: drag ${m.index}`);
+  }
+  assert.deepEqual(taps, []);
 });
 
 test('no two buttons on the screen have the same picture: the action button never shows the wave hand or the jump', () => {
@@ -162,10 +226,10 @@ test('from the first camera angle, no house or roof covers a place of a trial, a
     }
   }
   const smith = trials.find((t) => t.id === 'smith');
-  for (const name of ['ore', 'forge', 'anvil', 'trough'].map((k) => smith.places[k])) assert.deepEqual(covers(places[name], null), [], `something covers the place ${name} of the smith`);
+  for (const name of ['forge', 'anvil', 'trough'].map((k) => smith.places[k])) assert.deepEqual(covers(places[name], null), [], `something covers the place ${name} of the smith`);
 });
 
-test('the things of the trials are solid: the hero walks into the trough, the heap, and the anvil, and stays outside them', async () => {
+test('the things of the trials are solid: the hero walks into the trough and the anvil, and stays outside them', async () => {
   const { getEntity } = await import('../src/core/world/state.js');
   const inside = (p, r) => p.x > r.x0 && p.x < r.x1 && p.z > r.z0 && p.z < r.z1;
   // The hero walks with the stick (dx, dz) for some seconds, then stops.
@@ -173,15 +237,15 @@ test('the things of the trials are solid: the hero walks into the trough, the he
   const bad = [];
   const touched = new Set();
   const failures = await runHeadless({ name: 'task-solid', profile, clock: 540, at: ['phu-dong', 53, 43], steps: [
-    ...start('smith'), ...carry('ore', 'forge').slice(0, 3), { until: { event: 'fire', timeout: 15 } },
-    // From the north into the trough, from the west into the ore heap, from the north into the anvil.
+    { press: { entity: 'npc:smith' } }, { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 20 } }, { read: true },
+    { until: { event: 'hiss', timeout: 30 } }, { until: { event: 'fire', timeout: 10 } },
+    // From the north into the trough, from the north into the anvil.
     { walk: { to: [54.9, 44.1] } }, ...walk(-0.2, 1, 2),
-    { walk: { to: [48.8, 44] } }, ...walk(1, 0, 1),
     { walk: { to: [54.2, 41.6] } }, ...walk(0, 1, 2),
   ] }, { onSession: (s) => {
     s.listen(() => {
       const hero = getEntity(s.state, 'hero');
-      for (const id of ['trough:smith', 'zone:ore', 'iron:smith']) {
+      for (const id of ['trough:smith', 'iron:smith']) {
         const rect = getEntity(s.state, id)?.solid?.rect;
         if (!rect) continue;
         if (inside(hero.position, rect)) bad.push(id);
@@ -199,5 +263,37 @@ test('the things of the trials are solid: the hero walks into the trough, the he
     const o = map.layers.objects.find((x) => x.id === id && x.place === 'phu-dong') ?? map.layers.objects.find((x) => x.id === id);
     assert.ok(o, id);
     assert.ok(tileMap.isBlocked(Math.floor(o.x + o.w / 2), Math.floor(o.y + o.h / 2)), `${id} blocks its cells`);
+  }
+});
+
+test('the heap and the place of a task stand close, and two targets that the child moves between stand at least two blocks apart', async () => {
+  const { planeOf, load } = await import('./helpers.js');
+  const { placesOf } = await import('../src/core/world/env.js');
+  const { map, tileMap } = planeOf(1, { blocks: load('data/world/blocks.json') });
+  const places = placesOf(map, tileMap);
+  // Places are in half blocks; the distances here are in blocks.
+  const apart = (a, b) => Math.hypot(places[a].x - places[b].x, places[a].z - places[b].z) / 2;
+  const NEAR = 4; // one or two steps
+  const MIN = 2;
+  // The trips of each task: the heap (or the beds) and the place that takes the things.
+  const trips = [
+    ['school-rods', 'school-mat'],
+    ['fisher-stakes', 'fisher-line'],
+    ['healer-bed-1', 'healer-basket'], ['healer-bed-2', 'healer-basket'], ['healer-bed-3', 'healer-basket'],
+    ['horse-ore', 'smith-forge'],
+    ['rice-trays', 'giong-pot'],
+    ['trap-pile', 'trap-spots'],
+  ];
+  for (const [heap, place] of trips) {
+    const d = apart(heap, place);
+    assert.ok(d <= NEAR, `${heap} is ${d.toFixed(1)} blocks from ${place}`);
+    assert.ok(d >= MIN, `${heap} is only ${d.toFixed(1)} blocks from ${place}`);
+  }
+  for (const [a, b] of [['healer-bed-1', 'healer-bed-2'], ['healer-bed-2', 'healer-bed-3']]) assert.ok(apart(a, b) >= MIN, `${a} and ${b}`);
+  // The person of the task (the finish) is a target too.
+  for (const [npc, place] of [['teacher', 'school-mat'], ['teacher', 'school-rods'], ['smith', 'smith-anvil'], ['healer', 'healer-basket'], ['woodcutter', 'woodcutter-stem']]) {
+    const n = map.npcs.find((x) => x.id === npc);
+    const d = Math.hypot(places[place].x / 2 - n.x, places[place].z / 2 - n.y);
+    assert.ok(d >= MIN, `${npc} is only ${d.toFixed(1)} blocks from ${place}`);
   }
 });

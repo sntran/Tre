@@ -26,7 +26,7 @@
       "wait": 0.5
     },
     {
-      "tap": {
+      "press": {
         "entity": "event:flood"
       }
     },
@@ -61,7 +61,7 @@
       "repeat": 5,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "pails"
           }
         },
@@ -72,7 +72,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "event-flood-place"
           }
         },
@@ -84,11 +84,7 @@
         }
       ]
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "event:flood" } },
     {
       "until": {
         "event": "open",

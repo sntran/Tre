@@ -58,7 +58,16 @@
       ]
     },
     {
-      "tap": {
+      "until": {
+        "event": "call",
+        "with": {
+          "key": "mentor.first.you"
+        },
+        "timeout": 15
+      }
+    },
+    {
+      "press": {
         "item": "stake"
       }
     },
@@ -69,7 +78,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "line": 8
       }
     },
@@ -80,7 +89,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "stake"
       }
     },
@@ -91,7 +100,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "line": 16
       }
     },
@@ -117,7 +126,7 @@
       "wait": 4
     },
     {
-      "tap": {
+      "press": {
         "item": "stake"
       }
     },
@@ -128,7 +137,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "line": 12
       }
     },
@@ -178,7 +187,7 @@
       ]
     },
     {
-      "tap": {
+      "press": {
         "item": "stake"
       }
     },
@@ -189,7 +198,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "line": 8
       }
     },
@@ -200,7 +209,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "stake"
       }
     },
@@ -211,7 +220,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "line": 16
       }
     },
@@ -237,7 +246,7 @@
       "wait": 4
     },
     {
-      "tap": {
+      "press": {
         "item": "stake"
       }
     },
@@ -248,7 +257,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "line": 12
       }
     },

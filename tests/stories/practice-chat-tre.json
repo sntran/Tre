@@ -58,7 +58,7 @@
       ]
     },
     {
-      "tap": {
+      "press": {
         "stem": 3
       }
     },
@@ -68,11 +68,7 @@
         "timeout": 10
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:woodcutter" } },
     {
       "until": {
         "event": "snap",
@@ -83,7 +79,7 @@
       "wait": 2
     },
     {
-      "tap": {
+      "press": {
         "stem": 4
       }
     },
@@ -93,11 +89,7 @@
         "timeout": 10
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:woodcutter" } },
     {
       "until": {
         "event": "chop",
@@ -105,7 +97,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "sticks"
       }
     },
@@ -116,7 +108,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "woodpile"
       }
     },
@@ -148,7 +140,7 @@
       ]
     },
     {
-      "tap": {
+      "press": {
         "stem": 3
       }
     },
@@ -158,11 +150,7 @@
         "timeout": 60
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:woodcutter" } },
     {
       "until": {
         "event": "snap",
@@ -173,7 +161,7 @@
       "wait": 2
     },
     {
-      "tap": {
+      "press": {
         "stem": 4
       }
     },
@@ -183,11 +171,7 @@
         "timeout": 10
       }
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "npc:woodcutter" } },
     {
       "until": {
         "event": "chop",
@@ -195,7 +179,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "item": "sticks"
       }
     },
@@ -206,7 +190,7 @@
       }
     },
     {
-      "tap": {
+      "press": {
         "zone": "woodpile"
       }
     },

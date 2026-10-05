@@ -177,6 +177,17 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   let glowing = new Set();
   let glowSpots = [];
   let glowT = 0;
+  // The target of the action button: a thicker ink outline and a soft, still light under it (or on
+  // its place); a ghost: a pale figure where a thing will go on a line (docs/TASKS.md).
+  const lightMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(C.diep), transparent: true, opacity: 0.55, depthWrite: false, depthTest: false });
+  const light = new THREE.InstancedMesh(disc, lightMat, 1);
+  light.frustumCulled = false;
+  light.count = 0;
+  light.renderOrder = 9;
+  scene.add(light);
+  let targetId = null;
+  let targetSpot = null;
+  let ghost = null; // { look, x, y, z, facing } in half blocks
   // Dust puffs: small pale boxes behind a running hero.
   const dust = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.paperDeep), transparent: true, opacity: 0.7, depthWrite: false }), MAX_PUFFS);
   dust.frustumCulled = false;
@@ -235,7 +246,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     sync(world) {
       const seen = new Set();
       wind = world.wind ?? null;
-      for (const e of world.entities) {
+      const ghostEnt = ghost ? { id: 'ghost', ghost: true, look: ghost.look, position: { x: ghost.x, y: ghost.y, z: ghost.z, facing: ghost.facing ?? 0 } } : null;
+      for (const e of ghostEnt ? [...world.entities, ghostEnt] : world.entities) {
         if (!e.position || !e.look || e.hidden) continue;
         seen.add(e.id);
         const p = e.position;
@@ -268,6 +280,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         // The velocity in blocks a second, for the parts that hang.
         f.vel = { x: (e.motion?.vx ?? 0) / 2, z: (e.motion?.vz ?? 0) / 2 };
         f.control = Boolean(e.control);
+        f.ghost = Boolean(e.ghost);
         f.running = (e.motion?.speed ?? 0) > 11;
         // A rider sits on the back of Nghé; a swimmer at the ford is a little lower in the water;
         // in the surf the feet sink into the sand, so that the water comes to the knee.
@@ -296,6 +309,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       let n = 0;
       let s = 0;
       let g = 0;
+      let lit = false;
       glowT += dt;
       const breath = 0.5 - 0.5 * Math.cos((2 * Math.PI * glowT) / GLOW_BEAT);
       glowMat.opacity = 0.3 + 0.4 * breath;
@@ -327,7 +341,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         // A figure deep in the mist is paper: it draws nothing. The hero always draws.
         const mist = f.control ? 0 : mistAt(f.at.x, f.at.z);
         if (mist >= 0.78) continue;
-        const pale = smooth(0, 0.45, mist);
+        // A ghost is pale, as a thing far in the mist.
+        const pale = f.ghost ? 0.6 : smooth(0, 0.45, mist);
         const tint = (rgb) => color.setRGB(rgb[0] + (PAPER_RGB[0] - rgb[0]) * pale, rgb[1] + (PAPER_RGB[1] - rgb[1]) * pale, rgb[2] + (PAPER_RGB[2] - rgb[2]) * pale);
         // The animation goes on for every figure, so that a figure that comes into the view is in
         // step.
@@ -374,13 +389,20 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
           L.body.rotation.z = -Math.sin(a) * f.bend.amount * 0.9;
         }
         L.root.updateMatrixWorld(true);
-        const hull = L.hull;
+        // The target of the button has a thicker outline; a ghost has none.
+        const marked = f.id === targetId;
+        const hull = marked ? L.hull * 2.6 : L.hull;
+        if (marked) {
+          const r = Math.max(0.9, Math.min(1.8, L.height * 0.7));
+          light.setMatrixAt(0, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.05, f.at.z));
+          lit = true;
+        }
         for (const p of L.parts) {
           if (n >= MAX_PARTS) break;
           const [w, h, d] = p.size;
           m4.multiplyMatrices(p.node.matrixWorld, local.makeTranslation(0, p.pivotTop ? -h / 2 : p.pivotBottom ? h / 2 : 0, 0));
           parts.setMatrixAt(n, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
-          hulls.setMatrixAt(n, p.mark || p.noInk ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
+          hulls.setMatrixAt(n, p.mark || p.noInk || f.ghost ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
           parts.setColorAt(n, tint(p.rgb));
           plain.array[n] = p.mark ? 1 : 0;
           n += 1;
@@ -428,6 +450,14 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       }
       glows.count = g;
       glows.instanceMatrix.needsUpdate = true;
+      // A target with no figure (a place): the light lies on the place.
+      if (!lit && targetSpot) {
+        const r = targetSpot.r / 2 + 0.4;
+        light.setMatrixAt(0, tmp.makeScale(r, 1, r).setPosition(targetSpot.x / 2, (targetSpot.y ?? 0) / 2 + 0.05, targetSpot.z / 2));
+        lit = true;
+      }
+      light.count = lit ? 1 : 0;
+      light.instanceMatrix.needsUpdate = true;
       parts.count = n;
       hulls.count = n;
       shadows.count = s;
@@ -460,12 +490,19 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       glowing = new Set(ids);
       glowSpots = spots;
     },
+    // The target of the action button (an entity id, or null), the place of a target with no
+    // figure (spot in half blocks: { x, y, z, r }), and the ghost of a thing on a line.
+    mark(id = null, spot = null, ghostOf = null) {
+      targetId = id;
+      targetSpot = spot;
+      ghost = ghostOf;
+    },
     placeOf(id) {
       const f = figures.get(id);
       return f?.at ? { ...f.at, height: f.height } : null;
     },
     dispose() {
-      for (const m of [parts, hulls, shadows, glows, dust, spray]) {
+      for (const m of [parts, hulls, shadows, glows, light, dust, spray]) {
         scene.remove(m);
         m.material.dispose();
         m.dispose();

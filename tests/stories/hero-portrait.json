@@ -8,7 +8,7 @@
   "at": ["phu-dong", 11.0, 26.6],
   "steps": [
     { "expect": [{ "portrait": { "speaker": "hero", "look": { "skin": "skin4", "hair": "bun", "bottomKind": "skirt", "topKind": "yem", "face": 1 } } }] },
-    { "tap": { "entity": "npc:elder" } },
+    { "press": { "entity": "npc:elder" } },
     { "until": { "event": "open", "with": { "screen": "dialogue", "speaker": "elder" }, "timeout": 40 } },
     { "expect": [{ "text": { "shown": "dlg.elder.intro.n1" } }, { "portrait": { "speaker": "elder", "look": { "hair": "grey", "beard": true }, "mood": "happy" } }] },
     { "read": true },

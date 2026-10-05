@@ -1,8 +1,8 @@
 {
-  "name": "trial-teacher-tap",
+  "name": "trial-teacher-button",
   "about": {
-    "vi": "Thử thách của thầy đồ, bằng những cú chạm rõ ràng: chạm một que trên đống thì que lên chiếu; kéo một que từ chiếu về đống thì que về đống; chạm vào bó que trên chiếu thì buộc bó.",
-    "en": "The trial of the teacher with clear taps: a tap on a rod of the heap puts it on the mat; a drag of a rod from the mat to the heap takes it back; a tap on the rods on the mat ties the bundle."
+    "vi": "Thử thách của thầy đồ chỉ với nút hành động: nhặt từng que ở đống, đặt lên chiếu; tay không ở chiếu thì lấy lại một que và đặt về đống; đến chỗ thầy thì thầy bó que.",
+    "en": "The trial of the teacher with the action button only: pick up a rod at the heap, put it on the mat; with empty hands at the mat, take one rod back and put it on the heap; at the teacher, the teacher ties the rods."
   },
   "profile": {
     "name": "An",
@@ -22,7 +22,7 @@
   ],
   "steps": [
     {
-      "tap": {
+      "press": {
         "entity": "npc:teacher"
       }
     },
@@ -39,59 +39,100 @@
       "read": true
     },
     {
+      "until": {
+        "event": "call",
+        "with": {
+          "key": "mentor.first.you"
+        },
+        "timeout": 15
+      }
+    },
+    {
       "repeat": 10,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "rod"
           }
         },
         {
           "until": {
-            "event": "add",
+            "event": "pick",
+            "timeout": 10
+          }
+        },
+        {
+          "press": {
+            "zone": "mat"
+          }
+        },
+        {
+          "until": {
+            "event": "put",
             "timeout": 10
           }
         }
       ]
     },
     {
-      "do": {
-        "type": "drag",
-        "item": "rod:scholar:9",
+      "press": {
+        "thing": "rod:scholar:9"
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 10
+      }
+    },
+    {
+      "press": {
         "zone": "rods"
       }
     },
     {
       "until": {
-        "event": "back",
+        "event": "put",
         "timeout": 10
       }
     },
     {
       "expect": [
         {
-          "event": "back"
-        },
-        {
           "event": "skill",
           "not": true
+        },
+        {
+          "zone": "mat",
+          "planks": 9
         }
       ]
     },
     {
-      "tap": {
+      "press": {
         "item": "rod"
       }
     },
     {
       "until": {
-        "event": "add",
+        "event": "pick",
         "timeout": 10
       }
     },
     {
-      "tap": {
-        "thing": "rod:scholar:0"
+      "press": {
+        "zone": "mat"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 10
+      }
+    },
+    {
+      "press": {
+        "entity": "npc:teacher"
       }
     },
     {

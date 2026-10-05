@@ -26,7 +26,7 @@
       "wait": 0.5
     },
     {
-      "tap": {
+      "press": {
         "entity": "event:duck"
       }
     },
@@ -55,7 +55,7 @@
       "repeat": 1,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "duck",
             "stray": true
           }
@@ -67,7 +67,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "event-duck-place"
           }
         },
@@ -79,11 +79,7 @@
         }
       ]
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "event:duck" } },
     {
       "until": {
         "event": "open",
@@ -109,7 +105,7 @@
       "repeat": 1,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "duck",
             "stray": false
           }
@@ -121,7 +117,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "event-duck-place"
           }
         },
@@ -133,11 +129,7 @@
         }
       ]
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "event:duck" } },
     {
       "until": {
         "event": "open",
@@ -163,7 +155,7 @@
       "repeat": 1,
       "steps": [
         {
-          "tap": {
+          "press": {
             "item": "duck",
             "stray": false
           }
@@ -175,7 +167,7 @@
           }
         },
         {
-          "tap": {
+          "press": {
             "zone": "event-duck-place"
           }
         },
@@ -187,11 +179,7 @@
         }
       ]
     },
-    {
-      "do": {
-        "type": "hands"
-      }
-    },
+    { "press": { "entity": "event:duck" } },
     {
       "until": {
         "event": "open",

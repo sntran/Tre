@@ -103,7 +103,7 @@ test('a jump during a talk or a task in progress does nothing', async () => {
       { wait: 1 },
       { read: true },
       // A plank in the hands is a task in progress: no jump.
-      { tap: { plank: 4 } },
+      { press: { plank: 4 } },
       { until: { event: 'pick', timeout: 20 } },
       { do: { type: 'jump' } },
       { wait: 1 },

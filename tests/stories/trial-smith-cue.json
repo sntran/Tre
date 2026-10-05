@@ -1,28 +1,147 @@
 {
   "name": "trial-smith-cue",
   "about": {
-    "vi": "Gợi ý của bác thợ rèn: bác làm mẫu bước đầu một lần; khi An đứng yên một lúc thì đống quặng sáng lên; An chạm thì hết sáng; khi sắt đỏ rực mà An đứng yên thì thanh sắt sáng lên.",
-    "en": "The cue of the smith: he shows the first step one time; when An does nothing for a while, the ore heap glows; a tap of An stops the glow; when the iron glows hot and An waits, the iron glows."
+    "vi": "Gợi ý của bác thợ rèn: bác nhúng miếng sắt của bác trước (không có gợi ý trên miếng ấy); khi sắt của An đỏ rực mà An chờ, sắt phát sáng; An nhúng thì hết sáng.",
+    "en": "The cue of the smith: he quenches his own piece first (no glow on it); when the iron of An glows hot and An waits, the iron glows; when An quenches it, the glow stops."
   },
-  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
   "clock": 540,
-  "at": ["phu-dong", 53, 43],
+  "at": [
+    "phu-dong",
+    53,
+    43
+  ],
   "steps": [
-    { "tap": { "entity": "npc:smith" } },
-    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
-    { "read": true },
-    { "until": { "event": "call", "with": { "key": "mentor.first.you" }, "timeout": 15 } },
-    { "expect": [{ "event": "cue", "not": true }] },
-    { "wait": 7 },
-    { "expect": [{ "event": "cue", "with": { "ids": ["ore:smith:1", "ore:smith:2", "ore:smith:3"] } }] },
-    { "tap": { "item": "ore" } },
-    { "until": { "event": "cue", "with": { "ids": [] }, "timeout": 2 } },
-    { "until": { "event": "pick", "timeout": 15 } },
-    { "tap": { "zone": "forge" } },
-    { "until": { "event": "fire", "timeout": 15 } },
-    { "until": { "event": "cue", "with": { "ids": ["iron:smith"] }, "timeout": 20 } },
-    { "do": { "type": "hands" } },
-    { "until": { "event": "hiss", "timeout": 5 } },
-    { "expect": [{ "event": "pulse", "with": { "id": "iron:smith" } }, { "event": "cue", "with": { "ids": [] } }, { "flag": "trial.smith.done" }] }
+    {
+      "press": {
+        "entity": "npc:smith"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 30
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "call",
+          "with": {
+            "key": "smith.quench.show"
+          }
+        },
+        {
+          "event": "skill",
+          "not": true
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "fire",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "cue",
+          "with": {
+            "ids": [
+              "iron:smith-demo"
+            ]
+          },
+          "not": true
+        }
+      ]
+    },
+    {
+      "walk": {
+        "to": [
+          54.2,
+          41.6
+        ]
+      }
+    },
+    {
+      "do": {
+        "type": "move",
+        "dx": 0,
+        "dz": 1,
+        "strength": 1
+      }
+    },
+    {
+      "wait": 0.15
+    },
+    {
+      "do": {
+        "type": "move",
+        "dx": 0,
+        "dz": 0,
+        "strength": 0
+      }
+    },
+    {
+      "until": {
+        "event": "cue",
+        "with": {
+          "ids": [
+            "iron:smith"
+          ]
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "press": true
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "pulse",
+          "with": {
+            "id": "iron:smith"
+          }
+        },
+        {
+          "event": "cue",
+          "with": {
+            "ids": []
+          }
+        },
+        {
+          "flag": "trial.smith.done"
+        }
+      ]
+    }
   ]
 }

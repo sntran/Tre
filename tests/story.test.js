@@ -38,7 +38,7 @@ test('the profile of a story: the flags, the things, the party, the place, the c
   assert.deepEqual([Math.floor(c.x), Math.floor(c.y)], [Math.floor(s.map.spawn.x), Math.floor(s.map.spawn.y)]);
 });
 
-test('the targets of the taps: a cell, a person, a plank of a size, a plank outline, the gap, the last plank, and the hero', () => {
+test('the targets of the taps: a cell, a person, a plank of a size, a plank outline, the gap, and the last plank', () => {
   const s = sessionOf({ name: 't', profile: { flags: { 'intro.seen': true } }, at: ['phu-dong', 46, 61], clock: 540 });
   s.step();
   assert.ok(tapTarget(s, { cell: pd(40, 58) }).target.ground);
@@ -50,7 +50,6 @@ test('the targets of the taps: a cell, a person, a plank of a size, a plank outl
   const gap = tapTarget(s, { zone: 'bridge-gap' });
   assert.ok(gap.target.ground && gap.point.y >= pd(0, 66)[1]);
   assert.equal(tapTarget(s, { span: 'bridge-gap' }), null, 'no plank on the gap yet');
-  assert.deepEqual(tapTarget(s, { hero: true }).target, { hero: true });
 });
 
 test('each kind of fact: true and false', () => {
@@ -141,7 +140,7 @@ test('the laws: no NaN, nothing outside the map, nobody in a blocked cell or dee
   assert.match(laws.step(s).join(), /blocked cell/);
 });
 
-test('each kind of step: do, wait, until, at, tap, read, reload, and expect; a failure names the step', async () => {
+test('each kind of step: do, wait, until, at, press, tap, read, reload, and expect; a failure names the step', async () => {
   let session = null;
   const story = {
     name: 'steps',
@@ -155,7 +154,7 @@ test('each kind of step: do, wait, until, at, tap, read, reload, and expect; a f
       { wait: 0.5 },
       { at: { hour: 9.2 } },
       { expect: [{ clock: { between: [9.19, 9.25] } }] },
-      { tap: { entity: 'npc:grandma' } },
+      { press: { entity: 'npc:grandma' } },
       { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 30 } },
       { read: true },
       { reload: true },
@@ -216,8 +215,9 @@ test('the repeat step plays its steps again and again', async () => {
     steps: [
       { do: { type: 'talk', dialogue: 'teacher.trial' } },
       { read: true },
-      { repeat: 3, steps: [{ tap: { item: 'rod' } }, { until: { event: 'add', timeout: 10 } }] },
-      { expect: [{ event: 'add' }] },
+      { until: { event: 'call', with: { key: 'mentor.first.you' }, timeout: 15 } },
+      { repeat: 3, steps: [{ press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }, { press: { zone: 'mat' } }, { until: { event: 'put', timeout: 10 } }] },
+      { expect: [{ event: 'put' }] },
     ],
   };
   const failures = await runHeadless(story, { onSession: (s) => { session = s; } });

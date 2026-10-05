@@ -4,40 +4,336 @@
     "vi": "Lính trinh sát ở cổng làng: chạm cái cột gần giặc nhất, kéo ná đúng số bước, bắn hụt thì chỉnh, và cài then cổng trước khi đuốc bay tới.",
     "en": "The scouts at the gate: tap the post nearest the scout, pull the slingshot a count of steps, correct a miss, and bar the gate before a torch lands."
   },
-  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 3, "flags": { "intro.seen": true, "giong.spoke": true }, "items": { "coin": 5 } },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 3,
+    "flags": {
+      "intro.seen": true,
+      "giong.spoke": true
+    },
+    "items": {
+      "coin": 5
+    }
+  },
   "clock": 540,
-  "at": ["phu-dong", 61, 29],
+  "at": [
+    "phu-dong",
+    61,
+    29
+  ],
   "steps": [
-    { "tap": { "entity": "encounter:scouts" } },
-    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },
-    { "expect": [{ "text": { "shown": "raid.scouts.intro" } }] },
-    { "read": true },
-    { "wait": 0.5 },
-    { "expect": [{ "raid": { "on": true, "enemies": ">= 1" } }, { "hero": { "cell": [63, 29], "within": 1 } }, { "entity": "encounter:scouts", "hidden": true }, { "entity": "post:4", "look": "post-4-lit" }, { "text": { "shown": "raid.tool.sling" } }, { "text": { "shown": "raid.tool.gate" } }, { "count": { "entities": "trap", "max": 0 } }, { "count": { "entities": "spot-mark", "max": 0 } }] },
-    { "wait": 9 },
-    { "tap": { "post": 20 } },
-    { "wait": 0.2 },
-    { "expect": [{ "event": "predict", "with": { "post": 20, "near": 20 } }, { "entity": "post:4", "look": "post-4" }] },
-    { "shoot": { "count": 16 } },
-    { "until": { "event": "land", "timeout": 5 } },
-    { "expect": [{ "event": "shoot", "with": { "count": 16 } }, { "event": "land", "with": { "count": 16, "hit": false } }, { "event": "prediction", "with": { "task": "raid-scouts", "guess": 20, "used": 16, "solved": false } }, { "event": "skill", "with": { "skill": "math.count.120", "solved": false, "parts": [16] } }] },
-    { "shoot": { "count": 19 } },
-    { "until": { "event": "land", "timeout": 5 } },
-    { "expect": [{ "event": "land", "with": { "count": 19, "hit": true } }, { "event": "skill", "with": { "skill": "math.add.20", "solved": true, "parts": [16, 19] } }] },
-    { "until": { "event": "light", "timeout": 40 } },
-    { "wait": 0.5 },
-    { "tap": { "raid": "gate" } },
-    { "until": { "event": "stop", "timeout": 5 } },
-    { "expect": [{ "event": "bar" }, { "event": "gated", "with": { "barred": true } }, { "event": "skill", "not": true }, { "raid": { "losses": 0 } }] },
-    { "repeat": 12, "steps": [
-      { "shoot": { "at": "first", "lead": 1, "wait": true } },
-      { "wait": 1.4 }
-    ] },
-    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 60 } },
-    { "expect": [{ "event": "end", "with": { "won": true } }, { "flag": "scouts.won" }, { "event": "gift", "with": { "give": { "iron": 2, "coin": 2 } } }, { "text": { "shown": "raid.scouts.note" } }] },
-    { "read": true },
-    { "expect": [{ "text": { "shown": "dlg.scouts.won.n1" } }, { "item": "iron", "count": ">= 2" }] },
-    { "wait": 3 },
-    { "expect": [{ "raid": { "on": false } }, { "count": { "entities": "raider", "max": 0 } }] }
+    {
+      "press": {
+        "entity": "encounter:scouts"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "raid.scouts.intro"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "expect": [
+        {
+          "raid": {
+            "on": true,
+            "enemies": ">= 1"
+          }
+        },
+        {
+          "hero": {
+            "cell": [
+              63,
+              29
+            ],
+            "within": 1
+          }
+        },
+        {
+          "entity": "encounter:scouts",
+          "hidden": true
+        },
+        {
+          "entity": "post:4",
+          "look": "post-4-lit"
+        },
+        {
+          "text": {
+            "shown": "raid.tool.sling"
+          }
+        },
+        {
+          "text": {
+            "shown": "raid.tool.gate"
+          }
+        },
+        {
+          "count": {
+            "entities": "trap",
+            "max": 0
+          }
+        },
+        {
+          "count": {
+            "entities": "spot-mark",
+            "max": 0
+          }
+        }
+      ]
+    },
+    {
+      "wait": 9
+    },
+    {
+      "tap": {
+        "post": 20
+      }
+    },
+    {
+      "wait": 0.2
+    },
+    {
+      "expect": [
+        {
+          "event": "predict",
+          "with": {
+            "post": 20,
+            "near": 20
+          }
+        },
+        {
+          "entity": "post:4",
+          "look": "post-4"
+        }
+      ]
+    },
+    {
+      "shoot": {
+        "count": 16
+      }
+    },
+    {
+      "until": {
+        "event": "land",
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "shoot",
+          "with": {
+            "count": 16
+          }
+        },
+        {
+          "event": "land",
+          "with": {
+            "count": 16,
+            "hit": false
+          }
+        },
+        {
+          "event": "prediction",
+          "with": {
+            "task": "raid-scouts",
+            "guess": 20,
+            "used": 16,
+            "solved": false
+          }
+        },
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.count.120",
+            "solved": false,
+            "parts": [
+              16
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "shoot": {
+        "count": 19
+      }
+    },
+    {
+      "until": {
+        "event": "land",
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "land",
+          "with": {
+            "count": 19,
+            "hit": true
+          }
+        },
+        {
+          "event": "skill",
+          "with": {
+            "skill": "math.add.20",
+            "solved": true,
+            "parts": [
+              16,
+              19
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "light",
+        "timeout": 40
+      }
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "tap": {
+        "raid": "gate"
+      }
+    },
+    {
+      "until": {
+        "event": "stop",
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "bar"
+        },
+        {
+          "event": "gated",
+          "with": {
+            "barred": true
+          }
+        },
+        {
+          "event": "skill",
+          "not": true
+        },
+        {
+          "raid": {
+            "losses": 0
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 12,
+      "steps": [
+        {
+          "shoot": {
+            "at": "first",
+            "lead": 1,
+            "wait": true
+          }
+        },
+        {
+          "wait": 1.4
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "end",
+          "with": {
+            "won": true
+          }
+        },
+        {
+          "flag": "scouts.won"
+        },
+        {
+          "event": "gift",
+          "with": {
+            "give": {
+              "iron": 2,
+              "coin": 2
+            }
+          }
+        },
+        {
+          "text": {
+            "shown": "raid.scouts.note"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.scouts.won.n1"
+          }
+        },
+        {
+          "item": "iron",
+          "count": ">= 2"
+        }
+      ]
+    },
+    {
+      "wait": 3
+    },
+    {
+      "expect": [
+        {
+          "raid": {
+            "on": false
+          }
+        },
+        {
+          "count": {
+            "entities": "raider",
+            "max": 0
+          }
+        }
+      ]
+    }
   ]
 }

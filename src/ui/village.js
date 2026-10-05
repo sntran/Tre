@@ -322,6 +322,8 @@ export async function mountVillage(ctx, params = {}) {
     if (icon !== actNow?.icon) actIcon.src = actIcon.src.replace(/ui\/[a-z-]+\.svg/, `ui/${icon}.svg`);
     actBtn.classList.toggle('dim', !a);
     actNow = a;
+    // The target has a thicker outline and a soft light; a thing on a line shows as a ghost.
+    figures.mark(a?.target ?? null, a?.spot ?? null, a?.ghost ?? null);
   }
   const turns = h('div', { class: 'turns' }, [waveBtn, turnLeft, turnRight, jumpBtn, actBtn]);
   // The paper of the print over the world: grain and a soft vignette.
@@ -519,14 +521,6 @@ export async function mountVillage(ctx, params = {}) {
     // A thing under the finger (a plank, a rod, the stem) wins over Nghé beside it.
     const under = thingAt(p);
     hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false, friend: under || guessAt(p) ? null : friendAt(p) };
-    // A rod on the mat of the teacher, or a bunch in the basket of the healer, can be dragged back
-    // to its heap (the undo of the task).
-    if (under && session.dragsBack(under.id)) hold.drag = under.id;
-    // A finger on the jar of feed of the ducks pours while it stays down (docs/HAMLET.md).
-    if (hamletAt(p)?.hamlet.act === 'ducks') {
-      hold.jar = true;
-      send({ type: 'hold', on: true });
-    }
   }
 
   // A thing of an activity of the hamlet under a screen point (the jar of feed, a bronze drum).
@@ -540,7 +534,8 @@ export async function mountVillage(ctx, params = {}) {
     return null;
   }
 
-  // Nghé (or the hero on the back of Nghé) under a screen point: a tap pets, a hold rides.
+  // Nghé (or the hero on the back of Nghé) under a screen point: a tap pets (the action button
+  // gets on and off).
   function friendAt(p) {
     const friend = query(state, 'follow')[0];
     if (!friend) return null;
@@ -602,20 +597,7 @@ export async function mountVillage(ctx, params = {}) {
     if (hold && hold.id === e.pointerId) {
       const wasHeld = hold.held;
       const friend = hold.friend;
-      const jar = hold.jar;
-      const drag = hold.drag;
       hold = null;
-      // A drag ends where the finger lets go: on the heap, the thing goes back.
-      if (drag && wasHeld) {
-        const hit = view.pick(p.x, p.y, { things: true });
-        if (hit) send({ type: 'drag', item: drag, x: hit.x, y: hit.y });
-        return;
-      }
-      // The finger leaves the jar of feed: the pour stops (and the ducks eat).
-      if (jar) {
-        send({ type: 'hold', on: false });
-        return;
-      }
       if (wasHeld || e.type !== 'pointerup' || busy) return;
       if (friend) {
         ctx.bus.emit('sound', 'tap');
@@ -626,12 +608,7 @@ export async function mountVillage(ctx, params = {}) {
 
   function startHold() {
     hold.held = true;
-    // A hold on Nghé: get on its back, or get off.
-    if (hold.friend) {
-      send({ type: 'ride', mount: hold.friend });
-      hold.friend = null;
-      hold.done = true;
-    }
+    hold.friend = null;
   }
 
   function onWheel(e) {
@@ -732,18 +709,10 @@ export async function mountVillage(ctx, params = {}) {
     }
     return best?.g ?? null;
   }
-  // Is the hero under a screen point? (A tap on the hero puts the plank down.)
-  function heroUnder(p) {
-    const f = figures.placeOf('hero');
-    if (!f) return false;
-    const b = view.screenBox({ x0: f.x - 0.6, x1: f.x + 0.6, y0: f.y, y1: f.y + f.height, z0: f.z - 0.6, z1: f.z + 0.6 });
-    return p.x >= b.x0 - 4 && p.x <= b.x1 + 4 && p.y >= b.y0 - 4 && p.y <= b.y1 + 4;
-  }
 
-  // What is under a screen point, as the target of a tap for the session: the hero (with a plank
-  // in the hands), a plank outline, a plank, a person, or a point on the ground or a thing.
+  // What is under a screen point, as the target of a tap for the session: a plank outline, a
+  // plank, a person, or a point on the ground or a thing. A tap only walks there (docs/TASKS.md).
   function targetUnder(p) {
-    if (session.holding() && heroUnder(p)) return { hero: true };
     const ghost = guessAt(p);
     if (ghost) return { guess: { zone: ghost.guess.zone, n: ghost.guess.n } };
     const raidTap = raidView.targetAt(p);
@@ -793,7 +762,7 @@ export async function mountVillage(ctx, params = {}) {
     else if (keys.size) dir = toMap(keysToScreenDir(keys));
     else {
       if (hold && !hold.held && performance.now() - hold.since > HOLD_MS) startHold();
-      const m = hold?.held && !hold.done ? view.pick(hold.vx, hold.vy) : null;
+      const m = hold?.held ? view.pick(hold.vx, hold.vy) : null;
       if (m) {
         const c = heroCell();
         const i = inputToward(c, m, { run: Math.hypot(m.x - c.x, m.y - c.y) > 6, stop: 0.3 });

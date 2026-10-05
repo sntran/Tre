@@ -27,7 +27,7 @@ import {
   REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, sizesOf, sum, openRound, openGap, reachOf, oldDeck,
 } from '../zones.js';
 import { isMashing } from '../../learnlog.js';
-import { putWork, canTakeWork, toHeap, freeSlot } from './work.js';
+import { putWork, canTakeWork, toHeap, freeSlot, takeOut } from './work.js';
 import { putRaid } from './raid.js';
 
 // The zones of the tasks of the trials: the work system puts the things there.
@@ -113,7 +113,9 @@ function pick(world, e, thing, env, dt) {
   const working = zoneEnt && WORK.has(zoneEnt.zone.rule);
   if (working ? !canTakeWork(world, thing) : zoneEnt && !canTake(zoneEnt.zone, thing.id)) return;
   const at = zoneEnt?.zone.rule === 'span' ? zoneEnt.position : middleOf(thing);
-  if (dist(e.position, at) > REACH + (thing.item.size ?? 0) / 2) return say(world, 'far', e.id);
+  // From a place of a task, the hands take a thing back from where they put it.
+  const nearPlace = working && dist(e.position, zoneEnt.position) <= REACH + 2;
+  if (dist(e.position, at) > REACH + (thing.item.size ?? 0) / 2 && !nearPlace) return say(world, 'far', e.id);
   // The time that the child took to choose this plank, from the last action on its gap.
   const task = getEntity(world, `zone:${thing.item.task}`);
   if (task?.zone.rule === 'span' && zoneEnt?.zone.rule !== 'span') {
@@ -126,10 +128,15 @@ function pick(world, e, thing, env, dt) {
   }
   delete e.hands.aim;
   if (zoneEnt) {
-    zoneEnt.zone.items = zoneEnt.zone.items.filter((id) => id !== thing.id);
+    if (working) {
+      // A take back from a place of a task (the opposite of a put).
+      takeOut(world, thing);
+      delete thing.item.slot;
+      const tz = zoneEnt.zone.rule === 'heap' ? null : getEntity(world, `zone:${thing.item.task}`);
+      if (tz?.zone.rule === 'trial') tz.zone.resets = (tz.zone.resets ?? 0) + 1;
+    } else zoneEnt.zone.items = zoneEnt.zone.items.filter((id) => id !== thing.id);
     if (zoneEnt.zone.rule === 'pile') packPile(world, zoneEnt.zone);
-    else if (working) delete thing.item.slot;
-    else {
+    else if (!working) {
       // A plank taken back from the span: a reset of the attempt.
       const a = attemptOf(world, zoneEnt.zone);
       a.last = world.tick;

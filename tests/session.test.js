@@ -4,6 +4,7 @@ import { createProfile } from '../src/core/profile.js';
 import { createSession } from '../src/core/session.js';
 import { createTerrain } from '../src/world/terrain.js';
 import { loadGameData } from './helpers.js';
+import { getEntity } from '../src/core/world/state.js';
 
 const data = await loadGameData();
 const terrainOf = (map, tileMap) => createTerrain(map, data.tiles.types, tileMap);
@@ -53,7 +54,7 @@ test('a new profile: the intro opens as lines; the choice and the next screen co
   assert.ok(session.state.clock.minutes > t0);
 });
 
-test('a tap on a person: the hero walks there and the talk opens', () => {
+test('a tap on a person: the hero walks there, and the action button opens the talk', () => {
   const { session } = newSession();
   readAll(session);
   session.command({ type: 'closed' });
@@ -62,8 +63,13 @@ test('a tap on a person: the hero walks there and the talk opens', () => {
   const target = session.targetAt(elder.x, elder.y);
   assert.deepEqual(target, { person: elder.entity });
   session.command({ type: 'tap', target });
-  let i = 0;
-  for (; i < 1800 && !session.screen; i++) session.step();
+  // The tap only walks: no talk opens at the end of the walk.
+  for (let i = 0; i < 1800 && (i < 5 || getEntity(session.state, 'hero').route); i++) session.step();
+  for (let i = 0; i < 30; i++) session.step();
+  assert.equal(session.screen, null);
+  assert.equal(session.action()?.act, 'talk');
+  session.command({ type: 'hands' });
+  for (let i = 0; i < 30 && !session.screen; i++) session.step();
   assert.equal(session.screen, 'dialogue');
   assert.ok(opens(session.events()).some((e) => e.textKey.startsWith('dlg.elder.')));
 });
