@@ -30,15 +30,19 @@ The zoom and the length of the road are the progress of the real steps of the lo
 
 | Step | What it is |
 | --- | --- |
-| data | the texts of the language of the profile, the learning log, and the learner |
+| data | the texts of the language of the start, the learning log, and the learner |
 | heights | the height tiles of the land around the start |
-| code | the drawing code (three.js and `src/render`); the land workers start before it |
-| land | the land tiles around the hero (5 × 5 tiles of 64 cells), made in the workers |
+| code | the drawing code (three.js and `src/render`); it starts to load at the start of the load, at the same time as the data and the land |
+| land | the land tiles of the first view around the hero (the tiles under the drawn ring of 9 × 9 chunks: at most 4 × 4 tiles of 64 cells), from the store of the device or made in the workers |
 | world | the session and the world state of the map |
 | chunks | the meshes of the near chunks around the hero |
 | figures | the shaders, and the first frame of the world with the hero |
 
 The zoom and the road never go back, and the road reaches the seal only when the world is drawn.
+
+## The language of a start
+
+The language that the child chose on the title screen (or in hero creation) right before a start wins: the game uses it, and the profile saves it (`startLanguage` in `src/core/profile.js`). With no choice, the profile keeps its own language, so that two children of one family can play in two languages.
 
 ## The times
 
@@ -52,7 +56,10 @@ load: shown 109 · data 244 · heights 12 · code 988 · land 3501 · world 1189
 
 ## What makes the load shorter
 
-- Up to three Web Workers make the land tiles at the same time (`src/ui/stream.js`), and they start before the drawing code loads. The start of the session finds the tiles ready, so that it does not make them on the main thread.
+- The land tiles are kept on the device (#36): each made tile is saved in IndexedDB (`src/world/tilestore.js`, `src/ui/landstore.js`), and a start reads the saved tiles first. A practice link opens at the same place each time, so a second visit makes no land. The key of a tile has the version of the land code (`LAND_VERSION` in `src/core/gen/tiles.js`), the map, the seed, and a hash of the data of the map: a new version or new data makes new keys, and the old tiles go. The store keeps the 200 tiles that were used last (about 12 MB). With no IndexedDB, or a full store, the game makes the land as before.
+- The first frame waits only for the land of the first view (`viewTiles` in `src/ui/stream.js`). The rest of the ring of 5 × 5 tiles comes after the first frame; the mist and the paper cover the far land until it comes.
+- Up to three Web Workers make the land tiles that are not in the store, at the same time (`src/ui/stream.js`). The start of the session finds the tiles ready, so that it does not make them on the main thread.
+- The drawing code loads at the same time as the data and the land, not after them.
 - The first save of a new hero does not stop the load (the saves go one after the other).
 - The near chunks build in the frames of the loading screen, for at most 40 ms in each frame, so that the screen can draw the progress.
 - The shaders compile before the first frame (`prepare` in `src/render/voxel.js`).
