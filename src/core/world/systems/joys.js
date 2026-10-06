@@ -6,9 +6,10 @@
 //   dance: the lion dance of Tết goes around its place in steps, with a beat of the drum.
 //   flick: a tap on a sleeping animal makes it flick an ear (the input system starts it).
 //   catch: now and then the net of the fisher comes up with a fish, and the fisher holds it up.
+//     The fisher keeps the span of the catch (haul), so that one catch is one splash (#49).
 //   notice: Nghé turns its head to a joy near it, at most once a day, so that the child learns to
 //     look where Nghé looks.
-export const WRITES = ['hidden', 'position', 'motion', 'flick', 'carry', 'act', 'notice', 'noticed', 'events'];
+export const WRITES = ['hidden', 'position', 'motion', 'flick', 'carry', 'act', 'haul', 'notice', 'noticed', 'events'];
 
 import { query, getEntity } from '../state.js';
 import { hashSeed } from '../../rng.js';
@@ -69,7 +70,11 @@ export function joys(world, dt, rng, env) {
   const c = env.joys?.catch;
   const fisher = c ? getEntity(world, c.who) : null;
   if (fisher && !fisher.hidden && !world.paused && (fisher.motion?.speed ?? 0) < 0.5 && (world.sky?.night ?? 0) < 0.3 && catchAt(world.seed, seconds, c)) {
-    if (fisher.carry !== 'fish') world.events.push({ type: 'haul', id: fisher.id, sound: 'splash' });
+    // The schedule clears carry at each step, so the span of the catch, not carry, says that the
+    // splash of this catch has played.
+    const span = Math.floor(seconds / c.every);
+    if (fisher.haul !== span) world.events.push({ type: 'haul', id: fisher.id, sound: 'splash' });
+    fisher.haul = span;
     fisher.carry = 'fish';
     fisher.act = 'catch';
   }

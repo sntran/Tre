@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createWorldState, getEntity, query, command } from '../src/core/world/state.js';
+import { createWorldState, getEntity, query, command, addEntity } from '../src/core/world/state.js';
 import { step, STEP } from '../src/core/world/step.js';
 import { envFor, placesOf } from '../src/core/world/env.js';
 import { addHero, addFriend, addLifeLayer } from '../src/core/world/populate.js';
@@ -66,6 +66,27 @@ test('the net of the fisher comes up with a fish now and then, the same for the 
   const share = on / 3600;
   assert.ok(share > 0.01 && share < 0.06, `${share} of the time with a fish`);
   assert.equal(catchAt(11, 1234, c), catchAt(11, 1234, c));
+});
+
+test('one catch of the fisher is one splash, not a splash at each step while the fish is up (#49)', () => {
+  const c = life.joys.catch;
+  const w = village(600);
+  // The light holds (as in a practice), so that the fisher works all ten minutes.
+  w.clock.hold = true;
+  const at = getEntity(w, 'hero').position;
+  addEntity(w, { id: c.who, position: { ...at, x: at.x + 6 }, motion: { speed: 0 } });
+  const fisher = getEntity(w, c.who);
+  const hauls = [];
+  for (let i = 0; i < 600 / STEP; i++) {
+    step(w, STEP, env);
+    hauls.push(...w.events.filter((ev) => ev.type === 'haul'));
+    // The schedule of the people clears carry at each step.
+    delete fisher.carry;
+  }
+  let catches = 0;
+  for (let k = 0; k < 600 / c.every; k++) if (catchAt(w.seed, k * c.every, c)) catches++;
+  assert.ok(catches >= 1, 'the fisher catches a fish in ten minutes');
+  assert.equal(hauls.length, catches, `${hauls.length} splashes for ${catches} catches`);
 });
 
 test('a rare thing is there only on its day; at Tết the pot of bánh chưng is in the yard of the đình', () => {
