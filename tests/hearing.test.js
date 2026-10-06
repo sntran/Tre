@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createWorldState, addEntity } from '../src/core/world/state.js';
 import { HEAR, loudness, createHearing } from '../src/core/hearing.js';
+import { soundLog } from '../tools/sound-log.mjs';
 
 function world() {
   const w = createWorldState({ seed: 1, map: 'test', clock: { minutes: 600 } });
@@ -56,3 +57,9 @@ test('the sounds of the acts of the child always play: each put, each snap', () 
   assert.equal(ears.hear({ type: 'x', id: 'hero' }, w, 0), 0, 'no sound, nothing to hear');
 });
 
+test('five minutes of play through the village: no sound of the world plays more than a few times a minute (tools/sound-log.mjs)', async () => {
+  const { said, heard, most, own } = await soundLog(5);
+  assert.ok(Object.keys(said).length >= 3, JSON.stringify(said));
+  for (const [name, n] of Object.entries(most)) if (!own.has(name)) assert.ok(n <= HEAR.perMinute, `${name}: ${n} in a minute`);
+  assert.ok((heard.greet ?? 0) <= 5, `${heard.greet} greetings`);
+});
