@@ -14,7 +14,7 @@ import { pickGround } from '../world/terrain.js';
 import { C } from './palette.js';
 import { night } from './figure3d.js';
 import { rendererFor } from './gl.js';
-import { inFront, stepFade, stippleOf } from '../world/fade.js';
+import { inFront, hidesHero, stepFade, stippleOf, BUILDINGS, FADE_HOLES, FADE_OUTLINE } from '../world/fade.js';
 import { VIEW, viewSize } from '../world/view.js';
 
 export function hasWebGL() {
@@ -258,7 +258,8 @@ function flatMaterial(uniforms) {
       float bayer2(vec2 a) { a = floor(a); return fract(a.x / 2.0 + a.y * a.y * 0.75); }
       float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
       void main() {
-        if (vFade > 0.001 && vFade * 0.85 > bayer4(gl_FragCoord.xy)) discard;
+        // A faded thing keeps a part of its dots: a soft see-through shape, not lines (#53).
+        if (vFade > 0.001 && vFade * ${FADE_HOLES.toFixed(2)} > bayer4(gl_FragCoord.xy)) discard;
         gl_FragColor = vec4(onPaper(groundOf(vColor, vW, vSurface, vSoil, vStrip, uPuddles), uPaper, vPaper, vW), 1.0);
       }`,
   });
@@ -475,7 +476,7 @@ function inkMaterial(uniforms, hull = false) {
         float fade = fadeOf(owner);
         // The ink stays after the colors go, then it stops: none on the far land, none deep in the
         // mist.
-        vAlpha = (outer > 0.5 ? 1.0 : 1.0 - fade) * inkOf(paperOf(P, mist));
+        vAlpha = (outer > 0.5 ? 1.0 - fade * ${FADE_OUTLINE.toFixed(2)} : 1.0 - fade) * inkOf(paperOf(P, mist));
         vec3 d = normalize(O - P);
         vec3 p = normalize(cross(d, uView)) * width * 0.5 * side;
         gl_Position = projectionMatrix * viewMatrix * vec4(P + p - d * width * 0.5, 1.0);
@@ -989,13 +990,16 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
   function updateFades(hero, dt) {
     if (boxVersion !== terrain.version) {
       boxVersion = terrain.version;
-      boxes = terrain.objects.map((o) => ({ who: o.who, b: terrain.boxOf(o) }));
+      boxes = terrain.objects.map((o) => ({ who: o.who, b: terrain.boxOf(o), building: BUILDINGS.has(o.kind) }));
     }
     let changed = false;
     for (const o of boxes) {
       if (Math.abs(o.b.x0 - hero.x) > 40 || Math.abs(o.b.z0 - hero.z) > 40) continue;
       const was = fades.get(o.who) ?? 0;
-      const next = stepFade(was, inFront(o.b, hero, state.az, VIEW.elevation), dt);
+      // A building fades only when its blocks or its roof hide the hero; a tree, a bush, or a
+      // haystack (a smooth look) when the line crosses its box (#53).
+      const hit = inFront(o.b, hero, state.az, VIEW.elevation) && (!o.building || hidesHero(o.b, hero, state.az, VIEW.elevation, (x, y, z) => terrain.hits(o.who, x, y, z)));
+      const next = stepFade(was, hit, dt);
       if (next === was) continue;
       if (next) fades.set(o.who, next);
       else fades.delete(o.who);

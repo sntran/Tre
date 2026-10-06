@@ -1,12 +1,16 @@
 // The fade of the things in front of the hero: pure rules, no WebGL. The renderer
 // (src/render/voxel.js) keeps one fade for each object of the terrain and draws it as a stipple.
-// A thing fades when the line of sight from the hero to the camera crosses its box; it comes back
-// when the line leaves it. The fade snaps to exactly 0 and 1 at the ends, so that a thing that was
+// A thing fades when the line of sight from the hero to the camera goes through its blocks (#53:
+// not only through its box); it comes back when the line leaves it. The fade snaps to exactly 0 and 1 at the ends, so that a thing that was
 // in front once keeps no dots.
 
 // Under this fade a thing draws whole: an object that only touches the edge of the line of sight
 // gets no light scatter of dots.
 export const FADE_MIN = 0.3;
+// The look of a full fade (#53): the part of the dots of the faces that goes (the rest stays, a
+// soft see-through shape), and the part of the outline that goes (no hard lines of wire).
+export const FADE_HOLES = 0.6;
+export const FADE_OUTLINE = 0.65;
 const SPEED = 8; // a fade goes most of the way in about one eighth of a second
 const SNAP = 0.02;
 
@@ -50,6 +54,43 @@ export function heroPoints(hero, az) {
 export function inFront(box, hero, az, elevation) {
   const d = toCamera(az, elevation);
   return heroPoints(hero, az).some((p) => rayHits(box, p, d));
+}
+
+// Does a building hide the hero: does the line of sight from the feet, the body, or the head of
+// the hero to the camera go through a block or the roof of the building (not only through its box,
+// which takes the air around a roof and the yard, #53)? hits(x, y, z): is a point (world units) in
+// the building. A sample each quarter of a unit, in the box.
+const SIGHT = [0.4, 1.2, 2.2];
+export function hidesHero(box, hero, az, elevation, hits) {
+  const d = toCamera(az, elevation);
+  for (const h of SIGHT) {
+    const o = { x: hero.x, y: hero.y + h, z: hero.z };
+    const span = rayRange(box, o, d);
+    if (!span) continue;
+    for (let t = span[0]; t <= span[1]; t += 0.25) {
+      if (hits(o.x + d.x * t, o.y + d.y * t, o.z + d.z * t)) return true;
+    }
+  }
+  return false;
+}
+
+// The part of the ray (from 0.3 to 80 units) in a box: [t0, t1], or null.
+function rayRange(b, o, d) {
+  let t0 = 0.3;
+  let t1 = 80;
+  for (const [lo, hi, oo, dd] of [[b.x0, b.x1, o.x, d.x], [b.y0, b.y1, o.y, d.y], [b.z0, b.z1, o.z, d.z]]) {
+    if (Math.abs(dd) < 1e-9) {
+      if (oo < lo || oo > hi) return null;
+      continue;
+    }
+    let a = (lo - oo) / dd;
+    let c = (hi - oo) / dd;
+    if (a > c) [a, c] = [c, a];
+    t0 = Math.max(t0, a);
+    t1 = Math.min(t1, c);
+    if (t0 > t1) return null;
+  }
+  return [t0, t1];
 }
 
 // One step of a fade toward 1 (in front) or 0, with a snap at the ends.

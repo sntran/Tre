@@ -180,3 +180,16 @@ export function roundShell(r) {
   };
   return { xc, zc, rx, rz, eave, top, around: 20, rings: 5, at, covers };
 }
+
+// Is a point (fine units) under the thatch of a roof: in its eaves and under its slopes (or its
+// shell)? A little more than the shape, so that a line of sight past the edge of a roof counts
+// (the fade of a house, #53).
+export function inRoof(r, fx, fy, fz) {
+  if (fx < r.x0 - 0.5 || fx > r.x1 + 0.5 || fz < r.z0 - 0.5 || fz > r.z1 + 0.5 || fy < r.y - 1) return false;
+  const hx = Math.max(0.5, (r.x1 - r.x0) / 2);
+  const hz = Math.max(0.5, (r.z1 - r.z0) / 2);
+  const dx = Math.abs(fx - (r.x0 + r.x1) / 2) / hx;
+  const dz = Math.abs(fz - (r.z0 + r.z1) / 2) / hz;
+  const rise = r.shape === 'round' ? 1 - Math.min(1, dx * dx + dz * dz) : 1 - Math.min(1, dz);
+  return fy <= r.y + 0.5 + r.ridgeH * 2 * rise + (r.sweep ?? 1) * 2 * dx * dx;
+}

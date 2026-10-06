@@ -14,6 +14,7 @@
 import { createGrid, hashSeed, seeded, colorIndex } from './voxel.js';
 import { fbm } from '../core/gen/noise.js';
 import { buildProp } from './props/index.js';
+import { inRoof } from './roofs.js';
 
 export const WATER = Object.freeze({ river: 0.6, paddy: 0.55, sea: 2.5 }); // over the bed (blocks); sea: the surface (world y)
 export const CHUNK = 16; // ground columns along x and z
@@ -517,6 +518,17 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
 
   // Fell a tree (or take away another object of the map): its blocks go, and the smooth looks that
   // they own go with them. Return null for no such object, else { blocks (the count), drops, chunks }.
+  // The roofs of an object (who), over all the pages; again when the pages change.
+  let roofCache = { version: -1, by: new Map() };
+  function roofsOf(who) {
+    if (roofCache.version !== version) {
+      const by = new Map();
+      for (const p of pages.values()) for (const r of p.roofs) by.set(r.who, [...(by.get(r.who) ?? []), r]);
+      roofCache = { version, by };
+    }
+    return roofCache.by.get(who) ?? [];
+  }
+
   function fell(objectId) {
     const o = all().objects.find((x) => x.id === objectId);
     if (!o) return null;
@@ -702,6 +714,22 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     isFelled,
     // The object of a number (the owner of a block), or null.
     objectOf: (who) => all().objects.find((o) => o.who === who) ?? null,
+    // Is a point (world units) in a block or in the roof of an object (who)? The fade of a house
+    // tests the line of sight with it, not only with the box of the house (#53). A page that is not
+    // built has no blocks.
+    hits(who, x, y, z) {
+      const fx = x * 2;
+      const fy = y * 2;
+      const fz = z * 2;
+      const p = pages.get(chunkOf(Math.floor(x), Math.floor(z)));
+      if (p) {
+        const lx = Math.floor(fx) - p.fx0;
+        const ly = Math.floor(fy) - p.fy0;
+        const lz = Math.floor(fz) - p.fz0;
+        if (p.fine.get(lx, ly, lz) && p.fine.ownerAt(lx, ly, lz) === who) return true;
+      }
+      return roofsOf(who).some((r) => inRoof(r, fx, fy, fz));
+    },
     // World units: one ground block is 1 unit; a fine block is 0.5.
     boxOf: (o) => ({ x0: o.box.x0 / 2, y0: o.box.y0 / 2, z0: o.box.z0 / 2, x1: o.box.x1 / 2, y1: o.box.y1 / 2, z1: o.box.z1 / 2 }),
     // A change of the terrain, for the stories and the tools of a later era: { type: 'fell', id }
