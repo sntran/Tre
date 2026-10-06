@@ -277,8 +277,18 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
     if (ok !== true) problems.push(`step ${i}: the check ${s.check} is not true`);
   } else if (s.until) {
     // Play on with no finger until the expression is true (the browser can be slower than a phone).
-    const ok = await page.waitForFunction((expr) => new Function('tre', `return (${expr});`)(window.tre), s.until, { timeout: (s.timeout ?? 120) * 1000, polling: 500 }).then(() => true).catch(() => false);
-    if (!ok) problems.push(`step ${i}: ${s.until} did not come true in ${s.timeout ?? 120} seconds`);
+    // The page forbids eval in its own scripts (Content Security Policy), so the polls of
+    // waitForFunction fail after the first one; page.evaluate is not under that rule.
+    const t0 = Date.now();
+    const limit = (s.timeout ?? 120) * 1000;
+    let ok = false;
+    let error = null;
+    while (Date.now() - t0 < limit) {
+      ok = await page.evaluate((expr) => Boolean(new Function('tre', `return (${expr});`)(window.tre)), s.until).catch((e) => { error = e.message.split('\n')[0]; return false; });
+      if (ok) break;
+      await sleep(0.5);
+    }
+    if (!ok) problems.push(`step ${i}: ${s.until} did not come true in ${Math.round((Date.now() - t0) / 1000)} seconds${error ? ` (${error})` : ''}`);
   } else if (s.print) {
     const v = await page.evaluate((expr) => JSON.stringify(new Function('tre', `return (${expr});`)(window.tre)), s.print).catch((e) => `error ${e.message}`);
     console.log(`step ${i}: ${s.print} = ${v}`);

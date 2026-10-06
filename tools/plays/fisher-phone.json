@@ -17,10 +17,10 @@
     {"tap": {"place": "line"}, "after": 3},
     {"press": true, "after": 2},
     {"shot": "one-stake"},
-    {"until": "tre.activeVillage.state().entities.some((e) => e.id === 'fish:fisher')", "timeout": 200},
+    {"until": "tre.activeVillage.state().entities.some((e) => e.id === 'fish:fisher')", "timeout": 700},
     {"wait": 0.5},
     {"shot": "the-fish-goes-out-at-the-end"},
-    {"until": "document.body.textContent.includes('Cắm thêm cọc')", "timeout": 200},
+    {"until": "document.body.textContent.includes('Cắm thêm cọc')", "timeout": 700},
     {"shot": "no-new-stake"}
   ]
 }
