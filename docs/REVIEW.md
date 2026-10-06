@@ -465,3 +465,11 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 - **"Bọn mình", not "tụi mình":** the children of the folk games say "bọn mình" in `loco.invite`, `loco.join`, `loco.other`, `loco.line`, `loco.out`, `loco.slow`, `rope.invite`, and `rope.slow`. The word is marked (`{w:bọn}`), so the children of the south say "tụi mình", with a gloss the first time ("tụi" = "bọn"; `data/world/speech.json`). The lines `loco.*` and `rope.*` are now lines of people in that file.
 - The other lines of people have no other word of the south. "ba" (three) and "rau má" (a plant) are words of the whole country.
 - **Please check:** "bọn mình" in the mouth of a small child of the north, and the gloss for the south.
+- **The other new lines of #45:** the help for the name, `create.name.need` ("Em viết tên mình nhé. Hoặc chọn một tên ở dưới."); the bar of the practice of the hamlet, `practiceLink.xom-ruong.goal` ("Giúp người ở Xóm Ruộng"); "một bạn nhỏ" in place of "một em bé" in `dlg.grandma.intro.n1` and `n2`; and the move "show" of each station, `mentor.show.scholar`, `.smith`, `.fisher`, `.healer`, `.woodcutter`, `.plant`, `.ducks`, `.traps`, `.drum`, and `.bridge` (for example "Nhìn thanh sắt nhé. Đỏ rực thì nhúng vào nước.").
+- **Please check:** the names to choose in `data/hero.json` (An, Bình, Nam, Minh; Mai, Lan, Hoa, Linh).
+
+## The help of the touch screen (#53)
+
+- **The menu on a touch screen** shows only the touch help, with a picture of each control: `ui.help.tap` ("Chạm vào một chỗ: em đi đến đó."), `ui.help.star` ("Chạm vào ngôi sao: em đi đến chỗ cần đến."), `ui.help.stick` ("Giữ ngón tay trên vòng tròn ở góc dưới: em đi theo ngón tay."), `ui.help.act` ("Nút lớn: làm việc với thứ có viền đậm. Hình trên nút cho biết nút sẽ làm gì."), `ui.help.jump` ("Nút nhảy: em nhảy qua vũng nước hay khe nhỏ."), and `ui.help.turn` ("Hai nút xoay: xoay góc nhìn.").
+- **The keys** (`ui.keys`) show only with a mouse and a keyboard; the line has no touch part now.
+- **Please check:** "vòng tròn ở góc dưới" for the stick, and "nút lớn" for the action button.

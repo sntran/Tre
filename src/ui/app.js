@@ -6,7 +6,7 @@ import { loadData } from './data.js';
 import { createSeen } from '../core/fresh.js';
 import { saveProfile, loadProfile, listProfiles, isMemoryOnly, getMeta, setMeta } from './storage.js';
 import { linkIdOf, activityOf } from '../core/practice.js';
-import { h, button } from './dom.js';
+import { h, button, img } from './dom.js';
 import { createBus } from '../core/events.js';
 import { createMachine } from '../core/fsm.js';
 import { createRng } from '../core/rng.js';
@@ -305,6 +305,20 @@ export async function startApp(root) {
     },
   };
 
+  // The touch help: a picture of each control and one short line.
+  const touchHelp = () => {
+    const pic = (cls, child = null) => h('span', { class: `help-pic ${cls}` }, child ? [child] : []);
+    const rows = [
+      [pic('help-tap'), 'ui.help.tap'],
+      [pic('help-icon', img('ui/star', 'btn-icon')), 'ui.help.star'],
+      [pic('help-stick', h('span', { class: 'help-knob' })), 'ui.help.stick'],
+      [pic('help-btn big', img('ui/hand-pick', 'btn-icon')), 'ui.help.act'],
+      [pic('help-btn', img('ui/jump', 'btn-icon')), 'ui.help.jump'],
+      [pic('help-btn', h('span', { text: '⟲' })), 'ui.help.turn'],
+    ];
+    return h('ul', { class: 'menu-help' }, rows.map(([p, key]) => h('li', {}, [p, h('span', { text: t(key) })])));
+  };
+
   // The simple menu of the village.
   registerModal('menu', (c) => new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
@@ -316,8 +330,9 @@ export async function startApp(root) {
         button(t('ui.parents'), () => { close(); c.openParent(); }, { cls: 'btn paper', icon: 'ui/lock' }),
         button(t('ui.save.exit'), async () => { close(); await c.save('exit'); c.toast('ui.saved'); c.go('title'); }, { cls: 'btn paper' }),
       ]),
-      // The help of the controls.
-      h('p', { class: 'menu-keys', text: t('ui.keys') }),
+      // The help of the controls: on a touch screen the touch help only, with small pictures of
+      // the buttons; the keys only with a mouse and a keyboard (#53).
+      matchMedia('(pointer: coarse)').matches ? touchHelp() : h('p', { class: 'menu-keys', text: t('ui.keys') }),
     ]);
     layer.append(panel);
     layer.addEventListener('click', (e) => { if (e.target === layer) close(); });
