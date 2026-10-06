@@ -12,11 +12,14 @@ Every task in the world must be clear to a child of six. Young children need lar
 - **The action button** (E or Enter on a keyboard): it does every step of every task.
 - **The jump** (Space, or J) and **the wave** (ask for help, `docs/MENTOR.md`).
 - **The view** turns with the buttons at the bottom right, or with Z and C (`src/core/keys.js`).
-- **A tap on a thing or a person** walks the hero to it and makes it the target. A tap never does a step of a task, and a tap on a person never starts a talk: the button does. A tap on Nghé still pets her.
+- **A tap on a thing or a person** walks the hero to it and makes it the target. A tap never does a step of a task, and a tap on a person never starts a talk: the button does. Out of a task, a tap on Nghé pets her; in a task, a tap on Nghé is a tap on what is under or behind her, and Nghé never stands on a place of the work (#47).
+- **What a tap hits** (`src/world/hit.js`, the same for the village and the tests): a place of a task under the finger comes before a thing that only touches the finger with its margin, and before a person who stands in front of it. A tap on water stops at its surface. A long press that does not move is a tap too.
 
 ### The target
 
 - The target is the thing in reach that the button acts on now (`action()` in `src/core/session.js`). The thing in front of the hero comes first; a thing behind the hero comes last; the thing of the last tap comes before the others.
+- **The next press never undoes the last one** (#47). After the act on the target of a tap, the tap is used up. With a heap of the work in reach, a thing comes back from a place, a chalk mark goes away, the finish at the person (a try), and a call for help come only after a tap on that thing, mark, or person. A press with empty hands takes from the heap.
+- The point of each place of a task is the middle of its rect; the hero stands at its edge to work there. No thing of a heap lies in the rect of a place.
 - The target has a thicker ink outline and a soft light on the ground under it (`mark()` in `src/render/figure3d.js`). The button shows the picture of the act. With no target, the button is dim and has no picture.
 - **Places on a line** (a stake on the line of the fisher, a chalk mark on the stem, a plank at the gap of the bridge, a trap in the stream): a pale ghost of the thing shows at the spot in front of the hero, on the half-block grid. A press puts the thing at the ghost. A tap on the line chooses the spot.
 - When the button acts, the target pulses once.
@@ -89,7 +92,8 @@ The raised hand is only the wave button, and the jump has its own picture: no tw
 ### Tests and stories
 
 - `tests/tasks.test.js`: for the teacher, the smith, the healer, the woodcutter, and the fisher, the act and the picture of the button at each target, one press for one thing, the take back with empty hands, and the finish at the person; a tap on a rod, the mat, the basket, the stem, or the iron only walks; Nghé on and off; the places close and apart.
-- Every story of a task plays with moves and the action button only (the step `press` in `src/core/story.js`: a walk to the target, then the button); no story taps a thing of a task.
+- Every story of a task plays with moves and the action button only (the step `press` in `src/core/story.js`: a walk to the target, then the button); no story taps a thing of a task. A press at a place taps it through the hit test of the screen (`{ "press": { "screenOf": "mat" } }`), as a child taps.
+- `tests/screen.test.js`: a tap at the middle of each place of each trial and station, on a phone held upright, from the four angles of the view, chooses that place.
 - Stories: `trial-teacher-button` (pick, put, take back, and the tie at the teacher), `trial-smith-button` (the whole smith trial with the button, and its pictures), `trial-smith-taps` (taps on the smith during the task open the start talk zero times), and `trial-smith-cue` (the quench of the smith, the glow of the iron of the child, and the end of the glow).
 
 ## The work of the story in Era 1

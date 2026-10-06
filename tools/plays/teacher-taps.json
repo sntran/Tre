@@ -1,0 +1,108 @@
+{
+  "about": "#47: the trial of the teacher with taps and presses only. A tap on the heap and a press take a rod; a tap on the mat and a press put it there; more presses never take the rod back; Nghé takes no tap; at the teacher, a press ties.",
+  "start": "?practice=bo-que",
+  "lang": "vi",
+  "steps": [
+    {
+      "create": "Nam"
+    },
+    {
+      "read": 15
+    },
+    {
+      "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+      "timeout": 600
+    },
+    {
+      "read": 15
+    },
+    {
+      "wait": 2
+    },
+    {
+      "shot": "the-heap-and-the-mat"
+    },
+    {
+      "tap": {
+        "thing": "zone:rods"
+      },
+      "after": 3
+    },
+    {
+      "press": true,
+      "after": 1.5
+    },
+    {
+      "tap": {
+        "place": "mat"
+      },
+      "after": 3
+    },
+    {
+      "shot": "a-rod-and-the-mat-chosen"
+    },
+    {
+      "press": true,
+      "after": 1.5
+    },
+    {
+      "press": true,
+      "after": 1.5
+    },
+    {
+      "press": true,
+      "after": 1.5
+    },
+    {
+      "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length"
+    },
+    {
+      "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length >= 1"
+    },
+    {
+      "shot": "more-presses-keep-the-rod-on-the-mat"
+    },
+    {
+      "tap": {
+        "place": "mat"
+      },
+      "after": 2
+    },
+    {
+      "press": true,
+      "after": 1.5
+    },
+    {
+      "tap": {
+        "place": "mat"
+      },
+      "after": 2
+    },
+    {
+      "press": true,
+      "after": 1.5
+    },
+    {
+      "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length"
+    },
+    {
+      "shot": "rods-on-the-mat"
+    },
+    {
+      "restless": 20,
+      "seed": 7
+    },
+    {
+      "wait": 6
+    },
+    {
+      "check": "!tre.activeVillage.state().entities.some((e) => e.look === 'rod' && e.item && !e.item.zone && !e.item.held)"
+    },
+    {
+      "shot": "after-restless-play"
+    }
+  ],
+  "allow": [
+    "is under the bottom of the screen"
+  ]
+}

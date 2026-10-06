@@ -11,8 +11,9 @@
 // The steps:
 //   { "create": "Nam" }          pass the hero creation (a new game or the short creation of a link)
 //   { "tap": [x, y] }            a tap at a point of the screen
-//   { "tap": { "person": "teacher" } }, { "tap": { "thing": "rod:1" } }, { "tap": { "cell": [x, y] } }
-//                                a tap on a person, a thing, or a cell of the map, where the screen shows it
+//   { "tap": { "person": "teacher" } }, { "tap": { "thing": "rod:1" } }, { "tap": { "cell": [x, y] } },
+//   { "tap": { "place": "mat" } } a tap on a person, a thing, a cell of the map, or the middle of a
+//                                place of a task, where the screen shows it
 //   { "tap": { "star": true } }  a tap on the goal star (or the arrow at the edge of the screen)
 //   { "walk": { "person": "woodcutter" }, "taps": 12 } taps toward a target until the hero is near it
 //   { "press": true }            a quick tap on the big button (the press and the release at once)
@@ -96,6 +97,12 @@ async function pointOf(spec) {
     if (s.person) p = v.screenOfPerson(s.person);
     else if (s.thing) p = v.screenOfThing(s.thing);
     else if (s.cell) p = v.screenOf(s.cell[0], s.cell[1]);
+    else if (s.place) {
+      // The middle of the rect of a place of a task (the mat, the basket), on the ground.
+      const z = v.state().entities.find((e) => e.id === `zone:${s.place}`);
+      const r = z?.zone.rect;
+      p = r ? v.pointOf((r.x0 + r.x1) / 4, (r.z0 + r.z1) / 4) : null;
+    }
     else if (s.star) {
       const el = document.querySelector('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])');
       const r = el?.getBoundingClientRect();

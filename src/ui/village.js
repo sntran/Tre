@@ -649,7 +649,10 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     if (hold && hold.id === e.pointerId) {
-      const wasHeld = hold.held;
+      // A long press that did not move is a tap too: the walk toward the finger goes on to the
+      // place, and the place is the target (a child often presses long, #47).
+      const still = Math.hypot(p.x - hold.sx, p.y - hold.sy) < 14;
+      const wasHeld = hold.held && !still;
       hold = null;
       if (wasHeld || e.type !== 'pointerup' || busy) return;
       onTap(p);
@@ -1381,6 +1384,8 @@ export async function mountVillage(ctx, params = {}) {
     },
     // The plank under a screen point, for automatic tests.
     thingAt: (x, y) => thingUnder({ x, y }, view, query(state, 'item', 'position'))?.e.id ?? null,
+    // The target of a tap at a screen point (src/world/hit.js), for automatic tests.
+    targetUnder: (x, y) => targetUnder({ x, y }),
     turn: (n) => view.turn(n),
     stats: (opts) => view.stats(opts),
     // The world state, for automatic tests (read only).

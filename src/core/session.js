@@ -1542,6 +1542,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return tz && !tz.zone.done ? tz : null;
     };
     const held = getEntity(state, holding());
+    // A heap or a pile of a task in reach (of this task; null: of any open task): a press with
+    // empty hands takes from it, and a thing comes back from a place only after a tap on the thing
+    // itself (#47). The things of the heap are in reach, not only its point.
+    const heapNear = (task) => query(state, 'zone').some((h) => (h.zone.rule === 'heap' || h.zone.rule === 'pile') && (task === null ? h.zone.task?.startsWith('trial-') && !trialZone(h.zone.task.slice(6))?.zone.done : h.zone.task === task)
+      && h.zone.items.some((id) => { const t = getEntity(state, id); return t?.position && !t.item.held && distHb(hp, middleOf(t)) <= REACH + 2; }));
     // People: the finish of the task of the person, or a talk (during the task: a call for help).
     for (const q of persons()) {
       const e = getEntity(state, q.entity);
@@ -1552,7 +1557,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         continue;
       }
       const fin = finishOf(mentoring.taskOfPerson(q.entity));
-      if (fin) add({ ...base, ...fin, rank: 0 }, REACH + 3);
+      // The finish is a try (a commit): it comes after a tap on the person, or when no heap of the
+      // work is in reach. A child who presses again after a put never ties by accident (#47).
+      const tapped = chosen?.id === q.entity;
+      if (fin && (tapped || !heapNear(null))) add({ ...base, ...fin, rank: 0 }, REACH + 3);
+      // In a task, the call for help comes after a tap on the person when a heap of the work is
+      // in reach: a press takes from the heap.
+      else if (fin && !tapped) continue;
       else add({ ...base, act: 'talk', icon: 'talk', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
     }
     if (!held) {
@@ -1610,9 +1621,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // the child just made (#47).
         if (!(marked && tapped === null)) add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z }, run: () => work('woodcutter', 'mark', { at }) }, REACH + 2);
       }
-      // A heap or a pile of the same task in reach: a press with empty hands takes from it, and a
-      // thing comes back from a place only after a tap on the thing itself (#47).
-      const heapNear = (task) => query(state, 'zone').some((h) => (h.zone.rule === 'heap' || h.zone.rule === 'pile') && h.zone.task === task && h.zone.items.length && distHb(hp, h.position) <= REACH + 3);
       // The hands: pick up a thing (on a span, only its last plank); take one back from a place.
       for (const e of query(state, 'item', 'position')) {
         if (e.hidden || e.item.held || e.item.set || e.item.fixed) continue;

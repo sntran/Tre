@@ -210,3 +210,21 @@ test('the fisher: a press while the tide is in keeps the stake in the hands, and
   assert.ok(session.carried(), 'the stake stays in the hands');
   assert.ok(said.includes('fisher.tide.wait'), 'the fisher says to wait');
 });
+
+test('after a put at the mat, a press with the teacher in front takes from the heap: no tie and no call for help without a tap on the teacher', async () => {
+  const s = story('practice-bo-que');
+  s.steps = [...s.steps.slice(0, 5), { press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }, { press: { screenOf: 'mat' } }, { until: { event: 'put', timeout: 10 } }];
+  let session = null;
+  await runHeadless(s, { onSession: (x) => { session = x; } });
+  const hero = getEntity(session.state, 'hero');
+  const r = getEntity(session.state, 'zone:mat').zone.rect;
+  const teacher = getEntity(session.state, 'npc:teacher').position;
+  // At the left edge of the mat, facing the teacher (the heap behind the hero).
+  Object.assign(hero.position, { x: r.x0 + 1.5, z: (r.z0 + r.z1) / 2, facing: Math.atan2(teacher.x - r.x0 - 1.5, teacher.z - (r.z0 + r.z1) / 2) });
+  steps(session, 0.1);
+  assert.equal(session.action()?.act, 'pick', JSON.stringify(session.action()));
+  // A tap on the teacher: now the press ties.
+  session.command({ type: 'tap', target: { person: 'npc:teacher' } });
+  steps(session, 3);
+  assert.equal(session.action()?.act, 'tie');
+});
