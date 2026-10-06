@@ -1,0 +1,122 @@
+{
+ "about": "#49: a new game on a phone, as a child plays: taps on the stars, a stay near the people of the trials, restless taps, and a long wait. The view lists each sound that played: no sound of the world plays more than four times in a minute, and a person greets one time.",
+ "start": "",
+ "lang": "vi",
+ "allow": [
+  "the button Tiếp is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "create": "An"
+  },
+  {
+   "read": 12
+  },
+  {
+   "click": "Chào nghé con"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "read": 12
+  },
+  {
+   "click": "Đồng ý"
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-start"
+  },
+  {
+   "tap": {
+    "star": true
+   }
+  },
+  {
+   "wait": 6
+  },
+  {
+   "read": 20
+  },
+  {
+   "press": true
+  },
+  {
+   "wait": 2
+  },
+  {
+   "read": 30
+  },
+  {
+   "shot": "near-the-grandma"
+  },
+  {
+   "tap": {
+    "star": true
+   }
+  },
+  {
+   "wait": 8
+  },
+  {
+   "read": 20
+  },
+  {
+   "tap": {
+    "star": true
+   }
+  },
+  {
+   "wait": 8
+  },
+  {
+   "read": 20
+  },
+  {
+   "shot": "near-a-trial"
+  },
+  {
+   "wait": 60
+  },
+  {
+   "read": 20
+  },
+  {
+   "restless": 30,
+   "seed": 5
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 60
+  },
+  {
+   "read": 20
+  },
+  {
+   "shot": "after-a-long-wait"
+  },
+  {
+   "print": "(() => { const c = {}; for (const x of tre.activeVillage.sounds()) c[x.name] = (c[x.name] ?? 0) + 1; return c; })()"
+  },
+  {
+   "print": "(() => { const s = tre.activeVillage.sounds().filter((x) => x.id !== 'hero' && !String(x.id).startsWith('zone:')); const m = {}; for (const a of s) { const n = s.filter((b) => b.name === a.name && b.t >= a.t && b.t < a.t + 60).length; m[a.name] = Math.max(m[a.name] ?? 0, n); } return m; })()"
+  },
+  {
+   "check": "(() => { const s = tre.activeVillage.sounds().filter((x) => x.id !== 'hero' && !String(x.id).startsWith('zone:')); return s.every((a) => s.filter((b) => b.name === a.name && b.t >= a.t && b.t < a.t + 60).length <= 4); })()"
+  }
+ ]
+}

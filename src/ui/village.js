@@ -195,6 +195,8 @@ export async function mountVillage(ctx, params = {}) {
   setSpeech(speechTable(data.speech, speechWay(data.regions, session.map.region)));
   const state = session.state;
   const hearing = createHearing();
+  // The sounds of the world that played, for the phone play (tools/phone-play.mjs).
+  const soundsHeard = [];
   // One view for each map, made once for its terrain. The far land and the mist fade into the
   // paper (mistAt: 0 in the land of the era, 1 deep in the mist).
   const fadeCells = mapData.mist?.fade ?? 12;
@@ -1097,8 +1099,12 @@ export async function mountVillage(ctx, params = {}) {
     // A sound of the world is softer far away, and the same sound does not play again and again
     // (#49, src/core/hearing.js).
     if (ev.sound) {
-      const volume = hearing.hear(ev, state, performance.now() / 1000);
-      if (volume > 0) ctx.bus.emit('sound', { name: ev.sound, volume });
+      const now = performance.now() / 1000;
+      const volume = hearing.hear(ev, state, now);
+      if (volume > 0) {
+        ctx.bus.emit('sound', { name: ev.sound, volume });
+        if (soundsHeard.length < 5000) soundsHeard.push({ name: ev.sound, t: now, id: ev.id });
+      }
     }
     if (ev.type === 'petted') showBubble(ev.id, '♥');
     // The example of a station: the button picture of each act over the person.
@@ -1453,6 +1459,8 @@ export async function mountVillage(ctx, params = {}) {
     stats: (opts) => view.stats(opts),
     // The world state, for automatic tests (read only).
     state: () => state,
+    // The sounds of the world that played: { name, t (seconds), id }, for automatic tests.
+    sounds: () => soundsHeard.slice(),
   };
   ctx.activeVillage = api;
 
