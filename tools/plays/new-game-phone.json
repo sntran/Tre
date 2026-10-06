@@ -1,0 +1,22 @@
+{
+  "about": "#45: a new game on a phone. The child chooses the language on the title screen, and hero creation does not ask for it again. Tiếp with an empty name says what to do and gives names to choose.",
+  "start": "",
+  "lang": "vi",
+  "allow": ["the button Tiếp is under the bottom of the screen"],
+  "steps": [
+    {"wait": 3},
+    {"shot": "title"},
+    {"click": "Tiếng Việt"},
+    {"click": "Cuộc phiêu lưu mới"},
+    {"wait": 2},
+    {"check": "!document.body.textContent.includes('Chọn ngôn ngữ')"},
+    {"click": "Tiếp"},
+    {"wait": 1},
+    {"shot": "name-help"},
+    {"click": "Bạn trai"},
+    {"click": "An"},
+    {"create": ""},
+    {"read": 3},
+    {"shot": "the-first-line"}
+  ]
+}
