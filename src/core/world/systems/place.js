@@ -38,6 +38,7 @@ const DROP = 0.35; // seconds: the hero falls into the water
 const PULL = 0.8; // seconds: Nghé pulls the hero to the edge
 const SLIDE = 0.8; // seconds: a plank that is too long slides back into the water
 const GLANCE = 1.2; // seconds: Nghé glances at the outlines when the child skips the prediction
+const GROUND_BACK = 120; // steps (4 seconds): a thing of a task on the ground goes back to its heap
 
 export function place(world, dt, rng, env) {
   tidy(world, env);
@@ -65,6 +66,14 @@ function tidy(world, env) {
     }
   }
   for (const t of query(world, 'item')) {
+    // A thing of a task that lies on the ground goes back to its heap after a few seconds (the
+    // person puts it back), so that the work never stops for a lost rod (#44).
+    if (t.item.dropped !== undefined && !t.item.held && !t.item.zone && t.item.home && world.tick - t.item.dropped >= GROUND_BACK) {
+      delete t.item.dropped;
+      toHeap(world, t);
+      say(world, 'back', t.id, { item: t.id, sound: 'plank-down' });
+      continue;
+    }
     if (!t.item.held || getEntity(world, t.item.held)?.hands?.holds === t.id) continue;
     t.item.held = null;
     t.hidden = false;
@@ -149,6 +158,7 @@ function pick(world, e, thing, env, dt) {
   thing.item.zone = null;
   thing.item.held = e.id;
   thing.item.since = world.tick;
+  delete thing.item.dropped;
   thing.hidden = true;
   delete thing.tilt;
   e.hands.holds = thing.id;
@@ -225,6 +235,7 @@ function drop(world, e, env) {
   }
   release(e, thing);
   thing.position = { x, y: env.groundY(x / 2, z / 2), z, facing };
+  if (thing.item.home) thing.item.dropped = world.tick;
   say(world, 'drop', e.id, { item: thing.id, sound: 'plank-down' });
 }
 

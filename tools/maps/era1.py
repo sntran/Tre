@@ -212,11 +212,6 @@ ore_triggers(A, 'ore2', 3, 31)
 A.triggers += [
     {'id': 'well', 'x': 20, 'y': 11, 'on': 'tap', 'action': {'textKey': 'map.well'}},
     {'id': 'banyan', **A.rect('banyan'), 'on': 'tap', 'action': {'textKey': 'map.banyan'}},
-    {'id': 'home', **A.rect('home'), 'on': 'tap', 'action': {'talk': 'grandma'}},
-    {'id': 'school', **A.rect('school'), 'on': 'tap', 'action': {'talk': 'teacher'}},
-    {'id': 'forge', **A.rect('forge'), 'on': 'tap', 'action': {'talk': 'smith'}},
-    {'id': 'dinh', **A.rect('dinh'), 'on': 'tap', 'action': {'talk': 'elder'}},
-    {'id': 'giong-house', **A.rect('giong-house'), 'on': 'tap', 'action': {'talk': 'mother'}},
     {'id': 'sign', 'x': 20, 'y': 41, 'on': 'tap', 'action': {'textKey': 'map.sign.vanmieu'}},
     {'id': 'field-home', 'x': 3, 'y': 19, 'w': 8, 'h': 6, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-east', 'x': 33, 'y': 2, 'w': 6, 'h': 25, 'on': 'tap', 'action': {'textKey': 'map.field'}},

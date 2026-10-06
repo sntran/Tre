@@ -33,6 +33,7 @@
 // raid starts or its things went away), and lose { to, take } (the goods that an enemy took fly
 // from the counter to it).
 import { findPath, pathNextTo, createPlaneTileMap, footprint } from './tilemap.js';
+import { check } from './conditions.js';
 import { createTriggers } from './triggers.js';
 import { currentGoal } from './quests.js';
 import { offOf, weekOf } from './learnlog.js';
@@ -1608,9 +1609,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const g = outlines.find((x) => x.id === chosen?.id) ?? outlines.reduce((a, b) => (distHb(ahead, b.position) < distHb(ahead, a.position) ? b : a));
         add({ act: 'guess', icon: 'check', target: g.id, at: g.position, rank: 0.5, run: () => worldCommand(state, { type: 'guess', id: 'hero', zone: g.guess.zone, n: g.guess.n }) }, REACH);
       }
-      // Nghé: get on its back (only when nothing else is in reach).
+      // A thing of the map with a text or a find (the well, the banyan, a sign, a field, the ore of
+      // the forge): the button looks at it when the hero is next to it (#44: a tap only walks).
+      const ht = heroFrom();
+      for (const z of triggers.list) {
+        if (z.on !== 'tap' || (z.once && profile.flags[`zone.${z.id}`]) || !check(z.when, cond())) continue;
+        const nx = Math.max(z.x, Math.min(z.x + z.w - 1, ht.x));
+        const ny = Math.max(z.y, Math.min(z.y + z.h - 1, ht.y));
+        if (Math.max(Math.abs(nx - ht.x), Math.abs(ny - ht.y)) > 2) continue;
+        add({ act: 'look', icon: 'hint', target: `look:${z.id}`, at: { x: (nx + 0.5) * 2, z: (ny + 0.5) * 2 }, rank: z.action?.pickup ? 1 : 5, run: () => doAction(z) }, REACH + 3);
+      }
+      // Nghé: get on its back (only when nothing else is in reach), never in a task or a folk game
+      // (a press in the middle of the rope must not put the hero on Nghé, #44).
       const nghe = query(state, 'follow', 'position').find((e) => e.follow?.target === 'hero' && !e.hidden);
-      if (nghe && !raidOn()) add({ act: 'ride', icon: 'ride', target: nghe.id, at: nghe.position, rank: 6, run: () => worldCommand(state, { type: 'ride', id: 'hero', mount: nghe.id }) }, REACH + 2);
+      if (nghe && !raidOn() && !mentoring.activeKey() && !folk.active()) add({ act: 'ride', icon: 'ride', target: nghe.id, at: nghe.position, rank: 6, run: () => worldCommand(state, { type: 'ride', id: 'hero', mount: nghe.id }) }, REACH + 2);
       return out;
     }
     // A thing in the hands: the places that take it (a ghost shows where it goes on a line).
@@ -1644,7 +1656,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at, rank: 0.5, run: () => put(null) }, REACH + 3);
       } else if (zone.rule === 'heap') {
         if (held.item.home !== zone.id) continue;
-        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: z.position, rank: 0.5, run: () => put(null) }, REACH + 2);
+        // Back on its own heap: the last place before the ground, so that a press at the heap
+        // after a pick-up puts the thing on the place of the task (#44).
+        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: z.position, rank: 4, run: () => put(null) }, REACH + 2);
       } else if (zone.rule === 'road') {
         continue;
       } else {
@@ -1665,16 +1679,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (screen || busy || h.fall) return null;
     if (raidOn()) return raidAction();
     if (h.riding) return { act: 'ride-off', icon: 'ride-off', target: h.riding, run: () => worldCommand(state, { type: 'ride', id: 'hero' }) };
-    const list = candidates();
+    let list = candidates();
     if (!list.length) return null;
+    // With a thing in the hands: a place in reach that takes it always comes before the ground,
+    // and the hero turns to it (#44). The ground is a target only when no place is in reach.
+    const holdsThing = Boolean(holding());
+    const places = list.filter((c) => !(c.act === 'put' && c.rank >= 10));
+    if (holdsThing && places.length) list = places;
+    // The ride on Nghé comes only when nothing else is in reach.
+    const others = list.filter((c) => c.act !== 'ride');
+    if (others.length) list = others;
     const f = h.position.facing ?? 0;
     const score = (c) => {
       const dx = c.at.x - h.position.x;
       const dz = c.at.z - h.position.z;
       const len = Math.hypot(dx, dz);
-      // In front of the hero comes first; behind the hero comes last.
+      // In front of the hero comes first; behind the hero comes last (a place for the thing in the
+      // hands: the hero turns to it).
       const front = len < 0.5 ? 1 : (dx * Math.sin(f) + dz * Math.cos(f)) / len;
-      const turn = front < -0.2 ? 6 : front < 0.4 ? 2 : 0;
+      const turn = holdsThing && c.act === 'put' ? 0 : front < -0.2 ? 6 : front < 0.4 ? 2 : 0;
       const tapped = chosen && c.keys.includes(chosen.id) ? 8 : 0;
       return Math.max(0, c.d) + c.rank * 0.5 + turn - tapped;
     };
@@ -1686,6 +1709,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const a = action();
     if (!a) return;
     if (a.hold) return hold(true);
+    // The hero turns to the target of the act (a place behind the hero, #44).
+    if (a.at && a.act !== 'ride' && a.act !== 'ride-off') worldCommand(state, { type: 'face', id: 'hero', x: a.at.x, z: a.at.z });
     a.run();
     emit({ type: 'pulse', id: a.target });
   }
@@ -1828,17 +1853,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       worldCommand(state, { type: 'knock', home: hit.object });
       return;
     }
-    // A thing with a tap zone.
-    const o = hit.object ? map.layers.objects.find((x) => x.id === hit.object) : null;
-    const zone = o ? triggers.fire('tap', o.x, o.y, cond()) : null;
-    if (zone) {
-      const at = { x: o.x + o.w / 2, y: o.y + o.h / 2 };
-      emit({ type: 'tapfx', x: at.x, y: at.y, h: groundY(at.x, at.y) });
-      walkPath(pathNextTo(tileMap, from, { x: o.x + Math.floor(o.w / 2), y: o.y + o.h - 1 }) ?? pathNextTo(tileMap, from, o), null, () => doAction(zone),
-        { x: at.x, y: at.y, d: Math.max(o.w, o.h) / 2 + 1.5 });
-      return;
-    }
-    // The ground (or the foot of a thing without a zone).
+    // The ground (or the foot of a thing). A tap always walks (#44): a tap never opens a talk or a
+    // text; the big button does that near the thing.
     const tile = { x: Math.floor(hit.x), y: Math.floor(hit.y) };
     if (!tileMap.inside(tile.x, tile.y)) return;
     emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.thing ? groundY(hit.x, hit.y) : hit.h });
@@ -1846,13 +1862,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const span = spanAt(tile.x, tile.y);
     if (span) {
       tapSpan(span);
-      return;
-    }
-    // A tap zone on the ground is a thing that the hero cannot walk on (water, a field).
-    // A tap on a free cell of the zone (the ford, a dike in the field) is a walk.
-    const onGround = tileMap.isBlocked(tile.x, tile.y) ? triggers.fire('tap', tile.x, tile.y, cond()) : null;
-    if (onGround) {
-      walkPath(pathNextTo(pathMap(), from, tile), null, () => doAction(onGround), { x: hit.x, y: hit.y, d: 2.2 });
       return;
     }
     log('action', { kind: 'walk' });
@@ -1865,7 +1874,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     const paths = pathMap();
     if (paths.walkable(tile.x, tile.y)) walkPath(findPath(paths, from, tile)?.slice(0, -1), { x: hit.x, y: hit.y }, null);
-    else walkPath(pathNextTo(paths, from, tile), null, null);
+    else walkPath(pathToward(paths, from, tile), null, null);
+  }
+
+  // A path to a blocked cell (a house, water, a paddy, a person): to a free cell next to it, or
+  // else to the free cell nearest to it on the line from the hero to it (#44). Never nothing when
+  // a free cell is on the way.
+  function pathToward(paths, from, tile) {
+    const next = pathNextTo(paths, from, tile);
+    if (next) return next;
+    const n = Math.ceil(Math.hypot(tile.x - from.x, tile.y - from.y) * 2);
+    for (let i = 1; i < n; i++) {
+      const x = Math.floor(tile.x + 0.5 + ((from.x - tile.x) * i) / n);
+      const y = Math.floor(tile.y + 0.5 + ((from.y - tile.y) * i) / n);
+      if (!paths.walkable(x, y)) continue;
+      if (x === from.x && y === from.y) return null;
+      const path = findPath(paths, from, { x, y });
+      if (path) return path;
+    }
+    return null;
   }
 
   // The last free cell before an edge on the line from the hero to a point (map cells), or null.
