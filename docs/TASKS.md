@@ -20,6 +20,7 @@ Every task in the world must be clear to a child of six. Young children need lar
 - The target is the thing in reach that the button acts on now (`action()` in `src/core/session.js`). The thing in front of the hero comes first; a thing behind the hero comes last; the thing of the last tap comes before the others.
 - **The next press never undoes the last one** (#47). After the act on the target of a tap, the tap is used up. With a heap of the work in reach, a thing comes back from a place, a chalk mark goes away, the finish at the person (a try), and a call for help come only after a tap on that thing, mark, or person. A press with empty hands takes from the heap.
 - The point of each place of a task is the middle of its rect; the hero stands at its edge to work there. No thing of a heap lies in the rect of a place.
+- A press while the hero still walks to the target of a tap comes at the end of the walk (a child presses at once).
 - The target has a thicker ink outline and a soft light on the ground under it (`mark()` in `src/render/figure3d.js`). The button shows the picture of the act. With no target, the button is dim and has no picture.
 - **Places on a line** (a stake on the line of the fisher, a chalk mark on the stem, a plank at the gap of the bridge, a trap in the stream): a pale ghost of the thing shows at the spot in front of the hero, on the half-block grid. A press puts the thing at the ghost. A tap on the line chooses the spot.
 - When the button acts, the target pulses once.

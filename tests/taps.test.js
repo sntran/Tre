@@ -228,3 +228,29 @@ test('after a put at the mat, a press with the teacher in front takes from the h
   steps(session, 3);
   assert.equal(session.action()?.act, 'tie');
 });
+
+test('a press at once after a tap on a spot in the stream waits for the walk, and the trap goes into the stream', async () => {
+  const { tapTarget, sessionCamera, sessionScreen } = await import('../src/world/hit.js');
+  let session = null;
+  await runHeadless({ name: 'press-walk', practice: 'dat-lo', profile: { name: 'An', grade: 1, lang: 'vi', seed: 3, flags: {} }, steps: [] }, { onSession: (x) => { session = x; } });
+  for (let k = 0; k < 20 * 30; k++) {
+    if (session.screen === 'dialogue' || session.screen === 'say') session.command({ type: 'next' });
+    session.step();
+    session.events();
+  }
+  const pile = getEntity(session.state, 'zone:traps-pile');
+  session.command({ type: 'tap', target: { thing: pile.zone.items[0] } });
+  steps(session, 4);
+  session.command({ type: 'hands' });
+  steps(session, 1.5);
+  assert.ok(session.carried(), 'a trap is in the hands');
+  // The child taps the spot on the screen and presses at once, while the hero walks.
+  const spot = getEntity(session.state, 'hamlet:spot:1');
+  const cam = sessionCamera(session);
+  const t = tapTarget(cam.project(spot.position.x / 2, spot.position.y / 2, spot.position.z / 2), sessionScreen(session, cam));
+  session.command({ type: 'tap', target: t });
+  session.command({ type: 'hands' });
+  steps(session, 5);
+  assert.equal(getEntity(session.state, 'zone:traps-stream').zone.items.length, 1, 'the trap is in the stream');
+  assert.equal(session.carried(), null);
+});

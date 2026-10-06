@@ -1,0 +1,84 @@
+{
+  "about": "#47: the fish traps on a phone with taps and presses only: a tap on the pile and a press take a trap; a tap on a spot in the stream and a press put it there; restless play. The world never stops.",
+  "start": "?practice=dat-lo",
+  "lang": "vi",
+  "steps": [
+    {
+      "create": "Nam"
+    },
+    {
+      "read": 15
+    },
+    {
+      "wait": 25
+    },
+    {
+      "check": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))"
+    },
+    {
+      "read": 15
+    },
+    {
+      "wait": 2
+    },
+    {
+      "shot": "the-work"
+    },
+    {
+      "tap": {
+        "thing": "zone:traps-pile"
+      },
+      "after": 3
+    },
+    {
+      "press": true,
+      "after": 1.5
+    },
+    {
+      "print": "tre.activeVillage.session.carried()"
+    },
+    {
+      "tap": {
+        "thing": "hamlet:spot:1"
+      },
+      "after": 3
+    },
+    {
+      "print": "tre.activeVillage.session.chosen()"
+    },
+    {
+      "shot": "a-trap-in-the-hands-and-the-spot-chosen"
+    },
+    {
+      "press": true,
+      "after": 2
+    },
+    {
+      "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:traps-stream').zone.items.length"
+    },
+    {
+      "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:traps-stream').zone.items.length >= 1"
+    },
+    {
+      "press": true,
+      "after": 1.5
+    },
+    {
+      "press": true,
+      "after": 1.5
+    },
+    {
+      "restless": 25,
+      "seed": 11
+    },
+    {
+      "read": 15
+    },
+    {
+      "shot": "after-restless-play"
+    }
+  ],
+  "allow": [
+    "is under the bottom of the screen"
+  ]
+}

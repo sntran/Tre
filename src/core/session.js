@@ -710,9 +710,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // it becomes the target of the action button (docs/TASKS.md). A tap never does a step of a task.
   let chosen = null; // the last tap: { id (an entity), along (a place along a stem or a line) }
   // p: the point of the target (half blocks); stand: where the hero walks to (p when not given).
+  // A press while the hero walks to the target of a tap waits for the end of the walk (#47).
+  let pressAfterWalk = false;
   function goTo(p, id, along = null, stand = p) {
     chosen = { id, along };
-    const face = () => worldCommand(state, { type: 'face', id: 'hero', x: p.x, z: p.z });
+    pressAfterWalk = false;
+    const face = () => {
+      worldCommand(state, { type: 'face', id: 'hero', x: p.x, z: p.z });
+      if (pressAfterWalk) {
+        pressAfterWalk = false;
+        act();
+      }
+    };
     // Near enough to act there: only a turn to it.
     if (distHb(hero().position, stand) <= REACH - 1) return face();
     walkToThing({ x: stand.x / 2, y: stand.z / 2 }, face);
@@ -1762,6 +1771,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // that goes on while the button is down starts here, and ends with the hold of the button.
   function act() {
     const a = action();
+    // The hero still walks to the target of the last tap, and the button has no act on it yet:
+    // the press comes at the end of the walk (a child presses at once).
+    if (chosen && (hero().route || arrivals.size) && !(a && (a.keys ?? [a.target]).includes(chosen.id))) {
+      pressAfterWalk = true;
+      return;
+    }
     if (!a) return;
     if (a.hold) return hold(true);
     // The hero turns to the target of the act (a place behind the hero, #44).
@@ -2328,6 +2343,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (type === 'move' && cmd.strength) {
         arrivals.clear();
         chosen = null;
+        pressAfterWalk = false;
       }
       worldCommand(state, { id: 'hero', ...cmd });
     }

@@ -1,0 +1,24 @@
+{
+  "about": "#47: the practice chat-tre on a phone with taps and presses only: a tap on the place, presses, and restless play. The world never stops.",
+  "start": "?practice=chat-tre",
+  "lang": "vi",
+  "steps": [
+    { "create": "Nam" },
+    { "read": 15 },
+    { "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))", "timeout": 600 },
+    { "read": 15 },
+    { "wait": 2 },
+    { "shot": "the-work" },
+    { "tap": { "place": "woodpile" }, "after": 3 },
+    { "print": "tre.activeVillage.session.chosen()" },
+    { "shot": "a-tap-on-the-place" },
+    { "press": true, "after": 1.5 },
+    { "press": true, "after": 1.5 },
+    { "restless": 25, "seed": 11 },
+    { "read": 15 },
+    { "shot": "after-restless-play" }
+  ],
+  "allow": [
+    "is under the bottom of the screen"
+  ]
+}
