@@ -31,7 +31,13 @@ import { exactResult } from '../days.js';
 const BEND = 1.2; // seconds: the bent iron cools before it goes back into the fire
 const TIDE_IN = 2.5; // seconds: the tide stands high over the stakes
 const TIDE_OUT = 3; // seconds: the tide goes out and shows the trap
-const NEW_STEM = 1.2; // seconds: a new stem (or culm) comes after sticks that are not equal
+const NEW_STEM = 1.2; // seconds: a new culm comes after staffs that are not equal
+// The cut of the woodcutter that is not equal (#48): the pieces lie side by side this long (seconds),
+// the short one breaks after CUT_BREAK, and then a new stem comes. PIECE_ROW: the space between
+// the rows of the pieces (half blocks).
+const CUT_SHOW = 2.6;
+const CUT_BREAK = 1;
+const PIECE_ROW = 1.6;
 const CULM_STEP = 2.5; // half blocks between two culms of the bamboo clump (a row along -z)
 const AIM_RISE = 0.45; // seconds: the mark of a slash goes up one half block of the culm in this time
 const MAT_MAX = 14; // the most rods on the mat of the teacher
@@ -684,7 +690,7 @@ function act(world, e, want, env) {
       removeEntity(world, id);
     } else {
       tz.zone.marks.push(at);
-      addEntity(world, { id, keep: true, position: { x: s.x + at, y: s.y + 0.6, z: s.z, facing: 0 }, look: 'chalk' });
+      addEntity(world, { id, keep: true, position: { x: s.x + at, y: s.y, z: s.z, facing: 0 }, look: 'chalk-band' });
     }
     say(world, 'mark', stem.id, { at, sound: 'tap' });
   } else if (want.act === 'aim') {
@@ -748,11 +754,19 @@ function act(world, e, want, env) {
       addEntity(world, { id: 'sticks:woodcutter', keep: true, item: { kind: 'sticks', size: 2, task: `trial-woodcutter`, zone: null, home: null, held: null, set: false }, position: { x: s.x + s.length / 2 - 1, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `sticks-${task.parts}` });
       say(world, 'chop', `zone:trial-woodcutter`, { sound: 'plank-up', pieces: result.pieces });
     } else {
-      // The sticks are not equal: the short one breaks, and a new stem comes.
+      // The sticks are not equal: they lie side by side, so that the child sees the short one; the
+      // short one breaks, the woodcutter says why, and then a new stem comes (#48).
       const shortest = Math.min(...result.pieces);
       if (stem) stem.hidden = true;
-      tz.zone.cut = NEW_STEM;
+      const n = result.pieces.length;
+      result.pieces.forEach((len, i) => {
+        addEntity(world, { id: `piece:woodcutter:${i}`, keep: true, position: { x: s.x, y: s.y, z: s.z + (i - (n - 1) / 2) * PIECE_ROW, facing: Math.PI / 2 }, look: `piece-${len}` });
+      });
+      tz.zone.cut = CUT_SHOW;
+      tz.zone.short = result.pieces.indexOf(shortest);
       say(world, 'snap', `zone:trial-woodcutter`, { pieces: result.pieces, short: shortest, sound: 'plank-down' });
+      const person = query(world, 'person').find((p) => p.person.ref === 'woodcutter');
+      if (person) say(world, 'call', person.id, { key: 'woodcutter.short', params: {} });
     }
   }
 }
@@ -950,8 +964,21 @@ function tickSlash(world, tz, dt, env) {
 function tickStem(world, tz, dt) {
   if (!tz.zone.cut) return;
   tz.zone.cut -= dt;
+  // The short piece breaks a second after the cut: dust where it lay.
+  if (tz.zone.short != null && tz.zone.cut < CUT_SHOW - CUT_BREAK) {
+    const short = getEntity(world, `piece:woodcutter:${tz.zone.short}`);
+    if (short) {
+      say(world, 'snap', short.id, { at: { x: short.position.x + 2, z: short.position.z }, sound: 'plank-down' });
+      removeEntity(world, short.id);
+    }
+    delete tz.zone.short;
+  }
   if (tz.zone.cut > 0) return;
   delete tz.zone.cut;
+  for (const e of query(world, 'position').filter((x) => String(x.id).startsWith('piece:woodcutter:'))) removeEntity(world, e.id);
   const stem = getEntity(world, 'stem:woodcutter');
-  if (stem) stem.hidden = false;
+  if (stem) {
+    stem.hidden = false;
+    say(world, 'stem', stem.id, { sound: 'plank-down' });
+  }
 }

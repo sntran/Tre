@@ -1104,7 +1104,8 @@ export async function mountVillage(ctx, params = {}) {
       if (at) figures.burst(at[0] + 0.5, at[1] + 1, at[2] + 0.5, 'dust', 10);
     }
     if (ev.type === 'snap' || ev.type === 'strike' || ev.type === 'butt') {
-      const f = figures.placeOf(ev.type === 'snap' ? ev.trap : ev.id);
+      // A trap that snaps, a piece of the stem that breaks (at), or the band of the teacher.
+      const f = ev.at ? { x: ev.at.x / 2, y: session.env.groundY(ev.at.x / 2, ev.at.z / 2) / 2, z: ev.at.z / 2 } : figures.placeOf(ev.type === 'snap' ? ev.trap ?? ev.id : ev.id);
       if (f) figures.burst(f.x, f.y + 0.3, f.z, 'dust', 10);
     }
     // A plank falls into the river: a splash. The bridge takes solid form: dust along the deck.

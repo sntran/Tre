@@ -100,7 +100,7 @@ test('the woodcutter: the button puts a chalk mark at the place in front of the 
     { press: { stem: 3 } },
     { until: { event: 'mark', timeout: 10 } },
     // The next press never takes away the mark that was just made (#47); a tap on the mark does.
-    { expect: [{ count: { entities: 'chalk', min: 1, max: 1 } }] },
+    { expect: [{ count: { entities: 'chalk', min: 1, max: 1 } }, { count: { entities: 'chalk-band', min: 1, max: 1 } }] },
     { tap: { stem: 3 } },
     { wait: 1 },
     { expect: [{ action: { act: 'unmark', icon: 'clear' } }] },
@@ -112,6 +112,23 @@ test('the woodcutter: the button puts a chalk mark at the place in front of the 
     { press: { entity: 'npc:woodcutter' } },
     { until: { event: 'chop', timeout: 10 } },
     { expect: [{ event: 'pulse', with: { id: 'npc:woodcutter' } }, { event: 'skill', with: { solved: true } }] },
+  ]);
+});
+
+test('the woodcutter: a cut that is not equal shows the pieces side by side, the short one breaks, the woodcutter says why, and a new stem comes (#48)', async () => {
+  await play('task-woodcutter-short', [51, 8.5], [
+    ...start('woodcutter'),
+    // The stem is 8 long, for 2 equal sticks: a mark at 3 gives 3 and 5.
+    { press: { stem: 3 } },
+    { until: { event: 'mark', timeout: 10 } },
+    { press: { entity: 'npc:woodcutter' } },
+    { until: { event: 'snap', timeout: 10 } },
+    { expect: [{ count: { entities: 'piece:woodcutter', min: 2, max: 2 } }, { event: 'skill', with: { solved: false } }] },
+    { until: { event: 'call', with: { key: 'woodcutter.short' }, timeout: 3 } },
+    { wait: 1.5 },
+    { expect: [{ count: { entities: 'piece:woodcutter', min: 1, max: 1 } }] },
+    { wait: 1.5 },
+    { expect: [{ count: { entities: 'piece:woodcutter', max: 0 } }, { count: { entities: 'stem', min: 1, max: 1 } }] },
   ]);
 });
 

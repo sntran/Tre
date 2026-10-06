@@ -473,3 +473,7 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 - **The menu on a touch screen** shows only the touch help, with a picture of each control: `ui.help.tap` ("Chạm vào một chỗ: em đi đến đó."), `ui.help.star` ("Chạm vào ngôi sao: em đi đến chỗ cần đến."), `ui.help.stick` ("Giữ ngón tay trên vòng tròn ở góc dưới: em đi theo ngón tay."), `ui.help.act` ("Nút lớn: làm việc với thứ có viền đậm. Hình trên nút cho biết nút sẽ làm gì."), `ui.help.jump` ("Nút nhảy: em nhảy qua vũng nước hay khe nhỏ."), and `ui.help.turn` ("Hai nút xoay: xoay góc nhìn.").
 - **The keys** (`ui.keys`) show only with a mouse and a keyboard; the line has no touch part now.
 - **Please check:** "vòng tròn ở góc dưới" for the stick, and "nút lớn" for the action button.
+
+## What the work shows (#48)
+
+- **The woodcutter at a cut that is not equal:** `woodcutter.short` ("Khúc này ngắn quá nên gãy rồi. Các khúc phải dài bằng nhau.").

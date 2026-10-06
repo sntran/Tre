@@ -17,7 +17,7 @@
     { "press": { "entity": "npc:woodcutter" } },
     { "until": { "event": "snap", "timeout": 10 } },
     { "expect": [{ "event": "skill", "with": { "skill": "math.add.20", "solved": false, "parts": [3, 5] } }] },
-    { "wait": 2 },
+    { "until": { "event": "stem", "timeout": 5 } },
     { "press": { "stem": 4 } },
     { "until": { "event": "mark", "timeout": 10 } },
     { "press": { "entity": "npc:woodcutter" } },
