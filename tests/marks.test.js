@@ -1,0 +1,61 @@
+// The marks on the screen (#53): a star, an arrow, or a bubble never sits on a control, a star
+// never sits on the hero, and a bubble never covers the hero; a person off the screen talks from
+// the edge (src/world/marks.js).
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { overlaps, starBox, placeStar, placeArrow, placeBubble, upOutOf } from '../src/world/marks.js';
+
+// A phone held upright: the HUD to y 130, the stick and the buttons at the bottom.
+const screen = { w: 390, h: 844, top: 130, bottom: 844 };
+const controls = [
+  { x0: 24, y0: 684, x1: 136, y1: 796 }, // the stick
+  { x0: 270, y0: 680, x1: 380, y1: 830 }, // the big button and the turns
+  { x0: 150, y0: 740, x1: 260, y1: 830 }, // the jump
+];
+const hero = { x0: 175, y0: 380, x1: 215, y1: 460 };
+
+test('a star on the stick or on a button goes up over it; a star on the hero goes over the head of the hero', () => {
+  for (let x = 10; x <= 380; x += 10) {
+    for (let y = 600; y <= 844; y += 8) {
+      const s = placeStar({ x, y }, { controls, hero });
+      assert.ok(!controls.some((c) => overlaps(starBox(s), c)), `a star at ${x}, ${y} is on a control`);
+    }
+  }
+  const s = placeStar({ x: 195, y: 420 }, { controls, hero });
+  assert.ok(!overlaps(starBox(s), hero), 'the star is over the hero, not on the hero');
+  assert.ok(s.y <= hero.y0);
+  // A star away from all of them stays where it is.
+  assert.deepEqual(placeStar({ x: 100, y: 300 }, { controls, hero }), { x: 100, y: 300 });
+});
+
+test('an arrow at the bottom edge goes up over the controls (frame 3 of #53: a star at 82, 806 on the stick)', () => {
+  const a = placeArrow({ x: 82, y: 806 }, { controls });
+  assert.ok(!controls.some((c) => overlaps({ x0: a.x - 22, y0: a.y - 17, x1: a.x + 22, y1: a.y + 17 }, c)));
+});
+
+test('a bubble never covers the hero and never sits on a control; a person off the screen talks from the edge with a tail', () => {
+  // A person next to the hero: the bubble over the head would be on the hero.
+  const near = placeBubble({ x: 200, y: 440 }, 300, 50, { screen, hero, controls });
+  assert.ok(!overlaps(near, hero), 'over the hero, not on the hero');
+  assert.equal(near.away, false);
+  // A person to the west, off the screen (frame 3 of #53): the bubble is at the west edge, on the
+  // screen, not on the hero, and has a tail toward the person.
+  const west = placeBubble({ x: -200, y: 420 }, 300, 50, { screen, hero, controls });
+  assert.equal(west.away, true);
+  assert.deepEqual(west.tail, { x: -200, y: 420 });
+  assert.ok(west.x0 >= 0 && west.x1 <= screen.w && west.y0 >= screen.top, 'on the screen');
+  assert.ok(!overlaps(west, hero), 'not on the hero');
+  // A person under the screen: the bubble is over the controls.
+  const south = placeBubble({ x: 80, y: 1200 }, 200, 50, { screen, hero, controls });
+  assert.ok(!controls.some((c) => overlaps(south, c)), 'not on a control');
+  assert.ok(south.y1 <= screen.bottom);
+  // A hero at the top of the screen: the bubble goes under the hero.
+  const high = { x0: 175, y0: 140, x1: 215, y1: 220 };
+  const under = placeBubble({ x: 195, y: 180 }, 300, 50, { screen, hero: high, controls });
+  assert.ok(!overlaps(under, high) && under.y0 >= high.y1);
+});
+
+test('upOutOf moves a box up over every box that it overlaps', () => {
+  const b = upOutOf({ x0: 0, y0: 790, x1: 40, y1: 830 }, [{ x0: 0, y0: 800, x1: 50, y1: 844 }, { x0: 0, y0: 740, x1: 50, y1: 790 }]);
+  assert.ok(b.y1 <= 736);
+});

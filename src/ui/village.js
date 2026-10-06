@@ -15,6 +15,7 @@ import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, starOn, puddlesAt } 
 import { rainOf } from '../core/world/systems/sky.js';
 import { createSession, middleOf } from '../core/session.js';
 import { LINE_LIFE, lineLife, linesAfter, nearHero as talksNear } from '../core/lines.js';
+import { placeStar, placeArrow, placeBubble, AWAY_LIFE } from '../world/marks.js';
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
@@ -982,7 +983,7 @@ export async function mountVillage(ctx, params = {}) {
     const el = icon ? h('div', { class: 'world-bubble icon' }, [img(`ui/${icon}`, 'bubble-icon')]) : h('div', { class: 'world-bubble', text });
     marks.append(el);
     // A longer line stays longer (a greeting of one line), and wraps (styles/main.css).
-    bubbles.push({ id, el, age: 0, icon, life: lineLife(icon ? '' : text), width: el.offsetWidth });
+    bubbles.push({ id, el, age: 0, icon, life: lineLife(icon ? '' : text), width: el.offsetWidth, height: el.offsetHeight });
   }
   // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
   // up when it lands.
@@ -1165,11 +1166,36 @@ export async function mountVillage(ctx, params = {}) {
   const STAR_PULSE = 1.6;
   let starPulse = null;
   const pulseOf = (m) => (starPulse && m.id === starPulse.id ? 1 + 0.6 * Math.sin((Math.PI * starPulse.t) / STAR_PULSE) : 1);
+  // The boxes of the controls (the stick and the buttons) on the screen, and of the hero: the marks
+  // keep off them (src/world/marks.js, #53). The boxes of the buttons come again twice a second.
+  let controlBoxes = [];
+  let controlsAge = Infinity;
+  function controlsNow(canvasRect) {
+    if ((controlsAge += 1 / 60) < 0.5) return controlBoxes;
+    controlsAge = 0;
+    const box = (r) => ({ x0: r.left - canvasRect.left, y0: r.top - canvasRect.top, x1: r.right - canvasRect.left, y1: r.bottom - canvasRect.top });
+    controlBoxes = [...turns.querySelectorAll('button')].filter((b) => !b.hidden && b.offsetParent).map((b) => box(b.getBoundingClientRect()));
+    if (stick.show) {
+      const home = stickHome();
+      controlBoxes.push({ x0: home.x - STICK_R, y0: home.y - STICK_R, x1: home.x + STICK_R, y1: home.y + STICK_R });
+    }
+    return controlBoxes;
+  }
+  function heroBox() {
+    const f = figures.placeOf('hero');
+    if (!f) return null;
+    const feet = view.project(f.x, f.y, f.z);
+    const head = view.project(f.x, f.y + (f.height ?? 1.6), f.z);
+    const half = Math.max(14, (feet.y - head.y) * 0.3);
+    return { x0: feet.x - half, y0: head.y, x1: feet.x + half, y1: feet.y };
+  }
   function drawMarks() {
     if (starPulse && (starPulse.t -= 1 / 60) <= 0) starPulse = null;
     const hudRect = hud.getBoundingClientRect();
     const canvasRect = canvas.getBoundingClientRect();
     const inset = { top: Math.max(0, hudRect.bottom - canvasRect.top) + 8, right: 12, bottom: 12, left: 12 };
+    const controls = controlsNow(canvasRect);
+    const heroAt = heroBox();
     const screen = { x: 0, y: 0, w: size.width, h: size.height };
     let stars = 0;
     let arrows = 0;
@@ -1181,7 +1207,9 @@ export async function mountVillage(ctx, params = {}) {
       if (!edge) {
         const el = starAt(stars++);
         el.mark = m;
-        el.style.transform = `translate(${p.x - 15}px, ${p.y - 30 + bob}px) scale(${pulseOf(m)})`;
+        // Off the stick, the buttons, and the hero (#53).
+        const at = placeStar(p, { controls, hero: heroAt });
+        el.style.transform = `translate(${at.x - 15}px, ${at.y - 30 + bob}px) scale(${pulseOf(m)})`;
         continue;
       }
       // Targets in about the same direction share one arrow.
@@ -1190,7 +1218,8 @@ export async function mountVillage(ctx, params = {}) {
       const el = arrowAt(arrows++);
       el.mark = m;
       const pulse = Math.sin(time * 5) * 3;
-      el.style.transform = `translate(${edge.x}px, ${edge.y}px) rotate(${edge.angle}rad) translate(${-22 + pulse}px, 0) scale(${pulseOf(m)})`;
+      const at = placeArrow(edge, { controls });
+      el.style.transform = `translate(${at.x}px, ${at.y}px) rotate(${edge.angle}rad) translate(${-22 + pulse}px, 0) scale(${pulseOf(m)})`;
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
     }
     for (let i = stars; i < starPool.length; i++) starPool[i].hidden = true;
@@ -1204,10 +1233,18 @@ export async function mountVillage(ctx, params = {}) {
         continue;
       }
       const q = view.project(f.x, f.y + f.height + 0.4, f.z);
-      // The bubble stays on the screen: near an edge, it moves in from the edge.
-      const half = b.width / 2 + 8;
-      const x = Math.max(half, Math.min(size.width - half, q.x));
-      b.el.style.transform = `translate(${x}px, ${q.y - Math.min(b.age, LINE_LIFE) * 10 - (b.icon ? 40 : 0)}px) translate(-50%, -100%)`;
+      // The bubble stays on the screen, off the hero and the controls; a person off the screen
+      // talks from the edge with a tail toward the person, for a short time (#53).
+      const rise = Math.min(b.age, LINE_LIFE) * 10 + (b.icon ? 40 : 0);
+      const at = placeBubble({ x: q.x, y: q.y - rise }, b.width, b.height, { screen: { w: size.width, h: size.height, top: inset.top, bottom: size.height }, hero: heroAt, controls });
+      if (at.away) b.life = Math.min(b.life, AWAY_LIFE);
+      const side = !at.tail ? null : at.tail.x < at.x0 ? 'left' : at.tail.x > at.x1 ? 'right' : at.tail.y > at.y1 ? 'down' : 'up';
+      if (b.side !== side) {
+        if (b.side) b.el.classList.remove(`tail-${b.side}`);
+        if (side) b.el.classList.add(`tail-${side}`);
+        b.side = side;
+      }
+      b.el.style.transform = `translate(${at.x0}px, ${at.y0}px)`;
       b.el.style.opacity = String(Math.min(1, (b.life - b.age) * 2));
     }
     for (let i = arrows; i < arrowPool.length; i++) arrowPool[i].hidden = true;

@@ -284,6 +284,7 @@ const FILES = [
   'src/world/chunks.js',
   'src/world/fade.js',
   'src/world/hit.js',
+  'src/world/marks.js',
   'src/world/figures.js',
   'src/world/fine.js',
   'src/world/carry.js',
