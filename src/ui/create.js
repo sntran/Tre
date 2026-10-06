@@ -1,6 +1,6 @@
-// Hero creation: language, name, boy or girl, skin, face, hair, clothes, and grade. For a practice
-// link it is short: name, look, and grade (the grade sets the first level), and then the activity,
-// with no prologue. The preview is
+// Hero creation: name, boy or girl, skin, face, hair, clothes, and grade (the language is on the
+// title screen). For a practice link it is short: the language and the name, look, and grade (the
+// grade sets the first level), and then the activity, with no prologue. The preview is
 // the voxel hero itself, turning slowly (a drag turns it too), and each choice shows a small
 // rendered picture; the choices come from data/figures.json (hero).
 import { h, button } from './dom.js';
@@ -24,7 +24,9 @@ export async function mountCreate(ctx) {
   let grade = grades.default ?? gradeIds(grades)[0];
   let step = 0;
   const practice = ctx.practiceLink;
-  const steps = practice ? ['name', 'look', 'grade'] : ['lang', 'name', 'look', 'grade'];
+  // The language: the title screen has its choice, so a new game asks no second time; the short
+  // creation of a practice link (no title screen) has the two buttons on its first step (#45).
+  const steps = ['name', 'look', 'grade'];
   const next = () => show(step + 1);
 
   const screen = h('div', { class: 'screen' });
@@ -146,18 +148,38 @@ export async function mountCreate(ctx) {
         stage.append(b);
       }
     } else if (name === 'name') {
-      if (practice) stage.append(h('p', { class: 'practice-note center', text: t('practiceLink.new', { title: { key: practice.titleKey } }) }));
+      if (practice) {
+        stage.append(h('p', { class: 'practice-note center', text: t('practiceLink.new', { title: { key: practice.titleKey } }) }));
+        stage.append(h('div', { class: 'lang-switch create-lang' }, ['vi', 'en'].map((code) => {
+          const b = button(t(`lang.${code}`), async () => {
+            await ctx.chooseLanguage(code);
+            show(step);
+          }, { cls: `btn small ${lang() === code ? 'red' : 'paper'}` });
+          b.setAttribute('aria-pressed', String(lang() === code));
+          return b;
+        })));
+      }
       stage.append(title('create.name'));
       const input = h('input', { class: 'name-input', type: 'text', maxlength: String(opts.nameMax), autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', 'aria-label': t('create.name') });
       input.value = hero.name;
       stage.append(input);
-      stage.append(choiceRow(genders, () => hero.gender, (g) => h('span', { text: t(`create.${g}`) }), (g) => { hero.gender = g; }, 'create.gender', { words: true }));
+      // A child who cannot type yet chooses a name (the names for the boy or the girl, #45).
+      const need = h('p', { class: 'name-need center', hidden: true, text: t('create.name.need') });
+      const names = h('div', { class: 'choice-row name-choices' });
+      const fillNames = () => names.replaceChildren(...(ctx.data.hero.names?.[hero.gender] ?? []).map((n) => button(n, () => {
+        input.value = n;
+        need.hidden = true;
+      }, { cls: 'btn small paper' })));
+      fillNames();
+      stage.append(need, names);
+      stage.append(choiceRow(genders, () => hero.gender, (g) => h('span', { text: t(`create.${g}`) }), (g) => { hero.gender = g; fillNames(); }, 'create.gender', { words: true }));
       const go = button(t('ui.next'), () => {
         hero.name = input.value.trim().slice(0, opts.nameMax);
         if (!hero.name) {
           input.focus();
           input.classList.add('shake');
           setTimeout(() => input.classList.remove('shake'), 400);
+          need.hidden = false;
           speak('create.name.need', null, { force: true });
           return;
         }

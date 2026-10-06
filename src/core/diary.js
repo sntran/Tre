@@ -39,6 +39,20 @@ export function diaryLink(href) {
   return { href: REPO + resolve(DEVLOG, href), external: true };
 }
 
+// The Markdown without the line that is only the link to the same page in the other language (as
+// "*[English](README.md)*"): the page has its own switch at the top, and the link shows two times (#45).
+export function withoutLanguageLine(md, lang) {
+  const lines = String(md).split('\n');
+  const at = lines.findIndex((line) => {
+    const m = line.trim().match(/^([*_]?)\[[^\]]+\]\(([^)#]+)\)\1$/);
+    const file = m && m[2].match(/^(README|\d{4}-\d{2}-\d{2}-[a-z0-9-]+?)(\.vi)?\.md$/);
+    return file && (file[2] ? 'vi' : 'en') !== lang;
+  });
+  if (at < 0) return md;
+  lines.splice(at, lines[at + 1]?.trim() === '' ? 2 : 1);
+  return lines.join('\n');
+}
+
 // A path relative to a folder ("../research/x.md" from "docs/devlog/" is "docs/research/x.md").
 function resolve(dir, rel) {
   const parts = dir.split('/').filter(Boolean);

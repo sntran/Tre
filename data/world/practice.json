@@ -115,6 +115,7 @@
     {
       "id": "xom-ruong",
       "titleKey": "practiceLink.xom-ruong.title",
+      "goalKey": "practiceLink.xom-ruong.goal",
       "lineKey": "practiceLink.xom-ruong.line",
       "at": [
         "xom-ruong",

@@ -376,6 +376,9 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .dialogue .portrait { align-self: center; }
 .dialogue-body { flex: 1; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
 .speaker { align-self: flex-start; margin-bottom: 6px; font-size: var(--text-small); }
+.dialogue-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 6px; }
+.dialogue-head .speaker { margin-bottom: 0; }
+.dialogue .mark { position: static; }
 .line { margin: 0; font-size: var(--text); line-height: 1.5; }
 .line.narrator { font-style: italic; }
 .dialogue-tools { display: flex; flex-direction: column; gap: 8px; align-self: center; }
@@ -428,6 +431,9 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .practice-note { margin: 0; max-width: 32em; padding: 6px 12px; border: var(--line); border-radius: 10px; background: var(--diep); font-weight: 700; }
 .lang-switch { display: flex; gap: 8px; }
 .lang-switch .btn[aria-pressed="true"] { background: var(--vermilion); color: var(--diep); }
+.create-lang { justify-content: center; margin-bottom: 8px; }
+.name-need { color: var(--vermilion); font-weight: 700; margin: 4px 0; }
+.name-choices { margin: 6px 0 10px; }
 .corner { position: absolute; top: calc(10px + var(--safe-top)); right: 10px; }
 .corner-left { position: absolute; top: calc(10px + var(--safe-top)); left: 10px; }
 

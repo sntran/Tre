@@ -410,7 +410,8 @@ export async function mountVillage(ctx, params = {}) {
     const activity = pr && !pr.stayed ? activityOf(data.practice, pr.id) : null;
     const goal = activity ? null : currentGoal(data.quests.quests, conditionState(profile));
     if (activity) {
-      goalKey = activity.titleKey;
+      // What to do there (a practice of a whole place), or the name of the activity.
+      goalKey = activity.goalKey ?? activity.titleKey;
       goalParams = {};
     } else if (goal) {
       goalKey = goal.step.goalKey;

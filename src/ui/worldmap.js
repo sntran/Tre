@@ -262,14 +262,27 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
 
       const anchors = world.regions.map((r) => ({ id: r.id, ...proj.toMap(base.place[r.place].at) }));
       const sealPx = Math.max(12, Math.min(SEAL_PX, (svg.clientHeight || 600) / 28));
-      const laid = layoutSeals(anchors, sealPx * k);
+      // The locked chapters near each other share one lock (#45): fewer seals, so that no lock
+      // covers another lock or the face of the hero.
+      const locked = (id) => id !== here && !world.isOpen(id, state);
+      const groups = [];
+      for (const a of anchors) {
+        const near = locked(a.id) ? groups.find((q) => q.locked && Math.hypot(q.x - a.x, q.y - a.y) < sealPx * k * 4) : null;
+        if (near) {
+          near.ids.push(a.id);
+          near.x += (a.x - near.x) / near.ids.length;
+          near.y += (a.y - near.y) / near.ids.length;
+        } else groups.push({ id: a.id, ids: [a.id], x: a.x, y: a.y, locked: locked(a.id) });
+      }
+      const laid = layoutSeals(groups, sealPx * k);
       for (const s of laid) {
         const region = world.region(s.id);
         const open = world.isOpen(s.id, state);
         const kind = s.id === here ? 'here' : open ? 'open' : 'locked';
         const r = sealPx * k;
+        const chapters = groups.find((q) => q.id === s.id).ids.map((id) => world.region(id).chapter);
         const g = el('g', { class: `map-seal ${kind}${chosen === s.id ? ' selected' : ''}`, tabindex: 0, role: 'button',
-          'aria-label': inEra(region) ? `${t(region.nameKey)}. ${t('world.chapter', { n: region.chapter })}` : t('world.chapter', { n: region.chapter }) });
+          'aria-label': inEra(region) ? `${t(region.nameKey)}. ${t('world.chapter', { n: region.chapter })}` : chapters.map((n) => t('world.chapter', { n })).join(', ') });
         if (Math.hypot(s.x - s.ax, s.y - s.ay) > r * 0.6) {
           g.append(el('line', { x1: s.ax, y1: s.ay, x2: s.x, y2: s.y, stroke: C.ink, 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' }));
           g.append(el('circle', { cx: s.ax, cy: s.ay, r: 2 * k, fill: C.ink }));

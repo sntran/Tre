@@ -2,7 +2,7 @@
 // docs/devlog/, in the language of the game, with a switch to the other language. The Markdown of
 // the entries becomes HTML with src/core/markdown.js; src/core/diary.js tells where each link goes.
 import { markdownToHtml } from '../core/markdown.js';
-import { entriesOf, fileOf, pageOf, diaryLink } from '../core/diary.js';
+import { entriesOf, fileOf, pageOf, diaryLink, withoutLanguageLine } from '../core/diary.js';
 import { setLanguage, t } from './i18n.js';
 import { getMeta } from './storage.js';
 import { h } from './dom.js';
@@ -38,7 +38,7 @@ async function start() {
   main.replaceChildren(top, body);
   try {
     const [md, index] = await Promise.all([text(fileOf(name, lang)), name ? text(fileOf(null, lang)) : null]);
-    body.innerHTML = markdownToHtml(md, { link: diaryLink });
+    body.innerHTML = markdownToHtml(withoutLanguageLine(md, lang), { link: diaryLink });
     if (name) document.title = `${body.querySelector('h1')?.textContent ?? ''} · ${t('diary.title')}`;
     if (name) main.append(steps(entriesOf(index), name, lang));
   } catch (e) {

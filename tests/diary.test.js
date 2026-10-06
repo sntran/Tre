@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { markdownToHtml, inline } from '../src/core/markdown.js';
-import { entriesOf, fileOf, pageOf, diaryLink, REPO } from '../src/core/diary.js';
+import { entriesOf, fileOf, pageOf, diaryLink, withoutLanguageLine, REPO } from '../src/core/diary.js';
 
 const DIR = 'docs/devlog/';
 const read = (f) => readFileSync(f, 'utf8');
@@ -93,4 +93,19 @@ test('each entry and each index becomes HTML with no Markdown marks left', () =>
     assert.doesNotMatch(words, /(^|\s)\*\S|\S\*(\s|$)|^#/, file);
     for (const [, href] of html.matchAll(/href="([^"]+)"/g)) assert.ok(!href.endsWith('.md') || href.startsWith(REPO), `${file}: ${href} is a Markdown file of the site`);
   }
+});
+
+test('the page shows the link to the other language one time: the line of the index that is only that link goes (#45)', () => {
+  for (const lang of ['en', 'vi']) {
+    const md = readFileSync(fileOf(null, lang), 'utf8');
+    const other = lang === 'vi' ? 'README.md' : 'README.vi.md';
+    assert.ok(md.includes(`](${other})`), `the index in ${lang} links to the other language`);
+    const out = withoutLanguageLine(md, lang);
+    assert.ok(!out.includes(`](${other})`), `the line of the other language goes from the index in ${lang}`);
+    assert.ok(out.startsWith('# '), 'the heading stays');
+    assert.equal(entriesOf(out).length, entriesOf(md).length, 'the list of the entries stays');
+  }
+  // A link to the same language, or a link in a sentence, stays.
+  assert.equal(withoutLanguageLine('*[English](README.md)*', 'en'), '*[English](README.md)*');
+  assert.equal(withoutLanguageLine('See [this](README.vi.md) too.', 'en'), 'See [this](README.vi.md) too.');
 });

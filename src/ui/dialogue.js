@@ -79,12 +79,17 @@ export function createDialogueBox(ctx, { next, choose }) {
     const text = tg(line.textKey, params);
     const narrator = !line.speaker || line.speaker === 'narrator';
     const voice = voiceOf(line.speaker, voiceData(ctx), ctx.profile);
-    if (line.mark) box.append(h('div', { class: `mark mark-${line.mark}`, text: t(`mark.${line.mark}`) }));
+    // The tag of the line (Truyền thuyết) stands beside the name of the speaker, never on it (#45).
+    const mark = line.mark ? h('div', { class: `mark mark-${line.mark}`, text: t(`mark.${line.mark}`) }) : null;
     const face = portrait(ctx, line.speaker, line.mood);
     if (face) box.append(face);
     const gloss = glossLine(ctx, line.textKey, { params: line.params, speaker: narrator ? null : line.speaker, region: !narrator });
-    const body = h('div', { class: 'dialogue-body' }, [
+    const head = narrator && !mark ? null : h('div', { class: 'dialogue-head' }, [
       narrator ? null : h('div', { class: 'speaker', text: speakerName(ctx, line.speaker) }),
+      mark,
+    ]);
+    const body = h('div', { class: 'dialogue-body' }, [
+      head,
       h('p', { class: narrator ? 'line narrator' : 'line', text }),
       gloss ? h('p', { class: 'speech-gloss', text: gloss }) : null,
     ]);

@@ -54,7 +54,12 @@ test('every speaker of the dialogue data has a look in data/figures.json', () =>
 
 test('every option of hero creation comes from data/figures.json', () => {
   const o = figures.hero;
-  assert.deepEqual(Object.keys(load('data/hero.json')).filter((k) => !k.startsWith('_')), ['nameMax', 'jump'], 'data/hero.json has no looks (only the name length and the jump)');
+  const hero = load('data/hero.json');
+  assert.deepEqual(Object.keys(hero).filter((k) => !k.startsWith('_')), ['nameMax', 'names', 'jump'], 'data/hero.json has no looks (only the name length, the names to choose, and the jump)');
+  for (const gender of Object.keys(o.genders)) {
+    assert.ok(hero.names[gender]?.length >= 3, `the names to choose for ${gender} (#45)`);
+    for (const n of hero.names[gender]) assert.ok(n.length <= hero.nameMax, `the name ${n} fits`);
+  }
   for (const s of o.skins) assert.ok(colorIndex(s) > 0, `the skin ${s} is a color of the palette`);
   for (const c of o.clothes) for (const v of Object.values(c)) assert.ok(colorIndex(v) > 0, v);
   const seen = new Set();
