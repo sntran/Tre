@@ -294,7 +294,10 @@
       },
       "picture": "mentor.picture.bridge",
       "lines": {
-        "show": "mentor.show.bridge"
+        "show": "mentor.show.bridge",
+        "first": "mentor.bridge.first",
+        "mark": "mentor.bridge.mark",
+        "demo": "mentor.bridge.demo"
       }
     },
     "event-cart": {
@@ -344,7 +347,12 @@
       },
       "picture": "mentor.picture.scholar",
       "lines": {
-        "show": "mentor.show.scholar"
+        "show": "mentor.show.scholar",
+        "first": "mentor.scholar.first",
+        "mark": "mentor.scholar.mark",
+        "demo": "mentor.scholar.demo",
+        "smaller": "mentor.scholar.smaller",
+        "share": "mentor.scholar.share"
       }
     },
     "trial-smith": {
@@ -354,7 +362,8 @@
       "first": [],
       "lines": {
         "first": "smith.quench.watch",
-        "show": "mentor.show.smith"
+        "show": "mentor.show.smith",
+        "mark": "mentor.smith.mark"
       },
       "picture": "mentor.picture.smith"
     },
@@ -364,7 +373,9 @@
       "demo": null,
       "picture": "mentor.picture.fisher",
       "lines": {
-        "show": "mentor.show.fisher"
+        "show": "mentor.show.fisher",
+        "first": "mentor.fisher.first",
+        "mark": "mentor.fisher.mark"
       }
     },
     "trial-healer": {
@@ -373,7 +384,11 @@
       "demo": null,
       "picture": "mentor.picture.healer",
       "lines": {
-        "show": "mentor.show.healer"
+        "show": "mentor.show.healer",
+        "first": "mentor.healer.first",
+        "mark": "mentor.healer.mark",
+        "smaller": "mentor.healer.smaller",
+        "share": "mentor.healer.share"
       }
     },
     "trial-woodcutter": {
@@ -383,7 +398,8 @@
       "picture": "mentor.picture.woodcutter",
       "lines": {
         "first": "mentor.woodcutter.first",
-        "show": "mentor.show.woodcutter"
+        "show": "mentor.show.woodcutter",
+        "mark": "mentor.woodcutter.mark"
       }
     },
     "trial-plant": {
@@ -398,7 +414,12 @@
       "picture": "mentor.picture.planter",
       "pictureWho": "duck-girl",
       "lines": {
-        "show": "mentor.show.plant"
+        "show": "mentor.show.plant",
+        "first": "mentor.plant.first",
+        "mark": "mentor.plant.mark",
+        "demo": "mentor.plant.demo",
+        "smaller": "mentor.plant.smaller",
+        "share": "mentor.plant.share"
       }
     },
     "trial-ducks": {
@@ -428,7 +449,9 @@
         "mark": "mentor.traps.mark",
         "smaller": "mentor.traps.smaller",
         "share": "mentor.traps.share",
-        "show": "mentor.show.traps"
+        "show": "mentor.show.traps",
+        "first": "mentor.traps.first",
+        "demo": "mentor.traps.demo"
       }
     },
     "trial-drum": {

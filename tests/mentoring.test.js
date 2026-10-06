@@ -90,3 +90,20 @@ test('each station says the move "show" with its own words, and each line is in 
   }
   assert.equal(new Set(shows.map(([, key]) => key)).size, shows.length, 'no two stations share a show line');
 });
+
+test('each person of a task has an own line for each move that names the things of the work (#48: no line about a heap where there is no heap)', () => {
+  const vi = load('i18n/vi.json');
+  const en = load('i18n/en.json');
+  const mentorsData = load('data/world/mentors.json');
+  const THINGS = ['first', 'show', 'mark', 'demo', 'smaller', 'share'];
+  for (const [key, m] of Object.entries(mentorsData.mentors)) {
+    if (!key.startsWith('trial-') && key !== 'bridge') continue;
+    const fam = mentorsData.families[m.family];
+    const moves = new Set(['first', 'show', ...Object.values(fam.ladders).flat()]);
+    for (const move of THINGS.filter((x) => moves.has(x))) {
+      const line = m.lines?.[move];
+      assert.ok(line && line !== mentorsData.lines[move], `${key}: an own line for the move ${move}`);
+      assert.ok(vi[line] && en[line], `${key}: the line ${line} in the two languages`);
+    }
+  }
+});

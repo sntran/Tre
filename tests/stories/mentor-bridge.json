@@ -102,7 +102,7 @@
         "event": "open",
         "with": {
           "screen": "callout",
-          "textKey": "mentor.mark"
+          "textKey": "mentor.bridge.mark"
         },
         "timeout": 5
       }

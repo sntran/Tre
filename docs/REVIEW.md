@@ -478,3 +478,5 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 
 - **The woodcutter at a cut that is not equal:** `woodcutter.short` ("Khúc này ngắn quá nên gãy rồi. Các khúc phải dài bằng nhau.").
 - **The fisher at a tide with no new stake:** `fisher.tide.more` ("Cắm thêm cọc trước đã, rồi nước lên sẽ thử hàng cọc.").
+- **The own lines of each person (#48):** each person of a task now has own lines for the moves that name the things of the work, in place of the lines about a heap: `mentor.<person>.first`, `.mark`, `.demo`, `.smaller`, and `.share` for the bridge, the teacher (`scholar`), the smith, the fisher, the healer, the woodcutter, the planting (`plant`), and the fish traps (`traps`). For example `mentor.scholar.smaller` ("Thầy đặt giúp con mấy que trước, con đặt nốt nhé.") and `mentor.fisher.mark` ("Cháu nhìn khe này nhé: không khe nào được rộng hơn khe của chú.").
+- **Please check:** the voice of each person (thầy and con; bà, chú, cô, and cháu; anh and em), and that no line is a question (the rule of the world).

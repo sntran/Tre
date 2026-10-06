@@ -77,3 +77,15 @@ test('the bundles of the teacher stand in a row beside the mat, on a phone held 
   for (const az of ANGLES) assert.ok(onPhone(session, bundle.position, az), `the bundle is on the screen from ${az.toFixed(2)}`);
   assert.deepEqual(session.workCount(), { pip: 'bundle', have: 1, need: 2 });
 });
+
+test('the three herbs of the healer have shapes that differ, not only colors: tall, wide, and low (#48)', () => {
+  const box = (herb) => {
+    const f = figureOf({ kind: 'herb', herb }, 'coarse');
+    const top = Math.max(...f.parts.map((p) => p.at[1] + p.size[1] / 2));
+    const wide = Math.max(...f.parts.map((p) => Math.max(p.size[0], p.size[2])));
+    return { top, wide };
+  };
+  const [ngai, tiato, rauma] = ['ngai', 'tiato', 'rauma'].map(box);
+  assert.ok(ngai.top > tiato.top + 0.4 && tiato.top > rauma.top + 0.3, 'the heights differ');
+  assert.ok(tiato.wide > ngai.wide + 0.4 && tiato.wide > rauma.wide + 0.4, 'perilla is the wide one');
+});

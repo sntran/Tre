@@ -719,10 +719,14 @@ export function workThing(look) {
       for (let i = 0; i < 3; i++) parts.push(P(`fish${i}`, [0.4, 0.3, 1], 'ash', [(i - 1) * 1.2, 0.1, look.in ? 0.4 * i : -1 - i]), P(`tail${i}`, [0.4, 0.3, 0.3], 'ashLight', [(i - 1) * 1.2, 0.1, (look.in ? 0.4 * i : -1 - i) - 0.6]));
       return still(parts, 0.3);
     }
-    // A bunch of healing leaves: mugwort (grey-green), perilla (red and green), pennywort (round, green).
+    // A bunch of healing leaves. Each kind has its own shape, so that a child tells them apart also
+    // in a dim light (#48): mugwort (ngải) tall and thin, grey-green; perilla (tía tô) wide and
+    // flat, red; pennywort (rau má) low round leaves near the ground, green.
     case 'herb': {
       const [a, b] = HERBS[look.herb] ?? HERBS.ngai;
-      return still([P('stem', [0.2, 0.6, 0.2], 'greenDeep', [0, 0.3, 0]), P('leaves', [0.8, 0.4, 0.8], a, [0, 0.7, 0]), P('tip', [0.45, 0.3, 0.45], b, [0, 1, 0])], 1.1);
+      if (look.herb === 'tiato') return still([P('stem', [0.2, 0.5, 0.2], 'greenDeep', [0, 0.25, 0]), P('leaves', [1.2, 0.2, 1.2], a, [0, 0.55, 0]), P('top', [0.9, 0.2, 0.9], b, [0, 0.75, 0])], 0.85);
+      if (look.herb === 'rauma') return still([P('leafA', [0.5, 0.18, 0.5], a, [-0.3, 0.12, -0.2]), P('leafB', [0.5, 0.18, 0.5], b, [0.3, 0.14, -0.1]), P('leafC', [0.5, 0.18, 0.5], a, [0, 0.16, 0.3])], 0.3);
+      return still([P('stem', [0.18, 1.5, 0.18], 'greenDeep', [0, 0.75, 0]), P('leafA', [0.5, 0.35, 0.18], a, [0.2, 0.6, 0]), P('leafB', [0.18, 0.35, 0.5], a, [0, 1, 0.2]), P('tip', [0.3, 0.4, 0.3], b, [0, 1.5, 0])], 1.7);
     }
     // The basket of the healer, with three parts; full when the healer takes it.
     case 'basket': {
