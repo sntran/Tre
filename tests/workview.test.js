@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { planeOf, load } from './helpers.js';
 import { placesOf } from '../src/core/world/env.js';
 import { workBoxes, workCovers, workTurn } from '../src/world/fade.js';
-import { VIEW, viewSize, inView, leadFocus } from '../src/world/view.js';
+import { VIEW, viewSize, inView, inSafe, figureBox, leadFocus } from '../src/world/view.js';
 import { runHeadless } from './story-run.js';
 
 const ANGLES = [0, 1, 2, 3].map((k) => Math.PI / 4 + (k * Math.PI) / 2);
@@ -77,7 +77,7 @@ test('with the real camera on a phone held upright (the focus on the hero after 
       const lead = leadFocus(points, { az, width: 390, height: 844 });
       assert.ok(lead.fits, `${w.id} from the angle ${ANGLES.indexOf(az)}: the work fits on the screen`);
       const size = viewSize(390, 844, lead.level);
-      for (const p of points) assert.ok(inView({ x0: p.x - 0.5, x1: p.x + 0.5, y0: p.y, y1: p.y + 1.5, z0: p.z - 0.5, z1: p.z + 0.5 }, lead.focus, { az, size }), `${w.id}: a point of the work is off the screen`);
+      for (const p of points) assert.ok(inSafe(figureBox(p), lead.focus, { az, size }), `${w.id}: a point of the work is not fully on the screen, or is under the HUD or the buttons`);
     }
   }
 });

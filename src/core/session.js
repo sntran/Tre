@@ -1629,7 +1629,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const nx = Math.max(z.x, Math.min(z.x + z.w - 1, ht.x));
         const ny = Math.max(z.y, Math.min(z.y + z.h - 1, ht.y));
         if (Math.max(Math.abs(nx - ht.x), Math.abs(ny - ht.y)) > 2) continue;
-        add({ act: 'look', icon: 'hint', target: `look:${z.id}`, at: { x: (nx + 0.5) * 2, z: (ny + 0.5) * 2 }, rank: z.action?.pickup ? 1 : 5, run: () => doAction(z) }, REACH + 3);
+        add({ act: 'look', icon: 'look', target: `look:${z.id}`, at: { x: (nx + 0.5) * 2, z: (ny + 0.5) * 2 }, rank: z.action?.pickup ? 1 : 5, run: () => doAction(z) }, REACH + 3);
       }
       // Nghé: get on its back (only when nothing else is in reach), never in a task or a folk game
       // (a press in the middle of the rope must not put the hero on Nghé, #44).

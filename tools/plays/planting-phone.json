@@ -1,0 +1,70 @@
+{
+  "about": "#44: the planting of Xóm Ruộng on a phone. The bed of seedlings, the plots, and the planter are in view at the start of the task; a tap on the star walks; a restless child; the world never stops.",
+  "start": "?practice=cay-lua",
+  "lang": "vi",
+  "steps": [
+    {
+      "create": "Nam"
+    },
+    {
+      "read": 15
+    },
+    {
+      "until": "tre.activeVillage && tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+      "timeout": 300
+    },
+    {
+      "wait": 3
+    },
+    {
+      "shot": "the-example"
+    },
+    {
+      "print": "tre.activeVillage.screenOfThing('hero')"
+    },
+    {
+      "check": "(() => { const p = tre.activeVillage.screenOfThing('hero'); return p && p.x > 20 && p.x < 370 && p.y > 140 && p.y < 690; })()"
+    },
+    {
+      "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+      "timeout": 300
+    },
+    {
+      "read": 15
+    },
+    {
+      "wait": 2
+    },
+    {
+      "shot": "the-work-in-view"
+    },
+    {
+      "print": "tre.activeVillage.screenOfThing('hero')"
+    },
+    {
+      "check": "(() => { const p = tre.activeVillage.screenOfThing('hero'); return p && p.x > 20 && p.x < 370 && p.y > 140 && p.y < 690; })()"
+    },
+    {
+      "restless": 20,
+      "seed": 4
+    },
+    {
+      "read": 15
+    },
+    {
+      "shot": "after-restless-play"
+    },
+    {
+      "tap": {
+        "star": true
+      },
+      "after": 4
+    },
+    {
+      "shot": "after-a-tap-on-the-star"
+    }
+  ],
+  "allow": [
+    "is under the bottom of the screen"
+  ]
+}
