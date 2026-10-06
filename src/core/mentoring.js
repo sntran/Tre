@@ -284,12 +284,30 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     }
   }
 
+  // The moves of each task since the last try of the child, and the move "go and see another
+  // station" of this visit (#45): a person never says the same line more than two times in a row.
+  // After that, the person waits and nods until the child tries something; and the picture of
+  // another station comes at most one time in a visit.
+  const said = new Map(); // `${the id of a person}|${move}` -> { at (the last try then), n }
+  let pictured = false;
   // A move in the world: a script of the person (src/core/world/systems/mentor.js).
   function doMove(key, move, info = {}) {
     const w = world();
     const def = defOf(key);
     const task = taskOf(key);
     if (!w || !def) return;
+    // A try is a commit (rule 33: the help goes one level up only after a try). The lines count
+    // for each person, so that two tasks of one person count together.
+    const whoNow = (task?.person ?? getEntity(w, def.person))?.id ?? key;
+    const tried = Math.max(...[...tracks.values()].map((x) => x.lastCommit ?? -1), -1);
+    const last = said.get(`${whoNow}|${move}`);
+    const n = last && last.at === tried ? last.n + 1 : 1;
+    said.set(`${whoNow}|${move}`, { at: tried, n });
+    if (n > 2 || (move === 'picture' && pictured)) {
+      emit({ type: 'nod', id: whoNow });
+      return;
+    }
+    if (move === 'picture') pictured = true;
     const person = task?.person ?? getEntity(w, def.person);
     const who = person?.id ?? null;
     const steps = [];
