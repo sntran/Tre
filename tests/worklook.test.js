@@ -2,6 +2,7 @@
 // looks different from what was there before. The rules of the work are in tests/tasks.test.js.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { runHeadless } from './story-run.js';
 import { figureOf, thingLook, CHALK_BAND } from '../src/world/figures.js';
 import { sessionCamera } from '../src/world/hit.js';
@@ -88,4 +89,28 @@ test('the three herbs of the healer have shapes that differ, not only colors: ta
   const [ngai, tiato, rauma] = ['ngai', 'tiato', 'rauma'].map(box);
   assert.ok(ngai.top > tiato.top + 0.4 && tiato.top > rauma.top + 0.3, 'the heights differ');
   assert.ok(tiato.wide > ngai.wide + 0.4 && tiato.wide > rauma.wide + 0.4, 'perilla is the wide one');
+});
+
+test('the goal bar says the work of each step: two steps with the same text have the same work, or both are a walk to a place (#48)', () => {
+  const quests = JSON.parse(readFileSync(new URL('../data/quests.json', import.meta.url), 'utf8'));
+  const vi = JSON.parse(readFileSync(new URL('../i18n/vi.json', import.meta.url), 'utf8'));
+  const byText = new Map();
+  for (const q of quests.quests) for (const st of q.steps) byText.set(vi[st.goalKey], [...(byText.get(vi[st.goalKey]) ?? []), st]);
+  for (const [text, steps] of byText) {
+    if (steps.length < 2 || steps.every((st) => st.place)) continue;
+    const works = new Set(steps.map((st) => JSON.stringify(st.done)));
+    assert.equal(works.size, 1, `"${text}" is the goal of steps with other work: ${steps.map((st) => st.goalKey).join(', ')}`);
+  }
+});
+
+test('in the practice of the woodcutter the wood pile is next to the stem, on the screen with it (#48: not 55 blocks away by the bridge)', async () => {
+  const session = await practice('chat-tre', [
+    { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } },
+    { read: true },
+    { until: { event: 'call', with: { key: 'mentor.woodcutter.first' }, timeout: 15 } },
+  ]);
+  const stem = getEntity(session.state, 'stem:woodcutter').position;
+  const pile = getEntity(session.state, 'zone:woodpile').zone;
+  assert.ok(Math.hypot(pile.x - stem.x, pile.z - stem.z) < 20, 'the pile is near the stem');
+  assert.ok(ANGLES.some((az) => onPhone(session, pile, az) && onPhone(session, stem, az)), 'the stem and the pile are on one screen');
 });

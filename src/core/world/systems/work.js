@@ -36,6 +36,7 @@ const NEW_STEM = 1.2; // seconds: a new culm comes after staffs that are not equ
 // the short one breaks after CUT_BREAK, and then a new stem comes. PIECE_ROW: the space between
 // the rows of the pieces (half blocks).
 const CUT_SHOW = 2.6;
+const PILE_GAP = 4; // half blocks from the end of the stem to the wood pile of a practice
 // The two stakes that the fisher put himself (the space of the row): not a try of the child.
 const FISHER_STAKES = new Set(['stake:fisher:a', 'stake:fisher:b']);
 // The band of the teacher that snaps (#48): the rods lie this far from the middle of the mat (half
@@ -95,7 +96,8 @@ function finish(world, tz) {
 
 // Set up the things of a trial in the world, at the named places of the map (env.places).
 // level: the level of the task (0, 1, or 2). A trial that has its things already stays as it is.
-// opts: demo (false: the smith does not show his quench again, in a later round of a practice).
+// opts: demo (false: the smith does not show his quench again, in a later round of a practice),
+// practice (a visit from a practice link: the places of the task are close together).
 export function setupTrial(world, def, level, env, opts = {}) {
   if (trialZone(world, def.id)) return trialZone(world, def.id);
   const task = taskOf(def, level);
@@ -292,7 +294,9 @@ export function setupTrial(world, def, level, env, opts = {}) {
     tz.zone.stem = { x: s.x, y: s.y, z: s.z, length: task.length };
     tz.zone.marks = [];
     addEntity(world, { id: 'stem:woodcutter', keep: true, item: { kind: 'stem', size: task.length, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: s.x, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `stem-${task.length}` });
-    const w = P(def.places.pile);
+    // In a practice the wood pile is next to the end of the stem, so that a round is the math and
+    // not a long walk to the bridge (#48).
+    const w = opts.practice ? { x: s.x + task.length + PILE_GAP, y: env.groundY((s.x + task.length + PILE_GAP) / 2, s.z / 2), z: s.z } : P(def.places.pile);
     addEntity(world, { id: 'zone:woodpile', keep: true, zone: { id: 'woodpile', task: owner, rule: 'woodpile', accepts: 'sticks', items: [], x: w.x, y: w.y, z: w.z, rect: rect(w, 3, 2) }, position: { x: w.x + 1, y: w.y, z: w.z + 2, facing: 0 } });
   }
   // The point of each place of the task is the middle of its rect (the button and the light aim

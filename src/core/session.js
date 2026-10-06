@@ -630,7 +630,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The things that the child brought go into the task (the iron for the horse).
     if (def.take && !trialZone(id)) applyEffects(profile, [{ take: def.take }, ...(def.startSet ? [{ set: def.startSet }] : [])]);
     // In a later round of a practice, the smith does not show his quench again.
-    setupTrial(state, def, practicing ? practice.level : levelFor(data.trials, profile.grade), env, { demo: !(practicing && practice.round > 0) });
+    setupTrial(state, def, practicing ? practice.level : levelFor(data.trials, profile.grade), env, { demo: !(practicing && practice.round > 0), practice: practicing });
     mentoring.start(`trial-${id}`);
     emit({ type: 'hud' });
   }
