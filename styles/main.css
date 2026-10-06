@@ -867,9 +867,20 @@ p { line-height: 1.45; margin: 0.4em 0; }
   position: absolute;
   right: calc(12px + var(--safe-right, 0px));
   bottom: calc(12px + var(--safe-bottom, 0px));
-  display: flex;
+  /* Two columns at the bottom right, away from the stick at the bottom left (#44): the wave over
+     the jump, the two turns over the big button. */
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-areas: "wave turn" "jump act";
+  align-items: end;
+  justify-items: center;
   gap: 8px;
 }
+.turns > .wave-btn { grid-area: wave; }
+.turns > .turn-pair { grid-area: turn; display: flex; gap: 8px; }
+.turns > .jump-btn { grid-area: jump; }
+.turns > .act-btn { grid-area: act; }
+.turn-pair > .turn-btn { width: var(--touch-small); height: var(--touch-small); font-size: 22px; }
 .turn-btn {
   pointer-events: auto;
   width: var(--touch);

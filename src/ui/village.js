@@ -369,7 +369,9 @@ export async function mountVillage(ctx, params = {}) {
     // The target has a thicker outline and a soft light; a thing on a line shows as a ghost.
     figures.mark(a?.target ?? null, a?.spot ?? null, a?.ghost ?? null);
   }
-  const turns = h('div', { class: 'turns' }, [waveBtn, turnLeft, turnRight, jumpBtn, actBtn]);
+  // The buttons are a block of two columns at the bottom right, away from the stick at the bottom
+  // left (#44): the wave over the jump, the two turns over the big button.
+  const turns = h('div', { class: 'turns' }, [waveBtn, h('div', { class: 'turn-pair' }, [turnLeft, turnRight]), jumpBtn, actBtn]);
   // The paper of the print over the world: grain and a soft vignette.
   const paper = h('div', { class: 'world-paper' });
   // The dusk over the world: an indigo wash with warm pools around the lanterns, and the rain.
