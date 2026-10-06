@@ -1964,6 +1964,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     log('action', { kind: 'walk' });
     chosen = null;
+    // A tap on a star (or on its arrow at the edge of the screen): a walk all the way to the goal
+    // along the roads, or to the ferry on the way (#53). A new tap, a talk, or a ferry stops it.
+    if (hit.goal && walkFar(hit)) return;
     // A tap past an edge of the world (the deep sea, the mist): the walk stops at the edge.
     if (edgeAt(tile.x, tile.y)) {
       const stop = edgeStop(from, hit);
@@ -1979,6 +1982,43 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (path) walkPath(path, null, null);
       else walkPath(pathToward(paths, from, tile), null, null);
     } else walkPath(pathToward(paths, from, tile), null, null);
+  }
+
+  // A far walk to a goal (map cells), in legs: each leg is a short search that goes to the cell
+  // nearest to the goal that it finds, and the next leg starts at its end. When a leg comes no
+  // nearer (a river), the walk goes to the landing of the ferry that leads nearer to the goal; the
+  // ferry starts there. A new tap, a talk, or the ferry ends the walk (they end the arrival of the
+  // leg). True when the hero walks or stands at the goal.
+  const LEG = 2500; // the most cells of the search of one leg
+  function walkFar(goal, final = goal) {
+    const from = heroFrom();
+    const here = { x: from.x + 0.5, y: from.y + 0.5 };
+    const left = Math.hypot(goal.x - here.x, goal.y - here.y);
+    if (left < 1.5) return true;
+    const way = findPath(pathMap(), from, { x: Math.floor(goal.x), y: Math.floor(goal.y) }, { maxNodes: LEG, nearest: true });
+    const end = way?.length ? way[way.length - 1] : null;
+    if (!end || Math.hypot(goal.x - end.x - 0.5, goal.y - end.y - 0.5) > left - 1) {
+      // No nearer: the landing of a ferry, once.
+      const landing = goal === final ? landingToward(here, final) : null;
+      return landing ? walkFar(landing, final) : false;
+    }
+    walkPath(way, null, () => walkFar(goal, final));
+    return true;
+  }
+  // The landing of a ferry (map cells) near the hero whose other side is nearer to the goal: the
+  // zone of a ferry of the map, or the step of a ferry of the roads of the land.
+  function landingToward(here, goal) {
+    const sides = [];
+    const zones = (map.layers.triggers ?? []).filter((z) => z.action?.ferry);
+    for (const z of zones) {
+      const other = zones.find((o) => o !== z && o.action.ferry === z.action.ferry);
+      if (other) sides.push({ at: { x: z.x + z.w / 2, y: z.y + z.h / 2 }, far: { x: other.x + other.w / 2, y: other.y + other.h / 2 } });
+    }
+    for (const f of map.land?.ferries ?? []) sides.push({ at: f.stepA, far: f.stepB }, { at: f.stepB, far: f.stepA });
+    const d = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+    const near = sides.filter((s) => d(here, s.at) < 120 && d(s.far, goal) < d(here, goal) - 4);
+    near.sort((a, b) => d(here, a.at) + d(a.far, goal) - (d(here, b.at) + d(b.far, goal)));
+    return near[0]?.at ?? null;
   }
 
   // A held finger: the move toward a point (map cells) along a path around houses, walls, and
@@ -2003,7 +2043,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // A path to the free cell nearest to a point (map cells), within some cells of it. Null when
   // no free cell near it has a path; an empty path when the hero stands on that cell.
-  function pathNearest(paths, from, point, reach = 8) {
+  function pathNearest(paths, from, point, reach = 8, maxNodes = 8000) {
     const cells = [];
     const cx = Math.floor(point.x);
     const cy = Math.floor(point.y);
@@ -2015,7 +2055,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     cells.sort((a, b) => a.d - b.d);
     for (const c of cells.slice(0, 24)) {
       if (c.x === from.x && c.y === from.y) return [];
-      const path = findPath(paths, from, c, { maxNodes: 8000 });
+      const path = findPath(paths, from, c, { maxNodes });
       if (path) return path;
     }
     return null;

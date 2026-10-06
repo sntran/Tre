@@ -84,6 +84,37 @@ test('a held finger behind a house walks the hero around the house, as a tap doe
   }
 });
 
+test('from the đình, taps on the star of Văn Miếu alone take the hero to the gate: along the roads, and on the ferry over the Red River (#53)', async () => {
+  const dinh = data.world.map('phu-dong').layers.objects.find((o) => o.id === 'dinh');
+  const [gx, gy] = data.world.at('road-thanglong', 0.6, 40);
+  let session = null;
+  const s = { name: 'far', profile: { name: 'An', grade: 2, seed: 7, flags: { 'intro.seen': true, 'prologue.done': true } }, clock: 540, at: [dinh.x + dinh.w / 2, dinh.y + dinh.h + 2], steps: [] };
+  await runHeadless(s, { onSession: (x) => { session = x; } });
+  const hero = () => getEntity(session.state, 'hero');
+  let gate = false;
+  session.listen((ev) => {
+    if (ev.type === 'open' && ev.screen === 'vanmieu') gate = true;
+  });
+  let taps = 0;
+  let idle = 0;
+  for (let k = 0; k < 30 * 60 * 8 && !gate; k++) {
+    const screen = session.screen;
+    if (screen === 'dialogue' || screen === 'say') session.command({ type: 'next' });
+    else if (screen) session.command({ type: 'close' });
+    // A child taps the star again when the hero stands still for two seconds.
+    idle = hero().route || hero().aboard || screen ? 0 : idle + 1;
+    if (idle > 60) {
+      session.command({ type: 'tap', target: { ground: { x: gx, y: gy, h: 3, thing: false, object: null, goal: true } } });
+      taps += 1;
+      idle = 0;
+    }
+    session.step();
+    session.events();
+  }
+  assert.ok(gate, `the hero comes to the gate of Văn Miếu: ${JSON.stringify(heroCell(session))}, ${taps} taps`);
+  assert.ok(taps <= 6, `a few taps on the star: ${taps}`);
+});
+
 test('a tap on water or on a field far away walks the hero to a free cell on the way', async () => {
   const zones = data.world.map('phu-dong').layers.triggers.filter((z) => ['river', 'field-home'].includes(z.id));
   for (const z of zones) {

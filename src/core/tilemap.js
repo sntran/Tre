@@ -222,9 +222,11 @@ function createHeap(score) {
 }
 
 // A* from start to goal. Return the list of tiles after the start, up to the goal,
-// or null when no path exists. The start tile does not need to be walkable.
-export function findPath(map, start, goal, { maxNodes = 5000 } = {}) {
-  if (!map.inside(goal.x, goal.y) || !map.walkable(goal.x, goal.y)) return null;
+// or null when no path exists. The start tile does not need to be walkable. With nearest, a goal
+// out of reach (or past maxNodes) gives the path to the tile nearest to the goal that the search
+// found, for a far walk in legs (#53).
+export function findPath(map, start, goal, { maxNodes = 5000, nearest = false } = {}) {
+  if (!nearest && (!map.inside(goal.x, goal.y) || !map.walkable(goal.x, goal.y))) return null;
   if (start.x === goal.x && start.y === goal.y) return [];
   const w = map.width;
   const key = (x, y) => y * w + x;
@@ -235,22 +237,25 @@ export function findPath(map, start, goal, { maxNodes = 5000 } = {}) {
   const open = createHeap((n) => n.f + n.h * 1e-3);
   open.push({ x: start.x, y: start.y, f: h(start.x, start.y), h: h(start.x, start.y) });
   const closed = new Set();
+  const trace = (k) => {
+    const path = [];
+    let c = k;
+    while (c !== key(start.x, start.y)) {
+      path.push({ x: c % w, y: Math.floor(c / w) });
+      c = from.get(c);
+    }
+    return path.reverse();
+  };
+  let best = null;
   let count = 0;
   while (open.size) {
     const node = open.pop();
     const k = key(node.x, node.y);
     if (closed.has(k)) continue;
     closed.add(k);
-    if (node.x === goal.x && node.y === goal.y) {
-      const path = [];
-      let c = k;
-      while (c !== key(start.x, start.y)) {
-        path.push({ x: c % w, y: Math.floor(c / w) });
-        c = from.get(c);
-      }
-      return path.reverse();
-    }
-    if (++count > maxNodes) return null;
+    if (node.x === goal.x && node.y === goal.y) return trace(k);
+    if (nearest && (!best || node.h < best.h)) best = { k, h: node.h };
+    if (++count > maxNodes) break;
     for (const [dx, dy] of DIRS) {
       const nx = node.x + dx;
       const ny = node.y + dy;
@@ -267,7 +272,7 @@ export function findPath(map, start, goal, { maxNodes = 5000 } = {}) {
       }
     }
   }
-  return null;
+  return nearest && best ? trace(best.k) : null;
 }
 
 // A path to stand next to a blocked tile (for example a person).

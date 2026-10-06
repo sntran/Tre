@@ -1145,14 +1145,15 @@ export async function mountVillage(ctx, params = {}) {
     };
   }
   // A tap on a star (or on an arrow at the edge) walks the hero toward its goal (#44): children
-  // tap the star, because the star is where they must go.
+  // tap the star, because the star is where they must go. The walk goes on along the roads to the
+  // goal, or to the ferry on the way (#53).
   const starTap = (e) => {
     e.preventDefault();
     e.stopPropagation();
     const m = e.currentTarget.mark;
     if (!m || busy || !alive) return;
     ctx.log('action', { kind: 'star' });
-    send({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h, thing: false, object: null } } });
+    send({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h, thing: false, object: null, goal: true } } });
   };
   const tappable = (el) => {
     el.addEventListener('pointerdown', starTap);
