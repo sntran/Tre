@@ -716,14 +716,14 @@ export function workThing(look) {
       const h = 0.08 + n * 0.5;
       return still([P('water', [20, h, 3], n ? 'indigoPale' : 'indigo', [10, h / 2, 0]), P('lineN', [20, h + 0.02, 0.15], 'indigo', [10, h / 2, -1.5]), P('lineS', [20, h + 0.02, 0.15], 'indigo', [10, h / 2, 1.5])], h);
     }
-    // Fish in the trap, or fish that swim out through a space. They jump at the top of the water
+    // Fish in the trap, or fish that swim out through a space and away into the river. They jump at the top of the water
     // (FISH_JUMP over the bed of the line, where the ducks swim), light on the dark water, so that
     // the child sees the catch and the escape (#48).
     case 'fish-trap': {
       const parts = [];
       for (let i = 0; i < 3; i++) {
         const y = FISH_JUMP + (i % 2) * 0.35;
-        const z = look.in ? 0.4 * i : -1 - i;
+        const z = look.in ? 0.4 * i : 1 + 1.2 * i;
         parts.push(P(`fish${i}`, [0.45, 0.4, 1.1], 'paper', [(i - 1) * 1.2, y, z]), P(`tail${i}`, [0.5, 0.35, 0.35], 'ashLight', [(i - 1) * 1.2, y, z - 0.7]));
       }
       return still(parts, FISH_JUMP + 0.6);

@@ -929,7 +929,9 @@ function tickTide(world, tz, dt, env) {
     if (!r) return;
     const fish = r.solved ? 'fish-in' : 'fish-out';
     const at = r.solved ? line.zone.length / 2 : r.widest.from + r.widest.size / 2;
-    addEntity(world, { id: 'fish:fisher', keep: true, position: { x: line.zone.x + at, y: line.zone.y, z: line.zone.z + (r.solved ? 1 : -0.5), facing: 0 }, look: fish });
+    // The fish stay in the trap, or they swim out at the space into the river (+z of the line; the
+    // bank is on the other side).
+    addEntity(world, { id: 'fish:fisher', keep: true, position: { x: line.zone.x + at, y: line.zone.y, z: line.zone.z + (r.solved ? 1 : 1.5), facing: 0 }, look: fish });
     say(world, r.solved ? 'catch' : 'escape', tz.id, { at: { x: line.zone.x + at, z: line.zone.z }, sound: 'splash' });
   } else if (tide.phase === 'out' && tide.t >= TIDE_OUT) {
     const r = tide.result;

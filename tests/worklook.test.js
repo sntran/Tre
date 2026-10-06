@@ -102,6 +102,29 @@ test('the fish of the trap of the fisher jump over the water, where the ducks sw
   assert.ok(FISH_JUMP > swim);
 });
 
+test('the fish that swim out of a row that is too short are over the river, not under the bank (#48)', async () => {
+  const session = await practice('cam-coc', [
+    { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } },
+    { read: true },
+    { press: { thing: 'stake:fisher:2' } },
+    { until: { event: 'pick', timeout: 15 } },
+    { tap: { line: 9 } },
+    { wait: 2 },
+    { press: true },
+    { until: { event: 'put', timeout: 15 } },
+    { until: { event: 'escape', timeout: 200 } },
+  ]);
+  const fish = getEntity(session.state, 'fish:fisher');
+  assert.ok(fish, 'the fish swim out');
+  const f = figureOf(JSON.parse(readFileSync('data/figures.json', 'utf8')).figures[fish.look], 'coarse');
+  for (const p of f.parts) {
+    const x = fish.position.x + p.at[0];
+    const z = fish.position.z + p.at[2];
+    const ground = session.env.groundY(x / 2, z / 2);
+    assert.ok(fish.position.y + p.at[1] - p.size[1] / 2 > ground, `${p.name} is under the ground (${ground})`);
+  }
+});
+
 test('the goal bar says the work of each step: two steps with the same text have the same work, or both are a walk to a place (#48)', () => {
   const quests = JSON.parse(readFileSync(new URL('../data/quests.json', import.meta.url), 'utf8'));
   const vi = JSON.parse(readFileSync(new URL('../i18n/vi.json', import.meta.url), 'utf8'));
