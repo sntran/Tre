@@ -807,6 +807,8 @@
   "world.greet.1": "Hello, {name}!",
   "world.greet.2": "Good day to you!",
   "world.greet.3": "Hello, child!",
+  "world.greet.young": "Hello, little one!",
+  "world.greet.child": "Hi, friend!",
   "world.market.north": "There is a market today in the hamlet to the north.",
   "world.market.south": "There is a market today in the hamlet to the south.",
   "world.market.east": "There is a market today in the hamlet to the east.",

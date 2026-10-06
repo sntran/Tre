@@ -807,6 +807,8 @@
   "world.greet.1": "Chào {name}!",
   "world.greet.2": "Chào cháu!",
   "world.greet.3": "Cháu ngoan quá!",
+  "world.greet.young": "Chào em!",
+  "world.greet.child": "Chào bạn!",
   "world.market.north": "Hôm nay xóm phía bắc có phiên chợ đấy.",
   "world.market.south": "Hôm nay xóm phía nam có phiên chợ đấy.",
   "world.market.east": "Hôm nay xóm phía đông có phiên chợ đấy.",

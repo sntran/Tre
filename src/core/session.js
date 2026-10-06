@@ -82,7 +82,16 @@ const INPUT_SCREENS = new Set(['nameFriend']);
 // The commands that are an action of the child (they stop the cue).
 const CHILD_ACTS = new Set(['tap', 'hands', 'hold', 'wave', 'jump', 'move', 'pet', 'talkTo']);
 const WORLD = new Set(['move', 'stop', 'pet', 'ride', 'aim', 'pick', 'put', 'drop', 'guess', 'face']);
-const GREETS = ['world.greet.1', 'world.greet.2', 'world.greet.3'];
+// The words of a greeting by the age of the person (greet in data/npcs.json, #49): an old person
+// says "Cháu ngoan quá!", a child greets a child as a friend, and a person with no greet (Gióng,
+// the enemies) does not greet. A person greets one time, and not again for GREET_AGAIN seconds.
+const GREETS = {
+  elder: ['world.greet.1', 'world.greet.2', 'world.greet.3'],
+  grown: ['world.greet.1', 'world.greet.2'],
+  young: ['world.greet.1', 'world.greet.young'],
+  child: ['world.greet.1', 'world.greet.child'],
+};
+const GREET_AGAIN = 300;
 const CALM_CELLS = 2; // the hero is on the bridge when nearer than this to a span that is not solid
 const LIVE = 2; // the live chunks: this many chunks on each side of the chunk of the hero (5 x 5)
 const BACK = 1.5; // cells: two steps back from an edge of the world (a step of the hero is about 0.75 of a cell)
@@ -526,8 +535,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
 
   // A talk: one open event for each line. The effects of a line run when the line shows.
+  // The talks that the child heard in this visit (#49): a talk of a goal opens by itself one
+  // time; after that, it opens only after a tap on the person (see the candidates of the button).
+  const heard = new Set();
   function talk(id) {
     if (!id) return;
+    heard.add(id);
     queue(() => {
       const def = data.dialogues.get(id);
       if (!def) return;
@@ -1580,7 +1593,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // In a task, the call for help comes after a tap on the person when a heap of the work is
       // in reach: a press takes from the heap.
       else if (fin && !tapped) continue;
-      else add({ ...base, act: 'talk', icon: 'talk', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
+      // A talk that the child heard comes again only after a tap on the person: a child who
+      // presses the button near the forge for other things does not open the same talk (#49).
+      else if (tapped || q.kind !== 'npc' || mentoring.taskOfPerson(q.entity) || !heard.has(pickTalk(data.npcs.npcs[q.ref] ?? {}, profile))) add({ ...base, act: 'talk', icon: 'talk', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
     }
     if (!held) {
       // The folk games of the children: join them, and the throw of the shard (a hold).
@@ -2151,6 +2166,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // Events of a step ------------------------------------------------------------------
 
+  // The people who greeted the child: id -> the time of play of the greeting (seconds).
+  const greeted = new Map();
+
   // What the world did in a step, for the story: callouts, gifts, and the skill events.
   // The people at work (#38): the person of a script (an example, a first step, a move of a mentor,
   // the greeting of a place), or of a task that goes on. A person at work says only the lines of
@@ -2187,12 +2205,33 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       off: ev.solved ? 0 : offOf(ev.parts, ev.target),
     });
   }
-  function worldEvent(ev) {
-    // In a practice the people say no small talk of the day and no market line (#45).
-    if (ev.type === 'greet' && !busy && !practice && !quietForWork(ev.id)) {
-      const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
-      emit({ type: 'open', screen: 'callout', id: ev.id, textKey: clueLine(ev.id) ?? marketLine() ?? GREETS[n % GREETS.length], params: { name: profile.hero.name } });
+  // A greeting of a person near the hero (#49). It has words and a sound one time when the child
+  // comes near, then not again for some minutes; never during the work of the people near the
+  // hero, in a talk, or in a practice (#45); and never from an enemy. A clue of the way comes
+  // with the next greeting. A greeting with no words has no sound.
+  function greeting(ev) {
+    const who = getEntity(state, ev.id)?.person;
+    // A person of the map has a greet in data/npcs.json; the villagers of the land and the people of
+    // a small event greet as grown people; an enemy (an encounter) does not greet.
+    const group = who?.kind === 'npc' ? (data.npcs?.npcs?.[who.ref]?.greet ?? 'grown') : who?.kind === 'encounter' ? null : 'grown';
+    const words = GREETS[group];
+    const t = state.tick * STEP;
+    const last = greeted.get(ev.id);
+    if (!words || busy || practice || quietForWork(ev.id)) {
+      ev.sound = null;
+      return;
     }
+    const clue = clueLine(ev.id);
+    if (!clue && last !== undefined && t - last < GREET_AGAIN) {
+      ev.sound = null;
+      return;
+    }
+    greeted.set(ev.id, t);
+    const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
+    const market = group === 'elder' || group === 'grown' ? marketLine() : null;
+    emit({ type: 'open', screen: 'callout', id: ev.id, textKey: clue ?? market ?? words[n % words.length], params: { name: profile.hero.name } });
+  }
+  function worldEvent(ev) {
     // A person calls out: the fisher when a plank is too long, and the lines of the mentors.
     if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {} });
     // The mentors read the commits (before the learner takes them), the plank too long, and the
@@ -2299,6 +2338,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const fn of later.splice(0)) fn();
     const events = state.events;
     for (const ev of events) {
+      if (ev.type === 'greet') greeting(ev);
       emit(ev);
       if (ev.id === 'sky') {
         // At dawn the enemies of a lost raid come again, and the game saves the start of the day

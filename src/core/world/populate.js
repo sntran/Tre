@@ -60,7 +60,8 @@ export function syncPeople(world, map, env, present, people = {}, days = null) {
       position: { x: spot.x, y: env.groundY(item.x, item.y), z: spot.z, facing },
       motion: { vx: 0, vz: 0, speed: 0 },
       solid: { r: 1.8 },
-      ...(look === 'river-serpent' || !people.react ? {} : { react: structuredClone(people.react) }),
+      // The people of the village greet; the enemies of an encounter do not (#49).
+      ...(kind !== 'npc' || !people.react ? {} : { react: structuredClone(people.react) }),
       ...(day && people.steer ? {
         steer: { ...structuredClone(people.steer), goal: null, arrived: false, flee: null, bias: null, wander: null },
         schedule: { plan: structuredClone(days.plans[day.plan]), home: env.homes[day.home] ? day.home : null, spot, offset: offsetOf(id), ...(day.mends ? { mends: true } : {}) },

@@ -1,7 +1,8 @@
 {
-  "_about": "People of the village. talk: the first rule whose condition is true gives the dialogue. when: the person is on the map only when the condition is true. nameKey: the name of the person (the people of Phù Đổng keep a name of work and kinship, as Bác thợ rèn). kin, order, age, child, and name: the person is called by a word of kinship to the child and a word after it, by the way of naming of the region and the age of the person (data/world/naming.json, src/core/naming.js): the order of birth in the family (cô Năm, #38), the name of the first child (ông Dương, #41), or the own small name (chị Hến, #41). age: elder, grown, or young; child: the name of the first child; name: the own small name. folk: a child of a folk game (loco or rope, docs/FOLKGAMES.md): the game puts the child near its court or rope, not the map.",
+  "_about": "People of the village. talk: the first rule whose condition is true gives the dialogue. when: the person is on the map only when the condition is true. nameKey: the name of the person (the people of Phù Đổng keep a name of work and kinship, as Bác thợ rèn). kin, order, age, child, and name: the person is called by a word of kinship to the child and a word after it, by the way of naming of the region and the age of the person (data/world/naming.json, src/core/naming.js): the order of birth in the family (cô Năm, #38), the name of the first child (ông Dương, #41), or the own small name (chị Hến, #41). age: elder, grown, or young; child: the name of the first child; name: the own small name. folk: a child of a folk game (loco or rope, docs/FOLKGAMES.md): the game puts the child near its court or rope, not the map. greet: the words of the greeting of the person when the child comes near (#49): elder, grown, young, child, or none (the person does not greet).",
   "npcs": {
     "elder": {
+      "greet": "elder",
       "voice": "elderMan",
       "talk": [
         {
@@ -80,6 +81,7 @@
       "nameKey": "npc.elder.name"
     },
     "teacher": {
+      "greet": "grown",
       "voice": "man",
       "talk": [
         {
@@ -105,6 +107,7 @@
       "nameKey": "npc.teacher.name"
     },
     "smith": {
+      "greet": "grown",
       "voice": "man",
       "talk": [
         {
@@ -164,6 +167,7 @@
       "nameKey": "npc.smith.name"
     },
     "fisher": {
+      "greet": "grown",
       "voice": "man",
       "talk": [
         {
@@ -200,6 +204,7 @@
       "nameKey": "npc.fisher.name"
     },
     "healer": {
+      "greet": "elder",
       "voice": "elderWoman",
       "talk": [
         {
@@ -225,6 +230,7 @@
       "nameKey": "npc.healer.name"
     },
     "woodcutter": {
+      "greet": "grown",
       "voice": "man",
       "talk": [
         {
@@ -273,6 +279,7 @@
       "nameKey": "npc.woodcutter.name"
     },
     "grandma": {
+      "greet": "elder",
       "voice": "elderWoman",
       "talk": [
         {
@@ -282,6 +289,7 @@
       "nameKey": "npc.grandma.name"
     },
     "mother": {
+      "greet": "grown",
       "voice": "woman",
       "talk": [
         {
@@ -321,6 +329,7 @@
       "nameKey": "npc.mother.name"
     },
     "giong-boy": {
+      "greet": "none",
       "voice": "boy",
       "child": true,
       "when": {
@@ -363,6 +372,7 @@
       "nameKey": "npc.giong-boy.name"
     },
     "giong-hero": {
+      "greet": "none",
       "voice": "man",
       "scale": 0.5,
       "when": {
@@ -390,6 +400,7 @@
       "nameKey": "npc.giong-hero.name"
     },
     "messenger": {
+      "greet": "grown",
       "voice": "man",
       "when": {
         "flags": [
@@ -419,6 +430,7 @@
       "nameKey": "npc.messenger.name"
     },
     "giong-sky": {
+      "greet": "none",
       "voice": "man",
       "scale": 0.5,
       "nameKey": "npc.giong-hero.name",
@@ -437,6 +449,7 @@
       ]
     },
     "socson-elder": {
+      "greet": "elder",
       "voice": "elderMan",
       "nameKey": "npc.socson-elder.name",
       "talk": [
@@ -454,6 +467,7 @@
       ]
     },
     "planter": {
+      "greet": "grown",
       "voice": "woman",
       "kin": "co", "order": 5, "age": "grown",
       "talk": [
@@ -463,6 +477,7 @@
       ]
     },
     "duck-girl": {
+      "greet": "young",
       "voice": "girl",
       "kin": "chi", "order": 3, "age": "young", "name": "Hến",
       "talk": [
@@ -472,6 +487,7 @@
       ]
     },
     "fisher-uncle": {
+      "greet": "grown",
       "voice": "man",
       "kin": "chu", "order": 4, "age": "grown",
       "talk": [
@@ -481,6 +497,7 @@
       ]
     },
     "hamlet-head": {
+      "greet": "elder",
       "voice": "elderWoman",
       "nameKey": "npc.hamlet-head.name",
       "talk": [
@@ -490,18 +507,21 @@
       ]
     },
     "loco-child": {
+      "greet": "child",
       "voice": "boy",
       "folk": "loco",
       "nameKey": "npc.loco-child.name",
       "talk": []
     },
     "rope-child": {
+      "greet": "child",
       "voice": "girl",
       "folk": "rope",
       "nameKey": "npc.rope-child.name",
       "talk": []
     },
     "dam-elder": {
+      "greet": "elder",
       "voice": "elderMan",
       "kin": "bac",
       "order": 3,
@@ -510,6 +530,7 @@
       "talk": [{ "when": { "flags": ["trauson.found"] }, "dialogue": "dam-elder.found" }, { "dialogue": "dam-elder.hill" }]
     },
     "drummer": {
+      "greet": "elder",
       "voice": "elderMan",
       "kin": "ong", "order": 1, "age": "elder", "child": "Dương",
       "talk": [

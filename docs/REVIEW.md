@@ -480,3 +480,9 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 - **The fisher at a tide with no new stake:** `fisher.tide.more` ("Cắm thêm cọc trước đã, rồi nước lên sẽ thử hàng cọc.").
 - **The own lines of each person (#48):** each person of a task now has own lines for the moves that name the things of the work, in place of the lines about a heap: `mentor.<person>.first`, `.mark`, `.demo`, `.smaller`, and `.share` for the bridge, the teacher (`scholar`), the smith, the fisher, the healer, the woodcutter, the planting (`plant`), and the fish traps (`traps`). For example `mentor.scholar.smaller` ("Thầy đặt giúp con mấy que trước, con đặt nốt nhé.") and `mentor.fisher.mark` ("Cháu nhìn khe này nhé: không khe nào được rộng hơn khe của chú.").
 - **Please check:** the voice of each person (thầy and con; bà, chú, cô, and cháu; anh and em), and that no line is a question (the rule of the world).
+
+## The greetings of the people (#49)
+
+- **The words of a greeting by the age of the person** (`greet` in `data/npcs.json`): an old person says one of `world.greet.1` ("Chào {name}!"), `world.greet.2` ("Chào cháu!"), and `world.greet.3` ("Cháu ngoan quá!"); a grown person says `world.greet.1` or `world.greet.2`; a big sister (the duck girl) says `world.greet.1` or `world.greet.young` ("Chào em!"); a child of a folk game says `world.greet.1` or `world.greet.child` ("Chào bạn!"). Gióng and the enemies do not greet.
+- A person greets one time when the child comes near, and not again for some minutes; never during the work of the people near the child.
+- **Please check:** "Chào em!" from the duck girl, and "Chào bạn!" from a child to a child.
