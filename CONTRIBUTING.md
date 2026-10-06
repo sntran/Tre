@@ -57,6 +57,12 @@ Add tests for each change to `src/core/`. All tests must pass before we merge a 
 
 The use paths of the game are stories in `tests/stories/`: data files with a start state, commands, and the facts to check. `tests/stories.test.js`, `tests/stories-2.test.js`, and `tests/stories-3.test.js` run them headless (each file a third of the stories, so that they run at the same time), and `?story=<name>&play` plays one in the browser. Every new use path (a task, a raid, a quest step, a screen) comes with its story in the same commit. The stories test the paths; the unit tests test the parts. A new kind of step or fact goes into `src/core/story.js` with a test of its own in `tests/story.test.js`. After a change to a story, run `python3 tools/stories.py` to make `docs/reference/stories.html` again. `docs/STORIES.md` tells how to write a story. A story starts at a cell of a place (`"at": ["phu-dong", 31, 27]`) or of the plane (`"at": [x, y]`), and a long walk is one step (`{ "walk": { "to": ["soc-son", 40, 18] } }`).
 
+A story sends exact commands: it walks to the middle of a place and holds a button for many steps. A child does not. So the tests also play as a child:
+
+- **No step throws.** A story fails at the first step that throws an error (`playStory` in `src/core/story.js`), and the frame loop of the village logs an error of a step and goes on with the next frame (with `?debug=1`, the debug panel shows it).
+- **A quick tap.** `tests/quicktap.test.js` presses and lets go of each hold button (the knife, the jar) in one step of the world, and two times in one step. The commands of one step stay in their order (`takeWork` in `src/core/world/state.js`).
+- **A play on a phone.** `node tools/phone-play.mjs tools/plays/<plan>.json --out <folder>` plays the real game in a headless browser at 390 × 844 with touch: taps on the screen and on the buttons only (no story command, no keyboard, no teleport), with random restless taps when the plan asks. It saves the frames, and it fails when the page has an error, when the world stops, or when a main button is under the bottom of the screen. The plans are in `tools/plays/`; a plan can list a known problem of a later issue in `allow`. It needs a local server on port 8123 and Playwright, as `tools/fit-check.mjs`.
+
 ## How to pick up work
 
 Work is planned in GitHub issues, grouped in milestones. To pick up work:

@@ -1,0 +1,77 @@
+{
+  "about": "#46: quick taps on the knife at the bamboo clump, a double tap, a hold, and a restless child; the world never stops.",
+  "start": "?story=staffs-bamboo",
+  "lang": "vi",
+  "steps": [
+    {
+      "wait": 3
+    },
+    {
+      "read": 12
+    },
+    {
+      "shot": "start"
+    },
+    {
+      "walk": {
+        "person": "woodcutter"
+      }
+    },
+    {
+      "tap": {
+        "person": "woodcutter"
+      },
+      "after": 1.5
+    },
+    {
+      "press": true,
+      "after": 1
+    },
+    {
+      "read": 12
+    },
+    {
+      "shot": "after-the-talk"
+    },
+    {
+      "walk": {
+        "thing": "culm:staffs:0"
+      },
+      "near": 50
+    },
+    {
+      "shot": "at-the-clump"
+    },
+    {
+      "press": true,
+      "after": 1
+    },
+    {
+      "shot": "quick-tap"
+    },
+    {
+      "press": true,
+      "after": 0.05
+    },
+    {
+      "press": true,
+      "after": 1
+    },
+    {
+      "hold": 1.2
+    },
+    {
+      "wait": 1.5
+    },
+    {
+      "shot": "after-a-hold"
+    },
+    {
+      "restless": 20,
+      "seed": 3
+    },
+    {
+      "shot": "after-restless-play"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "about": "#46: a new device opens a practice link of the ducks; quick taps, a double tap, and a hold on the jar of feed; then a restless child. The world never stops, and a quick tap gives one scoop.",
+  "start": "?practice=cho-vit-an",
+  "lang": "vi",
+  "steps": [
+    {
+      "create": "Nam"
+    },
+    {
+      "shot": "arrive"
+    },
+    {
+      "read": 15
+    },
+    {
+      "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => e.id === 'script:example-ducks')",
+      "timeout": 600
+    },
+    {
+      "read": 15
+    },
+    {
+      "shot": "after-the-example"
+    },
+    {
+      "tap": {
+        "thing": "hamlet:jar"
+      },
+      "after": 4
+    },
+    {
+      "tap": {
+        "thing": "hamlet:jar"
+      },
+      "after": 2
+    },
+    {
+      "shot": "at-the-jar"
+    },
+    {
+      "press": true,
+      "after": 0.05
+    },
+    {
+      "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-ducks')?.zone.round?.pouring === false"
+    },
+    {
+      "shot": "quick-tap"
+    },
+    {
+      "press": true,
+      "after": 0.05
+    },
+    {
+      "press": true,
+      "after": 1
+    },
+    {
+      "hold": 1.5
+    },
+    {
+      "wait": 4
+    },
+    {
+      "shot": "after-a-hold"
+    },
+    {
+      "restless": 25,
+      "seed": 5
+    },
+    {
+      "shot": "after-restless-play"
+    }
+  ],
+  "allow": [
+    "is under the bottom of the screen"
+  ]
+}
