@@ -810,11 +810,13 @@ p { line-height: 1.45; margin: 0.4em 0; }
 }
 .world-marks { position: absolute; inset: 0; overflow: hidden; }
 .world-marks > * { position: absolute; left: 0; top: 0; will-change: transform; }
-.world-star { width: 30px; height: 30px; filter: drop-shadow(0 1px 0 var(--ink)); }
+.world-star { width: 30px; height: 30px; filter: drop-shadow(0 1px 0 var(--ink)); pointer-events: auto; cursor: pointer; }
 .edge-arrow {
   width: 44px;
   height: 34px;
   margin: -17px 0 0 -22px;
+  pointer-events: auto;
+  cursor: pointer;
 }
 .edge-arrow::before {
   content: '';

@@ -11,6 +11,7 @@ import { colorIndex, toneRgb, FACE_TONES } from '../world/voxel.js';
 import { figureOf } from '../world/figures.js';
 import { createAnimator, animate } from '../world/animate.js';
 import { trackCarries, flightAt } from '../world/carry.js';
+import { inFront, stepFade } from '../world/fade.js';
 import { detailFor, inView, lodFor } from '../world/lod.js';
 import { createSway, swayStep } from '../world/sway.js';
 import { C } from './palette.js';
@@ -120,6 +121,7 @@ export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
     dispose() {
       for (const m of [parts, hulls]) m.material.dispose();
       box.dispose();
+      ring.dispose();
     },
   };
 }
@@ -165,12 +167,14 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     scene.add(m);
   }
   shadows.renderOrder = 1;
-  // The cue: the thing to touch next glows softly, with a warm disc under it that breathes (the
-  // things in glowing, the places in glowSpots).
-  // The disc draws over a roof or a stair in front of it (no depth test), so that a thing behind a
+  // The cue: the thing to touch next breathes a little bigger, with a thin warm ring on the ground
+  // at its edge (the things in glowing, the places in glowSpots). The ring never covers the thing
+  // or the hero (#44): it is only a rim, and a thing at the feet of the hero has none.
+  // The ring draws over a roof or a stair in front of it (no depth test), so that a thing behind a
   // house still shows where it is.
-  const glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(C.yellow), transparent: true, opacity: 0.3, depthWrite: false, depthTest: false });
-  const glows = new THREE.InstancedMesh(disc, glowMat, MAX_GLOWS);
+  const ring = new THREE.RingGeometry(0.86, 1, 28).rotateX(-Math.PI / 2);
+  const glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(C.vermilion), transparent: true, opacity: 0.5, depthWrite: false, depthTest: false });
+  const glows = new THREE.InstancedMesh(ring, glowMat, MAX_GLOWS);
   glows.frustumCulled = false;
   glows.count = 0;
   glows.renderOrder = 10;
@@ -232,6 +236,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     const unit = figure.scale * grid;
     return { figure, root, body, nodes, parts: list, hangs, unit, hull: HULL / unit, height: figure.height * unit };
   }
+  const tmpDir = new THREE.Vector3();
   const frustum = new THREE.Frustum();
   const view = new THREE.Matrix4();
   let planes = null;
@@ -330,15 +335,24 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       let lit = false;
       glowT += dt;
       const breath = 0.5 - 0.5 * Math.cos((2 * Math.PI * glowT) / GLOW_BEAT);
-      glowMat.opacity = 0.3 + 0.4 * breath;
+      glowMat.opacity = 0.45 + 0.35 * breath;
       // The planes of the view, for the culling (plain numbers for src/world/lod.js).
       if (camera) {
         camera.updateMatrixWorld();
         frustum.setFromProjectionMatrix(view.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
         planes = frustum.planes.map((p) => ({ nx: p.normal.x, ny: p.normal.y, nz: p.normal.z, d: p.constant }));
       }
-      const hero = [...figures.values()].find((f) => f.control)?.curr ?? null;
+      const heroFig = [...figures.values()].find((f) => f.control) ?? null;
+      const hero = heroFig?.curr ?? null;
       const lod = lodFor(zoom());
+      // The way to the camera (its turn and its elevation), for the people in front of the hero.
+      let camAz = null;
+      let camEl = null;
+      if (camera && heroFig?.at) {
+        camera.getWorldDirection(tmpDir);
+        camAz = Math.atan2(-tmpDir.x, -tmpDir.z);
+        camEl = Math.asin(Math.max(-1, Math.min(1, -tmpDir.y)));
+      }
       for (const f of figures.values()) {
         const a = f.prev;
         const b = f.curr;
@@ -359,8 +373,14 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         // A figure deep in the mist is paper: it draws nothing. The hero always draws.
         const mist = f.control ? 0 : mistAt(f.at.x, f.at.z);
         if (mist >= 0.78) continue;
+        // A person or an animal between the camera and the hero fades, as a house does (#44): the
+        // hero is always seen.
+        if (!f.control && camAz !== null && f.height > 1) {
+          const box = { x0: f.at.x - 0.6, x1: f.at.x + 0.6, y0: f.at.y, y1: f.at.y + f.height, z0: f.at.z - 0.6, z1: f.at.z + 0.6 };
+          f.cover = stepFade(f.cover ?? 0, inFront(box, heroFig.at, camAz, camEl), dt);
+        } else f.cover = 0;
         // A ghost is pale, as a thing far in the mist.
-        const pale = f.ghost ? 0.6 : smooth(0, 0.45, mist);
+        const pale = Math.max(f.ghost ? 0.6 : smooth(0, 0.45, mist), (f.cover ?? 0) * 0.72);
         const tint = (rgb) => color.setRGB(rgb[0] + (PAPER_RGB[0] - rgb[0]) * pale, rgb[1] + (PAPER_RGB[1] - rgb[1]) * pale, rgb[2] + (PAPER_RGB[2] - rgb[2]) * pale);
         // The animation goes on for every figure, so that a figure that comes into the view is in
         // step.
@@ -378,10 +398,9 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         if (f.pulse > 0) f.pulse = Math.max(0, f.pulse - dt);
         const glow = glowing.has(f.id);
         L.root.scale.setScalar((f.pulse > 0 ? 1 + 0.18 * Math.sin(Math.PI * (1 - f.pulse / PULSE)) : 1) * (glow ? 1 + 0.08 * breath : 1));
-        if (glow && g < MAX_GLOWS) {
-          const r = Math.max(1, Math.min(1.8, L.height * 0.7)) * (0.9 + 0.2 * breath);
-          glows.setMatrixAt(g++, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.06, f.at.z));
-        }
+        const r = Math.max(1, Math.min(1.8, L.height * 0.7)) * (0.9 + 0.2 * breath);
+        const heroIn = heroFig?.at && Math.hypot(heroFig.at.x - f.at.x, heroFig.at.z - f.at.z) < r + 0.4;
+        if (glow && g < MAX_GLOWS && !heroIn) glows.setMatrixAt(g++, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.06, f.at.z));
         for (const [name, r] of Object.entries(pose.rot)) L.nodes[name]?.rotation.set(r[0], r[1], r[2]);
         if (L.hangs.length) {
           // The parts that hang follow the air that the figure feels, with a lag, on top of the pose.
@@ -464,6 +483,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       for (const p of glowSpots) {
         if (g >= MAX_GLOWS) break;
         const r = p.r / 2 + 0.4;
+        if (heroFig?.at && Math.hypot(heroFig.at.x - p.x / 2, heroFig.at.z - p.z / 2) < r + 0.4) continue;
         glows.setMatrixAt(g++, tmp.makeScale(r, 1, r).setPosition(p.x / 2, (p.y ?? 0) / 2 + 0.06, p.z / 2));
       }
       glows.count = g;

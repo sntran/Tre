@@ -19,7 +19,7 @@ import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
 import { workBoxes, workTurn } from '../world/fade.js';
-import { VIEW, viewSize, inView } from '../world/view.js';
+import { VIEW, viewSize, inView, leadFocus } from '../world/view.js';
 import { heroLook, thingLook } from '../world/figures.js';
 import { h, img, button } from './dom.js';
 import { t, tn, setSpeech } from './i18n.js';
@@ -999,10 +999,32 @@ export async function mountVillage(ctx, params = {}) {
   // A task or an example starts: the view turns (in its steps) so that no house or roof covers the
   // work and its person (src/world/fade.js, #38). points: half blocks.
   // sight: the points that stay on the screen (the person and the example).
+  // The work of a task near the hero (#44): the camera leads from the hero toward the middle of
+  // the work, so that the person, the heap, and the places are on the screen of a phone held
+  // upright, and zooms out one step when they need it. It ends when the hero walks away.
+  let work = null;
+  const WORK_AWAY = 16; // cells: the hero this far from the middle of the work ends the lead
+  function leadToWork(heroAt) {
+    if (!work) return heroAt;
+    const mid = work.points.reduce((a, p) => ({ x: a.x + p.x / work.points.length, z: a.z + p.z / work.points.length }), { x: 0, z: 0 });
+    if (Math.hypot(heroAt.x - mid.x, heroAt.z - mid.z) > WORK_AWAY) {
+      if (work.zoomed) view.setZoom(work.level);
+      work = null;
+      return heroAt;
+    }
+    const lead = leadFocus([heroAt, ...work.points], { az: view.angle, width: size.width, height: size.height });
+    if (lead.level > view.state.level && !work.zoomed) {
+      work.zoomed = true;
+      view.setZoom(lead.level);
+    }
+    return { ...heroAt, x: lead.focus.x, z: lead.focus.z };
+  }
   function turnToWork(points, sight = []) {
     const wu = (p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 });
     const pts = (points ?? []).map(wu);
     if (!pts.length) return;
+    if (work?.zoomed) view.setZoom(work.level);
+    work = { points: pts, level: view.state.level, zoomed: false };
     const focus = wu(hero().position);
     const scr = viewSize(size.width, size.height, view.state.level);
     const inSight = (az) => sight.map(wu).every((p) => inView({ x0: p.x - 0.5, x1: p.x + 0.5, y0: p.y, y1: p.y + 1, z0: p.z - 0.5, z1: p.z + 0.5 }, focus, { az, size: scr }));
@@ -1194,8 +1216,22 @@ export async function mountVillage(ctx, params = {}) {
       return pool[i];
     };
   }
-  const starAt = pooled(starPool, () => img('ui/star', 'world-star'));
-  const arrowAt = pooled(arrowPool, () => h('div', { class: 'edge-arrow' }, [img('ui/star', 'edge-star')]));
+  // A tap on a star (or on an arrow at the edge) walks the hero toward its goal (#44): children
+  // tap the star, because the star is where they must go.
+  const starTap = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const m = e.currentTarget.mark;
+    if (!m || busy || !alive) return;
+    ctx.log('action', { kind: 'star' });
+    send({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h, thing: false, object: null } } });
+  };
+  const tappable = (el) => {
+    el.addEventListener('pointerdown', starTap);
+    return el;
+  };
+  const starAt = pooled(starPool, () => tappable(img('ui/star', 'world-star')));
+  const arrowAt = pooled(arrowPool, () => tappable(h('div', { class: 'edge-arrow' }, [img('ui/star', 'edge-star')])));
   function drawMarks() {
     const hudRect = hud.getBoundingClientRect();
     const canvasRect = canvas.getBoundingClientRect();
@@ -1210,6 +1246,7 @@ export async function mountVillage(ctx, params = {}) {
       const edge = edgeMarker(screen, p, inset);
       if (!edge) {
         const el = starAt(stars++);
+        el.mark = m;
         el.style.transform = `translate(${p.x - 15}px, ${p.y - 30 + bob}px)`;
         continue;
       }
@@ -1217,6 +1254,7 @@ export async function mountVillage(ctx, params = {}) {
       if (edges.some((q) => Math.hypot(q.x - edge.x, q.y - edge.y) < 56)) continue;
       edges.push(edge);
       const el = arrowAt(arrows++);
+      el.mark = m;
       const pulse = Math.sin(time * 5) * 3;
       el.style.transform = `translate(${edge.x}px, ${edge.y}px) rotate(${edge.angle}rad) translate(${-22 + pulse}px, 0)`;
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
@@ -1377,7 +1415,7 @@ export async function mountVillage(ctx, params = {}) {
     const puddles = puddlesAt((d) => rainOf(state.seed, d, data.day ?? undefined), state.clock.minutes);
     const heroAt = figures.placeOf('hero');
     if (!heroAt) return;
-    view.render(dt, raidView.focus(heroAt), time, { ...state.sky, puddles }, ambient);
+    view.render(dt, raidView.focus(leadToWork(heroAt)), time, { ...state.sky, puddles }, ambient);
     drawSky();
     raidView.draw(dt, w, hh);
     drawMarks();
