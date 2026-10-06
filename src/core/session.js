@@ -64,7 +64,7 @@ import { createPlanting } from './planting-session.js';
 import { createHamlet } from './hamlet-session.js';
 import { plotsOf } from './world/systems/plant.js';
 import { jumpLength, planJump } from './world/jump.js';
-import { MOVE } from './world/move.js';
+import { MOVE, inputToward } from './world/move.js';
 import { createRaid, raidLevel } from './world/raids.js';
 import { setupRaid, roadPoint } from './world/systems/raid.js';
 import { lossLevel } from './profile.js';
@@ -1359,11 +1359,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function pathMap() {
     const solids = query(state, 'solid', 'position').filter((e) => !e.hidden && e.id !== 'hero');
     const boxes = solids.filter((e) => e.solid.rect).map((e) => e.solid.rect);
-    // A person near the hero (a person at work): the cells of the person, so that a walk goes
-    // around and never pushes into the person (#44). Things (a pot that breaks) and people far
-    // away (they move) do not count.
+    // A person or a solid thing near the hero (a person at work, a pot, a cart): its cells, so
+    // that a walk goes around and never pushes into it (#44; a pot in a narrow way stopped a walk,
+    // #53). People far away (they move) and Nghé (she steps aside) do not count.
     const hp = hero().position;
-    const rounds = solids.filter((e) => !e.solid.rect && e.solid.r && String(e.id).startsWith('npc:') && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) < 16)
+    const rounds = solids.filter((e) => !e.solid.rect && e.solid.r && !e.follow && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) < 16)
       .map((e) => ({ x: e.position.x, z: e.position.z, r: e.solid.r }));
     // The cell of the hero is never in a box: a hero who stands at the edge of a solid thing (a
     // culm, the mat) can always walk away from it (#44).
@@ -1972,7 +1972,53 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     const paths = pathMap();
     if (paths.walkable(tile.x, tile.y)) walkPath(findPath(paths, from, tile)?.slice(0, -1), { x: hit.x, y: hit.y }, null);
-    else walkPath(pathToward(paths, from, tile), null, null);
+    else if (hit.under) {
+      // A tap on a roof, a wall, or a tree: the hero walks around it to the free cell nearest to
+      // the ground under the finger, the side that the child sees past it (#53).
+      const path = pathNearest(paths, from, hit.under);
+      if (path) walkPath(path, null, null);
+      else walkPath(pathToward(paths, from, tile), null, null);
+    } else walkPath(pathToward(paths, from, tile), null, null);
+  }
+
+  // A held finger: the move toward a point (map cells) along a path around houses, walls, and
+  // steps, as a tap walks (#53). The path comes again when the hero or the finger goes to another
+  // cell. Return { dx, dz, strength, run } for a move command, or null at the point.
+  let held = null;
+  function holdToward(x, y) {
+    const from = heroFrom();
+    const c = heroCell();
+    const key = `${Math.floor(x)},${Math.floor(y)},${from.x},${from.y}`;
+    if (held?.key !== key) {
+      const paths = pathMap();
+      const tile = { x: Math.floor(x), y: Math.floor(y) };
+      held = { key, path: paths.walkable(tile.x, tile.y) ? findPath(paths, from, tile, { maxNodes: 8000 }) : pathNearest(paths, from, { x, y }) };
+    }
+    const path = held.path;
+    // The next cell of the path, or the finger itself on the last cell (or with no path).
+    const next = path?.length > 1 ? { x: path[0].x + 0.5, y: path[0].y + 0.5 } : { x, y };
+    const i = inputToward(c, next, { run: Math.hypot(x - c.x, y - c.y) > 6, stop: path?.length > 1 ? 0.05 : 0.3 });
+    return i.strength ? { dx: i.dx, dz: i.dy, strength: i.strength, run: i.run } : null;
+  }
+
+  // A path to the free cell nearest to a point (map cells), within some cells of it. Null when
+  // no free cell near it has a path; an empty path when the hero stands on that cell.
+  function pathNearest(paths, from, point, reach = 8) {
+    const cells = [];
+    const cx = Math.floor(point.x);
+    const cy = Math.floor(point.y);
+    for (let y = cy - reach; y <= cy + reach; y++) {
+      for (let x = cx - reach; x <= cx + reach; x++) {
+        if (paths.walkable(x, y)) cells.push({ x, y, d: Math.hypot(x + 0.5 - point.x, y + 0.5 - point.y) });
+      }
+    }
+    cells.sort((a, b) => a.d - b.d);
+    for (const c of cells.slice(0, 24)) {
+      if (c.x === from.x && c.y === from.y) return [];
+      const path = findPath(paths, from, c, { maxNodes: 8000 });
+      if (path) return path;
+    }
+    return null;
   }
 
   // A path to a blocked cell (a house, water, a paddy, a person): to a free cell next to it, or
@@ -2394,6 +2440,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     },
     snapshot,
     targetAt,
+    holdToward,
     startTrial,
     startRaid,
     raidOn,

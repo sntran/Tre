@@ -151,6 +151,7 @@ function heapThingNear(things, hit) {
 //   height }]; a tap there pets Nghé; guesses: the plank outlines; hamlet: the things
 //   of the hamlet with a tap ([{ id, hamletTap, x, y, z, height }]);
 // - pick(px, py): the ground (or a prop: who) under the point, { x, y (map cells), h, who } or null;
+// - under(px, py): the ground under the point behind the props, { x, y } or null (optional);
 // - placeAt(x, y, pad): a place of a task at a map point (cells), with a pad in half blocks;
 // - inTask: a task or a folk game goes on now; carrying: a thing is in the hands of the hero;
 //   raidAt(p): the target of a raid (optional).
@@ -186,7 +187,10 @@ export function tapTarget(p, w) {
   const person = figureUnder(p, w.cam, w.persons ?? [], nearPlace ? PERSON_PAD_AT_PLACE : PERSON_PAD);
   if (person) return { person: person.id };
   if (!hit) return null;
-  return { ground: { x: hit.x, y: hit.y, h: hit.h, thing: Boolean(hit.who), object: hit.object ?? null } };
+  // On a roof, a wall, or a tree, the ground under the finger behind it: the hero walks around
+  // the thing toward that side (#53).
+  const under = hit.who ? w.under?.(p.x, p.y) ?? null : null;
+  return { ground: { x: hit.x, y: hit.y, h: hit.h, thing: Boolean(hit.who), object: hit.object ?? null, ...(under ? { under: { x: under.x, y: under.y } } : {}) } };
 }
 
 // The camera of the game on a phone for a headless session (the tests and the story step tap:

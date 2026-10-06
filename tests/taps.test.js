@@ -49,6 +49,41 @@ test('a tap on a house walks the hero toward it and opens no talk (the đình, t
   }
 });
 
+test('a tap on a roof walks the hero around the house to the free cell nearest to the ground under the finger, the side past the house (#53)', async () => {
+  const houses = data.world.map('phu-dong').layers.objects.filter((o) => ['dinh', 'giong-house', 'home', 'school', 'forge'].includes(o.id));
+  for (const o of houses) {
+    // The hero stands on the south side of the house; the finger is on the roof, and the ground
+    // under the finger is on the north side, behind the house.
+    const session = await phuDong([o.x + o.w / 2, o.y + o.h + 2]);
+    const before = heroCell(session);
+    const under = { x: o.x + o.w / 2, y: o.y - 2.5 };
+    const roof = { x: o.x + o.w / 2, y: o.y + o.h / 2 };
+    assert.ok(!session.tileMap.walkable(Math.floor(roof.x), Math.floor(roof.y)), `${o.id}: the roof is over the house`);
+    session.command({ type: 'tap', target: { ground: { x: roof.x, y: roof.y, h: 4, thing: true, object: o.id, under } } });
+    steps(session, 20);
+    const after = heroCell(session);
+    assert.ok(Math.hypot(after.x - before.x, after.y - before.y) > 3, `${o.id}: the hero moves`);
+    assert.ok(Math.hypot(after.x - under.x, after.y - under.y) < 3, `${o.id}: the hero goes around the house to the north side: ${JSON.stringify(after)}`);
+  }
+});
+
+test('a held finger behind a house walks the hero around the house, as a tap does (#53)', async () => {
+  const houses = data.world.map('phu-dong').layers.objects.filter((o) => ['dinh', 'giong-house', 'home', 'school', 'forge'].includes(o.id));
+  for (const o of houses) {
+    const session = await phuDong([o.x + o.w / 2, o.y + o.h + 2]);
+    const finger = { x: o.x + o.w / 2, y: o.y - 2.5 };
+    // The village sends the move of the held finger in each frame.
+    for (let k = 0; k < 30 * 20; k++) {
+      const dir = session.holdToward(finger.x, finger.y);
+      session.command({ type: 'move', ...(dir ?? { dx: 0, dz: 0, strength: 0 }) });
+      session.step();
+      session.events();
+    }
+    const after = heroCell(session);
+    assert.ok(Math.hypot(after.x - finger.x, after.y - finger.y) < 3, `${o.id}: the hero goes around the house to the finger: ${JSON.stringify(after)}`);
+  }
+});
+
 test('a tap on water or on a field far away walks the hero to a free cell on the way', async () => {
   const zones = data.world.map('phu-dong').layers.triggers.filter((z) => ['river', 'field-home'].includes(z.id));
   for (const z of zones) {

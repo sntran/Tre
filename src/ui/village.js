@@ -7,7 +7,7 @@ import { questMark } from '../core/clues.js';
 import { conditionState } from '../core/game.js';
 import { edgeMarker } from '../core/hit.js';
 import { portraitCanvas, heroLookOf, speakerLookOf, prerender, portraitStats } from './portraits.js';
-import { keysToScreenDir, stickToScreenDir, screenToMap, inputToward } from '../core/world/move.js';
+import { keysToScreenDir, stickToScreenDir, screenToMap } from '../core/world/move.js';
 import { getEntity, query } from '../core/world/state.js';
 import { basketOf } from '../core/items.js';
 import { STEP } from '../core/world/step.js';
@@ -718,6 +718,7 @@ export async function mountVillage(ctx, params = {}) {
         const thing = hit.who ? terrain.objects.find((o) => o.who === hit.who) : null;
         return { ...hit, object: thing?.id ?? null };
       },
+      under: (px, py) => view.pick(px, py),
       placeAt: (x, y, pad) => session.taskPlaceAt(x, y, pad),
       inTask: session.inTask(),
       carrying: Boolean(session.carried()),
@@ -767,11 +768,8 @@ export async function mountVillage(ctx, params = {}) {
     else {
       if (hold && !hold.held && performance.now() - hold.since > HOLD_MS) startHold();
       const m = hold?.held ? view.pick(hold.vx, hold.vy) : null;
-      if (m) {
-        const c = heroCell();
-        const i = inputToward(c, m, { run: Math.hypot(m.x - c.x, m.y - c.y) > 6, stop: 0.3 });
-        dir = i.strength ? { dx: i.dx, dz: i.dy, strength: i.strength, run: i.run } : null;
-      }
+      // A held finger walks along a path around houses and steps, as a tap does (#53).
+      if (m) dir = session.holdToward(m.x, m.y);
     }
     if (dir) {
       if (!moving) ctx.log('action', { kind: 'walk' });

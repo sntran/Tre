@@ -64,8 +64,11 @@ function around(world, e, dx, dz, next) {
   let az = dz;
   const p = e.position;
   for (const s of query(world, 'solid', 'position')) {
-    // A box of a thing of a task does not walk: the route goes to its edge.
+    // A box of a thing of a task does not walk: the route goes to its edge. A thing that stands
+    // still (a pot, a cart) is in the path of the walk already: no step around it, which in a
+    // narrow way pushes the walker into a wall (#53).
     if (s === e || s.hidden || s.solid.rect) continue;
+    if (!s.person && !((s.motion?.speed ?? 0) > 0.05)) continue;
     const sx = s.position.x - p.x;
     const sz = s.position.z - p.z;
     const d = Math.hypot(sx, sz);
