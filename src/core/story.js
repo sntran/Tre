@@ -569,74 +569,81 @@ export async function playStory(story, io) {
   };
   unroll(story.steps ?? []);
   for (const [i, s] of flat) {
-    io.onStep?.(i, s);
-    rebind();
-    const session = io.session();
-    if (s.do || s.tap || s.press || s.read || s.shoot || s.pour) mark = events.length;
-    if (s.do) await io.send(s.do, null);
-    else if (s.wait !== undefined) await io.advance(s.wait, null);
-    else if (s.until) {
-      // The event came after the last command (in a browser, it can come while the finger taps).
-      const from = mark;
-      const ok = await io.advance(s.until.timeout ?? 30, () => events.slice(from).some((ev) => ev.type === s.until.event && fits(ev, s.until.with)));
-      if (!ok) fail(i, `no event ${s.until.event} ${JSON.stringify(s.until.with ?? {})} in ${s.until.timeout ?? 30} seconds`);
-    } else if (s.at) {
-      const m = session.state.clock.minutes;
-      const target = Math.floor(m / DAY) * DAY + s.at.hour * 60;
-      const end = target > m ? target : target + DAY;
-      const ok = await io.advance(2 * DAY, () => io.session().state.clock.minutes >= end);
-      if (!ok) fail(i, `the clock did not come to ${s.at.hour}`);
-    } else if (s.tap) {
-      const tap = tapTarget(session, s.tap);
-      if (!tap?.target) fail(i, `nothing to tap for ${JSON.stringify(s.tap)}`);
-      else await io.send({ type: 'tap', target: tap.target }, tap.point);
-    } else if (s.press) {
-      const problem = await press(io, s.press);
-      if (problem) fail(i, problem);
-    } else if (s.shoot) {
-      const cmd = shootCommand(session, s.shoot);
-      // wait: no enemy now is no failure; the world goes on for a second.
-      if (!cmd && s.shoot.wait) await io.advance(1, null);
-      else if (!cmd) fail(i, `no enemy to shoot at for ${JSON.stringify(s.shoot)}`);
-      else {
-        const h = getEntity(session.state, 'hero').position;
-        await io.send(cmd, { x: h.x / 2, y: h.z / 2 });
-      }
-    } else if (s.pour) {
-      const e = Array.isArray(s.pour.at) ? null : raidEnemy(session, s.pour.at ?? 'first');
-      const to = Array.isArray(s.pour.at) ? { x: s.pour.at[0], y: s.pour.at[1] } : e ? { x: e.x / 2, y: e.z / 2 } : null;
-      if (!to) fail(i, `no place to pour for ${JSON.stringify(s.pour)}`);
-      else await io.send({ type: 'pour', source: s.pour.from, x: to.x, y: to.y }, to);
-    } else if (s.walk) {
-      const problem = await walkFar(io, s.walk);
-      if (problem) fail(i, problem);
-    } else if (s.read) {
-      const choices = Array.isArray(s.read) ? [...s.read] : [];
-      for (let n = 0; n < 60 && ['dialogue', 'say'].includes(io.session().screen); n++) {
-        const line = lastLine();
-        if (line?.choices?.length) await io.send({ type: 'choose', n: choices.length ? choices.shift() : 0 }, null);
-        else await io.send({ type: 'next' }, null);
-      }
-      if (['dialogue', 'say'].includes(io.session().screen)) fail(i, 'the talk did not end');
-    } else if (s.reload) {
-      const problem = await io.reload();
+    // A law of every story: no step throws an error (an error in a frame of the view stops the
+    // game of a child, #46). The story stops at the step with the message.
+    try {
+      io.onStep?.(i, s);
       rebind();
-      if (problem) fail(i, problem);
-    } else if (s.restore !== undefined) {
-      const problem = await io.restore(s.restore);
-      rebind();
-      if (problem) fail(i, problem);
-    } else if (s.expect) {
-      const ctx = { session, events: events.slice(since), learner: io.learner?.(), data: io.data, points: await io.points?.() };
-      const out = [];
-      for (const fact of s.expect) {
-        const message = checkFact(fact, ctx);
-        if (message) out.push(message);
-      }
-      for (const message of out) fail(i, message);
-      await io.onExpect?.(i, out, s);
-      since = events.length;
-    } else fail(i, `an unknown step ${JSON.stringify(s)}`);
+      const session = io.session();
+      if (s.do || s.tap || s.press || s.read || s.shoot || s.pour) mark = events.length;
+      if (s.do) await io.send(s.do, null);
+      else if (s.wait !== undefined) await io.advance(s.wait, null);
+      else if (s.until) {
+        // The event came after the last command (in a browser, it can come while the finger taps).
+        const from = mark;
+        const ok = await io.advance(s.until.timeout ?? 30, () => events.slice(from).some((ev) => ev.type === s.until.event && fits(ev, s.until.with)));
+        if (!ok) fail(i, `no event ${s.until.event} ${JSON.stringify(s.until.with ?? {})} in ${s.until.timeout ?? 30} seconds`);
+      } else if (s.at) {
+        const m = session.state.clock.minutes;
+        const target = Math.floor(m / DAY) * DAY + s.at.hour * 60;
+        const end = target > m ? target : target + DAY;
+        const ok = await io.advance(2 * DAY, () => io.session().state.clock.minutes >= end);
+        if (!ok) fail(i, `the clock did not come to ${s.at.hour}`);
+      } else if (s.tap) {
+        const tap = tapTarget(session, s.tap);
+        if (!tap?.target) fail(i, `nothing to tap for ${JSON.stringify(s.tap)}`);
+        else await io.send({ type: 'tap', target: tap.target }, tap.point);
+      } else if (s.press) {
+        const problem = await press(io, s.press);
+        if (problem) fail(i, problem);
+      } else if (s.shoot) {
+        const cmd = shootCommand(session, s.shoot);
+        // wait: no enemy now is no failure; the world goes on for a second.
+        if (!cmd && s.shoot.wait) await io.advance(1, null);
+        else if (!cmd) fail(i, `no enemy to shoot at for ${JSON.stringify(s.shoot)}`);
+        else {
+          const h = getEntity(session.state, 'hero').position;
+          await io.send(cmd, { x: h.x / 2, y: h.z / 2 });
+        }
+      } else if (s.pour) {
+        const e = Array.isArray(s.pour.at) ? null : raidEnemy(session, s.pour.at ?? 'first');
+        const to = Array.isArray(s.pour.at) ? { x: s.pour.at[0], y: s.pour.at[1] } : e ? { x: e.x / 2, y: e.z / 2 } : null;
+        if (!to) fail(i, `no place to pour for ${JSON.stringify(s.pour)}`);
+        else await io.send({ type: 'pour', source: s.pour.from, x: to.x, y: to.y }, to);
+      } else if (s.walk) {
+        const problem = await walkFar(io, s.walk);
+        if (problem) fail(i, problem);
+      } else if (s.read) {
+        const choices = Array.isArray(s.read) ? [...s.read] : [];
+        for (let n = 0; n < 60 && ['dialogue', 'say'].includes(io.session().screen); n++) {
+          const line = lastLine();
+          if (line?.choices?.length) await io.send({ type: 'choose', n: choices.length ? choices.shift() : 0 }, null);
+          else await io.send({ type: 'next' }, null);
+        }
+        if (['dialogue', 'say'].includes(io.session().screen)) fail(i, 'the talk did not end');
+      } else if (s.reload) {
+        const problem = await io.reload();
+        rebind();
+        if (problem) fail(i, problem);
+      } else if (s.restore !== undefined) {
+        const problem = await io.restore(s.restore);
+        rebind();
+        if (problem) fail(i, problem);
+      } else if (s.expect) {
+        const ctx = { session, events: events.slice(since), learner: io.learner?.(), data: io.data, points: await io.points?.() };
+        const out = [];
+        for (const fact of s.expect) {
+          const message = checkFact(fact, ctx);
+          if (message) out.push(message);
+        }
+        for (const message of out) fail(i, message);
+        await io.onExpect?.(i, out, s);
+        since = events.length;
+      } else fail(i, `an unknown step ${JSON.stringify(s)}`);
+    } catch (err) {
+      fail(i, `the step threw an error: ${err?.message ?? err}`);
+      break;
+    }
   }
   stop();
   return failures;

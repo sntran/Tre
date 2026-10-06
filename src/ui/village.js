@@ -890,8 +890,21 @@ export async function mountVillage(ctx, params = {}) {
     return shaders === 'ready';
   }
 
+  // One frame. An error of one step or of the drawing never stops the loop: the frame logs it
+  // (with ?debug=1, the debug panel shows it), and the next frame goes on.
+  let errors = 0;
   function frame(now) {
     if (!alive) return;
+    try {
+      frameBody(now);
+    } catch (err) {
+      errors += 1;
+      if (errors <= 5 || errors % 100 === 0) console.error('frame', err);
+      if (debugPanel) debugPanel.append(h('div', { class: 'debug-error', text: `error: ${err?.message ?? err}` }));
+    }
+    if (alive) requestAnimationFrame(frame);
+  }
+  function frameBody(now) {
     if (warming === 'done') {
       // The first frame of the world is on the screen.
       warming = null;
@@ -900,7 +913,6 @@ export async function mountVillage(ctx, params = {}) {
     } else if (warming) {
       if (!warmUp(now)) {
         last = now;
-        requestAnimationFrame(frame);
         return;
       }
       warming = 'done';
@@ -918,11 +930,13 @@ export async function mountVillage(ctx, params = {}) {
     // The finger of the storybook moves to a tap: the world waits for it.
     if (book?.hold) acc = 0;
     while (acc >= STEP && alive) {
+      acc -= STEP;
       session.step();
       figures.sync(state);
       flush();
-      acc -= STEP;
     }
+    // A step can open another scene (the rest screen, Văn Miếu): the village is gone then.
+    if (!alive) return;
     draw(dt, acc / STEP);
     frames += 1;
     if (frames % 15 === 0) waveBtn.hidden = busy || !session.mentorTask;
@@ -943,7 +957,6 @@ export async function mountVillage(ctx, params = {}) {
       frames = 0;
       since = now;
     }
-    requestAnimationFrame(frame);
   }
 
   // A coin that an enemy took at the gate: it flies from its counter in the HUD to the enemy.
@@ -1348,7 +1361,9 @@ export async function mountVillage(ctx, params = {}) {
     stream.update(hp.x / 2, hp.z / 2, { x: (hm?.vx ?? 0) / speed, y: (hm?.vz ?? 0) / speed });
     // The puddles on the earth roads after a rain (drawn by the ground of the view).
     const puddles = puddlesAt((d) => rainOf(state.seed, d, data.day ?? undefined), state.clock.minutes);
-    view.render(dt, raidView.focus(figures.placeOf('hero')), time, { ...state.sky, puddles }, ambient);
+    const heroAt = figures.placeOf('hero');
+    if (!heroAt) return;
+    view.render(dt, raidView.focus(heroAt), time, { ...state.sky, puddles }, ambient);
     drawSky();
     raidView.draw(dt, w, hh);
     drawMarks();
