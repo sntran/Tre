@@ -9,8 +9,8 @@
       "bundle": 10,
       "levels": [
         { "rods": 24, "skill": "math.count.120", "level": 2 },
-        { "rods": 37, "skill": "math.place.1000", "level": 1 },
-        { "rods": 46, "skill": "math.place.1000", "level": 2 }
+        { "rods": 27, "skill": "math.place.1000", "level": 1 },
+        { "rods": 36, "skill": "math.place.1000", "level": 2 }
       ],
       "places": { "heap": "school-rods", "mat": "school-mat" }
     },

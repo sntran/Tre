@@ -73,7 +73,7 @@ test('a raise never makes the round in progress bigger: the heap and the goal st
       // Fewer than ten rods are left: the round ends, and the next round is bigger.
       { until: { event: 'open', with: { screen: 'say', textKey: 'practiceLink.again' }, timeout: 10 } },
       { read: true },
-      { expect: [{ count: { entities: 'rod', min: 46 } }] },
+      { expect: [{ count: { entities: 'rod', min: 36 } }] },
     ],
   });
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);

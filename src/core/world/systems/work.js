@@ -36,6 +36,11 @@ const NEW_STEM = 1.2; // seconds: a new culm comes after staffs that are not equ
 // the short one breaks after CUT_BREAK, and then a new stem comes. PIECE_ROW: the space between
 // the rows of the pieces (half blocks).
 const CUT_SHOW = 2.6;
+// The band of the teacher that snaps (#48): the rods lie this far from the middle of the mat (half
+// blocks) for SPRING_TIME seconds. BUNDLE_STEP: the space of the bundles in their row.
+const SPRING = 3.2;
+const SPRING_TIME = 1.2;
+const BUNDLE_STEP = 1.3;
 const CUT_BREAK = 1;
 const PIECE_ROW = 1.6;
 const CULM_STEP = 2.5; // half blocks between two culms of the bamboo clump (a row along -z)
@@ -59,6 +64,7 @@ export function work(world, dt, rng, env) {
     if (z.zone.task === 'forge' || z.zone.task === 'horse') tickForge(world, z, dt, env);
     if (z.zone.task === 'stakes') tickTide(world, z, dt, env);
     if (z.zone.task === 'cut') tickStem(world, z, dt);
+    if (z.zone.task === 'bundle') tickSpring(world, z, dt);
     if (z.zone.task === 'slash') tickSlash(world, z, dt, env);
     if (z.zone.task === 'share') tickShare(world, z, dt, env);
   }
@@ -549,18 +555,28 @@ function act(world, e, want, env) {
       for (const id of mat.zone.items) removeEntity(world, id);
       mat.zone.items = [];
       const k = mat.zone.tied++;
-      addEntity(world, { id: `bundle:scholar:${k}`, keep: true, position: { x: mat.zone.x + 0.5 + k * 0.9, y: mat.zone.y, z: mat.zone.z - 2.5, facing: 0 }, look: 'rod-bundle' });
+      // The bundles stand in a row on the side of the mat away from the teacher and the heap, in
+      // view of the work (#48).
+      const r = mat.zone.rect;
+      addEntity(world, { id: `bundle:scholar:${k}`, keep: true, position: { x: r.x0 + 1.4 + k * BUNDLE_STEP, y: mat.zone.y, z: r.z1 + 1.2, facing: Math.PI / 2 }, look: 'rod-bundle' });
       say(world, 'tie', mat.id, { sound: 'plank-up' });
       const heapZone = zoneEnt(world, 'rods');
       if ((heapZone?.zone.items.length ?? 0) < task.bundle) finish(world, tz);
     } else {
-      // The band snaps, and the rods fall back on the heap.
-      for (const id of mat.zone.items) {
+      // The band snaps: the rods spring apart around the mat (a puff of dust), and a moment later
+      // they go back on the heap (#48). While they lie apart, a tap does not take them.
+      const c = { x: (mat.zone.rect.x0 + mat.zone.rect.x1) / 2, z: (mat.zone.rect.z0 + mat.zone.rect.z1) / 2 };
+      mat.zone.items.forEach((id, i) => {
         const rod = getEntity(world, id);
-        if (rod) toHeap(world, rod);
-      }
+        if (!rod) return;
+        const a = (i / n) * Math.PI * 2;
+        Object.assign(rod.position, { x: c.x + Math.cos(a) * SPRING, z: c.z + Math.sin(a) * SPRING, facing: a });
+        rod.item.zone = null;
+        rod.item.set = true;
+      });
+      tz.zone.spring = { t: SPRING_TIME, ids: [...mat.zone.items] };
       mat.zone.items = [];
-      say(world, 'snap', mat.id, { count: n, sound: 'plank-down' });
+      say(world, 'snap', mat.id, { count: n, at: { x: c.x, z: c.z }, sound: 'plank-down' });
     }
   } else if (want.act === 'exact') {
     // The person of a small event checks the work: the sum of the sizes on the place is the commit.
@@ -959,6 +975,19 @@ function tickSlash(world, tz, dt, env) {
   const task = taskFor(env, tz.zone);
   tz.zone.pieces.forEach((p, i) => { if (p === null && !getEntity(world, `culm:staffs:${i}`)) addCulm(world, tz, task, i); });
   say(world, 'stem', tz.id, { sound: 'plank-down' });
+}
+
+// The rods of a band that snapped go back on the heap after a moment.
+function tickSpring(world, tz, dt) {
+  const sp = tz.zone.spring;
+  if (!sp || (sp.t -= dt) > 0) return;
+  delete tz.zone.spring;
+  for (const id of sp.ids) {
+    const rod = getEntity(world, id);
+    if (!rod) continue;
+    rod.item.set = false;
+    toHeap(world, rod);
+  }
 }
 
 function tickStem(world, tz, dt) {

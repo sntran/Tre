@@ -327,6 +327,9 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .pip-person.on { background: var(--ochre); }
 .pip-soldier { width: 14px; height: 16px; border-radius: 50% 50% 2px 2px / 60% 60% 2px 2px; }
 .pip-soldier.on { background: var(--indigo); }
+/* A bundle of rods of the teacher (#48): yellow, with a red band. */
+.pip-bundle { width: 10px; height: 16px; border-radius: 2px; background: linear-gradient(var(--paper) 40%, var(--ink) 40% 60%, var(--paper) 60%); }
+.pip-bundle.on { background: linear-gradient(var(--yellow) 40%, var(--vermilion) 40% 60%, var(--yellow) 60%); }
 .counts { flex: none; }
 .counts { display: flex; gap: 6px; }
 .count {

@@ -1984,6 +1984,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     } else walkPath(pathToward(paths, from, tile), null, null);
   }
 
+  // The count of the work for the goal bar, as things (#48): the bundles of the teacher (the ones
+  // tied, of all that the rods make). Null for the other work.
+  function workCount() {
+    if (mentoring.activeKey() !== 'trial-scholar') return null;
+    const mat = zoneOf('mat');
+    if (!mat) return null;
+    const rods = query(state, 'item').filter((e) => e.item.kind === 'rod' && e.item.task === 'trial-scholar').length;
+    const have = mat.zone.tied ?? 0;
+    return { pip: 'bundle', have, need: have + Math.floor(rods / (mat.zone.bundle ?? 10)) };
+  }
+
   // A far walk to a goal (map cells), in legs: each leg is a short search that goes to the cell
   // nearest to the goal that it finds, and the next leg starts at its end. When a leg comes no
   // nearer (a river), the walk goes to the landing of the ferry that leads nearer to the goal; the
@@ -2196,6 +2207,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       emit({ type: 'gift', from: ev.type === 'solid' ? ev.at : ev.id, give: ev.give, delay: ev.type === 'solid' ? 0.5 : 0 });
     }
     if (ev.type === 'skill') skillEvent(ev);
+    // The count of the bundles on the goal bar (#48).
+    if ((ev.type === 'tie' || ev.type === 'snap') && ev.id === 'zone:mat') emit({ type: 'hud' });
     if (ev.type === 'planted') planting.planted(ev);
     hamlet.worldEvent(ev);
     if (ev.type === 'trial' && ev.done && String(ev.trial).startsWith('event-')) eventDone(ev.trial.slice(6));
@@ -2536,6 +2549,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     get mentorTask() { return mentoring.activeKey(); },
     // The persons of the stations of a practice of a whole place (#37): the view puts a star over each.
     stations: () => [...stations()],
+    workCount,
     // The mentor of a task (for the tests and the debug panel).
     mentorOf: (key) => mentoring.stateOf(key),
     // The practice of the visit (a copy), or null.

@@ -408,7 +408,8 @@ export async function mountVillage(ctx, params = {}) {
   function updateHud() {
     // In a visit from a practice link, the quest bar shows the activity (until the child stays).
     const pr = session.practice;
-    const activity = pr && !pr.stayed ? activityOf(data.practice, pr.id) : null;
+    // A child who stays plays on in the practice: the bar still shows the activity (#48).
+    const activity = pr ? activityOf(data.practice, pr.id) : null;
     const goal = activity ? null : currentGoal(data.quests.quests, conditionState(profile));
     if (activity) {
       // What to do there (a practice of a whole place), or the name of the activity.
@@ -424,8 +425,11 @@ export async function mountVillage(ctx, params = {}) {
     // The quest bar has short text only. The dialogues give the long explanations.
     // A count shows as things, not numerals (docs/QUESTIONS.md, 76): a small thing for each one that
     // the step needs, filled for each one that the child has.
-    const pips = goal?.progress && goal.step.pip
-      ? [h('span', { class: 'goal-pips', 'aria-hidden': 'true' }, Array.from({ length: goal.progress.need }, (_, i) => h('i', { class: `pip pip-${goal.step.pip}${i < goal.progress.have ? ' on' : ''}` })))]
+    // The work of a trial counts as things too (the bundles of the teacher, #48).
+    const work = session.workCount();
+    const count = work ?? (goal?.progress && goal.step.pip ? { pip: goal.step.pip, ...goal.progress } : null);
+    const pips = count
+      ? [h('span', { class: 'goal-pips', 'aria-hidden': 'true' }, Array.from({ length: count.need }, (_, i) => h('i', { class: `pip pip-${count.pip}${i < count.have ? ' on' : ''}` })))]
       : [];
     goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), h('span', { class: 'goal-text', text: tn(goalKey, goalParams) }), ...pips);
     // A thing on its way to the basket is not in the count yet: the count ticks up when it lands.

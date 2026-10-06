@@ -148,7 +148,7 @@
         {
           "count": {
             "entities": "rod",
-            "min": 37
+            "min": 27
           }
         },
         {
@@ -158,7 +158,7 @@
       ]
     },
     {
-      "repeat": 3,
+      "repeat": 2,
       "steps": [
         {
           "repeat": 10,

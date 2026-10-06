@@ -1,8 +1,8 @@
 {
   "name": "mentor-bored",
   "about": {
-    "vi": "Người giao việc thấy con chán: ba bó que nhanh và đúng liền; thầy đồ hứa lần sau có việc lớn hơn, đống que lần này vẫn như cũ, và An bó nốt bó cuối.",
-    "en": "The mentor sees boredom: three bundles in a row, fast and right; the teacher says that next time there is a bigger task, the heap of this time stays the same, and An ties the last bundle."
+    "vi": "Người giao việc thấy con chán: ba bó que nhanh và đúng liền; thầy đồ sẽ cho việc lớn hơn lần sau; đống que lần này vẫn như cũ, và lượt bó que xong.",
+    "en": "The mentor sees boredom: three bundles in a row, fast and right; the teacher gives a bigger task next time; the heap of this time stays the same, and the round ends."
   },
   "profile": {
     "name": "An",
@@ -55,7 +55,8 @@
         {
           "count": {
             "entities": "rod",
-            "min": 46
+            "min": 36,
+            "max": 36
           }
         }
       ]
@@ -199,67 +200,7 @@
     },
     {
       "until": {
-        "event": "open",
-        "with": {
-          "screen": "callout",
-          "textKey": "mentor.raise"
-        },
-        "timeout": 5
-      }
-    },
-    {
-      "wait": 0.5
-    },
-    {
-      "expect": [
-        {
-          "count": {
-            "entities": "rod",
-            "min": 16,
-            "max": 16
-          }
-        },
-        {
-          "zone": "trial-scholar",
-          "state": "open"
-        }
-      ]
-    },
-    {
-      "repeat": 10,
-      "steps": [
-        {
-          "press": {
-            "item": "rod"
-          }
-        },
-        {
-          "until": {
-            "event": "pick",
-            "timeout": 10
-          }
-        },
-        {
-          "press": {
-            "screenOf": "mat"
-          }
-        },
-        {
-          "until": {
-            "event": "put",
-            "timeout": 10
-          }
-        }
-      ]
-    },
-    {
-      "press": {
-        "entity": "npc:teacher"
-      }
-    },
-    {
-      "until": {
-        "event": "tie",
+        "event": "trial",
         "timeout": 10
       }
     },
@@ -268,7 +209,14 @@
         {
           "count": {
             "entities": "rod-bundle",
-            "min": 4
+            "min": 3
+          }
+        },
+        {
+          "count": {
+            "entities": "rod",
+            "min": 6,
+            "max": 6
           }
         }
       ]

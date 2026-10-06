@@ -14,7 +14,7 @@ test('the level of the tasks follows the grade that the player gave', () => {
   assert.equal(levelFor(trials, 3), 2);
   assert.equal(levelFor(trials, 5), 2, 'a higher grade uses the nearest grade');
   const t = taskOf(def('scholar'), 1);
-  assert.equal(t.rods, 37);
+  assert.equal(t.rods, 27);
   assert.equal(t.skill, 'math.place.1000');
   // Each trial has three levels, and each level measures a skill of the skill map.
   for (const d of trials.trials) {
