@@ -15,7 +15,7 @@
 // the fact, and makes the next round). The rows of a full plot stay as a planted paddy (paddy).
 export const WRITES = ['work', 'zone', 'item', 'position', 'look', 'keep', 'paddy', 'plantPlot', 'plotPart', 'gesture', 'events'];
 
-import { query, getEntity, addEntity, removeEntity } from '../state.js';
+import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
 import { judge, judgeChoice, plantOrder } from '../../planting.js';
 import { trialSkill } from '../trials.js';
 import { toHeap } from './work.js';
@@ -255,10 +255,7 @@ function dropPlot(world, o) {
 // The planting: one row after another; then the event planted.
 export function plant(world, dt, rng, env) {
   for (const e of query(world, 'work', 'position')) {
-    if (e.work.trial !== 'plant') continue;
-    const want = e.work;
-    delete e.work;
-    if (!e.fall) plantAct(world, e, want, env);
+    for (const want of takeWork(e, (w) => w.trial === 'plant')) if (!e.fall) plantAct(world, e, want, env);
   }
   if (world.paused) return;
   const tz = tzOf(world);

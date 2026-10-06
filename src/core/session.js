@@ -1544,7 +1544,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const ducks = hamlet.round('ducks');
       const jar = getEntity(state, 'hamlet:jar');
       if (ducks && !ducks.done && !ducks.eat && jar) {
-        add({ act: 'pour', icon: 'jar', target: jar.id, at: jar.position, rank: 0, hold: true, run: () => work('ducks', 'pour'), release: () => { if (hamlet.round('ducks')?.pouring) work('ducks', 'stop'); } }, REACH + 1);
+        add({ act: 'pour', icon: 'jar', target: jar.id, at: jar.position, rank: 0, hold: true, run: () => work('ducks', 'pour'), release: () => work('ducks', 'stop') }, REACH + 1);
       }
       // A stake of a plot of a choose round of the planting: the choice of that plot.
       const round = getEntity(state, 'zone:trial-plant')?.zone.round;

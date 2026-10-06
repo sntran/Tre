@@ -77,12 +77,17 @@ export function input(world, dt, rng, env) {
         world.events.push({ type: 'mount', id: e.id, sound: 'moo' });
       }
     } else if (['aim', 'pick', 'put', 'drop', 'guess'].includes(c.type)) {
-      e.hands = { ...(e.hands ?? { holds: null }), want: { do: c.type, item: c.item ?? null, zone: c.zone ?? null, n: c.n ?? null, at: c.at ?? null } };
+      // The wishes of the hands of one step stay in their order (a quick tap: an aim and its put).
+      const want = { do: c.type, item: c.item ?? null, zone: c.zone ?? null, n: c.n ?? null, at: c.at ?? null };
+      e.hands = { ...(e.hands ?? { holds: null }), wants: [...(e.hands?.wants ?? []), want] };
     } else if (c.type === 'raid' && e.raid) {
       const { type, id, ...o } = c;
       e.orders = [...(e.orders ?? []), o];
     } else if (c.type === 'work') {
-      e.work = { trial: c.trial, act: c.act, item: c.item ?? null, at: c.at ?? null, culm: c.culm ?? null, plot: c.plot ?? null, which: c.which ?? null };
+      // The acts of one step stay in their order: a quick tap on a hold button gives the press
+      // and the release in one step, and the release must come after the press.
+      const w = { trial: c.trial, act: c.act, item: c.item ?? null, at: c.at ?? null, culm: c.culm ?? null, plot: c.plot ?? null, which: c.which ?? null };
+      e.work = [...(e.work ?? []), w];
     } else if (c.type === 'poke' && e.act === 'sleep') {
       e.flick = 0.8;
       world.events.push({ type: 'flick', id: e.id, sound: 'huff' });

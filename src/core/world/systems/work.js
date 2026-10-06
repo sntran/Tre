@@ -23,7 +23,7 @@
 // When a task is done, the event "trial" goes out (the session sets the flag and gives the reward).
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'solid', 'events'];
 
-import { query, getEntity, addEntity, removeEntity } from '../state.js';
+import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
 import { REACH } from '../zones.js';
 import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
@@ -45,9 +45,7 @@ const zoneEnt = (world, id) => getEntity(world, `zone:${id}`);
 
 export function work(world, dt, rng, env) {
   for (const e of query(world, 'work', 'position')) {
-    const want = e.work;
-    delete e.work;
-    if (!e.fall) act(world, e, want, env);
+    for (const want of takeWork(e, () => true)) if (!e.fall) act(world, e, want, env);
   }
   if (world.paused) return;
   for (const z of query(world, 'zone')) {
@@ -682,6 +680,8 @@ function act(world, e, want, env) {
     const culm = getEntity(world, `culm:staffs:${want.culm}`);
     if (!culm || tz.zone.cut) return;
     tz.zone.aim = { culm: want.culm, at: 1, t: 0 };
+    // A second press (a double tap) starts the mark again at the first ring.
+    removeEntity(world, 'aim:staffs');
     addEntity(world, { id: 'aim:staffs', position: { ...culm.position, y: culm.position.y + 1 }, look: 'chalk' });
   } else if (want.act === 'slash') {
     // A slash at the height of the hand on a standing culm: the top falls away, and the piece from
@@ -694,7 +694,7 @@ function act(world, e, want, env) {
     const aim = tz.zone.aim;
     delete tz.zone.aim;
     removeEntity(world, 'aim:staffs');
-    if (want.at === undefined && aim?.culm !== i) return;
+    if (want.at == null && aim?.culm !== i) return;
     const at = Math.round(want.at ?? aim.at);
     if (!c || !culm || tz.zone.cut || at < 1 || at >= task.height) return;
     if (at > task.reach) return say(world, 'high', tz.id, { culm: i, sound: 'tap' });

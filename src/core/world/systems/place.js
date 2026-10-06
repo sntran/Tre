@@ -41,7 +41,12 @@ const GLANCE = 1.2; // seconds: Nghé glances at the outlines when the child ski
 
 export function place(world, dt, rng, env) {
   tidy(world, env);
-  for (const e of query(world, 'hands', 'position')) if (e.hands.want) act(world, e, env, dt);
+  for (const e of query(world, 'hands', 'position')) {
+    const wants = e.hands.wants;
+    if (!wants) continue;
+    delete e.hands.wants;
+    for (const want of wants) act(world, e, want, env, dt);
+  }
   for (const z of query(world, 'zone')) if (z.zone.rule === 'span') tickSpan(world, z, dt, env, rng);
   for (const e of query(world, 'fall', 'position')) tickFall(world, e, dt, env);
 }
@@ -96,9 +101,7 @@ function attemptOf(world, zone) {
 
 // The wish of the hands of an entity: aim (the child chose a plank; the hero walks to it), pick,
 // put, drop, or guess (the prediction).
-function act(world, e, env, dt) {
-  const want = e.hands.want;
-  delete e.hands.want;
+function act(world, e, want, env, dt) {
   if (e.fall) return;
   if (want.do === 'aim') e.hands.aim = world.tick;
   else if (want.do === 'pick') pick(world, e, getEntity(world, want.item), env, dt);

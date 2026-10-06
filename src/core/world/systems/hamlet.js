@@ -17,7 +17,7 @@
 //   wrong beat starts again from the last good jump, a little slower.
 export const WRITES = ['work', 'zone', 'item', 'position', 'look', 'keep', 'gesture', 'hop', 'hamletPart', 'hamletTap', 'events'];
 
-import { query, getEntity, addEntity, removeEntity } from '../state.js';
+import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
 import { judgePour, scoopsOf, judgeTraps, createDance, stepDance, tapDance } from '../../hamlet.js';
 import { trialSkill } from '../trials.js';
 import { factKey } from '../../planting.js';
@@ -88,8 +88,13 @@ function duckWork(world, e, want) {
   }
   if (want.act !== 'stop' || !r.pouring) return;
   r.pouring = false;
-  // A tap with no scoop is no commit.
-  if (r.poured === r.judged) return;
+  // A quick tap on the jar (the press and the release in one step) gives one scoop.
+  if (r.poured === r.judged) {
+    r.poured += 1;
+    const notch = r.poured % 10 === 0 ? 10 : r.poured % 5 === 0 ? 5 : 0;
+    say(world, 'scoop', tz.id, { n: r.poured, notch, sound: notch === 10 ? 'notch-big' : notch === 5 ? 'notch' : 'scoop' });
+    feedLook(world, r);
+  }
   r.commits += 1;
   tz.zone.commits += 1;
   const res = judgePour({ ducks: r.shares.map((share) => ({ share })), need: r.need }, r.poured);
@@ -338,14 +343,12 @@ function drum(world, dt) {
 
 export function hamlet(world, dt) {
   for (const e of query(world, 'work', 'position')) {
-    const act = e.work.trial;
-    if (!ACTIVITIES.includes(act)) continue;
-    const want = e.work;
-    delete e.work;
-    if (e.fall) continue;
-    if (act === 'ducks') duckWork(world, e, want);
-    else if (act === 'traps') trapWork(world);
-    else drumWork(world, want);
+    for (const want of takeWork(e, (w) => ACTIVITIES.includes(w.trial))) {
+      if (e.fall) continue;
+      if (want.trial === 'ducks') duckWork(world, e, want);
+      else if (want.trial === 'traps') trapWork(world);
+      else drumWork(world, want);
+    }
   }
   if (world.paused) return;
   ducks(world, dt);

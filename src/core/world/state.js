@@ -58,3 +58,14 @@ export function query(world, ...names) {
 export function command(world, cmd) {
   world.commands.push(structuredClone(cmd));
 }
+
+// The acts of the work of an entity that a system takes (the commands of one step, in their
+// order): the acts that match go out of the list; the others stay for the next system.
+export function takeWork(e, match) {
+  const list = e.work ?? [];
+  const mine = list.filter(match);
+  const rest = list.filter((w) => !match(w));
+  if (rest.length) e.work = rest;
+  else delete e.work;
+  return mine;
+}
