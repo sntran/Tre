@@ -78,3 +78,15 @@ test('a raise never makes the round in progress bigger: the heap and the goal st
   });
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
 });
+
+test('each station says the move "show" with its own words, and each line is in both languages (#45)', () => {
+  const mentors = load('data/world/mentors.json').mentors;
+  const vi = load('i18n/vi.json');
+  const en = load('i18n/en.json');
+  const shows = Object.entries(mentors).filter(([k]) => k.startsWith('trial-') || k === 'bridge').map(([k, m]) => [k, m.lines?.show]);
+  for (const [k, key] of shows) {
+    assert.ok(key && key !== 'mentor.show', `${k}: its own show line`);
+    assert.ok(vi[key] && en[key], `${k}: ${key} in both languages`);
+  }
+  assert.equal(new Set(shows.map(([, key]) => key)).size, shows.length, 'no two stations share a show line');
+});

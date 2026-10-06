@@ -292,7 +292,10 @@
         "thing": "plank",
         "prop": null
       },
-      "picture": "mentor.picture.bridge"
+      "picture": "mentor.picture.bridge",
+      "lines": {
+        "show": "mentor.show.bridge"
+      }
     },
     "event-cart": {
       "family": "groups",
@@ -339,27 +342,39 @@
         "target": null,
         "same": true
       },
-      "picture": "mentor.picture.scholar"
+      "picture": "mentor.picture.scholar",
+      "lines": {
+        "show": "mentor.show.scholar"
+      }
     },
     "trial-smith": {
       "family": "plain",
       "person": "npc:smith",
       "demo": null,
       "first": [],
-      "lines": { "first": "smith.quench.watch" },
+      "lines": {
+        "first": "smith.quench.watch",
+        "show": "mentor.show.smith"
+      },
       "picture": "mentor.picture.smith"
     },
     "trial-fisher": {
       "family": "plain",
       "person": "npc:fisher",
       "demo": null,
-      "picture": "mentor.picture.fisher"
+      "picture": "mentor.picture.fisher",
+      "lines": {
+        "show": "mentor.show.fisher"
+      }
     },
     "trial-healer": {
       "family": "basket",
       "person": "npc:healer",
       "demo": null,
-      "picture": "mentor.picture.healer"
+      "picture": "mentor.picture.healer",
+      "lines": {
+        "show": "mentor.show.healer"
+      }
     },
     "trial-woodcutter": {
       "family": "plain",
@@ -367,7 +382,8 @@
       "demo": null,
       "picture": "mentor.picture.woodcutter",
       "lines": {
-        "first": "mentor.woodcutter.first"
+        "first": "mentor.woodcutter.first",
+        "show": "mentor.show.woodcutter"
       }
     },
     "trial-plant": {
@@ -379,16 +395,22 @@
         "prop": null,
         "target": null
       },
-      "picture": "mentor.picture.planter", "pictureWho": "duck-girl"
+      "picture": "mentor.picture.planter",
+      "pictureWho": "duck-girl",
+      "lines": {
+        "show": "mentor.show.plant"
+      }
     },
     "trial-ducks": {
       "family": "plain",
       "person": "npc:duck-girl",
       "demo": null,
-      "picture": "mentor.picture.duck-girl", "pictureWho": "fisher-uncle",
+      "picture": "mentor.picture.duck-girl",
+      "pictureWho": "fisher-uncle",
       "lines": {
         "mark": "mentor.ducks.mark",
-        "first": "mentor.ducks.first"
+        "first": "mentor.ducks.first",
+        "show": "mentor.show.ducks"
       }
     },
     "trial-traps": {
@@ -400,21 +422,25 @@
         "prop": null,
         "target": null
       },
-      "picture": "mentor.picture.fisher-uncle", "pictureWho": "duck-girl",
+      "picture": "mentor.picture.fisher-uncle",
+      "pictureWho": "duck-girl",
       "lines": {
         "mark": "mentor.traps.mark",
         "smaller": "mentor.traps.smaller",
-        "share": "mentor.traps.share"
+        "share": "mentor.traps.share",
+        "show": "mentor.show.traps"
       }
     },
     "trial-drum": {
       "family": "plain",
       "person": "npc:drummer",
       "demo": null,
-      "picture": "mentor.picture.drummer", "pictureWho": "planter",
+      "picture": "mentor.picture.drummer",
+      "pictureWho": "planter",
       "lines": {
         "mark": "mentor.drum.mark",
-        "first": "mentor.drum.first"
+        "first": "mentor.drum.first",
+        "show": "mentor.show.drum"
       }
     }
   },
