@@ -134,3 +134,79 @@ test('the cue of a heap is one rim around the heap, and no ring over each thing 
   assert.deepEqual(cue.rings, [], 'no ring over a rod');
   assert.equal(cue.spots.length, 1, 'one rim around the heap');
 });
+
+test('the next press never takes back what the child just put: three more presses at the mat leave the rod there', async () => {
+  const s = story('practice-bo-que');
+  s.steps = [...s.steps.slice(0, 5), { press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }];
+  let session = null;
+  await runHeadless(s, { onSession: (x) => { session = x; } });
+  steps(session, 0.5);
+  const mat = () => getEntity(session.state, 'zone:mat').zone.items.length;
+  session.command({ type: 'hands' });
+  steps(session, 1);
+  assert.equal(mat(), 1, 'the rod is on the mat');
+  for (let k = 0; k < 3; k++) {
+    const before = mat();
+    session.command({ type: 'hands' });
+    steps(session, 1);
+    assert.ok(mat() >= before, `press ${k + 2}: no rod comes back from the mat`);
+  }
+  // A tap on the rod on the mat, and a press: the rod comes back.
+  const rod = getEntity(session.state, 'zone:mat').zone.items.at(-1);
+  if (session.carried()) {
+    session.command({ type: 'hands' });
+    steps(session, 1);
+  }
+  const n = mat();
+  session.command({ type: 'tap', target: { thing: rod } });
+  steps(session, 2);
+  session.command({ type: 'hands' });
+  steps(session, 1);
+  assert.equal(mat(), n - 1, 'after a tap on the rod, the press takes it back');
+});
+
+test('in a task, Nghé never stands on a place of the work, and a tap on Nghé there is a tap on the place', async () => {
+  const { tapTarget, viewCamera, sessionScreen } = await import('../src/world/hit.js');
+  const s = story('practice-bo-que');
+  s.steps = s.steps.slice(0, 5);
+  let session = null;
+  await runHeadless(s, { onSession: (x) => { session = x; } });
+  const nghe = session.state.entities.find((e) => e.follow?.target === 'hero');
+  assert.ok(nghe, 'Nghé follows the hero');
+  const mat = getEntity(session.state, 'zone:mat');
+  const r = mat.zone.rect;
+  // Nghé on the middle of the mat: it steps out.
+  Object.assign(nghe.position, { x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2 });
+  const inMat = () => nghe.position.x >= r.x0 && nghe.position.x <= r.x1 && nghe.position.z >= r.z0 && nghe.position.z <= r.z1;
+  // A tap on Nghé there, before it moves: the tap goes to the place under Nghé, not a pet.
+  const at = { x: nghe.position.x / 2, y: nghe.position.y / 2, z: nghe.position.z / 2 };
+  const cam = viewCamera({ focus: at, width: 390, height: 844 });
+  const t = tapTarget(cam.project(at.x, at.y + 0.5, at.z), sessionScreen(session, cam));
+  assert.ok(!t?.pet, `no pet in a task: ${JSON.stringify(t)}`);
+  steps(session, 2);
+  assert.ok(!inMat(), 'Nghé stepped off the mat');
+});
+
+test('the fisher: a press while the tide is in keeps the stake in the hands, and the fisher says to wait', async () => {
+  const s = story('practice-cam-coc');
+  // Up to the first stake in the hands.
+  s.steps = [...s.steps.slice(0, 7)];
+  let session = null;
+  await runHeadless(s, { onSession: (x) => { session = x; } });
+  const tz = getEntity(session.state, 'zone:trial-fisher');
+  assert.ok(tz, 'the task of the fisher goes on');
+  assert.ok(session.carried(), 'a stake is in the hands');
+  // At the line, and the tide comes in.
+  const line = getEntity(session.state, 'zone:line');
+  const hero = getEntity(session.state, 'hero');
+  Object.assign(hero.position, { x: line.zone.stand.x, z: line.zone.stand.z });
+  tz.zone.tide.phase = 'in';
+  tz.zone.tide.t = 0;
+  const said = [];
+  session.listen((ev) => ev.type === 'open' && ev.screen === 'callout' && said.push(ev.textKey));
+  assert.equal(session.action()?.act, 'wait');
+  session.command({ type: 'hands' });
+  steps(session, 0.2);
+  assert.ok(session.carried(), 'the stake stays in the hands');
+  assert.ok(said.includes('fisher.tide.wait'), 'the fisher says to wait');
+});

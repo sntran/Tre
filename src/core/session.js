@@ -1459,6 +1459,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else goOnSpan(zone, thing.position.z + thing.item.size - 0.5);
       return;
     }
+    // With a thing in the hands, a tap on a thing on a place of a task (a trap in the stream, a rod
+    // on the mat) is a tap on the place: the thing in the hands goes there (#47).
+    if (holding() && zone?.zone.rect && zone.zone.rule !== 'heap' && zone.zone.rule !== 'pile' && tapTaskPlace({ x: m.x / 2, y: m.z / 2 })) return;
     // The child chose this plank now (the time to choose is a sign for the model).
     worldCommand(state, { type: 'aim', id: 'hero', item: thing.id });
     if (thing.item.kind === 'stem') return goTo({ x: thing.position.x + (along ?? thing.item.size / 2), z: thing.position.z }, thing.id, along === null ? null : Math.round(along));
@@ -1603,8 +1606,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const at = Math.max(1, Math.min(s.length - 1, tapped ?? Math.round(frontOf(hp).x - s.x)));
         const point = { x: s.x + at, z: s.z };
         const marked = wood.zone.marks.includes(at);
-        add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z }, run: () => work('woodcutter', 'mark', { at }) }, REACH + 2);
+        // A mark goes away only after a tap on it: a second press never takes away the mark that
+        // the child just made (#47).
+        if (!(marked && tapped === null)) add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z }, run: () => work('woodcutter', 'mark', { at }) }, REACH + 2);
       }
+      // A heap or a pile of the same task in reach: a press with empty hands takes from it, and a
+      // thing comes back from a place only after a tap on the thing itself (#47).
+      const heapNear = (task) => query(state, 'zone').some((h) => (h.zone.rule === 'heap' || h.zone.rule === 'pile') && h.zone.task === task && h.zone.items.length && distHb(hp, h.position) <= REACH + 3);
       // The hands: pick up a thing (on a span, only its last plank); take one back from a place.
       for (const e of query(state, 'item', 'position')) {
         if (e.hidden || e.item.held || e.item.set || e.item.fixed) continue;
@@ -1612,6 +1620,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const rule = zone?.zone.rule;
         if (rule === 'span') {
           if (!canTake(zone.zone, e.id)) continue;
+          // With the pile in reach, the last plank comes back only after a tap on it (#47).
+          if (heapNear(zone.zone.task) && chosen?.id !== e.id) continue;
           add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [e.id, zone.id], at: zone.position, rank: 1, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
           continue;
         }
@@ -1619,12 +1629,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         add({ act: 'pick', icon: 'hand-pick', target: e.id, at: middleOf(e), size: (e.item.size ?? 0) / 2, rank: 1, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
       }
       // Take back: the last thing put on a place (on a line or in the stream: the thing in front),
-      // from where the hero stands to put (the opposite of a put).
+      // from where the hero stands to put (the opposite of a put). When the heap of the same task
+      // is in reach, only after a tap on the thing itself: a press there takes from the heap (#47).
       const front = frontOf(hp);
       for (const z of query(state, 'zone')) {
         if (!TAKE_BACK.has(z.zone.rule)) continue;
         const things = z.zone.items.map((id) => getEntity(state, id)).filter((e) => e && !e.hidden && !e.item.held && !e.item.set && !e.item.fixed && canTakeWork(state, e));
         if (!things.length) continue;
+        if (heapNear(z.zone.task) && !things.some((e) => e.id === chosen?.id)) continue;
         const spread = z.zone.rule === 'line' || z.zone.rule === 'spots';
         const e = spread ? things.reduce((a, b) => (distHb(front, b.position) < distHb(front, a.position) ? b : a)) : things[things.length - 1];
         add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [z.id, ...things.map((x) => x.id)], at: spread ? e.position : nearIn(z, hp), rank: 1.5, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH + 2);
@@ -1664,7 +1676,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const slot = spanSlot(zone, before, held.item.size);
         add({ act: 'put', icon: 'hand-put', target: z.id, at: z.position, rank: 0, ghost: { look: held.look, x: slot.x, y: slot.y, z: slot.z, facing: 0 }, run: () => put(null) }, REACH);
       } else if (zone.rule === 'line') {
-        if (trialZone('fisher')?.zone.tide?.phase !== 'low') continue;
+        if (trialZone('fisher')?.zone.tide?.phase !== 'low') {
+          // The tide is in: the line takes no stake now. The fisher says a short line, and the stake
+          // stays in the hands; a press never drops it on the bank (#47).
+          const fisher = query(state, 'person').find((e) => e.person.ref === 'fisher') ?? null;
+          add({ act: 'wait', icon: 'water', target: z.id, at: nearIn(z, hp), rank: 0, run: () => emit({ type: 'open', screen: 'callout', id: fisher?.id ?? 'npc:fisher', textKey: 'fisher.tide.wait', params: {} }) }, REACH + 3);
+          continue;
+        }
         const tapped = chosen?.id === z.id && chosen.along !== null ? chosen.along : null;
         const slot = Math.max(1, Math.min(zone.length, tapped ?? Math.round(front.x - zone.x)));
         if (zone.items.some((id) => getEntity(state, id)?.item.slot === slot)) continue;
@@ -1691,7 +1709,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         continue;
       } else {
         if (zone.rule === 'hearth' && trialZone('horse')?.zone.heat !== null) continue;
-        add({ act: 'put', icon: 'hand-put', target: z.id, at: nearIn(z, hp), rank: 0, run: () => put(null) }, REACH + 2);
+        // A tap on a thing on the place (the sticks on the wood pile) makes the place the target too.
+        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: nearIn(z, hp), rank: 0, run: () => put(null) }, REACH + 2);
       }
     }
     // Anywhere else: put it down on the ground in front of the hero.
@@ -1740,6 +1759,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The hero turns to the target of the act (a place behind the hero, #44).
     if (a.at && a.act !== 'ride' && a.act !== 'ride-off') worldCommand(state, { type: 'face', id: 'hero', x: a.at.x, z: a.at.z });
     a.run();
+    // The act on the target of the last tap is done: the next press chooses again (#47: the next
+    // press never takes back what was just put there).
+    if (chosen && (a.keys ?? [a.target]).includes(chosen.id)) chosen = null;
     emit({ type: 'pulse', id: a.target });
   }
 
@@ -2351,7 +2373,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // only touches the finger with its pad (src/world/hit.js, #47).
     taskPlaceAt: (x, y, pad = ZONE_PAD) => Boolean(workZoneAt(x * 2, y * 2, pad)),
     // A task or a folk game goes on now: a tap on Nghé is a tap on what is under or behind Nghé.
-    inTask: () => Boolean(mentoring.activeKey() || folk.active()),
+    // Any open task counts (a trial, a station, or a work task such as the rice for Gióng).
+    inTask: () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done)),
     // The work in view now (the last event workView while its task goes on), or null.
     work: () => (lastWork && (mentoring.activeKey() || folk.active() || String(lastWork.key).startsWith('example-')) ? lastWork : null),
     // The last tap: the id of its target (an entity), or null (#47).

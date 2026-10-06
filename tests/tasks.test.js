@@ -23,7 +23,7 @@ async function play(name, at, steps) {
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
 }
 
-test('the teacher: the button picks up one rod at the heap and puts it on the mat; with empty hands at the mat it takes one back; at the teacher, the teacher ties', async () => {
+test('the teacher: the button picks up one rod at the heap and puts it on the mat; after a tap on a rod on the mat it takes it back; at the teacher, the teacher ties', async () => {
   await play('task-teacher', [54, 27], [
     ...start('teacher'),
     // The teacher showed the first step and took the rod back: the mat is empty.
@@ -37,8 +37,9 @@ test('the teacher: the button picks up one rod at the heap and puts it on the ma
     { press: true },
     { until: { event: 'put', timeout: 10 } },
     { expect: [{ zone: 'mat', planks: 1 }, { hero: { holding: false } }, { action: { act: 'pick', icon: 'hand-pick' } }] },
-    // Empty hands at the mat: one rod comes back into the hands, and goes back on the heap.
-    { press: { zone: 'mat' } },
+    // A tap on the rod on the mat, and a press: the rod comes back into the hands (a press at the
+    // mat with no tap on the rod takes from the heap, #47), and goes back on the heap.
+    { press: { on: 'mat' } },
     { until: { event: 'pick', timeout: 10 } },
     { expect: [{ zone: 'mat', planks: 0 }, { hero: { holding: true } }] },
     { press: { zone: 'rods' } },
@@ -70,7 +71,7 @@ test('the smith: the fire is ready at the start; the smith quenches his own piec
   ]);
 });
 
-test('the healer: the button puts a bunch into the basket, takes one back with empty hands, and at the healer the healer takes the basket', async () => {
+test('the healer: the button puts a bunch into the basket, takes one back after a tap on it, and at the healer the healer takes the basket', async () => {
   await play('task-healer', [33, 44], [
     ...start('healer'),
     // The healer showed the first step and took the bunch back: the basket is empty.
@@ -78,8 +79,8 @@ test('the healer: the button puts a bunch into the basket, takes one back with e
     ...carry('herb-ngai', 'basket'),
     ...carry('herb-ngai', 'basket'),
     { expect: [{ zone: 'basket', planks: 2 }, { hero: { holding: false } }] },
-    // Empty hands at the basket: one bunch comes back into the hands.
-    { press: { zone: 'basket' } },
+    // A tap on a bunch in the basket, and a press: the bunch comes back into the hands.
+    { press: { on: 'basket' } },
     { until: { event: 'pick', timeout: 10 } },
     { expect: [{ zone: 'basket', planks: 1 }, { hero: { holding: true } }] },
     { press: { zone: 'basket' } },
@@ -93,12 +94,16 @@ test('the healer: the button puts a bunch into the basket, takes one back with e
   ]);
 });
 
-test('the woodcutter: the button puts a chalk mark at the place in front of the hero, takes it away at a mark, and the woodcutter cuts', async () => {
+test('the woodcutter: the button puts a chalk mark at the place in front of the hero, takes it away after a tap on the mark, and the woodcutter cuts', async () => {
   await play('task-woodcutter', [51, 8.5], [
     ...start('woodcutter'),
     { press: { stem: 3 } },
     { until: { event: 'mark', timeout: 10 } },
-    { expect: [{ count: { entities: 'chalk', min: 1, max: 1 } }, { action: { act: 'unmark', icon: 'clear' } }] },
+    // The next press never takes away the mark that was just made (#47); a tap on the mark does.
+    { expect: [{ count: { entities: 'chalk', min: 1, max: 1 } }] },
+    { tap: { stem: 3 } },
+    { wait: 1 },
+    { expect: [{ action: { act: 'unmark', icon: 'clear' } }] },
     { press: { stem: 3 } },
     { until: { event: 'mark', timeout: 10 } },
     { expect: [{ count: { entities: 'chalk', max: 0 } }, { action: { act: 'mark', icon: 'chalk' } }] },

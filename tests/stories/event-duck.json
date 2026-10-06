@@ -68,7 +68,7 @@
         },
         {
           "press": {
-            "zone": "event-duck-place"
+            "screenOf": "event-duck-place"
           }
         },
         {
@@ -118,7 +118,7 @@
         },
         {
           "press": {
-            "zone": "event-duck-place"
+            "screenOf": "event-duck-place"
           }
         },
         {
@@ -168,7 +168,7 @@
         },
         {
           "press": {
-            "zone": "event-duck-place"
+            "screenOf": "event-duck-place"
           }
         },
         {

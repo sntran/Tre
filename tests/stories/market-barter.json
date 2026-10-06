@@ -86,7 +86,7 @@
         },
         {
           "press": {
-            "zone": "event-market-place"
+            "screenOf": "event-market-place"
           }
         },
         {
@@ -151,7 +151,7 @@
         },
         {
           "press": {
-            "zone": "event-market-place"
+            "screenOf": "event-market-place"
           }
         },
         {

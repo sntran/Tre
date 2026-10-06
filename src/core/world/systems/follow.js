@@ -5,7 +5,8 @@
 // system), Nghé walks to that point, looks to `face`, and takes the pose `act` there: at the near
 // end of the planks it stretches its neck toward the gap (a hint), beside the plank outlines it
 // looks at the hero, and at the edge of the water it pulls the hero out. At a closed ford Nghé stops at the
-// edge and shakes its head. After a skip of the prediction, Nghé glances once at the outlines. Nghé
+// edge and shakes its head. Nghé never stands on a place of a task, and it steps aside when the hero
+// walks toward it (#47). After a skip of the prediction, Nghé glances once at the outlines. Nghé
 // does not go into the sea, nor into the mist of the land of a later era: it stops at the edge, and
 // at the mist it lows.
 export const WRITES = ['position', 'motion', 'follow', 'act', 'events'];
@@ -73,6 +74,42 @@ export function follow(world, dt, rng, env) {
         m.speed = Math.max(m.speed, 6);
       }
     }
+    // The places of a task that goes on: Nghé steps out of their rects, so that it never stands on a
+    // place of the work (#47). The hero walks toward Nghé: Nghé steps aside.
+    for (const z of query(world, 'zone')) {
+      const r = z.zone.rect;
+      if (!r || !z.zone.task?.startsWith('trial-') || getEntity(world, `zone:${z.zone.task}`)?.zone.done) continue;
+      if (p.x < r.x0 || p.x > r.x1 || p.z < r.z0 || p.z > r.z1) continue;
+      // The nearest edge, one half block out.
+      const outs = [{ x: r.x0 - 1, z: p.z }, { x: r.x1 + 1, z: p.z }, { x: p.x, z: r.z0 - 1 }, { x: p.x, z: r.z1 + 1 }]
+        .sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z));
+      const out = outs.find((o) => env.canEnter('land', p, o));
+      if (!out) continue;
+      const d = Math.hypot(out.x - p.x, out.z - p.z);
+      const step = Math.min(d, dt * 8);
+      p.x += ((out.x - p.x) / d) * step;
+      p.z += ((out.z - p.z) / d) * step;
+      p.facing = Math.atan2(out.x - p.x, out.z - p.z);
+      m.speed = Math.max(m.speed, 6);
+    }
+    const lv = leader.motion;
+    if (lv && (lv.speed ?? 0) > 0.5) {
+      const dx = p.x - leader.position.x;
+      const dz = p.z - leader.position.z;
+      const d = Math.hypot(dx, dz);
+      const v = Math.hypot(lv.vx, lv.vz) || 1;
+      if (d < 3 && d > 1e-6 && (dx * lv.vx + dz * lv.vz) / (d * v) > 0.7) {
+        // To the side that is nearer (the left or the right of the walk of the hero).
+        const side = Math.sign(dx * lv.vz - dz * lv.vx) || 1;
+        const to = { x: p.x + side * (lv.vz / v) * dt * 6, z: p.z - side * (lv.vx / v) * dt * 6 };
+        if (env.canEnter('land', p, to)) {
+          p.x = to.x;
+          p.z = to.z;
+          m.speed = Math.max(m.speed, 6);
+        }
+      }
+    }
+    p.y = env.groundY(p.x / 2, p.z / 2);
     // The hero rests at night (stands still): Nghé lies down beside the hero.
     const near = Math.hypot(leader.position.x - p.x, leader.position.z - p.z) < 7;
     const rest = (world.sky?.night ?? 0) > 0.5 && (leader.motion?.idle ?? 0) > 2 && near && m.speed < 0.2;

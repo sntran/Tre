@@ -86,7 +86,7 @@
         },
         {
           "press": {
-            "zone": "mat"
+            "screenOf": "mat"
           }
         },
         {
@@ -143,7 +143,7 @@
         },
         {
           "press": {
-            "zone": "mat"
+            "screenOf": "mat"
           }
         },
         {
@@ -200,7 +200,7 @@
         },
         {
           "press": {
-            "zone": "mat"
+            "screenOf": "mat"
           }
         },
         {

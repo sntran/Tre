@@ -154,7 +154,7 @@ test('the parent page lists every activity, and each link opens its activity', (
 
 test('a rod taken back from the mat in a practice is no "go back": the visit goes on', async () => {
   // The world event of a rod back to the heap had the same name as the end of a visit, and the
-  // village started again. Now the rod comes back with the action button at the mat.
+  // village started again. Now the rod comes back with a tap on it and the action button.
   const sessions = new Set();
   const story = {
     name: 'rod-back', profile: { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } }, practice: 'bo-que',
@@ -163,7 +163,7 @@ test('a rod taken back from the mat in a practice is no "go back": the visit goe
       { until: { event: 'call', with: { key: 'mentor.first.you' }, timeout: 15 } },
       { press: { thing: 'rod:scholar:0' } }, { until: { event: 'pick', timeout: 10 } },
       { press: { zone: 'mat' } }, { until: { event: 'put', timeout: 10 } },
-      { press: { zone: 'mat' } }, { until: { event: 'pick', timeout: 10 } },
+      { press: { on: 'mat' } }, { until: { event: 'pick', timeout: 10 } },
       { press: { zone: 'rods' } }, { until: { event: 'put', with: { zone: 'rods' }, timeout: 10 } },
       { wait: 2 },
       { expect: [{ zone: 'trial-scholar', state: 'open' }, { hero: { near: 'npc:teacher', within: 12 } }] },

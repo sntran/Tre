@@ -287,7 +287,7 @@
         },
         {
           "press": {
-            "zone": "share-hero"
+            "screenOf": "share-hero"
           }
         },
         {
@@ -314,7 +314,7 @@
         },
         {
           "press": {
-            "zone": "share-nghe"
+            "screenOf": "share-nghe"
           }
         },
         {
@@ -341,7 +341,7 @@
         },
         {
           "press": {
-            "zone": "share-giong"
+            "screenOf": "share-giong"
           }
         },
         {
@@ -390,7 +390,7 @@
         },
         {
           "press": {
-            "zone": "share-nghe"
+            "screenOf": "share-nghe"
           }
         },
         {

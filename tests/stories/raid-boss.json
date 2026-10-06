@@ -47,19 +47,19 @@
     { "repeat": 4, "steps": [
       {"press": {"item": "sack"}},
       {"until": {"event": "pick", "timeout": 20}},
-      {"press": {"zone": "share-hero"}},
+      {"press": {"screenOf": "share-hero"}},
       {"until": {"event": "put", "timeout": 20}}
     ] },
     { "repeat": 4, "steps": [
       {"press": {"item": "sack"}},
       {"until": {"event": "pick", "timeout": 20}},
-      {"press": {"zone": "share-nghe"}},
+      {"press": {"screenOf": "share-nghe"}},
       {"until": {"event": "put", "timeout": 20}}
     ] },
     { "repeat": 4, "steps": [
       {"press": {"item": "sack"}},
       {"until": {"event": "pick", "timeout": 20}},
-      {"press": {"zone": "share-giong"}},
+      {"press": {"screenOf": "share-giong"}},
       {"until": {"event": "put", "timeout": 20}}
     ] },
     {"until": {"event": "happy", "timeout": 5}},

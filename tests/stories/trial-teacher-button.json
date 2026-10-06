@@ -63,7 +63,7 @@
         },
         {
           "press": {
-            "zone": "mat"
+            "screenOf": "mat"
           }
         },
         {
@@ -87,7 +87,7 @@
     },
     {
       "press": {
-        "zone": "rods"
+        "screenOf": "rods"
       }
     },
     {
@@ -121,7 +121,7 @@
     },
     {
       "press": {
-        "zone": "mat"
+        "screenOf": "mat"
       }
     },
     {

@@ -152,7 +152,8 @@ function heapThingNear(things, hit) {
 //   of the hamlet with a tap ([{ id, hamletTap, x, y, z, height }]);
 // - pick(px, py): the ground (or a prop: who) under the point, { x, y (map cells), h, who } or null;
 // - placeAt(x, y, pad): a place of a task at a map point (cells), with a pad in half blocks;
-// - inTask: a task or a folk game goes on now; raidAt(p): the target of a raid (optional).
+// - inTask: a task or a folk game goes on now; carrying: a thing is in the hands of the hero;
+//   raidAt(p): the target of a raid (optional).
 // The order: a plank outline, a target of a raid, a thing of the hamlet; then a thing, but a place
 // of a task wins over a thing that only touches the finger with its margin (#47); then Nghé (not
 // in a task: in a task a tap on Nghé is a tap on what is under or behind Nghé, #47); then a place
@@ -161,7 +162,9 @@ function heapThingNear(things, hit) {
 // Returns a target for the session ({ guess }, { hamlet }, { thing }, { pet }, { person },
 // { ground }), a target of a raid, or null.
 export function tapTarget(p, w) {
-  const ghost = guessUnder(p, w.cam, w.guesses ?? []);
+  // The plank outlines of the prediction take a tap only with empty hands: with a plank in the
+  // hands, the child puts it (#47).
+  const ghost = w.carrying ? null : guessUnder(p, w.cam, w.guesses ?? []);
   if (ghost) return { guess: { zone: ghost.guess.zone, n: ghost.guess.n } };
   const raid = w.raidAt?.(p);
   if (raid) return raid;
@@ -214,5 +217,6 @@ export function sessionScreen(session, cam) {
     pick: groundPick(cam, session.tileMap),
     placeAt: (x, y, pad) => session.taskPlaceAt(x, y, pad),
     inTask: session.inTask(),
+    carrying: Boolean(session.carried()),
   };
 }

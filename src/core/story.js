@@ -17,10 +17,12 @@
 //   { until: { event, with, timeout } }      (an event after the last command)
 //   { at: { hour } }
 //   { tap: { cell: [x, y] } | { entity } | { thing } | { item: <kind>, size } | { plank: <size> } | { guess: <n> } |
-//          { zone } | { span } | { stem: <along> } | { culm: <n>, at: <height> } | { line: <along> } |
+//          { zone } | { on: <zone> } | { screenOf: <zone> } | { span } | { stem: <along> } | { culm: <n>, at: <height> } | { line: <along> } |
 //          { raid: 'gate' | 'bamboo' | <spot id> } | { post: 10 } (a post before the first shot) }
 //     (item: the first thing of a kind (and size) in a heap or a pile; plank: a plank of this size on a pile;
-//     zone: the middle of the zone of a task, the first thing of a heap, or the gap of a span; span: the last plank on a
+//     zone: the middle of the zone of a task, the first thing of a heap, or the gap of a span; on: the last thing put
+//     on the zone of a task (a tap on the thing itself, to take it back); screenOf: the middle of the zone of a task on
+//     the screen of a phone, through the hit test of the village (src/world/hit.js), as a child taps; span: the last plank on a
 //     span; stem: a place along the stem of the woodcutter; culm: a standing culm of the bamboo
 //     clump of the staffs (its place in the row), at a height in half blocks; line: a place on the
 //     fish trap line)
@@ -51,6 +53,8 @@ import { createI18n } from './i18n.js';
 import { STEP } from './world/step.js';
 import { along } from './world/raids.js';
 import { heroLook } from '../world/figures.js';
+import { tapTarget as screenTap, sessionCamera, sessionScreen } from '../world/hit.js';
+import { pickTopOf, columnTop } from '../world/terrain.js';
 import { speakerLook } from '../world/portraits.js';
 
 // The time of the start of a story (a Monday morning), so that a story always gives the same
@@ -144,6 +148,14 @@ export function tapTarget(session, spec) {
     const g = query(state, 'guess', 'position').find((x) => x.guess.n === spec.guess && x.guess.left === undefined);
     return g ? { target: { guess: { zone: g.guess.zone, n: g.guess.n } }, point: { x: g.position.x / 2, y: g.position.z / 2 + 1 } } : null;
   }
+  if (spec.on) {
+    // The last thing put on a place of a task (a tap on the thing itself, to take it back).
+    const z = getEntity(state, `zone:${spec.on}`);
+    const e = z ? z.zone.items.map((id) => getEntity(state, id)).filter((x) => x && !x.hidden && !x.item.held).at(-1) : null;
+    if (!e) return null;
+    const m = session.middleOf(e);
+    return { target: { thing: e.id }, point: { x: m.x / 2, y: m.z / 2 } };
+  }
   if (spec.thing) {
     const e = getEntity(state, spec.thing);
     if (!e?.position) return null;
@@ -195,6 +207,22 @@ export function tapTarget(session, spec) {
     if (!e) return null;
     const m = session.middleOf(e);
     return { target: { thing: id }, point: { x: m.x / 2, y: m.z / 2 } };
+  }
+  if (spec.screenOf) {
+    // A tap where a child taps: the middle of the place on the screen of a phone, with the camera of
+    // the game, through the hit test of the village (src/world/hit.js, #47). The target is what the
+    // screen gives there (the place, a thing, or a person in front of it).
+    const base = tapTarget(session, { zone: spec.screenOf });
+    if (!base) return null;
+    const thing = base.target.thing ? getEntity(state, base.target.thing) : null;
+    // The height of the point: a thing, or the top of the ground (or of the water) there.
+    const [cx, cz] = [Math.floor(base.point.x), Math.floor(base.point.y)];
+    const tm = session.tileMap;
+    const h = thing ? thing.position.y / 2 + 0.3 : pickTopOf(tm.type(cx, cz), columnTop(tm.heightAt(cx, cz)));
+    const cam = sessionCamera(session, spec.az !== undefined ? { az: spec.az } : {});
+    const at = cam.project(base.point.x, h, base.point.y);
+    const target = screenTap(at, sessionScreen(session, cam));
+    return target && !target.pet ? { target, point: base.point } : null;
   }
   if (spec.zone) {
     // The zone of a task: a tap in the middle of it.

@@ -77,7 +77,7 @@
         },
         {
           "press": {
-            "zone": "event-cart-place"
+            "screenOf": "event-cart-place"
           }
         },
         {
@@ -139,7 +139,7 @@
         },
         {
           "press": {
-            "zone": "event-cart-place"
+            "screenOf": "event-cart-place"
           }
         },
         {

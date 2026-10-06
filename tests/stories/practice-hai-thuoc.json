@@ -75,7 +75,7 @@
         },
         {
           "press": {
-            "zone": "basket"
+            "screenOf": "basket"
           }
         },
         {
@@ -102,7 +102,7 @@
         },
         {
           "press": {
-            "zone": "basket"
+            "screenOf": "basket"
           }
         },
         {
@@ -129,7 +129,7 @@
         },
         {
           "press": {
-            "zone": "basket"
+            "screenOf": "basket"
           }
         },
         {
@@ -197,7 +197,7 @@
         },
         {
           "press": {
-            "zone": "basket"
+            "screenOf": "basket"
           }
         },
         {
@@ -224,7 +224,7 @@
         },
         {
           "press": {
-            "zone": "basket"
+            "screenOf": "basket"
           }
         },
         {
@@ -251,7 +251,7 @@
         },
         {
           "press": {
-            "zone": "basket"
+            "screenOf": "basket"
           }
         },
         {

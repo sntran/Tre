@@ -15,7 +15,7 @@
     { "repeat": 5, "steps": [
       { "press": { "item": "ore" } },
       { "until": { "event": "pick", "timeout": 15 } },
-      { "press": { "zone": "hearth" } },
+      { "press": { "screenOf": "hearth" } },
       { "until": { "event": "put", "timeout": 15 } }
     ] },
     { "press": { "thing": "bellows:horse" } },
@@ -24,7 +24,7 @@
     { "repeat": 2, "steps": [
       { "press": { "item": "ore" } },
       { "until": { "event": "pick", "timeout": 15 } },
-      { "press": { "zone": "hearth" } },
+      { "press": { "screenOf": "hearth" } },
       { "until": { "event": "put", "timeout": 15 } }
     ] },
     { "press": { "thing": "bellows:horse" } },

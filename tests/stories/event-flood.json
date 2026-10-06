@@ -73,7 +73,7 @@
         },
         {
           "press": {
-            "zone": "event-flood-place"
+            "screenOf": "event-flood-place"
           }
         },
         {

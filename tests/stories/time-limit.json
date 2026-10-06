@@ -12,7 +12,7 @@
     { "until": { "event": "pick", "timeout": 20 } },
     { "wait": 15 },
     { "expect": [{ "hero": { "holding": true } }, { "screen": null }] },
-    { "press": { "zone": "bridge-gap" } },
+    { "press": { "screenOf": "bridge-gap" } },
     { "until": { "event": "put", "timeout": 20 } },
     { "wait": 3 },
     { "expect": [{ "hero": { "holding": false } }, { "screen": null }] },

@@ -109,7 +109,7 @@
     },
     {
       "press": {
-        "zone": "woodpile"
+        "screenOf": "woodpile"
       }
     },
     {
@@ -191,7 +191,7 @@
     },
     {
       "press": {
-        "zone": "woodpile"
+        "screenOf": "woodpile"
       }
     },
     {

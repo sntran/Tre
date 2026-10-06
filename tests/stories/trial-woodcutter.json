@@ -25,7 +25,7 @@
     { "expect": [{ "event": "skill", "with": { "solved": true, "parts": [4, 4] } }, { "count": { "entities": "sticks-2", "min": 1 } }] },
     { "press": { "item": "sticks" } },
     { "until": { "event": "pick", "timeout": 10 } },
-    { "press": { "zone": "woodpile" } },
+    { "press": { "screenOf": "woodpile" } },
     { "until": { "event": "trial", "timeout": 120 } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
     { "expect": [{ "flag": "trial.woodcutter.done" }, { "text": { "shown": "dlg.woodcutter.trial.done.n1" } }] },

@@ -55,7 +55,7 @@
     },
     {
       "press": {
-        "zone": "plant-edge-p0"
+        "screenOf": "plant-edge-p0"
       }
     },
     {
@@ -78,7 +78,7 @@
     },
     {
       "press": {
-        "zone": "plant-edge-p0"
+        "screenOf": "plant-edge-p0"
       }
     },
     {

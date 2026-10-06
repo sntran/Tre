@@ -62,7 +62,7 @@
     },
     {
       "press": {
-        "zone": "event-cart-place"
+        "screenOf": "event-cart-place"
       }
     },
     {

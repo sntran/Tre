@@ -36,7 +36,7 @@
     },
     {
       "press": {
-        "zone": "bridge-gap"
+        "screenOf": "bridge-gap"
       }
     },
     {
@@ -61,7 +61,7 @@
     },
     {
       "press": {
-        "zone": "bridge-gap"
+        "screenOf": "bridge-gap"
       }
     },
     {
@@ -75,7 +75,7 @@
     },
     {
       "press": {
-        "zone": "bridge-gap"
+        "screenOf": "bridge-gap"
       }
     },
     {
@@ -147,7 +147,7 @@
     },
     {
       "press": {
-        "zone": "bridge-gap"
+        "screenOf": "bridge-gap"
       }
     },
     {
@@ -172,7 +172,7 @@
     },
     {
       "press": {
-        "zone": "bridge-gap"
+        "screenOf": "bridge-gap"
       }
     },
     {
@@ -186,7 +186,7 @@
     },
     {
       "press": {
-        "zone": "bridge-gap"
+        "screenOf": "bridge-gap"
       }
     },
     {

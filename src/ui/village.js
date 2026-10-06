@@ -716,6 +716,7 @@ export async function mountVillage(ctx, params = {}) {
       },
       placeAt: (x, y, pad) => session.taskPlaceAt(x, y, pad),
       inTask: session.inTask(),
+      carrying: Boolean(session.carried()),
       raidAt: (p) => raidView.targetAt(p),
     };
   }

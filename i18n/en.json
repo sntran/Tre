@@ -667,6 +667,7 @@
   "dlg.smith.forge.n2": "The forge needs exactly {lumps} lumps. Carry the lumps into the forge, one at a time, then stand at the bellows and press the big button. When the iron glows, stand at the anvil and press the big button to put it in the water.",
   "dlg.smith.horse.n1": "The iron horse is ready! The smith also makes the iron armor and the iron staff for Gióng. Take the good news to Gióng's house.",
   "dlg.smith.idle.n1": "The fire of my forge is always red. Come back any time.",
+  "fisher.tide.wait": "Wait. The water goes out soon.",
   "dlg.fisher.idle.n1": "The river is clear today. Remember: water flows from high places to low places.",
   "dlg.fisher.river.n1": "Some little [[thuongluong]] make trouble on our bank, west of the ford. They hide in shells of ice and bubbles of water. Remember: fire melts ice.",
   "dlg.healer.idle.n1": "Plants need water and light. People need good food and enough sleep. Remember to rest.",
