@@ -21,6 +21,7 @@ import { WATER_KINDS } from '../world/chunks.js';
 import { workBoxes, workTurn } from '../world/fade.js';
 import { VIEW, viewSize, inView, leadFocus } from '../world/view.js';
 import { heroLook, thingLook } from '../world/figures.js';
+import { tapTarget, thingUnder } from '../world/hit.js';
 import { h, img, button } from './dom.js';
 import { t, tn, setSpeech } from './i18n.js';
 import { speechTable, speechWay } from '../core/speech.js';
@@ -38,8 +39,6 @@ const DUSK = Object.freeze({ hue: 215, saturation: 45, lightness: 42 });
 const WARM_MS = 40; // the time to build near chunks in each frame of the loading screen
 const WARM_WAIT_MS = 6000; // after this time, the near land that did not come is made at once
 const HOLD_MS = 220; // a press this long is a hold (walk toward the finger), not a tap
-const PERSON_PAD = 10; // screen pixels around the box of a person, for small fingers
-const PERSON_PAD_AT_PLACE = -6; // next to a place of a task: only the body of the person
 
 // three.js and the drawing code load only when the village opens, so that the other screens
 // work without them. The terrain of a map takes some time to make: keep it for the next visit.
@@ -600,34 +599,7 @@ export async function mountVillage(ctx, params = {}) {
       Object.assign(stick, { active: true, id: e.pointerId, x: p.x, y: p.y, kx: 0, ky: 0, since: performance.now(), far: 0 });
       return;
     }
-    // A thing under the finger (a plank, a rod, the stem) wins over Nghé beside it.
-    const under = thingAt(p);
-    hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false, friend: under || guessAt(p) ? null : friendAt(p) };
-  }
-
-  // A thing of an activity of the hamlet under a screen point (the jar of feed, a bronze drum).
-  function hamletAt(p) {
-    for (const e of query(state, 'hamletTap', 'position')) {
-      const f = figures.placeOf(e.id);
-      if (!f) continue;
-      const b = view.screenBox({ x0: f.x - 0.6, x1: f.x + 0.6, y0: f.y, y1: f.y + Math.max(0.6, f.height), z0: f.z - 0.6, z1: f.z + 0.6 });
-      if (p.x >= b.x0 - 10 && p.x <= b.x1 + 10 && p.y >= b.y0 - 10 && p.y <= b.y1 + 10) return { hamlet: { ...e.hamletTap, id: e.id } };
-    }
-    return null;
-  }
-
-  // Nghé (or the hero on the back of Nghé) under a screen point: a tap pets (the action button
-  // gets on and off).
-  function friendAt(p) {
-    const friend = query(state, 'follow')[0];
-    if (!friend) return null;
-    for (const id of [friend.id, ...(hero().riding ? ['hero'] : [])]) {
-      const f = figures.placeOf(id);
-      if (!f) continue;
-      const b = view.screenBox({ x0: f.x - 0.8, x1: f.x + 0.8, y0: f.y, y1: f.y + f.height + 0.2, z0: f.z - 0.8, z1: f.z + 0.8 });
-      if (p.x >= b.x0 - 8 && p.x <= b.x1 + 8 && p.y >= b.y0 - 8 && p.y <= b.y1 + 8) return friend.id;
-    }
-    return null;
+    hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false };
   }
 
   function onMove(e) {
@@ -678,19 +650,14 @@ export async function mountVillage(ctx, params = {}) {
     }
     if (hold && hold.id === e.pointerId) {
       const wasHeld = hold.held;
-      const friend = hold.friend;
       hold = null;
       if (wasHeld || e.type !== 'pointerup' || busy) return;
-      if (friend) {
-        ctx.bus.emit('sound', 'tap');
-        send({ type: 'pet', id: friend });
-      } else onTap(p);
+      onTap(p);
     }
   }
 
   function startHold() {
     hold.held = true;
-    hold.friend = null;
   }
 
   function onWheel(e) {
@@ -721,97 +688,47 @@ export async function mountVillage(ctx, params = {}) {
     }
   }
 
-  // The person or enemy under a screen point: the nearest one to the camera.
-  // pad: screen pixels around the box of a person (smaller next to a place of a task).
-  function personAt(p, pad = 10) {
-    let best = null;
-    for (const q of persons()) {
-      const f = figures.placeOf(q.entity);
-      if (!f) continue;
-      const b = view.screenBox({ x0: f.x - 0.7, x1: f.x + 0.7, y0: f.y, y1: f.y + f.height + 0.2, z0: f.z - 0.7, z1: f.z + 0.7 });
-      if (p.x < b.x0 - pad || p.x > b.x1 + pad || p.y < b.y0 - pad || p.y > b.y1 + pad) continue;
-      const near = view.nearness(f.x, f.y, f.z);
-      if (!best || near > best.near) best = { q, near };
-    }
-    return best?.q ?? null;
-  }
-
   const showTap = (x, y, hh) => {
     tapFx = { x, y, h: hh, age: 0 };
   };
 
-  // The plank under a screen point: the nearest one to the camera.
-  function thingAt(p) {
-    let best = null;
-    for (const e of query(state, 'item', 'position')) {
-      // A thing that is set does not move, but a fixed thing of a trial (a stem, the iron, the
-      // straw rope) answers a tap.
-      if (e.hidden || (e.item.set && !e.item.fixed)) continue;
-      const q = e.position;
-      // A standing culm (or cut piece) of the bamboo clump goes up from its foot; other things lie
-      // along their facing.
-      const up = e.item.kind === 'culm' || e.item.kind === 'stump';
-      const end = up ? { x: q.x, z: q.z } : { x: q.x + Math.sin(q.facing ?? 0) * e.item.size, z: q.z + Math.cos(q.facing ?? 0) * e.item.size };
-      const b = view.screenBox({
-        x0: Math.min(q.x, end.x) / 2 - 0.5, x1: Math.max(q.x, end.x) / 2 + 0.5,
-        y0: q.y / 2, y1: q.y / 2 + (up ? e.item.size / 2 : 0.5),
-        z0: Math.min(q.z, end.z) / 2 - 0.5, z1: Math.max(q.z, end.z) / 2 + 0.5,
-      });
-      const pad = 6;
-      if (p.x < b.x0 - pad || p.x > b.x1 + pad || p.y < b.y0 - pad || p.y > b.y1 + pad) continue;
-      // The plank whose middle line on the screen is nearest to the finger (for a culm: the height).
-      const a = view.project(q.x / 2, q.y / 2 + (up ? 0 : 0.4), q.z / 2);
-      const c = view.project(end.x / 2, q.y / 2 + (up ? e.item.size / 2 : 0.4), end.z / 2);
-      const dx = c.x - a.x;
-      const dy = c.y - a.y;
-      const k = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
-      const d = Math.hypot(p.x - (a.x + dx * k), p.y - (a.y + dy * k));
-      if (!best || d < best.d) best = { e, d, along: Math.round(k * e.item.size) };
-    }
-    return best ? { ...best.e, along: best.along } : null;
+  // What the screen shows now, for the hit test of a tap (src/world/hit.js): the figures where the
+  // renderer draws them.
+  const figureAt = (id, extra = {}) => {
+    const f = figures.placeOf(id);
+    return f ? { id, x: f.x, y: f.y, z: f.z, height: f.height, ...extra } : null;
+  };
+  function screenNow() {
+    const friend = query(state, 'follow')[0];
+    const friends = friend ? [figureAt(friend.id), ...(hero().riding ? [{ ...figureAt('hero'), id: friend.id }] : [])].filter((f) => f?.x !== undefined) : [];
+    return {
+      cam: view,
+      things: query(state, 'item', 'position'),
+      persons: persons().map((q) => figureAt(q.entity)).filter(Boolean),
+      friends,
+      guesses: query(state, 'guess', 'position'),
+      hamlet: query(state, 'hamletTap', 'position').map((e) => figureAt(e.id, { hamletTap: e.hamletTap })).filter(Boolean),
+      pick: (px, py) => {
+        const hit = view.pick(px, py, { things: true });
+        if (!hit) return null;
+        const thing = hit.who ? terrain.objects.find((o) => o.who === hit.who) : null;
+        return { ...hit, object: thing?.id ?? null };
+      },
+      placeAt: (x, y, pad) => session.taskPlaceAt(x, y, pad),
+      inTask: session.inTask(),
+      raidAt: (p) => raidView.targetAt(p),
+    };
   }
-  // The plank outline of the prediction under a screen point (the row lies on the bank).
-  function guessAt(p) {
-    let best = null;
-    for (const g of query(state, 'guess', 'position')) {
-      if (g.guess.left !== undefined) continue;
-      const q = g.position;
-      const b = view.screenBox({ x0: q.x / 2 - 0.6, x1: q.x / 2 + 0.6, y0: q.y / 2, y1: q.y / 2 + 0.3, z0: q.z / 2, z1: q.z / 2 + 2 });
-      if (p.x < b.x0 - 4 || p.x > b.x1 + 4 || p.y < b.y0 - 4 || p.y > b.y1 + 4) continue;
-      // The outlines stand close together: the one whose middle is nearest to the finger.
-      const c = view.project(q.x / 2, q.y / 2 + 0.1, q.z / 2 + 1);
-      const d = Math.hypot(p.x - c.x, p.y - c.y);
-      if (!best || d < best.d) best = { g, d };
-    }
-    return best?.g ?? null;
-  }
-
-  // What is under a screen point, as the target of a tap for the session: a plank outline, a
-  // plank, a person, or a point on the ground or a thing. A tap only walks there (docs/TASKS.md).
-  function targetUnder(p) {
-    const ghost = guessAt(p);
-    if (ghost) return { guess: { zone: ghost.guess.zone, n: ghost.guess.n } };
-    const raidTap = raidView.targetAt(p);
-    if (raidTap) return raidTap;
-    const hamletTap = hamletAt(p);
-    if (hamletTap) return hamletTap;
-    const plank = thingAt(p);
-    if (plank) return plank.item.fixed ? { thing: plank.id, along: plank.along } : { thing: plank.id };
-    // During a task, a place of the task (the forge, the trough, the basket) comes before a person
-    // who stands next to it: the box of the person has no pad there and is a little smaller, so
-    // that only a tap on the body of the person is for the person (docs/TASKS.md).
-    const hit = view.pick(p.x, p.y, { things: true });
-    const place = hit && session.taskPlaceAt(hit.x, hit.y);
-    const person = personAt(p, place ? PERSON_PAD_AT_PLACE : PERSON_PAD);
-    if (person) return { person: person.entity };
-    if (!hit) return null;
-    const thing = hit.who ? terrain.objects.find((o) => o.who === hit.who) : null;
-    return { ground: { x: hit.x, y: hit.y, h: hit.h, thing: Boolean(hit.who), object: thing?.id ?? null } };
-  }
+  // What is under a screen point, as the target of a tap for the session (a tap only walks there,
+  // docs/TASKS.md), or a pet of Nghé.
+  const targetUnder = (p) => tapTarget(p, screenNow());
 
   function onTap(p) {
     const target = targetUnder(p);
-    if (target) send({ type: 'tap', target });
+    if (target?.pet) {
+      ctx.bus.emit('sound', 'tap');
+      send({ type: 'pet', id: target.pet });
+    } else if (target) send({ type: 'tap', target });
     else ctx.bus.emit('sound', 'tap');
   }
 
@@ -1462,7 +1379,7 @@ export async function mountVillage(ctx, params = {}) {
       return g ? view.project(g.position.x / 2, g.position.y / 2 + 0.1, g.position.z / 2 + 1) : null;
     },
     // The plank under a screen point, for automatic tests.
-    thingAt: (x, y) => thingAt({ x, y })?.id ?? null,
+    thingAt: (x, y) => thingUnder({ x, y }, view, query(state, 'item', 'position'))?.e.id ?? null,
     turn: (n) => view.turn(n),
     stats: (opts) => view.stats(opts),
     // The world state, for automatic tests (read only).

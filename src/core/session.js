@@ -97,7 +97,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   let opening = []; // the events of the last start
   let starting = false;
   // Every event goes to the queue of the view and to the listeners (the runner of a story).
+  // The last work in view (the event workView): the camera of a story tap leads toward it.
+  let lastWork = null;
   const emit = (ev) => {
+    if (ev.type === 'workView') lastWork = ev;
     out.push(ev);
     if (starting) opening.push(ev);
     for (const fn of listeners) fn(ev);
@@ -693,10 +696,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The zone of a task under a point on the ground (half blocks).
   // The zone of a task under a point on the ground (half blocks). A place of a task answers a tap
   // on its whole box with a pad around it (ZONE_PAD), so that a finger near the edge hits it.
-  const workZoneAt = (x, z, pad = ZONE_PAD) => query(state, 'zone').find((e) => {
-    const r = e.zone.rect;
-    return r && x >= r.x0 - pad && x <= r.x1 + pad && z >= r.z0 - pad && z <= r.z1 + pad && e.zone.task?.startsWith('trial-') && !trialZone(e.zone.task.slice(6))?.zone.done;
-  }) ?? null;
+  // A place that has the point comes before a place that only has it in its pad (#47).
+  const workZoneAt = (x, z, pad = ZONE_PAD) => {
+    const off = (e) => {
+      const r = e.zone.rect;
+      return Math.max(r.x0 - x, x - r.x1, r.z0 - z, z - r.z1, 0);
+    };
+    const near = query(state, 'zone').filter((e) => e.zone.rect && off(e) <= pad && e.zone.task?.startsWith('trial-') && !trialZone(e.zone.task.slice(6))?.zone.done);
+    return near.reduce((a, b) => (!a || off(b) < off(a) ? b : a), null);
+  };
   const work = (trial, act, extra = {}) => worldCommand(state, { type: 'work', id: 'hero', trial, act, ...extra });
   // A tap only walks: on a thing, a place, or a person, the hero walks there and turns to it, and
   // it becomes the target of the action button (docs/TASKS.md). A tap never does a step of a task.
@@ -711,19 +719,27 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // A tap on a place of a task: the hero walks to it, and it is the target. On the line of stakes,
   // the place of the tap along the line is the target place.
+  // The point of a place is the middle of its rect; the hero stands at its stand point to work
+  // there (src/core/world/systems/work.js).
+  const standOf = (wz) => wz.zone.stand ?? wz.position;
+  // The point of a place nearest to p (half blocks): in its rect, or its point.
+  const nearIn = (wz, p) => {
+    const r = wz.zone.rect;
+    return r ? { x: Math.max(r.x0, Math.min(r.x1, p.x)), z: Math.max(r.z0, Math.min(r.z1, p.z)) } : wz.position;
+  };
   function tapTaskPlace(hit) {
     const wz = workZoneAt(hit.x * 2, hit.y * 2);
     if (!wz) return false;
     const z = wz.zone;
     if (z.rule === 'line') {
       const along = Math.max(1, Math.min(z.length, Math.round(hit.x * 2 - z.x)));
-      goTo({ x: z.x + along, z: z.z }, wz.id, along, { x: z.x + along, z: wz.position.z });
+      goTo({ x: z.x + along, z: z.z }, wz.id, along, { x: z.x + along, z: standOf(wz).z });
     } else if (z.rule === 'spots') {
       // A spot in the stream: the free spot nearest to the tap is the target place.
       const k = freeSlot(state, z, { x: hit.x * 2, z: hit.y * 2 });
       if (k >= 0) goTo(z.slots[k], wz.id, k);
-      else goTo(wz.position, wz.id);
-    } else goTo(wz.position, wz.id);
+      else goTo(wz.position, wz.id, null, standOf(wz));
+    } else goTo(wz.position, wz.id, null, standOf(wz));
     return true;
   }
   // The hold of the action button (the jar of feed, the slash at a culm): the act goes on while the
@@ -1611,7 +1627,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (!things.length) continue;
         const spread = z.zone.rule === 'line' || z.zone.rule === 'spots';
         const e = spread ? things.reduce((a, b) => (distHb(front, b.position) < distHb(front, a.position) ? b : a)) : things[things.length - 1];
-        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [z.id, ...things.map((x) => x.id)], at: spread ? e.position : z.position, rank: 1.5, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH + 2);
+        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [z.id, ...things.map((x) => x.id)], at: spread ? e.position : nearIn(z, hp), rank: 1.5, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH + 2);
       }
       // The guess at the bridge: the plank outline in front of the hero (or the outline of the last
       // tap). A press chooses it: the bridge takes that many planks.
@@ -1675,7 +1691,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         continue;
       } else {
         if (zone.rule === 'hearth' && trialZone('horse')?.zone.heat !== null) continue;
-        add({ act: 'put', icon: 'hand-put', target: z.id, at: z.position, rank: 0, run: () => put(null) }, REACH + 2);
+        add({ act: 'put', icon: 'hand-put', target: z.id, at: nearIn(z, hp), rank: 0, run: () => put(null) }, REACH + 2);
       }
     }
     // Anywhere else: put it down on the ground in front of the hero.
@@ -2330,8 +2346,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     heroCell,
     holding,
     middleOf,
-    // Is a place of a task (with its pad) at a map point? A tap there comes before a person.
-    taskPlaceAt: (x, y) => Boolean(workZoneAt(x * 2, y * 2)),
+    // Is a place of a task at a map point (cells)? With its pad (half blocks; ZONE_PAD when not
+    // given): a tap there comes before a person. With no pad: a tap there comes before a thing that
+    // only touches the finger with its pad (src/world/hit.js, #47).
+    taskPlaceAt: (x, y, pad = ZONE_PAD) => Boolean(workZoneAt(x * 2, y * 2, pad)),
+    // A task or a folk game goes on now: a tap on Nghé is a tap on what is under or behind Nghé.
+    inTask: () => Boolean(mentoring.activeKey() || folk.active()),
+    // The work in view now (the last event workView while its task goes on), or null.
+    work: () => (lastWork && (mentoring.activeKey() || folk.active() || String(lastWork.key).startsWith('example-')) ? lastWork : null),
+    // The last tap: the id of its target (an entity), or null (#47).
+    chosen: () => chosen?.id ?? null,
+    // The place of a task that a tap at a map point (cells) chooses: its id, or null.
+    taskPlace: (x, y) => workZoneAt(x * 2, y * 2)?.id ?? null,
     // All that the action button can act on now, with the distance of each (for tests and the
     // debug panel): [{ act, icon, target, d, rank }].
     targets: () => (screen || busy ? [] : candidates().map((c) => ({ act: c.act, icon: c.icon, target: c.target, d: Math.round(c.d * 10) / 10, rank: c.rank }))),

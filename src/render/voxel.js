@@ -1128,7 +1128,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     pick(px, py, { things = false } = {}) {
       ndc.set((px / state.width) * 2 - 1, -(py / state.height) * 2 + 1);
       ray.setFromCamera(ndc, cam);
-      const ground = pickGround(ray.ray.origin, ray.ray.direction, terrain.topAt, terrain.width, terrain.height, terrain.maxTop);
+      const ground = pickGround(ray.ray.origin, ray.ray.direction, terrain.pickTop ?? terrain.topAt, terrain.width, terrain.height, terrain.maxTop);
       if (things) {
         for (const hit of ray.intersectObjects([...thingMeshes], false)) {
           if (ground && hit.distance > ground.t) break;

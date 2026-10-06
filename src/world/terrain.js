@@ -40,6 +40,16 @@ const SURFACE_OF = { grass: SURFACE.grass, flowers: SURFACE.grass, hedge: SURFAC
 // The top of the ground of a cell (world y), from the height layer.
 export const columnTop = (digit) => digit + 1;
 
+// The top of a column for a tap (world y): the ground, or the surface of the water on it, so that
+// a tap on the water of a stream or a paddy lands where the child sees it, not on the bed (#47).
+// type: the ground type of the cell (data/tiles.json); top: the top of the ground.
+export function pickTopOf(type, top) {
+  if (type === 'water' || type === 'shallow') return top + WATER.river;
+  if (type === 'field' || type === 'ditch') return top + WATER.paddy;
+  if (SEA.has(type)) return Math.max(top, WATER.sea);
+  return top;
+}
+
 // The first ground column that a ray meets (a ray from the camera through a screen point).
 // o, d: { x, y, z } in world units (y up, z = map y). topAt(x, z): the top of a column.
 // Return { x, y (map), h (the height of the hit), t (the distance along d) }, or null.
@@ -648,6 +658,8 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     return [kind, dx, dz, off, wet, density];
   }
   const topAt = (x, z) => Math.max(0, baseTop(x, z) - dugAt(x, z));
+  // The top for a tap: the surface of the water over a bed (pickTopOf).
+  const pickTop = (x, z) => pickTopOf(typeAt(x, z), topAt(x, z));
 
   const terrain = {
     width: W,
@@ -660,6 +672,7 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
     strip,
     roadAt,
     topAt,
+    pickTop,
     baseTop,
     // The highest top of the ground (for a ray from the camera).
     get maxTop() { return plane ? 40 : Math.max(0, ...[...pages.values()].map((p) => p.maxTop)); },

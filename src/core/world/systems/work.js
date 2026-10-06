@@ -121,13 +121,17 @@ export function setupTrial(world, def, level, env, opts = {}) {
   const rect = (p, w, d) => ({ x0: p.x - 1, x1: p.x + w + 1, z0: p.z - 1, z1: p.z + d + 1 });
 
   if (def.task === 'bundle') {
-    const rods = heap('rods', P(def.places.heap), 'rod', { cols: 8, step: 0.7 });
-    things(rods, 'rod', task.rods);
     const m = P(def.places.mat);
+    // The heap ends a step before the rect of the mat, so that no rod lies on the mat and a tap on
+    // the mat chooses the mat (#47): 8 columns 0.7 apart, a rod as long as about one half block.
+    const h = P(def.places.heap);
+    const rods = heap('rods', { ...h, x: Math.min(h.x, m.x - 1 - 1 - 1 - 7 * 0.7) }, 'rod', { cols: 8, step: 0.7 });
+    things(rods, 'rod', task.rods);
     addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts: 'rod', items: [], x: m.x, y: m.y, z: m.z, tied: 0, rect: rect(m, 4, 2) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1, facing: 0 } });
     addEntity(world, { id: 'mat:scholar', keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: 'mat' });
-    // A coil of straw rope by the mat: a tap on it ties the rods on the mat.
-    addEntity(world, { id: 'band:scholar', keep: true, item: { kind: 'band', size: 1, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: m.x + 4.6, y: m.y, z: m.z + 1, facing: 0 }, look: 'band' });
+    // A coil of straw rope by the mat: only a picture. The tie is at the teacher (the finish of the
+    // task), so the coil is no target of a tap (#47).
+    addEntity(world, { id: 'band:scholar', keep: true, position: { x: m.x + 4.6, y: m.y, z: m.z + 1, facing: 0 }, look: 'band' });
   } else if (def.task === 'forge') {
     // The quench is the skill of this trial (#34): the fire burns when the child comes. The ore is
     // in the forge and the water is in the trough. The smith quenches one piece himself first (the
@@ -276,6 +280,14 @@ export function setupTrial(world, def, level, env, opts = {}) {
     addEntity(world, { id: 'stem:woodcutter', keep: true, item: { kind: 'stem', size: task.length, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: s.x, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `stem-${task.length}` });
     const w = P(def.places.pile);
     addEntity(world, { id: 'zone:woodpile', keep: true, zone: { id: 'woodpile', task: owner, rule: 'woodpile', accepts: 'sticks', items: [], x: w.x, y: w.y, z: w.z, rect: rect(w, 3, 2) }, position: { x: w.x + 1, y: w.y, z: w.z + 2, facing: 0 } });
+  }
+  // The point of each place of the task is the middle of its rect (the button and the light aim
+  // there), and the hero stands at the old point (stand) to work there (#47).
+  for (const z of query(world, 'zone')) {
+    const r = z.zone.rect;
+    if (z.zone.task !== owner || !r || z.zone.stand) continue;
+    z.zone.stand = { x: z.position.x, z: z.position.z };
+    z.position = { ...z.position, x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2 };
   }
   return tz;
 }

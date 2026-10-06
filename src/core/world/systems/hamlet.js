@@ -171,20 +171,28 @@ export function setupTraps(world, round) {
     },
     position: { ...round.pile, facing: 0 },
   });
-  const pile = addEntity(world, { id: 'zone:traps-pile', keep: true, zone: { id: 'traps-pile', task: 'trial-traps', rule: 'heap', accepts: 'lo', items: [], x: round.pile.x, y: round.pile.y, z: round.pile.z, cols: 4, step: 1.1 }, position: { ...round.pile, facing: 0 } });
+  // The pile lies on the bank out of the rect of the stream (the spots, 4 half blocks to the bank
+  // side, 2 to the other), so that a tap on the pile chooses the pile (#47).
+  const xs = round.spots.map((q) => q.x);
+  const zs = round.spots.map((q) => q.z);
+  const [sx0, sx1] = [Math.min(...xs) - 4, Math.max(...xs) + 2];
+  const wide = 3 * 1.1 + 1;
+  let px = round.pile.x;
+  if (px < (sx0 + sx1) / 2 && px + wide + 0.5 > sx0) px = sx0 - 0.5 - wide;
+  else if (px >= (sx0 + sx1) / 2 && px - 0.5 < sx1) px = sx1 + 0.5;
+  const at = { ...round.pile, x: px };
+  const pile = addEntity(world, { id: 'zone:traps-pile', keep: true, zone: { id: 'traps-pile', task: 'trial-traps', rule: 'heap', accepts: 'lo', items: [], x: at.x, y: at.y, z: at.z, cols: 4, step: 1.1 }, position: { ...at, facing: 0 } });
   for (const size of t.pile) {
     const id = `lo:${tz.zone.made++}`;
-    addEntity(world, { id, keep: true, item: { kind: 'lo', size, task: 'trial-traps', zone: 'traps-pile', home: 'traps-pile', held: null, set: false }, position: { ...round.pile, facing: 0 }, look: `lo-${size}` });
+    addEntity(world, { id, keep: true, item: { kind: 'lo', size, task: 'trial-traps', zone: 'traps-pile', home: 'traps-pile', held: null, set: false }, position: { ...at, facing: 0 }, look: `lo-${size}` });
     pile.zone.items.push(id);
   }
   packHeap(world, pile.zone);
-  const xs = round.spots.map((q) => q.x);
-  const zs = round.spots.map((q) => q.z);
   const mid = { x: (Math.min(...xs) + Math.max(...xs)) / 2, z: (Math.min(...zs) + Math.max(...zs)) / 2 };
   addEntity(world, {
     id: 'zone:traps-stream',
     keep: true,
-    zone: { id: 'traps-stream', task: 'trial-traps', rule: 'spots', accepts: 'lo', items: [], x: mid.x, y: round.y, z: mid.z, slots: round.spots.map((q) => ({ x: q.x, z: q.z })), rect: { x0: Math.min(...xs) - 4, x1: Math.max(...xs) + 2, z0: Math.min(...zs) - 1.2, z1: Math.max(...zs) + 1.2 } },
+    zone: { id: 'traps-stream', task: 'trial-traps', rule: 'spots', accepts: 'lo', items: [], x: mid.x, y: round.y, z: mid.z, slots: round.spots.map((q) => ({ x: q.x, z: q.z })), rect: { x0: sx0, x1: sx1, z0: Math.min(...zs) - 1.2, z1: Math.max(...zs) + 1.2 } },
     position: { x: mid.x, y: round.y, z: mid.z, facing: 0 },
   });
   round.spots.forEach((q, k) => part(world, 'traps', `hamlet:spot:${k}`, { x: q.x, y: round.y, z: q.z }, 'trap-spot'));
