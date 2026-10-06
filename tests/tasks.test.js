@@ -151,6 +151,30 @@ test('the fisher: the button puts a stake on the line at the ghost, and with emp
   ]);
 });
 
+test('the fisher: the tide waits for the first stake of the child, and a tide with no change of the row is no try (#48)', async () => {
+  let session = null;
+  const events = [];
+  const failures = await runHeadless({ name: 'task-fisher-tide', profile, clock: 540, at: ['phu-dong', 27, 64.5], steps: [
+    ...start('fisher'),
+    // No stake of the child yet: the water stays low, longer than a tide.
+    { wait: 90 },
+    { expect: [{ event: 'tide', not: true }, { event: 'skill', not: true }] },
+    { press: { thing: 'stake:fisher:2' } },
+    { until: { event: 'pick', timeout: 15 } },
+    { tap: { line: 8 } },
+    { wait: 2 },
+    { press: true },
+    { until: { event: 'put', timeout: 15 } },
+    // The first tide after the stake is a try; the next one with the same row is not.
+    { until: { event: 'tide', timeout: 100 } },
+    { expect: [{ event: 'skill', with: { solved: false } }] },
+    { until: { event: 'call', with: { key: 'fisher.tide.more' }, timeout: 120 } },
+  ] }, { onSession: (s) => { session = s; s.listen((ev) => events.push(ev)); } });
+  assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
+  assert.equal(events.filter((ev) => ev.type === 'skill').length, 1, 'one try, for the row that changed');
+  void session;
+});
+
 test('a tap on a rod, the mat, the basket, the stem, or the iron only walks the hero there: it changes nothing in the task', async () => {
   const quiet = { event: 'pick', not: true };
   await play('task-taps-teacher', [54, 27], [

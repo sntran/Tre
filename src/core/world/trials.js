@@ -47,6 +47,8 @@ export const quenchResult = (value, glow) => value >= glow.hot;
 // of the widest space (where the fish swim out).
 export function stakeResult(offsets, length, space) {
   const at = [...new Set([0, ...offsets])].filter((o) => o >= 0 && o <= length).sort((a, b) => a - b);
+  // A stake next to the float (one half block before it) reaches it (#48).
+  if (at[at.length - 1] >= length - 1) at[at.length - 1] = length;
   let widest = { from: at[at.length - 1], size: length - at[at.length - 1] };
   const gaps = [];
   for (let i = 1; i < at.length; i++) {
@@ -55,6 +57,9 @@ export function stakeResult(offsets, length, space) {
     if (size > widest.size) widest = { from: at[i - 1], size };
   }
   const reach = at[at.length - 1] === length;
+  // A row that does not reach the float: the fish goes out at the end of the row, where the child
+  // sees the open water, not at a wide space before it (#48).
+  if (!reach) widest = { from: at[at.length - 1], size: length - at[at.length - 1] };
   const solved = reach && gaps.every((g) => g <= space);
   const fewest = Math.ceil(length / space) + 1;
   return { solved, efficient: solved && at.length === fewest, count: at.length, fewest, gaps, widest };

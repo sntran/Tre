@@ -477,3 +477,4 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 ## What the work shows (#48)
 
 - **The woodcutter at a cut that is not equal:** `woodcutter.short` ("Khúc này ngắn quá nên gãy rồi. Các khúc phải dài bằng nhau.").
+- **The fisher at a tide with no new stake:** `fisher.tide.more` ("Cắm thêm cọc trước đã, rồi nước lên sẽ thử hàng cọc.").

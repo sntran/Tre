@@ -59,6 +59,12 @@ test('the fisher: no space wider than the space of the row, and a stake at the e
   assert.ok(!short.solved, 'no stake at the end mark');
   assert.deepEqual(short.widest, { from: 12, size: 4 });
   assert.equal(stakeResult([3, 6, 9, 12, 15], 15, 3).solved, true);
+  // A stake next to the float (half a block before it) reaches it (#48).
+  assert.equal(stakeResult([4, 8, 12, 15], 16, 4).solved, true);
+  assert.equal(stakeResult([4, 8, 12, 14], 16, 4).solved, false);
+  // A row that does not reach the float: the fish goes out at the end of the row, also when a
+  // wider space is before it (#48: not at the space of the fisher).
+  assert.deepEqual(stakeResult([10, 12], 16, 4).widest, { from: 12, size: 4 });
 });
 
 test('the healer: the same number of each kind, no more and no less', () => {

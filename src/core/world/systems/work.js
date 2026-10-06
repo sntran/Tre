@@ -36,6 +36,8 @@ const NEW_STEM = 1.2; // seconds: a new culm comes after staffs that are not equ
 // the short one breaks after CUT_BREAK, and then a new stem comes. PIECE_ROW: the space between
 // the rows of the pieces (half blocks).
 const CUT_SHOW = 2.6;
+// The two stakes that the fisher put himself (the space of the row): not a try of the child.
+const FISHER_STAKES = new Set(['stake:fisher:a', 'stake:fisher:b']);
 // The band of the teacher that snaps (#48): the rods lie this far from the middle of the mat (half
 // blocks) for SPRING_TIME seconds. BUNDLE_STEP: the space of the bundles in their row.
 const SPRING = 3.2;
@@ -877,13 +879,37 @@ function tickTide(world, tz, dt, env) {
   const water = getEntity(world, 'tide:fisher');
   if (!tide || !line) return;
   const task = taskFor(env, tz.zone);
+  const row = query(world, 'item').filter((s) => s.item.zone === 'line');
+  // The clock of the tide starts at the first stake of the child (#48): the wait is the time of the
+  // child, not of the talk or of the first step that the fisher shows.
+  if (!tide.started) {
+    // A stake that the hero puts on the line in this step (the place system runs before this one);
+    // the stake of the first step that the fisher shows does not count.
+    if (!world.events.some((ev) => ev.type === 'put' && ev.id === 'hero' && ev.zone === 'line')) return;
+    tide.started = true;
+    tide.t = 0;
+  }
   tide.t += dt;
   if (tide.phase === 'low') {
     // The water rises in the last part of the wait, so that the child sees it come.
     const k = Math.max(0, (tide.t - (tide.every - 10)) / 10);
     if (water) water.look = `tide-${Math.min(2, Math.floor(k * 3))}`;
     if (tide.t < tide.every) return;
-    const offsets = query(world, 'item').filter((s) => s.item.zone === 'line').map((s) => s.item.slot);
+    const offsets = row.map((s) => s.item.slot);
+    // A row that did not change since the last tide, or with no stake of the child, is no try
+    // (#48): the water comes and goes, and the fisher says to put more stakes first.
+    const key = [...offsets].sort((a, b) => a - b).join(',');
+    if (key === tide.last || !row.some((s) => !FISHER_STAKES.has(s.id))) {
+      tide.phase = 'in';
+      tide.t = 0;
+      tide.result = null;
+      if (water) water.look = 'tide-3';
+      say(world, 'tide', tz.id, { sound: 'splash' });
+      const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher');
+      if (fisher) say(world, 'call', fisher.id, { key: 'fisher.tide.more', params: {} });
+      return;
+    }
+    tide.last = key;
     const result = stakeResult(offsets, line.zone.length, line.zone.space);
     commit(world, tz, task, { solved: result.solved, efficient: result.efficient, parts: result.gaps, target: line.zone.length });
     tide.phase = 'in';
@@ -896,13 +922,14 @@ function tickTide(world, tz, dt, env) {
     tide.t = 0;
     if (water) water.look = 'tide-0';
     const r = tide.result;
+    if (!r) return;
     const fish = r.solved ? 'fish-in' : 'fish-out';
     const at = r.solved ? line.zone.length / 2 : r.widest.from + r.widest.size / 2;
     addEntity(world, { id: 'fish:fisher', keep: true, position: { x: line.zone.x + at, y: line.zone.y, z: line.zone.z + (r.solved ? 1 : -0.5), facing: 0 }, look: fish });
     say(world, r.solved ? 'catch' : 'escape', tz.id, { at: { x: line.zone.x + at, z: line.zone.z }, sound: 'splash' });
   } else if (tide.phase === 'out' && tide.t >= TIDE_OUT) {
     const r = tide.result;
-    if (r.solved) {
+    if (r?.solved) {
       finish(world, tz);
       return;
     }
