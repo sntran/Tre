@@ -27,7 +27,9 @@ export function createProfile({ id, name, gender = 'boy', skin = 1, face = 1, ha
     // Nghé, the buffalo calf, is the friend of the hero from the first minute.
     flags: { 'friend.nghe': true },
     quests: {},
-    inventory: {},
+    // A little rice in the basket, so that a new household can barter on the first market day
+    // (#45): the market at its highest level takes ten.
+    inventory: { rice: 10 },
     friends: ['nghe'],
     friendNames: {}, // names that the player chose for friends, by friend id
     party: ['nghe'],

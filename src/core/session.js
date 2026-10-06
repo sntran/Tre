@@ -303,7 +303,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // in one line that each person here has work, and points at the stations one after the other
   // (a mark on the ground at each one). The script plays in the world (src/core/world/systems/
   // mentor.js); a tap or a walk of the child does not stop it.
-  const GREET = { say: 0.6, first: 2.4, each: 1.8 };
+  const GREET = { say: 0.6, first: 3.4, each: 3.2 };
   function greetPlace() {
     const greeter = getEntity(state, `npc:${practice.greeter}`);
     if (!greeter) return;
@@ -312,10 +312,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const n = names();
     const steps = [{ at: GREET.say, say: { id: greeter.id, key: 'hamlet.greet', params: { planter: n.planter, duckGirl: n['duck-girl'], fisherUncle: n['fisher-uncle'], drummer: n.drummer } } }];
     let t = GREET.first;
+    // The work of each station (data/world/hamlet.json stations: the work -> the person).
+    const workOf = Object.fromEntries(Object.entries(data.hamlet?.stations ?? {}).map(([act, who]) => [who, act]));
     for (const id of practice.stations ?? []) {
       const p = getEntity(state, `npc:${id}`)?.position;
       if (!p) continue;
-      steps.push({ at: t, point: { id: greeter.id, x: p.x, z: p.z, time: 1.5 } }, { at: t, mark: { x: p.x, z: p.z, ttl: 2.5 } });
+      // The head points, a mark lies at the station, the star of the station pulses (the station
+      // is often off the screen of a phone), and the head says the name and the work (#45).
+      steps.push({ at: t, point: { id: greeter.id, x: p.x, z: p.z, time: 1.5 } }, { at: t, mark: { x: p.x, z: p.z, ttl: 2.5 } }, { at: t, star: `npc:${id}` });
+      if (workOf[id]) steps.push({ at: t, say: { id: greeter.id, key: `hamlet.point.${workOf[id]}`, params: { who: nameOf(id) } } });
       t += GREET.each;
     }
     steps.push({ at: t + 0.5, end: true });
@@ -822,6 +827,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const ev of kept) {
       const def = eventDef(ev.id);
       if (!def || visit.things[`event.${ev.id}`] === day || getEntity(state, `event:${ev.id}`)) continue;
+      // No market in a practice: it would send the child away from the work (#45).
+      if (practice && def.barter && ev.id !== force) continue;
       visit.things[`event.${ev.id}.spot`] = `${day}:${ev.at[0]},${ev.at[1]}`;
       const rng = createRng(hashSeed(`${state.seed}:event-place:${ev.id}:${day}`));
       // The person stands on open ground near the spot (not in a narrow lane).
@@ -2084,7 +2091,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     });
   }
   function worldEvent(ev) {
-    if (ev.type === 'greet' && !busy && !quietForWork(ev.id)) {
+    // In a practice the people say no small talk of the day and no market line (#45).
+    if (ev.type === 'greet' && !busy && !practice && !quietForWork(ev.id)) {
       const n = [...String(ev.id)].reduce((a, c) => a + c.charCodeAt(0), 0) + Math.floor(state.clock.minutes / 60);
       emit({ type: 'open', screen: 'callout', id: ev.id, textKey: clueLine(ev.id) ?? marketLine() ?? GREETS[n % GREETS.length], params: { name: profile.hero.name } });
     }

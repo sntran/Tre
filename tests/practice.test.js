@@ -134,7 +134,7 @@ test('after a set and "go back": the hero is back; P(L), the log with the practi
   const [bx, by] = data.world.at(...raw.at);
   const place = heroPlace(profile.world);
   assert.ok(Math.hypot(place.x - bx, place.y - by) < 2, `the hero of the save is at ${place.x}, ${place.y}`);
-  assert.equal(profile.inventory.rice, 3, 'the reward of the set: rice for the basket');
+  assert.equal(profile.inventory.rice, 10 + 3, 'the rice of a new household and the reward of the set');
   assert.deepEqual(profile.practice['bo-que'], { level: 2, sets: 1 });
   assert.equal(profile.flags['trial.scholar.done'], undefined, 'the trial of the story stays as it is');
   assert.ok(profile.learning.skills['math.count.120'].p > 0.2, 'P(L) of the skill of the task');
@@ -219,4 +219,22 @@ test('the light holds while a set of a practice is open: the clock does not pass
     session.events();
   }
   assert.equal(session.state.clock.minutes % 1440, start, 'ten minutes of play: the light holds');
+});
+
+test('a new household has a little rice for the market, and a practice has no market and no small talk (#45)', async () => {
+  const { createProfile } = await import('../src/core/profile.js');
+  assert.ok(createProfile({ name: 'An' }).inventory.rice >= 10, 'rice for a market at its highest level');
+  let session = null;
+  const said = [];
+  const story = { name: 'quiet', practice: 'xom-ruong', profile: { name: 'An', grade: 2, lang: 'vi', seed: 7, flags: {} }, steps: [] };
+  await runHeadless(story, { onSession: (s) => { session = s; s.listen((ev) => ev.type === 'open' && ev.screen === 'callout' && said.push(ev.textKey)); } });
+  for (let k = 0; k < 30 * 90; k++) {
+    session.step();
+    session.events();
+  }
+  assert.ok(!said.some((k) => k.startsWith('world.market') || k.startsWith('world.greet')), JSON.stringify(said));
+  assert.ok(!session.state.entities.some((e) => e.dayEvent?.id === 'market'), 'no market in the practice');
+  // The greeting: one line for each station, after the greeting itself.
+  const points = said.filter((k) => k.startsWith('hamlet.point.'));
+  assert.deepEqual(points, ['hamlet.point.planting', 'hamlet.point.ducks', 'hamlet.point.traps', 'hamlet.point.drum']);
 });

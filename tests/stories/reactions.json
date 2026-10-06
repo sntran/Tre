@@ -18,6 +18,6 @@
     { "read": true },
     { "tap": { "cell": [13.2, 23.9] } },
     { "until": { "event": "break", "timeout": 20 } },
-    { "expect": [{ "event": "break", "with": { "spill": true } }, { "item": "rice", "count": 0 }, { "entity": "life:11:0", "look": "pot-broken" }] }
+    { "expect": [{ "event": "break", "with": { "spill": true } }, { "item": "rice", "count": 10 }, { "entity": "life:11:0", "look": "pot-broken" }] }
   ]
 }

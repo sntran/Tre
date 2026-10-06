@@ -61,6 +61,8 @@ function play(world, ent, dt, env) {
       if (who?.position) who.gesture = { act: 'point', x: st.point.x, z: st.point.z, t: st.point.time ?? 1.2 };
     }
     if (st.say) world.events.push({ type: 'call', id: st.say.id, key: st.say.key, params: st.say.params ?? {} });
+    // The star of a person pulses (the view shows it, also at the edge of the screen).
+    if (st.star) world.events.push({ type: 'starPulse', id: st.star });
     if (st.mark) {
       const y = env.groundY(st.mark.x / 2, st.mark.z / 2);
       const id = `mark:mentor:${made++}`;

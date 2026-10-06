@@ -470,7 +470,7 @@ export async function mountVillage(ctx, params = {}) {
     const stationIds = session.stations();
     if (stationIds.length) {
       return persons().filter((p) => p.kind === 'npc' && stationIds.includes(p.ref)).map((p) => ({ p, top: figureTop(p.entity) }))
-        .filter((m) => m.top !== null).map(({ p, top }) => ({ x: p.x, y: p.y, h: top }));
+        .filter((m) => m.top !== null).map(({ p, top }) => ({ x: p.x, y: p.y, h: top, id: p.entity }));
     }
     const goal = currentGoal(data.quests.quests, conditionState(profile));
     if (!goal) return [];
@@ -1049,6 +1049,8 @@ export async function mountVillage(ctx, params = {}) {
       case 'tapfx': showTap(ev.x, ev.y, ev.h); return;
       case 'pulse': figures.pulse(ev.id); return;
       case 'cue': figures.glow(ev.ids, ev.spots, ev.rings); return;
+      // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
+      case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
       case 'workView': turnToWork(ev.points, ev.sight); return;
       case 'gift':
         for (const [item, n] of Object.entries(ev.give)) {
@@ -1153,7 +1155,12 @@ export async function mountVillage(ctx, params = {}) {
   };
   const starAt = pooled(starPool, () => tappable(img('ui/star', 'world-star')));
   const arrowAt = pooled(arrowPool, () => tappable(h('div', { class: 'edge-arrow' }, [img('ui/star', 'edge-star')])));
+  // The pulse of the star of a station (seconds left), when the head of the hamlet points at it.
+  const STAR_PULSE = 1.6;
+  let starPulse = null;
+  const pulseOf = (m) => (starPulse && m.id === starPulse.id ? 1 + 0.6 * Math.sin((Math.PI * starPulse.t) / STAR_PULSE) : 1);
   function drawMarks() {
+    if (starPulse && (starPulse.t -= 1 / 60) <= 0) starPulse = null;
     const hudRect = hud.getBoundingClientRect();
     const canvasRect = canvas.getBoundingClientRect();
     const inset = { top: Math.max(0, hudRect.bottom - canvasRect.top) + 8, right: 12, bottom: 12, left: 12 };
@@ -1168,7 +1175,7 @@ export async function mountVillage(ctx, params = {}) {
       if (!edge) {
         const el = starAt(stars++);
         el.mark = m;
-        el.style.transform = `translate(${p.x - 15}px, ${p.y - 30 + bob}px)`;
+        el.style.transform = `translate(${p.x - 15}px, ${p.y - 30 + bob}px) scale(${pulseOf(m)})`;
         continue;
       }
       // Targets in about the same direction share one arrow.
@@ -1177,7 +1184,7 @@ export async function mountVillage(ctx, params = {}) {
       const el = arrowAt(arrows++);
       el.mark = m;
       const pulse = Math.sin(time * 5) * 3;
-      el.style.transform = `translate(${edge.x}px, ${edge.y}px) rotate(${edge.angle}rad) translate(${-22 + pulse}px, 0)`;
+      el.style.transform = `translate(${edge.x}px, ${edge.y}px) rotate(${edge.angle}rad) translate(${-22 + pulse}px, 0) scale(${pulseOf(m)})`;
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
     }
     for (let i = stars; i < starPool.length; i++) starPool[i].hidden = true;
