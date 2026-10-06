@@ -578,6 +578,9 @@ export function thingLook(key) {
 export const SCOOP_LENGTH = 0.2;
 // The size of the chalk band around the stem (half blocks): the stem is 1 x 1.
 export const CHALK_BAND = 1.8;
+// The fish of the trap of the fisher jump at this height over the bed of the line (the ducks swim
+// at about 1.1).
+export const FISH_JUMP = 1.3;
 const RINGS = { 2: 1.6, 5: 2.4, 10: 3.4 }; // the length of a fish trap (half blocks) for its rings
 const STAGES = { planted: ['greenPale', 0.8], green: ['green', 1.2], tall: ['greenDeep', 1.7], gold: ['yellow', 1.9] };
 // The water of a paddy stands over the ground (WATER.paddy in src/world/terrain.js): a seedling
@@ -713,11 +716,17 @@ export function workThing(look) {
       const h = 0.08 + n * 0.5;
       return still([P('water', [20, h, 3], n ? 'indigoPale' : 'indigo', [10, h / 2, 0]), P('lineN', [20, h + 0.02, 0.15], 'indigo', [10, h / 2, -1.5]), P('lineS', [20, h + 0.02, 0.15], 'indigo', [10, h / 2, 1.5])], h);
     }
-    // Fish in the trap, or fish that swim out through a space.
+    // Fish in the trap, or fish that swim out through a space. They jump at the top of the water
+    // (FISH_JUMP over the bed of the line, where the ducks swim), light on the dark water, so that
+    // the child sees the catch and the escape (#48).
     case 'fish-trap': {
       const parts = [];
-      for (let i = 0; i < 3; i++) parts.push(P(`fish${i}`, [0.4, 0.3, 1], 'ash', [(i - 1) * 1.2, 0.1, look.in ? 0.4 * i : -1 - i]), P(`tail${i}`, [0.4, 0.3, 0.3], 'ashLight', [(i - 1) * 1.2, 0.1, (look.in ? 0.4 * i : -1 - i) - 0.6]));
-      return still(parts, 0.3);
+      for (let i = 0; i < 3; i++) {
+        const y = FISH_JUMP + (i % 2) * 0.35;
+        const z = look.in ? 0.4 * i : -1 - i;
+        parts.push(P(`fish${i}`, [0.45, 0.4, 1.1], 'paper', [(i - 1) * 1.2, y, z]), P(`tail${i}`, [0.5, 0.35, 0.35], 'ashLight', [(i - 1) * 1.2, y, z - 0.7]));
+      }
+      return still(parts, FISH_JUMP + 0.6);
     }
     // A bunch of healing leaves. Each kind has its own shape, so that a child tells them apart also
     // in a dim light (#48): mugwort (ngải) tall and thin, grey-green; perilla (tía tô) wide and

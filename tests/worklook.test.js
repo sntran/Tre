@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runHeadless } from './story-run.js';
-import { figureOf, thingLook, CHALK_BAND } from '../src/world/figures.js';
+import { figureOf, thingLook, CHALK_BAND, FISH_JUMP } from '../src/world/figures.js';
 import { sessionCamera } from '../src/world/hit.js';
 import { getEntity } from '../src/core/world/state.js';
 
@@ -89,6 +89,17 @@ test('the three herbs of the healer have shapes that differ, not only colors: ta
   const [ngai, tiato, rauma] = ['ngai', 'tiato', 'rauma'].map(box);
   assert.ok(ngai.top > tiato.top + 0.4 && tiato.top > rauma.top + 0.3, 'the heights differ');
   assert.ok(tiato.wide > ngai.wide + 0.4 && tiato.wide > rauma.wide + 0.4, 'perilla is the wide one');
+});
+
+test('the fish of the trap of the fisher jump over the water, where the ducks swim: the child sees the catch and the escape (#48)', () => {
+  const life = JSON.parse(readFileSync('data/world/life.json', 'utf8'));
+  const swim = Math.max(...Object.values(life.kinds).map((k) => k.steer?.float ?? 0));
+  for (const name of ['fish-in', 'fish-out']) {
+    const f = figureOf(JSON.parse(readFileSync('data/figures.json', 'utf8')).figures[name], 'coarse');
+    const low = Math.min(...f.parts.map((p) => p.at[1] - p.size[1] / 2));
+    assert.ok(low >= swim - 0.1, `${name}: the fish are under the water (${low} < ${swim})`);
+  }
+  assert.ok(FISH_JUMP > swim);
 });
 
 test('the goal bar says the work of each step: two steps with the same text have the same work, or both are a walk to a place (#48)', () => {
