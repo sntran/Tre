@@ -577,7 +577,7 @@ export function thingLook(key) {
 // trough for each fifth scoop, and a bigger notch for each tenth.
 export const SCOOP_LENGTH = 0.2;
 // The size of the chalk band around the stem (half blocks): the stem is 1 x 1.
-export const CHALK_BAND = 1.4;
+export const CHALK_BAND = 1.8;
 const RINGS = { 2: 1.6, 5: 2.4, 10: 3.4 }; // the length of a fish trap (half blocks) for its rings
 const STAGES = { planted: ['greenPale', 0.8], green: ['green', 1.2], tall: ['greenDeep', 1.7], gold: ['yellow', 1.9] };
 // The water of a paddy stands over the ground (WATER.paddy in src/world/terrain.js): a seedling
@@ -805,9 +805,9 @@ export function workThing(look) {
     // The mark of a mentor: a red ring on the ground and a small red flag on a stick, where the
     // person points (what matters, the heap, the place).
     case 'mentor-mark': return still([P('ring', [1.4, 0.06, 1.4], 'vermilion', [0, 0.03, 0]), P('hole', [0.9, 0.07, 0.9], 'paper', [0, 0.035, 0]), P('stick', [0.15, 1.6, 0.15], 'wood', [0, 0.8, 0]), P('flag', [0.6, 0.4, 0.08], 'vermilion', [0.3, 1.4, 0])], 1.6);
-    // A chalk mark on the stem: a red band around the stem, larger than the stem, with a white
-    // line on the top, so that it shows on the top and on the sides (#48).
-    case 'chalk-band': return still([P('band', [0.34, CHALK_BAND, CHALK_BAND], 'vermilion', [0, 0.5, 0]), P('top', [0.34, 0.12, CHALK_BAND + 0.06], 'paper', [0, 0.5 + CHALK_BAND / 2, 0])], 0.5 + CHALK_BAND / 2);
+    // A chalk mark on the stem: a red band around the stem, much larger than the stem, so that it
+    // shows on the top and on the sides (#48).
+    case 'chalk-band': return still([P('band', [0.4, CHALK_BAND, CHALK_BAND], 'vermilion', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
     // A chalk mark across a culm (the height of a slash).
     case 'chalk': return still([P('mark', [1.3, 0.08, 0.25], 'vermilion', [0, 0.45, 0]), P('dotA', [0.25, 0.4, 0.25], 'vermilion', [-0.65, 0.25, 0]), P('dotB', [0.25, 0.4, 0.25], 'vermilion', [0.65, 0.25, 0])], 0.5);
     // Equal bamboo sticks (or staffs) tied into a bundle.

@@ -1,8 +1,9 @@
 // A play on a phone, as a child plays (#46 and the issues of the play test): the real game in a
 // headless browser at 390 × 844 with touch, and only taps on the screen and the buttons of the
 // screen. No story command, no keyboard, and no teleport. The tool saves the frames of the play,
-// and it fails when the page has an error, when the frame loop stops, or when a tap on free ground
-// that the hero can walk to does not move the hero.
+// and it fails when the page has an error, when the frame loop stops, when a tap on free ground
+// that the hero can walk to does not move the hero, or when a tap on a place of a task does not
+// choose it.
 // Run it from the root of the repository with a local server on port 8123
 // (python3 -m http.server 8123), and Playwright (npm install playwright, or a global one):
 //   node tools/phone-play.mjs <plan.json> [--out <folder>] [--base <URL>] [--three <three.module.min.js>]
@@ -15,6 +16,7 @@
 //   { "tap": { "person": "teacher" } }, { "tap": { "thing": "rod:1" } }, { "tap": { "cell": [x, y] } },
 //   { "tap": { "place": "mat" } } a tap on a person, a thing, a cell of the map, or the middle of a
 //                                place of a task, where the screen shows it
+//   { "tap": { "stem": 4 } }     a tap on the stem of the woodcutter, 4 half blocks from its start
 //   { "tap": { "star": true } }  a tap on the goal star (or the arrow at the edge of the screen)
 //   { "walk": { "person": "woodcutter" }, "taps": 12 } taps toward a target until the hero is near it
 //   { "press": true }            a quick tap on the big button (the press and the release at once)
@@ -98,6 +100,11 @@ async function pointOf(spec) {
     if (s.person) p = v.screenOfPerson(s.person);
     else if (s.thing) p = v.screenOfThing(s.thing);
     else if (s.cell) p = v.screenOf(s.cell[0], s.cell[1]);
+    else if (s.stem !== undefined) {
+      // A point of the stem of the woodcutter, this many half blocks from its start.
+      const st = v.state().entities.find((e) => e.id === 'stem:woodcutter');
+      p = st ? v.pointOf((st.position.x + s.stem) / 2, st.position.z / 2) : null;
+    }
     else if (s.place) {
       // The middle of the rect of a place of a task (the mat, the basket), on the ground.
       const z = v.state().entities.find((e) => e.id === `zone:${s.place}`);
@@ -125,6 +132,14 @@ const freeGround = (p) => page.evaluate(([x, y]) => {
   if (!s.tileMap.walkable(Math.floor(g.x), Math.floor(g.y)) || Math.hypot(g.x - c.x, g.y - c.y) < 2) return null;
   return { x: c.x, y: c.y };
 }, p);
+// Does the session choose this target in the next second?
+async function chose(id) {
+  for (let k = 0; k < 4; k++) {
+    if (await page.evaluate((x) => window.tre.activeVillage?.session.chosen() === x, id)) return true;
+    await sleep(0.25);
+  }
+  return false;
+}
 // Did the hero move from a cell in the next 3 seconds (a browser with no GPU is slow)?
 async function movedSince(from) {
   for (let k = 0; k < 12; k++) {
@@ -173,6 +188,9 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
       const free = await freeGround(p);
       await tapAt(p[0], p[1]);
       if (free && !(await movedSince(free))) problems.push(`step ${i}: a tap on free ground at ${p.map(Math.round)} did not move the hero`);
+      // A tap on a place of a task chooses that place (#48: a slow tap in the area of the stick did
+      // nothing).
+      if (s.tap.place && !(await chose(`zone:${s.tap.place}`))) problems.push(`step ${i}: a tap on the place ${s.tap.place} at ${p.map(Math.round)} did not choose it`);
     }
     await sleep(s.after ?? 0.3);
   } else if (s.walk !== undefined) {

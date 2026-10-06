@@ -650,8 +650,9 @@ export async function mountVillage(ctx, params = {}) {
       stick.active = false;
       stick.kx = 0;
       stick.ky = 0;
-      // A short tap with no push in the stick area is a tap on the world there.
-      if (e.type === 'pointerup' && !busy && stick.far < 12 && performance.now() - stick.since < HOLD_MS) onTap(p);
+      // A touch with no push in the stick area is a tap on the world there, short or long (a child
+      // often presses long; #48: a slow tap on the wood pile at the bottom left did nothing).
+      if (e.type === 'pointerup' && !busy && stick.far < 12) onTap(p);
       return;
     }
     if (hold && hold.id === e.pointerId) {

@@ -1,0 +1,26 @@
+{
+  "about": "#48: the fisher with taps only. The tide waits for the first stake of the child; a row that does not reach the float: the fish goes out at the end of the row; a tide with no new stake is no try.",
+  "start": "?practice=cam-coc",
+  "lang": "vi",
+  "allow": ["is under the bottom of the screen"],
+  "steps": [
+    {"create": "Nam"},
+    {"read": 15},
+    {"until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))", "timeout": 600},
+    {"read": 15},
+    {"wait": 2},
+    {"shot": "the-line"},
+    {"wait": 40},
+    {"check": "tre.activeVillage.state().entities.find((e) => e.id === 'tide:fisher').look === 'tide-0'"},
+    {"tap": {"thing": "zone:stakes"}, "after": 3},
+    {"press": true, "after": 1.5},
+    {"tap": {"place": "line"}, "after": 3},
+    {"press": true, "after": 2},
+    {"shot": "one-stake"},
+    {"until": "tre.activeVillage.state().entities.some((e) => e.id === 'fish:fisher')", "timeout": 200},
+    {"wait": 0.5},
+    {"shot": "the-fish-goes-out-at-the-end"},
+    {"until": "document.body.textContent.includes('Cắm thêm cọc')", "timeout": 200},
+    {"shot": "no-new-stake"}
+  ]
+}
