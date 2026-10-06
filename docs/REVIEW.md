@@ -458,3 +458,10 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 - **The names of the activities and of the moves of the people:** `parent.act.*` ("Cây cầu", "Việc nhỏ trong ngày", "Giữ làng") and `parent.move.*` (for example "thử trước rồi mới giúp").
 - **Please check:** "đã chắc" for a confident fact; "có lúc chán" and "có lúc nản" for restless and frustrated; "say mê" for keen; and that no line sounds like a grade or a judgment of the child.
 
+
+## The words of the whole country (#45)
+
+- **The words of numbers:** `num.101` to `num.109` now say "một trăm linh một" … "một trăm linh chín" (they said "lẻ"), as in the school books. A test checks that no `num.*` key has "lẻ" or "ngàn".
+- **"Bọn mình", not "tụi mình":** the children of the folk games say "bọn mình" in `loco.invite`, `loco.join`, `loco.other`, `loco.line`, `loco.out`, `loco.slow`, `rope.invite`, and `rope.slow`. The word is marked (`{w:bọn}`), so the children of the south say "tụi mình", with a gloss the first time ("tụi" = "bọn"; `data/world/speech.json`). The lines `loco.*` and `rope.*` are now lines of people in that file.
+- The other lines of people have no other word of the south. "ba" (three) and "rau má" (a plant) are words of the whole country.
+- **Please check:** "bọn mình" in the mouth of a small child of the north, and the gloss for the south.

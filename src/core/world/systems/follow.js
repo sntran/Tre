@@ -15,6 +15,7 @@ import { query, getEntity } from '../state.js';
 import { stepFollower, moveCircle, faceOf, MOVE } from '../move.js';
 
 const SHAKE = 1.6; // seconds of a shake of the head
+const NEAR_HERO = 0.6; // half blocks: Nghé on the hero (nearer than this) steps past or away
 
 export function follow(world, dt, rng, env) {
   const hot = query(world, 'hot', 'position');
@@ -23,6 +24,7 @@ export function follow(world, dt, rng, env) {
     if (!leader?.position) continue;
     const p = e.position;
     const m = e.motion;
+    const from = { x: p.x, z: p.z };
     e.follow.happy = Math.max(0, (e.follow.happy ?? 0) - dt);
     // Ridden: Nghé is under the hero.
     if (leader.riding === e.id) {
@@ -107,6 +109,25 @@ export function follow(world, dt, rng, env) {
           p.z = to.z;
           m.speed = Math.max(m.speed, 6);
         }
+      }
+    }
+    // Never on the hero: Nghé on the hero (after a step out of a place or aside) steps past or
+    // away, so that the walk of the hero is never stuck in Nghé.
+    const ox = p.x - leader.position.x;
+    const oz = p.z - leader.position.z;
+    const od = Math.hypot(ox, oz);
+    if (od < NEAR_HERO) {
+      // Past the hero in the way of the walk of Nghé, or away from the hero, or to the side of the
+      // hero, so that Nghé never stays in the hero.
+      const mx = p.x - from.x;
+      const mz = p.z - from.z;
+      const mv = Math.hypot(mx, mz);
+      const f = leader.position.facing ?? 0;
+      const [ux, uz] = mv > 1e-3 ? [mx / mv, mz / mv] : od > 1e-6 ? [ox / od, oz / od] : [Math.cos(f), -Math.sin(f)];
+      const to = { x: leader.position.x + ux * NEAR_HERO * 2, z: leader.position.z + uz * NEAR_HERO * 2 };
+      if (env.canEnter('land', p, to)) {
+        p.x = to.x;
+        p.z = to.z;
       }
     }
     p.y = env.groundY(p.x / 2, p.z / 2);

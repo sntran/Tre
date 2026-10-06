@@ -72,3 +72,20 @@ test('the gloss of a word of a region shows one time for each word, and the nort
   const i18n = createI18n(vi, 'vi');
   assert.equal(i18n.t('speech.gloss', { local: 'mô', word: 'đâu' }), '“mô” = “đâu”');
 });
+
+test('the words of numbers are the words of the whole country: "linh", not "lẻ"; "nghìn", not "ngàn" (#45)', () => {
+  for (const key of Object.keys(vi).filter((k) => k.startsWith('num.'))) {
+    assert.ok(!/(^|\s)lẻ(\s|$)/.test(vi[key]) && !vi[key].includes('ngàn'), `${key}: ${vi[key]}`);
+  }
+  assert.equal(vi['num.105'], 'một trăm linh năm');
+});
+
+test('the children of the north say "bọn mình", and the children of the south "tụi mình" (#45)', () => {
+  for (const key of ['loco.invite', 'loco.join', 'loco.other', 'loco.line', 'loco.out', 'loco.slow', 'rope.invite', 'rope.slow']) {
+    assert.ok(!/tụi/i.test(vi[key]), key);
+    assert.deepEqual(markedWords(vi[key]).map((w) => w.toLocaleLowerCase('vi')), ['bọn'], key);
+  }
+  assert.equal(localWord(speechTable(speech, 'south'), 'bọn'), 'tụi');
+  assert.equal(localWord(speechTable(speech, 'south'), 'Bọn'), 'Tụi');
+  assert.deepEqual(glossesOf(vi['loco.invite'], speechTable(speech, 'north')), []);
+});

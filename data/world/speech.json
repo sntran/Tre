@@ -3,7 +3,7 @@
   "ways": {
     "north": { "words": {} },
     "center": { "words": { "đâu": "mô", "gì": "chi", "sao": "răng", "thế": "rứa", "kia": "tê", "này": "ni", "mẹ": "mạ", "cô": "o" } },
-    "south": { "words": { "mẹ": "má", "bố": "ba", "hoa": "bông", "lợn": "heo", "quả": "trái", "tôi": "tui", "ngô": "bắp" } }
+    "south": { "words": { "mẹ": "má", "bố": "ba", "hoa": "bông", "lợn": "heo", "quả": "trái", "tôi": "tui", "ngô": "bắp", "bọn": "tụi" } }
   },
-  "people": ["dlg.", "mentor.", "event.", "plant.", "hamlet.", "ducks.", "traps.", "drum.", "example.", "smith.", "gift.", "world.greet.", "world.market."]
+  "people": ["dlg.", "mentor.", "event.", "plant.", "hamlet.", "ducks.", "traps.", "drum.", "example.", "smith.", "gift.", "world.greet.", "world.market.", "loco.", "rope."]
 }

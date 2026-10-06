@@ -31,14 +31,15 @@ export function linkOf(base, id) {
   return url.toString();
 }
 
-// The minute when the visit starts: now, in the hours of the visits (hours: [from, to) of the
-// day); at other hours the night goes by, to the first hour of the next morning.
+// The minute when the visit starts: the first hour of the visits (hours: [from, to) of the day),
+// so that the child works in daylight (#45). Before that hour the night goes by to it; later, the
+// evening and the night go by to the first hour of the next morning. The light holds while a set
+// is open (clock.hold).
 export function visitClock(minutes, hours = [7, 17]) {
   const inDay = ((minutes % 1440) + 1440) % 1440;
-  const [from, to] = hours;
-  if (inDay >= from * 60 && inDay < to * 60) return minutes;
+  const [from] = hours;
   const day = minutes - inDay;
-  return inDay < from * 60 ? day + from * 60 : day + 1440 + from * 60;
+  return inDay <= from * 60 ? day + from * 60 : day + 1440 + from * 60;
 }
 
 // The level of the next round (0, 1, or 2), from the commits of the last round: with no fail it

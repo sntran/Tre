@@ -2184,6 +2184,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The time of play in the village counts here, one step at a time (the app counts it in the
     // other scenes).
     if (profile.time) addPlayTime(profile.time, now(), STEP * 1000);
+    // The light holds for the work in a visit of a practice (#45): while a task (a set) or a folk
+    // game is open, the clock waits, and the person of the task does not go home while the child
+    // works. In the story the days go on (the rice grows, the feast comes at dusk).
+    state.clock.hold = Boolean(practice && (mentoring.activeKey() || folk.active()));
     worldStep(state, STEP, env);
     for (const fn of later.splice(0)) fn();
     const events = state.events;

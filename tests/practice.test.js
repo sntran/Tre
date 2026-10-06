@@ -70,9 +70,11 @@ test('each activity has its texts, its trial, its skills, its place, and its sto
   }
 });
 
-test('a visit at night starts at the next morning; a visit in the day starts now', () => {
+test('a visit always starts at the first hour of the morning, so that the child works in daylight', () => {
   const [from] = practice.hours;
-  assert.equal(visitClock(540, practice.hours), 540, 'nine in the morning');
+  assert.equal(visitClock(540, practice.hours), 1440 + from * 60, 'nine in the morning: the next morning, at the first hour');
+  assert.equal(visitClock(from * 60, practice.hours), from * 60, 'the first hour: now');
+  assert.equal(visitClock(16 * 60 + 59, practice.hours), 1440 + from * 60, 'a minute before five in the evening: the next morning');
   assert.equal(visitClock(1440 + 22 * 60, practice.hours), 2 * 1440 + from * 60, 'ten at night: the next morning');
   assert.equal(visitClock(1440 + 3 * 60, practice.hours), 1440 + from * 60, 'three at night: the morning of the same day');
   assert.equal(visitClock(18 * 60, practice.hours), 1440 + from * 60, 'the dusk, when the people go home');
@@ -202,4 +204,19 @@ test('a practice of the whole hamlet: no prologue; the head of the hamlet greets
   // The child waited: the person of the nearest station glows (the cue).
   const cue = events.filter((e) => e.type === 'cue' && e.ids.length).at(-1);
   assert.ok(cue && stations.some((id) => cue.ids.includes(`npc:${id}`)), JSON.stringify(cue));
+});
+
+test('the light holds while a set of a practice is open: the clock does not pass five in the evening', async () => {
+  let session = null;
+  const story = { name: 'light', practice: 'bo-que', clock: 16 * 60 + 59, profile: { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } }, steps: [] };
+  const failures = await runHeadless(story, { onSession: (s) => { session = s; } });
+  assert.deepEqual(failures, []);
+  const start = session.state.clock.minutes % 1440;
+  assert.equal(start, 7 * 60, 'the visit starts at seven');
+  for (let k = 0; k < 30 * 60 * 10; k++) {
+    if (session.screen === 'dialogue' || session.screen === 'say') session.command({ type: 'next' });
+    session.step();
+    session.events();
+  }
+  assert.equal(session.state.clock.minutes % 1440, start, 'ten minutes of play: the light holds');
 });
