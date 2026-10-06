@@ -119,3 +119,18 @@ test('in a task, the big button never offers a ride on Nghé', async () => {
     assert.notEqual(session.action()?.act, 'ride');
   }
 });
+
+test('the cue of a heap is one rim around the heap, and no ring over each thing of the heap', async () => {
+  const s = story('practice-bo-que');
+  s.steps = s.steps.slice(0, 5);
+  let session = null;
+  const cues = [];
+  await runHeadless(s, { onSession: (x) => { session = x; x.listen((ev) => ev.type === 'cue' && ev.ids.length && cues.push(ev)); } });
+  steps(session, 12);
+  const cue = cues.at(-1);
+  assert.ok(cue, 'the rods glow when the child waits');
+  const heap = getEntity(session.state, 'zone:rods');
+  assert.ok(cue.ids.some((id) => heap.zone.items.includes(id)), 'the rods of the heap breathe');
+  assert.deepEqual(cue.rings, [], 'no ring over a rod');
+  assert.equal(cue.spots.length, 1, 'one rim around the heap');
+});

@@ -170,16 +170,17 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   // The cue: the thing to touch next breathes a little bigger, with a thin warm ring on the ground
   // at its edge (the things in glowing, the places in glowSpots). The ring never covers the thing
   // or the hero (#44): it is only a rim, and a thing at the feet of the hero has none.
-  // The ring draws over a roof or a stair in front of it (no depth test), so that a thing behind a
-  // house still shows where it is.
+  // The ring has a depth test: the thing and the hero stand over it. A house in front of a thing
+  // fades when the hero is behind it (src/world/fade.js).
   const ring = new THREE.RingGeometry(0.86, 1, 28).rotateX(-Math.PI / 2);
-  const glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(C.vermilion), transparent: true, opacity: 0.5, depthWrite: false, depthTest: false });
+  const glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(C.vermilion), transparent: true, opacity: 0.5, depthWrite: false });
   const glows = new THREE.InstancedMesh(ring, glowMat, MAX_GLOWS);
   glows.frustumCulled = false;
   glows.count = 0;
   glows.renderOrder = 10;
   scene.add(glows);
   let glowing = new Set();
+  let ringed = new Set(); // the glowing things with a ring of their own (not the things of a heap)
   let glowSpots = [];
   let glowT = 0;
   // The target of the action button: a thicker ink outline and a soft, still light under it (or on
@@ -400,7 +401,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         L.root.scale.setScalar((f.pulse > 0 ? 1 + 0.18 * Math.sin(Math.PI * (1 - f.pulse / PULSE)) : 1) * (glow ? 1 + 0.08 * breath : 1));
         const r = Math.max(1, Math.min(1.8, L.height * 0.7)) * (0.9 + 0.2 * breath);
         const heroIn = heroFig?.at && Math.hypot(heroFig.at.x - f.at.x, heroFig.at.z - f.at.z) < r + 0.4;
-        if (glow && g < MAX_GLOWS && !heroIn) glows.setMatrixAt(g++, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.06, f.at.z));
+        if (glow && ringed.has(f.id) && g < MAX_GLOWS && !heroIn) glows.setMatrixAt(g++, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.06, f.at.z));
         for (const [name, r] of Object.entries(pose.rot)) L.nodes[name]?.rotation.set(r[0], r[1], r[2]);
         if (L.hangs.length) {
           // The parts that hang follow the air that the figure feels, with a lag, on top of the pose.
@@ -524,8 +525,9 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     },
     // The cue: these things glow (entity ids), and these places glow on the ground (spots in half
     // blocks: { x, y, z, r }). Empty lists stop the glow.
-    glow(ids = [], spots = []) {
+    glow(ids = [], spots = [], rings = ids) {
       glowing = new Set(ids);
+      ringed = new Set(rings);
       glowSpots = spots;
     },
     // The target of the action button (an entity id, or null), the place of a target with no

@@ -1733,18 +1733,36 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // empty. It stops when the child acts.
   let idleT = 0;
   let cue = [];
-  // ids: the things that glow; a place (a zone) glows as a soft disc on the ground (spots, in half
+  // ids: the things that glow; a place (a zone) glows as a thin rim on the ground (spots, in half
   // blocks: { x, z, r }).
   // A place on the ground (half blocks: { x, y, z, r }) for the glow of a zone.
   const spotOf = (z) => {
     const r = z.rect;
     return r ? { x: (r.x0 + r.x1) / 2, y: z.y, z: (r.z0 + r.z1) / 2, r: Math.max(r.x1 - r.x0, r.z1 - r.z0) / 2 } : { x: z.x, y: z.y, z: z.z, r: 2 };
   };
+  // rings: the things with a ring of their own. The things of a heap have none; one rim goes
+  // around the heap, so that the rings never cover the things (#44).
   function setCue(ids) {
     if (ids.join() === cue.join()) return;
     cue = ids;
-    const spots = ids.map((id) => getEntity(state, id)?.zone).filter(Boolean).map(spotOf);
-    emit({ type: 'cue', ids, spots });
+    const heapOf = (e) => zoneOf(e?.item?.zone);
+    const zones = new Set();
+    const rings = [];
+    for (const id of ids) {
+      const e = getEntity(state, id);
+      const heap = heapOf(e);
+      if (e?.zone) zones.add(e.id);
+      else if (heap?.zone?.rule === 'heap') zones.add(heap.id);
+      else rings.push(id);
+    }
+    // The rim goes around the things of a place too, also when they lie out of its rect.
+    const spots = [...zones].map((id) => {
+      const z = getEntity(state, id).zone;
+      const spot = spotOf(z);
+      const far = Math.max(0, ...z.items.map((t) => getEntity(state, t)?.position).filter(Boolean).map((p) => Math.hypot(p.x - spot.x, p.z - spot.z) + 1));
+      return { ...spot, r: Math.max(spot.r, far) };
+    });
+    emit({ type: 'cue', ids, spots, rings });
   }
   function acted() {
     idleT = 0;

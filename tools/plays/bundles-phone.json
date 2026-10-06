@@ -1,0 +1,26 @@
+{
+  "about": "#44: the practice of the bundles on a phone. The work is in view at the start; a rod taken at the heap goes on the mat at a press at once; a tap on the star walks; a restless child; no ride in the task.",
+  "start": "?practice=bo-que",
+  "lang": "vi",
+  "steps": [
+    { "create": "Nam" },
+    { "read": 15 },
+    { "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))", "timeout": 600 },
+    { "read": 15 },
+    { "wait": 2 },
+    { "shot": "work-in-view" },
+    { "tap": { "thing": "zone:rods" }, "after": 4 },
+    { "press": true, "after": 1.5 },
+    { "shot": "a-rod-in-the-hands" },
+    { "press": true, "after": 1.5 },
+    { "shot": "the-rod-on-the-mat" },
+    { "check": "!tre.activeVillage.state().entities.some((e) => e.look === 'rod' && e.item && !e.item.zone && !e.item.held)" },
+    { "restless": 25, "seed": 3 },
+    { "wait": 7 },
+    { "check": "!tre.activeVillage.state().entities.some((e) => e.look === 'rod' && e.item && !e.item.zone && !e.item.held)" },
+    { "shot": "after-restless-play" }
+  ],
+  "allow": [
+    "is under the bottom of the screen"
+  ]
+}

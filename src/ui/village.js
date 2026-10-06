@@ -1127,7 +1127,7 @@ export async function mountVillage(ctx, params = {}) {
       case 'sound': ctx.bus.emit('sound', ev.sound); return;
       case 'tapfx': showTap(ev.x, ev.y, ev.h); return;
       case 'pulse': figures.pulse(ev.id); return;
-      case 'cue': figures.glow(ev.ids, ev.spots); return;
+      case 'cue': figures.glow(ev.ids, ev.spots, ev.rings); return;
       case 'workView': turnToWork(ev.points, ev.sight); return;
       case 'gift':
         for (const [item, n] of Object.entries(ev.give)) {
