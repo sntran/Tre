@@ -170,6 +170,7 @@ const FILES = [
   'src/core/gen/tiles.js',
   'src/core/generators.js',
   'src/core/grades.js',
+  'src/core/hearing.js',
   'src/core/hit.js',
   'src/core/i18n.js',
   'src/core/items.js',

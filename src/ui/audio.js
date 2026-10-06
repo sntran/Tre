@@ -12,6 +12,8 @@ let musicOn = true;
 let musicTimer = null;
 let musicStep = 0;
 let musicMode = null;
+// The output of the sound that plays now: a gain for a soft sound of a far thing (#49), else null.
+let out = null;
 
 function audio() {
   if (!ac) {
@@ -46,7 +48,7 @@ function tone(freq, start, length, { type = 'sine', volume = 0.3, glide = null, 
   g.gain.setValueAtTime(0.0001, start);
   g.gain.exponentialRampToValueAtTime(volume, start + 0.01);
   g.gain.exponentialRampToValueAtTime(0.0001, start + length);
-  osc.connect(g).connect(dest ?? master);
+  osc.connect(g).connect(dest ?? out ?? master);
   osc.start(start);
   osc.stop(start + length + 0.05);
 }
@@ -68,7 +70,7 @@ function noise(start, length, { volume = 0.3, filter = 1200, q = 1, sweep = null
   const g = a.createGain();
   g.gain.setValueAtTime(volume, start);
   g.gain.exponentialRampToValueAtTime(0.0001, start + length);
-  src.connect(f).connect(g).connect(dest ?? master);
+  src.connect(f).connect(g).connect(dest ?? out ?? master);
   src.start(start);
 }
 
@@ -191,11 +193,23 @@ export function setAmbience(level) {
   }
 }
 
-export function play(name) {
+// sound: a name, or { name, volume } for a sound of the world at a distance (src/core/hearing.js).
+export function play(sound) {
   if (!soundOn) return;
   const a = audio();
   if (!a || a.state !== 'running') return;
-  SOUNDS[name]?.(a.currentTime + 0.01);
+  const name = typeof sound === 'string' ? sound : sound?.name;
+  const volume = typeof sound === 'string' ? 1 : (sound?.volume ?? 1);
+  if (volume < 1) {
+    out = a.createGain();
+    out.gain.value = volume;
+    out.connect(master);
+  }
+  try {
+    SOUNDS[name]?.(a.currentTime + 0.01);
+  } finally {
+    out = null;
+  }
 }
 
 // Simple music: a flute line and a drum. mode: 'village' or 'raid' (faster).

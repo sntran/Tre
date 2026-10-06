@@ -14,6 +14,7 @@ import { STEP } from '../core/world/step.js';
 import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, starOn, puddlesAt } from '../core/world/ambient.js';
 import { rainOf } from '../core/world/systems/sky.js';
 import { createSession, middleOf } from '../core/session.js';
+import { createHearing } from '../core/hearing.js';
 import { LINE_LIFE, lineLife, linesAfter, nearHero as talksNear } from '../core/lines.js';
 import { placeStar, placeArrow, placeBubble, AWAY_LIFE } from '../world/marks.js';
 import { practiceStart, activityOf } from '../core/practice.js';
@@ -193,6 +194,7 @@ export async function mountVillage(ctx, params = {}) {
   // The people of the region speak the words of its way (data/world/speech.json, #39).
   setSpeech(speechTable(data.speech, speechWay(data.regions, session.map.region)));
   const state = session.state;
+  const hearing = createHearing();
   // One view for each map, made once for its terrain. The far land and the mist fade into the
   // paper (mistAt: 0 in the land of the era, 1 deep in the mist).
   const fadeCells = mapData.mist?.fade ?? 12;
@@ -1092,7 +1094,12 @@ export async function mountVillage(ctx, params = {}) {
       ctx.bus.emit('sound', ev.type === 'dawn' ? 'crow' : 'bell');
       return;
     }
-    if (ev.sound) ctx.bus.emit('sound', ev.sound);
+    // A sound of the world is softer far away, and the same sound does not play again and again
+    // (#49, src/core/hearing.js).
+    if (ev.sound) {
+      const volume = hearing.hear(ev, state, performance.now() / 1000);
+      if (volume > 0) ctx.bus.emit('sound', { name: ev.sound, volume });
+    }
     if (ev.type === 'petted') showBubble(ev.id, '♥');
     // The example of a station: the button picture of each act over the person.
     if (ev.type === 'shows') showBubble(ev.id, null, ev.icon);
