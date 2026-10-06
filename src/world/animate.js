@@ -17,7 +17,8 @@ export function createAnimator(kind) {
   return { kind, state: 'idle', phase: 0, idle: 0, rest: 0, graze: 0, wave: 0, time: 0 };
 }
 
-// input: { speed (units a second), dt, want: 'rest' | 'wave' | null, lookAt (radians, head turn) }.
+// input: { speed (units a second), dt, want: 'rest' | 'wave' | 'reach' | null, lookAt (radians, head turn),
+// hold: the way a biped holds a thing in the hands (src/world/carry.js) or null }.
 // Return the pose: { state, rot: { part: [x, y, z] }, lift, lean, sink }.
 export function animate(a, input) {
   const dt = input.dt ?? 0;
@@ -58,6 +59,20 @@ export function animate(a, input) {
     rot.footR = [-Math.max(0, -sw) * 0.35, 0, 0];
     rot.armL = [-sw * 0.8, 0, 0];
     rot.armR = [sw * 0.8 - a.wave * 0.2, 0, -a.wave * (1.9 + Math.sin(a.time * 8) * 0.35)];
+    // A thing in the hands (src/world/carry.js): both arms forward for a thing in front of the
+    // chest, the right hand up at the shoulder for a long thing or the carrying pole. The walk keeps
+    // the arms there; a thing in one hand swings with the arm.
+    if (input.hold === 'front') {
+      rot.armL = [-1.15, 0, -0.3];
+      rot.armR = [-1.15, 0, 0.3];
+    } else if (input.hold === 'shoulder' || input.hold === 'yoke') rot.armR = [-2.5, 0, 0.35];
+    // A thing in one hand: the arm a little to the front, so that the thing is seen.
+    else if (input.hold === 'hand') rot.armR = [-0.55 + sw * 0.3, 0, 0.15];
+    // A pick-up or a put-down: the person bends a little toward the thing, and the arms reach.
+    if (input.want === 'reach') {
+      rot.armL = [-0.9, 0, -0.2];
+      rot.armR = [-0.9, 0, 0.2];
+    }
     // Point: the right arm goes out to the front, a little down, toward what matters (a mentor).
     if (input.want === 'point') {
       rot.armR = [-1.35, 0, 0.1];
@@ -75,7 +90,7 @@ export function animate(a, input) {
       lean = 0.15 + Math.max(0, push) * 0.15;
     }
     lift = Math.abs(Math.cos(a.phase)) * 0.18 * s;
-    lean = input.want === 'pole' ? lean : 0.08 * s;
+    lean = input.want === 'pole' ? lean : input.want === 'reach' ? 0.35 : 0.08 * s;
     sink = a.rest * 1.2;
     const look = moving ? 0 : (input.lookAt ?? Math.sin(a.idle * 0.8) * 0.35 * Math.min(1, a.idle / 2));
     // The head bobs a little with each step.

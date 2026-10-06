@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import { colorIndex, toneRgb, FACE_TONES } from '../world/voxel.js';
 import { figureOf } from '../world/figures.js';
 import { createAnimator, animate } from '../world/animate.js';
+import { trackCarries, flightAt } from '../world/carry.js';
 import { detailFor, inView, lodFor } from '../world/lod.js';
 import { createSway, swayStep } from '../world/sway.js';
 import { C } from './palette.js';
@@ -241,28 +242,44 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     return a + d * t;
   };
 
+  // The things in the hands, and the things in flight between the ground and the hands
+  // (src/world/carry.js): a person shows the thing in the hands at the end of a pick-up flight, and
+  // a put thing shows at its place at the end of a put-down flight. The person bends a little.
+  const holding = new Map();
+  let flights = [];
+  let synced = false;
+  const until = (list, key, id) => list.filter((fl) => fl[key] === id).reduce((m, fl) => Math.max(m, fl.start + fl.steps), -1);
+
   return {
     // After each step of the world: note the new place of each entity, and add or remove figures.
     sync(world) {
       const seen = new Set();
       wind = world.wind ?? null;
+      const tick = world.tick ?? 0;
+      flights = [...flights.filter((fl) => tick < fl.start + fl.steps), ...trackCarries(holding, world.entities, tick, synced)];
+      synced = true;
+      const flying = flights.map((fl) => ({ id: `flight:${fl.start}:${fl.by}`, look: fl.look, position: flightAt(fl, tick) })).filter((x) => x.position);
       const ghostEnt = ghost ? { id: 'ghost', ghost: true, look: ghost.look, position: { x: ghost.x, y: ghost.y, z: ghost.z, facing: ghost.facing ?? 0 } } : null;
-      for (const e of ghostEnt ? [...world.entities, ghostEnt] : world.entities) {
+      for (const e of [...world.entities, ...flying, ...(ghostEnt ? [ghostEnt] : [])]) {
         if (!e.position || !e.look || e.hidden) continue;
+        if (until(flights, 'hide', e.id) > tick) continue;
         seen.add(e.id);
         const p = e.position;
         let f = figures.get(e.id);
         const now = { x: p.x, y: p.y, z: p.z, facing: p.facing ?? 0 };
         // A new look (a pot that breaks, a lantern in the hand): a new figure at the same place.
-        const key = e.carry ? `${e.look}+${e.carry}` : e.look;
+        const carry = until(flights.filter((fl) => fl.pick), 'by', e.id) > tick ? null : e.carry;
+        const key = carry ? `${e.look}+${carry}` : e.look;
         if (f && f.look !== key) {
           figures.delete(e.id);
           f = null;
         }
         if (!f) {
-          f = { id: e.id, look: key, lookData: lookOf(e.look, e.carry), levels: {}, detail: null };
+          f = { id: e.id, look: key, lookData: lookOf(e.look, carry), levels: {}, detail: null };
           const coarse = figureOf(f.lookData, 'coarse');
           f.anim = createAnimator(coarse.kind);
+          // How the figure holds a thing in the hands (src/world/carry.js), for the pose of the arms.
+          f.hold = coarse.hold ?? null;
           // The lift and the sink of a pose are in the units of the coarse figure.
           f.poseUnit = coarse.scale * (coarse.grid ?? 0.5);
           f.curr = now;
@@ -295,7 +312,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         }
         f.jumping = Boolean(e.jump);
         const jump = e.jump ? (e.jump.crouch > 0 ? 'crouch' : 'jump') : null;
-        f.want = e.riding ? 'ride' : jump ?? (e.hop ? 'jump' : null) ?? WANTS[e.gesture?.act ?? e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
+        const reach = until(flights, 'by', e.id) > tick ? 'reach' : null;
+        f.want = e.riding ? 'ride' : jump ?? (e.hop ? 'jump' : null) ?? reach ?? WANTS[e.gesture?.act ?? e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
         f.bend = e.react?.bend ?? null;
         // A tap on a sleeping animal: its ear flicks (in two held positions, as a print).
         f.flick = e.flick ?? 0;
@@ -346,7 +364,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         const tint = (rgb) => color.setRGB(rgb[0] + (PAPER_RGB[0] - rgb[0]) * pale, rgb[1] + (PAPER_RGB[1] - rgb[1]) * pale, rgb[2] + (PAPER_RGB[2] - rgb[2]) * pale);
         // The animation goes on for every figure, so that a figure that comes into the view is in
         // step.
-        const pose = animate(f.anim, { speed: f.speed, dt, want: f.want });
+        const pose = animate(f.anim, { speed: f.speed, dt, want: f.want, hold: f.hold });
         // The level of detail: fine near the hero, coarse far away (src/world/lod.js).
         const dist = hero ? Math.hypot(b.x - hero.x, b.z - hero.z) / 2 : 0;
         f.detail = detail ?? detailFor(f.detail, dist, lod);

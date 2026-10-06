@@ -3,7 +3,8 @@
 // `scale`, on its `grid` (in blocks); the front of a figure is +z. This file has the coarse
 // figures (a grid of half blocks), which the renderer also draws for the people and animals far
 // from the hero; the fine people and animals (a grid of quarter blocks) are in src/world/fine.js.
-import { P, PLANK_TONES, heldItem, shoulderPlank } from './parts.js';
+import { P, PLANK_TONES, heldItem, TOOLS } from './parts.js';
+import { carriedParts } from './carry.js';
 import { personFine, ngheFine, buffaloFine, dogFine, chickenFine, duckFine, fishFine, coatOf, hairStyleOf, TALL } from './fine.js';
 
 export { PLANK_TONES };
@@ -117,14 +118,19 @@ export function person(look) {
   const eye = child ? [0.32, 0.4] : [0.26, 0.32];
   for (const ex of [-0.5, 0.5]) parts.push(P(`eye${ex > 0 ? 'R' : 'L'}`, [eye[0], eye[1], 0.05], 'ink', [ex, eyeY, headD / 2 + 0.03], { ...onHead, mark: true }));
   if (look.face === 2 || look.face === 4) parts.push(P('mouth', [0.5, 0.12, 0.05], 'vermilion', [0, eyeY - 0.55, headD / 2 + 0.03], { ...onHead, mark: true }));
-  // Something in the hand, and a plank on the right shoulder.
-  parts.push(...heldItem(look.item, (dx, dy, dz) => [dx, -armH + dy, dz], 1));
   // The size: the same height as the fine person (src/world/fine.js) to the top of the hair.
   const scale = (child ? TALL.child : TALL.adult) / (0.5 * (headY + capTop)) * (look.scale ? look.scale / (child ? 0.6 : 0.66) : 1);
-  parts.push(...shoulderPlank(look.item, 1 / scale, bodyW / 2 + 0.1, shoulder));
+  // A thing in the hands (src/world/carry.js), or a tool of a person (a staff, a net, a torch).
+  const carried = carriedParts(look.carriedFigure, 1 / scale, {
+    hand: { parent: 'armR', at: [0, -armH, 0.3] },
+    front: { parent: 'body', at: [0, hip + bodyH * 0.25, bodyD / 2 + 0.3] },
+    shoulder: { parent: 'body', at: [bodyW / 2 - 0.2, shoulder + 0.1, 0] },
+    yoke: { parent: 'body', at: [bodyW / 2 + 0.2, shoulder + 0.4, 0] },
+  }, look.carryRules);
+  parts.push(...(carried.hold ? carried.parts : heldItem(look.item, (dx, dy, dz) => [dx, -armH + dy, dz], 1)));
   const knot = hair === 'bald' || covered ? 0 : style === 'topknot' ? 0.9 : style === 'tufts' ? 0.65 : 0;
   const top = headY + capTop + (look.hat === 'non' ? 0.4 : look.hat === 'plume' ? 1.45 : look.hat === 'helmet' ? 0.25 : knot);
-  return { kind: 'biped', parts, scale, height: top, shadow: 1.3 };
+  return { kind: 'biped', parts, scale, height: top, shadow: 1.3, hold: carried.hold };
 }
 
 // The next darker tone of a skin (the neck, in the shadow under the chin).
@@ -587,7 +593,8 @@ export function workThing(look) {
     // A bundle of seedlings (bó mạ): green blades tied with straw, wider for more seedlings.
     case 'seed-bundle': {
       const w = Math.min(0.9, 0.3 + (look.n ?? 1) * 0.06);
-      return still([P('blades', [w, 0.9, w], 'green', [0, 0.45, 0]), P('roots', [w * 0.9, 0.15, w * 0.9], 'ochre', [0, 0.07, 0]), P('band', [w + 0.06, 0.12, w + 0.06], 'yellowPale', [0, 0.35, 0])], 0.9);
+      // A bundle is for two hands, so that its size is seen (src/world/carry.js).
+      return { ...still([P('blades', [w, 0.9, w], 'green', [0, 0.45, 0]), P('roots', [w * 0.9, 0.15, w * 0.9], 'ochre', [0, 0.07, 0]), P('band', [w + 0.06, 0.12, w + 0.06], 'yellowPale', [0, 0.35, 0])], 0.9), hold: 'front' };
     }
     // A loose bunch of seedlings: a few blades.
     case 'seed-bunch': {
@@ -633,7 +640,8 @@ export function workThing(look) {
       const parts = [P('cone', [1, 1, len], 'yellow', [0, 0.5, 0]), P('mouth', [1.3, 1.3, 0.2], 'ochre', [0, 0.6, len / 2])];
       for (let i = 0; i < look.n; i++) parts.push(P(`ring${i}`, [1.08, 1.08, 0.08], 'wood', [0, 0.5, -len / 2 + (len * (i + 0.5)) / look.n]));
       if (look.full) parts.push(P('fish', [0.5, 0.35, len * 0.7], 'ashLight', [0, 1.1, 0]), P('fishB', [0.4, 0.3, len * 0.5], 'ash', [0.25, 1.2, -0.1]));
-      return still(parts, 1.3);
+      // A fish trap is held in front, in two hands, so that its rings are seen (src/world/carry.js).
+      return { ...still(parts, 1.3), hold: 'front' };
     }
     // A stake in the stream: a spot for a trap.
     case 'trap-spot': return still([P('pole', [0.2, 2.6, 0.2], 'wood', [-0.8, 0.6, 0]), P('top', [0.28, 0.12, 0.28], 'ochre', [-0.8, 1.95, 0])], 2);
@@ -760,13 +768,15 @@ export function workThing(look) {
         parts.push(P(`stone${i}`, [0.55, 0.45, 0.55], 'ash', at), P(`top${i}`, [0.3, 0.1, 0.3], 'ashLight', [at[0] + 0.05, at[1] + 0.25, at[2]]));
       }
       parts.push(P('net', [Math.min(3, n) * 0.6, 0.08, 0.9], 'ochre', [0, 0.04, 0]));
-      return still(parts, 0.6 + Math.floor((n - 1) / 3) * 0.4);
+      // Stones in a net are heavy: two hands (src/world/carry.js).
+      return { ...still(parts, 0.6 + Math.floor((n - 1) / 3) * 0.4), hold: 'front' };
     }
     case 'pails': {
       const n = look.n ?? 1;
       const parts = [P('pole', [Math.max(1, n) * 0.8 + 0.4, 0.12, 0.12], 'wood', [0, 1.1, 0])];
       for (let i = 0; i < n; i++) parts.push(P(`pail${i}`, [0.55, 0.6, 0.55], 'wood', [(i - (n - 1) / 2) * 0.8, 0.3, 0]), P(`water${i}`, [0.45, 0.05, 0.45], 'indigoPale', [(i - (n - 1) / 2) * 0.8, 0.62, 0]));
-      return still(parts, 1.2);
+      // Pails go on the carrying pole across the shoulder (đòn gánh, src/world/carry.js).
+      return { ...still(parts, 1.2), hold: 'yoke' };
     }
     // A measure of rice (đấu): a small square box of wood, full of rice (#26).
     case 'measure': return still([P('box', [0.7, 0.45, 0.7], 'wood', [0, 0.22, 0]), P('rice', [0.56, 0.06, 0.56], 'paper', [0, 0.47, 0]), P('rim', [0.76, 0.06, 0.76], 'ochre', [0, 0.42, 0])], 0.5);
@@ -806,7 +816,8 @@ export function raidThing(look) {
       const n = look.n ?? 3;
       const parts = [P('tray', [n * 0.9 + 0.3, 0.2, 1.2], 'wood', [0, 0.1, 0]), P('rim', [n * 0.9 + 0.4, 0.12, 0.2], 'ochre', [0, 0.25, 0.55])];
       for (let i = 0; i < n; i++) parts.push(P(`bowl${i}`, [0.7, 0.4, 0.7], 'diep', [(i - (n - 1) / 2) * 0.9, 0.4, 0]), P(`rice${i}`, [0.5, 0.15, 0.5], 'paper', [(i - (n - 1) / 2) * 0.9, 0.65, 0]));
-      return still(parts, 0.8);
+      // A tray of bowls is held in front, in two hands (src/world/carry.js).
+      return { ...still(parts, 0.8), hold: 'front' };
     }
     // The pot of Gióng, with the bowls of the ten that is not full yet beside it (the ones).
     case 'rice-pot': {
@@ -869,6 +880,11 @@ export function raidThing(look) {
 // have one level.
 export function figureOf(look, detail = 'fine') {
   const fine = detail !== 'coarse';
+  // A thing in the hands of a person: the figure of the thing itself (src/world/carry.js).
+  if (look.carried && !look.carriedFigure && !TOOLS.has(look.item)) {
+    const thing = figureOf(look.carried, 'coarse');
+    if (thing.kind !== 'biped') look = { ...look, carriedFigure: thing };
+  }
   const thing = workThing(look) ?? raidThing(look);
   if (thing) return thing;
   if (look.kind === 'plank') return plank(look.n);
@@ -881,7 +897,8 @@ export function figureOf(look, detail = 'fine') {
     // small duck) is half as big again.
     const f = fine ? duckFine(look.coat) : duck(look.coat);
     const k = (look.size ?? 1) * (look.big ? 1.5 : 1);
-    return k === 1 ? f : { ...f, scale: f.scale * k };
+    // A duck in the arms is held with two hands (src/world/carry.js).
+    return { ...f, hold: 'front', ...(k === 1 ? {} : { scale: f.scale * k }) };
   }
   if (look.kind === 'serpent') return serpent(look);
   if (look.kind === 'chicken') return fine ? chickenFine(look) : chicken(look);

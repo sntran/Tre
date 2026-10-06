@@ -261,7 +261,9 @@ export async function mountVillage(ctx, params = {}) {
     get crowns() { return nearby().crowns; },
   });
   // A villager of a generated hamlet has a look from parts in the map (by its id).
-  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : looks[key] ?? thingLook(key) ?? mapData.looks?.[key] ?? {}), ...(carry ? { item: carry } : {}) }), { camera: view.camera, zoom: () => view.state.level, mistAt: (x, z) => Math.min(1, (session.tileMap.mistAt?.(Math.floor(x), Math.floor(z)) ?? 0) / fadeCells) });
+  // A thing in the hands has the look of the thing itself (src/world/carry.js).
+  const lookOfKey = (key) => looks[key] ?? thingLook(key) ?? mapData.looks?.[key] ?? {};
+  const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : lookOfKey(key)), ...(carry ? { item: carry, carried: lookOfKey(carry), carryRules: data.figures.carry } : {}) }), { camera: view.camera, zoom: () => view.state.level, mistAt: (x, z) => Math.min(1, (session.tileMap.mistAt?.(Math.floor(x), Math.floor(z)) ?? 0) / fadeCells) });
 
   // The height of the ground under a map point (world units).
   const groundY = (x, y) => columnTop(tileMap.heightAt(Math.floor(x), Math.floor(y)));
@@ -326,7 +328,11 @@ export async function mountVillage(ctx, params = {}) {
   // shows a picture of what it will do now, and it is dim when there is nothing to do. While the
   // jar of feed is in reach, the button pours as long as the finger stays on it.
   const actIcon = img('ui/hand-pick', 'btn-icon');
-  const actBtn = h('button', { class: 'turn-btn act-btn dim', type: 'button', 'aria-label': t('ui.action'), title: t('ui.action') }, [actIcon]);
+  // The thing in the hands: a small picture of it in the corner of the button (#43), so that the
+  // child sees what the hero carries also when the hero is small on a phone.
+  const actThing = h('span', { class: 'act-thing', hidden: true });
+  const actBtn = h('button', { class: 'turn-btn act-btn dim', type: 'button', 'aria-label': t('ui.action'), title: t('ui.action') }, [actIcon, actThing]);
+  let actCarry = null;
   let actNow = null;
   let actHold = false;
   actBtn.addEventListener('pointerdown', (e) => {
@@ -354,6 +360,12 @@ export async function mountVillage(ctx, params = {}) {
     if (icon !== actNow?.icon) actIcon.src = actIcon.src.replace(/ui\/[a-z-]+\.svg/, `ui/${icon}.svg`);
     actBtn.classList.toggle('dim', !a);
     actNow = a;
+    const carry = busy ? actCarry : session.carried();
+    if (carry !== actCarry) {
+      actCarry = carry;
+      actThing.hidden = !carry;
+      actThing.replaceChildren(...(carry ? [portraitCanvas(ctx, lookOfKey(carry), { framing: 'full', size: 34, cls: 'act-thing-pic' })] : []));
+    }
     // The target has a thicker outline and a soft light; a thing on a line shows as a ghost.
     figures.mark(a?.target ?? null, a?.spot ?? null, a?.ghost ?? null);
   }

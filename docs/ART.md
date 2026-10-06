@@ -293,3 +293,16 @@ The ground is printed, not a flat color. The texture is in the shader (`GROUND_G
 - **Tufts:** small smooth tufts of grass along the edges of roads and the banks of the fields, and reeds at the water (`tuft` in `src/world/smooth.js`; a tuft belongs to its ground block, so a dig takes it). Along a road, a tuft stands just out of the edge of the strip. There is no tuft on the strip of a road, on a dike top, or on water. Tufts show at the near level only.
 - **The low land is not a table:** mounds (gò) of one step with a clump of bamboo or a tree stand among the paddies, and short ditches (mương) of still water run along some blocks of paddies (drawn as the water of a paddy, with no seedlings).
 - **Puddles:** from the start of a rain until a game day after its end, some cells of a road have a flat puddle in a rut: pale water with one glint and a thin ink rim (`puddlesAt` in `src/core/world/ambient.js`).
+
+## 19. The thing in the hands
+
+A person shows the thing in the hands from the pick-up to the put-down (#43). The hands draw the thing itself: the same look and parts as on the ground (`src/world/carry.js`), at 0.8 of its size. A new thing of a task needs no new code for the hands. Only the tools of the people (a staff, a pole, a net, a torch, a lantern, a shield) have their own parts in the hand (`TOOLS` in `src/world/parts.js`).
+
+How a person holds a thing follows its size (`carry` in `data/figures.json`), or the look says it:
+
+- **One hand:** a small thing (a rod, a shard, a measure of rice, a herb, a lump of ore) stands up in the right hand, a little to the front.
+- **Two hands:** a thing in front of the chest, with both arms forward (a bundle of seedlings, a fish trap, stones in a net, a tray of bowls, a duck). The bigger bundle is bigger in the hands, so that the child sees the size.
+- **Shoulder:** a long thing (a stake, a plank, staffs) on the right shoulder, along the way the person looks.
+- **Yoke:** pails on a carrying pole (đòn gánh) across the right shoulder.
+
+A pick-up and a put-down show the move: the thing flies in a short arc (about 0.3 seconds) from the ground to the hands, or from the hands to its place, and the person bends a little. The big button shows a small picture of the thing in its corner while the hands hold it. A law of the stories checks that the figure of the hero draws the thing at every step where the hero carries one.

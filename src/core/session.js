@@ -2285,6 +2285,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const zone = getEntity(state, a.target)?.zone;
       return { act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold), ghost: a.ghost ?? null, spot: zone && zone.rule !== 'span' ? spotOf(zone) : null };
     },
+    // The look of the thing in the hands of the hero (a small picture of it on the action button,
+    // #43), or null when the hands are empty.
+    carried() {
+      return hero()?.carry ?? null;
+    },
     get state() { return state; },
     get map() { return map; },
     get tileMap() { return tileMap; },

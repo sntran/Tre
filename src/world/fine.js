@@ -6,7 +6,8 @@
 // by one unit. Faces have eyes (a white, a dark dot, and a highlight), brows, a mouth, and cheeks.
 // Legs bend at one joint (the knee), and the feet lift at the heel. The coarse figures of
 // src/world/figures.js are the far level of detail.
-import { P, heldItem, shoulderPlank } from './parts.js';
+import { P, heldItem } from './parts.js';
+import { carriedParts } from './carry.js';
 
 // A small stepped ball of size (w, h, d): three crossed boxes and a core, so that the corners are
 // cut (the heads of the animals).
@@ -302,18 +303,24 @@ export function personFine(look) {
       top = 8;
     }
   }
-  // Something in the hands, and a plank on the right shoulder.
-  parts.push(...heldItem(look.item, (dx, dy, dz) => [dx * 2, dy * 2 + 0.5, dz * 2], 2, 'handR', 'handL'));
   // The scale gives the size of the coarse person (a look with its own scale, as Gióng who grows,
   // is in the scale of the coarse person: the same ratio).
   const base = headY + hairTop;
   const scale = (child ? TALL.child : TALL.adult) / (0.25 * base) * (look.scale ? look.scale / (child ? 0.6 : 0.66) : 1);
-  parts.push(...shoulderPlank(look.item, 2 / scale, chestW / 2 + 0.25, shoulder));
+  // A thing in the hands (src/world/carry.js), or a tool of a person (a staff, a net, a torch).
+  // One half block is 2 / scale units of the fine grid (quarter blocks).
+  const carried = carriedParts(look.carriedFigure, 2 / scale, {
+    hand: { parent: 'handR', at: [0, -0.4, 0.6] },
+    front: { parent: 'body', at: [0, hip + 1.5, bodyD / 2 + 0.5] },
+    shoulder: { parent: 'body', at: [chestW / 2 - 0.25, shoulder + 0.2, 0] },
+    yoke: { parent: 'body', at: [chestW / 2 + 0.5, shoulder + 1, 0] },
+  }, look.carryRules);
+  parts.push(...(carried.hold ? carried.parts : heldItem(look.item, (dx, dy, dz) => [dx * 2, dy * 2 + 0.5, dz * 2], 2, 'handR', 'handL')));
   // crown: the top of the head for the frame of a portrait (src/world/portraits.js): the hat, or
   // the cap of the hair with the lower half of a knot or a tuft, so that a tall knot does not make
   // the face small and the style still shows.
   const knot = hair === 'bald' || capped ? 0 : style === 'topknot' ? 1.6 : style === 'tufts' ? 1.4 : 0;
-  return { kind: 'biped', parts, scale, grid: 0.25, height: headY + top, crown: headY + (capped ? top : hairTop + knot), shadow: 5 };
+  return { kind: 'biped', parts, scale, grid: 0.25, height: headY + top, crown: headY + (capped ? top : hairTop + knot), shadow: 5, hold: carried.hold };
 }
 
 // Nghé, the buffalo calf: a stepped barrel, legs that bend at one joint, a head with a muzzle and

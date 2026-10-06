@@ -10,6 +10,8 @@ import { serialize, deserialize } from '../src/core/save.js';
 import { saveWorld } from '../src/core/world/save.js';
 import { addPoint, restorePoint, whereOf } from '../src/core/restore.js';
 import { createTerrain } from '../src/world/terrain.js';
+import { figureOf, heroLook, thingLook } from '../src/world/figures.js';
+import { getEntity } from '../src/core/world/state.js';
 import { activityOf, practiceStart } from '../src/core/practice.js';
 import { loadGameData, load } from './helpers.js';
 import { test } from 'node:test';
@@ -19,6 +21,17 @@ import { readdirSync, readFileSync } from 'node:fs';
 const data = await loadGameData();
 const graph = createSkillGraph(data.skills);
 const laws = createLaws({ texts: { vi: load('i18n/vi.json'), en: load('i18n/en.json') }, limits: load('data/config/limits.json') });
+// A law of the hands (#43): on every step where the hero carries a thing, the figure of the hero
+// (fine and far) draws that thing. No empty hands.
+const handsChecked = new Map();
+export function handsShow(hero, carry) {
+  const key = `${JSON.stringify(hero)}|${carry}`;
+  if (!handsChecked.has(key)) {
+    const look = { ...heroLook(hero, data.figures.hero), item: carry, carried: data.figures.figures[carry] ?? thingLook(carry) ?? {}, carryRules: data.figures.carry };
+    handsChecked.set(key, ['fine', 'coarse'].every((d) => figureOf(look, d).parts.some((p) => p.name.startsWith('carry'))));
+  }
+  return handsChecked.get(key);
+}
 const terrains = new Map();
 // One terrain for each map and seed (its pages are pure; a new session loads its own changes).
 const terrainOf = (map, tileMap) => {
@@ -111,6 +124,8 @@ export async function runHeadless(raw, { onSession = null, log: keepLog = false,
         elapsed += STEP;
         session.events();
         for (const p of laws.step(session)) breakLaw(p);
+        const carry = getEntity(session.state, 'hero')?.carry;
+        if (carry && !handsShow(profile.hero, carry)) breakLaw(`the hands of the hero do not show ${carry}`);
         if (back) goBack();
         if (until?.()) return true;
       }
