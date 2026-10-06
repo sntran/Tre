@@ -1325,17 +1325,29 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The tile map for the walks of the hero: the cells under a solid box of a thing of a task (a
   // trough, a heap) are blocked too, so that a walk goes around them.
   function pathMap() {
-    const boxes = query(state, 'solid', 'position').filter((e) => e.solid.rect && !e.hidden).map((e) => e.solid.rect);
-    if (!boxes.length) return tileMap;
-    const inBox = (x, y) => boxes.some((b) => (x + 0.5) * 2 > b.x0 - 0.5 && (x + 0.5) * 2 < b.x1 + 0.5 && (y + 0.5) * 2 > b.z0 - 0.5 && (y + 0.5) * 2 < b.z1 + 0.5);
+    const solids = query(state, 'solid', 'position').filter((e) => !e.hidden && e.id !== 'hero');
+    const boxes = solids.filter((e) => e.solid.rect).map((e) => e.solid.rect);
+    // A person near the hero (a person at work): the cells of the person, so that a walk goes
+    // around and never pushes into the person (#44). Things (a pot that breaks) and people far
+    // away (they move) do not count.
+    const hp = hero().position;
+    const rounds = solids.filter((e) => !e.solid.rect && e.solid.r && String(e.id).startsWith('npc:') && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) < 16)
+      .map((e) => ({ x: e.position.x, z: e.position.z, r: e.solid.r }));
+    // The cell of the hero is never in a box: a hero who stands at the edge of a solid thing (a
+    // culm, the mat) can always walk away from it (#44).
+    const h = heroFrom();
+    const inBox = (x, y) => !(x === h.x && y === h.y) && (boxes.some((b) => (x + 0.5) * 2 > b.x0 - 0.5 && (x + 0.5) * 2 < b.x1 + 0.5 && (y + 0.5) * 2 > b.z0 - 0.5 && (y + 0.5) * 2 < b.z1 + 0.5)
+      || rounds.some((c) => Math.hypot((x + 0.5) * 2 - c.x, (y + 0.5) * 2 - c.z) < c.r));
     return Object.assign(Object.create(tileMap), {
-      walkable: (x, y) => tileMap.walkable(x, y) && !inBox(x, y),
+      // The hero can always start from its own cell (in the water after a jump, at a thing).
+      walkable: (x, y) => (x === h.x && y === h.y) || (tileMap.walkable(x, y) && !inBox(x, y)),
       isBlocked: (x, y) => tileMap.isBlocked(x, y) || inBox(x, y),
     });
   }
   function walkToThing(target, onArrive) {
     const tile = { x: Math.floor(target.x), y: Math.floor(target.y) };
-    walkPath(pathNextTo(pathMap(), heroFrom(), tile), null, onArrive, { x: target.x, y: target.y, d: 2.2 });
+    // A large solid thing (the mat, a clump): the free cell nearest to it on the way (#44).
+    walkPath(pathToward(pathMap(), heroFrom(), tile), null, onArrive, { x: target.x, y: target.y, d: 2.2 });
   }
   function walkToPerson(id) {
     const p = persons().find((x) => x.kind === 'npc' && x.ref === id);
@@ -2312,6 +2324,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const zone = getEntity(state, a.target)?.zone;
       return { act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold), ghost: a.ghost ?? null, spot: zone && zone.rule !== 'span' ? spotOf(zone) : null };
     },
+    // The place of a task under a map point (cells), or null: a tap there chooses the place.
+    placeAt: (x, y) => workZoneAt(x * 2, y * 2)?.id ?? null,
     // The look of the thing in the hands of the hero (a small picture of it on the action button,
     // #43), or null when the hands are empty.
     carried() {
