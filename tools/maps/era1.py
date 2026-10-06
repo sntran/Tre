@@ -132,7 +132,8 @@ A.places = {
     'healer-basket': {'x': 14.7, 'y': 22.6},
     'woodcutter-stem': {'x': 26.6, 'y': 3.6},
     'staffs-clump': {'x': 12.5, 'y': 16.25},
-    'woodpile': {'x': 26.1, 'y': 30.2},
+    # The wood pile is next to the stem, on free ground (#47, #48): a round is the math, not a walk.
+    'woodpile': {'x': 27.6, 'y': 2.4},
     # Rice for Gióng: the trays of bowls on the path of the paddies, and the pot in front of the
     # house of Gióng.
     'rice-trays': {'x': 9.8, 'y': 14.4},
