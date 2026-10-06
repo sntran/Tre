@@ -11,7 +11,7 @@
     },
     {
       "until": "tre.activeVillage && tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
-      "timeout": 300
+      "timeout": 600
     },
     {
       "wait": 3
@@ -27,7 +27,7 @@
     },
     {
       "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
-      "timeout": 300
+      "timeout": 600
     },
     {
       "read": 15
