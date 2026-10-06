@@ -729,6 +729,12 @@ export async function mountVillage(ctx, params = {}) {
   const targetUnder = (p) => tapTarget(p, screenNow());
 
   function onTap(p) {
+    // A long press that did not move walked toward the finger: stop that walk before the tap, so
+    // that the stop of the next frame does not end the walk of the tap (#53).
+    if (moving) {
+      session.command({ type: 'move', dx: 0, dz: 0, strength: 0 });
+      moving = false;
+    }
     const target = targetUnder(p);
     if (target?.pet) {
       ctx.bus.emit('sound', 'tap');

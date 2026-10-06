@@ -1,7 +1,8 @@
 // A play on a phone, as a child plays (#46 and the issues of the play test): the real game in a
 // headless browser at 390 × 844 with touch, and only taps on the screen and the buttons of the
 // screen. No story command, no keyboard, and no teleport. The tool saves the frames of the play,
-// and it fails when the page has an error or when the frame loop stops.
+// and it fails when the page has an error, when the frame loop stops, or when a tap on free ground
+// that the hero can walk to does not move the hero.
 // Run it from the root of the repository with a local server on port 8123
 // (python3 -m http.server 8123), and Playwright (npm install playwright, or a global one):
 //   node tools/phone-play.mjs <plan.json> [--out <folder>] [--base <URL>] [--three <three.module.min.js>]
@@ -111,6 +112,28 @@ async function pointOf(spec) {
     return p ? [p.x, p.y] : null;
   }, spec);
 }
+// Free ground under a screen point: a cell that the hero can walk to, more than two cells away,
+// with no talk open. Return the cell of the hero then, or null.
+const freeGround = (p) => page.evaluate(([x, y]) => {
+  const v = window.tre.activeVillage;
+  const s = v?.session;
+  if (!v || !s || s.screen || document.querySelector('.dialogue-layer, .modal-layer')) return null;
+  const t = v.targetUnder(x, y);
+  const g = t?.ground;
+  const c = v.heroTile();
+  if (!g || g.thing || g.object || !c || s.placeAt?.(g.x, g.y)) return null;
+  if (!s.tileMap.walkable(Math.floor(g.x), Math.floor(g.y)) || Math.hypot(g.x - c.x, g.y - c.y) < 2) return null;
+  return { x: c.x, y: c.y };
+}, p);
+// Did the hero move from a cell in the next 3 seconds (a browser with no GPU is slow)?
+async function movedSince(from) {
+  for (let k = 0; k < 12; k++) {
+    await sleep(0.25);
+    const c = await page.evaluate(() => window.tre.activeVillage?.heroTile() ?? null);
+    if (c && Math.hypot(c.x - from.x, c.y - from.y) > 0.5) return true;
+  }
+  return false;
+}
 // The tick of the world: a frame loop that stopped has the same tick after a second.
 const tick = () => page.evaluate(() => window.tre.activeVillage?.session.state.tick ?? null);
 let rng = 1;
@@ -144,7 +167,13 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
   } else if (s.tap !== undefined) {
     const p = await pointOf(s.tap);
     if (!p) problems.push(`step ${i}: nothing on the screen for ${JSON.stringify(s.tap)}`);
-    else await tapAt(p[0], p[1]);
+    else {
+      // A tap on free ground that the hero can walk to moves the hero (#53: a long press ended as a
+      // tap, and the stop of the press ended the walk of the tap).
+      const free = await freeGround(p);
+      await tapAt(p[0], p[1]);
+      if (free && !(await movedSince(free))) problems.push(`step ${i}: a tap on free ground at ${p.map(Math.round)} did not move the hero`);
+    }
     await sleep(s.after ?? 0.3);
   } else if (s.walk !== undefined) {
     // Taps toward the target, as a child taps where to go: on the target when the screen shows
