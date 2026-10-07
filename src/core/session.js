@@ -1752,6 +1752,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     else goTo(c.at, c.target);
     if (hero().route || arrivals.size) pressAfterWalk = true;
   }
+  // Has a place of the task of a thing room for it (not its heap)? The row of the fisher up to the
+  // float, a free spot, a basket that wants that kind; the other places take any number.
+  function roomFor(e) {
+    return query(state, 'zone').some((z) => {
+      const zone = z.zone;
+      if (zone.task !== e.item.task || ['heap', 'pile'].includes(zone.rule) || !canPut(zone, e)) return false;
+      if (zone.rule === 'line') return Math.max(0, ...query(state, 'item').filter((x) => x.item.zone === zone.id && x.item.slot != null).map((x) => x.item.slot)) < zone.length;
+      if (zone.rule === 'spots') return freeSlot(state, zone) >= 0;
+      return true;
+    });
+  }
   // The places that the hands take a thing back from (the opposite of a put).
   const TAKE_BACK = new Set(['bundle', 'basket', 'line', 'exact', 'share', 'spots', 'hearth']);
   // The point in front of the hero (half blocks), for the places on a line.
@@ -1890,6 +1901,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // Of the things of a task, the kind of the last pick first, while a heap has that kind. A
         // tap on a thing chooses it.
         if (want !== null && chosen?.id !== e.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || want === '')) continue;
+        // A press picks a thing of a task only when a place of the task has room for it: no stake
+        // after the row is at the float (#54: the stake stayed in the hands with no act).
+        if (chosen?.id !== e.id && openTask(e.item.task) && !roomFor(e)) continue;
         add({ act: 'pick', icon: 'hand-pick', target: e.id, at: middleOf(e), size: (e.item.size ?? 0) / 2, rank: 1, work: openTask(e.item.task), run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
       }
       // Take back: the thing that the child tapped on a place (the opposite of a put), from where
@@ -2008,6 +2022,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const c = list.far.reduce((a, b) => (b.d + b.rank * 0.5 < a.d + a.rank * 0.5 ? b : a));
       return { ...c, go: true, hold: false, release: null, run: () => goWork(c) };
     }
+    // In a task, a press never looks or talks in place of the work, also while no work is left for
+    // a moment (the fisher shows a stake; the tide comes in): the button waits. A tap chooses them.
+    if (taskOn() && !tappedNear) list = list.filter((c) => c.work || !WORKLESS.has(c.act));
     if (!list.length) return null;
     // With a thing in the hands: a place in reach that takes it always comes before the ground,
     // and the hero turns to it (#44). The ground is a target only when no place is in reach.

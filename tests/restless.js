@@ -137,7 +137,8 @@ export { STEP };
 // laws:
 // - a press never asks for help (a talk to the mentor needs a tap on the mentor);
 // - a press never takes back the thing that the last press put;
-// - a press never puts a thing of a task on the ground.
+// - a press never puts a thing of a task on the ground;
+// - a press never looks at a thing of the map or talks in the task (a tap chooses them).
 export function playPresses(session, { presses = 40, wait = 2.5, hold = 1, until = () => false } = {}) {
   const broken = new Set();
   let lastPut = null;
@@ -160,7 +161,9 @@ export function playPresses(session, { presses = 40, wait = 2.5, hold = 1, until
       session.events();
       run(0.3);
     }
-    if (session.action()?.hold) {
+    const a = session.action();
+    if (a && (a.act === 'look' || a.act === 'talk') && !a.work) broken.add(`a press in the task did ${a.act} at ${a.target}`);
+    if (a?.hold) {
       session.command({ type: 'hold', on: true });
       run(hold);
       session.command({ type: 'hold', on: false });

@@ -60,6 +60,9 @@ test('the fisher: presses go on with the row toward the float, and never take ba
   const slots = () => query(session.state, 'item').filter((e) => e.item.zone === 'line' && !e.item.held).map((e) => e.item.slot);
   assert.deepEqual(playPresses(session, { presses: 16, until: () => Math.max(...slots()) === line.length }), []);
   assert.equal(Math.max(...slots()), line.length, `the row reaches the float: ${slots().sort((a, b) => a - b).join(' ')}`);
+  // The row is at the float: a press takes no more stakes (no stake stays in the hands with no act).
+  assert.deepEqual(playPresses(session, { presses: 3 }), []);
+  assert.equal(session.carried(), null, 'no stake in the hands after the row is done');
   run(session, 120, () => zone(session, 'trial-fisher').done);
   assert.equal(zone(session, 'trial-fisher').done, true, 'the tide comes, and the trap keeps the fish');
 });
