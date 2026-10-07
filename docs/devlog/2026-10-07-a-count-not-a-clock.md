@@ -19,4 +19,4 @@ The slingshot of a raid teaches the number line: the child sees how far the enem
 
 ## The limit of what we know
 
-The study measured a simple reaction to a light, not a release on a moving target, which is harder. We did not test the new pull with children yet. The details are in issue #56.
+The study measured a simple reaction to a light, not a release on a moving target, which is harder. We did not test the new pull with children yet. The details are in issue #55.

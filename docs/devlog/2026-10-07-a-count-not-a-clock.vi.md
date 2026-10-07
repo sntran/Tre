@@ -19,4 +19,4 @@ Cái ná trong trận tập kích dạy trục số: trẻ nhìn kẻ địch c�
 
 ## Giới hạn của điều chúng tôi biết
 
-Nghiên cứu đo phản ứng đơn với một ánh đèn, không phải việc buông tay đúng lúc với một mục tiêu đang đi, việc này khó hơn. Chúng tôi chưa thử cách kéo mới với trẻ thật. Chi tiết ở issue #56.
+Nghiên cứu đo phản ứng đơn với một ánh đèn, không phải việc buông tay đúng lúc với một mục tiêu đang đi, việc này khó hơn. Chúng tôi chưa thử cách kéo mới với trẻ thật. Chi tiết ở issue #55.
