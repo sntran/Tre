@@ -1,0 +1,19 @@
+{
+ "about": "#51: at the forge, on a phone: a tap on the smith and a press; the smith says what the fire and the water do to the iron, where the fire and the water are.",
+ "start": "?story=forge-horse",
+ "lang": "vi",
+ "steps": [
+  {"until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10", "timeout": 180},
+  {"wait": 3},
+  {"tap": {"person": "smith"}, "after": 0.3},
+  {"press": true, "after": 2},
+  {"until": "Boolean(document.querySelector('.dialogue-layer'))", "timeout": 120},
+  {"read": 1},
+  {"wait": 1},
+  {"shot": "the-fire"},
+  {"read": 1},
+  {"wait": 1},
+  {"shot": "the-water"},
+  {"read": 4}
+ ]
+}

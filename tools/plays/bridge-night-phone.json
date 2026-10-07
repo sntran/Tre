@@ -1,0 +1,113 @@
+{
+ "about": "#51: the broken bridge at night on a phone. The fisher is at home, so Nghé shows the pale planks of the guess; the child takes a short plank, taps toward the gap at the left edge, puts it with the big button, puts a second one, taps the gap to walk out, falls, and Nghé counts the planks and marks the empty part.",
+ "start": "?story=mentor-bridge-night",
+ "lang": "vi",
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 180
+  },
+  {
+   "until": "Boolean(document.querySelector('.world-bubble:not(.icon)'))",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "nghe-shows-the-guess"
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:3"
+   },
+   "after": 3,
+   "if": "tre.activeVillage.state().entities.some((e) => e.id === 'plank:bridge-gap:3')"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "tap": [
+    40,
+    470
+   ],
+   "after": 4,
+   "if": "!tre.activeVillage.screenOfThing('zone:bridge-gap')?.visible || tre.activeVillage.screenOfThing('zone:bridge-gap').x < 20"
+  },
+  {
+   "tap": {
+    "thing": "zone:bridge-gap"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "shot": "one-plank"
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:4"
+   },
+   "after": 3,
+   "if": "tre.activeVillage.state().entities.some((e) => e.id === 'plank:bridge-gap:4')"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "tap": [
+    40,
+    470
+   ],
+   "after": 4,
+   "if": "!tre.activeVillage.screenOfThing('zone:bridge-gap')?.visible || tre.activeVillage.screenOfThing('zone:bridge-gap').x < 20"
+  },
+  {
+   "tap": {
+    "thing": "zone:bridge-gap"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 4
+  },
+  {
+   "shot": "two-planks"
+  },
+  {
+   "tap": {
+    "cell": [
+     9402.5,
+     6319.5
+    ]
+   },
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.look === 'mentor-mark')",
+   "timeout": 240
+  },
+  {
+   "wait": 0.2
+  },
+  {
+   "shot": "nghe-counts-and-marks"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-mark"
+  }
+ ]
+}

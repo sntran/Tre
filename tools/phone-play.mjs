@@ -26,6 +26,9 @@
 //                                with a value and a frame before the finger goes up
 //   { "button": ".jump-btn" }    a tap on another button of the screen (a CSS selector)
 //   { "click": "Tiếp" }          a tap on a visible button with this text
+//   { "answer": "right" }        the answer of the question on the screen (an exam or a practice
+//                                with the teacher): a tap on the choice, or the keys of the pad and
+//                                the check; "wrong" taps another answer
 //   { "stick": [dx, dy, 1.5] }   the stick: a finger down at the stick, moved by dx, dy, for seconds
 //   { "drag": [[x0, y0], [x1, y1], 0.6] } a finger that moves over the screen (the slingshot)
 //   { "read": 10 }               taps on the box of a talk, up to this many lines
@@ -264,6 +267,33 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
     else if (box.y + box.height > height) problems.push(`step ${i}: the button ${s.click} is under the bottom of the screen`);
     else await tapAt(box.x + box.width / 2, box.y + box.height / 2);
     await sleep(s.after ?? 0.5);
+  } else if (s.answer !== undefined) {
+    // A child who knows the answer of a question of the teacher or of an exam (or who does not):
+    // a tap on the choice, or taps on the keys of the pad and then on the check.
+    const right = s.answer !== 'wrong';
+    const q = await page.evaluate((ok) => {
+      const p = window.tre.activeProblem;
+      if (!p) return null;
+      if (p.kind === 'choice') return { skill: p.skill, choice: ok ? p.answer : (p.answer + 1) % p.choices.length };
+      return { skill: p.skill, keys: String(ok ? p.answer : p.answer + 1).split('') };
+    }, right);
+    if (!q) problems.push(`step ${i}: no question on the screen`);
+    else {
+      console.log(`step ${i}: ${q.skill}, ${right ? 'right' : 'wrong'}`);
+      const at = async (loc) => {
+        const box = await loc.boundingBox().catch(() => null);
+        if (!box) problems.push(`step ${i}: no key or choice for the answer`);
+        else if (box.y + box.height > height) problems.push(`step ${i}: a key of the answer is under the bottom of the screen`);
+        else await tapAt(box.x + box.width / 2, box.y + box.height / 2);
+        await sleep(0.15);
+      };
+      if (q.choice !== undefined) await at(page.locator('.choice-grid button').nth(q.choice));
+      else {
+        for (const k of q.keys) await at(page.locator('.numpad button').filter({ hasText: new RegExp(`^${k === '.' ? '[.,]' : k}$`) }).first());
+        await at(page.locator('.numpad .btn.ok'));
+      }
+    }
+    await sleep(s.after ?? 1);
   } else if (s.stick) {
     const [dx, dy, seconds = 1] = s.stick;
     const x = 80;
@@ -319,11 +349,12 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
     const v = await page.evaluate((expr) => JSON.stringify(new Function('tre', `return (${expr});`)(window.tre)), s.print).catch((e) => `error ${e.message}`);
     console.log(`step ${i}: ${s.print} = ${v}`);
   } else problems.push(`step ${i}: an unknown step ${JSON.stringify(s)}`);
-  // The frame loop goes on: the tick of the world grows in a second and a half (when no line holds it).
+  // The frame loop goes on: the tick of the world grows in a second and a half (when no line holds it,
+  // and no map loads).
   const t0 = await tick();
   await sleep(1.5);
   const t1 = await tick();
-  const held = await page.evaluate(() => Boolean(document.querySelector('.dialogue-layer, .modal-layer')) || (window.tre.activeVillage?.session.screen ?? null) !== null);
+  const held = await page.evaluate(() => Boolean(document.querySelector('.dialogue-layer, .modal-layer, .loading-svg')) || (window.tre.activeVillage?.session.screen ?? null) !== null);
   if (t0 !== null && t1 !== null && t0 === t1 && !held) problems.push(`step ${i}: the world stopped at tick ${t0}`);
   log.push({ step: i, ...s, problems: problems.slice(before) });
 }

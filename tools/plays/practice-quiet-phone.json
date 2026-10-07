@@ -1,0 +1,78 @@
+{
+ "about": "#51: the practice of the woodcutter on a phone. The child walks to the đình on the way, taps the elder, and presses the big button: the elder only greets the child. No talk of the story opens, and no star of the story shows.",
+ "start": "?practice=chat-tre",
+ "lang": "vi",
+ "steps": [
+  {
+   "create": "Nam"
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "elder"
+   },
+   "taps": 14,
+   "near": 200
+  },
+  {
+   "tap": {
+    "person": "elder"
+   },
+   "after": 0.5
+  },
+  {
+   "wait": 6
+  },
+  {
+   "tap": {
+    "person": "elder"
+   },
+   "after": 6,
+   "if": "tre.activeVillage.session.action()?.act !== 'talk'"
+  },
+  {
+   "tap": {
+    "person": "elder"
+   },
+   "after": 6,
+   "if": "tre.activeVillage.session.action()?.act !== 'talk'"
+  },
+  {
+   "check": "tre.activeVillage.session.action()?.act === 'talk'"
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "shot": "the-elder-greets"
+  },
+  {
+   "check": "!document.querySelector('.dialogue-layer')"
+  },
+  {
+   "check": "!document.querySelector('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])')"
+  },
+  {
+   "check": "!tre.profile.flags['prologue.started']"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "no-story-stars"
+  }
+ ]
+}

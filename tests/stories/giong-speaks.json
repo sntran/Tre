@@ -1,0 +1,18 @@
+{
+ "name": "giong-speaks",
+ "about": {
+  "vi": "Sứ giả đã qua làng. An đến nhà Gióng, chạm vào Gióng và bấm nút: Gióng nói ba câu, xin ngựa sắt, roi sắt và áo giáp sắt. Không có bài học hay câu hỏi nào sau đó; chuyện lửa và nước để dành cho lò rèn.",
+  "en": "The messenger came through the village. An goes to the house of Gióng, taps Gióng, and presses the button: Gióng says three lines and asks for an iron horse, an iron whip, and iron armor. No lesson and no question comes after it; the fire and the water wait for the forge."
+ },
+ "profile": {"name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": {"intro.seen": true, "prologue.started": true, "prologue.done": true, "trial.scholar.done": true, "trial.smith.done": true, "trial.fisher.done": true, "trial.healer.done": true, "trial.woodcutter.done": true, "giong.messenger": true}},
+ "clock": 540,
+ "at": ["phu-dong", 21, 28],
+ "steps": [
+  {"press": {"entity": "npc:giong-boy"}},
+  {"until": {"event": "open", "with": {"screen": "dialogue"}, "timeout": 20}},
+  {"expect": [{"text": {"shown": "dlg.giong.speaks.n1"}}]},
+  {"read": true},
+  {"wait": 1},
+  {"expect": [{"text": {"shown": "dlg.giong.speaks.n3"}}, {"flag": "giong.spoke"}, {"screen": null}, {"event": "open", "with": {"screen": "lesson"}, "not": true}, {"event": "open", "with": {"screen": "quiz"}, "not": true}]}
+ ]
+}

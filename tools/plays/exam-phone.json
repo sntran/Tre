@@ -1,0 +1,264 @@
+{
+ "about": "#51: the exam of the Văn Lang era on a phone: the star leads to the gate, Văn Miếu, the exam with a mix of questions (two wrong answers), the title, the board at the gate and the stele with the turtle, the callings on one screen, the end of chapter one, and the star home.",
+ "start": "?story=exam-gate",
+ "lang": "vi",
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 180
+  },
+  {
+   "wait": 10
+  },
+  {
+   "shot": "the-star-over-the-gate"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.screen .main-actions'))",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "van-mieu"
+  },
+  {
+   "click": "Thi môn Toán"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-exam"
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "wrong",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "shot": "a-question"
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "wrong",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.main-btn'))",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-title"
+  },
+  {
+   "button": ".main-btn",
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.main-btn'))",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-board-and-the-stele"
+  },
+  {
+   "button": ".main-btn",
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.main-btn'))",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "button": ".main-btn",
+   "after": 2
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "button": ".main-btn",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.main-btn')) && !document.querySelector('.calling-grid')"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "button": ".main-btn",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.main-btn')) && !document.querySelector('.calling-grid')"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "button": ".main-btn",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.main-btn')) && !document.querySelector('.calling-grid')"
+  },
+  {
+   "until": "Boolean(document.querySelector('.calling-grid'))",
+   "timeout": 30
+  },
+  {
+   "click": "Tiều phu"
+  },
+  {
+   "shot": "the-callings"
+  },
+  {
+   "click": "Chọn nghề này",
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.main-btn'))",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "button": ".main-btn",
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.chapter-end'))",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-end-of-chapter-one"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 2
+  },
+  {
+   "shot": "van-mieu-after"
+  },
+  {
+   "click": "Về làng",
+   "after": 3
+  },
+  {
+   "until": "Boolean(tre.activeVillage)",
+   "timeout": 120
+  },
+  {
+   "wait": 10
+  },
+  {
+   "shot": "the-star-home"
+  }
+ ]
+}

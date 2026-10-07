@@ -1,0 +1,22 @@
+{
+ "about": "#51: Gióng speaks, on a phone: a tap on Gióng, a press at once, and three lines; no lesson and no question come after them.",
+ "start": "?story=giong-speaks",
+ "lang": "vi",
+ "steps": [
+  {"until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10", "timeout": 180},
+  {"wait": 3},
+  {"tap": {"person": "giong-boy"}, "after": 0.3},
+  {"press": true, "after": 2},
+  {"until": "Boolean(document.querySelector('.dialogue-layer'))", "timeout": 120},
+  {"wait": 1},
+  {"shot": "the-first-line"},
+  {"read": 1},
+  {"read": 1},
+  {"wait": 1},
+  {"shot": "giong-asks-for-iron"},
+  {"read": 1},
+  {"wait": 3},
+  {"check": "!document.querySelector('.dialogue-layer, .modal-layer')"},
+  {"shot": "after-the-talk"}
+ ]
+}
