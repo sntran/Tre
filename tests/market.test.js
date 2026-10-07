@@ -16,7 +16,7 @@ async function marketDay() {
   return session.state.entities;
 }
 
-test('the tray of the seller lies in front of her, beside the mat of the rice, toward the child', async () => {
+test('the tray of the seller lies in front of her, beside the mat of the rice, toward the child, and the rice lies by the mat', async () => {
   const all = await marketDay();
   const at = (id) => {
     const p = all.find((e) => e.id === id)?.position;
@@ -32,6 +32,9 @@ test('the tray of the seller lies in front of her, beside the mat of the rice, t
   assert.ok(ahead(tray) > 1, 'the tray is in front of the seller, not behind her');
   assert.ok(Math.hypot(tray.x - mat.x, tray.z - mat.z) <= 3.5, 'the tray lies beside the mat');
   assert.ok(Math.hypot(tray.x - mat.x, tray.z - mat.z) >= 2, 'the tray does not lie on the mat');
+  // The rice of the basket lies by the mat, a few steps from it.
+  const pile = at('zone:event-market-pile');
+  assert.ok(Math.hypot(pile.x - mat.x, pile.z - mat.z) <= 6, 'the rice lies by the mat');
 });
 
 test('each person of a market day stands on a cell of their own, and nobody stands on the mat, the tray, or the rice', async () => {

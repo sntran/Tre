@@ -906,11 +906,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The person stands on open ground near the spot (not in a narrow lane), on a cell of her own:
       // never where another person stands (#42).
       const others = peopleCells(null);
-      const stand = nearFree(ev.at, 2, 5, rng, others, 1) ?? nearFree(ev.at, 1, 6, rng, others) ?? { x: ev.at[0] + 0.5, y: ev.at[1] + 0.5 };
+      // A seller of a market day sits at her stall from the start, on open ground that the child can
+      // walk to (#42): the mat, her seat, and her tray each have open cells all around.
+      const open = (q) => [-1, 0, 1].every((dy) => [-1, 0, 1].every((dx) => tileMap.walkable(Math.floor(q.x) + dx, Math.floor(q.y) + dy))) && !others.some((o) => Math.hypot(o.x - q.x, o.y - q.y) < 1.5);
+      const stall = def.barter ? marketStall(ev.at, open) : null;
+      const stand = stall?.seat ?? nearFree(ev.at, 2, 5, rng, others, 1) ?? nearFree(ev.at, 1, 6, rng, others) ?? { x: ev.at[0] + 0.5, y: ev.at[1] + 0.5 };
       addEntity(state, {
         id: `event:${ev.id}`,
         chunk: chunkOf(ev.at[0], ev.at[1]),
-        dayEvent: { id: ev.id, day, at: ev.at, area: ev.area },
+        dayEvent: { id: ev.id, day, at: ev.at, area: ev.area, ...(stall ? { stall } : {}) },
         person: { kind: 'event', ref: ev.id },
         position: { x: stand.x * 2, y: env.groundY(stand.x, stand.y), z: stand.y * 2, facing: 0 },
         motion: { vx: 0, vz: 0, speed: 0 },
@@ -1011,11 +1015,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // room: the cells around it that must be free too (1: three by three), for a pile of things.
   // The stall of a seller on a market day (#42): the mat of the rice, her seat behind it (-z), and
   // her tray in front of her beside the mat, at the nearest cell to the spot where all three are
-  // open (open(q): walkable, and no person near). Null when no cell fits.
+  // open (open(q): the ground is open, and no person is near). Null when no cell fits.
   const STALL = { seat: [-1.5, -2], tray: [-3, 0] };
   function marketStall([x, y], open) {
     const cells = [];
-    for (let dy = -6; dy <= 6; dy++) for (let dx = -6; dx <= 6; dx++) cells.push([dx, dy, Math.hypot(dx, dy)]);
+    for (let dy = -8; dy <= 8; dy++) for (let dx = -8; dx <= 8; dx++) cells.push([dx, dy, Math.hypot(dx, dy)]);
     cells.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0]);
     for (const [dx, dy] of cells) {
       const mat = { x: Math.floor(x) + dx + 0.5, y: Math.floor(y) + dy + 0.5 };
@@ -1087,12 +1091,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A market day (#42): the seller sits behind the mat of the rice, and her tray of goods lies in
     // front of her, beside the mat, toward the child, so that the child sees all her goods. The mat
     // goes to the nearest cell where the mat, her seat, and the tray are all free.
-    const stall = task.goods ? marketStall(ent.dayEvent.at, openAt) : null;
+    const stall = task.goods ? ent.dayEvent.stall ?? marketStall(ent.dayEvent.at, openAt) : null;
     const placeAt = stall?.mat ?? (openAt(target) ? target : nearFree(ent.dayEvent.at, 1, 4, rng, others) ?? target);
     const trayAt = stall?.tray ?? null;
     if (stall) ent.position = { ...ent.position, x: stall.seat.x * 2, y: env.groundY(stall.seat.x, stall.seat.y), z: stall.seat.y * 2, facing: 0 };
     const taken = [placeAt, { x: ent.position.x / 2, y: ent.position.z / 2 }, ...(trayAt ? [trayAt] : []), ...others];
-    const pileAt = nearFree(ent.dayEvent.at, 4, 7, rng, taken, 1) ?? nearFree(ent.dayEvent.at, 2, 10, rng, [], 1) ?? placeAt;
+    // The rice of the basket of a market day lies by the mat (#42), a few steps from it.
+    const near = trayAt ? [Math.floor(placeAt.x), Math.floor(placeAt.y)] : ent.dayEvent.at;
+    const pileAt = (trayAt ? nearFree(near, 3, 5, rng, taken, 1) : null) ?? nearFree(ent.dayEvent.at, 4, 7, rng, taken, 1) ?? nearFree(ent.dayEvent.at, 2, 10, rng, [], 1) ?? placeAt;
     const lost = [];
     if (task.lost) {
       // Some lost things are near; the others are farther, out of view from the place, so that
