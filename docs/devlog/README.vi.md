@@ -10,6 +10,7 @@ Chúng tôi viết cho các bậc cha mẹ và cho bất kỳ ai muốn biết v
 
 | Ngày | Bài viết |
 | --- | --- |
+| 7/10/2026 | [Đếm, không phải canh giờ](2026-10-07-a-count-not-a-clock.vi.md) |
 | 6/10/2026 | [Chơi như một đứa trẻ](2026-10-06-play-it-as-a-child.vi.md) |
 | 5/10/2026 | [Ông Dương và chị Hến: cách gọi tên ở miền Bắc](2026-10-05-names-in-the-north.vi.md) |
 | 5/10/2026 | [Cô Năm, chứ không phải cô Cấy: tên gọi, từ ngữ, và bắp ngô](2026-10-05-names-words-and-corn.vi.md) |
