@@ -111,14 +111,28 @@ const EAVES = 2; // cells: a building counts within its eaves (not a kite high o
 const REACH = 30; // cells: farther buildings never cover the work
 const WORK_HEIGHTS = [0.3, 1.2]; // over the ground: a thing of the work, and the body of a person
 
-// The boxes of the buildings near the points of the work (world units: x, z in cells, y in blocks
-// over the ground, as terrain.boxOf).
+// A thing this tall (blocks over its ground) or more covers the work when it stands in front: a
+// gate post, a wall, a tall tree, a stack (#42). A bush or a fence is lower. A tall thing at the
+// work (within AT_WORK cells of a point: the clumps of the grove where the woodcutter works) is the
+// place of the work: no turn shows the work out of it, and it fades as the hero walks in.
+// Only a tall thing within TALL_REACH cells counts: a far clump of bamboo fades as a small part of
+// the view, and the gate post right by the work fades as a large dotted shape over it.
+export const TALL = 2;
+const AT_WORK = 1.5;
+const TALL_REACH = 10;
+
+// The boxes of the buildings and of the other tall things near the points of the work (world
+// units: x, z in cells, y in blocks over the ground, as terrain.boxOf).
 export function workBoxes(terrain, points) {
   const near = (o) => points.some((p) => Math.abs(o.x + o.w / 2 - p.x) < REACH && Math.abs(o.y + o.h / 2 - p.z) < REACH);
-  return terrain.objects.filter((o) => BUILDINGS.has(o.kind) && !o.gone && near(o)).map((o) => {
+  const out = [];
+  for (const o of terrain.objects) {
+    if (o.gone || !near(o)) continue;
     const b = terrain.boxOf(o);
-    return { ...b, x0: Math.max(b.x0, o.x - EAVES), x1: Math.min(b.x1, o.x + o.w + EAVES), z0: Math.max(b.z0, o.y - EAVES), z1: Math.min(b.z1, o.y + o.h + EAVES), id: o.id ?? o.kind };
-  });
+    if (BUILDINGS.has(o.kind)) out.push({ ...b, x0: Math.max(b.x0, o.x - EAVES), x1: Math.min(b.x1, o.x + o.w + EAVES), z0: Math.max(b.z0, o.y - EAVES), z1: Math.min(b.z1, o.y + o.h + EAVES), id: o.id ?? o.kind, building: true });
+    else if (b.y1 - b.y0 >= TALL && points.some((p) => Math.abs(o.x + o.w / 2 - p.x) < TALL_REACH && Math.abs(o.y + o.h / 2 - p.z) < TALL_REACH) && !points.some((p) => p.x >= b.x0 - AT_WORK && p.x <= b.x1 + AT_WORK && p.z >= b.z0 - AT_WORK && p.z <= b.z1 + AT_WORK)) out.push({ ...b, id: o.id ?? o.kind });
+  }
+  return out;
 }
 
 // The boxes that cover a point of the work from the angle az. points: { x, y, z } (world units, y:
@@ -131,9 +145,15 @@ export function workCovers(boxes, points, az, elevation) {
 // The turn (in steps of 90 degrees) to the first angle that shows the work with nothing in front:
 // none when the angle now shows it, then one step either way, then the back. inSight(az): the
 // person and the example are on the screen from that angle (the screen of a phone held upright is
-// narrow); an angle with them in sight comes first. 0 when no angle is clear (the view stays).
+// narrow); an angle with them in sight comes first. When no angle is free of all tall things, the
+// first angle with no building in front (a tall tree fades to a few dots; a house hides the work,
+// #42). 0 when no angle is clear (the view stays).
 export function workTurn(boxes, points, az, elevation, inSight = () => true) {
   const order = [0, 1, -1, 2];
-  const clear = order.filter((steps) => !workCovers(boxes, points, az + (steps * Math.PI) / 2, elevation).length);
-  return clear.find((steps) => inSight(az + (steps * Math.PI) / 2)) ?? clear[0] ?? 0;
+  const covers = order.map((steps) => workCovers(boxes, points, az + (steps * Math.PI) / 2, elevation));
+  const pick = (ok) => {
+    const clear = order.filter((_, i) => ok(covers[i]));
+    return clear.find((steps) => inSight(az + (steps * Math.PI) / 2)) ?? clear[0];
+  };
+  return pick((c) => !c.length) ?? pick((c) => !c.some((b) => b.building)) ?? 0;
 }

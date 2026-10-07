@@ -140,8 +140,10 @@ A.places = {
     'giong-pot': {'x': 10.7, 'y': 13.2},
     'buffalo-shade': {'x': 37.6, 'y': 17.5},
     # Nhảy lò cò (docs/FOLKGAMES.md): the start line of the court, and the way that it goes (east).
-    'hopscotch': {'x': 34.3, 'y': 12.7},
-    'hopscotch-to': {'x': 37.8, 'y': 12.7},
+    # In an open yard by the bend of the road east of the gate, with nothing tall on it or near it
+    # (#42: at the gate, the gate posts and a tree covered it from every angle).
+    'hopscotch': {'x': 44.7, 'y': 9.7},
+    'hopscotch-to': {'x': 48.2, 'y': 9.7},
 }
 # The spots of the small events of the day in the village (cells): the road on the south bank,
 # the paddies on the south bank by the river (they can flood) and by the home, and the yard in

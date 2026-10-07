@@ -1,11 +1,13 @@
 // The camera sees the work (#38): when a task or an example starts, the view turns (in its steps of
-// 90 degrees) to an angle where no house or roof covers the places of the work and its person
-// (workTurn in src/world/fade.js, the event workView of the session).
+// 90 degrees) to an angle where no house or roof covers the places of the work and its person, and
+// where it can, no other tall thing either (#42; workTurn in src/world/fade.js, the event workView
+// of the session).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { planeOf, load } from './helpers.js';
 import { placesOf } from '../src/core/world/env.js';
-import { workBoxes, workCovers, workTurn } from '../src/world/fade.js';
+import { readFileSync } from 'node:fs';
+import { workBoxes, workCovers, workTurn, TALL } from '../src/world/fade.js';
 import { VIEW, viewSize, inView, inSafe, figureBox, leadFocus } from '../src/world/view.js';
 import { runHeadless } from './story-run.js';
 
@@ -55,8 +57,9 @@ test('from each of the four angles, the turn of the view finds an angle where no
     for (const az of ANGLES) {
       const steps = workTurn(w.boxes, w.points, az, VIEW.elevation, inSight);
       const to = az + (steps * Math.PI) / 2;
-      assert.deepEqual(workCovers(w.boxes, w.points, to, VIEW.elevation).map((b) => b.id), [], `${w.id} from the angle ${ANGLES.indexOf(az)}: a building covers the work`);
-      if (steps === 0) assert.equal(workCovers(w.boxes, w.points, az, VIEW.elevation).length, 0, 'the view stays only when the work is in sight');
+      const houses = (a) => workCovers(w.boxes, w.points, a, VIEW.elevation).filter((b) => b.building).map((b) => b.id);
+      assert.deepEqual(houses(to), [], `${w.id} from the angle ${ANGLES.indexOf(az)}: a building covers the work`);
+      if (steps === 0) assert.deepEqual(houses(az), [], 'the view stays only when the work is in sight');
       assert.ok(inSight(to), `${w.id} from the angle ${ANGLES.indexOf(az)}: the person and the example on a portrait screen`);
     }
   }
@@ -78,6 +81,41 @@ test('with the real camera on a phone held upright (the focus on the hero after 
       assert.ok(lead.fits, `${w.id} from the angle ${ANGLES.indexOf(az)}: the work fits on the screen`);
       const size = viewSize(390, 844, lead.level);
       for (const p of points) assert.ok(inSafe(figureBox(p), lead.focus, { az, size }), `${w.id}: a point of the work is not fully on the screen, or is under the HUD or the buttons`);
+    }
+  }
+});
+
+// The folk games in the open (#42): the court of nhảy lò cò and the rope of nhảy dây. Nothing tall
+// (a house, a gate post, a wall, a tall tree, a stack: workBoxes) stands on the work, and from each
+// of the four angles the turn of the view finds an angle where nothing tall covers it.
+async function folkPoints(name, read) {
+  const story = JSON.parse(readFileSync(new URL(`./stories/${name}.json`, import.meta.url)));
+  story.steps = story.steps.slice(0, 1);
+  let session = null;
+  const failures = await runHeadless(story, { onSession: (s) => { session = s; } });
+  assert.deepEqual(failures, []);
+  return read((id) => session.state.entities.find((e) => e.id === id)).map((q) => ({ x: q.x / 2, y: q.y / 2, z: q.z / 2 }));
+}
+
+test('the court of nhay lo co and the rope of nhay day are in the open: nothing tall on them, and a turn of the view finds an angle where nothing tall covers them', async () => {
+  const { terrain } = planeOf(1, { blocks: load('data/world/blocks.json'), places: ['phu-dong', 'xom-ruong'] });
+  const games = {
+    // The half circle to rest has no height of its own: the height of the last square.
+    court: await folkPoints('practice-nhay-lo-co', (E) => { const c = E('folk:court').folkCourt; return [...c.squares, { ...c.rest, y: c.squares.at(-1).y }]; }),
+    // The two children who turn the rope, and the middle of the rope (as the event workView).
+    rope: await folkPoints('practice-nhay-day', (E) => ['npc:rope-child', 'folk:turner:1', 'folk:rope'].map((id) => E(id).position)),
+  };
+  for (const [id, points] of Object.entries(games)) {
+    assert.ok(points.length >= 2, id);
+    const boxes = workBoxes(terrain, points);
+    // Nothing tall on the work: no tall thing holds a point of the work.
+    const tall = terrain.objects.filter((o) => !o.gone).map((o) => ({ o, b: terrain.boxOf(o) })).filter(({ b }) => b.y1 - b.y0 >= TALL);
+    const on = tall.filter(({ b }) => points.some((p) => p.x >= b.x0 && p.x <= b.x1 && p.z >= b.z0 && p.z <= b.z1)).map(({ o }) => o.id ?? o.kind);
+    assert.deepEqual(on, [], `${id}: a tall thing on the work`);
+    for (const az of ANGLES) {
+      const steps = workTurn(boxes, points, az, VIEW.elevation);
+      const to = az + (steps * Math.PI) / 2;
+      assert.deepEqual(workCovers(boxes, points, to, VIEW.elevation).map((b) => b.id), [], `${id} from the angle ${ANGLES.indexOf(az)}: a tall thing covers the work`);
     }
   }
 });
