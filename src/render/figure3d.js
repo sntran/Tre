@@ -121,7 +121,6 @@ export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
     dispose() {
       for (const m of [parts, hulls]) m.material.dispose();
       box.dispose();
-      ring.dispose();
     },
   };
 }
