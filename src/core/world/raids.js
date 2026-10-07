@@ -91,7 +91,7 @@ const unit = (v) => {
 // teach: the tools that are new to the child in this raid (the first raid of each tool).
 // The part of the road that the animals and the children of the court leave in a raid (#55): from
 // behind the wall to the start of the farthest enemy, KEEP_SIDE half blocks to each side.
-export const KEEP_SIDE = 8;
+export const KEEP_SIDE = 12;
 const KEEP_BACK = 4; // half blocks behind the wall
 function keepOf(wall, dir, phases, posts) {
   const starts = phases.flatMap((p) => p.waves ?? []).filter((w) => w.from).map((w) => hb(w.from));

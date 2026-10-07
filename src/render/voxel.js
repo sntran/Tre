@@ -987,7 +987,11 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
   // The fade of each object follows the line of sight from the hero to the camera
   // (src/world/fade.js). The texture keeps the stipple: 0 under FADE_MIN, so that a thing that only
   // touches the line, or that was in front once, keeps no dots.
-  function updateFades(hero, dt) {
+  // seen: the hero, or a list of points that the child must see (the hero first; in a raid also
+  // the posts and the enemies, #55).
+  function updateFades(seen, dt) {
+    const points = Array.isArray(seen) ? seen : [seen];
+    const hero = points[0];
     if (boxVersion !== terrain.version) {
       boxVersion = terrain.version;
       boxes = terrain.objects.map((o) => ({ who: o.who, b: terrain.boxOf(o), building: BUILDINGS.has(o.kind) }));
@@ -998,7 +1002,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
       const was = fades.get(o.who) ?? 0;
       // A building fades only when its blocks or its roof hide the hero; a tree, a bush, or a
       // haystack (a smooth look) when the line crosses its box (#53).
-      const hit = inFront(o.b, hero, state.az, VIEW.elevation) && (!o.building || hidesHero(o.b, hero, state.az, VIEW.elevation, (x, y, z) => terrain.hits(o.who, x, y, z)));
+      const hit = points.some((p) => inFront(o.b, p, state.az, VIEW.elevation) && (!o.building || hidesHero(o.b, p, state.az, VIEW.elevation, (x, y, z) => terrain.hits(o.who, x, y, z))));
       const next = stepFade(was, hit, dt);
       if (next === was) continue;
       if (next) fades.set(o.who, next);
@@ -1083,7 +1087,8 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     // sky: { night, flood } from the world state. ambient: { gusts: { paddy, hedge, tree }, wind
     // ({ x, z }), windy } for the sway (src/core/world/ambient.js). hero: the point that the view
     // follows (in a raid or at work, a point between the hero and the work); seen: the hero, for the
-    // fade of the things in front of the hero (#55: the roof of the forge over the hero at the wall).
+    // fade of the things in front of the hero (#55: the roof of the forge over the hero at the wall),
+    // or a list of points (the hero first).
     render(dt, hero, t, sky = null, ambient = null, seen = hero) {
       uniforms.uTime.value = t;
       if (ambient) {

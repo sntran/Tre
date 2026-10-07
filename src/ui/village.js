@@ -950,6 +950,15 @@ export async function mountVillage(ctx, params = {}) {
   // upright, and zooms out one step when they need it. It ends when the hero walks away.
   let work = null;
   const WORK_AWAY = 16; // cells: the hero this far from the middle of the work ends the lead
+  // The points that the child must see (world units): the hero; in a raid also the posts and the
+  // enemies, so that a tree or a roof in front of the road fades (#55: a child counts the post
+  // where the enemy stands).
+  function seenPoints(heroAt) {
+    const r = getEntity(state, 'raid')?.raid;
+    if (!r || r.result) return heroAt;
+    const at = (p) => ({ x: p.x / 2, y: groundY(p.x / 2, p.z / 2), z: p.z / 2 });
+    return [heroAt, ...r.posts.map(at), ...r.enemies.filter((e) => e.state !== 'retreat').map(at)];
+  }
   function leadToWork(heroAt) {
     if (!work) return heroAt;
     const mid = work.points.reduce((a, p) => ({ x: a.x + p.x / work.points.length, z: a.z + p.z / work.points.length }), { x: 0, z: 0 });
@@ -1418,7 +1427,7 @@ export async function mountVillage(ctx, params = {}) {
     const puddles = puddlesAt((d) => rainOf(state.seed, d, data.day ?? undefined), state.clock.minutes);
     const heroAt = figures.placeOf('hero');
     if (!heroAt) return;
-    view.render(dt, raidView.focus(leadToWork(heroAt)), time, { ...state.sky, puddles }, ambient, heroAt);
+    view.render(dt, raidView.focus(leadToWork(heroAt)), time, { ...state.sky, puddles }, ambient, seenPoints(heroAt));
     drawSky();
     raidView.draw(dt, w, hh);
     drawMarks();

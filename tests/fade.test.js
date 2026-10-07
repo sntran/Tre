@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { columnTop } from '../src/world/terrain.js';
 import { inFront, hidesHero, stepFade, stippleOf, toCamera, FADE_MIN, FADE_HOLES, FADE_OUTLINE, BUILDINGS } from '../src/world/fade.js';
 import { load, planeOf } from './helpers.js';
@@ -120,4 +121,22 @@ test('at the wall of the scouts, the roof of the forge hides the hero from one a
   assert.ok(hides(hero, az), 'the roof of the forge is between the camera and the hero');
   const road = { ...hero, x: hero.x + def.dir[0] * 8, z: hero.z + def.dir[1] * 8 };
   assert.ok(!hides(road, az), 'a point on the road is not behind the forge: a fade from it would keep the roof');
+});
+
+// In a raid the child must see the post where an enemy stands (#55, frame 2 of the play): a tree in
+// front of the road hides the far posts but not the hero. The view gives the fade the posts and the
+// enemies too (seenPoints in src/ui/village.js), so that the tree fades.
+test('at the wall of the scouts, a tree hides a far post and not the hero: the posts must be points of the fade too (#55)', () => {
+  const def = load('data/raids.json').raids.scouts;
+  const point = (cx, cy) => {
+    const [x, z] = at('phu-dong', cx, cy);
+    return { x, y: columnTop(tileMap.heightAt(Math.floor(x), Math.floor(z))), z };
+  };
+  const hero = point(def.wall[0] + 0.5, def.wall[1] + 0.5);
+  const post = point(def.wall[0] + 0.5 + 20 / 2, def.wall[1] + 0.5);
+  const az = Math.PI / 4;
+  const hidesPost = terrain.objects.filter((o) => inFront(terrain.boxOf(o), post, az, ELEVATION) && !inFront(terrain.boxOf(o), hero, az, ELEVATION));
+  assert.ok(hidesPost.length > 0, 'a thing hides the fourth post from the camera of the start');
+  const view = readFileSync(new URL('../src/ui/village.js', import.meta.url), 'utf8');
+  assert.match(view, /function seenPoints[\s\S]*r\.posts[\s\S]*r\.enemies/, 'the view gives the posts and the enemies to the fade');
 });

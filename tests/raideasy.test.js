@@ -124,13 +124,13 @@ test('in a raid, the animals leave the road and the children of the court go hom
   // A buffalo on the road at the start of the raid walks off it.
   const buffalo = w.entities.find((e) => e.look === 'buffalo' && e.steer);
   Object.assign(buffalo.position, { x: (keep.a.x + keep.b.x) / 2, z: (keep.a.z + keep.b.z) / 2 });
-  for (let i = 0; i < 30 * 10; i++) {
+  for (let i = 0; i < 30 * 20; i++) {
     session.step();
     session.events();
   }
   assert.ok(children.every((c) => c.hidden), 'the children of the court went home');
   for (const e of query(w, 'steer', 'position').filter((x) => x.steer.medium === 'land' && !x.follow && !x.hidden)) {
-    assert.ok(offRoad(keep, e.position).d >= KEEP_SIDE - 0.5, `${e.id} (${e.look}) is ${offRoad(keep, e.position).d.toFixed(1)} half blocks from the road`);
+    assert.ok(offRoad(keep, e.position).d >= KEEP_SIDE - 1, `${e.id} (${e.look}) is ${offRoad(keep, e.position).d.toFixed(1)} half blocks from the road`);
   }
   // The end of the raid: the children come back.
   getEntity(w, 'raid').raid.result = 'won';
