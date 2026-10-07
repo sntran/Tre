@@ -129,9 +129,10 @@ function mirror(world, raid, env) {
     const post = getEntity(world, `post:${i + 1}`);
     if (!post) continue;
     const waiting = raid.predict.state === 'pending' && raid.enemies.some((e) => e.state !== 'retreat');
-    // While the child sets a pull, the posts up to the pull light up (#55).
-    const on = !waiting && (raid.pull ?? 0) >= raid.posts[i].d;
-    post.look = `post-${i + 1}${waiting ? '-lit' : on ? '-on' : ''}`;
+    // While the child sets a pull, the posts up to the pull light up (#55), also before the first
+    // shot: the pull comes before the caps that wait for a tap.
+    const on = (raid.pull ?? 0) >= raid.posts[i].d;
+    post.look = `post-${i + 1}${on ? '-on' : waiting ? '-lit' : ''}`;
     if (waiting) post.raidTap = { what: 'post', id: raid.posts[i].d };
     else delete post.raidTap;
   }

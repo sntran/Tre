@@ -91,6 +91,13 @@ test('while the child presses, the posts up to the pull light up and a ring lies
   assert.deepEqual(looks, ['post-1-on', 'post-2-on', 'post-3', 'post-4']);
   const ring = getEntity(w, 'ring:pull');
   assert.ok(ring && ring.look === 'pull-ring' && Math.abs(ring.position.x - (live.wall.x + live.dir.x * 10)) < 1e-6, 'the ring at the count');
+  // Before the first shot the posts wait for a tap (yellow caps); a pull lights them all the same
+  // (the play of #55: four presses before the first shot showed no lit post).
+  live.predict.state = 'pending';
+  live.pull = 15;
+  raidSystem(w, 1 / 30, null, { groundY: () => 0 });
+  const first = query(w, 'raidThing').filter((e) => String(e.id).startsWith('post:')).sort((a, b) => a.id.localeCompare(b.id)).map((e) => e.look);
+  assert.deepEqual(first, ['post-1-on', 'post-2-on', 'post-3-on', 'post-4-lit']);
 });
 
 test('in the raid of the general, Gióng rides his iron horse beside the road, away from the jar, the brazier, the forge, and the flags (#50)', async () => {
