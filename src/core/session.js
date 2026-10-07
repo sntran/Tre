@@ -2154,7 +2154,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const from = heroFrom();
     const here = { x: from.x + 0.5, y: from.y + 0.5 };
     const left = Math.hypot(goal.x - here.x, goal.y - here.y);
-    if (left < 1.5) return true;
+    if (left < 1.5) {
+      // The last step: onto the cell of the goal when the hero can stand there, so that the hero
+      // comes into the zone of a place (the gate of Văn Miếu, #51).
+      const tile = { x: Math.floor(goal.x), y: Math.floor(goal.y) };
+      if ((from.x !== tile.x || from.y !== tile.y) && pathMap().walkable(tile.x, tile.y)) walkPath(findPath(pathMap(), from, tile), { x: goal.x, y: goal.y }, null);
+      return true;
+    }
     const way = findPath(pathMap(), from, { x: Math.floor(goal.x), y: Math.floor(goal.y) }, { maxNodes: LEG, nearest: true });
     const end = way?.length ? way[way.length - 1] : null;
     if (!end || Math.hypot(goal.x - end.x - 0.5, goal.y - end.y - 0.5) > left - 1) {

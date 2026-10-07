@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { load } from './helpers.js';
-import { currentGoal } from '../src/core/quests.js';
+import { currentGoal, placeMark } from '../src/core/quests.js';
 
 const quests = load('data/quests.json').quests;
 
@@ -19,6 +19,9 @@ test('the place of each step of a quest is inside a zone of its map that the her
     const { x, y } = st.place;
     const inside = zones.filter((z) => x >= z.x && x < z.x + (z.w ?? 1) && y >= z.y && y < z.y + (z.h ?? 1));
     assert.ok(inside.length, `${q.id}/${st.id}: the place ${x}, ${y} is in no zone of ${st.place.map}`);
+    // The star is on the cell of the place, so that the last step of a walk to it is into the zone.
+    const mark = placeMark(st.place);
+    assert.ok(inside.some((z) => mark.x >= z.x && mark.x < z.x + (z.w ?? 1) && mark.y >= z.y && mark.y < z.y + (z.h ?? 1)), `${q.id}/${st.id}: the star of the place is out of its zone`);
   }
   assert.ok(n >= 2);
 });

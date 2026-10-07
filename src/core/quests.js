@@ -46,3 +46,9 @@ export function liveTargets(step, flags, { raidOf = () => null, raids = {}, minu
     return !(back !== undefined && back > minutes);
   });
 }
+
+// The point of the star of a place of a step (map cells): the middle of the cell of the place, so
+// that a walk to the star ends in the zone of the place (#51).
+export function placeMark(place) {
+  return { x: place.x + 0.5, y: place.y + 0.5 };
+}

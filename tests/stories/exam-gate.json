@@ -1,0 +1,87 @@
+{
+ "name": "exam-gate",
+ "about": {
+  "vi": "Sau khi Gióng bay về trời, ngôi sao dẫn An đến cổng Văn Miếu. An chạm vào ngôi sao (ở giữa ô của chỗ cần đến, trên mặt phẳng là 9113,5 và 6343,5), đi theo nó vào cổng, và Văn Miếu mở ra với bài thi của thời Văn Lang.",
+  "en": "After Gióng rides into the sky, the star leads An to the gate of Văn Miếu. An taps the star (in the middle of the cell of the place, 9113.5 and 6343.5 on the plane), follows it into the gate, and Văn Miếu opens with the exam of the Văn Lang era."
+ },
+ "profile": {
+  "name": "An",
+  "grade": 2,
+  "lang": "vi",
+  "seed": 7,
+  "flags": {
+   "intro.seen": true,
+   "prologue.started": true,
+   "prologue.done": true,
+   "trial.scholar.done": true,
+   "trial.smith.done": true,
+   "trial.fisher.done": true,
+   "trial.healer.done": true,
+   "trial.woodcutter.done": true,
+   "giong.farewell": true,
+   "giong.messenger": true,
+   "giong.spoke": true,
+   "horse.iron": true,
+   "horse.forged": true,
+   "giong.grown": true,
+   "soldier1.won": true,
+   "soldier2.won": true,
+   "boss.staffs": true,
+   "era1.boss.won": true,
+   "river.calmed": true,
+   "scouts.won": true
+  }
+ },
+ "clock": 540,
+ "at": [
+  "road-thanglong",
+  20,
+  40
+ ],
+ "steps": [
+  {
+   "expect": [
+    {
+     "event": "open",
+     "not": true
+    }
+   ]
+  },
+  {
+   "do": {
+    "type": "tap",
+    "target": {
+     "ground": {
+      "x": 9113.5,
+      "y": 6343.5,
+      "h": 3,
+      "goal": true
+     }
+    }
+   }
+  },
+  {
+   "until": {
+    "event": "open",
+    "with": {
+     "screen": "vanmieu"
+    },
+    "timeout": 60
+   }
+  },
+  {
+   "expect": [
+    {
+     "screen": "vanmieu"
+    },
+    {
+     "flag": "exam.era1.passed",
+     "is": false
+    },
+    {
+     "flag": "giong.farewell"
+    }
+   ]
+  }
+ ]
+}

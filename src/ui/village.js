@@ -2,7 +2,7 @@
 // session owns the world state and the story logic; this file draws the state, turns the input
 // into commands, and reacts to the events: the dialogue box, the screens, the sounds, the HUD,
 // and the marks over the world.
-import { currentGoal, liveTargets } from '../core/quests.js';
+import { currentGoal, liveTargets, placeMark } from '../core/quests.js';
 import { questMark } from '../core/clues.js';
 import { conditionState } from '../core/game.js';
 import { edgeMarker } from '../core/hit.js';
@@ -514,7 +514,7 @@ export async function mountVillage(ctx, params = {}) {
         if (o) out.push({ x: o.x + o.w / 2, y: o.y + o.h / 2, h: (thing ? terrain.boxOf(thing).y1 : groundY(o.x, o.y) + 2) + 0.8 });
       }
     }
-    if (stepGoal.place && (stepGoal.place.map ?? mapData.id) === mapData.id) out.push({ x: stepGoal.place.x + 1, y: stepGoal.place.y + 0.5, h: groundY(stepGoal.place.x, stepGoal.place.y) + 3 });
+    if (stepGoal.place && (stepGoal.place.map ?? mapData.id) === mapData.id) out.push({ ...placeMark(stepGoal.place), h: groundY(stepGoal.place.x, stepGoal.place.y) + 3 });
     // A place that the hero did not find yet (Trâu Sơn, #27): the mark shows only the way.
     if (!data.clues || !data.world?.at) return out;
     const h = hero().position;
