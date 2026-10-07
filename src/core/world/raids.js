@@ -334,7 +334,9 @@ function tickEnemy(raid, e, dt, ctx, out) {
     return;
   }
   const gateD = along(raid, raid.gate);
-  if (kind.torch && e.cool <= 0 && d - gateD <= kind.torch.range && d - gateD > 1) {
+  // A torch only where the child has the gate to stop it (#55: the first raid of the slingshot has
+  // no gate, and so no torch).
+  if (kind.torch && raid.tools.includes('gate') && e.cool <= 0 && d - gateD <= kind.torch.range && d - gateD > 1) {
     e.state = 'torch';
     e.t = kind.torch.tell;
     e.lit = raid.t;

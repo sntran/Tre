@@ -51,6 +51,11 @@ test('the first raid of the slingshot has no gate: one new tool in a raid', () =
   // Without the gate, a scout still comes to the gate and walks the road.
   run(raid, 5);
   assert.ok(along(raid, raid.enemies[0]) > 0);
+  // With no gate to stop a torch, the scouts throw no torch: the child has only the slingshot.
+  const out = run(raid, 120);
+  assert.equal(out.filter((ev) => ev.type === 'light').length, 0, 'no torch');
+  const gated = createRaid(raids, 'scouts', 0, null, [], {});
+  assert.ok(run(gated, 120).some((ev) => ev.type === 'light'), 'with the gate, the scouts light torches');
 });
 
 test('at Trâu Sơn, with the soldiers in reach, a press starts the raid, not a look at the field (#55)', async () => {

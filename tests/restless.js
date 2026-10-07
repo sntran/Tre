@@ -175,3 +175,85 @@ export function playPresses(session, { presses = 40, wait = 2.5, hold = 1, until
   if (asked) broken.add(`a press asked for help ${asked} times`);
   return [...broken];
 }
+
+// A child of six in a raid with the big button only (#55). The child taps the enemy of the
+// encounter and presses. In the raid the child looks at the nearest enemy that walks to the gate,
+// counts the red bands of the post nearest to it, and presses that many times (a press each
+// 0.3 seconds); the stone flies one second after the last press. A restless child miscounts by one
+// post at times (miscount), and waits a moment (0.5 to 2 seconds) after each stone lands. Return
+// { won (true, false, or null when the raid did not end), shots, hits }.
+export function playRaid(session, encounter, { seed = 1, miscount = 0.25, seconds = 300 } = {}) {
+  const random = createRng(`raid:${seed}`);
+  const rng = () => random.next();
+  let won = null;
+  let shots = 0;
+  let hits = 0;
+  let flying = 0;
+  const off = session.listen((ev) => {
+    if (ev.type === 'end' && typeof ev.won === 'boolean') won = ev.won;
+    if (ev.type === 'shoot') {
+      shots += 1;
+      flying += 1;
+    }
+    if (ev.type === 'land') flying = Math.max(0, flying - 1);
+    if (ev.type === 'hit') hits += 1;
+  });
+  const run = (s) => {
+    for (let i = 0; i < s / STEP; i++) {
+      session.step();
+      session.events();
+    }
+  };
+  const read = () => {
+    for (let n = 0; session.screen && n < 40; n++) {
+      session.command(session.screen === 'dialogue' || session.screen === 'say' ? { type: 'next' } : { type: 'close' });
+      session.events();
+      run(0.3);
+    }
+  };
+  session.command({ type: 'tap', target: { person: encounter } });
+  session.events();
+  session.command({ type: 'hands' });
+  session.events();
+  let t = 0;
+  let rest = 0;
+  for (; t < 20 && !getEntity(session.state, 'raid'); t += 0.3) {
+    read();
+    run(0.3);
+  }
+  while (t < seconds && won === null) {
+    read();
+    const raid = getEntity(session.state, 'raid')?.raid;
+    if (!raid) break;
+    if (rest > 0 || flying || raid.reload > 0) {
+      rest -= STEP;
+      run(STEP);
+      t += STEP;
+      continue;
+    }
+    const foes = raid.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone' && e.hits < e.max);
+    const near = foes.map((e) => ({ e, d: (e.x - raid.wall.x) * raid.dir.x + (e.z - raid.wall.z) * raid.dir.z })).filter((f) => f.d > 2).sort((a, b) => a.d - b.d)[0];
+    if (!near) {
+      run(0.2);
+      t += 0.2;
+      continue;
+    }
+    // The bands of the post nearest to the enemy, sometimes one more or one less.
+    let posts = Math.max(1, Math.round(near.d / 5));
+    if (rng() < miscount) posts = Math.max(1, posts + (rng() < 0.5 ? -1 : 1));
+    for (let k = 0; k < posts; k++) {
+      session.command({ type: 'hands' });
+      session.events();
+      run(0.3);
+      t += 0.3;
+    }
+    // The stone flies one second after the last press.
+    run(1.1);
+    t += 1.1;
+    rest = 0.5 + rng() * 1.5;
+  }
+  run(3);
+  read();
+  off();
+  return { won, shots, hits };
+}
