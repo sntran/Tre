@@ -486,3 +486,10 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 - **The words of a greeting by the age of the person** (`greet` in `data/npcs.json`): an old person says one of `world.greet.1` ("Chào {name}!"), `world.greet.2` ("Chào cháu!"), and `world.greet.3` ("Cháu ngoan quá!"); a grown person says `world.greet.1` or `world.greet.2`; a big sister (the duck girl) says `world.greet.1` or `world.greet.young` ("Chào em!"); a child of a folk game says `world.greet.1` or `world.greet.child` ("Chào bạn!"). Gióng and the enemies do not greet.
 - A person greets one time when the child comes near, and not again for some minutes; never during the work of the people near the child.
 - **Please check:** "Chào em!" from the duck girl, and "Chào bạn!" from a child to a child.
+
+## The words of the raids (#50)
+
+- **A lost raid says who left and when they come back:** `raid.lost` ("Quân giặc lấy một ít đồ rồi đi. Sáng mai chúng quay lại."), `raid.river.lost` ("Hai con thuồng luồng nhỏ bơi đi rồi. Sáng mai chúng quay lại chỗ lội."), and `raid.scouts.lost` ("Bọn lính trinh sát lấy một ít đồ rồi chạy đi. Sáng mai chúng quay lại.").
+- **The lines that say what the raid does:** `dlg.scouts.won.n1` (four scouts, not two); `dlg.fisher.river.n1` and `dlg.river.friends.n5` (the serpents are hungry and eat the rice balls; no shell of ice); `dlg.river.friends.n6` ("[[song]] cũng trở thành bạn của em.").
+- **No hearts:** `practice.note` ("Ở đây làm sai thì làm lại. Không mất gì cả.") and `dlg.teacher.practice.n1`. The lines of the old battle screen are gone: `friend.*.help` and `calling.*.van` and `calling.*.vo`.
+- **Please check:** "Sáng mai chúng quay lại" for a lost raid, and "làm sai thì làm lại" for the practice with the teacher.

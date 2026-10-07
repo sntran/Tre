@@ -2,19 +2,19 @@
   "_about": "The five callings (nghề). A calling never blocks a subject. It gives a bonus in one subject. bonus: the battle bonus of the Võ skill. look: the look of the mentor in data/figures.json, drawn at full length with the tool of the calling.",
   "callings": [
     { "id": "scholar", "look": "mentor-scholar", "nameKey": "calling.scholar.name", "mentorKey": "calling.scholar.mentor",
-      "subjectKey": "calling.scholar.subject", "vanKey": "calling.scholar.van", "voKey": "calling.scholar.vo",
+      "subjectKey": "calling.scholar.subject",
       "bonus": { "extraCards": 1, "shieldBlock": 1 } },
     { "id": "smith", "look": "mentor-smith", "nameKey": "calling.smith.name", "mentorKey": "calling.smith.mentor",
-      "subjectKey": "calling.smith.subject", "vanKey": "calling.smith.van", "voKey": "calling.smith.vo",
+      "subjectKey": "calling.smith.subject",
       "bonus": { "damage": { "shield": 1 } } },
     { "id": "fisher", "look": "mentor-fisher", "nameKey": "calling.fisher.name", "mentorKey": "calling.fisher.mentor",
-      "subjectKey": "calling.fisher.subject", "vanKey": "calling.fisher.van", "voKey": "calling.fisher.vo",
+      "subjectKey": "calling.fisher.subject",
       "bonus": { "damage": { "water": 1 } } },
     { "id": "healer", "look": "mentor-healer", "nameKey": "calling.healer.name", "mentorKey": "calling.healer.mentor",
-      "subjectKey": "calling.healer.subject", "vanKey": "calling.healer.van", "voKey": "calling.healer.vo",
+      "subjectKey": "calling.healer.subject",
       "bonus": { "heal": 1 } },
     { "id": "woodcutter", "look": "mentor-woodcutter", "nameKey": "calling.woodcutter.name", "mentorKey": "calling.woodcutter.mentor",
-      "subjectKey": "calling.woodcutter.subject", "vanKey": "calling.woodcutter.van", "voKey": "calling.woodcutter.vo",
+      "subjectKey": "calling.woodcutter.subject",
       "bonus": { "fastWalk": true, "damage": { "fire": 1 } } }
   ]
 }

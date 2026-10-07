@@ -1242,7 +1242,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The enemies come again at the next dawn, so that the child sleeps on it.
       profile.flags[`raid.${r.raid.id}.back`] = nextDawn(state.clock.minutes);
       save('raid');
-      say('raid.lost');
+      // The line of the raid says who left and when they come back (#50).
+      say(def.lostKey ?? 'raid.lost');
     }
     emit({ type: 'hud' });
   }

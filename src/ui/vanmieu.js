@@ -152,7 +152,6 @@ function chooseCalling(ctx, change) {
     for (const c of data.callings.callings) {
       const card = h('button', { class: 'calling-card', type: 'button', 'aria-pressed': String(c.id === picked) }, [
         portraitCanvas(ctx, data.figures.figures[c.look], { framing: 'full', size: 96 }), h('strong', { text: t(c.nameKey) }), h('small', { text: t(c.mentorKey) }), h('small', { text: t(c.subjectKey) }),
-        h('small', { text: t(c.vanKey) }), h('small', { text: t(c.voKey) }),
       ]);
       card.addEventListener('click', () => {
         picked = c.id;

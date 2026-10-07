@@ -46,7 +46,7 @@
       "spots": [[69, 27], [72, 31.2]], "helpers": 2,
       "sources": [{ "id": "jar", "kind": "water", "at": [60.6, 32.6] }],
       "allow": 1, "take": { "rice": 1 },
-      "pauseKey": "raid.scouts.pause", "introKey": "raid.scouts.intro", "mark": "legend", "noteKey": "raid.scouts.note",
+      "pauseKey": "raid.scouts.pause", "introKey": "raid.scouts.intro", "lostKey": "raid.scouts.lost", "mark": "legend", "noteKey": "raid.scouts.note",
       "win": { "set": ["scouts.won"], "give": { "iron": 2, "rice": 2 }, "after": ["scouts.won"] }
     },
     "patrol": {
@@ -71,7 +71,7 @@
         { "at": 9, "kind": "serpent", "from": [36, 68.5], "side": 1 }
       ],
       "allow": 1, "take": {},
-      "pauseKey": "raid.river.pause", "introKey": "raid.river.intro", "mark": "legend", "noteKey": "raid.river.note",
+      "pauseKey": "raid.river.pause", "introKey": "raid.river.intro", "lostKey": "raid.river.lost", "mark": "legend", "noteKey": "raid.river.note",
       "win": { "set": ["river.calmed"], "give": { "fish": 2 }, "after": ["river.song", "river.song.after"] }
     },
     "soldier1": {

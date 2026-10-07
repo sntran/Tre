@@ -106,8 +106,7 @@ test('Nghé is the friend of the hero from the start; Sóng is the friend of the
   const friends = load('data/friends.json').friends;
   const raids = load('data/raids.json').raids;
   for (const [id, f] of Object.entries(friends)) {
-    assert.ok(['shield', 'heart'].includes(f.help.type), `${id}: help type`);
-    assert.ok(f.nameKey in vi && f.helpKey in vi, `${id}: text`);
+    assert.ok(f.nameKey in vi, `${id}: text`);
     if (f.ride !== undefined) {
       assert.equal(typeof f.ride.speed, 'number', `${id}: ride speed`);
       assert.ok(Array.isArray(f.ride.over), `${id}: ride over`);
