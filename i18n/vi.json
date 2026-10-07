@@ -942,7 +942,7 @@
   "exam.placement.title": "Bài thi xếp lớp môn Toán",
   "exam.era1.start": "Thi môn Toán",
   "exam.placement.start": "Thi xếp lớp",
-  "exam.rule": "Bài thi có {min} đến {max} câu. Câu hỏi khó dần. Cứ bình tĩnh làm hết sức mình.",
+  "exam.rule": "Bài thi có {min} đến {max} câu, nhiều loại khác nhau. Em làm đúng thì câu sau khó hơn, em làm sai thì câu sau dễ hơn. Cứ bình tĩnh làm hết sức mình.",
   "exam.question": "Câu {n}",
   "exam.right": "Đúng rồi.",
   "exam.next": "Sang câu tiếp theo nhé.",

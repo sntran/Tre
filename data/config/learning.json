@@ -77,7 +77,7 @@
     "era1": {
       "_about": "The pass mark comes from a simulation: at passAbility, about half of the players pass. Run the test \"the Era 1 pass mark comes from the simulation\" after a change, and copy the new value to pass.",
       "passAbility": 1000,
-      "pass": 999,
+      "pass": 998,
       "simulationRuns": 4000,
       "simulationSeed": "passmark"
     },

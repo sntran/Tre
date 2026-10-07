@@ -497,4 +497,5 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 ## The road of the story (#51)
 
 - **The board at the gate, not the stele:** `exam.stele` ("Tên của em được viết lên bảng ở cổng [[vanmieu]]. Chỉ tên các tiến sĩ mới được khắc lên bia đá trên lưng rùa. Em học tiếp, một ngày nào đó tên em cũng có thể ở đó."), `vanmieu.hello.done` ("Tên em đã ở trên bảng ở cổng."), and `vanmieu.board` ("Bảng ở cổng"). Only the doctors (tiến sĩ) had their names on the steles of Văn Miếu.
+- **The rule of the exam says the truth:** `exam.rule` ("Bài thi có {min} đến {max} câu, nhiều loại khác nhau. Em làm đúng thì câu sau khó hơn, em làm sai thì câu sau dễ hơn. Cứ bình tĩnh làm hết sức mình."). The exam mixes the kinds of questions: never more than three of one kind in a row.
 - **Please check:** "bảng ở cổng" for the list of the names of the titles.

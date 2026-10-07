@@ -942,7 +942,7 @@
   "exam.placement.title": "Math placement exam",
   "exam.era1.start": "Take the math exam",
   "exam.placement.start": "Take the placement exam",
-  "exam.rule": "The exam has {min} to {max} questions. They get harder. Stay calm and do your best.",
+  "exam.rule": "The exam has {min} to {max} questions of different kinds. After a right answer the next question is harder, and after a wrong answer it is easier. Stay calm and do your best.",
   "exam.question": "Question {n}",
   "exam.right": "Right.",
   "exam.next": "On to the next question.",

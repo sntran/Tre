@@ -1,18 +1,25 @@
-// The adaptive Văn Miếu exam. It starts easy (or near the grade of the player) and gets
-// harder until the player makes a few mistakes. It has "min" to "max" questions.
+// The adaptive Văn Miếu exam. It starts easy (or near the grade of the player): after a right
+// answer the next question is harder, after a wrong answer it is easier, until the player makes a
+// few mistakes. It has "min" to "max" questions, and it mixes the kinds of questions.
 // The ability estimate is a rating on the same scale as the problem items.
 // Until the player has both a correct and a wrong answer, the estimate moves in steps.
 // After that, and for the result, the estimate is the maximum likelihood value of all answers.
 import { expected, itemStartRating } from './rating.js';
 
-// A ladder of exam items (skill and level), from easy to hard.
+// The kind of a question: the family of its skill (math.add.10 and math.add.20 are both
+// math.add). An exam mixes the kinds (#51).
+export const kindOf = (skillId) => skillId.replace(/\.\d+$/, '');
+// The most questions of one kind in a row.
+export const MAX_RUN = 3;
+
+// A ladder of exam items (skill, kind, and level), from easy to hard.
 // ratingOf(skill, level) gives the item rating. The default is the start rating.
 export function buildLadder(skills, ratingCfg, ratingOf = null) {
   const items = [];
   for (const skill of skills) {
     skill.levels.forEach((_, i) => {
       const level = i + 1;
-      items.push({ skill: skill.id, level, rating: ratingOf ? ratingOf(skill, level) : itemStartRating(skill, level, ratingCfg) });
+      items.push({ skill: skill.id, kind: kindOf(skill.id), level, rating: ratingOf ? ratingOf(skill, level) : itemStartRating(skill, level, ratingCfg) });
     });
   }
   return items.sort((a, b) => a.rating - b.rating || a.skill.localeCompare(b.skill));
@@ -76,6 +83,20 @@ export function createExam({ ladder, settings, rng, scale = 400, start = null })
     const target = state.ability;
     const near = ladder.filter((it) => Math.abs(it.rating - target) <= settings.window);
     let pool = near.length ? near : [ladder.reduce((a, b) => (Math.abs(b.rating - target) < Math.abs(a.rating - target) ? b : a))];
+    // Mix the kinds (#51): a kind that is not one of the last two questions, near the ability when
+    // one is near, else the nearest question of such a kind; else another kind than the last one.
+    const kinds = state.asked.slice(-2).map((a) => a.kind ?? kindOf(a.skill));
+    const freshKind = (list) => list.filter((it) => !kinds.includes(it.kind ?? kindOf(it.skill)));
+    const nearest = (list) => {
+      const d = Math.min(...list.map((it) => Math.abs(it.rating - target)));
+      return list.filter((it) => Math.abs(it.rating - target) <= d + 1e-9);
+    };
+    if (kinds.length && freshKind(pool).length) pool = freshKind(pool);
+    else if (kinds.length && freshKind(ladder).length) pool = nearest(freshKind(ladder));
+    else if (kinds.length) {
+      const other = pool.filter((it) => (it.kind ?? kindOf(it.skill)) !== kinds.at(-1));
+      if (other.length) pool = other;
+    }
     const recent = state.asked.slice(-2).map((a) => a.skill);
     const fresh = pool.filter((it) => !recent.includes(it.skill));
     if (fresh.length) pool = fresh;

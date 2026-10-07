@@ -7,7 +7,7 @@ import { expected, updateRatings, chooseLevel, itemStartRating, gradeBase } from
 import { startReview, recordReview, isDue, DAY_MS } from '../src/core/review.js';
 import { createLearner, feedbackFor, battleSkills } from '../src/core/learner.js';
 import { gradeIds, byGrade, gradeName } from '../src/core/grades.js';
-import { createExam, buildLadder, skillsToPractice, maxLikelihood, simulateExams, examSkills } from '../src/core/exam.js';
+import { createExam, buildLadder, skillsToPractice, maxLikelihood, simulateExams, examSkills, kindOf, MAX_RUN } from '../src/core/exam.js';
 import { skillsData, learningConfig as cfg, bank, load } from './helpers.js';
 import { createSeen, problemKey, otherLevels } from '../src/core/fresh.js';
 
@@ -369,6 +369,27 @@ test('the exam ability is the maximum likelihood value of all answers', () => {
   const high = allLadder[allLadder.length - 1].rating + 200;
   assert.equal(exam.ability, result.ability);
   assert.ok(result.ability >= low && result.ability <= high);
+});
+
+test('the exam mixes the kinds of questions: never more than three of one kind in a row (#51)', () => {
+  // A player of grade 2 who is right about 80 percent of the time, as in the play of #51 (nine
+  // questions a + ? = b in a row).
+  for (let i = 0; i < 40; i++) {
+    const exam = createExam({ ladder: era1Ladder, settings, rng: createRng(`mix${i}`), start: gradeBase(2, cfg.rating) });
+    const answers = createRng(`mix-answers${i}`);
+    const kinds = [];
+    while (!exam.done) {
+      const item = exam.next();
+      kinds.push(kindOf(item.skill));
+      exam.answer(answers.chance(0.8));
+    }
+    let run = 1;
+    for (let k = 1; k < kinds.length; k++) {
+      run = kinds[k] === kinds[k - 1] ? run + 1 : 1;
+      assert.ok(run <= MAX_RUN, `exam ${i}: ${kinds.join(' ')}`);
+    }
+    assert.ok(new Set(kinds).size >= 3, `exam ${i}: three kinds or more: ${kinds.join(' ')}`);
+  }
 });
 
 test('the exam of a title uses the skills of the era of that title', () => {
