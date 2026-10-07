@@ -650,7 +650,13 @@ export async function mountVillage(ctx, params = {}) {
       hold = null;
       return;
     }
-    if (raidView.up(p, e.pointerId)) return;
+    const raidUp = raidView.up(p, e.pointerId);
+    // A still touch on the hero in a raid is a tap (#50: never a shot).
+    if (raidUp === 'tap') {
+      if (e.type === 'pointerup' && !busy) onTap(p);
+      return;
+    }
+    if (raidUp) return;
     if (stick.active && stick.id === e.pointerId) {
       stick.active = false;
       stick.kx = 0;

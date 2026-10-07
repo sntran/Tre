@@ -11,6 +11,7 @@
 //   up as red dots over the enemy (no numeral in the world).
 import { getEntity, query } from '../core/world/state.js';
 import { C } from '../render/palette.js';
+import { takesSling, isPull } from '../world/sling.js';
 
 const FLOW = { water: C.indigo, fire: C.vermilion, lightning: C.yellow };
 
@@ -23,6 +24,7 @@ export function createRaidView({ view, figures, session, layer, send }) {
   let sling = null; // { id, x, y }: the finger that pulls the slingshot
   let flow = null; // { id, source, kind, x, y }: the finger that drags an element
   const pops = []; // { id, n, age }
+  let demo = 0; // seconds: the hand that shows the pull of the slingshot
   let size = { w: 1, h: 1 };
 
   // The box of a figure on the screen, with some room for a finger.
@@ -32,6 +34,13 @@ export function createRaidView({ view, figures, session, layer, send }) {
     const b = view.screenBox({ x0: f.x - 0.8, x1: f.x + 0.8, y0: f.y, y1: f.y + Math.max(0.6, f.height) + 0.2, z0: f.z - 0.8, z1: f.z + 0.8 });
     return p.x >= b.x0 - pad && p.x <= b.x1 + pad && p.y >= b.y0 - pad && p.y <= b.y1 + pad;
   };
+  // The box of a figure on the screen, and its middle.
+  const boxOf = (id) => {
+    const f = figures.placeOf(id);
+    if (!f) return null;
+    return view.screenBox({ x0: f.x - 0.8, x1: f.x + 0.8, y0: f.y, y1: f.y + Math.max(0.6, f.height) + 0.2, z0: f.z - 0.8, z1: f.z + 0.8 });
+  };
+  const middleOf = (b) => (b ? { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 } : null);
   const heroScreen = () => {
     const f = figures.placeOf('hero');
     return f ? view.project(f.x, f.y + 1, f.z) : null;
@@ -40,9 +49,25 @@ export function createRaidView({ view, figures, session, layer, send }) {
   const stepPx = () => Math.max(7, Math.min(11, Math.min(size.w, size.h) / 90));
   // The pull of the slingshot now: the count of steps (whole half blocks, 0 to the longest pull),
   // and the direction of the band on the screen.
+  // The direction away from the road on the screen (a pull of the big button goes this way).
+  function backward() {
+    const r = raid();
+    const f = figures.placeOf('hero');
+    if (!r || !f) return null;
+    const a = view.project(f.x, f.y + 1, f.z);
+    const b = view.project(f.x + r.dir.x * 5, f.y + 1, f.z + r.dir.z * 5);
+    const n = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    return { ux: (a.x - b.x) / n, uy: (a.y - b.y) / n };
+  }
   function aim() {
     const h = heroScreen();
     const r = raid();
+    // A pull with the big button (#50): the band goes back from the hero, away from the road.
+    const held = session.raidPull?.() ?? 0;
+    if (!sling && held && h && r) {
+      const u = backward();
+      return u ? { count: held, ux: u.ux, uy: u.uy, from: h } : null;
+    }
     if (!sling || !h || !r) return null;
     const dx = sling.x - h.x;
     const dy = sling.y - h.y;
@@ -55,11 +80,14 @@ export function createRaidView({ view, figures, session, layer, send }) {
     // Is a raid on now?
     get on() { return Boolean(raid() && !raid().result); },
     // A finger down: on the hero (with empty hands) it takes the slingshot; on a source it takes
-    // an element. Return true when the raid takes this finger.
+    // an element. Return true when the raid takes this finger. up() returns 'tap' for a touch of
+    // the slingshot that did not pull.
     down(p, id) {
       if (!this.on) return false;
-      if (!session.holding() && under('hero', p, 6)) {
-        sling = { id, x: p.x, y: p.y };
+      // The slingshot: a finger on the hero, not on Nghé next to the hero (#50).
+      const hb = boxOf('hero');
+      if (!session.holding() && takesSling(p, hb, middleOf(hb), [middleOf(boxOf('friend:nghe'))])) {
+        sling = { id, x: p.x, y: p.y, x0: p.x, y0: p.y };
         return true;
       }
       for (const e of query(state(), 'source', 'position')) {
@@ -78,7 +106,10 @@ export function createRaidView({ view, figures, session, layer, send }) {
     up(p, id) {
       if (sling?.id === id) {
         const a = aim();
+        const pulled = isPull({ x: sling.x0, y: sling.y0 }, p, stepPx());
         sling = null;
+        // A touch that does not pull is a tap on the world, never a shot (#50).
+        if (!pulled) return 'tap';
         // No step is no shot (the finger went back to the hero).
         if (a?.count) send({ type: 'shoot', count: a.count });
         return true;
@@ -158,6 +189,34 @@ export function createRaidView({ view, figures, session, layer, send }) {
         draw2d.lineWidth = 2;
         draw2d.strokeStyle = C.ink;
         draw2d.stroke();
+      }
+      // The first raid of the slingshot (#50): while the enemy waits, a hand shows the pull on the
+      // hero, again and again: a finger on the hero that goes back, with the band behind it.
+      if (!a && r?.hold?.tool === 'sling') {
+        demo = (demo + dt) % 2.6;
+        const h0 = heroScreen();
+        const u = backward();
+        if (h0 && u) {
+          const k = Math.min(1, demo / 1.6);
+          const len = k * 6 * stepPx();
+          const end = { x: h0.x + u.ux * len, y: h0.y + u.uy * len };
+          draw2d.globalAlpha = demo < 2.2 ? 0.85 : 0.85 * (2.6 - demo) / 0.4;
+          draw2d.strokeStyle = C.wood;
+          draw2d.lineWidth = 5;
+          draw2d.beginPath();
+          draw2d.moveTo(h0.x, h0.y);
+          draw2d.lineTo(end.x, end.y);
+          draw2d.stroke();
+          // The finger: a round pad with a ring.
+          draw2d.beginPath();
+          draw2d.arc(end.x, end.y, 13, 0, Math.PI * 2);
+          draw2d.fillStyle = C.paper;
+          draw2d.fill();
+          draw2d.lineWidth = 3;
+          draw2d.strokeStyle = C.ink;
+          draw2d.stroke();
+          draw2d.globalAlpha = 1;
+        }
       }
       // An element on its way: a thick line in its color from the source to the finger.
       if (flow) {
