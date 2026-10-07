@@ -24,7 +24,7 @@ import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { DAY_MINUTES } from '../clock.js';
 import { faceOf } from '../move.js';
 import {
-  REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, sizesOf, sum, openRound, openGap, reachOf, oldDeck,
+  REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, sizesOf, sum, openRound, openGap, reachOf, oldDeck, nearestPoint,
 } from '../zones.js';
 import { isMashing } from '../../learnlog.js';
 import { putWork, canTakeWork, toHeap, freeSlot, takeOut } from './work.js';
@@ -174,10 +174,10 @@ function put(world, e, zoneEnt, env, dt, at = null) {
   const zone = zoneEnt.zone;
   if (!canPut(zone, thing)) return;
   if (WORK.has(zone.rule)) {
-    // A zone of a trial or a raid: near its reach point, or near the point of the tap on a line of
-    // stakes or on the road.
+    // A zone of a trial or a raid: near its nearest point (the same point as the action button,
+    // #54), or near the point of the tap on a line of stakes or on the road.
     const slot = zone.rule === 'spots' ? zone.slots[freeSlot(world, zone, at)] : null;
-    const target = zone.rule === 'line' && at ? { x: at.x, z: zone.z } : zone.rule === 'road' && at ? at : slot ?? zoneEnt.position;
+    const target = zone.rule === 'line' && at ? { x: at.x, z: zone.z } : zone.rule === 'road' && at ? at : slot ?? nearestPoint(zoneEnt, e.position);
     if (dist(e.position, target) > REACH + 2) return say(world, 'far', e.id);
     release(e, thing);
     const done = zone.task === 'raid' ? putRaid(world, e, zone, thing, at, env) : putWork(world, e, zone, thing, at, env);

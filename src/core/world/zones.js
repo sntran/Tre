@@ -122,6 +122,13 @@ export function canPut(zone, item) {
   return true;
 }
 
+// The point of a zone nearest to p (half blocks): in its rect, or its point. The action button
+// and the put of the world measure the reach of a place to this point (#54).
+export function nearestPoint(zoneEnt, p) {
+  const r = zoneEnt.zone.rect;
+  return r ? { x: Math.max(r.x0, Math.min(r.x1, p.x)), z: Math.max(r.z0, Math.min(r.z1, p.z)) } : zoneEnt.position;
+}
+
 // Can the hero take this thing out of the zone? From a span only the last thing, and not
 // while the span is solid or something happens on it.
 export function canTake(zone, id) {
