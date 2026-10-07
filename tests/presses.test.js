@@ -44,15 +44,14 @@ function tapAndPress(session, target) {
   run(session, 15, () => session.screen);
 }
 
-test('the healer: presses fill the basket with each kind, as many as she needs; one tap on her gives it', async () => {
+test('the healer: presses fill the basket with each kind, as many as she needs, and give it to her', async () => {
   const session = await afterTalk('trial-healer');
   const each = taskOf(data.trials.trials.find((t) => t.id === 'healer'), zone(session, 'trial-healer').level).each;
-  assert.deepEqual(playPresses(session, { presses: 30 }), []);
-  assert.deepEqual(kinds(session, 'basket'), { 'herb-ngai': each, 'herb-tiato': each, 'herb-rauma': each }, 'presses take the same kind again, then the next kind');
-  assert.equal(session.action(), null, 'with enough of each kind, a press takes no more');
-  tapAndPress(session, { person: 'npc:healer' });
-  run(session, 3);
+  const skills = [];
+  session.listen((ev) => { if (ev.type === 'skill') skills.push(ev); });
+  assert.deepEqual(playPresses(session, { presses: 30, until: () => zone(session, 'trial-healer').done }), []);
   assert.equal(zone(session, 'trial-healer').done, true, 'the healer takes the basket');
+  assert.deepEqual(skills.map((e) => [e.solved, e.parts]), [[true, [each, each, each]]], 'presses take the same kind again, then the next kind, and give the basket when it has enough of each');
 });
 
 test('the fisher: presses go on with the row toward the float, and never take back a stake', async () => {

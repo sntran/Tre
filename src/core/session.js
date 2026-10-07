@@ -1769,6 +1769,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const out = [];
     const far = [];
     out.far = far;
+    const laterFin = [];
     const add = (c, reach) => {
       const d = distHb(hp, c.at) - (c.size ?? 0);
       if (d <= reach) out.push({ rank: 1, keys: [c.target], ...c, d });
@@ -1801,9 +1802,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // that the mentor shows is not a try of the child (#54).
       const task = mentoring.taskOfPerson(q.entity);
       if (fin && (tapped || (!heapNear(null) && childPut.has(task)))) add({ ...base, ...fin, rank: 0, work: true }, REACH + 3);
-      // In a task, the call for help comes after a tap on the person when a heap of the work is
-      // in reach: a press takes from the heap.
-      else if (fin && !tapped) continue;
+      // With a heap in reach, the finish waits: it comes only when the press has no other work
+      // (#54: the basket of the healer has enough of each kind, and the healer stands at it).
+      else if (fin && !tapped) {
+        if (childPut.has(task)) laterFin.push({ ...base, ...fin, rank: 0, work: true });
+        continue;
+      }
       // While the task of the person is open, a talk is a call for help: it needs a tap on the
       // person. A press with no tap does the work (#54).
       else if (task && !tapped) continue;
@@ -1921,6 +1925,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // (a press in the middle of the rope must not put the hero on Nghé, #44).
       const nghe = query(state, 'follow', 'position').find((e) => e.follow?.target === 'hero' && !e.hidden);
       if (nghe && !raidOn() && !taskOn()) add({ act: 'ride', icon: 'ride', target: nghe.id, at: nghe.position, rank: 6, run: () => worldCommand(state, { type: 'ride', id: 'hero', mount: nghe.id }) }, REACH + 2);
+      if (!out.some((c) => !WORKLESS.has(c.act)) && !far.length) for (const c of laterFin) add(c, REACH + 3);
       return out;
     }
     // A thing in the hands: the places that take it (a ghost shows where it goes on a line).
