@@ -493,3 +493,8 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 - **The lines that say what the raid does:** `dlg.scouts.won.n1` (four scouts, not two); `dlg.fisher.river.n1` and `dlg.river.friends.n5` (the serpents are hungry and eat the rice balls; no shell of ice); `dlg.river.friends.n6` ("[[song]] cũng trở thành bạn của em.").
 - **No hearts:** `practice.note` ("Ở đây làm sai thì làm lại. Không mất gì cả.") and `dlg.teacher.practice.n1`. The lines of the old battle screen are gone: `friend.*.help` and `calling.*.van` and `calling.*.vo`.
 - **Please check:** "Sáng mai chúng quay lại" for a lost raid, and "làm sai thì làm lại" for the practice with the teacher.
+
+## The road of the story (#51)
+
+- **The board at the gate, not the stele:** `exam.stele` ("Tên của em được viết lên bảng ở cổng [[vanmieu]]. Chỉ tên các tiến sĩ mới được khắc lên bia đá trên lưng rùa. Em học tiếp, một ngày nào đó tên em cũng có thể ở đó."), `vanmieu.hello.done` ("Tên em đã ở trên bảng ở cổng."), and `vanmieu.board` ("Bảng ở cổng"). Only the doctors (tiến sĩ) had their names on the steles of Văn Miếu.
+- **Please check:** "bảng ở cổng" for the list of the names of the titles.

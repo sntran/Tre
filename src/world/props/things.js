@@ -231,24 +231,28 @@ export function vanmieuGate(ctx, o) {
   ctx.shadowDisc(fx + fw / 2, fz + fd / 2, 3, 2);
 }
 
-// A stele of the doctors on a stone turtle: the turtle has a stepped shell, a head to the front
-// (+z), and four feet; the slab stands on its back with lines of writing as dark marks.
+// A stele of the doctors on a stone turtle (#51): the turtle has a low body, a shell in steps, a
+// head to the front (+z) with two eyes, four feet, and a short tail; a wide, flat slab with a
+// round top stands on its back, with three columns of writing as small dark marks. It fits its 8 × 8 fine
+// blocks.
 export function stele(ctx, o) {
   const { x, z } = center(o);
   const g = ctx.ground(x, z);
-  const sx = x - 2;
-  const sz = z - 2;
-  // The turtle.
-  ctx.box(sx, g, sz, sx + 3, g + 1, sz + 3, 'ash');
-  ctx.box(sx + 1, g + 2, sz + 1, sx + 2, g + 2, sz + 2, 'ashLight');
-  ctx.box(sx + 1, g, sz + 4, sx + 2, g + 1, sz + 4, 'ash');
-  ctx.set(sx + 1, g + 1, sz + 5, 'ashLight');
-  ctx.set(sx + 2, g + 1, sz + 5, 'ashLight');
-  for (const [fx2, fz2] of [[sx - 1, sz], [sx + 4, sz], [sx - 1, sz + 3], [sx + 4, sz + 3]]) ctx.set(fx2, g, fz2, 'ash');
-  // The slab, with a rounded top and lines of writing.
-  ctx.box(sx + 1, g + 3, sz + 1, sx + 2, g + 10, sz + 2, 'paperDeep');
-  ctx.box(sx + 1, g + 11, sz + 1, sx + 2, g + 11, sz + 2, 'ashLight');
-  for (let y = g + 4; y <= g + 9; y += 2) ctx.set(sx + 1, y, sz + 2, 'ink');
-  for (let y = g + 5; y <= g + 9; y += 2) ctx.set(sx + 2, y, sz + 2, 'ink');
-  ctx.shadowDisc(x, z, 2, 2);
+  // The turtle: the feet at the four corners, the body, and the shell in three steps.
+  for (const [fx2, fz2] of [[x - 3, z - 3], [x + 3, z - 3], [x - 3, z + 1], [x + 3, z + 1]]) ctx.set(fx2, g, fz2, 'ash');
+  ctx.box(x - 2, g, z - 3, x + 2, g, z + 1, 'ash');
+  ctx.box(x - 3, g + 1, z - 3, x + 3, g + 1, z + 1, 'ash');
+  ctx.box(x - 2, g + 2, z - 3, x + 2, g + 2, z + 1, 'ashLight');
+  ctx.box(x - 1, g + 3, z - 2, x + 1, g + 3, z, 'ashLight');
+  // The neck and the head to the front, with the eyes; the tail to the back.
+  ctx.box(x - 1, g, z + 2, x + 1, g + 1, z + 2, 'ash');
+  ctx.box(x - 1, g + 1, z + 3, x + 1, g + 2, z + 3, 'ashLight');
+  ctx.set(x - 1, g + 2, z + 3, 'ink');
+  ctx.set(x + 1, g + 2, z + 3, 'ink');
+  ctx.set(x, g, z - 4, 'ash');
+  // The slab: wide and flat, with a round top and three columns of writing.
+  ctx.box(x - 2, g + 4, z - 1, x + 2, g + 12, z - 1, 'paperDeep');
+  ctx.box(x - 1, g + 13, z - 1, x + 1, g + 13, z - 1, 'paperDeep');
+  for (const cx of [x - 1, x, x + 1]) for (let y = g + 5; y <= g + 11; y++) if ((y - g + cx - x) % 2 === 0) ctx.set(cx, y, z - 1, 'ash');
+  ctx.shadowDisc(x, z, 3, 3);
 }

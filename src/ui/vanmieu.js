@@ -1,5 +1,5 @@
 // Văn Miếu, the Temple of Literature: the adaptive exams, the first title,
-// the stone stele on the turtle, and the choice of a calling.
+// the stone stele of the doctors on the turtle, the board at the gate, and the choice of a calling.
 import { doorOf } from '../core/session.js';
 import { buildLadder, createExam, skillsToPractice, examSkills } from '../core/exam.js';
 import { gradeBase } from '../core/rating.js';
@@ -189,7 +189,10 @@ async function mountVanMieu(ctx) {
 
   const draw = () => {
     const names = profile.stele.map((s) => h('span', { text: t('vanmieu.stele.row', { name: s.name, title: { key: `title.${s.title}.name` } }) }));
-    const stele = h('div', { class: 'stele' }, [portraitCanvas(ctx, data.figures.views.stele, { framing: 'full', size: 200 }), h('div', { class: 'stele-names' }, names)]);
+    // The stele of the doctors on its turtle, and the board at the gate with the names of the
+    // titles of the player (only the doctors had their names on the steles, #51).
+    const board = names.length ? h('div', { class: 'stele-names' }, [h('strong', { text: t('vanmieu.board') }), ...names]) : null;
+    const stele = h('div', { class: 'stele' }, [portraitCanvas(ctx, data.figures.views.stele, { framing: 'full', size: 200 }), board]);
     const actions = h('div', { class: 'row main-actions' });
     const needPlacement = profile.grade >= ctx.data.learning.exam.placement.fromGrade && !profile.flags['placement.done'];
     if (needPlacement) {
