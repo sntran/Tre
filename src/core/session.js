@@ -534,12 +534,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     woken = new Set();
     tileMap.clearOccupied();
     for (const p of persons()) tileMap.occupy(Math.floor(p.x), Math.floor(p.y), { kind: p.kind, id: p.ref });
-    // A person of the quest stays out at night, with a lantern.
-    const goal = currentGoal(data.quests.quests, cond());
-    const wanted = new Set((goal?.step.targets ?? (goal?.step.target ? [{ npc: goal.step.target }] : [])).map((tg) => tg.npc).filter(Boolean));
-    // The person of a practice stays at the task too.
-    if (practice) wanted.add(practice.person);
-    for (const p of persons()) if (p.kind === 'npc') worldCommand(state, { type: 'stay', id: p.entity, on: wanted.has(p.ref) });
+    updateStays();
     // The friend walks behind the hero.
     const friendId = profile.party[0];
     for (const f of query(state, 'follow')) if (f.id !== `friend:${friendId}`) state.entities.splice(state.entities.indexOf(f), 1);
@@ -2757,15 +2752,42 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     worldCommand(state, { type: 'walk', id: 'hero', points: [{ x: to.x * 2, z: to.y * 2 }], token, near: null });
   }
 
+  // Who stays out (at the spot, not in the house): a person of the quest stays out at night, with a
+  // lantern; the person of a practice and the person of the task that the hero works on stay at the
+  // task until it ends (#57: the healer went out at dawn in the middle of her trial).
+  let stayKey = null;
+  // The last press or hold of the big button (a tick): the child works at a task only within
+  // WORK_HOLD seconds after it. A child who waits next to a plot or a bridge does not work (#57).
+  const WORK_HOLD = 30;
+  let lastPress = -Infinity;
+  // The task of a person that the child works on now (its mentor key), or null. In a visit of a
+  // practice, the set is open while the hero is at its place (#45).
+  const workKey = () => (practice || (state.tick - lastPress) * STEP < WORK_HOLD ? mentoring.activeKey() : null);
+  function updateStays() {
+    const goal = currentGoal(data.quests.quests, cond());
+    const wanted = new Set((goal?.step.targets ?? (goal?.step.target ? [{ npc: goal.step.target }] : [])).map((tg) => tg.npc).filter(Boolean));
+    if (practice) wanted.add(practice.person);
+    // The fisher of the bridge goes home at night as before: Nghé helps there (#24).
+    const mentor = stayKey && stayKey !== 'bridge' ? mentoring.personOf(stayKey) : null;
+    for (const p of persons()) if (p.kind === 'npc') worldCommand(state, { type: 'stay', id: p.entity, on: wanted.has(p.ref) || p.entity === mentor });
+  }
+
   // One step of the world, then the events of the step, the exits, and the trigger zones.
   function step() {
     // The time of play in the village counts here, one step at a time (the app counts it in the
     // other scenes).
     if (profile.time) addPlayTime(profile.time, now(), STEP * 1000);
-    // The light holds for the work in a visit of a practice (#45): while a task (a set) or a folk
-    // game is open, the clock waits, and the person of the task does not go home while the child
-    // works. In the story the days go on (the rice grows, the feast comes at dusk).
-    state.clock.hold = Boolean(practice && (mentoring.activeKey() || folk.active()));
+    // The light holds for the work (#45, #57): while the hero works at the task of a person (a press
+    // within WORK_HOLD seconds), plays a folk game, or holds a raid, the clock waits, in a practice
+    // and in the story, and the person of the task does not go home while the child works. Between
+    // the tasks, and while the child only waits, the days go on (the rice grows, the feast comes at
+    // dusk).
+    const key = workKey();
+    state.clock.hold = Boolean(key || folk.active() || raidOn());
+    if (key !== stayKey) {
+      stayKey = key;
+      updateStays();
+    }
     worldStep(state, STEP, env);
     stepSling();
     stepFarewell();
@@ -2915,6 +2937,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (busy) return;
+    if (type === 'hold' || type === 'hands') lastPress = state.tick;
     if (type === 'hold') {
       hold(true);
       return;

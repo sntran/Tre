@@ -90,7 +90,7 @@ A system is a function `(world, dt, rng, env)` in `src/core/world/systems/`. It 
 15. **joys**: after the plans and Nghé: the small joys show or hide by their days and hours, the lion dances, the fisher holds up a fish over his plan, and Nghé turns its head over its walk (see "The world at rest" below).
 16. **flock**: the pull of each flock (alignment with the near neighbors, cohesion to the middle of the flock, and the range of its place) goes into `steer.bias` before the animals move.
 17. **steer**: animals and people that move by themselves (seek, arrive, flee, wander, separation, avoidance).
-18. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits.
+18. **clock**: last: the time of the step passes after all that happened in it. The clock stops while the world waits. It also holds while the hero works at the task of a person (near its place; in the story, with a press or a hold of the big button in the last 30 seconds; in a visit of a practice, while its set is open, as in #45), plays a folk game, or holds a raid, in a practice and in the story: the work is done in the light of its start. The person of that task stays at it (`schedule.stay`) and does not go home until the hero leaves the task (#57; before, the trial of the healer went from dusk through the night, and at dawn she went out and left her trial). A child who only waits next to a plot or a bridge does not hold the light, so the rice grows overnight; and the fisher of the bridge goes home at night as before, so that Nghé helps there.
 
 Randomness comes only from the `rng` of the step. The same seed and the same commands give the same world.
 

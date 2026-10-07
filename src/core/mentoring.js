@@ -552,6 +552,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     move: (key, move) => doMove(key, move, {}),
     tick,
     activeKey,
+    // The person of a task (an entity id), or null.
+    personOf: (key) => defOf(key)?.person ?? null,
     // The mentor of a task (for the tests and the debug panel).
     stateOf: (key) => states.get(key) ?? null,
     reset() {
