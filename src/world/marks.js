@@ -1,8 +1,8 @@
 // The marks on the screen over the world (#53): the stars of the goals, the arrows at the edge of
 // the screen, and the bubbles of the lines of the people. What is on the screen must not hide what
 // the child needs: a mark never sits on a control (the stick, the buttons), a star never sits on
-// the hero, and a bubble never covers the hero. Pure: screen pixels in, screen pixels out; the
-// village (src/ui/village.js) draws them.
+// the hero, and a bubble never covers the hero or a star (#56). Pure: screen pixels in, screen
+// pixels out; the village (src/ui/village.js) draws them.
 
 // A box on the screen: { x0, y0, x1, y1 } (pixels, y down).
 export const overlaps = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
@@ -52,9 +52,11 @@ export const AWAY_LIFE = 3;
 // box of the hero, or null; controls: the boxes of the controls. The bubble stands over the head,
 // and stays on the screen: a person off the screen talks from the edge nearest to the person, with
 // a tail toward the person. A bubble never covers the hero: it goes over the hero, or under the
-// hero when there is no room over it. Return { x0, y0, x1, y1, away, tail } (tail: the screen point
-// of the person when away, else null).
-export function placeBubble(head, w, h, { screen, hero = null, controls = [] }) {
+// hero when there is no room over it. A bubble never covers a star (#56): it goes to the other side
+// of its person (the side away from the star, or under the feet). stars: the boxes of the stars and
+// the arrows; foot: the screen point of the feet of the person, or null. Return { x0, y0, x1, y1,
+// away, tail } (tail: the screen point of the person when away, else null).
+export function placeBubble(head, w, h, { screen, hero = null, controls = [], stars = [], foot = null }) {
   const margin = 8;
   const top = screen.top ?? 0;
   const bottom = screen.bottom ?? screen.h;
@@ -71,5 +73,21 @@ export function placeBubble(head, w, h, { screen, hero = null, controls = [] }) 
     b = { ...b, y0: y1 - h, y1 };
   }
   b = upOutOf(b, controls);
+  const star = stars.find((o) => overlaps(b, o));
+  if (star && !away) {
+    // The other side of the person: beside the head, away from the star, then under the feet.
+    const gap = 6;
+    const low = (foot?.y ?? head.y + h) + gap;
+    const lx = Math.min(head.x, star.x0) - gap;
+    const rx = Math.max(head.x, star.x1) + gap;
+    const left = { x0: lx - w, x1: lx, y0: head.y - h, y1: head.y };
+    const right = { x0: rx, x1: rx + w, y0: head.y - h, y1: head.y };
+    const under = { x0: x - w / 2, x1: x + w / 2, y0: low, y1: low + h };
+    const sides = (star.x0 + star.x1) / 2 > head.x ? [left, right, under] : [right, left, under];
+    const fits = (c) => c.x0 >= margin && c.x1 <= screen.w - margin && c.y0 >= top + margin && c.y1 <= bottom - margin;
+    const free = (c) => fits(c) && !stars.some((o) => overlaps(c, o)) && !(hero && overlaps(c, hero)) && !controls.some((o) => overlaps(c, o));
+    const other = sides.find(free);
+    if (other) b = other;
+  }
   return { ...b, away, tail: away ? { x: head.x, y: head.y } : null };
 }

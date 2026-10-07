@@ -16,7 +16,7 @@ import { rainOf } from '../core/world/systems/sky.js';
 import { createSession, middleOf } from '../core/session.js';
 import { createHearing } from '../core/hearing.js';
 import { LINE_LIFE, lineLife, linesAfter, nearHero as talksNear } from '../core/lines.js';
-import { placeStar, placeArrow, placeBubble, AWAY_LIFE } from '../world/marks.js';
+import { placeStar, placeArrow, placeBubble, starBox, AWAY_LIFE } from '../world/marks.js';
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
@@ -1244,6 +1244,7 @@ export async function mountVillage(ctx, params = {}) {
     let stars = 0;
     let arrows = 0;
     const edges = [];
+    const marks = []; // the boxes of the stars and the arrows: a bubble never covers them (#56)
     const bob = Math.sin(time * 4) * 4;
     for (const m of busy ? [] : markers()) {
       const p = view.project(m.x, m.h, m.y);
@@ -1253,6 +1254,9 @@ export async function mountVillage(ctx, params = {}) {
         el.mark = m;
         // Off the stick, the buttons, and the hero (#53).
         const at = placeStar(p, { controls, hero: heroAt });
+        // The box of the star with its bob, so that a bubble does not jump from side to side.
+        const box = starBox(at);
+        marks.push({ ...box, y0: box.y0 - 4, y1: box.y1 + 4 });
         el.style.transform = `translate(${at.x - 15}px, ${at.y - 30 + bob}px) scale(${pulseOf(m)})`;
         continue;
       }
@@ -1263,6 +1267,7 @@ export async function mountVillage(ctx, params = {}) {
       el.mark = m;
       const pulse = Math.sin(time * 5) * 3;
       const at = placeArrow(edge, { controls });
+      marks.push({ x0: at.x - 22, y0: at.y - 22, x1: at.x + 22, y1: at.y + 22 });
       el.style.transform = `translate(${at.x}px, ${at.y}px) rotate(${edge.angle}rad) translate(${-22 + pulse}px, 0) scale(${pulseOf(m)})`;
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
     }
@@ -1280,7 +1285,8 @@ export async function mountVillage(ctx, params = {}) {
       // The bubble stays on the screen, off the hero and the controls; a person off the screen
       // talks from the edge with a tail toward the person, for a short time (#53).
       const rise = Math.min(b.age, LINE_LIFE) * 10 + (b.icon ? 40 : 0);
-      const at = placeBubble({ x: q.x, y: q.y - rise }, b.width, b.height, { screen: { w: size.width, h: size.height, top: inset.top, bottom: size.height }, hero: heroAt, controls });
+      const foot = view.project(f.x, f.y, f.z);
+      const at = placeBubble({ x: q.x, y: q.y - rise }, b.width, b.height, { screen: { w: size.width, h: size.height, top: inset.top, bottom: size.height }, hero: heroAt, controls, stars: marks, foot });
       if (at.away) b.life = Math.min(b.life, AWAY_LIFE);
       const side = !at.tail ? null : at.tail.x < at.x0 ? 'left' : at.tail.x > at.x1 ? 'right' : at.tail.y > at.y1 ? 'down' : 'up';
       if (b.side !== side) {

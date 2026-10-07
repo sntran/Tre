@@ -55,6 +55,26 @@ test('a bubble never covers the hero and never sits on a control; a person off t
   assert.ok(!overlaps(under, high) && under.y0 >= high.y1);
 });
 
+test('a bubble never covers a star: it goes to the other side of its person (#56)', () => {
+  // The woodcutter talks, and the star of the bamboo clump is over his head (frame 4 of #56).
+  const head = { x: 120, y: 300 };
+  const foot = { x: 120, y: 360 };
+  const star = starBox({ x: 128, y: 290 });
+  const plain = placeBubble(head, 120, 40, { screen, hero, controls });
+  assert.ok(overlaps(plain, star), 'with no stars, the bubble is over the head');
+  const b = placeBubble(head, 120, 40, { screen, hero, controls, stars: [star], foot });
+  assert.ok(!overlaps(b, star), 'not on the star');
+  assert.ok(!overlaps(b, hero), 'not on the hero');
+  assert.ok(b.x0 >= 0 && b.x1 <= screen.w && b.y0 >= screen.top, 'on the screen');
+  // A star to the left of the head: the bubble goes to the right.
+  const west = starBox({ x: 90, y: 290 });
+  const r = placeBubble({ x: 250, y: 300 }, 100, 40, { screen, controls, stars: [starBox({ x: 245, y: 290 })], foot: { x: 250, y: 360 } });
+  assert.ok(r.x0 >= 250, `right of the head: ${r.x0}`);
+  // Stars on both sides: under the feet.
+  const both = placeBubble(head, 120, 40, { screen, controls, stars: [star, west, starBox({ x: 190, y: 290 }), starBox({ x: 60, y: 290 })], foot });
+  assert.ok(both.y0 >= foot.y, 'under the feet');
+});
+
 test('upOutOf moves a box up over every box that it overlaps', () => {
   const b = upOutOf({ x0: 0, y0: 790, x1: 40, y1: 830 }, [{ x0: 0, y0: 800, x1: 50, y1: 844 }, { x0: 0, y0: 740, x1: 50, y1: 790 }]);
   assert.ok(b.y1 <= 736);
