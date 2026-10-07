@@ -41,6 +41,12 @@ const TRAP = 0.9; // half blocks: an enemy steps on a trap this near
 const HURT = 3; // half blocks: the blow of the general pushes the hero back
 const MARK = 4; // seconds: a stone lies where it landed, so that short or long shows on the road
 const AIM = 8; // half blocks: the shot is for the enemy nearest to the count, within this distance
+const LANE = 2.5; // half blocks: a stone hits an enemy this far to the side of the line of the road
+// The first raid of a tool waits for the child (#50): with a new slingshot, the first enemy stops
+// this far from the wall (half blocks) until the first hit, and no other wave comes; with new
+// traps, no enemy comes until the child has a trap in the hands.
+export const HOLD_AT = 20;
+export const HOLD_TOOLS = Object.freeze(['sling', 'traps']);
 
 // The slingshot (world units are half blocks). max: the longest count of a pull.
 export const SLING = Object.freeze({ g: 20, h0: 2.2, angle: 0.7, max: 30, hit: 1.5, reload: 0.6 });
@@ -82,7 +88,8 @@ const unit = (v) => {
 // A new raid from its definition (data/raids.json), at a level. loss: what an enemy at the gate
 // takes ('none', 'small', or 'normal': twice as much; see lossLevel in src/core/profile.js); by
 // default nothing at the lowest level. The raid is plain data.
-export function createRaid(raids, id, level = 0, loss = null) {
+// teach: the tools that are new to the child in this raid (the first raid of each tool).
+export function createRaid(raids, id, level = 0, loss = null, teach = []) {
   const def = raids.raids[id];
   const sling = { ...SLING, ...raids.sling };
   const wall = hb(def.wall);
@@ -114,6 +121,8 @@ export function createRaid(raids, id, level = 0, loss = null) {
     // The prediction before the first shot: pending (the posts wait for a tap), then the post that
     // the child tapped (guess) and the distance of the enemy then (gap), or skipped.
     predict: { state: 'pending', guess: null, gap: null },
+    // The tool that the raid waits for (the first raid of the tool), or null.
+    hold: HOLD_TOOLS.find((t) => has(t) && teach.includes(t)) ? { tool: HOLD_TOOLS.find((t) => has(t) && teach.includes(t)) } : null,
     marks: [],
     shots: 0,
     enemies: [],
@@ -143,8 +152,9 @@ export function createRaid(raids, id, level = 0, loss = null) {
   };
 }
 
-// The distance of a point along the road from the wall.
+// The distance of a point along the road from the wall, and to the side of the line of the road.
 export const along = (raid, p) => (p.x - raid.wall.x) * raid.dir.x + (p.z - raid.wall.z) * raid.dir.z;
+export const across = (raid, p) => (p.x - raid.wall.x) * -raid.dir.z + (p.z - raid.wall.z) * raid.dir.x;
 
 const alive = (e) => e.state !== 'retreat' && e.state !== 'gone';
 const active = (raid) => raid.enemies.filter(alive);
@@ -155,7 +165,8 @@ export function stepRaid(raid, dt, ctx = {}) {
   const out = [];
   if (raid.result) return out;
   raid.t += dt;
-  raid.phaseT += dt;
+  // While the raid waits for the child, no new wave comes.
+  if (!raid.hold) raid.phaseT += dt;
   raid.reload = Math.max(0, raid.reload - dt);
   spawn(raid, out);
   tickGate(raid, dt, out);
@@ -181,6 +192,8 @@ function spawn(raid, out) {
   const phase = raid.phases[raid.phase];
   for (const w of phase.waves) {
     if (w.in || raid.phaseT < (w.at ?? 0)) continue;
+    // New traps: no enemy until the child has a trap in the hands.
+    if (raid.hold?.tool === 'traps') continue;
     w.in = true;
     const kind = raid.kinds[w.kind];
     const from = hb(w.from);
@@ -272,6 +285,11 @@ function tickEnemy(raid, e, dt, ctx, out) {
   }
   // Walk. The tells come first: the torch of a scout, the sword of the general.
   const d = along(raid, e);
+  // A new slingshot: the enemy stops on the road and waits for the first shot of the child.
+  if (raid.hold?.tool === 'sling' && d <= HOLD_AT) {
+    e.facing = faceTo(e, raid.wall);
+    return;
+  }
   const gateD = along(raid, raid.gate);
   if (kind.torch && e.cool <= 0 && d - gateD <= kind.torch.range && d - gateD > 1) {
     e.state = 'torch';
@@ -322,6 +340,9 @@ function tickEnemy(raid, e, dt, ctx, out) {
 // last hit of his phase stands, stunned, for the next phase.
 function hit(raid, e, damage, by, out) {
   if (!alive(e) || e.state === 'stunned') return false;
+  // The first hit of a new slingshot: the raid goes on (a short or a long shot shows on the road,
+  // and the enemy waits for the next try).
+  if (raid.hold?.tool === 'sling') raid.hold = null;
   e.hits = Math.min(e.max, e.hits + damage);
   // A rice ball is food, not a blow: the creature eats it.
   out.push({ type: 'hit', id: e.id, by, damage, left: e.max - e.hits, sound: by === 'riceball' ? 'pickup' : 'hit' });
@@ -393,8 +414,10 @@ function tickStones(raid, dt, out) {
     if (s.t < s.flight.t) continue;
     s.done = true;
     const at = { x: raid.wall.x + raid.dir.x * s.count, z: raid.wall.z + raid.dir.z * s.count };
-    // The enemy where the stone lands, at that moment.
-    const target = raid.enemies.filter((e) => alive(e) && e.state !== 'stunned' && dist(e, at) <= raid.sling.hit).sort((a, b) => dist(a, at) - dist(b, at))[0] ?? null;
+    // The enemy where the stone lands, at that moment: the count along the road, and anywhere in
+    // the lane of the road (an enemy that walks a little to the side is on the road too, #50).
+    const onLane = (e) => Math.abs(along(raid, e) - s.count) <= raid.sling.hit && Math.abs(across(raid, e)) <= LANE;
+    const target = raid.enemies.filter((e) => alive(e) && e.state !== 'stunned' && onLane(e)).sort((a, b) => dist(a, at) - dist(b, at))[0] ?? null;
     let solved = false;
     if (target && target.shield > 0) out.push({ type: 'block', id: target.id, sound: 'plank-down' });
     else if (target) solved = hit(raid, target, 1, s.ball ?? 'stone', out);
@@ -508,6 +531,13 @@ export function shoot(raid, count) {
   const s = { id: `stone:${++raid.made}`, count: flight.count, flight, t: 0, first, ...(raid.ball ? { ball: raid.ball } : {}) };
   raid.stones.push(s);
   return [{ type: 'shoot', id: s.id, count: flight.count, sound: 'sling' }];
+}
+
+// The child has the tool that the raid waits for (a trap in the hands): the raid goes on.
+export function releaseHold(raid, tool) {
+  if (raid.hold?.tool !== tool) return [];
+  raid.hold = null;
+  return [{ type: 'release', id: 'raid', tool }];
 }
 
 // A tap on a post before the first shot: the child says where the enemy is (the post nearest to

@@ -603,7 +603,9 @@ export async function playStory(story, io) {
       io.onStep?.(i, s);
       rebind();
       const session = io.session();
-      if (s.do || s.tap || s.press || s.read || s.shoot || s.pour) mark = events.length;
+      // A shoot step marks only when it shoots: a shot with no enemy (the raid is over) keeps the
+      // mark, so that the end of the raid during the shots still counts for the next steps.
+      if (s.do || s.tap || s.press || s.read || s.pour || (s.shoot && shootCommand(session, s.shoot))) mark = events.length;
       if (s.do) await io.send(s.do, null);
       else if (s.wait !== undefined) await io.advance(s.wait, null);
       else if (s.until) {

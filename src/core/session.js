@@ -1192,7 +1192,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function startRaid(id, encId = null) {
     const def = data.raids?.raids[id];
     if (!def || def.map !== map.id || raidOn()) return false;
-    const raid = createRaid(data.raids, id, raidLevel(data.raids, profile.grade), lossLevel(profile));
+    // The tools that are new to the child: the first raid of the slingshot or of the traps waits
+    // for the child (#50).
+    const teach = (def.tools ?? ['sling']).filter((tool) => !profile.flags[`raid.tool.${tool}`]);
+    const raid = createRaid(data.raids, id, raidLevel(data.raids, profile.grade), lossLevel(profile), teach);
+    slingPull = null;
     setupRaid(state, raid, def, env, { helpers: data.raids.helperLooks, companion: data.raids.companions?.[def.companion] });
     placeHero(def.wall[0], def.wall[1]);
     worldCommand(state, { type: 'face', id: 'hero', x: raid.wall.x + raid.dir.x * 10, z: raid.wall.z + raid.dir.z * 10 });
@@ -1348,7 +1352,26 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (held) return null;
     const traps = query(state, 'item', 'position').filter((e) => e.item.kind === 'trap' && !e.item.set && !e.item.held && !e.hidden && e.item.zone !== 'raid-road' && distHb(hp, e.position) <= REACH);
     const trap = traps.sort((a, b) => distHb(hp, a.position) - distHb(hp, b.position))[0];
-    return trap ? { act: 'pick', icon: 'hand-pick', target: trap.id, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: trap.id }) } : null;
+    // A trap in the hands: the first raid of the traps goes on (#50).
+    if (trap) return { act: 'pick', icon: 'hand-pick', target: trap.id, run: () => { worldCommand(state, { type: 'pick', id: 'hero', item: trap.id }); order({ act: 'release', tool: 'traps' }); } };
+    // Nothing else in reach: the big button is the slingshot (#50). Hold it: the band pulls back
+    // one step at a time; let go: the stone flies. A child who only presses the button can play.
+    const r = raidEnt()?.raid;
+    if (!r || r.result || !r.tools.includes('sling')) return null;
+    return { act: 'sling', icon: 'sling', target: 'hero', hold: true, run: () => { slingPull = { t: 0 }; }, release: () => {
+      const count = pullCount();
+      slingPull = null;
+      if (count >= 1) shootFromWall(count);
+    } };
+  }
+  // The pull of the slingshot with the big button: one step at once, and PULL_RATE steps a second
+  // while the button is down, up to the longest pull. null: no pull.
+  let slingPull = null;
+  const PULL_RATE = 4;
+  function pullCount() {
+    const r = raidEnt()?.raid;
+    if (!slingPull || !r) return 0;
+    return Math.min(r.sling.max, 1 + Math.floor(slingPull.t * PULL_RATE));
   }
 
   // Walks -------------------------------------------------------------------------
@@ -2336,6 +2359,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // works. In the story the days go on (the rice grows, the feast comes at dusk).
     state.clock.hold = Boolean(practice && (mentoring.activeKey() || folk.active()));
     worldStep(state, STEP, env);
+    if (slingPull) slingPull.t += STEP;
     for (const fn of later.splice(0)) fn();
     const events = state.events;
     for (const ev of events) {
@@ -2591,6 +2615,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The persons of the stations of a practice of a whole place (#37): the view puts a star over each.
     stations: () => [...stations()],
     workCount,
+    // The pull of the slingshot with the big button now (steps), or 0 (#50).
+    raidPull: () => pullCount(),
     // The mentor of a task (for the tests and the debug panel).
     mentorOf: (key) => mentoring.stateOf(key),
     // The practice of the visit (a copy), or null.
