@@ -28,3 +28,15 @@ test('no text names a heart, a card, or a shield that the game does not have (#5
     assert.deepEqual(bad, [], `${lang}: old words`);
   }
 });
+
+// The world is made of blocks, but a block is a unit of the engine, not of the village (#51). A child
+// measures with the rings of the bamboo, with steps, and with the hands, never with blocks.
+const ENGINE = { vi: /khối/i, en: /\bblocks?\b/i };
+
+test('no text gives a length in blocks, a unit of the engine (#51)', () => {
+  for (const lang of ['vi', 'en']) {
+    const texts = load(`i18n/${lang}.json`);
+    const bad = Object.entries(texts).filter(([, v]) => typeof v === 'string' && ENGINE[lang].test(v)).map(([k, v]) => `${k}: ${v}`);
+    assert.deepEqual(bad, [], `${lang}: words of the engine`);
+  }
+});

@@ -272,7 +272,7 @@ The crafting screen of the iron horse is gone, and its texts too (`craft.*` and 
 
 - `dlg.giong.rice.n2`: the mother says the work: carry the trays to the pot; each ten bowls, Gióng grows one head taller.
 - `dlg.smith.forge.n1` and `dlg.smith.forge.n2`: the smith takes the iron, adds old iron, and says the work: "exactly {lumps} lumps" in the forge, then the bellows, then the water. `dlg.smith.horse.n1`: the iron horse is ready (the old text of `craft.horse.done`).
-- `dlg.woodcutter.staffs.n1`, `dlg.woodcutter.staffs.n2`, and `dlg.woodcutter.staffs.done.n1`: the bamboo staffs for the men of the village; the stem has a ring at each half block, and each slash cuts at once. `quest.defend.staffs`: the goal in the quest bar.
+- `dlg.woodcutter.staffs.n1`, `dlg.woodcutter.staffs.n2`, and `dlg.woodcutter.staffs.done.n1`: the bamboo staffs for the men of the village; the rings of the stem are the same distance apart ("có đốt cách đều nhau"; a half block is a unit of the engine, not a word for a child, #51), and each slash cuts at once. `quest.defend.staffs`: the goal in the quest bar.
 - `share.start`: the line before the share of the loot ("Hãy chia đều cho cháu, Nghé và Gióng.").
 
 Please check the words ống bễ (the bellows), đốt (a ring of the bamboo), and whether "chia đều" reads well for a child of 6.
