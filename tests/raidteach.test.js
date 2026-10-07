@@ -83,6 +83,12 @@ test('in the raid of the general, Gióng rides his iron horse beside the road, a
   const { STEED_SEAT } = await import('../src/world/figures.js');
   const def = raids.raids.boss;
   assert.equal(def.steed, STEED_SEAT / 2, 'the seat of Gióng is the top of the back of the horse');
+  // The horse is as big as grown Gióng: the seat is near the height of his hips, so his feet hang at
+  // the sides of the horse and do not touch the ground (a small horse hides under his legs).
+  const { figureOf } = await import('../src/world/figures.js');
+  const giong = figureOf(load('data/figures.json').figures['giong-hero'], 'coarse');
+  const tall = giong.height * giong.scale * (giong.grid ?? 0.5);
+  assert.ok(def.steed >= 0.4 * tall, `the seat ${def.steed} is at the hips of Gióng (${tall.toFixed(2)} tall)`);
   const raid = createRaid(raids, 'boss', 0, null, []);
   const w = createWorldState({ seed: 1, map: 'trau-son', clock: { minutes: 600 } });
   setupRaid(w, raid, def, { groundY: () => 0 }, { companion: 'giong-hero' });
@@ -91,8 +97,10 @@ test('in the raid of the general, Gióng rides his iron horse beside the road, a
   assert.ok(horse && horse.look === 'iron-steed', 'the iron horse is there');
   assert.equal(g.riding, def.steed);
   assert.deepEqual({ x: horse.position.x, z: horse.position.z }, { x: g.position.x, z: g.position.z });
+  // Nothing of the raid is under the horse: its head and its tail reach STEED_SEAT * 1.25 from
+  // the middle.
   for (const s of [...raid.sources, ...raid.spots]) {
-    assert.ok(Math.hypot(s.x - g.position.x, s.z - g.position.z) >= 4, `${s.id} is far from Gióng`);
+    assert.ok(Math.hypot(s.x - g.position.x, s.z - g.position.z) >= STEED_SEAT * 1.25 + 1, `${s.id} is far from Gióng and his horse`);
   }
   assert.deepEqual(companionSpot(raid), companionSpot(raid), 'the same place each time');
 });

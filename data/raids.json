@@ -116,7 +116,7 @@
     },
     "boss": {
       "tools": ["sling", "traps", "helpers", "nghe", "water", "fire", "lightning", "bamboo"], "trapPost": 20, "trapAsk": "smith",
-      "map": "trau-son", "wall": [91, 19], "gate": [93, 19], "dir": [1, 0], "companion": "giong", "steed": 0.825,
+      "map": "trau-son", "wall": [91, 19], "gate": [93, 19], "dir": [1, 0], "companion": "giong", "steed": 1.8,
       "phases": [
         { "id": "soldiers", "waves": [
           { "at": 0, "kind": "soldier", "from": [110, 19] },
