@@ -1071,6 +1071,7 @@
   "parent.code.error.shape": "Hồ sơ trong mã không đúng.",
   "ui.none": "—",
   "ui.list.sep": ", ",
+  "ui.list.and": " và ",
   "parent.q.row": "{text} — {answer} ({skill}, {lang})",
   "vanmieu.stele.row": "{name} · {title}",
   "vanmieu.board": "Bảng ở cổng",

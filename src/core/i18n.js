@@ -1,7 +1,8 @@
 // Text lookup by key. This module has no DOM code.
 // A dictionary is a flat object: { "key.name": "Text with {param}" }.
-// A parameter value can be a number, a string, or a nested key
-// in the form { key: "other.key", params: {...} }.
+// A parameter value can be a number, a string, a list (joined with ui.list.sep and ui.list.and), or
+// a nested key in the form { key: "other.key", params: {...} }. A key "<key>.one" is the text for
+// the param n equal to 1 (the plural of English).
 // The text "[[id]]" is a glossary mark. It shows the name "gloss.<id>.name".
 // In English mode, the first mark of an id also shows "gloss.<id>.meaning".
 // The text "{w:đâu}" in a line of a person is a word that can change: it shows the word of the way
@@ -53,6 +54,12 @@ export function createI18n(dict, lang, fallback = null) {
   function value(v) {
     if (v === null || v === undefined) return '';
     if (typeof v === 'number') return formatNumber(v, lang);
+    // A list: "3, 4 và 5" ("3, 4, and 5" has no comma before "and" here: "3, 4 and 5").
+    if (Array.isArray(v)) {
+      const items = v.map(value);
+      if (items.length < 2) return items.join('');
+      return `${items.slice(0, -1).join(raw('ui.list.sep') ?? ', ')}${raw('ui.list.and') ?? ' & '}${items[items.length - 1]}`;
+    }
     if (typeof v === 'object' && typeof v.key === 'string') return t(v.key, v.params);
     return String(v);
   }
@@ -61,9 +68,11 @@ export function createI18n(dict, lang, fallback = null) {
   // so that a missing key is easy to see.
   // A parameter at the start of a sentence (at the start of the text, or after ".", "!",
   // "?", or "…") starts with a capital letter, for example "{name} is calm." -> "The scout is calm."
+  // The plural: with the param n equal to 1, the text of "<key>.one" when it is there (English has
+  // two forms, Vietnamese has one), so that "1 times" never shows (#42).
   function t(key, params) {
     params = params ?? {};
-    const marked = raw(key);
+    const marked = (params.n === 1 && raw(`${key}.one`)) || raw(key);
     if (marked === null) return key;
     const text = speakWay(marked, speech);
     return text.replace(PARAM, (all, name, offset) => {

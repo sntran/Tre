@@ -1071,6 +1071,7 @@
   "parent.code.error.shape": "The profile in the code is not correct.",
   "ui.none": "—",
   "ui.list.sep": ", ",
+  "ui.list.and": " and ",
   "parent.q.row": "{text} — {answer} ({skill}, {lang})",
   "vanmieu.stele.row": "{name} · {title}",
   "vanmieu.board": "The board at the gate",

@@ -168,3 +168,15 @@ test('each save error has a message for parents', () => {
     assert.ok(`parent.code.error.${reason}` in vi, reason);
   }
 });
+
+test('a key with .one is the text for n equal to 1, and a list joins with "and" (#42)', () => {
+  const en = createI18n({ 'ui.list.sep': ', ', 'ui.list.and': ' and ', times: '{n} times', 'times.one': '{n} time', played: '{name} played {count}.', facts: 'With {list}.' }, 'en');
+  assert.equal(en.t('times', { n: 1 }), '1 time');
+  assert.equal(en.t('times', { n: 3 }), '3 times');
+  assert.equal(en.t('played', { name: 'Nam', count: { key: 'times', params: { n: 1 } } }), 'Nam played 1 time.');
+  assert.equal(en.t('facts', { list: [3, 4, 5] }), 'With 3, 4 and 5.');
+  assert.equal(en.t('facts', { list: [3] }), 'With 3.');
+  const vi = createI18n({ 'ui.list.sep': ', ', 'ui.list.and': ' và ', times: '{n} lần', facts: 'Với {list}.' }, 'vi');
+  assert.equal(vi.t('times', { n: 1 }), '1 lần', 'Vietnamese has one form');
+  assert.equal(vi.t('facts', { list: [3, 4, 5] }), 'Với 3, 4 và 5.');
+});
