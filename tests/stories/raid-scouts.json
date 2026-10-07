@@ -84,11 +84,6 @@
           }
         },
         {
-          "text": {
-            "shown": "raid.tool.gate"
-          }
-        },
-        {
           "count": {
             "entities": "trap",
             "max": 0
@@ -213,6 +208,17 @@
         "event": "light",
         "timeout": 40
       }
+    },
+    {
+      "expect": [
+        {
+          "event": "open",
+          "with": {
+            "screen": "callout",
+            "textKey": "raid.tool.gate"
+          }
+        }
+      ]
     },
     {
       "wait": 0.5

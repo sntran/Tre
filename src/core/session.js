@@ -1204,18 +1204,30 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const fig = raidEnc ? getEntity(state, raidEnc) : null;
     if (fig) fig.hidden = true;
     log('action', { kind: 'raid' });
-    // The elder or the smith says one line the first time that a tool comes; the raid waits.
+    // The elder or the smith says one line the first time that a tool comes. One tool at a time
+    // (#50): the line of the first new tool now, and the line of each next new tool later, when the
+    // raid does not wait and the child had some time with the tool before (see the step).
+    const lines = [];
     for (const tool of raid.tools) {
       const line = data.raids.toolLines?.[tool];
       if (!line || profile.flags[`raid.tool.${tool}`]) continue;
       profile.flags[`raid.tool.${tool}`] = true;
-      say(line.textKey, {}, null, line.speaker);
+      lines.push({ tool, textKey: line.textKey, speaker: line.speaker });
     }
-    // A villager names the post for a trap (an ordinal word, no numeral).
+    // A villager names the post for a trap (an ordinal word, no numeral), after the line of the traps.
     if (raid.trapPost !== null) {
       const n = raid.posts.findIndex((q) => q.d === raid.trapPost) + 1;
-      say('raid.trap.ask', { post: { key: `ord.${n}` } }, null, def.trapAsk ?? 'elder');
+      const ask = { textKey: 'raid.trap.ask', params: { post: { key: `ord.${n}` } }, speaker: def.trapAsk ?? 'elder' };
+      const k = lines.findIndex((l) => l.tool === 'traps');
+      if (k >= 0) lines.splice(k + 1, 0, { ...ask, with: true });
+      else lines.unshift(ask);
     }
+    // Now: the lines up to the first new tool, that line, and the lines that go with it.
+    const first = lines.findIndex((l) => l.tool);
+    let now = lines.findIndex((l, i) => i > first && l.tool && !l.with);
+    if (first < 0 || now < 0) now = lines.length;
+    for (const l of lines.slice(0, now)) say(l.textKey, l.params ?? {}, null, l.speaker);
+    toolLines = { list: lines.slice(now), t: TOOL_GAP };
     emit({ type: 'raid', on: true, id });
     emit({ type: 'hud' });
     return true;
@@ -1363,6 +1375,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       slingPull = null;
       if (count >= 1) shootFromWall(count);
     } };
+  }
+  // The lines of the new tools that wait (the first raid of more than one tool), and the seconds
+  // before the next one.
+  let toolLines = { list: [], t: 0 };
+  const TOOL_GAP = 6;
+  function stepToolLines() {
+    const r = raidEnt()?.raid;
+    if (!r || r.result || !toolLines.list.length) return;
+    if (r.hold || busy || screen) return;
+    toolLines.t -= STEP;
+    // A tool that the raid needs now comes at once: the gate when a scout lights a torch.
+    const now = toolLines.list[0]?.tool === 'gate' && state.events.some((ev) => ev.type === 'light');
+    if (toolLines.t > 0 && !now) return;
+    // In the raid the line is a bubble of the person: it does not stop the play.
+    const bubble = (l) => emit({ type: 'open', screen: 'callout', id: `npc:${l.speaker}`, textKey: l.textKey, params: l.params ?? {} });
+    bubble(toolLines.list.shift());
+    // The lines that go with it (the post of a trap) come at once.
+    while (toolLines.list[0]?.with) bubble(toolLines.list.shift());
+    toolLines.t = TOOL_GAP;
   }
   // The pull of the slingshot with the big button: one step at once, and PULL_RATE steps a second
   // while the button is down, up to the longest pull. null: no pull.
@@ -2360,6 +2391,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     state.clock.hold = Boolean(practice && (mentoring.activeKey() || folk.active()));
     worldStep(state, STEP, env);
     if (slingPull) slingPull.t += STEP;
+    stepToolLines();
     for (const fn of later.splice(0)) fn();
     const events = state.events;
     for (const ev of events) {

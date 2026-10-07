@@ -143,6 +143,16 @@ export function createRaidView({ view, figures, session, layer, send }) {
     focus(heroPlace) {
       const r = raid();
       if (!r || !heroPlace) return heroPlace;
+      // The first raid of the traps waits for the first trap in the hands (#50): the pile is on the
+      // screen, between it and the hero.
+      if (r.hold?.tool === 'traps') {
+        const pile = query(state(), 'item', 'position').filter((e) => e.item.kind === 'trap' && !e.item.set && !e.item.held);
+        if (pile.length) {
+          const px = pile.reduce((a, e) => a + e.position.x, 0) / pile.length;
+          const pz = pile.reduce((a, e) => a + e.position.z, 0) / pile.length;
+          return { ...heroPlace, x: (heroPlace.x + px) / 2, z: (heroPlace.z + pz) / 2 };
+        }
+      }
       const mid = { x: (r.wall.x + r.dir.x * 14) / 2, z: (r.wall.z + r.dir.z * 14) / 2 };
       return { ...heroPlace, x: heroPlace.x * 0.3 + mid.x * 0.7, z: heroPlace.z * 0.3 + mid.z * 0.7 };
     },
