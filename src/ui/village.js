@@ -482,6 +482,8 @@ export async function mountVillage(ctx, params = {}) {
       return persons().filter((p) => p.kind === 'npc' && stationIds.includes(p.ref)).map((p) => ({ p, top: figureTop(p.entity) }))
         .filter((m) => m.top !== null).map(({ p, top }) => ({ x: p.x, y: p.y, h: top, id: p.entity }));
     }
+    // A practice has no star of the story (#51): the work of the practice has its own outlines.
+    if (session.practice) return [];
     const goal = currentGoal(data.quests.quests, conditionState(profile));
     if (!goal) return [];
     const stepGoal = goal.step;

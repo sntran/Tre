@@ -1,0 +1,118 @@
+{
+ "name": "practice-story-quiet",
+ "about": {
+  "vi": "Trong lúc luyện tập chặt tre, An đi qua đình, chạm vào ông cụ và bấm nút. Ông cụ chỉ chào An: không có chuyện kể của làng mở ra. Rồi An đến chỗ bọn do thám và bấm nút: không có trận đánh nào bắt đầu.",
+  "en": "In the practice of the bamboo, An walks past the đình, taps the elder, and presses the button. The elder only greets An: no talk of the story opens. Then An goes to the scouts and presses the button: no raid starts."
+ },
+ "practice": "chat-tre",
+ "profile": {
+  "name": "An",
+  "grade": 1,
+  "lang": "vi",
+  "seed": 7,
+  "flags": {
+   "intro.seen": true,
+   "giong.spoke": true
+  }
+ },
+ "clock": 540,
+ "at": [
+  "phu-dong",
+  33,
+  44
+ ],
+ "steps": [
+  {
+   "until": {
+    "event": "open",
+    "with": {
+     "screen": "dialogue"
+    },
+    "timeout": 5
+   }
+  },
+  {
+   "expect": [
+    {
+     "text": {
+      "shown": "dlg.woodcutter.trial.n1"
+     }
+    }
+   ]
+  },
+  {
+   "read": true
+  },
+  {
+   "press": {
+    "entity": "npc:elder"
+   }
+  },
+  {
+   "wait": 1
+  },
+  {
+   "expect": [
+    {
+     "hero": {
+      "near": "npc:elder",
+      "within": 4
+     }
+    },
+    {
+     "event": "open",
+     "with": {
+      "screen": "callout",
+      "id": "npc:elder"
+     }
+    },
+    {
+     "event": "open",
+     "with": {
+      "screen": "dialogue"
+     },
+     "not": true
+    },
+    {
+     "flag": "prologue.started",
+     "is": false
+    }
+   ]
+  },
+  {
+   "tap": {
+    "cell": [
+     64,
+     29
+    ]
+   }
+  },
+  {
+   "wait": 30
+  },
+  {
+   "press": {
+    "entity": "encounter:scouts"
+   }
+  },
+  {
+   "wait": 1
+  },
+  {
+   "expect": [
+    {
+     "raid": {
+      "on": false
+     }
+    },
+    {
+     "event": "open",
+     "with": {
+      "screen": "say"
+     },
+     "not": true
+    }
+   ]
+  }
+ ]
+}

@@ -335,6 +335,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     steps.push({ at: t + 0.5, end: true });
     addEntity(state, { id: 'script:greet', script: { key: 'greet', move: 'greet', t: 0, i: 0, steps, spawned: [] } });
   }
+  // A person of the practice: the person of the task, the person who greets at a whole place, or
+  // the person of a station. The talks of the other people are of the story (#51).
+  const ofPractice = (ref) => ref === practice?.person || ref === practice?.greeter || Boolean(practice?.stations?.includes(ref));
   // The persons of the stations of a practice of a whole place (a star over each one).
   const stations = () => (practice && !practice.person ? practice.stations ?? [] : []);
 
@@ -1226,10 +1229,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (!r || r.move === 'wait' || r.move === 'tryFirst') mentoring.move(key, 'show');
         return;
       }
+      // In a practice, a person who is not of the practice only greets the child: no talk of the
+      // story opens there (#51).
+      if (practice && !ofPractice(who.id)) {
+        const words = GREETS[data.npcs.npcs[who.id]?.greet ?? 'grown'];
+        if (words) emit({ type: 'open', screen: 'callout', id: at.entity ?? `npc:${who.id}`, textKey: words[state.tick % words.length], params: { name: profile.hero.name } });
+        return;
+      }
       talk(pickTalk(data.npcs.npcs[who.id], profile));
     }
     else if (who.kind === 'event') tapEvent(who.id);
     else if (who.kind === 'encounter') {
+      // No raid of the story starts in a practice (#51).
+      if (practice) return;
       const enc = map.encounters.find((e) => e.id === who.id);
       const def = data.raids?.raids[enc.raid];
       if (!def) return;
@@ -1690,7 +1702,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // People: the finish of the task of the person, or a talk (during the task: a call for help).
     for (const q of persons()) {
       const e = getEntity(state, q.entity);
-      if (!e || e.hidden || (q.kind === 'encounter' && raidOn())) continue;
+      if (!e || e.hidden || (q.kind === 'encounter' && (raidOn() || practice))) continue;
       const base = { target: q.entity, at: e.position };
       if (held) {
         if (held.item.kind === 'gift' && q.kind === 'npc' && trialDef('share')?.rest?.[q.ref]) add({ ...base, act: 'give', icon: 'hand-give', rank: 0, run: () => giveGift(q) }, REACH + 3);
@@ -1706,6 +1718,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else if (fin && !tapped) continue;
       // A talk that the child heard comes again only after a tap on the person: a child who
       // presses the button near the forge for other things does not open the same talk (#49).
+      // In a practice, a person who is not of the practice greets only after a tap (#51).
+      else if (practice && q.kind === 'npc' && !ofPractice(q.ref) && !tapped) continue;
       else if (tapped || q.kind !== 'npc' || mentoring.taskOfPerson(q.entity) || !heard.has(pickTalk(data.npcs.npcs[q.ref] ?? {}, profile))) add({ ...base, act: 'talk', icon: 'talk', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
     }
     if (!held) {
