@@ -1,0 +1,202 @@
+{
+ "about": "#52: three practice visits by links in the same tab, as a parent sends them (the forge, the herbs, the bundles), each with some play; then the parent area from the menu: the gate with a wrong answer first, and the tabs this week, progress, and the adventures, with no line null, undefined, or NaN. The log keeps a session for each visit.",
+ "start": "?practice=ren-sat",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "create": "Minh"
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 240
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 5
+  },
+  {
+   "read": 5
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "wait": 20
+  },
+  {
+   "shot": "the-forge"
+  },
+  {
+   "goto": "?practice=hai-thuoc",
+   "after": 2
+  },
+  {
+   "shot": "who-plays"
+  },
+  {
+   "click": "Minh",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 240
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 5
+  },
+  {
+   "read": 5
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "wait": 20
+  },
+  {
+   "goto": "?practice=bo-que",
+   "after": 2
+  },
+  {
+   "click": "Minh",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 240
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 5
+  },
+  {
+   "read": 5
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "wait": 20
+  },
+  {
+   "print": "JSON.stringify(tre.profile.log.events.filter((e) => e.type === 'session').map((e) => [e.practice, Math.round((e.end - e.start) / 1000), e.endedBy]))"
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": "wrong",
+   "shot": "the-gate-after-a-wrong-answer"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "this-week"
+  },
+  {
+   "check": "!/\\b(null|undefined|NaN)\\b/.test(document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText)"
+  },
+  {
+   "click": "Tiến bộ",
+   "after": 1
+  },
+  {
+   "shot": "progress"
+  },
+  {
+   "check": "!/\\b(null|undefined|NaN)\\b/.test(document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText)"
+  },
+  {
+   "click": "Cuộc phiêu lưu",
+   "after": 2
+  },
+  {
+   "shot": "the-adventures"
+  },
+  {
+   "check": "!/\\b(null|undefined|NaN)\\b/.test(document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText)"
+  },
+  {
+   "print": "JSON.stringify(tre.profile.log.events.filter((e) => e.type === 'session').map((e) => [e.practice, Math.round((e.end - e.start) / 1000), e.endedBy]))"
+  }
+ ]
+}

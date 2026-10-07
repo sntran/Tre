@@ -29,6 +29,10 @@
 //   { "answer": "right" }        the answer of the question on the screen (an exam or a practice
 //                                with the teacher): a tap on the choice, or the keys of the pad and
 //                                the check; "wrong" taps another answer
+//   { "goto": "?practice=hai-thuoc" } a new link in the same tab (the page goes with no end)
+//   { "gate": true }             a parent passes the parent gate (the lock held, the answer typed);
+//                                "wrong" gives a wrong answer first (with "shot": a frame of it)
+//   { "profile": "week.json" }   a test profile into the store of the browser, and the page again
 //   { "stick": [dx, dy, 1.5] }   the stick: a finger down at the stick, moved by dx, dy, for seconds
 //   { "drag": [[x0, y0], [x1, y1], 0.6] } a finger that moves over the screen (the slingshot)
 //   { "read": 10 }               taps on the box of a talk, up to this many lines
@@ -294,6 +298,49 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
       }
     }
     await sleep(s.after ?? 1);
+  } else if (s.goto !== undefined) {
+    // A new link in the same tab (a practice link from the parent): the page goes away with no end
+    // of its session, as on a phone, and the store of the browser stays.
+    await page.goto(`${base}index.html${s.goto}`);
+    await page.waitForFunction(() => window.tre, null, { timeout: 60000 });
+    if (plan.lang) await page.evaluate((code) => window.tre.chooseLanguage?.(code), plan.lang);
+    await sleep(s.after ?? 1);
+  } else if (s.gate) {
+    // A parent passes the parent gate: a finger on the lock until the question shows, then the
+    // answer on the keyboard and a tap on the check. wrong: a wrong answer first.
+    const lock = await center('.panel .btn.paper[aria-label]');
+    if (!lock) problems.push(`step ${i}: no lock of the parent gate`);
+    else {
+      await touch('touchStart', ...lock);
+      const t0 = Date.now();
+      while (!(await page.locator('.gate-question').count()) && Date.now() - t0 < 10000) await sleep(0.1);
+      await touch('touchEnd');
+      const answer = async (right) => {
+        const q = await page.locator('.gate-question').textContent();
+        const [a, b] = q.match(/\d+/g).map(Number);
+        await page.locator('.panel input').fill(String(right ? a * b : a * b + 1));
+        const ok = await center('.panel .row.field .btn');
+        await tapAt(...ok);
+        await sleep(0.8);
+      };
+      if (s.gate === 'wrong') {
+        await answer(false);
+        if (s.shot) {
+          shots += 1;
+          await page.screenshot({ path: `${out}/${String(shots).padStart(2, '0')}-${s.shot}.jpg`, type: 'jpeg', quality: 80 });
+        }
+      }
+      await answer(true);
+      if (await page.locator('.gate-question').count()) problems.push(`step ${i}: the parent gate did not open`);
+    }
+  } else if (s.profile) {
+    // A test profile (tools/week-profile.mjs) into the store of the browser, and the page again.
+    const profile = JSON.parse(readFileSync(s.profile, 'utf8'));
+    await page.evaluate(async (p) => (await import('./src/ui/storage.js')).saveProfile(p), profile);
+    await page.reload();
+    await page.waitForFunction(() => window.tre, null, { timeout: 60000 });
+    if (plan.lang) await page.evaluate((code) => window.tre.chooseLanguage?.(code), plan.lang);
+    await sleep(1);
   } else if (s.stick) {
     const [dx, dy, seconds = 1] = s.stick;
     const x = 80;
