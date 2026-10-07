@@ -1,9 +1,9 @@
 // A play on a phone, as a child plays (#46 and the issues of the play test): the real game in a
 // headless browser at 390 × 844 with touch, and only taps on the screen and the buttons of the
 // screen. No story command, no keyboard, and no teleport. The tool saves the frames of the play,
-// and it fails when the page has an error, when the frame loop stops, when a tap on free ground
-// that the hero can walk to does not move the hero, or when a tap on a place of a task does not
-// choose it.
+// and it fails when the page has an error or a warning, when the frame loop stops, when a tap on
+// free ground that the hero can walk to does not move the hero, when a tap on a place of a task
+// does not choose it, or when a portrait in a frame stays empty.
 // Run it from the root of the repository with a local server on port 8123
 // (python3 -m http.server 8123), and Playwright (npm install playwright, or a global one):
 //   node tools/phone-play.mjs <plan.json> [--out <folder>] [--base <URL>] [--three <three.module.min.js>]
@@ -72,8 +72,15 @@ if (three) await page.route('https://cdn.jsdelivr.net/**', (r) => r.fulfill({ bo
 const problems = [];
 const log = [];
 page.on('pageerror', (e) => problems.push(`page error: ${e.message}`));
+// A warning or an error of the game fails the play (#59: each portrait threw an error, and the
+// game only wrote a warning). The report names the place in the code.
 page.on('console', (m) => {
-  if (m.type() === 'error') problems.push(`console: ${m.text().slice(0, 300)}`);
+  if (m.type() !== 'error' && m.type() !== 'warning') return;
+  // A note of the GL driver of the headless browser (a stall on a read of pixels, an extension
+  // that the software GPU does not have) is not of the game.
+  if (/GL Driver Message|extension not supported/.test(m.text())) return;
+  const at = m.location()?.url ? ` (${m.location().url.replace(base, '')}:${m.location().lineNumber + 1})` : '';
+  problems.push(`console ${m.type()}: ${m.text().slice(0, 300)}${at}`);
 });
 await page.goto(`${base}index.html${plan.start ?? ''}`);
 await page.waitForFunction(() => window.tre, null, { timeout: 60000 });
@@ -169,6 +176,17 @@ const random = () => {
 };
 
 let shots = 0;
+// A frame of the screen. Before it, each portrait on the screen gets a few seconds to draw; a
+// portrait that stays empty (a canvas of 1 × 1, #59) is a problem of the step.
+const emptyPortraits = () => page.evaluate(() => [...document.querySelectorAll('canvas.portrait-img')]
+  .filter((c) => c.width <= 1 && c.getBoundingClientRect().width > 0 && c.checkVisibility?.() !== false).length);
+async function shot(i, name) {
+  for (let k = 0; k < 12 && (await emptyPortraits()) > 0; k++) await sleep(0.5);
+  const empty = await emptyPortraits();
+  if (empty) problems.push(`step ${i}: ${empty} portraits on the screen are empty`);
+  shots += 1;
+  await page.screenshot({ path: `${out}/${String(shots).padStart(2, '0')}-${name}.jpg`, type: 'jpeg', quality: 80 });
+}
 try {
 for (const [i, s] of (plan.steps ?? []).entries()) {
   const before = problems.length;
@@ -253,8 +271,7 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
       }
       if (s.hold.print) console.log(`step ${i}: ${s.hold.print} = ${await page.evaluate((expr) => JSON.stringify(new Function('tre', `return (${expr});`)(window.tre)), s.hold.print).catch((e) => `error ${e.message}`)}`);
       if (s.shot) {
-        shots += 1;
-        await page.screenshot({ path: `${out}/${String(shots).padStart(2, '0')}-${s.shot}.jpg`, type: 'jpeg', quality: 80 });
+        await shot(i, s.shot);
       }
       await touch('touchEnd');
     }
@@ -326,8 +343,7 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
       if (s.gate === 'wrong') {
         await answer(false);
         if (s.shot) {
-          shots += 1;
-          await page.screenshot({ path: `${out}/${String(shots).padStart(2, '0')}-${s.shot}.jpg`, type: 'jpeg', quality: 80 });
+          await shot(i, s.shot);
         }
       }
       await answer(true);
@@ -373,8 +389,7 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
       await sleep(0.1 + random() * 0.4);
     }
   } else if (s.shot) {
-    shots += 1;
-    await page.screenshot({ path: `${out}/${String(shots).padStart(2, '0')}-${s.shot}.jpg`, type: 'jpeg', quality: 80 });
+    await shot(i, s.shot);
   } else if (s.check) {
     const ok = await page.evaluate((expr) => Boolean(new Function('tre', `return (${expr});`)(window.tre)), s.check).catch((e) => `error ${e.message}`);
     if (ok !== true) problems.push(`step ${i}: the check ${s.check} is not true`);
