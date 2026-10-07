@@ -73,7 +73,7 @@ The tools come one raid after the other (rule 11: one new part at a time). A too
 | `river` | Phù Đổng | The river to the ford | Two little river serpents (they become calm) | `river.calmed`, the talks of Sóng |
 | `patrol` | Phù Đổng | The east road to the gate | Two scouts (again and again) | Rice and bamboo |
 
-The boss has phases: the soldiers first; then the general comes (Gióng stands at the side of the hero); after three hits the general stands stunned, the iron staff breaks (the talk `staff.breaks`), and a bamboo clump grows by the path. A tap on it: Gióng pulls it up (the talk `bamboo.found`) and strikes, and the raid is won.
+The boss has phases: the soldiers first; then the general comes (Gióng stands at the side of the hero); after three hits the general stands stunned, the iron whip breaks (the talk `staff.breaks`), and a bamboo clump grows by the path. A tap on it: Gióng pulls it up (the talk `bamboo.found`) and strikes, and the raid is won.
 
 The second soldier raid has a jar and a brazier, and the boss adds the small forge of the smith by the crossroads ("I brought my forge to the crossroads"), so that the child can use the whole chain of the elements there.
 

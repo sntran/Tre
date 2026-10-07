@@ -126,7 +126,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `raid-scouts` | The first raid: the lines of the slingshot and the gate, a tap on the post nearest the scout, a short pull and its correction by count, and the gate bar before a torch lands (no skill event). |
 | `raid-patrol` | The traps: the elder names the third post; a trap there is counting, a trap one post on is play. |
 | `raid-soldiers` | The first soldiers: a villager at a straw flag, a trap at the post that the smith names, and the charge of Nghé. Then the loot: three, one, and two sacks make Nghé sulk; a sack from the basket of the hero to Nghé makes it fair. |
-| `raid-boss` | The forge of the smith: fire makes the soldiers raise wet shields, lightning into the wet ground shocks them; the general and his blow, the iron staff breaks, and Gióng pulls up the bamboo. The fact of history keeps its year. Then twelve sacks, four on each mat, and the farewell of Gióng. |
+| `raid-boss` | The forge of the smith: fire makes the soldiers raise wet shields, lightning into the wet ground shocks them; the general and his blow, the iron whip breaks, and Gióng pulls up the bamboo. The fact of history keeps its year. Then twelve sacks, four on each mat, and the farewell of Gióng. |
 | `raid-lost` | The map only pauses the raid, with one line; nobody stops the soldiers; at grade 1 they take nothing, and they come again at the next dawn. |
 | `raid-river` | Rice balls from the same pull: two little river serpents eat two each and swim away calm; the talks of Sóng. |
 | `restore-point` | A point at each dawn, only the last three; a parent goes back to yesterday morning (before the talk with the elder), and then back to where the game was. |
