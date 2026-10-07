@@ -1321,13 +1321,16 @@ export async function mountVillage(ctx, params = {}) {
     if (night > 0.05) {
       // Each lit lantern: a hole in the wash (lighter), and a warm pool on the glow layer.
       dusk.globalCompositeOperation = 'lighter';
-      const lights = state.entities.filter((e) => e.look === 'lantern-lit' || e.carry === 'lantern');
+      // The lit posts and the ring of the pull of the slingshot are lights too (#55).
+      const lights = state.entities.filter((e) => e.look === 'lantern-lit' || e.carry === 'lantern' || e.look === 'pull-ring' || /^post-\d-on$/.test(e.look ?? ''));
       for (const e of lights) {
         const f = figures.placeOf(e.id);
         if (!f) continue;
         const q = view.project(f.x + (e.lantern ? 0.8 : 0), f.y + (e.lantern ? 1 : 0.6), f.z);
         const flicker = e.lantern?.flicker ? 0.7 + Math.abs(Math.sin(time * 40)) * 0.5 : 1;
-        const r = (view.state.level ? 70 : 100) * (0.95 + Math.sin(time * 6 + q.x) * 0.05) * flicker;
+        // A post or the ring of the pull: a small light.
+        const size = e.look === 'lantern-lit' || e.carry === 'lantern' ? 1 : 0.45;
+        const r = (view.state.level ? 70 : 100) * size * (0.95 + Math.sin(time * 6 + q.x) * 0.05) * flicker;
         const hole = dusk.createRadialGradient(q.x, q.y, 0, q.x, q.y, r);
         hole.addColorStop(0, `rgba(160, 140, 110, ${0.8 * night})`);
         hole.addColorStop(1, 'rgba(0, 0, 0, 0)');

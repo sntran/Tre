@@ -80,7 +80,7 @@ const CUE_IDLE = 6; // seconds with no action in a task before the next thing gl
 // The screens of a talk that the child fills in: they open at once, and the talk waits for them.
 const INPUT_SCREENS = new Set(['nameFriend']);
 // The commands that are an action of the child (they stop the cue).
-const CHILD_ACTS = new Set(['tap', 'hands', 'hold', 'wave', 'jump', 'move', 'pet', 'talkTo']);
+const CHILD_ACTS = new Set(['tap', 'hands', 'hold', 'wave', 'jump', 'move', 'pet', 'talkTo', 'fire']);
 const WORLD = new Set(['move', 'stop', 'pet', 'ride', 'aim', 'pick', 'put', 'drop', 'guess', 'face']);
 // The words of a greeting by the age of the person (greet in data/npcs.json, #49): an old person
 // says "Cháu ngoan quá!", a child greets a child as a friend, and a person with no greet (Gióng,
@@ -1473,15 +1473,30 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const trap = traps.sort((a, b) => distHb(hp, a.position) - distHb(hp, b.position))[0];
     // A trap in the hands: the first raid of the traps goes on (#50).
     if (trap) return { act: 'pick', icon: 'hand-pick', target: trap.id, run: () => { worldCommand(state, { type: 'pick', id: 'hero', item: trap.id }); order({ act: 'release', tool: 'traps' }); } };
-    // Nothing else in reach: the big button is the slingshot (#50). Hold it: the band pulls back
-    // one step at a time; let go: the stone flies. A child who only presses the button can play.
+    // Nothing else in reach: the big button is the slingshot (#50, #55). Each press adds one post
+    // to the pull (a red band on the band); the stone flies one second after the last press, or at
+    // once after a tap on the hero. A child counts the presses, not the time.
     const r = raidEnt()?.raid;
     if (!r || r.result || !r.tools.includes('sling')) return null;
-    return { act: 'sling', icon: 'sling', target: 'hero', hold: true, run: () => { slingPull = { t: 0 }; }, release: () => {
-      const count = pullCount();
-      slingPull = null;
-      if (count >= 1) shootFromWall(count);
+    return { act: 'sling', icon: 'sling', target: 'hero', run: () => {
+      const most = Math.floor(r.sling.max / POST_STEP);
+      slingPull = { posts: Math.min(most, (slingPull?.posts ?? 0) + 1), t: 0 };
     } };
+  }
+  // The stone of the pull of the button flies now.
+  function fireSling() {
+    const count = pullCount();
+    slingPull = null;
+    if (count >= 1) shootFromWall(count);
+  }
+  // One step of the pull of the button: the stone flies one second after the last press.
+  function stepSling() {
+    const r = raidEnt()?.raid;
+    // The posts up to the pull light up, and a ring lies on the road at the count.
+    if (r) r.pull = slingPull ? pullCount() : dragPull;
+    if (!slingPull) return;
+    slingPull.t += STEP;
+    if (slingPull.t >= FIRE_WAIT) fireSling();
   }
   // The lines of the new tools that wait (the first raid of more than one tool), and the seconds
   // before the next one.
@@ -1502,14 +1517,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     while (toolLines.list[0]?.with) bubble(toolLines.list.shift());
     toolLines.t = TOOL_GAP;
   }
-  // The pull of the slingshot with the big button: one step at once, and PULL_RATE steps a second
-  // while the button is down, up to the longest pull. null: no pull.
+  // The pull of the slingshot with the big button: { posts (the count of presses), t (seconds
+  // since the last press) }, or null. One press is one post: POST_STEP half blocks, as far as the
+  // first post is from the wall.
   let slingPull = null;
-  const PULL_RATE = 4;
+  let dragPull = 0; // half blocks: the pull of a drag on the hero now
+  const POST_STEP = 5;
+  const FIRE_WAIT = 1;
   function pullCount() {
     const r = raidEnt()?.raid;
     if (!slingPull || !r) return 0;
-    return Math.min(r.sling.max, 1 + Math.floor(slingPull.t * PULL_RATE));
+    return Math.min(r.sling.max, slingPull.posts * POST_STEP);
   }
 
   // Walks -------------------------------------------------------------------------
@@ -2612,7 +2630,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // works. In the story the days go on (the rice grows, the feast comes at dusk).
     state.clock.hold = Boolean(practice && (mentoring.activeKey() || folk.active()));
     worldStep(state, STEP, env);
-    if (slingPull) slingPull.t += STEP;
+    stepSling();
     stepFarewell();
     stepGuessLine();
     stepToolLines();
@@ -2765,8 +2783,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     // In a raid, a tap on Nghé is the charge only when Nghé is a tool of this raid.
     const charges = type === 'pet' && raidEnt()?.raid.tools.includes('nghe');
+    // The pull of a drag on the hero, for the posts and the ring on the road (no shot), and a tap
+    // on the hero that lets the stone of the pull of the button fly at once (#55).
+    if (raidOn() && type === 'pullTo') {
+      dragPull = Math.max(0, Math.min(raidEnt().raid.sling.max, Number(cmd.count) || 0));
+      return;
+    }
+    if (raidOn() && type === 'fire') {
+      fireSling();
+      return;
+    }
     if (raidOn() && (type === 'shoot' || type === 'pour' || charges)) {
-      if (type === 'shoot') shootFromWall(cmd.count);
+      if (type === 'shoot') {
+        slingPull = null;
+        dragPull = 0;
+        shootFromWall(cmd.count);
+      }
       else if (type === 'pour') order({ act: 'pour', source: cmd.source, x: cmd.x * 2, z: cmd.y * 2 });
       else order({ act: 'charge' });
       return;

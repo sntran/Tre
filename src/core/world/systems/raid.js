@@ -128,9 +128,16 @@ function mirror(world, raid, env) {
     const post = getEntity(world, `post:${i + 1}`);
     if (!post) continue;
     const waiting = raid.predict.state === 'pending' && raid.enemies.some((e) => e.state !== 'retreat');
-    post.look = `post-${i + 1}${waiting ? '-lit' : ''}`;
+    // While the child sets a pull, the posts up to the pull light up (#55).
+    const on = !waiting && (raid.pull ?? 0) >= raid.posts[i].d;
+    post.look = `post-${i + 1}${waiting ? '-lit' : on ? '-on' : ''}`;
     if (waiting) post.raidTap = { what: 'post', id: raid.posts[i].d };
     else delete post.raidTap;
+  }
+  // A small ring on the road at the count of the pull: the count, not the arc and not the answer.
+  if (raid.pull > 0) {
+    const at = { x: raid.wall.x + raid.dir.x * raid.pull, z: raid.wall.z + raid.dir.z * raid.pull };
+    put('ring:pull', { position: { ...at, y: gy(at), facing: 0 }, look: 'pull-ring' });
   }
   for (const t of raid.torches) {
     const p = torchAt(t);

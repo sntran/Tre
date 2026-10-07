@@ -98,7 +98,13 @@ export function createRaidView({ view, figures, session, layer, send }) {
       return false;
     },
     move(p, id) {
-      if (sling?.id === id) Object.assign(sling, { x: p.x, y: p.y });
+      if (sling?.id === id) {
+        Object.assign(sling, { x: p.x, y: p.y });
+        // The posts up to the pull light up, and a ring shows the count on the road (#55).
+        const count = aim()?.count ?? 0;
+        if (count !== sling.count) send({ type: 'pullTo', count });
+        sling.count = count;
+      }
       else if (flow?.id === id) Object.assign(flow, { x: p.x, y: p.y });
       else return false;
       return true;
@@ -107,7 +113,14 @@ export function createRaidView({ view, figures, session, layer, send }) {
       if (sling?.id === id) {
         const a = aim();
         const pulled = isPull({ x: sling.x0, y: sling.y0 }, p, stepPx());
+        const shown = sling.count;
         sling = null;
+        if (shown) send({ type: 'pullTo', count: 0 });
+        // A tap on the hero with a pull of the big button: the stone flies at once (#55).
+        if (!pulled && session.raidPull?.()) {
+          send({ type: 'fire' });
+          return true;
+        }
         // A touch that does not pull is a tap on the world, never a shot (#50).
         if (!pulled) return 'tap';
         // No step is no shot (the finger went back to the hero).
@@ -124,6 +137,7 @@ export function createRaidView({ view, figures, session, layer, send }) {
       return false;
     },
     cancel() {
+      if (sling?.count) send({ type: 'pullTo', count: 0 });
       sling = null;
       flow = null;
     },

@@ -535,3 +535,8 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 
 - **The sample staff:** `dlg.woodcutter.staffs.n2` ("… Bác dựng một cây gậy mẫu ở đầu hàng tre. Cháu chặt {staffs} cây gậy dài bằng cây gậy mẫu: … nên đếm các đốt trước khi chặt."). Each staff must be as long as the sample, so that two quick taps (the lowest ring) do not finish the task.
 - **Please check:** "cây gậy mẫu" for the sample staff, and "đếm các đốt" in place of "nhìn các đốt".
+
+## Raids that a child can win (#55)
+
+- **The count of the button:** `raid.tool.sling` ("Bấm nút lớn một lần là một cột, như các vạch đỏ trên cột. Kẻ địch đứng ở cột thứ mấy thì cháu bấm mấy lần, rồi viên đạn bay. …"). One press of the big button is one post (five half blocks), the same unit as the red bands on the posts. The stone flies one second after the last press.
+- **Please check:** "bấm mấy lần" for "press as many times", and "kẻ địch" for the scouts, the soldiers, and the serpents of the river.

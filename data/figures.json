@@ -1018,6 +1018,11 @@
       "n": 1,
       "lit": true
     },
+    "post-1-on": {
+      "kind": "post",
+      "n": 1,
+      "on": true
+    },
     "post-2": {
       "kind": "post",
       "n": 2
@@ -1026,6 +1031,11 @@
       "kind": "post",
       "n": 2,
       "lit": true
+    },
+    "post-2-on": {
+      "kind": "post",
+      "n": 2,
+      "on": true
     },
     "post-3": {
       "kind": "post",
@@ -1036,6 +1046,11 @@
       "n": 3,
       "lit": true
     },
+    "post-3-on": {
+      "kind": "post",
+      "n": 3,
+      "on": true
+    },
     "post-4": {
       "kind": "post",
       "n": 4
@@ -1044,6 +1059,14 @@
       "kind": "post",
       "n": 4,
       "lit": true
+    },
+    "post-4-on": {
+      "kind": "post",
+      "n": 4,
+      "on": true
+    },
+    "pull-ring": {
+      "kind": "pull-ring"
     },
     "trap": {
       "kind": "trap"

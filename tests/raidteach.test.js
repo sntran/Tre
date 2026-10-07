@@ -45,13 +45,13 @@ test('the first raid of the traps: no enemy comes until the child has a trap in 
   assert.ok(raid.enemies.length >= 1, 'the soldiers come');
 });
 
-test('the big button is the slingshot: a longer hold is a longer pull, and a pull to the waiting serpent hits it', async () => {
+test('the big button is the slingshot: each press is one post, the posts up to the pull light up, and the stone flies one second after the last press (#55)', async () => {
   let session = null;
   const events = [];
   const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'giong.spoke': true } };
-  // The serpent waits at HOLD_AT half blocks from the wall: one step at once, and four steps each
-  // second of the hold. A hold of (HOLD_AT - 1) / 4 seconds is a pull to the serpent.
-  const holdFor = (HOLD_AT - 1) / 4 + 0.1;
+  // The serpent waits at HOLD_AT half blocks from the wall: the fourth post. Four presses reach it.
+  const posts = HOLD_AT / 5;
+  const press = { do: { type: 'hands' } };
   const failures = await runHeadless({ name: 'raid-button', profile, clock: 540, at: ['phu-dong', 14, 61], steps: [
     { press: { entity: 'encounter:river' } },
     { until: { event: 'open', with: { screen: 'say' }, timeout: 20 } },
@@ -61,20 +61,36 @@ test('the big button is the slingshot: a longer hold is a longer pull, and a pul
     // The child waits: the serpent stops on the road and waits.
     { wait: 40 },
     { expect: [{ raid: { on: true, enemies: 1 } }, { event: 'gate', not: true }] },
-    // A short hold: a short pull.
-    { do: { type: 'hold', on: true } }, { wait: 1 }, { do: { type: 'hold', on: false } },
-    { until: { event: 'shoot', timeout: 5 } },
+    // One press: a pull to the first post. No stone flies before one second.
+    press, { wait: 0.5 },
+    { expect: [{ event: 'shoot', not: true }] },
+    { until: { event: 'shoot', timeout: 3 } },
     { wait: 3 },
-    // A hold of the right length: the rice ball reaches the serpent.
-    { do: { type: 'hold', on: true } }, { wait: holdFor }, { do: { type: 'hold', on: false } },
+    // As many presses as the post of the serpent, a little apart: the rice ball reaches it.
+    ...Array.from({ length: posts }, () => [press, { wait: 0.6 }]).flat(),
     { until: { event: 'hit', timeout: 8 } },
   ] }, { onSession: (s) => { session = s; s.listen((ev) => events.push(ev)); } });
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
   const shots = events.filter((ev) => ev.type === 'shoot').map((ev) => ev.count);
-  assert.equal(shots.length, 2);
-  assert.ok(shots[0] < shots[1], `a longer hold is a longer pull: ${shots}`);
-  assert.equal(shots[1], HOLD_AT);
+  assert.deepEqual(shots, [5, HOLD_AT], 'one press is one post; four presses are four posts');
   void session;
+});
+
+test('while the child presses, the posts up to the pull light up and a ring lies on the road at the count (#55)', async () => {
+  const { setupRaid } = await import('../src/core/world/systems/raid.js');
+  const { raid: raidSystem } = await import('../src/core/world/systems/raid.js');
+  const { createWorldState, getEntity, query } = await import('../src/core/world/state.js');
+  const r = createRaid(raids, 'river', 0, null, []);
+  const w = createWorldState({ seed: 1, map: 'phu-dong', clock: { minutes: 600 } });
+  setupRaid(w, r, raids.raids.river, { groundY: () => 0 }, {});
+  const live = getEntity(w, 'raid').raid;
+  live.predict.state = 'skipped';
+  live.pull = 10;
+  raidSystem(w, 1 / 30, null, { groundY: () => 0 });
+  const looks = query(w, 'raidThing').filter((e) => String(e.id).startsWith('post:')).sort((a, b) => a.id.localeCompare(b.id)).map((e) => e.look);
+  assert.deepEqual(looks, ['post-1-on', 'post-2-on', 'post-3', 'post-4']);
+  const ring = getEntity(w, 'ring:pull');
+  assert.ok(ring && ring.look === 'pull-ring' && Math.abs(ring.position.x - (live.wall.x + live.dir.x * 10)) < 1e-6, 'the ring at the count');
 });
 
 test('in the raid of the general, Gióng rides his iron horse beside the road, away from the jar, the brazier, the forge, and the flags (#50)', async () => {

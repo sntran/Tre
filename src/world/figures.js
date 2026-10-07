@@ -885,9 +885,20 @@ export function raidThing(look) {
     case 'post': {
       const n = look.n ?? 1;
       // A post that waits for a tap (the prediction before the first shot) has a yellow cap.
-      const parts = [P('pole', [0.6, 4.5, 0.6], 'wood', [0, 2.25, 0]), P('cap', [0.9, look.lit ? 0.6 : 0.3, 0.9], look.lit ? 'yellow' : 'ink', [0, look.lit ? 4.75 : 4.6, 0])];
+      // A post up to the pull of the slingshot (on, #55) is bright: a pale pole and a yellow cap,
+      // also at night (a light of the dusk, src/ui/village.js).
+      const parts = [P('pole', [0.6, 4.5, 0.6], look.on ? 'diep' : 'wood', [0, 2.25, 0]), P('cap', [0.9, look.lit || look.on ? 0.6 : 0.3, 0.9], look.lit || look.on ? 'yellow' : 'ink', [0, look.lit || look.on ? 4.75 : 4.6, 0])];
       for (let i = 0; i < n; i++) parts.push(P(`band${i}`, [0.7, 0.35, 0.7], 'vermilion', [0, 3.9 - i * 0.6, 0]));
       return still(parts, 4.8);
+    }
+    // The count of the pull on the road: a small ring of marks (#55). It is not the arc.
+    case 'pull-ring': {
+      const parts = [];
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        parts.push(P(`m${i}`, [0.5, 0.08, 0.5], i % 2 ? 'yellow' : 'vermilion', [Math.cos(a) * 1.2, 0.04, Math.sin(a) * 1.2], { mark: true }));
+      }
+      return still(parts, 0.1);
     }
     // A bamboo trap on the road: a frame with a spring; closed after it snaps.
     case 'trap': {
