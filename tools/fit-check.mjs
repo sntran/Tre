@@ -1,6 +1,8 @@
 // A headless browser check (#37): at a phone width of 360 px, in Vietnamese and in English, no
 // label of a button is wider than its button (and a choice tile shows its word on one line), on each screen of hero creation (a new adventure,
 // and the short creation of a practice link) and on the title screen.
+// At 360 × 740 and 390 × 844 the main button of each screen (hero creation, Văn Miếu, the choice of
+// a calling, and a message) is fully on the screen, with no scroll (#51).
 // Run it from the root of the repository with a local server on port 8123
 // (python3 -m http.server 8123), and Playwright (npm install playwright, or a global one):
 //   node tools/fit-check.mjs [base URL] [--three <a local copy of three.module.min.js>]
@@ -53,9 +55,17 @@ const cut = (page) => page.evaluate(() => [...document.querySelectorAll('button,
   })
   .filter((x) => x.wide || x.tall || x.out || x.broken.length || x.wrapped));
 
+// The main buttons of the screen (the class main-btn, or the buttons in main-actions) that are not
+// fully on the screen.
+const off = (page) => page.evaluate(() => [...document.querySelectorAll('.main-btn, .main-actions .btn')]
+  .filter((b) => b.offsetParent)
+  .map((b) => ({ text: b.textContent.trim(), r: b.getBoundingClientRect() }))
+  .filter(({ r }) => r.top < 0 || r.bottom > window.innerHeight + 1 || r.left < -1 || r.right > window.innerWidth + 1)
+  .map(({ text, r }) => `${text} at ${Math.round(r.top)}..${Math.round(r.bottom)}`));
+
 for (const lang of ['vi', 'en']) {
-  for (const start of ['', '?practice=xom-ruong']) {
-    const ctx = await browser.newContext({ viewport: { width: 360, height: 740 }, locale: lang === 'vi' ? 'vi-VN' : 'en-US' });
+  for (const [start, size] of [['', [360, 740]], ['?practice=xom-ruong', [360, 740]], ['', [390, 844]]]) {
+    const ctx = await browser.newContext({ viewport: { width: size[0], height: size[1] }, locale: lang === 'vi' ? 'vi-VN' : 'en-US' });
     const page = await ctx.newPage();
     if (three) await page.route('https://cdn.jsdelivr.net/**', (r) => r.fulfill({ body: readFileSync(three), contentType: 'application/javascript', headers: { 'access-control-allow-origin': '*' } }));
     await page.goto(`${base}index.html${start}`);
@@ -70,17 +80,36 @@ for (const lang of ['vi', 'en']) {
       await page.waitForTimeout(500);
       const name = await page.evaluate(() => document.querySelector('.create-stage h2')?.textContent ?? '');
       screens.push([`create: ${name}`, await cut(page)]);
+      screens.push([`create: ${name}: the main button`, await off(page)]);
       const input = await page.$('.name-input');
       if (input && !(await input.inputValue())) await input.fill('Mai');
       const lang = await page.$('.create-stage .btn.big.paper, .create-stage .btn.big.red');
       const btn = await page.$('.create-stage > .btn.big.red:last-child') ?? lang;
       if (!btn) break;
       const label = (await btn.textContent()).trim();
-      if (/Bắt đầu|Start/i.test(label)) break;
+      if (/Bắt đầu|Start/i.test(label)) {
+        // Văn Miếu, the choice of a calling, and a message, with the profile of the new hero.
+        if (start) break;
+        await btn.click();
+        await page.waitForFunction(() => window.tre.activeVillage, null, { timeout: 90000 });
+        await page.waitForTimeout(1000);
+        await page.evaluate(() => window.tre.go('vanmieu'));
+        await page.waitForSelector('.vanmieu .main-actions').catch(async (e) => {
+          await page.screenshot({ path: 'fit-check-stopped.jpg', type: 'jpeg' });
+          throw e;
+        });
+        await page.waitForTimeout(500);
+        screens.push(['vanmieu: the main buttons', await off(page)], ['vanmieu', await cut(page)]);
+        page.evaluate(() => window.tre.open({ open: 'calling' })).catch(() => {});
+        await page.waitForSelector('.calling-grid');
+        await page.waitForTimeout(500);
+        screens.push(['calling: the main button', await off(page)]);
+        break;
+      }
       await btn.click();
     }
     for (const [name, bad] of screens) {
-      const line = `${lang} ${start || 'new'} ${name}: ${bad.length ? `cut ${JSON.stringify(bad)}` : 'ok'}`;
+      const line = `${lang} ${size.join('×')} ${start || 'new'} ${name}: ${bad.length ? `cut ${JSON.stringify(bad)}` : 'ok'}`;
       if (bad.length) failed += 1;
       console.log(line);
     }

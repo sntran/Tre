@@ -168,7 +168,7 @@ function chooseCalling(ctx, change) {
       ]),
       h('p', { class: 'center', text: tg(change ? 'calling.change.note' : 'calling.note') }),
       grid,
-      h('div', { class: 'row', style: { marginTop: '12px' } }, [confirm]),
+      h('div', { class: 'row main-actions', style: { marginTop: '12px' } }, [confirm]),
     ]));
     ctx.ui.append(layer);
     speak(change ? 'calling.change.note' : 'calling.note');
@@ -190,7 +190,7 @@ async function mountVanMieu(ctx) {
   const draw = () => {
     const names = profile.stele.map((s) => h('span', { text: t('vanmieu.stele.row', { name: s.name, title: { key: `title.${s.title}.name` } }) }));
     const stele = h('div', { class: 'stele' }, [portraitCanvas(ctx, data.figures.views.stele, { framing: 'full', size: 200 }), h('div', { class: 'stele-names' }, names)]);
-    const actions = h('div', { class: 'row' });
+    const actions = h('div', { class: 'row main-actions' });
     const needPlacement = profile.grade >= ctx.data.learning.exam.placement.fromGrade && !profile.flags['placement.done'];
     if (needPlacement) {
       actions.append(button(t('exam.placement.start'), async () => {

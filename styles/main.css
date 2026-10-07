@@ -241,7 +241,13 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .muted { color: var(--ash); }
 
 .mark { position: absolute; top: -14px; left: 18px; font-size: var(--text-small); z-index: 1; }
-.panel > .mark { top: 10px; left: auto; right: 14px; }
+/* The seal of a panel has its own line above the text: it never covers a word (#51). */
+.panel > .mark { position: static; display: table; margin: 0 0 8px auto; }
+
+/* The main buttons of a screen stay on the screen: when the screen scrolls, they stay at the
+   bottom edge over the paper (#51). */
+.main-btn, .main-actions { position: sticky; bottom: 0; z-index: 3; }
+.main-actions { width: 100%; padding: 8px 0; background: var(--paper) var(--paper-texture) repeat; background-size: 256px; }
 .mark-history { background: var(--indigo); border-color: var(--indigo); }
 
 /* Portraits: the rendered voxel figures (src/ui/portraits.js) on the paper of their box. */

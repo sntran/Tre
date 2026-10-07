@@ -184,7 +184,7 @@ export async function mountCreate(ctx) {
           return;
         }
         next();
-      }, { cls: 'btn big red' });
+      }, { cls: 'btn big red main-btn' });
       input.addEventListener('keydown', (e) => { if (e.key === 'Enter') go.click(); });
       stage.append(go);
     } else if (name === 'look') {
@@ -205,12 +205,12 @@ export async function mountCreate(ctx) {
       stage.append(row(count(opts.faces), 'face', 'create.face'));
       stage.append(row(count(opts.hairs), 'hair', 'create.hair', 'head', (30 * Math.PI) / 180));
       stage.append(row(count(opts.clothes), 'clothes', 'create.clothes', 'full'));
-      stage.append(button(t('ui.next'), next, { cls: 'btn big red' }));
+      stage.append(button(t('ui.next'), next, { cls: 'btn big red main-btn' }));
     } else if (name === 'grade') {
       stage.append(title('create.grade'));
       stage.append(choiceRow(gradeIds(grades), () => grade, (v) => h('span', { text: t(gradeShort(v, grades).key, gradeShort(v, grades).params) }), (v) => { grade = v; }, 'create.grade.label', { words: true }));
       stage.append(h('p', { class: 'center muted', text: t('create.grade.note') }));
-      stage.append(button(t('create.start'), finish, { cls: 'btn big red' }));
+      stage.append(button(t('create.start'), finish, { cls: 'btn big red main-btn' }));
     }
   }
 

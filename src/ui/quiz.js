@@ -189,7 +189,7 @@ export function showMessage(ctx, { title, textKey, params: own = {}, art = null,
         ]))),
       ]) : null,
       noteKey ? h('p', { text: t(noteKey) }) : null,
-      button(t('ui.ok'), close, { cls: 'btn big red' }),
+      button(t('ui.ok'), close, { cls: 'btn big red main-btn' }),
     ]);
     if (art) body.querySelector('img:not(.layer)')?.setAttribute('style', 'width:min(30vmin,160px)');
     const panel = h('div', { class: 'panel', style: { width: 'min(640px, 100%)' } }, [
