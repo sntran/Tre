@@ -28,6 +28,15 @@ export function medianOf(buckets, bounds, few = SIGNALS.few) {
   return null;
 }
 
+// The activities with no reason in the note for their misses, and no person who helped (#55).
+const NO_REASON = new Set(['raids']);
+// The signs of an activity, without restless and frustrated for an activity in NO_REASON.
+const signsFor = (id, r, few) => {
+  if (!NO_REASON.has(id)) return signsOf(r, few);
+  const out = signsOf(r, few).filter((s) => s !== 'restless' && s !== 'frustrated');
+  return out.length ? out : ['steady'];
+};
+
 // The name of an activity: the title of its practice link, or parent.act.<id>.
 export const titleOf = (practice, id) => (practice?.activities ?? []).find((a) => a.id === id)?.titleKey ?? `parent.act.${id}`;
 
@@ -122,9 +131,11 @@ export function weeklyNote(rollups, profile, week, data = {}) {
   const medBefore = L ? medianOf(L.recall, sig.recall, sig.few) : null;
   if (med !== null) line(5, medBefore !== null ? 'parent.week.recall' : 'parent.week.recallFirst', { secs: count('seconds', med), before: count('seconds', medBefore ?? 0) });
 
-  // 4. The signs, for each activity, with what the game did.
+  // 4. The signs, for each activity, with what the game did. A raid gives no reason for its misses
+  // (#55): a miss there comes from the time of the shot, not from a bored child, and nobody in a
+  // raid gives a smaller task.
   for (const [id, r] of list) {
-    const signs = signsOf(r, sig.few);
+    const signs = signsFor(id, r, sig.few);
     if (signs.includes('frustrated')) line(8, 'parent.week.frustrated', { act: title(id), times: count('times', Math.max(r.left, r.missRuns)) });
     if (signs.includes('restless')) line(7, 'parent.week.restless', { act: title(id) });
     if (r.sets && r.stay) line(4, 'parent.week.stay', { act: title(id), sets: count('sets', r.sets), times: count('times', r.stay) });
@@ -163,6 +174,7 @@ export function weeklyNote(rollups, profile, week, data = {}) {
   // person at the thing of the activity (#42).
   let best = null;
   for (const [act, moves] of Object.entries(W.moves ?? {})) {
+    if (NO_REASON.has(act)) continue;
     for (const [move, [n, ok]] of Object.entries(moves)) {
       if (n >= sig.few && (!best || ok / n > best.rate || (ok / n === best.rate && n > best.n))) best = { act, move, n, rate: ok / n };
     }
@@ -198,7 +210,7 @@ export function weeklyNote(rollups, profile, week, data = {}) {
     first: r.first,
     self: r.self,
     stops: r.stops,
-    signs: signsOf(r, sig.few),
+    signs: signsFor(id, r, sig.few),
     learned: learned[id] ?? null,
   })).sort((a, b) => b.minutes - a.minutes);
   return { week, played: true, lines, acts: out, facts, check };

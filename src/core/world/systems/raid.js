@@ -61,7 +61,7 @@ export function raid(world, dt, rng, env) {
 function order(world, r, o, hero, friend) {
   const raid = r.raid;
   let evs = [];
-  if (o.act === 'shoot') evs = shoot(raid, o.count);
+  if (o.act === 'shoot') evs = shoot(raid, o.count, o.unit ?? 1);
   else if (o.act === 'release') evs = releaseHold(raid, o.tool);
   else if (o.act === 'predict') evs = predict(raid, o.post);
   else if (o.act === 'bar') evs = barGate(raid);

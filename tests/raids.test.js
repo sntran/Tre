@@ -103,6 +103,24 @@ test('a stone lands at the count and hits the enemy there; short shows on the ro
   assert.deepEqual([fix.skill, fix.solved, fix.efficient, fix.first, fix.level, fix.parts, fix.target], ['math.add.20', true, false, false, 1, [d - 3, d], d]);
 });
 
+// A press of the big button pulls one post (#55): the log counts posts, not half blocks.
+test('a shot of the big button counts posts in the log: four presses at the fourth post, then a correction of one post', () => {
+  const raid = createRaid(raids, 'scouts', 1);
+  run(raid, 0.1);
+  const e = enemy(raid);
+  e.state = 'wait';
+  e.t = 99;
+  e.x = raid.wall.x + raid.dir.x * 20;
+  e.z = raid.wall.z + raid.dir.z * 20;
+  shoot(raid, 15, 5);
+  const miss = until(raid, 'land').find((x) => x.type === 'skill');
+  assert.deepEqual([miss.solved, miss.parts, miss.target, miss.level], [false, [3], 4, 1], 'three posts against four; the level is from the distance');
+  run(raid, 1);
+  shoot(raid, 20, 5);
+  const fix = until(raid, 'land').find((x) => x.type === 'skill');
+  assert.deepEqual([fix.solved, fix.parts, fix.target, fix.level], [true, [3, 4], 4, 1]);
+});
+
 test('a first shot with no tap on a post skips the prediction', () => {
   const raid = createRaid(raids, 'scouts', 1);
   run(raid, 0.1);

@@ -464,17 +464,21 @@ function tickStones(raid, dt, out) {
       out.push({ type: 'prediction', id: 'raid', task: `raid-${raid.id}`, gap: p.gap ?? goal ?? s.count, guess: p.guess, used: s.count, solved: solved && target === aimed });
     }
     // The skill event: the count of the shot against the distance of the enemy it was for. The next
-    // shot at the same enemy after a miss is a correction (the difference on the road).
+    // shot at the same enemy after a miss is a correction (the difference on the road). A shot of
+    // the big button counts posts (#55): the presses against the post nearest to the enemy.
     if (aimed) {
       const was = raid.aims[aimed.id];
       const hitAimed = solved && target === aimed;
       const kinds = raid.skills.shot[Math.min(raid.skills.shot.length - 1, raid.level)];
       const correct = Boolean(was);
+      const u = s.unit ?? 1;
+      const got = Math.round(s.count / u);
+      const want = Math.round(goal / u);
       out.push(skill(raid, correct ? 'correct' : 'shot', {
         skill: correct ? kinds.correct : kinds.first, solved: hitAimed, efficient: hitAimed && !correct, first: !correct,
-        parts: correct ? [was.got, s.count] : [s.count], target: goal, gap: correct ? Math.abs(goal - was.got) : goal,
+        parts: correct ? [was.got, got] : [got], target: want, gap: correct ? Math.abs(want - was.got) : want, unit: u,
       }));
-      raid.aims[aimed.id] = hitAimed ? null : { got: s.count };
+      raid.aims[aimed.id] = hitAimed ? null : { got };
     }
   }
   raid.stones = raid.stones.filter((s) => !s.done);
@@ -537,8 +541,10 @@ function end(raid, won, out) {
 function skill(raid, what, r) {
   const s = raid.skills[what] ?? {};
   let level = s.level ?? 1;
-  if (what === 'shot') level = r.target <= (raid.skills.near ?? 20) ? 1 : 2;
-  if (what === 'correct') level = r.gap <= 5 ? 1 : r.gap <= 10 ? 2 : 3;
+  // The distance in half blocks (a count of posts is five half blocks each).
+  const u = r.unit ?? 1;
+  if (what === 'shot') level = r.target * u <= (raid.skills.near ?? 20) ? 1 : 2;
+  if (what === 'correct') level = r.gap * u <= 5 ? 1 : r.gap * u <= 10 ? 2 : 3;
   return {
     type: 'skill', id: 'raid', skill: r.skill ?? s.skill, level, task: `raid-${raid.id}`, solved: r.solved, correct: r.solved,
     efficient: r.efficient, first: r.first, evidence: true, mashing: false, parts: r.parts, target: r.target,
@@ -551,7 +557,8 @@ function skill(raid, what, r) {
 // A shot from the slingshot at the wall, along the road: the pull counts `count` half blocks,
 // and the stone lands exactly there. Return the events (none when the slingshot is not ready).
 // ball: what flies (a rice ball for the creatures of the river), from the data of the raid.
-export function shoot(raid, count) {
+// unit: half blocks of one step of the pull (5: a press of the big button is one post, #55).
+export function shoot(raid, count, unit = 1) {
   if (raid.result || raid.reload > 0 || !(count >= 1)) return [];
   const flight = flightFor(count, raid.sling);
   raid.reload = raid.sling.reload;
@@ -559,7 +566,7 @@ export function shoot(raid, count) {
   const first = raid.shots === 0;
   raid.shots += 1;
   if (raid.predict.state === 'pending') raid.predict.state = 'skipped';
-  const s = { id: `stone:${++raid.made}`, count: flight.count, flight, t: 0, first, ...(raid.ball ? { ball: raid.ball } : {}) };
+  const s = { id: `stone:${++raid.made}`, count: flight.count, flight, t: 0, first, unit, ...(raid.ball ? { ball: raid.ball } : {}) };
   raid.stones.push(s);
   return [{ type: 'shoot', id: s.id, count: flight.count, sound: 'sling' }];
 }

@@ -1455,11 +1455,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'raid', on: false });
   }
   // The slingshot is at the wall: the hero walks back there first when the hero is away.
-  function shootFromWall(count) {
+  // unit: half blocks of one step of the pull (a post for the big button, #55).
+  function shootFromWall(count, unit = 1) {
     const wall = raidEnt()?.raid.wall;
     if (!wall) return;
-    if (distHb(hero().position, wall) <= 2) order({ act: 'shoot', count });
-    else walkTo([{ x: wall.x / 2, y: wall.z / 2 }], () => order({ act: 'shoot', count }));
+    if (distHb(hero().position, wall) <= 2) order({ act: 'shoot', count, unit });
+    else walkTo([{ x: wall.x / 2, y: wall.z / 2 }], () => order({ act: 'shoot', count, unit }));
   }
   // A tap on the road with a trap in the hands: the hero walks there, and the place on the road is
   // the target of the button.
@@ -1505,7 +1506,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function fireSling() {
     const count = pullCount();
     slingPull = null;
-    if (count >= 1) shootFromWall(count);
+    if (count >= 1) shootFromWall(count, POST_STEP);
   }
   // One step of the pull of the button: the stone flies one second after the last press.
   function stepSling() {

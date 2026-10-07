@@ -96,6 +96,27 @@ test('too few to tell yet; no play this week', () => {
   assert.equal(say(en, none.lines[0]), 'Nam did not play this week.');
 });
 
+// A raid with quick far misses (#55): the time of the shot, not a bored child, makes a miss there,
+// and nobody in a raid gives a smaller task. So no restless line, no frustrated line, and no help
+// of a person comes from a raid.
+test('a raid gives no reason for its misses and no person who helped (#55)', () => {
+  const out = [];
+  for (let d = 0; d < 3; d++) {
+    const t = MON + d * DAY_MS;
+    for (let i = 0; i < 6; i++) {
+      out.push(commit(t + 10 * S + i * S, 'raid-scouts', { success: false, off: 2, parts: [5, 5], skill: 'math.count.5' }));
+      out.push({ type: 'help', t: t + 10 * S + i * S + 500, variant: 'base', task: 'raid-scouts', diagnosis: 'missing', move: 'mark', pBefore: null, success: true, efficient: true });
+    }
+    out.push(session(t, t + 120 * S));
+  }
+  const note = weeklyNote(rollupEvents(out, opts), profile(), W, data);
+  const keys = note.lines.flatMap((l) => (l.parts ?? [l]).map((x) => x.key));
+  for (const k of ['parent.week.restless', 'parent.week.frustrated', 'parent.week.helped']) assert.ok(!keys.includes(k), k);
+  const raids = note.acts.find((a) => a.id === 'raids');
+  assert.ok(raids, 'the raids have a line of their own');
+  assert.ok(!raids.signs.includes('restless') && !raids.signs.includes('frustrated'), raids.signs.join(' '));
+});
+
 // The rules of #42: each line is a sentence that a parent says, not a table of counts.
 test('the rules of the plain words: no count after a colon, no fraction, a person in each move, no "1 times", at most six lines', () => {
   const extra = [];
