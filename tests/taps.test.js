@@ -320,3 +320,20 @@ test('a press at once after a tap on a spot in the stream waits for the walk, an
   assert.equal(getEntity(session.state, 'zone:traps-stream').zone.items.length, 1, 'the trap is in the stream');
   assert.equal(session.carried(), null);
 });
+
+test('a press at once after a tap on the scouts waits for the walk, and the raid starts (#50)', async () => {
+  const { tapTarget, sessionCamera, sessionScreen } = await import('../src/world/hit.js');
+  const session = await phuDong(['phu-dong', 61, 29], { 'giong.spoke': true });
+  const enc = getEntity(session.state, 'encounter:scouts');
+  const cam = sessionCamera(session);
+  const t = tapTarget(cam.project(enc.position.x / 2, enc.position.y / 2 + 0.8, enc.position.z / 2), sessionScreen(session, cam));
+  assert.equal(t.person, 'encounter:scouts', 'the finger is on the scouts');
+  session.command({ type: 'tap', target: t });
+  steps(session, 0.2);
+  session.command({ type: 'hands' });
+  steps(session, 8);
+  assert.equal(session.screen, 'say', 'the line of the scouts');
+  session.command({ type: 'next' });
+  steps(session, 1);
+  assert.ok(getEntity(session.state, 'raid'), 'the raid of the scouts is on');
+});

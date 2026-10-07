@@ -2002,7 +2002,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (!person || (person.kind === 'encounter' && raidOn())) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
       chosen = { id: person.entity, along: null };
-      walkToThing(person, () => worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 }));
+      pressAfterWalk = false;
+      // A press while the hero walks to the person (or to the enemies of an encounter) comes at the
+      // end of the walk, as at a place of a task (#50: a child presses at once).
+      walkToThing(person, () => {
+        worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 });
+        if (pressAfterWalk) {
+          pressAfterWalk = false;
+          act();
+        }
+      });
       return;
     }
     const hit = target.ground;
