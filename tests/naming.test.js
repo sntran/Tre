@@ -115,9 +115,9 @@ test('in the game, the greeting of the hamlet names the people by the way of the
 });
 
 // The glosses of names one at a time (#42): the greeting of the hamlet names four people and shows
-// no gloss; the first talk with the planter has the gloss of Cô Năm, one gloss for the line; the
-// next lines and the second talk have none.
-test('the gloss of a name comes in the first talk with that person, one at a time; the greeting of the hamlet has none', async () => {
+// no gloss, nor do the lines that point at the stations; the first line of the planter to the child
+// has the gloss of Cô Năm, one gloss for the line; her next lines and a second talk have none.
+test('the gloss of a name comes with the first line of that person to the child, one at a time; the greeting of the hamlet has none', async () => {
   const story = JSON.parse(readFileSync(new URL('./stories/practice-xom-ruong.json', import.meta.url)));
   const lines = [];
   const failures = await runHeadless(story, { onSession: (s) => s.listen((ev) => ev.type === 'open' && (ev.screen === 'callout' || ev.screen === 'dialogue') && lines.push(ev)) });
@@ -125,17 +125,31 @@ test('the gloss of a name comes in the first talk with that person, one at a tim
   const n = namesOf({ npcs: { npcs }, regions, naming }, 'giong');
   const speakerOf = (ev) => ev.speaker ?? ev.id?.replace(/^npc:/, '') ?? null;
   const seen = [];
-  const glosses = lines.map((ev) => [ev.textKey, talkGloss(ev, n[speakerOf(ev)] ?? null, seen, en)]);
+  const glosses = lines.map((ev) => [ev.textKey, talkGloss({ ...ev, speaker: speakerOf(ev) }, n[speakerOf(ev)] ?? null, seen, en)]);
   const greet = glosses.find(([k]) => k === 'hamlet.greet');
   assert.ok(greet, 'the greeting');
   assert.equal(greet[1], null, 'the greeting has no gloss');
-  for (const [k, g] of glosses.filter(([k]) => k.startsWith('hamlet.point.'))) assert.equal(g, null, `${k}: a bubble has no gloss`);
+  for (const [k, g] of glosses.filter(([k]) => k.startsWith('hamlet.point.'))) assert.equal(g, null, `${k}: a line that names a person has no gloss`);
+  // Each line shows at most one gloss, and only the head of the hamlet and the planter talked.
+  assert.ok(glosses.filter(([, g]) => g).length <= 2, JSON.stringify(glosses.filter(([, g]) => g)));
   const talk = glosses.filter(([k]) => k.startsWith('dlg.planter.'));
   assert.equal(talk[0][1], 'Cô Năm: the fifth child of her family.', 'the first line of the first talk with the planter');
   assert.ok(talk.slice(1).every(([, g]) => g === null), 'the next lines have none');
   // A second talk with the planter: no gloss again.
-  const first = lines.find((ev) => ev.textKey === talk[0][0]);
+  const first = { ...lines.find((ev) => ev.textKey === talk[0][0]), speaker: 'planter' };
   assert.equal(talkGloss(first, n.planter, seen, en), null, 'the second talk has none');
   // In Vietnamese, no gloss of a name.
   assert.equal(talkGloss(first, n.planter, [], vi), null);
+  // A bubble of a person is a line to the child too: the first one has the gloss.
+  assert.equal(talkGloss({ speaker: 'planter', params: { name: 'An' } }, n.planter, [], en), 'Cô Năm: the fifth child of her family.');
+});
+
+// The save keeps the glosses of the lines (the names of people and the words of a region) and the
+// glossary names together (#42): before, the save kept only the glossary names, so that the gloss
+// of a name came back after each save (a planter who counts aloud showed her gloss at each word).
+test('the save keeps the glosses that the child saw in the lines, with the glossary names', async () => {
+  const { joinSeen } = await import('../src/core/speech.js');
+  const seen = joinSeen(['name:Cô Năm', 'mô'], ['nghecalf', 'mô']);
+  assert.deepEqual(seen.sort(), ['mô', 'name:Cô Năm', 'nghecalf']);
+  assert.deepEqual(joinSeen(undefined, ['nghecalf']), ['nghecalf']);
 });

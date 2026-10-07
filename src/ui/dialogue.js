@@ -32,13 +32,13 @@ export function portrait(ctx, speaker, mood = 'calm') {
 // The small gloss under a line, the first time that the child meets a word of a region ("mô = đâu",
 // #39) or, in English, the name of the person who talks with the child ("Ông Dương: an old man is
 // called by the name of his first child, Dương.", #41): one time for each (profile.seenGloss). The
-// gloss of a name shows only in a talk, for the speaker, one name at a time (talkGloss, #42).
-// screen: the screen of the line ('dialogue', 'say', or 'callout' for a bubble); speaker: the
-// person who says it; region: false for the narrator (no words of a region). Null when there is none.
-export function glossLine(ctx, textKey, { screen = 'dialogue', speaker = null, region = true } = {}) {
+// gloss of a name is the gloss of the speaker, with the first line of that person to the child, one
+// name at a time (talkGloss, #42). params: the parameters of the line; speaker: the person who says
+// it; region: false for the narrator (no words of a region). Null when there is none.
+export function glossLine(ctx, textKey, { params = {}, speaker = null, region = true } = {}) {
   const seen = (ctx.profile.seenGloss ??= []);
   const words = region ? newGlosses(regionalWords(textKey), seen).map((g) => t('speech.gloss', { local: g.local, word: g.word })) : [];
-  const name = talkGloss({ screen, speaker }, personOf(ctx, speaker), seen, { lang: lang(), t });
+  const name = talkGloss({ speaker, params }, personOf(ctx, speaker), seen, { lang: lang(), t });
   const all = [...(name ? [name] : []), ...words];
   return all.length ? all.join('\n') : null;
 }
@@ -84,7 +84,7 @@ export function createDialogueBox(ctx, { next, choose }) {
     const mark = line.mark ? h('div', { class: `mark mark-${line.mark}`, text: t(`mark.${line.mark}`) }) : null;
     const face = portrait(ctx, line.speaker, line.mood);
     if (face) box.append(face);
-    const gloss = glossLine(ctx, line.textKey, { speaker: narrator ? null : line.speaker, region: !narrator });
+    const gloss = glossLine(ctx, line.textKey, { params: line.params, speaker: narrator ? null : line.speaker, region: !narrator });
     const head = narrator && !mark ? null : h('div', { class: 'dialogue-head' }, [
       narrator ? null : h('div', { class: 'speaker', text: speakerName(ctx, line.speaker) }),
       mark,

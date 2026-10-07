@@ -4,6 +4,7 @@ import { chosenGlossNames, startLanguage } from '../core/profile.js';
 import { loadRecordedKeys, setVoiceEnabled, setVoiceProfiles, speak } from './speak.js';
 import { loadData } from './data.js';
 import { createSeen } from '../core/fresh.js';
+import { joinSeen } from '../core/speech.js';
 import { saveProfile, loadProfile, listProfiles, isMemoryOnly, getMeta, setMeta } from './storage.js';
 import { linkIdOf, activityOf } from '../core/practice.js';
 import { h, button, img } from './dom.js';
@@ -159,7 +160,7 @@ export async function startApp(root) {
       // The open village puts its world state into the profile first.
       ctx.syncWorld?.();
       ctx.logger?.checkQuests();
-      ctx.profile.seenGloss = seenGlossList();
+      ctx.profile.seenGloss = joinSeen(ctx.profile.seenGloss, seenGlossList());
       const snapshot = ctx.profile;
       // The save at dawn is also a restore point for the parent.
       saving = saving.then(() => saveProfile(snapshot, { dawn: reason === 'dawn' })).catch((e) => console.error('Save failed', reason, e));

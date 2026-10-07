@@ -37,6 +37,13 @@ export function glossesOf(text, table) {
   return out;
 }
 
+// The glosses that the child saw, for the save (#42): the list of the profile (the glosses of the
+// lines: the words of a region and the names of people) and the glossary names of the texts, each
+// one time. The save must keep both, so that a gloss never shows again after a save.
+export function joinSeen(lines = [], glossary = []) {
+  return [...new Set([...lines, ...glossary])];
+}
+
 // The glosses that the child did not see yet (seen: the list of the words of a region that the
 // child saw, profile.seenGloss). They go into seen, so that each gloss shows one time.
 export function newGlosses(glosses, seen) {

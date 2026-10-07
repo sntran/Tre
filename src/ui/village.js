@@ -534,9 +534,9 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     if (ev.screen === 'callout') {
-      // The first time of a word of a region (#39), its gloss shows in the bubble too. A bubble shows
-      // no gloss of a name: the gloss of a person comes in the first talk with that person (#42).
-      const gloss = glossLine(ctx, ev.textKey, { screen: 'callout' });
+      // The first time of a word of a region (#39), or the first line of a person to the child (the
+      // gloss of the name of the speaker, #41, #42), the gloss shows in the bubble too.
+      const gloss = glossLine(ctx, ev.textKey, { params: ev.params, speaker: String(ev.id ?? '').startsWith('npc:') ? ev.id.slice(4) : null });
       showBubble(ev.id, gloss ? `${t(ev.textKey, ev.params)}\n${gloss}` : t(ev.textKey, ev.params));
       return;
     }
