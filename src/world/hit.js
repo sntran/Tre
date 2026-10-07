@@ -178,6 +178,10 @@ export function tapTarget(p, w) {
   // The ground between the things of a heap: the nearest thing of the heap (a heap has no rect).
   const heaped = hit && !inPlace ? heapThingNear(w.things, hit) : null;
   if (heaped) return { thing: heaped.id };
+  // An enemy of an encounter under the finger comes before Nghé: a tap on the enemy never pets
+  // Nghé (#55).
+  const foe = figureUnder(p, w.cam, (w.persons ?? []).filter((q) => String(q.id).startsWith('encounter:')), PERSON_PAD);
+  if (foe) return { person: foe.id };
   const friend = w.inTask ? null : figureUnder(p, w.cam, w.friends ?? [], FRIEND_PAD, 0.8);
   if (friend) return { pet: friend.id };
   // A place of a task under the finger comes before a person who stands in front of it (#31,

@@ -2067,6 +2067,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const holdsThing = Boolean(holding());
     const places = list.filter((c) => !(c.act === 'put' && c.rank >= 10));
     if (holdsThing && places.length) list = places;
+    // With an enemy of an encounter in reach, a look at a field or a sign is never the act (#55).
+    if (list.some((c) => c.act === 'talk' && String(c.target).startsWith('encounter:'))) list = list.filter((c) => c.act !== 'look');
     // The ride on Nghé comes only when nothing else is in reach.
     const others = list.filter((c) => c.act !== 'ride');
     if (others.length) list = others;
