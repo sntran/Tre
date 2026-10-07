@@ -1534,6 +1534,7 @@
   "practiceLink.xom-ruong.line": "A small quiet hamlet with many tasks for multiplication. It starts in the yard of the hamlet.",
   "parent.facts": "The multiplication table",
   "parent.facts.none": "Your child has not met a fact of multiplication yet. The table shows when your child plants rice in Xóm Ruộng.",
+  "parent.facts.few": "Your child answered a multiplication question {n} times, outside the rice fields. That is too few to tell. The table shows when your child plants rice in Xóm Ruộng.",
   "parent.facts.exploring": "Exploring",
   "parent.facts.getting": "Getting there",
   "parent.facts.confident": "Confident",

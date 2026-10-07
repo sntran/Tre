@@ -1534,6 +1534,7 @@
   "practiceLink.xom-ruong.line": "Một xóm nhỏ yên tĩnh, nhiều việc cho phép nhân. Bắt đầu ở sân xóm.",
   "parent.facts": "Bảng nhân",
   "parent.facts.none": "Con chưa gặp phép nhân nào. Bảng sẽ hiện khi con cấy lúa ở Xóm Ruộng.",
+  "parent.facts.few": "Con mới trả lời phép nhân {n} lần, ở bên ngoài ruộng lúa. Như thế còn quá ít để biết. Bảng sẽ hiện khi con cấy lúa ở Xóm Ruộng.",
   "parent.facts.exploring": "Đang tìm hiểu",
   "parent.facts.getting": "Đang tiến bộ",
   "parent.facts.confident": "Vững vàng",

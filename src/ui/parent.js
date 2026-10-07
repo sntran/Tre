@@ -430,7 +430,10 @@ async function parentArea(ctx, opts = {}) {
       const grid = factTable(p.facts?.[skill] ?? {});
       body.append(h('h3', { text: t('parent.facts') }));
       if (!grid.flat().some(Boolean)) {
-        body.append(h('p', { class: 'muted', text: t('parent.facts.none') }));
+        // The answers of the skill out of the table (at the healer, in a quiz) are in the row of the
+        // skill below: the line says how many, and that they are too few to tell (#52).
+        const answers = ctx.learner.summary((s) => s.id === skill)[0]?.answers ?? 0;
+        body.append(h('p', { class: 'muted', text: answers ? t('parent.facts.few', { n: answers }) : t('parent.facts.none') }));
         return;
       }
       const table = h('table', { class: 'facts' });
