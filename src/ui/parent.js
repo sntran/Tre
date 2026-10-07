@@ -332,7 +332,8 @@ async function parentArea(ctx, opts = {}) {
           titles: p.titles.map((id) => t(`title.${id}.name`)).join(t('ui.list.sep')) || t('ui.none'),
           minutes: Math.round((p.time.usedMs ?? 0) / 60000),
         }) }),
-        p.settings.timeLimit ? h('p', { text: t('parent.time.left', { minutes: Math.max(0, Math.round(left / 60000)) }) }) : null,
+        // Element.append writes null as the text "null": no line when there is no time limit (#52).
+        ...(p.settings.timeLimit ? [h('p', { text: t('parent.time.left', { minutes: Math.max(0, Math.round(left / 60000)) }) })] : []),
       );
       const practice = learner.toPractice();
       body.append(h('h3', { text: t('parent.practice') }), h('p', { text: practice.length ? practice.map((id) => t(`skill.${id}`)).join(t('ui.list.sep')) : t('parent.practice.none') }));
