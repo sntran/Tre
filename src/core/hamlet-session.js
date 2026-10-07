@@ -99,7 +99,7 @@ export function createHamlet(deps) {
       const trough = at('duck-trough');
       const jar = at('duck-jar');
       if (!trough || !jar) return;
-      setupDucks(deps.world(), { index: s.index, level, skill: memDef.skill, key, task, rate: def.ducks.rate, trough, jar });
+      setupDucks(deps.world(), { index: s.index, level, skill: memDef.skill, key, task, wait: def.ducks.wait, trough, jar });
     } else if (act === 'traps') {
       const first = at('trap-spots');
       const pile = at('trap-pile');

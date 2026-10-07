@@ -3,9 +3,10 @@
 // (setupDucks, setupTraps, setupDrum); this system answers the work of the hands and plays the
 // timed parts. Each activity sends one event at the end of a commit (fed, caught, danced), and the
 // session says the line, records the facts, and makes the next round.
-//   The ducks: while the child holds the jar (act pour), the feed fills the trough one scoop at a
-//   time (an event scoop, with a notch for each fifth and tenth scoop). When the child lets go
-//   (act stop), the feed runs along the trough and each duck eats its share in turn. Too few: the
+//   The ducks: each press on the jar (act pour) puts one scoop of feed into the trough (an event
+//   scoop, with a notch for each fifth and tenth scoop), and the presses that come quickly are one
+//   pour (#55: a count, not a time). One wait (data ducks.wait) after the last press, the feed runs
+//   along the trough and each duck eats its share in turn. Too few: the
 //   last ducks are hungry, and the next pour goes on from where it stopped. Too much: the extra
 //   feed stays at the end of the trough.
 //   The traps: the child carries traps from the pile of the fisher to the spots in the stream (the
@@ -18,7 +19,7 @@
 export const WRITES = ['work', 'zone', 'item', 'position', 'look', 'keep', 'gesture', 'hop', 'hamletPart', 'hamletTap', 'events'];
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
-import { judgePour, scoopsOf, judgeTraps, createDance, stepDance, tapDance } from '../../hamlet.js';
+import { judgePour, judgeTraps, createDance, stepDance, tapDance } from '../../hamlet.js';
 import { trialSkill } from '../trials.js';
 import { factKey } from '../../planting.js';
 import { packHeap } from './work.js';
@@ -56,7 +57,7 @@ export function setupDucks(world, round) {
       id: 'trial-ducks', rule: 'trial', trial: 'ducks', task: 'ducks', level: round.level, commits: 0, fails: 0, done: false,
       round: {
         index: round.index, skill: round.skill, key: round.key, form: t.form, shares: t.ducks.map((d) => d.share), big: t.ducks.map((d) => d.big), need: t.need, show: t.show, facts: t.facts.slice(),
-        rate: round.rate, poured: 0, base: 0, held: 0, pouring: false, judged: 0, eaten: t.ducks.map(() => 0), commits: 0, eat: null, done: false,
+        wait: round.wait ?? 1, left: 0, poured: 0, pouring: false, judged: 0, eaten: t.ducks.map(() => 0), commits: 0, eat: null, done: false,
       },
     },
     position: { ...round.jar, facing: 0 },
@@ -78,23 +79,20 @@ function duckWork(world, e, want) {
   const tz = tzOf(world, 'ducks');
   const r = tz?.zone.round;
   if (!r || r.done || r.eat) return;
-  if (want.act === 'pour') {
-    if (r.pouring) return;
-    r.pouring = true;
-    r.base = r.poured;
-    r.held = 0;
-    say(world, 'pour', tz.id, { sound: 'pour' });
-    return;
-  }
-  if (want.act !== 'stop' || !r.pouring) return;
+  if (want.act !== 'pour') return;
+  // One press, one scoop; the pour goes on while the presses come.
+  if (!r.pouring) say(world, 'pour', tz.id, { sound: 'pour' });
+  r.pouring = true;
+  r.left = r.wait ?? 1;
+  r.poured += 1;
+  const notch = r.poured % 10 === 0 ? 10 : r.poured % 5 === 0 ? 5 : 0;
+  say(world, 'scoop', tz.id, { n: r.poured, notch, sound: notch === 10 ? 'notch-big' : notch === 5 ? 'notch' : 'scoop' });
+  feedLook(world, r);
+}
+
+// The end of a pour: the commit of the scoops since the last one, and the ducks eat.
+function endPour(world, tz, r) {
   r.pouring = false;
-  // A quick tap on the jar (the press and the release in one step) gives one scoop.
-  if (r.poured === r.judged) {
-    r.poured += 1;
-    const notch = r.poured % 10 === 0 ? 10 : r.poured % 5 === 0 ? 5 : 0;
-    say(world, 'scoop', tz.id, { n: r.poured, notch, sound: notch === 10 ? 'notch-big' : notch === 5 ? 'notch' : 'scoop' });
-    feedLook(world, r);
-  }
   r.commits += 1;
   tz.zone.commits += 1;
   const res = judgePour({ ducks: r.shares.map((share) => ({ share })), need: r.need }, r.poured);
@@ -111,14 +109,8 @@ function ducks(world, dt) {
   const r = tz?.zone.round;
   if (!r) return;
   if (r.pouring) {
-    r.held += dt;
-    const n = r.base + scoopsOf(r.held, r.rate);
-    while (r.poured < n) {
-      r.poured += 1;
-      const notch = r.poured % 10 === 0 ? 10 : r.poured % 5 === 0 ? 5 : 0;
-      say(world, 'scoop', tz.id, { n: r.poured, notch, sound: notch === 10 ? 'notch-big' : notch === 5 ? 'notch' : 'scoop' });
-    }
-    feedLook(world, r);
+    r.left = (r.left ?? 0) - dt;
+    if (r.left <= 0) endPour(world, tz, r);
     return;
   }
   const a = r.eat;

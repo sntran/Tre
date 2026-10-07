@@ -24,7 +24,7 @@ After the planting (`docs/PLANTING.md`), Xóm Ruộng has three more activities.
 ## Feeding the ducks
 
 - The talk of the duck girl opens a set. A line of ducks stands along a long trough on the shore of the pond. In a bubble, the duck girl says the share of one duck ("Mỗi con ăn ba gáo."). Big ducks eat twice the share of a small duck.
-- **The child holds the jar** (the finger stays on the jar, or the command `hold`). While the child holds it, the feed fills the trough one scoop at a time (two and a half scoops a second), with a small sound for each scoop. Each fifth scoop has a notch on the side of the trough, and each tenth scoop has a bigger notch. The child lets go at the total.
+- **The child presses the big button at the jar** (or taps the jar). Each press puts one scoop of feed into the trough, with a small sound for each scoop. Each fifth scoop has a notch on the side of the trough, and each tenth scoop has a bigger notch. The presses that come quickly are one pour: the pour ends one second after the last press (`ducks.wait` in `data/world/hamlet.json`). The child counts the presses, not the time (#55): a hold of the button is one press, and nothing grows while the button is down.
 - The feed runs along the trough, and each duck eats its share in turn:
   - **just right:** every duck eats, and the trough is clean; the duck girl says the total as a word;
   - **too few:** the last ducks have nothing and look at the child; the next pour goes on from where it stopped;

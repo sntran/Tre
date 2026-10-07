@@ -51,19 +51,17 @@
       "wait": 2
     },
     {
-      "do": {
-        "type": "hold",
-        "on": true
-      }
-    },
-    {
-      "wait": 1.8
-    },
-    {
-      "do": {
-        "type": "hold",
-        "on": false
-      }
+      "repeat": 4,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
     },
     {
       "until": {

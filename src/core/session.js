@@ -1869,7 +1869,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The folk games of the children: join them, and the throw of the shard (a hold).
       folk.candidates(add, REACH);
       // The acts of things: the glowing iron (quench), the bellows on the lumps (blow), a bronze
-      // drum (a beat), the jar of feed (pour while the button is down).
+      // drum (a beat), the jar of feed (a scoop for each press).
       for (const id of ['smith', 'horse']) {
         const tz = open(id);
         // While the smith shows the quench on his own piece, the iron is his.
@@ -1886,7 +1886,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const ducks = hamlet.round('ducks');
       const jar = getEntity(state, 'hamlet:jar');
       if (ducks && !ducks.done && !ducks.eat && jar) {
-        add({ act: 'pour', icon: 'jar', target: jar.id, at: jar.position, rank: 0, hold: true, run: () => work('ducks', 'pour'), release: () => work('ducks', 'stop') }, REACH + 1);
+        add({ act: 'pour', icon: 'jar', target: jar.id, at: jar.position, rank: 0, run: () => work('ducks', 'pour') }, REACH + 1);
       }
       // A stake of a plot of a choose round of the planting: the choice of that plot.
       const round = getEntity(state, 'zone:trial-plant')?.zone.round;

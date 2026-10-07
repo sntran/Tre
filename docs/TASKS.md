@@ -42,7 +42,7 @@ Every task in the world must be clear to a child of six. Young children need lar
 | The glowing iron on the anvil | Quench. | A drop of water (`water`) |
 | The bellows, with lumps in the hearth | Blow. | Fire (`fire`) |
 | A bronze drum | A beat. | The drum (`drum`) |
-| The jar of feed | Pour while the button is down. | The jar (`jar`) |
+| The jar of feed | One scoop for each press; the pour ends one second after the last press (#55). | The jar (`jar`) |
 | A standing culm of the staffs | While the button is down, the mark goes up the culm; when it goes up, the slash is at the mark. | A knife (`knife`) |
 | A stake of a plot in a choose round | Choose that plot. | A tick (`check`) |
 | A plank outline of the guess at the bridge (the outline in front of the hero) | Choose it: the bridge takes that many planks. | A tick (`check`) |
@@ -70,7 +70,7 @@ The raised hand is only the wave button, and the jump has its own picture: no tw
 | The bridge | Before the first plank, a plank outline on the bank: the guess. A plank of a pile: pick up. The gap: put at the ghost; with empty hands at the edge, take the last plank back. | The gap is full. | Nghé shows the gap (the mentor). |
 | The small events of the day | A thing of the pile: pick up. The place: put; with empty hands, take one back. | The person of the event checks the place (`check`). | The pile, while the place is empty. |
 | The planting | A bundle of the seedbed: pick up. The edge of a plot: put; with empty hands, take one back. A stake of a plot in a choose round: choose. | The planter looks at the plots (`seedling`). | The seedbed, while the edges are empty. |
-| Feeding the ducks | The jar: hold the button to pour; let go at the total. | The ducks eat. | The jar, before a pour. |
+| Feeding the ducks | The jar: one press for each scoop, as many presses as the total. | The ducks eat. | The jar, before a pour. |
 | The fish traps | A trap: pick up. A spot in the stream: put at the ghost; with empty hands, take the trap in front back. | The fisher uncle opens the weir (`weir`). | The pile of traps, while the stream is empty. |
 | The drum dance | The bronze drum: a beat. | The dance ends. | The drum, before the dance. |
 

@@ -540,3 +540,5 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 
 - **The count of the button:** `raid.tool.sling` ("Bấm nút lớn một lần là một cột, như các vạch đỏ trên cột. Kẻ địch đứng ở cột thứ mấy thì cháu bấm mấy lần, rồi viên đạn bay. …"). One press of the big button is one post (five half blocks), the same unit as the red bands on the posts. The stone flies one second after the last press.
 - **Please check:** "bấm mấy lần" for "press as many times", and "kẻ địch" for the scouts, the soldiers, and the serpents of the river.
+- **The jar of the ducks counts presses:** `mentor.ducks.first` ("Đứng bên cái vại nhé. Bấm nút lớn một lần là một gáo cám vào máng.") and `mentor.show.ducks` ("Bấm nút một lần là một gáo vào máng nhé."). They take the place of the lines that said to hold the button and let go.
+- **Please check:** "gáo cám" (a scoop of bran) in the first line, where the old line of the show said "thóc".

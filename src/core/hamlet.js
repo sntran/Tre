@@ -52,9 +52,6 @@ export function duckTask({ key, form, data, rng }) {
   return { form: 'groups', ducks, need: a * b, show: b, facts: [factKey(a, b)] };
 }
 
-// The scoops of a pour of so many seconds (one scoop each 1 / rate seconds).
-export const scoopsOf = (seconds, rate) => Math.floor(seconds * rate + 1e-9);
-
 // The ducks eat in turn from the feed in the trough. poured: all the scoops of the task so far (a
 // pour goes on from where it stopped). Return { result, eaten: [n of each duck], hungry: [index],
 // extra }.

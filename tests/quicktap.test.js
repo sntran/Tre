@@ -48,27 +48,28 @@ test('a double tap on the knife in one step: no error', async () => {
   assert.doesNotThrow(() => steps(session, 301));
 });
 
-test('a quick tap on the jar of feed: one scoop at most, and the pour stops', async () => {
-  const first = (s) => s.do?.type === 'hold' && s.do.on;
+test('a quick hold of the button at the jar of feed: one press at most, and the pour ends (#55)', async () => {
+  const first = (s) => s.repeat && s.steps?.[0]?.do?.type === 'hands';
   const session = await sessionAt('practice-cho-vit-an', first);
   const round = () => getEntity(session.state, 'zone:trial-ducks')?.zone.round;
   const before = round().poured;
   session.command({ type: 'hold', on: true });
   session.command({ type: 'hold', on: false });
   assert.doesNotThrow(() => steps(session, 1));
-  assert.equal(round().pouring, false, 'the jar stops at once');
   assert.ok(round().poured - before <= 1, 'one scoop at most');
   steps(session, 300);
+  assert.equal(round().pouring, false, 'the pour ends');
   assert.ok(round().poured - before <= 1, 'no more feed after the tap');
 });
-
-test('a double tap on the jar in one step: the pour stops', async () => {
-  const first = (s) => s.do?.type === 'hold' && s.do.on;
+test('two presses on the jar in one step: two scoops in one pour, and the pour ends one second later (#55)', async () => {
+  const first = (s) => s.repeat && s.steps?.[0]?.do?.type === 'hands';
   const session = await sessionAt('practice-cho-vit-an', first);
   const round = () => getEntity(session.state, 'zone:trial-ducks')?.zone.round;
   const before = round().poured;
-  for (const on of [true, false, true, false]) session.command({ type: 'hold', on });
-  assert.doesNotThrow(() => steps(session, 301));
-  assert.equal(round().pouring, false);
-  assert.ok(round().poured - before <= 2);
+  for (let k = 0; k < 2; k++) session.command({ type: 'hands' });
+  assert.doesNotThrow(() => steps(session, 15));
+  assert.equal(round().pouring, true, 'the pour waits for more presses');
+  steps(session, 30);
+  assert.equal(round().pouring, false, 'one second after the last press, the pour ends');
+  assert.equal(round().poured - before, 2);
 });

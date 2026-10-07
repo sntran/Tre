@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { nextTask, duckTask, scoopsOf, judgePour, trapTask, trapPool, judgeTraps, drumTask, createDance, stepDance, tapDance, newTable, feedDucks, dawnTable, feastReady, feastNow, serveFeast, pointTo, hamletEvent, activityRng } from '../src/core/hamlet.js';
+import { nextTask, duckTask, judgePour, trapTask, trapPool, judgeTraps, drumTask, createDance, stepDance, tapDance, newTable, feedDucks, dawnTable, feastReady, feastNow, serveFeast, pointTo, hamletEvent, activityRng } from '../src/core/hamlet.js';
 import { factKey, factPool, recordFact } from '../src/core/planting.js';
 import { createRng } from '../src/core/rng.js';
 import { load } from './helpers.js';
@@ -22,13 +22,10 @@ test('the ducks: each duck eats its share in turn; too few leaves the last ducks
 
 test('the pour goes on from where it stopped: the scoops of two pours add up', () => {
   const task = duckTask({ key: factKey(2, 5), form: 'groups', data: data.ducks, rng: createRng(2) });
-  // A scoop for each two fifths of a second while the child holds the jar.
-  const first = scoopsOf(2.4, data.ducks.rate);
-  assert.equal(first, 6);
-  assert.equal(judgePour(task, first).result, 'few');
-  const second = scoopsOf(1.6, data.ducks.rate);
-  assert.equal(judgePour(task, first + second).result, 'exact');
-  assert.equal(scoopsOf(0.39, data.ducks.rate), 0);
+  // A scoop for each press on the jar (#55): six presses, then four more.
+  assert.equal(judgePour(task, 6).result, 'few');
+  assert.equal(judgePour(task, 6 + 4).result, 'exact');
+  assert.ok(data.ducks.wait > 0 && data.ducks.wait <= 1.5, 'the pour ends soon after the last press');
 });
 
 test('the ducks: big ducks eat twice the share that the duck girl shows; a mixed line is the sum of two products', () => {
@@ -239,4 +236,43 @@ test('a small event: at most one in a set, never the same in two sets in a row',
       last = e;
     }
   }
+});
+
+// The jar of the ducks counts presses, not time (#55): quick presses are one pour, and the pour
+// ends one wait after the last press. A child who presses four times gives four scoops.
+test('quick presses on the jar of the ducks are one pour of that many scoops, judged one second after the last press (#55)', async () => {
+  const { runHeadless } = await import('./story-run.js');
+  const story = load('tests/stories/practice-cho-vit-an.json');
+  const tap = story.steps.findIndex((s) => s.tap?.entity === 'hamlet:jar');
+  let session = null;
+  await runHeadless({ ...story, steps: story.steps.slice(0, tap + 2) }, { onSession: (s) => { session = s; } });
+  const evs = [];
+  session.listen((ev) => { if (ev.type === 'scoop' || ev.type === 'skill') evs.push(ev); });
+  const run = (seconds) => {
+    for (let i = 0; i < seconds * 30; i++) {
+      session.step();
+      session.events();
+    }
+  };
+  assert.equal(session.action()?.act, 'pour');
+  assert.ok(!session.action().hold, 'a press, not a hold');
+  for (let k = 0; k < 4; k++) {
+    session.command({ type: 'hands' });
+    session.events();
+    run(0.4);
+  }
+  assert.equal(evs.filter((e) => e.type === 'skill').length, 0, 'the pour goes on while the presses come');
+  run(1.2);
+  assert.deepEqual(evs.filter((e) => e.type === 'scoop').map((e) => e.n), [1, 2, 3, 4]);
+  const skills = evs.filter((e) => e.type === 'skill');
+  assert.equal(skills.length, 1, 'one commit for the pour');
+  assert.deepEqual(skills[0].parts, [4]);
+  // A long hold of the button gives no more scoops: nothing grows with time.
+  evs.length = 0;
+  run(20);
+  session.command({ type: 'hold', on: true });
+  run(3);
+  session.command({ type: 'hold', on: false });
+  run(2);
+  assert.ok(evs.filter((e) => e.type === 'scoop').length <= 1, 'a hold is one press at most');
 });

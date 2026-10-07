@@ -49,19 +49,17 @@
       "wait": 2
     },
     {
-      "do": {
-        "type": "hold",
-        "on": true
-      }
-    },
-    {
-      "wait": 1.8
-    },
-    {
-      "do": {
-        "type": "hold",
-        "on": false
-      }
+      "repeat": 4,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
     },
     {
       "until": {
@@ -103,19 +101,17 @@
       "wait": 2
     },
     {
-      "do": {
-        "type": "hold",
-        "on": true
-      }
-    },
-    {
-      "wait": 4.2
-    },
-    {
-      "do": {
-        "type": "hold",
-        "on": false
-      }
+      "repeat": 10,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
     },
     {
       "until": {
@@ -154,19 +150,17 @@
       "wait": 2
     },
     {
-      "do": {
-        "type": "hold",
-        "on": true
-      }
-    },
-    {
-      "wait": 2.2
-    },
-    {
-      "do": {
-        "type": "hold",
-        "on": false
-      }
+      "repeat": 5,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
     },
     {
       "until": {
@@ -208,19 +202,17 @@
       "wait": 2
     },
     {
-      "do": {
-        "type": "hold",
-        "on": true
-      }
-    },
-    {
-      "wait": 4.6
-    },
-    {
-      "do": {
-        "type": "hold",
-        "on": false
-      }
+      "repeat": 11,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
     },
     {
       "until": {
@@ -262,19 +254,17 @@
       "wait": 2
     },
     {
-      "do": {
-        "type": "hold",
-        "on": true
-      }
-    },
-    {
-      "wait": 10.2
-    },
-    {
-      "do": {
-        "type": "hold",
-        "on": false
-      }
+      "repeat": 25,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
     },
     {
       "until": {
