@@ -182,17 +182,13 @@
        "object": "ore1",
        "unless": "horse.ore1"
       },
-      {
-       "encounter": "river"
-      },
+      { "encounter": "river", "unless": "river.calmed" },
       {
        "object": "ore2",
        "unless": "horse.ore2",
        "if": "river.calmed"
       },
-      {
-       "encounter": "scouts"
-      }
+      { "encounter": "scouts", "unless": "scouts.won" }
      ]
     },
     {
@@ -241,12 +237,8 @@
       "soldier2.won"
      ],
      "targets": [
-      {
-       "encounter": "soldier1"
-      },
-      {
-       "encounter": "soldier2"
-      }
+      { "encounter": "soldier1", "unless": "soldier1.won" },
+      { "encounter": "soldier2", "unless": "soldier2.won" }
      ]
     },
     {
@@ -268,9 +260,7 @@
       ]
      },
      "targets": [
-      {
-       "encounter": "boss"
-      }
+      { "encounter": "boss", "unless": "era1.boss.won" }
      ]
     }
    ]

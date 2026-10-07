@@ -2,7 +2,7 @@
 // session owns the world state and the story logic; this file draws the state, turns the input
 // into commands, and reacts to the events: the dialogue box, the screens, the sounds, the HUD,
 // and the marks over the world.
-import { currentGoal } from '../core/quests.js';
+import { currentGoal, liveTargets } from '../core/quests.js';
 import { questMark } from '../core/clues.js';
 import { conditionState } from '../core/game.js';
 import { edgeMarker } from '../core/hit.js';
@@ -487,7 +487,10 @@ export async function mountVillage(ctx, params = {}) {
     const stepGoal = goal.step;
     const out = [];
     const flags = profile.flags;
-    const list = stepGoal.targets ?? (stepGoal.target ? [{ npc: stepGoal.target }] : []);
+    // The targets that are there now (#50): not a done one, and not the enemies of a won or a
+    // lost raid (they come back at the next dawn).
+    const raidOf = (id) => mapData.encounters.find((e) => e.id === id)?.raid ?? null;
+    const list = liveTargets(stepGoal, flags, { raidOf, raids: data.raids?.raids ?? {}, minutes: state.clock.minutes });
     const here = persons();
     // A person of the quest away from the live chunks: the marker is at the place of the person on
     // the map (the arrow at the edge of the screen shows the way).
@@ -496,8 +499,6 @@ export async function mountVillage(ctx, params = {}) {
       if (item) out.push({ x: item.x, y: item.y, h: groundY(item.x, item.y) + 3 });
     };
     for (const tg of list) {
-      if (tg.unless && flags[tg.unless]) continue;
-      if (tg.if && !flags[tg.if]) continue;
       for (const kind of ['npc', 'encounter']) {
         if (!tg[kind]) continue;
         const p = here.find((x) => x.kind === kind && x.ref === tg[kind]);

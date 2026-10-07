@@ -26,3 +26,23 @@ export function currentGoal(quests, state) {
   }
   return null;
 }
+
+// The targets of a step that have a star now (#50). A target with its flag `unless` is done, and a
+// target waits for its flag `if`. An encounter has a star only while its enemies are there: not
+// after the raid is won (the flags that the win of its raid sets), and not after a lost raid until
+// the enemies come back at the next dawn (the flag raid.<raid>.back holds the minute of that dawn).
+// step: a step of a quest; flags: the story flags; raidOf(id): the raid of an encounter; raids:
+// data.raids.raids; minutes: the game clock. Return the targets that keep a star.
+export function liveTargets(step, flags, { raidOf = () => null, raids = {}, minutes = 0 } = {}) {
+  const list = step?.targets ?? (step?.target ? [{ npc: step.target }] : []);
+  return list.filter((tg) => {
+    if (tg.unless && flags[tg.unless]) return false;
+    if (tg.if && !flags[tg.if]) return false;
+    if (!tg.encounter) return true;
+    const raid = raidOf(tg.encounter);
+    const won = [].concat(raids[raid]?.win?.set ?? []);
+    if (won.length && won.every((f) => flags[f])) return false;
+    const back = flags[`raid.${raid}.back`];
+    return !(back !== undefined && back > minutes);
+  });
+}
