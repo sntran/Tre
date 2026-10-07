@@ -131,6 +131,39 @@ async function afterExam(ctx, kind, result) {
     await showMessage(ctx, { speaker: 'examiner', textKey: 'exam.who' });
     await chooseCalling(ctx, false);
   }
+  // The title of the era ends the chapter: a short page of what the child did, and the way home.
+  if (kind === 'era1' && !profile.flags['chapter1.end']) {
+    await chapterEnd(ctx, data.titles.titles.find((x) => x.id === def.title));
+    setFlag(profile, 'chapter1.end');
+    await ctx.save('exam');
+  }
+}
+
+// The end of chapter one (#51): what the child did in the story, one line for each part, and the
+// next goal (the teacher at home, with a star).
+function chapterEnd(ctx, title) {
+  const f = ctx.profile.flags;
+  const trials = ctx.data.trials.trials.filter((x) => x.npc && x.calling).every((x) => f[x.flag]);
+  const lines = [
+    [trials, 'chapter.end.trials'],
+    [f['horse.forged'], 'chapter.end.horse'],
+    [f['era1.boss.won'], 'chapter.end.raids'],
+    [f['giong.farewell'], 'chapter.end.farewell'],
+    [true, 'chapter.end.exam'],
+  ].filter(([done]) => done);
+  const params = { title: { key: title.nameKey } };
+  return new Promise((resolve) => {
+    const layer = h('div', { class: 'modal-layer' });
+    const close = () => { layer.remove(); resolve(); };
+    layer.append(h('div', { class: 'panel chapter-end', style: { width: 'min(640px, 100%)' } }, [
+      h('div', { class: 'panel-head' }, [h('h2', { text: t('chapter.end.title') })]),
+      h('ul', { class: 'chapter-list' }, lines.map(([, key]) => h('li', { text: tg(key, params) }))),
+      h('p', { class: 'prompt', text: tg('chapter.end.next') }),
+      h('div', { class: 'row main-actions' }, [button(t('ui.ok'), close, { cls: 'btn big red' })]),
+    ]));
+    ctx.ui.append(layer);
+    speak('chapter.end.title');
+  });
 }
 
 function chooseCalling(ctx, change) {

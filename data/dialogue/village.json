@@ -187,6 +187,40 @@
       }
     },
     {
+      "id": "teacher.home",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "teacher",
+          "textKey": "dlg.teacher.home.n1",
+          "mood": "happy",
+          "next": "n2"
+        },
+        "n2": {
+          "speaker": "teacher",
+          "textKey": "dlg.teacher.home.n2",
+          "effects": [
+            {
+              "set": "chapter1.home"
+            }
+          ],
+          "choices": [
+            {
+              "textKey": "dlg.teacher.practice.n1.c1",
+              "effects": [
+                {
+                  "open": "practice"
+                }
+              ]
+            },
+            {
+              "textKey": "dlg.teacher.practice.n1.c2"
+            }
+          ]
+        }
+      }
+    },
+    {
       "id": "teacher.practice",
       "start": "n1",
       "nodes": {

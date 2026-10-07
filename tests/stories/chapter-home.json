@@ -1,0 +1,17 @@
+{
+  "name": "chapter-home",
+  "about": {
+    "vi": "Sau kỳ thi ở Văn Miếu: ngôi sao dẫn về thầy giáo ở làng; thầy mừng em đỗ và mời em luyện tập; chương một xong.",
+    "en": "After the exam at Văn Miếu: the star leads home to the teacher; the teacher is glad that you passed and asks you to practice; chapter one is done."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "prologue.done": true, "trial.scholar.done": true, "giong.farewell": true, "exam.era1.passed": true, "chapter1.end": true } },
+  "clock": 540,
+  "at": ["phu-dong", 54, 27],
+  "steps": [
+    { "press": { "entity": "npc:teacher" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "expect": [{ "text": { "shown": "dlg.teacher.home.n1" } }] },
+    { "read": [1] },
+    { "expect": [{ "text": { "shown": "dlg.teacher.home.n2" } }, { "flag": "chapter1.home" }, { "screen": null }] }
+  ]
+}

@@ -182,13 +182,19 @@
        "object": "ore1",
        "unless": "horse.ore1"
       },
-      { "encounter": "river", "unless": "river.calmed" },
+      {
+       "encounter": "river",
+       "unless": "river.calmed"
+      },
       {
        "object": "ore2",
        "unless": "horse.ore2",
        "if": "river.calmed"
       },
-      { "encounter": "scouts", "unless": "scouts.won" }
+      {
+       "encounter": "scouts",
+       "unless": "scouts.won"
+      }
      ]
     },
     {
@@ -237,8 +243,14 @@
       "soldier2.won"
      ],
      "targets": [
-      { "encounter": "soldier1", "unless": "soldier1.won" },
-      { "encounter": "soldier2", "unless": "soldier2.won" }
+      {
+       "encounter": "soldier1",
+       "unless": "soldier1.won"
+      },
+      {
+       "encounter": "soldier2",
+       "unless": "soldier2.won"
+      }
      ]
     },
     {
@@ -260,7 +272,10 @@
       ]
      },
      "targets": [
-      { "encounter": "boss", "unless": "era1.boss.won" }
+      {
+       "encounter": "boss",
+       "unless": "era1.boss.won"
+      }
      ]
     }
    ]
@@ -308,6 +323,27 @@
       "x": 1,
       "y": 40
      }
+    }
+   ]
+  },
+  {
+   "id": "home",
+   "titleKey": "quest.home.title",
+   "when": {
+    "flags": [
+     "exam.era1.passed"
+    ]
+   },
+   "steps": [
+    {
+     "id": "teacher",
+     "goalKey": "quest.home.teacher",
+     "done": {
+      "flags": [
+       "chapter1.home"
+      ]
+     },
+     "target": "teacher"
     }
    ]
   }

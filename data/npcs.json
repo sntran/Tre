@@ -101,6 +101,17 @@
           "dialogue": "teacher.trial"
         },
         {
+          "when": {
+            "flags": [
+              "exam.era1.passed"
+            ],
+            "notFlags": [
+              "chapter1.home"
+            ]
+          },
+          "dialogue": "teacher.home"
+        },
+        {
           "dialogue": "teacher.practice"
         }
       ],
