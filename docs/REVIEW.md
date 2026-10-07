@@ -83,7 +83,7 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
 | `dlg.messenger.call.n4` | Mọi người ơi! Bé Gióng nhà tôi vừa nói câu đầu tiên! {name}, cháu đến nhà bác ngay nhé! | Everyone! My little Gióng just spoke for the first time! {name}, please come to our house now! |
 | `dlg.giong.speaks.n1` | Gióng đã ba tuổi mà chưa biết nói, chưa biết cười. Nhưng hôm nay, khi nghe tiếng sứ giả, Gióng bỗng cất tiếng nói. | Gióng was three years old. He could not speak or laugh. But today, when he heard the messenger, he spoke. |
 | `dlg.giong.speaks.n2` | Mẹ ơi, mẹ mời sứ giả vào đây. Con sẽ đi giúp nước, giữ làng. | Mother, please ask the messenger to come in. I will go and help the country and protect our village. |
-| `dlg.giong.speaks.n3` | Xin nhà vua làm cho con một con ngựa sắt, một bộ áo giáp sắt và một cây gậy sắt. | Ask the king to make me an iron horse, an iron armor, and an iron staff. |
+| `dlg.giong.speaks.n3` | Xin nhà vua làm cho con một con ngựa sắt, một bộ áo giáp sắt và một cây roi sắt. | Ask the king to make me an iron horse, an iron armor, and an iron whip. |
 | `dlg.giong.speaks.n4` | Con ta nói được rồi! Nhưng ngựa sắt thì ai làm được đây? | My son can speak! But who can make an iron horse? |
 | `dlg.giong.speaks.n5` | {name} ơi, bạn giúp các bác thợ rèn nhé. Mình sẽ kể cho bạn nghe về sắt và lửa. | {name}, please help the smiths. I will tell you about iron and fire. |
 | `dlg.giong.speaks.n6` | Sắt rất cứng. Nhưng trong lửa thật nóng, sắt mềm ra, và thợ rèn uốn được nó. | Iron is very hard. But in a very hot fire, iron gets soft, and the smith can shape it. |
@@ -92,13 +92,13 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
 | `dlg.giong.speaks.n9` | Bác thợ rèn cần 6 miếng sắt. Có quặng sắt trong rặng tre và bên bờ sông. Bạn trả lời thử hai câu này nhé! | The smith needs 6 pieces of iron. There is iron ore in the bamboo and by the river. Now try these two questions! |
 | `dlg.giong.rice.n1` | Từ hôm đó, Gióng lớn nhanh như thổi. Cơm ăn mấy cũng không no, áo vừa mặc đã chật. | From that day, Gióng grew very fast. He was always hungry, and new clothes were soon too small. |
 | `dlg.giong.rice.n2` | Nhà bác không đủ gạo. Cả làng góp gạo nấu cơm cho Gióng. Cháu giúp bác đếm các nia cơm nhé! | We do not have enough rice. The whole village shares rice for Gióng. Please help me count the baskets of rice! |
-| `dlg.giong.grown.n1` | Gióng vươn vai một cái, bỗng thành một chàng trai cao lớn. Gióng mặc áo giáp sắt, cầm gậy sắt, nhảy lên ngựa sắt. | Gióng stretched, and suddenly he was a tall young man. He put on the iron armor, took the iron staff, and jumped onto the iron horse. |
+| `dlg.giong.grown.n1` | Gióng vươn vai một cái, bỗng thành một chàng trai cao lớn. Gióng mặc áo giáp sắt, cầm roi sắt, nhảy lên ngựa sắt. | Gióng stretched, and suddenly he was a tall young man. He put on the iron armor, took the iron whip, and jumped onto the iron horse. |
 | `dlg.giong.grown.n2` | Cảm ơn {name} và cả làng! Giờ mình đi giữ làng. Bạn đi cùng mình chứ? | Thank you, {name}, and thank you, everyone! Now I go to protect the village. Will you come with me? |
 | `dlg.giong.grown.n2.c1` | Có! Mình đi cùng bạn. | Yes! I will come with you. |
 | `dlg.giong.grown.n3` | Hai người lính [[an]] đang ở cánh đồng phía đông, ngoài cổng làng. Ta cùng đẩy lùi họ nhé. | Two soldiers of [[an]] are in the fields to the east, outside the village gate. Let us push them back together. |
 | `dlg.giong.ready.n1` | Hai người lính [[an]] ở ngoài cánh đồng phía đông. Chạm vào họ để bắt đầu. Mình đi cùng bạn! | Two soldiers of [[an]] are in the fields to the east. Tap them to start. I am with you! |
 | `dlg.giong.boss.n1` | Tướng [[an]] đang ở chân núi Trâu Sơn, phía đông bắc. Ta cùng đến đó! | The general of [[an]] is at the foot of Trâu Sơn mountain, to the northeast. Let us go there together! |
-| `dlg.staff.breaks.n1` | Rắc! Cây gậy sắt gãy làm đôi! | Crack! The iron staff breaks in two! |
+| `dlg.staff.breaks.n1` | Rắc! Cái roi sắt gãy làm đôi! | Crack! The iron whip breaks in two! |
 | `dlg.staff.breaks.n2` | {name} ơi, tìm cho mình một cây tre thật chắc! | {name}, find me a strong bamboo! |
 | `dlg.bamboo.found.n1` | Gióng nhổ bụi tre bên đường. Cây tre dẻo dai, không gãy! | Gióng pulls up the bamboo by the road. The bamboo bends, but it does not break! |
 | `dlg.giong.farewell.n1` | Tướng [[an]] và quân lính rút về nước. Họ cũng mong được về nhà với gia đình. | The Ân general and his soldiers went back to their own land. They also wanted to go home to their families. |
@@ -152,7 +152,7 @@ Short meanings of names in English mode (the first time a name shows):
 
 | Key | Vietnamese | English |
 | --- | --- | --- |
-| `q.legend.bamboo.prompt` | Khi gậy sắt gãy, Thánh Gióng dùng gì? | When the iron staff broke, what did Thánh Gióng use? |
+| `q.legend.bamboo.prompt` | Khi roi sắt gãy, Thánh Gióng dùng gì? | When the iron whip broke, what did Thánh Gióng use? |
 | `q.legend.bamboo.hint` | Cây này mọc quanh mọi làng Việt. | This plant grows around every Vietnamese village. |
 | `q.legend.bamboo.explain` | Theo truyền thuyết, Gióng nhổ những bụi tre bên đường. | In the legend, Gióng pulled up bamboo by the road. |
 | `q.legend.bamboo.c1` | Những bụi tre | Bamboo |
@@ -160,7 +160,7 @@ Short meanings of names in English mode (the first time a name shows):
 | `q.legend.bamboo.c3` | Nồi cơm | A rice pot |
 | `q.legend.smiths.prompt` | Ai làm ngựa sắt cho Gióng? | Who made the iron horse for Gióng? |
 | `q.legend.smiths.hint` | Họ làm việc bên lò lửa và cái đe. | They work with fire and an anvil. |
-| `q.legend.smiths.explain` | Thợ rèn nung sắt và làm ngựa sắt, áo giáp sắt và gậy sắt. | The smiths heated iron and made the horse, the armor, and the staff. |
+| `q.legend.smiths.explain` | Thợ rèn nung sắt và làm ngựa sắt, áo giáp sắt và roi sắt. | The smiths heated iron and made the horse, the armor, and the staff. |
 | `q.legend.smiths.c1` | Những người thợ rèn | The smiths |
 | `q.legend.smiths.c2` | Những người đánh cá | The fishers |
 | `q.legend.smiths.c3` | Đàn chim | The birds |
@@ -501,4 +501,6 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 - **The cards of the callings say what the child learns with each person:** `calling.<id>.line`, for example `calling.smith.line` ("Học với bác thợ rèn: lửa, nước và sắt.") and `calling.healer.line` ("Học với bà lang: các loại cây thuốc, mỗi loại đủ số."); `calling.note` ("Chọn người thầy em thích nhất. Em vẫn học được tất cả các môn, và em có thể đổi nghề ở nhà bất cứ lúc nào."). A calling gives no bonus in the game now, so no line promises one.
 - **The end of chapter one:** `chapter.end.title` ("Hết chương một: Thánh Gióng"), `chapter.end.trials`, `.horse`, `.raids`, `.farewell`, `.exam` ("Em đỗ kỳ thi ở [[vanmieu]] và có danh hiệu {title}."), and `chapter.end.next` ("Em đi theo ngôi sao, hoặc mở bản đồ, để về làng Phù Đổng. Thầy giáo đang chờ em.").
 - **The way home:** `quest.home.title` ("Về làng"), `quest.home.teacher` ("Về làng, đến gặp thầy giáo."), and the talk of the teacher `dlg.teacher.home.n1` ("Thầy nghe tin rồi: con đỗ kỳ thi ở [[vanmieu]]! Thầy mừng lắm.") and `dlg.teacher.home.n2`.
-- **Please check:** "bảng ở cổng" for the list of the names of the titles, the five lines of the callings, and the page of the end of the chapter.
+- **Gióng speaks in three lines:** `dlg.giong.speaks.n2` ("{w:Mẹ} ơi, {w:mẹ} mời sứ giả vào đây. Con xin nhà vua một con ngựa sắt, một cái roi sắt và một bộ áo giáp sắt. Con sẽ đi đánh giặc, giữ làng.") and `dlg.giong.speaks.n3` ("{name} ơi, bạn giúp các bác thợ rèn làm ngựa sắt nhé. …"). The lines `dlg.giong.speaks.n4` to `.n9` and the two questions after them are gone: the smith says the lines of fire and water at the forge, where the fire and the water are (`dlg.smith.forge.iron`: "Cháu xem này: sắt rất cứng. Nhưng trong lửa thật nóng, sắt mềm ra, và bác uốn được nó."; `dlg.smith.forge.water`).
+- **Roi sắt, as in the books of school:** ngựa sắt, roi sắt, áo giáp sắt (`dlg.giong.speaks.n2`, `dlg.smith.horse.n1`, `dlg.giong.grown.n1`, `dlg.staff.breaks.n1` "Rắc! Cái roi sắt gãy làm đôi!", `q.legend.bamboo.prompt`, `q.legend.smiths.explain`); "iron whip" in English.
+- **Please check:** "bảng ở cổng" for the list of the names of the titles, the five lines of the callings, the page of the end of the chapter, and "cái roi sắt".

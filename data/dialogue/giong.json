@@ -51,45 +51,9 @@
     "n3": {
      "speaker": "giong",
      "textKey": "dlg.giong.speaks.n3",
-     "next": "n4"
-    },
-    "n4": {
-     "speaker": "mother",
-     "textKey": "dlg.giong.speaks.n4",
-     "mood": "surprised",
-     "next": "n5"
-    },
-    "n5": {
-     "speaker": "giong",
-     "textKey": "dlg.giong.speaks.n5",
-     "next": "n6"
-    },
-    "n6": {
-     "speaker": "giong",
-     "textKey": "dlg.giong.speaks.n6",
-     "next": "n7"
-    },
-    "n7": {
-     "speaker": "giong",
-     "textKey": "dlg.giong.speaks.n7",
-     "next": "n8"
-    },
-    "n8": {
-     "speaker": "giong",
-     "textKey": "dlg.giong.speaks.n8",
-     "next": "n9"
-    },
-    "n9": {
-     "speaker": "giong",
-     "textKey": "dlg.giong.speaks.n9",
      "effects": [
       {
        "set": "giong.spoke"
-      },
-      {
-       "open": "lesson",
-       "skill": "sci.matter.states",
-       "count": 2
       }
      ]
     }

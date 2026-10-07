@@ -260,6 +260,16 @@
         "n1": {
           "speaker": "smith",
           "textKey": "dlg.smith.forge.n1",
+          "next": "iron"
+        },
+        "iron": {
+          "speaker": "smith",
+          "textKey": "dlg.smith.forge.iron",
+          "next": "water"
+        },
+        "water": {
+          "speaker": "smith",
+          "textKey": "dlg.smith.forge.water",
           "next": "n2"
         },
         "n2": {

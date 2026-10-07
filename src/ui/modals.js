@@ -1,4 +1,4 @@
-// The screens that open over the village: practice, lessons, and more. (The Five Trials and the
+// The screens that open over the village: practice with the teacher, and more. (The Five Trials and the
 // rice for Gióng are work in the village: src/core/world/systems/work.js.)
 import { registerModal } from './registry.js';
 import { runQuiz } from './quiz.js';
@@ -11,17 +11,6 @@ import { setFriendName, chosenGlossNames } from '../core/profile.js';
 function similar(ctx) {
   return (p) => ctx.learner.problem(p.skill, { level: p.level });
 }
-
-// A short lesson of the mentor, with a fixed skill.
-registerModal('lesson', async (ctx, cmd) => {
-  await runQuiz(ctx, {
-    title: t('lesson.title'),
-    speaker: 'giong',
-    count: cmd.count ?? 2,
-    next: () => ctx.learner.problem(cmd.skill),
-    similar: similar(ctx),
-  });
-});
 
 // Practice with the teacher: no health loss, no end.
 registerModal('practice', async (ctx) => {
