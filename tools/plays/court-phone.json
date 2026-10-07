@@ -1,0 +1,59 @@
+{
+ "about": "#42: the court of nhảy lò cò in the open yard by the road, on a phone: the children, the court, a throw with the big button, and hops.",
+ "start": "?practice=nhay-lo-co",
+ "lang": "vi",
+ "steps": [
+  {
+   "create": "Nam"
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 240
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 4
+  },
+  {
+   "shot": "the-court"
+  },
+  {
+   "hold": 0.6
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "the-throw"
+  },
+  {
+   "press": true,
+   "after": 0.8
+  },
+  {
+   "press": true,
+   "after": 0.8
+  },
+  {
+   "press": true,
+   "after": 0.8
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "hops"
+  },
+  {
+   "read": 3
+  },
+  {
+   "wait": 5
+  },
+  {
+   "shot": "after-a-turn"
+  }
+ ]
+}

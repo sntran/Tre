@@ -70,11 +70,19 @@ export function createDialogueBox(ctx, { next, choose }) {
   const box = h('div', { class: 'dialogue', role: 'dialog', 'aria-live': 'polite' });
   layer.append(box);
   ctx.ui.append(layer);
-  const openedAt = performance.now();
-  // The tap that opened the box can also send a click to the box. Ignore that click.
-  const early = () => performance.now() - openedAt < 400;
+  // The tap that opened the box (or a line) can also send a click to the box, and that click can
+  // come late (a long press, a slow phone). A click goes on only when its finger went down on the
+  // box after the line showed, and not in the first moment (#42: the tap of the big button that
+  // opened a talk also closed it, before the child could read it). The box is made one time and
+  // shows many lines, so both go again with each line.
+  let openedAt = performance.now();
+  let downOnLine = false;
+  const early = () => !downOnLine || performance.now() - openedAt < 400;
+  layer.addEventListener('pointerdown', () => { downOnLine = true; }, true);
 
   function show(line) {
+    openedAt = performance.now();
+    downOnLine = false;
     box.replaceChildren();
     const params = { ...ctx.textParams(), ...(line.params ?? {}) };
     const text = tg(line.textKey, params);

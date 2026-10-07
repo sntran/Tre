@@ -1,0 +1,64 @@
+{
+ "about": "#42: the glosses of names one at a time, in English: the greeting of the hamlet has no gloss; the first line of the planter to the child has the gloss of Cô Năm; no other line has it.",
+ "start": "?practice=xom-ruong",
+ "lang": "en",
+ "steps": [
+  {
+   "create": "Nam"
+  },
+  {
+   "check": "(window.__lines = window.__lines ?? [], window.__obs ?? (window.__obs = new MutationObserver(() => { for (const b of document.querySelectorAll('.world-bubble, .dialogue')) { const s = b.innerText; if (s && window.__lines.at(-1) !== s && !window.__lines.includes(s)) window.__lines.push(s); } })).observe(document.body, { childList: true, subtree: true, characterData: true }), true)"
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 240
+  },
+  {
+   "check": "(window.__lines = window.__lines ?? [], window.__obs ?? (window.__obs = new MutationObserver(() => { for (const b of document.querySelectorAll('.world-bubble, .dialogue')) { const s = b.innerText; if (s && window.__lines.at(-1) !== s && !window.__lines.includes(s)) window.__lines.push(s); } })).observe(document.body, { childList: true, subtree: true, characterData: true }), true)"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-greeting"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.id === 'script:greet')",
+   "timeout": 400
+  },
+  {
+   "walk": {
+    "person": "planter"
+   },
+   "taps": 12
+  },
+  {
+   "tap": {
+    "person": "planter"
+   },
+   "after": 1
+  },
+  {
+   "hold": {
+    "until": "[...document.querySelectorAll('.dialogue')].some((d) => /the fifth child/.test(d.innerText)) && (window.__t0 = window.__t0 ?? performance.now(), performance.now() - window.__t0 > 2500)",
+    "timeout": 30
+   },
+   "shot": "first-line-of-the-planter"
+  },
+  {
+   "wait": 15
+  },
+  {
+   "shot": "later"
+  },
+  {
+   "print": "window.__lines"
+  },
+  {
+   "check": "window.__lines.filter((s) => /the fifth child/.test(s)).length === 1"
+  },
+  {
+   "check": "!window.__lines.some((s) => /Hello!/.test(s) && /: the|small name/.test(s))"
+  }
+ ]
+}
