@@ -464,3 +464,31 @@ test('from the porch of the đình, a tap on the market walks there with no stop
   assert.ok(Math.hypot(h.x - market.x, h.z - market.z) < 4, `the hero comes to the market: ${JSON.stringify(h)}`);
 });
 
+// A far walk waits for the land that is not made yet (#56). In the browser the chunks ahead come a
+// little after the hero needs them; before, each tap on a far star walked 40 to 70 blocks to the
+// end of the made land and stopped. Here the land south of a line comes only after 15 seconds: one
+// tap on the star takes the hero past the line.
+test('one tap on a far star walks on when the land ahead comes later (#56)', async () => {
+  const [gx, gy] = data.world.at('road-thanglong', 0.6, 40);
+  let session = null;
+  const flags = { 'intro.seen': true, 'prologue.started': true, 'prologue.done': true, 'giong.spoke': true, 'giong.grown': true, 'soldier1.won': true, 'soldier2.won': true, 'era1.boss.won': true, 'giong.farewell': true };
+  const s = { name: 'far-wait', profile: { name: 'An', grade: 2, seed: 7, flags }, clock: 540, at: ['soc-son', 38, 20], steps: [] };
+  await runHeadless(s, { onSession: (x) => { session = x; } });
+  const tm = session.tileMap;
+  const line = heroCell(session).y + 20;
+  let late = true;
+  const { inside, walkable, isBlocked } = tm;
+  Object.assign(tm, {
+    inside: (x, y) => !(late && y > line) && inside(x, y),
+    walkable: (x, y) => !(late && y > line) && walkable(x, y),
+    isBlocked: (x, y) => (late && y > line) || isBlocked(x, y),
+  });
+  for (let i = 0; i < 30 * 40; i++) {
+    if (i === 30) session.command({ type: 'tap', target: { ground: { x: gx, y: gy, h: 3, thing: false, object: null, goal: true } } });
+    if (i === 30 * 15) late = false;
+    session.step();
+    session.events();
+    if (session.screen) session.command({ type: 'next' });
+  }
+  assert.ok(heroCell(session).y > line + 10, `the hero walks past the line ${line}: ${JSON.stringify(heroCell(session))}`);
+});

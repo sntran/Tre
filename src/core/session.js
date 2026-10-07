@@ -2322,7 +2322,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The ground (or the foot of a thing). A tap always walks (#44): a tap never opens a talk or a
     // text; the big button does that near the thing.
     const tile = { x: Math.floor(hit.x), y: Math.floor(hit.y) };
-    if (!tileMap.inside(tile.x, tile.y)) return;
+    // A star can stand on land that is not made yet (far away): its walk goes there all the same.
+    if (!hit.goal && !tileMap.inside(tile.x, tile.y)) return;
     emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.thing ? groundY(hit.x, hit.y) : hit.h });
     // The broken bridge: put the plank there, or walk out on the planks.
     const span = spanAt(tile.x, tile.y);
@@ -2369,7 +2370,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // ferry starts there. A new tap, a talk, or the ferry ends the walk (they end the arrival of the
   // leg). True when the hero walks or stands at the goal.
   const LEG = 2500; // the most cells of the search of one leg
-  function walkFar(goal, final = goal) {
+  function walkFar(goal, final = goal, waits = 0) {
     const from = heroFrom();
     const here = { x: from.x + 0.5, y: from.y + 0.5 };
     const left = Math.hypot(goal.x - here.x, goal.y - here.y);
@@ -2383,6 +2384,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const way = findPath(pathMap(), from, { x: Math.floor(goal.x), y: Math.floor(goal.y) }, { maxNodes: LEG, nearest: true });
     const end = way?.length ? way[way.length - 1] : null;
     if (!end || Math.hypot(goal.x - end.x - 0.5, goal.y - end.y - 0.5) > left - 1) {
+      // No nearer because the land ahead is not made yet (the chunks come a little later in the
+      // browser): the walk waits for it and goes on (#56; before, each tap on a far star walked
+      // 40 to 70 blocks and stopped). A new tap, the stick, or a talk ends the wait.
+      if (landAhead(end ?? from, goal) && waits < FAR_WAITS) {
+        waitFar(() => walkFar(goal, final, waits + 1));
+        return true;
+      }
       // No nearer (a river, or the end of a sandbar): the whole way to the landing of a ferry, once.
       const landing = goal === final ? landingToward(here, from, final) : null;
       if (!landing) return false;
@@ -2391,6 +2399,41 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     walkPath(way, null, () => walkFar(goal, final));
     return true;
+  }
+  // Is a cell on the line from a cell toward the goal (a few cells ahead) not made yet?
+  function landAhead(c, goal) {
+    const dx = goal.x - c.x - 0.5;
+    const dy = goal.y - c.y - 0.5;
+    const n = Math.hypot(dx, dy) || 1;
+    for (let k = 1; k <= 8; k++) {
+      if (!tileMap.inside(Math.floor(c.x + 0.5 + (dx / n) * k), Math.floor(c.y + 0.5 + (dy / n) * k))) return true;
+    }
+    return false;
+  }
+  // Do fn after a short wait, unless a new walk, the stick, or a screen ends it (they clear the
+  // arrivals). The world step calls stepFarWait.
+  const FAR_WAIT = 0.5; // seconds
+  const FAR_WAITS = 40; // the most waits of one far walk (20 seconds)
+  let farWait = null;
+  function waitFar(fn) {
+    const token = nextToken++;
+    arrivals.clear();
+    worldCommand(state, { type: 'stop', id: 'hero' });
+    arrivals.set(token, fn);
+    farWait = { token, t: FAR_WAIT };
+  }
+  function stepFarWait() {
+    if (!farWait) return;
+    if (!arrivals.has(farWait.token)) {
+      farWait = null;
+      return;
+    }
+    farWait.t -= STEP;
+    if (farWait.t > 0) return;
+    const fn = arrivals.get(farWait.token);
+    arrivals.delete(farWait.token);
+    farWait = null;
+    fn();
   }
   // The landing of a ferry (map cells) whose other side is nearer to the goal, and the whole way to
   // it from the cell of the hero: { at, way }, or null. A landing is the zone of a ferry of the map,
@@ -2709,6 +2752,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepFarewell();
     stepGuessLine();
     stepToolLines();
+    stepFarWait();
     for (const fn of later.splice(0)) fn();
     const events = state.events;
     for (const ev of events) {
