@@ -1,0 +1,141 @@
+{
+  "name": "mentor-bridge-night",
+  "about": {
+    "vi": "Ở cầu lúc đêm: chú đánh cá đã về nhà, nên Nghé nói thay: trước hết Nghé chỉ hàng ván mờ để đoán, rồi Nghé đếm từng tấm ván và chỉ chỗ thiếu.",
+    "en": "At the bridge at night: the fisher is at home, so Nghé speaks: first Nghé shows the pale planks of the guess, then Nghé counts the planks one by one and marks the empty part."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true
+    }
+  },
+  "clock": 1320,
+  "at": [
+    "phu-dong",
+    46,
+    61
+  ],
+  "steps": [
+    {
+      "wait": 1.5
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "id": "friend:nghe",
+          "textKey": "mentor.nghe.bridge.guess"
+        },
+        "timeout": 15
+      }
+    },
+    {
+      "press": {
+        "plank": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 20
+      }
+    },
+    {
+      "press": {
+        "screenOf": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1.5
+    },
+    {
+      "press": {
+        "plank": 4
+      }
+    },
+    {
+      "until": {
+        "event": "pick",
+        "timeout": 20
+      }
+    },
+    {
+      "press": {
+        "screenOf": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "put",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1.5
+    },
+    {
+      "press": {
+        "screenOf": "bridge-gap"
+      }
+    },
+    {
+      "until": {
+        "event": "tip",
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "mentor",
+          "with": {
+            "key": "bridge",
+            "diagnosis": "missing",
+            "move": "mark",
+            "level": 1
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "id": "friend:nghe",
+          "textKey": "mentor.mark"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "wait": 1.2
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "mentor-mark",
+            "min": 1
+          }
+        },
+        {
+          "text": {
+            "shown": "num.4"
+          }
+        }
+      ]
+    }
+  ]
+}

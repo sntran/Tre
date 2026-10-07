@@ -21,6 +21,17 @@ export function stepAt(plan, hour) {
   return out;
 }
 
+// A person at work now: in the world (not hidden), and not on the way home or at home by the plan
+// of the day (unless the person stays out for the quest). The lines of a task come from a person at
+// work; else from Nghé (#51).
+export function atWork(e, minutes) {
+  if (!e || e.hidden) return false;
+  const sc = e.schedule;
+  if (!sc?.plan || sc.stay) return true;
+  const at = stepAt(sc.plan, (minutes % 1440) / 60).at;
+  return at !== 'home' && at !== 'gone' && at !== 'bed';
+}
+
 // Put an entity at the place of its plan at an hour (when its chunk wakes, it is where its day put
 // it: a villager whose day put her at the well is at the well; a person at home is in the house).
 export function placeBySchedule(e, hour, env) {

@@ -46,7 +46,7 @@ import { createWorldState, getEntity, query, addEntity, removeEntity, command as
 import { step as worldStep, STEP } from './world/step.js';
 import { envFor, placesOf } from './world/env.js';
 import { addHero, addFriend, syncPeople, addLifeGroups, addLanterns, addZones, addVillagers, sleepChunk } from './world/populate.js';
-import { placeBySchedule } from './world/systems/schedule.js';
+import { placeBySchedule, atWork } from './world/systems/schedule.js';
 import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
@@ -491,6 +491,23 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const id of ['farewell:steed', 'farewell:giong', 'farewell:cloud']) removeEntity(state, id);
     farewell = null;
     emit({ type: 'farewell', on: false });
+  }
+
+  // The guess at the bridge (#51): when the plank outlines of the guess lie on the bank, a line says
+  // what they are, one time in a visit: the fisher says it, or Nghé when the fisher is not there
+  // (at home at night).
+  let guessTold = false;
+  function stepGuessLine() {
+    if (guessTold || busy || screen) return;
+    const outlines = query(state, 'guess', 'position').filter((g) => g.guess.left === undefined);
+    if (!outlines.length) return;
+    guessTold = true;
+    const at = outlines[0].position;
+    const fisher = getEntity(state, 'npc:fisher');
+    const nghe = getEntity(state, 'friend:nghe');
+    const here = atWork(fisher, state.clock.minutes) && Math.hypot(fisher.position.x - at.x, fisher.position.z - at.z) <= 40;
+    if (here) emit({ type: 'open', screen: 'callout', id: fisher.id, textKey: 'mentor.bridge.guess', params: {} });
+    else if (nghe && !nghe.hidden) emit({ type: 'open', screen: 'callout', id: nghe.id, textKey: 'mentor.nghe.bridge.guess', params: {} });
   }
 
   // People and encounters, in map cells. They block their cells for the paths of taps.
@@ -2440,6 +2457,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     worldStep(state, STEP, env);
     if (slingPull) slingPull.t += STEP;
     stepFarewell();
+    stepGuessLine();
     stepToolLines();
     for (const fn of later.splice(0)) fn();
     const events = state.events;

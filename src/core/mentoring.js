@@ -6,6 +6,7 @@
 import { newMentor, newMemory, onCommit, onIdle, onWave, onCheck, onChange, demoTarget, demoParts, shareParts } from './mentor.js';
 import { getEntity, query, addEntity } from './world/state.js';
 import { endScript } from './world/systems/mentor.js';
+import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
 
 // The zones where the parts of a try go, in the order of the search.
@@ -16,6 +17,7 @@ const LEAVE_TIME = 15; // seconds after a miss
 const COUNT_PACE = 0.9; // seconds between two counted parts (counting pace)
 const FIRST_DELAY = 0.5; // seconds after the start of a task: the person shows the first step
 const WORK_NEAR = 24; // half blocks: a person this near the place of a task stands at the work
+const AWAY = 40; // half blocks: a person farther than this from the place of a task is not there (#51)
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
@@ -294,7 +296,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   function doMove(key, move, info = {}) {
     const w = world();
     const def = defOf(key);
-    const task = taskOf(key);
+    let task = taskOf(key);
     if (!w || !def) return;
     // A try is a commit (rule 33: the help goes one level up only after a try). The lines count
     // for each person, so that two tasks of one person count together.
@@ -308,11 +310,23 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       return;
     }
     if (move === 'picture') pictured = true;
-    const person = task?.person ?? getEntity(w, def.person);
+    let person = task?.person ?? getEntity(w, def.person);
+    // The person of the task is not there (at home at night, #51): Nghé says the lines, in the
+    // words of a friend, and shows the place. Nghé never carries the things of the task.
+    const nghe = getEntity(w, 'friend:nghe');
+    const away = Boolean(task && nghe && !nghe.hidden && (!atWork(person, w.clock.minutes) || Math.hypot(person.position.x - task.at.x, person.position.z - task.at.z) > AWAY));
+    if (away) {
+      person = nghe;
+      task = { ...task, person: nghe, byNghe: true };
+    }
     const who = person?.id ?? null;
     const steps = [];
     let t = 0;
-    const say = (at, k, params = {}) => { if (who && k) steps.push({ at, say: { id: who, key: k, params } }); };
+    // The keys of the lines of Nghé: the general line of the move (not the own line of the person),
+    // and the words of a friend where the line says cháu.
+    const moveOf = Object.fromEntries([...Object.entries(cfg.lines), ...Object.entries(def.lines ?? {})].filter(([, k]) => k).map(([m, k]) => [k, m]));
+    const asNghe = (k) => cfg.ngheLines?.[moveOf[k] ?? k] ?? cfg.ngheLines?.[k] ?? (moveOf[k] ? cfg.lines[moveOf[k]] : k);
+    const say = (at, k, params = {}) => { if (who && k) steps.push({ at, say: { id: who, key: away ? asNghe(k) : k, params } }); };
     const point = (at, p, time = 1.2) => { if (who) steps.push({ at, point: { id: who, x: p.x, z: p.z, time } }); };
     const mark = (at, p, ttl = 3) => steps.push({ at, mark: { x: p.x, z: p.z, ttl } });
     if (info.remembered && cfg.again[move]) {
@@ -384,7 +398,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       s.mark(t + 1.6, task.at, 2.5);
       return t + 3;
     }
-    const pairs = (Array.isArray(def.first) ? def.first : task.piles[0] && task.place ? [{ from: task.piles[0].zone.id, to: task.place.zone.id }] : [])
+    const pairs = (task.byNghe ? [] : Array.isArray(def.first) ? def.first : task.piles[0] && task.place ? [{ from: task.piles[0].zone.id, to: task.place.zone.id }] : [])
       .map((p) => ({ heap: getEntity(w, `zone:${p.from}`), place: getEntity(w, `zone:${p.to}`) }))
       .filter((p) => p.heap && p.place);
     s.say(t, lineOf(task.key, 'first'));
