@@ -809,7 +809,9 @@ p { line-height: 1.45; margin: 0.4em 0; }
   .hud .counts { margin-left: auto; }
   .hud .goal { order: 3; flex: 1 1 calc(100% - var(--touch) - var(--gap)); }
   .hud .map-btn { order: 4; }
-  .dialogue .portrait { display: none; }
+  /* Phone: a smaller face in the talk box, never none (#59). */
+  .dialogue .portrait { width: 60px; height: 66px; }
+  .dialogue .portrait .portrait-img { width: 60px !important; height: 60px !important; }
 }
 
 @media (orientation: portrait) {

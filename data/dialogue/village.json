@@ -398,12 +398,7 @@
       "nodes": {
         "n1": {
           "speaker": "grandma",
-          "textKey": "dlg.grandma.home.n1",
-          "effects": [
-            {
-              "open": "home"
-            }
-          ]
+          "textKey": "dlg.grandma.home.n1"
         }
       }
     },

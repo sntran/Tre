@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { readFileSync, readdirSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { checkDialogue } from '../src/core/dialogue.js';
 import { createSkillGraph } from '../src/core/skills.js';
@@ -49,7 +50,14 @@ test('each talk rule names a known dialogue', () => {
 });
 
 test('dialogue effects open only known screens', () => {
-  const screens = new Set(['trial', 'planting', 'ducks', 'traps', 'drum', 'practice', 'practice-stay', 'practice-back', 'farewell', 'home', 'vanmieu', 'nameFriend']);
+  // The names come from the code, not from a list here (#59: a talk opened the screen "home",
+  // which was gone): the opens of the session, and the modals and the scenes of the UI.
+  const src = (f) => readFileSync(new URL(`../src/${f}`, import.meta.url), 'utf8');
+  const screens = new Set([...src('core/session.js').matchAll(/c\.open === '([\w-]+)'/g)].map((m) => m[1]));
+  for (const f of readdirSync(new URL('../src/ui/', import.meta.url))) {
+    for (const m of src(`ui/${f}`).matchAll(/register(?:Modal|Scene)\('([\w-]+)'/g)) screens.add(m[1]);
+  }
+  assert.ok(screens.has('trial') && screens.has('nameFriend') && screens.has('vanmieu'), [...screens].join(' '));
   for (const d of dialogues) {
     for (const n of Object.values(d.nodes)) {
       const effects = [...(n.effects ?? []), ...(n.choices ?? []).flatMap((c) => c.effects ?? [])];
