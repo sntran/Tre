@@ -89,6 +89,30 @@ const unit = (v) => {
 // takes ('none', 'small', or 'normal': twice as much; see lossLevel in src/core/profile.js); by
 // default nothing at the lowest level. The raid is plain data.
 // teach: the tools that are new to the child in this raid (the first raid of each tool).
+// The part of the road that the animals and the children of the court leave in a raid (#55): from
+// behind the wall to the start of the farthest enemy, KEEP_SIDE half blocks to each side.
+export const KEEP_SIDE = 8;
+const KEEP_BACK = 4; // half blocks behind the wall
+function keepOf(wall, dir, phases, posts) {
+  const starts = phases.flatMap((p) => p.waves ?? []).filter((w) => w.from).map((w) => hb(w.from));
+  const far = Math.max((posts.at(-1) ?? 0) + 5, ...starts.map((s) => (s.x - wall.x) * dir.x + (s.z - wall.z) * dir.z));
+  return { a: { x: wall.x - dir.x * KEEP_BACK, z: wall.z - dir.z * KEEP_BACK }, b: { x: wall.x + dir.x * far, z: wall.z + dir.z * far } };
+}
+
+// The distance of a point (half blocks) from the part of the road of a raid (keep), and the way off
+// the road: a unit vector away from the middle line.
+export function offRoad(keep, p) {
+  const ax = keep.b.x - keep.a.x;
+  const az = keep.b.z - keep.a.z;
+  const t = Math.max(0, Math.min(1, ((p.x - keep.a.x) * ax + (p.z - keep.a.z) * az) / (ax * ax + az * az || 1)));
+  const x = p.x - (keep.a.x + ax * t);
+  const z = p.z - (keep.a.z + az * t);
+  const d = Math.hypot(x, z);
+  if (d > 1e-6) return { d, x: x / d, z: z / d };
+  const l = Math.hypot(ax, az) || 1;
+  return { d, x: -az / l, z: ax / l };
+}
+
 // easy (#55): { stop: seconds that each enemy stops at each post (0: none; then the next wave
 // comes only when no enemy walks), fewer: waves less (after a loss), help: a helper at the wall
 // gives each enemy one hit (after two losses), helper: the look of the helper, without: tools
@@ -126,6 +150,7 @@ export function createRaid(raids, id, level = 0, loss = null, teach = [], easy =
     trapDone: false,
     ball: def.ball ?? null,
     posts: (raids.posts ?? []).map((d) => ({ d, x: wall.x + dir.x * d, z: wall.z + dir.z * d })),
+    keep: keepOf(wall, dir, phases, raids.posts ?? []),
     // The prediction before the first shot: pending (the posts wait for a tap), then the post that
     // the child tapped (guess) and the distance of the enemy then (gap), or skipped.
     predict: { state: 'pending', guess: null, gap: null },

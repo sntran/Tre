@@ -95,3 +95,45 @@ test('a tap on a soldier of an encounter with Nghé in front of him never pets N
   const t = tapTarget(cam.project(at.x, at.y + 1, at.z), sessionScreen(session, cam));
   assert.deepEqual(t, { person: enc.id });
 });
+
+test('in a raid, the animals leave the road and the children of the court go home; after it, the children come back (#55)', async () => {
+  const { runHeadless } = await import('./story-run.js');
+  const { getEntity, query } = await import('../src/core/world/state.js');
+  const { offRoad, KEEP_SIDE } = await import('../src/core/world/raids.js');
+  let session = null;
+  const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'giong.spoke': true, 'raid.tool.sling': true } };
+  await runHeadless({ name: 'x', profile, clock: 540, at: ['phu-dong', 61, 29], steps: [{ wait: 1 }] }, { onSession: (s) => { session = s; } });
+  const w = session.state;
+  const children = query(w, 'folkChild');
+  assert.ok(children.length >= 3 && children.every((c) => !c.hidden), 'the children play on the court by the road');
+  session.command({ type: 'tap', target: { person: 'encounter:scouts' } });
+  session.events();
+  session.command({ type: 'hands' });
+  session.events();
+  for (let i = 0; i < 30 * 20 && !getEntity(w, 'raid'); i++) {
+    session.step();
+    session.events();
+    if (session.screen) session.command({ type: 'next' });
+  }
+  const keep = getEntity(w, 'raid').raid.keep;
+  // A buffalo on the road at the start of the raid walks off it.
+  const buffalo = w.entities.find((e) => e.look === 'buffalo' && e.steer);
+  Object.assign(buffalo.position, { x: (keep.a.x + keep.b.x) / 2, z: (keep.a.z + keep.b.z) / 2 });
+  for (let i = 0; i < 30 * 10; i++) {
+    session.step();
+    session.events();
+  }
+  assert.ok(children.every((c) => c.hidden), 'the children of the court went home');
+  for (const e of query(w, 'steer', 'position').filter((x) => x.steer.medium === 'land' && !x.follow && !x.hidden)) {
+    assert.ok(offRoad(keep, e.position).d >= KEEP_SIDE - 0.5, `${e.id} (${e.look}) is ${offRoad(keep, e.position).d.toFixed(1)} half blocks from the road`);
+  }
+  // The end of the raid: the children come back.
+  getEntity(w, 'raid').raid.result = 'won';
+  for (let i = 0; i < 30 * 30 && getEntity(w, 'raid'); i++) {
+    session.step();
+    session.events();
+    if (session.screen) session.command({ type: 'next' });
+  }
+  assert.equal(getEntity(w, 'raid'), null);
+  assert.ok(children.every((c) => !c.hidden), 'the children play again');
+});

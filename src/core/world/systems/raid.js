@@ -6,15 +6,16 @@
 // raid, and puts the enemies, the stones, the torches, the fires, the wet ground, and the
 // villagers into the world as entities. The raid waits while the world waits (a talk, the map).
 // When the raid is over, its things go away after a moment.
-export const WRITES = ['raid', 'orders', 'over', 'horns', 'position', 'look', 'act', 'carry', 'item', 'zone', 'follow', 'raider', 'hot', 'source', 'raidTap', 'raidThing', 'fixedThing', 'events'];
+export const WRITES = ['raid', 'orders', 'over', 'horns', 'position', 'look', 'act', 'carry', 'item', 'zone', 'follow', 'raider', 'hot', 'source', 'raidTap', 'raidThing', 'fixedThing', 'raidAway', 'hidden', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
-import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, setTraps, trapPut, stoneAt, torchAt, along, releaseHold } from '../raids.js';
+import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, setTraps, trapPut, stoneAt, torchAt, along, releaseHold, offRoad, KEEP_SIDE } from '../raids.js';
 import { packHeap } from './work.js';
 
 const OVER = 2.5; // seconds: the things of the raid stay after the end
 const HORNS = 1.6; // seconds: Nghé lowers her horns when the hero is hurt
 const LANE = 2; // half blocks: a trap snaps to the middle of the road within this distance
+const AWAY = KEEP_SIDE + 6; // half blocks: the children of the court this near the road go home in a raid (#55)
 
 const say = (world, type, id, extra = {}) => world.events.push({ type, id, ...extra });
 const raidOf = (world) => getEntity(world, 'raid');
@@ -170,6 +171,11 @@ function endRaid(world, friend) {
   for (const e of query(world, 'raidThing')) removeEntity(world, e.id);
   for (const id of ['zone:raid-traps', 'zone:raid-road']) removeEntity(world, id);
   for (const e of query(world, 'item')) if (e.item.task === 'raid') removeEntity(world, e.id);
+  // The children of the court come back.
+  for (const e of query(world, 'raidAway')) {
+    delete e.raidAway;
+    delete e.hidden;
+  }
   // A trap in the hands went away too: the place system empties the hands in the next step.
   if (friend?.follow.goal) delete friend.follow.goal;
   removeEntity(world, 'raid');
@@ -202,6 +208,13 @@ export function setupRaid(world, raid, def, env, looks = {}) {
   const hb = (p) => ({ x: p[0] * 2, z: p[1] * 2 });
   const fixed = (id, p, look, extra = {}) => addEntity(world, { id, raidThing: true, fixedThing: true, position: { x: p.x, y: gy(p.x, p.z), z: p.z, facing: extra.facing ?? 0 }, look, ...extra });
   const r = addEntity(world, { id: 'raid', raid });
+  // The children of the court by the road go home until the raid ends (#55): no child stands
+  // between the posts and the enemies.
+  for (const e of query(world, 'folkChild', 'position')) {
+    if (e.hidden || offRoad(raid.keep, e.position).d >= AWAY) continue;
+    e.hidden = true;
+    e.raidAway = true;
+  }
   // The distance posts, at the side of the road (a post shows its count as bands, no numeral).
   const side = { x: -raid.dir.z, z: raid.dir.x };
   const has = (t) => raid.tools.includes(t);

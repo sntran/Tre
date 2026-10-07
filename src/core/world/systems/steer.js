@@ -8,6 +8,7 @@ export const WRITES = ['steer', 'position', 'motion'];
 
 import { query, getEntity } from '../state.js';
 import { faceOf } from '../move.js';
+import { offRoad, KEEP_SIDE } from '../raids.js';
 
 // steer: { speed, accel, medium, goal: { x, z } | null, arrived, flee: { x, z, time } | null,
 //   bias: { x, z }, wander: { t, dx, dz, on }, weights: { seek, arrive, flee, wander, separation,
@@ -17,6 +18,11 @@ import { faceOf } from '../move.js';
 export function steer(world, dt, rng, env) {
   const movers = query(world, 'steer', 'position', 'motion').filter((e) => !e.hidden && !e.climb);
   const hero = getEntity(world, 'hero');
+  // In a raid, the animals (and the other walkers) go off the road of the raid and do not come
+  // back on it until the raid ends (#55): the child must see the road, the posts, and the enemies.
+  const raid = getEntity(world, 'raid')?.raid;
+  const keep = raid && !raid.result ? raid.keep : null;
+  const onRoad = (p) => offRoad(keep, p).d < KEEP_SIDE;
   for (const e of movers) {
     const s = e.steer;
     const w = s.weights;
@@ -94,17 +100,26 @@ export function steer(world, dt, rng, env) {
         dz += (oz / d) * k;
       }
     }
+    // Off the road of a raid: straight to the side, faster than a walk.
+    const keeps = keep && s.medium === 'land' && !e.follow && !e.raidThing;
+    const enter = keeps ? (medium, from, to) => env.canEnter(medium, from, to) && (onRoad(from) || !onRoad(to)) : env.canEnter;
+    if (keeps && onRoad(p)) {
+      const out = offRoad(keep, p);
+      dx = out.x * s.speed * 1.5;
+      dz = out.z * s.speed * 1.5;
+      if (s.wander) s.wander.on = false;
+    }
     // Avoidance: look ahead, and turn to a free side before a wall or the edge of the water.
     const speedNow = Math.hypot(dx, dz);
     if (w.avoid && speedNow > 1e-3) {
       const look = 1.6;
       const ahead = { x: p.x + (dx / speedNow) * look, z: p.z + (dz / speedNow) * look };
-      if (!env.canEnter(s.medium, p, ahead)) {
+      if (!enter(s.medium, p, ahead)) {
         const base = Math.atan2(dx, dz);
         for (const turn of [0.6, -0.6, 1.2, -1.2, 2, -2, Math.PI]) {
           const a = base + turn;
           const q = { x: p.x + Math.sin(a) * look, z: p.z + Math.cos(a) * look };
-          if (!env.canEnter(s.medium, p, q)) continue;
+          if (!enter(s.medium, p, q)) continue;
           dx = Math.sin(a) * speedNow;
           dz = Math.cos(a) * speedNow;
           break;
@@ -128,11 +143,11 @@ export function steer(world, dt, rng, env) {
     // Move, and never enter a place of another medium: slide along it, or stop.
     const next = { x: p.x + m.vx * dt, z: p.z + m.vz * dt };
     let moved = true;
-    if (env.canEnter(s.medium, p, next)) Object.assign(p, next);
-    else if (env.canEnter(s.medium, p, { x: next.x, z: p.z })) {
+    if (enter(s.medium, p, next)) Object.assign(p, next);
+    else if (enter(s.medium, p, { x: next.x, z: p.z })) {
       p.x = next.x;
       m.vz = 0;
-    } else if (env.canEnter(s.medium, p, { x: p.x, z: next.z })) {
+    } else if (enter(s.medium, p, { x: p.x, z: next.z })) {
       p.z = next.z;
       m.vx = 0;
     } else {
