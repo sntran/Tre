@@ -85,25 +85,28 @@ test('with the real camera on a phone held upright (the focus on the hero after 
   }
 });
 
-// The folk games in the open (#42): the court of nhảy lò cò and the rope of nhảy dây. Nothing tall
+// The folk games and the market in the open (#42): the court of nhảy lò cò, the rope of nhảy dây,
+// and the stall of a market day (the mat of the rice, the tray of goods, the seller). Nothing tall
 // (a house, a gate post, a wall, a tall tree, a stack: workBoxes) stands on the work, and from each
 // of the four angles the turn of the view finds an angle where nothing tall covers it.
-async function folkPoints(name, read) {
+async function folkPoints(name, read, steps = 1) {
   const story = JSON.parse(readFileSync(new URL(`./stories/${name}.json`, import.meta.url)));
-  story.steps = story.steps.slice(0, 1);
+  story.steps = story.steps.slice(0, steps);
   let session = null;
   const failures = await runHeadless(story, { onSession: (s) => { session = s; } });
   assert.deepEqual(failures, []);
   return read((id) => session.state.entities.find((e) => e.id === id)).map((q) => ({ x: q.x / 2, y: q.y / 2, z: q.z / 2 }));
 }
 
-test('the court of nhay lo co and the rope of nhay day are in the open: nothing tall on them, and a turn of the view finds an angle where nothing tall covers them', async () => {
+test('the court of nhay lo co, the rope of nhay day, and the stall of the market are in the open: nothing tall on them, and a turn of the view finds an angle where nothing tall covers them', async () => {
   const { terrain } = planeOf(1, { blocks: load('data/world/blocks.json'), places: ['phu-dong', 'xom-ruong'] });
   const games = {
     // The half circle to rest has no height of its own: the height of the last square.
     court: await folkPoints('practice-nhay-lo-co', (E) => { const c = E('folk:court').folkCourt; return [...c.squares, { ...c.rest, y: c.squares.at(-1).y }]; }),
     // The two children who turn the rope, and the middle of the rope (as the event workView).
     rope: await folkPoints('practice-nhay-day', (E) => ['npc:rope-child', 'folk:turner:1', 'folk:rope'].map((id) => E(id).position)),
+    // The market of the story, after the seller says her trade.
+    market: await folkPoints('market-barter', (E) => ['mark:event-market', 'wares:event-market', 'event:market'].map((id) => E(id).position), 5),
   };
   for (const [id, points] of Object.entries(games)) {
     assert.ok(points.length >= 2, id);

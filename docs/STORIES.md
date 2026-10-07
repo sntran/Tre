@@ -136,7 +136,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `fell-dig` | A tree is felled and a block is dug; after a save and a load, the tree stays felled. |
 | `event-cart` | A cart stuck on the road: three stones are too few, five roll one back, four lift the cart. |
 | `event-flood` | A flooded field: five pails of water to the ditch. |
-| `market-barter` | Market day is barter: two eggs for five measures of rice, and the seller has six eggs. Fourteen measures are not enough; fifteen are. The rice leaves the basket only then, and the eggs go to it. |
+| `market-barter` | Market day is barter: three eggs for four bowls of rice, and the seller has nine eggs. Eleven bowls are not enough; twelve are. The rice leaves the basket only then, and the eggs go to it. |
 | `event-duck` | Lost ducks: one is not enough; with the second, the flock is whole. |
 | `walk-trau-son` | From the gate of Phù Đổng on the east road, through the generated land, to the fields at the foot of the low hills of Trâu Sơn, with no change of scene. |
 | `walk-vanmieu` | From Phù Đổng over the ford and the west road, through the generated land, over the Red River on the ferry (the story waits for `ferried`), to Văn Miếu. |

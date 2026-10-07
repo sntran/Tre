@@ -107,16 +107,22 @@ export function exactResult(sum, need) {
 }
 
 // The work of a market day: barter (#26; Era 1 has no coins). The seller has goods (one of
-// def.goods) and wants rice for them at a rate that the level sets: [a, b] is a measures of rice
-// for b goods. She trades all her goods in lots of the rate: she has k = lots × b goods and needs
-// lots × a measures. rice: the measures of rice in the basket of the hero. The lots are never more
-// than the rice can pay, and the pile is the rice of the basket (with extra measures, so that too
-// many is possible). null: the rice cannot pay the fewest lots.
+// def.goods that the level has a rate for) and wants rice for them at a rate of the level and the
+// good: [a, b] is a bowls of rice for b goods; a dearer good takes more rice for each one (#42).
+// She trades all her goods in lots of the rate: she has k = lots × b goods and needs lots × a
+// bowls. rice: the bowls of rice in the basket of the hero. The lots are never more than the rice
+// can pay, nor more than def.most bowls, and the pile is the rice of the basket (with extra bowls,
+// so that too many is possible). null: the rice cannot pay the fewest lots.
 export function barterTask(def, level, rng, rice) {
   const l = def.levels[Math.max(0, Math.min(def.levels.length - 1, level))];
-  const goods = rng.pick(def.goods);
-  const [a, b] = rng.pick(l.rates);
-  const most = Math.min(l.lots[1], Math.floor(rice / a));
+  // The goods that the rice can pay for in the fewest lots (a seller of eggs when the basket has
+  // little rice).
+  const pays = (r) => r[0] * l.lots[0] <= Math.min(rice, def.most ?? Infinity);
+  const can = def.goods.filter((g) => (l.rates[g] ?? []).some(pays));
+  if (!can.length) return null;
+  const goods = rng.pick(can);
+  const [a, b] = rng.pick(l.rates[goods].filter(pays));
+  const most = Math.min(l.lots[1], Math.floor(rice / a), Math.floor((def.most ?? Infinity) / a));
   if (most < l.lots[0]) return null;
   const lots = rng.int(l.lots[0], most);
   const need = lots * a;

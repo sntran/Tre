@@ -1,8 +1,8 @@
 {
   "name": "market-barter",
   "about": {
-    "vi": "Phiên chợ là đổi hàng: cô bán hàng đổi hai quả trứng lấy năm đấu gạo, và cô có sáu quả trứng. Em mang mười bốn đấu ra chiếu: chưa đủ. Em mang thêm một đấu: đủ mười lăm. Gạo chỉ rời thúng khi đổi xong, và trứng vào thúng.",
-    "en": "Market day is barter: the seller trades two eggs for five measures of rice, and she has six eggs. The hero puts fourteen measures on the mat: not enough. One more measure makes fifteen. The rice leaves the basket only when the trade is done, and the eggs go to the basket."
+    "vi": "Phiên chợ là đổi hàng: cô bán hàng đổi ba quả trứng lấy bốn bát gạo, và cô có chín quả trứng. Em mang mười một bát ra chiếu: chưa đủ. Em mang thêm một bát: đủ mười hai. Gạo chỉ rời thúng khi đổi xong, và trứng vào thúng.",
+    "en": "Market day is barter: the seller trades three eggs for four bowls of rice, and she has nine eggs. The hero puts eleven bowls on the mat: not enough. One more bowl makes twelve. The rice leaves the basket only when the trade is done, and the eggs go to the basket."
   },
   "profile": {
     "name": "An",
@@ -59,19 +59,19 @@
         {
           "count": {
             "entities": "rice-1",
-            "min": 19
+            "min": 16
           }
         },
         {
           "count": {
-            "entities": "wares-egg-6",
+            "entities": "wares-egg-9",
             "min": 1
           }
         }
       ]
     },
     {
-      "repeat": 14,
+      "repeat": 11,
       "steps": [
         {
           "press": {
@@ -123,7 +123,7 @@
           "with": {
             "skill": "math.mul.10",
             "solved": false,
-            "target": 15
+            "target": 12
           }
         },
         {
@@ -188,24 +188,24 @@
           "with": {
             "skill": "math.mul.10",
             "solved": true,
-            "target": 15
+            "target": 12
           }
         },
         {
           "event": "lose",
           "with": {
             "take": {
-              "rice": 15
+              "rice": 12
             }
           }
         },
         {
           "item": "rice",
-          "count": 15
+          "count": 18
         },
         {
           "item": "egg",
-          "count": 6
+          "count": 9
         }
       ]
     },

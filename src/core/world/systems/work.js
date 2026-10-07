@@ -279,10 +279,12 @@ export function setupTrial(world, def, level, env, opts = {}) {
     addEntity(world, { id: `mark:${def.id}`, keep: true, position: { ...t, facing: 0 }, look: def.target });
     for (let i = 0; i < (def.keep ?? 0); i++) add(place, 1, { set: true, fixed: true });
     packExact(world, place.zone);
-    // The goods of a seller (barter) lie on her side of the mat, for all to see.
+    // The goods of a seller (barter) lie on her tray, for all to see: in front of her, beside the
+    // mat (def.at.wares, #42), or else on her side of the mat.
     if (def.give) {
       const [goods, n] = Object.entries(def.give)[0];
-      addEntity(world, { id: `wares:${def.id}`, keep: true, position: { x: t.x, y: t.y, z: t.z - 3.5, facing: 0 }, look: `wares-${goods}-${n}` });
+      const w = def.at.wares ? at(def.at.wares) : { x: t.x, y: t.y, z: t.z - 3.5 };
+      addEntity(world, { id: `wares:${def.id}`, keep: true, position: { x: w.x, y: w.y, z: w.z, facing: 0 }, look: `wares-${goods}-${n}` });
     }
     Object.assign(tz.zone, { work: { id: def.id, skill: def.skill, level: def.level, need: def.need }, need: def.need, day: def.day, event: def.event, give: def.give ?? null });
   } else if (def.task === 'slash') {

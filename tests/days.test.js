@@ -74,19 +74,26 @@ test('a market day is barter: the seller trades all her goods at the rate of the
     for (let s = 0; s < 40; s++) {
       const t = barterTask(market, level, createRng(s), 40);
       const [a, b] = t.rate;
-      assert.ok(market.levels[level].rates.some(([x, y]) => x === a && y === b));
+      assert.ok(market.levels[level].rates[t.goods].some(([x, y]) => x === a && y === b));
       assert.ok(market.goods.includes(t.goods));
       assert.equal(t.need, t.lots * a, 'the rice for all the lots');
       assert.equal(t.k, t.lots * b, 'all the goods of the seller');
-      assert.equal(t.pile.length, t.need + market.extra, 'the measures by the mat, with some more');
+      assert.equal(t.pile.length, t.need + market.extra, 'the bowls by the mat, with some more');
       assert.ok(t.pile.every((x) => x === 1));
       assert.ok(t.k <= 20 && t.need <= 20, 'small numbers');
     }
   }
-  // One for one (count), two for one (doubles), and rates such as five for two (groups).
+  // One for one (count), a few for one (adding), and rates such as five for two (groups).
   assert.deepEqual(market.levels.map((l) => l.skill), ['math.count.120', 'math.add.20', 'math.mul.10']);
-  assert.deepEqual(market.levels[0].rates, [[1, 1]]);
-  assert.deepEqual(market.levels[1].rates, [[2, 1]]);
+  assert.deepEqual(market.levels[0].rates, { egg: [[1, 1]] }, 'counting: an egg for a bowl');
+  assert.ok(Object.values(market.levels[1].rates).every((r) => r.every(([, b]) => b === 1)), 'adding: one good at a time');
+  // A fair trade (#42): in each level, a pot takes more rice for each one than a fish, and a fish
+  // more than an egg; eggs take the least.
+  const each = (rates) => rates.map(([a, b]) => a / b);
+  for (const l of market.levels) {
+    const order = ['egg', 'fish', 'pot'].filter((g) => l.rates[g]);
+    for (let i = 1; i < order.length; i++) assert.ok(Math.min(...each(l.rates[order[i]])) > Math.max(...each(l.rates[order[i - 1]])), `${l.skill}: ${order[i]} dearer than ${order[i - 1]}`);
+  }
   // Little rice: fewer lots, and only the rice of the basket lies by the mat.
   const few = barterTask(market, 1, createRng(3), 7);
   assert.equal(few.lots, 3);

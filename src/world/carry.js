@@ -2,7 +2,7 @@
 // parts as the thing on the ground (src/world/figures.js), smaller, so that a new thing of a task
 // needs no new code for the hands ("one look for each thing", docs/DESIGN.md). How a person holds
 // a thing follows its size (data/figures.json, carry), or the look of the thing says it (hold):
-// - hand: a small thing (a rod, a shard, a measure of rice, a herb) in the right hand, at the side;
+// - hand: a small thing (a rod, a shard, a bowl of rice, a herb) in the right hand, at the side;
 // - front: a thing for two hands (a bundle of seedlings, a fish trap, stones in a net, a duck) in
 //   front of the chest, with both arms forward;
 // - shoulder: a long thing (a stake, a plank, a bundle of sticks) on the right shoulder, along the

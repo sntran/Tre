@@ -18,7 +18,7 @@ Units: half blocks (one map cell is 2) and seconds. The places in the data are i
 
 1. The child taps an enemy of the map (an encounter). The narrator says one line, and the raid starts on this map: the hero stands at the wall (the slingshot spot), and the enemies come from the end of the road, one wave after the other. The first time that a tool comes, the elder or the smith says one line about it (the flag `raid.tool.<tool>`), and in a raid with traps a villager names the post for a trap.
 2. The enemies walk to the gate on a straight path. They never run. Each enemy has dots over its head, one for each hit that it can still take.
-3. An enemy with no hits left retreats and walks away. A creature (the river serpent) becomes calm and swims away. An enemy at the gate takes a measure of rice from the store and leaves (nothing at grade 1; see the loss rule below).
+3. An enemy with no hits left retreats and walks away. A creature (the river serpent) becomes calm and swims away. An enemy at the gate takes a bowl of rice from the store and leaves (nothing at grade 1; see the loss rule below).
 4. The map of the country only pauses the raid: one line says where the enemies are ("The scouts are at the gate."), and there is no travel. Nobody is hurt. Nothing that the child built is changed.
 5. The raid ends when the last enemy is gone. It is won when no more than `allow` enemies (and torches) got in. A win gives its flags and gifts, a short note with its seal (Legend or History), and its talks. A raid with loot leaves a pile of small sacks of rice behind the wall: the child shares it with Nghé and Gióng (`docs/TASKS.md`), and the talks come after the share. A lost raid comes again at the next dawn (the flag `raid.<id>.back`), so that the child sleeps on it.
 
@@ -60,7 +60,7 @@ The tools come one raid after the other (rule 11: one new part at a time). A too
 - The general lifts his staff for two seconds before a big blow. The hero in reach is pushed back, and Nghé lowers her horns. (The art rules give soldiers blunt staffs, no blades.)
 - A scout on a trap sits down. A trap snaps with a sound.
 - A hit pops up as red dots over the enemy.
-- An enemy at the gate takes a measure of rice: it flies from the basket of the HUD to the enemy.
+- An enemy at the gate takes a bowl of rice: it flies from the basket of the HUD to the enemy.
 
 ## The raids of Era 1
 
@@ -92,4 +92,4 @@ The gate is timing: it sends the fact `gated` and no skill event. A trap put any
 
 ## The loss rule
 
-An enemy at the gate takes what the raid says (`take`, one measure of rice; nothing at the river), by the loss rule of the profile (`lossLevel` in `src/core/profile.js`): nothing at grade 1 and lower, twice as much when a parent sets the losses to "normal". Never a friend, a machine, or a title. The rice never goes below zero.
+An enemy at the gate takes what the raid says (`take`, one bowl of rice; nothing at the river), by the loss rule of the profile (`lossLevel` in `src/core/profile.js`): nothing at grade 1 and lower, twice as much when a parent sets the losses to "normal". Never a friend, a machine, or a title. The rice never goes below zero.

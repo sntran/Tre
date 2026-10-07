@@ -903,8 +903,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (practice && def.barter && ev.id !== force) continue;
       visit.things[`event.${ev.id}.spot`] = `${day}:${ev.at[0]},${ev.at[1]}`;
       const rng = createRng(hashSeed(`${state.seed}:event-place:${ev.id}:${day}`));
-      // The person stands on open ground near the spot (not in a narrow lane).
-      const stand = nearFree(ev.at, 2, 5, rng, [], 1) ?? nearFree(ev.at, 1, 6, rng) ?? { x: ev.at[0] + 0.5, y: ev.at[1] + 0.5 };
+      // The person stands on open ground near the spot (not in a narrow lane), on a cell of her own:
+      // never where another person stands (#42).
+      const others = peopleCells(null);
+      const stand = nearFree(ev.at, 2, 5, rng, others, 1) ?? nearFree(ev.at, 1, 6, rng, others) ?? { x: ev.at[0] + 0.5, y: ev.at[1] + 0.5 };
       addEntity(state, {
         id: `event:${ev.id}`,
         chunk: chunkOf(ev.at[0], ev.at[1]),
@@ -1007,6 +1009,27 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // A free cell from min to max cells from a point, in the order of the seed (map cells, the middle).
   // room: the cells around it that must be free too (1: three by three), for a pile of things.
+  // The stall of a seller on a market day (#42): the mat of the rice, her seat behind it (-z), and
+  // her tray in front of her beside the mat, at the nearest cell to the spot where all three are
+  // open (open(q): walkable, and no person near). Null when no cell fits.
+  const STALL = { seat: [-1.5, -2], tray: [-3, 0] };
+  function marketStall([x, y], open) {
+    const cells = [];
+    for (let dy = -6; dy <= 6; dy++) for (let dx = -6; dx <= 6; dx++) cells.push([dx, dy, Math.hypot(dx, dy)]);
+    cells.sort((a, b) => a[2] - b[2] || a[1] - b[1] || a[0] - b[0]);
+    for (const [dx, dy] of cells) {
+      const mat = { x: Math.floor(x) + dx + 0.5, y: Math.floor(y) + dy + 0.5 };
+      const seat = { x: mat.x + STALL.seat[0], y: mat.y + STALL.seat[1] };
+      const tray = { x: mat.x + STALL.tray[0], y: mat.y + STALL.tray[1] };
+      if (open(mat) && open(seat) && open(tray)) return { mat, seat, tray };
+    }
+    return null;
+  }
+  // The cells (x, y in cells) of the people of the map (the people of the village, of the events,
+  // the hero, and the friends), but one (but: an id).
+  function peopleCells(but) {
+    return state.entities.filter((e) => e.id !== but && e.position && (e.person || e.id === 'hero' || e.id.startsWith('friend:'))).map((e) => ({ x: e.position.x / 2, y: e.position.z / 2 }));
+  }
   function nearFree([x, y], min, max, rng, taken = [], room = 0) {
     const cells = [];
     const free = (cx, cy) => tileMap.walkable(cx, cy) && tileMap.type(cx, cy) !== 'shallow';
@@ -1056,10 +1079,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     let pile = task.pile;
-    // The places: the work at the spot, the pile a few cells away, and each lost duck further.
+    // The places: the work at the spot, the pile a few cells away, and each lost duck further. No
+    // place of the work lies where another person stands (#42).
+    const others = peopleCells(ent.id);
     const target = { x: ent.dayEvent.at[0] + 0.5, y: ent.dayEvent.at[1] + 0.5 };
-    const placeAt = tileMap.walkable(Math.floor(target.x), Math.floor(target.y)) ? target : nearFree(ent.dayEvent.at, 1, 4, rng) ?? target;
-    const taken = [placeAt, { x: ent.position.x / 2, y: ent.position.z / 2 }];
+    const openAt = (q) => tileMap.walkable(Math.floor(q.x), Math.floor(q.y)) && !others.some((o) => Math.hypot(o.x - q.x, o.y - q.y) < 1.5);
+    // A market day (#42): the seller sits behind the mat of the rice, and her tray of goods lies in
+    // front of her, beside the mat, toward the child, so that the child sees all her goods. The mat
+    // goes to the nearest cell where the mat, her seat, and the tray are all free.
+    const stall = task.goods ? marketStall(ent.dayEvent.at, openAt) : null;
+    const placeAt = stall?.mat ?? (openAt(target) ? target : nearFree(ent.dayEvent.at, 1, 4, rng, others) ?? target);
+    const trayAt = stall?.tray ?? null;
+    if (stall) ent.position = { ...ent.position, x: stall.seat.x * 2, y: env.groundY(stall.seat.x, stall.seat.y), z: stall.seat.y * 2, facing: 0 };
+    const taken = [placeAt, { x: ent.position.x / 2, y: ent.position.z / 2 }, ...(trayAt ? [trayAt] : []), ...others];
     const pileAt = nearFree(ent.dayEvent.at, 4, 7, rng, taken, 1) ?? nearFree(ent.dayEvent.at, 2, 10, rng, [], 1) ?? placeAt;
     const lost = [];
     if (task.lost) {
@@ -1085,7 +1117,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     setupTrial(state, {
       id: `event-${id}`, task: 'exact', thing: def.thing, target: def.target, pile, keep: task.keep, lost: task.lost,
       need: task.need, skill: task.skill, level: task.level, day, event: id, levels: [{}],
-      at: { target: hb(placeAt), pile: hb(pileAt), lost: lost.map(hb), strays: strays.map(hb) }, strayLook: def.strayLook,
+      at: { target: hb(placeAt), pile: hb(pileAt), lost: lost.map(hb), strays: strays.map(hb), ...(trayAt ? { wares: hb(trayAt) } : {}) }, strayLook: def.strayLook,
       give: task.goods ? { [task.goods]: task.k } : null,
     }, 0, env);
     mentoring.start(`event-${id}`);
@@ -1359,7 +1391,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'hud' });
   }
   let shareAfter = [];
-  // The share is fair: the sacks of the hero go to the basket as measures of rice, the rest stays
+  // The share is fair: the sacks of the hero go to the basket as bowls of rice, the rest stays
   // for the village, and the things of the share go away.
   function shareDone() {
     const sacks = getEntity(state, 'zone:share-hero')?.zone.items.length ?? 0;

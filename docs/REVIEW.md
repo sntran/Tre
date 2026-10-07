@@ -524,3 +524,9 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The outside check:** `parent.week.check` ("Thầy ở làng hỏi nhanh {name} {facts} của bảng, và {name} làm đúng {ok}.") and `parent.week.check.known` ("Với những phép nhân đã chắc trong game, {name} đúng {ok} trong {n}.").
 - **The name, never "con":** `folk.real.nhay-lo-co` and `folk.real.nhay-day` ("Tuần này {name} đã chơi nhảy dây. …"), `parent.facts.none`, and `parent.facts.few` ("{name} mới trả lời phép nhân {n} lần, …").
 - **Please check:** "đã chắc {n} phép nhân" for confident facts; "đổi cách làm rồi thử lại"; "người ở đó" when the name of the person is not known; the things of the activities; and that each line reads as a sentence that a parent says.
+
+## The market in bowls of rice (#42)
+
+- **Bát gạo, not đấu:** a đấu is about one litre of rice, so "hai quả trứng lấy năm đấu gạo" was kilograms of rice for two eggs. The measure of rice is now the bowl that every kitchen uses: `event.market.start.<goods>.<form>` ("Cô đổi trứng lấy gạo: ba quả trứng lấy bốn bát gạo. Cô có chín quả trứng. …"), and `road.cart` ("… Bác cho em một bát gạo."). In English, "a bowl of rice". The rice of the basket looks like a bowl of rice. The lines above under #26 still say "đấu"; the texts do not.
+- **Fair rates:** a dearer good takes more rice for each one (a pot more than a fish, a fish more than an egg), and the level of counting has eggs only, one egg for one bowl.
+- **Please check:** "bát gạo" as the measure at a market, and the rates: an egg for two bowls, a fish for three, a pot for four; four bowls for three eggs, three bowls for two fish, five bowls for two pots.

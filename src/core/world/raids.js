@@ -4,7 +4,7 @@
 //
 //   Enemies walk on a straight path from their start to the gate, and never run. An enemy that is
 //   hit enough times retreats (a creature becomes calm and swims away). An enemy at the gate takes
-//   a measure of rice from the store and leaves (nothing at the lowest level; Era 1 has no coins, #26). Nobody is hurt.
+//   a bowl of rice from the store and leaves (nothing at the lowest level; Era 1 has no coins, #26). Nobody is hurt.
 //   The slingshot: the child pulls back and lets go. The pull counts in steps of one half block
 //   (the band has a tick at each step and a red band at every fifth, the same marks as the posts),
 //   and the stone lands exactly at the count along the road, on a real arc at one angle. Short or
@@ -33,7 +33,7 @@ const DRY = 14; // seconds: a wet zone dries
 const FLAME = 3; // half blocks: the reach of fire at a point
 const BURN = 9; // seconds: a torch on the road burns
 const CHARGE = 0.7; // seconds: Nghé runs to the first enemy
-const STEAL = 1.2; // seconds: an enemy at an open gate takes a measure of rice
+const STEAL = 1.2; // seconds: an enemy at an open gate takes a bowl of rice
 const HELPER = 2; // half blocks each second: a villager walks to a spot
 const PAUSE = 2.5; // seconds: an enemy stops in front of a villager
 const NEAR_SPOT = 5; // half blocks: an enemy stops when it passes this near a villager

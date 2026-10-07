@@ -163,7 +163,7 @@ export const MIGRATIONS = {
     }
     return out;
   },
-  // Version 9: Era 1 has no coins (#26). The coins of the household become measures of rice, one
+  // Version 9: Era 1 has no coins (#26). The coins of the household become bowls of rice, one
   // for one, and a market day that was not done (the coins on the mat) goes: the market of today
   // comes again as barter.
   8: (profile) => {

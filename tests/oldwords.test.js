@@ -40,3 +40,16 @@ test('no text gives a length in blocks, a unit of the engine (#51)', () => {
     assert.deepEqual(bad, [], `${lang}: words of the engine`);
   }
 });
+
+// A đấu is about one litre of rice: "two eggs for five đấu" is kilograms of rice (#42). The measure
+// of rice in the basket, the market, and the texts is the bowl that every kitchen uses (bát gạo).
+const MEASURE = { vi: /đấu/i, en: /\bmeasures? of rice\b/i };
+
+test('the measure of rice is a bowl (bát gạo), never a đấu (#42)', () => {
+  for (const lang of ['vi', 'en']) {
+    const texts = load(`i18n/${lang}.json`);
+    const bad = Object.entries(texts).filter(([, v]) => typeof v === 'string' && MEASURE[lang].test(v)).map(([k, v]) => `${k}: ${v}`);
+    assert.deepEqual(bad, [], `${lang}: the old measure`);
+  }
+  assert.equal(load('data/figures.json').figures['rice-1'].kind, 'rice-bowl', 'the rice of the basket looks like a bowl');
+});

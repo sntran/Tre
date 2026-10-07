@@ -193,7 +193,7 @@ The world is made of blocks and drawn with three.js (`src/render/voxel.js`). The
 - **The mist:** beyond the land of the era, the land goes to the dó paper of the panels over 12 cells, as an old map that stops where the mapmaker did not go, in three stages: first the colors go pale, then only the ink lines stay (the faces are paper), then the paper with its grain of short fibers and specks. Things in the mist go through the same stages with the ground under them, so a thing in the mist is never a solid shape.
 - **The ferry:** a dugout with a bird-head prow, as the boats on the bronze drums. The ferryman stands at the stern in a nón with a long pole; while the boat moves, he pushes the pole down and back with both hands.
 - **The sea:** the same wave plane as the river, over a bed that goes down in steps: the surf (three cells, to the knee) and then the deep sea. The surf and a ford are lighter than deep water. In the surf the legs of a figure go under the water line. A line of foam lies on the sand at the edge of the water and moves up and back in held steps (`foam` in `src/render/voxel.js`). The beach is sand.
-- **The things of the small events:** each thing shows its units, so that its size is seen and never written: stones in a net (one, two, or five), pails of water on a carrying pole (one, two, three, or five), and measures of rice (a small square box of wood, full of rice; one rice to a measure). The goods of a seller lie on a flat tray of woven bamboo in rows of five (fish, eggs, or small clay pots), so that the child sees how many she has. The mud under a stuck cart, a small ditch, a reed mat, and a low pen of woven bamboo show where the things go.
+- **The things of the small events:** each thing shows its units, so that its size is seen and never written: stones in a net (one, two, or five), pails of water on a carrying pole (one, two, three, or five), and bowls of rice (bát gạo, #42: a bowl of glazed clay on a small foot with a blue band, full of rice; one rice to a bowl). The goods of a seller lie on a flat tray of woven bamboo in rows of five (fish, eggs, or small clay pots), so that the child sees how many she has. The mud under a stuck cart, a small ditch, a reed mat, and a low pen of woven bamboo show where the things go.
 - **Camera:** orthographic, from the front-left and above. It turns in steps of 90° (the buttons at the bottom right, or Z and C), and it has two zoom levels (pinch, or the wheel). It follows the hero with a soft lag.
 
 ## 12. The country map
@@ -300,7 +300,7 @@ A person shows the thing in the hands from the pick-up to the put-down (#43). Th
 
 How a person holds a thing follows its size (`carry` in `data/figures.json`), or the look says it:
 
-- **One hand:** a small thing (a rod, a shard, a measure of rice, a herb, a lump of ore) stands up in the right hand, a little to the front.
+- **One hand:** a small thing (a rod, a shard, a bowl of rice, a herb, a lump of ore) stands up in the right hand, a little to the front.
 - **Two hands:** a thing in front of the chest, with both arms forward (a bundle of seedlings, a fish trap, stones in a net, a tray of bowls, a duck). The bigger bundle is bigger in the hands, so that the child sees the size.
 - **Shoulder:** a long thing (a stake, a plank, staffs) on the right shoulder, along the way the person looks.
 - **Yoke:** pails on a carrying pole (đòn gánh) across the right shoulder.

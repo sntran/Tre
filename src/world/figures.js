@@ -798,7 +798,7 @@ export function workThing(look) {
     case 'share-mat': return still([P('mat', [2.2, 0.08, 2.2], 'yellowPale', [0, 0.04, 0]), P('edgeN', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, -1.05]), P('edgeS', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, 1.05])], 0.1);
     // The things of the small events of the day: each shows its units, so that its size is seen
     // and never written. Stones in a net (one, two, or five), pails of water on a carrying pole,
-    // and measures of rice.
+    // and bowls of rice.
     case 'stones': {
       const n = look.n ?? 1;
       const parts = [];
@@ -817,8 +817,9 @@ export function workThing(look) {
       // Pails go on the carrying pole across the shoulder (đòn gánh, src/world/carry.js).
       return { ...still(parts, 1.2), hold: 'yoke' };
     }
-    // A measure of rice (đấu): a small square box of wood, full of rice (#26).
-    case 'measure': return still([P('box', [0.7, 0.45, 0.7], 'wood', [0, 0.22, 0]), P('rice', [0.56, 0.06, 0.56], 'paper', [0, 0.47, 0]), P('rim', [0.76, 0.06, 0.76], 'ochre', [0, 0.42, 0])], 0.5);
+    // A bowl of rice (bát gạo, #26, #42): the measure that every kitchen uses, a bowl of glazed clay
+    // on a small foot, full of rice in a low mound.
+    case 'rice-bowl': return still([P('foot', [0.4, 0.1, 0.4], 'ashLight', [0, 0.05, 0]), P('bowl', [0.7, 0.24, 0.7], 'diep', [0, 0.22, 0]), P('band', [0.74, 0.06, 0.74], 'indigoPale', [0, 0.31, 0]), P('rice', [0.56, 0.1, 0.56], 'paper', [0, 0.38, 0])], 0.44);
     // The mud under the wheel of a stuck cart.
     case 'mud': return still([P('mud', [2.6, 0.06, 2], 'wood', [0, 0.03, 0]), P('wet', [1.6, 0.07, 1.2], 'ink', [0.2, 0.04, 0.1]), P('rut', [0.5, 0.08, 2.2], 'ochre', [-0.8, 0.05, 0])], 0.1);
     // A small ditch at the side of a paddy, where the water goes.
