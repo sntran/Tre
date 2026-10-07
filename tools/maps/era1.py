@@ -27,8 +27,9 @@ A.fill(8, 26, 2, 5, '=')
 A.fill(31, 13, 1, 3, '=')
 for r in [(3, 12, 4, 2), (9, 12, 4, 2), (13, 12, 7, 2), (25, 12, 4, 2), (24, 16, 6, 6), (13, 18, 6, 4)]:
     A.fill(*r, 'y')
-# The packed earth of the court of nhảy lò cò, by the road outside the east gate (docs/FOLKGAMES.md).
-A.fill(34, 11, 4, 3, 'y')
+# The packed earth of the court of nhảy lò cò: an open yard by the road outside the east gate, a few
+# cells from the gate posts (docs/FOLKGAMES.md, #42).
+A.fill(34, 11, 6, 3, 'y')
 # Fields outside the gate.
 A.fill(33, 2, 6, 10, 'f')
 A.fill(33, 18, 6, 9, 'f')
@@ -140,10 +141,10 @@ A.places = {
     'giong-pot': {'x': 10.7, 'y': 13.2},
     'buffalo-shade': {'x': 37.6, 'y': 17.5},
     # Nhảy lò cò (docs/FOLKGAMES.md): the start line of the court, and the way that it goes (east).
-    # In an open yard by the bend of the road east of the gate, with nothing tall on it or near it
-    # (#42: at the gate, the gate posts and a tree covered it from every angle).
-    'hopscotch': {'x': 44.7, 'y': 9.7},
-    'hopscotch-to': {'x': 48.2, 'y': 9.7},
+    # In the open yard by the road, a few cells east of the gate, with nothing tall on it (#42: right
+    # at the gate, the gate posts and a tree covered it from every angle).
+    'hopscotch': {'x': 35.7, 'y': 13.2},
+    'hopscotch-to': {'x': 39.2, 'y': 13.2},
 }
 # The spots of the small events of the day in the village (cells): the road on the south bank,
 # the paddies on the south bank by the river (they can flood) and by the home, and the yard in

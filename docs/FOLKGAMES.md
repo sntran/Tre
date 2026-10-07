@@ -1,6 +1,6 @@
 # The folk games of the village children
 
-The children of the villages play folk games, and the hero can join (#30): nhảy lò cò (hopscotch) on a court in an open yard by the road, east of the east gate of Phù Đổng, and nhảy dây (jump rope) at the feast of Xóm Ruộng. These are folk games that children played in the villages or along the way, in every era. The narrator says nothing about their age (no history note).
+The children of the villages play folk games, and the hero can join (#30): nhảy lò cò (hopscotch) on a court in an open yard by the road, a few cells east of the east gate of Phù Đổng, and nhảy dây (jump rope) at the feast of Xóm Ruộng. These are folk games that children played in the villages or along the way, in every era. The narrator says nothing about their age (no history note).
 
 The math is inside the play. The child never reads a numeral or a question: the children say the numbers as words.
 
@@ -13,7 +13,7 @@ The math is inside the play. The child never reads a numeral or a question: the 
 
 ## Nhảy lò cò
 
-- **The court** (`hopscotch` and `hopscotch-to` in the places of `phu-dong`, `tools/maps/era1.py`): ten squares of one cell, drawn with a stick in the packed earth (the ink lines of `src/render/folk3d.js`), and the half circle at the top. No numeral is on the court. Three children of the village (`npc:loco-child`, Tí, and two friends) stand by it. The court is in an open yard by the bend of the road, about twenty-five cells east of the gate, with nothing tall on it or near it: at the gate, the gate posts and a tree covered it from every angle (#42; `tests/workview.test.js`).
+- **The court** (`hopscotch` and `hopscotch-to` in the places of `phu-dong`, `tools/maps/era1.py`): ten squares of one cell, drawn with a stick in the packed earth (the ink lines of `src/render/folk3d.js`), and the half circle at the top. No numeral is on the court. Three children of the village (`npc:loco-child`, Tí, and two friends) stand by it. The court is in the open yard of packed earth by the road, a few cells east of the gate, with nothing tall on it, so that a turn of the view always shows it whole: right at the gate, the gate posts and a tree covered it from every angle (#42; `tests/workview.test.js`). The yard is in the stamp of the map, so that it is the same in every world.
 - **Join:** when the hero comes near, Tí asks in words ("Vào chơi lò cò với tụi mình đi!"). The action button (the picture of the talk) joins the game.
 - **The call:** a child calls a square ("Ô bảy mươi bảy!"), or, at the levels of addition, a square as a number more than another one ("Ô năm, rồi thêm hai ô nữa!").
 - **The throw:** the child holds the action button (the picture of the shard) and lets go. The longer the hold, the farther the shard goes (`rate` in `data/world/folkgames.json`), as the pour of the jar. In the called square: the hero goes. In another square: the children say the number of that square, and the turn goes to the next child. On a line or out: the children laugh, and the turn goes to the next child. Nothing is lost.
