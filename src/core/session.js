@@ -2376,16 +2376,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const way = findPath(pathMap(), from, { x: Math.floor(goal.x), y: Math.floor(goal.y) }, { maxNodes: LEG, nearest: true });
     const end = way?.length ? way[way.length - 1] : null;
     if (!end || Math.hypot(goal.x - end.x - 0.5, goal.y - end.y - 0.5) > left - 1) {
-      // No nearer: the landing of a ferry, once.
-      const landing = goal === final ? landingToward(here, final) : null;
-      return landing ? walkFar(landing, final) : false;
+      // No nearer (a river, or the end of a sandbar): the whole way to the landing of a ferry, once.
+      const landing = goal === final ? landingToward(here, from, final) : null;
+      if (!landing) return false;
+      walkPath(landing.way, null, () => walkFar(landing.at, final));
+      return true;
     }
     walkPath(way, null, () => walkFar(goal, final));
     return true;
   }
-  // The landing of a ferry (map cells) near the hero whose other side is nearer to the goal: the
-  // zone of a ferry of the map, or the step of a ferry of the roads of the land.
-  function landingToward(here, goal) {
+  // The landing of a ferry (map cells) whose other side is nearer to the goal, and the whole way to
+  // it from the cell of the hero: { at, way }, or null. A landing is the zone of a ferry of the map,
+  // or the step of a ferry of the roads of the land. The nearest landing can be on the other bank
+  // (#56): a landing with no way to it does not count.
+  const LANDING_FAR = 400; // cells: the farthest landing
+  const LANDING_SEARCH = 60000; // the most cells of the search of the way to a landing
+  function landingToward(here, from, goal) {
     const sides = [];
     const zones = (map.layers.triggers ?? []).filter((z) => z.action?.ferry);
     for (const z of zones) {
@@ -2394,9 +2400,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     for (const f of map.land?.ferries ?? []) sides.push({ at: f.stepA, far: f.stepB }, { at: f.stepB, far: f.stepA });
     const d = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-    const near = sides.filter((s) => d(here, s.at) < 120 && d(s.far, goal) < d(here, goal) - 4);
+    const near = sides.filter((s) => d(here, s.at) < LANDING_FAR && d(s.far, goal) < d(here, goal) - 4);
     near.sort((a, b) => d(here, a.at) + d(a.far, goal) - (d(here, b.at) + d(b.far, goal)));
-    return near[0]?.at ?? null;
+    const paths = pathMap();
+    for (const s of near.slice(0, 3)) {
+      const way = findPath(paths, from, { x: Math.floor(s.at.x), y: Math.floor(s.at.y) }, { maxNodes: LANDING_SEARCH });
+      if (way?.length) return { at: s.at, way };
+    }
+    return null;
   }
 
   // A held finger: the move toward a point (map cells) along a path around houses, walls, and

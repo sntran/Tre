@@ -394,3 +394,40 @@ test('from the đình, taps on the star alone set trauson.found and take the her
   assert.ok(near(), `the hero comes to the soldiers: ${JSON.stringify(heroCell(session))}, ${taps} taps`);
   assert.ok(clues.length >= 1, `the people of the way say the clues: ${clues.join(' ')}`);
 });
+
+// From the top of Sóc Sơn, after the farewell, taps on the star alone take the hero to the gate of
+// Văn Miếu (#56): the walk goes to the ferry of the Red River, never onto a sandbar with no way out.
+test('from the top of Sóc Sơn, taps on the star alone take the hero to the gate of Văn Miếu (#56)', async () => {
+  const [gx, gy] = data.world.at('road-thanglong', 0.6, 40);
+  let session = null;
+  const flags = { 'intro.seen': true, 'prologue.started': true, 'prologue.done': true, 'giong.spoke': true, 'giong.grown': true, 'soldier1.won': true, 'soldier2.won': true, 'era1.boss.won': true, 'giong.farewell': true };
+  const s = { name: 'far', profile: { name: 'An', grade: 2, seed: 7, flags }, clock: 540, at: ['soc-son', 38, 20], steps: [] };
+  await runHeadless(s, { onSession: (x) => { session = x; } });
+  const hero = () => getEntity(session.state, 'hero');
+  let gate = false;
+  session.listen((ev) => {
+    if (ev.type === 'open' && ev.screen === 'vanmieu') gate = true;
+  });
+  let taps = 0;
+  let idle = 0;
+  let stuck = 0;
+  let last = null;
+  for (let k = 0; k < 30 * 60 * 12 && !gate; k++) {
+    const screen = session.screen;
+    if (screen === 'dialogue' || screen === 'say') session.command({ type: 'next' });
+    else if (screen) session.command({ type: 'close' });
+    idle = hero().route || hero().aboard || screen ? 0 : idle + 1;
+    if (idle > 60) {
+      const here = heroCell(session);
+      if (last && Math.hypot(here.x - last.x, here.y - last.y) < 1) stuck += 1;
+      last = here;
+      session.command({ type: 'tap', target: { ground: { x: gx, y: gy, h: 3, thing: false, object: null, goal: true } } });
+      taps += 1;
+      idle = 0;
+    }
+    session.step();
+    session.events();
+  }
+  assert.ok(gate, `the hero comes to the gate of Văn Miếu: ${JSON.stringify(heroCell(session))}, ${taps} taps, ${stuck} with no walk`);
+  assert.ok(stuck <= 1, `a star tap always walks: ${stuck} taps with no walk`);
+});
