@@ -72,25 +72,24 @@ function gate(ctx) {
       panel.replaceChildren(header(), h('p', { class: 'center', text: t('parent.gate.hold') }), h('div', { class: 'row' }, [holder]));
     }
 
-    function questionStep() {
+    // wrong: the answer before was wrong. The new question comes with a line that says so, and the
+    // line stays on it (#52: a new question with no word told the parent nothing).
+    function questionStep(wrong = false) {
       const q = makeGateQuestion(ctx.rng, cfg);
       const input = h('input', { type: 'text', inputmode: 'numeric', autocomplete: 'off', 'aria-label': t('parent.gate.answer'), style: { fontSize: '28px', textAlign: 'center', width: '160px' } });
-      const msg = h('p', { class: 'center' });
+      const msg = h('p', { class: 'center gate-wrong', role: 'alert', text: wrong ? t('parent.gate.wrong') : '' });
       const ok = button(t('ui.ok'), () => {
         if (checkGateAnswer(q, input.value)) {
           layer.remove();
           resolve(true);
-        } else {
-          msg.textContent = t('parent.gate.wrong');
-          setTimeout(questionStep, 900);
-        }
+        } else questionStep(true);
       }, { cls: 'btn red' });
       input.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok.click(); });
       panel.replaceChildren(header(),
+        msg,
         h('p', { class: 'center', text: t('parent.gate.question') }),
         h('p', { class: 'center gate-question', text: `${q.a} × ${q.b} = ?` }),
-        h('div', { class: 'row field' }, [input, ok]),
-        msg);
+        h('div', { class: 'row field' }, [input, ok]));
       input.focus();
     }
 

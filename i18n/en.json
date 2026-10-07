@@ -980,7 +980,7 @@
   "parent.gate.hold": "Parent: hold this button for 3 seconds.",
   "parent.gate.question": "Parent: answer this question.",
   "parent.gate.answer": "Answer",
-  "parent.gate.wrong": "Not correct. Here is another question.",
+  "parent.gate.wrong": "Not right. Try this one.",
   "parent.tab.progress": "Progress",
   "parent.tab.settings": "Settings",
   "parent.tab.questions": "Your questions",

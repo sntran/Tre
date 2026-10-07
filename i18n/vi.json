@@ -980,7 +980,7 @@
   "parent.gate.hold": "Bố mẹ hãy giữ nút này trong 3 giây.",
   "parent.gate.question": "Bố mẹ hãy trả lời câu hỏi này.",
   "parent.gate.answer": "Câu trả lời",
-  "parent.gate.wrong": "Chưa đúng. Đây là một câu hỏi khác.",
+  "parent.gate.wrong": "Chưa đúng. Thử câu này nhé.",
   "parent.tab.progress": "Tiến bộ",
   "parent.tab.settings": "Cài đặt",
   "parent.tab.questions": "Câu hỏi của bố mẹ",

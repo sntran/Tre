@@ -653,6 +653,9 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .switch-row input[type="checkbox"] { accent-color: var(--vermilion); }
 .hold-ring { width: 150px; height: 150px; }
 .gate-question { font-family: var(--display); font-size: var(--text-big); }
+/* The line over a new question of the gate after a wrong answer (#52). An empty line keeps no space. */
+.gate-wrong { color: var(--vermilion); font-weight: 700; margin: 0 0 6px; }
+.gate-wrong:empty { display: none; }
 
 /* The change of map: a dark layer, and the name of the new map. */
 
