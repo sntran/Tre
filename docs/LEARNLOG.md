@@ -94,6 +94,7 @@ The parent page has a tab "Tuần này" (`parent.tab.week`, the first tab). It a
 | `day` | the minutes of play on each day, Monday first |
 | `hops` | changes to another activity within `hop` seconds |
 | `acts` | for each activity: `commits`, `ok`, `near` and `far` (misses by at most `near` groups, and the others), `fast` and `idle` (commits less than `fast` or more than `idle` seconds after the commit before), `resets`, `missRuns` (`missRun` misses in a row), `again`, `changed`, and `left` (after a miss: the same commit again, another commit, or the child left within `leave` seconds), `sessions`, `self`, `sent`, `first` (the first activity of a session), `stops` (the last activity of a session), `sets`, `stay` (one more set after a set), and `minutes` (in a session of a practice link, the whole session goes to its activity, also with one commit or none; in other play, the time between two commits of the activity, each gap at most `gap` seconds; #52) |
+| `moves` | for each activity, for each move of the people: [moves, right next commits] |
 | `l2l` | learning to learn: `checks` and `selfFix` (a check before a commit, and a change after it), `before` and `after` (a wave for help before or after a try), `predN` and `predErr` (predictions and their error), `helps` (moves of the people), and `marks` (moves that check for the child) |
 | `recall` | the seconds of the right commits of the facts of the table, in the buckets of `recall` |
 | `quiz`, `quizKnown` | the short questions of the teacher: [questions, right], and the same on the facts that are confident in the world |
@@ -102,17 +103,17 @@ The activity of a task comes from `activities` in `data/config/learnlog.json` (`
 
 **The memory of the facts.** Each fact of the table (`src/core/planting.js`) keeps `from` (the activity of its first right commit), `fromWk` (the week of it), and `kept` (the week when it was right again after that week). At the first session of a new week, the session keeps the table of the week before (`profile.factSnap`: `cur`, `prev`, `week`, `prevWeek`; a table is a string of 100 letters: `-` not met, `e` emerging, `g` growing, `c` confident).
 
-**The note.** In this order, and only the lines that have something to say:
+**The note.** Each line is a sentence, or a few sentences, that a parent says (#42): the counts are inside the words (`parent.count.*`, with a text for the count 1 in English, a key with `.one`), lists join with "và" or "and", and no line has a count after a colon or a fraction. The note has at most six lines (`MAX_LINES`): each line has a priority, the lines with the highest priority stay, in the order below. Only the lines that have something to say come:
 
 1. How much: the sessions and their length, "too few to tell" under `few` sessions, and who started them (the child, or a practice link).
 2. The activities: the activity that the child chose first most, and an activity that the child came back to with no link.
 3. The facts: the confident facts now and last week (a × b and b × a are one fact), the factors with no confident fact, and the median seconds of a right fact against last week.
 4. The signs of each activity: frustrated (the child left after a miss, or runs of misses), restless (many fast or far commits), and the sets with one more set; hops, and shorter sessions at the end of the week. Each line says what the game did (for example, a smaller task after a miss).
 5. Learning to learn: checks and self-corrections, the handover (fewer moves that check for the child than last week), waves before and after a try, what the child did after a miss, and the error of the predictions.
-6. What helped: the move of the people with the best next commit, of all the weeks, when it has at least `few` uses.
+6. What helped: the move of a person with the best next commit this week, when it has at least `few` uses, as an act of that person at the thing of the activity ("when Cô Năm pointed at the part of the row of seedlings that was still missing"). The week keeps the moves of each activity (`moves`: { activity: { move: [moves, right next commits] } }); the person is the person of the practice activity, by the names of the region (`namesOf`).
 7. The real game of a folk game (`docs/FOLKGAMES.md`), and one thing to play together at home.
 
-Under the note: the table of the facts of this week next to last week, the line of each activity (minutes, sets, chosen first, started by the child, stops, the signs, and the facts first learned there last week that are still right), and the outside check (the short questions of the teacher, and the same on the facts that are confident in the world).
+Under the note: the table of the facts of this week next to last week (a calm light indigo for exploring, yellow for getting there, green for confident; no red), the sentences of each activity (`actSentences`: minutes and sets, chosen first, started by the child, stops, the signs, and the facts first learned there last week that are still right, with no fraction), and the outside check (`checkSentence`: the short questions of the teacher, and the same on the facts that are confident in the world).
 
 The note never judges the child, never ranks, never compares with other children, and gives no score of a grade. A longer session is not better: the note names the healthy signs (comes back, finishes, chooses to play on) and warns about restless or frustrated play.
 

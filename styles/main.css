@@ -625,7 +625,7 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .facts th { font-size: 0.8em; padding: 1px 4px; font-weight: 700; }
 .facts td { width: 22px; height: 22px; border: 1px solid var(--ink); }
 .fact.none { background: transparent; }
-.fact.exploring, .chip.fact-exploring { background: var(--vermilion-pale); }
+.fact.exploring, .chip.fact-exploring { background: var(--indigo-pale); }
 .fact.getting, .chip.fact-getting { background: var(--yellow-pale); }
 .fact.confident, .chip.fact-confident { background: var(--green-pale); }
 .facts-key { display: flex; gap: 8px; flex-wrap: wrap; }

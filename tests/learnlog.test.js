@@ -37,7 +37,8 @@ const DAY2 = [
   { type: 'ask', t: T0 + DAY_MS + 9800, variant: 'base', task: 'bridge', when: 'before', move: 'tryFirst' },
 ];
 const ALL = [...DAY1, ...DAY2];
-const opts = { first: Math.floor(T0 / DAY_MS) };
+// The same activities and signals as the log (currentRollups), so that the two roll-ups agree.
+const opts = { first: Math.floor(T0 / DAY_MS), activities: schema.activities, signals: schema.signals };
 
 test('each event has the shape of its kind: numbers, times, ids, and words only', () => {
   for (const ev of ALL) assert.ok(checkEvent(ev, schema));

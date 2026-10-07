@@ -78,7 +78,10 @@ export function createI18n(dict, lang, fallback = null) {
     return text.replace(PARAM, (all, name, offset) => {
       if (!Object.prototype.hasOwnProperty.call(params, name)) return all;
       const v = value(params[name]);
-      return startsSentence(text, offset) ? capitalize(v) : v;
+      if (startsSentence(text, offset)) return capitalize(v);
+      // In the middle of an English sentence, a name with an article has a small article: "Nam
+      // likes the drum dance most", not "The drum dance" (#42).
+      return lang === 'en' ? v.replace(/^(The|A|An) /, (a) => a.toLowerCase()) : v;
     });
   }
 

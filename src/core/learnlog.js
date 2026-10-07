@@ -321,6 +321,9 @@ const emptyWeek = () => ({
   // Learning to learn: checks before a commit, self-corrections, waves before and after a try,
   // predictions and their error, the moves of the people, and the moves that check for the child.
   l2l: { checks: 0, selfFix: 0, before: 0, after: 0, predN: 0, predErr: 0, helps: 0, marks: 0 },
+  // The moves of the people by activity: { [activity]: { [move]: [moves, right next commits] } },
+  // so that the note can say who helped, and how (#42).
+  moves: {},
   recall: [0, 0, 0, 0, 0, 0], // the seconds of right commits of the facts of the table, in buckets
   quiz: [0, 0], // the short questions of the teacher on the facts: [questions, right]
   quizKnown: [0, 0], // the same, on the facts that are confident in the world
@@ -464,6 +467,9 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
       } else if (ev.type === 'help') {
         w.l2l.helps += 1;
         w.l2l.marks += MARKS.has(ev.move) ? 1 : 0;
+        const m = ((w.moves[activityOf(ev.task, activities)] ??= {})[ev.move] ??= [0, 0]);
+        m[0] += 1;
+        m[1] += ev.success ? 1 : 0;
       } else if (ev.type === 'prediction' && ev.guess !== null) {
         w.l2l.predN += 1;
         w.l2l.predErr += Math.abs(ev.guess - ev.used);

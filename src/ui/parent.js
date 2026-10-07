@@ -12,7 +12,8 @@ import { gameDay, restoreLabel } from '../core/restore.js';
 import { h, img, button } from './dom.js';
 import { factTable } from '../core/planting.js';
 import { currentRollups, weekOf } from '../core/learnlog.js';
-import { weeklyNote } from '../core/weekly.js';
+import { weeklyNote, actSentences, checkSentence } from '../core/weekly.js';
+import { namesOf } from '../core/naming.js';
 import { portraitCanvas, heroLookOf } from './portraits.js';
 import { t, lang } from './i18n.js';
 import { formatNumber } from '../core/i18n.js';
@@ -379,8 +380,11 @@ async function parentArea(ctx, opts = {}) {
       const p = ctx.profile;
       const name = p.hero.name;
       const rollups = p.log ? currentRollups(p.log, data.learnlog) : {};
-      const note = weeklyNote(rollups, p, weekOf(Date.now(), p.log?.tz ?? 0), data);
-      const say = (l) => t(l.key, l.params);
+      // The names of the people, so that the note says who helped (the region of the hamlet).
+      const names = namesOf(data, data.world?.map?.('xom-ruong')?.region ?? data.regions?.start?.region);
+      const note = weeklyNote(rollups, p, weekOf(Date.now(), p.log?.tz ?? 0), { ...data, names });
+      // A line is a sentence, or a few sentences (#42).
+      const say = (l) => (l.parts ? l.parts.map(say).join(' ') : t(l.key, l.params));
       body.append(
         h('h3', { text: t('parent.week.title') }),
         h('ul', { class: 'week-note' }, note.lines.map((l) => h('li', { text: say(l) }))),
@@ -401,7 +405,7 @@ async function parentArea(ctx, opts = {}) {
         }
         return table;
       };
-      if (!note.facts.cur) body.append(h('p', { class: 'muted', text: t('parent.facts.none') }));
+      if (!note.facts.cur) body.append(h('p', { class: 'muted', text: t('parent.facts.none', { name }) }));
       else {
         body.append(h('div', { class: 'facts-pair' }, [
           h('div', {}, [h('h4', { text: t('parent.week.thisWeek') }), grid(note.facts.cur)]),
@@ -412,16 +416,14 @@ async function parentArea(ctx, opts = {}) {
       if (note.acts.length) {
         body.append(h('h3', { text: t('parent.week.acts.title') }));
         for (const a of note.acts) {
-          const signs = a.signs.map((x) => t(`parent.week.sign.${x}`)).join(t('ui.list.sep'));
           body.append(h('div', { class: 'week-act', dataset: { act: a.id } }, [
             h('h4', { text: t(a.titleKey) }),
-            h('p', { text: t('parent.week.act.line', { minutes: a.minutes, sets: a.sets, first: a.first, self: a.self, stops: a.stops, signs }) }),
-            a.learned ? h('p', { class: 'muted', text: t('parent.week.learned', { n: a.learned[0], kept: a.learned[1] }) }) : null,
+            h('p', { text: actSentences(a, name).map(say).join(' ') }),
           ]));
         }
       }
       // The outside check: the short questions of the teacher on the facts (rule 26).
-      body.append(h('h3', { text: t('parent.week.check.title') }), h('p', { text: note.check.n ? t('parent.week.check', { n: note.check.n, ok: note.check.ok, kn: note.check.known[0], kok: note.check.known[1] }) : t('parent.week.check.none') }));
+      body.append(h('h3', { text: t('parent.week.check.title') }), h('p', { text: say(checkSentence(note.check, name)) }));
       body.append(h('p', { class: 'muted', text: t('parent.week.research') }));
     }
 
@@ -435,7 +437,7 @@ async function parentArea(ctx, opts = {}) {
         // The answers of the skill out of the table (at the healer, in a quiz) are in the row of the
         // skill below: the line says how many, and that they are too few to tell (#52).
         const answers = ctx.learner.summary((s) => s.id === skill)[0]?.answers ?? 0;
-        body.append(h('p', { class: 'muted', text: answers ? t('parent.facts.few', { n: answers }) : t('parent.facts.none') }));
+        body.append(h('p', { class: 'muted', text: answers ? t('parent.facts.few', { name: p.hero?.name ?? '', n: answers }) : t('parent.facts.none', { name: p.hero?.name ?? '' }) }));
         return;
       }
       const table = h('table', { class: 'facts' });

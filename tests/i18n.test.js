@@ -11,13 +11,16 @@ test('each key in vi.json is also in en.json', () => {
   assert.deepEqual(missing, []);
 });
 
+// A key with .one is the English text for the count 1 (#42). Vietnamese has one form, so the key
+// without .one is enough there.
 test('each key in en.json is also in vi.json', () => {
-  const missing = Object.keys(en).filter((k) => !(k in vi));
+  const missing = Object.keys(en).filter((k) => !(k in vi) && !(k.endsWith('.one') && k.slice(0, -4) in vi));
   assert.deepEqual(missing, []);
 });
 
+// A text can say a parameter two times (for example the name), so the test compares the sets.
 test('each text has the same parameters in the two languages', () => {
-  const params = (s) => [...s.matchAll(/\{([a-zA-Z0-9_]+)\}/g)].map((m) => m[1]).sort();
+  const params = (s) => [...new Set([...s.matchAll(/\{([a-zA-Z0-9_]+)\}/g)].map((m) => m[1]))].sort();
   const wrong = Object.keys(vi).filter((k) => k in en &&
     JSON.stringify(params(vi[k])) !== JSON.stringify(params(en[k])));
   assert.deepEqual(wrong, []);
