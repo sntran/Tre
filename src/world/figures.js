@@ -901,6 +901,14 @@ export function raidThing(look) {
     }
     // A spot for a villager: a small straw flag.
     case 'spot': return still([P('pole', [0.2, 2.6, 0.2], 'wood', [0, 1.3, 0]), P('flag', [0.1, 0.8, 1.1], 'yellowPale', [0, 2.2, 0.55]), P('base', [0.8, 0.15, 0.8], 'ochre', [0, 0.07, 0])], 2.6);
+    // The cloud that comes down over Gióng at his farewell (#51): round puffs of light paper.
+    case 'cloud': return still([
+      P('mid', [7, 3, 5], 'diep', [0, 1.5, 0]),
+      P('left', [4, 2.4, 4], 'diep', [-4.4, 1.1, 0.4]),
+      P('right', [4.4, 2.6, 4], 'diep', [4.2, 1.2, -0.4]),
+      P('top', [4, 2, 3.4], 'diep', [0.6, 3.6, 0]),
+      P('under', [9, 0.6, 4], 'ashLight', [0, 0.1, 0]),
+    ], 4.6);
     // A jar of water, a brazier of fire, and the small forge (lightning).
     case 'jar': return still([P('body', [1.4, 1.5, 1.4], 'ochre', [0, 0.75, 0]), P('neck', [0.9, 0.3, 0.9], 'wood', [0, 1.6, 0]), P('water', [0.7, 0.05, 0.7], 'indigoPale', [0, 1.76, 0])], 1.8);
     case 'brazier': return still([P('bowl', [1.4, 0.6, 1.4], 'ink', [0, 0.9, 0]), P('leg', [0.3, 0.7, 0.3], 'ink', [0, 0.35, 0]), P('flame', [0.9, 0.9, 0.9], 'vermilion', [0, 1.6, 0]), P('core', [0.5, 0.6, 0.5], 'yellow', [0, 1.7, 0])], 2.1);

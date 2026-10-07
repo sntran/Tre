@@ -250,6 +250,9 @@
      "effects": [
       {
        "set": "giong.farewell"
+      },
+      {
+       "open": "farewell"
       }
      ]
     }

@@ -1,0 +1,57 @@
+{
+ "about": "#51: the farewell of Gióng on Núi Sóc at night, on a phone: a tap on Gióng, a press at once, the three lines, and the scene (Gióng rides up the hill on his iron horse, a cloud comes down, and Gióng is gone).",
+ "start": "?story=farewell",
+ "lang": "vi",
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "giong-sky"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 120
+  },
+  {
+   "shot": "giong-says-goodbye"
+  },
+  {
+   "read": 6
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'farewell:cloud'))",
+   "timeout": 60
+  },
+  {
+   "shot": "the-horse-rides-up"
+  },
+  {
+   "until": "(tre.activeVillage.state().entities.find((e) => e.id === 'farewell:giong')?.position.y ?? 999) > 36",
+   "timeout": 60
+  },
+  {
+   "shot": "the-cloud-comes-down"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'farewell:cloud')",
+   "timeout": 120
+  },
+  {
+   "shot": "giong-is-gone"
+  }
+ ]
+}

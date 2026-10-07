@@ -1,0 +1,19 @@
+{
+  "name": "farewell",
+  "about": {
+    "vi": "Gióng từ biệt ở núi Sóc, lúc trời tối: Gióng nói với em như bạn, rồi cưỡi ngựa sắt phi lên núi, mây kéo xuống, và Gióng bay về trời.",
+    "en": "The farewell of Gióng on Núi Sóc, at night: Gióng speaks to you as a friend, then rides his iron horse up the hill, a cloud comes down, and Gióng goes up to the sky."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "prologue.done": true, "giong.spoke": true, "giong.grown": true, "soldier1.won": true, "soldier2.won": true, "era1.boss.won": true } },
+  "clock": 1250,
+  "at": ["soc-son", 38, 17],
+  "steps": [
+    { "press": { "entity": "npc:giong-sky" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 30 } },
+    { "expect": [{ "text": { "shown": "dlg.giong.farewell.n2" } }] },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "dlg.giong.farewell.care" } }, { "flag": "giong.farewell" }, { "event": "farewell", "with": { "on": true } }, { "entity": "farewell:giong", "look": "giong-sky" }, { "entity": "farewell:steed", "look": "iron-steed" }, { "entity": "farewell:cloud", "look": "cloud" }] },
+    { "wait": 9 },
+    { "expect": [{ "event": "farewell", "with": { "on": false } }, { "entity": "farewell:giong", "gone": true }, { "entity": "farewell:cloud", "gone": true }, { "entity": "npc:giong-sky", "gone": true }] }
+  ]
+}

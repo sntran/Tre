@@ -726,6 +726,9 @@
     "iron-steed": {
       "kind": "steed"
     },
+    "cloud": {
+      "kind": "cloud"
+    },
     "bucket": {
       "kind": "bucket"
     },

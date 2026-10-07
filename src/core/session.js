@@ -459,6 +459,40 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     visit.last = Math.round(state.clock.minutes);
   }
 
+  // The farewell of Gióng (#51): Gióng gets on his iron horse and rides up the hill, a cloud comes
+  // down over him, and then the horse, Gióng, and the cloud are gone. By day and at night.
+  const FAREWELL = { end: 8, cloud: 6, up: 8, away: 4, high: 16 }; // seconds, and half blocks
+  let farewell = null;
+  function startFarewell() {
+    const g = query(state, 'person').find((e) => e.person.ref === 'giong-sky');
+    if (!g || farewell) return;
+    const from = { ...g.position };
+    const seat = data.raids?.raids?.boss?.steed ?? 1.8;
+    addEntity(state, { id: 'farewell:steed', position: { ...from }, look: 'iron-steed' });
+    addEntity(state, { id: 'farewell:giong', position: { ...from }, look: g.look, riding: seat });
+    addEntity(state, { id: 'farewell:cloud', position: { ...from, y: from.y + FAREWELL.high }, look: 'cloud' });
+    farewell = { t: 0, from };
+    emit({ type: 'farewell', on: true, x: from.x / 2, y: from.z / 2, sound: 'win' });
+  }
+  function stepFarewell() {
+    if (!farewell) return;
+    farewell.t += STEP;
+    const { from, t } = farewell;
+    const k = Math.min(1, t / FAREWELL.end);
+    const f = from.facing ?? 0;
+    const at = { x: from.x + Math.sin(f) * FAREWELL.away * k, y: from.y + FAREWELL.up * k * k, z: from.z + Math.cos(f) * FAREWELL.away * k };
+    for (const id of ['farewell:steed', 'farewell:giong']) {
+      const e = getEntity(state, id);
+      if (e) Object.assign(e.position, at);
+    }
+    const cloud = getEntity(state, 'farewell:cloud');
+    if (cloud) Object.assign(cloud.position, { x: at.x, z: at.z, y: from.y + FAREWELL.high - (FAREWELL.high - FAREWELL.up + 2) * Math.min(1, t / FAREWELL.cloud) });
+    if (t < FAREWELL.end) return;
+    for (const id of ['farewell:steed', 'farewell:giong', 'farewell:cloud']) removeEntity(state, id);
+    farewell = null;
+    emit({ type: 'farewell', on: false });
+  }
+
   // People and encounters, in map cells. They block their cells for the paths of taps.
   const persons = () => query(state, 'person').map((e) => ({ ...e.person, x: e.position.x / 2, y: e.position.z / 2, entity: e.id }));
   function refreshPeople() {
@@ -584,6 +618,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // A screen of a story effect ({ open: 'worldmap' }, Văn Miếu, a trial).
   function openCommand(c) {
+    // The farewell of Gióng: a short scene in the world, and no screen opens (#51).
+    if (c.open === 'farewell') {
+      startFarewell();
+      return;
+    }
     // A trial is work in the village: its things lie in the world, and no screen opens.
     if (c.open === 'trial') {
       startTrial(c.id);
@@ -2400,6 +2439,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     state.clock.hold = Boolean(practice && (mentoring.activeKey() || folk.active()));
     worldStep(state, STEP, env);
     if (slingPull) slingPull.t += STEP;
+    stepFarewell();
     stepToolLines();
     for (const fn of later.splice(0)) fn();
     const events = state.events;
