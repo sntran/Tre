@@ -337,3 +337,23 @@ test('a press at once after a tap on the scouts waits for the walk, and the raid
   steps(session, 1);
   assert.ok(getEntity(session.state, 'raid'), 'the raid of the scouts is on');
 });
+
+// A tap on a person never pets Nghé (#56): on the way to the elder, Nghé stood next to him, and the
+// tap on him petted her. A tap on Nghé is a pet only when no person is under the finger.
+test('a tap on a person with Nghé in front of him is for the person; a tap on Nghé alone is a pet (#56)', async () => {
+  const { tapTarget, viewCamera, sessionScreen } = await import('../src/world/hit.js');
+  const session = await phuDong(['phu-dong', 31, 27], { 'giong.spoke': true });
+  const nghe = session.state.entities.find((e) => e.follow?.target === 'hero');
+  const person = session.state.entities.find((e) => e.person && e.position && !e.hidden && !String(e.id).startsWith('encounter:') && Math.hypot(e.position.x - nghe.position.x, e.position.z - nghe.position.z) < 40);
+  assert.ok(person, 'a person near the hero');
+  Object.assign(nghe.position, { x: person.position.x, z: person.position.z + 1 });
+  const at = { x: person.position.x / 2, y: person.position.y / 2, z: person.position.z / 2 };
+  const cam = viewCamera({ focus: at, width: 390, height: 844 });
+  const t = tapTarget(cam.project(at.x, at.y + 1, at.z), sessionScreen(session, cam));
+  assert.deepEqual(t, { person: person.id });
+  // Nghé alone, far from people: a tap on her is a pet.
+  Object.assign(nghe.position, { x: person.position.x + 40, z: person.position.z + 40 });
+  const n = { x: nghe.position.x / 2, y: nghe.position.y / 2, z: nghe.position.z / 2 };
+  const cam2 = viewCamera({ focus: n, width: 390, height: 844 });
+  assert.deepEqual(tapTarget(cam2.project(n.x, n.y + 0.5, n.z), sessionScreen(session, cam2)), { pet: nghe.id });
+});

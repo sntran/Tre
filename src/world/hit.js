@@ -182,13 +182,15 @@ export function tapTarget(p, w) {
   // Nghé (#55).
   const foe = figureUnder(p, w.cam, (w.persons ?? []).filter((q) => String(q.id).startsWith('encounter:')), PERSON_PAD);
   if (foe) return { person: foe.id };
-  const friend = w.inTask ? null : figureUnder(p, w.cam, w.friends ?? [], FRIEND_PAD, 0.8);
+  // A person under the finger comes before Nghé too: a tap on Nghé is a pet only when no person
+  // is under the finger (#56: Nghé stood next to the elder, and a tap on him petted her).
+  const nearPlace = hit && w.placeAt(hit.x, hit.y);
+  const person = figureUnder(p, w.cam, w.persons ?? [], nearPlace ? PERSON_PAD_AT_PLACE : PERSON_PAD);
+  const friend = w.inTask || person ? null : figureUnder(p, w.cam, w.friends ?? [], FRIEND_PAD, 0.8);
   if (friend) return { pet: friend.id };
   // A place of a task under the finger comes before a person who stands in front of it (#31,
   // #47); next to a place, only a tap on the body of the person is for the person.
   if (inPlace) return { ground: { x: hit.x, y: hit.y, h: hit.h, thing: Boolean(hit.who), object: hit.object ?? null } };
-  const nearPlace = hit && w.placeAt(hit.x, hit.y);
-  const person = figureUnder(p, w.cam, w.persons ?? [], nearPlace ? PERSON_PAD_AT_PLACE : PERSON_PAD);
   if (person) return { person: person.id };
   if (!hit) return null;
   // On a roof, a wall, or a tree, the ground under the finger behind it: the hero walks around
