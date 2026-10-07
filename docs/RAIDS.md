@@ -31,7 +31,9 @@ The story never stops at a raid. The session counts the raids of each tool (the 
 - **The first two raids of a tool, and every raid after a loss:** each enemy stops at each post for some seconds (4; 6 after a loss), so that the child can count the post and press. The next wave comes only when no enemy walks to the gate.
 - **After a loss:** the next raid of that kind has one enemy less (one always comes).
 - **After two losses:** a helper stands at the wall (the fisher at the river, the smith in the village; Gióng does not move before the envoy comes) and gives each enemy one hit when it comes, and the child can still win.
-- **One new tool in a raid:** the first raid of the slingshot has no gate, whichever raid comes first.
+- **One new tool in a raid:** the first raid of the slingshot has no gate, whichever raid comes first. With no gate in a raid, no scout throws a torch: the child has nothing to stop a torch with.
+- **The road is clear:** in a raid, the animals of the village leave the road (8 half blocks to each side, from behind the wall to the start of the farthest enemy: `keep` of the raid) and do not come back on it until the raid ends, and the children of the court near the road go home. The roof over the hero fades in a raid as anywhere (the fade tests the hero, not the point that the view follows).
+- **The test:** `tests/raidchild.test.js` plays a child with the button only (`playRaid` in `tests/restless.js`): the child presses as many times as the bands of the post nearest to the enemy, miscounts by one at times, and rests between shots. From a new profile, the child wins the scouts and then the river, each in at most two tries.
 
 ## The tools of the child
 
@@ -96,6 +98,8 @@ Each commit is one skill event for the learner (the child never sees it):
 | The next shot after a miss at the same enemy (a correction: the difference on the road) | `math.count.120` at raid level 1, else `math.add.20` | The stone hit | By the size of the correction: up to 5, up to 10, more |
 | A trap put at the post that the villager named (once in a raid) | `math.count.120` | Yes | 1 |
 | Lightning | `sci.matter.states` | Wet ground was there | 1 (efficient: two or more enemies) |
+
+A shot of the big button counts posts (#55): the parts are the presses, and the target is the post nearest to the enemy (the event has `unit: 5`); the level still comes from the distance in half blocks. A shot of the drag counts half blocks. The weekly note of the parents gives no reason for the misses of a raid (no "bored", no "wants harder work") and no help of a person: a miss there comes from the time of the shot, and nobody in a raid gives a smaller task.
 
 The gate is timing: it sends the fact `gated` and no skill event. A trap put anywhere else, and a trap that snaps, send nothing. The prediction before the first shot is a `prediction` event of the log. The raid level comes from the grade that the player gave (`grades` in `data/raids.json`): grade 1 and lower is level 1.
 
