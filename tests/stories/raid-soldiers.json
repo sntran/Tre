@@ -11,6 +11,12 @@
     "seed": 5,
     "flags": {
       "intro.seen": true,
+      "raid.used.sling": 2,
+      "raid.used.traps": 2,
+      "raid.used.helpers": 2,
+      "raid.used.nghe": 2,
+      "raid.used.water": 2,
+      "raid.used.fire": 2,
       "giong.grown": true,
       "raid.tool.sling": true,
       "raid.tool.gate": true

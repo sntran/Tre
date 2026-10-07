@@ -1292,6 +1292,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // Raids (data/raids.json, src/core/world/raids.js, and src/core/world/systems/raid.js) -----
 
+  // Seconds that an enemy stops at each post: in the first two raids of a tool, and after a loss.
+  const RAID_STOP = Object.freeze({ first: 4, lost: 6 });
   const raidEnt = () => getEntity(state, 'raid');
   const raidOn = () => Boolean(raidEnt());
   let raidEnc = null; // the encounter of the raid now (its figure hides while the raid goes on)
@@ -1302,7 +1304,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The tools that are new to the child: the first raid of the slingshot or of the traps waits
     // for the child (#50).
     const teach = (def.tools ?? ['sling']).filter((tool) => !profile.flags[`raid.tool.${tool}`]);
-    const raid = createRaid(data.raids, id, raidLevel(data.raids, profile.grade), lossLevel(profile), teach);
+    // A raid that a child can win (#55): in the first two raids of each tool, and after a loss,
+    // each enemy stops at the posts and the enemies come one at a time; after a loss, one enemy
+    // less; after two losses, a helper at the wall. One new tool in a raid: no gate in the first
+    // raid of the slingshot.
+    const lost = Number(profile.flags[`raid.${id}.lost`] ?? 0);
+    const used = Math.min(...(def.tools ?? ['sling']).map((t) => Number(profile.flags[`raid.used.${t}`] ?? 0)));
+    const easy = {
+      stop: lost ? RAID_STOP.lost : used < 2 ? RAID_STOP.first : 0,
+      fewer: lost ? 1 : 0,
+      help: lost >= 2,
+      helper: def.helper ?? 'smith',
+      without: teach.includes('sling') ? ['gate'] : [],
+    };
+    for (const t of def.tools ?? ['sling']) profile.flags[`raid.used.${t}`] = Number(profile.flags[`raid.used.${t}`] ?? 0) + 1;
+    const raid = createRaid(data.raids, id, raidLevel(data.raids, profile.grade), lossLevel(profile), teach, easy);
     slingPull = null;
     setupRaid(state, raid, def, env, { helpers: data.raids.helperLooks, companion: data.raids.companions?.[def.companion] });
     placeHero(def.wall[0], def.wall[1]);
@@ -1364,6 +1380,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       profile.stats.battlesLost = (profile.stats.battlesLost ?? 0) + 1;
       // The enemies come again at the next dawn, so that the child sleeps on it.
       profile.flags[`raid.${r.raid.id}.back`] = nextDawn(state.clock.minutes);
+      // The next raid of this kind is easier (#55).
+      profile.flags[`raid.${r.raid.id}.lost`] = Number(profile.flags[`raid.${r.raid.id}.lost`] ?? 0) + 1;
       save('raid');
       // The line of the raid says who left and when they come back (#50).
       say(def.lostKey ?? 'raid.lost');

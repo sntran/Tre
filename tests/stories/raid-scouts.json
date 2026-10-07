@@ -11,7 +11,10 @@
     "seed": 3,
     "flags": {
       "intro.seen": true,
-      "giong.spoke": true
+      "giong.spoke": true,
+      "raid.tool.sling": true,
+      "raid.used.sling": 2,
+      "raid.used.gate": 0
     },
     "items": {
       "rice": 5
@@ -80,7 +83,7 @@
         },
         {
           "text": {
-            "shown": "raid.tool.sling"
+            "shown": "raid.tool.gate"
           }
         },
         {
@@ -208,17 +211,6 @@
         "event": "light",
         "timeout": 40
       }
-    },
-    {
-      "expect": [
-        {
-          "event": "open",
-          "with": {
-            "screen": "callout",
-            "textKey": "raid.tool.gate"
-          }
-        }
-      ]
     },
     {
       "wait": 0.5

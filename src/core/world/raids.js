@@ -89,14 +89,22 @@ const unit = (v) => {
 // takes ('none', 'small', or 'normal': twice as much; see lossLevel in src/core/profile.js); by
 // default nothing at the lowest level. The raid is plain data.
 // teach: the tools that are new to the child in this raid (the first raid of each tool).
-export function createRaid(raids, id, level = 0, loss = null, teach = []) {
+// easy (#55): { stop: seconds that each enemy stops at each post (0: none; then the next wave
+// comes only when no enemy walks), fewer: waves less (after a loss), help: a helper at the wall
+// gives each enemy one hit (after two losses), helper: the look of the helper, without: tools
+// that are not in this raid (the gate in the first raid of the slingshot) }.
+export function createRaid(raids, id, level = 0, loss = null, teach = [], easy = {}) {
   const def = raids.raids[id];
   const sling = { ...SLING, ...raids.sling };
   const wall = hb(def.wall);
   const gate = hb(def.gate);
   const dir = unit({ x: def.dir[0], z: def.dir[1] });
-  const phases = def.phases ?? [{ id: 'raid', waves: def.waves }];
-  const tools = def.tools ?? ['sling'];
+  const phases = (def.phases ?? [{ id: 'raid', waves: def.waves }]).map((p, i) => {
+    const waves = p.waves ?? [];
+    // One enemy less after a loss: the last waves of the first phase go (one always stays).
+    return i === 0 && easy.fewer ? { ...p, waves: waves.slice(0, Math.max(1, waves.length - easy.fewer)) } : p;
+  });
+  const tools = (def.tools ?? ['sling']).filter((t) => !(easy.without ?? []).includes(t));
   const has = (t) => tools.includes(t);
   return {
     id,
@@ -146,6 +154,9 @@ export function createRaid(raids, id, level = 0, loss = null, teach = []) {
     loss: loss ?? (level > 0 ? 'small' : 'none'),
     aims: {},
     bamboo: null,
+    stop: easy.stop ?? 0,
+    help: Boolean(easy.help),
+    helper: easy.help ? easy.helper ?? null : null,
     sling,
     kinds: raids.enemies,
     skills: raids.skills,
@@ -194,6 +205,8 @@ function spawn(raid, out) {
     if (w.in || raid.phaseT < (w.at ?? 0)) continue;
     // New traps: no enemy until the child has a trap in the hands.
     if (raid.hold?.tool === 'traps') continue;
+    // In an easy raid, the next wave comes only when no enemy walks to the gate (#55).
+    if (raid.stop > 0 && active(raid).length) continue;
     w.in = true;
     const kind = raid.kinds[w.kind];
     const from = hb(w.from);
@@ -202,6 +215,11 @@ function spawn(raid, out) {
       id: `raider:${++raid.count}`, kind: w.kind, look: kind.look, x: from.x, z: from.z, from, to,
       hits: 0, max: kind.hits, state: 'walk', t: 0, cool: kind.torch?.first ?? kind.sword?.first ?? 0, waited: [], shield: 0, phase: raid.phase,
     };
+    // After two lost raids, a helper at the wall gives each enemy one hit (#55).
+    if (raid.help && e.max > 1) {
+      e.hits = 1;
+      out.push({ type: 'helped', id: e.id, sound: 'hit' });
+    }
     raid.enemies.push(e);
     out.push({ type: 'come', id: e.id, kind: e.kind });
   }
@@ -303,6 +321,19 @@ function tickEnemy(raid, e, dt, ctx, out) {
     e.t = kind.sword.tell;
     out.push({ type: 'sword', id: e.id });
     return;
+  }
+  // In an easy raid, the enemy stops at each post for some seconds (#55): the child has time to
+  // count the post and to press.
+  if (raid.stop > 0) {
+    const post = raid.posts.find((q) => !e.waited.includes(`post:${q.d}`) && d <= q.d + 0.2 && d > q.d - 2);
+    if (post) {
+      e.waited.push(`post:${post.d}`);
+      e.state = 'wait';
+      e.t = raid.stop;
+      e.facing = faceTo(e, raid.wall);
+      out.push({ type: 'pause', id: e.id, post: post.d });
+      return;
+    }
   }
   // A villager at a spot: the enemy stops for a moment, once for each spot.
   for (const s of raid.spots) {

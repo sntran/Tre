@@ -4,7 +4,7 @@
     "vi": "Em mở bản đồ thì trận chỉ dừng lại; không ai chặn thì lính tới ngã tư rồi đi; ở lớp một, giặc không lấy gì, và sáng hôm sau chúng quay lại.",
     "en": "The map only pauses the raid; with nobody to stop them, the soldiers reach the crossroads and leave; at grade one they take nothing, and they come again at the next dawn."
   },
-  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 2, "flags": { "intro.seen": true, "giong.grown": true, "raid.tool.sling": true, "raid.tool.gate": true, "raid.tool.traps": true, "raid.tool.helpers": true, "raid.tool.nghe": true }, "items": { "rice": 5 } },
+  "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 2, "flags": { "intro.seen": true, "giong.grown": true, "raid.tool.sling": true, "raid.tool.gate": true, "raid.tool.traps": true, "raid.tool.helpers": true, "raid.tool.nghe": true, "raid.used.sling": 2, "raid.used.traps": 2, "raid.used.helpers": 2, "raid.used.nghe": 2, "raid.used.water": 2, "raid.used.fire": 2 }, "items": { "rice": 5 } },
   "clock": 600,
   "at": ["trau-son", 89, 38],
   "steps": [

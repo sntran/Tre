@@ -151,6 +151,11 @@ function mirror(world, raid, env) {
     if (!s.helper) continue;
     put(`helper:${s.id}`, { position: { x: s.helper.x ?? s.x, y: gy(s.helper.x ? s.helper : s), z: s.helper.z ?? s.z, facing: 0 }, look: s.look ?? 'woodcutter', act: s.helper.state === 'go' ? 'walk' : 'guard' });
   }
+  // After two lost raids, a helper stands at the wall, beside the hero (#55).
+  if (raid.helper) {
+    const at = { x: raid.wall.x - raid.dir.z * 2.5 - raid.dir.x * 1.5, z: raid.wall.z + raid.dir.x * 2.5 - raid.dir.z * 1.5 };
+    put('helper:wall', { position: { ...at, y: gy(at), facing: Math.atan2(raid.dir.x, raid.dir.z) }, look: raid.helper, act: 'guard' });
+  }
   const bar = getEntity(world, 'bar:raid');
   if (bar) bar.look = raid.bar?.down > 0 ? 'bar-down' : 'bar-up';
   if (raid.bamboo) {

@@ -24,6 +24,15 @@ Units: half blocks (one map cell is 2) and seconds. The places in the data are i
 
 The time limit never sends the hero home in a raid: the rest waits until the raid is over.
 
+## A raid that a child can win (#55)
+
+The story never stops at a raid. The session counts the raids of each tool (the flag `raid.used.<tool>`) and the lost raids of each kind (`raid.<id>.lost`), and `createRaid` in `src/core/world/raids.js` takes the rule (`easy`):
+
+- **The first two raids of a tool, and every raid after a loss:** each enemy stops at each post for some seconds (4; 6 after a loss), so that the child can count the post and press. The next wave comes only when no enemy walks to the gate.
+- **After a loss:** the next raid of that kind has one enemy less (one always comes).
+- **After two losses:** a helper stands at the wall (the fisher at the river, the smith in the village; Gióng does not move before the envoy comes) and gives each enemy one hit when it comes, and the child can still win.
+- **One new tool in a raid:** the first raid of the slingshot has no gate, whichever raid comes first.
+
 ## The tools of the child
 
 The tools come one raid after the other (rule 11: one new part at a time). A tool that is not in the raid is not on the map.
@@ -39,7 +48,7 @@ The tools come one raid after the other (rule 11: one new part at a time). A too
 
 | Tool | What the child does | What the world does |
 | --- | --- | --- |
-| The slingshot | A finger on the hero, pull back, let go. | The band stretches in steps of one half block: a tick at each step and a red band at every fifth, the same marks as the posts. No arc shows before the shot. The stone flies from the wall along the road on a real arc and lands exactly at the count. It hits the enemy there (within 1.5 half blocks); a stone that misses lies on the road for a moment, so short or long shows against the posts. The hero walks back to the wall for a shot. |
+| The slingshot | The big button: each press adds one post to the pull (five half blocks, one red band); the stone flies one second after the last press, or at once after a tap on the hero (#55). Or a finger on the hero, pull back, let go: the fine pull. While the child sets a pull, the posts up to the pull light up (also at night), and a small ring lies on the road at the count. | The band stretches in steps of one half block: a tick at each step and a red band at every fifth, the same marks as the posts. No arc shows before the shot. The stone flies from the wall along the road on a real arc and lands exactly at the count. It hits the enemy there (within 1.5 half blocks); a stone that misses lies on the road for a moment, so short or long shows against the posts. The hero walks back to the wall for a shot. |
 | The prediction | Before the first shot of a raid, tap the post nearest the enemy. | The posts have yellow caps until the tap. The prediction (the post, the distance of the enemy, the count of the first shot, and the result) goes to the log. A first shot with no tap skips it. |
 | The distance posts | (They stand by the road.) | Four posts at 5, 10, 15, and 20 half blocks from the wall, with one, two, three, and four red bands. No numeral. |
 | Bamboo traps | Carry a trap from the pile, and tap the road. | The trap snaps to the middle of the road on the half-block grid. A scout or a soldier that steps on it sits down for some seconds, and the trap snaps shut. The general breaks a trap. A villager names one post ("Put a trap at the third post"); a trap put there is counting. |

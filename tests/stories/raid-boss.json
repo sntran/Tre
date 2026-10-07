@@ -4,7 +4,7 @@
     "vi": "Trận ở chân núi Trâu Sơn: bác thợ rèn mang lò rèn ra ngã tư; lửa làm lính giơ khiên ướt, sét vào chỗ ướt làm lính bị điện giật; rồi tướng Ân giơ gậy, roi sắt gãy, và Gióng nhổ tre đánh đuổi giặc.",
     "en": "The raid at the foot of Trâu Sơn: the smith brings his forge to the crossroads; fire makes the soldiers raise wet shields, and lightning into the wet ground shocks them; then the Ân general lifts his staff, the iron whip breaks, and Gióng pulls up bamboo to drive the enemy away."
   },
-  "profile": {"name": "An", "grade": 3, "lang": "vi", "seed": 9, "flags": {"intro.seen": true, "giong.grown": true, "soldier1.won": true, "soldier2.won": true, "boss.staffs": true, "raid.tool.sling": true, "raid.tool.gate": true, "raid.tool.traps": true, "raid.tool.helpers": true, "raid.tool.nghe": true, "raid.tool.water": true, "raid.tool.fire": true}, "items": {"rice": 5}},
+  "profile": {"name": "An", "grade": 3, "lang": "vi", "seed": 9, "flags": {"intro.seen": true, "raid.used.sling": 2, "raid.used.gate": 2, "raid.used.traps": 2, "raid.used.helpers": 2, "raid.used.nghe": 2, "raid.used.water": 2, "raid.used.fire": 2, "raid.used.lightning": 2, "raid.used.bamboo": 2, "giong.grown": true, "soldier1.won": true, "soldier2.won": true, "boss.staffs": true, "raid.tool.sling": true, "raid.tool.gate": true, "raid.tool.traps": true, "raid.tool.helpers": true, "raid.tool.nghe": true, "raid.tool.water": true, "raid.tool.fire": true}, "items": {"rice": 5}},
   "clock": 600,
   "at": ["trau-son", 98, 19],
   "steps": [

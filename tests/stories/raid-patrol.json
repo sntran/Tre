@@ -11,6 +11,9 @@
     "seed": 6,
     "flags": {
       "intro.seen": true,
+      "raid.used.sling": 2,
+      "raid.used.gate": 2,
+      "raid.used.traps": 2,
       "giong.farewell": true,
       "scouts.won": true,
       "raid.tool.sling": true,
