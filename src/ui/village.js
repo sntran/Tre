@@ -1468,6 +1468,8 @@ export async function mountVillage(ctx, params = {}) {
     state: () => state,
     // The sounds of the world that played: { name, t (seconds), id }, for automatic tests.
     sounds: () => soundsHeard.slice(),
+    // The count of the pull of the slingshot now (0 with no pull), for automatic tests.
+    pull: () => session.raidPull?.() ?? 0,
   };
   ctx.activeVillage = api;
 

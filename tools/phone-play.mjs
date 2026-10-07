@@ -21,6 +21,9 @@
 //   { "walk": { "person": "woodcutter" }, "taps": 12 } taps toward a target until the hero is near it
 //   { "press": true }            a quick tap on the big button (the press and the release at once)
 //   { "hold": 1.5 }              the big button down for this many seconds
+//   { "hold": { "until": "expr", "timeout": 30, "print": "expr" }, "shot": "name" } the big button
+//                                down until the expression is true (a child who looks at the band),
+//                                with a value and a frame before the finger goes up
 //   { "button": ".jump-btn" }    a tap on another button of the screen (a CSS selector)
 //   { "click": "Tiếp" }          a tap on a visible button with this text
 //   { "stick": [dx, dy, 1.5] }   the stick: a finger down at the stick, moved by dx, dy, for seconds
@@ -31,6 +34,7 @@
 //   { "shot": "name" }           a frame of the screen (JPEG) in the out folder
 //   { "until": "expr", "timeout": 120 } play on with no finger until the expression is true
 //   { "check": "expr" }          a JavaScript expression on window.tre that must be true
+//   { ..., "if": "expr" }        any step: it runs only when the expression is true
 //   { "print": "expr" }          the value of a JavaScript expression on window.tre, in the output
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -161,6 +165,8 @@ let shots = 0;
 try {
 for (const [i, s] of (plan.steps ?? []).entries()) {
   const before = problems.length;
+  // A step with "if" runs only when the expression is true (a child who sees a torch taps the gate).
+  if (s.if && !(await page.evaluate((expr) => Boolean(new Function('tre', `return (${expr});`)(window.tre)), s.if).catch(() => false))) continue;
   if (s.create !== undefined) {
     for (let k = 0; k < 12 && !(await page.evaluate(() => Boolean(window.tre.activeVillage))); k++) {
       const input = await page.$('.name-input');
@@ -224,7 +230,27 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
     await sleep(s.after ?? 0.3);
   } else if (s.hold !== undefined) {
     const p = await center('.act-btn');
-    await finger([p], s.hold);
+    if (typeof s.hold === 'number' && !s.shot) await finger([p], s.hold);
+    else {
+      await touch('touchStart', ...p);
+      const t0 = Date.now();
+      if (typeof s.hold === 'number') await sleep(s.hold);
+      else {
+        const timeout = (s.hold.timeout ?? 30) * 1000;
+        let ok = false;
+        while (!ok && Date.now() - t0 < timeout) {
+          ok = await page.evaluate((expr) => Boolean(new Function('tre', `return (${expr});`)(window.tre)), s.hold.until).catch(() => false);
+          if (!ok) await sleep(0.1);
+        }
+        if (!ok) problems.push(`step ${i}: the hold did not come to ${s.hold.until}`);
+      }
+      if (s.hold.print) console.log(`step ${i}: ${s.hold.print} = ${await page.evaluate((expr) => JSON.stringify(new Function('tre', `return (${expr});`)(window.tre)), s.hold.print).catch((e) => `error ${e.message}`)}`);
+      if (s.shot) {
+        shots += 1;
+        await page.screenshot({ path: `${out}/${String(shots).padStart(2, '0')}-${s.shot}.jpg`, type: 'jpeg', quality: 80 });
+      }
+      await touch('touchEnd');
+    }
     await sleep(0.2);
   } else if (s.button) {
     const p = await center(s.button);
