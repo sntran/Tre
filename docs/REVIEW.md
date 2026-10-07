@@ -530,3 +530,8 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **Bát gạo, not đấu:** a đấu is about one litre of rice, so "hai quả trứng lấy năm đấu gạo" was kilograms of rice for two eggs. The measure of rice is now the bowl that every kitchen uses: `event.market.start.<goods>.<form>` ("Cô đổi trứng lấy gạo: ba quả trứng lấy bốn bát gạo. Cô có chín quả trứng. …"), and `road.cart` ("… Bác cho em một bát gạo."). In English, "a bowl of rice". The rice of the basket looks like a bowl of rice. The lines above under #26 still say "đấu"; the texts do not.
 - **Fair rates:** a dearer good takes more rice for each one (a pot more than a fish, a fish more than an egg), and the level of counting has eggs only, one egg for one bowl.
 - **Please check:** "bát gạo" as the measure at a market, and the rates: an egg for two bowls, a fish for three, a pot for four; four bowls for three eggs, three bowls for two fish, five bowls for two pots.
+
+## The big button at work in the story (#54)
+
+- **The sample staff:** `dlg.woodcutter.staffs.n2` ("… Bác dựng một cây gậy mẫu ở đầu hàng tre. Cháu chặt {staffs} cây gậy dài bằng cây gậy mẫu: … nên đếm các đốt trước khi chặt."). Each staff must be as long as the sample, so that two quick taps (the lowest ring) do not finish the task.
+- **Please check:** "cây gậy mẫu" for the sample staff, and "đếm các đốt" in place of "nhìn các đốt".

@@ -76,11 +76,13 @@ export function basketResult(counts, kinds, each) {
 // The staffs from the bamboo clump: the length of the piece from each culm (the height of its
 // cut). Equal pieces are solved. If not, the pieces of the most common length stay (with a tie, the
 // length of the first piece), and the others break (broken: their places in the clump).
-export function staffResult(pieces) {
+export function staffResult(pieces, length = null) {
   const count = new Map();
   for (const p of pieces) count.set(p, (count.get(p) ?? 0) + 1);
   let keep = pieces[0];
   for (const [len, n] of count) if (n > count.get(keep)) keep = len;
+  // With a sample staff, each staff must be as long as the sample (#54).
+  if (length !== null) keep = length;
   const broken = pieces.flatMap((p, i) => (p === keep ? [] : [i]));
   return { solved: broken.length === 0, keep, broken };
 }

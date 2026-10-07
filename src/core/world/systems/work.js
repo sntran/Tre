@@ -291,6 +291,9 @@ export function setupTrial(world, def, level, env, opts = {}) {
     const c = P(def.places.clump);
     Object.assign(tz.zone, { clump: { x: c.x, y: c.y, z: c.z }, pieces: Array(task.parts).fill(null) });
     for (let i = 0; i < task.parts; i++) addCulm(world, tz, task, i);
+    // The sample staff of the woodcutter stands at the head of the row: each staff must be as long
+    // as it, so that the child looks at the rings (#54: two quick taps cut two equal short staffs).
+    if (task.length) addEntity(world, { id: 'sample:staffs', keep: true, item: { kind: 'stump', size: task.length, slot: -1, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: c.x, y: c.y, z: c.z + CULM_STEP, facing: 0 }, look: `stump-${task.length}` });
   } else if (def.task === 'cut') {
     const s = P(def.places.stem);
     tz.zone.stem = { x: s.x, y: s.y, z: s.z, length: task.length };
@@ -745,11 +748,12 @@ function act(world, e, want, env) {
     addEntity(world, { id: `stump:staffs:${i}`, keep: true, item: { kind: 'stump', size: at, slot: i, task: 'trial-staffs', zone: null, held: null, set: true, fixed: true }, position: { ...culm.position }, look: `stump-${at}` });
     say(world, 'slash', tz.id, { culm: i, at, sound: 'plank-up' });
     if (tz.zone.pieces.includes(null)) return;
-    const result = staffResult(tz.zone.pieces);
+    const result = staffResult(tz.zone.pieces, task.length ?? null);
     commit(world, tz, task, { solved: result.solved, parts: [...tz.zone.pieces], target: task.height });
     if (result.solved) {
       // Equal staffs, tied into a bundle for the men of the village.
       tz.zone.pieces.forEach((_, j) => removeEntity(world, `stump:staffs:${j}`));
+      removeEntity(world, 'sample:staffs');
       addEntity(world, { id: 'staffs:bamboo', keep: true, position: { x: c.x + 3, y: c.y, z: c.z - (task.parts - 1) * CULM_STEP / 2, facing: 0 }, look: `staffs-${task.parts}` });
       say(world, 'chop', tz.id, { sound: 'plank-up', pieces: [...tz.zone.pieces] });
       finish(world, tz);

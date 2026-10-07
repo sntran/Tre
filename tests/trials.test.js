@@ -128,7 +128,10 @@ test('the bamboo staffs: each level has a culm for each staff, and the hand reac
     assert.ok(l.parts >= 2 && l.reach >= 2 && l.reach < l.height, JSON.stringify(l));
     assert.ok(looks[`culm-${l.height}`] && looks[`staffs-${l.parts}`], 'the looks of the culm and the bundle');
     for (let at = 1; at <= l.reach; at++) assert.ok(looks[`stump-${at}`], `a piece of ${at}`);
-    assert.ok(staffResult(Array(l.parts).fill(l.reach)).solved);
+    // #54: the staffs are as long as a sample; the lowest cut (a quick tap) is too short.
+    assert.ok(l.length > 1 && l.length <= l.reach, `the length of the sample at level ${l.level}`);
+    assert.ok(staffResult(Array(l.parts).fill(l.length), l.length).solved);
+    assert.ok(!staffResult(Array(l.parts).fill(1), l.length).solved, 'equal pieces at the lowest ring are too short');
   }
 });
 
@@ -147,4 +150,8 @@ test('the staffs from the bamboo clump: equal pieces are solved; the pieces that
   assert.deepEqual(staffResult([5, 5, 4, 5]), { solved: false, keep: 5, broken: [2] });
   assert.deepEqual(staffResult([3, 6]), { solved: false, keep: 3, broken: [1] }, 'a tie: the length of the first piece stays');
   assert.deepEqual(staffResult([4, 6, 6, 4, 6, 2]), { solved: false, keep: 6, broken: [0, 3, 5] });
+  // With a sample staff (#54), the pieces of another length break, also when they are equal.
+  assert.deepEqual(staffResult([1, 1], 4), { solved: false, keep: 4, broken: [0, 1] });
+  assert.deepEqual(staffResult([5, 4, 5, 5], 5), { solved: false, keep: 5, broken: [1] });
+  assert.deepEqual(staffResult([4, 4], 4), { solved: true, keep: 4, broken: [] });
 });
