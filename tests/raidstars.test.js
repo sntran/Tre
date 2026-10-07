@@ -36,3 +36,14 @@ test('a done target has no star; the enemies of a won raid have no star; the ene
   assert.deepEqual(ids({ 'raid.scouts.back': 1440 + 300 }, 900), ['ore1', 'river']);
   assert.deepEqual(ids({ 'raid.scouts.back': 1440 + 300 }, 1440 + 301), ['ore1', 'river', 'scouts']);
 });
+
+// The star of the staffs (#56): on the woodcutter until his talk, then on the bamboo clump (the
+// place of the trial), so that a child who follows the star does not talk to him again and again.
+test('the star of the staffs goes from the woodcutter to the bamboo clump after his talk (#56)', () => {
+  const step = load('data/quests.json').quests.flatMap((q) => q.steps).find((s) => s.id === 'staffs');
+  assert.deepEqual(liveTargets(step, {}).map((t) => t.npc ?? t.trial), ['woodcutter']);
+  assert.deepEqual(liveTargets(step, { 'staffs.told': true }).map((t) => t.npc ?? t.trial), ['staffs']);
+  const talk = load('data/dialogue/village.json').dialogues.find((d) => d.id === 'woodcutter.staffs');
+  const effects = Object.values(talk.nodes).flatMap((n) => n.effects ?? []);
+  assert.ok(effects.some((e) => e.set === 'staffs.told') && effects.some((e) => e.open === 'trial' && e.id === 'staffs'), 'the talk sets the flag and opens the trial');
+});

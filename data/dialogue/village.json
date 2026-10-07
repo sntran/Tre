@@ -372,6 +372,9 @@
           "textKey": "dlg.woodcutter.staffs.n2",
           "effects": [
             {
+              "set": "staffs.told"
+            },
+            {
               "open": "trial",
               "id": "staffs"
             }

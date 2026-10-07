@@ -508,6 +508,12 @@ export async function mountVillage(ctx, params = {}) {
         if (top !== null) out.push({ x: p.x, y: p.y, h: top });
         else if (!p) away(kind, tg[kind]);
       }
+      // The place of a trial that is open (the bamboo clump of the staffs, #56): after the talk
+      // that opens it, the star is on the work, not on the person.
+      if (tg.trial) {
+        const z = getEntity(state, `zone:trial-${tg.trial}`);
+        if (z && !z.zone.done) out.push({ x: z.position.x / 2, y: z.position.z / 2, h: groundY(z.position.x / 2, z.position.z / 2) + 3 });
+      }
       if (tg.object) {
         const o = mapData.layers.objects.find((x) => x.id === tg.object);
         const thing = objectOf(tg.object);

@@ -261,7 +261,16 @@
        "boss.staffs"
       ]
      },
-     "target": "woodcutter"
+     "targets": [
+      {
+       "npc": "woodcutter",
+       "unless": "staffs.told"
+      },
+      {
+       "trial": "staffs",
+       "if": "staffs.told"
+      }
+     ]
     },
     {
      "id": "boss",
