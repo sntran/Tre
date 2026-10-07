@@ -95,7 +95,7 @@ export function playRestless(session, { steps = 240, seed = 1, repeats = 3 } = {
         for (let i = 0; i < 45; i++) tick();
         offSeen();
         const after = cellOf();
-        if (reach && reach.length > 2 && !hero().riding && !session.screen && Math.hypot(after.x - before.x, after.y - before.y) < 0.2) broken.add(process.env.RESTLESS_DEBUG ? `a tap on a cell that the hero can walk to does not move the hero: ${JSON.stringify({ before, x, y, carry: session.carried(), route, seen: seen.slice(0, 12), fall: hero().fall ?? null, intent: hero().intent ?? null })}` : 'a tap on a cell that the hero can walk to does not move the hero');
+        if (reach && reach.length > 2 && !hero().riding && !session.screen && Math.hypot(after.x - before.x, after.y - before.y) < 0.2) broken.add(process.env.RESTLESS_DEBUG ? `a tap on a cell that the hero can walk to does not move the hero: ${JSON.stringify({ before, x, y, carry: session.carried(), route, seen: seen.slice(0, 12), fall: hero().fall ?? null, intent: hero().intent ?? null, solids: session.state.entities.filter((e) => e.solid && e.position && Math.hypot(e.position.x - hero().position.x, e.position.z - hero().position.z) < 6).map((e) => `${e.id} ${JSON.stringify(e.solid)} ${e.position.x.toFixed(1)},${e.position.z.toFixed(1)}`), hp: [hero().position.x.toFixed(2), hero().position.z.toFixed(2)] })}` : 'a tap on a cell that the hero can walk to does not move the hero');
       } else if (r < 0.6) {
         // A press of the big button with no walk first.
         const targets = session.targets();
@@ -130,3 +130,45 @@ export function playRestless(session, { steps = 240, seed = 1, repeats = 3 } = {
 }
 
 export { STEP };
+
+// A child who only presses the big button (#54): from the end of the talk of a mentor, a press, a
+// short wait, and a press again; a talk reads on. With hold, a press is a hold of the button for
+// that many seconds (the slash at a culm). until(session): stop when it is true. Return the broken
+// laws:
+// - a press never asks for help (a talk to the mentor needs a tap on the mentor);
+// - a press never takes back the thing that the last press put;
+// - a press never puts a thing of a task on the ground.
+export function playPresses(session, { presses = 40, wait = 2.5, hold = 1, until = () => false } = {}) {
+  const broken = new Set();
+  let lastPut = null;
+  let asked = 0;
+  const off = session.listen((ev) => {
+    if (ev.type === 'mentor' && ev.asked) asked += 1;
+    if (ev.type === 'put' && ev.id === 'hero') lastPut = ev.item;
+    if (ev.type === 'pick' && ev.id === 'hero' && ev.item === lastPut) broken.add(`a press took back ${ev.item}, which the last press put`);
+    if (ev.type === 'drop' && ev.id === 'hero' && String(getEntity(session.state, ev.item)?.item?.task ?? '').startsWith('trial-')) broken.add(`a press put ${ev.item} on the ground`);
+  });
+  const run = (seconds) => {
+    for (let i = 0; i < seconds / STEP; i++) {
+      session.step();
+      session.events();
+    }
+  };
+  for (let k = 0; k < presses && !until(session); k++) {
+    for (let n = 0; session.screen && n < 40; n++) {
+      session.command(session.screen === 'dialogue' || session.screen === 'say' ? { type: 'next' } : { type: 'close' });
+      session.events();
+      run(0.3);
+    }
+    if (session.action()?.hold) {
+      session.command({ type: 'hold', on: true });
+      run(hold);
+      session.command({ type: 'hold', on: false });
+    } else session.command({ type: 'hands' });
+    session.events();
+    run(wait);
+  }
+  off();
+  if (asked) broken.add(`a press asked for help ${asked} times`);
+  return [...broken];
+}

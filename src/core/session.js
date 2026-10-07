@@ -50,7 +50,7 @@ import { placeBySchedule, atWork } from './world/systems/schedule.js';
 import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
-import { REACH, learnerRecord, canPut, canTake, spanSlot } from './world/zones.js';
+import { REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
 import { setupTrial, clearTrial, freeSlot, canTakeWork } from './world/systems/work.js';
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
@@ -782,7 +782,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const near = query(state, 'zone').filter((e) => e.zone.rect && off(e) <= pad && e.zone.task?.startsWith('trial-') && !trialZone(e.zone.task.slice(6))?.zone.done);
     return near.reduce((a, b) => (!a || off(b) < off(a) ? b : a), null);
   };
-  const work = (trial, act, extra = {}) => worldCommand(state, { type: 'work', id: 'hero', trial, act, ...extra });
+  // A chalk mark and a slash are tries of the child in the task, as a put is (#54).
+  const work = (trial, act, extra = {}) => {
+    if (act === 'mark' || act === 'slash') childPut.add(`trial-${trial}`);
+    return worldCommand(state, { type: 'work', id: 'hero', trial, act, ...extra });
+  };
   // A tap only walks: on a thing, a place, or a person, the hero walks there and turns to it, and
   // it becomes the target of the action button (docs/TASKS.md). A tap never does a step of a task.
   let chosen = null; // the last tap: { id (an entity), along (a place along a stem or a line) }
@@ -796,7 +800,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       worldCommand(state, { type: 'face', id: 'hero', x: p.x, z: p.z });
       if (pressAfterWalk) {
         pressAfterWalk = false;
-        act();
+        act(true);
       }
     };
     // Near enough to act there: only a turn to it.
@@ -809,10 +813,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // there (src/core/world/systems/work.js).
   const standOf = (wz) => wz.zone.stand ?? wz.position;
   // The point of a place nearest to p (half blocks): in its rect, or its point.
-  const nearIn = (wz, p) => {
-    const r = wz.zone.rect;
-    return r ? { x: Math.max(r.x0, Math.min(r.x1, p.x)), z: Math.max(r.z0, Math.min(r.z1, p.z)) } : wz.position;
-  };
+  const nearIn = nearestPoint;
   function tapTaskPlace(hit) {
     const wz = workZoneAt(hit.x * 2, hit.y * 2);
     if (!wz) return false;
@@ -1710,6 +1711,47 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return null;
   }
 
+  // The tasks where the child put a thing, and the last thing that the child took from a heap
+  // ({ task, kind }).
+  const childPut = new Set();
+  let lastPick = null;
+  // A task (its owner, trial-<id>) that is open now.
+  const openTask = (task) => {
+    if (!task?.startsWith('trial-')) return false;
+    const tz = trialZone(task.slice(6));
+    return Boolean(tz && !tz.zone.done);
+  };
+  // The kind of thing that a press takes from a heap now: the kind of the last pick (the child does
+  // the same again), '' (none), or null (any kind). At the healer, when the basket has enough of
+  // that kind, the next kind that the basket needs (#54).
+  function wantKind() {
+    if (!lastPick || !openTask(lastPick.task)) return null;
+    if (lastPick.task !== 'trial-healer') return lastPick.kind;
+    const basket = zoneOf('basket')?.zone;
+    if (!basket) return lastPick.kind;
+    const each = taskOf(trialDef('healer'), trialZone('healer').zone.level ?? 0).each;
+    const count = (kind) => basket.items.filter((id) => getEntity(state, id)?.item.kind === kind).length;
+    if (count(lastPick.kind) < each) return lastPick.kind;
+    // '': the basket has enough of each kind, and a press takes no more.
+    return basket.kinds.map((k) => `herb-${k}`).find((k) => count(k) < each) ?? '';
+  }
+  // A task or a folk game goes on now.
+  const taskOn = () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done));
+  // The acts of the button that are not work: in a task, they never keep a press from the work.
+  const WORKLESS = new Set(['talk', 'look', 'ride']);
+  // Half blocks: a press walks the hero to the work of the task this far away at most (#54).
+  const FAR_WORK = 80;
+  // The press walks the hero to a work of the task out of reach, and does its act at the end of
+  // the walk (as after a tap on the place).
+  function goWork(c) {
+    const e = getEntity(state, c.target);
+    if (e?.zone?.rule === 'line') goTo(c.at, e.id, Math.round(c.at.x - e.zone.x), { x: c.at.x, z: standOf(e).z });
+    else if (e?.zone) goTo(c.at, e.id, null, standOf(e));
+    // A standing culm: the hero stands at its side of the road (the clump is dense).
+    else if (e?.item?.kind === 'culm') goTo(c.at, e.id, null, { x: c.at.x + 2, z: c.at.z });
+    else goTo(c.at, c.target);
+    if (hero().route || arrivals.size) pressAfterWalk = true;
+  }
   // The places that the hands take a thing back from (the opposite of a put).
   const TAKE_BACK = new Set(['bundle', 'basket', 'line', 'exact', 'share', 'spots', 'hearth']);
   // The point in front of the hero (half blocks), for the places on a line.
@@ -1719,13 +1761,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // finish of a task at its person, the acts of things, the hands (pick up, put, take back), a
   // talk, and Nghé. Each: { act, icon, target (the entity that the outline marks), keys (the ids
   // that a tap makes the target), at (half blocks), d, rank, run, hold, release, ghost }.
+  // The work of a task that is out of reach (work: true) is in out.far: with no work in reach, a
+  // press walks the hero there, and the act comes at the end of the walk (#54).
   function candidates() {
     const h = hero();
     const hp = h.position;
     const out = [];
+    const far = [];
+    out.far = far;
     const add = (c, reach) => {
       const d = distHb(hp, c.at) - (c.size ?? 0);
       if (d <= reach) out.push({ rank: 1, keys: [c.target], ...c, d });
+      else if (c.work && d <= FAR_WORK) far.push({ rank: 1, keys: [c.target], ...c, d });
     };
     const open = (id) => {
       const tz = trialZone(id);
@@ -1750,15 +1797,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The finish is a try (a commit): it comes after a tap on the person, or when no heap of the
       // work is in reach. A child who presses again after a put never ties by accident (#47).
       const tapped = chosen?.id === q.entity;
-      if (fin && (tapped || !heapNear(null))) add({ ...base, ...fin, rank: 0 }, REACH + 3);
+      // With no tap, the finish comes only after a put of the child in the task: the first step
+      // that the mentor shows is not a try of the child (#54).
+      const task = mentoring.taskOfPerson(q.entity);
+      if (fin && (tapped || (!heapNear(null) && childPut.has(task)))) add({ ...base, ...fin, rank: 0, work: true }, REACH + 3);
       // In a task, the call for help comes after a tap on the person when a heap of the work is
       // in reach: a press takes from the heap.
       else if (fin && !tapped) continue;
+      // While the task of the person is open, a talk is a call for help: it needs a tap on the
+      // person. A press with no tap does the work (#54).
+      else if (task && !tapped) continue;
       // A talk that the child heard comes again only after a tap on the person: a child who
       // presses the button near the forge for other things does not open the same talk (#49).
       // In a practice, a person who is not of the practice greets only after a tap (#51).
       else if (practice && q.kind === 'npc' && !ofPractice(q.ref) && !tapped) continue;
-      else if (tapped || q.kind !== 'npc' || mentoring.taskOfPerson(q.entity) || !heard.has(pickTalk(data.npcs.npcs[q.ref] ?? {}, profile))) add({ ...base, act: 'talk', icon: 'talk', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
+      else if (tapped || q.kind !== 'npc' || !heard.has(pickTalk(data.npcs.npcs[q.ref] ?? {}, profile))) add({ ...base, act: 'talk', icon: 'talk', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
     }
     if (!held) {
       // The folk games of the children: join them, and the throw of the shard (a hold).
@@ -1769,11 +1822,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const tz = open(id);
         // While the smith shows the quench on his own piece, the iron is his.
         const iron = tz?.zone.heat !== null && tz?.zone.heat !== undefined && !tz.zone.bent && !tz.zone.demo ? getEntity(state, tz.zone.iron ?? 'iron:smith') : null;
-        if (iron) add({ act: 'quench', icon: 'water', target: iron.id, at: tz.zone.anvil, rank: 0, run: () => work(id, 'quench') }, REACH + 3);
+        if (iron) add({ act: 'quench', icon: 'water', target: iron.id, at: tz.zone.anvil, rank: 0, work: true, run: () => work(id, 'quench') }, REACH + 3);
       }
       const hearth = zoneOf('hearth');
       const bellows = query(state, 'item', 'position').find((e) => e.item.kind === 'bellows' && !e.hidden);
-      if (open('horse')?.zone.heat === null && hearth?.zone.items.length) add({ act: 'blow', icon: 'fire', target: bellows?.id ?? hearth.id, keys: [bellows?.id, hearth.id], at: bellows?.position ?? hearth.position, rank: 0, run: () => work('horse', 'blow') }, REACH + 3);
+      if (open('horse')?.zone.heat === null && hearth?.zone.items.length) add({ act: 'blow', icon: 'fire', target: bellows?.id ?? hearth.id, keys: [bellows?.id, hearth.id], at: bellows?.position ?? hearth.position, rank: 0, work: true, run: () => work('horse', 'blow') }, REACH + 3);
       const drum = hamlet.round('drum');
       if (drum && !drum.done) {
         for (const e of query(state, 'hamletTap', 'position')) if (e.hamletTap.act === 'drum') add({ act: 'drum', icon: 'drum', target: e.id, at: e.position, rank: 0, run: () => work('drum', 'tap', { which: e.hamletTap.which ?? 0 }) }, REACH + 1);
@@ -1798,7 +1851,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         for (const e of query(state, 'item', 'position')) {
           if (e.item.kind !== 'culm' || e.hidden) continue;
           const culm = e.item.slot;
-          add({ act: 'slash', icon: 'knife', target: e.id, at: e.position, rank: 0, hold: true, run: () => work('staffs', 'aim', { culm }), release: () => work('staffs', 'slash', { culm }) }, REACH + 2);
+          add({ act: 'slash', icon: 'knife', target: e.id, at: e.position, rank: 0, work: true, hold: true, run: () => work('staffs', 'aim', { culm }), release: () => work('staffs', 'slash', { culm }) }, REACH + 2);
         }
       }
       // The stem of the woodcutter: a chalk mark at the place in front of the hero (or at the place
@@ -1813,35 +1866,38 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const marked = wood.zone.marks.includes(at);
         // A mark goes away only after a tap on it: a second press never takes away the mark that
         // the child just made (#47).
-        if (!(marked && tapped === null)) add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z }, run: () => work('woodcutter', 'mark', { at }) }, REACH + 2);
+        if (!(marked && tapped === null)) add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, work: !marked, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z }, run: () => work('woodcutter', 'mark', { at }) }, REACH + 2);
       }
       // The hands: pick up a thing (on a span, only its last plank); take one back from a place.
+      const want = wantKind();
+      const wantLeft = want && query(state, 'item', 'position').some((e) => e.item.kind === want && !e.item.held && !e.hidden && ['heap', 'pile'].includes(zoneOf(e.item.zone)?.zone.rule));
       for (const e of query(state, 'item', 'position')) {
         if (e.hidden || e.item.held || e.item.set || e.item.fixed) continue;
         const zone = zoneOf(e.item.zone);
         const rule = zone?.zone.rule;
         if (rule === 'span') {
           if (!canTake(zone.zone, e.id)) continue;
-          // With the pile in reach, the last plank comes back only after a tap on it (#47).
-          if (heapNear(zone.zone.task) && chosen?.id !== e.id) continue;
+          // The last plank comes back only after a tap on it: a press never undoes a put (#47, #54).
+          if (chosen?.id !== e.id) continue;
           add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [e.id, zone.id], at: zone.position, rank: 1, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
           continue;
         }
         if (zone && rule !== 'heap' && rule !== 'pile') continue;
-        add({ act: 'pick', icon: 'hand-pick', target: e.id, at: middleOf(e), size: (e.item.size ?? 0) / 2, rank: 1, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
+        // Of the things of a task, the kind of the last pick first, while a heap has that kind. A
+        // tap on a thing chooses it.
+        if (want !== null && chosen?.id !== e.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || want === '')) continue;
+        add({ act: 'pick', icon: 'hand-pick', target: e.id, at: middleOf(e), size: (e.item.size ?? 0) / 2, rank: 1, work: openTask(e.item.task), run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
       }
-      // Take back: the last thing put on a place (on a line or in the stream: the thing in front),
-      // from where the hero stands to put (the opposite of a put). When the heap of the same task
-      // is in reach, only after a tap on the thing itself: a press there takes from the heap (#47).
-      const front = frontOf(hp);
+      // Take back: the thing that the child tapped on a place (the opposite of a put), from where
+      // the hero stands to put. Only after a tap on the thing itself, with the heap in reach or
+      // not: a press never undoes what the child just put (#47, #54).
       for (const z of query(state, 'zone')) {
         if (!TAKE_BACK.has(z.zone.rule)) continue;
         const things = z.zone.items.map((id) => getEntity(state, id)).filter((e) => e && !e.hidden && !e.item.held && !e.item.set && !e.item.fixed && canTakeWork(state, e));
-        if (!things.length) continue;
-        if (heapNear(z.zone.task) && !things.some((e) => e.id === chosen?.id)) continue;
+        const e = things.find((x) => x.id === chosen?.id);
+        if (!e) continue;
         const spread = z.zone.rule === 'line' || z.zone.rule === 'spots';
-        const e = spread ? things.reduce((a, b) => (distHb(front, b.position) < distHb(front, a.position) ? b : a)) : things[things.length - 1];
-        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [z.id, ...things.map((x) => x.id)], at: spread ? e.position : nearIn(z, hp), rank: 1.5, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH + 2);
+        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [e.id], at: spread ? e.position : nearIn(z, hp), rank: 1.5, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH + 2);
       }
       // The guess at the bridge: the plank outline in front of the hero (or the outline of the last
       // tap). A press chooses it: the bridge takes that many planks.
@@ -1864,7 +1920,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // Nghé: get on its back (only when nothing else is in reach), never in a task or a folk game
       // (a press in the middle of the rope must not put the hero on Nghé, #44).
       const nghe = query(state, 'follow', 'position').find((e) => e.follow?.target === 'hero' && !e.hidden);
-      if (nghe && !raidOn() && !mentoring.activeKey() && !folk.active()) add({ act: 'ride', icon: 'ride', target: nghe.id, at: nghe.position, rank: 6, run: () => worldCommand(state, { type: 'ride', id: 'hero', mount: nghe.id }) }, REACH + 2);
+      if (nghe && !raidOn() && !taskOn()) add({ act: 'ride', icon: 'ride', target: nghe.id, at: nghe.position, rank: 6, run: () => worldCommand(state, { type: 'ride', id: 'hero', mount: nghe.id }) }, REACH + 2);
       return out;
     }
     // A thing in the hands: the places that take it (a ghost shows where it goes on a line).
@@ -1872,11 +1928,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const z of query(state, 'zone')) {
       const zone = z.zone;
       if (!canPut(zone, held)) continue;
+      // A place of a done task is never a target (#54: the forge of the smith and the hearth of the
+      // iron horse are at the same place).
+      if (zone.task?.startsWith('trial-') && trialZone(zone.task.slice(6))?.zone.done) continue;
+      const work = openTask(zone.task);
       const put = (at, opts = {}) => worldCommand(state, { type: 'put', id: 'hero', zone: zone.id, ...(at ? { at } : {}), ...opts });
       if (zone.rule === 'span') {
         const before = zone.items.reduce((a, id) => a + (getEntity(state, id)?.item.size ?? 0), 0);
         const slot = spanSlot(zone, before, held.item.size);
-        add({ act: 'put', icon: 'hand-put', target: z.id, at: z.position, rank: 0, ghost: { look: held.look, x: slot.x, y: slot.y, z: slot.z, facing: 0 }, run: () => put(null) }, REACH);
+        add({ act: 'put', icon: 'hand-put', target: z.id, at: z.position, work, rank: 0, ghost: { look: held.look, x: slot.x, y: slot.y, z: slot.z, facing: 0 }, run: () => put(null) }, REACH);
       } else if (zone.rule === 'line') {
         if (trialZone('fisher')?.zone.tide?.phase !== 'low') {
           // The tide is in: the line takes no stake now. The fisher says a short line, and the stake
@@ -1886,36 +1946,42 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           continue;
         }
         const tapped = chosen?.id === z.id && chosen.along !== null ? chosen.along : null;
-        const slot = Math.max(1, Math.min(zone.length, tapped ?? Math.round(front.x - zone.x)));
-        if (zone.items.some((id) => getEntity(state, id)?.item.slot === slot)) continue;
+        // With no tap, the next point of the row: one space of the row after its last stake,
+        // toward the float (#54: the press goes on with the row, and never puts a stake back).
+        const row = query(state, 'item').filter((e) => e.item.zone === zone.id && !e.item.held && e.item.slot != null).map((e) => e.item.slot);
+        const slot = Math.max(1, Math.min(zone.length, tapped ?? Math.max(0, ...row) + zone.space));
+        if (row.includes(slot)) continue;
         const at = { x: zone.x + slot, z: zone.z };
-        add({ act: 'put', icon: 'hand-put', target: z.id, at, rank: 0, ghost: { look: held.look, x: at.x, y: zone.y, z: at.z, facing: 0 }, run: () => put(at) }, REACH + 2);
+        add({ act: 'put', icon: 'hand-put', target: z.id, at, work, rank: 0, ghost: { look: held.look, x: at.x, y: zone.y, z: at.z, facing: 0 }, run: () => put(at) }, REACH + 2);
       } else if (zone.rule === 'spots') {
         const tapped = chosen?.id === z.id && chosen.along !== null && freeSlot(state, zone, zone.slots[chosen.along]) === chosen.along ? chosen.along : null;
         const k = tapped ?? freeSlot(state, zone, front);
         if (k < 0) continue;
         const at = { x: zone.slots[k].x, z: zone.slots[k].z };
-        add({ act: 'put', icon: 'hand-put', target: z.id, at, rank: 0, ghost: { look: held.look, x: at.x, y: zone.y, z: at.z, facing: 0 }, run: () => put(at) }, REACH + 2);
+        add({ act: 'put', icon: 'hand-put', target: z.id, at, work, rank: 0, ghost: { look: held.look, x: at.x, y: zone.y, z: at.z, facing: 0 }, run: () => put(at) }, REACH + 2);
       } else if (zone.rule === 'pile') {
         // A pile is long: near the pile or near one of its planks.
         // A tap on a plank of the pile makes the pile the target too.
         const near = [z.position, ...zone.items.map((id) => getEntity(state, id)).filter(Boolean).map(middleOf)];
         const at = near.reduce((a, b) => (distHb(hp, b) < distHb(hp, a) ? b : a));
-        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at, rank: 0.5, run: () => put(null) }, REACH + 3);
+        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at, work, rank: 0.5, run: () => put(null) }, REACH + 3);
       } else if (zone.rule === 'heap') {
         if (held.item.home !== zone.id) continue;
-        // Back on its own heap: the last place before the ground, so that a press at the heap
-        // after a pick-up puts the thing on the place of the task (#44).
+        // Back on its own heap: only after a tap on the heap. A press after a pick never puts the
+        // thing back (#44, #54: pick, put back, pick, put back).
+        if (!chosen || ![z.id, ...zone.items].includes(chosen.id)) continue;
         add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: z.position, rank: 4, run: () => put(null) }, REACH + 2);
       } else if (zone.rule === 'road') {
         continue;
       } else {
         if (zone.rule === 'hearth' && trialZone('horse')?.zone.heat !== null) continue;
         // A tap on a thing on the place (the sticks on the wood pile) makes the place the target too.
-        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: nearIn(z, hp), rank: 0, run: () => put(null) }, REACH + 2);
+        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: nearIn(z, hp), work, rank: 0, run: () => put(null) }, REACH + 2);
       }
     }
-    // Anywhere else: put it down on the ground in front of the hero.
+    // Anywhere else: put it down on the ground in front of the hero. A thing of a task never goes
+    // on the ground by the button (#54): it goes to its place, or the button does nothing.
+    if (held.item.task?.startsWith('trial-')) return out;
     out.push({ act: 'put', icon: 'hand-put', target: held.id, keys: [], at: hp, d: 0, rank: 10, run: () => worldCommand(state, { type: 'drop', id: 'hero' }) });
     return out;
   }
@@ -1929,6 +1995,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (raidOn()) return raidAction();
     if (h.riding) return { act: 'ride-off', icon: 'ride-off', target: h.riding, run: () => worldCommand(state, { type: 'ride', id: 'hero' }) };
     let list = candidates();
+    // In a task, with no work in reach, the press walks the hero to the nearest work of the task:
+    // the heap, the place for the thing in the hands, the anvil, the culms (#54). A talk, a look,
+    // or a ride never comes in place of the work.
+    const tappedNear = chosen && list.some((c) => c.keys.includes(chosen.id));
+    if (taskOn() && !tappedNear && !list.some((c) => c.work || !WORKLESS.has(c.act)) && list.far.length) {
+      const c = list.far.reduce((a, b) => (b.d + b.rank * 0.5 < a.d + a.rank * 0.5 ? b : a));
+      return { ...c, go: true, hold: false, release: null, run: () => goWork(c) };
+    }
     if (!list.length) return null;
     // With a thing in the hands: a place in reach that takes it always comes before the ground,
     // and the hero turns to it (#44). The ground is a target only when no place is in reach.
@@ -1954,7 +2028,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // The action button (or E): do the act of the target, and the target pulses once. An act
   // that goes on while the button is down starts here, and ends with the hold of the button.
-  function act() {
+  // walked: the press came during the walk to the target. An act that goes on while the button is
+  // down (a slash) does not start then: the button is up (#54).
+  function act(walked = false) {
     const a = action();
     // The hero still walks to the target of the last tap, and the button has no act on it yet:
     // the press comes at the end of the walk (a child presses at once).
@@ -1963,13 +2039,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (!a) return;
+    if (a.hold && walked) return;
     if (a.hold) return hold(true);
     // The hero turns to the target of the act (a place behind the hero, #44).
     if (a.at && a.act !== 'ride' && a.act !== 'ride-off') worldCommand(state, { type: 'face', id: 'hero', x: a.at.x, z: a.at.z });
     a.run();
     // The act on the target of the last tap is done: the next press chooses again (#47: the next
     // press never takes back what was just put there).
-    if (chosen && (a.keys ?? [a.target]).includes(chosen.id)) chosen = null;
+    if (!a.go && chosen && (a.keys ?? [a.target]).includes(chosen.id)) chosen = null;
     emit({ type: 'pulse', id: a.target });
   }
 
@@ -2522,6 +2599,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const ev of events) {
       if (ev.type === 'greet') greeting(ev);
       emit(ev);
+      // The kind of the last thing of a task that the child (or the mentor, in the first step)
+      // took or put: a press does the same again (#54).
+      if ((ev.type === 'pick' || ev.type === 'put') && ev.item) {
+        const it = getEntity(state, ev.item)?.item;
+        if (it?.task?.startsWith('trial-')) lastPick = { task: it.task, kind: it.kind };
+      }
       if (ev.id === 'sky') {
         // At dawn the enemies of a lost raid come again, and the game saves the start of the day
         // (a restore point for the parent).
@@ -2541,6 +2624,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         continue;
       }
       mentoring.worldEvent(ev);
+      // The tasks where the child put a thing (#54).
+      if (ev.type === 'put' && ev.zone) {
+        const task = zoneOf(ev.zone)?.zone.task;
+        if (task) childPut.add(task);
+      }
       if (ev.type === 'arrived' || ev.type === 'stuck') {
         const fn = arrivals.get(ev.token);
         arrivals.delete(ev.token);
