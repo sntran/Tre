@@ -36,7 +36,24 @@ export function createLogger({ profile, schema, label = () => 'base', quests = [
     }
   }
 
-  const playMinutes = () => (log.playMs + (session ? now() - session.start : 0)) / 60000;
+  // The time of play: the stored time, and the time of the open session since its last save.
+  const playMinutes = () => (log.playMs + (session ? now() - session.saved : 0)) / 60000;
+
+  // The session event in the log: it goes in at the start, and each save moves its end (#52). A
+  // page that goes away with no end (a new link in the same tab, a closed browser) leaves the
+  // session in the log, with the time of its last save as its end. The time of the event is its
+  // end, so that the roll-ups read it after its commits.
+  function update(s, end) {
+    log.playMs += end - s.saved;
+    s.saved = end;
+    // The day of the log rolled up with the session in it: the rest of the session is a new one.
+    if (s.ev && !log.events.includes(s.ev)) s.ev = record('session', { ...s.ev, start: s.ev.end, end: s.ev.end, quests: 0, afterQuest: false });
+    if (!s.ev) return null;
+    Object.assign(s.ev, {
+      t: end, end, quests: Math.max(0, questSteps(profile, quests) - s.steps), afterQuest: s.lastStep !== null && end - s.lastStep >= AFTER_QUEST_MS, first: s.first,
+    });
+    return s.ev;
+  }
 
   return {
     record,
@@ -47,7 +64,9 @@ export function createLogger({ profile, schema, label = () => 'base', quests = [
     // A session of play starts. practice: the id of the activity of a practice link, or null.
     startSession({ practice = null } = {}) {
       if (session || drop) return;
-      session = { start: now(), steps: questSteps(profile, quests), first: 'none', lastStep: null, practice };
+      const start = now();
+      session = { start, saved: start, steps: questSteps(profile, quests), first: 'none', lastStep: null, practice };
+      session.ev = record('session', { start, end: start, endedBy: 'device', quests: 0, place: null, afterQuest: false, first: 'none', practice });
     },
     // The kind of the first action of the session (walk, place, talk, travel, or menu).
     action(kind) {
@@ -57,25 +76,24 @@ export function createLogger({ profile, schema, label = () => 'base', quests = [
     questStep() {
       if (session) session.lastStep = now();
     },
-    // Look for quest steps that are done since the last look (at each save).
+    // At each save: the quest steps that are done since the last look, and the end of the session
+    // in the log moves to now.
     checkQuests() {
       if (!session) return;
       const steps = questSteps(profile, quests);
       if (steps > (session.seen ?? session.steps)) session.lastStep = now();
       session.seen = steps;
+      update(session, now());
     },
     // The end of the session: by the device (the app went to the background), the parent (the
     // time limit), or the child (the child left the game).
     endSession(endedBy, place = null) {
       if (!session) return null;
-      const end = now();
       const s = session;
       session = null;
-      log.playMs += end - s.start;
-      const steps = Math.max(0, questSteps(profile, quests) - s.steps);
-      return record('session', {
-        start: s.start, end, endedBy, quests: steps, place, afterQuest: s.lastStep !== null && end - s.lastStep >= AFTER_QUEST_MS, first: s.first, practice: s.practice,
-      });
+      const ev = update(s, now());
+      if (ev) Object.assign(ev, { endedBy, place });
+      return ev;
     },
     get open() {
       return Boolean(session);

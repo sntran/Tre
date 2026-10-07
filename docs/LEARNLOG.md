@@ -27,7 +27,7 @@ Each event has `type`, `t` (the time), and `variant`, and the fields of its kind
 | Kind | Fields | Sent by |
 | --- | --- | --- |
 | `attempt` | task, skill, phase (explore or commit), success, efficient, first, mashing, parts, resets, latencies, hint, hintSeen, off (how far the commit was from the target, in groups: 0 is exact), pBefore, pAfter, play, retry, harder, map | the village, for each skill event of a commit on the bridge |
-| `session` | start, end, endedBy (device, parent, or child), quests, place, afterQuest, first (the first action), practice (the id of the activity of a practice link, or null) | the app, at the end of a session |
+| `session` | start, end, endedBy (device, parent, or child), quests, place, afterQuest, first (the first action), practice (the id of the activity of a practice link, or null) | the app, at the start of a session; each save moves its end, and the end of the session sets endedBy and place (#52) |
 | `review` | skill, due, gap (days since the last practice), result | the learner, for an answer for a mastered skill that is due |
 | `exam` | skill, correct, p (P(L) before the answer) | Văn Miếu, for each exam item |
 | `prediction` | task, gap, guess (null when skipped), used, solved | the village, at the first commit on a gap |
@@ -40,7 +40,7 @@ Each event has `type`, `t` (the time), and `variant`, and the fields of its kind
 
 The scenes never write the log. They call `ctx.log(kind, fields)`, the one way in (`src/core/logger.js`). The logger adds the time and the variant, keeps the open session, and counts the time of play.
 
-A **session** starts in a scene of play (the village, a battle, Văn Miếu) and ends at the title (the child left), at the rest screen (the time limit of the parent), or when the page goes to the background (the device). `quests` counts the quest steps that were done in the session, and `afterQuest` is true when the play went on for one more minute after a quest step.
+A **session** starts in a scene of play (the village, a battle, Văn Miếu) and ends at the title (the child left), at the rest screen (the time limit of the parent), or when the page goes to the background (the device). `quests` counts the quest steps that were done in the session, and `afterQuest` is true when the play went on for one more minute after a quest step. The session goes into the log at its start, and each save (at least each half minute of play) moves its end to the time of the save. A page that goes away with no end of the session (a new practice link in the same tab, a closed browser) leaves the session in the log with the end of its last save and `endedBy: device`. The time `t` of the event is its end, so that the roll-ups read it after its commits.
 
 **Mashing** (rule 22) is computed in the log module (`isMashing`) from the latencies, the pause after a failure, and a sweep of sizes at one place. The attempt carries the flag.
 

@@ -218,3 +218,30 @@ test('which help works: the moves of the mentors with the next commit, the check
   assert.deepEqual(mergeRollups(old, r.base).helps, r.base.helps);
   assert.throws(() => checkEvent({ ...ALL.find((e) => e.type === 'help'), move: 'answer' }, schema), 'no move gives the answer');
 });
+
+test('a page that goes away with no end of its session leaves the session in the log, with the time of its last save as its end (#52)', async () => {
+  const { createLogger } = await import('../src/core/logger.js');
+  const quests = load('data/quests.json').quests;
+  let now = T0;
+  const profile = { flags: {}, inventory: {}, grade: 2, quests: {} };
+  const first = createLogger({ profile, schema, quests, now: () => now });
+  first.startSession({ practice: 'ren-sat' });
+  assert.equal(profile.log.events.filter((e) => e.type === 'session').length, 1, 'the session is in the log at its start');
+  now += 50000;
+  first.checkQuests(); // a save
+  now += 20000;
+  // A new practice link opens in the same tab: no end of the session, and a new page.
+  const second = createLogger({ profile, schema, quests, now: () => now });
+  second.startSession({ practice: 'hai-thuoc' });
+  now += 60000;
+  second.endSession('child', 'phu-dong');
+  const sessions = profile.log.events.filter((e) => e.type === 'session');
+  assert.deepEqual(sessions.map((s) => [s.practice, (s.end - s.start) / 1000, s.endedBy]), [['ren-sat', 50, 'device'], ['hai-thuoc', 60, 'child']]);
+  assert.equal(profile.log.playMs, 110000, 'the time of play has both sessions');
+  // The week of the log counts both visits, each with its minutes.
+  const { weekRollups } = await import('../src/core/learnlog.js');
+  const week = Object.values(weekRollups(profile.log.events, { tz: 0 }).base)[0];
+  assert.equal(week.sessions, 2);
+  assert.equal(week.sent, 2);
+  assert.ok(Math.abs(week.minutes - 110 / 60) < 1e-9);
+});

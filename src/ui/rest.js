@@ -21,15 +21,22 @@ function calm(ctx) {
   return ctx.scene === 'village' && !ctx.activeVillage && !ctx.ui.querySelector('.modal-layer, .dialogue-layer');
 }
 
+const SAVE_TICKS = 6; // ticks of 5 seconds
+
 export function startTimer(ctx) {
   let last = Date.now();
   let warned = false;
+  let ticks = 0;
   setInterval(() => {
     const now = Date.now();
     const delta = now - last;
     last = now;
     const p = ctx.profile;
     if (!p || document.visibilityState !== 'visible' || !PLAY_SCENES.has(ctx.scene)) return;
+    // A save each half minute of play: the end of the session in the learning log moves with it,
+    // so that a page that goes away loses at most half a minute of the visit (#52).
+    ticks += 1;
+    if (ticks % SAVE_TICKS === 0) ctx.save('tick');
     // The session of the village counts the time of play in its steps.
     if (!(ctx.scene === 'village' && ctx.activeVillage)) addPlayTime(p.time, now, delta);
     const status = timeStatus(p.time, p.settings.timeLimit, ctx.data.game.time.warnBeforeMin, now);
