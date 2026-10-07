@@ -1,20 +1,45 @@
 {
-  "_about": "The five callings (nghề). A calling never blocks a subject. It gives a bonus in one subject. bonus: the battle bonus of the Võ skill. look: the look of the mentor in data/figures.json, drawn at full length with the tool of the calling.",
+  "_about": "The five callings (nghề). A calling never blocks a subject. look: the look of the mentor in data/figures.json, drawn at full length with the tool of the calling. lineKey: one short line of what the child learns with the mentor in the world (the card of the choice, #51).",
   "callings": [
-    { "id": "scholar", "look": "mentor-scholar", "nameKey": "calling.scholar.name", "mentorKey": "calling.scholar.mentor",
+    {
+      "id": "scholar",
+      "look": "mentor-scholar",
+      "nameKey": "calling.scholar.name",
+      "mentorKey": "calling.scholar.mentor",
       "subjectKey": "calling.scholar.subject",
-      "bonus": { "extraCards": 1, "shieldBlock": 1 } },
-    { "id": "smith", "look": "mentor-smith", "nameKey": "calling.smith.name", "mentorKey": "calling.smith.mentor",
+      "lineKey": "calling.scholar.line"
+    },
+    {
+      "id": "smith",
+      "look": "mentor-smith",
+      "nameKey": "calling.smith.name",
+      "mentorKey": "calling.smith.mentor",
       "subjectKey": "calling.smith.subject",
-      "bonus": { "damage": { "shield": 1 } } },
-    { "id": "fisher", "look": "mentor-fisher", "nameKey": "calling.fisher.name", "mentorKey": "calling.fisher.mentor",
+      "lineKey": "calling.smith.line"
+    },
+    {
+      "id": "fisher",
+      "look": "mentor-fisher",
+      "nameKey": "calling.fisher.name",
+      "mentorKey": "calling.fisher.mentor",
       "subjectKey": "calling.fisher.subject",
-      "bonus": { "damage": { "water": 1 } } },
-    { "id": "healer", "look": "mentor-healer", "nameKey": "calling.healer.name", "mentorKey": "calling.healer.mentor",
+      "lineKey": "calling.fisher.line"
+    },
+    {
+      "id": "healer",
+      "look": "mentor-healer",
+      "nameKey": "calling.healer.name",
+      "mentorKey": "calling.healer.mentor",
       "subjectKey": "calling.healer.subject",
-      "bonus": { "heal": 1 } },
-    { "id": "woodcutter", "look": "mentor-woodcutter", "nameKey": "calling.woodcutter.name", "mentorKey": "calling.woodcutter.mentor",
+      "lineKey": "calling.healer.line"
+    },
+    {
+      "id": "woodcutter",
+      "look": "mentor-woodcutter",
+      "nameKey": "calling.woodcutter.name",
+      "mentorKey": "calling.woodcutter.mentor",
       "subjectKey": "calling.woodcutter.subject",
-      "bonus": { "fastWalk": true, "damage": { "fire": 1 } } }
+      "lineKey": "calling.woodcutter.line"
+    }
   ]
 }

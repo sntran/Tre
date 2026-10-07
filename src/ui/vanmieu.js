@@ -151,13 +151,13 @@ function chooseCalling(ctx, change) {
     }, { cls: 'btn big red', disabled: !picked });
     for (const c of data.callings.callings) {
       const card = h('button', { class: 'calling-card', type: 'button', 'aria-pressed': String(c.id === picked) }, [
-        portraitCanvas(ctx, data.figures.figures[c.look], { framing: 'full', size: 96 }), h('strong', { text: t(c.nameKey) }), h('small', { text: t(c.mentorKey) }), h('small', { text: t(c.subjectKey) }),
+        portraitCanvas(ctx, data.figures.figures[c.look], { framing: 'full', size: 64 }), h('span', { class: 'calling-words' }, [h('strong', { text: t(c.nameKey) }), h('small', { text: t(c.lineKey) })]),
       ]);
       card.addEventListener('click', () => {
         picked = c.id;
         for (const x of grid.children) x.setAttribute('aria-pressed', String(x === card));
         confirm.disabled = false;
-        speak(c.nameKey);
+        speak(c.lineKey);
       });
       grid.append(card);
     }
