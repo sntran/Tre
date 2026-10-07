@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
-import { orderWord, personName, wayOf, namesOf, nameGlosses, namesIn } from '../src/core/naming.js';
+import { orderWord, personName, wayOf, namesOf, nameGlosses, talkGloss } from '../src/core/naming.js';
 import { createI18n } from '../src/core/i18n.js';
 import { load } from './helpers.js';
 import { runHeadless } from './story-run.js';
@@ -74,16 +74,15 @@ test('no two people of one place have the same name: the south adds the name of 
 test('the gloss of a name shows one time, in English only', () => {
   const n = namesOf({ npcs: { npcs }, regions, naming }, 'giong');
   const seen = [];
-  const params = { planter: n.planter, duckGirl: n['duck-girl'], fisherUncle: n['fisher-uncle'], drummer: n.drummer, count: 3 };
-  assert.deepEqual(namesIn(params).length, 4);
-  assert.deepEqual(nameGlosses(namesIn(params), seen, en), [
+  const four = [n.planter, n['duck-girl'], n['fisher-uncle'], n.drummer];
+  assert.deepEqual(nameGlosses(four, seen, en), [
     'Cô Năm: the fifth child of her family.',
     'Chị Hến: a young person is called by her own small name, Hến.',
     'Chú Tư: the fourth child of his family.',
     'Ông Dương: an old man is called by the name of his first child, Dương.',
   ]);
-  assert.deepEqual(nameGlosses(namesIn(params), seen, en), [], 'one time for each name');
-  assert.deepEqual(nameGlosses(namesIn(params), [], vi), [], 'no gloss in Vietnamese');
+  assert.deepEqual(nameGlosses(four, seen, en), [], 'one time for each name');
+  assert.deepEqual(nameGlosses(four, [], vi), [], 'no gloss in Vietnamese');
   // In the south, the same old man has another name, and so another gloss.
   const s = namesOf({ npcs: { npcs }, regions, naming }, 'gia-dinh');
   assert.deepEqual(nameGlosses([s.drummer], seen, en), ['Ông Hai: the first child of his family.']);
@@ -113,4 +112,30 @@ test('in the game, the greeting of the hamlet names the people by the way of the
   const failures = await runHeadless(story, { onSession: (s) => s.listen((ev) => { if (ev.textKey === 'hamlet.greet' && ev.screen === 'callout') line = vi.t(ev.textKey, ev.params); }) });
   assert.deepEqual(failures, []);
   assert.equal(line, 'Chào cháu! Ở xóm này ai cũng có việc cần cháu giúp: cô Năm, chị Hến, chú Tư và ông Dương.');
+});
+
+// The glosses of names one at a time (#42): the greeting of the hamlet names four people and shows
+// no gloss; the first talk with the planter has the gloss of Cô Năm, one gloss for the line; the
+// next lines and the second talk have none.
+test('the gloss of a name comes in the first talk with that person, one at a time; the greeting of the hamlet has none', async () => {
+  const story = JSON.parse(readFileSync(new URL('./stories/practice-xom-ruong.json', import.meta.url)));
+  const lines = [];
+  const failures = await runHeadless(story, { onSession: (s) => s.listen((ev) => ev.type === 'open' && (ev.screen === 'callout' || ev.screen === 'dialogue') && lines.push(ev)) });
+  assert.deepEqual(failures, []);
+  const n = namesOf({ npcs: { npcs }, regions, naming }, 'giong');
+  const speakerOf = (ev) => ev.speaker ?? ev.id?.replace(/^npc:/, '') ?? null;
+  const seen = [];
+  const glosses = lines.map((ev) => [ev.textKey, talkGloss(ev, n[speakerOf(ev)] ?? null, seen, en)]);
+  const greet = glosses.find(([k]) => k === 'hamlet.greet');
+  assert.ok(greet, 'the greeting');
+  assert.equal(greet[1], null, 'the greeting has no gloss');
+  for (const [k, g] of glosses.filter(([k]) => k.startsWith('hamlet.point.'))) assert.equal(g, null, `${k}: a bubble has no gloss`);
+  const talk = glosses.filter(([k]) => k.startsWith('dlg.planter.'));
+  assert.equal(talk[0][1], 'Cô Năm: the fifth child of her family.', 'the first line of the first talk with the planter');
+  assert.ok(talk.slice(1).every(([, g]) => g === null), 'the next lines have none');
+  // A second talk with the planter: no gloss again.
+  const first = lines.find((ev) => ev.textKey === talk[0][0]);
+  assert.equal(talkGloss(first, n.planter, seen, en), null, 'the second talk has none');
+  // In Vietnamese, no gloss of a name.
+  assert.equal(talkGloss(first, n.planter, [], vi), null);
 });

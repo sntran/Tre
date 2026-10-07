@@ -96,5 +96,13 @@ export function nameGlosses(names, seen, { lang, t }) {
   return out;
 }
 
-// The name parameters in the parameters of a line.
-export const namesIn = (params) => Object.values(params ?? {}).filter((v) => v && typeof v === 'object' && v.gloss);
+// The gloss of a name in a line of a person (#42): the name of the person who talks, the first time
+// that this person talks with the child (the first line of the person in the box of a talk). A
+// bubble (the greeting of the hamlet, a line during the work) and the names inside a line show no
+// gloss, so that a line shows at most one gloss, and the child reads one name at a time.
+// line: { screen, speaker } (an open event of the session); name: the name parameters of the
+// speaker (personName), or null. Returns the text of the gloss, or null.
+export function talkGloss(line, name, seen, i18n) {
+  if (line.screen === 'callout' || !line.speaker || line.speaker === 'narrator' || !name) return null;
+  return nameGlosses([name], seen, i18n)[0] ?? null;
+}
