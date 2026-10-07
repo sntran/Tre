@@ -1,0 +1,63 @@
+{
+ "about": "#50: the raid of the general at the foot of Trâu Sơn on a phone: a tap on the enemies and a press at once; Gióng rides the iron horse beside the road, away from the jar, the brazier, and the forge, and the three are on the screen.",
+ "start": "?story=raid-boss",
+ "lang": "vi",
+ "allow": [
+  "the button Tiếp is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "before-the-raid"
+  },
+  {
+   "print": "(() => { const s = tre.activeVillage.state(); const e = s.entities.find((x) => x.id === 'encounter:boss'); const h = s.entities.find((x) => x.id === 'hero'); return { enc: e?.position, hidden: e?.hidden, hero: h.position, screen: tre.activeVillage.screenOfThing('encounter:boss') }; })()"
+  },
+  {
+   "walk": {
+    "thing": "encounter:boss"
+   },
+   "taps": 12
+  },
+  {
+   "tap": {
+    "thing": "encounter:boss"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid'))",
+   "timeout": 120
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "(() => { const s = tre.activeVillage.state(); const g = s.entities.find((e) => e.id === 'companion:raid'); const h = s.entities.find((e) => e.id === 'steed:raid'); return { riding: g?.riding, steed: h?.look, at: g?.position, sources: s.entities.filter((e) => e.source).map((e) => [e.id, tre.activeVillage.screenOfThing(e.id)]) }; })()"
+  },
+  {
+   "shot": "gióng-rides-the-iron-horse-beside-the-road"
+  },
+  {
+   "wait": 10
+  },
+  {
+   "shot": "the-soldiers-come"
+  }
+ ]
+}
