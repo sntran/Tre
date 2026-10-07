@@ -1081,8 +1081,10 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     },
     // One frame: turn, follow, build the chunks of the ring, fade, and draw.
     // sky: { night, flood } from the world state. ambient: { gusts: { paddy, hedge, tree }, wind
-    // ({ x, z }), windy } for the sway (src/core/world/ambient.js).
-    render(dt, hero, t, sky = null, ambient = null) {
+    // ({ x, z }), windy } for the sway (src/core/world/ambient.js). hero: the point that the view
+    // follows (in a raid or at work, a point between the hero and the work); seen: the hero, for the
+    // fade of the things in front of the hero (#55: the roof of the forge over the hero at the wall).
+    render(dt, hero, t, sky = null, ambient = null, seen = hero) {
       uniforms.uTime.value = t;
       if (ambient) {
         uniforms.uGust.value.set(ambient.gusts.paddy, ambient.gusts.hedge, ambient.gusts.tree);
@@ -1100,7 +1102,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
       focus.z += (hero.z - focus.z) * k;
       place();
       update(hero.x, hero.z);
-      updateFades(hero, dt);
+      updateFades(seen, dt);
       waveOffset.value.y = (t * 0.04) % 1;
       // In the rain the river rises one block; after a rain the earth roads have puddles.
       for (const r of rivers) r.position.y = sky?.flood ?? 0;

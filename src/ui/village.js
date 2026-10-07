@@ -1418,7 +1418,7 @@ export async function mountVillage(ctx, params = {}) {
     const puddles = puddlesAt((d) => rainOf(state.seed, d, data.day ?? undefined), state.clock.minutes);
     const heroAt = figures.placeOf('hero');
     if (!heroAt) return;
-    view.render(dt, raidView.focus(leadToWork(heroAt)), time, { ...state.sky, puddles }, ambient);
+    view.render(dt, raidView.focus(leadToWork(heroAt)), time, { ...state.sky, puddles }, ambient, heroAt);
     drawSky();
     raidView.draw(dt, w, hh);
     drawMarks();

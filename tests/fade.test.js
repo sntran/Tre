@@ -105,3 +105,19 @@ test('a full fade keeps a part of the dots and a soft outline: a see-through sha
   assert.ok(FADE_HOLES > 0.3 && FADE_HOLES < 0.8, 'some dots of the faces stay');
   assert.ok(FADE_OUTLINE > 0.3 && FADE_OUTLINE < 1, 'the outline goes soft, but the shape stays');
 });
+
+// At the wall of the scouts the hero stands by the forge (#55, frame 1). From the angle where the
+// road goes up and to the right, the roof of the forge hides the hero, and the view must fade it:
+// the view tests the hero, not the point that it follows in a raid (a point on the road).
+test('at the wall of the scouts, the roof of the forge hides the hero from one angle, and the point on the road is not hidden (#55)', () => {
+  const raids = load('data/raids.json');
+  const def = raids.raids.scouts;
+  const forge = terrain.objects.find((o) => o.id === 'forge');
+  const hides = (p, az) => inFront(terrain.boxOf(forge), p, az, ELEVATION) && hidesHero(terrain.boxOf(forge), p, az, ELEVATION, (x, y, z) => terrain.hits(forge.who, x, y, z));
+  const [x, z] = at('phu-dong', def.wall[0] + 0.5, def.wall[1] + 0.5);
+  const hero = { x, y: columnTop(tileMap.heightAt(Math.floor(x), Math.floor(z))), z };
+  const az = Math.PI / 4 + (3 * Math.PI) / 2;
+  assert.ok(hides(hero, az), 'the roof of the forge is between the camera and the hero');
+  const road = { ...hero, x: hero.x + def.dir[0] * 8, z: hero.z + def.dir[1] * 8 };
+  assert.ok(!hides(road, az), 'a point on the road is not behind the forge: a fade from it would keep the roof');
+});
