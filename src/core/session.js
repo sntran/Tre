@@ -38,7 +38,7 @@ import { createTriggers } from './triggers.js';
 import { currentGoal } from './quests.js';
 import { offOf, weekOf } from './learnlog.js';
 import { snapFacts } from './planting.js';
-import { clueLine as clueOf, hiddenAt, areaOf, inArea } from './clues.js';
+import { clueLine as clueOf, hiddenAt, areaOf, inArea, openFinds, wayOf, wayPoint } from './clues.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
 import { createDialogue } from './dialogue.js';
 import { timeStatus, addPlayTime } from './timelimit.js';
@@ -525,6 +525,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const present = (kind, item) => inLive(item.x, item.y) && (kind === 'npc' ? Boolean(npcs[item.id]) && isPresent(npcs[item.id], profile) : isPresent(item, profile) && !(back(item) > state.clock.minutes));
     const before = new Set(state.entities.map((e) => e.id));
     syncPeople(state, map, env, present, data.life.people, data.people);
+    wayPeople();
     // A person of a chunk that woke after the start is where the day puts the person now.
     const hour = (state.clock.minutes % 1440) / 60;
     for (const e of query(state, 'person')) {
@@ -926,6 +927,41 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         addEntity(state, { id: `event:${ev.id}:cart`, chunk: chunkOf(ev.at[0], ev.at[1]), dayEvent: { id: ev.id, day, at: ev.at }, position: { x: ev.at[0] * 2 + 1, y: env.groundY(ev.at[0], ev.at[1]) - 0.5, z: ev.at[1] * 2 + 1, facing: 0.3 }, solid: { r: 2.2 }, look: 'cart' });
       }
     }
+  }
+  // The people of the way of a find (#56): while the find is open, they stand on its road (in the
+  // live chunks) and greet the hero, with the clues of the way. They go when the find is found.
+  const WAY_CALL = 24; // half blocks: a person of the way greets the hero this far away
+  function wayPeople() {
+    if (!data.clues || !data.world?.at) return;
+    const want = new Set();
+    for (const f of openFinds(data.clues, profile.flags)) {
+      const way = wayOf(f, data.world.at);
+      for (const w of way ? f.people ?? [] : []) {
+        const p = wayPoint(way, w.at);
+        if (!inLive(p.x, p.y)) continue;
+        const id = `way:${w.id}`;
+        want.add(id);
+        if (getEntity(state, id)) continue;
+        // A free cell of the road near the point.
+        let spot = null;
+        for (let r = 0; r <= 4 && !spot; r++) {
+          for (let dy = -r; dy <= r && !spot; dy++) for (let dx = -r; dx <= r && !spot; dx++) if (tileMap.walkable(Math.floor(p.x) + dx, Math.floor(p.y) + dy)) spot = { x: Math.floor(p.x) + dx + 0.5, y: Math.floor(p.y) + dy + 0.5 };
+        }
+        if (!spot) continue;
+        addEntity(state, {
+          id,
+          chunk: chunkOf(Math.floor(spot.x), Math.floor(spot.y)),
+          person: { kind: 'way', ref: w.id },
+          position: { x: spot.x * 2, y: env.groundY(spot.x, spot.y), z: spot.y * 2, facing: Math.PI / 2 },
+          motion: { vx: 0, vz: 0, speed: 0 },
+          solid: { r: 1.8 },
+          // A person of the way calls out to a child who walks past on the road: a wider greeting.
+          ...(data.life.people?.react ? { react: { ...structuredClone(data.life.people.react), radius: WAY_CALL } } : {}),
+          look: w.look,
+        });
+      }
+    }
+    for (const e of query(state, 'person')) if (e.person.kind === 'way' && !want.has(e.id)) removeEntity(state, e.id);
   }
   // Find a place by real clues (#27; src/core/clues.js): a person who greets the hero on the way
   // says the next clue, when the quest leads to the place (a target of the step of the quest is in

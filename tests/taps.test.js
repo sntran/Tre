@@ -357,3 +357,40 @@ test('a tap on a person with Nghé in front of him is for the person; a tap on N
   const cam2 = viewCamera({ focus: n, width: 390, height: 844 });
   assert.deepEqual(tapTarget(cam2.project(n.x, n.y + 0.5, n.z), sessionScreen(session, cam2)), { pet: nghe.id });
 });
+
+// The star of Trâu Sơn (#56): before the find, the star leads along the road east, past the people
+// of the way, into the area of the hills; then it is on the soldiers. Taps on the star alone.
+test('from the đình, taps on the star alone set trauson.found and take the hero to the soldiers (#56)', async () => {
+  const { questMark } = await import('../src/core/clues.js');
+  const dinh = data.world.map('phu-dong').layers.objects.find((o) => o.id === 'dinh');
+  const story = JSON.parse(readFileSync(new URL('./stories/find-trau-son.json', import.meta.url), 'utf8'));
+  let session = null;
+  const s = { name: 'trau', profile: story.profile, clock: 420, at: [dinh.x + dinh.w / 2, dinh.y + dinh.h + 2], steps: [] };
+  await runHeadless(s, { onSession: (x) => { session = x; } });
+  const hero = () => getEntity(session.state, 'hero');
+  const soldier = JSON.parse(readFileSync(new URL('../data/maps/trau-son.json', import.meta.url), 'utf8')).encounters.find((e) => e.id === 'soldier1');
+  const [sx, sy] = data.world.at('trau-son', soldier.x, soldier.y);
+  const clues = [];
+  session.listen((ev) => { if (ev.type === 'clue') clues.push(ev.textKey); });
+  let taps = 0;
+  let idle = 0;
+  const near = () => Math.hypot(hero().position.x / 2 - sx, hero().position.z / 2 - sy) < 8;
+  for (let k = 0; k < 30 * 60 * 12 && !near(); k++) {
+    const screen = session.screen;
+    if (screen === 'dialogue' || screen === 'say') session.command({ type: 'next' });
+    else if (screen) session.command({ type: 'close' });
+    idle = hero().route || hero().aboard || screen ? 0 : idle + 1;
+    if (idle > 60) {
+      const h = heroCell(session);
+      const m = questMark(data.clues, data.world.at, session.profile.flags, { x: sx, y: sy, h: 3 }, h);
+      session.command({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: 3, thing: false, object: null, goal: true } } });
+      taps += 1;
+      idle = 0;
+    }
+    session.step();
+    session.events();
+  }
+  assert.ok(session.profile.flags['trauson.found'], `the hero stood in the area: ${JSON.stringify(heroCell(session))}`);
+  assert.ok(near(), `the hero comes to the soldiers: ${JSON.stringify(heroCell(session))}, ${taps} taps`);
+  assert.ok(clues.length >= 1, `the people of the way say the clues: ${clues.join(' ')}`);
+});

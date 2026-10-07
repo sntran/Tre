@@ -71,8 +71,9 @@ export function syncPeople(world, map, env, present, people = {}, days = null) {
     changed = true;
   }
   for (const e of query(world, 'person')) {
-    // The person of a small event of the day is not a person of the map data.
-    if (want.has(e.id) || e.person.kind === 'event') continue;
+    // The person of a small event of the day and the people of the way of a find (#56) are not
+    // people of the map data.
+    if (want.has(e.id) || e.person.kind === 'event' || e.person.kind === 'way') continue;
     removeEntity(world, e.id);
     changed = true;
   }

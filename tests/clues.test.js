@@ -1,7 +1,7 @@
 // Find Trâu Sơn by real clues, not by a mark (#27): data/world/clues.json and src/core/clues.js.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { areaOf, questMark, clueLine, hiddenAt, onWay } from '../src/core/clues.js';
+import { areaOf, questMark, clueLine, hiddenAt, onWay, wayOf, inArea, AHEAD } from '../src/core/clues.js';
 import { load, worldOf } from './helpers.js';
 
 const clues = load('data/world/clues.json');
@@ -33,15 +33,25 @@ test('the note of the battle has the mark Legend and says that nobody knows the 
   assert.equal(en['mark.legend'], 'Legend');
 });
 
-test('before the hero stands on the low hills, the arrow of the quest points east and not at the hill', () => {
+test('before the hero stands on the low hills, the arrow of the quest leads along the road east into the area, and not at the hill (#56)', () => {
   const s = encounter('soldier1');
   const [sx, sy] = at('trau-son', s.x, s.y);
   const mark = { x: sx, y: sy, h: 5 };
   const hero = { x: at('phu-dong', 90, 30)[0], y: at('phu-dong', 90, 30)[1] };
   const shown = questMark(clues, at, {}, mark, hero);
-  assert.equal(shown.y, hero.y, 'straight toward the sunrise');
-  assert.ok(shown.x > hero.x);
+  const way = wayOf(find, at);
+  const off = (p) => Math.abs((p.x - way.a.x) * (way.b.y - way.a.y) - (p.y - way.a.y) * (way.b.x - way.a.x)) / Math.hypot(way.b.x - way.a.x, way.b.y - way.a.y);
+  assert.ok(off(shown) < 1e-6, 'on the road');
+  assert.ok(shown.x > hero.x, 'toward the sunrise');
+  assert.ok(Math.hypot(shown.x - hero.x, shown.y - hero.y) <= AHEAD + 2, 'a little ahead of the hero');
   assert.ok(Math.hypot(shown.x - mark.x, shown.y - mark.y) > 100, 'not at the place of the battle');
+  // The road ends in the area: a child who follows the star comes into it.
+  const area = areaOf(find, at);
+  assert.ok(inArea(area, way.b.x, way.b.y), 'the end of the road is in the area');
+  // A hero who walked past the area (east of it): the arrow points back into it.
+  const past = { x: area.x1 + 60, y: area.y1 + 30 };
+  const back = questMark(clues, at, {}, mark, past);
+  assert.ok(back.x < past.x && inArea(area, back.x, back.y), 'back into the area');
   // After the hero stands on the low hills, the arrow shows the place.
   assert.deepEqual(questMark(clues, at, { [find.flag]: true }, mark, hero), mark);
   // A mark out of the area (Phù Đổng) does not change.

@@ -1,5 +1,5 @@
 {
-  "_about": "Find a place by real clues, not by a mark (#27; src/core/clues.js; docs/WORLD.md, \"Finding Trâu Sơn\"). The hero has never seen the place. A find: flag (set when the hero first stands in the area), frame and area (the cells of the frame of the place: x0, y0, x1, y1), toward (the way of the arrow of the quest before the hero finds the place: [1, 0] is east, toward the sunrise), way (the people on the way: east of the column x of the frame), clues (in order, each from another person who greets the hero on the way, once, when the quest leads to the place), and wrong (a person at a wrong place says why it is not the place). Each line has its source. No line gives or takes anything: the world answers, with no fail and no score.",
+  "_about": "Find a place by real clues, not by a mark (#27; src/core/clues.js; docs/WORLD.md, \"Finding Trâu Sơn\"). The hero has never seen the place. A find: flag (set when the hero first stands in the area), frame and area (the cells of the frame of the place: x0, y0, x1, y1), toward (the way of the arrow of the quest before the hero finds the place: [1, 0] is east, toward the sunrise), way (the people on the way: east of the column x of the frame), path (the road of the way, the road east of data/world/land-giong.json: its two ends; before the find, the mark of the quest is on this road ahead of the hero, and the road ends in the area, #56), people (the people who stand on the road and greet the hero with the clues: id, at (the part of the road, 0 to 1), look), clues (in order, each from another person who greets the hero on the way, once, when the quest leads to the place), and wrong (a person at a wrong place says why it is not the place). Each line has its source. No line gives or takes anything: the world answers, with no fail and no score.",
   "finds": [
     {
       "id": "trau-son",
@@ -8,6 +8,11 @@
       "area": [60, -10, 210, 94],
       "toward": [1, 0],
       "way": { "frame": "phu-dong", "x": 80 },
+      "path": [["phu-dong", 79, 30], ["trau-son", 64, 33]],
+      "people": [
+        { "id": "way-1", "at": 0.35, "look": "farmer" },
+        { "id": "way-2", "at": 0.7, "look": "seller" }
+      ],
       "clues": [
         {
           "textKey": "clue.trau.sunrise",
