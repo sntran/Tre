@@ -1,0 +1,337 @@
+{
+  "name": "raid-first-sling",
+  "about": {
+    "vi": "Trận đầu tiên có ná, chỉ bằng nút lớn: lính trinh sát dừng ở từng cột, An bấm bốn lần cho cột thứ tư và ba lần cho cột thứ ba, viên đạn bay sau lần bấm cuối. Trận này không có cổng, nên không có đuốc. An thắng ngay lần đầu.",
+    "en": "The first raid of the slingshot, with the big button only: each scout stops at each post, An presses four times for the fourth post and three times for the third, and the stone flies after the last press. This raid has no gate, so no torch. An wins at the first try."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 3,
+    "flags": {
+      "intro.seen": true,
+      "giong.spoke": true
+    },
+    "items": {
+      "rice": 5
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    61,
+    29
+  ],
+  "steps": [
+    {
+      "press": {
+        "entity": "encounter:scouts"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "raid.scouts.intro"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 1
+    },
+    {
+      "wait": 14
+    },
+    {
+      "expect": [
+        {
+          "raid": {
+            "on": true,
+            "enemies": 1
+          }
+        }
+      ]
+    },
+    {
+      "repeat": 4,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:1"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:1",
+          "post": 15
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:1"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:2",
+          "post": 20
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "repeat": 4,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:2"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:2",
+          "post": 15
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:2"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:3",
+          "post": 20
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "repeat": 4,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:3"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:3",
+          "post": 15
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:3"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:4",
+          "post": 20
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "repeat": 4,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:4"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:4",
+          "post": 15
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:4"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "end",
+        "with": {
+          "won": true
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "flag": "scouts.won"
+        },
+        {
+          "raid": {
+            "losses": 0
+          }
+        }
+      ]
+    }
+  ]
+}

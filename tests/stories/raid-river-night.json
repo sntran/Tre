@@ -1,0 +1,209 @@
+{
+  "name": "raid-river-night",
+  "about": {
+    "vi": "Rắn ở bến sông, vào ban đêm, chỉ bằng nút lớn: các cột đến số lần bấm sáng lên, và một vòng nhỏ nằm trên đường ở chỗ viên cơm sẽ rơi. Mỗi con rắn dừng ở từng cột; An bấm đúng số cột và thắng.",
+    "en": "The serpents at the river, at night, with the big button only: the posts up to the count of the presses light up, and a small ring lies on the road where the rice ball will land. Each serpent stops at each post; An presses the count of the post and wins."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 3,
+    "flags": {
+      "intro.seen": true,
+      "giong.spoke": true,
+      "scouts.won": true,
+      "raid.tool.sling": true,
+      "raid.used.sling": 1
+    },
+    "items": {
+      "rice": 5
+    }
+  },
+  "clock": 1230,
+  "at": [
+    "phu-dong",
+    14,
+    61
+  ],
+  "steps": [
+    {
+      "press": {
+        "entity": "encounter:river"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "raid.river.intro"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 1
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:1",
+          "post": 20
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "repeat": 4,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:1"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:1",
+          "post": 15
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:1"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:2",
+          "post": 20
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "repeat": 4,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:2"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "pause",
+        "with": {
+          "id": "raider:2",
+          "post": 15
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "repeat": 3,
+      "steps": [
+        {
+          "do": {
+            "type": "hands"
+          }
+        },
+        {
+          "wait": 0.25
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hit",
+        "with": {
+          "id": "raider:2"
+        },
+        "timeout": 8
+      }
+    },
+    {
+      "until": {
+        "event": "end",
+        "with": {
+          "won": true
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "flag": "river.calmed"
+        },
+        {
+          "raid": {
+            "losses": 0
+          }
+        }
+      ]
+    }
+  ]
+}
