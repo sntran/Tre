@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { load } from './helpers.js';
 import { addPoint, restorePoint, gameDay, whereOf, newAdventure, KEEP } from '../src/core/restore.js';
 
 const record = (text = 'now') => ({ id: 'p1', name: 'An', text, updatedAt: 0, points: [] });
@@ -44,4 +45,17 @@ test('a save is where its hero is: the game day and the map', () => {
 test('the title always shows a new adventure, and full profiles ask for the parent gate', () => {
   assert.deepEqual(newAdventure(0, 4), { show: true, full: false });
   assert.deepEqual(newAdventure(4, 4), { show: true, full: true });
+});
+
+test('a restore point has the game day of its morning, never "days ago" (#52)', async () => {
+  const { restoreLabel } = await import('../src/core/restore.js');
+  assert.deepEqual(restoreLabel({ day: 2 }, 7), { key: 'parent.restore.day', params: { d: 3 } });
+  assert.deepEqual(restoreLabel({ day: 7 }, 7), { key: 'parent.restore.day', params: { d: 8 } });
+  assert.deepEqual(restoreLabel({ day: 9 }, 7), { key: 'parent.restore.dayLater', params: { d: 10 } });
+  assert.equal(restoreLabel({ day: 9, before: true }, 7).key, 'parent.restore.before');
+  for (const lang of ['vi', 'en']) {
+    const texts = load(`i18n/${lang}.json`);
+    for (const k of ['parent.restore.day', 'parent.restore.dayLater', 'parent.restore.before']) assert.ok(texts[k], `${lang}: ${k}`);
+    assert.ok(!Object.keys(texts).some((k) => /^parent\.restore\.(today|yesterday|days)$/.test(k)), `${lang}: no text of days ago`);
+  }
 });

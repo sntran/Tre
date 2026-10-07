@@ -44,3 +44,11 @@ export function restorePoint(record, index, current, now) {
 export function newAdventure(count, max) {
   return { show: true, full: count >= max };
 }
+
+// The name of a restore point for the parent: the game day of its morning (the first day is 1),
+// never "N days ago", because a game day is a few real minutes and a parent reads "days ago" as real
+// days (#52). The real date and time of the save go beside it. Return { key, params }.
+export function restoreLabel(point, today) {
+  if (point.before) return { key: 'parent.restore.before', params: {} };
+  return { key: point.day > today ? 'parent.restore.dayLater' : 'parent.restore.day', params: { d: point.day + 1 } };
+}

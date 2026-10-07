@@ -8,7 +8,7 @@ import { gradeIds, gradeName } from '../core/grades.js';
 import { extendTime, remainingMs } from '../core/timelimit.js';
 import { registerModal } from './registry.js';
 import { saveProfile, deleteProfile, listProfiles, loadProfile, listRestorePoints, restoreProfile } from './storage.js';
-import { gameDay } from '../core/restore.js';
+import { gameDay, restoreLabel } from '../core/restore.js';
 import { h, img, button } from './dom.js';
 import { factTable } from '../core/planting.js';
 import { currentRollups, weekOf } from '../core/learnlog.js';
@@ -117,9 +117,13 @@ function selectField(label, options, value, onChange) {
   return h('div', { class: 'field' }, [h('label', { text: label }), sel]);
 }
 
-function formatDate(ms) {
+// The real date of a time (and the hour and minute with time: true).
+function formatDate(ms, time = false) {
   try {
-    return new Date(ms).toLocaleDateString(lang() === 'vi' ? 'vi-VN' : 'en-US');
+    const d = new Date(ms);
+    const locale = lang() === 'vi' ? 'vi-VN' : 'en-US';
+    const date = d.toLocaleDateString(locale);
+    return time ? `${date}, ${d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}` : date;
   } catch {
     return '';
   }
@@ -255,9 +259,8 @@ async function parentArea(ctx, opts = {}) {
         if (!points.length) box.append(h('p', { class: 'muted', text: t('parent.restore.none') }));
         const row = h('div', { class: 'row', style: { justifyContent: 'flex-start', flexWrap: 'wrap' } });
         points.forEach((pt, i) => {
-          const back = today - pt.day;
-          const label = pt.before ? t('parent.restore.before') : back < 0 ? t('parent.restore.later') : back === 0 ? t('parent.restore.today') : back === 1 ? t('parent.restore.yesterday') : t('parent.restore.days', { n: back });
-          row.append(button(`${label} · ${t(ctx.data.world.eraOf(pt.map))} · ${formatDate(pt.at)}`, async () => {
+          const name = restoreLabel(pt, today);
+          row.append(button(`${t(name.key, name.params)} · ${t(ctx.data.world.eraOf(pt.map))} · ${formatDate(pt.at, true)}`, async () => {
             if (!window.confirm(t('parent.restore.confirm', { name: current.hero.name }))) return;
             // The open game saves first, so that its state becomes the restore point in its place.
             if (ctx.profile?.id === item.id) await ctx.save('restore');
