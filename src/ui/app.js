@@ -12,10 +12,9 @@ import { createMachine } from '../core/fsm.js';
 import { createRng } from '../core/rng.js';
 import { createSkillGraph } from '../core/skills.js';
 import { createLearner } from '../core/learner.js';
-import { isDue } from '../core/review.js';
+import { reviewOf } from '../core/review.js';
 import { createExperiments } from '../core/experiments.js';
 import { createLogger } from '../core/logger.js';
-import { DAY_MS } from '../core/learnlog.js';
 import { mountTitle } from './title.js';
 import { connectAudio } from './audio.js';
 import { startTimer, isTimeOver } from './rest.js';
@@ -194,7 +193,7 @@ export async function startApp(root) {
       learner.record = (prob, correct) => {
         const e = learner.entry(prob.skill);
         const now = Date.now();
-        const review = e.mastered && isDue(e, now) ? { due: e.due, gap: e.last ? (now - e.last) / DAY_MS : 0 } : null;
+        const review = reviewOf(e, now, config.review);
         const out = record(prob, correct);
         if (review) ctx.log('review', { skill: prob.skill, due: review.due, gap: Math.round(review.gap * 10) / 10, result: Boolean(correct) });
         return out;

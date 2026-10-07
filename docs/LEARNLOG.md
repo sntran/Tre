@@ -28,7 +28,7 @@ Each event has `type`, `t` (the time), and `variant`, and the fields of its kind
 | --- | --- | --- |
 | `attempt` | task, skill, phase (explore or commit), success, efficient, first, mashing, parts, resets, latencies, hint, hintSeen, off (how far the commit was from the target, in groups: 0 is exact), pBefore, pAfter, play, retry, harder, map | the village, for each skill event of a commit on the bridge |
 | `session` | start, end, endedBy (device, parent, or child), quests, place, afterQuest, first (the first action), practice (the id of the activity of a practice link, or null) | the app, at the start of a session; each save moves its end, and the end of the session sets endedBy and place (#52) |
-| `review` | skill, due, gap (days since the last practice), result | the learner, for an answer for a mastered skill that is due |
+| `review` | skill, due, gap (days since the last practice), result | the learner, for an answer for a mastered skill that is due, after an answer before it and at least the first interval of the boxes (`reviewOf` in `src/core/review.js`; a skill that starts as mastered is not reviewed at its first answer, #52) |
 | `exam` | skill, correct, p (P(L) before the answer) | Văn Miếu, for each exam item |
 | `prediction` | task, gap, guess (null when skipped), used, solved | the village, at the first commit on a gap |
 | `help` | task, diagnosis, move, pBefore, success, efficient (the next commit after the move) | the session, at the commit after a move of the mentor of a task (`docs/MENTOR.md`) |

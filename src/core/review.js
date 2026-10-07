@@ -33,3 +33,15 @@ export function recordReview(entry, correct, now, cfg) {
 export function isDue(entry, now) {
   return Boolean(entry?.box) && now >= entry.due;
 }
+
+// A review for the learning log: an answer for a mastered skill that is due, after an answer
+// before it, at least the first interval of the boxes later. Return { due, gap } (gap in days), or
+// null. A skill that starts as mastered (below the grade of the child) is due at once, but its first
+// answer is not a review, and an answer a few minutes after the last one does not say whether the
+// child keeps the skill (#52: "after about 7 days: 33%" on the first day of play).
+export function reviewOf(entry, now, cfg) {
+  if (!entry?.mastered || !isDue(entry, now) || !entry.last) return null;
+  const gap = (now - entry.last) / DAY_MS;
+  if (gap < cfg.intervalsDays[0]) return null;
+  return { due: entry.due, gap };
+}

@@ -575,3 +575,18 @@ test('parent questions come up for their skill and language', () => {
   const vietnamese = createLearner({ graph, config: cfg, learning: { skills: {}, items: {} }, grade: 1, rng: createRng('pq'), bank: [...bank, parentQ], lang: 'vi' });
   for (let i = 0; i < 20; i++) assert.notEqual(vietnamese.problem('math.add.10').source, 'parent-1');
 });
+
+test('a review in the learning log needs an answer before it and at least the first interval of the boxes (#52)', async () => {
+  const { reviewOf, DAY_MS } = await import('../src/core/review.js');
+  const cfg = { intervalsDays: [1, 2, 4, 8, 16, 32] };
+  const now = 100 * DAY_MS;
+  // A skill below the grade starts as mastered and due at once: its first answer is not a review.
+  assert.equal(reviewOf({ mastered: true, box: 1, due: now, last: 0 }, now + 2, cfg), null);
+  // An answer a few minutes after the last one is not a review.
+  assert.equal(reviewOf({ mastered: true, box: 1, due: now, last: now - 60000 }, now + 2, cfg), null);
+  // Two days after the last answer, on or after the due time: a review with its gap.
+  assert.deepEqual(reviewOf({ mastered: true, box: 1, due: now, last: now - 2 * DAY_MS }, now, cfg), { due: now, gap: 2 });
+  // Not due, or not mastered: no review.
+  assert.equal(reviewOf({ mastered: true, box: 1, due: now + DAY_MS, last: now - 2 * DAY_MS }, now, cfg), null);
+  assert.equal(reviewOf({ mastered: false, box: 0, due: 0, last: now - 2 * DAY_MS }, now, cfg), null);
+});
