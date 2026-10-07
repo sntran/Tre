@@ -431,3 +431,36 @@ test('from the top of Sóc Sơn, taps on the star alone take the hero to the gat
   assert.ok(gate, `the hero comes to the gate of Văn Miếu: ${JSON.stringify(heroCell(session))}, ${taps} taps, ${stuck} with no walk`);
   assert.ok(stuck <= 1, `a star tap always walks: ${stuck} taps with no walk`);
 });
+
+// From the porch of the đình by the elder, on a day of the market, a tap on the mat of the seller
+// walks there (#56): the walk never goes through the narrow gap between the mother of Gióng and a
+// wall, where the body of the hero does not fit and each walk stopped.
+test('from the porch of the đình, a tap on the market walks there with no stop (#56)', async () => {
+  let session = null;
+  const flags = { 'intro.seen': true, 'giong.spoke': true, 'giong.grown': true, 'soldier1.won': true, 'trauson.found': true };
+  const s = { name: 'porch', profile: { name: 'An', grade: 2, seed: 7, flags, items: { rice: 30 } }, clock: 600, at: ['phu-dong', 30, 15], steps: [{ do: { type: 'event', id: 'market' } }, { wait: 0.5 }] };
+  await runHeadless(s, { onSession: (x) => { session = x; } });
+  const run = (seconds) => {
+    for (let i = 0; i < seconds * 30; i++) {
+      session.step();
+      session.events();
+      if (session.screen) session.command({ type: 'close' });
+    }
+  };
+  session.command({ type: 'tap', target: { person: 'npc:elder' } });
+  session.events();
+  run(25);
+  assert.ok(getEntity(session.state, 'hero').position.y >= 8, 'the hero stands on the porch');
+  const ends = []; // the walks that stop with no way on
+  session.listen((ev) => {
+    if (ev.id === 'hero' && ev.type === 'stuck') ends.push(ev.type);
+  });
+  const market = getEntity(session.state, 'event:market').position;
+  session.command({ type: 'tap', target: { ground: { x: market.x / 2, y: market.z / 2, h: 3, thing: true, object: null } } });
+  session.events();
+  run(6);
+  const h = getEntity(session.state, 'hero').position;
+  assert.deepEqual(ends, [], 'the walk never stops on the way');
+  assert.ok(Math.hypot(h.x - market.x, h.z - market.z) < 4, `the hero comes to the market: ${JSON.stringify(h)}`);
+});
+

@@ -1612,12 +1612,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // #53). People far away (they move) and Nghé (she steps aside) do not count.
     const hp = hero().position;
     const rounds = solids.filter((e) => !e.solid.rect && e.solid.r && !e.follow && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) < 16)
-      .map((e) => ({ x: e.position.x, z: e.position.z, r: e.solid.r }));
+      .map((e) => ({ x: e.position.x, z: e.position.z, r: e.solid.r, person: Boolean(e.person) }));
+    // A narrow gap between a person and a wall is no way: a cell beside a wall where the body of
+    // the hero touches the person (the walk cannot step around the person there). #56: the mother
+    // of Gióng at the market stood one step from a wall, and each walk from the porch of the đình
+    // stopped. A pot in the way still breaks (the walk goes into it).
+    const body = MOVE.radius * 2; // half blocks
+    const wall = (x, y) => tileMap.isBlocked(x, y) || tileMap.isBlocked(x + 1, y) || tileMap.isBlocked(x - 1, y) || tileMap.isBlocked(x, y + 1) || tileMap.isBlocked(x, y - 1);
+    const gap = (x, y) => rounds.some((c) => c.person && Math.hypot((x + 0.5) * 2 - c.x, (y + 0.5) * 2 - c.z) < c.r + body) && wall(x, y);
     // The cell of the hero is never in a box: a hero who stands at the edge of a solid thing (a
     // culm, the mat) can always walk away from it (#44).
     const h = heroFrom();
     const inBox = (x, y) => !(x === h.x && y === h.y) && (boxes.some((b) => (x + 0.5) * 2 > b.x0 - 0.5 && (x + 0.5) * 2 < b.x1 + 0.5 && (y + 0.5) * 2 > b.z0 - 0.5 && (y + 0.5) * 2 < b.z1 + 0.5)
-      || rounds.some((c) => Math.hypot((x + 0.5) * 2 - c.x, (y + 0.5) * 2 - c.z) < c.r));
+      || rounds.some((c) => Math.hypot((x + 0.5) * 2 - c.x, (y + 0.5) * 2 - c.z) < c.r) || gap(x, y));
     return Object.assign(Object.create(tileMap), {
       // The hero can always start from its own cell (in the water after a jump, at a thing).
       walkable: (x, y) => (x === h.x && y === h.y) || (tileMap.walkable(x, y) && !inBox(x, y)),
