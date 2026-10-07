@@ -353,7 +353,8 @@ const MARKS = new Set(['show', 'mark', 'cue', 'demo']); // the people check or s
 //   sessions, self, sent, first, stops: the sessions with commits of the activity (started by the
 //     child or by a practice link), the sessions that it began, and the sessions that it ended.
 //   sets, stay: the sets of a practice done, and the times the child played on after a set.
-//   minutes: the time between the commits of the activity (each gap at most signals.gap seconds).
+//   minutes: the time between the commits of the activity (each gap at most signals.gap seconds);
+//     in a session of a practice link, the whole time of the session goes to its activity.
 // hops: a commit of another activity less than signals.hop seconds after a commit.
 export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {} } = {}) {
   const sig = { ...SIGNALS, ...signals };
@@ -394,7 +395,8 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
           const secs = (ev.t - last.t) / 1000;
           if (secs < sig.fast) r.fast += 1;
           if (secs > sig.idle) r.idle += 1;
-          r.minutes += Math.min(secs, sig.gap) / 60;
+          // The time of a session of a practice link goes to its activity at the end of the session.
+          if (!s?.practice) r.minutes += Math.min(secs, sig.gap) / 60;
           if (ok && String(ev.skill).startsWith('math.mul')) {
             const i = sig.recall.findIndex((x) => secs <= x);
             w.recall[i < 0 ? sig.recall.length : i] += 1;
@@ -434,6 +436,20 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
           }
           act(w, k.first).first += 1;
           act(w, k.last).stops += 1;
+        }
+        // A session of a practice link: all its minutes are of its activity, from the start to the
+        // end, also with one commit or none (#52).
+        if (ev.practice) {
+          const r = act(w, ev.practice);
+          r.minutes += min;
+          if (!k?.acts.has(ev.practice)) {
+            r.sessions += 1;
+            r.sent += 1;
+          }
+          if (!k) {
+            r.first += 1;
+            r.stops += 1;
+          }
         }
         prev = null;
       } else if (ev.type === 'set') {

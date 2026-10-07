@@ -85,7 +85,7 @@ test('into it: near misses, right commits of the facts and their seconds, sets f
   assert.equal(d.sent, 1, 'a session from a practice link');
   assert.equal(w.sent, 1);
   assert.equal(w.self, 0);
-  assert.ok(Math.abs(d.minutes - 20 / 60) < 1e-9, 'twenty seconds between the commits');
+  assert.equal(d.minutes, 10, 'the whole session of the practice link (#52), not only the twenty seconds between the commits');
 });
 
 test('self-started or sent; first and last activity of a session; minutes of each day of the week', () => {
@@ -166,4 +166,25 @@ test('a question of the teacher on a fact of the table goes to the log, with the
   const { readFileSync } = await import('node:fs');
   const src = readFileSync('src/ui/quiz.js', 'utf8');
   assert.match(src, /ctx\.log\?\.\('quiz', \{ skill: problem\.skill, fact, known, correct: ok \}\)/);
+});
+
+test('a session of a practice link gives all its minutes to its activity, also with one commit or none (#52)', () => {
+  const t = MON;
+  const w = week([
+    // The forge: one commit in a visit of four minutes.
+    commit(t + 60 * S, 'trial-smith', { success: true, off: 0 }),
+    session(t, t + 240 * S, 'ren-sat'),
+    // The herbs: no commit in a visit of two minutes.
+    session(t + 300 * S, t + 420 * S, 'hai-thuoc'),
+    // Free play: the minutes between the commits, as before.
+    commit(t + 500 * S, 'trial-drum'),
+    commit(t + 530 * S, 'trial-drum'),
+    session(t + 480 * S, t + 600 * S),
+  ]);
+  assert.equal(w.acts['ren-sat'].minutes, 4);
+  assert.deepEqual([w.acts['ren-sat'].sessions, w.acts['ren-sat'].sent], [1, 1]);
+  assert.equal(w.acts['hai-thuoc'].minutes, 2);
+  assert.deepEqual([w.acts['hai-thuoc'].sessions, w.acts['hai-thuoc'].sent, w.acts['hai-thuoc'].first, w.acts['hai-thuoc'].stops], [1, 1, 1, 1]);
+  assert.equal(w.acts['mua-trong'].minutes, 0.5, 'thirty seconds between the two commits');
+  assert.equal(w.sessions, 3);
 });
