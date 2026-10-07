@@ -126,3 +126,17 @@ test('tall grass bends away from the hero and rustles once when the hero comes i
   step(w, 60);
   assert.equal(tuft.react.bend, undefined, 'it stands up again');
 });
+
+test('a hidden thing (the rice cakes of Tết on another day) does not block the walk of the hero (#54)', async () => {
+  const { move } = await import('../src/core/world/systems/move.js');
+  const walk = (hidden) => {
+    const w = world({ x: 10, z: 10 });
+    const hero = getEntity(w, 'hero');
+    hero.intent = { dx: 1, dz: 0, strength: 1 };
+    addEntity(w, { id: 'cakes', position: { x: 13, y: 6, z: 10, facing: 0 }, solid: { r: 1.8 }, ...(hidden ? { hidden: true } : {}) });
+    for (let i = 0; i < 60; i++) move(w, 1 / 30, createRng('x'), env);
+    return hero.position.x;
+  };
+  assert.ok(walk(false) < 12, 'a thing that is there stops the hero');
+  assert.ok(walk(true) > 14, 'a hidden thing does not');
+});

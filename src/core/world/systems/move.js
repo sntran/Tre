@@ -41,7 +41,8 @@ export function move(world, dt, rng, env) {
     const body = { x: p.x / 2, y: p.z / 2, vx: m.vx / 2, vy: m.vz / 2, facing: p.facing, speedFactor: (e.riding ? RIDE_SPEED : 1) * paceOf(world, e) * (1 - mist) };
     stepBody(body, i ? { dx: i.dx, dy: i.dz, strength: i.strength, run: i.run } : { dx: 0, dy: 0, strength: 0 }, dt, env.near(body.x, body.y));
     for (const s of solids) {
-      if (s === e || (e.riding && s.pushable)) continue;
+      // A hidden thing (the rice cakes of Tết on another day) is not there: it does not block (#54).
+      if (s === e || s.hidden || (e.riding && s.pushable)) continue;
       if (s.solid.rect) {
         pushOutOfRect(body, s.solid.rect, env);
         continue;
