@@ -164,6 +164,24 @@ function endRaid(world, friend) {
   say(world, 'raidover', 'raid');
 }
 
+// The place of the companion of a raid (#50): beside the road near the wall, as far as it can be
+// from the sources (the jar, the brazier, the forge), the flags of the villagers, the pile of traps,
+// and the gate, so that the companion never stands over a thing that the child must touch.
+// Half blocks.
+export function companionSpot(raid, pile = null) {
+  const side = { x: -raid.dir.z, z: raid.dir.x };
+  const avoid = [...raid.sources, ...raid.spots, raid.gate, pile].filter(Boolean);
+  let best = null;
+  for (const s of [-9, -6, 6, 9]) {
+    for (const b of [0, 3, 6]) {
+      const p = { x: raid.wall.x + side.x * s - raid.dir.x * b, z: raid.wall.z + side.z * s - raid.dir.z * b };
+      const score = Math.min(99, ...avoid.map((a) => Math.hypot(a.x - p.x, a.z - p.z))) - b * 0.2;
+      if (!best || score > best.score) best = { p, score };
+    }
+  }
+  return best.p;
+}
+
 // Set up a raid in the world: the raid (from createRaid), and its fixed things. def: the raid in
 // data/raids.json. Units of def: map cells.
 export function setupRaid(world, raid, def, env, looks = {}) {
@@ -183,8 +201,12 @@ export function setupRaid(world, raid, def, env, looks = {}) {
   }
   for (const s of raid.sources) fixed(`source:${s.id}`, s, s.kind === 'water' ? 'jar' : s.kind === 'fire' ? 'brazier' : 'forge', { source: { id: s.id, kind: s.kind } });
   if (def.companion) {
-    const at = { x: raid.wall.x + side.x * 2.5, z: raid.wall.z + side.z * 2.5 };
-    fixed('companion:raid', at, looks.companion ?? def.companion, { facing: Math.atan2(raid.dir.x, raid.dir.z) });
+    const at = companionSpot(raid, def.pile ? hb(def.pile) : null);
+    const facing = Math.atan2(raid.dir.x, raid.dir.z);
+    // Gióng grown rides his iron horse (#50): the horse, and Gióng on its back (steed: the height
+    // of the seat in blocks, the same as STEED_SEAT of the figure in src/world/figures.js).
+    if (def.steed) fixed('steed:raid', at, 'iron-steed', { facing });
+    fixed('companion:raid', at, looks.companion ?? def.companion, { facing, ...(def.steed ? { riding: def.steed } : {}) });
   }
   // The pile of traps by the gate, and the part of the road for traps.
   if (has('traps') && def.pile && def.traps) {

@@ -305,9 +305,10 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         f.control = Boolean(e.control);
         f.ghost = Boolean(e.ghost);
         f.running = (e.motion?.speed ?? 0) > 11;
-        // A rider sits on the back of Nghé; a swimmer at the ford is a little lower in the water;
+        // A rider sits on the back of Nghé (riding: true), or at a seat of its own (riding: the height
+        // in world units, as Gióng on his iron horse); a swimmer at the ford is a little lower in the water;
         // in the surf the feet sink into the sand, so that the water comes to the knee.
-        f.offset = (e.riding ? RIDER : 0) - (e.motion?.wade ? WADE : e.motion?.shallow && !e.control ? 0.3 : 0);
+        f.offset = (e.riding ? (typeof e.riding === 'number' ? e.riding : RIDER) : 0) - (e.motion?.wade ? WADE : e.motion?.shallow && !e.control ? 0.3 : 0);
         // A dancer of the drum dance hops on its beat: up and down in a short arc.
         if (e.hop) f.offset += Math.sin(Math.PI * Math.min(1, e.hop.t / HOP)) * HOP_UP;
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.

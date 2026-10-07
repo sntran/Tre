@@ -154,6 +154,12 @@ export function createRaidView({ view, figures, session, layer, send }) {
         }
       }
       const mid = { x: (r.wall.x + r.dir.x * 14) / 2, z: (r.wall.z + r.dir.z * 14) / 2 };
+      // The sources of the elements (the jar, the brazier, the forge) stay on the screen too (#50).
+      if (r.sources.length) {
+        const sx = r.sources.reduce((a, q) => a + q.x, 0) / r.sources.length / 2;
+        const sz = r.sources.reduce((a, q) => a + q.z, 0) / r.sources.length / 2;
+        return { ...heroPlace, x: heroPlace.x * 0.3 + mid.x * 0.35 + sx * 0.35, z: heroPlace.z * 0.3 + mid.z * 0.35 + sz * 0.35 };
+      }
       return { ...heroPlace, x: heroPlace.x * 0.3 + mid.x * 0.7, z: heroPlace.z * 0.3 + mid.z * 0.7 };
     },
     // Each frame: the dotted arc, the flow of an element, the dots over the enemies, and the pops.

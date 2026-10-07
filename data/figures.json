@@ -723,6 +723,9 @@
       "kind": "iron",
       "horse": true
     },
+    "iron-steed": {
+      "kind": "steed"
+    },
     "bucket": {
       "kind": "bucket"
     },

@@ -581,6 +581,8 @@ export const CHALK_BAND = 1.8;
 // The fish of the trap of the fisher jump at this height over the bed of the line (the ducks swim
 // at about 1.1).
 export const FISH_JUMP = 1.3;
+// The seat of the iron horse of Gióng over the ground (half blocks).
+export const STEED_SEAT = 1.65;
 const RINGS = { 2: 1.6, 5: 2.4, 10: 3.4 }; // the length of a fish trap (half blocks) for its rings
 const STAGES = { planted: ['greenPale', 0.8], green: ['green', 1.2], tall: ['greenDeep', 1.7], gold: ['yellow', 1.9] };
 // The water of a paddy stands over the ground (WATER.paddy in src/world/terrain.js): a seedling
@@ -705,6 +707,19 @@ export function workThing(look) {
         return still([...anvil, ...legs, P('body', [0.6, 0.45, 1.4], 'ash', [0, 0.8, 0]), P('neck', [0.35, 0.6, 0.35], 'ash', [0, 1.2, 0.6]), P('head', [0.35, 0.3, 0.7], 'ash', [0, 1.55, 0.85]), P('mane', [0.12, 0.5, 0.4], 'vermilion', [0, 1.4, 0.45]), P('tail', [0.15, 0.5, 0.15], 'ink', [0, 0.8, -0.8])], 1.8);
       }
       return still([...anvil, P('bar', [0.4, 0.3, 2], IRON[Math.max(0, Math.min(3, look.glow ?? 0))], [0, 0.15, 0])], 0.4);
+    }
+    // The iron horse that Gióng rides (#50): a horse of iron, as tall as a buffalo, with a red mane.
+    // The seat (the top of the back) is at STEED_SEAT over the ground.
+    case 'steed': {
+      const legs = [[-0.35, -0.9], [0.35, -0.9], [-0.35, 0.9], [0.35, 0.9]].map(([x, z], i) => P(`leg${i}`, [0.35, 1, 0.35], 'ink', [x, 0.5, z]));
+      return still([
+        ...legs,
+        P('body', [0.9, 0.7, 2.4], 'ash', [0, STEED_SEAT - 0.35, 0]),
+        P('neck', [0.5, 1, 0.5], 'ash', [0, STEED_SEAT + 0.25, 1.1]),
+        P('head', [0.5, 0.45, 1], 'ash', [0, STEED_SEAT + 0.75, 1.5]),
+        P('mane', [0.15, 0.8, 0.5], 'vermilion', [0, STEED_SEAT + 0.45, 0.9]),
+        P('tail', [0.2, 0.8, 0.2], 'ink', [0, STEED_SEAT - 0.35, -1.3]),
+      ], STEED_SEAT + 1);
     }
     // A stake of the fish trap, half in the water.
     case 'stake': return still([P('pole', [0.55, 4, 0.55], look.set ? 'wood' : 'ochre', [0, 1.2, 0]), P('top', [0.6, 0.2, 0.6], 'yellowPale', [0, 3.25, 0]), P('tie', [0.62, 0.2, 0.62], 'ink', [0, 2.4, 0])], 3.3);

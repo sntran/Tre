@@ -76,3 +76,23 @@ test('the big button is the slingshot: a longer hold is a longer pull, and a pul
   assert.equal(shots[1], HOLD_AT);
   void session;
 });
+
+test('in the raid of the general, Gióng rides his iron horse beside the road, away from the jar, the brazier, the forge, and the flags (#50)', async () => {
+  const { companionSpot, setupRaid } = await import('../src/core/world/systems/raid.js');
+  const { createWorldState, getEntity } = await import('../src/core/world/state.js');
+  const { STEED_SEAT } = await import('../src/world/figures.js');
+  const def = raids.raids.boss;
+  assert.equal(def.steed, STEED_SEAT / 2, 'the seat of Gióng is the top of the back of the horse');
+  const raid = createRaid(raids, 'boss', 0, null, []);
+  const w = createWorldState({ seed: 1, map: 'trau-son', clock: { minutes: 600 } });
+  setupRaid(w, raid, def, { groundY: () => 0 }, { companion: 'giong-hero' });
+  const g = getEntity(w, 'companion:raid');
+  const horse = getEntity(w, 'steed:raid');
+  assert.ok(horse && horse.look === 'iron-steed', 'the iron horse is there');
+  assert.equal(g.riding, def.steed);
+  assert.deepEqual({ x: horse.position.x, z: horse.position.z }, { x: g.position.x, z: g.position.z });
+  for (const s of [...raid.sources, ...raid.spots]) {
+    assert.ok(Math.hypot(s.x - g.position.x, s.z - g.position.z) >= 4, `${s.id} is far from Gióng`);
+  }
+  assert.deepEqual(companionSpot(raid), companionSpot(raid), 'the same place each time');
+});

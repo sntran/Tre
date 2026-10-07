@@ -13,7 +13,7 @@
     {"expect": [{"text": {"shown": "raid.boss.intro"}}]},
     {"read": true},
     {"wait": 0.5},
-    {"expect": [{"raid": {"on": true, "phase": "soldiers"}}, {"entity": "companion:raid", "near": "hero", "within": 2}, {"text": {"shown": "raid.tool.lightning"}}, {"text": {"shown": "raid.trap.ask"}}, {"count": {"entities": "source", "min": 3}}]},
+    {"expect": [{"raid": {"on": true, "phase": "soldiers"}}, {"entity": "companion:raid", "near": "hero", "within": 5}, {"entity": "steed:raid", "look": "iron-steed"}, {"text": {"shown": "raid.tool.lightning"}}, {"text": {"shown": "raid.trap.ask"}}, {"count": {"entities": "source", "min": 3}}]},
     {"wait": 12},
     {"pour": {"from": "brazier", "at": "first"}},
     {"wait": 0.2},
