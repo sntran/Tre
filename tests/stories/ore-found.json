@@ -1,0 +1,19 @@
+{
+  "name": "ore-found",
+  "about": {
+    "vi": "An tìm thấy quặng sắt bên đường. Sau đó, một lần bấm ở cùng chỗ không nói lại rằng đó có lẽ là quặng.",
+    "en": "An finds the iron ore by the road. After that, a press at the same place does not say again that it is maybe ore."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "prologue.done": true, "giong.spoke": true } },
+  "clock": 540,
+  "at": ["phu-dong", 49, 7],
+  "steps": [
+    { "press": { "cell": [51, 5] } },
+    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },
+    { "expect": [{ "text": { "shown": "map.ore.found" } }, { "flag": "horse.ore1" }] },
+    { "read": true },
+    { "press": { "cell": [51, 5] } },
+    { "wait": 3 },
+    { "expect": [{ "event": "open", "with": { "textKey": "map.ore.look" }, "not": true }] }
+  ]
+}

@@ -245,9 +245,9 @@
   },
   "triggers": [
    {"id": "ore1", "x": 50, "y": 4, "on": "tap", "when": {"flags": ["giong.spoke"], "notFlags": ["horse.ore1"]}, "action": {"pickup": {"iron": 2}, "set": "horse.ore1", "textKey": "map.ore.found"}, "w": 2, "h": 2},
-   {"id": "ore1-early", "x": 50, "y": 4, "on": "tap", "action": {"textKey": "map.ore.look"}, "w": 2, "h": 2},
+   {"id": "ore1-early", "x": 50, "y": 4, "on": "tap", "when": {"notFlags": ["horse.ore1"]}, "action": {"textKey": "map.ore.look"}, "w": 2, "h": 2},
    {"id": "ore2", "x": 6, "y": 62, "on": "tap", "when": {"flags": ["giong.spoke"], "notFlags": ["horse.ore2"]}, "action": {"pickup": {"iron": 2}, "set": "horse.ore2", "textKey": "map.ore.found"}, "w": 2, "h": 2},
-   {"id": "ore2-early", "x": 6, "y": 62, "on": "tap", "action": {"textKey": "map.ore.look"}, "w": 2, "h": 2},
+   {"id": "ore2-early", "x": 6, "y": 62, "on": "tap", "when": {"notFlags": ["horse.ore2"]}, "action": {"textKey": "map.ore.look"}, "w": 2, "h": 2},
    {"id": "well", "x": 40, "y": 22, "on": "tap", "action": {"textKey": "map.well"}, "w": 2, "h": 2},
    {"id": "banyan", "x": 34, "y": 6, "w": 6, "h": 6, "on": "tap", "action": {"textKey": "map.banyan"}},
    {"id": "sign", "x": 40, "y": 82, "on": "tap", "action": {"textKey": "map.sign.vanmieu"}, "w": 2, "h": 2},
