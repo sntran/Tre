@@ -440,9 +440,13 @@ export async function mountVillage(ctx, params = {}) {
     // The counter of rice is the basket of the household (#26): a tap opens it.
     counts.replaceChildren(...data.items.hud.map((item) => {
       const basket = item === BASKET;
+      // The other goods in the basket (the eggs of the market, the fish of the river) show as small
+      // pictures on the basket, so that the child sees them and opens the basket (#57).
+      const others = basket ? data.items.basket.filter((id) => id !== item && (profile.inventory[id] ?? 0) - (flying[id] ?? 0) > 0) : [];
       const el = h(basket ? 'button' : 'span', { class: `count${basket ? ' basket' : ''}`, dataset: { item }, ...(basket ? { type: 'button', 'aria-label': t('basket.title') } : {}) }, [
         img(basket ? data.items.basketArt : data.items.items[item].art, 'count-icon'),
         h('span', { text: String((profile.inventory[item] ?? 0) - (flying[item] ?? 0)) }),
+        ...others.slice(0, 3).map((id) => img(data.items.items[id].art, 'count-extra')),
       ]);
       if (basket) el.addEventListener('click', openBasket);
       return el;
