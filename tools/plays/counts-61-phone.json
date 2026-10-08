@@ -84,13 +84,18 @@
   },
   {
    "press": true,
-   "after": 4
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((h) => h.text === 'ba')",
+   "timeout": 120
   },
   {
    "shot": "the-band-snaps-and-he-counts"
   },
   {
-   "wait": 9
+   "until": "tre.activeVillage.heard().some((h) => h.text === 'chín')",
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length"
@@ -129,7 +134,12 @@
    "after": 2
   },
   {
-   "create": "Bin"
+   "click": "Bin",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 240
   },
   {
    "read": 15
@@ -160,6 +170,12 @@
   {
    "press": true,
    "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "herb-ngai:healer:6"
+   },
+   "after": 3
   },
   {
    "press": true,
@@ -207,13 +223,22 @@
   },
   {
    "press": true,
-   "after": 5
+   "after": 0.5
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.lay)",
+   "timeout": 60
+  },
+  {
+   "until": "tre.activeVillage.heard().some((h) => h.text === 'hai')",
+   "timeout": 120
   },
   {
    "shot": "the-healer-counts-each-row"
   },
   {
-   "wait": 10
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.lay",
+   "timeout": 240
   },
   {
    "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.map((id) => id.split(':')[0]))"
