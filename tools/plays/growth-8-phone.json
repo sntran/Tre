@@ -78,8 +78,16 @@
    "after": 1
   },
   {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
    "click": "Sổ tay",
    "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.notebook'))",
+   "timeout": 30
   },
   {
    "shot": "the-notebook"
@@ -107,6 +115,10 @@
    "after": 1
   },
   {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
    "click": "Dành cho bố mẹ",
    "after": 1
   },
@@ -116,6 +128,10 @@
   {
    "click": "Sổ tay",
    "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.notebook'))",
+   "timeout": 30
   },
   {
    "shot": "the-notebook-in-the-parent-area"

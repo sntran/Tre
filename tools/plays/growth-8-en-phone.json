@@ -18,8 +18,16 @@
    "after": 1
   },
   {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
    "click": "Notebook",
    "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.notebook'))",
+   "timeout": 30
   },
   {
    "shot": "en-notebook"

@@ -1230,7 +1230,14 @@ export async function mountVillage(ctx, params = {}) {
   let printCard = null;
   const printQueue = [];
   function pumpPrints() {
-    if (printCard || !printQueue.length || box || busy || ctx.ui.querySelector('.modal-layer')) return;
+    const modal = ctx.ui.querySelector('.modal-layer');
+    // A screen opens over the card: the card goes (the print stays in the notebook), so that it is
+    // not a target next to the buttons of the screen.
+    if (printCard && modal) {
+      printCard.remove();
+      printCard = null;
+    }
+    if (printCard || !printQueue.length || box || busy || modal) return;
     showPrint(printQueue.shift());
   }
   function showPrint(ev) {
