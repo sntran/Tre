@@ -368,8 +368,11 @@ export async function mountVillage(ctx, params = {}) {
   let actHold = false;
   actBtn.addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    if (busy || !actNow) return;
-    if (actNow.hold) {
+    if (busy) return;
+    // A press on a dim button goes to the game too: during a walk to a tapped thing, the act comes
+    // at the end of the walk (#66: a tap on a pale row of the bridge and a press at once made no
+    // guess, because the button had no act yet).
+    if (actNow?.hold) {
       actHold = true;
       send({ type: 'hold', on: true });
     } else send({ type: 'hands' });
