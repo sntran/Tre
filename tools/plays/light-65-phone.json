@@ -1,0 +1,491 @@
+{
+ "about": "#65: each trial in the day (10:00) and at night (21:00). The work at night is in its own light: the mean lightness of the place of the task at night is at least 80% of the day.",
+ "start": "?story=trial-scholar&clock=600",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "light": "scholar-day",
+   "at": {
+    "place": "mat"
+   },
+   "size": 140
+  },
+  {
+   "shot": "scholar-day"
+  },
+  {
+   "goto": "?story=trial-scholar&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "light": "scholar-night",
+   "at": {
+    "place": "mat"
+   },
+   "size": 140
+  },
+  {
+   "shot": "scholar-night"
+  },
+  {
+   "lightRatio": [
+    "scholar-night",
+    "scholar-day"
+   ],
+   "min": 0.8
+  },
+  {
+   "goto": "?story=trial-healer&clock=600",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "light": "healer-day",
+   "at": {
+    "place": "basket"
+   },
+   "size": 140
+  },
+  {
+   "shot": "healer-day"
+  },
+  {
+   "goto": "?story=trial-healer&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "light": "healer-night",
+   "at": {
+    "place": "basket"
+   },
+   "size": 140
+  },
+  {
+   "shot": "healer-night"
+  },
+  {
+   "lightRatio": [
+    "healer-night",
+    "healer-day"
+   ],
+   "min": 0.8
+  },
+  {
+   "goto": "?story=trial-fisher&clock=600",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "light": "fisher-day",
+   "at": {
+    "place": "line"
+   },
+   "size": 140
+  },
+  {
+   "shot": "fisher-day"
+  },
+  {
+   "goto": "?story=trial-fisher&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "light": "fisher-night",
+   "at": {
+    "place": "line"
+   },
+   "size": 140
+  },
+  {
+   "shot": "fisher-night"
+  },
+  {
+   "lightRatio": [
+    "fisher-night",
+    "fisher-day"
+   ],
+   "min": 0.8
+  },
+  {
+   "goto": "?story=trial-woodcutter&clock=600",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "light": "woodcutter-day",
+   "at": {
+    "stem": 4
+   },
+   "size": 140
+  },
+  {
+   "shot": "woodcutter-day"
+  },
+  {
+   "goto": "?story=trial-woodcutter&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "light": "woodcutter-night",
+   "at": {
+    "stem": 4
+   },
+   "size": 140
+  },
+  {
+   "shot": "woodcutter-night"
+  },
+  {
+   "lightRatio": [
+    "woodcutter-night",
+    "woodcutter-day"
+   ],
+   "min": 0.8
+  },
+  {
+   "goto": "?story=trial-smith&clock=600",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "light": "smith-day",
+   "at": {
+    "thing": "zone:forge"
+   },
+   "size": 140
+  },
+  {
+   "shot": "smith-day"
+  },
+  {
+   "goto": "?story=trial-smith&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "light": "smith-night",
+   "at": {
+    "thing": "zone:forge"
+   },
+   "size": 140
+  },
+  {
+   "shot": "smith-night"
+  },
+  {
+   "lightRatio": [
+    "smith-night",
+    "smith-day"
+   ],
+   "min": 0.8
+  }
+ ]
+}
