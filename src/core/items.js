@@ -13,3 +13,14 @@ export const itemsOf = (items, year) => Object.keys(items.items ?? {}).filter((i
 // The goods of the basket of the household: [{ id, n }] in the order of the basket, with the
 // goods that the household has.
 export const basketOf = (items, inventory) => (items.basket ?? []).map((id) => ({ id, n: inventory?.[id] ?? 0 }));
+
+// What a counter of the HUD says after a tap (#62): its name and its count, as words ("Gạo, mười
+// ba"), or that it has none yet ("Sắt, chưa có."). A count with no number word (more than the words of the game) says the name only. The
+// basket says its title ("Giỏ của nhà"). max: the biggest number word (num.<n>).
+export function counterLine(items, id, n, { basket = false, max = 150 } = {}) {
+  if (basket) return { key: 'basket.title', params: {} };
+  const name = { key: items.items?.[id]?.nameKey ?? `item.${id}.name` };
+  if (!Number.isInteger(n) || n < 0 || n > max) return { key: 'count.name', params: { name } };
+  if (n === 0) return { key: 'count.none', params: { name } };
+  return { key: 'count.say', params: { name, n: { key: `num.${n}` } } };
+}

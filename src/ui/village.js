@@ -9,7 +9,7 @@ import { edgeMarker } from '../core/hit.js';
 import { portraitCanvas, heroLookOf, speakerLookOf, prerender, portraitStats } from './portraits.js';
 import { keysToScreenDir, stickToScreenDir, screenToMap } from '../core/world/move.js';
 import { getEntity, query } from '../core/world/state.js';
-import { basketOf } from '../core/items.js';
+import { basketOf, counterLine } from '../core/items.js';
 import { STEP } from '../core/world/step.js';
 import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, starOn, puddlesAt } from '../core/world/ambient.js';
 import { rainOf } from '../core/world/systems/sky.js';
@@ -478,12 +478,19 @@ export async function mountVillage(ctx, params = {}) {
     const basket = item === BASKET;
     const n = h('span');
     const extras = basket ? [0, 1, 2].map(() => h('img', { class: 'count-extra', alt: '', draggable: 'false', hidden: true })) : [];
-    const el = h(basket ? 'button' : 'span', { class: `count${basket ? ' basket' : ''}`, dataset: { item }, ...(basket ? { type: 'button', 'aria-label': t('basket.title') } : {}) }, [
+    const el = h('button', { class: `count${basket ? ' basket' : ''}`, dataset: { item }, type: 'button', 'aria-label': t(basket ? 'basket.title' : data.items.items[item].nameKey) }, [
       img(basket ? data.items.basketArt : data.items.items[item].art, 'count-icon'),
       n,
       ...extras,
     ]);
-    if (basket) el.addEventListener('click', openBasket);
+    // A tap on a counter says its name and its count, as words; the basket opens and says its
+    // title (#62).
+    el.addEventListener('click', () => {
+      const n = (profile.inventory[item] ?? 0) - (flying[item] ?? 0);
+      const line = counterLine(data.items, item, n, { basket });
+      speak(line.key, line.params, { force: true });
+      if (basket) openBasket();
+    });
     counts.append(el);
     const c = { el, n, extras };
     countNodes.set(item, c);

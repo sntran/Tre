@@ -2,7 +2,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { itemIn, itemsOf, basketOf } from '../src/core/items.js';
+import { itemIn, itemsOf, basketOf, counterLine } from '../src/core/items.js';
+import { createI18n } from '../src/core/i18n.js';
 import { load } from './helpers.js';
 
 const items = load('data/items.json');
@@ -46,4 +47,24 @@ test('no text of Era 1 says coins or a price in đồng; the coin is a thing of 
   }
   // No market line names a price: the seller says a rate of goods.
   for (const k of Object.keys(vi).filter((x) => x.startsWith('event.market'))) assert.ok(!/đồng/iu.test(vi[k]) && !/coin|cost|price/i.test(en[k]), k);
+});
+
+// The counters say what they are (#62): a tap on a counter of the HUD says its name and its count
+// as words, and the basket says its title.
+test('a tap on a counter says its name and its count as words, and the basket says its title', () => {
+  const tv = createI18n(vi, 'vi');
+  const te = createI18n(en, 'en');
+  const say = (i18n, line) => i18n.t(line.key, line.params);
+  assert.equal(say(tv, counterLine(items, 'rice', 13)), 'Gạo, mười ba.');
+  assert.equal(say(tv, counterLine(items, 'iron', 0)), 'Sắt, chưa có.');
+  assert.equal(say(tv, counterLine(items, 'bamboo', 2)), 'Tre, hai.');
+  assert.equal(say(tv, counterLine(items, 'rice', 13, { basket: true })), 'Giỏ của nhà');
+  assert.equal(say(tv, counterLine(items, 'rice', 999)), 'Gạo.', 'no number word: the name only');
+  for (const id of items.hud) {
+    for (const n of [0, 1, 7, 42, 150]) {
+      const text = say(te, counterLine(items, id, n));
+      assert.doesNotMatch(text, /\d/, `${id} ${n}: words, not numerals`);
+      assert.doesNotMatch(say(tv, counterLine(items, id, n)), /\d|\{|\}/);
+    }
+  }
 });
