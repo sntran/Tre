@@ -1,0 +1,337 @@
+{
+ "about": "#60: hints that a child hears, and a button that does what its picture shows. A new game: after the naming of the calf, grandma says how to ride; a tap on Nghé gives the ride on the button, and the press rides; on Nghé next to grandma the button shows the talk, and one press gets down and talks. Then the teacher by a practice link: nine rods and the tie, and the lines of the bubbles that the voice said (tre.activeVillage.heard()).",
+ "start": "?",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "click": "Bình"
+  },
+  {
+   "click": "Tiếp"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "create": "Bin"
+  },
+  {
+   "read": 3
+  },
+  {
+   "read": 4
+  },
+  {
+   "click": "Chào nghé con",
+   "if": "[...document.querySelectorAll('button')].some((b) => b.offsetParent && b.textContent.includes('Chào nghé con'))",
+   "after": 1.5
+  },
+  {
+   "click": "Đồng ý",
+   "if": "Boolean(document.querySelector('.name-input'))",
+   "after": 1
+  },
+  {
+   "until": "document.querySelector('.dialogue-layer')?.textContent.includes('nút lớn')",
+   "timeout": 60
+  },
+  {
+   "shot": "grandma-says-how-to-ride"
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "thing": "friend:nghe"
+   },
+   "after": 1
+  },
+  {
+   "print": "document.querySelector('.act-btn img.btn-icon')?.getAttribute('src')"
+  },
+  {
+   "shot": "a-tap-on-nghe-the-ride"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "print": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.riding)"
+  },
+  {
+   "tap": {
+    "person": "grandma"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "document.querySelector('.act-btn img.btn-icon')?.getAttribute('src')"
+  },
+  {
+   "shot": "on-nghe-next-to-grandma-the-talk"
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.riding)"
+  },
+  {
+   "print": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "read": 10
+  },
+  {
+   "goto": "?practice=bo-que",
+   "after": 2
+  },
+  {
+   "create": "Bin"
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 240
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "place": "mat"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "place": "mat"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "place": "mat"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "place": "mat"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "place": "mat"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "place": "mat"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "place": "mat"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "place": "mat"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "place": "mat"
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "wait": 6
+  },
+  {
+   "shot": "the-teacher-counts-aloud"
+  },
+  {
+   "wait": 10
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((h) => [h.voice, h.text]))"
+  }
+ ]
+}
