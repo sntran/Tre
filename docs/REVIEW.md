@@ -557,3 +557,4 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 ## The parent area: Vietnamese words, real names, and true reasons (#58)
 
 - **The names of the work of the story:** `parent.act.trial-horse` ("Ngựa sắt"), `parent.act.trial-rice` ("Cơm cho Gióng"), `parent.act.trial-staffs` ("Gậy tre"), and `parent.act.trial-share` ("Chia bao gạo"). Before, the parent area showed the keys.
+- **What happened in the raids:** `parent.week.act.raids` ("{name} thắng {won}, thua {lost}.") with `parent.count.raids` ("{n} trận"), for example "Mai thắng 0 trận, thua 5 trận." The line of the raids gives this in place of the signs ("có lúc chán", "say mê"): a miss in a raid comes from the time of the shot, so the note gives no reason for it.

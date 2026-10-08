@@ -1394,6 +1394,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const def = data.raids.raids[r?.raid.id];
     if (!def) return;
     profile.stats ??= {};
+    log('raid', { raid: r.raid.id, won: Boolean(ev.won) });
     if (ev.won) {
       profile.stats.battlesWon = (profile.stats.battlesWon ?? 0) + 1;
       const win = def.win ?? {};

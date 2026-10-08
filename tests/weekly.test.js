@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { weeklyNote, medianOf, signsOf, actSentences, checkSentence, MAX_LINES, titleOf } from '../src/core/weekly.js';
-import { rollupEvents, weekOf, summarize, createLog, logEvent, extraFields, DAY_MS, activityOf } from '../src/core/learnlog.js';
+import { rollupEvents, weekOf, summarize, createLog, logEvent, extraFields, DAY_MS, activityOf, checkEvent } from '../src/core/learnlog.js';
 import { createI18n } from '../src/core/i18n.js';
 import { namesOf } from '../src/core/naming.js';
 import { load } from './helpers.js';
@@ -107,14 +107,24 @@ test('a raid gives no reason for its misses and no person who helped (#55)', () 
       out.push(commit(t + 10 * S + i * S, 'raid-scouts', { success: false, off: 2, parts: [5, 5], skill: 'math.count.5' }));
       out.push({ type: 'help', t: t + 10 * S + i * S + 500, variant: 'base', task: 'raid-scouts', diagnosis: 'missing', move: 'mark', pBefore: null, success: true, efficient: true });
     }
+    // The raid ends with a loss, a little after the last miss.
+    out.push({ type: 'raid', t: t + 18 * S, variant: 'base', raid: 'scouts', won: false });
     out.push(session(t, t + 120 * S));
   }
+  out.push({ type: 'raid', t: MON + 4 * DAY_MS, variant: 'base', raid: 'river', won: true });
+  for (const ev of out.filter((e) => e.type === 'raid')) checkEvent(ev, schema);
   const note = weeklyNote(rollupEvents(out, opts), profile(), W, data);
   const keys = note.lines.flatMap((l) => (l.parts ?? [l]).map((x) => x.key));
-  for (const k of ['parent.week.restless', 'parent.week.frustrated', 'parent.week.helped']) assert.ok(!keys.includes(k), k);
+  // No reason for a miss, no person who helped, and no line about the way after a miss (#58).
+  for (const k of ['parent.week.restless', 'parent.week.frustrated', 'parent.week.helped', 'parent.week.afterMiss', 'parent.week.afterMissStay']) assert.ok(!keys.includes(k), k);
   const raids = note.acts.find((a) => a.id === 'raids');
   assert.ok(raids, 'the raids have a line of their own');
   assert.ok(!raids.signs.includes('restless') && !raids.signs.includes('frustrated'), raids.signs.join(' '));
+  // The line says what happened: the raids won and lost, and no signs (#58).
+  const said = (i18n) => actSentences(raids, 'Nam').map((x) => say(i18n, x)).join(' ');
+  assert.match(said(vi), /Nam thắng 1 trận, thua 3 trận\./);
+  assert.match(said(en), /Nam won 1 raid and lost 3 raids\./);
+  assert.ok(!/steady|keen|chán|nản/.test(said(en) + said(vi)), said(vi));
 });
 
 // The rules of #42: each line is a sentence that a parent says, not a table of counts.

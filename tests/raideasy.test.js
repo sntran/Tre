@@ -142,3 +142,16 @@ test('in a raid, the animals leave the road and the children of the court go hom
   assert.equal(getEntity(w, 'raid'), null);
   assert.ok(children.every((c) => !c.hidden), 'the children play again');
 });
+
+test('the end of a raid goes into the learning log, won or lost, for the line of the raids in the note of the parents (#58)', async () => {
+  const { runHeadless } = await import('./story-run.js');
+  const { playRaid } = await import('./restless.js');
+  let session = null;
+  let profile = null;
+  const start = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'giong.spoke': true, 'raid.tool.sling': true } };
+  await runHeadless({ name: 'x', profile: start, clock: 540, at: ['phu-dong', 61, 29], steps: [{ wait: 1 }] }, { log: true, onSession: (s) => { session = s; }, onEnd: (x) => { profile = x.profile; } });
+  const { won } = playRaid(session, 'encounter:scouts', { seed: 2 });
+  assert.equal(typeof won, 'boolean', 'the raid ends');
+  const ends = profile.log.events.filter((ev) => ev.type === 'raid').map((ev) => [ev.raid, ev.won]);
+  assert.deepEqual(ends, [['scouts', won]]);
+});

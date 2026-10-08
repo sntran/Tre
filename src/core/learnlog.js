@@ -314,7 +314,7 @@ export function offOf(parts, target) {
   return Math.abs(sum - target) / group;
 }
 
-const emptyAct = () => ({ commits: 0, ok: 0, near: 0, far: 0, fast: 0, idle: 0, resets: 0, missRuns: 0, again: 0, changed: 0, left: 0, sessions: 0, self: 0, sent: 0, first: 0, stops: 0, sets: 0, stay: 0, minutes: 0 });
+const emptyAct = () => ({ commits: 0, ok: 0, near: 0, far: 0, fast: 0, idle: 0, resets: 0, missRuns: 0, again: 0, changed: 0, left: 0, sessions: 0, self: 0, sent: 0, first: 0, stops: 0, sets: 0, stay: 0, won: 0, lost: 0, minutes: 0 });
 const emptyWeek = () => ({
   sessions: 0, self: 0, sent: 0, minutes: 0, hops: 0,
   day: [0, 0, 0, 0, 0, 0, 0], // minutes of play on each day of the week, Monday first
@@ -357,6 +357,7 @@ const MARKS = new Set(['show', 'mark', 'cue', 'demo']); // the people check or s
 //   sessions, self, sent, first, stops: the sessions with commits of the activity (started by the
 //     child or by a practice link), the sessions that it began, and the sessions that it ended.
 //   sets, stay: the sets of a practice done, and the times the child played on after a set.
+//   won, lost: the raids that the child won and lost (#58).
 //   minutes: the time between the commits of the activity (each gap at most signals.gap seconds);
 //     in a session of a practice link, the whole time of the session goes to its activity.
 // hops: a commit of another activity less than signals.hop seconds after a commit.
@@ -463,6 +464,9 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
         const r = act(w, ev.activity);
         if (ev.end === 'done') r.sets += 1;
         if (ev.end === 'stay') r.stay += 1;
+      } else if (ev.type === 'raid') {
+        const r = act(w, activityOf(`raid-${ev.raid}`, activities));
+        r[ev.won ? 'won' : 'lost'] += 1;
       } else if (ev.type === 'check') {
         w.l2l.checks += 1;
         w.l2l.selfFix += ev.changed ? 1 : 0;

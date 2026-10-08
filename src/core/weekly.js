@@ -157,7 +157,8 @@ export function weeklyNote(rollups, profile, week, data = {}) {
   if (l.after && l.before) line(3, 'parent.week.asks', { after: count('times', l.after), before: count('times', l.before) });
   else if (l.after) line(3, 'parent.week.asksAfter', { times: count('times', l.after), n: l.after });
   else if (l.before) line(3, 'parent.week.asksBefore', { times: count('times', l.before) });
-  const missed = list.reduce((a, [, r]) => [a[0] + r.again, a[1] + r.changed, a[2] + r.left], [0, 0, 0]);
+  // A miss in a raid comes from the time of the shot: it says nothing about the way after a miss.
+  const missed = list.filter(([id]) => !NO_REASON.has(id)).reduce((a, [, r]) => [a[0] + r.again, a[1] + r.changed, a[2] + r.left], [0, 0, 0]);
   if (sum(missed) >= sig.few) {
     // The way that the child takes most after a miss, and the leaving (or none).
     const how = missed[1] >= missed[0] ? 'parent.week.miss.changed' : 'parent.week.miss.again';
@@ -211,6 +212,8 @@ export function weeklyNote(rollups, profile, week, data = {}) {
     self: r.self,
     stops: r.stops,
     signs: signsFor(id, r, sig.few),
+    // The raids: what happened, the raids won and lost, in place of the signs (#58).
+    raids: NO_REASON.has(id) && (r.won || r.lost) ? [r.won ?? 0, r.lost ?? 0] : null,
     learned: learned[id] ?? null,
   })).sort((a, b) => b.minutes - a.minutes);
   return { week, played: true, lines, acts: out, facts, check };
@@ -225,7 +228,8 @@ export function actSentences(a, name) {
   out.push(a.sets ? { key: 'parent.week.act.time', params: { minutes, sets: count('sets', a.sets) } } : { key: 'parent.week.act.timeOnly', params: { minutes } });
   const how = [['first', a.first], ['self', a.self], ['stops', a.stops]].filter(([, n]) => n > 0).map(([k, n]) => ({ key: `parent.week.act.${k}`, params: { times: count('times', n) } }));
   if (how.length) out.push({ key: 'parent.week.act.how', params: { name, list: how } });
-  out.push({ key: 'parent.week.act.signs', params: { signs: a.signs.map((x) => ({ key: `parent.week.sign.${x}` })) } });
+  if (a.raids) out.push({ key: 'parent.week.act.raids', params: { name, won: count('raids', a.raids[0]), lost: count('raids', a.raids[1]) } });
+  else out.push({ key: 'parent.week.act.signs', params: { signs: a.signs.map((x) => ({ key: `parent.week.sign.${x}` })) } });
   if (a.learned) {
     const [n, kept] = a.learned;
     out.push({ key: kept === n ? 'parent.week.learned.all' : 'parent.week.learned', params: { name, facts: count('facts', n), n, kept } });
