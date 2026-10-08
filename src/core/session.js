@@ -1940,10 +1940,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const TAP_FINISH = new Set(['trial-healer']);
   // The healer says the name of a herb in a bubble (#61): 'bed' after a tap on a bed, 'herb' when
   // the child takes a bunch. A child who cannot read hears it (#60).
+  // The same line comes at most HERB_RUN times in a row before a try (#63: a press takes the same
+  // kind again with no limit, and the healer said "Bó rau má đây." at each of many presses).
+  const HERB_RUN = 3;
+  let herbSaid = { key: null, n: 0 };
   function sayHerb(what, kind) {
     const healer = getEntity(state, 'npc:healer');
     if (!healer || !/^herb-(ngai|tiato|rauma)$/.test(kind)) return;
-    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: `healer.${what}.${kind.slice(5)}`, params: {} });
+    const key = `healer.${what}.${kind.slice(5)}`;
+    herbSaid = herbSaid.key === key ? { key, n: herbSaid.n + 1 } : { key, n: 1 };
+    if (herbSaid.n > HERB_RUN) return;
+    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: key, params: {} });
   }
   // A task or a folk game goes on now.
   const taskOn = () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done));
@@ -2893,6 +2900,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The mentors read the commits (before the learner takes them), the plank too long, and the
     // actions of the hands.
     if (ev.type === 'skill') mentoring.skill(ev);
+    if (ev.type === 'skill') herbSaid = { key: null, n: 0 };
     if (ev.type === 'long') mentoring.long(ev);
     mentoring.worldEvent(ev);
     if ((ev.type === 'solid' || ev.type === 'break') && ev.give) {
