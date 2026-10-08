@@ -469,19 +469,18 @@ export async function mountVillage(ctx, params = {}) {
     // A count shows as things, not numerals (docs/QUESTIONS.md, 76): a small thing for each one that
     // the step needs, filled for each one that the child has.
     // The work of a trial counts as things too (the bundles of the teacher, #48).
+    // The goal bar keeps the pips of the quest (the five trials) at a station too, and the pips of
+    // the task (two bundles) show in their own row under the text (#64: in place of the five
+    // trials, five empty pips looked like a lost bundle).
     const work = session.workCount();
-    const count = work ?? (goal?.progress && goal.step.pip ? { pip: goal.step.pip, ...goal.progress } : null);
+    const quest = goal?.progress && goal.step.pip ? { pip: goal.step.pip, ...goal.progress } : null;
     // The nodes of the HUD are made one time. An update changes only a text, the class of a pip,
     // and the picture of an image that is different, so that no picture blinks while it loads (#60).
     setText(goalText, tn(goalKey, goalParams));
-    const pipKey = count ? `${count.pip}:${count.need}` : '';
-    if (goalPips.dataset.key !== pipKey) {
-      goalPips.dataset.key = pipKey;
-      goalPips.replaceChildren(...(count ? Array.from({ length: count.need }, () => h('i', { class: `pip pip-${count.pip}` })) : []));
-      goalPips.hidden = !count;
-    }
-    // A tied bundle on its way to its pip is not in the count yet: the pip fills when it lands (#61).
-    if (count) [...goalPips.children].forEach((pip, i) => pip.classList.toggle('on', i < count.have - pipsFlying));
+    // A thing on its way to its pip is not in the count yet: the pip fills when it lands (#61): a
+    // tied bundle to the pips of the task, the seal of a done task to the pips of the quest.
+    drawPips(goalPips, quest, sealsFlying);
+    drawPips(taskPips, work, pipsFlying);
     // A thing on its way to the basket is not in the count yet: the count ticks up when it lands.
     // The counter of rice is the basket of the household (#26): a tap opens it.
     for (const item of data.items.hud) {
@@ -498,12 +497,24 @@ export async function mountVillage(ctx, params = {}) {
     }
   }
   const setText = (el, text) => { if (el.textContent !== text) el.textContent = text; };
+  // A row of pips for a count ({ pip, need, have }, or null: no row).
+  function drawPips(row, count, flying) {
+    const key = count ? `${count.pip}:${count.need}` : '';
+    if (row.dataset.key !== key) {
+      row.dataset.key = key;
+      row.replaceChildren(...(count ? Array.from({ length: count.need }, () => h('i', { class: `pip pip-${count.pip}` })) : []));
+      row.hidden = !count;
+    }
+    if (count) [...row.children].forEach((pip, i) => pip.classList.toggle('on', i < count.have - flying));
+  }
   // The picture of an image, only when it is different (a new src loads, and shows empty a moment).
   const setArt = (el, art) => { if (el.dataset.art !== art) { el.dataset.art = art; el.src = `art/${art}.svg`; } };
   const goalText = h('span', { class: 'goal-text' });
   const goalPips = h('span', { class: 'goal-pips', 'aria-hidden': 'true', hidden: true });
-  let pipsFlying = 0; // the tied bundles on their way to their pips (#61)
-  goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), goalText, goalPips);
+  const taskPips = h('span', { class: 'goal-task-pips', 'aria-hidden': 'true', hidden: true });
+  let pipsFlying = 0; // the tied bundles on their way to their pips of the task (#61)
+  let sealsFlying = 0; // the seals of done tasks on their way to the pips of the quest (#62)
+  goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), h('span', { class: 'goal-body' }, [goalText, taskPips]), goalPips);
   const countNodes = new Map();
   function countNode(item) {
     if (countNodes.has(item)) return countNodes.get(item);
@@ -1152,7 +1163,7 @@ export async function mountVillage(ctx, params = {}) {
   }
   // The pips of the goal bar light up one at a time, while the person says how many (#61).
   function showPips() {
-    [...goalPips.children].forEach((pip, i) => {
+    [...taskPips.children].forEach((pip, i) => {
       pip.classList.remove('intro');
       pip.style.animationDelay = `${0.2 + i * 0.6}s`;
       void pip.offsetWidth;
@@ -1163,7 +1174,7 @@ export async function mountVillage(ctx, params = {}) {
   // lands (#61).
   function flyToPip(fromId) {
     const q = getEntity(state, fromId)?.position;
-    if (!q || !goalPips.children.length) return;
+    if (!q || !taskPips.children.length) return;
     const start = view.project(q.x / 2, q.y / 2 + 0.6, q.z / 2);
     const el = h('i', { class: 'pip pip-bundle on flying-pip' });
     marks.append(el);
@@ -1172,7 +1183,7 @@ export async function mountVillage(ctx, params = {}) {
     const t0 = performance.now();
     const tick = (now) => {
       const index = Math.max(0, (session.workCount()?.have ?? 1) - pipsFlying);
-      const box = goalPips.children[index]?.getBoundingClientRect();
+      const box = taskPips.children[index]?.getBoundingClientRect();
       const base = canvas.getBoundingClientRect();
       const end = box ? { x: box.left + box.width / 2 - base.left, y: box.top + box.height / 2 - base.top } : { x: start.x, y: 0 };
       const k = Math.max(0, Math.min(1, (now - t0) / 900));
@@ -1196,7 +1207,7 @@ export async function mountVillage(ctx, params = {}) {
     const start = view.project(q.x, q.y + (q.height ?? 1.5), q.z);
     const el = h('i', { class: 'flying-seal' });
     marks.append(el);
-    pipsFlying += 1;
+    sealsFlying += 1;
     updateHud();
     const t0 = performance.now();
     const target = () => {
@@ -1216,7 +1227,7 @@ export async function mountVillage(ctx, params = {}) {
         return;
       }
       el.remove();
-      pipsFlying = Math.max(0, pipsFlying - 1);
+      sealsFlying = Math.max(0, sealsFlying - 1);
       if (!alive) return;
       const spot = target();
       updateHud();
