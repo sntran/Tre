@@ -109,3 +109,22 @@ test('the rice for Gióng and the woodcutter: no press undoes a put, asks for he
     assert.deepEqual(playPresses(session, { presses: 16 }), [], name);
   }
 });
+
+// A press next to the mentor is no ask (#58): only a tap on the person asks for help, so the log
+// and the note of the parents count only the asks of the child.
+test('the healer: a tap on her asks for help once; presses next to her never ask', async () => {
+  const session = await afterTalk('trial-healer');
+  const asks = [];
+  session.listen((ev) => { if (ev.type === 'mentor' && ev.asked) asks.push(ev); });
+  assert.equal(session.carried(), null, 'empty hands at the start');
+  tapAndPress(session, { person: 'npc:healer' });
+  assert.equal(asks.length, 1, 'the tap asks');
+  for (let n = 0; session.screen && n < 20; n++) {
+    session.command({ type: session.screen === 'dialogue' || session.screen === 'say' ? 'next' : 'close' });
+    session.events();
+  }
+  const healer = getEntity(session.state, 'npc:healer').position;
+  Object.assign(getEntity(session.state, 'hero').position, { x: healer.x + 1.5, z: healer.z });
+  assert.deepEqual(playPresses(session, { presses: 8, wait: 1.5 }), []);
+  assert.equal(asks.length, 1, 'no press asks');
+});
