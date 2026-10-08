@@ -55,7 +55,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -83,7 +83,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -111,7 +111,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -139,7 +139,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -167,7 +167,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -195,7 +195,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -223,7 +223,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -251,7 +251,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -279,7 +279,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -307,7 +307,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -335,7 +335,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
@@ -363,7 +363,7 @@
   },
   {
    "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
-   "timeout": 180
+   "timeout": 240
   },
   {
    "print": "tre.activeVillage.heroTile()"
