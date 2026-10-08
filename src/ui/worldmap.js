@@ -38,6 +38,9 @@ const pathOf = (rings) => rings.map((r) => `M${r.map((p) => `${p.x.toFixed(2)},$
 // opts.soft: the loading screen: softer colors of the regions, so that the land, the rivers, the
 // coast, and the road stand out, and the sea past the east and the south of the sheet (with no
 // frame line at the edge of the sheet).
+// The size of a tile of the paper grain on the map (map units).
+const PAPER_TILE = 48;
+
 export function drawBase(svg, ctx, proj, eraSouth, opts = {}) {
   const { data } = ctx;
   const geo = data.geo;
@@ -50,6 +53,15 @@ export function drawBase(svg, ctx, proj, eraSouth, opts = {}) {
     el('clipPath', { id: 'vn-land' }, [el('path', { d: pathOf(geo.land.VNM.map((r) => r.map(toMap))) })]),
     el('pattern', { id: 'sea-waves', width: 12, height: 12, patternUnits: 'userSpaceOnUse' }, [
       el('image', { href: 'art/pattern/waves.svg', width: 12, height: 12 }),
+    ]),
+    // The grain of the dó paper over the whole sheet, and a soft vignette at its edges (#8: the
+    // look of the voxel print style).
+    el('pattern', { id: 'paper-grain', width: PAPER_TILE, height: PAPER_TILE, patternUnits: 'userSpaceOnUse' }, [
+      el('image', { href: 'art/paper.svg', width: PAPER_TILE, height: PAPER_TILE }),
+    ]),
+    el('radialGradient', { id: 'map-vignette', cx: '50%', cy: '50%', r: '72%' }, [
+      el('stop', { offset: '60%', 'stop-color': C.paperDeep, 'stop-opacity': 0 }),
+      el('stop', { offset: '100%', 'stop-color': C.wood, 'stop-opacity': 0.28 }),
     ]),
   ]);
   svg.append(defs);
@@ -150,6 +162,10 @@ export function drawBase(svg, ctx, proj, eraSouth, opts = {}) {
     islands.append(el('circle', { cx: m.x, cy: m.y, r: 0.9, fill: C.paper, stroke: C.ink, 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' }));
   }
   svg.append(islands);
+  // The paper over the print: the grain multiplies the flat tones, as ink on dó paper.
+  const sheet = { x: 0, y: 0, width: proj.width * sea, height: proj.height * sea, 'pointer-events': 'none' };
+  svg.append(el('rect', { ...sheet, fill: 'url(#paper-grain)', opacity: 0.6, style: 'mix-blend-mode: multiply' }));
+  if (!opts.soft) svg.append(el('rect', { ...sheet, fill: 'url(#map-vignette)' }));
   if (!opts.soft) svg.append(el('rect', { x: 0, y: 0, width: proj.width, height: proj.height, fill: 'none', stroke: C.ink, 'stroke-width': 2.5, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
   return { regionPaths, eraY, place };
 }
