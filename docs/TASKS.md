@@ -54,6 +54,10 @@ Every task in the world must be clear to a child of six. Young children need lar
 
 The raised hand is only the wave button, and the jump has its own picture: no two buttons on the screen have the same picture.
 
+### The picture is the act (#60)
+
+A press does the act of the picture that the child saw. When the picture of the button changes for a reason that the child did not make (a person or Nghé comes into reach or goes, the hero stops at the end of a walk, the hero turns), the new act starts 0.6 seconds after the new picture shows: a child of five or six presses about half a second after the child sees a picture. In that time a press does the act of the old picture when it is still possible; if not, the press does nothing and the button pulses once. A change that comes from a press or a tap of the child is the act at once (after a pick, the next press puts).
+
 ### The table of the tasks
 
 | Task | The targets, and the act at each one | The finish at the person (its picture) | The cue |

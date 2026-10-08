@@ -835,7 +835,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       a?.release?.();
       return;
     }
-    const a = action();
+    const a = pressAct();
     if (!a?.hold || busy) return;
     holdAct = a;
     a.run();
@@ -2126,12 +2126,46 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     };
     return list.reduce((a, b) => (score(b) < score(a) ? b : a));
   }
+  // The picture on the big button (#60): the act that the child sees. A change of the picture that
+  // the child did not make (a person or Nghé comes into reach or goes, the hero stops at the end of
+  // a walk, the hero turns) starts its act SETTLE seconds after it shows: a child presses about half
+  // a second after the child sees a picture. In that time a press does the act of the old picture
+  // when it is still possible, or nothing (the button pulses once). A change that comes from a press
+  // or a tap of the child is the act at once (after a pick, the next press puts).
+  const SETTLE = 0.6;
+  const CHILD_CHANGE = 0.4; // seconds after a command of the child: the change is of the child
+  let shown = null; // { key, a (the act), t (the tick of the change), prev (the picture before) }
+  let lastChild = -Infinity;
+  const actKey = (a) => (a ? `${a.act}|${a.target}` : null);
+  function watchPicture() {
+    const a = action();
+    const key = actKey(a);
+    if (shown && key === shown.key) {
+      shown.a = a;
+      return;
+    }
+    const child = (state.tick - lastChild) * STEP < CHILD_CHANGE || Boolean(a && chosen && (a.keys ?? [a.target]).includes(chosen.id));
+    shown = { key, a, t: state.tick, prev: child ? null : shown };
+  }
+  // The act of a press: the act of the picture, or of the old picture while a new one settles.
+  // Null: no act (the button pulses when a new picture took the place of an act that is gone).
+  function pressAct() {
+    watchPicture();
+    const a = shown.a;
+    if (!shown.prev || (state.tick - shown.t) * STEP >= SETTLE) return a;
+    const old = shown.prev.a;
+    const still = old && candidates().find((c) => c.act === old.act && c.target === old.target);
+    if (still) return still;
+    emit({ type: 'pulse', id: null });
+    return null;
+  }
   // The action button (or E): do the act of the target, and the target pulses once. An act
   // that goes on while the button is down starts here, and ends with the hold of the button.
   // walked: the press came during the walk to the target. An act that goes on while the button is
   // down (a slash) does not start then: the button is up (#54).
   function act(walked = false) {
-    const a = action();
+    // A press at the end of a walk to a tapped target is the act of the tap (the child chose it).
+    const a = walked ? action() : pressAct();
     // The hero still walks to the target of the last tap, and the button has no act on it yet:
     // the press comes at the end of the walk (a child presses at once).
     if (chosen && (hero().route || arrivals.size) && !(a && (a.keys ?? [a.target]).includes(chosen.id))) {
@@ -2806,6 +2840,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       updateStays();
     }
     worldStep(state, STEP, env);
+    // The picture of the button, as the child sees it (about each 0.1 seconds).
+    if (state.tick % 3 === 0 && !screen) watchPicture();
     stepSling();
     stepFarewell();
     stepGuessLine();
@@ -2910,7 +2946,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   function command(cmd) {
     const type = cmd.type;
-    if (CHILD_ACTS.has(type)) acted();
+    if (CHILD_ACTS.has(type)) {
+      acted();
+      lastChild = state.tick;
+    }
     if (type === 'next' || type === 'choose') {
       if (screen?.screen === 'dialogue') showLine(screen, screen.runner.next(type === 'choose' ? cmd.n : null));
       else if (screen?.screen === 'say') closeScreen();

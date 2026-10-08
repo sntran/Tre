@@ -128,3 +128,32 @@ test('the healer: a tap on her asks for help once; presses next to her never ask
   assert.deepEqual(playPresses(session, { presses: 8, wait: 1.5 }), []);
   assert.equal(asks.length, 1, 'no press asks');
 });
+
+// The press does the act of the picture that the child saw (#60): Nghé walks up next to the hero
+// 0.2 seconds before a press; the picture changes to the ride, but the press does not put the hero
+// on Nghé. A press after the new picture settled rides.
+test('when Nghé comes into reach 0.2 seconds before a press, the press does not put the hero on Nghé', async () => {
+  let session = null;
+  const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'giong.spoke': true, 'nghe.named': true } };
+  await runHeadless({ name: 'x', profile, clock: 540, at: ['phu-dong', 20, 20], steps: [{ wait: 1 }] }, { onSession: (s) => { session = s; } });
+  const hero = getEntity(session.state, 'hero');
+  const nghe = session.state.entities.find((e) => e.follow?.target === 'hero');
+  // Nghé is away (out of sight); the button has no act.
+  nghe.hidden = true;
+  run(session, 2);
+  assert.equal(session.action(), null);
+  // Nghé comes next to the hero.
+  nghe.hidden = false;
+  Object.assign(nghe.position, { x: hero.position.x + 1.5, z: hero.position.z });
+  run(session, 0.2);
+  assert.equal(session.action()?.act, 'ride', 'the picture changes to the ride');
+  session.command({ type: 'hands' });
+  session.events();
+  run(session, 0.5);
+  assert.ok(!getEntity(session.state, 'hero').riding, 'the press 0.2 s after the change does not ride');
+  run(session, 0.7);
+  session.command({ type: 'hands' });
+  session.events();
+  run(session, 1);
+  assert.ok(getEntity(session.state, 'hero').riding, 'a press after the picture settled rides');
+});

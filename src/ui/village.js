@@ -1134,7 +1134,17 @@ export async function mountVillage(ctx, params = {}) {
       case 'hud': updateHud(); return;
       case 'sound': ctx.bus.emit('sound', ev.sound); return;
       case 'tapfx': showTap(ev.x, ev.y, ev.h); return;
-      case 'pulse': figures.pulse(ev.id); return;
+      case 'pulse':
+        // A press while a new picture settles, with the act of the old picture gone: the button
+        // pulses once (#60).
+        if (!ev.id) {
+          actBtn.classList.remove('nudge');
+          void actBtn.offsetWidth;
+          actBtn.classList.add('nudge');
+          return;
+        }
+        figures.pulse(ev.id);
+        return;
       case 'cue': figures.glow(ev.ids, ev.spots, ev.rings); return;
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;

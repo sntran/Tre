@@ -938,6 +938,7 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .act-btn { display: grid; place-items: center; padding: 8px; width: calc(var(--touch) * 1.7); height: calc(var(--touch) * 1.7); align-self: flex-end; touch-action: none; }
 .act-btn .btn-icon { width: 100%; height: 100%; }
 .act-btn.dim { opacity: 0.6; }
+.act-btn.nudge { animation: pop 0.3s ease-out; }
 .act-btn.dim .btn-icon { visibility: hidden; }
 /* The thing in the hands (#43): a small picture in the corner of the big button. */
 .act-btn { position: relative; }
