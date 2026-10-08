@@ -1,0 +1,87 @@
+{
+  "name": "vanmieu-board",
+  "about": {
+    "vi": "An đã đỗ kỳ thi ở Văn Miếu và có danh hiệu Tú tài. Ở cổng, tên của An ở trên tấm bảng gỗ dưới mái nhỏ, không ở trên tấm bia trên lưng rùa.",
+    "en": "An passed the exam at Văn Miếu and has the title Tú tài. At the gate, the name of An is on the wooden board under a small roof, not on the stele on the back of the turtle."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true,
+      "prologue.done": true,
+      "trial.scholar.done": true,
+      "trial.smith.done": true,
+      "trial.fisher.done": true,
+      "trial.healer.done": true,
+      "trial.woodcutter.done": true,
+      "giong.farewell": true,
+      "giong.messenger": true,
+      "giong.spoke": true,
+      "horse.iron": true,
+      "horse.forged": true,
+      "giong.grown": true,
+      "soldier1.won": true,
+      "soldier2.won": true,
+      "boss.staffs": true,
+      "era1.boss.won": true,
+      "river.calmed": true,
+      "scouts.won": true,
+      "exam.era1.passed": true
+    },
+    "titles": [
+      "tu-tai"
+    ]
+  },
+  "clock": 540,
+  "at": [
+    "road-thanglong",
+    20,
+    40
+  ],
+  "steps": [
+    {
+      "expect": [
+        {
+          "event": "open",
+          "not": true
+        }
+      ]
+    },
+    {
+      "do": {
+        "type": "tap",
+        "target": {
+          "ground": {
+            "x": 9113.5,
+            "y": 6343.5,
+            "h": 3,
+            "goal": true
+          }
+        }
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "vanmieu"
+        },
+        "timeout": 60
+      }
+    },
+    {
+      "expect": [
+        {
+          "screen": "vanmieu"
+        },
+        {
+          "flag": "exam.era1.passed"
+        }
+      ]
+    }
+  ]
+}

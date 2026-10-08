@@ -1,0 +1,119 @@
+{
+  "name": "healer-dusk",
+  "about": {
+    "vi": "Bà lang giao việc lúc gần tối. Trong khi An làm việc ở vườn thuốc, trời không tối đi, và bà lang ở lại bên vườn.",
+    "en": "The healer gives the work near dusk. While An works at the beds of herbs, the light holds, and the healer stays by the beds."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 1000,
+  "at": [
+    "phu-dong",
+    33,
+    44
+  ],
+  "steps": [
+    {
+      "press": {
+        "entity": "npc:healer"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "wait": 15
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "wait": 15
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "wait": 15
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "wait": 15
+    },
+    {
+      "expect": [
+        {
+          "clock": {
+            "between": [
+              16.6,
+              16.8
+            ]
+          }
+        },
+        {
+          "entity": "npc:healer",
+          "near": "hero",
+          "within": 12
+        }
+      ]
+    }
+  ]
+}

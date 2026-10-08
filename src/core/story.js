@@ -6,7 +6,7 @@
 //
 // A story file:
 //   { name, about: { vi, en }, profile: { name, grade, lang, seed, flags, items, party, timeLimit,
-//     played (minutes of play today) }, at: [place, x, y] (the start of the hero: a cell of the
+//     played (minutes of play today), titles (the ids of the titles of the child) }, at: [place, x, y] (the start of the hero: a cell of the
 //     plane in the frame of a place; [x, y]: a cell of the plane), clock (game minutes), state (a
 //     saved world, instead of at), steps: [...] }
 // The cells of the steps ([x, y]) are in the frame of the place of the start (of the plane, when
@@ -44,7 +44,7 @@
 //                                             first: src/core/restore.js; the game goes on from it)
 //   { expect: [<fact>, ...] }
 // Facts: see checkFact.
-import { createProfile } from './profile.js';
+import { createProfile, giveTitle } from './profile.js';
 import { dayKey } from './timelimit.js';
 import { getEntity, query } from './world/state.js';
 import { findPath } from './tilemap.js';
@@ -99,6 +99,8 @@ export function storyProfile(story, { now = STORY_EPOCH } = {}) {
     profile.party = [...p.party];
     profile.friends = [...new Set([...profile.friends, ...p.party])];
   }
+  // The titles that the child has (the names on the board at the gate of Văn Miếu).
+  for (const title of p.titles ?? []) giveTitle(profile, title, 1, now);
   if (p.timeLimit !== undefined) profile.settings.timeLimit = p.timeLimit;
   if (p.played !== undefined) profile.time = { day: dayKey(now), usedMs: p.played * 60000, extraMs: 0 };
   const map = story.map ?? 'giong';
