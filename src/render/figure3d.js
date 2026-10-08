@@ -15,6 +15,7 @@ import { inFront, stepFade } from '../world/fade.js';
 import { detailFor, inView, lodFor } from '../world/lod.js';
 import { createSway, swayStep } from '../world/sway.js';
 import { C } from './palette.js';
+import { edgeOf } from '../world/light.js';
 
 // One unit of a fine figure is a quarter block; the coarse figures and the things keep a grid of
 // half blocks (the field `grid` of a figure, in blocks).
@@ -154,7 +155,12 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   box.setAttribute('plain', plain);
   const parts = new THREE.InstancedMesh(box, partsMaterial(), MAX_PARTS);
   parts.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PARTS * 3), 3);
-  const hulls = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.ink), side: THREE.BackSide }), MAX_PARTS);
+  // The ink outlines have a color for each part: ink, or the light edge of the hero at night (#65).
+  const hulls = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide }), MAX_PARTS);
+  hulls.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PARTS * 3), 3);
+  const INK = new THREE.Color(C.ink);
+  const EDGE = { yellowPale: new THREE.Color(C.yellowPale) };
+  let night = 0; // the night of the world (world.sky.night)
   const disc = new THREE.CircleGeometry(1, 20).rotateX(-Math.PI / 2);
   // A flat, dark disc under each figure, so that the child finds the hero in a busy frame.
   const shadows = new THREE.InstancedMesh(disc, new THREE.MeshBasicMaterial({
@@ -272,6 +278,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     sync(world) {
       const seen = new Set();
       wind = world.wind ?? null;
+      night = world.sky?.night ?? 0;
       const tick = world.tick ?? 0;
       flights = [...flights.filter((fl) => tick < fl.start + fl.steps), ...trackCarries(holding, world.entities, tick, synced, undefined, places)];
       synced = true;
@@ -445,7 +452,10 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         L.root.updateMatrixWorld(true);
         // The target of the button has a thicker outline; a ghost has none.
         const marked = f.id === targetId;
-        const hull = marked ? L.hull * 2.6 : L.hull;
+        // The hero has a thin light edge at dusk and at night (#65: a black shape in the dark).
+        const edge = edgeOf(f.id, night);
+        const hull = marked ? L.hull * 2.6 : edge ? L.hull * edge.k : L.hull;
+        const hullColor = edge ? EDGE[edge.tone] : INK;
         if (marked) {
           const r = Math.max(0.9, Math.min(1.8, L.height * 0.7));
           light.setMatrixAt(0, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.05, f.at.z));
@@ -458,6 +468,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
           parts.setMatrixAt(n, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
           hulls.setMatrixAt(n, p.mark || p.noInk || f.ghost ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
           parts.setColorAt(n, tint(p.rgb));
+          hulls.setColorAt(n, hullColor);
           plain.array[n] = p.mark ? 1 : 0;
           n += 1;
         }
@@ -538,6 +549,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       shadows.count = s;
       for (const m of [parts, hulls, shadows]) m.instanceMatrix.needsUpdate = true;
       parts.instanceColor.needsUpdate = true;
+      hulls.instanceColor.needsUpdate = true;
       plain.needsUpdate = true;
     },
     // A burst at a point (world units): 'splash' (drops of water), 'dust' (a puff of dust, for

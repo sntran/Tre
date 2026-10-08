@@ -803,6 +803,12 @@ export function workThing(look) {
     }
     // The wood pile of the woodcutter (#57): two rows of logs on a low rack, so that the place
     // where the sticks go has a picture, not only the light of the cue.
+    // The lights of the work at dusk and at night (#65): a lantern on a post (the woodcutter and
+    // the other tasks), an oil lamp on a low stand (the teacher), and a torch on the bank (the
+    // fisher). The flame is pale, so that it shows in the day too; the view lights it at night.
+    case 'work-lamp': return still([P('post', [0.25, 2.6, 0.25], 'wood', [0, 1.3, 0]), P('arm', [0.8, 0.15, 0.15], 'wood', [0.35, 2.5, 0]), P('lamp', [0.6, 0.7, 0.6], 'yellowPale', [0.7, 2.05, 0]), P('cap', [0.75, 0.12, 0.75], 'wood', [0.7, 2.45, 0])], 2.7);
+    case 'oil-lamp': return still([P('stand', [0.3, 0.9, 0.3], 'wood', [0, 0.45, 0]), P('dish', [0.8, 0.15, 0.8], 'ochre', [0, 0.95, 0]), P('flame', [0.25, 0.4, 0.25], 'yellowPale', [0, 1.2, 0])], 1.4);
+    case 'work-torch': return still([P('pole', [0.25, 2.8, 0.25], 'wood', [0, 1.4, 0]), P('wrap', [0.4, 0.4, 0.4], 'ochre', [0, 2.9, 0]), P('flame', [0.5, 0.6, 0.5], 'yellow', [0, 3.35, 0]), P('core', [0.25, 0.35, 0.25], 'yellowPale', [0, 3.4, 0])], 3.7);
     case 'woodpile': return still([
       P('rack', [3.2, 0.2, 2], 'ink', [1.5, 0.1, 1]),
       P('log1', [3, 0.55, 0.55], 'wood', [1.5, 0.45, 0.4]), P('log2', [3, 0.55, 0.55], 'ochre', [1.5, 0.45, 1]), P('log3', [3, 0.55, 0.55], 'wood', [1.5, 0.45, 1.6]),

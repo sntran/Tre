@@ -827,6 +827,15 @@
     "woodpile": {
       "kind": "woodpile"
     },
+    "work-lamp": {
+      "kind": "work-lamp"
+    },
+    "oil-lamp": {
+      "kind": "oil-lamp"
+    },
+    "work-torch": {
+      "kind": "work-torch"
+    },
     "basket-full": {
       "kind": "basket",
       "full": true

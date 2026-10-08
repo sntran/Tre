@@ -105,6 +105,9 @@ function finish(world, tz, at = null) {
   say(world, 'trial', tz.id, { trial: tz.zone.trial, done: true, sound: 'drum' });
 }
 
+// The lamp of the work of each kind of task (#65); null: the task has a light of its own.
+const LAMPS = Object.freeze({ bundle: 'oil-lamp', stakes: 'work-torch', basket: null, forge: null });
+
 // Set up the things of a trial in the world, at the named places of the map (env.places).
 // level: the level of the task (0, 1, or 2). A trial that has its things already stays as it is.
 // opts: demo (false: the smith does not show his quench again, in a later round of a practice),
@@ -124,6 +127,10 @@ export function setupTrial(world, def, level, env, opts = {}) {
     position: { x: first.x, y: first.y, z: first.z, facing: 0 },
   });
   const owner = `trial-${def.id}`;
+  // The light of the work at dusk and at night (#65): a lamp at the edge of the work. The healer
+  // has the lamp of her basket, and the smith the fire of his forge.
+  const lamp = LAMPS[def.task] === undefined ? 'work-lamp' : LAMPS[def.task];
+  if (lamp && !def.at) addEntity(world, { id: `lamp:${def.id}`, keep: true, position: { x: first.x - 2.5, y: first.y, z: first.z - 2.5, facing: 0 }, look: lamp });
   const heap = (id, place, accepts, extra = {}) => addEntity(world, {
     id: `zone:${id}`,
     keep: true,

@@ -292,6 +292,7 @@ const FILES = [
   'src/world/chunks.js',
   'src/world/fade.js',
   'src/world/hit.js',
+  'src/world/light.js',
   'src/world/marks.js',
   'src/world/minimap.js',
   'src/world/sling.js',

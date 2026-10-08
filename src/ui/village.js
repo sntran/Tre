@@ -24,6 +24,7 @@ import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
 import { workBoxes, workTurn } from '../world/fade.js';
+import { taskPools } from '../world/light.js';
 import { VIEW, SAFE, TALK_SAFE, viewSize, inView, leadFocus } from '../world/view.js';
 import { heroLook, thingLook } from '../world/figures.js';
 import { tapTarget, thingUnder } from '../world/hit.js';
@@ -1269,6 +1270,9 @@ export async function mountVillage(ctx, params = {}) {
   // The lamp of the basket of the healer, from the corner of the basket (half blocks; the part
   // 'lamp' of the figure 'basket', src/world/figures.js).
   const BASKET_LAMP = { x: 5.25, y: 2.9 };
+  // The lamps of the work (#65, src/world/figures.js): their flame at dusk and at night.
+  const WORK_LAMPS = new Set(['work-lamp', 'oil-lamp', 'work-torch']);
+  const LAMP_AT = { 'work-lamp': { x: 0.7, y: 2.05 }, 'oil-lamp': { x: 0, y: 1.2 }, 'work-torch': { x: 0, y: 3.35 } };
 
   // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
   // up when it lands.
@@ -1764,6 +1768,28 @@ export async function mountVillage(ctx, params = {}) {
     return [...groups.values()].map((b) => ({ x0: b.x0 - 4, y0: b.y0 - 4, x1: b.x1 + 4, y1: b.y1 + 4 }));
   }
 
+  // The pools of light at dusk and at night on the screen (#65): one for each open task near the
+  // hero (src/world/light.js), and a small one at the hero. { x, y, r (pixels), clear (how much of
+  // the wash goes), flat (the part of the radius with no fall-off) }.
+  function workPools() {
+    if ((state.sky?.night ?? 0) < 0.01) return [];
+    const hp = getEntity(state, 'hero')?.position;
+    const out = [];
+    for (const p of taskPools(state.entities, hp)) {
+      const c = view.project(p.x / 2, p.y / 2 + 0.5, p.z / 2);
+      const ex = view.project((p.x + p.r) / 2, p.y / 2 + 0.5, p.z / 2);
+      const ez = view.project(p.x / 2, p.y / 2 + 0.5, (p.z + p.r) / 2);
+      const r = Math.max(Math.hypot(ex.x - c.x, ex.y - c.y), Math.hypot(ez.x - c.x, ez.y - c.y));
+      if (Number.isFinite(c.x) && Number.isFinite(c.y) && r > 1) out.push({ x: c.x, y: c.y, r, clear: 1, flat: 0.7 });
+    }
+    const f = figures.placeOf('hero');
+    if (f) {
+      const q = view.project(f.x, f.y + 1, f.z);
+      if (Number.isFinite(q.x) && Number.isFinite(q.y)) out.push({ x: q.x, y: q.y, r: view.state.level ? 34 : 48, clear: 0.6, flat: 0.3 });
+    }
+    return out;
+  }
+
   // The wash of the dusk (multiply), holes of warm light at the lanterns, and the lines of the rain.
   function drawSky() {
     const night = state.sky?.night ?? 0;
@@ -1787,12 +1813,33 @@ export async function mountVillage(ctx, params = {}) {
     dusk.globalCompositeOperation = 'source-over';
     dusk.fillStyle = `hsl(${DUSK.hue}, ${DUSK.saturation}%, ${100 - (100 - DUSK.lightness) * k}%)`;
     dusk.fillRect(0, 0, w, hh);
+    // The work of each open task is in the light (#65): its pool clears the wash and the blue tint,
+    // so that the things of the task, its person, and the hero show in their day colors. The hero
+    // has a small soft light of its own, so that the child finds the hero in the dark.
+    const pools = workPools();
+    dusk.globalCompositeOperation = 'destination-out';
+    for (const p of pools) {
+      const g = dusk.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+      g.addColorStop(0, `rgba(0, 0, 0, ${p.clear})`);
+      g.addColorStop(p.flat, `rgba(0, 0, 0, ${p.clear})`);
+      g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      dusk.fillStyle = g;
+      dusk.fillRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+    }
+    const mask = pools.map((p) => `radial-gradient(circle at ${Math.round(p.x)}px ${Math.round(p.y)}px, rgba(0, 0, 0, ${1 - p.clear}) ${Math.round(p.r * p.flat)}px, #000 ${Math.round(p.r)}px)`).join(', ');
+    if (duskTint.dataset.mask !== mask) {
+      duskTint.dataset.mask = mask;
+      duskTint.style.maskImage = mask || 'none';
+      duskTint.style.webkitMaskImage = mask || 'none';
+      duskTint.style.maskComposite = pools.length > 1 ? 'intersect' : '';
+      duskTint.style.webkitMaskComposite = pools.length > 1 ? 'source-in' : '';
+    }
     if (night > 0.05) {
       // Each lit lantern: a hole in the wash (lighter), and a warm pool on the glow layer.
       dusk.globalCompositeOperation = 'lighter';
       // The lit posts and the ring of the pull of the slingshot are lights too (#55).
       // The lamp of the basket of the healer too (#64: a child finds the basket also at night).
-      const lights = state.entities.filter((e) => e.look === 'lantern-lit' || e.carry === 'lantern' || e.look === 'pull-ring' || /^post-\d-on$/.test(e.look ?? '') || e.id === 'basket:healer');
+      const lights = state.entities.filter((e) => e.look === 'lantern-lit' || e.carry === 'lantern' || e.look === 'pull-ring' || /^post-\d-on$/.test(e.look ?? '') || e.id === 'basket:healer' || WORK_LAMPS.has(e.look));
       // The bursts of a success are lights too, for a moment (#62).
       const nowMs = performance.now();
       cheerLights = cheerLights.filter((c) => nowMs - c.t < CHEER_LIGHT * 1000);
@@ -1800,7 +1847,10 @@ export async function mountVillage(ctx, params = {}) {
       for (const e of lights) {
         const f = e.cheer ?? figures.placeOf(e.id);
         if (!f) continue;
-        const q = e.id === 'basket:healer' ? view.project(f.x + BASKET_LAMP.x / 2, f.y + BASKET_LAMP.y / 2, f.z) : view.project(f.x + (e.lantern ? 0.8 : 0), f.y + (e.lantern ? 1 : 0.6), f.z);
+        const lampAt = e.id === 'basket:healer' ? BASKET_LAMP : LAMP_AT[e.look];
+        const q = lampAt ? view.project(f.x + lampAt.x / 2, f.y + lampAt.y / 2, f.z) : view.project(f.x + (e.lantern ? 0.8 : 0), f.y + (e.lantern ? 1 : 0.6), f.z);
+        // A light with no full point on the screen is not drawn (#65: createRadialGradient threw).
+        if (!Number.isFinite(q.x) || !Number.isFinite(q.y)) continue;
         const flicker = e.lantern?.flicker ? 0.7 + Math.abs(Math.sin(time * 40)) * 0.5 : 1;
         // A post or the ring of the pull: a small light.
         const size = e.look === 'lantern-lit' || e.carry === 'lantern' || e.id === 'basket:healer' ? 1 : e.cheer ? 0.8 * (1 - (nowMs - e.cheer.t) / (CHEER_LIGHT * 1000)) : 0.45;
