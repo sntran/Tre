@@ -225,3 +225,22 @@ test('after a tap on Nghé next to the hero, the button shows the ride, also wit
   run(session, 1);
   assert.ok(hero().riding, 'the press rides');
 });
+
+// The first step leaves no thing when a new move comes (#61): the teacher puts one rod on the mat
+// and takes it back a moment later. A wave in that time ends the step; the rod goes back to the
+// heap, so that the ten rods of the child are not eleven.
+test('the teacher: a wave during the first step leaves the mat empty', async () => {
+  const session = await afterTalk('trial-scholar');
+  const mat = () => zone(session, 'mat').items.length;
+  let put = false;
+  for (let i = 0; i < 30 * 6 && !put; i++) {
+    session.step();
+    session.events();
+    put = mat() > 0;
+  }
+  assert.ok(put, 'the teacher puts a rod on the mat');
+  session.command({ type: 'wave' });
+  session.events();
+  run(session, 2);
+  assert.equal(mat(), 0, 'the rod of the example went back to the heap');
+});

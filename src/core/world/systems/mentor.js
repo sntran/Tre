@@ -112,6 +112,15 @@ export function endScript(world, ent, { early = false } = {}) {
 
 function end(world, ent) {
   for (const id of ent.script.spawned) removeEntity(world, id);
+  // A script that ends before a step back (a new move of the task, a wave): the things that a step
+  // put and that a later step takes back go back to their heap now, so that no thing of the
+  // example stays on the place (#61). The things that smaller and share put stay.
+  const sc = ent.script;
+  const later = new Set(sc.steps.slice(sc.i).filter((s) => s.back).map((s) => s.back.item));
+  for (const id of sc.put ?? []) {
+    const thing = getEntity(world, id);
+    if (later.has(id) && thing) backHome(world, thing);
+  }
   // The example of a station ends (src/core/examples.js): the round of the child comes next.
   if (ent.script.move === 'example') world.events.push({ type: 'example', key: ent.script.key, done: true });
   for (const f of query(world, 'follow')) if (f.follow.goal?.nudge) delete f.follow.goal;
