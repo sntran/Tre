@@ -24,28 +24,31 @@ const mondayOf = (t) => {
 };
 const monday = given ? Date.parse(`${given}T00:00:00Z`) : mondayOf(Date.now());
 
-// [day from this Monday, hour, story, from a practice link]
+// [day from this Monday, hour, story, from a practice link, who ends the session]. The time limit
+// (parent) ends one session, and the raids of the story come on two days (#58).
 const PLAN = [
   [-7, 17, 'practice-cay-lua', true],
   [-5, 17, 'practice-cho-vit-an', true],
   [-4, 18, 'practice-mua-trong', false],
   [0, 17, 'practice-mua-trong', true],
   [1, 17, 'practice-dat-lo', false],
-  [2, 18, 'practice-cay-lua', false],
+  [1, 19, 'raid-lost', false],
+  [2, 18, 'practice-cay-lua', false, 'parent'],
+  [2, 19, 'raid-scouts', false],
   [3, 17, 'practice-mua-trong', false],
   [4, 16, 'practice-nhay-day', false],
 ];
 
 const story = (name) => JSON.parse(readFileSync(new URL(`../tests/stories/${name}.json`, import.meta.url), 'utf8'));
 const runs = [];
-for (const [day, hour, name, sent] of PLAN) {
+for (const [day, hour, name, sent, endedBy = 'child'] of PLAN) {
   const s = story(name);
   s.profile = { ...s.profile, name: 'Nam' };
   const epoch = monday + day * DAY + hour * 3600000;
   let p = null;
-  const failures = await runHeadless(s, { log: true, epoch, sent, onEnd: (r) => { p = r.profile; } });
+  const failures = await runHeadless(s, { log: true, epoch, sent, endedBy, onEnd: (r) => { p = r.profile; } });
   runs.push({ epoch, profile: p });
-  console.log(`${new Date(epoch).toISOString().slice(0, 16)} ${name}${sent ? ' (link)' : ''}: ${failures.length ? JSON.stringify(failures) : 'ok'}`);
+  console.log(`${new Date(epoch).toISOString().slice(0, 16)} ${name}${sent ? ' (link)' : ''}${endedBy !== 'child' ? ` (ended by ${endedBy})` : ''}: ${failures.length ? JSON.stringify(failures) : 'ok'}`);
 }
 
 // One profile: the last one, with the events of all the logs, and the facts of all the plays.

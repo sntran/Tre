@@ -45,8 +45,9 @@ const terrainOf = (map, tileMap) => {
 // a look at the end, after the save.
 // profile: go on with this profile (its log, its facts) in place of the profile of the story;
 // epoch: the time of the start (milliseconds); sent: false makes the session of a practice one
-// that the child started (tools/week-profile.mjs, the week of a test profile, #25).
-export async function runHeadless(raw, { onSession = null, log: keepLog = false, onEnd = null, profile: given = null, epoch = STORY_EPOCH, sent = true } = {}) {
+// that the child started (tools/week-profile.mjs, the week of a test profile, #25); endedBy: who
+// ends the session in the log at the end (child, parent for the time limit, or device; #58).
+export async function runHeadless(raw, { onSession = null, log: keepLog = false, onEnd = null, profile: given = null, epoch = STORY_EPOCH, sent = true, endedBy = 'child' } = {}) {
   const story = storyOnPlane(raw, data.world);
   let elapsed = 0;
   const now = () => epoch + elapsed * 1000;
@@ -163,7 +164,7 @@ export async function runHeadless(raw, { onSession = null, log: keepLog = false,
   const again = deserialize(serialize(profile, now()));
   if (JSON.stringify(again.world) !== JSON.stringify(profile.world)) breakLaw('the save of the profile does not load back to the same world');
   for (const [message, step] of broken) failures.push({ step, message: `law: ${message}` });
-  if (keepLog && logger.open) logger.endSession('child', profile.world?.map ?? null);
+  if (keepLog && logger.open) logger.endSession(endedBy, profile.world?.map ?? null);
   onEnd?.({ profile, learner, logger, session });
   return failures;
 }
