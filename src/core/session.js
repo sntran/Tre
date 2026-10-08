@@ -2119,8 +2119,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (holdsThing && places.length) list = places;
     // With an enemy of an encounter in reach, a look at a field or a sign is never the act (#55).
     if (list.some((c) => c.act === 'talk' && String(c.target).startsWith('encounter:'))) list = list.filter((c) => c.act !== 'look');
-    // The ride on Nghé comes only when nothing else is in reach.
-    const others = list.filter((c) => c.act !== 'ride');
+    // The ride on Nghé comes only when nothing else is in reach, or after a tap on Nghé (#60).
+    const others = list.filter((c) => c.act !== 'ride' || tapped(c));
     if (others.length) list = others;
     const f = h.position.facing ?? 0;
     const score = (c) => {
@@ -3048,6 +3048,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // In a raid the map only pauses: it says where the enemies are, and it has no travel.
     else if (type === 'travel') queue(() => openCommand(raidOn() ? { open: 'worldmap', pauseKey: data.raids.raids[raidEnt().raid.id].pauseKey ?? null } : { open: 'worldmap' }));
     else if (WORLD.has(type)) {
+      // A tap on Nghé (a pet, with a heart) chooses her: next to the hero, the button shows the
+      // ride, also with other things in reach (#60; not in a task, a raid, or a folk game).
+      if (type === 'pet' && cmd.id) chosen = { id: cmd.id, along: null };
       // A walk with the stick or the keys ends a walk of a tap.
       if (type === 'move' && cmd.strength) {
         arrivals.clear();

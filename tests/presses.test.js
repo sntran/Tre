@@ -204,3 +204,24 @@ test('on Nghé next to a person, one press gets down and talks; with nobody near
   assert.ok(!hero().riding, 'the hero gets down');
   assert.equal(session.screen, 'dialogue', 'and the talk opens with the same press');
 });
+
+// The ride is easy to find (#60): after a tap on Nghé next to the hero, the button shows the ride,
+// also when a person is in reach.
+test('after a tap on Nghé next to the hero, the button shows the ride, also with a person in reach', async () => {
+  let session = null;
+  const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'giong.spoke': true } };
+  await runHeadless({ name: 'x', profile, clock: 540, at: ['phu-dong', 30, 40], steps: [{ wait: 1 }] }, { onSession: (s) => { session = s; } });
+  const hero = () => getEntity(session.state, 'hero');
+  const nghe = session.state.entities.find((e) => e.follow?.target === 'hero');
+  Object.assign(nghe.position, { x: hero().position.x + 1, z: hero().position.z });
+  run(session, 0.5);
+  assert.equal(session.action()?.act, 'talk', 'the healer is in reach: the button talks');
+  session.command({ type: 'pet', id: nghe.id });
+  session.events();
+  run(session, 0.3);
+  assert.equal(session.action()?.act, 'ride', 'after the tap on Nghé, the button rides');
+  session.command({ type: 'hands' });
+  session.events();
+  run(session, 1);
+  assert.ok(hero().riding, 'the press rides');
+});

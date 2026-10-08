@@ -37,6 +37,12 @@
      "next": "nghe2",
      "mark": null
     },
+    "ride": {
+     "speaker": "grandma",
+     "textKey": "dlg.grandma.intro.ride",
+     "next": "n4",
+     "mark": null
+    },
     "nghe2": {
      "speaker": "nghe",
      "textKey": "dlg.grandma.intro.nghe2",
@@ -49,7 +55,7 @@
          "id": "nghe"
         }
        ],
-       "next": "n4"
+       "next": "ride"
       }
      ],
      "mark": null

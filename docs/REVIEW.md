@@ -558,3 +558,7 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 
 - **The names of the work of the story:** `parent.act.trial-horse` ("Ngựa sắt"), `parent.act.trial-rice` ("Cơm cho Gióng"), `parent.act.trial-staffs` ("Gậy tre"), and `parent.act.trial-share` ("Chia bao gạo"). Before, the parent area showed the keys.
 - **What happened in the raids:** `parent.week.act.raids` ("{name} thắng {won}, thua {lost}.") with `parent.count.raids` ("{n} trận"), for example "Mai thắng 0 trận, thua 5 trận." The line of the raids gives this in place of the signs ("có lúc chán", "say mê"): a miss in a raid comes from the time of the shot, so the note gives no reason for it.
+
+## Hints that a child hears, and a big button that does what its picture shows (#60)
+
+- **How to ride:** after the child names the calf, grandma says `dlg.grandma.intro.ride` ("Chạm vào [[nghecalf]], rồi bấm nút lớn để cưỡi."), with the name that the child chose.

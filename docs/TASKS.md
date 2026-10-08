@@ -66,6 +66,10 @@ While the task of a person is open, a look or a talk is the act of a press only 
 
 On Nghé, when a person who can talk is in reach, the button shows the talk: one press gets the hero down and opens the talk. With no person in reach, the press gets the hero down, as before.
 
+### The ride is easy to find (#60)
+
+A tap on Nghé (with a heart) chooses her: next to the hero, the button shows the ride, also when other things are in reach (not in a task, a raid, or a folk game). After the child names the calf, grandma says how to ride: a touch on the calf, then the big button.
+
 ### The table of the tasks
 
 | Task | The targets, and the act at each one | The finish at the person (its picture) | The cue |
