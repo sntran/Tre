@@ -2366,9 +2366,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // ferry starts there. A new tap, a talk, or the ferry ends the walk (they end the arrival of the
   // leg). True when the hero walks or stands at the goal.
   const LEG = 2500; // the most cells of the search of one leg
+  // The ferry that a far walk goes to: { final (the goal), at (the landing) }. A new tap on the same
+  // goal keeps the way to that landing (#56: before, each new tap on the way along the bank turned
+  // the walk back to the end of the sandbar, nearer to the star in a line). The ferry, or a tap on
+  // another goal, ends it.
+  let farPlan = null;
   function walkFar(goal, final = goal, waits = 0) {
     const from = heroFrom();
     const here = { x: from.x + 0.5, y: from.y + 0.5 };
+    if (goal === final && farPlan && Math.hypot(farPlan.final.x - final.x, farPlan.final.y - final.y) < 2) {
+      const landing = landingToward(here, from, final);
+      if (landing && !landing.part && Math.hypot(landing.at.x - farPlan.at.x, landing.at.y - farPlan.at.y) < 4) {
+        walkPath(landing.way, null, () => walkFar(landing.at, final));
+        return true;
+      }
+    }
+    if (goal === final && farPlan && Math.hypot(farPlan.final.x - final.x, farPlan.final.y - final.y) >= 2) farPlan = null;
     const left = Math.hypot(goal.x - here.x, goal.y - here.y);
     if (left < 1.5) {
       // The last step: onto the cell of the goal when the hero can stand there, so that the hero
@@ -2398,6 +2411,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         else return false;
         return true;
       }
+      farPlan = { final: { x: final.x, y: final.y }, at: landing.at };
       walkPath(landing.way, null, () => walkFar(landing.at, final));
       return true;
     }
@@ -2660,6 +2674,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'open', screen: 'callout', id: ev.id, textKey: clue ?? market ?? words[n % words.length], params: { name: profile.hero.name } });
   }
   function worldEvent(ev) {
+    // Over the river: the far walk has no ferry to keep any more.
+    if (ev.type === 'ferried' && (ev.riders ?? []).includes('hero')) farPlan = null;
     // A person calls out: the fisher when a plank is too long, and the lines of the mentors.
     if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {} });
     // The mentors read the commits (before the learner takes them), the plank too long, and the

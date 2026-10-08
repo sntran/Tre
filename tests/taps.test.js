@@ -536,3 +536,36 @@ test('at the end of the sandbar, a tap on the star walks toward the ferry also w
   assert.ok(at !== null, 'the walk comes to the end of the sandbar');
   assert.ok(ferried, `the hero crosses on the ferry: ${JSON.stringify(heroCell(session))}, ${taps} taps`);
 });
+
+// On the way to the ferry along the bank (east of the end of the sandbar), a new tap on the same
+// star keeps the way to the ferry (#56: in the browser, each new tap turned the walk back to the
+// end of the sandbar, which is nearer to the star in a line, and the hero went back and forth).
+test('a new tap on the star on the way to the ferry keeps the way: the hero never goes back to the end of the sandbar (#56)', async () => {
+  const [gx, gy] = data.world.at('road-thanglong', 0.6, 40);
+  let session = null;
+  const flags = { 'intro.seen': true, 'prologue.started': true, 'prologue.done': true, 'giong.spoke': true, 'giong.grown': true, 'soldier1.won': true, 'soldier2.won': true, 'era1.boss.won': true, 'giong.farewell': true };
+  await runHeadless({ name: 'bank', profile: { name: 'An', grade: 2, seed: 7, flags }, clock: 540, at: ['soc-son', 38, 20], steps: [] }, { onSession: (x) => { session = x; } });
+  let ferried = false;
+  session.listen((ev) => { if (ev.type === 'ferried') ferried = true; });
+  const tap = () => session.command({ type: 'tap', target: { ground: { x: gx, y: gy, h: 3, thing: false, object: null, goal: true } } });
+  let east = false;
+  let back = false;
+  let taps = 0;
+  for (let k = 0; k < 30 * 60 * 10 && !ferried; k++) {
+    if (session.screen === 'dialogue' || session.screen === 'say') session.command({ type: 'next' });
+    else if (session.screen) session.command({ type: 'close' });
+    const c = heroCell(session);
+    if (c.x > 9150 && c.y < 6260) east = true;
+    if (east && c.x < 9125 && c.y < 6260) back = true;
+    // A child taps the star at the start, and again every 20 seconds.
+    if (k % (30 * 20) === 0) {
+      tap();
+      taps += 1;
+    }
+    session.step();
+    session.events();
+  }
+  assert.ok(east, 'the walk goes east along the bank');
+  assert.ok(!back, `a new tap never turns the walk back to the end of the sandbar: ${JSON.stringify(heroCell(session))}`);
+  assert.ok(ferried, `the hero crosses on the ferry: ${JSON.stringify(heroCell(session))}, ${taps} taps`);
+});
