@@ -183,3 +183,15 @@ test('a key with .one is the text for n equal to 1, and a list joins with "and" 
   assert.equal(vi.t('times', { n: 1 }), '1 lần', 'Vietnamese has one form');
   assert.equal(vi.t('facts', { list: [3, 4, 5] }), 'Với 3, 4 và 5.');
 });
+
+test('with the two languages loaded, a Vietnamese line takes no form for one from the English text (#58)', () => {
+  const i18n = createI18n(vi, 'vi', en);
+  const ones = Object.keys(en).filter((k) => k.endsWith('.one') && !(k in vi));
+  assert.ok(ones.length > 0, 'English has forms for one');
+  for (const one of ones) {
+    const key = one.slice(0, -4);
+    if (!(key in vi)) continue;
+    assert.equal(i18n.t(key, { n: 1 }), i18n.t(key, { n: 2 }).replace(/2/g, '1'), `${key}: the Vietnamese text for one`);
+  }
+  assert.equal(i18n.t('parent.count.times', { n: 1 }), '1 lần');
+});

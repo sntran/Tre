@@ -69,10 +69,13 @@ export function createI18n(dict, lang, fallback = null) {
   // A parameter at the start of a sentence (at the start of the text, or after ".", "!",
   // "?", or "…") starts with a capital letter, for example "{name} is calm." -> "The scout is calm."
   // The plural: with the param n equal to 1, the text of "<key>.one" when it is there (English has
-  // two forms, Vietnamese has one), so that "1 times" never shows (#42).
+  // two forms, Vietnamese has one), so that "1 times" never shows (#42). The form for one comes
+  // only from the language of the text, never from the fallback: "1 time" in a Vietnamese line
+  // came from the English text (#58).
   function t(key, params) {
     params = params ?? {};
-    const marked = (params.n === 1 && raw(`${key}.one`)) || raw(key);
+    const one = params.n === 1 && Object.prototype.hasOwnProperty.call(dict, `${key}.one`) ? dict[`${key}.one`] : null;
+    const marked = one || raw(key);
     if (marked === null) return key;
     const text = speakWay(marked, speech);
     return text.replace(PARAM, (all, name, offset) => {
