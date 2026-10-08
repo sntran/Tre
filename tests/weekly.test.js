@@ -190,6 +190,9 @@ test('the median of the seconds of the known facts, and the signs of an activity
   assert.deepEqual(signsOf({ ...base, left: 2 }), ['frustrated']);
   assert.deepEqual(signsOf({ ...base, near: 4 }), ['keen']);
   assert.deepEqual(signsOf(base), ['steady']);
+  // No opposite words in one line (#58): keen does not come with frustrated or restless.
+  assert.deepEqual(signsOf({ ...base, left: 2, near: 4 }), ['frustrated']);
+  assert.deepEqual(signsOf({ ...base, fast: 4, far: 4, stay: 1 }), ['restless']);
 });
 
 test('the shared summary has the weeks, rounded, with no name', () => {
@@ -214,4 +217,15 @@ test('each activity of the log has a name in the two languages: the trials of th
   for (const tr of load('data/trials.json').trials) ids.add(activityOf(`trial-${tr.id}`, activities));
   const missing = [...ids].map((id) => titleOf(practice, id)).filter((key) => !vi[key] || !en[key]);
   assert.deepEqual(missing, []);
+});
+
+// A child of grade 1 who met one fact (2 × 2 at the ducks) and is not sure of it yet: no line
+// says "0 facts" (#58).
+test('no line of the facts says 0 facts', () => {
+  const cur = Array.from({ length: 100 }, (_, i) => (i === 11 ? 'g' : '-')).join('');
+  const r = rollupEvents([commit(MON + 10 * S, 'trial-ducks'), commit(MON + 30 * S, 'trial-ducks'), session(MON, MON + 300 * S)], opts);
+  const note = weeklyNote(r, profile({ grade: 1, factSnap: { week: W, cur: { 'math.mul.10': cur }, prev: null } }), W, data);
+  const keys = note.lines.flatMap((l) => (l.parts ?? [l]).map((x) => x.key));
+  assert.ok(!keys.includes('parent.week.facts') && !keys.includes('parent.week.factsFirst'), keys.join(' '));
+  assert.ok(!/ 0 /.test(text(vi, note)), text(vi, note));
 });

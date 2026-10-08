@@ -47,7 +47,9 @@ export function signsOf(r, few = SIGNALS.few) {
   if (r.commits < few) return ['few'];
   if (r.fast + r.far >= Math.max(few, r.commits / 2)) out.push('restless');
   if (r.left >= 2 || r.missRuns >= 2) out.push('frustrated');
-  if ((r.near >= few && r.near >= misses / 2) || r.stay > 0) out.push('keen');
+  // Keen is the opposite of restless and frustrated: with one of them, the note says only that one,
+  // not "frustrated at times and keen" (#58).
+  if (!out.length && ((r.near >= few && r.near >= misses / 2) || r.stay > 0)) out.push('keen');
   return out.length ? out : ['steady'];
 }
 
@@ -121,11 +123,11 @@ export function weeklyNote(rollups, profile, week, data = {}) {
     if (back.length) line(7, 'parent.week.back', { act: title(back[0]) });
   }
 
-  // 3. The facts.
+  // 3. The facts. No line that says 0 facts (#58).
   if (cur) {
-    const parts = [[prev ? 'parent.week.facts' : 'parent.week.factsFirst', { facts: count('facts', facts.confident), before: facts.confidentBefore }]];
+    const parts = facts.confident ? [[prev ? 'parent.week.facts' : 'parent.week.factsFirst', { facts: count('facts', facts.confident), before: facts.confidentBefore }]] : [];
     if (stillNew.length) parts.push(['parent.week.stillNew', { list: stillNew }]);
-    lineOf(9, parts);
+    if (parts.length) lineOf(9, parts);
   }
   const med = medianOf(W.recall, sig.recall, sig.few);
   const medBefore = L ? medianOf(L.recall, sig.recall, sig.few) : null;
