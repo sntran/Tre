@@ -697,7 +697,10 @@ export async function mountVillage(ctx, params = {}) {
   const stickHome = () => ({ x: 24 + STICK_R, y: size.height - 24 - STICK_R });
   const inStickZone = (p) => p.x < Math.min(280, size.width * 0.4) && p.y > size.height * 0.45;
 
+  // A touch while a talk is open: only a still tap on a thing that the line names counts (namedTap).
+  let busyDown = null;
   function onDown(e) {
+    if (busy && alive) busyDown = { id: e.pointerId, ...local(e) };
     if (busy || !alive) return;
     const p = local(e);
     pointers.set(e.pointerId, p);
@@ -755,6 +758,12 @@ export async function mountVillage(ctx, params = {}) {
 
   function onUp(e) {
     const p = local(e);
+    if (busyDown && busyDown.id === e.pointerId) {
+      const down = busyDown;
+      busyDown = null;
+      if (busy && e.type === 'pointerup' && Math.hypot(p.x - down.x, p.y - down.y) < 14) namedTap(p);
+      if (busy) return;
+    }
     pointers.delete(e.pointerId);
     if (pinch) {
       if (pointers.size === 0) pinch = null;
@@ -858,6 +867,16 @@ export async function mountVillage(ctx, params = {}) {
   // docs/TASKS.md), or a pet of Nghé.
   const targetUnder = (p) => tapTarget(p, screenNow());
 
+  // While a talk is open, a tap on a thing that its line names goes to the session: the talk goes
+  // on and the tap chooses the thing (#66: "Chạm vào Bông, rồi bấm nút lớn để cưỡi." and two taps
+  // on the calf did nothing). Other taps wait for the end of the talk.
+  function namedTap(p) {
+    const target = targetUnder(p);
+    const id = target?.pet ?? target?.person ?? target?.thing ?? null;
+    if (!id || !namePoints.some((n) => n.id === id)) return false;
+    onTap(p);
+    return true;
+  }
   function onTap(p) {
     // A long press that did not move walked toward the finger: stop that walk before the tap, so
     // that the stop of the next frame does not end the walk of the tap (#53).
