@@ -143,17 +143,14 @@
    "timeout": 180
   },
   {
-   "press": true,
-   "after": 0.35
+   "press": true
   },
   {
-   "shot": "leaves-and-a-jump"
+   "until": "Boolean(document.querySelector('.flying-seal'))",
+   "timeout": 30
   },
   {
-   "wait": 0.5
-  },
-  {
-   "shot": "the-seal-flies-to-its-pip"
+   "shot": "leaves-a-jump-and-the-seal"
   },
   {
    "until": "Boolean(document.querySelector('.talk-calling'))",
