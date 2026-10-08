@@ -51,6 +51,38 @@
    "shot": "this-week"
   },
   {
+   "drag": [
+    [
+     195,
+     760
+    ],
+    [
+     195,
+     120
+    ],
+    0.6
+   ]
+  },
+  {
+   "drag": [
+    [
+     195,
+     760
+    ],
+    [
+     195,
+     120
+    ],
+    0.6
+   ]
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-activities"
+  },
+  {
    "check": "!/\\b(time|times|minute|minutes|raid|raids|set|sets|fact|facts|parents|making)\\b/.test((document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText))"
   },
   {
