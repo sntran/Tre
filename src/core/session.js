@@ -1522,8 +1522,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (held) return null;
     const traps = query(state, 'item', 'position').filter((e) => e.item.kind === 'trap' && !e.item.set && !e.item.held && !e.hidden && e.item.zone !== 'raid-road' && distHb(hp, e.position) <= REACH);
     const trap = traps.sort((a, b) => distHb(hp, a.position) - distHb(hp, b.position))[0];
-    // A trap in the hands: the first raid of the traps goes on (#50).
-    if (trap) return { act: 'pick', icon: 'hand-pick', target: trap.id, run: () => { worldCommand(state, { type: 'pick', id: 'hero', item: trap.id }); order({ act: 'release', tool: 'traps' }); } };
+    // A trap in the hands: the first raid of the traps goes on (#50). A tap on any free trap
+    // chooses this pick: the walk to a far trap stops at the nearest one (#60).
+    const free = query(state, 'item').filter((e) => e.item.kind === 'trap' && !e.item.set && e.item.zone !== 'raid-road').map((e) => e.id);
+    if (trap) return { act: 'pick', icon: 'hand-pick', target: trap.id, keys: free, run: () => { worldCommand(state, { type: 'pick', id: 'hero', item: trap.id }); order({ act: 'release', tool: 'traps' }); } };
     // Nothing else in reach: the big button is the slingshot (#50, #55). Each press adds one post
     // to the pull (a red band on the band); the stone flies one second after the last press, or at
     // once after a tap on the hero. A child counts the presses, not the time.
@@ -1980,7 +1982,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // A press picks a thing of a task only when a place of the task has room for it: no stake
         // after the row is at the float (#54: the stake stayed in the hands with no act).
         if (chosen?.id !== e.id && openTask(e.item.task) && !roomFor(e)) continue;
-        add({ act: 'pick', icon: 'hand-pick', target: e.id, at: middleOf(e), size: (e.item.size ?? 0) / 2, rank: 1, work: openTask(e.item.task), run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
+        // A tap on a thing of a heap or a pile chooses the pick of each thing of the same kind and
+        // size there: the walk to a thing at the far side of a pile stops at the near side, and the
+        // act there is the pick of a near thing like it, which is the act of the tap (not a new
+        // picture that waits, #60).
+        const like = (id) => { const x = getEntity(state, id)?.item; return x && x.kind === e.item.kind && x.size === e.item.size; };
+        const keys = [e.id, ...(zone ? [zone.id, ...zone.zone.items.filter(like)] : [])];
+        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys, at: middleOf(e), size: (e.item.size ?? 0) / 2, rank: 1, work: openTask(e.item.task), run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
       }
       // Take back: the thing that the child tapped on a place (the opposite of a put), from where
       // the hero stands to put. Only after a tap on the thing itself, with the heap in reach or
@@ -2131,7 +2139,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // hands: the hero turns to it).
       const front = len < 0.5 ? 1 : (dx * Math.sin(f) + dz * Math.cos(f)) / len;
       const turn = holdsThing && c.act === 'put' ? 0 : front < -0.2 ? 6 : front < 0.4 ? 2 : 0;
-      const tapped = chosen && c.keys.includes(chosen.id) ? 8 : 0;
+      // The thing that the child tapped comes first, then a thing like it in the same pile.
+      const tapped = chosen && c.keys.includes(chosen.id) ? (c.target === chosen.id ? 12 : 8) : 0;
       return Math.max(0, c.d) + c.rank * 0.5 + turn - tapped;
     };
     return list.reduce((a, b) => (score(b) < score(a) ? b : a));

@@ -288,7 +288,7 @@
       "read": true
     },
     {
-      "wait": 3
+      "wait": 4
     },
     {
       "press": true
@@ -556,7 +556,7 @@
       "read": true
     },
     {
-      "wait": 3
+      "wait": 4
     },
     {
       "press": true
