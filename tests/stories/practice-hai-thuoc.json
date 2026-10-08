@@ -114,6 +114,12 @@
         "timeout": 15
       }
     },
+    {
+      "until": {
+        "event": "counted",
+        "timeout": 30
+      }
+    },
     { "press": { "entity": "npc:healer" } },
     {
       "until": {
@@ -201,6 +207,12 @@
       "until": {
         "event": "nope",
         "timeout": 15
+      }
+    },
+    {
+      "until": {
+        "event": "counted",
+        "timeout": 30
       }
     },
     { "press": { "entity": "npc:healer" } },

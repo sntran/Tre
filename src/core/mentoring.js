@@ -6,6 +6,7 @@
 import { newMentor, newMemory, onCommit, onIdle, onWave, onCheck, onChange, demoTarget, demoParts, shareParts } from './mentor.js';
 import { getEntity, query, addEntity } from './world/state.js';
 import { endScript } from './world/systems/mentor.js';
+import { basketRowAt } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
 
@@ -462,6 +463,30 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         if (total <= 30) s.say(at + 0.1, `num.${total}`);
       });
       t += 1 + parts.length * COUNT_PACE;
+    } else if (fam.reader === 'each' && parts.length && task.place.zone.kinds) {
+      // The basket of the healer (#61): after a wrong give the bunches lie in a row for each kind in
+      // front of the basket. She counts each row aloud from one, with a point at each bunch, and a
+      // short row has the mark at its empty end.
+      const kinds = task.place.zone.kinds;
+      const each = Math.round((info.target ?? kinds.length * 2) / kinds.length);
+      let at = t + 1;
+      kinds.forEach((k, row) => {
+        const bunches = parts.filter((e) => e.item.kind === `herb-${k}`);
+        bunches.forEach((e, i) => {
+          s.point(at, e.position, COUNT_PACE);
+          s.mark(at, e.position, COUNT_PACE + 0.3);
+          if (i < 30) s.say(at + 0.1, `num.${i + 1}`);
+          at += COUNT_PACE;
+        });
+        if (bunches.length < each) {
+          const end = basketRowAt(task.place.zone, row, bunches.length);
+          s.point(at, end, COUNT_PACE);
+          s.mark(at, end, COUNT_PACE + 1);
+          at += COUNT_PACE;
+        }
+        at += 0.4;
+      });
+      return at + 1;
     } else t += 1;
     const target = info.target ?? null;
     let end = task.at;

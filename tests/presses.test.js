@@ -335,3 +335,27 @@ test('the healer: the child never takes the bunch of the example, and the exampl
   run(two, 8);
   assert.deepEqual(basket(two), [id], 'the bunch of the child stays in the basket');
 });
+
+// A basket where the child sees the count (#61): after a wrong give, the healer lays each kind in a
+// row in front of the basket and counts each row aloud from one; then only the extra bunch goes
+// back to its bed, and the rest go back into the basket.
+test('the healer: after a wrong give, each kind lies in a row and she counts each row; then only the extra bunch goes back', async () => {
+  const counts = [];
+  let session = null;
+  const story = load('tests/stories/trial-healer.json');
+  const upToNope = story.steps.slice(0, story.steps.findIndex((s) => s.until?.event === 'nope') + 1);
+  const failures = await runHeadless({ ...story, steps: [...upToNope, { do: { type: 'mentor', key: 'trial-healer', move: 'mark' } }] }, { onSession: (s) => {
+    session = s;
+    s.listen((ev) => { if (ev.type === 'call' && /^num\./.test(ev.key)) counts.push(Number(ev.key.slice(4))); });
+  } });
+  assert.deepEqual(failures, []);
+  const basket = getEntity(session.state, 'zone:basket');
+  const rows = basket.zone.items.map((id) => getEntity(session.state, id));
+  assert.equal(rows.length, 7);
+  assert.ok(rows.every((h) => h.item.set && h.position.z > basket.zone.rect.z1), 'the bunches lie in rows in front of the basket, and a tap does not take them');
+  run(session, 12);
+  assert.deepEqual(counts, [1, 2, 3, 1, 2, 1, 2], 'one count for each row');
+  const after = kinds(session, 'basket');
+  assert.deepEqual(after, { 'herb-ngai': 2, 'herb-tiato': 2, 'herb-rauma': 2 }, 'only the extra bunch went back');
+  assert.ok(basket.zone.items.every((id) => !getEntity(session.state, id).item.set), 'the bunches are in the basket again');
+});

@@ -69,6 +69,7 @@ export function work(world, dt, rng, env) {
     if (z.zone.task === 'stakes') tickTide(world, z, dt, env);
     if (z.zone.task === 'cut') tickStem(world, z, dt);
     if (z.zone.task === 'bundle') tickSpring(world, z, dt);
+    if (z.zone.task === 'basket') tickLay(world, z, dt);
     if (z.zone.task === 'slash') tickSlash(world, z, dt, env);
     if (z.zone.task === 'share') tickShare(world, z, dt, env);
   }
@@ -212,8 +213,10 @@ export function setupTrial(world, def, level, env, opts = {}) {
       addEntity(world, { id: `sign:${def.id}:bed-${kind}`, keep: true, position: { x: at.x - 1, y: at.y, z: at.z - 1, facing: 0 }, look: `herb-sign-${kind}` });
     });
     const b = P(def.places.basket);
-    addEntity(world, { id: 'zone:basket', keep: true, zone: { id: 'basket', task: owner, rule: 'basket', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, items: [], x: b.x, y: b.y, z: b.z, rect: rect(b, 3, 1) }, position: { x: b.x + 1.5, y: b.y, z: b.z - 1.5, facing: 0 } });
+    addEntity(world, { id: 'zone:basket', keep: true, zone: { id: 'basket', task: owner, rule: 'basket', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, items: [], x: b.x, y: b.y, z: b.z, rect: rect(b, 3 * BASKET_PART, 1.6) }, position: { x: b.x + 1.5 * BASKET_PART, y: b.y, z: b.z - 1.5, facing: 0 } });
     addEntity(world, { id: 'basket:healer', keep: true, position: { x: b.x, y: b.y, z: b.z, facing: 0 }, look: 'basket' });
+    // Each part of the basket has the picture of its herb on the back wall (#61).
+    def.kinds.forEach((kind, k) => addEntity(world, { id: `sign:${def.id}:basket-${kind}`, keep: true, position: { x: b.x + (k + 0.5) * BASKET_PART, y: b.y, z: b.z - 0.1, facing: 0 }, look: `herb-tag-${kind}` }));
   } else if (def.task === 'feed') {
     // Trays of 3 and 5 bowls on the path of the paddies, and the pot in front of the house of Gióng.
     const trays = heap('trays', P(def.places.trays), 'bowls', { cols: 3, step: 1.6 });
@@ -373,15 +376,25 @@ function packMat(world, zone) {
 }
 
 // The things in the basket, by kind: one part of the basket for each kind.
+// The basket of the healer has three parts, BASKET_PART half blocks wide, one for each kind. The
+// bunches stand up in a row in their part, so that each bunch shows from the camera (#61).
+export const BASKET_PART = 1.6;
 function packBasket(world, zone) {
   const n = {};
   for (const id of zone.items) {
     const e = getEntity(world, id);
-    if (!e) continue;
+    if (!e || e.item.set) continue;
     const k = zone.kinds.indexOf(e.item.kind.slice(5));
     const i = (n[k] = (n[k] ?? -1) + 1);
-    e.position = { x: zone.x + 0.4 + k * 1.1 + (i % 2) * 0.4, y: zone.y + 0.4 + Math.floor(i / 4) * 0.2, z: zone.z + 0.3 + (Math.floor(i / 2) % 2) * 0.5, facing: 0 };
+    e.position = { x: zone.x + 0.3 + k * BASKET_PART + (i % 4) * 0.34, y: zone.y + 0.25, z: zone.z + 0.45 + Math.floor(i / 4) * 0.6, facing: 0 };
   }
+}
+
+// After a wrong give, the healer lays each kind in a row in front of the basket (#61): row k is the
+// kind k of the basket, and the bunch i of a row lies at basketRowAt(zone, k, i).
+export const ROW_GAP = 0.7;
+export function basketRowAt(zone, row, i) {
+  return { x: zone.rect.x0 + 1 + i * ROW_GAP, z: zone.rect.z1 + 0.6 + row * 0.9 };
 }
 
 // A thing goes back to its heap.
@@ -690,6 +703,8 @@ function act(world, e, want, env) {
     const basket = zoneEnt(world, 'basket');
     const healer = query(world, 'person').find((p) => p.person.ref === 'healer');
     if (!basket || !basket.zone.items.length || (healer && !near(healer.position, REACH + 3))) return;
+    // While the bunches of a wrong give lie in rows for the count, the healer takes no basket.
+    if (tz.zone.lay) return;
     const counts = {};
     for (const id of basket.zone.items) {
       const k = getEntity(world, id)?.item.kind.slice(5);
@@ -705,17 +720,23 @@ function act(world, e, want, env) {
       say(world, 'given', basket.id, { sound: 'pickup' });
       finish(world, tz);
     } else {
-      // The healer gives the basket back: the herbs over the number fly back to their beds.
-      for (const k of basket.zone.kinds) {
-        let extra = result.extra[k];
-        for (const id of [...basket.zone.items].reverse()) {
-          const h = getEntity(world, id);
-          if (extra <= 0 || h?.item.kind !== `herb-${k}`) continue;
-          takeOut(world, h);
-          toHeap(world, h);
-          extra -= 1;
-        }
-      }
+      // The healer takes the bunches out and lays each kind in a row in front of the basket, so
+      // that she counts each row aloud with the child (#61: before, the extra herbs flew back at
+      // once, and the count counted nothing). After the count, only the bunches over the number go
+      // back to their beds, one at a time, and the rest go back into the basket. While they lie in
+      // the rows, a tap does not take them.
+      const extra = [];
+      basket.zone.kinds.forEach((k, row) => {
+        const bunches = basket.zone.items.map((id) => getEntity(world, id)).filter((h) => h?.item.kind === `herb-${k}`);
+        bunches.forEach((h, i) => {
+          h.item.set = true;
+          h.position = { ...basketRowAt(basket.zone, row, i), y: basket.zone.y, facing: 0 };
+          if (i >= task.each) extra.push(h.id);
+        });
+      });
+      const n = basket.zone.items.length;
+      // The count of the healer: each bunch, and the empty end of each short row (src/core/mentoring.js).
+      tz.zone.lay = { t: SPRING_TIME + (n + basket.zone.kinds.length) * COUNT_TIME + basket.zone.kinds.length * 0.4, ids: extra.reverse() };
       say(world, 'nope', healer?.id ?? basket.id, { sound: 'tap' });
     }
   } else if (want.act === 'mark') {
@@ -1046,6 +1067,33 @@ function tickSpring(world, tz, dt) {
   }
   rod.item.set = false;
   toHeap(world, rod);
+}
+
+// The rows of a wrong give: after the count, the extra bunches go back to their beds one at a time,
+// and then the rest go back into the basket.
+function tickLay(world, tz, dt) {
+  const lay = tz.zone.lay;
+  if (!lay || (lay.t -= dt) > 0) return;
+  const basket = zoneEnt(world, 'basket');
+  const id = lay.ids.shift();
+  const h = id ? getEntity(world, id) : null;
+  if (h) {
+    h.item.set = false;
+    if (basket) basket.zone.items = basket.zone.items.filter((x) => x !== id);
+    toHeap(world, h);
+  }
+  if (lay.ids.length) {
+    lay.t = ROLL_STEP;
+    return;
+  }
+  delete tz.zone.lay;
+  if (!basket) return;
+  for (const x of basket.zone.items) {
+    const e = getEntity(world, x);
+    if (e) e.item.set = false;
+  }
+  packBasket(world, basket.zone);
+  say(world, 'counted', basket.id, { sound: 'pickup' });
 }
 
 function tickStem(world, tz, dt) {

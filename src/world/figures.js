@@ -553,8 +553,8 @@ export function thingLook(key) {
   if (m) return { kind: `seed-${m[1]}`, n: Number(m[2]) };
   if (k === 'plot-stake') return { kind: 'plot-stake' };
   // The small sign at a bed of the healer, with a picture of its herb and no word (#61).
-  m = /^herb-sign-(ngai|tiato|rauma)$/.exec(k);
-  if (m) return { kind: 'herb-sign', herb: m[1] };
+  m = /^herb-(sign|tag)-(ngai|tiato|rauma)$/.exec(k);
+  if (m) return { kind: 'herb-sign', herb: m[2], tag: m[1] === 'tag' };
   // A chalk mark on the stem of the woodcutter: a band around the stem (#48); a cut piece of the
   // stem (green), n half blocks long.
   if (k === 'chalk-band') return { kind: 'chalk-band' };
@@ -764,16 +764,20 @@ export function workThing(look) {
     // A sign at a bed: a post with a board, and on the board the shape of the herb in its tones.
     case 'herb-sign': {
       const [a, b] = HERBS[look.herb] ?? HERBS.ngai;
-      const parts = [P('post', [0.2, 1.2, 0.2], 'wood', [0, 0.6, 0]), P('board', [1.1, 0.9, 0.12], 'paper', [0, 1.45, 0])];
-      if (look.herb === 'ngai') parts.push(P('pic', [0.16, 0.7, 0.04], a, [0, 1.45, 0.08]), P('picTip', [0.3, 0.2, 0.04], b, [0, 1.75, 0.08]));
-      else if (look.herb === 'tiato') parts.push(P('pic', [0.8, 0.22, 0.04], a, [0, 1.3, 0.08]), P('picTop', [0.55, 0.2, 0.04], b, [0, 1.52, 0.08]));
-      else parts.push(P('picA', [0.25, 0.25, 0.04], a, [-0.25, 1.25, 0.08]), P('picB', [0.25, 0.25, 0.04], b, [0.05, 1.3, 0.08]), P('picC', [0.25, 0.25, 0.04], a, [0.3, 1.24, 0.08]));
-      return still(parts, 1.9);
+      // A tag on the back wall of a part of the basket: the board only, lower (#61).
+      const y = look.tag ? -0.55 : 0;
+      const parts = look.tag ? [P('board', [1.1, 0.9, 0.12], 'paper', [0, 1.45 + y, 0])] : [P('post', [0.2, 1.2, 0.2], 'wood', [0, 0.6, 0]), P('board', [1.1, 0.9, 0.12], 'paper', [0, 1.45, 0])];
+      if (look.herb === 'ngai') parts.push(P('pic', [0.16, 0.7, 0.04], a, [0, 1.45 + y, 0.08]), P('picTip', [0.3, 0.2, 0.04], b, [0, 1.75 + y, 0.08]));
+      else if (look.herb === 'tiato') parts.push(P('pic', [0.8, 0.22, 0.04], a, [0, 1.3 + y, 0.08]), P('picTop', [0.55, 0.2, 0.04], b, [0, 1.52 + y, 0.08]));
+      else parts.push(P('picA', [0.25, 0.25, 0.04], a, [-0.25, 1.25 + y, 0.08]), P('picB', [0.25, 0.25, 0.04], b, [0.05, 1.3 + y, 0.08]), P('picC', [0.25, 0.25, 0.04], a, [0.3, 1.24 + y, 0.08]));
+      return still(parts, 1.9 + y);
     }
     // The basket of the healer, with three parts; full when the healer takes it.
     case 'basket': {
-      const parts = [P('floor', [3.4, 0.2, 1.4], 'ochre', [1.7, 0.1, 0.6]), P('wallN', [3.4, 0.7, 0.2], 'ochre', [1.7, 0.35, 0]), P('wallS', [3.4, 0.7, 0.2], 'ochre', [1.7, 0.35, 1.3]), P('wallW', [0.2, 0.7, 1.4], 'ochre', [0, 0.35, 0.6]), P('wallE', [0.2, 0.7, 1.4], 'ochre', [3.4, 0.35, 0.6]), P('div1', [0.15, 0.6, 1.2], 'wood', [1.15, 0.3, 0.6]), P('div2', [0.15, 0.6, 1.2], 'wood', [2.25, 0.3, 0.6])];
-      if (look.full) parts.push(P('leaves', [3, 0.4, 1.1], 'green', [1.7, 0.7, 0.6]));
+      // Three parts, 1.6 half blocks wide each (#61: a basket where the child sees the count). The
+      // front wall is low, so that the bunches that stand in the parts show.
+      const parts = [P('floor', [4.8, 0.2, 1.8], 'ochre', [2.4, 0.1, 0.8]), P('wallN', [4.8, 0.7, 0.2], 'ochre', [2.4, 0.35, 0]), P('wallS', [4.8, 0.35, 0.2], 'ochre', [2.4, 0.18, 1.7]), P('wallW', [0.2, 0.7, 1.8], 'ochre', [0, 0.35, 0.8]), P('wallE', [0.2, 0.7, 1.8], 'ochre', [4.8, 0.35, 0.8]), P('div1', [0.15, 0.6, 1.6], 'wood', [1.6, 0.3, 0.8]), P('div2', [0.15, 0.6, 1.6], 'wood', [3.2, 0.3, 0.8])];
+      if (look.full) parts.push(P('leaves', [4.4, 0.4, 1.5], 'green', [2.4, 0.7, 0.8]));
       return still(parts, 0.9);
     }
     // The wood pile of the woodcutter (#57): two rows of logs on a low rack, so that the place
