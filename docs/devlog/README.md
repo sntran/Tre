@@ -10,6 +10,7 @@ We write it for parents and for anyone who wants to know why the game is the way
 
 | Date | Entry |
 | --- | --- |
+| 8 Oct 2026 | [The button knew the answer](2026-10-08-the-button-knew-the-answer.md) |
 | 7 Oct 2026 | [A count, not a clock](2026-10-07-a-count-not-a-clock.md) |
 | 6 Oct 2026 | [Play it as a child](2026-10-06-play-it-as-a-child.md) |
 | 5 Oct 2026 | [Ông Dương and chị Hến: names in the north](2026-10-05-names-in-the-north.md) |
