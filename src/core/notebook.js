@@ -28,30 +28,45 @@ export function isMet(rule, profile) {
 
 // The skills of the notebook: the skills of the era of the story (def.skillEra) up to the grade of
 // the child, and a skill of a higher grade that the child met (learned: profile.learning.skills).
-export function notebookSkills(def, skills, grade = 1, learned = {}) {
-  return skills.filter((s) => (s.era ?? 1) <= (def.skillEra ?? 1) && (s.grade <= grade || learned[s.id]?.n > 0));
+// A skill of a later era that a task of this era sends (sent: a set of skill ids), or that the child
+// met, has a print in this era too (#67: the bundle of a child of grade 2 sends math.place.1000).
+export function notebookSkills(def, skills, grade = 1, learned = {}, sent = new Set()) {
+  return skills.filter((s) => ((s.era ?? 1) <= (def.skillEra ?? 1) || sent.has(s.id) || learned[s.id]?.n > 0) && (s.grade <= grade || learned[s.id]?.n > 0));
+}
+
+// The skills that the tasks of the trials send: every "skill" value in data/trials.json.
+export function sentSkills(trials) {
+  const out = new Set();
+  const walk = (v) => {
+    if (Array.isArray(v)) v.forEach(walk);
+    else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) (k === 'skill' && typeof x === 'string' ? out.add(x) : walk(x));
+  };
+  walk(trials);
+  return out;
 }
 
 // All the prints of the notebook, in the order of the pages: [{ id, kind, titleKey, look, met,
 // sealed }]. A skill is met after its first skill event (n > 0), and it is sealed when it is
-// mastered. A page with a met print comes before a page of gaps, and on a page the met prints come
-// first. A skill that starts as mastered (below the grade of the child) is not met until the
-// child does it.
-export function notebookOf(def, skills, profile) {
+// mastered. The page with the most met prints comes first (#67: a first page of one print and
+// fifteen gaps hid the page of six animals), and on a page the met prints come first. A skill that
+// starts as mastered (below the grade of the child) is not met until the child does it. sent: the
+// skills that the tasks of this era send (sentSkills).
+export function notebookOf(def, skills, profile, sent = new Set()) {
   const learned = profile.learning?.skills ?? {};
   const out = [];
-  for (const s of notebookSkills(def, skills, profile.grade ?? 1, learned)) {
+  for (const s of notebookSkills(def, skills, profile.grade ?? 1, learned, sent)) {
     const e = learned[s.id];
     const met = Boolean(e && e.n > 0);
     out.push({ id: `skill:${s.id}`, kind: 'skill', skill: s.id, subject: s.subject, titleKey: `skill.${s.id}`, look: null, met, sealed: met && Boolean(e.mastered) });
   }
   for (const e of def.entries) out.push({ id: e.id, kind: e.kind, titleKey: e.titleKey, look: e.look ?? null, met: isMet(e.met, profile), sealed: false });
-  // The pages in their order, but a page with a print that the child met comes before a page of
-  // gaps; on a page, the met prints come first. So the child sees the prints before the gaps.
+  // The pages with the most met prints first, then in their order; on a page, the met prints come
+  // first. So the child sees the prints before the gaps.
   const kinds = def.kinds ?? ['skill', 'legend', 'creature', 'place'];
-  const full = new Set(out.filter((e) => e.met).map((e) => e.kind));
-  const rank = (kind) => (full.has(kind) ? 0 : kinds.length) + kinds.indexOf(kind);
-  return out.map((e, i) => ({ e, i })).sort((a, b) => rank(a.e.kind) - rank(b.e.kind) || Number(b.e.met) - Number(a.e.met) || a.i - b.i).map(({ e }) => e);
+  const have = {};
+  for (const e of out) if (e.met) have[e.kind] = (have[e.kind] ?? 0) + 1;
+  const rank = (a, b) => (have[b] ?? 0) - (have[a] ?? 0) || kinds.indexOf(a) - kinds.indexOf(b);
+  return out.map((e, i) => ({ e, i })).sort((a, b) => rank(a.e.kind, b.e.kind) || Number(b.e.met) - Number(a.e.met) || a.i - b.i).map(({ e }) => e);
 }
 
 // The entries that a new key fills in (the entries whose rule is the key).

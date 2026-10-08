@@ -2,18 +2,20 @@
   "_about": "Values of the game rules (the party, losses, time). The learning model is in learning.json.",
   "maxProfiles": 4,
   "grades": {
-    "_about": "The grades that a player or a parent can choose. -1 is Pre-K, 0 is K. A grade with no \"name\" uses the text key grade.name with the number.",
+    "_about": "The grades that a player or a parent can choose. -1 is Pre-K, 0 is K. A grade with no \"name\" uses the text key grade.name with the number. art: a small picture next to the short name (the bud and the leaf of the two classes of kindergarten, #67: a child who grew up outside Vietnam does not know these class names).",
     "default": 1,
     "list": [
       {
         "id": -1,
         "name": "grade.name.prek",
-        "short": "grade.short.prek"
+        "short": "grade.short.prek",
+        "art": "ui/bud"
       },
       {
         "id": 0,
         "name": "grade.name.k",
-        "short": "grade.short.k"
+        "short": "grade.short.k",
+        "art": "ui/leaf"
       },
       {
         "id": 1

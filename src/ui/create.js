@@ -3,11 +3,11 @@
 // grade sets the first level), and then the activity, with no prologue. The preview is
 // the voxel hero itself, turning slowly (a drag turns it too), and each choice shows a small
 // rendered picture; the choices come from data/figures.json (hero).
-import { h, button } from './dom.js';
+import { h, button, img } from './dom.js';
 import { t, lang } from './i18n.js';
 import { speak } from './speak.js';
 import { createProfile } from '../core/profile.js';
-import { gradeIds, gradeShort } from '../core/grades.js';
+import { gradeIds, gradeShort, gradeArt } from '../core/grades.js';
 import { heroLook } from '../world/figures.js';
 import { portraitCanvas, portraitImage } from './portraits.js';
 
@@ -217,7 +217,14 @@ export async function mountCreate(ctx) {
       stage.append(button(t('ui.next'), next, { cls: 'btn big red main-btn' }));
     } else if (name === 'grade') {
       stage.append(title('create.grade'));
-      stage.append(choiceRow(gradeIds(grades), () => grade, (v) => h('span', { text: t(gradeShort(v, grades).key, gradeShort(v, grades).params) }), (v) => { grade = v; }, 'create.grade.label', { words: true }));
+      // A class of kindergarten shows its picture (a bud, a leaf) and the word for kindergarten over
+      // its name (#67).
+      const gradeTile = (v) => {
+        const name = h('span', { text: t(gradeShort(v, grades).key, gradeShort(v, grades).params) });
+        const art = gradeArt(v, grades);
+        return art ? h('span', { class: 'grade-tile' }, [h('small', { text: t('grade.kinder') }), h('span', { class: 'grade-tile-name' }, [img(art, 'grade-art'), name])]) : name;
+      };
+      stage.append(choiceRow(gradeIds(grades), () => grade, gradeTile, (v) => { grade = v; }, 'create.grade.label', { words: true }));
       stage.append(h('p', { class: 'center muted', text: t('create.grade.note') }));
       stage.append(button(t('create.start'), finish, { cls: 'btn big red main-btn' }));
     }

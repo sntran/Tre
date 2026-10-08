@@ -23,6 +23,11 @@ export function gradeShort(grade, cfg) {
   return entry?.short ? { key: entry.short, params: {} } : { key: 'grade.short', params: { n: grade } };
 }
 
+// The small picture of a grade (an art key), or null: the bud and the leaf of kindergarten (#67).
+export function gradeArt(grade, cfg) {
+  return cfg?.list?.find((g) => g.id === grade)?.art ?? null;
+}
+
 // The value in an object with grade keys ("1", "2", ...) for a grade. A grade with no value
 // uses the nearest grade with a value (the lower one when two are equally near).
 export function byGrade(table, grade) {

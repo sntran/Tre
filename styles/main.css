@@ -1137,7 +1137,8 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
    seal on a mastered skill. */
 .notebook-panel { width: min(640px, 100%); max-height: 90vh; overflow-y: auto; }
 .note-count { margin: 0 0 6px; font-size: var(--text-small); }
-.note-page h3 { margin: 12px 0 6px; font-size: var(--text); }
+.note-page h3 { margin: 12px 0 6px; font-size: var(--text); display: flex; align-items: baseline; gap: 8px; }
+.note-page-count { font-size: var(--text-small); font-weight: 600; opacity: 0.75; }
 .note-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
 .note-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; border: var(--line); border-radius: var(--corner); background: var(--paper) var(--paper-texture); background-size: 256px; box-shadow: var(--frame); font: inherit; color: var(--ink); text-align: center; }
 .note-card.gap { border-style: dashed; box-shadow: none; opacity: 0.55; background: var(--paper-deep); }
@@ -1153,3 +1154,8 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 /* The minimap (#8): a round print of the near places under the map button. */
 .minimap { position: absolute; right: 8px; top: calc(var(--safe-top) + 128px); width: 76px; height: 76px; padding: 0; border: none; border-radius: 50%; background: transparent; box-shadow: var(--frame); cursor: pointer; z-index: 5; }
 .minimap-canvas { display: block; width: 76px; height: 76px; border-radius: 50%; }
+/* A class of kindergarten in hero creation: the word for kindergarten over its picture and name (#67). */
+.grade-tile { display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.1; }
+.grade-tile small { font-size: 0.7em; font-weight: 600; opacity: 0.8; }
+.grade-tile-name { display: flex; align-items: center; gap: 4px; }
+.grade-art { width: 20px; height: 20px; }

@@ -5,7 +5,7 @@ import { h, img, button } from './dom.js';
 import { t } from './i18n.js';
 import { speak } from './speak.js';
 import { portraitCanvas } from './portraits.js';
-import { notebookOf, notebookCount, printArt } from '../core/notebook.js';
+import { notebookOf, notebookCount, printArt, sentSkills } from '../core/notebook.js';
 
 // The print of an entry: the figure of its look, the picture of a place, or of a subject.
 export function printOf(ctx, entry, size = 64) {
@@ -17,7 +17,7 @@ export function printOf(ctx, entry, size = 64) {
 // gap with its place on the page (the child sees what is still to find); a tap on a print says its
 // name.
 export function notebookGrid(ctx, profile, { speakOnTap = true } = {}) {
-  const list = notebookOf(ctx.data.notebook, ctx.data.skills.skills, profile);
+  const list = notebookOf(ctx.data.notebook, ctx.data.skills.skills, profile, sentSkills(ctx.data.trials ?? {}));
   const pages = [];
   // The pages in the order of the list (a page with a print first).
   for (const kind of [...new Set(list.map((e) => e.kind))]) {
@@ -30,7 +30,9 @@ export function notebookGrid(ctx, profile, { speakOnTap = true } = {}) {
       if (e.met && speakOnTap) card.addEventListener('click', () => speak(e.titleKey, {}, { force: true }));
       return card;
     });
-    if (cards.length) pages.push(h('section', { class: 'note-page' }, [h('h3', { text: t(`note.${kind}`) }), h('div', { class: 'note-grid' }, cards)]));
+    // The count of each page with its name (#67), so that the child sees where the prints are.
+    const n = notebookCount(list.filter((e) => e.kind === kind));
+    if (cards.length) pages.push(h('section', { class: 'note-page' }, [h('h3', {}, [t(`note.${kind}`), h('span', { class: 'note-page-count', text: t('note.pageCount', n) })]), h('div', { class: 'note-grid' }, cards)]));
   }
   const c = notebookCount(list);
   return h('div', { class: 'notebook' }, [h('p', { class: 'note-count', text: t('parent.notebook.count', c) }), ...pages]);

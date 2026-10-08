@@ -1,7 +1,7 @@
 // The notebook (Sổ tay, #8): the fill rules of the prints (src/core/notebook.js, data/notebook.json).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { notebookOf, noteSeen, isMet, notebookCount, entriesOfKey, notebookSkills, printArt } from '../src/core/notebook.js';
+import { notebookOf, noteSeen, isMet, notebookCount, entriesOfKey, notebookSkills, printArt, sentSkills } from '../src/core/notebook.js';
 import { existsSync } from 'node:fs';
 import { createProfile } from '../src/core/profile.js';
 import { serialize, deserialize } from '../src/core/save.js';
@@ -100,4 +100,19 @@ test('each skill print shows the picture of its subject, never the picture of a 
     assert.ok(existsSync(new URL(`../art/${art}.svg`, import.meta.url)), `${s.id}: art/${art}.svg`);
   }
   assert.equal(printArt({ kind: 'place' }), 'ui/map');
+});
+
+// The notebook says what is true (#67): a skill that a task of this era sends has a print in this
+// era (the bundle of a child of grade 2 sends math.place.1000, a skill of era 2), and the page with
+// the most prints comes first.
+test('a sent skill of a later era has a print; the page with the most prints comes first', () => {
+  const sent = sentSkills(load('data/trials.json'));
+  assert.ok(sent.has('math.place.1000'), 'a bundle of grade 2 sends math.place.1000');
+  const p = createProfile({ id: 'b', name: 'Tí', grade: 2 });
+  p.learning.skills['math.place.1000'] = { p: 0.4, n: 2, mastered: false };
+  for (const c of ['duck', 'chicken', 'buffalo', 'dog', 'owl']) noteSeen(p, `creature:${c}`);
+  const list = notebookOf(def, skills, p, sent);
+  assert.equal(list.find((e) => e.id === 'skill:math.place.1000')?.met, true, 'the print of the bundle of grade 2');
+  const kinds = [...new Set(list.map((e) => e.kind))];
+  assert.equal(kinds[0], 'creature', `the page of the animals first: ${kinds}`);
 });

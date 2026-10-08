@@ -598,3 +598,18 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **Grandma's first talk:** the line of the touch screen (`dlg.grandma.intro.n4`) comes before the ride line now, so that the ride line is the last line and a tap on the calf closes the box.
 - **Please check:** "ván mờ" for the pale outlines of the guess, and "dài bằng chỗ gãy".
 
+## Short start lines, a true first raid, one voice, and a true note (#67)
+
+- **The start talks have short lines, one new word in each, with its thing shown:**
+  - The teacher: `dlg.teacher.trial.n1` to `n4` ("À, một học trò mới! Các bạn trong lớp cần que tính." / "Đây là que tính, trên đống này." / "Đây là cái chiếu. Con đặt từng que lên chiếu, đủ {bundle} que." / "Rồi con đến chỗ thầy và bấm nút lớn. Thầy buộc chúng thành một bó.").
+  - The smith: `dlg.smith.trial.n1` to `n4` ("Cháu đến đúng lúc! Đây là lò rèn. Lửa đang cháy." / "Đây là cái máng. Trong máng có nước." / "Đây là thanh sắt. Sắt nằm trên cái đe, cạnh lò." / "Khi sắt đỏ rực, cháu đứng bên đe và bấm nút lớn để thả sắt vào nước."). The ore ("quặng") is not in the talk now.
+  - The healer: `dlg.healer.trial.n1` to `n5` ("Bà cần lá thuốc. Đây là ngải cứu, trên luống này." / "Đây là tía tô." / "Đây là rau má." / "Đây là giỏ của bà. Cháu bỏ vào giỏ mỗi loại {each} bó." / "Rồi cháu đến chỗ bà và bấm nút lớn: bà nhận giỏ.").
+  - The woodcutter: `dlg.woodcutter.trial.n1` to `n3` ("Cây tre này đổ vì gió." / "Em vạch phấn lên cây tre để chia nó thành {parts} khúc bằng nhau, rồi bảo anh chặt." / "Mang các khúc tre ra đống gỗ này nhé.").
+  - The fisher: `dlg.fisher.trial.n4` ("Cháu cắm tiếp cọc tới cái phao đỏ này.") and `n5` ("Đây là khe giữa hai cọc của chú. Đừng để khe nào rộng hơn khe này."), with his two stakes glowing.
+- **The elder names the five people with their faces:** `dlg.elder.intro.n1` ("Chào cháu {name}. Làng ta có năm người tài giỏi.") and `dlg.elder.intro.five` ("Đó là thầy giáo, bác thợ rèn, chú đánh cá, bà lang và anh tiều phu."). The face of each person shows over the talk box as the elder names them.
+- **The first raid:** `raid.scouts.intro.first` ("Lính trinh sát [[an]] đi trên đường về cổng làng. Em đứng ở cổng với cái ná."), with no torch; `raid.tool.sling` ("Lính đứng ở cột thứ mấy, cháu bấm nút lớn mấy lần."); the drag comes in a later raid: `raid.tool.drag` ("Cháu cũng có thể đặt ngón tay lên cháu rồi kéo về phía sau, xa con đường.").
+- **Grandma in the morning:** `dlg.grandma.morning.n1` ("Cụ già làng đang chờ cháu ở nhà làng đấy."), until the talk of the elder is done.
+- **The note of the parents:** `parent.week.stopAfter` ("{name} dừng ở {act} ngay sau {tries} liền nhau.", with `parent.count.tries` "{n} lần làm chưa đúng"), and the sign `parent.week.sign.hard` ("có lúc gặp khó") in place of "phần lớn đều đặn" after misses in a row or a wave.
+- **Hero creation and the notebook:** `grade.kinder` ("Mẫu giáo") over the bud of "Chồi" and the leaf of "Lá"; `note.pageCount` ("{have} trên {all}") on each page of the notebook.
+- **Please check:** "cái máng" and "cái đe" for a child of six; "lần làm chưa đúng" in the note.
+
