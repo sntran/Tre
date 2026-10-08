@@ -836,6 +836,7 @@ export async function mountVillage(ctx, params = {}) {
       },
       under: (px, py) => view.pick(px, py),
       placeAt: (x, y, pad) => session.taskPlaceAt(x, y, pad),
+      line: () => session.line(),
       inTask: session.inTask(),
       carrying: Boolean(session.carried()),
       raidAt: (p) => raidView.targetAt(p),
@@ -1855,7 +1856,7 @@ export async function mountVillage(ctx, params = {}) {
     // Send a command to the session and show its events (the storybook).
     send,
     // The screen point of a map point on the ground (the finger of the storybook).
-    pointOf: (x, y) => view.project(x, groundY(x, y) + 0.2, y),
+    pointOf: (x, y, h = null) => view.project(x, h ?? groundY(x, y) + 0.2, y),
     // The debug panel (with ?debug=1), where the storybook shows the step of a story.
     debugPanel,
     // The motes of the world at rest that the last frame drew (for the tests on a device).

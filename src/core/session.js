@@ -3291,6 +3291,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // given): a tap there comes before a person. With no pad: a tap there comes before a thing that
     // only touches the finger with its pad (src/world/hit.js, #47).
     taskPlaceAt: (x, y, pad = ZONE_PAD) => Boolean(workZoneAt(x * 2, y * 2, pad)),
+    // The row of the open task of the fisher: { x, y, z, length } (half blocks), or null.
+    line: () => {
+      const z = trialZone('fisher') && !trialZone('fisher').zone.done ? zoneOf('line')?.zone : null;
+      return z ? { x: z.x, y: z.y, z: z.z, length: z.length } : null;
+    },
     // A task or a folk game goes on now: a tap on Nghé is a tap on what is under or behind Nghé.
     // Any open task counts (a trial, a station, or a work task such as the rice for Gióng).
     inTask: () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done)),

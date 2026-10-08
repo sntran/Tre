@@ -69,3 +69,30 @@ for (const a of data.practice.activities) {
     assert.deepEqual(wrong, []);
   });
 }
+
+// A tap on a point of the row of the fisher chooses that point (#63): the stakes stand higher than
+// the water that the ray meets, and the tap took the point two half blocks farther.
+test('on a phone, a tap on each point of the row of the fisher chooses that point', async () => {
+  let session = null;
+  const failures = await runHeadless({ name: 'screen-row', practice: 'cam-coc', profile: { name: 'An', grade: 2, lang: 'vi', seed: 3, flags: {} }, steps: [] }, { onSession: (s) => { session = s; } });
+  assert.deepEqual(failures, []);
+  assert.ok(untilTask(session), 'the task of the fisher');
+  const row = session.state.entities.find((e) => e.id === 'zone:line').zone;
+  const wrong = [];
+  let checked = 0;
+  for (const az of ANGLES) {
+    const cam = sessionCamera(session, { az });
+    for (let a = 1; a <= row.length; a++) {
+      const p = cam.project((row.x + a) / 2, row.y / 2, row.z / 2);
+      if (p.x < 0 || p.x > cam.width || p.y < 0 || p.y > cam.height) continue;
+      const t = tapTarget(p, sessionScreen(session, cam));
+      // A stake on the row or the fisher in front of the point takes the tap: that is right.
+      if (t?.thing || t?.person) continue;
+      checked += 1;
+      const along = t?.ground ? Math.round(t.ground.x * 2 - row.x) : null;
+      if (along !== a) wrong.push(`angle ${ANGLES.indexOf(az)}, point ${a}: ${JSON.stringify(t)}`);
+    }
+  }
+  assert.deepEqual(wrong, []);
+  assert.ok(checked >= row.length * 2, `points checked: ${checked}`);
+});

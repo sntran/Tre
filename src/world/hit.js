@@ -130,6 +130,19 @@ export function guessUnder(p, cam, guesses) {
   return best?.g ?? null;
 }
 
+// The point of the row of the fisher nearest to a screen point: { a (half blocks from its start),
+// d (pixels) }, or null when the finger is not on the row.
+const ROW_PAD = 18;
+function rowUnder(p, cam, row) {
+  let best = null;
+  for (let a = 1; a <= row.length; a++) {
+    const c = cam.project((row.x + a) / 2, row.y / 2, row.z / 2);
+    const d = Math.hypot(p.x - c.x, p.y - c.y);
+    if (!best || d < best.d) best = { a, d };
+  }
+  return best && best.d <= ROW_PAD ? best : null;
+}
+
 // The thing of a heap nearest to a point on the ground (cells), within one block: a thing of a heap
 // lies at its home.
 function heapThingNear(things, hit) {
@@ -153,6 +166,8 @@ function heapThingNear(things, hit) {
 // - pick(px, py): the ground (or a prop: who) under the point, { x, y (map cells), h, who } or null;
 // - under(px, py): the ground under the point behind the props, { x, y } or null (optional);
 // - placeAt(x, y, pad): a place of a task at a map point (cells), with a pad in half blocks;
+// - line(): the row of the open task of the fisher, { x, y, z, length } in half blocks, or null
+//   (optional);
 // - inTask: a task or a folk game goes on now; carrying: a thing is in the hands of the hero;
 //   raidAt(p): the target of a raid (optional).
 // The order: a plank outline, a target of a raid, a thing of the hamlet; then a thing, but a place
@@ -172,7 +187,12 @@ export function tapTarget(p, w) {
   const tap = figureUnder(p, w.cam, w.hamlet ?? [], 10, 0.6);
   if (tap) return { hamlet: { ...tap.hamletTap, id: tap.id } };
   const hit = w.pick(p.x, p.y);
-  const inPlace = hit && w.placeAt(hit.x, hit.y, 0);
+  // The row of the fisher: its stakes stand higher than the water that the ray meets, so the
+  // point of the row nearest to the finger on the screen is the point of the tap (#63: the stake
+  // went two half blocks farther than the finger, or the tap missed the row).
+  const row = w.line?.() ?? null;
+  const onRow = row ? rowUnder(p, w.cam, row) : null;
+  const inPlace = onRow || (hit && w.placeAt(hit.x, hit.y, 0));
   const thing = thingUnder(p, w.cam, w.things);
   if (thing && (thing.inside || !inPlace)) return thing.e.item.fixed ? { thing: thing.e.id, along: thing.along } : { thing: thing.e.id };
   // The ground between the things of a heap: the nearest thing of the heap (a heap has no rect).
@@ -190,6 +210,7 @@ export function tapTarget(p, w) {
   if (friend) return { pet: friend.id };
   // A place of a task under the finger comes before a person who stands in front of it (#31,
   // #47); next to a place, only a tap on the body of the person is for the person.
+  if (onRow) return { ground: { x: (row.x + onRow.a) / 2, y: row.z / 2, h: row.y / 2, thing: false, object: null } };
   if (inPlace) return { ground: { x: hit.x, y: hit.y, h: hit.h, thing: Boolean(hit.who), object: hit.object ?? null } };
   if (person) return { person: person.id };
   if (!hit) return null;
@@ -226,6 +247,7 @@ export function sessionScreen(session, cam) {
     hamlet: list.filter((e) => e.hamletTap && e.position).map((e) => fig(e, { hamletTap: e.hamletTap, height: 0.8 })),
     pick: groundPick(cam, session.tileMap),
     placeAt: (x, y, pad) => session.taskPlaceAt(x, y, pad),
+    line: () => session.line(),
     inTask: session.inTask(),
     carrying: Boolean(session.carried()),
   };
