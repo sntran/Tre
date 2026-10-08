@@ -1822,6 +1822,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // '': the basket has enough of each kind, and a press takes no more.
     return basket.kinds.map((k) => `herb-${k}`).find((k) => count(k) < each) ?? '';
   }
+  // The healer says the name of a herb in a bubble (#61): 'bed' after a tap on a bed, 'herb' when
+  // the child takes a bunch. A child who cannot read hears it (#60).
+  function sayHerb(what, kind) {
+    const healer = getEntity(state, 'npc:healer');
+    if (!healer || !/^herb-(ngai|tiato|rauma)$/.test(kind)) return;
+    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: `healer.${what}.${kind.slice(5)}`, params: {} });
+  }
   // A task or a folk game goes on now.
   const taskOn = () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done));
   // The acts of the button that are not work: in a task, they never keep a press from the work.
@@ -2341,6 +2348,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (target.thing) {
       const thing = getEntity(state, target.thing);
+      // A tap on a bed of the healer: she says the name of its herb (#61).
+      if (thing?.item?.kind?.startsWith('herb-') && zoneOf(thing.item.zone)?.zone.rule === 'heap') sayHerb('bed', thing.item.kind);
       if (thing?.item) tapThing(thing, target.along ?? null);
       return;
     }
@@ -2902,6 +2911,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if ((ev.type === 'pick' || ev.type === 'put') && ev.item) {
         const it = getEntity(state, ev.item)?.item;
         if (it?.task?.startsWith('trial-')) lastPick = { task: it.task, kind: it.kind };
+        if (ev.type === 'pick' && ev.id === 'hero' && it?.task === 'trial-healer') sayHerb('herb', it.kind);
       }
       if (ev.id === 'sky') {
         // At dawn the enemies of a lost raid come again, and the game saves the start of the day

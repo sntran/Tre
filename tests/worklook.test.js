@@ -146,6 +146,43 @@ test('the three herbs of the healer have shapes that differ, not only colors: ta
   assert.ok(tiato.wide > ngai.wide + 0.4 && tiato.wide > rauma.wide + 0.4, 'perilla is the wide one');
 });
 
+test('perilla is indigo below and green on top, and each bed has a sign with a picture of its herb and no word (#61)', async () => {
+  const tiato = figureOf({ kind: 'herb', herb: 'tiato' }, 'coarse').parts;
+  const low = tiato.filter((p) => p.color !== 'greenDeep').reduce((a, b) => (b.at[1] < a.at[1] ? b : a));
+  const high = tiato.reduce((a, b) => (b.at[1] > a.at[1] ? b : a));
+  assert.equal(low.color, 'indigo', 'the leaves below');
+  assert.equal(high.color, 'green', 'the leaves on top');
+  const seen = [];
+  const session = await practice('hai-thuoc', [{ until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } }, { read: true }]);
+  for (const k of ['ngai', 'tiato', 'rauma']) {
+    const sign = getEntity(session.state, `sign:healer:bed-${k}`);
+    assert.ok(sign, `a sign at the bed of ${k}`);
+    assert.equal(sign.look, `herb-sign-${k}`);
+    const f = figureOf(thingLook(sign.look), 'coarse');
+    const herb = figureOf({ kind: 'herb', herb: k }, 'coarse');
+    const tones = new Set(herb.parts.map((p) => p.color));
+    assert.ok(f.parts.some((p) => tones.has(p.color) && p.name !== 'post'), `the picture of ${k} has its tones`);
+    seen.push(k);
+  }
+  assert.equal(seen.length, 3);
+});
+
+test('the healer says the name of the herb when the child takes a bunch, and after a tap on a bed (#61)', async () => {
+  const lines = [];
+  const failures = await runHeadless({ name: 'herb-names', practice: 'hai-thuoc', profile, steps: [
+    { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } },
+    { read: true },
+    { until: { event: 'call', with: { key: 'mentor.first.you' }, timeout: 15 } },
+    { press: { item: 'herb-tiato' } },
+    { until: { event: 'put', timeout: 15 } },
+    { tap: { item: 'herb-rauma' } },
+    { wait: 1 },
+  ] }, { onSession: (s) => s.listen((ev) => ev.type === 'open' && ev.screen === 'callout' && lines.push(ev.textKey)) });
+  assert.deepEqual(failures, []);
+  assert.ok(lines.includes('healer.herb.tiato'), `the name of the bunch: ${lines.join(', ')}`);
+  assert.ok(lines.includes('healer.bed.rauma'), `the name of the bed: ${lines.join(', ')}`);
+});
+
 test('the fish of the trap of the fisher jump over the water, where the ducks swim: the child sees the catch and the escape (#48)', () => {
   const life = JSON.parse(readFileSync('data/world/life.json', 'utf8'));
   const swim = Math.max(...Object.values(life.kinds).map((k) => k.steer?.float ?? 0));

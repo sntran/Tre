@@ -205,8 +205,11 @@ export function setupTrial(world, def, level, env, opts = {}) {
     void line;
   } else if (def.task === 'basket') {
     def.kinds.forEach((kind, i) => {
-      const bed = heap(`bed-${kind}`, P(def.places.beds[i]), `herb-${kind}`, { cols: 4 });
+      const at = P(def.places.beds[i]);
+      const bed = heap(`bed-${kind}`, at, `herb-${kind}`, { cols: 4 });
       things(bed, `herb-${kind}`, def.bed ?? 7);
+      // A small sign with a picture of the herb at the far corner of the bed (#61).
+      addEntity(world, { id: `sign:${def.id}:bed-${kind}`, keep: true, position: { x: at.x - 1, y: at.y, z: at.z - 1, facing: 0 }, look: `herb-sign-${kind}` });
     });
     const b = P(def.places.basket);
     addEntity(world, { id: 'zone:basket', keep: true, zone: { id: 'basket', task: owner, rule: 'basket', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, items: [], x: b.x, y: b.y, z: b.z, rect: rect(b, 3, 1) }, position: { x: b.x + 1.5, y: b.y, z: b.z - 1.5, facing: 0 } });

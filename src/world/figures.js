@@ -537,7 +537,9 @@ export function gapMarks(n) {
 // The things of the Five Trials (src/core/world/systems/work.js). Plain things with flat colors
 // (rule 9 of the design: the content object is plain; the village is rich). Units: half blocks.
 const still = (parts, height, shadow = 0) => ({ kind: 'still', parts, scale: 1, height, shadow });
-const HERBS = { ngai: ['greenPale', 'ashLight'], tiato: ['vermilionPale', 'greenDeep'], rauma: ['green', 'greenPale'] };
+// The tones of the herbs: [below, top]. Perilla (tía tô) is purple below and green on top: the
+// palette of the prints has no purple, so its leaves are indigo below (#61).
+const HERBS = { ngai: ['greenPale', 'ashLight'], tiato: ['indigo', 'green'], rauma: ['green', 'greenPale'] };
 const IRON = ['ash', 'vermilionPale', 'vermilion', 'yellowPale'];
 // The looks of the planting of Xóm Ruộng that come from their key (docs/PLANTING.md): a row of n
 // seedlings at a stage of growth (seedlings-<n>-<stage>), a bundle of n seedlings tied with straw
@@ -550,6 +552,9 @@ export function thingLook(key) {
   m = /^(bundle|bunch)-(\d+)$/.exec(k);
   if (m) return { kind: `seed-${m[1]}`, n: Number(m[2]) };
   if (k === 'plot-stake') return { kind: 'plot-stake' };
+  // The small sign at a bed of the healer, with a picture of its herb and no word (#61).
+  m = /^herb-sign-(ngai|tiato|rauma)$/.exec(k);
+  if (m) return { kind: 'herb-sign', herb: m[1] };
   // A chalk mark on the stem of the woodcutter: a band around the stem (#48); a cut piece of the
   // stem (green), n half blocks long.
   if (k === 'chalk-band') return { kind: 'chalk-band' };
@@ -755,6 +760,15 @@ export function workThing(look) {
       if (look.herb === 'tiato') return still([P('stem', [0.2, 0.5, 0.2], 'greenDeep', [0, 0.25, 0]), P('leaves', [1.2, 0.2, 1.2], a, [0, 0.55, 0]), P('top', [0.9, 0.2, 0.9], b, [0, 0.75, 0])], 0.85);
       if (look.herb === 'rauma') return still([P('leafA', [0.5, 0.18, 0.5], a, [-0.3, 0.12, -0.2]), P('leafB', [0.5, 0.18, 0.5], b, [0.3, 0.14, -0.1]), P('leafC', [0.5, 0.18, 0.5], a, [0, 0.16, 0.3])], 0.3);
       return still([P('stem', [0.18, 1.5, 0.18], 'greenDeep', [0, 0.75, 0]), P('leafA', [0.5, 0.35, 0.18], a, [0.2, 0.6, 0]), P('leafB', [0.18, 0.35, 0.5], a, [0, 1, 0.2]), P('tip', [0.3, 0.4, 0.3], b, [0, 1.5, 0])], 1.7);
+    }
+    // A sign at a bed: a post with a board, and on the board the shape of the herb in its tones.
+    case 'herb-sign': {
+      const [a, b] = HERBS[look.herb] ?? HERBS.ngai;
+      const parts = [P('post', [0.2, 1.2, 0.2], 'wood', [0, 0.6, 0]), P('board', [1.1, 0.9, 0.12], 'paper', [0, 1.45, 0])];
+      if (look.herb === 'ngai') parts.push(P('pic', [0.16, 0.7, 0.04], a, [0, 1.45, 0.08]), P('picTip', [0.3, 0.2, 0.04], b, [0, 1.75, 0.08]));
+      else if (look.herb === 'tiato') parts.push(P('pic', [0.8, 0.22, 0.04], a, [0, 1.3, 0.08]), P('picTop', [0.55, 0.2, 0.04], b, [0, 1.52, 0.08]));
+      else parts.push(P('picA', [0.25, 0.25, 0.04], a, [-0.25, 1.25, 0.08]), P('picB', [0.25, 0.25, 0.04], b, [0.05, 1.3, 0.08]), P('picC', [0.25, 0.25, 0.04], a, [0.3, 1.24, 0.08]));
+      return still(parts, 1.9);
     }
     // The basket of the healer, with three parts; full when the healer takes it.
     case 'basket': {
