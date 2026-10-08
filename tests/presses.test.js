@@ -1,12 +1,12 @@
 // A child who plays the trials of the story with the big button (#54): after the talk of each
 // mentor, presses only; then one tap and presses. The laws of playPresses (tests/restless.js) hold:
 // a press never asks for help, never takes back what it just put, and never puts a thing of a task
-// on the ground. The work goes on with presses: the basket of the healer fills with the right kinds,
-// the row of the fisher goes on to the float, the forge takes the ore, and the smith quenches.
+// on the ground. The work goes on with presses, but a press never finds the number that the child
+// must find (#63): the healer and the fisher need the child's taps and counts.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless, data } from './story-run.js';
-import { playPresses, STEP } from './restless.js';
+import { playPresses, blindPresses, STEP } from './restless.js';
 import { getEntity, query } from '../src/core/world/state.js';
 import { load } from './helpers.js';
 import { taskOf } from '../src/core/world/trials.js';
@@ -44,27 +44,92 @@ function tapAndPress(session, target) {
   run(session, 15, () => session.screen);
 }
 
-test('the healer: presses fill the basket with each kind, as many as she needs, and give it to her', async () => {
+// The button never knows the answer (#63): presses alone never give the basket with the right
+// count, and never make the row of the fisher with the right space. The child's taps and counts
+// decide, and a child who counts right finishes with few touches.
+test('the healer: presses alone take the same kind again and never give the basket', async () => {
+  const session = await afterTalk('trial-healer');
+  const log = [];
+  assert.deepEqual(playPresses(session, { presses: 16, log }), []);
+  assert.equal(zone(session, 'trial-healer').done, false, 'no give with no tap on the healer');
+  assert.ok(log.length >= 6, `presses put bunches: ${log.length}`);
+  assert.equal(new Set(log).size, 1, `presses take one kind only: ${[...new Set(log)].join(', ')}`);
+});
+
+test('the healer: a child who taps each bed and counts the presses gives the right basket', async () => {
   const session = await afterTalk('trial-healer');
   const each = taskOf(data.trials.trials.find((t) => t.id === 'healer'), zone(session, 'trial-healer').level).each;
   const skills = [];
   session.listen((ev) => { if (ev.type === 'skill') skills.push(ev); });
-  assert.deepEqual(playPresses(session, { presses: 30, until: () => zone(session, 'trial-healer').done }), []);
-  assert.equal(zone(session, 'trial-healer').done, true, 'the healer takes the basket');
-  assert.deepEqual(skills.map((e) => [e.solved, e.parts]), [[true, [each, each, each]]], 'presses take the same kind again, then the next kind, and give the basket when it has enough of each');
+  let touches = 0;
+  for (const bed of ['bed-ngai', 'bed-tiato', 'bed-rauma']) {
+    const herb = zone(session, bed).items.find((id) => !getEntity(session.state, id).item.held);
+    session.command({ type: 'tap', target: { thing: herb } });
+    session.events();
+    run(session, 8, () => !getEntity(session.state, 'hero').route);
+    touches += 1;
+    // The child counts: one press for each bunch.
+    for (let k = 0; k < each; k++) {
+      session.command({ type: 'hands' });
+      session.events();
+      run(session, 1.5);
+      touches += 1;
+    }
+  }
+  tapAndPress(session, { person: 'npc:healer' });
+  touches += 2;
+  assert.deepEqual(skills.map((e) => e.solved), [true], `the give: ${JSON.stringify(skills.map((e) => e.parts))}`);
+  assert.ok(touches <= 3 * (each + 1) + 2, `few touches: ${touches}`);
 });
 
-test('the fisher: presses go on with the row toward the float, and never take back a stake', async () => {
+test('the fisher: presses alone put the stakes next to each other, and the row never reaches the float', async () => {
+  const session = await afterTalk('trial-fisher');
+  const line = zone(session, 'line');
+  const slots = () => query(session.state, 'item').filter((e) => e.item.zone === 'line' && !e.item.held).map((e) => e.item.slot).sort((a, b) => a - b);
+  assert.deepEqual(playPresses(session, { presses: 24 }), []);
+  assert.ok(Math.max(...slots()) < line.length, `the row of presses does not reach the float: ${slots().join(' ')}`);
+  run(session, 120, () => zone(session, 'trial-fisher').tide?.phase === 'high');
+  run(session, 60, () => zone(session, 'trial-fisher').tide?.phase !== 'high');
+  assert.equal(zone(session, 'trial-fisher').done, false, 'the fish swim out at the first tide');
+});
+
+test('the fisher: a child who taps each point of the row at the space of the fisher keeps the fish', async () => {
   const session = await afterTalk('trial-fisher');
   const line = zone(session, 'line');
   const slots = () => query(session.state, 'item').filter((e) => e.item.zone === 'line' && !e.item.held).map((e) => e.item.slot);
-  assert.deepEqual(playPresses(session, { presses: 16, until: () => Math.max(...slots()) === line.length }), []);
+  for (let at = 2 * line.space; at <= line.length; at += line.space) {
+    // A press takes a stake from the bank (again, while a move of the fisher keeps the press
+    // busy), a tap chooses the point, and a press puts it there.
+    for (let k = 0; k < 4 && !session.carried(); k++) {
+      session.command({ type: 'hands' });
+      session.events();
+      run(session, 8, () => Boolean(session.carried()));
+    }
+    session.command({ type: 'tap', target: { ground: { x: (line.x + at) / 2, y: line.z / 2 } } });
+    session.events();
+    session.command({ type: 'hands' });
+    session.events();
+    run(session, 8, () => !session.carried());
+  }
   assert.equal(Math.max(...slots()), line.length, `the row reaches the float: ${slots().sort((a, b) => a - b).join(' ')}`);
-  // The row is at the float: a press takes no more stakes (no stake stays in the hands with no act).
-  assert.deepEqual(playPresses(session, { presses: 3 }), []);
-  assert.equal(session.carried(), null, 'no stake in the hands after the row is done');
-  run(session, 120, () => zone(session, 'trial-fisher').done);
+  run(session, 160, () => zone(session, 'trial-fisher').done);
   assert.equal(zone(session, 'trial-fisher').done, true, 'the tide comes, and the trap keeps the fish');
+});
+
+// The same presses at a different number make the same puts (tests/restless.js, blindPresses).
+test('the button is blind: the same presses make the same puts when the number of the task changes', async () => {
+  // [story, trial, number, two values]. The fisher puts the first two stakes of the row, at 0 and
+  // at the space: with a space of 8 or 9, his second stake is out of the reach of the presses.
+  const cases = [['trial-healer', 'healer', 'each', [2, 3]], ['trial-fisher', 'fisher', 'space', [8, 9]], ['trial-woodcutter', 'woodcutter', 'parts', [2, 4]], ['rice-giong', 'rice', 'heads', [2, 3]], ['forge-horse', 'horse', 'ore', [6, 5]]];
+  for (const [story, id, key, values] of cases) {
+    const def = data.trials.trials.find((t) => t.id === id);
+    const set = (value) => () => {
+      const old = def.levels.map((l) => l[key]);
+      for (const l of def.levels) l[key] = value;
+      return () => def.levels.forEach((l, i) => { l[key] = old[i]; });
+    };
+    assert.deepEqual(await blindPresses(() => afterTalk(story), values.map(set), { presses: story === 'rice-giong' ? 16 : 8 }), [], story);
+  }
 });
 
 test('the iron horse: presses carry the ore into the hearth, never into the forge of the done trial of the smith', async () => {

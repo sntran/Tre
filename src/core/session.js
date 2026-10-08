@@ -1926,21 +1926,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return Boolean(tz && !tz.zone.done);
   };
   // The kind of thing that a press takes from a heap now: the kind of the last pick (the child does
-  // the same again), '' (none), or null (any kind). At the healer, when the basket has enough of
-  // that kind, the next kind that the basket needs (#54).
+  // the same again), or null (any kind). A press never reads a number that the child must find
+  // (#63): at the healer, the press takes the same kind again with no limit, and only a tap on
+  // another bed changes the kind. The child counts the bunches.
   function wantKind() {
     if (!lastPick || !openTask(lastPick.task)) return null;
-    if (lastPick.task !== 'trial-healer') return lastPick.kind;
-    const basket = zoneOf('basket')?.zone;
-    if (!basket) return lastPick.kind;
-    const each = taskOf(trialDef('healer'), trialZone('healer').zone.level ?? 0).each;
-    // The bunch of the example of the healer (the first step) is hers: it does not count (#61).
-    const example = new Set(query(state, 'script').flatMap((e) => e.script.put ?? []));
-    const count = (kind) => basket.items.filter((id) => !example.has(id) && getEntity(state, id)?.item.kind === kind).length;
-    if (count(lastPick.kind) < each) return lastPick.kind;
-    // '': the basket has enough of each kind, and a press takes no more.
-    return basket.kinds.map((k) => `herb-${k}`).find((k) => count(k) < each) ?? '';
+    return lastPick.kind;
   }
+  // The tasks whose kind of thing only a tap changes: when the bed of that kind is empty, a press
+  // takes nothing (#63). At the other tasks, a press takes another kind when the heap has no more.
+  const SAME_KIND = new Set(['trial-healer']);
+  // The tasks whose finish needs a tap on the person: the give of the basket is a try (#47, #63).
+  const TAP_FINISH = new Set(['trial-healer']);
   // The healer says the name of a herb in a bubble (#61): 'bed' after a tap on a bed, 'herb' when
   // the child takes a bunch. A child who cannot read hears it (#60).
   function sayHerb(what, kind) {
@@ -2025,11 +2022,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // With no tap, the finish comes only after a put of the child in the task: the first step
       // that the mentor shows is not a try of the child (#54).
       const task = mentoring.taskOfPerson(q.entity);
-      if (fin && (tapped || (!heapNear(null) && childPut.has(task)))) add({ ...base, ...fin, rank: 0, work: true }, REACH + 3);
+      if (fin && (tapped || (!TAP_FINISH.has(task) && !heapNear(null) && childPut.has(task)))) add({ ...base, ...fin, rank: 0, work: true }, REACH + 3);
       // With a heap in reach, the finish waits: it comes only when the press has no other work
       // (#54: the basket of the healer has enough of each kind, and the healer stands at it).
       else if (fin && !tapped) {
-        if (childPut.has(task)) laterFin.push({ ...base, ...fin, rank: 0, work: true });
+        if (childPut.has(task) && !TAP_FINISH.has(task)) laterFin.push({ ...base, ...fin, rank: 0, work: true });
         continue;
       }
       // While the task of the person is open, a talk is a call for help: it needs a tap on the
@@ -2113,7 +2110,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (zone && rule !== 'heap' && rule !== 'pile') continue;
         // Of the things of a task, the kind of the last pick first, while a heap has that kind. A
         // tap on a thing chooses it.
-        if (want !== null && chosen?.id !== e.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || want === '')) continue;
+        if (want !== null && chosen?.id !== e.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || SAME_KIND.has(lastPick.task))) continue;
         // A press picks a thing of a task only when a place of the task has room for it: no stake
         // after the row is at the float (#54: the stake stayed in the hands with no act).
         if (chosen?.id !== e.id && openTask(e.item.task) && !roomFor(e)) continue;
@@ -2198,11 +2195,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           continue;
         }
         const tapped = chosen?.id === z.id && chosen.along !== null ? chosen.along : null;
-        // With no tap, the next point of the row: one space of the row after its last stake,
-        // toward the float (#54: the press goes on with the row, and never puts a stake back).
+        // With no tap, the point of the row nearest to the hero; when it has a stake, the next free
+        // point after it (one half block). The press never reads the space of the row (#63): the
+        // child chooses each space with a tap, and presses alone make a row that is too close.
         const row = query(state, 'item').filter((e) => e.item.zone === zone.id && !e.item.held && e.item.slot != null).map((e) => e.item.slot);
-        const slot = Math.max(1, Math.min(zone.length, tapped ?? Math.max(0, ...row) + zone.space));
-        if (row.includes(slot)) continue;
+        let slot = Math.max(1, Math.min(zone.length, tapped ?? Math.round(hp.x - zone.x)));
+        if (tapped === null) while (row.includes(slot) && slot <= zone.length) slot += 1;
+        if (slot > zone.length || row.includes(slot)) continue;
         const at = { x: zone.x + slot, z: zone.z };
         add({ act: 'put', icon: 'hand-put', target: z.id, at, work, rank: 0, ghost: { look: held.look, x: at.x, y: zone.y, z: at.z, facing: 0 }, run: () => put(at) }, REACH + 2);
       } else if (zone.rule === 'spots') {
@@ -3035,11 +3034,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const ev of events) {
       if (ev.type === 'greet') greeting(ev);
       emit(ev);
-      // The kind of the last thing of a task that the child (or the mentor, in the first step)
-      // took or put: a press does the same again (#54).
+      // The kind of the last thing of a task that the child took or put: a press does the same
+      // again (#54). The mentor sets it only before the child's first act in the task (the first
+      // step); a later move of the mentor never changes the kind of a press (#63).
       if ((ev.type === 'pick' || ev.type === 'put') && ev.item) {
         const it = getEntity(state, ev.item)?.item;
-        if (it?.task?.startsWith('trial-')) lastPick = { task: it.task, kind: it.kind };
+        if (it?.task?.startsWith('trial-') && (ev.id === 'hero' || lastPick?.task !== it.task || !lastPick.child)) lastPick = { task: it.task, kind: it.kind, child: ev.id === 'hero' };
         if (ev.type === 'pick' && ev.id === 'hero' && it?.task === 'trial-healer') sayHerb('herb', it.kind);
       }
       // A wrong bundle: a hero who stands on the mat steps off to the place of the mat, so that the

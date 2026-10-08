@@ -11,7 +11,7 @@
 //   the game (the focus led toward the work, src/world/view.js);
 // - the hero never stands on the cell of the person at the start of a talk.
 import { createRng } from '../src/core/rng.js';
-import { getEntity } from '../src/core/world/state.js';
+import { getEntity, query } from '../src/core/world/state.js';
 import { findPath } from '../src/core/tilemap.js';
 import { leadFocus } from '../src/world/view.js';
 
@@ -139,13 +139,23 @@ export { STEP };
 // - a press never takes back the thing that the last press put;
 // - a press never puts a thing of a task on the ground;
 // - a press never looks at a thing of the map or talks in the task (a tap chooses them).
-export function playPresses(session, { presses = 40, wait = 2.5, hold = 1, until = () => false } = {}) {
+// log: an array that takes each put of the presses (the place, the kind, and the point) and each
+// chalk mark.
+export function playPresses(session, { presses = 40, wait = 2.5, hold = 1, until = () => false, log = null } = {}) {
   const broken = new Set();
   let lastPut = null;
   let asked = 0;
   const off = session.listen((ev) => {
     if (ev.type === 'mentor' && ev.asked) asked += 1;
-    if (ev.type === 'put' && ev.id === 'hero') lastPut = ev.item;
+    if (ev.type === 'put' && ev.id === 'hero') {
+      lastPut = ev.item;
+      // The puts of the presses, as the child sees them: the place, the kind, and the point.
+      const item = getEntity(session.state, ev.item)?.item;
+      log?.push(`${ev.zone} ${item?.kind ?? '?'}${item?.slot != null ? ` at ${item.slot}` : ''}`);
+    }
+    // A chalk mark on the stem of the woodcutter, and a tray into the pot of Gióng, are puts too.
+    if (ev.type === 'mark' && ev.at != null) log?.push(`${ev.id} mark at ${ev.at}`);
+    if (ev.type === 'carry') log?.push(`${ev.id} tray of ${ev.size}`);
     if (ev.type === 'pick' && ev.id === 'hero' && ev.item === lastPut) broken.add(`a press took back ${ev.item}, which the last press put`);
     if (ev.type === 'drop' && ev.id === 'hero' && String(getEntity(session.state, ev.item)?.item?.task ?? '').startsWith('trial-')) broken.add(`a press put ${ev.item} on the ground`);
   });
@@ -256,4 +266,34 @@ export function playRaid(session, encounter, { seed = 1, miscount = 0.25, second
   read();
   off();
   return { won, shots, hits };
+}
+
+// The law of the blind button (#63): a press never reads a number that the child must find. The
+// same presses in the same task, once with one number and once with a different number (the `each`
+// of the healer, the `space` of the fisher), make the same puts. A play can end sooner only when
+// its task is done (the pot of Gióng is full): then the puts are the same up to that end. make(): a
+// new session of the task; numbers: two functions, each sets a number and returns a function that
+// undoes it. Returns the broken laws of both plays, and a line when the puts are not the same.
+export async function blindPresses(make, numbers, opts = {}) {
+  const broken = [];
+  const plays = [];
+  for (const set of numbers) {
+    const undo = set();
+    const log = [];
+    try {
+      const session = await make();
+      const open = () => query(session.state, 'zone').filter((z) => z.zone.rule === 'trial' && !z.zone.done).map((z) => z.id);
+      const before = open();
+      broken.push(...playPresses(session, { ...opts, log }));
+      plays.push({ log, done: before.some((id) => !open().includes(id)) });
+    } finally {
+      undo();
+    }
+  }
+  if (!plays[0].log.length) broken.push('the presses put nothing');
+  const n = Math.min(...plays.map((p) => p.log.length));
+  const same = plays.every((p) => p.log.slice(0, n).join('|') === plays[0].log.slice(0, n).join('|'));
+  const ended = plays.every((p) => p.log.length === n || plays.find((q) => q.log.length === n).done);
+  if (!same || !ended) broken.push(`the presses changed with the number of the task: ${plays.map((p) => p.log.join(', ')).join(' / ')}`);
+  return broken;
 }
