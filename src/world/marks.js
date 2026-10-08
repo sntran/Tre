@@ -20,8 +20,9 @@ export function upOutOf(box, boxes, gap = 4) {
   return b;
 }
 
-// The box of a star over a target at the screen point p (the star stands on the point): 30 x 30.
-export const STAR = 30;
+// The box of a star over a target at the screen point p (the star stands on the point): 34 x 34,
+// with the small face of its person in its disc (#62).
+export const STAR = 34;
 export const starBox = (p) => ({ x0: p.x - STAR / 2, y0: p.y - STAR, x1: p.x + STAR / 2, y1: p.y });
 
 // Where a star goes: over its point, but off the controls, and over the head of the hero when the

@@ -47,6 +47,16 @@ export function liveTargets(step, flags, { raidOf = () => null, raids = {}, minu
   });
 }
 
+// Whose star a live target is (#62): the person whose small face shows in the disc of the star,
+// and the line that a tap on the star says before the walk ("Đi tìm bà lang."). The first live
+// target of a step is the next step of the story: its star is bigger than the others. tg: a live
+// target; index: its place in the list of live targets; trials: data.trials.trials. Return
+// { who (an id of a person, or null), key (the text key of the line), main }.
+export function starOf(tg, index = 0, trials = []) {
+  const who = tg.npc ?? (tg.trial ? trials.find((t) => t.id === tg.trial)?.npc ?? null : null);
+  return { who, key: who ? 'star.go.person' : 'star.go.place', main: index === 0 };
+}
+
 // The point of the star of a place of a step (map cells): the middle of the cell of the place, so
 // that a walk to the star ends in the zone of the place (#51).
 export function placeMark(place) {

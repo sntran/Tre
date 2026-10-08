@@ -849,7 +849,12 @@ p { line-height: 1.45; margin: 0.4em 0; }
 }
 .world-marks { position: absolute; inset: 0; overflow: hidden; }
 .world-marks > * { position: absolute; left: 0; top: 0; will-change: transform; }
-.world-star { width: 30px; height: 30px; filter: drop-shadow(0 1px 0 var(--ink)); pointer-events: auto; cursor: pointer; z-index: 1; }
+.world-star { width: 34px; height: 34px; filter: drop-shadow(0 1px 0 var(--ink)); pointer-events: auto; cursor: pointer; z-index: 1; transform-origin: 50% 100%; }
+.world-star.main { z-index: 2; }
+.star-pic { display: block; width: 100%; height: 100%; }
+/* The small face of the person of a star, in the disc of the star (#62). */
+.star-face { position: absolute; left: 50%; top: 54%; width: 18px; height: 18px; margin: -9px 0 0 -9px; overflow: hidden; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--paper); pointer-events: none; }
+.star-face canvas { display: block; width: 20px !important; height: 20px !important; margin: -1px 0 0 -1px; }
 /* The bubbles of the lines over the stars, and the stick over both (#53). */
 .world-marks > .world-bubble { z-index: 2; }
 .world-marks > .stick { z-index: 3; }

@@ -2,7 +2,7 @@
 // session owns the world state and the story logic; this file draws the state, turns the input
 // into commands, and reacts to the events: the dialogue box, the screens, the sounds, the HUD,
 // and the marks over the world.
-import { currentGoal, liveTargets, placeMark } from '../core/quests.js';
+import { currentGoal, liveTargets, placeMark, starOf } from '../core/quests.js';
 import { questMark } from '../core/clues.js';
 import { conditionState } from '../core/game.js';
 import { edgeMarker } from '../core/hit.js';
@@ -16,7 +16,7 @@ import { rainOf } from '../core/world/systems/sky.js';
 import { createSession, middleOf } from '../core/session.js';
 import { createHearing } from '../core/hearing.js';
 import { LINE_LIFE, lineLife, linesAfter, nearHero as talksNear } from '../core/lines.js';
-import { placeStar, placeArrow, placeBubble, starBox, AWAY_LIFE } from '../world/marks.js';
+import { placeStar, placeArrow, placeBubble, starBox, STAR, AWAY_LIFE } from '../world/marks.js';
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
@@ -25,11 +25,12 @@ import { VIEW, SAFE, TALK_SAFE, viewSize, inView, leadFocus } from '../world/vie
 import { heroLook, thingLook } from '../world/figures.js';
 import { tapTarget, thingUnder } from '../world/hit.js';
 import { h, img, button } from './dom.js';
-import { t, tn, setSpeech } from './i18n.js';
+import { t, tn, setSpeech, lang } from './i18n.js';
 import { speechTable, speechWay } from '../core/speech.js';
 import { speak, speaking } from './speak.js';
 import { bubbleLine, createVoiceQueue } from '../core/bubblevoice.js';
 import { voiceOf } from '../core/voices.js';
+import { namesOf } from '../core/naming.js';
 import { createDialogueBox, glossLine } from './dialogue.js';
 import { createRaidView } from './raid.js';
 import { createStream } from './stream.js';
@@ -520,7 +521,7 @@ export async function mountVillage(ctx, params = {}) {
     const stationIds = session.stations();
     if (stationIds.length) {
       return persons().filter((p) => p.kind === 'npc' && stationIds.includes(p.ref)).map((p) => ({ p, top: figureTop(p.entity) }))
-        .filter((m) => m.top !== null).map(({ p, top }) => ({ x: p.x, y: p.y, h: top, id: p.entity }));
+        .filter((m) => m.top !== null).map(({ p, top }) => ({ x: p.x, y: p.y, h: top, id: p.entity, who: p.ref, key: 'star.go.person', main: false }));
     }
     // A practice has no star of the story (#51): the work of the practice has its own outlines.
     if (session.practice) return [];
@@ -540,7 +541,10 @@ export async function mountVillage(ctx, params = {}) {
       const item = (kind === 'npc' ? mapData.npcs : mapData.encounters).find((x) => x.id === id);
       if (item) out.push({ x: item.x, y: item.y, h: groundY(item.x, item.y) + 3 });
     };
-    for (const tg of list) {
+    for (const [i, tg] of list.entries()) {
+      // The face and the line of the star, and the bigger star of the next step (#62).
+      const face = starOf(tg, i, data.trials?.trials ?? []);
+      const from = out.length;
       for (const kind of ['npc', 'encounter']) {
         if (!tg[kind]) continue;
         const p = here.find((x) => x.kind === kind && x.ref === tg[kind]);
@@ -559,6 +563,7 @@ export async function mountVillage(ctx, params = {}) {
         const thing = objectOf(tg.object);
         if (o) out.push({ x: o.x + o.w / 2, y: o.y + o.h / 2, h: (thing ? terrain.boxOf(thing).y1 : groundY(o.x, o.y) + 2) + 0.8 });
       }
+      for (let k = from; k < out.length; k++) Object.assign(out[k], face);
     }
     if (stepGoal.place && (stepGoal.place.map ?? mapData.id) === mapData.id) out.push({ ...placeMark(stepGoal.place), h: groundY(stepGoal.place.x, stepGoal.place.y) + 3 });
     // A place that the hero did not find yet (Trâu Sơn, #27): the mark shows only the way.
@@ -1395,16 +1400,38 @@ export async function mountVillage(ctx, params = {}) {
     const m = e.currentTarget.mark;
     if (!m || busy || !alive) return;
     ctx.log('action', { kind: 'star' });
+    sayStar(m);
     send({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h, thing: false, object: null, goal: true } } });
   };
   const tappable = (el) => {
     el.addEventListener('pointerdown', starTap);
     return el;
   };
-  const starAt = pooled(starPool, () => tappable(img('ui/star', 'world-star')));
-  const arrowAt = pooled(arrowPool, () => tappable(h('div', { class: 'edge-arrow' }, [img('ui/star', 'edge-star')])));
+  // A star shows the small face of its person in its disc, also at the edge of the screen (#62).
+  const face = () => h('span', { class: 'star-face' });
+  const starAt = pooled(starPool, () => tappable(h('div', { class: 'world-star' }, [img('ui/star', 'star-pic'), face()])));
+  const arrowAt = pooled(arrowPool, () => tappable(h('div', { class: 'edge-arrow' }, [h('div', { class: 'edge-star' }, [img('ui/star', 'star-pic'), face()])])));
+  function setFace(el, who) {
+    const slot = el.querySelector('.star-face');
+    if (slot.dataset.who === (who ?? '')) return;
+    slot.dataset.who = who ?? '';
+    const look = who ? speakerLookOf(ctx, who) : null;
+    slot.replaceChildren(...(look ? [portraitCanvas(ctx, look, { framing: 'bust', size: 20 })] : []));
+    slot.hidden = !look;
+  }
+  // A tap on a star says where it goes, before the walk (#62): "Đi tìm bà lang." The hero says it,
+  // in the voice of the hero, as a line of a bubble (#60).
+  function sayStar(m) {
+    const name = m.who ? namesOf(data, mapData.region)[m.who] ?? { key: `npc.${m.who}.name` } : null;
+    const who = name ? t(name.key, name.params) : '';
+    const params = { who: who.charAt(0).toLocaleLowerCase(lang()) + who.slice(1) };
+    const line = { id: 'hero', key: m.key ?? 'star.go.place', params, voice: lineVoice('hero'), kind: 'line' };
+    showBubble('hero', t(line.key, params), null, line);
+    voiceQueue.offer(line, speaking() || Boolean(spoken));
+  }
   // The pulse of the star of a station (seconds left), when the head of the hamlet points at it.
   const STAR_PULSE = 1.6;
+  const MAIN_STAR = 1.3; // the scale of the star of the next step of the story (#62)
   let starPulse = null;
   const pulseOf = (m) => (starPulse && m.id === starPulse.id ? 1 + 0.6 * Math.sin((Math.PI * starPulse.t) / STAR_PULSE) : 1);
   // The boxes of the controls (the stick and the buttons) on the screen, and of the hero: the marks
@@ -1454,7 +1481,10 @@ export async function mountVillage(ctx, params = {}) {
         // The box of the star with its bob, so that a bubble does not jump from side to side.
         const box = starBox(at);
         marks.push({ ...box, y0: box.y0 - 4, y1: box.y1 + 4 });
-        el.style.transform = `translate(${at.x - 15}px, ${at.y - 30 + bob}px) scale(${pulseOf(m)})`;
+        setFace(el, m.who);
+        // The star of the next step of the story is bigger than the others (#62).
+        el.classList.toggle('main', Boolean(m.main));
+        el.style.transform = `translate(${at.x - STAR / 2}px, ${at.y - STAR + bob}px) scale(${pulseOf(m) * (m.main ? MAIN_STAR : 1)})`;
         continue;
       }
       // Targets in about the same direction share one arrow.
@@ -1465,7 +1495,8 @@ export async function mountVillage(ctx, params = {}) {
       const pulse = Math.sin(time * 5) * 3;
       const at = placeArrow(edge, { controls });
       marks.push({ x0: at.x - 22, y0: at.y - 22, x1: at.x + 22, y1: at.y + 22 });
-      el.style.transform = `translate(${at.x}px, ${at.y}px) rotate(${edge.angle}rad) translate(${-22 + pulse}px, 0) scale(${pulseOf(m)})`;
+      setFace(el, m.who);
+      el.style.transform = `translate(${at.x}px, ${at.y}px) rotate(${edge.angle}rad) translate(${-22 + pulse}px, 0) scale(${pulseOf(m) * (m.main ? MAIN_STAR : 1)})`;
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
     }
     for (let i = stars; i < starPool.length; i++) starPool[i].hidden = true;
