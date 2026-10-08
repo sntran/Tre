@@ -553,3 +553,7 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The names of the people of the small events:** `npc.carter.name` ("Bác đánh xe"), `npc.farmer.name` ("Chú nông dân"), and `npc.seller.name` ("Cô bán hàng"). Before, the box of the talk showed the key.
 - **The end of the chapter:** `chapter.end.title` ("Hết chương {n}: Thánh Gióng", with the number of the region on the map of the country, 3) and `chapter.end.next` ("Em đi theo ngôi sao để về làng Phù Đổng. Thầy giáo đang chờ em.": the map has no travel, so the line names only the star).
 - **Please check:** "chương 3" for the first chapter that a child plays: the chapters of the map follow the order of history, and the first two regions are not open yet.
+
+## The parent area: Vietnamese words, real names, and true reasons (#58)
+
+- **The names of the work of the story:** `parent.act.trial-horse` ("Ngựa sắt"), `parent.act.trial-rice` ("Cơm cho Gióng"), `parent.act.trial-staffs` ("Gậy tre"), and `parent.act.trial-share` ("Chia bao gạo"). Before, the parent area showed the keys.

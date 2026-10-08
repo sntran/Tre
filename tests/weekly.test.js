@@ -4,8 +4,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { weeklyNote, medianOf, signsOf, actSentences, checkSentence, MAX_LINES } from '../src/core/weekly.js';
-import { rollupEvents, weekOf, summarize, createLog, logEvent, extraFields, DAY_MS } from '../src/core/learnlog.js';
+import { weeklyNote, medianOf, signsOf, actSentences, checkSentence, MAX_LINES, titleOf } from '../src/core/weekly.js';
+import { rollupEvents, weekOf, summarize, createLog, logEvent, extraFields, DAY_MS, activityOf } from '../src/core/learnlog.js';
 import { createI18n } from '../src/core/i18n.js';
 import { namesOf } from '../src/core/naming.js';
 import { load } from './helpers.js';
@@ -191,4 +191,17 @@ test('the shared summary has the weeks, rounded, with no name', () => {
   assert.ok(s.rollups.base.weeks[W].acts['mua-trong']);
   assert.deepEqual(extraFields(s, schema.summary), []);
   assert.ok(!JSON.stringify(s).includes('Nam'));
+});
+
+test('each activity of the log has a name in the two languages: the trials of the story too (#58)', () => {
+  const vi = load('i18n/vi.json');
+  const en = load('i18n/en.json');
+  const practice = load('data/world/practice.json');
+  const { activities } = load('data/config/learnlog.json');
+  const ids = new Set(Object.entries(activities).filter(([k]) => k !== '_about').map(([, v]) => v));
+  // The tasks of the trials (the iron horse, the rice for Gióng, the staffs: parent.act.trial-horse
+  // showed as a key, #58).
+  for (const tr of load('data/trials.json').trials) ids.add(activityOf(`trial-${tr.id}`, activities));
+  const missing = [...ids].map((id) => titleOf(practice, id)).filter((key) => !vi[key] || !en[key]);
+  assert.deepEqual(missing, []);
 });
