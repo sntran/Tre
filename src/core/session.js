@@ -2394,6 +2394,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // No nearer (a river, or the end of a sandbar): the whole way to the landing of a ferry, once.
       const landing = goal === final ? landingToward(here, from, final) : null;
       if (!landing) return false;
+      // Part of the way (to the end of the made land): then the walk looks again from there, or
+      // waits for the land when it is at that end already.
+      if (landing.part) {
+        if (landing.way.length) walkPath(landing.way, null, () => walkFar(goal, final));
+        else if (waits < FAR_WAITS) waitFar(() => walkFar(goal, final, waits + 1));
+        else return false;
+        return true;
+      }
       walkPath(landing.way, null, () => walkFar(landing.at, final));
       return true;
     }
@@ -2456,6 +2464,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const s of near.slice(0, 3)) {
       const way = findPath(paths, from, { x: Math.floor(s.at.x), y: Math.floor(s.at.y) }, { maxNodes: LANDING_SEARCH });
       if (way?.length) return { at: s.at, way };
+    }
+    // No way in the land that is made: a way that goes through the land that is not made yet (the
+    // chunks come a little later in the browser). The walk goes to the last cell of the made land
+    // on it, and then looks again (#56: at the end of the sandbar of the Red River, three taps did
+    // nothing until the land to the east came).
+    const open = Object.assign(Object.create(paths), { inside: () => true, walkable: (x, y) => !tileMap.inside(x, y) || paths.walkable(x, y), canStep: (ax, ay, bx, by) => !tileMap.inside(ax, ay) || !tileMap.inside(bx, by) || tileMap.canStep(ax, ay, bx, by) });
+    for (const s of near.slice(0, 3)) {
+      const way = findPath(open, from, { x: Math.floor(s.at.x), y: Math.floor(s.at.y) }, { maxNodes: LANDING_SEARCH });
+      const cut = way ? way.findIndex((c) => !tileMap.inside(c.x, c.y)) : -1;
+      if (cut > 0) return { at: s.at, way: way.slice(0, cut), part: true };
+      if (cut === 0) return { at: s.at, way: [], part: true };
     }
     return null;
   }

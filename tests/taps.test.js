@@ -492,3 +492,47 @@ test('one tap on a far star walks on when the land ahead comes later (#56)', asy
   }
   assert.ok(heroCell(session).y > line + 10, `the hero walks past the line ${line}: ${JSON.stringify(heroCell(session))}`);
 });
+
+// At the end of the sandbar of the Red River, the way to the ferry goes through land that is not
+// made yet (#56: in the browser, three taps on the star did nothing until the land to the east
+// came). The walk goes on the made land toward the ferry, and on when the land comes.
+test('at the end of the sandbar, a tap on the star walks toward the ferry also when the land on the way comes later (#56)', async () => {
+  const [gx, gy] = data.world.at('road-thanglong', 0.6, 40);
+  let session = null;
+  const flags = { 'intro.seen': true, 'prologue.started': true, 'prologue.done': true, 'giong.spoke': true, 'giong.grown': true, 'soldier1.won': true, 'soldier2.won': true, 'era1.boss.won': true, 'giong.farewell': true };
+  const s = { name: 'sandbar', profile: { name: 'An', grade: 2, seed: 7, flags }, clock: 540, at: ['soc-son', 38, 20], steps: [] };
+  await runHeadless(s, { onSession: (x) => { session = x; } });
+  // The land east of the sandbar comes 20 seconds after the hero is at its end.
+  const tm = session.tileMap;
+  const { inside, walkable, isBlocked } = tm;
+  let at = null;
+  let time = 0;
+  const late = (x, y) => x > 9126 && y > 6150 && y < 6330 && !(at !== null && time > at + 20);
+  Object.assign(tm, {
+    inside: (x, y) => !late(x, y) && inside(x, y),
+    walkable: (x, y) => !late(x, y) && walkable(x, y),
+    isBlocked: (x, y) => late(x, y) || isBlocked(x, y),
+  });
+  let ferried = false;
+  session.listen((ev) => {
+    if (ev.type === 'ferried') ferried = true;
+  });
+  const tap = () => session.command({ type: 'tap', target: { ground: { x: gx, y: gy, h: 3, thing: false, object: null, goal: true } } });
+  let taps = 0;
+  for (let k = 0; k < 30 * 60 * 6 && !ferried; k++) {
+    time = k / 30;
+    const c = heroCell(session);
+    if (at === null && Math.hypot(c.x - 9113.5, c.y - 6235.5) < 3) at = time;
+    if (session.screen === 'dialogue' || session.screen === 'say') session.command({ type: 'next' });
+    else if (session.screen) session.command({ type: 'close' });
+    // One tap on the star: the walk goes on by itself.
+    if (k === 30) {
+      tap();
+      taps += 1;
+    }
+    session.step();
+    session.events();
+  }
+  assert.ok(at !== null, 'the walk comes to the end of the sandbar');
+  assert.ok(ferried, `the hero crosses on the ferry: ${JSON.stringify(heroCell(session))}, ${taps} taps`);
+});
