@@ -45,7 +45,12 @@
 //   { "check": "expr" }          a JavaScript expression on window.tre that must be true
 //   { ..., "if": "expr" }        any step: it runs only when the expression is true
 //   { "print": "expr" }          the value of a JavaScript expression on window.tre, in the output
+//   { "light": "name", "at": { "place": "mat" }, "size": 140 } the mean lightness (0 to 1) of a
+//                                square of the screen around a target (#65), kept under its name
+//   { "lightRatio": ["night", "day"], "min": 0.8 } the lightness of the first over the second must be
+//                                at least min (#65: the work at night is as clear as in the day)
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { inflateSync } from 'node:zlib';
 import { createRequire } from 'node:module';
 
 const args = process.argv.slice(2);
@@ -187,6 +192,49 @@ let shots = 0;
 // portrait that stays empty (a canvas of 1 × 1, #59) is a problem of the step.
 const emptyPortraits = () => page.evaluate(() => [...document.querySelectorAll('canvas.portrait-img')]
   .filter((c) => c.width <= 1 && c.getBoundingClientRect().width > 0 && c.checkVisibility?.() !== false).length);
+// The mean lightness (0 to 1, the mean of the red, green, and blue) of a PNG of the screen: an
+// 8-bit RGB or RGBA image, with the filters of each row undone.
+function meanLight(png) {
+  let pos = 8;
+  let w = 0;
+  let h = 0;
+  let bpp = 4;
+  const data = [];
+  while (pos < png.length) {
+    const len = png.readUInt32BE(pos);
+    const type = png.toString('ascii', pos + 4, pos + 8);
+    const body = png.subarray(pos + 8, pos + 8 + len);
+    if (type === 'IHDR') {
+      w = body.readUInt32BE(0);
+      h = body.readUInt32BE(4);
+      bpp = body[9] === 2 ? 3 : 4;
+    } else if (type === 'IDAT') data.push(body);
+    pos += 12 + len;
+  }
+  const raw = inflateSync(Buffer.concat(data));
+  const stride = w * bpp;
+  const prev = new Uint8Array(stride);
+  const row = new Uint8Array(stride);
+  let sum = 0;
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (stride + 1)];
+    for (let x = 0; x < stride; x++) {
+      const v = raw[y * (stride + 1) + 1 + x];
+      const a = x >= bpp ? row[x - bpp] : 0;
+      const b = prev[x];
+      const c = x >= bpp ? prev[x - bpp] : 0;
+      const pa = Math.abs(b - c);
+      const pb = Math.abs(a - c);
+      const pc = Math.abs(a + b - 2 * c);
+      const pred = f === 1 ? a : f === 2 ? b : f === 3 ? (a + b) >> 1 : f === 4 ? (pa <= pb && pa <= pc ? a : pb <= pc ? b : c) : 0;
+      row[x] = (v + pred) & 255;
+    }
+    for (let x = 0; x < w; x++) sum += (row[x * bpp] + row[x * bpp + 1] + row[x * bpp + 2]) / 3;
+    prev.set(row);
+  }
+  return sum / (w * h * 255);
+}
+const lights = {};
 async function shot(i, name) {
   for (let k = 0; k < 12 && (await emptyPortraits()) > 0; k++) await sleep(0.5);
   const empty = await emptyPortraits();
@@ -430,6 +478,21 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
       await sleep(0.5);
     }
     if (!ok) problems.push(`step ${i}: ${s.until} did not come true in ${Math.round((Date.now() - t0) / 1000)} seconds${error ? ` (${error})` : ''}`);
+  } else if (s.light) {
+    const p = await pointOf(s.at);
+    const size = s.size ?? 140;
+    if (!p) problems.push(`step ${i}: nothing on the screen for the light of ${JSON.stringify(s.at)}`);
+    else {
+      const x = Math.max(0, Math.min(width - size, p[0] - size / 2));
+      const y = Math.max(0, Math.min(height - size, p[1] - size / 2));
+      lights[s.light] = meanLight(await page.screenshot({ type: 'png', clip: { x, y, width: size, height: size } }));
+      console.log(`step ${i}: the light of ${s.light} = ${lights[s.light].toFixed(3)}`);
+    }
+  } else if (s.lightRatio) {
+    const [a, b] = s.lightRatio;
+    const k = lights[a] / lights[b];
+    console.log(`step ${i}: the light of ${a} over ${b} = ${Number.isFinite(k) ? k.toFixed(3) : k}`);
+    if (!(k >= (s.min ?? 0.8))) problems.push(`step ${i}: the light of ${a} is ${Number.isFinite(k) ? Math.round(k * 100) : '?'}% of ${b}, less than ${Math.round((s.min ?? 0.8) * 100)}%`);
   } else if (s.print) {
     const v = await page.evaluate((expr) => JSON.stringify(new Function('tre', `return (${expr});`)(window.tre)), s.print).catch((e) => `error ${e.message}`);
     console.log(`step ${i}: ${s.print} = ${v}`);
@@ -453,7 +516,7 @@ const allowed = (p) => (plan.allow ?? []).some((a) => p.includes(a));
 const known = problems.filter(allowed);
 problems.splice(0, problems.length, ...problems.filter((p) => !allowed(p)));
 for (const p of known) console.log(`known: ${p}`);
-writeFileSync(`${out}/play.json`, JSON.stringify({ plan: args[0], problems, log }, null, 2));
+writeFileSync(`${out}/play.json`, JSON.stringify({ plan: args[0], problems, log, lights }, null, 2));
 for (const p of problems) console.log(p);
 console.log(`${plan.steps?.length ?? 0} steps, ${shots} frames in ${out}, ${problems.length} problems`);
 await browser.close();
