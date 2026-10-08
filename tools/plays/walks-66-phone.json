@@ -1,0 +1,471 @@
+{
+ "about": "#66: presses and taps go only where the child chose. The fisher: presses up to the float and more presses at the end of the row stay at the row (not the bridge). A new game: a tap on the calf that grandma names closes the talk box and chooses the calf; a press during the walk to grandma opens her talk. The bridge starts with a short talk, each new word with its thing, and after the guess a line says what comes next. On the calf next to the scouts, one press gets down and talks. At night: the fisher again.",
+ "start": "?practice=cam-coc",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "create": "Su"
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'fish:fisher')) || tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done",
+   "timeout": 700
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify([JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z]), Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').position.z)])"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify([JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z]), Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').position.z)])"
+  },
+  {
+   "check": "Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').position.z) > 30"
+  },
+  {
+   "shot": "fisher-presses-at-the-end-of-the-row-stay"
+  },
+  {
+   "goto": "",
+   "after": 2
+  },
+  {
+   "wait": 3
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "click": "Bình",
+   "if": "[...document.querySelectorAll('button')].some((b) => b.offsetParent && b.textContent.trim() === 'Bình')"
+  },
+  {
+   "click": "Tiếp"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "create": "Bin"
+  },
+  {
+   "read": 3
+  },
+  {
+   "read": 4
+  },
+  {
+   "click": "Chào nghé con",
+   "if": "[...document.querySelectorAll('button')].some((b) => b.offsetParent && b.textContent.includes('Chào nghé con'))",
+   "after": 1.5
+  },
+  {
+   "click": "Đồng ý",
+   "if": "Boolean(document.querySelector('.name-input'))",
+   "after": 1
+  },
+  {
+   "read": 1,
+   "if": "Boolean(document.querySelector('.dialogue-layer')) && !document.querySelector('.dialogue-layer').textContent.includes('cưỡi')"
+  },
+  {
+   "read": 1,
+   "if": "Boolean(document.querySelector('.dialogue-layer')) && !document.querySelector('.dialogue-layer').textContent.includes('cưỡi')"
+  },
+  {
+   "read": 1,
+   "if": "Boolean(document.querySelector('.dialogue-layer')) && !document.querySelector('.dialogue-layer').textContent.includes('cưỡi')"
+  },
+  {
+   "read": 1,
+   "if": "Boolean(document.querySelector('.dialogue-layer')) && !document.querySelector('.dialogue-layer').textContent.includes('cưỡi')"
+  },
+  {
+   "until": "document.querySelector('.dialogue-layer')?.textContent.includes('cưỡi')",
+   "timeout": 120
+  },
+  {
+   "shot": "grandma-asks-for-a-tap-on-the-calf"
+  },
+  {
+   "tap": {
+    "thing": "friend:nghe"
+   },
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify([Boolean(document.querySelector('.dialogue-layer')), document.querySelector('.act-btn img.btn-icon')?.getAttribute('src')])"
+  },
+  {
+   "check": "!document.querySelector('.dialogue-layer')"
+  },
+  {
+   "shot": "the-tap-closes-the-box-and-chooses-the-calf"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "check": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.riding)"
+  },
+  {
+   "tap": {
+    "person": "grandma"
+   },
+   "after": 0.4
+  },
+  {
+   "press": true,
+   "after": 0.2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify([Boolean(document.querySelector('.dialogue-layer')), Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.riding)])"
+  },
+  {
+   "check": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "shot": "a-press-during-the-walk-opens-the-talk"
+  },
+  {
+   "read": 15
+  },
+  {
+   "goto": "?story=bridge",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "bridge-talk-the-gap"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "bridge-talk-the-planks"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "bridge-talk-the-guess"
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "!document.querySelector('.dialogue-layer')",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.session.screen, tre.activeVillage.session.action()?.act])"
+  },
+  {
+   "tap": {
+    "thing": "guess:bridge-gap:3"
+   },
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.some((e) => e.id === 'guess:bridge-gap:3')"
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "after-the-guess-the-next-step"
+  },
+  {
+   "goto": "?story=raid-scouts",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thing": "friend:nghe"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "print": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.riding)"
+  },
+  {
+   "tap": {
+    "thing": "encounter:scouts"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "on-the-calf-next-to-the-scouts"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "print": "JSON.stringify([Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.riding), Boolean(document.querySelector('.dialogue-layer'))])"
+  },
+  {
+   "check": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "shot": "one-press-gets-down-and-talks"
+  },
+  {
+   "read": 12
+  },
+  {
+   "goto": "?story=trial-fisher&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify([JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z]), Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').position.z)])"
+  },
+  {
+   "check": "Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').position.z) > 30"
+  },
+  {
+   "shot": "night-fisher-presses-stay-at-the-row"
+  }
+ ]
+}
