@@ -357,6 +357,7 @@ export async function mountVillage(ctx, params = {}) {
   for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actBtn.addEventListener(ev, actUp);
   // The picture of the button follows the hands and the task in reach.
   let actWait = 0;
+  const thingPics = new Map(); // the look of a thing in the hands -> its picture
   function updateAction(dt) {
     actWait -= dt;
     if (actWait > 0) return;
@@ -370,7 +371,10 @@ export async function mountVillage(ctx, params = {}) {
     if (carry !== actCarry) {
       actCarry = carry;
       actThing.hidden = !carry;
-      actThing.replaceChildren(...(carry ? [portraitCanvas(ctx, lookOfKey(carry), { framing: 'full', size: 34, cls: 'act-thing-pic' })] : []));
+      // The picture of a kind of thing is made one time and kept, so that it does not blink (#60).
+      const key = carry ? lookOfKey(carry) : null;
+      if (key && !thingPics.has(key)) thingPics.set(key, portraitCanvas(ctx, key, { framing: 'full', size: 34, cls: 'act-thing-pic' }));
+      actThing.replaceChildren(...(key ? [thingPics.get(key)] : []));
     }
     // The target has a thicker outline and a soft light; a thing on a line shows as a ghost.
     figures.mark(a?.target ?? null, a?.spot ?? null, a?.ghost ?? null);
@@ -434,25 +438,53 @@ export async function mountVillage(ctx, params = {}) {
     // The work of a trial counts as things too (the bundles of the teacher, #48).
     const work = session.workCount();
     const count = work ?? (goal?.progress && goal.step.pip ? { pip: goal.step.pip, ...goal.progress } : null);
-    const pips = count
-      ? [h('span', { class: 'goal-pips', 'aria-hidden': 'true' }, Array.from({ length: count.need }, (_, i) => h('i', { class: `pip pip-${count.pip}${i < count.have ? ' on' : ''}` })))]
-      : [];
-    goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), h('span', { class: 'goal-text', text: tn(goalKey, goalParams) }), ...pips);
+    // The nodes of the HUD are made one time. An update changes only a text, the class of a pip,
+    // and the picture of an image that is different, so that no picture blinks while it loads (#60).
+    setText(goalText, tn(goalKey, goalParams));
+    const pipKey = count ? `${count.pip}:${count.need}` : '';
+    if (goalPips.dataset.key !== pipKey) {
+      goalPips.dataset.key = pipKey;
+      goalPips.replaceChildren(...(count ? Array.from({ length: count.need }, () => h('i', { class: `pip pip-${count.pip}` })) : []));
+      goalPips.hidden = !count;
+    }
+    if (count) [...goalPips.children].forEach((pip, i) => pip.classList.toggle('on', i < count.have));
     // A thing on its way to the basket is not in the count yet: the count ticks up when it lands.
     // The counter of rice is the basket of the household (#26): a tap opens it.
-    counts.replaceChildren(...data.items.hud.map((item) => {
-      const basket = item === BASKET;
+    for (const item of data.items.hud) {
+      const c = countNode(item);
+      setText(c.n, String((profile.inventory[item] ?? 0) - (flying[item] ?? 0)));
       // The other goods in the basket (the eggs of the market, the fish of the river) show as small
       // pictures on the basket, so that the child sees them and opens the basket (#57).
-      const others = basket ? data.items.basket.filter((id) => id !== item && (profile.inventory[id] ?? 0) - (flying[id] ?? 0) > 0) : [];
-      const el = h(basket ? 'button' : 'span', { class: `count${basket ? ' basket' : ''}`, dataset: { item }, ...(basket ? { type: 'button', 'aria-label': t('basket.title') } : {}) }, [
-        img(basket ? data.items.basketArt : data.items.items[item].art, 'count-icon'),
-        h('span', { text: String((profile.inventory[item] ?? 0) - (flying[item] ?? 0)) }),
-        ...others.slice(0, 3).map((id) => img(data.items.items[id].art, 'count-extra')),
-      ]);
-      if (basket) el.addEventListener('click', openBasket);
-      return el;
-    }));
+      const others = item === BASKET ? data.items.basket.filter((id) => id !== item && (profile.inventory[id] ?? 0) - (flying[id] ?? 0) > 0) : [];
+      c.extras.forEach((pic, i) => {
+        const id = others[i];
+        pic.hidden = !id;
+        if (id) setArt(pic, data.items.items[id].art);
+      });
+    }
+  }
+  const setText = (el, text) => { if (el.textContent !== text) el.textContent = text; };
+  // The picture of an image, only when it is different (a new src loads, and shows empty a moment).
+  const setArt = (el, art) => { if (el.dataset.art !== art) { el.dataset.art = art; el.src = `art/${art}.svg`; } };
+  const goalText = h('span', { class: 'goal-text' });
+  const goalPips = h('span', { class: 'goal-pips', 'aria-hidden': 'true', hidden: true });
+  goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), goalText, goalPips);
+  const countNodes = new Map();
+  function countNode(item) {
+    if (countNodes.has(item)) return countNodes.get(item);
+    const basket = item === BASKET;
+    const n = h('span');
+    const extras = basket ? [0, 1, 2].map(() => h('img', { class: 'count-extra', alt: '', draggable: 'false', hidden: true })) : [];
+    const el = h(basket ? 'button' : 'span', { class: `count${basket ? ' basket' : ''}`, dataset: { item }, ...(basket ? { type: 'button', 'aria-label': t('basket.title') } : {}) }, [
+      img(basket ? data.items.basketArt : data.items.items[item].art, 'count-icon'),
+      n,
+      ...extras,
+    ]);
+    if (basket) el.addEventListener('click', openBasket);
+    counts.append(el);
+    const c = { el, n, extras };
+    countNodes.set(item, c);
+    return c;
   }
   goalBtn.addEventListener('click', () => speak(goalKey, goalParams, { force: true }));
   // The basket of the household: all the goods of barter, with the count of each (#26).
