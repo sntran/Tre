@@ -1,5 +1,5 @@
 {
- "about": "#8 in English: the notebook from the menu and the country map from the minimap.",
+ "about": "#8 in English: the notebook from the menu, the country map from the minimap, and a tap on a lock of the map.",
  "start": "?story=trial-fisher",
  "lang": "en",
  "steps": [
@@ -42,6 +42,16 @@
   },
   {
    "shot": "en-country-map"
+  },
+  {
+   "button": ".map-seal.locked",
+   "after": 1.5
+  },
+  {
+   "shot": "en-a-locked-region"
+  },
+  {
+   "print": "[...document.querySelectorAll('.region-info p, .region-info h3')].map((e) => e.textContent)"
   }
  ]
 }
