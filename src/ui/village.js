@@ -585,8 +585,11 @@ export async function mountVillage(ctx, params = {}) {
   let bookScreen = null;
   function openScreen(ev) {
     if (ev.screen === 'dialogue' || ev.screen === 'say') {
-      // A line in the box is a new line of its speaker: the lines of the other people go.
+      // A line in the box is a new line of its speaker: the lines of the other people go, and so
+      // does the last bubble of the speaker (#62: a hint of the smith stayed over his done talk).
       talkOver(`npc:${ev.speaker}`);
+      for (const b of bubbles.filter((x) => x.id === `npc:${ev.speaker}` && !x.icon)) b.el.remove();
+      bubbles = bubbles.filter((x) => x.id !== `npc:${ev.speaker}` || x.icon);
       box ??= createDialogueBox(ctx, { next: () => send({ type: 'next' }), choose: (n) => send({ type: 'choose', n }) });
       box.show(ev);
       return;
