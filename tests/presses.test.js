@@ -277,3 +277,61 @@ test('the teacher: after a tie of 11 rods, the teacher counts to eleven and only
   assert.deepEqual(counts.slice(0, 11), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], `the teacher counts aloud: ${counts.join(' ')}`);
   assert.equal(mat(), 10, 'the rod over ten went back to the heap');
 });
+
+// One press, one rod (#61): with the heap and the mat in reach, a press takes one rod from the heap
+// and puts it on the mat in one move. After the first step of the teacher, 10 presses and one tie
+// make one bundle.
+test('the teacher: 10 presses put 10 rods on the mat, and one tie makes a bundle', async () => {
+  const session = await afterTalk('trial-scholar');
+  const mat = () => zone(session, 'mat');
+  run(session, 8);
+  const hero = getEntity(session.state, 'hero').position;
+  const r = mat().rect;
+  Object.assign(hero, { x: (r.x0 + r.x1) / 2, z: r.z0 - 2 });
+  for (let k = 0; k < 10; k++) {
+    session.command({ type: 'hands' });
+    session.events();
+    run(session, 1.2);
+  }
+  assert.equal(mat().items.length, 10, `10 presses, 10 rods: ${mat().items.length}`);
+  assert.equal(session.carried(), null, 'no rod stays in the hands');
+  tapAndPress(session, { person: 'npc:teacher' });
+  assert.equal(mat().tied, 1, 'one bundle');
+});
+
+// The first step of the healer and the presses of the child at the same time (#61). The bunch of
+// the example is the healer's until she takes it back: a tap on it and a press never take it. And
+// a bunch that the child put first stays in the basket: the step never puts it again and never
+// takes it back.
+test('the healer: the child never takes the bunch of the example, and the example never takes a bunch of the child', async () => {
+  const one = await afterTalk('trial-healer');
+  const basket = (q) => zone(q, 'basket').items;
+  for (let i = 0; i < 30 * 6 && !basket(one).length; i++) { one.step(); one.events(); }
+  const shown = basket(one)[0];
+  assert.ok(shown, 'the healer puts a bunch in the basket');
+  const b = getEntity(one.state, 'zone:basket').position;
+  Object.assign(getEntity(one.state, 'hero').position, { x: b.x, z: b.z + 2 });
+  one.command({ type: 'tap', target: { thing: shown } });
+  one.events();
+  run(one, 0.3);
+  one.command({ type: 'hands' });
+  one.events();
+  assert.equal(one.carried(), null, 'the press does not take the bunch of the example');
+  run(one, 4);
+  assert.ok(!basket(one).includes(shown), 'the healer took her bunch back');
+  assert.ok(zone(one, getEntity(one.state, shown).item.zone).rule === 'heap', 'her bunch is on its bed');
+
+  const two = await afterTalk('trial-healer');
+  const withPut = () => two.state.entities.find((e) => e.script?.steps.some((st) => st.put));
+  for (let i = 0; i < 30 * 3 && !withPut(); i++) { two.step(); two.events(); }
+  const script = withPut();
+  const id = script.script.steps.find((st) => st.put).put.item;
+  // The child puts that bunch in the basket before the healer does.
+  const thing = getEntity(two.state, id);
+  const bed = zone(two, thing.item.zone);
+  bed.items.splice(bed.items.indexOf(id), 1);
+  basket(two).push(id);
+  thing.item.zone = 'basket';
+  run(two, 8);
+  assert.deepEqual(basket(two), [id], 'the bunch of the child stays in the basket');
+});

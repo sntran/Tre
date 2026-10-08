@@ -69,17 +69,6 @@
         },
         {
           "until": {
-            "event": "pick",
-            "timeout": 15
-          }
-        },
-        {
-          "press": {
-            "screenOf": "basket"
-          }
-        },
-        {
-          "until": {
             "event": "put",
             "timeout": 15
           }
@@ -96,17 +85,6 @@
         },
         {
           "until": {
-            "event": "pick",
-            "timeout": 15
-          }
-        },
-        {
-          "press": {
-            "screenOf": "basket"
-          }
-        },
-        {
-          "until": {
             "event": "put",
             "timeout": 15
           }
@@ -119,17 +97,6 @@
         {
           "press": {
             "item": "herb-rauma"
-          }
-        },
-        {
-          "until": {
-            "event": "pick",
-            "timeout": 15
-          }
-        },
-        {
-          "press": {
-            "screenOf": "basket"
           }
         },
         {
@@ -191,17 +158,6 @@
         },
         {
           "until": {
-            "event": "pick",
-            "timeout": 15
-          }
-        },
-        {
-          "press": {
-            "screenOf": "basket"
-          }
-        },
-        {
-          "until": {
             "event": "put",
             "timeout": 15
           }
@@ -218,17 +174,6 @@
         },
         {
           "until": {
-            "event": "pick",
-            "timeout": 15
-          }
-        },
-        {
-          "press": {
-            "screenOf": "basket"
-          }
-        },
-        {
-          "until": {
             "event": "put",
             "timeout": 15
           }
@@ -241,17 +186,6 @@
         {
           "press": {
             "item": "herb-rauma"
-          }
-        },
-        {
-          "until": {
-            "event": "pick",
-            "timeout": 15
-          }
-        },
-        {
-          "press": {
-            "screenOf": "basket"
           }
         },
         {

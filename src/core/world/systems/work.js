@@ -471,6 +471,9 @@ export function freeSlot(world, zone, at = null) {
 // move; the stakes on the line wait for the tide while the tide is in.
 export function canTakeWork(world, thing) {
   if (thing.item.fixed || thing.item.set) return false;
+  // The thing of an example that a person shows (the first step) is the person's until the person
+  // takes it back: a press of the child during the example never takes it (#61).
+  if (query(world, 'script').some((e) => e.script.put?.includes(thing.id))) return false;
   if (thing.item.zone === 'forge') return false;
   if (thing.item.task === 'trial-share' && trialZone(world, 'share')?.zone.leave !== null) return false;
   if (thing.item.zone === 'hearth') return trialZone(world, 'horse')?.zone.heat === null;

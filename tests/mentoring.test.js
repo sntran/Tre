@@ -54,7 +54,7 @@ test('a check at the place, then a change before the commit, is a self-correctio
 });
 
 test('a raise never makes the round in progress bigger: the heap and the goal stay, and the next round is bigger', async () => {
-  const bundle = { repeat: 10, steps: [{ press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }, { press: { zone: 'mat' } }, { until: { event: 'put', timeout: 10 } }] };
+  const bundle = { repeat: 10, steps: [{ press: { item: 'rod' } }, { until: { event: 'put', timeout: 10 } }] };
   const tie = [{ press: { entity: 'npc:teacher' } }, { until: { event: 'tie', timeout: 10 } }];
   const failures = await runHeadless({
     name: 'x', about: { vi: '-', en: '-' }, practice: 'bo-que',

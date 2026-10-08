@@ -85,17 +85,6 @@
             },
             {
               "until": {
-                "event": "pick",
-                "timeout": 10
-              }
-            },
-            {
-              "press": {
-                "screenOf": "mat"
-              }
-            },
-            {
-              "until": {
                 "event": "put",
                 "timeout": 10
               }
@@ -166,17 +155,6 @@
             {
               "press": {
                 "item": "rod"
-              }
-            },
-            {
-              "until": {
-                "event": "pick",
-                "timeout": 10
-              }
-            },
-            {
-              "press": {
-                "screenOf": "mat"
               }
             },
             {

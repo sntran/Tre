@@ -115,7 +115,9 @@ test('a pick-up flies from the ground to the hands, and a put-down flies back to
 });
 
 test('the action button knows the thing in the hands, and nothing when the hands are empty', async () => {
-  const story = JSON.parse(readFileSync(new URL('./stories/practice-bo-que.json', import.meta.url), 'utf8'));
+  // The story with a rod taken back from the mat into the hands (one press at the heap puts a rod
+  // on the mat at once, #61).
+  const story = JSON.parse(readFileSync(new URL('./stories/trial-teacher-button.json', import.meta.url), 'utf8'));
   let session = null;
   const seen = [];
   const failures = await runHeadless(story, {

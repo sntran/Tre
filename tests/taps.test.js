@@ -143,23 +143,25 @@ test('next to a thing with a find, the big button looks at it: the ore gives iro
   assert.ok(profile.inventory.iron > 0, 'the iron is in the basket');
 });
 
-test('a rod taken at the heap goes on the mat at once, also when the hero still faces the heap', async () => {
+// A rod in the hands: one press at the heap puts a rod on the mat (#61), and a tap on that rod and a
+// press take it back into the hands.
+const rodInHands = (s) => [...s.steps.slice(0, 5), { press: { item: 'rod' } }, { until: { event: 'put', timeout: 10 } }, { press: { on: 'mat' } }, { until: { event: 'pick', timeout: 10 } }];
+
+test('a rod in the hands at the mat has a put on a place, never on the ground', async () => {
   const s = story('practice-bo-que');
-  // Up to the first pick-up at the heap.
-  s.steps = [...s.steps.slice(0, 5), { press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }];
+  s.steps = rodInHands(s);
   let session = null;
   await runHeadless(s, { onSession: (x) => { session = x; } });
   steps(session, 0.5);
   assert.ok(session.carried(), 'a rod is in the hands');
   const a = session.action();
   assert.equal(a.act, 'put');
-  assert.ok(a.target !== getEntity(session.state, 'hero').hands.holds, 'not on the ground');
-  assert.notEqual(a.target, 'zone:teacher-rods', 'not back on the heap');
+  assert.ok(['zone:mat', 'zone:rods'].includes(a.target), `on the mat or the heap, not on the ground: ${a.target}`);
 });
 
 test('a thing of a task left on the ground goes back to its heap after a few seconds', async () => {
   const s = story('practice-bo-que');
-  s.steps = [...s.steps.slice(0, 5), { press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }];
+  s.steps = rodInHands(s);
   let session = null;
   await runHeadless(s, { onSession: (x) => { session = x; } });
   steps(session, 0.5);
@@ -203,13 +205,11 @@ test('the cue of a heap is one rim around the heap, and no ring over each thing 
 
 test('the next press never takes back what the child just put: three more presses at the mat leave the rod there', async () => {
   const s = story('practice-bo-que');
-  s.steps = [...s.steps.slice(0, 5), { press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }];
+  s.steps = [...s.steps.slice(0, 5), { press: { item: 'rod' } }, { until: { event: 'put', timeout: 10 } }];
   let session = null;
   await runHeadless(s, { onSession: (x) => { session = x; } });
   steps(session, 0.5);
   const mat = () => getEntity(session.state, 'zone:mat').zone.items.length;
-  session.command({ type: 'hands' });
-  steps(session, 1);
   assert.equal(mat(), 1, 'the rod is on the mat');
   for (let k = 0; k < 3; k++) {
     const before = mat();
@@ -279,7 +279,7 @@ test('the fisher: a press while the tide is in keeps the stake in the hands, and
 
 test('after a put at the mat, a press with the teacher in front takes from the heap: no tie and no call for help without a tap on the teacher', async () => {
   const s = story('practice-bo-que');
-  s.steps = [...s.steps.slice(0, 5), { press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }, { press: { screenOf: 'mat' } }, { until: { event: 'put', timeout: 10 } }];
+  s.steps = [...s.steps.slice(0, 5), { press: { item: 'rod' } }, { until: { event: 'put', timeout: 10 } }];
   let session = null;
   await runHeadless(s, { onSession: (x) => { session = x; } });
   const hero = getEntity(session.state, 'hero');
@@ -288,7 +288,8 @@ test('after a put at the mat, a press with the teacher in front takes from the h
   // At the left edge of the mat, facing the teacher (the heap behind the hero).
   Object.assign(hero.position, { x: r.x0 + 1.5, z: (r.z0 + r.z1) / 2, facing: Math.atan2(teacher.x - r.x0 - 1.5, teacher.z - (r.z0 + r.z1) / 2) });
   steps(session, 0.1);
-  assert.equal(session.action()?.act, 'pick', JSON.stringify(session.action()));
+  // From the heap: a pick, or with the mat in reach the one-press put of a rod (#61).
+  assert.ok(['pick', 'put'].includes(session.action()?.act) && session.action()?.target !== 'npc:teacher', JSON.stringify(session.action()));
   // A tap on the teacher: now the press ties.
   session.command({ type: 'tap', target: { person: 'npc:teacher' } });
   steps(session, 3);

@@ -1789,6 +1789,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return null;
   }
 
+  // The place of a one-press move (#61): the mat of the teacher or the basket of the healer that
+  // takes the thing, when the hero stands in reach of it. Null: the press only picks.
+  const ONE_MOVE = new Set(['bundle', 'basket']);
+  function oneMovePlace(thing) {
+    const h = hero().position;
+    return query(state, 'zone').find((z) => ONE_MOVE.has(z.zone.rule) && z.zone.task === thing.item.task && canPut(z.zone, thing) && distHb(h, nearestPoint(z, h)) <= REACH + 2) ?? null;
+  }
   // The tasks where the child put a thing, and the last thing that the child took from a heap
   // ({ task, kind }).
   const childPut = new Set();
@@ -1808,7 +1815,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const basket = zoneOf('basket')?.zone;
     if (!basket) return lastPick.kind;
     const each = taskOf(trialDef('healer'), trialZone('healer').zone.level ?? 0).each;
-    const count = (kind) => basket.items.filter((id) => getEntity(state, id)?.item.kind === kind).length;
+    // The bunch of the example of the healer (the first step) is hers: it does not count (#61).
+    const example = new Set(query(state, 'script').flatMap((e) => e.script.put ?? []));
+    const count = (kind) => basket.items.filter((id) => !example.has(id) && getEntity(state, id)?.item.kind === kind).length;
     if (count(lastPick.kind) < each) return lastPick.kind;
     // '': the basket has enough of each kind, and a press takes no more.
     return basket.kinds.map((k) => `herb-${k}`).find((k) => count(k) < each) ?? '';
@@ -1988,7 +1997,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // picture that waits, #60).
         const like = (id) => { const x = getEntity(state, id)?.item; return x && x.kind === e.item.kind && x.size === e.item.size; };
         const keys = [e.id, ...(zone ? [zone.id, ...zone.zone.items.filter(like)] : [])];
-        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys, at: middleOf(e), size: (e.item.size ?? 0) / 2, rank: 1, work: openTask(e.item.task), run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
+        // One press, one thing (#61): with the mat of the teacher or the basket of the healer in
+        // reach too, the press takes one thing from the heap and puts it on the place, in one move,
+        // so that a child who counts the presses counts the things. Only with the thing in reach:
+        // out of reach, the press walks to the heap (a walk to the place never comes nearer to it).
+        const size = (e.item.size ?? 0) / 2;
+        const into = openTask(e.item.task) && distHb(hp, middleOf(e)) - size <= REACH ? oneMovePlace(e) : null;
+        if (into) {
+          const ghost = { look: e.look, x: into.position.x, y: into.position.y, z: into.position.z, facing: 0 };
+          add({ act: 'put', icon: 'hand-put', target: into.id, keys: [into.id, ...keys], at: middleOf(e), size, rank: 1, work: true, ghost, run: () => {
+            worldCommand(state, { type: 'pick', id: 'hero', item: e.id });
+            worldCommand(state, { type: 'put', id: 'hero', zone: into.zone.id });
+          } }, REACH);
+          continue;
+        }
+        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys, at: middleOf(e), size, rank: 1, work: openTask(e.item.task), run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
       }
       // Take back: the thing that the child tapped on a place (the opposite of a put), from where
       // the hero stands to put. Only after a tap on the thing itself, with the heap in reach or

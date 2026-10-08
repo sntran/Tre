@@ -16,27 +16,23 @@ const start = (npc) => [
   { read: true },
   { until: { event: 'call', with: { key: FIRST[npc] ?? 'mentor.first.you' }, timeout: 15 } },
 ];
-const carry = (item, zone) => [{ press: { item } }, { until: { event: 'pick', timeout: 15 } }, { press: { zone } }, { until: { event: 'put', timeout: 15 } }];
+// One press at the heap with the place in reach: one thing from the heap onto the place (#61).
+const move = (item) => [{ press: { item } }, { until: { event: 'put', timeout: 15 } }];
 
 async function play(name, at, steps) {
   const failures = await runHeadless({ name, profile, clock: 540, at: ['phu-dong', ...at], steps });
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
 }
 
-test('the teacher: the button picks up one rod at the heap and puts it on the mat; after a tap on a rod on the mat it takes it back; at the teacher, the teacher ties', async () => {
+test('the teacher: one press at the heap puts one rod on the mat; after a tap on a rod on the mat it takes it back; at the teacher, the teacher ties', async () => {
   await play('task-teacher', [54, 27], [
     ...start('teacher'),
     // The teacher showed the first step and took the rod back: the mat is empty.
     { expect: [{ zone: 'mat', planks: 0 }] },
+    // The mat is in reach of the heap: one press takes one rod and puts it on the mat (#61).
     { press: { thing: 'rod:scholar:2' } },
-    { until: { event: 'pick', timeout: 10 } },
-    { expect: [{ hero: { holding: true } }, { zone: 'mat', planks: 0 }] },
-    { tap: { zone: 'mat' } },
-    { wait: 2 },
-    { expect: [{ action: { act: 'put', icon: 'hand-put' } }] },
-    { press: true },
     { until: { event: 'put', timeout: 10 } },
-    { expect: [{ zone: 'mat', planks: 1 }, { hero: { holding: false } }, { action: { act: 'pick', icon: 'hand-pick' } }] },
+    { expect: [{ zone: 'mat', planks: 1 }, { hero: { holding: false } }, { action: { act: 'put', icon: 'hand-put' } }] },
     // A tap on the rod on the mat, and a press: the rod comes back into the hands (a press at the
     // mat with no tap on the rod takes from the heap, #47), and goes back on the heap.
     { press: { on: 'mat' } },
@@ -44,7 +40,8 @@ test('the teacher: the button picks up one rod at the heap and puts it on the ma
     { expect: [{ zone: 'mat', planks: 0 }, { hero: { holding: true } }] },
     { press: { zone: 'rods' } },
     { until: { event: 'put', timeout: 10 } },
-    ...carry('rod', 'mat'),
+    { expect: [{ zone: 'mat', planks: 0 }, { hero: { holding: false } }] },
+    ...move('rod'),
     { press: { entity: 'npc:teacher' } },
     { until: { event: 'snap', timeout: 10 } },
     { expect: [{ event: 'skill', with: { solved: false, parts: [1] } }, { event: 'pulse', with: { id: 'npc:teacher' } }] },
@@ -76,8 +73,8 @@ test('the healer: the button puts a bunch into the basket, takes one back after 
     ...start('healer'),
     // The healer showed the first step and took the bunch back: the basket is empty.
     { expect: [{ zone: 'basket', planks: 0 }] },
-    ...carry('herb-ngai', 'basket'),
-    ...carry('herb-ngai', 'basket'),
+    ...move('herb-ngai'),
+    ...move('herb-ngai'),
     { expect: [{ zone: 'basket', planks: 2 }, { hero: { holding: false } }] },
     // A tap on a bunch in the basket, and a press: the bunch comes back into the hands.
     { press: { on: 'basket' } },

@@ -1,8 +1,8 @@
 {
   "name": "trial-scholar",
   "about": {
-    "vi": "Thử thách của thầy đồ: bó que tính thành từng bó mười que; một bó chín que thì lạt đứt; xong thì được thưởng.",
-    "en": "The trial of the teacher: tie the counting rods into bundles of ten; a bundle of nine snaps its band; then the reward."
+    "vi": "Thử thách của thầy đồ: bó que tính thành từng bó mười que; một bó chín que thì lạt đứt, chín que vẫn nằm trên chiếu, thêm một que là đủ mười; xong thì được thưởng.",
+    "en": "The trial of the teacher: tie the counting rods into bundles of ten; a bundle of nine snaps its band, the nine rods stay on the mat, and one more rod makes ten; then the reward."
   },
   "profile": {
     "name": "An",
@@ -80,17 +80,6 @@
         },
         {
           "until": {
-            "event": "pick",
-            "timeout": 10
-          }
-        },
-        {
-          "press": {
-            "screenOf": "mat"
-          }
-        },
-        {
-          "until": {
             "event": "put",
             "timeout": 10
           }
@@ -137,17 +126,6 @@
         },
         {
           "until": {
-            "event": "pick",
-            "timeout": 10
-          }
-        },
-        {
-          "press": {
-            "screenOf": "mat"
-          }
-        },
-        {
-          "until": {
             "event": "put",
             "timeout": 10
           }
@@ -185,22 +163,11 @@
       ]
     },
     {
-      "repeat": 10,
+      "repeat": 1,
       "steps": [
         {
           "press": {
             "item": "rod"
-          }
-        },
-        {
-          "until": {
-            "event": "pick",
-            "timeout": 10
-          }
-        },
-        {
-          "press": {
-            "screenOf": "mat"
           }
         },
         {

@@ -1,8 +1,8 @@
 {
   "name": "trial-teacher-button",
   "about": {
-    "vi": "Thử thách của thầy đồ chỉ với nút hành động: nhặt từng que ở đống, đặt lên chiếu; tay không ở chiếu thì lấy lại một que và đặt về đống; đến chỗ thầy thì thầy bó que.",
-    "en": "The trial of the teacher with the action button only: pick up a rod at the heap, put it on the mat; with empty hands at the mat, take one rod back and put it on the heap; at the teacher, the teacher ties the rods."
+    "vi": "Thử thách của thầy đồ chỉ với nút hành động: mỗi lần bấm ở đống, một que lên chiếu; chạm một que trên chiếu thì lấy lại que đó và đặt về đống; đến chỗ thầy thì thầy bó que.",
+    "en": "The trial of the teacher with the action button only: each press at the heap puts one rod on the mat; after a tap on a rod on the mat, the button takes it back and puts it on the heap; at the teacher, the teacher ties the rods."
   },
   "profile": {
     "name": "An",
@@ -57,17 +57,6 @@
         },
         {
           "until": {
-            "event": "pick",
-            "timeout": 10
-          }
-        },
-        {
-          "press": {
-            "screenOf": "mat"
-          }
-        },
-        {
-          "until": {
             "event": "put",
             "timeout": 10
           }
@@ -76,7 +65,7 @@
     },
     {
       "press": {
-        "thing": "rod:scholar:9"
+        "on": "mat"
       }
     },
     {
@@ -111,17 +100,6 @@
     {
       "press": {
         "item": "rod"
-      }
-    },
-    {
-      "until": {
-        "event": "pick",
-        "timeout": 10
-      }
-    },
-    {
-      "press": {
-        "screenOf": "mat"
       }
     },
     {

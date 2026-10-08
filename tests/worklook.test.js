@@ -51,23 +51,21 @@ test('a chalk mark of the woodcutter is on a phone held upright, from the four a
 });
 
 // The steps of a child at the teacher: n rods from the heap to the mat, and a tap on the teacher.
-const rods = (n) => ({ repeat: n, steps: [{ press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }, { press: { screenOf: 'mat' } }, { until: { event: 'put', timeout: 10 } }] });
+// One press at the heap puts one rod on the mat (#61).
+const rods = (n) => ({ repeat: n, steps: [{ press: { item: 'rod' } }, { until: { event: 'put', timeout: 10 } }] });
 const startTeacher = [
   { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } },
   { read: true },
   { until: { event: 'call', with: { key: 'mentor.first.you' }, timeout: 15 } },
 ];
 
-test('the band of the teacher snaps: the rods spring apart off the mat with a puff, take no tap, and go back on the heap (#48)', async () => {
+test('the band of the teacher snaps on nine rods: the rods stay on the mat to be counted, and none goes back on the heap (#48, #61)', async () => {
   const session = await practice('bo-que', [...startTeacher, rods(9), { press: { entity: 'npc:teacher' } }, { until: { event: 'snap', timeout: 10 } }]);
-  const mat = getEntity(session.state, 'zone:mat');
-  const loose = session.state.entities.filter((e) => e.item?.kind === 'rod' && e.item.zone === null && !e.item.held);
-  assert.equal(loose.length, 9, 'nine rods lie apart');
-  const r = mat.zone.rect;
-  for (const e of loose) assert.ok(e.position.x < r.x0 || e.position.x > r.x1 || e.position.z < r.z0 || e.position.z > r.z1, 'off the mat');
-  assert.ok(loose.every((e) => e.item.set), 'a tap does not take a rod that springs');
-  for (let k = 0; k < 60; k++) { session.step(); session.events(); }
-  assert.equal(getEntity(session.state, 'zone:rods').zone.items.length, 24, 'all the rods are back on the heap');
+  const onMat = () => getEntity(session.state, 'zone:mat').zone.items.length;
+  assert.equal(onMat(), 9, 'the nine rods stay on the mat');
+  for (let k = 0; k < 200; k++) { session.step(); session.events(); }
+  assert.equal(onMat(), 9, 'no rod is over ten: none rolls back');
+  assert.equal(getEntity(session.state, 'zone:rods').zone.items.length, 15, 'the heap keeps the other rods');
 });
 
 test('the bundles of the teacher stand in a row beside the mat, on a phone held upright, and the goal bar counts them as bundles (#48)', async () => {

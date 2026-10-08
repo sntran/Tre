@@ -217,7 +217,8 @@ test('the repeat step plays its steps again and again', async () => {
       { do: { type: 'talk', dialogue: 'teacher.trial' } },
       { read: true },
       { until: { event: 'call', with: { key: 'mentor.first.you' }, timeout: 15 } },
-      { repeat: 3, steps: [{ press: { item: 'rod' } }, { until: { event: 'pick', timeout: 10 } }, { press: { zone: 'mat' } }, { until: { event: 'put', timeout: 10 } }] },
+      // One press at the heap puts one rod on the mat (#61).
+      { repeat: 3, steps: [{ press: { item: 'rod' } }, { until: { event: 'put', timeout: 10 } }] },
       { expect: [{ event: 'put' }] },
     ],
   };

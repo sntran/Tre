@@ -85,10 +85,17 @@ function play(world, ent, dt, env) {
       const person = getEntity(world, st.put.person) ?? { id: st.put.person, position: null };
       const thing = getEntity(world, st.put.item);
       const zone = getEntity(world, st.put.zone);
-      if (thing && zone && !thing.item?.held && handPut(world, person, thing, zone, env)) (sc.put ??= []).push(thing.id);
+      // A thing that the child already put on a place stays where it is: the step never takes it
+      // and never takes it back later (#61: one press put the bunch of the example in the basket).
+      const lies = thing?.item?.zone ? getEntity(world, `zone:${thing.item.zone}`)?.zone : null;
+      const free = !lies || lies.rule === 'heap' || lies.rule === 'pile';
+      if (thing && zone && free && !thing.item?.held && handPut(world, person, thing, zone, env)) (sc.put ??= []).push(thing.id);
     }
     // Only a thing that the person put goes back (the child can take the same thing first).
-    if (st.back && sc.put?.includes(st.back.item)) backHome(world, getEntity(world, st.back.item));
+    if (st.back && sc.put?.includes(st.back.item)) {
+      backHome(world, getEntity(world, st.back.item));
+      sc.put = sc.put.filter((id) => id !== st.back.item);
+    }
     if (st.cue) cueHint(world, getEntity(world, st.cue.zone), env);
     if (st.nudge) {
       const friend = query(world, 'follow')[0];
