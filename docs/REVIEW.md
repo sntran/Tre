@@ -542,3 +542,8 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **Please check:** "bấm mấy lần" for "press as many times", and "kẻ địch" for the scouts, the soldiers, and the serpents of the river.
 - **The jar of the ducks counts presses:** `mentor.ducks.first` ("Đứng bên cái vại nhé. Bấm nút lớn một lần là một gáo cám vào máng.") and `mentor.show.ducks` ("Bấm nút một lần là một gáo vào máng nhé."). They take the place of the lines that said to hold the button and let go.
 - **Please check:** "gáo cám" (a scoop of bran) in the first line, where the old line of the show said "thóc".
+
+## Time, people, and lines in the story (#57)
+
+- **The note of the time limit:** `parent.time.note` ("Khi hết giờ, trò chơi chờ em làm xong việc đang làm với một người, nhiều nhất thêm {n} phút. Một trận giữ làng cũng chờ đến hết trận.").
+- **Please check:** "trận giữ làng" for a raid, and "việc đang làm với một người" for the task of a person.

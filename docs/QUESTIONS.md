@@ -39,7 +39,7 @@ This list has the questions that the design does not answer, and the choice that
 15. **Subtraction with number cards.** Choice: the player taps cards in order and taps the sign between two cards to change it from + to −. The running total can go below zero during the choice. Is this acceptable for grade 1?
 16. **The adult question of the parent gate.** Choice: multiply two numbers from 12 to 19 (for example 14 × 17). A strong grade 5 child can solve it with time. Is another kind of question better?
 17. **Profiles.** The slice has one profile (`maxProfiles` in `game.json`). The saves and the code support more profiles.
-18. **What counts as play time?** Choice: time in the village, in battles, and at Văn Miếu, when the page is visible. The title screen and the parent area do not count. When the time is over, the game waits for a calm point in the village.
+18. **What counts as play time?** Choice: time in the village, in battles, and at Văn Miếu, when the page is visible. The title screen and the parent area do not count. When the time is over, the game waits for a calm point in the village. A calm point has no screen open, empty hands, no bridge that is not solid, no raid (a raid waits for its end), and no task of a person that goes on, for at most 5 more minutes after the end of the time (`taskGraceMin` in `data/config/game.json`, #57). The setting of the time limit in the parent area says this (`parent.time.note`).
 19. **Calling bonuses in the slice.** Some Võ skills of the design are for later eras (physics shots, diving). Choice for now:
     - Scholar: one more attack card, and the first mistake in a battle costs no heart.
     - Smith: the forge skips the measure step, and a shield break does one more point of damage.

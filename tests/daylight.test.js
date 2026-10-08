@@ -54,3 +54,30 @@ test('a child who only waits next to the work does not hold the light: the clock
   }
   assert.ok(session.state.clock.minutes > start, 'a minute of no press: the day goes on');
 });
+
+test('the rest of the time limit waits for the end of a task of a person, for at most five minutes (#57)', async () => {
+  const story = load('tests/stories/trial-healer.json');
+  const first = story.steps.findIndex((s) => s.read === true);
+  let session = null;
+  const profile = { ...story.profile, timeLimit: 30, played: 29.5 };
+  const failures = await runHeadless({ ...story, profile, steps: story.steps.slice(0, first + 1) }, { onSession: (s) => { session = s; } });
+  assert.deepEqual(failures, []);
+  let rest = null;
+  let t = 0;
+  session.listen((ev) => {
+    if (ev.type === 'open' && ev.screen === 'rest' && rest === null) rest = t;
+  });
+  for (let k = 0; k < 30 * 60 * 8 && rest === null; k++) {
+    t = k / 30 / 60;
+    if (session.screen === 'dialogue' || session.screen === 'say') session.command({ type: 'next' });
+    else if (session.screen && session.screen !== 'rest') session.command({ type: 'close' });
+    else if (!session.screen && k % (30 * 20) === 0) {
+      session.command({ type: 'hold', on: true });
+      session.command({ type: 'hold', on: false });
+    }
+    session.step();
+    session.events();
+  }
+  assert.ok(rest !== null, 'the rest comes');
+  assert.ok(rest > 5 && rest < 6.5, `the rest waits for the work, at most five minutes after the end of the time: ${rest?.toFixed(2)} minutes`);
+});

@@ -128,7 +128,8 @@
       90
     ],
     "warnBeforeMin": 5,
-    "extendMin": 15
+    "extendMin": 15,
+    "taskGraceMin": 5
   },
   "trials": {
     "questions": 3

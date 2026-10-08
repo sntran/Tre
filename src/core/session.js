@@ -41,7 +41,7 @@ import { snapFacts } from './planting.js';
 import { clueLine as clueOf, hiddenAt, areaOf, inArea, openFinds, wayOf, wayPoint } from './clues.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
 import { createDialogue } from './dialogue.js';
-import { timeStatus, addPlayTime } from './timelimit.js';
+import { timeStatus, addPlayTime, remainingMs } from './timelimit.js';
 import { createWorldState, getEntity, query, addEntity, removeEntity, command as worldCommand } from './world/state.js';
 import { step as worldStep, STEP } from './world/step.js';
 import { envFor, placesOf } from './world/env.js';
@@ -2868,9 +2868,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
 
   // The time limit: the hero goes home to rest at a calm point: no screen is open, the hands are
-  // empty, and the hero is not on or next to a bridge that is not solid.
+  // empty, the hero is not on or next to a bridge that is not solid, and no task of a person goes
+  // on, for at most taskGraceMin minutes after the end of the time (#57: the rest came in the
+  // middle of the trial of the healer). A raid waits for its end (docs/RAIDS.md).
   function calm() {
     if (screen || busy || holding() || hero().fall || raidOn()) return false;
+    const over = -remainingMs(profile.time, profile.settings?.timeLimit, now()) / 60000;
+    if (workKey() && over < (data.game.time.taskGraceMin ?? 5)) return false;
     const c = heroCell();
     return !spans().some(({ zone: z }) => !z.set && c.x >= z.x0 - CALM_CELLS && c.x <= z.x1 + CALM_CELLS && c.y >= z.start / 2 - CALM_CELLS && c.y < z.end / 2 + CALM_CELLS);
   }

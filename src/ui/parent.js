@@ -469,6 +469,7 @@ async function parentArea(ctx, opts = {}) {
           s.timeLimit = Number(v);
           save();
         }),
+        h('p', { class: 'muted', text: t('parent.time.note', { n: data.game.time.taskGraceMin }) }),
         h('div', { class: 'row', style: { justifyContent: 'flex-start' } }, [
           button(t('parent.time.extend', { n: data.game.time.extendMin }), () => {
             extendTime(p.time, data.game.time.extendMin, Date.now());

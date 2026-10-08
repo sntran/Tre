@@ -1025,6 +1025,7 @@
   "parent.grade": "Lớp của con",
   "parent.time": "Thời gian chơi mỗi ngày",
   "parent.time.none": "Không giới hạn",
+  "parent.time.note": "Khi hết giờ, trò chơi chờ em làm xong việc đang làm với một người, nhiều nhất thêm {n} phút. Một trận giữ làng cũng chờ đến hết trận.",
   "parent.minutes": "{n} phút",
   "parent.time.extend": "Thêm {n} phút cho hôm nay",
   "parent.time.extended": "Đã thêm {n} phút.",

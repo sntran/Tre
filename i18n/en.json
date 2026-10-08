@@ -1025,6 +1025,7 @@
   "parent.grade": "Grade of the child",
   "parent.time": "Play time each day",
   "parent.time.none": "No limit",
+  "parent.time.note": "When the time is over, the game waits until the child ends the work in hand with a person, at most {n} more minutes. A raid also waits until its end.",
   "parent.minutes": "{n} minutes",
   "parent.time.extend": "Give {n} more minutes today",
   "parent.time.extended": "{n} minutes added.",
