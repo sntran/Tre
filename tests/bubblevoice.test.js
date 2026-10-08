@@ -2,7 +2,7 @@
 // person, the words of a count in their order, and a greeting goes when the voice is busy.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { bubbleLine, createVoiceQueue, kindOf, speakerOf } from '../src/core/bubblevoice.js';
+import { bubbleLine, createVoiceQueue, kindOf, speakerOf, SAID_AGAIN } from '../src/core/bubblevoice.js';
 import { voiceOf } from '../src/core/voices.js';
 import { runHeadless, data } from './story-run.js';
 import { playPresses } from './restless.js';
@@ -57,4 +57,24 @@ test('each bubble of a mentor in a task gives one line to speak, in the voice of
   const teacher = lines.filter((l) => l.id === 'npc:teacher');
   assert.ok(teacher.length > 0);
   assert.ok(teacher.every((l) => l.voice === voice('teacher') && l.voice !== 'narrator'), JSON.stringify(teacher.map((l) => l.voice)));
+});
+
+// Each line of a bubble is spoken one time (#67): two children who greet the hero at once, or two
+// villagers who say the same news, are heard one time; the words of a count are never dropped.
+test('the same words from two people are spoken one time; a count is never dropped', () => {
+  const q = createVoiceQueue();
+  const line = (key, id = 'npc:teacher') => ({ id, key, params: {}, voice: 'elderMan', kind: kindOf(key) });
+  const hi = (id) => ({ ...line('world.greet.1', id), params: { name: 'Tí' } });
+  assert.equal(q.offer(hi('npc:kid-a'), false, 10), 'now');
+  assert.equal(q.offer(hi('npc:kid-b'), false, 10), 'drop', 'the same greeting waits already');
+  assert.equal(q.next(false, 10).id, 'npc:kid-a');
+  assert.equal(q.offer(hi('npc:kid-b'), false, 11), 'drop', 'the voice said these words a moment ago');
+  assert.equal(q.offer(line('market.news', 'npc:a'), false, 12), 'now');
+  q.next(false, 12);
+  assert.equal(q.offer(line('market.news', 'npc:b'), false, 14), 'drop');
+  assert.equal(q.offer(line('market.news', 'npc:b'), false, 12 + SAID_AGAIN), 'now', 'much later, the line speaks again');
+  q.next(false, 12 + SAID_AGAIN);
+  assert.equal(q.offer(line('num.1'), false, 40), 'now');
+  q.next(false, 40);
+  assert.equal(q.offer(line('num.1'), false, 41), 'now', 'a new count says one again');
 });

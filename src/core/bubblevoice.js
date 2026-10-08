@@ -32,6 +32,12 @@ export function bubbleLine(ev, voice = () => 'narrator') {
 }
 
 const same = (a, b) => a.id === b.id && a.key === b.key && JSON.stringify(a.params) === JSON.stringify(b.params);
+// The same words, from any person: two children who greet the hero at once ("Chào Tí! Chào Tí!"),
+// or two villagers who say the same news (#67).
+const sameWords = (a, b) => a.key === b.key && JSON.stringify(a.params) === JSON.stringify(b.params);
+// Seconds: a line with the same words as a line that the voice said this short time ago goes (#67:
+// each line of a bubble is spoken one time). The words of a count are never dropped.
+export const SAID_AGAIN = 12;
 
 // The queue of the lines of the bubbles. offer(line, speaking): speaking is true while the voice
 // says something (a line of the talk box or of a bubble). Returns:
@@ -39,14 +45,22 @@ const same = (a, b) => a.id === b.id && a.key === b.key && JSON.stringify(a.para
 //   'wait' the line waits for its turn (a hint, a wait, or a count while the voice is busy; the
 //          words of a count keep their order, so that one number never cuts the last one);
 //   'drop' a greeting while the voice is busy, or the same line that already waits.
+//   A line with the same words as a line that waits, or as a line that the voice said in the last
+//   SAID_AGAIN seconds, also goes (not a word of a count).
 // next(speaking): the line to speak now, or null while the voice is busy or nothing waits.
+// now: the time in seconds (null: no memory of the lines that the voice said).
 export function createVoiceQueue() {
   const queue = [];
+  const said = []; // { line, at }: the lines that the voice said
   return {
-    offer(line, speaking = false) {
+    offer(line, speaking = false, now = null) {
       if (!line) return 'drop';
       if (line.kind === 'greet' && (speaking || queue.length)) return 'drop';
       if (queue.some((q) => same(q, line))) return 'drop';
+      if (line.kind !== 'count') {
+        if (queue.some((q) => sameWords(q, line))) return 'drop';
+        if (now !== null && said.some((x) => sameWords(x.line, line) && now - x.at < SAID_AGAIN)) return 'drop';
+      }
       // A newer hint of the same person takes the place of an older hint that still waits.
       if (line.kind === 'line') {
         for (let i = queue.length - 1; i >= 0; i--) if (queue[i].id === line.id && queue[i].kind === 'line') queue.splice(i, 1);
@@ -54,8 +68,13 @@ export function createVoiceQueue() {
       queue.push(line);
       return !speaking && queue.length === 1 ? 'now' : 'wait';
     },
-    next(speaking = false) {
-      return speaking ? null : queue.shift() ?? null;
+    next(speaking = false, now = null) {
+      const line = speaking ? null : queue.shift() ?? null;
+      if (line && now !== null) {
+        said.push({ line, at: now });
+        while (said.length && now - said[0].at >= SAID_AGAIN) said.shift();
+      }
+      return line;
     },
     waiting: (id, key) => queue.some((q) => q.id === id && (key === undefined || q.key === key)),
     size: () => queue.length,

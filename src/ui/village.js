@@ -648,7 +648,7 @@ export async function mountVillage(ctx, params = {}) {
       // The line is spoken in the voice of its person, in its turn (#60, src/core/bubblevoice.js).
       const line = bubbleLine(ev, lineVoice);
       showBubble(ev.id, gloss ? `${t(ev.textKey, ev.params)}\n${gloss}` : t(ev.textKey, ev.params), null, line);
-      voiceQueue.offer(line, speaking() || Boolean(spoken));
+      voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
       return;
     }
     // A story that plays in the storybook stays in the village: the other screens show as a
@@ -1148,7 +1148,7 @@ export async function mountVillage(ctx, params = {}) {
     // line takes to say, about 12 letters each second.
     if (spoken && performance.now() > spoken.end) spoken = null;
     if (spoken) return;
-    const line = voiceQueue.next(speaking());
+    const line = voiceQueue.next(speaking(), performance.now() / 1000);
     if (!line) return;
     const now = { line, t: performance.now(), end: performance.now() + 600 + t(line.key, line.params).length * 85 };
     spoken = now;
@@ -1543,9 +1543,13 @@ export async function mountVillage(ctx, params = {}) {
     const name = m.who ? namesOf(data, mapData.region)[m.who] ?? { key: `npc.${m.who}.name` } : null;
     const who = name ? t(name.key, name.params) : '';
     const params = { who: who.charAt(0).toLocaleLowerCase(lang()) + who.slice(1) };
-    const line = { id: 'hero', key: m.key ?? 'star.go.place', params, voice: lineVoice('hero'), kind: 'line' };
+    // A person with the name of a role (the smith) gets an article in English (#67: "Go and find the
+    // smith."); a person with a name of the region does not.
+    const role = name?.key === `npc.${m.who}.name`;
+    const key = m.key === 'star.go.person' && role ? 'star.go.role' : m.key ?? 'star.go.place';
+    const line = { id: 'hero', key, params, voice: lineVoice('hero'), kind: 'line' };
     showBubble('hero', t(line.key, params), null, line);
-    voiceQueue.offer(line, speaking() || Boolean(spoken));
+    voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
   }
   // The pulse of the star of a station (seconds left), when the head of the hamlet points at it.
   // The pointers over the things that a line of a talk names (#62).
