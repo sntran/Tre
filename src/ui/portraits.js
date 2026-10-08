@@ -33,12 +33,18 @@ export function portraitCanvas(ctx, look, { framing = 'bust', mood = 'calm', siz
   c.style.width = `${size}px`;
   c.style.height = `${size}px`;
   if (!look) return c;
-  portraits(ctx).then((p) => p?.image(look, { framing, mood, size, facing })).then((img) => {
-    if (!img) return;
+  // A portrait that did not render (a busy or lost context) gets one more try a moment later, so
+  // that the face in a talk box is never empty (#67).
+  const draw = (again) => portraits(ctx).then((p) => p?.image(look, { framing, mood, size, facing })).then((img) => {
+    if (!img) {
+      if (again) setTimeout(() => draw(false), 500);
+      return;
+    }
     c.width = img.width;
     c.height = img.height;
     c.getContext('2d').drawImage(img, 0, 0);
   });
+  draw(true);
   return c;
 }
 

@@ -362,7 +362,11 @@ p { line-height: 1.45; margin: 0.4em 0; }
   font-weight: 700;
 }
 .count-icon { width: 30px; height: 30px; }
-.count-extra { width: 16px; height: 16px; margin-left: -2px; }
+/* The number of the basket, and under it the small pictures of the other goods (#57, #67). */
+.count-col { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.count-extras { display: flex; gap: 1px; }
+.count-extras:not(:has(.count-extra:not([hidden]))) { display: none; }
+.count-extra { width: 12px; height: 12px; }
 /* A tap on a counter says its name and its count (#62). */
 button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: pointer; pointer-events: auto; }
 .count.basket { border: var(--line); border-radius: var(--corner); background: var(--diep); box-shadow: var(--press); cursor: pointer; font: inherit; font-weight: 700; color: var(--ink); }
@@ -850,6 +854,15 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
   /* Phone: a smaller face in the talk box, never none (#59). */
   .dialogue .portrait { width: 60px; height: 66px; }
   .dialogue .portrait .portrait-img { width: 60px !important; height: 60px !important; }
+}
+
+/* A narrow phone (360 px): the face, the counters, and the menu stay in one row at the top (#67). */
+@media (max-width: 380px) {
+  .hud { gap: 6px; }
+  .hud-hero { padding: 4px 6px 4px 4px; gap: 4px; }
+  .counts { gap: 4px; }
+  .count { padding: 0 4px 0 2px; gap: 2px; }
+  .count-icon { width: 26px; height: 26px; }
 }
 
 @media (orientation: portrait) {

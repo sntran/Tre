@@ -223,9 +223,15 @@ export async function mountVillage(ctx, params = {}) {
   const looks = data.figures.figures;
   // The portraits of the hero, Nghé, and the people of this map, before any dialogue opens (after
   // the loading screen, so that they do not take the frames of the load).
+  // The happy faces of the people of the trials and the cards of their callings come with the done
+  // talk, at the same time (#67: the face of the fisher was empty in his last talk on a phone), and
+  // the small faces of the five people come with the talk of the elder: draw them before too.
+  const trialPeople = (data.trials?.trials ?? []).filter((x) => x.npc).map((x) => x.npc);
   const prerenderAll = () => prerender(ctx, [
     { look: heroLookOf(ctx), size: 44 },
     ...['hero', 'nghe', ...mapData.npcs.map((n) => n.id)].map((id) => ({ look: speakerLookOf(ctx, id), size: 96 })),
+    ...trialPeople.flatMap((id) => [{ look: speakerLookOf(ctx, id), mood: 'happy', size: 96 }, { look: speakerLookOf(ctx, id), size: 44 }]),
+    ...(data.callings?.callings ?? []).map((c) => ({ look: data.figures.figures[c.look], framing: 'full', size: 64 })),
   ]);
   if (!loading) prerenderAll();
   // The world at rest: the smoke of the kitchens, the steam of the rice pot, the incense of the đình,
@@ -525,10 +531,11 @@ export async function mountVillage(ctx, params = {}) {
     const basket = item === BASKET;
     const n = h('span');
     const extras = basket ? [0, 1, 2].map(() => h('img', { class: 'count-extra', alt: '', draggable: 'false', hidden: true })) : [];
+    // The small pictures stand under the number, so that the top row of the HUD keeps one line on a
+    // phone (#67: at 390 px the menu and the map went to a second row).
     const el = h('button', { class: `count${basket ? ' basket' : ''}`, dataset: { item }, type: 'button', 'aria-label': t(basket ? 'basket.title' : data.items.items[item].nameKey) }, [
       img(basket ? data.items.basketArt : data.items.items[item].art, 'count-icon'),
-      n,
-      ...extras,
+      basket ? h('span', { class: 'count-col' }, [n, h('span', { class: 'count-extras' }, extras)]) : n,
     ]);
     // A tap on a counter says its name and its count, as words; the basket opens and says its
     // title (#62).
