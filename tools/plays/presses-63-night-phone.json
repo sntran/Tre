@@ -1,0 +1,229 @@
+{
+ "about": "#63 at night: the healer and the fisher at 21:00, with the taps of a child who counts.",
+ "start": "?story=trial-healer&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "night-healer-start"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-ngai"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-tiato"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-rauma"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.map((id) => id.split(':')[0]), tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.done, tre.activeVillage.state().clock?.minutes])"
+  },
+  {
+   "shot": "night-healer-taps"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.done",
+   "timeout": 60
+  },
+  {
+   "shot": "night-healer-done"
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.map((id) => id.split(':')[0]), tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.done, tre.activeVillage.state().clock?.minutes])"
+  },
+  {
+   "goto": "?story=trial-fisher&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line' && !e.item.held).map((e) => e.item.slot).sort((a, b) => a - b), tre.activeVillage.state().entities.find((e) => e.id === 'zone:line')?.zone.space, tre.activeVillage.state().entities.find((e) => e.id === 'zone:line')?.zone.length, tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done])"
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.item?.held === 'hero')",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "row": 8
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.item?.held === 'hero')",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "row": 12
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.item?.held === 'hero')",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "row": 16
+   },
+   "after": 2.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line' && !e.item.held).map((e) => e.item.slot).sort((a, b) => a - b), tre.activeVillage.state().entities.find((e) => e.id === 'zone:line')?.zone.space, tre.activeVillage.state().entities.find((e) => e.id === 'zone:line')?.zone.length, tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done])"
+  },
+  {
+   "shot": "night-fisher-taps"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done",
+   "timeout": 700
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "night-fisher-done"
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line' && !e.item.held).map((e) => e.item.slot).sort((a, b) => a - b), tre.activeVillage.state().entities.find((e) => e.id === 'zone:line')?.zone.space, tre.activeVillage.state().entities.find((e) => e.id === 'zone:line')?.zone.length, tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done])"
+  }
+ ]
+}

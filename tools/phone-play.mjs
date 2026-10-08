@@ -17,6 +17,7 @@
 //   { "tap": { "place": "mat" } } a tap on a person, a thing, a cell of the map, or the middle of a
 //                                place of a task, where the screen shows it
 //   { "tap": { "stem": 4 } }     a tap on the stem of the woodcutter, 4 half blocks from its start
+//   { "tap": { "row": 8 } }      a tap on the row of the fisher, 8 half blocks from its start
 //   { "tap": { "star": true } }  a tap on the goal star (or the arrow at the edge of the screen)
 //   { "walk": { "person": "woodcutter" }, "taps": 12 } taps toward a target until the hero is near it
 //   { "press": true }            a quick tap on the big button (the press and the release at once)
@@ -119,7 +120,12 @@ async function pointOf(spec) {
     if (s.person) p = v.screenOfPerson(s.person);
     else if (s.thing) p = v.screenOfThing(s.thing);
     else if (s.cell) p = v.screenOf(s.cell[0], s.cell[1]);
-    else if (s.stem !== undefined) {
+    else if (s.row !== undefined) {
+      // A point of the row of the fisher, this many half blocks from its start, at the height of
+      // the row (where the stakes stand), as a child taps it (#63).
+      const z = v.state().entities.find((e) => e.id === 'zone:line');
+      p = z ? v.pointOf((z.zone.x + s.row) / 2, z.zone.z / 2, z.zone.y / 2) : null;
+    } else if (s.stem !== undefined) {
       // A point of the stem of the woodcutter, this many half blocks from its start.
       const st = v.state().entities.find((e) => e.id === 'stem:woodcutter');
       p = st ? v.pointOf((st.position.x + s.stem) / 2, st.position.z / 2) : null;

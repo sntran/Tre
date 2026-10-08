@@ -12,10 +12,12 @@ import { h } from './dom.js';
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Start a story. name: the name of the story file. play: play the steps. speed: the speed of the world.
-export async function startStory(ctx, name, { play = false, speed = 1 } = {}) {
+export async function startStory(ctx, name, { play = false, speed = 1, clock = null } = {}) {
   const response = await fetch(`tests/stories/${encodeURIComponent(name)}.json`);
   if (!response.ok) throw new Error(`No story ${name}`);
   const story = storyOnPlane(await response.json(), ctx.data.world);
+  // &clock=<minutes of the day> starts the story at another hour (a play at night, #63).
+  if (Number.isFinite(clock)) story.clock = clock;
   ctx.storybook = { story, playing: play, speed: Math.max(1, Math.min(16, speed || 1)) };
   // Nothing of a story goes into the store of the device: the saves stay in this page, with the
   // restore points of the dawns (src/core/restore.js), as the store of the device keeps them.

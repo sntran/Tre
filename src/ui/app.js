@@ -356,11 +356,12 @@ export async function startApp(root) {
   const saved = await getMeta('lang').catch(() => null);
   const browser = navigator.language?.toLowerCase().startsWith('vi') ? 'vi' : 'en';
   await ctx.setLanguage(saved ?? browser);
-  // ?story=<name> opens a story of the storybook (with &play, the story plays).
+  // ?story=<name> opens a story of the storybook (with &play, the story plays; with
+  // &clock=<minutes of the day>, at another hour).
   const query = new URLSearchParams(location.search);
   if (query.get('story')) {
     await ctx.go('title');
-    await startStory(ctx, query.get('story'), { play: query.has('play'), speed: Number(query.get('speed')) || 1 });
+    await startStory(ctx, query.get('story'), { play: query.has('play'), speed: Number(query.get('speed')) || 1, clock: query.has('clock') ? Number(query.get('clock')) : null });
     return ctx;
   }
   // ?practice=<id> takes a child to one activity (src/core/practice.js): only the id is read. With
