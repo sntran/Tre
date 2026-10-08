@@ -51,18 +51,18 @@
    "press": true
   },
   {
+   "until": "Boolean(document.querySelector('.talk-calling'))",
+   "timeout": 30
+  },
+  {
+   "read": 1
+  },
+  {
    "until": "Boolean(document.querySelector('.print-card'))",
    "timeout": 30
   },
   {
    "shot": "a-new-print-of-the-notebook"
-  },
-  {
-   "until": "Boolean(document.querySelector('.talk-calling'))",
-   "timeout": 30
-  },
-  {
-   "read": 3
   },
   {
    "wait": 2

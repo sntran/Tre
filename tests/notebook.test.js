@@ -54,9 +54,9 @@ test('a skill fills in at its first skill event, and gets the red seal when it i
   assert.equal(at('math.count.120').met, false);
   assert.deepEqual([at('math.add.10').met, at('math.add.10').sealed], [true, false]);
   assert.deepEqual([at('math.add.20').met, at('math.add.20').sealed], [true, true]);
-  // The pages: the skills first, then the legends, the creatures, and the places.
+  // The pages with a print first (the skills and the creatures: Nghé), then the pages of gaps.
   const kinds = list.map((e) => e.kind);
-  assert.deepEqual([...new Set(kinds)], ['skill', 'legend', 'creature', 'place']);
+  assert.deepEqual([...new Set(kinds)], ['skill', 'creature', 'legend', 'place']);
   // No skill of a later era; a skill over the grade of the child only when the child met it.
   assert.ok(list.every((e) => e.kind !== 'skill' || skills.find((s) => s.id === e.skill).grade <= 1 || e.met));
   assert.ok(list.some((e) => e.id === 'skill:math.add.20'), 'a skill of grade 2 that the child met');

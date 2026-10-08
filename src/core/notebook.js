@@ -34,7 +34,8 @@ export function notebookSkills(def, skills, grade = 1, learned = {}) {
 
 // All the prints of the notebook, in the order of the pages: [{ id, kind, titleKey, look, met,
 // sealed }]. A skill is met after its first skill event (n > 0), and it is sealed when it is
-// mastered. On a page, the met prints come first. A skill that starts as mastered (below the grade of the child) is not met until the
+// mastered. A page with a met print comes before a page of gaps, and on a page the met prints come
+// first. A skill that starts as mastered (below the grade of the child) is not met until the
 // child does it.
 export function notebookOf(def, skills, profile) {
   const learned = profile.learning?.skills ?? {};
@@ -45,10 +46,12 @@ export function notebookOf(def, skills, profile) {
     out.push({ id: `skill:${s.id}`, kind: 'skill', skill: s.id, subject: s.subject, titleKey: `skill.${s.id}`, look: null, met, sealed: met && Boolean(e.mastered) });
   }
   for (const e of def.entries) out.push({ id: e.id, kind: e.kind, titleKey: e.titleKey, look: e.look ?? null, met: isMet(e.met, profile), sealed: false });
-  // The pages in their order; on a page, the prints that the child met come first, so that the
-  // child sees them before the gaps.
-  const order = def.kinds ?? ['skill', 'legend', 'creature', 'place'];
-  return out.map((e, i) => ({ e, i })).sort((a, b) => order.indexOf(a.e.kind) - order.indexOf(b.e.kind) || Number(b.e.met) - Number(a.e.met) || a.i - b.i).map(({ e }) => e);
+  // The pages in their order, but a page with a print that the child met comes before a page of
+  // gaps; on a page, the met prints come first. So the child sees the prints before the gaps.
+  const kinds = def.kinds ?? ['skill', 'legend', 'creature', 'place'];
+  const full = new Set(out.filter((e) => e.met).map((e) => e.kind));
+  const rank = (kind) => (full.has(kind) ? 0 : kinds.length) + kinds.indexOf(kind);
+  return out.map((e, i) => ({ e, i })).sort((a, b) => rank(a.e.kind) - rank(b.e.kind) || Number(b.e.met) - Number(a.e.met) || a.i - b.i).map(({ e }) => e);
 }
 
 // The entries that a new key fills in (the entries whose rule is the key).

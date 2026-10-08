@@ -23,7 +23,8 @@ export function printOf(ctx, entry, size = 64) {
 export function notebookGrid(ctx, profile, { speakOnTap = true } = {}) {
   const list = notebookOf(ctx.data.notebook, ctx.data.skills.skills, profile);
   const pages = [];
-  for (const kind of ctx.data.notebook.kinds) {
+  // The pages in the order of the list (a page with a print first).
+  for (const kind of [...new Set(list.map((e) => e.kind))]) {
     const cards = list.filter((e) => e.kind === kind).map((e) => {
       const card = h(e.met ? 'button' : 'div', { class: `note-card${e.met ? '' : ' gap'}${e.sealed ? ' sealed' : ''}`, ...(e.met ? { type: 'button' } : {}), dataset: { id: e.id } }, [
         h('span', { class: 'note-print' }, e.met ? [printOf(ctx, e)] : []),

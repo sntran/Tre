@@ -1224,19 +1224,24 @@ export async function mountVillage(ctx, params = {}) {
     };
     requestAnimationFrame(tick);
   }
-  // The card of a new print of the notebook (#8), under the goal bar for a few seconds.
+  // The card of a new print of the notebook (#8), under the goal bar for a few seconds. The new
+  // prints wait while a talk or a screen is open (the child reads), and show one at a time.
   let printCard = null;
+  const printQueue = [];
+  function pumpPrints() {
+    if (printCard || !printQueue.length || box || busy || ctx.ui.querySelector('.modal-layer')) return;
+    showPrint(printQueue.shift());
+  }
   function showPrint(ev) {
-    printCard?.remove();
     const name = t(ev.titleKey);
     const card = h('button', { class: 'print-card', type: 'button' }, [
       h('span', { class: 'note-print' }, [printOf(ctx, ev, 40)]),
       h('span', { text: t('note.new', { name }) }),
     ]);
-    card.addEventListener('click', () => { card.remove(); modals.notebook?.(ctx); });
+    card.addEventListener('click', () => { card.remove(); printCard = null; modals.notebook?.(ctx); });
     ctx.ui.append(card);
     printCard = card;
-    setTimeout(() => { if (printCard === card) { card.remove(); printCard = null; } }, 4000);
+    setTimeout(() => { if (printCard === card) { card.remove(); printCard = null; } }, 5000);
   }
   // The lights of the bursts of a success (#62): a warm light for a moment, also at night.
   let cheerLights = [];
@@ -1328,7 +1333,7 @@ export async function mountVillage(ctx, params = {}) {
       case 'workView': turnToWork(ev.points, ev.sight); return;
       // A new print in the notebook (#8): a small card at the top for a moment; a tap opens the
       // notebook.
-      case 'notebook': showPrint(ev); return;
+      case 'notebook': printQueue.push(ev); return;
       // Experience (#8): the shoot of the bamboo grows; at a new level a new section grows and shines.
       case 'growth':
         drawBamboo(ev.up);
@@ -1633,6 +1638,7 @@ export async function mountVillage(ctx, params = {}) {
     }
     for (let i = stars; i < starPool.length; i++) starPool[i].hidden = true;
     drawMini(busy ? [] : markers());
+    pumpPrints();
     // A small red pointer over each thing that a line of a talk names (#62): the glow alone does
     // not show on a thing in the water.
     let pointers = 0;
@@ -1826,6 +1832,8 @@ export async function mountVillage(ctx, params = {}) {
 
   const api = {
     refresh: () => send({ type: 'refresh' }),
+    // The cards of new prints that wait, for the plays on a phone (#8).
+    prints: () => ({ waiting: printQueue.length, shown: Boolean(printCard), box: Boolean(box), busy }),
     talk: (id) => send({ type: 'talk', dialogue: id }),
     heroTile: () => {
       const c = heroCell();
