@@ -149,7 +149,10 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
   // Skills to practice: tried skills that are not mastered, and review skills that are due.
   function toPractice(filter = () => true) {
     const now = clock();
+    // Only the skills of the grade of the child and below: a fact of a higher grade that the
+    // child met once in the world is not a skill to practice (#58).
     return graph.filter(filter)
+      .filter((s) => !(s.grade > grade))
       .filter((s) => learning.skills[s.id])
       .filter((s) => {
         const e = learning.skills[s.id];

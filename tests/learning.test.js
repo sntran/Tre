@@ -259,6 +259,9 @@ test('the learner: skills to practice after mistakes', () => {
   const pr = learner.problem('math.add.10');
   learner.record(pr, false);
   assert.deepEqual(learner.toPractice(), ['math.add.10']);
+  // A miss on a skill of a higher grade: not a skill to practice for a child of grade 1 (#58).
+  learner.record(learner.problem('math.mul.10'), false);
+  assert.deepEqual(learner.toPractice(), ['math.add.10']);
   const s = learner.summary((x) => x.id === 'math.add.10')[0];
   assert.equal(s.status, 'learning');
   assert.equal(s.answers, 1);
