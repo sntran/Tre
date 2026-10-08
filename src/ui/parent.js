@@ -157,14 +157,20 @@ async function parentArea(ctx, opts = {}) {
       else ctx.go('title');
     };
     const tabBar = h('div', { class: 'tabs' });
+    const head = h('div', { class: 'panel-head' });
+    const foot = h('div');
+    // The head, the tabs, and the link under them, in the language of now: a change of the language
+    // in the settings draws them again (#58).
     const drawTabs = () => {
+      head.replaceChildren(h('h2', { text: t('parent.title') }), button(null, close, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') }));
+      foot.replaceChildren(diaryLink());
       tabBar.replaceChildren(...tabs.map((id) => {
         const b = button(t(`parent.tab.${id}`), () => { tab = id; drawTabs(); draw(); }, { cls: 'btn small paper' });
         b.setAttribute('aria-pressed', String(id === tab));
         return b;
       }));
     };
-    panel.append(h('div', { class: 'panel-head' }, [h('h2', { text: t('parent.title') }), button(null, close, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') })]), tabBar, body, diaryLink());
+    panel.append(head, tabBar, body, foot);
     layer.append(panel);
     ctx.ui.append(layer);
 
