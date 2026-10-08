@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runHeadless } from './story-run.js';
 import { figureOf, thingLook, CHALK_BAND, FISH_JUMP } from '../src/world/figures.js';
-import { sessionCamera } from '../src/world/hit.js';
+import { sessionCamera, viewCamera } from '../src/world/hit.js';
 import { getEntity } from '../src/core/world/state.js';
 
 const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
@@ -66,6 +66,63 @@ test('the band of the teacher snaps on nine rods: the rods stay on the mat to be
   for (let k = 0; k < 200; k++) { session.step(); session.events(); }
   assert.equal(onMat(), 9, 'no rod is over ten: none rolls back');
   assert.equal(getEntity(session.state, 'zone:rods').zone.items.length, 15, 'the heap keeps the other rods');
+});
+
+test('the rods on the mat lie in rows of five with a space between two rods, all on the mat (#61)', async () => {
+  const session = await practice('bo-que', [...startTeacher, rods(10)]);
+  const mat = getEntity(session.state, 'zone:mat').zone;
+  const at = mat.items.map((id) => getEntity(session.state, id).position);
+  assert.equal(at.length, 10);
+  const xs = [...new Set(at.map((p) => p.x.toFixed(2)))].map(Number).sort((a, b) => a - b);
+  const zs = [...new Set(at.map((p) => p.z.toFixed(2)))];
+  assert.equal(xs.length, 5, 'five rods in a row');
+  assert.equal(zs.length, 2, 'two rows');
+  const width = figureOf({ kind: 'rod' }, 'coarse').parts.find((p) => p.name === 'stick' || p.id === 'stick')?.size?.[0] ?? 0.4;
+  for (let k = 1; k < xs.length; k++) assert.ok(xs[k] - xs[k - 1] >= width + 0.3, 'a space between two rods');
+  // The picture of the mat: 4.4 by 2.6 half blocks from 0.2 before its point.
+  for (const p of at) {
+    assert.ok(p.x - width / 2 >= mat.x - 0.2 && p.x + width / 2 <= mat.x + 4.2, 'on the mat across');
+    assert.ok(p.z - 0.6 >= mat.z - 0.1 && p.z + 0.6 <= mat.z + 2.5, 'on the mat along');
+  }
+});
+
+test('a rod is more than 4 pixels wide on a phone at the zoom of the start, and the hero stands on the far side of the mat (#61)', async () => {
+  const f = figureOf({ kind: 'rod' }, 'coarse');
+  const width = Math.min(...f.parts.map((p) => p.size[0]));
+  for (const az of ANGLES) {
+    const cam = viewCamera({ focus: { x: 0, y: 0, z: 0 }, az, level: 0, width: 390, height: 844 });
+    const a = cam.project(0, 0, 0);
+    const b = cam.project(width / 2, 0, 0);
+    assert.ok(Math.hypot(b.x - a.x, b.y - a.y) > 4, `the width of a rod from ${az.toFixed(2)}: ${Math.hypot(b.x - a.x, b.y - a.y).toFixed(1)} px`);
+  }
+  // The hero works at the mat from the place of the mat: from the camera of the start, that place
+  // is behind the mat (higher on the screen), so the hero does not hide the rods.
+  const session = await practice('bo-que', startTeacher);
+  const mat = getEntity(session.state, 'zone:mat');
+  const stand = mat.zone.stand ?? mat.position;
+  const r = mat.zone.rect;
+  const cam = viewCamera({ focus: { x: stand.x / 2, y: 0, z: stand.z / 2 }, az: Math.PI / 4, level: 0, width: 390, height: 844 });
+  const middle = cam.project((r.x0 + r.x1) / 4, 0, (r.z0 + r.z1) / 4);
+  const hero = cam.project(stand.x / 2, 0, stand.z / 2);
+  assert.ok(hero.y < middle.y, `the hero is behind the mat: ${hero.y.toFixed(0)} above ${middle.y.toFixed(0)}`);
+});
+
+test('the animals stay out of the places of an open task, 2 half blocks around: no chicken walks over the rods (#61)', async () => {
+  const { taskPlaces, PLACE_MARGIN } = await import('../src/core/world/systems/steer.js');
+  const session = await practice('bo-que', startTeacher);
+  const places = taskPlaces(session.state);
+  assert.ok(places.length >= 2, 'the mat and the heap');
+  const mat = getEntity(session.state, 'zone:mat').position;
+  const near = session.state.entities.filter((e) => e.kind && e.position && !e.hidden && Math.hypot(e.position.x - mat.x, e.position.z - mat.z) < 30);
+  assert.ok(near.length > 0, 'animals live near the mat');
+  let inside = 0;
+  for (let i = 0; i < 30 * 90; i++) {
+    session.step();
+    session.events();
+    if (i < 30 * 5) continue;
+    for (const e of near) if (places.some((r) => e.position.x > r.x0 + PLACE_MARGIN / 2 && e.position.x < r.x1 - PLACE_MARGIN / 2 && e.position.z > r.z0 + PLACE_MARGIN / 2 && e.position.z < r.z1 - PLACE_MARGIN / 2)) inside++;
+  }
+  assert.equal(inside, 0, 'no animal in a place');
 });
 
 test('the bundles of the teacher stand in a row beside the mat, on a phone held upright, and the goal bar counts them as bundles (#48)', async () => {

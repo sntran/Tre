@@ -15,6 +15,24 @@ import { offRoad, KEEP_SIDE } from '../raids.js';
 //   avoid }, slow (the distance where arrive starts to slow down), radius (for separation), boost
 //   (the speed factor when fleeing) }. Units: half blocks and seconds.
 
+// The places of an open task (the mat, the basket, the beds, the line, the hearth): the animals
+// stay out of them, PLACE_MARGIN half blocks around, so that no animal walks over the things that
+// the child counts (#61).
+export const PLACE_MARGIN = 2;
+export function taskPlaces(world) {
+  const out = [];
+  for (const z of query(world, 'zone')) {
+    const task = z.zone.task;
+    if (!task?.startsWith('trial-') || z.zone.rule === 'trial') continue;
+    if (getEntity(world, `zone:${task}`)?.zone.done !== false) continue;
+    const zone = z.zone;
+    const r = zone.rect ?? z.solid?.rect ?? (zone.rule === 'line' ? { x0: zone.x, x1: zone.x + zone.length, z0: zone.z - 1, z1: zone.z + 1 } : Number.isFinite(zone.x) ? { x0: zone.x - 1, x1: zone.x + 1, z0: zone.z - 1, z1: zone.z + 1 } : null);
+    if (r) out.push({ x0: r.x0 - PLACE_MARGIN, x1: r.x1 + PLACE_MARGIN, z0: r.z0 - PLACE_MARGIN, z1: r.z1 + PLACE_MARGIN });
+  }
+  return out;
+}
+const inRect = (r, p) => p.x > r.x0 && p.x < r.x1 && p.z > r.z0 && p.z < r.z1;
+
 export function steer(world, dt, rng, env) {
   const movers = query(world, 'steer', 'position', 'motion').filter((e) => !e.hidden && !e.climb);
   const hero = getEntity(world, 'hero');
@@ -23,6 +41,8 @@ export function steer(world, dt, rng, env) {
   const raid = getEntity(world, 'raid')?.raid;
   const keep = raid && !raid.result ? raid.keep : null;
   const onRoad = (p) => offRoad(keep, p).d < KEEP_SIDE;
+  const places = taskPlaces(world);
+  const inPlace = (p) => places.find((r) => inRect(r, p)) ?? null;
   for (const e of movers) {
     const s = e.steer;
     const w = s.weights;
@@ -102,7 +122,19 @@ export function steer(world, dt, rng, env) {
     }
     // Off the road of a raid: straight to the side, faster than a walk.
     const keeps = keep && s.medium === 'land' && !e.follow && !e.raidThing;
-    const enter = keeps ? (medium, from, to) => env.canEnter(medium, from, to) && (onRoad(from) || !onRoad(to)) : env.canEnter;
+    const roadOk = keeps ? (medium, from, to) => env.canEnter(medium, from, to) && (onRoad(from) || !onRoad(to)) : env.canEnter;
+    // An animal never walks into a place of an open task, and walks out of one at once.
+    const animal = Boolean(e.kind) && s.medium !== 'air' && !e.follow && !e.person;
+    const enter = animal && places.length ? (medium, from, to) => roadOk(medium, from, to) && (Boolean(inPlace(from)) || !inPlace(to)) : roadOk;
+    const place = animal ? inPlace(p) : null;
+    if (place) {
+      // Out by the nearest side of the place.
+      const sides = [[p.x - place.x0, -1, 0], [place.x1 - p.x, 1, 0], [p.z - place.z0, 0, -1], [place.z1 - p.z, 0, 1]];
+      const [, ox, oz] = sides.reduce((a, b) => (b[0] < a[0] ? b : a));
+      dx = ox * s.speed * 1.5;
+      dz = oz * s.speed * 1.5;
+      if (s.wander) s.wander.on = false;
+    }
     if (keeps && onRoad(p)) {
       const out = offRoad(keep, p);
       dx = out.x * s.speed * 1.5;

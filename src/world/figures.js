@@ -677,8 +677,9 @@ export function workThing(look) {
     case 'bronze-drum': return still([P('body', [1.6, 0.8, 1.6], 'ochre', [0, 0.4, 0]), P('waist', [1.3, 0.3, 1.3], 'wood', [0, 0.15, 0]), P('face', [1.7, 0.1, 1.7], 'yellow', [0, 0.85, 0]), P('star', [0.5, 0.04, 0.5], 'vermilion', [0, 0.92, 0])], 0.95);
     // A thin bamboo stake at the edge of a plot: one for each row, one for each column.
     case 'plot-stake': return still([P('pole', [0.18, 1.6, 0.18], 'yellow', [0, 0.8, 0]), P('top', [0.24, 0.12, 0.24], 'ochre', [0, 1.62, 0])], 1.7);
-    // A counting rod: a thin stick of bamboo.
-    case 'rod': return still([P('stick', [0.22, 0.22, 1.2], 'yellow', [0, 0.11, 0]), P('endA', [0.22, 0.22, 0.12], 'ochre', [0, 0.11, 0.66]), P('endB', [0.22, 0.22, 0.12], 'ochre', [0, 0.11, -0.66])], 0.25);
+    // A counting rod: a stick of bamboo, thick enough to see on a phone at the zoom of the start
+    // (more than 4 pixels wide, #61).
+    case 'rod': return still([P('stick', [0.4, 0.3, 1.2], 'yellow', [0, 0.15, 0]), P('endA', [0.4, 0.3, 0.12], 'ochre', [0, 0.15, 0.66]), P('endB', [0.4, 0.3, 0.12], 'ochre', [0, 0.15, -0.66])], 0.32);
     // Ten rods tied with a red band.
     case 'rod-bundle': return still([P('rods', [0.8, 0.8, 1.5], 'yellow', [0, 0.4, 0]), P('ends', [0.7, 0.7, 1.52], 'ochre', [0, 0.4, 0]), P('band', [0.9, 0.9, 0.3], 'vermilion', [0, 0.4, 0])], 0.9);
     // A reed mat on the ground.

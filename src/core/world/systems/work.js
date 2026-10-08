@@ -355,10 +355,17 @@ export function packHeap(world, zone) {
 }
 
 // The rods on the mat: two rows, side by side.
+// The rods on the mat lie in rows of five, with a space between two rods: a full row is five, and
+// two full rows are ten (#61). A child sees how many in a known pattern, as in a frame of ten. More
+// than ten rods (a wrong tie) make more rows, closer together, on the mat.
+export const MAT_ROW = 5;
+export const MAT_GAP = 0.8; // half blocks from the middle of a rod to the next one
 function packMat(world, zone) {
+  const rows = Math.max(2, Math.ceil(zone.items.length / MAT_ROW));
+  const step = rows <= 2 ? 1.3 : 2.6 / (rows - 1);
   zone.items.forEach((id, i) => {
     const e = getEntity(world, id);
-    if (e) e.position = { x: zone.x + 0.3 + (i % 7) * 0.5, y: zone.y + 0.15, z: zone.z + 0.5 + Math.floor(i / 7) * 1.3, facing: 0 };
+    if (e) e.position = { x: zone.x + 0.4 + (i % MAT_ROW) * MAT_GAP, y: zone.y + 0.15, z: zone.z + 0.6 + Math.floor(i / MAT_ROW) * step, facing: 0 };
   });
 }
 
