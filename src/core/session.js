@@ -2093,14 +2093,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // In a task, with no work in reach, the press walks the hero to the nearest work of the task:
     // the heap, the place for the thing in the hands, the anvil, the culms (#54). A talk, a look,
     // or a ride never comes in place of the work.
-    const tappedNear = chosen && list.some((c) => c.keys.includes(chosen.id));
+    const tapped = (c) => Boolean(chosen && c.keys.includes(chosen.id));
+    const tappedNear = list.some(tapped);
     if (taskOn() && !tappedNear && !list.some((c) => c.work || !WORKLESS.has(c.act)) && list.far.length) {
       const c = list.far.reduce((a, b) => (b.d + b.rank * 0.5 < a.d + a.rank * 0.5 ? b : a));
       return { ...c, go: true, hold: false, release: null, run: () => goWork(c) };
     }
     // In a task, a press never looks or talks in place of the work, also while no work is left for
-    // a moment (the fisher shows a stake; the tide comes in): the button waits. A tap chooses them.
-    if (taskOn() && !tappedNear) list = list.filter((c) => c.work || !WORKLESS.has(c.act));
+    // a moment (the fisher shows a stake; the tide comes in): the button waits. A tap chooses them:
+    // a look or a talk stays only when the child tapped that one (#60: a tap on a stake of the row
+    // of the fisher never made the look at the river the act).
+    if (taskOn()) list = list.filter((c) => c.work || !WORKLESS.has(c.act) || tapped(c));
     if (!list.length) return null;
     // With a thing in the hands: a place in reach that takes it always comes before the ground,
     // and the hero turns to it (#44). The ground is a target only when no place is in reach.
@@ -2362,7 +2365,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     log('action', { kind: 'walk' });
-    chosen = null;
+    // A tap on a thing of the map with a text (a field, the river, a sign) chooses it: in a task,
+    // its look is a target only after this tap (#60).
+    const look = triggers.list.find((z) => z.on === 'tap' && tile.x >= z.x && tile.x < z.x + z.w && tile.y >= z.y && tile.y < z.y + z.h);
+    chosen = look ? { id: `look:${look.id}`, along: null } : null;
     // A tap on a star (or on its arrow at the edge of the screen): a walk all the way to the goal
     // along the roads, or to the ferry on the way (#53). A new tap, a talk, or a ferry stops it.
     if (hit.goal && walkFar(hit)) return;
@@ -3104,7 +3110,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     taskPlace: (x, y) => workZoneAt(x * 2, y * 2)?.id ?? null,
     // All that the action button can act on now, with the distance of each (for tests and the
     // debug panel): [{ act, icon, target, d, rank }].
-    targets: () => (screen || busy ? [] : candidates().map((c) => ({ act: c.act, icon: c.icon, target: c.target, d: Math.round(c.d * 10) / 10, rank: c.rank }))),
+    targets: () => (screen || busy ? [] : candidates().map((c) => ({ act: c.act, icon: c.icon, target: c.target, at: c.at ?? null, d: Math.round(c.d * 10) / 10, rank: c.rank }))),
     // The target of the action button now: { act, icon, target, hold, ghost } or null.
     action() {
       const a = action();

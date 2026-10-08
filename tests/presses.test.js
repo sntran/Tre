@@ -157,3 +157,27 @@ test('when Nghé comes into reach 0.2 seconds before a press, the press does not
   run(session, 1);
   assert.ok(getEntity(session.state, 'hero').riding, 'a press after the picture settled rides');
 });
+
+// In a task, the button is for the task (#60): at the row of the fisher with empty hands, the look
+// at the river is never the act of a press, also after a tap on a stake of the row.
+test('the fisher: at the row with empty hands, the look at the river is never the act of a press', async () => {
+  const session = await afterTalk('trial-fisher');
+  assert.deepEqual(playPresses(session, { presses: 6 }), []);
+  if (session.carried()) {
+    session.command({ type: 'hands' });
+    run(session, 2);
+  }
+  const look = session.targets().find((t) => t.act === 'look');
+  assert.ok(look, 'the look at the river is in reach');
+  assert.notEqual(session.action()?.act, 'look');
+  // A tap on a stake of the row, then the stake goes back: the look does not come.
+  const stake = query(session.state, 'item').find((e) => e.item.zone === 'line' && !e.item.fixed);
+  tapAndPress(session, { thing: stake.id });
+  if (session.carried()) {
+    session.command({ type: 'hands' });
+    run(session, 2);
+  }
+  assert.notEqual(session.action()?.act, 'look', 'after a tap on a stake');
+  // A tap on the water next to the row is a tap on the place of the task (a check), so the look
+  // waits for a tap on the river away from the work.
+});
