@@ -359,3 +359,23 @@ test('the healer: after a wrong give, each kind lies in a row and she counts eac
   assert.deepEqual(after, { 'herb-ngai': 2, 'herb-tiato': 2, 'herb-rauma': 2 }, 'only the extra bunch went back');
   assert.ok(basket.zone.items.every((id) => !getEntity(session.state, id).item.set), 'the bunches are in the basket again');
 });
+
+// The count of a wrong bundle in view (#61): a hero who stands on the mat at the snap steps off to
+// the place of the mat, so that the rods show while the teacher counts them.
+test('the teacher: at a wrong tie, a hero who stands on the mat steps off it', async () => {
+  const session = await afterTalk('trial-scholar');
+  const mat = () => zone(session, 'mat');
+  assert.deepEqual(playPresses(session, { presses: 40, until: () => mat().items.length >= 9 && !session.carried() }), []);
+  assert.equal(mat().items.length, 9);
+  const r = mat().rect;
+  const hero = getEntity(session.state, 'hero').position;
+  Object.assign(hero, { x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2 });
+  let snapped = false;
+  session.listen((ev) => { if (ev.type === 'snap') snapped = true; });
+  tapAndPress(session, { person: 'npc:teacher' });
+  run(session, 4, () => snapped);
+  assert.ok(snapped, 'the band snaps');
+  run(session, 4);
+  const inside = hero.x > r.x0 + 0.8 && hero.x < r.x1 - 0.8 && hero.z > r.z0 + 0.8 && hero.z < r.z1 - 0.8;
+  assert.ok(!inside, `the hero is off the mat: ${hero.x.toFixed(1)}, ${hero.z.toFixed(1)}`);
+});

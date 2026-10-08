@@ -1075,7 +1075,9 @@ export async function mountVillage(ctx, params = {}) {
   const voiceHolds = (b) => Boolean(b.line) && (voiceQueue.waiting(b.id, b.line.key) || (spoken?.line.id === b.id && spoken.line.key === b.line.key));
   // A tap on a bubble, or on its person while the bubble shows, says the line again (#60).
   function sayAgain(id) {
-    const b = bubbles.find((x) => x.id === id && x.line);
+    // A word of a count is never said again: a tap on the person in the middle of a count (to tie
+    // the bundle) said one number two times (#61).
+    const b = bubbles.find((x) => x.id === id && x.line && x.line.kind !== 'count');
     if (b) sayLine(b.line, { force: true });
     return Boolean(b);
   }

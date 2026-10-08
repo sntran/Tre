@@ -2920,6 +2920,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (it?.task?.startsWith('trial-')) lastPick = { task: it.task, kind: it.kind };
         if (ev.type === 'pick' && ev.id === 'hero' && it?.task === 'trial-healer') sayHerb('herb', it.kind);
       }
+      // A wrong bundle: a hero who stands on the mat steps off to the place of the mat, so that the
+      // rods show while the teacher counts them (#61: the walk to the teacher crossed the mat).
+      if (ev.type === 'snap' && ev.id === 'zone:mat') {
+        const mat = getEntity(state, ev.id);
+        const r = mat?.zone.rect;
+        const hp = hero().position;
+        if (r && hp.x > r.x0 + 0.8 && hp.x < r.x1 - 0.8 && hp.z > r.z0 + 0.8 && hp.z < r.z1 - 0.8) {
+          const stand = standOf(mat);
+          walkTo([{ x: stand.x / 2, y: stand.z / 2 }], () => worldCommand(state, { type: 'face', id: 'hero', x: mat.zone.x + 2, z: mat.zone.z + 1 }));
+        }
+      }
       if (ev.id === 'sky') {
         // At dawn the enemies of a lost raid come again, and the game saves the start of the day
         // (a restore point for the parent).
