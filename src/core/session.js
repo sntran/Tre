@@ -53,7 +53,8 @@ import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
 import { REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
-import { setupTrial, clearTrial, freeSlot, canTakeWork } from './world/systems/work.js';
+import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap } from './world/systems/work.js';
+import { taskPools, POOL } from '../world/light.js';
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring } from './mentoring.js';
@@ -570,17 +571,35 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // what they are, one time in a visit: the fisher says it, or Nghé when the fisher is not there
   // (at home at night).
   let guessTold = false;
+  const GUESS_NEAR = 20; // half blocks: the hero stands this near the outlines for the line
   function stepGuessLine() {
     if (guessTold || busy || screen) return;
     const outlines = query(state, 'guess', 'position').filter((g) => g.guess.left === undefined);
     if (!outlines.length) return;
-    guessTold = true;
     const at = outlines[0].position;
+    // A walk that the child chose goes on: the line waits until the hero stops near the outlines
+    // (#66: the talk of the bridge stopped a walk from the stakes to the smith).
+    const hero = getEntity(state, 'hero');
+    if (hero.route || Math.hypot(hero.position.x - at.x, hero.position.z - at.z) > GUESS_NEAR) return;
+    guessTold = true;
     const fisher = getEntity(state, 'npc:fisher');
     const nghe = getEntity(state, 'friend:nghe');
     const here = atWork(fisher, state.clock.minutes) && Math.hypot(fisher.position.x - at.x, fisher.position.z - at.z) <= 40;
-    if (here) emit({ type: 'open', screen: 'callout', id: fisher.id, textKey: 'mentor.bridge.guess', params: {} });
+    // The fisher starts the bridge with a short talk: one new word in each line, and its thing
+    // glows (#66: the bridge started by itself with one long line, and no child knew what to do).
+    if (here) talk('bridge.start');
     else if (nghe && !nghe.hidden) emit({ type: 'open', screen: 'callout', id: nghe.id, textKey: 'mentor.nghe.bridge.guess', params: {} });
+  }
+  // After the guess, a line says what comes next, and the pile of planks glows (#66: the outlines
+  // went away with no word).
+  function bridgeNext() {
+    const fisher = getEntity(state, 'npc:fisher');
+    const pile = getEntity(state, 'zone:bridge-pile');
+    const near = fisher && pile && atWork(fisher, state.clock.minutes) && Math.hypot(fisher.position.x - pile.position.x, fisher.position.z - pile.position.z) <= 40;
+    const nghe = getEntity(state, 'friend:nghe');
+    const who = near ? fisher : nghe && !nghe.hidden ? nghe : null;
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'mentor.bridge.next', params: {} });
+    if (pile) setCue([pile.id]);
   }
 
   // People and encounters, in map cells. They block their cells for the paths of taps.
@@ -720,6 +739,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const things = named.map((n) => n.e);
     if (!things.length && !d.named) return;
     d.named = things.length > 0;
+    d.namedIds = things.map((e) => e.id);
     if (d.named) setCue([]);
     const rise = named.find((n) => n.act === 'rise' && n.e.look === 'tide-0');
     if (rise) {
@@ -914,10 +934,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // p: the point of the target (half blocks); stand: where the hero walks to (p when not given).
   // A press while the hero walks to the target of a tap waits for the end of the walk (#47).
   let pressAfterWalk = false;
+  // The act and the target of the picture of the button at a press during a walk (#66: at the end
+  // of the walk, the act was chosen again, and a press on the talk put the child on the calf).
+  let pressShown = null;
+  // A press at the end of a walk when the button has no act on the target of the tap yet (it comes
+  // a moment later, when the hero has turned to it): the seconds that it still waits for that act.
+  let pressSoon = 0;
+  const PRESS_SOON = 0.6;
   // exact: the walk ends at the stand point itself (a free point beside a stem), not near it.
   function goTo(p, id, along = null, stand = p, { exact = false } = {}) {
     chosen = { id, along };
     pressAfterWalk = false;
+    pressSoon = 0;
     const face = () => {
       worldCommand(state, { type: 'face', id: 'hero', x: p.x, z: p.z });
       if (pressAfterWalk) {
@@ -1767,6 +1795,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A large solid thing (the mat, a clump): the free cell nearest to it on the way (#44).
     walkPath(pathToward(pathMap(), heroFrom(), tile), null, onArrive, { x: target.x, y: target.y, d: 2.2 });
   }
+  // A walk to a person goes on to where the person is now, up to PERSON_FOLLOW times, when the
+  // person is more than PERSON_NEAR cells away at its end.
+  const PERSON_FOLLOW = 4;
+  const PERSON_NEAR = 3;
+  const personNow = (p) => persons().find((x) => x.entity === p.entity) ?? p;
   function walkToPerson(id) {
     const p = persons().find((x) => x.kind === 'npc' && x.ref === id);
     // A person who sleeps in the house is not there to talk to.
@@ -1995,7 +2028,48 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     else if (e?.item?.kind === 'culm') goTo(c.at, e.id, null, { x: c.at.x + 2, z: c.at.z });
     else if (e?.item?.kind === 'stem') goTo(c.at, e.id, Math.round(c.at.x - e.position.x), besideStem(e, c.at), { exact: true });
     else goTo(c.at, c.target);
-    if (hero().route || arrivals.size) pressAfterWalk = true;
+    if (hero().route || arrivals.size) {
+      pressAfterWalk = true;
+      pressShown = { act: c.act, target: c.target, task: taskOfCandidate(c) };
+    }
+  }
+  // The task of a candidate of the button: of its thing, its place, or its person (a finish).
+  function taskOfCandidate(c) {
+    const e = getEntity(state, c.target);
+    return c.task ?? e?.item?.task ?? e?.zone?.task ?? (e?.person ? mentoring.taskOfPerson(e.id) : null) ?? null;
+  }
+  // Is a point (half blocks) in the area of the work of a task (#66)? The area is the pool of light
+  // of the task (src/world/light.js) with a margin; a task with no trial zone (the bridge) has the
+  // places of the task with the same margin.
+  const AREA_PAD = 6; // half blocks
+  function inTaskArea(task, p) {
+    if (!task || !p) return false;
+    // Next to the person who gives the task, also when the work is far from that person (#66: after
+    // the talk of the woodcutter, a press walks to the clump of the staffs).
+    const npc = trialDef(String(task).replace(/^trial-/, ''))?.npc;
+    const giver = npc ? getEntity(state, `npc:${npc}`) : null;
+    if (giver?.position && !giver.hidden && Math.hypot(p.x - giver.position.x, p.z - giver.position.z) <= AREA_PAD * 3) return true;
+    const pool = taskPools(state.entities, p, { ...POOL, near: Infinity }).find((x) => x.task === task);
+    if (pool) return Math.hypot(p.x - pool.x, p.z - pool.z) <= pool.r + AREA_PAD;
+    const places = query(state, 'zone').filter((z) => (z.zone.task === task || z.zone.id === task) && z.position);
+    return places.some((z) => {
+      const r = z.zone.rect;
+      if (r) return p.x >= r.x0 - AREA_PAD * 2 && p.x <= r.x1 + AREA_PAD * 2 && p.z >= r.z0 - AREA_PAD * 2 && p.z <= r.z1 + AREA_PAD * 2;
+      return Math.hypot(p.x - z.position.x, p.z - z.position.z) <= AREA_PAD * 3;
+    });
+  }
+  // A thing of a task in the hands flies back to its heap when the hero leaves the area of the task
+  // (#66: a child with a bunch of the healer at the forge pressed to drop it, and the press walked
+  // back to the healer). Then the hands and the button are free.
+  function stepLeaveTask() {
+    const thing = getEntity(state, holding());
+    const task = thing?.item?.task;
+    if (!task?.startsWith('trial-') || !thing.item.home || inTaskArea(task, hero().position)) return;
+    const h = hero();
+    h.hands.holds = null;
+    delete h.carry;
+    toHeap(state, thing);
+    emit({ type: 'back', id: thing.id, item: thing.id, sound: 'plank-down' });
   }
   // Has a place of the task of a thing room for it (not its heap)? The row of the fisher up to the
   // float, a free spot, a basket that wants that kind; the other places take any number.
@@ -2284,10 +2358,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (raidOn()) return raidAction();
     const getOff = () => worldCommand(state, { type: 'ride', id: 'hero' });
     if (h.riding) {
-      // On Nghé, next to a person who can talk: the button shows the talk, and one press gets the
-      // hero down and opens the talk (#60).
-      const talk = candidates().find((c) => c.act === 'talk' && String(c.target).startsWith('npc:'));
-      if (talk) return { ...talk, run: () => { getOff(); talk.run(); } };
+      // On Nghé, next to a person who can talk, or the enemies of an encounter (#66): the button
+      // shows the talk, and one press gets the hero down and opens the talk (#60).
+      const people = new Set(persons().filter((p) => p.kind === 'npc' || p.kind === 'encounter').map((p) => p.entity));
+      const talk = candidates().find((c) => c.act === 'talk' && people.has(c.target));
+      // The hero gets down at once: the world waits while the talk is open, and a command of the
+      // world comes only after it (#66: the hero stayed on the calf at the scouts).
+      if (talk) return { ...talk, run: () => { delete hero().riding; talk.run(); } };
       return { act: 'ride-off', icon: 'ride-off', target: h.riding, run: getOff };
     }
     let list = candidates();
@@ -2296,8 +2373,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // or a ride never comes in place of the work.
     const tapped = (c) => Boolean(chosen && c.keys.includes(chosen.id));
     const tappedNear = list.some(tapped);
-    if (taskOn() && !tappedNear && !list.some((c) => c.work || !WORKLESS.has(c.act)) && list.far.length) {
-      const c = list.far.reduce((a, b) => (b.d + b.rank * 0.5 < a.d + a.rank * 0.5 ? b : a));
+    // Only to the work of the task whose area the hero is in: never to another task, or back
+    // across the village (#66: a press walked the child from the fisher to the bridge, and from the
+    // smith back to the healer).
+    const far = list.far.filter((c) => inTaskArea(taskOfCandidate(c), h.position));
+    if (taskOn() && !tappedNear && !list.some((c) => c.work || !WORKLESS.has(c.act)) && far.length) {
+      const c = far.reduce((a, b) => (b.d + b.rank * 0.5 < a.d + a.rank * 0.5 ? b : a));
       return { ...c, go: true, hold: false, release: null, run: () => goWork(c) };
     }
     // In a task, a press never looks or talks in place of the work, also while no work is left for
@@ -2354,6 +2435,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // The act of a press: the act of the picture, or of the old picture while a new one settles.
   // Null: no act (the button pulses when a new picture took the place of an act that is gone).
+  // The act of a kept picture ({ act, target }) now, in reach, or null.
+  function keptAct(kept) {
+    const now = action();
+    if (now && now.act === kept.act && now.target === kept.target) return now;
+    const same = candidates().find((c) => c.act === kept.act && c.target === kept.target);
+    if (same) return same;
+    // The work of the same task: a press walked to the heap of rods, and at the mat the act of the
+    // button puts a rod of the heap on the mat. Never a talk or a ride in its place.
+    if (now && kept.task && !WORKLESS.has(now.act) && taskOfCandidate(now) === kept.task) return now;
+    return null;
+  }
   function pressAct() {
     watchPicture();
     const a = shown.a;
@@ -2364,17 +2456,47 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'pulse', id: null });
     return null;
   }
+  // A press that waits at the end of a walk: the act on the target of the tap as soon as it is
+  // there; else, after PRESS_SOON seconds, nothing (the button pulses).
+  function stepPressSoon() {
+    if (pressSoon <= 0) return;
+    pressSoon -= STEP;
+    const a = action();
+    if (a && chosen && (a.keys ?? [a.target]).includes(chosen.id)) {
+      pressSoon = 0;
+      pressShown = { act: a.act, target: a.target };
+      act(true);
+    } else if (pressSoon <= 0) emit({ type: 'pulse', id: null });
+  }
   // The action button (or E): do the act of the target, and the target pulses once. An act
   // that goes on while the button is down starts here, and ends with the hold of the button.
   // walked: the press came during the walk to the target. An act that goes on while the button is
   // down (a slash) does not start then: the button is up (#54).
   function act(walked = false) {
-    // A press at the end of a walk to a tapped target is the act of the tap (the child chose it).
-    const a = walked ? action() : pressAct();
+    // A press at the end of a walk does the act of the picture at the press, on its target, when
+    // it can (#66); if not, nothing, and the button pulses. With no picture at the press, the act
+    // of the tap (the child chose it).
+    const kept = walked ? pressShown : null;
+    if (walked) pressShown = null;
+    let a = walked ? (kept ? keptAct(kept) : action()) : pressAct();
+    // No act on the target of the tap at the end of the walk yet: the press waits a moment for it
+    // (#66: in the browser, a tap on a pale row of the bridge and a press at once made no guess).
+    if (walked && !kept && chosen && !(a && (a.keys ?? [a.target]).includes(chosen.id))) {
+      pressSoon = PRESS_SOON;
+      return;
+    }
+    if (walked && kept && !a) {
+      emit({ type: 'pulse', id: null });
+      return;
+    }
     // The hero still walks to the target of the last tap, and the button has no act on it yet:
     // the press comes at the end of the walk (a child presses at once).
+    // The picture is not about the target of the tap yet (an older act): at the end of the walk the
+    // press does the act on the target of the tap (#66: a tap on a pale row of the bridge, and a
+    // press at once, kept the check of the button and made no guess).
     if (chosen && (hero().route || arrivals.size) && !(a && (a.keys ?? [a.target]).includes(chosen.id))) {
       pressAfterWalk = true;
+      pressShown = null;
       return;
     }
     if (!a) return;
@@ -2531,15 +2653,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
       chosen = { id: person.entity, along: null };
       pressAfterWalk = false;
+      pressSoon = 0;
       // A press while the hero walks to the person (or to the enemies of an encounter) comes at the
-      // end of the walk, as at a place of a task (#50: a child presses at once).
-      walkToThing(person, () => {
-        worldCommand(state, { type: 'face', id: 'hero', x: person.x * 2, z: person.y * 2 });
+      // end of the walk, as at a place of a task (#50: a child presses at once). A person who walks
+      // (to the station, home): the walk goes on to where the person is now (#66: the walk to the
+      // healer ended where she stood at the tap).
+      const follow = (tries) => walkToThing(personNow(person), () => {
+        const now = personNow(person);
+        if (tries > 0 && Math.hypot(now.x - heroCell().x, now.y - heroCell().y) > PERSON_NEAR) return follow(tries - 1);
+        worldCommand(state, { type: 'face', id: 'hero', x: now.x * 2, z: now.y * 2 });
         if (pressAfterWalk) {
           pressAfterWalk = false;
-          act();
+          act(true);
         }
       });
+      follow(PERSON_FOLLOW);
       return;
     }
     const hit = target.ground;
@@ -3072,12 +3200,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     checkSteps();
     checkNotebook();
     stepGuessLine();
+    stepLeaveTask();
+    stepPressSoon();
     stepToolLines();
     stepFarWait();
     for (const fn of later.splice(0)) fn();
     const events = state.events;
     for (const ev of events) {
       if (ev.type === 'greet') greeting(ev);
+      if (ev.type === 'guess' && ev.n !== null && ev.n !== undefined && String(ev.id).includes('bridge')) bridgeNext();
       emit(ev);
       // The kind of the last thing of a task that the child took or put: a press does the same
       // again (#54). The mentor sets it only before the child's first act in the task (the first
@@ -3197,6 +3328,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       acted();
       lastChild = state.tick;
     }
+    // A tap on a thing that the open line names (#66: "Chạm vào Bông, rồi bấm nút lớn để cưỡi."):
+    // the talk goes on to its next line (the last line closes the box), and the tap is done.
+    const tapped = type === 'pet' ? cmd.id : type === 'tap' ? (cmd.target?.thing ?? cmd.target?.person ?? cmd.target?.pet ?? null) : null;
+    if (tapped && screen?.screen === 'dialogue' && screen.namedIds?.includes(tapped) && !screen.runner.view()?.choices?.length) {
+      showLine(screen, screen.runner.next(null));
+    }
     if (type === 'next' || type === 'choose') {
       if (screen?.screen === 'dialogue') showLine(screen, screen.runner.next(type === 'choose' ? cmd.n : null));
       else if (screen?.screen === 'say') closeScreen();
@@ -3290,6 +3427,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         arrivals.clear();
         chosen = null;
         pressAfterWalk = false;
+        pressSoon = 0;
       }
       worldCommand(state, { id: 'hero', ...cmd });
     }

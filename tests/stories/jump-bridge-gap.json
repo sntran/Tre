@@ -20,6 +20,8 @@
     65
   ],
   "steps": [
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
+    { "read": true },
     {
       "wait": 1
     },

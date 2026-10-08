@@ -84,7 +84,9 @@ test('each kind of fact: true and false', () => {
   no({ ford: 'closed' });
   ok({ text: { shown: 'world.greet.1' } });
   no({ text: { shown: 'world.greet.2' } });
-  ok({ screen: null });
+  // At the bridge in the morning, the fisher starts the bridge with a short talk (#66).
+  ok({ screen: 'dialogue' });
+  no({ screen: null });
   ok({ count: { entities: 'chicken', min: 3 } });
   no({ count: { entities: 'chicken', max: 1 } });
   ok({ all: { of: 'people', near: 'spot', within: 40 } });

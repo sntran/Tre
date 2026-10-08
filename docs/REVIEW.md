@@ -591,3 +591,10 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **A press at the healer says the put:** a press that takes a bunch from its bed and puts it in the basket in one move says `healer.put.ngai` ("Ngải cứu vào giỏ rồi."), `healer.put.tiato` ("Tía tô vào giỏ rồi."), or `healer.put.rauma` ("Rau má vào giỏ rồi."), not only "Bó ngải cứu đây.".
 - **A wave always helps:** "Cháu thử trước đã, để xem nào." comes only before any act of the child in the task. After an act, a wave gives the line of the next step, for example `mentor.show.smith`. A wave never gets "Cần giúp thì vẫy tay nhé." or a nod.
 - **Please check:** "vào giỏ rồi" for a bunch that the child put in the basket.
+
+## The bridge starts with a short talk (#66)
+
+- **The start talk of the bridge, by the fisher:** `dlg.bridge.start.n1` ("Cây cầu gãy rồi. Đây là chỗ gãy."), with the gap glowing; `dlg.bridge.start.n2` ("Đây là ván. Ván nằm trên bờ."), with the planks glowing; `dlg.bridge.start.n3` ("Đây là những hàng ván mờ."), with the pale planks glowing; and `dlg.bridge.start.n4` ("Cháu chạm vào hàng ván mờ dài bằng chỗ gãy."). After the guess: `mentor.bridge.next` ("Giờ cháu lấy ván ở đống, đặt lên chỗ gãy."), and the pile of planks glows. The old line `mentor.bridge.guess` is gone.
+- **Grandma's first talk:** the line of the touch screen (`dlg.grandma.intro.n4`) comes before the ride line now, so that the ride line is the last line and a tap on the calf closes the box.
+- **Please check:** "ván mờ" for the pale outlines of the guess, and "dài bằng chỗ gãy".
+

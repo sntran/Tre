@@ -51,18 +51,22 @@ test('a new profile: the intro opens as lines; the choice and the next screen co
   // The view closes the name screen: the talk goes on with its next line.
   session.command({ type: 'closed' });
   assert.equal(session.screen, 'dialogue');
-  // Grandma says how to ride the calf (#60), then the line for a touch screen.
-  assert.equal(opens(session.events()).at(-1).textKey, 'dlg.grandma.intro.ride');
-  session.command({ type: 'next' });
+  // The line for a touch screen, then grandma says how to ride the calf (#60), as the last line,
+  // with the calf named (#66).
   assert.equal(opens(session.events()).at(-1).textKey, 'dlg.grandma.intro.n4');
   session.command({ type: 'next' });
   assert.ok(profile.flags['intro.seen']);
+  assert.equal(opens(session.events()).at(-1).textKey, 'dlg.grandma.intro.ride');
+  // A tap on the calf that the line names closes the box and chooses the calf (#66: two taps on
+  // the calf did nothing while the box was open).
+  session.command({ type: 'pet', id: 'friend:nghe' });
   // The talk ended: the world goes on.
   assert.equal(session.screen, null);
   assert.equal(session.busy, false);
   session.step();
   session.step();
   assert.ok(session.state.clock.minutes > t0);
+  assert.equal(session.action()?.act, 'ride', 'the button shows the ride on the calf');
 });
 
 test('a tap on a person: the hero walks there, and the action button opens the talk', () => {

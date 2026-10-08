@@ -96,6 +96,8 @@ test('a jump during a talk or a task in progress does nothing', async () => {
     clock: 540, at: ['phu-dong', 46, 61],
     steps: [
       { wait: 1 },
+      // The fisher starts the bridge with a short talk (#66).
+      { read: true },
       // In a talk: no jump.
       { do: { type: 'talk', dialogue: 'teacher.wait' } },
       { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } },

@@ -8,6 +8,8 @@
   "clock": 540,
   "at": ["phu-dong", 46, 61],
   "steps": [
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
+    { "read": true },
     { "press": { "plank": 4 } },
     { "until": { "event": "pick", "timeout": 20 } },
     { "wait": 15 },

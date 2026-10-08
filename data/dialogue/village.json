@@ -88,6 +88,17 @@
       }
     },
     {
+      "id": "bridge.start",
+      "_about": "#66: the broken bridge starts with a short talk of the fisher, with one new word in each line and its thing shown (names).",
+      "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "fisher", "textKey": "dlg.bridge.start.n1", "names": ["zone:bridge-gap"], "next": "n2" },
+        "n2": { "speaker": "fisher", "textKey": "dlg.bridge.start.n2", "names": ["zone:bridge-pile"], "next": "n3" },
+        "n3": { "speaker": "fisher", "textKey": "dlg.bridge.start.n3", "names": ["guess:bridge-gap:1", "guess:bridge-gap:2", "guess:bridge-gap:3", "guess:bridge-gap:4", "guess:bridge-gap:5", "guess:bridge-gap:6"], "next": "n4" },
+        "n4": { "speaker": "fisher", "textKey": "dlg.bridge.start.n4", "names": ["guess:bridge-gap:1", "guess:bridge-gap:2", "guess:bridge-gap:3", "guess:bridge-gap:4", "guess:bridge-gap:5", "guess:bridge-gap:6"] }
+      }
+    },
+    {
       "id": "fisher.trial",
       "start": "n1",
       "nodes": {

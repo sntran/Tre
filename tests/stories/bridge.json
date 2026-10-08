@@ -8,6 +8,8 @@
   "clock": 540,
   "at": ["phu-dong", 46, 61],
   "steps": [
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
+    { "read": true },
     { "wait": 1 },
     { "expect": [{ "zone": "bridge-gap", "state": "open", "gap": 12, "planks": 0 }, { "count": { "entities": "plank-ghost", "min": 6 } }] },
     { "press": { "guess": 3 } },
