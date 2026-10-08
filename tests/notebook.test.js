@@ -24,7 +24,7 @@ test('each print has a title in both languages, a print that the game can draw, 
     if (kind === 'talk') assert.ok(dialogues.includes(what), `${e.id}: the talk ${what}`);
     if (kind === 'map') assert.ok(load(`data/maps/${what}.json`), e.id);
   }
-  for (const s of notebookSkills(def, skills, 2)) assert.ok(vi[`skill.${s.id}`] && en[`skill.${s.id}`], s.id);
+  for (const s of notebookSkills(def, skills, 5)) assert.ok(vi[`skill.${s.id}`] && en[`skill.${s.id}`], s.id);
   assert.equal(new Set(def.entries.map((e) => e.id)).size, def.entries.length, 'no two prints with one id');
 });
 
@@ -57,8 +57,13 @@ test('a skill fills in at its first skill event, and gets the red seal when it i
   // The pages: the skills first, then the legends, the creatures, and the places.
   const kinds = list.map((e) => e.kind);
   assert.deepEqual([...new Set(kinds)], ['skill', 'legend', 'creature', 'place']);
-  // No skill of a later era, and none two grades over the child.
-  assert.ok(list.every((e) => e.kind !== 'skill' || skills.find((s) => s.id === e.skill).grade <= 2));
+  // No skill of a later era; a skill over the grade of the child only when the child met it.
+  assert.ok(list.every((e) => e.kind !== 'skill' || skills.find((s) => s.id === e.skill).grade <= 1 || e.met));
+  assert.ok(list.some((e) => e.id === 'skill:math.add.20'), 'a skill of grade 2 that the child met');
+  assert.ok(!list.some((e) => e.id === 'skill:math.sub.20'), 'not a skill of grade 2 that the child did not meet');
+  // On a page the met prints come first.
+  const page = list.filter((e) => e.kind === 'skill');
+  assert.deepEqual(page.slice(0, 2).map((e) => e.met), [true, true]);
   const c = notebookCount(list);
   assert.equal(c.sealed, 1);
   assert.ok(c.have >= 3 && c.have < c.all);

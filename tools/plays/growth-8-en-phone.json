@@ -1,0 +1,39 @@
+{
+ "about": "#8 in English: the notebook from the menu and the country map from the minimap.",
+ "start": "?story=trial-fisher",
+ "lang": "en",
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().entities.some((e) => e.id === 'npc:fisher')",
+   "timeout": 900
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "en-hud"
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Menu']",
+   "after": 1
+  },
+  {
+   "click": "Notebook",
+   "after": 1.5
+  },
+  {
+   "shot": "en-notebook"
+  },
+  {
+   "button": ".notebook-panel .icon-btn",
+   "after": 0.5
+  },
+  {
+   "button": ".minimap",
+   "after": 2
+  },
+  {
+   "shot": "en-country-map"
+  }
+ ]
+}

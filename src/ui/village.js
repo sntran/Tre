@@ -312,7 +312,7 @@ export async function mountVillage(ctx, params = {}) {
     const key = `${g.level}:${Math.round((g.into / g.need) * 8)}`;
     if (bamboo.dataset.key === key && !grew) return;
     bamboo.dataset.key = key;
-    const size = Math.max(3, Math.min(7, Math.floor(34 / (g.level + 1))));
+    const size = Math.max(4, Math.min(10, Math.floor(38 / (g.level + 1))));
     bamboo.style.setProperty('--section', `${size}px`);
     const sections = Array.from({ length: g.level }, (_, i) => h('i', { class: grew && i === g.level - 1 ? 'grew' : '' }));
     const shoot = h('i', { class: 'shoot' });

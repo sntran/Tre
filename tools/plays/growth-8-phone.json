@@ -1,0 +1,124 @@
+{
+ "about": "#8: the bamboo of the hero grows after the trial of the smith, a new print of the notebook shows, the notebook opens from the menu, the minimap opens the country map on do paper, and the parent area shows the same notebook. In Vietnamese.",
+ "start": "?story=trial-smith",
+ "lang": "vi",
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().entities.some((e) => e.id === 'npc:smith')",
+   "timeout": 900
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "bamboo-and-minimap"
+  },
+  {
+   "print": "[document.querySelectorAll('.hud-bamboo i:not(.shoot)').length, document.querySelector('.hud-bamboo .shoot')?.style.height]"
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 4
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith')",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.look === 'iron-3'",
+   "timeout": 180
+  },
+  {
+   "press": true
+  },
+  {
+   "until": "Boolean(document.querySelector('.print-card'))",
+   "timeout": 30
+  },
+  {
+   "shot": "a-new-print-of-the-notebook"
+  },
+  {
+   "until": "Boolean(document.querySelector('.talk-calling'))",
+   "timeout": 30
+  },
+  {
+   "read": 3
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-shoot-of-the-bamboo-grew"
+  },
+  {
+   "print": "[JSON.stringify(tre.profile.growth), document.querySelectorAll('.hud-bamboo i:not(.shoot)').length, document.querySelector('.print-card')?.textContent ?? null, Object.keys(tre.profile.notebook?.seen ?? {}).join(' ')]"
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "click": "Sổ tay",
+   "after": 1.5
+  },
+  {
+   "shot": "the-notebook"
+  },
+  {
+   "print": "[document.querySelectorAll('.note-card:not(.gap)').length, document.querySelectorAll('.note-card.gap').length, document.querySelector('.note-count')?.textContent]"
+  },
+  {
+   "button": ".notebook-panel .icon-btn",
+   "after": 0.5
+  },
+  {
+   "button": ".minimap",
+   "after": 2
+  },
+  {
+   "shot": "the-country-map-on-paper"
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Sổ tay",
+   "after": 1.5
+  },
+  {
+   "shot": "the-notebook-in-the-parent-area"
+  }
+ ]
+}

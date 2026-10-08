@@ -2845,8 +2845,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function skillEvent(ev) {
     const l = learner();
     const pBefore = l?.entry(ev.skill).p ?? null;
+    const met = (profile.learning?.skills?.[ev.skill]?.n ?? 0) > 0;
     const rec = learnerRecord(ev);
     if (rec) l?.record({ skill: ev.skill, level: rec.level }, rec.correct);
+    // The first skill event of a skill of the era: a new print in the notebook (#8).
+    if (!met && (profile.learning?.skills?.[ev.skill]?.n ?? 0) > 0 && data.notebook) {
+      const skill = data.skills?.skills?.find((s) => s.id === ev.skill);
+      if (skill && (skill.era ?? 1) <= (data.notebook.skillEra ?? 1)) emit({ type: 'notebook', id: `skill:${skill.id}`, titleKey: `skill.${skill.id}`, look: null, kind: 'skill', subject: skill.subject });
+    }
     const pAfter = l?.entry(ev.skill).p ?? null;
     log('attempt', {
       task: ev.task, skill: ev.skill, phase: 'commit', success: ev.solved, efficient: ev.efficient, first: ev.first, mashing: ev.mashing,
