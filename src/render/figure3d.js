@@ -200,6 +200,14 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   dust.count = 0;
   scene.add(dust);
   const puffs = [];
+  // Leaves of a success (#62): small flat leaves in green, yellow, and red that fly up and fall
+  // slowly. They have their own light (a basic material), so that they show also at night.
+  const leafMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.15, 0.6), new THREE.MeshBasicMaterial({ color: 0xffffff }), MAX_PUFFS);
+  leafMesh.frustumCulled = false;
+  leafMesh.count = 0;
+  scene.add(leafMesh);
+  const LEAF_COLORS = [C.green, C.yellow, C.vermilion, C.greenPale].map((c) => new THREE.Color(c));
+  const leaves = [];
   // Drops of a splash: small white boxes that fly up and fall back into the water.
   const spray = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.diep) }), MAX_PUFFS);
   spray.frustumCulled = false;
@@ -211,6 +219,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   const m4 = new THREE.Matrix4();
   const local = new THREE.Matrix4();
   const tmp = new THREE.Matrix4();
+  const rot = new THREE.Matrix4();
+  const scl = new THREE.Vector3();
   const color = new THREE.Color();
 
   // A figure at one level of detail: a tree of plain three.js groups (no meshes) that gives the
@@ -311,6 +321,9 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         f.offset = (e.riding ? (typeof e.riding === 'number' ? e.riding : RIDER) : 0) - (e.motion?.wade ? WADE : e.motion?.shallow && !e.control ? 0.3 : 0);
         // A dancer of the drum dance hops on its beat: up and down in a short arc.
         if (e.hop) f.offset += Math.sin(Math.PI * Math.min(1, e.hop.t / HOP)) * HOP_UP;
+        // The person of a task cheers at a success (#62): one jump, or two jumps and a wave at the end.
+        const cheering = e.cheer ? (e.cheer.t < e.cheer.hops * e.cheer.hop ? 'jump' : 'wave') : null;
+        if (cheering === 'jump') f.offset += Math.sin(Math.PI * ((e.cheer.t / e.cheer.hop) % 1)) * HOP_UP;
         // The pose that the state asks for: riding, rest, joy, a wave, and the bend of grass.
         // A mentor that points (the gesture of a move) comes before the act of the plan.
         // A jump: a crouch, then the pose in the air. At the landing, a puff of dust at the feet.
@@ -320,7 +333,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         f.jumping = Boolean(e.jump);
         const jump = e.jump ? (e.jump.crouch > 0 ? 'crouch' : 'jump') : null;
         const reach = until(flights, 'by', e.id) > tick ? 'reach' : null;
-        f.want = e.riding ? 'ride' : jump ?? (e.hop ? 'jump' : null) ?? reach ?? WANTS[e.gesture?.act ?? e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
+        f.want = e.riding ? 'ride' : jump ?? cheering ?? (e.hop ? 'jump' : null) ?? reach ?? WANTS[e.gesture?.act ?? e.act] ?? (e.react?.waving > 0 ? 'wave' : null);
         f.bend = e.react?.bend ?? null;
         // A tap on a sleeping animal: its ear flicks (in two held positions, as a print).
         f.flick = e.flick ?? 0;
@@ -483,6 +496,26 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       }
       spray.count = r;
       spray.instanceMatrix.needsUpdate = true;
+      let l = 0;
+      for (let i = leaves.length - 1; i >= 0; i--) {
+        const d = leaves[i];
+        d.age += dt;
+        d.vy -= 3 * dt;
+        d.x += (d.vx + Math.sin(d.age * 7 + d.spin) * 0.6) * dt;
+        d.y += Math.max(d.vy, -0.8) * dt;
+        d.z += d.vz * dt;
+        if (d.age > 1.6 || l >= MAX_PUFFS) {
+          leaves.splice(i, 1);
+          continue;
+        }
+        const k = 0.22 * Math.min(1, (1.6 - d.age) * 3);
+        tmp.makeRotationY(d.spin + d.age * 4).multiply(rot.makeRotationX(Math.sin(d.age * 9 + d.spin) * 0.8)).scale(scl.set(k, k, k)).setPosition(d.x, d.y, d.z);
+        leafMesh.setMatrixAt(l, tmp);
+        leafMesh.setColorAt(l++, d.color);
+      }
+      leafMesh.count = l;
+      leafMesh.instanceMatrix.needsUpdate = true;
+      if (leafMesh.instanceColor) leafMesh.instanceColor.needsUpdate = true;
       for (const p of glowSpots) {
         if (g >= MAX_GLOWS) break;
         const r = p.r / 2 + 0.4;
@@ -506,12 +539,15 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       parts.instanceColor.needsUpdate = true;
       plain.needsUpdate = true;
     },
-    // A burst at a point (world units): 'splash' (drops of water) or 'dust' (a puff of dust, for
-    // example when the bridge takes solid form). n: how many.
+    // A burst at a point (world units): 'splash' (drops of water), 'dust' (a puff of dust, for
+    // example when the bridge takes solid form), or 'leaves' (a success, #62). n: how many.
     burst(x, y, z, kind = 'splash', n = 14) {
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2 + Math.random() * 0.4;
-        if (kind === 'splash') {
+        if (kind === 'leaves') {
+          const v = 0.6 + Math.random() * 0.9;
+          leaves.push({ x, y, z, vx: Math.cos(a) * v, vy: 2.6 + Math.random() * 1.4, vz: Math.sin(a) * v, age: 0, spin: Math.random() * 6, color: LEAF_COLORS[i % LEAF_COLORS.length] });
+        } else if (kind === 'splash') {
           const v = 0.8 + Math.random() * 1.2;
           drops.push({ x, y, z, vx: Math.cos(a) * v, vy: 2.5 + Math.random() * 2, vz: Math.sin(a) * v, age: 0, floor: y - 0.2, size: 0.12 + Math.random() * 0.1 });
         } else {
@@ -546,7 +582,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       return f?.at ? { ...f.at, height: f.height } : null;
     },
     dispose() {
-      for (const m of [parts, hulls, shadows, glows, light, dust, spray]) {
+      for (const m of [parts, hulls, shadows, glows, light, dust, spray, leafMesh]) {
         scene.remove(m);
         m.material.dispose();
         m.dispose();

@@ -1140,6 +1140,48 @@ export async function mountVillage(ctx, params = {}) {
     };
     requestAnimationFrame(tick);
   }
+  // The end of a task (#62): a small seal of the calling flies from the person to the goal bar. It
+  // lands on the pip that the task fills (the pip glows), or on the picture of the goal bar.
+  function flySeal(fromId) {
+    const q = figures.placeOf(fromId);
+    if (!q) return;
+    const start = view.project(q.x, q.y + (q.height ?? 1.5), q.z);
+    const el = h('i', { class: 'flying-seal' });
+    marks.append(el);
+    pipsFlying += 1;
+    updateHud();
+    const t0 = performance.now();
+    const target = () => {
+      const pips = [...goalPips.children];
+      const index = pips.filter((p) => p.classList.contains('on')).length;
+      return !goalPips.hidden && pips[index] ? pips[index] : goalBtn.querySelector('.btn-icon');
+    };
+    const tick = (now) => {
+      const box = target()?.getBoundingClientRect();
+      const base = canvas.getBoundingClientRect();
+      const end = box ? { x: box.left + box.width / 2 - base.left, y: box.top + box.height / 2 - base.top } : { x: start.x, y: 0 };
+      const k = Math.max(0, Math.min(1, (now - t0) / 1100));
+      const e = k * k * (3 - 2 * k);
+      el.style.transform = `translate(${start.x + (end.x - start.x) * e}px, ${start.y + (end.y - start.y) * e - Math.sin(k * Math.PI) * 50}px) translate(-50%, -50%) rotate(${(1 - k) * 30}deg) scale(${1.6 - 0.6 * k})`;
+      if (k < 1 && alive) {
+        requestAnimationFrame(tick);
+        return;
+      }
+      el.remove();
+      pipsFlying = Math.max(0, pipsFlying - 1);
+      if (!alive) return;
+      const spot = target();
+      updateHud();
+      spot?.classList.remove('landed');
+      void spot?.offsetWidth;
+      spot?.classList.add('landed');
+    };
+    requestAnimationFrame(tick);
+  }
+  // The lights of the bursts of a success (#62): a warm light for a moment, also at night.
+  let cheerLights = [];
+  const CHEER_LIGHT = 1.4; // seconds
+
   // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
   // up when it lands.
   function flyToCounter(fromId, item, delay) {
@@ -1224,6 +1266,16 @@ export async function mountVillage(ctx, params = {}) {
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
       case 'workView': turnToWork(ev.points, ev.sight); return;
+      // A success in a task (#62): a burst of leaves from the thing, with its own light; at the end
+      // of the task, the seal flies to the goal bar.
+      case 'cheer':
+        if (ev.at) {
+          const at = { x: ev.at.x / 2, y: ev.at.y / 2 + 0.4, z: ev.at.z / 2 };
+          figures.burst(at.x, at.y, at.z, 'leaves', ev.end ? 18 : 10);
+          cheerLights.push({ ...at, t: performance.now() });
+        }
+        if (ev.end && ev.by) flySeal(ev.by);
+        return;
       // The things that a line of a talk names (#62): they glow, and the view shows them above the
       // talk box. An empty list ends it.
       case 'names':
@@ -1491,13 +1543,17 @@ export async function mountVillage(ctx, params = {}) {
       dusk.globalCompositeOperation = 'lighter';
       // The lit posts and the ring of the pull of the slingshot are lights too (#55).
       const lights = state.entities.filter((e) => e.look === 'lantern-lit' || e.carry === 'lantern' || e.look === 'pull-ring' || /^post-\d-on$/.test(e.look ?? ''));
+      // The bursts of a success are lights too, for a moment (#62).
+      const nowMs = performance.now();
+      cheerLights = cheerLights.filter((c) => nowMs - c.t < CHEER_LIGHT * 1000);
+      for (const c of cheerLights) lights.push({ id: null, cheer: c, look: 'cheer' });
       for (const e of lights) {
-        const f = figures.placeOf(e.id);
+        const f = e.cheer ?? figures.placeOf(e.id);
         if (!f) continue;
         const q = view.project(f.x + (e.lantern ? 0.8 : 0), f.y + (e.lantern ? 1 : 0.6), f.z);
         const flicker = e.lantern?.flicker ? 0.7 + Math.abs(Math.sin(time * 40)) * 0.5 : 1;
         // A post or the ring of the pull: a small light.
-        const size = e.look === 'lantern-lit' || e.carry === 'lantern' ? 1 : 0.45;
+        const size = e.look === 'lantern-lit' || e.carry === 'lantern' ? 1 : e.cheer ? 0.8 * (1 - (nowMs - e.cheer.t) / (CHEER_LIGHT * 1000)) : 0.45;
         const r = (view.state.level ? 70 : 100) * size * (0.95 + Math.sin(time * 6 + q.x) * 0.05) * flicker;
         const hole = dusk.createRadialGradient(q.x, q.y, 0, q.x, q.y, r);
         hole.addColorStop(0, `rgba(160, 140, 110, ${0.8 * night})`);

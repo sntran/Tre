@@ -161,3 +161,7 @@ The level comes from the grade that the player gave, as for the trials.
 - The soldier raids and the boss give no rice as a gift: their sacks are the loot. The scouts give iron (for the horse) and rice.
 - Gióng stands at the side of the hero in the soldier raids too, so that he is there for the share.
 - A share is judged only when the pile cannot even out the mats any more. So a child who fills one mat after the other (four, four, then two with two sacks left) is not judged before the last sacks go down.
+
+## A finish that a child sees (#62)
+
+At each success in a task (a tied bundle, a quench, a full basket, the row of stakes that keeps the fish, equal staffs, the rice of Gióng), the work system sends the event `success` with the place of the thing. The person of the task jumps one time, and a small burst of leaves in green, yellow, and red comes from the thing. The leaves and a warm light under them show also at night. At the end of the task, the person jumps two times and waves, and a small red seal flies from the person to the pip that the task fills on the goal bar (or to the picture of the goal bar); the pip glows when the seal lands. All this takes less than 2 seconds and has no text. The jump goes on while the done talk is open: the session moves it, not the world.

@@ -91,8 +91,17 @@ function commit(world, tz, task, result) {
   say(world, 'skill', tz.id, trialSkill(task, { ...result, first: result.first ?? tz.zone.commits === 1, resets: tz.zone.resets }));
 }
 
-function finish(world, tz) {
+// A success that a child sees with the sound off (#62): the person of the task jumps (the session),
+// and a small burst of leaves comes from the thing (the view). at: the place of the thing (half
+// blocks); end: the end of the task.
+function success(world, tz, at = null, end = false) {
+  const p = at ?? tz.position;
+  say(world, 'success', tz.id, { trial: tz.zone.trial, end, at: { x: p.x, y: p.y, z: p.z } });
+}
+
+function finish(world, tz, at = null) {
   tz.zone.done = true;
+  success(world, tz, at, true);
   say(world, 'trial', tz.id, { trial: tz.zone.trial, done: true, sound: 'drum' });
 }
 
@@ -564,7 +573,7 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.set = true;
     zone.items.push(thing.id);
     thing.position = { x: zone.x + 0.5, y: zone.y, z: zone.z + 0.5, facing: Math.PI / 2 };
-    finish(world, tz);
+    finish(world, tz, thing.position);
   } else return false;
   say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: 'plank-down' });
   return true;
@@ -597,10 +606,11 @@ function act(world, e, want, env) {
       // The bundles stand in a row on the side of the mat away from the teacher and the heap, in
       // view of the work (#48).
       const r = mat.zone.rect;
-      addEntity(world, { id: `bundle:scholar:${k}`, keep: true, position: { x: r.x0 + 1.4 + k * BUNDLE_STEP, y: mat.zone.y, z: r.z1 + 1.2, facing: Math.PI / 2 }, look: 'rod-bundle' });
+      const bundle = addEntity(world, { id: `bundle:scholar:${k}`, keep: true, position: { x: r.x0 + 1.4 + k * BUNDLE_STEP, y: mat.zone.y, z: r.z1 + 1.2, facing: Math.PI / 2 }, look: 'rod-bundle' });
       say(world, 'tie', mat.id, { sound: 'plank-up' });
       const heapZone = zoneEnt(world, 'rods');
-      if ((heapZone?.zone.items.length ?? 0) < task.bundle) finish(world, tz);
+      if ((heapZone?.zone.items.length ?? 0) < task.bundle) finish(world, tz, bundle.position);
+      else success(world, tz, bundle.position);
     } else {
       // The band snaps (a puff of dust), and the rods stay on the mat in their rows, so that the
       // teacher counts them aloud with the child (#61: before, all the rods went back to the heap,
@@ -639,7 +649,7 @@ function act(world, e, want, env) {
     } else if (r.solved) {
       for (const t of things) t.item.set = true;
       say(world, 'exact', place.id, { sound: 'plank-up' });
-      finish(world, tz);
+      finish(world, tz, place.position);
     } else if (r.over) {
       // Too many: the last things go back to the pile, until the place is not over.
       let rest = sum;
@@ -693,7 +703,7 @@ function act(world, e, want, env) {
       iron.item.set = true;
       tz.zone.heat = null;
       say(world, 'hiss', iron.id, { sound: 'splash', at: iron.position });
-      finish(world, tz);
+      finish(world, tz, iron.position);
     } else {
       iron.look = 'iron-bent';
       tz.zone.bent = BEND;
@@ -718,7 +728,7 @@ function act(world, e, want, env) {
       const b = getEntity(world, 'basket:healer');
       if (b) b.look = 'basket-full';
       say(world, 'given', basket.id, { sound: 'pickup' });
-      finish(world, tz);
+      finish(world, tz, b?.position);
     } else {
       // The healer takes the bunches out and lays each kind in a row in front of the basket, so
       // that she counts each row aloud with the child (#61: before, the extra herbs flew back at
@@ -791,7 +801,7 @@ function act(world, e, want, env) {
       removeEntity(world, 'sample:staffs');
       addEntity(world, { id: 'staffs:bamboo', keep: true, position: { x: c.x + 3, y: c.y, z: c.z - (task.parts - 1) * CULM_STEP / 2, facing: 0 }, look: `staffs-${task.parts}` });
       say(world, 'chop', tz.id, { sound: 'plank-up', pieces: [...tz.zone.pieces] });
-      finish(world, tz);
+      finish(world, tz, getEntity(world, 'staffs:bamboo')?.position);
     } else {
       // The pieces that are not equal to the others break, and their culms grow again.
       const pieces = [...tz.zone.pieces];
@@ -863,7 +873,7 @@ function feed(world, tz, thing, env) {
   tz.zone.ones = r.ones;
   const pot = getEntity(world, 'pot:rice');
   if (pot) pot.look = `rice-pot-${r.ones}`;
-  if (tz.zone.heads >= task.heads) finish(world, tz);
+  if (tz.zone.heads >= task.heads) finish(world, tz, pot?.position);
 }
 
 // A glowing iron on the anvil of the smith (the demo piece of the smith, or the iron of the child).
@@ -977,7 +987,7 @@ function tickTide(world, tz, dt, env) {
   } else if (tide.phase === 'out' && tide.t >= TIDE_OUT) {
     const r = tide.result;
     if (r?.solved) {
-      finish(world, tz);
+      finish(world, tz, getEntity(world, 'fish:fisher')?.position);
       return;
     }
     removeEntity(world, 'fish:fisher');

@@ -496,6 +496,24 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'farewell', on: false });
   }
 
+  // A success in a task (#62): the person of the task jumps (two jumps and a wave at the end of the
+  // task), and the view shows a burst of leaves and, at the end, the seal that flies to the goal
+  // bar. The jump goes on while a talk box is open (the world waits, the session does not).
+  const CHEER = { hop: 0.5, wave: 0.9 };
+  function cheer(ev) {
+    const id = String(ev.trial ?? '');
+    const person = id.startsWith('event-') ? getEntity(state, `event:${id.slice(6)}`) : getEntity(state, `npc:${trialDef(id)?.npc}`);
+    if (person) person.cheer = { t: 0, hops: ev.end ? 2 : 1, wave: Boolean(ev.end), hop: CHEER.hop };
+    emit({ type: 'cheer', by: person?.id ?? null, at: ev.at, end: Boolean(ev.end), trial: id });
+  }
+  function stepCheer() {
+    for (const e of state.entities) {
+      if (!e.cheer) continue;
+      e.cheer.t += STEP;
+      if (e.cheer.t >= e.cheer.hops * CHEER.hop + (e.cheer.wave ? CHEER.wave : 0)) delete e.cheer;
+    }
+  }
+
   // The guess at the bridge (#51): when the plank outlines of the guess lie on the bank, a line says
   // what they are, one time in a visit: the fisher says it, or Nghé when the fisher is not there
   // (at home at night).
@@ -2833,6 +2851,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The count of the bundles on the goal bar (#48).
     if ((ev.type === 'tie' || ev.type === 'snap') && ev.id === 'zone:mat') emit({ type: 'hud' });
     if (ev.type === 'planted') planting.planted(ev);
+    if (ev.type === 'success') cheer(ev);
     hamlet.worldEvent(ev);
     if (ev.type === 'trial' && ev.done && String(ev.trial).startsWith('event-')) eventDone(ev.trial.slice(6));
     else if (ev.type === 'trial' && ev.done) trialDone(ev.trial);
@@ -2950,6 +2969,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (state.tick % 3 === 0 && !screen) watchPicture();
     stepSling();
     stepFarewell();
+    stepCheer();
     stepGuessLine();
     stepToolLines();
     stepFarWait();
