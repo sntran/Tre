@@ -37,6 +37,7 @@ import { check } from './conditions.js';
 import { createTriggers } from './triggers.js';
 import { currentGoal, doneSteps } from './quests.js';
 import { addXp, questSteps } from './growth.js';
+import { noteSeen, entriesOfKey } from './notebook.js';
 import { offOf, weekOf } from './learnlog.js';
 import { snapFacts } from './planting.js';
 import { clueLine as clueOf, hiddenAt, areaOf, inArea, openFinds, wayOf, wayPoint } from './clues.js';
@@ -523,6 +524,33 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (r) emit({ type: 'growth', kind, ...r });
     return r;
   }
+  // The notebook (#8, src/core/notebook.js): the things that the child meets. A new print sends the
+  // event notebook (the view shows the print for a moment).
+  function noteKey(key) {
+    if (!data.notebook || !noteSeen(profile, key, state?.clock?.minutes ?? 0)) return;
+    for (const e of entriesOfKey(data.notebook, key)) emit({ type: 'notebook', id: e.id, titleKey: e.titleKey, look: e.look ?? null, kind: e.kind });
+  }
+  const NOTE_NEAR = 20; // half blocks: an animal this near the hero is met
+  const creatureKinds = () => new Set((data.notebook?.entries ?? []).filter((e) => e.met.startsWith('creature:')).map((e) => e.met.slice(9)));
+  // About each second: the animals near the hero, the enemies of a raid, and the place of the map.
+  function checkNotebook() {
+    if (state.tick % 30 !== 15 || !data.notebook) return;
+    const kinds = creatureKinds();
+    const hp = hero()?.position;
+    if (!hp) return;
+    for (const e of state.entities) {
+      if (!e.kind || !kinds.has(e.kind) || !e.position) continue;
+      if (Math.hypot(e.position.x - hp.x, e.position.z - hp.z) <= NOTE_NEAR) noteKey(`creature:${e.kind}`);
+    }
+    for (const en of raidEnt()?.raid.enemies ?? []) if (kinds.has(en.kind)) noteKey(`creature:${en.kind}`);
+    // A place: the hero is in the rect of its map on the plane.
+    const c = heroCell();
+    for (const p of map.source?.places ?? []) {
+      const [x0, y0] = data.world.at(p.id, 0, 0);
+      if (c.x >= x0 && c.y >= y0 && c.x < x0 + p.width && c.y < y0 + p.height) noteKey(`map:${p.id}`);
+    }
+  }
+
   // The done steps of the quests, about each second.
   function checkSteps() {
     if (state.tick % 30 !== 0 || !data.quests) return;
@@ -626,6 +654,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function talk(id) {
     if (!id) return;
     heard.add(id);
+    noteKey(`talk:${id}`);
     queue(() => {
       const def = data.dialogues.get(id);
       if (!def) return;
@@ -2991,6 +3020,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepFarewell();
     stepCheer();
     checkSteps();
+    checkNotebook();
     stepGuessLine();
     stepToolLines();
     stepFarWait();

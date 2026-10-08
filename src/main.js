@@ -4,6 +4,7 @@ import './ui/modals.js';
 import './ui/worldmap.js';
 import './ui/vanmieu.js';
 import './ui/parent.js';
+import './ui/notebook.js';
 
 startApp(document.getElementById('app'));
 

@@ -12,6 +12,7 @@ export const FILES = {
   tiles: 'data/tiles.json',
   regions: 'data/world/regions.json',
   roadEvents: 'data/world/road-events.json',
+  notebook: 'data/notebook.json',
   routes: 'data/world/routes.json',
   geo: 'data/geo/vietnam.json',
   npcs: 'data/npcs.json',

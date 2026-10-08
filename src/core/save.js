@@ -358,6 +358,11 @@ export function validate(profile, { grades = null } = {}) {
     int(profile.growth.xp, 'growth.xp', 0, 1e9);
     if (profile.growth.steps !== null && profile.growth.steps !== undefined) int(profile.growth.steps, 'growth.steps', 0, 1e6);
   }
+  // The notebook (#8): the things that the child met, with the game minute.
+  if (profile.notebook !== undefined) {
+    if (!isObj(profile.notebook)) fail('notebook');
+    for (const [, v] of entries(profile.notebook.seen ?? {}, 'notebook.seen')) int(v, 'notebook.seen value', 0, 1e9);
+  }
   if (profile.world !== undefined) validateWorld(profile.world, { fail, num, int, str, list, isObj });
   if (profile.log !== undefined) validateLog(profile.log, { fail, num, int, str, list, isObj });
   if (profile.experiment !== undefined) {

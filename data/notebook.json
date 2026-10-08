@@ -1,0 +1,189 @@
+{
+ "_about": "The notebook (Sổ tay, #8, src/core/notebook.js): a collection of prints that fills in as the child plays. kinds: the order of the pages. entries: the legends, the creatures, and the places, each with its title (titleKey), its print (look: a look of data/figures.json, drawn with portraitCanvas; a place has the print of a place), and met: the thing that fills it in. met is a key of profile.notebook.seen (talk:<dialogue>: the child heard the talk; creature:<kind>: an animal of the kind came near the hero, or an enemy of the kind came in a raid; map:<id>: the hero was on the map) or flag:<flag> (a story flag). The skills come from data/skills.json (the skills of the era of the story up to one grade over the grade of the child): a skill is met after its first skill event in the world, and a mastered skill has a red seal.",
+ "kinds": [
+  "skill",
+  "legend",
+  "creature",
+  "place"
+ ],
+ "skillEra": 1,
+ "entries": [
+  {
+   "id": "legend:messenger",
+   "kind": "legend",
+   "titleKey": "note.legend.messenger",
+   "look": "messenger",
+   "met": "talk:messenger.call"
+  },
+  {
+   "id": "legend:speaks",
+   "kind": "legend",
+   "titleKey": "note.legend.speaks",
+   "look": "giong-boy",
+   "met": "talk:giong.speaks"
+  },
+  {
+   "id": "legend:rice",
+   "kind": "legend",
+   "titleKey": "note.legend.rice",
+   "look": "giong-boy",
+   "met": "talk:giong.rice"
+  },
+  {
+   "id": "legend:grown",
+   "kind": "legend",
+   "titleKey": "note.legend.grown",
+   "look": "giong-boy",
+   "met": "talk:giong.grown"
+  },
+  {
+   "id": "legend:horse",
+   "kind": "legend",
+   "titleKey": "note.legend.horse",
+   "look": "smith",
+   "met": "talk:smith.horse"
+  },
+  {
+   "id": "legend:bamboo",
+   "kind": "legend",
+   "titleKey": "note.legend.bamboo",
+   "look": "giong-boy",
+   "met": "talk:staff.breaks"
+  },
+  {
+   "id": "legend:farewell",
+   "kind": "legend",
+   "titleKey": "note.legend.farewell",
+   "look": "giong-boy",
+   "met": "talk:giong.farewell"
+  },
+  {
+   "id": "legend:socson",
+   "kind": "legend",
+   "titleKey": "note.legend.socson",
+   "look": "socson-elder",
+   "met": "talk:socson.elder.legend"
+  },
+  {
+   "id": "creature:nghe",
+   "kind": "creature",
+   "titleKey": "note.creature.nghe",
+   "look": "nghe",
+   "met": "flag:friend.nghe"
+  },
+  {
+   "id": "creature:buffalo",
+   "kind": "creature",
+   "titleKey": "note.creature.buffalo",
+   "look": "buffalo",
+   "met": "creature:buffalo"
+  },
+  {
+   "id": "creature:duck",
+   "kind": "creature",
+   "titleKey": "note.creature.duck",
+   "look": "duck",
+   "met": "creature:duck"
+  },
+  {
+   "id": "creature:chicken",
+   "kind": "creature",
+   "titleKey": "note.creature.chicken",
+   "look": "chicken",
+   "met": "creature:chicken"
+  },
+  {
+   "id": "creature:dog",
+   "kind": "creature",
+   "titleKey": "note.creature.dog",
+   "look": "dog",
+   "met": "creature:dog"
+  },
+  {
+   "id": "creature:fish",
+   "kind": "creature",
+   "titleKey": "note.creature.fish",
+   "look": "fish",
+   "met": "creature:fish"
+  },
+  {
+   "id": "creature:frog",
+   "kind": "creature",
+   "titleKey": "note.creature.frog",
+   "look": "frog",
+   "met": "creature:frog"
+  },
+  {
+   "id": "creature:kingfisher",
+   "kind": "creature",
+   "titleKey": "note.creature.kingfisher",
+   "look": "kingfisher",
+   "met": "creature:kingfisher"
+  },
+  {
+   "id": "creature:owl",
+   "kind": "creature",
+   "titleKey": "note.creature.owl",
+   "look": "owl",
+   "met": "creature:owl"
+  },
+  {
+   "id": "creature:scout",
+   "kind": "creature",
+   "titleKey": "note.creature.scout",
+   "look": "scout",
+   "met": "creature:scout"
+  },
+  {
+   "id": "creature:soldier",
+   "kind": "creature",
+   "titleKey": "note.creature.soldier",
+   "look": "soldier",
+   "met": "creature:soldier"
+  },
+  {
+   "id": "creature:serpent",
+   "kind": "creature",
+   "titleKey": "note.creature.serpent",
+   "look": "river-serpent",
+   "met": "creature:serpent"
+  },
+  {
+   "id": "creature:general",
+   "kind": "creature",
+   "titleKey": "note.creature.general",
+   "look": "general",
+   "met": "creature:general"
+  },
+  {
+   "id": "place:phu-dong",
+   "kind": "place",
+   "titleKey": "place.phudong",
+   "met": "map:phu-dong"
+  },
+  {
+   "id": "place:xom-ruong",
+   "kind": "place",
+   "titleKey": "place.xomruong",
+   "met": "map:xom-ruong"
+  },
+  {
+   "id": "place:trau-son",
+   "kind": "place",
+   "titleKey": "place.trauson",
+   "met": "map:trau-son"
+  },
+  {
+   "id": "place:soc-son",
+   "kind": "place",
+   "titleKey": "place.socson",
+   "met": "map:soc-son"
+  },
+  {
+   "id": "place:road-thanglong",
+   "kind": "place",
+   "titleKey": "place.roadthanglong",
+   "met": "map:road-thanglong"
+  }
+ ]
+}

@@ -577,3 +577,11 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **Please check:** "nhúng sắt" for the quench, and "giỏi như các Nho sinh ngày xưa" (the old line said "Người thích con số và chữ nghĩa gọi là Nho sinh.").
 - **A tap on a star says where it goes, in the voice of the hero:** `star.go.person` ("Đi tìm {who}.", for example "Đi tìm bà lang.", with the name of the person in small letters) and `star.go.place` ("Đi tới chỗ ngôi sao.", for a star on a place or a thing). Each star shows the small face of its person in its disc, and the star of the next step of the story is bigger than the others.
 - **The counters say what they are:** a tap on a counter says `count.say` ("{name}, {n}.", for example "Gạo, mười ba.") or `count.none` ("{name}, chưa có.", for example "Sắt, chưa có."). The basket opens and says `basket.title` ("Giỏ của nhà").
+
+## The notebook, the bamboo of the hero, and the minimap (#8)
+
+- **The notebook (Sổ tay):** `note.title` ("Sổ tay"), the pages `note.skill` ("Việc em làm được"), `note.legend` ("Truyền thuyết"), `note.creature` ("Con vật và con người"), `note.place` ("Nơi em đã đến"), a gap `note.unknown` ("Chưa gặp"), and the card of a new print `note.new` ("Sổ tay có một tranh mới: {name}.").
+- **The titles of the legends:** "Sứ giả tìm người tài", "Cậu bé ba tuổi cất tiếng nói", "Cả làng góp gạo nuôi Gióng", "Gióng vươn vai thành tráng sĩ", "Ngựa sắt, roi sắt, áo giáp sắt", "Nhổ tre làm gậy đánh giặc", "Gióng bay về trời", and "Chuyện ở núi Sóc" (`note.legend.*`).
+- **The creatures:** "Nghé, bạn của em", "Con trâu", "Con vịt", "Con gà", "Con chó", "Con cá", "Con ếch", "Chim bói cá", "Con cú", "Lính do thám của giặc Ân", "Lính giặc Ân", "Thuồng luồng dưới sông", and "Tướng giặc Ân" (`note.creature.*`).
+- **The parent area:** the tab `parent.tab.notebook` ("Sổ tay"), `parent.notebook.about`, and `parent.notebook.count` ("{have} trên {all} tranh").
+- **Please check:** "Thuồng luồng" for the serpent of the river raid, and "Tướng giặc Ân" for the general.

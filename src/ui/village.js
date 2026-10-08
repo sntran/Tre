@@ -33,6 +33,8 @@ import { bubbleLine, createVoiceQueue } from '../core/bubblevoice.js';
 import { voiceOf } from '../core/voices.js';
 import { namesOf } from '../core/naming.js';
 import { createDialogueBox, glossLine } from './dialogue.js';
+import { printOf } from './notebook.js';
+import { modals } from './registry.js';
 import { createRaidView } from './raid.js';
 import { createStream } from './stream.js';
 import { landStore } from './landstore.js';
@@ -1211,6 +1213,20 @@ export async function mountVillage(ctx, params = {}) {
     };
     requestAnimationFrame(tick);
   }
+  // The card of a new print of the notebook (#8), under the goal bar for a few seconds.
+  let printCard = null;
+  function showPrint(ev) {
+    printCard?.remove();
+    const name = t(ev.titleKey);
+    const card = h('button', { class: 'print-card', type: 'button' }, [
+      h('span', { class: 'note-print' }, [printOf(ctx, ev, 40)]),
+      h('span', { text: t('note.new', { name }) }),
+    ]);
+    card.addEventListener('click', () => { card.remove(); modals.notebook?.(ctx); });
+    ctx.ui.append(card);
+    printCard = card;
+    setTimeout(() => { if (printCard === card) { card.remove(); printCard = null; } }, 4000);
+  }
   // The lights of the bursts of a success (#62): a warm light for a moment, also at night.
   let cheerLights = [];
   const CHEER_LIGHT = 1.4; // seconds
@@ -1299,6 +1315,9 @@ export async function mountVillage(ctx, params = {}) {
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
       case 'workView': turnToWork(ev.points, ev.sight); return;
+      // A new print in the notebook (#8): a small card at the top for a moment; a tap opens the
+      // notebook.
+      case 'notebook': showPrint(ev); return;
       // Experience (#8): the shoot of the bamboo grows; at a new level a new section grows and shines.
       case 'growth':
         drawBamboo(ev.up);

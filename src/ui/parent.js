@@ -1,6 +1,7 @@
 // The parent area: the gate, the progress page, the settings, the question
 // editor, and the export code. The area opens only after a parent holds a
 // button for 3 seconds and answers a question for adults.
+import { notebookGrid } from './notebook.js';
 import { makeGateQuestion, checkGateAnswer, holdProgress } from '../core/parentgate.js';
 import { drawLearning } from './research.js';
 import { exportCode, importCode, SaveError } from '../core/save.js';
@@ -146,7 +147,7 @@ async function parentArea(ctx, opts = {}) {
     const panel = h('div', { class: 'panel parent' });
     const body = h('div');
     const close = () => { layer.remove(); resolve(); };
-    const tabs = ctx.profile ? ['week', 'progress', 'learning', 'settings', 'questions', 'games', 'links', 'code'] : ['games', 'links', 'code'];
+    const tabs = ctx.profile ? ['week', 'progress', 'notebook', 'learning', 'settings', 'questions', 'games', 'links', 'code'] : ['games', 'links', 'code'];
     let tab = tabs.includes(opts.tab) ? opts.tab : tabs[0];
     // Leave the parent area and go on with a profile (after a restore or an import), or to the title.
     const leave = async (profile) => {
@@ -178,6 +179,8 @@ async function parentArea(ctx, opts = {}) {
       body.replaceChildren();
       if (tab === 'week') drawWeek();
       if (tab === 'progress') drawProgress();
+      // The same notebook as the child sees (#8).
+      if (tab === 'notebook') body.append(h('p', { class: 'parent-about', text: t('parent.notebook.about') }), notebookGrid(ctx, ctx.profile, { speakOnTap: false }));
       if (tab === 'learning') drawLearning(body, ctx);
       if (tab === 'settings') drawSettings();
       if (tab === 'questions') drawQuestions();

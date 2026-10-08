@@ -235,3 +235,8 @@ These questions need a person who knows Vietnamese history and geography. Until 
 
 106. **The names of the people of a Cham village.** In the time of chapter 11 (1460 to 1497), many people of the center are Cham. A Cham village does not use the Việt words of kinship and the order of birth (`data/world/naming.json`). When the region of chapter 11 gets its places, its Cham people need their own way of naming, with sources. Which way, and from which sources?
 
+## Questions about the notebook and the growth of the hero (#8)
+
+107. **The names of the skills in the notebook.** The notebook of the child shows a print for each skill of the era with its name from the parent page (for example "Cộng trong phạm vi 10"). The notebook is a screen of the menu, not the village, but a name of a skill can name a math operation. Should the child see other names here (the work where the child learned it, for example "Bó que với thầy giáo"), or no name at all?
+108. **The experience of each deed.** A done task gives 10, a won raid 15, a done step of a quest 5, a round of a practice or of the hamlet 4, and a small event 3; level 1 needs 20, and each next level 10 more (`src/core/growth.js`). A lost raid gives none. Are these good for the game?
+

@@ -1102,3 +1102,19 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .practice-link h3 { margin: 4px 0; }
 .practice-link p { margin: 4px 0; }
 .practice-url { display: block; margin: 4px 0 8px; font-size: 14px; overflow-wrap: anywhere; user-select: all; -webkit-user-select: all; }
+
+/* The notebook (Sổ tay, #8): pages of prints on dó paper, a gap for a print still to find, and a red
+   seal on a mastered skill. */
+.notebook-panel { width: min(640px, 100%); max-height: 90vh; overflow-y: auto; }
+.note-count { margin: 0 0 6px; font-size: var(--text-small); }
+.note-page h3 { margin: 12px 0 6px; font-size: var(--text); }
+.note-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.note-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; border: var(--line); border-radius: var(--corner); background: var(--paper) var(--paper-texture); background-size: 256px; box-shadow: var(--frame); font: inherit; color: var(--ink); text-align: center; }
+.note-card.gap { border-style: dashed; box-shadow: none; opacity: 0.55; background: var(--paper-deep); }
+.note-print { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--diep); overflow: hidden; }
+.note-card.gap .note-print { background: transparent; border-style: dashed; }
+.note-art { width: 40px; height: 40px; }
+.note-name { font-size: var(--text-small); line-height: 1.2; }
+.note-seal { position: absolute; right: -6px; top: -6px; width: 28px; height: 28px; transform: rotate(-12deg); }
+.print-card { position: absolute; left: 50%; top: calc(var(--safe-top) + 132px); transform: translateX(-50%); display: flex; align-items: center; gap: 8px; max-width: calc(100% - 24px); padding: 6px 12px 6px 6px; border: var(--line); border-radius: var(--corner); background: var(--paper) var(--paper-texture); background-size: 256px; box-shadow: var(--frame); font: inherit; color: var(--ink); z-index: 25; animation: pop 0.4s; pointer-events: auto; }
+.print-card .note-print { width: 40px; height: 40px; }

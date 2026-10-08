@@ -327,6 +327,8 @@ export async function startApp(root) {
       h('div', { class: 'panel-head' }, [h('h2', { text: t('ui.menu') }), button(null, close, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') })]),
       h('div', { class: 'menu-list' }, [
         button(t('ui.continue'), close, { cls: 'btn big' }),
+        // The notebook of prints (#8).
+        button(t('note.title'), () => { close(); modals.notebook?.(c); }, { cls: 'btn paper', icon: 'ui/seal' }),
         button(t('ui.parents'), () => { close(); c.openParent(); }, { cls: 'btn paper', icon: 'ui/lock' }),
         button(t('ui.save.exit'), async () => { close(); await c.save('exit'); c.toast('ui.saved'); c.go('title'); }, { cls: 'btn paper' }),
       ]),
