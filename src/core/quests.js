@@ -62,3 +62,13 @@ export function starOf(tg, index = 0, trials = []) {
 export function placeMark(place) {
   return { x: place.x + 0.5, y: place.y + 0.5 };
 }
+
+// The number of the done steps of all the quests (#8: each done step gives experience one time).
+export function doneSteps(quests, state) {
+  let n = 0;
+  for (const q of quests) {
+    const s = questState(q, state);
+    if (s.open) n += s.index;
+  }
+  return n;
+}

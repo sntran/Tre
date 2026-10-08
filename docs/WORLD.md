@@ -346,3 +346,7 @@ A profile is one record in the store of the device (IndexedDB, `src/ui/storage.j
 - `data/world/zones.json`: the kinds of placement zones: the bridge (its rounds, the repair after the rain, piles, skill events, outcomes, hint, the signs of mashing, and the prediction) and the pile of planks.
 - The maps (`tools/maps/era1.py`): `layers.life` (groups of living things), `layers.places` (named places for the plans, the pile, and the plank outlines of the prediction), and `layers.zones` (placement zones with a `task`).
 
+
+## The growth of the hero (#8)
+
+The hero has experience and a hero level (`src/core/growth.js`, saved as `profile.growth = { xp, steps }`). Experience comes only from what the child does in the world: a done task of a person (10), a won raid (15), a done step of a quest (5), a round of a practice or of an activity of the hamlet (4), and a small event of the day (3). A question of the teacher or of an exam gives none. Level 1 needs 20 experience, and each next level needs 10 more than the last. The bamboo of the HUD, next to the face of the hero, has one section for each level, and a pale shoot on top grows with the experience of the level. At a new level the new section grows and shines. The first count of the steps of the quests of an old save gives no experience for the steps that it did before.

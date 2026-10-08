@@ -352,6 +352,12 @@ export function validate(profile, { grades = null } = {}) {
     list(profile.seenGloss, 'seenGloss');
     profile.seenGloss.forEach((x) => str(x, 'seenGloss'));
   }
+  // The growth of the hero (#8): experience, and the done steps of the quests that gave it.
+  if (profile.growth !== undefined) {
+    if (!isObj(profile.growth)) fail('growth');
+    int(profile.growth.xp, 'growth.xp', 0, 1e9);
+    if (profile.growth.steps !== null && profile.growth.steps !== undefined) int(profile.growth.steps, 'growth.steps', 0, 1e6);
+  }
   if (profile.world !== undefined) validateWorld(profile.world, { fail, num, int, str, list, isObj });
   if (profile.log !== undefined) validateLog(profile.log, { fail, num, int, str, list, isObj });
   if (profile.experiment !== undefined) {

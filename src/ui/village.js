@@ -10,6 +10,7 @@ import { portraitCanvas, heroLookOf, speakerLookOf, prerender, portraitStats } f
 import { keysToScreenDir, stickToScreenDir, screenToMap } from '../core/world/move.js';
 import { getEntity, query } from '../core/world/state.js';
 import { basketOf, counterLine } from '../core/items.js';
+import { levelOf } from '../core/growth.js';
 import { STEP } from '../core/world/step.js';
 import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, starOn, puddlesAt } from '../core/world/ambient.js';
 import { rainOf } from '../core/world/systems/sky.js';
@@ -294,10 +295,27 @@ export async function mountVillage(ctx, params = {}) {
   // The counter of rice shows the basket of the household; the other goods of the basket fly to it.
   const BASKET = data.items.basket?.[0] ?? null;
   const slotOf = (item) => (data.items.basket?.includes(item) ? BASKET : item);
+  // The bamboo of the hero (#8): one section for each hero level, and a shoot on top that grows
+  // with the experience of the level (src/core/growth.js).
+  const bamboo = h('span', { class: 'hud-bamboo', 'aria-hidden': 'true' });
   const heroFace = h('button', { class: 'hud-hero', type: 'button', 'aria-label': t('ui.home') }, [
     h('span', { class: 'mini-portrait' }, [portraitCanvas(ctx, heroLookOf(ctx), { size: 44 })]),
+    bamboo,
     h('span', { class: 'hud-name', text: profile.hero.name }),
   ]);
+  function drawBamboo(grew = false) {
+    const g = levelOf(profile.growth?.xp ?? 0);
+    const key = `${g.level}:${Math.round((g.into / g.need) * 8)}`;
+    if (bamboo.dataset.key === key && !grew) return;
+    bamboo.dataset.key = key;
+    const size = Math.max(3, Math.min(7, Math.floor(34 / (g.level + 1))));
+    bamboo.style.setProperty('--section', `${size}px`);
+    const sections = Array.from({ length: g.level }, (_, i) => h('i', { class: grew && i === g.level - 1 ? 'grew' : '' }));
+    const shoot = h('i', { class: 'shoot' });
+    shoot.style.height = `${Math.max(2, Math.round(size * (g.into / g.need)))}px`;
+    bamboo.replaceChildren(...sections, shoot);
+  }
+  drawBamboo();
   heroFace.addEventListener('click', () => send({ type: 'talkTo', id: 'grandma' }));
   const menuBtn = button(null, () => { ctx.log('action', { kind: 'menu' }); ctx.openMenu(); }, { cls: 'icon-btn', icon: 'ui/menu', aria: t('ui.menu') });
   // The country map. The world waits while it is open.
@@ -1281,6 +1299,11 @@ export async function mountVillage(ctx, params = {}) {
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
       case 'workView': turnToWork(ev.points, ev.sight); return;
+      // Experience (#8): the shoot of the bamboo grows; at a new level a new section grows and shines.
+      case 'growth':
+        drawBamboo(ev.up);
+        if (ev.up) ctx.bus.emit('sound', 'win');
+        return;
       // A success in a task (#62): a burst of leaves from the thing, with its own light; at the end
       // of the task, the seal flies to the goal bar.
       case 'cheer':

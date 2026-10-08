@@ -35,7 +35,8 @@
 import { findPath, pathNextTo, createPlaneTileMap, footprint } from './tilemap.js';
 import { check } from './conditions.js';
 import { createTriggers } from './triggers.js';
-import { currentGoal } from './quests.js';
+import { currentGoal, doneSteps } from './quests.js';
+import { addXp, questSteps } from './growth.js';
 import { offOf, weekOf } from './learnlog.js';
 import { snapFacts } from './planting.js';
 import { clueLine as clueOf, hiddenAt, areaOf, inArea, openFinds, wayOf, wayPoint } from './clues.js';
@@ -187,6 +188,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     data, profile, learner, emit, mentoring, examples, nameOf, week, world: () => state, env: () => env,
     seed: () => state.seed, clock: () => state.clock.minutes, rain: () => state.sky?.rain ?? 0,
     say: (...a) => say(...a), talk: (id) => talk(id), save: (why) => save(why), busy: () => busy,
+    grow: (kind) => grow(kind),
     callout: (textKey, params, who) => emit({ type: 'open', screen: 'callout', id: `npc:${who}`, textKey, params }),
     // The end of a set of a practice of an activity: the practice ends there.
     setDone: (act) => {
@@ -514,6 +516,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
   }
 
+  // The growth of the hero (#8, src/core/growth.js): experience from a task, a raid, a step of a
+  // quest, and a small event; the bamboo of the HUD grows one section for each level.
+  function grow(kind, times = 1) {
+    const r = addXp(profile, kind, times);
+    if (r) emit({ type: 'growth', kind, ...r });
+    return r;
+  }
+  // The done steps of the quests, about each second.
+  function checkSteps() {
+    if (state.tick % 30 !== 0 || !data.quests) return;
+    const r = questSteps(profile, doneSteps(data.quests.quests, cond()));
+    if (r) emit({ type: 'growth', kind: 'quest', ...r });
+  }
+
   // The guess at the bridge (#51): when the plank outlines of the guess lie on the bank, a line says
   // what they are, one time in a visit: the fisher says it, or Nghé when the fisher is not there
   // (at home at night).
@@ -785,6 +801,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (!def || profile.flags[def.flag]) return;
     applyEffects(profile, [{ set: def.flag }, { give: def.reward }]);
+    grow('task');
     save('trial');
     const from = `npc:${def.npc}`;
     if (Object.keys(def.reward ?? {}).length) emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: def.reward, delay: 0.3 });
@@ -798,6 +815,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function practiceRound(def) {
     const z = trialZone(def.id).zone;
     practice.round += 1;
+    grow('round');
     practice.level = nextLevel(practice.level, z, def.levels.length - 1);
     const rec = (profile.practice ??= {})[practice.id] ??= { level: practice.level, sets: 0 };
     rec.level = practice.level;
@@ -1244,6 +1262,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const tz = trialZone(`event-${id}`);
     if (!def || !tz) return;
     visit.things[`event.${id}`] = tz.zone.day;
+    grow('event');
     const from = `event:${id}`;
     // Barter: the rice on the mat leaves the basket, and the goods of the seller go to it.
     const give = tz.zone.give ?? def.reward;
@@ -1467,6 +1486,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     log('raid', { raid: r.raid.id, won: Boolean(ev.won) });
     if (ev.won) {
       profile.stats.battlesWon = (profile.stats.battlesWon ?? 0) + 1;
+      grow('raid');
       const win = def.win ?? {};
       applyEffects(profile, [...[].concat(win.set ?? []).map((f) => ({ set: f })), ...(win.give ? [{ give: win.give }] : [])]);
       save('raid');
@@ -2970,6 +2990,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepSling();
     stepFarewell();
     stepCheer();
+    checkSteps();
     stepGuessLine();
     stepToolLines();
     stepFarWait();

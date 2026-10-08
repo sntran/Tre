@@ -185,6 +185,8 @@ export function createHamlet(deps) {
     s.counts[ev.form] = (s.counts[ev.form] ?? 0) + 1;
     s.prev = ev.key;
     s.index += 1;
+    // A round of an activity of the hamlet gives experience (#8), right or not: the child did it.
+    deps.grow?.('round');
     const plays = (root().plays ??= {});
     plays[act] = (plays[act] ?? 0) + 1;
     // What the activity gives to the feast table: the ducks that ate lay eggs the next morning,
@@ -212,6 +214,7 @@ export function createHamlet(deps) {
     const s = state(act);
     s.active = false;
     s.sets += 1;
+    if (why === 'done') deps.grow?.('task');
     clearActivity(deps.world(), act);
     for (const id of decor[act] ?? []) removeEntity(deps.world(), id);
     decor[act] = [];
