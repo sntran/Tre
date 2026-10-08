@@ -1,0 +1,378 @@
+{
+ "about": "#64: the count of the child's own work after each wrong try, and waves that always help. Two wrong ties at the teacher, two wrong gives at the healer, with three waves at each station; the big basket of the healer, and the bunch that flies into it.",
+ "start": "?practice=bo-que",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "create": "Bin"
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 3
+  },
+  {
+   "button": ".wave-btn",
+   "after": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "teacher-wave-after-an-act"
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((h) => h.text === 'ba')",
+   "timeout": 240
+  },
+  {
+   "shot": "teacher-wrong-tie-1-counts"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((h) => h.text === 'chín')",
+   "timeout": 240
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "teacher-wave-after-wrong-tie-1"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((h) => h.text === 'hai')",
+   "timeout": 240
+  },
+  {
+   "shot": "teacher-wrong-tie-2-counts"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((h) => h.text === 'mười một')",
+   "timeout": 240
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "teacher-wave-2"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "teacher-wave-3"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((h) => h.text))"
+  },
+  {
+   "goto": "?practice=hai-thuoc",
+   "after": 2
+  },
+  {
+   "click": "Bin",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "healer-the-big-basket"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-ngai"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 0.15
+  },
+  {
+   "shot": "healer-a-bunch-flies-into-the-basket"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-tiato"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-rauma"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.map((id) => id.split(':')[0]))"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((h) => h.text === 'ba')",
+   "timeout": 240
+  },
+  {
+   "shot": "healer-wrong-give-1-counts"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.lay",
+   "timeout": 240
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.map((id) => id.split(':')[0]))"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "healer-wave-1"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-tiato"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.map((id) => id.split(':')[0]))"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((h) => h.text === 'ba')",
+   "timeout": 240
+  },
+  {
+   "shot": "healer-wrong-give-2-counts"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.lay",
+   "timeout": 240
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.map((id) => id.split(':')[0]))"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "healer-wave-2"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "healer-wave-3"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "shot": "healer-takes-the-basket"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((h) => h.text))"
+  }
+ ]
+}

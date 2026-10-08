@@ -1,0 +1,220 @@
+{
+ "about": "#64 at dusk and at night: the woodcutter with a break (the pieces side by side) and three waves, the fisher with three waves, and the healer at night with the lamp of the basket.",
+ "start": "?practice=chat-tre",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "create": "Nam"
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "stem": 3
+   },
+   "after": 3
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'hero').position, tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter').position])"
+  },
+  {
+   "until": "Math.abs(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - (tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter').position.x + 3)) < 1.5",
+   "timeout": 20
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "shot": "woodcutter-hero-beside-the-stem-and-the-mark"
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 0.6
+  },
+  {
+   "shot": "woodcutter-a-break-pieces-side-by-side"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "read": 5
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "woodcutter-wave-1"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "woodcutter-wave-2"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "woodcutter-wave-3"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((h) => h.text))"
+  },
+  {
+   "goto": "?practice=cam-coc",
+   "after": 2
+  },
+  {
+   "click": "Nam",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "zone:stakes"
+   },
+   "after": 3
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "fisher-wave-1"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "fisher-wave-2"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "fisher-wave-3"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((h) => h.text))"
+  },
+  {
+   "goto": "?story=trial-healer&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "night-healer-the-basket-lamp"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-ngai"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "button": ".wave-btn",
+   "after": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((h) => h.text))"
+  },
+  {
+   "shot": "night-healer-wave"
+  }
+ ]
+}
