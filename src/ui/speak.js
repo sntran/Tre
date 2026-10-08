@@ -70,24 +70,37 @@ export function setVoiceProfiles(value) {
 // Speak a text key. Params are only for the synthetic voice:
 // a recorded file is used only for a key with no params.
 // opts: { force (speak also when the voice is off), queue (wait for the current speech;
-// do not stop it), voice (a profile name, for example 'elderMan') }
-export function speak(key, params = null, { force = false, queue = false, voice = 'narrator' } = {}) {
-  if (!enabled && !force) return;
+// do not stop it), voice (a profile name, for example 'elderMan'), onEnd (called when the line
+// ends, or at once when nothing speaks it) }
+export function speak(key, params = null, { force = false, queue = false, voice = 'narrator', onEnd = null } = {}) {
+  if (!enabled && !force) return ended(onEnd);
   if (!queue) stop();
   const code = lang();
   const hasParams = params && Object.keys(params).length > 0;
   if (!hasParams && recorded[code]?.has(key) && !queue) {
     player = new Audio(`audio/${code}/${key}.mp3`);
-    player.play().catch(() => speakText(say(key, params), code, { voice, force: true }));
+    if (onEnd) player.onended = onEnd;
+    player.play().catch(() => speakText(say(key, params), code, { voice, force: true, onEnd }));
     return;
   }
-  speakText(say(key, params), code, { queue: true, voice, force: true });
+  speakText(say(key, params), code, { queue: true, voice, force: true, onEnd });
+}
+
+// onEnd of a line that nothing speaks (the voice is off, or the device has no voice): soon.
+function ended(onEnd) {
+  if (onEnd) setTimeout(onEnd, 0);
+}
+
+// True while the voice says something (a recorded file or the synthetic voice).
+export function speaking() {
+  return Boolean((player && !player.paused && !player.ended) ||
+    ('speechSynthesis' in window && (window.speechSynthesis.speaking || window.speechSynthesis.pending)));
 }
 
 // Speak a text. With queue: false, stop the current speech first.
-export function speakText(text, code = lang(), { queue = false, voice = 'narrator', force = false } = {}) {
-  if (!('speechSynthesis' in window) || !text) return;
-  if (!enabled && !force) return;
+export function speakText(text, code = lang(), { queue = false, voice = 'narrator', force = false, onEnd = null } = {}) {
+  if (!('speechSynthesis' in window) || !text) return ended(onEnd);
+  if (!enabled && !force) return ended(onEnd);
   if (!queue) stop();
   const profile = profiles[voice] ?? profiles.narrator ?? {};
   const utterance = new SpeechSynthesisUtterance(text);
@@ -96,6 +109,10 @@ export function speakText(text, code = lang(), { queue = false, voice = 'narrato
   if (chosen) utterance.voice = chosen;
   utterance.rate = profile.rate ?? 0.9;
   utterance.pitch = profile.pitch ?? 1;
+  if (onEnd) {
+    utterance.onend = onEnd;
+    utterance.onerror = onEnd;
+  }
   window.speechSynthesis.speak(utterance);
 }
 
@@ -104,9 +121,7 @@ export function whenQuiet(maxMs = 6000) {
   const start = Date.now();
   return new Promise((resolve) => {
     const check = () => {
-      const talking = (player && !player.paused && !player.ended) ||
-        ('speechSynthesis' in window && (window.speechSynthesis.speaking || window.speechSynthesis.pending));
-      if (!talking || Date.now() - start >= maxMs) resolve();
+      if (!speaking() || Date.now() - start >= maxMs) resolve();
       else setTimeout(check, 100);
     };
     // Wait a moment, so that a speech that starts now is seen.

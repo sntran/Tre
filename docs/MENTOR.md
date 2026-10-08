@@ -49,6 +49,10 @@ After each commit (and after a plank too long on the bridge, which the world jud
 
 **The contingent rule:** after a miss, the help level goes one up; after a success, one down; at mastery (P(L) at or over `mastery`) the person only watches (`wait`), except for boredom and a child ready for more. A miss climbs the ladder of its diagnosis with the help level; the other diagnoses climb with each repeat.
 
+## The voice of the bubbles
+
+A child of six may not read yet, so the voice says every line of a person in a bubble, in the voice of that person (#60, `src/core/bubblevoice.js`): the hints, the waits, and each word of a count. The lines wait for their turn: a hint waits while the talk box speaks, and the words of a count keep their order, so that one number never cuts the last one. A greeting of a person who walks by goes when the voice is busy. A bubble stays while its line waits or is spoken. A tap on a bubble, or on its person while the bubble shows, says the line again.
+
 ## The person remembers the child
 
 `profile.mentors[<task>]` keeps the moves that were tried and the moves that helped (a right next commit), for each diagnosis, the usual errors, the self-corrections, and the lift of the task. In a new task, the move that helped this child comes first for its diagnosis, and the person says so as information ("Hôm trước nhìn kỹ chỗ sai là cháu làm được ngay.").

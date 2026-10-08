@@ -983,6 +983,8 @@ p { line-height: 1.45; margin: 0.4em 0; }
 }
 .dialogue .speech-gloss { margin: 2px 0 0; font-size: 0.8em; color: var(--ink); opacity: 0.75; white-space: pre-line; }
 .world-bubble.icon { padding: 2px 6px; line-height: 0; }
+/* A bubble with a spoken line: a tap on it says the line again (#60). */
+.world-bubble.spoken { pointer-events: auto; cursor: pointer; }
 /* A person off the screen talks from the edge: a small tail toward the person (#53). */
 .world-bubble[class*='tail-']::after { content: ''; position: absolute; border: 8px solid transparent; }
 .world-bubble.tail-left::after { left: -16px; top: calc(50% - 8px); border-right-color: var(--ink); }

@@ -27,7 +27,9 @@ import { tapTarget, thingUnder } from '../world/hit.js';
 import { h, img, button } from './dom.js';
 import { t, tn, setSpeech } from './i18n.js';
 import { speechTable, speechWay } from '../core/speech.js';
-import { speak } from './speak.js';
+import { speak, speaking } from './speak.js';
+import { bubbleLine, createVoiceQueue } from '../core/bubblevoice.js';
+import { voiceOf } from '../core/voices.js';
 import { createDialogueBox, glossLine } from './dialogue.js';
 import { createRaidView } from './raid.js';
 import { createStream } from './stream.js';
@@ -547,7 +549,10 @@ export async function mountVillage(ctx, params = {}) {
       // The first time of a word of a region (#39), or the first line of a person to the child (the
       // gloss of the name of the speaker, #41, #42), the gloss shows in the bubble too.
       const gloss = glossLine(ctx, ev.textKey, { params: ev.params, speaker: String(ev.id ?? '').startsWith('npc:') ? ev.id.slice(4) : null });
-      showBubble(ev.id, gloss ? `${t(ev.textKey, ev.params)}\n${gloss}` : t(ev.textKey, ev.params));
+      // The line is spoken in the voice of its person, in its turn (#60, src/core/bubblevoice.js).
+      const line = bubbleLine(ev, lineVoice);
+      showBubble(ev.id, gloss ? `${t(ev.textKey, ev.params)}\n${gloss}` : t(ev.textKey, ev.params), null, line);
+      voiceQueue.offer(line, speaking() || Boolean(spoken));
       return;
     }
     // A story that plays in the storybook stays in the village: the other screens show as a
@@ -767,6 +772,7 @@ export async function mountVillage(ctx, params = {}) {
       moving = false;
     }
     const target = targetUnder(p);
+    if (target?.person) sayAgain(target.person);
     if (target?.pet) {
       ctx.bus.emit('sound', 'tap');
       send({ type: 'pet', id: target.pet });
@@ -1009,7 +1015,37 @@ export async function mountVillage(ctx, params = {}) {
   }
   // icon: the button picture of an act (the example of a station, #37), in a bubble of its own over
   // the line of the person.
-  function showBubble(id, text, icon = null) {
+  // The voice of the bubbles (#60): the lines wait for their turn, and a bubble stays while its
+  // line waits or is spoken. spoken: the line that the voice says now.
+  const voiceQueue = createVoiceQueue();
+  const lineVoice = (speaker) => voiceOf(speaker, { npcs: data.npcs.npcs, friends: data.friends.friends, voices: data.game.voices }, profile);
+  let spoken = null;
+  // The lines that the voice said, the last 40 (for the tests of the whole game on a device).
+  const heard = [];
+  const sayLine = (line, opts = {}) => {
+    heard.push({ key: line.key, text: t(line.key, line.params), voice: line.voice, again: Boolean(opts.force) });
+    if (heard.length > 40) heard.shift();
+    speak(line.key, line.params, { voice: line.voice, ...opts });
+  };
+  function stepVoice() {
+    // A voice that sends no end (no voice on the device): the turn ends after the time that the
+    // line takes to say, about 12 letters each second.
+    if (spoken && performance.now() > spoken.end) spoken = null;
+    if (spoken) return;
+    const line = voiceQueue.next(speaking());
+    if (!line) return;
+    const now = { line, t: performance.now(), end: performance.now() + 600 + t(line.key, line.params).length * 85 };
+    spoken = now;
+    sayLine(line, { queue: true, onEnd: () => { if (spoken === now) spoken = null; } });
+  }
+  const voiceHolds = (b) => Boolean(b.line) && (voiceQueue.waiting(b.id, b.line.key) || (spoken?.line.id === b.id && spoken.line.key === b.line.key));
+  // A tap on a bubble, or on its person while the bubble shows, says the line again (#60).
+  function sayAgain(id) {
+    const b = bubbles.find((x) => x.id === id && x.line);
+    if (b) sayLine(b.line, { force: true });
+    return Boolean(b);
+  }
+  function showBubble(id, text, icon = null, line = null) {
     // A heart over Nghé is no line of a person.
     if (!icon && !String(id).startsWith('friend:')) talkOver(id);
     // A new line of a person takes the place of the last one (a mentor counts aloud, one word at a time).
@@ -1019,9 +1055,16 @@ export async function mountVillage(ctx, params = {}) {
       bubbles.splice(i, 1);
     }
     const el = icon ? h('div', { class: 'world-bubble icon' }, [img(`ui/${icon}`, 'bubble-icon')]) : h('div', { class: 'world-bubble', text });
+    if (line) {
+      el.classList.add('spoken');
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sayLine(line, { force: true });
+      });
+    }
     marks.append(el);
     // A longer line stays longer (a greeting of one line), and wraps (styles/main.css).
-    bubbles.push({ id, el, age: 0, icon, life: lineLife(icon ? '' : text), width: el.offsetWidth, height: el.offsetHeight });
+    bubbles.push({ id, el, age: 0, icon, line, life: lineLife(icon ? '' : text), width: el.offsetWidth, height: el.offsetHeight });
   }
   // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
   // up when it lands.
@@ -1276,11 +1319,13 @@ export async function mountVillage(ctx, params = {}) {
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
     }
     for (let i = stars; i < starPool.length; i++) starPool[i].hidden = true;
+    stepVoice();
     for (let i = bubbles.length - 1; i >= 0; i--) {
       const b = bubbles[i];
       b.age += 1 / 60;
       const f = figures.placeOf(b.id);
-      if (!f || b.age > b.life) {
+      // A bubble stays at least as long as its line waits or is spoken (#60).
+      if (!f || (b.age > b.life && !voiceHolds(b))) {
         b.el.remove();
         bubbles.splice(i, 1);
         continue;
@@ -1459,6 +1504,8 @@ export async function mountVillage(ctx, params = {}) {
     mapId: () => mapData.id,
     // The session of the village, for the storybook and for automatic tests of the whole game.
     session,
+    // The lines that the voice said from the bubbles (#60), for automatic tests of the whole game.
+    heard: () => heard.slice(),
     // Send a command to the session and show its events (the storybook).
     send,
     // The screen point of a map point on the ground (the finger of the storybook).
