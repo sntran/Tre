@@ -152,17 +152,20 @@ function chapterEnd(ctx, title) {
     [true, 'chapter.end.exam'],
   ].filter(([done]) => done);
   const params = { title: { key: title.nameKey } };
+  // The number of the chapter is the number of its region, as the map of the country shows it
+  // (#57: the map said "Chương 3" and this page said "chương một").
+  const chapter = { n: ctx.data.world.region('giong')?.chapter ?? 1 };
   return new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
     const close = () => { layer.remove(); resolve(); };
     layer.append(h('div', { class: 'panel chapter-end', style: { width: 'min(640px, 100%)' } }, [
-      h('div', { class: 'panel-head' }, [h('h2', { text: t('chapter.end.title') })]),
+      h('div', { class: 'panel-head' }, [h('h2', { text: t('chapter.end.title', chapter) })]),
       h('ul', { class: 'chapter-list' }, lines.map(([, key]) => h('li', { text: tg(key, params) }))),
       h('p', { class: 'prompt', text: tg('chapter.end.next') }),
       h('div', { class: 'row main-actions' }, [button(t('ui.ok'), close, { cls: 'btn big red' })]),
     ]));
     ctx.ui.append(layer);
-    speak('chapter.end.title');
+    speak('chapter.end.title', chapter);
   });
 }
 
