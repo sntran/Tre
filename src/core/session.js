@@ -1708,13 +1708,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // A walk on a path of cells around houses and water. The world sends the event "arrived" at
   // the end of the walk.
-  function walkPath(path, end, onArrive, near = null) {
+  // onStuck: what a walk does when a person stops it on the way (a leg of a far walk plans again).
+  const stucks = new Map(); // the token of a walk -> what it does when it is stuck
+  function walkPath(path, end, onArrive, near = null, onStuck = null) {
     if (!path) return;
     const points = path.map((p) => ({ x: (p.x + 0.5) * 2, z: (p.y + 0.5) * 2 }));
     for (const e of end ? [].concat(end) : []) points.push({ x: e.x * 2, z: e.y * 2 });
     const token = nextToken++;
     arrivals.clear();
+    stucks.clear();
     if (onArrive) arrivals.set(token, onArrive);
+    if (onStuck) stucks.set(token, onStuck);
     worldCommand(state, { type: 'walk', id: 'hero', points, token, near: near ? { x: near.x * 2, z: near.y * 2, d: near.d * 2 } : null });
   }
   const heroFrom = () => {
@@ -2609,7 +2613,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (goal === final && farPlan && Math.hypot(farPlan.final.x - final.x, farPlan.final.y - final.y) < 2) {
       const landing = landingToward(here, from, final);
       if (landing && !landing.part && Math.hypot(landing.at.x - farPlan.at.x, landing.at.y - farPlan.at.y) < 4) {
-        walkPath(landing.way, null, () => walkFar(landing.at, final));
+        walkPath(landing.way, null, () => walkFar(landing.at, final), null, () => { if (waits < FAR_WAITS) waitFar(() => walkFar(goal, final, waits + 1)); });
         return true;
       }
     }
@@ -2644,10 +2648,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         return true;
       }
       farPlan = { final: { x: final.x, y: final.y }, at: landing.at };
-      walkPath(landing.way, null, () => walkFar(landing.at, final));
+      walkPath(landing.way, null, () => walkFar(landing.at, final), null, () => { if (waits < FAR_WAITS) waitFar(() => walkFar(goal, final, waits + 1)); });
       return true;
     }
-    walkPath(way, null, () => walkFar(goal, final));
+    // A person who stands in a narrow way (a villager in a yard in the day) can stop a leg: the
+    // walk waits a moment and plans again, now around the person (pathMap counts the people near
+    // the hero). Before, the far walk to the ferry ended there in the day (#65).
+    walkPath(way, null, () => walkFar(goal, final), null, () => { if (waits < FAR_WAITS) waitFar(() => walkFar(goal, final, waits + 1)); });
     return true;
   }
   // Is a cell on the line from a cell toward the goal (a few cells ahead) not made yet?
@@ -3114,6 +3121,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (ev.type === 'arrived' || ev.type === 'stuck') {
         const fn = arrivals.get(ev.token);
         arrivals.delete(ev.token);
+        const again = ev.type === 'stuck' && fn ? stucks.get(ev.token) : null;
+        stucks.delete(ev.token);
+        if (again) again();
         const back = ev.token === turning;
         if (back) turning = null;
         if (ev.type === 'arrived' || back) fn?.();
