@@ -90,6 +90,31 @@ test('a press never walks to another task: a bunch of the healer in the hands at
   assert.ok(Math.hypot(hero.position.x - at.x, hero.position.z - at.z) < 4, 'the hero stays at the forge');
 });
 
+test('at the fisher, presses up to the float and on past it never walk the hero to the bridge (#66)', async () => {
+  const story = load('trial-fisher');
+  const upTo = story.steps.findIndex((x) => x.read) + 1;
+  let s = null;
+  await runHeadless({ ...story, steps: [...story.steps.slice(0, upTo), { wait: 1 }] }, { onSession: (x) => { s = x; } });
+  const hero = getEntity(s.state, 'hero');
+  const gap = getEntity(s.state, 'zone:bridge-gap').position;
+  const pile = getEntity(s.state, 'zone:bridge-pile').position;
+  const near = () => Math.min(Math.hypot(hero.position.x - gap.x, hero.position.z - gap.z), Math.hypot(hero.position.x - pile.x, hero.position.z - pile.z));
+  let least = near();
+  // A child presses again and again, also after the row is at the float.
+  for (let k = 0; k < 40; k++) {
+    for (let n = 0; s.screen && n < 40; n++) {
+      s.command({ type: s.screen === 'dialogue' || s.screen === 'say' ? 'next' : 'close' });
+      s.step();
+    }
+    s.command({ type: 'hands' });
+    for (let i = 0; i < 45; i++) {
+      s.step();
+      least = Math.min(least, near());
+    }
+  }
+  assert.ok(least > 30, `the hero came ${(least / 2).toFixed(1)} cells from the bridge`);
+});
+
 test('a walk to the star of a person goes to the person, past the station of an open task (#66)', async () => {
   const story = load('trial-scholar');
   const upTo = story.steps.findIndex((x) => x.read) + 1;
