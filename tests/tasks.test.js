@@ -32,7 +32,7 @@ test('the teacher: one press at the heap puts one rod on the mat; after a tap on
     // The mat is in reach of the heap: one press takes one rod and puts it on the mat (#61).
     { press: { thing: 'rod:scholar:2' } },
     { until: { event: 'put', timeout: 10 } },
-    { expect: [{ zone: 'mat', planks: 1 }, { hero: { holding: false } }, { action: { act: 'put', icon: 'hand-put' } }] },
+    { expect: [{ zone: 'mat', planks: 1 }, { hero: { holding: false } }, { action: { act: 'put', icon: 'hand-move' } }] },
     // A tap on the rod on the mat, and a press: the rod comes back into the hands (a press at the
     // mat with no tap on the rod takes from the heap, #47), and goes back on the heap.
     { press: { on: 'mat' } },

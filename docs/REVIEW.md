@@ -585,3 +585,9 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The creatures:** "Nghé, bạn của em", "Con trâu", "Con vịt", "Con gà", "Con chó", "Con cá", "Con ếch", "Chim bói cá", "Con cú", "Lính do thám của giặc Ân", "Lính giặc Ân", "Thuồng luồng dưới sông", and "Tướng giặc Ân" (`note.creature.*`).
 - **The parent area:** the tab `parent.tab.notebook` ("Sổ tay"), `parent.notebook.about`, and `parent.notebook.count` ("{have} trên {all} tranh").
 - **Please check:** "Thuồng luồng" for the serpent of the river raid, and "Tướng giặc Ân" for the general.
+
+## The count after a wrong try, a wave that always helps, and a basket a child can find (#64)
+
+- **A press at the healer says the put:** a press that takes a bunch from its bed and puts it in the basket in one move says `healer.put.ngai` ("Ngải cứu vào giỏ rồi."), `healer.put.tiato` ("Tía tô vào giỏ rồi."), or `healer.put.rauma` ("Rau má vào giỏ rồi."), not only "Bó ngải cứu đây.".
+- **A wave always helps:** "Cháu thử trước đã, để xem nào." comes only before any act of the child in the task. After an act, a wave gives the line of the next step, for example `mentor.show.smith`. A wave never gets "Cần giúp thì vẫy tay nhé." or a nod.
+- **Please check:** "vào giỏ rồi" for a bunch that the child put in the basket.

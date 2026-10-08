@@ -39,6 +39,7 @@ Every task in the world must be clear to a child of six. Young children need lar
 | --- | --- | --- |
 | Empty hands at a thing that can be carried | Pick it up. One press, one thing. | A hand that holds a thing (`hand-pick`) |
 | A thing in the hands at a place that takes it | Put it there. One press, one thing. | A hand that sets a thing down (`hand-put`) |
+| Empty hands at a heap, with its place in reach (the rods and the mat, the herbs and the basket) | Take one thing and put it on the place, in one move (#61). At the healer, the line says the put: "Ngải cứu vào giỏ rồi." | A thing that goes from the heap to the place (`hand-move`, #64) |
 | A thing in the hands, anywhere else | Put it down on the ground. | `hand-put` |
 | Empty hands at a place with things in it | Take one back: the last thing put (on a line or in the stream, the thing in front). | `hand-pick` |
 | At the person of the task, during the task | The person checks the work (the finish). | The picture of the finish (below) |

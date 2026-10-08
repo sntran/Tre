@@ -167,7 +167,7 @@ test('perilla is indigo below and green on top, and each bed has a sign with a p
   assert.equal(seen.length, 3);
 });
 
-test('the healer says the name of the herb when the child takes a bunch, and after a tap on a bed (#61)', async () => {
+test('the healer says the name of the herb when a press puts a bunch in the basket (#64), and after a tap on a bed (#61)', async () => {
   const lines = [];
   const failures = await runHeadless({ name: 'herb-names', practice: 'hai-thuoc', profile, steps: [
     { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } },
@@ -179,7 +179,9 @@ test('the healer says the name of the herb when the child takes a bunch, and aft
     { wait: 1 },
   ] }, { onSession: (s) => s.listen((ev) => ev.type === 'open' && ev.screen === 'callout' && lines.push(ev.textKey)) });
   assert.deepEqual(failures, []);
-  assert.ok(lines.includes('healer.herb.tiato'), `the name of the bunch: ${lines.join(', ')}`);
+  // The one move of a press says the put, not only the pick (#64).
+  assert.ok(lines.includes('healer.put.tiato'), `the name of the bunch: ${lines.join(', ')}`);
+  assert.ok(!lines.includes('healer.herb.tiato'), `no line of a pick: ${lines.join(', ')}`);
   assert.ok(lines.includes('healer.bed.rauma'), `the name of the bed: ${lines.join(', ')}`);
 });
 

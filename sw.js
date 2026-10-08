@@ -59,6 +59,7 @@ const FILES = [
   'art/ui/hand-give.svg',
   'art/ui/hand-pick.svg',
   'art/ui/hand-put.svg',
+  'art/ui/hand-move.svg',
   'art/ui/heart-empty.svg',
   'art/ui/heart.svg',
   'art/ui/hint.svg',

@@ -1931,6 +1931,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // ({ task, kind }).
   const childPut = new Set();
   let lastPick = null;
+  // The thing of the last one-move press: its pick says nothing, and its put says the put (#64:
+  // "Bó ngải cứu đây." at each press, and the child did not know if a bunch went in or out).
+  let oneMove = null;
   // A task (its owner, trial-<id>) that is open now.
   const openTask = (task) => {
     if (!task?.startsWith('trial-')) return false;
@@ -2148,7 +2151,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const into = openTask(e.item.task) && distHb(hp, middleOf(e)) - size <= REACH ? oneMovePlace(e) : null;
         if (into) {
           const ghost = { look: e.look, x: into.position.x, y: into.position.y, z: into.position.z, facing: 0 };
-          add({ act: 'put', icon: 'hand-put', target: into.id, keys: [into.id, ...keys], at: middleOf(e), size, rank: 1, work: true, ghost, run: () => {
+          // The one move has its own picture: a thing that goes from the heap to the place (#64: the
+          // picture of a put with empty hands looked like a stick in the hands).
+          add({ act: 'put', icon: 'hand-move', target: into.id, keys: [into.id, ...keys], at: middleOf(e), size, rank: 1, work: true, ghost, run: () => {
+            oneMove = e.id;
             worldCommand(state, { type: 'pick', id: 'hero', item: e.id });
             worldCommand(state, { type: 'put', id: 'hero', zone: into.zone.id });
           } }, REACH);
@@ -3064,7 +3070,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if ((ev.type === 'pick' || ev.type === 'put') && ev.item) {
         const it = getEntity(state, ev.item)?.item;
         if (it?.task?.startsWith('trial-') && (ev.id === 'hero' || lastPick?.task !== it.task || !lastPick.child)) lastPick = { task: it.task, kind: it.kind, child: ev.id === 'hero' };
-        if (ev.type === 'pick' && ev.id === 'hero' && it?.task === 'trial-healer') sayHerb('herb', it.kind);
+        if (ev.type === 'pick' && ev.id === 'hero' && it?.task === 'trial-healer' && ev.item !== oneMove) sayHerb('herb', it.kind);
+        if (ev.type === 'put' && ev.id === 'hero' && ev.item === oneMove) {
+          oneMove = null;
+          if (it?.task === 'trial-healer') sayHerb('put', it.kind);
+        }
       }
       // A wrong bundle: a hero who stands on the mat steps off to the place of the mat, so that the
       // rods show while the teacher counts them (#61: the walk to the teacher crossed the mat).
