@@ -170,6 +170,12 @@
       "w": 4,
       "h": 4,
       "seed": 1
+    },
+    "gate-board": {
+      "prop": "gate-board",
+      "w": 4,
+      "h": 4,
+      "seed": 1
     }
   },
   "figures": {

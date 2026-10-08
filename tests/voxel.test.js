@@ -500,3 +500,10 @@ test('a rock is irregular: its top is never a plus, an X, or a line of three blo
   }
   assert.ok(shapes.size > 100, `${shapes.size} different rocks`);
 });
+
+test('the board at the gate of Văn Miếu is a prop of its own: two posts, a board, and a small roof (#57)', async () => {
+  assert.equal(typeof PROPS['gate-board'], 'function');
+  const views = JSON.parse((await import('node:fs')).readFileSync('data/figures.json', 'utf8')).views;
+  assert.equal(views['gate-board'].prop, 'gate-board');
+  assert.notEqual(PROPS['gate-board'], PROPS.stele, 'the board is not the stele');
+});

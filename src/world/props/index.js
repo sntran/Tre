@@ -3,13 +3,13 @@
 import { propContext } from './context.js';
 import { house, giongHouse, dinh, hut, school, forge } from './houses.js';
 import { tree, banyan, bamboo, banana, herbs, bush, areca } from './plants.js';
-import { well, haystack, coop, jar, drum, log, rock, ore, boat, signpost, gate, fence, riceStack, vanmieuGate, stele } from './things.js';
+import { well, haystack, coop, jar, drum, log, rock, ore, boat, signpost, gate, fence, riceStack, vanmieuGate, stele, gateBoard } from './things.js';
 
 export const PROPS = Object.freeze({
   house, 'giong-house': giongHouse, dinh, hut, school, forge,
   tree, banyan, bamboo, banana, herbs, bush, areca,
   well, haystack, coop, jar, drum, log, rock, ore, boat, signpost, gate, fence, 'rice-stack': riceStack,
-  'vanmieu-gate': vanmieuGate, stele,
+  'vanmieu-gate': vanmieuGate, stele, 'gate-board': gateBoard,
 });
 
 // Build one prop into the fine grid.

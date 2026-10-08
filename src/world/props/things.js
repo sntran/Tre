@@ -1,5 +1,5 @@
 // Things: the well, haystacks, pots, a big jar, a fallen log, rocks, ore, boats, the signpost, the gate, fences,
-// rice stacks, the gate of Văn Miếu, and a stele on a turtle. Units are fine blocks.
+// rice stacks, the gate of Văn Miếu, a stele on a turtle, and the board at the gate. Units are fine blocks.
 import { levelOf } from './houses.js';
 
 const center = (o) => ({ x: o.fx + Math.floor(o.fw / 2), z: o.fz + Math.floor(o.fd / 2) });
@@ -255,4 +255,20 @@ export function stele(ctx, o) {
   ctx.box(x - 1, g + 13, z - 1, x + 1, g + 13, z - 1, 'paperDeep');
   for (const cx of [x - 1, x, x + 1]) for (let y = g + 5; y <= g + 11; y++) if ((y - g + cx - x) % 2 === 0) ctx.set(cx, y, z - 1, 'ash');
   ctx.shadowDisc(x, z, 3, 3);
+}
+
+// The board at the gate of Văn Miếu (#57): the names of the people who passed an exam are on a
+// wooden board between two posts, under a small roof of red tiles; only the doctors have their
+// names on a stele. Rows of small dark marks are the names. It fits its 8 × 8 fine blocks.
+export function gateBoard(ctx, o) {
+  const { x, z } = center(o);
+  const g = ctx.ground(x, z);
+  for (const px of [x - 3, x + 3]) ctx.box(px, g, z, px, g + 9, z, 'wood');
+  ctx.box(x - 2, g + 3, z, x + 2, g + 8, z, 'paperDeep');
+  ctx.box(x - 3, g + 2, z, x + 3, g + 2, z, 'wood');
+  for (let y = g + 4; y <= g + 7; y++) for (let cx = x - 2; cx <= x + 2; cx++) if ((cx - x + y - g) % 2 === 0 && cx !== x) ctx.set(cx, y, z, 'ink');
+  ctx.box(x - 4, g + 10, z - 1, x + 4, g + 10, z + 1, 'vermilion');
+  ctx.box(x - 3, g + 11, z, x + 3, g + 11, z, 'ochre');
+  for (const ex of [x - 4, x + 4]) ctx.set(ex, g + 11, z, 'vermilion');
+  ctx.shadowDisc(x, z, 3, 1);
 }
