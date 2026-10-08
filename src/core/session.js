@@ -102,6 +102,14 @@ const BACK = 1.5; // cells: two steps back from an edge of the world (a step of 
 // the learner of the profile, or null. log(kind, fields): the learning log (ctx.log). save(reason):
 // save the profile. now(): the time in milliseconds (for the time limit). terrainOf(map, tileMap):
 // the terrain of a map (for the homes of the people). switches: the switches of the experiments.
+// A full point of the world (half blocks) from a point that can have no height: the height is the
+// top of the ground there (#65: a burst at a point with no height made its light NaN at night, and
+// the frame threw). Null for a point with no x or z. groundY(x, y): the top of the ground of a cell.
+export function fullPoint(at, groundY) {
+  if (!at || !Number.isFinite(at.x) || !Number.isFinite(at.z)) return null;
+  return { x: at.x, y: Number.isFinite(at.y) ? at.y : groundY(at.x / 2, at.z / 2), z: at.z };
+}
+
 export function createSession({ data, profile, learner = () => null, log = () => null, save = () => {}, now = () => Date.now(), terrainOf = () => ({ homes: {} }), switches = null }) {
   const out = [];
   const listeners = new Set();
@@ -507,7 +515,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const id = String(ev.trial ?? '');
     const person = id.startsWith('event-') ? getEntity(state, `event:${id.slice(6)}`) : getEntity(state, `npc:${trialDef(id)?.npc}`);
     if (person) person.cheer = { t: 0, hops: ev.end ? 2 : 1, wave: Boolean(ev.end), hop: CHEER.hop };
-    emit({ type: 'cheer', by: person?.id ?? null, at: ev.at, end: Boolean(ev.end), trial: id });
+    emit({ type: 'cheer', by: person?.id ?? null, at: fullPoint(ev.at, env.groundY), end: Boolean(ev.end), trial: id });
   }
   function stepCheer() {
     for (const e of state.entities) {

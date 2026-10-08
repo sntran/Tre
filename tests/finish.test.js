@@ -24,7 +24,8 @@ for (const [trial, person] of Object.entries(PEOPLE)) {
     assert.ok(cheers.length >= 1, 'a cheer');
     for (const c of cheers) {
       assert.equal(c.by, person, 'the person of the task cheers');
-      assert.ok(c.at && Number.isFinite(c.at.x) && Number.isFinite(c.at.z), 'the burst comes from a thing');
+      // A full point, with its height (#65: the light of a burst with no height was NaN at night).
+      assert.ok(c.at && Number.isFinite(c.at.x) && Number.isFinite(c.at.y) && Number.isFinite(c.at.z), 'the burst comes from a full point of a thing');
     }
     const ends = cheers.filter((c) => c.end);
     assert.equal(ends.length, 1, 'one end of the task');
@@ -55,4 +56,14 @@ test('the cheer of the person goes on while the done talk is open (the world wai
   assert.deepEqual(failures, []);
   assert.ok(open?.hops === 2, 'the smith cheers when the done talk opens');
   assert.equal(session.state.entities.find((e) => e.id === 'npc:smith').cheer, undefined, 'and the cheer ends in less than 2 seconds, while the talk is open');
+});
+
+test('a burst always has a full point: a point with no height takes the top of the ground (#65)', async () => {
+  const { fullPoint } = await import('../src/core/session.js');
+  const ground = (x, y) => x + y;
+  assert.deepEqual(fullPoint({ x: 10, z: 4 }, ground), { x: 10, y: 7, z: 4 });
+  assert.deepEqual(fullPoint({ x: 10, y: 2, z: 4 }, ground), { x: 10, y: 2, z: 4 });
+  assert.deepEqual(fullPoint({ x: 10, y: Number.NaN, z: 4 }, ground), { x: 10, y: 7, z: 4 });
+  assert.equal(fullPoint({ x: 10 }, ground), null);
+  assert.equal(fullPoint(null, ground), null);
 });
