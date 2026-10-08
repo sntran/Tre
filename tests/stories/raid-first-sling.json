@@ -42,7 +42,7 @@
       "expect": [
         {
           "text": {
-            "shown": "raid.scouts.intro"
+            "shown": "raid.scouts.intro.first"
           }
         }
       ]

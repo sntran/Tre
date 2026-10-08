@@ -1476,8 +1476,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const enc = map.encounters.find((e) => e.id === who.id);
       const def = data.raids?.raids[enc.raid];
       if (!def) return;
-      // One line, and then the raid starts on this map.
-      say(def.introKey);
+      // One line, and then the raid starts on this map. The first raid of the slingshot has its
+      // own line (firstKey): it has no gate, and so no torch (#67).
+      say(def.firstKey && !profile.flags['raid.tool.sling'] ? def.firstKey : def.introKey);
       queue(() => startRaid(enc.raid, enc.id));
     }
   }
@@ -1523,11 +1524,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // (#50): the line of the first new tool now, and the line of each next new tool later, when the
     // raid does not wait and the child had some time with the tool before (see the step).
     const lines = [];
+    // The drag of the slingshot comes in a later raid, after the child knows the presses (#67).
+    const drag = raid.tools.includes('sling') && !teach.includes('sling') && !profile.flags['raid.tool.drag'] && data.raids.toolLines?.drag;
     for (const tool of raid.tools) {
       const line = data.raids.toolLines?.[tool];
       if (!line || profile.flags[`raid.tool.${tool}`]) continue;
       profile.flags[`raid.tool.${tool}`] = true;
       lines.push({ tool, textKey: line.textKey, speaker: line.speaker });
+    }
+    if (drag) {
+      profile.flags['raid.tool.drag'] = true;
+      lines.push({ tool: 'drag', textKey: drag.textKey, speaker: drag.speaker });
     }
     // A villager names the post for a trap (an ordinal word, no numeral), after the line of the traps.
     if (raid.trapPost !== null) {
@@ -1704,7 +1711,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     slingPull = null;
     if (count >= 1) shootFromWall(count, POST_STEP);
   }
-  // One step of the pull of the button: the stone flies one second after the last press.
+  // One step of the pull of the button: the stone flies FIRE_WAIT seconds after the last press.
   function stepSling() {
     const r = raidEnt()?.raid;
     // The posts up to the pull light up, and a ring lies on the road at the count.
@@ -1738,7 +1745,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   let slingPull = null;
   let dragPull = 0; // half blocks: the pull of a drag on the hero now
   const POST_STEP = 5;
-  const FIRE_WAIT = 1;
+  // Two counting paces (COUNT_PACE in src/core/mentoring.js): a child who says each number aloud
+  // while pressing is slower than the mentors (#67).
+  const FIRE_WAIT = 1.8;
   function pullCount() {
     const r = raidEnt()?.raid;
     if (!slingPull || !r) return 0;

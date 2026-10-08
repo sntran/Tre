@@ -45,7 +45,7 @@ test('the first raid of the traps: no enemy comes until the child has a trap in 
   assert.ok(raid.enemies.length >= 1, 'the soldiers come');
 });
 
-test('the big button is the slingshot: each press is one post, the posts up to the pull light up, and the stone flies one second after the last press (#55)', async () => {
+test('the big button is the slingshot: each press is one post, the posts up to the pull light up, and the stone flies after the last press (#55)', async () => {
   let session = null;
   const events = [];
   const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'giong.spoke': true } };
@@ -74,6 +74,28 @@ test('the big button is the slingshot: each press is one post, the posts up to t
   const shots = events.filter((ev) => ev.type === 'shoot').map((ev) => ev.count);
   assert.deepEqual(shots, [5, HOLD_AT], 'one press is one post; four presses are four posts');
   void session;
+});
+
+// A child who says each number aloud while pressing presses about once each 1.2 seconds (#67): the
+// stone waits for the last press, and one shot goes to the post of the count.
+test('a child who counts aloud and presses once each 1.2 seconds gets one shot at the count (#67)', async () => {
+  const events = [];
+  const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'giong.spoke': true } };
+  const posts = HOLD_AT / 5;
+  const press = { do: { type: 'hands' } };
+  const failures = await runHeadless({ name: 'raid-count-aloud', profile, clock: 540, at: ['phu-dong', 14, 61], steps: [
+    { press: { entity: 'encounter:river' } },
+    { until: { event: 'open', with: { screen: 'say' }, timeout: 20 } },
+    { read: true },
+    { wait: 2 },
+    { expect: [{ raid: { on: true, enemies: 1 } }] },
+    ...Array.from({ length: posts }, () => [press, { wait: 1.2 }]).flat(),
+    { until: { event: 'shoot', timeout: 4 } },
+    { wait: 3 },
+  ] }, { onSession: (s) => { s.listen((ev) => events.push(ev)); } });
+  assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
+  const shots = events.filter((ev) => ev.type === 'shoot').map((ev) => ev.count);
+  assert.deepEqual(shots, [HOLD_AT], 'one shot, at the post of the count');
 });
 
 test('while the child presses, the posts up to the pull light up and a ring lies on the road at the count (#55)', async () => {
