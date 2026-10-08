@@ -62,6 +62,17 @@ function personOf(ctx, speaker) {
   return namesOf(ctx.data, region)[speaker] ?? null;
 }
 
+// The card of a calling next to the talk box, when a line names the calling (#62): the picture of
+// its mentor, as at Văn Miếu, and its name. Null when the line names none.
+function callingCard(ctx, id) {
+  const c = id ? ctx.data.callings?.callings.find((x) => x.id === id) : null;
+  if (!c) return null;
+  return h('div', { class: 'calling-card talk-calling', 'aria-hidden': 'true' }, [
+    portraitCanvas(ctx, ctx.data.figures.figures[c.look], { framing: 'full', size: 64 }),
+    h('span', { class: 'calling-words' }, [h('strong', { text: t(c.nameKey) })]),
+  ]);
+}
+
 // A dialogue box that shows the lines that come from elsewhere (the session of the village, or
 // runDialogue). line: { speaker, textKey, params, choices (text keys), mark }. next(): the child
 // goes on; choose(i): the child picks a choice.
@@ -84,6 +95,9 @@ export function createDialogueBox(ctx, { next, choose }) {
     openedAt = performance.now();
     downOnLine = false;
     box.replaceChildren();
+    layer.querySelector('.talk-calling')?.remove();
+    const card = callingCard(ctx, line.calling);
+    if (card) layer.prepend(card);
     const params = { ...ctx.textParams(), ...(line.params ?? {}) };
     const text = tg(line.textKey, params);
     const narrator = !line.speaker || line.speaker === 'narrator';

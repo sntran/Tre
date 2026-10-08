@@ -34,6 +34,7 @@
         "n1": {
           "speaker": "teacher",
           "textKey": "dlg.teacher.trial.done.n1",
+          "calling": "scholar",
           "mood": "happy"
         }
       }
@@ -71,6 +72,7 @@
         "n1": {
           "speaker": "smith",
           "textKey": "dlg.smith.trial.done.n1",
+          "calling": "smith",
           "mood": "happy"
         }
       }
@@ -127,6 +129,7 @@
         "n1": {
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.done.n1",
+          "calling": "fisher",
           "mood": "happy"
         }
       }
@@ -164,6 +167,7 @@
         "n1": {
           "speaker": "healer",
           "textKey": "dlg.healer.trial.done.n1",
+          "calling": "healer",
           "mood": "happy"
         }
       }
@@ -201,6 +205,7 @@
         "n1": {
           "speaker": "woodcutter",
           "textKey": "dlg.woodcutter.trial.done.n1",
+          "calling": "woodcutter",
           "mood": "happy"
         }
       }

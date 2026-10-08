@@ -609,6 +609,8 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .chapter-list li::before { content: '✓ '; color: var(--vermilion); font-weight: 700; }
 .calling-card strong { font-family: var(--display); font-size: var(--text-big); }
 .calling-card small { font-size: var(--text-small); }
+/* The card of a calling over the talk box, when a line names the calling (#62). */
+.talk-calling { position: absolute; left: var(--gap); bottom: calc(100% - var(--gap) * 0.5); cursor: default; animation: pop 0.5s; pointer-events: none; }
 .calling-card[aria-pressed="true"] { background: var(--yellow-pale); box-shadow: inset 0 0 0 3px var(--vermilion), var(--press); }
 .title-badge { font-size: var(--text-big); padding: 8px 20px; animation: pop 0.5s; }
 
