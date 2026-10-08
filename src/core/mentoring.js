@@ -80,6 +80,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return { key, tz, place, piles, person, at, done: false, round: 0 };
   }
 
+  // Does the hero carry a thing of the task, and has the mentor a line for it (lines.carry)?
+  function carrying(key, task) {
+    if (!defOf(key)?.lines?.carry) return false;
+    const held = getEntity(world(), getEntity(world(), 'hero')?.hands?.holds);
+    return Boolean(held?.item && (held.item.task === key || held.item.task === task.tz?.zone.task));
+  }
+
   // The things in a zone (entities).
   const itemsOf = (zoneEnt) => (zoneEnt?.zone.items ?? []).map((id) => getEntity(world(), id)).filter(Boolean);
   // The sizes of the things that the child can choose (on the piles and on the place).
@@ -338,6 +345,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (needsPlace && !task) return;
     if (move === 'first') {
       t = firstSteps(task, def, { say, point, mark, steps }, t);
+    } else if (move === 'show' && carrying(key, task)) {
+      // The thing of the task is in the hands (the sticks after the right cut): the line is the
+      // next step with it, toward its place (#57), not the first step.
+      const place = task.place?.position ?? task.at;
+      say(t, defOf(key).lines.carry);
+      point(t, place, 1.4);
+      mark(t, place, 2.5);
+      t += 2;
     } else if (move === 'show') {
       const pile = task.piles[0]?.position ?? task.at;
       say(t, lineOf(key, 'show'));

@@ -399,7 +399,8 @@
       "lines": {
         "first": "mentor.woodcutter.first",
         "show": "mentor.show.woodcutter",
-        "mark": "mentor.woodcutter.mark"
+        "mark": "mentor.woodcutter.mark",
+        "carry": "mentor.carry.woodcutter"
       }
     },
     "trial-plant": {

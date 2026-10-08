@@ -115,6 +115,23 @@ test('the woodcutter: the button puts a chalk mark at the place in front of the 
   ]);
 });
 
+test('the woodcutter: with the sticks in the hands after the right cut, his help names the wood pile, not the first chalk mark (#57)', async () => {
+  await play('task-woodcutter-carry', [51, 8.5], [
+    ...start('woodcutter'),
+    { press: { stem: 4 } },
+    { until: { event: 'mark', timeout: 10 } },
+    { press: { entity: 'npc:woodcutter' } },
+    { until: { event: 'chop', timeout: 10 } },
+    { wait: 2 },
+    { press: true },
+    { until: { event: 'pick', timeout: 10 } },
+    // The woodcutter shows the next step (his help, or the cue of a child who waits).
+    { do: { type: 'mentor', key: 'trial-woodcutter', move: 'show' } },
+    { until: { event: 'open', with: { textKey: 'mentor.carry.woodcutter' }, timeout: 10 } },
+    { expect: [{ event: 'open', with: { textKey: 'mentor.carry.woodcutter' } }, { count: { entities: 'woodpile', min: 1, max: 1 } }] },
+  ]);
+});
+
 test('the woodcutter: a cut that is not equal shows the pieces side by side, the short one breaks, the woodcutter says why, and a new stem comes (#48)', async () => {
   await play('task-woodcutter-short', [51, 8.5], [
     ...start('woodcutter'),

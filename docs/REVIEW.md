@@ -548,3 +548,5 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The note of the time limit:** `parent.time.note` ("Khi hết giờ, trò chơi chờ em làm xong việc đang làm với một người, nhiều nhất thêm {n} phút. Một trận giữ làng cũng chờ đến hết trận.").
 - **Please check:** "trận giữ làng" for a raid, and "việc đang làm với một người" for the task of a person.
 - **The help line of grandma, for a touch screen:** `dlg.grandma.intro.n4` ("Chạm vào chỗ muốn đến, hoặc chạm vào ngôi sao vàng."), with no seal: a line about the controls is not a legend (a node of a talk can have its own `mark`).
+- **The woodcutter is "anh" everywhere:** `dlg.woodcutter.staffs.n2` ("… Anh dựng một cây gậy mẫu … Em chặt …"), `dlg.woodcutter.practice.end.n1` ("… Anh cảm ơn em. Giờ em chọn nhé …"), and `practiceLink.chat-tre.line` ("… cho anh tiều phu …"), as in `npc.woodcutter.name` ("Anh tiều phu").
+- **The wood pile is next to the stem:** `dlg.woodcutter.trial.n1` ends "Mang các khúc tre ra đống gỗ bên cạnh nhé.", and the help with the sticks in the hands is `mentor.carry.woodcutter` ("Mang các khúc tre ra đống gỗ nhé.").

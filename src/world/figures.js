@@ -761,6 +761,14 @@ export function workThing(look) {
       if (look.full) parts.push(P('leaves', [3, 0.4, 1.1], 'green', [1.7, 0.7, 0.6]));
       return still(parts, 0.9);
     }
+    // The wood pile of the woodcutter (#57): two rows of logs on a low rack, so that the place
+    // where the sticks go has a picture, not only the light of the cue.
+    case 'woodpile': return still([
+      P('rack', [3.2, 0.2, 2], 'ink', [1.5, 0.1, 1]),
+      P('log1', [3, 0.55, 0.55], 'wood', [1.5, 0.45, 0.4]), P('log2', [3, 0.55, 0.55], 'ochre', [1.5, 0.45, 1]), P('log3', [3, 0.55, 0.55], 'wood', [1.5, 0.45, 1.6]),
+      P('log4', [3, 0.55, 0.55], 'ochre', [1.5, 0.95, 0.7]), P('log5', [3, 0.55, 0.55], 'wood', [1.5, 0.95, 1.3]),
+      P('ends', [0.08, 0.9, 1.6], 'yellowPale', [0, 0.7, 1]),
+    ], 1.25);
     // A fallen bamboo stem, n half blocks long, along +z, with a node at each unit.
     case 'stem': {
       const parts = [];

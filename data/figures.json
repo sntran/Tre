@@ -814,6 +814,9 @@
     "basket": {
       "kind": "basket"
     },
+    "woodpile": {
+      "kind": "woodpile"
+    },
     "basket-full": {
       "kind": "basket",
       "full": true

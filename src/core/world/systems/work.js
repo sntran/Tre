@@ -303,6 +303,7 @@ export function setupTrial(world, def, level, env, opts = {}) {
     // not a long walk to the bridge (#48).
     const w = opts.practice ? { x: s.x + task.length + PILE_GAP, y: env.groundY((s.x + task.length + PILE_GAP) / 2, s.z / 2), z: s.z } : P(def.places.pile);
     addEntity(world, { id: 'zone:woodpile', keep: true, zone: { id: 'woodpile', task: owner, rule: 'woodpile', accepts: 'sticks', items: [], x: w.x, y: w.y, z: w.z, rect: rect(w, 3, 2) }, position: { x: w.x + 1, y: w.y, z: w.z + 2, facing: 0 } });
+    if (!getEntity(world, 'pile:woodcutter')) addEntity(world, { id: 'pile:woodcutter', keep: true, position: { x: w.x, y: w.y, z: w.z, facing: 0 }, look: 'woodpile' });
   }
   // The point of each place of the task is the middle of its rect (the button and the light aim
   // there), and the hero stands at the old point (stand) to work there (#47).
