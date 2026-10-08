@@ -1,0 +1,276 @@
+{
+ "about": "#57: time, people, and lines on a phone. Hero creation with the look step (Tiếp covers no choice), the help line of grandma for a touch screen, the healer at dusk: while the child works (presses), the light holds, the woodcutter and his wood pile, and the board with the name of the child at the gate of Văn Miếu.",
+ "start": "",
+ "lang": "vi",
+ "allow": [],
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "click": "Bình"
+  },
+  {
+   "click": "Tiếp"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "the-look-step"
+  },
+  {
+   "create": "Bình"
+  },
+  {
+   "read": 3
+  },
+  {
+   "read": 4
+  },
+  {
+   "click": "Chào nghé con",
+   "if": "[...document.querySelectorAll('button')].some((b) => b.offsetParent && b.textContent.includes('Chào nghé con'))",
+   "after": 1.5
+  },
+  {
+   "click": "Đồng ý",
+   "if": "Boolean(document.querySelector('.name-input'))",
+   "after": 1
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Chạm vào chỗ muốn đến')",
+   "after": 0.6
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Chạm vào chỗ muốn đến')",
+   "after": 0.6
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Chạm vào chỗ muốn đến')",
+   "after": 0.6
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Chạm vào chỗ muốn đến')",
+   "after": 0.6
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Chạm vào chỗ muốn đến')",
+   "after": 0.6
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Chạm vào chỗ muốn đến')",
+   "after": 0.6
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Chạm vào chỗ muốn đến')",
+   "after": 0.6
+  },
+  {
+   "read": 1,
+   "if": "!document.querySelector('.dialogue-layer')?.textContent.includes('Chạm vào chỗ muốn đến')",
+   "after": 0.6
+  },
+  {
+   "until": "document.querySelector('.dialogue-layer')?.textContent.includes('Chạm vào chỗ muốn đến')",
+   "timeout": 120,
+   "if": "true"
+  },
+  {
+   "shot": "the-help-line-of-grandma"
+  },
+  {
+   "read": 30
+  },
+  {
+   "goto": "?story=healer-dusk"
+  },
+  {
+   "until": "Boolean(tre.activeVillage)",
+   "timeout": 240
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "print": "tre.activeVillage.state().clock.minutes % 1440"
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "press": true,
+   "after": 5
+  },
+  {
+   "print": "tre.activeVillage.state().clock.minutes % 1440"
+  },
+  {
+   "shot": "the-healer-at-dusk-after-a-minute"
+  },
+  {
+   "goto": "?story=trial-woodcutter"
+  },
+  {
+   "until": "Boolean(tre.activeVillage)",
+   "timeout": 240
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 4
+  },
+  {
+   "shot": "the-woodcutter-and-the-wood-pile"
+  },
+  {
+   "goto": "?story=vanmieu-board"
+  },
+  {
+   "until": "Boolean(tre.activeVillage)",
+   "timeout": 240
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "cell": [
+     9124,
+     6343
+    ]
+   }
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "cell": [
+     9116,
+     6343
+    ]
+   }
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "cell": [
+     9113,
+     6343
+    ]
+   }
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.vanmieu'))",
+   "timeout": 240
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "the-board-at-the-gate"
+  }
+ ]
+}
