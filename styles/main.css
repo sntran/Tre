@@ -247,6 +247,7 @@ p { line-height: 1.45; margin: 0.4em 0; }
 /* The main buttons of a screen stay on the screen: when the screen scrolls, they stay at the
    bottom edge over the paper (#51). */
 .main-btn, .main-actions { position: sticky; bottom: 0; z-index: 3; }
+.main-space { flex: none; height: 12px; }
 .main-actions { width: 100%; padding: 8px 0; background: var(--paper) var(--paper-texture) repeat; background-size: 256px; }
 .mark-history { background: var(--indigo); border-color: var(--indigo); }
 
@@ -264,6 +265,7 @@ p { line-height: 1.45; margin: 0.4em 0; }
 }
 .mini-portrait { width: 44px; height: 44px; border: var(--thin); border-radius: 3px; background: var(--diep); }
 .hero-preview { width: min(40vmin, 260px); height: min(60vmin, 390px); overflow: visible; }
+.hero-preview.small { height: min(36vmin, 140px); }
 .hero-turn { cursor: grab; touch-action: none; max-width: 100%; }
 .hero-turn:active { cursor: grabbing; }
 .game-head { display: flex; align-items: center; gap: 8px; }

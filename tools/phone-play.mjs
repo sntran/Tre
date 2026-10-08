@@ -200,6 +200,12 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
       // under the bottom of the screen, the child must scroll to find it: a problem.
       const main = page.locator('.btn.big.red:visible').last();
       let box = await main.boundingBox().catch(() => null);
+      // The main button never covers a choice: a tap on a tile under it presses the button (#57).
+      const covered = box && (await page.evaluate((b) => [...document.querySelectorAll('.option-grid > *')].filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width && r.left < b.x + b.width && r.right > b.x && r.top < b.y + b.height && r.bottom > b.y;
+      }).length, box));
+      if (covered) problems.push(`create: the button ${(await main.textContent()).trim()} covers ${covered} choices`);
       if (box && box.y + box.height > height) {
         problems.push(`create: the button ${(await main.textContent()).trim()} is under the bottom of the screen`);
         await main.scrollIntoViewIfNeeded();

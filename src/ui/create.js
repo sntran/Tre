@@ -14,6 +14,9 @@ import { portraitCanvas, portraitImage } from './portraits.js';
 const TURNS = 16; // the preview turns in 16 steps, as a print
 const STEP_MS = 350; // one step of the turn
 const PREVIEW = 220; // the size of the preview (CSS pixels)
+// The step of the look has four rows of pictures: the preview is smaller there, so that all the rows
+// fit over the main button on a phone held upright (#57: "Tiếp" covered the row of the clothes).
+const PREVIEW_LOOK = 140;
 
 export async function mountCreate(ctx) {
   const opts = { ...ctx.data.figures.hero, nameMax: ctx.data.hero.nameMax };
@@ -138,6 +141,10 @@ export async function mountCreate(ctx) {
     thumbRows = [];
     stage.replaceChildren(dots());
     const name = steps[step];
+    const size = name === 'look' ? PREVIEW_LOOK : PREVIEW;
+    turnCanvas.style.width = `${size}px`;
+    turnCanvas.style.height = `${size}px`;
+    preview.classList.toggle('small', name === 'look');
     if (name === 'lang') {
       stage.append(title('create.lang'));
       for (const code of ['vi', 'en']) {
@@ -205,6 +212,8 @@ export async function mountCreate(ctx) {
       stage.append(row(count(opts.faces), 'face', 'create.face'));
       stage.append(row(count(opts.hairs), 'hair', 'create.hair', 'head', (30 * Math.PI) / 180));
       stage.append(row(count(opts.clothes), 'clothes', 'create.clothes', 'full'));
+      // A space as tall as the main button under the last row: the button never covers a choice.
+      stage.append(h('div', { class: 'main-space', 'aria-hidden': 'true' }));
       stage.append(button(t('ui.next'), next, { cls: 'btn big red main-btn' }));
     } else if (name === 'grade') {
       stage.append(title('create.grade'));
