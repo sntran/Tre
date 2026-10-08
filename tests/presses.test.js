@@ -244,3 +244,36 @@ test('the teacher: a wave during the first step leaves the mat empty', async () 
   run(session, 2);
   assert.equal(mat(), 0, 'the rod of the example went back to the heap');
 });
+
+// A wrong bundle stays on the mat, and the teacher counts it aloud (#61): after a tie of 11 rods,
+// the teacher says the numbers from one to eleven with a point at each rod, then the rod over ten
+// rolls back to the heap, and 10 rods stay on the mat.
+test('the teacher: after a tie of 11 rods, the teacher counts to eleven and only the extra rod goes back', async () => {
+  const session = await afterTalk('trial-scholar');
+  const mat = () => zone(session, 'mat').items.length;
+  assert.deepEqual(playPresses(session, { presses: 60, until: () => mat() >= 10 && !session.carried() }), []);
+  // One rod more on the mat (as the rod of an example that stayed, before #61, item 7).
+  const heap = zone(session, 'rods');
+  const id = heap.items.pop();
+  zone(session, 'mat').items.push(id);
+  getEntity(session.state, id).item.zone = 'mat';
+  assert.equal(mat(), 11);
+  const counts = [];
+  session.listen((ev) => {
+    if (ev.type === 'open' && ev.screen === 'callout' && ev.id === 'npc:teacher' && String(ev.textKey).startsWith('num.')) counts.push(Number(ev.textKey.slice(4)));
+  });
+  let snapped = false;
+  session.listen((ev) => { if (ev.type === 'snap') snapped = true; });
+  session.command({ type: 'tap', target: { person: 'npc:teacher' } });
+  session.events();
+  session.command({ type: 'hands' });
+  session.events();
+  run(session, 15, () => snapped);
+  assert.ok(snapped, 'the band snaps');
+  run(session, 2);
+  assert.equal(mat(), 11, 'the rods stay on the mat after the snap');
+  run(session, 20, () => counts.length >= 11 && mat() === 10);
+  run(session, 2);
+  assert.deepEqual(counts.slice(0, 11), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], `the teacher counts aloud: ${counts.join(' ')}`);
+  assert.equal(mat(), 10, 'the rod over ten went back to the heap');
+});

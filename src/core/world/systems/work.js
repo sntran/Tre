@@ -41,8 +41,9 @@ const PILE_GAP = 4; // half blocks from the end of the stem to the wood pile of 
 const FISHER_STAKES = new Set(['stake:fisher:a', 'stake:fisher:b']);
 // The band of the teacher that snaps (#48): the rods lie this far from the middle of the mat (half
 // blocks) for SPRING_TIME seconds. BUNDLE_STEP: the space of the bundles in their row.
-const SPRING = 3.2;
 const SPRING_TIME = 1.2;
+const COUNT_TIME = 0.9; // seconds: the count of one rod aloud by the teacher (COUNT_PACE in src/core/mentoring.js)
+const ROLL_STEP = 0.5; // seconds between two extra rods that roll back to the heap
 const BUNDLE_STEP = 1.3;
 const CUT_BREAK = 1;
 const PIECE_ROW = 1.6;
@@ -575,19 +576,18 @@ function act(world, e, want, env) {
       const heapZone = zoneEnt(world, 'rods');
       if ((heapZone?.zone.items.length ?? 0) < task.bundle) finish(world, tz);
     } else {
-      // The band snaps: the rods spring apart around the mat (a puff of dust), and a moment later
-      // they go back on the heap (#48). While they lie apart, a tap does not take them.
+      // The band snaps (a puff of dust), and the rods stay on the mat in their rows, so that the
+      // teacher counts them aloud with the child (#61: before, all the rods went back to the heap,
+      // and the count counted nothing). After the count, only the rods over a bundle roll back to
+      // the heap, one at a time. With too few, all the rods stay. While the extra rods wait, a tap
+      // does not take them.
       const c = { x: (mat.zone.rect.x0 + mat.zone.rect.x1) / 2, z: (mat.zone.rect.z0 + mat.zone.rect.z1) / 2 };
-      mat.zone.items.forEach((id, i) => {
+      const extra = mat.zone.items.slice(task.bundle);
+      for (const id of extra) {
         const rod = getEntity(world, id);
-        if (!rod) return;
-        const a = (i / n) * Math.PI * 2;
-        Object.assign(rod.position, { x: c.x + Math.cos(a) * SPRING, z: c.z + Math.sin(a) * SPRING, facing: a });
-        rod.item.zone = null;
-        rod.item.set = true;
-      });
-      tz.zone.spring = { t: SPRING_TIME, ids: [...mat.zone.items] };
-      mat.zone.items = [];
+        if (rod) rod.item.set = true;
+      }
+      if (extra.length) tz.zone.spring = { t: SPRING_TIME + n * COUNT_TIME, ids: extra };
       say(world, 'snap', mat.id, { count: n, at: { x: c.x, z: c.z }, sound: 'plank-down' });
     }
   } else if (want.act === 'exact') {
@@ -1017,17 +1017,22 @@ function tickSlash(world, tz, dt, env) {
   say(world, 'stem', tz.id, { sound: 'plank-down' });
 }
 
-// The rods of a band that snapped go back on the heap after a moment.
+// The extra rods of a band that snapped roll back to the heap after the count, one at a time.
 function tickSpring(world, tz, dt) {
   const sp = tz.zone.spring;
   if (!sp || (sp.t -= dt) > 0) return;
-  delete tz.zone.spring;
-  for (const id of sp.ids) {
-    const rod = getEntity(world, id);
-    if (!rod) continue;
-    rod.item.set = false;
-    toHeap(world, rod);
+  const id = sp.ids.pop();
+  if (sp.ids.length) sp.t = ROLL_STEP;
+  else delete tz.zone.spring;
+  const rod = getEntity(world, id);
+  if (!rod) return;
+  const mat = zoneEnt(world, 'mat');
+  if (mat) {
+    mat.zone.items = mat.zone.items.filter((x) => x !== id);
+    packMat(world, mat.zone);
   }
+  rod.item.set = false;
+  toHeap(world, rod);
 }
 
 function tickStem(world, tz, dt) {
