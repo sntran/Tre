@@ -447,10 +447,17 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .profile-text { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .profile-where { display: flex; align-items: center; gap: 6px; font-family: var(--body); font-weight: 400; font-size: var(--text-small); }
 /* The bamboo of the hero in the HUD (#8): a section for each level, a shoot that grows on top. */
-.hud-bamboo { display: inline-flex; flex-direction: column-reverse; align-items: center; gap: 1px; align-self: flex-end; margin: 0 0 2px -4px; }
-.hud-bamboo i { display: block; width: 11px; height: var(--section, 9px); background: var(--green); border: 1.5px solid var(--ink); border-radius: 2px; }
-.hud-bamboo i.shoot { width: 6px; background: var(--green-pale); border-width: 1px 1px 0; border-radius: 3px 3px 0 0; }
+.hud-bamboo { display: inline-flex; flex-direction: column-reverse; align-items: center; align-self: flex-end; margin: 0 4px 2px -2px; }
+/* Thin and tall sections with a dark ring of a node at the top of each, so that the stem reads as
+   bamboo and not as a box. */
+.hud-bamboo i { position: relative; display: block; width: 7px; height: var(--section, 9px); background: var(--green); border: 1.5px solid var(--ink); border-top-width: 3px; border-radius: 1px; }
+/* The shoot grows with the experience; a leaf at its tip turns to the side. */
+.hud-bamboo i.shoot { width: 5px; background: var(--green-pale); border-width: 1px 1px 0; border-radius: 2px 2px 0 0; }
+.hud-bamboo i.shoot::after { content: ''; position: absolute; top: -4px; left: 2px; width: 9px; height: 4px; background: var(--green); border: 1px solid var(--ink); border-radius: 0 100% 0 100%; transform: rotate(-35deg); transform-origin: left bottom; }
 .hud-bamboo i.grew { animation: bamboo-grew 1.2s ease-out; }
+
+.hud-bamboo i.sprout { animation: bamboo-sprout 1.6s ease-out; }
+@keyframes bamboo-sprout { 0%, 40% { background: var(--yellow); box-shadow: 0 0 6px 2px var(--yellow); } 100% { box-shadow: none; } }
 @keyframes bamboo-grew { 0% { transform: scaleY(0); background: var(--yellow); } 50% { transform: scaleY(1.3); background: var(--yellow); box-shadow: 0 0 6px 2px var(--yellow); } 100% { transform: scaleY(1); } }
 .mini-bamboo { display: inline-flex; flex-direction: column-reverse; gap: 1px; }
 .mini-bamboo i { display: block; width: 10px; height: 9px; background: var(--green); border: 1px solid var(--ink); }

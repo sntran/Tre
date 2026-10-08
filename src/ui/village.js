@@ -307,16 +307,17 @@ export async function mountVillage(ctx, params = {}) {
     bamboo,
     h('span', { class: 'hud-name', text: profile.hero.name }),
   ]);
-  function drawBamboo(grew = false) {
+  function drawBamboo(grew = false, added = false) {
     const g = levelOf(profile.growth?.xp ?? 0);
     const key = `${g.level}:${Math.round((g.into / g.need) * 8)}`;
-    if (bamboo.dataset.key === key && !grew) return;
+    if (bamboo.dataset.key === key && !grew && !added) return;
     bamboo.dataset.key = key;
-    const size = Math.max(4, Math.min(10, Math.floor(38 / (g.level + 1))));
+    const size = Math.max(5, Math.min(14, Math.floor(42 / (g.level + 1))));
     bamboo.style.setProperty('--section', `${size}px`);
     const sections = Array.from({ length: g.level }, (_, i) => h('i', { class: grew && i === g.level - 1 ? 'grew' : '' }));
-    const shoot = h('i', { class: 'shoot' });
-    shoot.style.height = `${Math.max(2, Math.round(size * (g.into / g.need)))}px`;
+    // New experience: the shoot shines for a moment, so that the child sees that it grew.
+    const shoot = h('i', { class: added && !grew ? 'shoot sprout' : 'shoot' });
+    shoot.style.height = `${Math.max(4, Math.round(size * (g.into / g.need)))}px`;
     bamboo.replaceChildren(...sections, shoot);
   }
   drawBamboo();
@@ -1336,7 +1337,7 @@ export async function mountVillage(ctx, params = {}) {
       case 'notebook': printQueue.push(ev); return;
       // Experience (#8): the shoot of the bamboo grows; at a new level a new section grows and shines.
       case 'growth':
-        drawBamboo(ev.up);
+        drawBamboo(ev.up, true);
         if (ev.up) ctx.bus.emit('sound', 'win');
         return;
       // A success in a task (#62): a burst of leaves from the thing, with its own light; at the end

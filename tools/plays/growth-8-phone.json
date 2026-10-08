@@ -71,7 +71,7 @@
    "shot": "the-shoot-of-the-bamboo-grew"
   },
   {
-   "print": "[JSON.stringify(tre.profile.growth), document.querySelectorAll('.hud-bamboo i:not(.shoot)').length, document.querySelector('.print-card')?.textContent ?? null, Object.keys(tre.profile.notebook?.seen ?? {}).join(' ')]"
+   "print": "[JSON.stringify(tre.profile.growth), document.querySelectorAll('.hud-bamboo i:not(.shoot)').length, document.querySelector('.hud-bamboo .shoot')?.style.height, document.querySelector('.print-card')?.textContent ?? null, Object.keys(tre.profile.notebook?.seen ?? {}).join(' ')]"
   },
   {
    "button": ".hud .icon-btn[aria-label='Trình đơn']",
