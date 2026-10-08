@@ -40,7 +40,9 @@ const signsFor = (id, r, few) => {
 // The name of an activity: the title of its practice link, or parent.act.<id>.
 export const titleOf = (practice, id) => (practice?.activities ?? []).find((a) => a.id === id)?.titleKey ?? `parent.act.${id}`;
 
-// The signs of an activity in the week, in words: steady, restless, frustrated at times, or keen.
+// The signs of an activity in the week, in words: steady, restless, frustrated at times, keen, or
+// hard at times. Steady only with no misses in a row and no waves for help (#67: a lost child who
+// tried again and again was "mostly steady").
 export function signsOf(r, few = SIGNALS.few) {
   const misses = r.commits - r.ok;
   const out = [];
@@ -50,6 +52,7 @@ export function signsOf(r, few = SIGNALS.few) {
   // Keen is the opposite of restless and frustrated: with one of them, the note says only that one,
   // not "frustrated at times and keen" (#58).
   if (!out.length && ((r.near >= few && r.near >= misses / 2) || r.stay > 0)) out.push('keen');
+  if (!out.length && ((r.pairs ?? 0) > 0 || (r.asks ?? 0) > 0)) out.push('hard');
   return out.length ? out : ['steady'];
 }
 
@@ -139,6 +142,8 @@ export function weeklyNote(rollups, profile, week, data = {}) {
   for (const [id, r] of list) {
     const signs = signsFor(id, r, sig.few);
     if (signs.includes('frustrated')) line(8, 'parent.week.frustrated', { act: title(id), times: count('times', Math.max(r.left, r.missRuns)) });
+    // The child stopped right after misses in a row: what happened, with no reason (#67).
+    if (!NO_REASON.has(id) && (r.stopRun ?? 0) >= 2) line(8, 'parent.week.stopAfter', { act: title(id), tries: count('tries', r.stopRun) });
     if (signs.includes('restless')) line(7, 'parent.week.restless', { act: title(id) });
     if (r.sets && r.stay) line(4, 'parent.week.stay', { act: title(id), sets: count('sets', r.sets), times: count('times', r.stay) });
   }

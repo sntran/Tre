@@ -314,7 +314,7 @@ export function offOf(parts, target) {
   return Math.abs(sum - target) / group;
 }
 
-const emptyAct = () => ({ commits: 0, ok: 0, near: 0, far: 0, fast: 0, idle: 0, resets: 0, missRuns: 0, again: 0, changed: 0, left: 0, sessions: 0, self: 0, sent: 0, first: 0, stops: 0, sets: 0, stay: 0, won: 0, lost: 0, minutes: 0 });
+const emptyAct = () => ({ commits: 0, ok: 0, near: 0, far: 0, fast: 0, idle: 0, resets: 0, missRuns: 0, pairs: 0, asks: 0, stopRun: 0, again: 0, changed: 0, left: 0, sessions: 0, self: 0, sent: 0, first: 0, stops: 0, sets: 0, stay: 0, won: 0, lost: 0, minutes: 0 });
 const emptyWeek = () => ({
   sessions: 0, self: 0, sent: 0, minutes: 0, hops: 0,
   day: [0, 0, 0, 0, 0, 0, 0], // minutes of play on each day of the week, Monday first
@@ -351,6 +351,9 @@ const MARKS = new Set(['show', 'mark', 'cue', 'demo']); // the people check or s
 //   fast, idle: the commits less than signals.fast seconds after the commit before (careless), and
 //     the commits more than signals.idle seconds after it (a long pause).
 //   resets, missRuns: the resets of the commits, and the runs of signals.missRun misses in a row.
+//   pairs, asks: the runs of two or more misses in a row, and the waves of the child to a person of
+//     the activity (#67: "steady" only with none of them).
+//   stopRun: the most misses in a row just before the child ended a session there (#67).
 //   again, changed, left: after a miss, the next commit of the same activity (and with other
 //     parts), or no more commit of it: the session ended or the child went to another activity
 //     within signals.leave seconds.
@@ -416,6 +419,7 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
         if (!inSession) for (const k of Object.keys(missRun)) delete missRun[k];
         missRun[a] = ok ? 0 : (missRun[a] ?? 0) + 1;
         if (missRun[a] === sig.missRun) r.missRuns += 1;
+        if (missRun[a] === 2) r.pairs += 1;
         if (s) {
           const k = seen.get(s) ?? { acts: new Set(), first: a, last: a, lastT: ev.t };
           k.acts.add(a);
@@ -431,6 +435,11 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
         // stop of the child (#58).
         const byChild = ev.endedBy === 'child';
         if (byChild && prev && !prev.ok && prev.session === ev && (ev.end - prev.t) / 1000 < sig.leave) closeMiss(prev, 'left');
+        // The child stopped there right after misses in a row: how many (#67).
+        if (byChild && prev && !prev.ok && prev.session === ev) {
+          const r = act(W(prev.t), prev.a);
+          r.stopRun = Math.max(r.stopRun, missRun[prev.a] ?? 1);
+        }
         const min = Math.max(0, ev.end - ev.start) / 60000;
         w.sessions += 1;
         w.minutes += min;
@@ -472,6 +481,7 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
         w.l2l.selfFix += ev.changed ? 1 : 0;
       } else if (ev.type === 'ask') {
         w.l2l[ev.when] += 1;
+        if (ev.task) act(w, activityOf(ev.task, activities)).asks += 1;
       } else if (ev.type === 'help') {
         w.l2l.helps += 1;
         w.l2l.marks += MARKS.has(ev.move) ? 1 : 0;

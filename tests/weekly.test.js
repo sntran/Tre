@@ -229,3 +229,25 @@ test('no line of the facts says 0 facts', () => {
   assert.ok(!keys.includes('parent.week.facts') && !keys.includes('parent.week.factsFirst'), keys.join(' '));
   assert.ok(!/ 0 /.test(text(vi, note)), text(vi, note));
 });
+
+// The note says only what is true (#67): "steady" only with no misses in a row and no waves, and a
+// child who stops right after wrong tries hears what happened, with no reason.
+test('a child who tries again and again, waves, and stops after three wrong gives is not "steady"', () => {
+  const out = [];
+  const t = MON;
+  out.push(commit(t + 10 * S, 'trial-healer', { success: false, off: 1 }));
+  out.push({ type: 'ask', t: t + 20 * S, variant: 'base', task: 'trial-healer', when: 'after', move: 'show' });
+  out.push(commit(t + 40 * S, 'trial-healer', { success: false, off: 1, parts: [2, 4] }));
+  out.push(commit(t + 70 * S, 'trial-healer', { success: false, off: 2, parts: [1, 4] }));
+  out.push(session(t, t + 100 * S));
+  const note = weeklyNote(rollupEvents(out, opts), profile(), W, data);
+  const act = note.acts.find((a) => a.id === activityOf('trial-healer', schema.activities));
+  assert.ok(act && !act.signs.includes('steady'), JSON.stringify(act?.signs));
+  const v = text(vi, note);
+  const e = text(en, note);
+  assert.match(v, /Nam dừng ở .+ ngay sau 3 lần làm chưa đúng liền nhau\./);
+  assert.match(e, /Nam stopped at .+ right after 3 wrong tries in a row\./);
+  // An activity with right tries only, and no wave, is steady.
+  const calm = rollupEvents([commit(t + 10 * S, 'trial-healer'), commit(t + 40 * S, 'trial-healer'), commit(t + 70 * S, 'trial-healer'), session(t, t + 100 * S)], opts);
+  assert.deepEqual(weeklyNote(calm, profile(), W, data).acts[0].signs, ['steady']);
+});
