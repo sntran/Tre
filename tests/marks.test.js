@@ -55,6 +55,24 @@ test('a bubble never covers the hero and never sits on a control; a person off t
   assert.ok(!overlaps(under, high) && under.y0 >= high.y1);
 });
 
+test('a bubble never covers the work of an open task: it goes higher, or to the other side of its person (#64)', () => {
+  // The woodcutter stands by the stem; the stem lies on the screen where his bubble would go
+  // (frame 7 of #64).
+  const head = { x: 200, y: 400 };
+  const stem = { x0: 60, y0: 330, x1: 340, y1: 390 };
+  const b = placeBubble(head, 260, 50, { screen, hero: null, controls, work: [stem] });
+  assert.ok(!overlaps(b, stem), 'not on the stem');
+  assert.ok(b.y1 <= stem.y0, 'higher, over the stem');
+  // No room over the work (the work is at the top of the screen): the other side of the person.
+  const beds = { x0: 20, y0: screen.top + 2, x1: 230, y1: 400 };
+  const side = placeBubble({ x: 200, y: 420 }, 140, 40, { screen, hero: null, controls, work: [beds] });
+  assert.ok(!overlaps(side, beds), 'not on the beds');
+  assert.ok(side.x0 >= beds.x1, 'at the side away from the beds');
+  // With no work under it, the bubble stays over the head.
+  const free = placeBubble(head, 260, 50, { screen, hero: null, controls, work: [{ x0: 0, y0: 600, x1: 50, y1: 650 }] });
+  assert.equal(free.y1, head.y);
+});
+
 test('a bubble never covers a star: it goes to the other side of its person (#56)', () => {
   // The woodcutter talks, and the star of the bamboo clump is over his head (frame 4 of #56).
   const head = { x: 120, y: 300 };

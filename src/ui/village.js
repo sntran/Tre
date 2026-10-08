@@ -1672,6 +1672,7 @@ export async function mountVillage(ctx, params = {}) {
     }
     for (let i = pointers; i < pointerPool.length; i++) pointerPool[i].hidden = true;
     stepVoice();
+    const workAt = bubbles.length ? workMarks() : [];
     for (let i = bubbles.length - 1; i >= 0; i--) {
       const b = bubbles[i];
       b.age += 1 / 60;
@@ -1687,7 +1688,7 @@ export async function mountVillage(ctx, params = {}) {
       // talks from the edge with a tail toward the person, for a short time (#53).
       const rise = Math.min(b.age, LINE_LIFE) * 10 + (b.icon ? 40 : 0);
       const foot = view.project(f.x, f.y, f.z);
-      const at = placeBubble({ x: q.x, y: q.y - rise }, b.width, b.height, { screen: { w: size.width, h: size.height, top: inset.top, bottom: size.height }, hero: heroAt, controls, stars: marks, foot });
+      const at = placeBubble({ x: q.x, y: q.y - rise }, b.width, b.height, { screen: { w: size.width, h: size.height, top: inset.top, bottom: size.height }, hero: heroAt, controls, stars: marks, foot, work: workAt });
       if (at.away) b.life = Math.min(b.life, AWAY_LIFE);
       const side = !at.tail ? null : at.tail.x < at.x0 ? 'left' : at.tail.x > at.x1 ? 'right' : at.tail.y > at.y1 ? 'down' : 'up';
       if (b.side !== side) {
@@ -1715,6 +1716,49 @@ export async function mountVillage(ctx, params = {}) {
       stickEl.style.transform = `translate(${s.x - STICK_R}px, ${s.y - STICK_R}px)`;
       stickEl.firstChild.style.transform = `translate(${s.kx}px, ${s.ky}px)`;
     }
+  }
+
+  // The boxes on the screen of the work of each open task near the hero (#64): the things of the
+  // task (a bed, a heap, the stem), and its places (a mat, the basket). A bubble never covers them.
+  const WORK_MARK_NEAR = 40; // half blocks from the hero
+  function workMarks() {
+    const hp = getEntity(state, 'hero')?.position;
+    if (!hp) return [];
+    const open = (task) => {
+      const z = task && getEntity(state, `zone:${task}`);
+      return Boolean(task) && !z?.zone?.done;
+    };
+    const groups = new Map();
+    const grow = (key, x, y, z, up) => {
+      const lo = view.project(x / 2, y / 2, z / 2);
+      const hi = view.project(x / 2, (y + up) / 2, z / 2);
+      const b = groups.get(key) ?? { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+      b.x0 = Math.min(b.x0, lo.x, hi.x);
+      b.x1 = Math.max(b.x1, lo.x, hi.x);
+      b.y0 = Math.min(b.y0, lo.y, hi.y);
+      b.y1 = Math.max(b.y1, lo.y, hi.y);
+      groups.set(key, b);
+    };
+    for (const e of state.entities) {
+      if (!e.position || e.hidden) continue;
+      if (Math.hypot(e.position.x - hp.x, e.position.z - hp.z) > WORK_MARK_NEAR) continue;
+      const p = e.position;
+      if (e.zone?.rect && e.zone.rule !== 'trial' && open(e.zone.task)) {
+        const r = e.zone.rect;
+        const y = e.zone.y ?? p.y;
+        for (const [x, z] of [[r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1]]) grow(e.id, x, y, z, 1);
+      } else if (e.item && !e.item.held && open(e.item.task)) {
+        // A long thing (the stem of the woodcutter) lies along +x from its place.
+        const len = e.item.fixed ? e.item.size ?? 0 : 0;
+        const key = e.item.zone ? `zone:${e.item.zone}` : e.id;
+        grow(key, p.x - 0.6, p.y, p.z - 0.6, 1.6);
+        grow(key, p.x + len + 0.6, p.y, p.z + 0.6, 1.6);
+      } else if (e.id === 'basket:healer' && open('trial-healer')) {
+        grow(e.id, p.x, p.y, p.z, 3.4);
+        grow(e.id, p.x + 5.6, p.y, p.z + 1.8, 3.4);
+      }
+    }
+    return [...groups.values()].map((b) => ({ x0: b.x0 - 4, y0: b.y0 - 4, x1: b.x1 + 4, y1: b.y1 + 4 }));
   }
 
   // The wash of the dusk (multiply), holes of warm light at the lanterns, and the lines of the rain.

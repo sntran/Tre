@@ -55,9 +55,12 @@ export const AWAY_LIFE = 3;
 // a tail toward the person. A bubble never covers the hero: it goes over the hero, or under the
 // hero when there is no room over it. A bubble never covers a star (#56): it goes to the other side
 // of its person (the side away from the star, or under the feet). stars: the boxes of the stars and
-// the arrows; foot: the screen point of the feet of the person, or null. Return { x0, y0, x1, y1,
-// away, tail } (tail: the screen point of the person when away, else null).
-export function placeBubble(head, w, h, { screen, hero = null, controls = [], stars = [], foot = null }) {
+// the arrows; foot: the screen point of the feet of the person, or null. A bubble never covers the
+// work of an open task (#64: the hint of the woodcutter lay over the stem, and a tap on the stem hit
+// the bubble): it goes higher, over the work, or to the other side of its person. work: the boxes of
+// the work. Return { x0, y0, x1, y1, away, tail } (tail: the screen point of the person when away,
+// else null).
+export function placeBubble(head, w, h, { screen, hero = null, controls = [], stars = [], foot = null, work = [] }) {
   const margin = 8;
   const top = screen.top ?? 0;
   const bottom = screen.bottom ?? screen.h;
@@ -88,6 +91,24 @@ export function placeBubble(head, w, h, { screen, hero = null, controls = [], st
     const fits = (c) => c.x0 >= margin && c.x1 <= screen.w - margin && c.y0 >= top + margin && c.y1 <= bottom - margin;
     const free = (c) => fits(c) && !stars.some((o) => overlaps(c, o)) && !(hero && overlaps(c, hero)) && !controls.some((o) => overlaps(c, o));
     const other = sides.find(free);
+    if (other) b = other;
+  }
+  const busy = away ? null : work.find((o) => overlaps(b, o));
+  if (busy) {
+    const gap = 6;
+    const fits = (c) => c.x0 >= margin && c.x1 <= screen.w - margin && c.y0 >= top + margin && c.y1 <= bottom - margin;
+    const free = (c) => fits(c) && !work.some((o) => overlaps(c, o)) && !stars.some((o) => overlaps(c, o)) && !(hero && overlaps(c, hero)) && !controls.some((o) => overlaps(c, o));
+    // Higher: over the top of all the work under the bubble, at its place or over the head.
+    const over = Math.min(...work.filter((o) => o.x1 > b.x0 && o.x0 < b.x1).map((o) => o.y0)) - gap;
+    const higher = { ...b, y0: over - h, y1: over };
+    const overHead = { x0: head.x - w / 2, x1: head.x + w / 2, y0: over - h, y1: over };
+    // The other side of the person: beside the head, away from the work.
+    const lx = Math.min(head.x, busy.x0) - gap;
+    const rx = Math.max(head.x, busy.x1) + gap;
+    const left = { x0: lx - w, x1: lx, y0: head.y - h, y1: head.y };
+    const right = { x0: rx, x1: rx + w, y0: head.y - h, y1: head.y };
+    const sides = (busy.x0 + busy.x1) / 2 > head.x ? [left, right] : [right, left];
+    const other = [higher, overHead, ...sides].find(free);
     if (other) b = other;
   }
   return { ...b, away, tail: away ? { x: head.x, y: head.y } : null };
