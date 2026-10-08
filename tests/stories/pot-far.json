@@ -13,6 +13,7 @@
     { "expect": [{ "entity": "life:11:0", "look": "pot-broken", "keep": true }] },
     { "walk": { "to": ["phu-dong", 46.5, 1.5] } },
     { "walk": { "to": ["phu-dong", 46.5, -40.5] } },
+    { "at": { "hour": 2 } },
     { "at": { "hour": 10 } },
     { "expect": [{ "day": 1 }, { "entity": "life:11:0", "look": "pot", "keep": false }] },
     { "walk": { "to": ["phu-dong", 31.5, 27.5] } },

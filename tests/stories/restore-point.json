@@ -4,7 +4,7 @@
     "vi": "Điểm khôi phục: mỗi sáng trò chơi giữ lại một điểm, chỉ ba sáng gần nhất; bố mẹ đưa trò chơi về sáng hôm qua (trước khi gặp cụ trưởng làng), rồi quay lại chỗ đang chơi.",
     "en": "Restore points: the game keeps a point each morning, only the last three; a parent takes the game back to yesterday morning (before the talk with the elder), and then back to where the game was."
   },
-  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "timeLimit": 0, "flags": { "intro.seen": true } },
   "clock": 330,
   "at": ["phu-dong", 34, 33],
   "steps": [
