@@ -1,0 +1,89 @@
+{
+ "about": "#58: the parent area after a week of play with the time limit, two raids, and practice links (make the profile first: node tools/week-profile.mjs week.json). The device is in English and the page starts in English; the parent chooses Vietnamese in the settings, so both texts are loaded. Each tab is in Vietnamese only, names each activity by its name, and says what happened in the raids.",
+ "start": "?",
+ "lang": "en",
+ "steps": [
+  {
+   "profile": "week.json"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "click": "Nam",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 240
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Menu']",
+   "after": 1
+  },
+  {
+   "click": "For parents",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Settings",
+   "after": 1
+  },
+  {
+   "select": "Language",
+   "value": "vi",
+   "after": 2
+  },
+  {
+   "click": "Tuần này",
+   "after": 1
+  },
+  {
+   "shot": "this-week"
+  },
+  {
+   "check": "!/\\b(time|times|minute|minutes|raid|raids|set|sets|fact|facts|parents|making)\\b/.test((document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText))"
+  },
+  {
+   "check": "!/parent\\.|\\b(null|undefined|NaN)\\b/.test((document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText))"
+  },
+  {
+   "print": "(document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText)"
+  },
+  {
+   "click": "Tiến bộ",
+   "after": 1
+  },
+  {
+   "shot": "progress"
+  },
+  {
+   "check": "!/\\b(time|times|minute|minutes|raid|raids|set|sets|fact|facts|parents|making)\\b/.test((document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText))"
+  },
+  {
+   "check": "!/parent\\.|\\b(null|undefined|NaN)\\b/.test((document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText))"
+  },
+  {
+   "print": "(document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText)"
+  },
+  {
+   "click": "Học tập",
+   "after": 1
+  },
+  {
+   "shot": "learning"
+  },
+  {
+   "check": "!/parent\\.|\\b(null|undefined|NaN)\\b/.test((document.querySelector('.panel, .screen')?.innerText ?? document.body.innerText))"
+  }
+ ]
+}

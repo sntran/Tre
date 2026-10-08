@@ -26,6 +26,7 @@
 //                                with a value and a frame before the finger goes up
 //   { "button": ".jump-btn" }    a tap on another button of the screen (a CSS selector)
 //   { "click": "Tiếp" }          a tap on a visible button with this text
+//   { "select": "Language", "value": "vi" } a tap on a list of choices (its label), then a choice
 //   { "answer": "right" }        the answer of the question on the screen (an exam or a practice
 //                                with the teacher): a tap on the choice, or the keys of the pad and
 //                                the check; "wrong" taps another answer
@@ -294,6 +295,16 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
     else if (box.y + box.height > height) problems.push(`step ${i}: the button ${s.click} is under the bottom of the screen`);
     else await tapAt(box.x + box.width / 2, box.y + box.height / 2);
     await sleep(s.after ?? 0.5);
+  } else if (s.select) {
+    // A native list of choices: the tap opens it, and the phone shows the choices in its own sheet.
+    const sel = page.locator(`select[aria-label="${s.select}"]:visible`).first();
+    const box = await sel.boundingBox().catch(() => null);
+    if (!box) problems.push(`step ${i}: no list of choices ${s.select}`);
+    else {
+      await tapAt(box.x + box.width / 2, box.y + box.height / 2);
+      await sel.selectOption(String(s.value));
+    }
+    await sleep(s.after ?? 1);
   } else if (s.answer !== undefined) {
     // A child who knows the answer of a question of the teacher or of an exam (or who does not):
     // a tap on the choice, or taps on the keys of the pad and then on the check.
