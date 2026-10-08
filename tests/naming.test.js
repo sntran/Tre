@@ -153,3 +153,17 @@ test('the save keeps the glosses that the child saw in the lines, with the gloss
   assert.deepEqual(seen.sort(), ['mô', 'name:Cô Năm', 'nghecalf']);
   assert.deepEqual(joinSeen(undefined, ['nghecalf']), ['nghecalf']);
 });
+
+test('each person who can speak has a name in the two languages: a name of the region, or npc.<id>.name (#57)', () => {
+  const speakers = new Set();
+  for (const f of readdirSync('data/dialogue')) for (const d of load(`data/dialogue/${f}`).dialogues ?? []) for (const n of Object.values(d.nodes)) if (n.speaker) speakers.add(n.speaker);
+  // The people of the small events (the seller of the market showed npc.seller.name, #57).
+  for (const e of load('data/world/events.json').events) if (e.person) speakers.add(e.person);
+  speakers.delete('hero'); // the name of the child
+  const vi = load('i18n/vi.json');
+  const en = load('i18n/en.json');
+  const data = { regions: load('data/world/regions.json'), naming: load('data/world/naming.json'), npcs: load('data/npcs.json') };
+  const named = namesOf(data, 'phu-dong');
+  const missing = [...speakers].filter((s) => !named[s] && (!vi[`npc.${s}.name`] || !en[`npc.${s}.name`]));
+  assert.deepEqual(missing, []);
+});
