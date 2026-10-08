@@ -24,7 +24,7 @@
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'solid', 'events'];
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
-import { REACH } from '../zones.js';
+import { REACH, BASKET_FLOOR } from '../zones.js';
 import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
 
@@ -253,7 +253,7 @@ export function setupTrial(world, def, level, env, opts = {}) {
       const behind = pt(9, (i - 1) * 3.5);
       const by = Math.abs(behind.y - m.y) < 0.6 ? behind : pt(4.8, (i - 1) * 3.5);
       const face = Math.atan2(-back.x, -back.z) + (by === behind ? 0 : Math.PI);
-      if (who === 'hero') addEntity(world, { id: 'by:share-hero', keep: true, position: { ...by, facing: face }, look: 'basket' });
+      if (who === 'hero') addEntity(world, { id: 'by:share-hero', keep: true, position: { ...by, facing: face }, look: 'basket-low' });
       if (who === 'giong') addEntity(world, { id: 'by:share-giong', keep: true, position: { ...by, facing: face }, look: 'giong-hero' });
       const friend = friendOf(world);
       if (who === 'nghe' && friend) friend.follow.goal = { x: by.x, z: by.z, face };
@@ -395,7 +395,7 @@ function packBasket(world, zone) {
     if (!e || e.item.set) continue;
     const k = zone.kinds.indexOf(e.item.kind.slice(5));
     const i = (n[k] = (n[k] ?? -1) + 1);
-    e.position = { x: zone.x + 0.3 + k * BASKET_PART + (i % 4) * 0.34, y: zone.y + 0.25, z: zone.z + 0.45 + Math.floor(i / 4) * 0.6, facing: 0 };
+    e.position = { x: zone.x + 0.3 + k * BASKET_PART + (i % 4) * 0.34, y: zone.y + BASKET_FLOOR, z: zone.z + 0.45 + Math.floor(i / 4) * 0.6, facing: 0 };
   }
 }
 

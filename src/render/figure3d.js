@@ -262,6 +262,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   // (src/world/carry.js): a person shows the thing in the hands at the end of a pick-up flight, and
   // a put thing shows at its place at the end of a put-down flight. The person bends a little.
   const holding = new Map();
+  const places = new Map();
   let flights = [];
   let synced = false;
   const until = (list, key, id) => list.filter((fl) => fl[key] === id).reduce((m, fl) => Math.max(m, fl.start + fl.steps), -1);
@@ -272,9 +273,9 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       const seen = new Set();
       wind = world.wind ?? null;
       const tick = world.tick ?? 0;
-      flights = [...flights.filter((fl) => tick < fl.start + fl.steps), ...trackCarries(holding, world.entities, tick, synced)];
+      flights = [...flights.filter((fl) => tick < fl.start + fl.steps), ...trackCarries(holding, world.entities, tick, synced, undefined, places)];
       synced = true;
-      const flying = flights.map((fl) => ({ id: `flight:${fl.start}:${fl.by}`, look: fl.look, position: flightAt(fl, tick) })).filter((x) => x.position);
+      const flying = flights.map((fl) => ({ id: `flight:${fl.start}:${fl.by}:${fl.hide ?? ''}`, look: fl.look, position: flightAt(fl, tick) })).filter((x) => x.position);
       const ghostEnt = ghost ? { id: 'ghost', ghost: true, look: ghost.look, position: { x: ghost.x, y: ghost.y, z: ghost.z, facing: ghost.facing ?? 0 } } : null;
       for (const e of [...world.entities, ...flying, ...(ghostEnt ? [ghostEnt] : [])]) {
         if (!e.position || !e.look || e.hidden) continue;

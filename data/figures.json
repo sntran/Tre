@@ -820,6 +820,10 @@
     "basket": {
       "kind": "basket"
     },
+    "basket-low": {
+      "kind": "basket",
+      "low": true
+    },
     "woodpile": {
       "kind": "woodpile"
     },

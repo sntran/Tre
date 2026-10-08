@@ -1266,6 +1266,9 @@ export async function mountVillage(ctx, params = {}) {
   // The lights of the bursts of a success (#62): a warm light for a moment, also at night.
   let cheerLights = [];
   const CHEER_LIGHT = 1.4; // seconds
+  // The lamp of the basket of the healer, from the corner of the basket (half blocks; the part
+  // 'lamp' of the figure 'basket', src/world/figures.js).
+  const BASKET_LAMP = { x: 5.25, y: 2.9 };
 
   // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
   // up when it lands.
@@ -1788,7 +1791,8 @@ export async function mountVillage(ctx, params = {}) {
       // Each lit lantern: a hole in the wash (lighter), and a warm pool on the glow layer.
       dusk.globalCompositeOperation = 'lighter';
       // The lit posts and the ring of the pull of the slingshot are lights too (#55).
-      const lights = state.entities.filter((e) => e.look === 'lantern-lit' || e.carry === 'lantern' || e.look === 'pull-ring' || /^post-\d-on$/.test(e.look ?? ''));
+      // The lamp of the basket of the healer too (#64: a child finds the basket also at night).
+      const lights = state.entities.filter((e) => e.look === 'lantern-lit' || e.carry === 'lantern' || e.look === 'pull-ring' || /^post-\d-on$/.test(e.look ?? '') || e.id === 'basket:healer');
       // The bursts of a success are lights too, for a moment (#62).
       const nowMs = performance.now();
       cheerLights = cheerLights.filter((c) => nowMs - c.t < CHEER_LIGHT * 1000);
@@ -1796,10 +1800,10 @@ export async function mountVillage(ctx, params = {}) {
       for (const e of lights) {
         const f = e.cheer ?? figures.placeOf(e.id);
         if (!f) continue;
-        const q = view.project(f.x + (e.lantern ? 0.8 : 0), f.y + (e.lantern ? 1 : 0.6), f.z);
+        const q = e.id === 'basket:healer' ? view.project(f.x + BASKET_LAMP.x / 2, f.y + BASKET_LAMP.y / 2, f.z) : view.project(f.x + (e.lantern ? 0.8 : 0), f.y + (e.lantern ? 1 : 0.6), f.z);
         const flicker = e.lantern?.flicker ? 0.7 + Math.abs(Math.sin(time * 40)) * 0.5 : 1;
         // A post or the ring of the pull: a small light.
-        const size = e.look === 'lantern-lit' || e.carry === 'lantern' ? 1 : e.cheer ? 0.8 * (1 - (nowMs - e.cheer.t) / (CHEER_LIGHT * 1000)) : 0.45;
+        const size = e.look === 'lantern-lit' || e.carry === 'lantern' || e.id === 'basket:healer' ? 1 : e.cheer ? 0.8 * (1 - (nowMs - e.cheer.t) / (CHEER_LIGHT * 1000)) : 0.45;
         const r = (view.state.level ? 70 : 100) * size * (0.95 + Math.sin(time * 6 + q.x) * 0.05) * flicker;
         const hole = dusk.createRadialGradient(q.x, q.y, 0, q.x, q.y, r);
         hole.addColorStop(0, `rgba(160, 140, 110, ${0.8 * night})`);

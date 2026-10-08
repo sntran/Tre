@@ -5,6 +5,7 @@
 // from the hero; the fine people and animals (a grid of quarter blocks) are in src/world/fine.js.
 import { P, PLANK_TONES, heldItem, TOOLS } from './parts.js';
 import { carriedParts } from './carry.js';
+import { BASKET_FLOOR } from '../core/world/zones.js';
 import { personFine, ngheFine, buffaloFine, dogFine, chickenFine, duckFine, fishFine, coatOf, hairStyleOf, TALL } from './fine.js';
 
 export { PLANK_TONES };
@@ -764,8 +765,9 @@ export function workThing(look) {
     // A sign at a bed: a post with a board, and on the board the shape of the herb in its tones.
     case 'herb-sign': {
       const [a, b] = HERBS[look.herb] ?? HERBS.ngai;
-      // A tag on the back wall of a part of the basket: the board only, lower (#61).
-      const y = look.tag ? -0.55 : 0;
+      // A tag on the back wall of a part of the basket: the board only, on the top of the wall
+      // (#61, #64: the basket stands on a stand).
+      const y = look.tag ? BASKET_FLOOR + 0.45 : 0;
       const parts = look.tag ? [P('board', [1.1, 0.9, 0.12], 'paper', [0, 1.45 + y, 0])] : [P('post', [0.2, 1.2, 0.2], 'wood', [0, 0.6, 0]), P('board', [1.1, 0.9, 0.12], 'paper', [0, 1.45, 0])];
       if (look.herb === 'ngai') parts.push(P('pic', [0.16, 0.7, 0.04], a, [0, 1.45 + y, 0.08]), P('picTip', [0.3, 0.2, 0.04], b, [0, 1.75 + y, 0.08]));
       else if (look.herb === 'tiato') parts.push(P('pic', [0.8, 0.22, 0.04], a, [0, 1.3 + y, 0.08]), P('picTop', [0.55, 0.2, 0.04], b, [0, 1.52 + y, 0.08]));
@@ -776,9 +778,28 @@ export function workThing(look) {
     case 'basket': {
       // Three parts, 1.6 half blocks wide each (#61: a basket where the child sees the count). The
       // front wall is low, so that the bunches that stand in the parts show.
-      const parts = [P('floor', [4.8, 0.2, 1.8], 'ochre', [2.4, 0.1, 0.8]), P('wallN', [4.8, 0.7, 0.2], 'ochre', [2.4, 0.35, 0]), P('wallS', [4.8, 0.35, 0.2], 'ochre', [2.4, 0.18, 1.7]), P('wallW', [0.2, 0.7, 1.8], 'ochre', [0, 0.35, 0.8]), P('wallE', [0.2, 0.7, 1.8], 'ochre', [4.8, 0.35, 0.8]), P('div1', [0.15, 0.6, 1.6], 'wood', [1.6, 0.3, 0.8]), P('div2', [0.15, 0.6, 1.6], 'wood', [3.2, 0.3, 0.8])];
-      if (look.full) parts.push(P('leaves', [4.4, 0.4, 1.5], 'green', [2.4, 0.7, 0.8]));
-      return still(parts, 0.9);
+      if (look.low) {
+        // The low basket of the hero at the share of the loot: on the ground.
+        const parts = [P('floor', [4.8, 0.2, 1.8], 'ochre', [2.4, 0.1, 0.8]), P('wallN', [4.8, 0.7, 0.2], 'ochre', [2.4, 0.35, 0]), P('wallS', [4.8, 0.35, 0.2], 'ochre', [2.4, 0.18, 1.7]), P('wallW', [0.2, 0.7, 1.8], 'ochre', [0, 0.35, 0.8]), P('wallE', [0.2, 0.7, 1.8], 'ochre', [4.8, 0.35, 0.8]), P('div1', [0.15, 0.6, 1.6], 'wood', [1.6, 0.3, 0.8]), P('div2', [0.15, 0.6, 1.6], 'wood', [3.2, 0.3, 0.8])];
+        return still(parts, 0.9);
+      }
+      // The basket of the healer is big (#64: no child found the small one): on a low stand, with
+      // its back wall about as tall as the hero, and its own lamp on a pole at the east end, which
+      // lights at dusk and at night (src/ui/village.js). The bunches stand on its floor
+      // (BASKET_FLOOR, src/core/world/systems/work.js).
+      const f = BASKET_FLOOR;
+      const parts = [
+        P('legNW', [0.3, f - 0.2, 0.3], 'wood', [0.2, (f - 0.2) / 2, 0.15]), P('legNE', [0.3, f - 0.2, 0.3], 'wood', [4.6, (f - 0.2) / 2, 0.15]),
+        P('legSW', [0.3, f - 0.2, 0.3], 'wood', [0.2, (f - 0.2) / 2, 1.55]), P('legSE', [0.3, f - 0.2, 0.3], 'wood', [4.6, (f - 0.2) / 2, 1.55]),
+        P('floor', [4.8, 0.2, 1.8], 'ochre', [2.4, f - 0.1, 0.8]),
+        P('wallN', [4.8, 1.3, 0.2], 'ochre', [2.4, f + 0.65, 0]), P('wallS', [4.8, 0.45, 0.2], 'ochre', [2.4, f + 0.22, 1.7]),
+        P('wallW', [0.2, 1.3, 1.8], 'ochre', [0, f + 0.65, 0.8]), P('wallE', [0.2, 1.3, 1.8], 'ochre', [4.8, f + 0.65, 0.8]),
+        P('rim', [5, 0.15, 0.3], 'wood', [2.4, f + 1.35, 0]),
+        P('div1', [0.15, 1, 1.6], 'wood', [1.6, f + 0.5, 0.8]), P('div2', [0.15, 1, 1.6], 'wood', [3.2, f + 0.5, 0.8]),
+        P('pole', [0.2, 2.6, 0.2], 'wood', [5.25, 1.3, 0]), P('lamp', [0.7, 0.8, 0.7], 'yellowPale', [5.25, 2.9, 0]), P('lampCap', [0.9, 0.15, 0.9], 'wood', [5.25, 3.35, 0]),
+      ];
+      if (look.full) parts.push(P('leaves', [4.4, 0.4, 1.5], 'green', [2.4, f + 0.3, 0.8]));
+      return still(parts, 3.4);
     }
     // The wood pile of the woodcutter (#57): two rows of logs on a low rack, so that the place
     // where the sticks go has a picture, not only the light of the cue.

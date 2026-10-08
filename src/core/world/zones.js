@@ -21,6 +21,10 @@
 import { getEntity } from './state.js';
 
 export const REACH = 5; // half blocks: how near the hero must be to pick up or put down
+// The floor of the basket of the healer over the ground (half blocks): the basket stands on a low
+// stand, so that a child finds it (#64). The figure (src/world/figures.js) and the places of the
+// bunches in it (src/core/world/systems/work.js) use it.
+export const BASKET_FLOOR = 1;
 export const PILE_GAP = 1; // half blocks between two things in a row of a pile
 export const PILE_ROW = 3; // half blocks from one row of a pile to the next
 

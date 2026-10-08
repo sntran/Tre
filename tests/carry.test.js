@@ -114,6 +114,33 @@ test('a pick-up flies from the ground to the hands, and a put-down flies back to
   assert.equal(put[0].pick, false);
 });
 
+test('a one move of a press (a bunch from the bed into the basket in one step) flies through the hands of the hero', () => {
+  const holding = new Map();
+  const places = new Map();
+  const hero1 = { id: 'hero', position: { x: 12, y: 4, z: 10, facing: 0 } };
+  const herb = { id: 'herb-ngai:healer:1', look: 'herb-ngai', item: { held: null, zone: 'bed-ngai' }, position: { x: 10, y: 4, z: 10 } };
+  const far = { id: 'rod:far', look: 'rod', item: { held: null, zone: 'heap' }, position: { x: 60, y: 4, z: 60 } };
+  assert.deepEqual(trackCarries(holding, [hero1, herb, far], 1, false, FLIGHT_STEPS, places), []);
+  // The press: the bunch is in the basket at the next step, never in the hands.
+  herb.item.zone = 'basket';
+  herb.position = { x: 14, y: 5, z: 12 };
+  // A thing far from the hero that a system moves to another place flies nothing.
+  far.item.zone = 'mat';
+  far.position = { x: 62, y: 4, z: 60 };
+  const out = trackCarries(holding, [hero1, herb, far], 2, true, FLIGHT_STEPS, places);
+  assert.equal(out.length, 2);
+  assert.deepEqual(out[0].from, { x: 10, y: 4, z: 10 });
+  assert.deepEqual(out[0].to, handOf(hero1));
+  assert.deepEqual(out[1].from, handOf(hero1));
+  assert.deepEqual(out[1].to, { x: 14, y: 5, z: 12 });
+  assert.ok(out.every((fl) => fl.hide === herb.id && !fl.pick));
+  // The second half starts at the end of the first: the bunch is in the hands between them.
+  assert.equal(out[1].start, out[0].start + out[0].steps);
+  assert.equal(flightAt(out[1], 2), null);
+  // No new flight at the next step.
+  assert.deepEqual(trackCarries(holding, [hero1, herb, far], 3, true, FLIGHT_STEPS, places), []);
+});
+
 test('the action button knows the thing in the hands, and nothing when the hands are empty', async () => {
   // The story with a rod taken back from the mat into the hands (one press at the heap puts a rod
   // on the mat at once, #61).

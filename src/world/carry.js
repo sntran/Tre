@@ -112,6 +112,7 @@ export function carriedParts(thing, unit, anchors, rules) {
 export const FLIGHT_STEPS = 9;
 const ARC = 1.4; // half blocks: the top of the arc over the straight line
 const HAND_UP = 2.2; // half blocks: the hands of a person over the ground
+const MOVE_REACH = 8; // half blocks: a one move in the reach of the hero (session.js REACH and a step)
 
 // The place of the hands of an entity (in the units of the entities: half blocks).
 export function handOf(e) {
@@ -125,9 +126,34 @@ export function handOf(e) {
 // flight). Returns the new flights: { by, look, from, to, start, steps, pick, hide }. pick: true
 // for a pick-up (the hands show the thing at the end of the flight); hide: the id of the thing that
 // the put-down puts, which shows at the end of the flight.
-export function trackCarries(holding, entities, tick, ready = true, steps = FLIGHT_STEPS) {
+//
+// places (a Map from the id of a thing to { zone, position }, kept by the caller): a thing that goes
+// from one place to another in one step, with no step in the hands (the one move of a press, #61),
+// flies from its old place into the hands of the hero and from there to its new place (#64).
+export function trackCarries(holding, entities, tick, ready = true, steps = FLIGHT_STEPS, places = null) {
   const flights = [];
   const byId = new Map(entities.map((e) => [e.id, e]));
+  if (places) {
+    const hero = byId.get('hero');
+    for (const e of entities) {
+      if (!e.item) continue;
+      if (e.item.held || !e.position || e.hidden) {
+        places.delete(e.id);
+        continue;
+      }
+      const was = places.get(e.id);
+      places.set(e.id, { zone: e.item.zone ?? null, position: { ...e.position } });
+      if (!ready || !was || was.zone === (e.item.zone ?? null) || !hero?.position) continue;
+      // Only a move in the reach of the hero (a system that moves things far away flies nothing).
+      const near = (q) => Math.hypot(q.x - hero.position.x, q.z - hero.position.z) <= MOVE_REACH;
+      if (!near(was.position) || !near(e.position)) continue;
+      const hand = handOf(hero);
+      const half = Math.ceil(steps / 2);
+      flights.push({ by: 'hero', look: e.look, from: was.position, to: hand, start: tick, steps: half, pick: false, hide: e.id });
+      flights.push({ by: 'hero', look: e.look, from: hand, to: { ...e.position }, start: tick + half, steps, pick: false, hide: e.id });
+    }
+    for (const id of [...places.keys()]) if (!byId.has(id)) places.delete(id);
+  }
   for (const e of entities) {
     const was = holding.get(e.id);
     if (e.carry && was?.carry !== e.carry) {
