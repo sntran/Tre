@@ -18,7 +18,8 @@
      "speaker": "grandma",
      "textKey": "dlg.grandma.intro.n3",
      "mood": "happy",
-     "next": "nghe1"
+     "next": "nghe1",
+     "mark": null
     },
     "n4": {
      "speaker": "grandma",
@@ -27,12 +28,14 @@
       {
        "set": "intro.seen"
       }
-     ]
+     ],
+     "mark": null
     },
     "nghe1": {
      "speaker": "grandma",
      "textKey": "dlg.grandma.intro.nghe1",
-     "next": "nghe2"
+     "next": "nghe2",
+     "mark": null
     },
     "nghe2": {
      "speaker": "nghe",
@@ -48,7 +51,8 @@
        ],
        "next": "n4"
       }
-     ]
+     ],
+     "mark": null
     }
    },
    "mark": "legend"

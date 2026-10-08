@@ -11,7 +11,8 @@
 // }
 // A node with no "next" and no "choices" ends the dialogue. "mood" (optional): the face of the speaker in
 // the portrait (calm, happy, worried, surprised; calm when it is not given).
-// "effects" run when the node shows (or when the player picks a choice).
+// "effects" run when the node shows (or when the player picks a choice). "mark" (optional, on a
+// node): the seal of that line, in place of the seal of the dialogue (null: no seal).
 import { check } from './conditions.js';
 
 export function createDialogue(def, state) {
@@ -43,7 +44,7 @@ export function createDialogue(def, state) {
     if (!current) return null;
     const node = def.nodes[current];
     const choices = (node.choices ?? []).filter((c) => check(c.when, state));
-    return { id: current, speaker: node.speaker ?? null, textKey: node.textKey, params: node.params ?? {}, choices, mood: node.mood ?? null };
+    return { id: current, speaker: node.speaker ?? null, textKey: node.textKey, params: node.params ?? {}, choices, mood: node.mood ?? null, mark: 'mark' in node ? node.mark : def.mark ?? null };
   }
 
   // Go on. choice is the index of a choice, when the node has choices.
