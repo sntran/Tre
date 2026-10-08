@@ -17,7 +17,9 @@
 // the line shows, the person points at them, they glow, and the view shows them (#62: a new word
 // with its thing). act: "bob" (the thing bobs, as a float), or "rise" (the water rises a little,
 // and goes back at the end of the line). "calling" (optional, on a node): the id of a calling
-// that the line names; the card of the calling shows next to the talk box (#62).
+// that the line names; the card of the calling shows next to the talk box (#62). "faces"
+// (optional, on a node): the people that the line names, in the order of the words; their faces
+// show over the talk box one after the other, as the speaker names them (#67).
 // An effect { "open": "trial", "now": true } starts the task when its line shows, so that the
 // things of the task are there for the next lines.
 import { check } from './conditions.js';
@@ -51,7 +53,7 @@ export function createDialogue(def, state) {
     if (!current) return null;
     const node = def.nodes[current];
     const choices = (node.choices ?? []).filter((c) => check(c.when, state));
-    return { id: current, speaker: node.speaker ?? null, textKey: node.textKey, params: node.params ?? {}, choices, mood: node.mood ?? null, mark: 'mark' in node ? node.mark : def.mark ?? null, names: (node.names ?? []).map((n) => (typeof n === 'string' ? { id: n } : n)), calling: node.calling ?? null };
+    return { id: current, speaker: node.speaker ?? null, textKey: node.textKey, params: node.params ?? {}, choices, mood: node.mood ?? null, mark: 'mark' in node ? node.mark : def.mark ?? null, names: (node.names ?? []).map((n) => (typeof n === 'string' ? { id: n } : n)), calling: node.calling ?? null, faces: node.faces ?? [] };
   }
 
   // Go on. choice is the index of a choice, when the node has choices.

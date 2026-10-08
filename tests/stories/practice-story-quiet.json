@@ -44,6 +44,15 @@
    "read": true
   },
   {
+   "expect": [
+    {
+     "text": {
+      "shown": "dlg.woodcutter.trial.n3"
+     }
+    }
+   ]
+  },
+  {
    "press": {
     "entity": "npc:elder"
    }

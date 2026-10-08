@@ -12,19 +12,13 @@
     },
     {
       "id": "teacher.trial",
+      "_about": "#67: short lines, one new word in each line, with its thing shown (names).",
       "start": "n1",
       "nodes": {
-        "n1": {
-          "speaker": "teacher",
-          "textKey": "dlg.teacher.trial.n1",
-          "mood": "happy",
-          "effects": [
-            {
-              "open": "trial",
-              "id": "scholar"
-            }
-          ]
-        }
+        "n1": { "speaker": "teacher", "textKey": "dlg.teacher.trial.n1", "mood": "happy", "next": "n2", "effects": [{ "open": "trial", "id": "scholar", "now": true }] },
+        "n2": { "speaker": "teacher", "textKey": "dlg.teacher.trial.n2", "names": ["zone:rods"], "next": "n3" },
+        "n3": { "speaker": "teacher", "textKey": "dlg.teacher.trial.n3", "names": ["zone:mat"], "next": "n4" },
+        "n4": { "speaker": "teacher", "textKey": "dlg.teacher.trial.n4" }
       }
     },
     {
@@ -51,18 +45,13 @@
     },
     {
       "id": "smith.trial",
+      "_about": "#67: short lines, one new word in each line, with its thing shown (names).",
       "start": "n1",
       "nodes": {
-        "n1": {
-          "speaker": "smith",
-          "textKey": "dlg.smith.trial.n1",
-          "effects": [
-            {
-              "open": "trial",
-              "id": "smith"
-            }
-          ]
-        }
+        "n1": { "speaker": "smith", "textKey": "dlg.smith.trial.n1", "names": ["zone:forge"], "next": "n2", "effects": [{ "open": "trial", "id": "smith", "now": true }] },
+        "n2": { "speaker": "smith", "textKey": "dlg.smith.trial.n2", "names": ["zone:trough"], "next": "n3" },
+        "n3": { "speaker": "smith", "textKey": "dlg.smith.trial.n3", "names": ["iron:smith-demo"], "next": "n4" },
+        "n4": { "speaker": "smith", "textKey": "dlg.smith.trial.n4", "names": ["zone:trough"] }
       }
     },
     {
@@ -129,7 +118,13 @@
         "n4": {
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.n4",
-          "names": [{ "id": "mark:fisher:end", "act": "bob" }]
+          "names": [{ "id": "mark:fisher:end", "act": "bob" }],
+          "next": "n5"
+        },
+        "n5": {
+          "speaker": "fisher",
+          "textKey": "dlg.fisher.trial.n5",
+          "names": ["stake:fisher:a", "stake:fisher:b"]
         }
       }
     },
@@ -157,18 +152,14 @@
     },
     {
       "id": "healer.trial",
+      "_about": "#67: short lines, one new word in each line, with its thing shown (names).",
       "start": "n1",
       "nodes": {
-        "n1": {
-          "speaker": "healer",
-          "textKey": "dlg.healer.trial.n1",
-          "effects": [
-            {
-              "open": "trial",
-              "id": "healer"
-            }
-          ]
-        }
+        "n1": { "speaker": "healer", "textKey": "dlg.healer.trial.n1", "names": ["zone:bed-ngai"], "next": "n2", "effects": [{ "open": "trial", "id": "healer", "now": true }] },
+        "n2": { "speaker": "healer", "textKey": "dlg.healer.trial.n2", "names": ["zone:bed-tiato"], "next": "n3" },
+        "n3": { "speaker": "healer", "textKey": "dlg.healer.trial.n3", "names": ["zone:bed-rauma"], "next": "n4" },
+        "n4": { "speaker": "healer", "textKey": "dlg.healer.trial.n4", "names": ["zone:basket"], "next": "n5" },
+        "n5": { "speaker": "healer", "textKey": "dlg.healer.trial.n5" }
       }
     },
     {
@@ -195,18 +186,12 @@
     },
     {
       "id": "woodcutter.trial",
+      "_about": "#67: short lines, one new word in each line, with its thing shown (names).",
       "start": "n1",
       "nodes": {
-        "n1": {
-          "speaker": "woodcutter",
-          "textKey": "dlg.woodcutter.trial.n1",
-          "effects": [
-            {
-              "open": "trial",
-              "id": "woodcutter"
-            }
-          ]
-        }
+        "n1": { "speaker": "woodcutter", "textKey": "dlg.woodcutter.trial.n1", "names": ["stem:woodcutter"], "next": "n2", "effects": [{ "open": "trial", "id": "woodcutter", "now": true }] },
+        "n2": { "speaker": "woodcutter", "textKey": "dlg.woodcutter.trial.n2", "names": ["stem:woodcutter"], "next": "n3" },
+        "n3": { "speaker": "woodcutter", "textKey": "dlg.woodcutter.trial.n3", "names": ["zone:woodpile"] }
       }
     },
     {
@@ -429,6 +414,17 @@
         }
       },
       "mark": "legend"
+    },
+    {
+      "id": "grandma.morning",
+      "_about": "#67: until the talk of the elder is done, grandma sends the child to him.",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "grandma",
+          "textKey": "dlg.grandma.morning.n1"
+        }
+      }
     },
     {
       "id": "grandma.home",

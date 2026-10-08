@@ -722,7 +722,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else runPending();
       return;
     }
-    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling });
+    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, faces: view.faces });
     showNames(d, view.speaker, view.names);
   }
   // The things that a line names (#62): the person points at the first one, the view makes them
@@ -839,11 +839,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'hud' });
     // The teacher says how many bundles he needs, while the pips of the goal bar light up one at a
     // time (#61: before, only the pips showed it).
-    const need = workCount()?.need ?? 0;
-    if (need >= 1 && need <= 4) {
-      emit({ type: 'goalShow', n: need });
-      emit({ type: 'open', screen: 'callout', id: `npc:${def.npc}`, textKey: `teacher.need.${need}`, params: {} });
-    }
+    // After the talk that starts the task (#67: the talk starts the task at its first line, so that
+    // its things glow, and its box opens after this; the line of the need comes when the talk is
+    // over). later: at the end of this step, when the box is open.
+    later.push(() => queue(() => {
+      const need = workCount()?.need ?? 0;
+      if (need >= 1 && need <= 4) {
+        emit({ type: 'goalShow', n: need });
+        emit({ type: 'open', screen: 'callout', id: `npc:${def.npc}`, textKey: `teacher.need.${need}`, params: {} });
+      }
+    }));
   }
   // A trial is done: the flag, the reward that flies to the counters, and the done line.
   function trialDone(id) {

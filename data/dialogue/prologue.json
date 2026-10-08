@@ -72,6 +72,12 @@
      "speaker": "elder",
      "textKey": "dlg.elder.intro.n1",
      "mood": "happy",
+     "next": "five"
+    },
+    "five": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.intro.five",
+     "faces": ["teacher", "smith", "fisher", "healer", "woodcutter"],
      "next": "n2"
     },
     "n2": {

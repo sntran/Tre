@@ -294,6 +294,14 @@
       "voice": "elderWoman",
       "talk": [
         {
+          "when": {
+            "notFlags": [
+              "prologue.started"
+            ]
+          },
+          "dialogue": "grandma.morning"
+        },
+        {
           "dialogue": "grandma.home"
         }
       ],

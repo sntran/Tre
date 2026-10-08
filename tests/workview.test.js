@@ -175,12 +175,12 @@ test('each thing that a line of the fisher names is in the world, glows, and is 
   });
   assert.deepEqual(failures, []);
   const named = lines.filter((n) => n.points.length);
-  assert.deepEqual(named.map((n) => n.line), ['dlg.fisher.trial.n2', 'dlg.fisher.trial.n3', 'dlg.fisher.trial.n4']);
-  assert.deepEqual(named.map((n) => n.ids), [['stake:fisher:a', 'stake:fisher:b'], ['tide:fisher'], ['mark:fisher:end']]);
+  assert.deepEqual(named.map((n) => n.line), ['dlg.fisher.trial.n2', 'dlg.fisher.trial.n3', 'dlg.fisher.trial.n4', 'dlg.fisher.trial.n5']);
+  assert.deepEqual(named.map((n) => n.ids), [['stake:fisher:a', 'stake:fisher:b'], ['tide:fisher'], ['mark:fisher:end'], ['stake:fisher:a', 'stake:fisher:b']]);
   assert.equal(named[0].spots.length, 1, 'the row of the trap glows as a rim on the ground');
   for (const n of named) assert.equal(n.point?.act, 'point', `${n.line}: the fisher points`);
-  assert.deepEqual(named.map((n) => n.tide), ['tide-0', 'tide-1', 'tide-0'], 'at the tide the water rises a little, and goes back');
-  assert.deepEqual(named.map((n) => n.bobs), [[], [], ['mark:fisher:end']], 'the red float bobs');
+  assert.deepEqual(named.map((n) => n.tide), ['tide-0', 'tide-1', 'tide-0', 'tide-0'], 'at the tide the water rises a little, and goes back');
+  assert.deepEqual(named.map((n) => n.bobs), [[], [], ['mark:fisher:end'], []], 'the red float bobs');
   assert.deepEqual(lines.at(-1).points, [], 'the end of the talk ends the glow');
   const { terrain } = planeOf(story.profile.seed, { blocks: load('data/world/blocks.json'), places: ['phu-dong'] });
   const wu = (p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 });
