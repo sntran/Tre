@@ -1,0 +1,175 @@
+{
+ "about": "#62: a new word with its thing (the fisher names the trap, the tide, and the float while they glow), the card of a calling at the done talk, a finish that shows with the sound off (the jump, the leaves, the seal), stars with faces that say where they go, and counters that say what they are.",
+ "start": "?story=trial-fisher",
+ "lang": "vi",
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && Boolean(document.querySelector('.world-star:not([hidden]), .edge-arrow:not([hidden])'))",
+   "timeout": 900
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "stars-with-faces"
+  },
+  {
+   "print": "[...document.querySelectorAll('.world-star:not([hidden]), .edge-arrow:not([hidden])')].map((s) => (s.querySelector('.star-face')?.dataset.who ?? '') + (s.classList.contains('main') ? '*' : '')).join(' ')"
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-fish-trap-glows"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-tide-rises"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-red-float-bobs"
+  },
+  {
+   "read": 4
+  },
+  {
+   "wait": 3
+  },
+  {
+   "button": ".count[data-item='iron']",
+   "after": 0.8
+  },
+  {
+   "button": ".count[data-item='bamboo']",
+   "after": 0.8
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((h) => h.text))"
+  },
+  {
+   "button": ".count.basket",
+   "after": 0.8
+  },
+  {
+   "shot": "the-basket-says-its-title"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((h) => h.text))"
+  },
+  {
+   "button": ".modal-layer .icon-btn",
+   "if": "Boolean(document.querySelector('.basket-panel'))",
+   "after": 0.5
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.6
+  },
+  {
+   "shot": "a-tap-on-the-star-says-where"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((h) => h.text))"
+  },
+  {
+   "goto": "?story=trial-smith"
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().entities.some((e) => e.id === 'npc:smith')",
+   "timeout": 900
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 4
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith')",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.look === 'iron-3'",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "shot": "leaves-and-a-jump"
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "the-seal-flies-to-its-pip"
+  },
+  {
+   "until": "Boolean(document.querySelector('.talk-calling'))",
+   "timeout": 20
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-card-of-the-calling"
+  },
+  {
+   "print": "document.querySelector('.dialogue-layer .line')?.textContent"
+  },
+  {
+   "read": 3
+  }
+ ]
+}

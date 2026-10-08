@@ -488,7 +488,7 @@ export async function mountVillage(ctx, params = {}) {
     el.addEventListener('click', () => {
       const n = (profile.inventory[item] ?? 0) - (flying[item] ?? 0);
       const line = counterLine(data.items, item, n, { basket });
-      speak(line.key, line.params, { force: true });
+      sayLine({ key: line.key, params: line.params, voice: lineVoice(null) }, { force: true });
       if (basket) openBasket();
     });
     counts.append(el);
@@ -1292,6 +1292,7 @@ export async function mountVillage(ctx, params = {}) {
       // talk box. An empty list ends it.
       case 'names':
         figures.glow(ev.ids, ev.spots, ev.ids, ev.bobs);
+        namePoints = [...ev.ids.map((id) => ({ id })), ...ev.spots.map((spot) => ({ spot }))];
         if (ev.points.length) {
           turnToWork(ev.points, ev.points);
           work.talk = true;
@@ -1437,6 +1438,10 @@ export async function mountVillage(ctx, params = {}) {
     voiceQueue.offer(line, speaking() || Boolean(spoken));
   }
   // The pulse of the star of a station (seconds left), when the head of the hamlet points at it.
+  // The pointers over the things that a line of a talk names (#62).
+  const pointerPool = [];
+  const pointerAt = pooled(pointerPool, () => h('div', { class: 'name-pointer', 'aria-hidden': 'true' }));
+  let namePoints = [];
   const STAR_PULSE = 1.6;
   const MAIN_STAR = 1.3; // the scale of the star of the next step of the story (#62)
   let starPulse = null;
@@ -1503,10 +1508,23 @@ export async function mountVillage(ctx, params = {}) {
       const at = placeArrow(edge, { controls });
       marks.push({ x0: at.x - 22, y0: at.y - 22, x1: at.x + 22, y1: at.y + 22 });
       setFace(el, m.who);
+      el.classList.toggle('main', Boolean(m.main));
       el.style.transform = `translate(${at.x}px, ${at.y}px) rotate(${edge.angle}rad) translate(${-22 + pulse}px, 0) scale(${pulseOf(m) * (m.main ? MAIN_STAR : 1)})`;
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
     }
     for (let i = stars; i < starPool.length; i++) starPool[i].hidden = true;
+    // A small red pointer over each thing that a line of a talk names (#62): the glow alone does
+    // not show on a thing in the water.
+    let pointers = 0;
+    for (const n of namePoints) {
+      const f = n.id ? figures.placeOf(n.id) : null;
+      const at = f ? { x: f.x, y: f.y + (f.height ?? 1) + 0.3, z: f.z } : n.spot ? { x: n.spot.x / 2, y: (n.spot.y ?? 0) / 2 + 1, z: n.spot.z / 2 } : null;
+      if (!at) continue;
+      const q = view.project(at.x, at.y, at.z);
+      const el = pointerAt(pointers++);
+      el.style.transform = `translate(${q.x}px, ${q.y - 16 + bob}px)`;
+    }
+    for (let i = pointers; i < pointerPool.length; i++) pointerPool[i].hidden = true;
     stepVoice();
     for (let i = bubbles.length - 1; i >= 0; i--) {
       const b = bubbles[i];

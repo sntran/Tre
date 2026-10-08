@@ -889,6 +889,8 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
   border-radius: 50%;
   background: var(--paper);
 }
+/* A small red pointer over a thing that a line of a talk names (#62). */
+.name-pointer { width: 0; height: 0; margin-left: -9px; border: 9px solid transparent; border-top: 14px solid var(--vermilion); border-bottom: 0; filter: drop-shadow(0 1px 0 var(--ink)); pointer-events: none; z-index: 1; }
 .tap-ring {
   width: 40px;
   height: 40px;
