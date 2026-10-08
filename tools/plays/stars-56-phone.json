@@ -1,0 +1,396 @@
+{
+ "about": "#56: the stars lead there, on a phone with taps only. After the talk of the woodcutter, the star is on the bamboo clump. From the top of Sóc Sơn after the farewell, taps on the star alone take the hero to the ferry of the Red River, over it, and to the gate of Văn Miếu.",
+ "start": "?story=staffs-star",
+ "lang": "vi",
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "staffs-star-on-the-clump"
+  },
+  {
+   "print": "tre.profile.flags['staffs.told'] ?? false"
+  },
+  {
+   "goto": "?story=after-farewell"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "after-the-farewell-the-star"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "if": "!document.querySelector('.vanmieu') && !(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard)",
+   "timeout": 180
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  },
+  {
+   "shot": "on-the-ferry",
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard) && !window.__ferryShot && (window.__ferryShot = true)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.aboard",
+   "timeout": 120
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Tiếp",
+   "if": "Boolean([...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Tiếp'))"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "at-the-gate-of-van-mieu"
+  },
+  {
+   "print": "tre.activeVillage.heroTile()"
+  }
+ ]
+}

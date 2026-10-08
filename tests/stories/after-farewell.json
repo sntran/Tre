@@ -1,0 +1,14 @@
+{
+  "name": "after-farewell",
+  "about": {
+    "vi": "Sáng hôm sau ngày Gióng bay về trời, An đứng trên đỉnh Sóc Sơn. Ngôi sao chỉ đường tới cổng Văn Miếu.",
+    "en": "The morning after Gióng flies up to the sky, An stands on the top of Sóc Sơn. The star shows the way to the gate of Văn Miếu."
+  },
+  "profile": {"name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": {"intro.seen": true, "prologue.started": true, "prologue.done": true, "giong.messenger": true, "trial.scholar.done": true, "trial.smith.done": true, "trial.fisher.done": true, "trial.healer.done": true, "trial.woodcutter.done": true, "giong.spoke": true, "horse.iron": true, "horse.forged": true, "giong.grown": true, "soldier1.won": true, "soldier2.won": true, "boss.staffs": true, "era1.boss.won": true, "giong.farewell": true}},
+  "clock": 480,
+  "at": ["soc-son", 38, 20],
+  "steps": [
+    { "wait": 1 },
+    { "expect": [{ "flag": "giong.farewell" }, { "screen": null }] }
+  ]
+}

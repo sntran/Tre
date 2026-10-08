@@ -1,0 +1,16 @@
+{
+  "name": "staffs-star",
+  "about": {
+    "vi": "Bác tiều phu nói về bụi tre bên đường lớn. Sau lời bác, ngôi sao ở trên bụi tre, không ở trên bác.",
+    "en": "The woodcutter speaks of the bamboo clump by the big road. After his talk, the star is on the clump, not on him."
+  },
+  "profile": {"name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": {"intro.seen": true, "prologue.started": true, "prologue.done": true, "giong.messenger": true, "trial.scholar.done": true, "trial.smith.done": true, "trial.fisher.done": true, "trial.healer.done": true, "trial.woodcutter.done": true, "giong.spoke": true, "horse.iron": true, "horse.forged": true, "giong.grown": true, "soldier1.won": true, "soldier2.won": true}},
+  "clock": 540,
+  "at": ["phu-dong", 48, 8],
+  "steps": [
+    { "press": { "entity": "npc:woodcutter" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "flag": "staffs.told" }] }
+  ]
+}
