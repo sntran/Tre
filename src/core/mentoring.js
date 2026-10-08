@@ -377,8 +377,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     } else if (move === 'smaller' || move === 'share') {
       t = shareSteps(task, famOf(key), move, info, { say, point, steps }, t);
     } else if (move === 'picture') {
-      // The line names the person of another station (pictureWho), by the name of the region.
-      say(t, def.picture, def.pictureWho ? { who: nameOf(def.pictureWho) } : {});
+      // The line names the person of another station (pictureWho), by the name of the region. A
+      // line that names a place where the child has nothing more to do (the trial there is done:
+      // pictureUnless) says only to rest (#57).
+      if (def.pictureUnless && profile.flags?.[def.pictureUnless]) say(t, lineOf(key, 'break'));
+      else say(t, def.picture, def.pictureWho ? { who: nameOf(def.pictureWho) } : {});
       t += 2;
     } else if (move === 'raise') {
       say(t, lineOf(key, 'raise'));

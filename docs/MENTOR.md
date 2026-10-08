@@ -41,7 +41,7 @@ After each commit (and after a plank too long on the bridge, which the world jud
 | `demo` | A demonstration on another instance, next to the person, never on the same place: for the cart, another cart with its mud, and the stones of another number, the biggest first, then counting on. A wave ends it after its key part (half of the parts) has shown. |
 | `smaller` | The person puts one part into the place, and the child does the rest. |
 | `share` | The person puts about half of what is still missing, and the child does the rest. Never the whole task. |
-| `picture` | The person says that another station is there (the child is never sent; the child chooses). |
+| `picture` | The person says that another station is there (the child is never sent; the child chooses). When the trial of that station is done (`pictureUnless`), the person says only to rest (`mentor.break`, #57). |
 | `raise` | A bigger task next time, once in a task: the next round of a practice is one level higher, and the next event of the same kind is one level higher. A move never makes the task in progress bigger (#32); a help move can make it smaller, and says so. |
 | `break` | A break in the story (a rice ball). |
 | `tryFirst` | The answer to a wave before any try: the person watches. |

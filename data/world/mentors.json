@@ -1,5 +1,5 @@
 {
-  "_about": "The mentors of the tasks (src/core/mentor.js; docs/MENTOR.md). The person who gives a task watches the child, reads the error, and chooses one move after each commit, and on idle time. mastery: at this P(L) the person only watches. ready: P(L) over this, with fast right commits, is ready for more. top: the highest help level. handover: the self-corrections of the child after which the person first waits before a mark (the first number), and then only watches (the second). families: how a family of tasks reads its commits. reader: sum (the sum of the parts against the target), each (each part against the target: the kinds of the basket), or plain (only right or not). slip: an error of at most this many units is a slip. fastUnit: seconds for each unit of the target (each part, for plain); a try faster than this is fast. slowUnit: seconds for each unit of the target; a right try slower than this is counting all. idleStart: seconds with no action at the start of a task (does not know what to do). offerAfter: seconds of idle time after a miss, with no wave, before the person offers help. look: the seconds that the person waits after a miss for the child to look first (the second stage of the handover). frustrated: misses in a row; bored: fast clean commits in a row (the same number, so that boredom gets a response as soon as frustration). ladders: for each diagnosis, the moves in the order of the help level. mentors: the mentor of each task (the task id of its skill events): its family, its person (the entity that acts), demo (the other instance of a demonstration: thing, the look of its things with their sizes; prop and target, the looks of the props there; same: the instance has the same number, as each bundle is ten), picture (the line that sends the child to another station; pictureWho: the person of that station, whom the line names by the name of the region, #38), and lines (optional: the own line of the person for a move, in place of the common line). lines: the line of each move (the person says it in a bubble). again: the line of a move that helped this child before (the person says it as information). ngheLines: the lines of Nghé when the person of a task is not there (at home at night, #51): the general line of each move, and these lines in the words of a friend in place of the lines that say cháu.",
+  "_about": "The mentors of the tasks (src/core/mentor.js; docs/MENTOR.md). The person who gives a task watches the child, reads the error, and chooses one move after each commit, and on idle time. mastery: at this P(L) the person only watches. ready: P(L) over this, with fast right commits, is ready for more. top: the highest help level. handover: the self-corrections of the child after which the person first waits before a mark (the first number), and then only watches (the second). families: how a family of tasks reads its commits. reader: sum (the sum of the parts against the target), each (each part against the target: the kinds of the basket), or plain (only right or not). slip: an error of at most this many units is a slip. fastUnit: seconds for each unit of the target (each part, for plain); a try faster than this is fast. slowUnit: seconds for each unit of the target; a right try slower than this is counting all. idleStart: seconds with no action at the start of a task (does not know what to do). offerAfter: seconds of idle time after a miss, with no wave, before the person offers help. look: the seconds that the person waits after a miss for the child to look first (the second stage of the handover). frustrated: misses in a row; bored: fast clean commits in a row (the same number, so that boredom gets a response as soon as frustration). ladders: for each diagnosis, the moves in the order of the help level. mentors: the mentor of each task (the task id of its skill events): its family, its person (the entity that acts), demo (the other instance of a demonstration: thing, the look of its things with their sizes; prop and target, the looks of the props there; same: the instance has the same number, as each bundle is ten), picture (the line that sends the child to another station; pictureWho: the person of that station, whom the line names by the name of the region, #38; pictureUnless: a flag that makes the line of that station not true, the trial there is done: then the person says only the line of a break, #57), and lines (optional: the own line of the person for a move, in place of the common line). lines: the line of each move (the person says it in a bubble). again: the line of a move that helped this child before (the person says it as information). ngheLines: the lines of Nghé when the person of a task is not there (at home at night, #51): the general line of each move, and these lines in the words of a friend in place of the lines that say cháu.",
   "mastery": 0.95,
   "ready": 0.8,
   "top": 3,
@@ -345,7 +345,7 @@
         "target": null,
         "same": true
       },
-      "picture": "mentor.picture.scholar",
+      "picture": "mentor.picture.scholar", "pictureUnless": "trial.healer.done",
       "lines": {
         "show": "mentor.show.scholar",
         "first": "mentor.scholar.first",
@@ -365,13 +365,13 @@
         "show": "mentor.show.smith",
         "mark": "mentor.smith.mark"
       },
-      "picture": "mentor.picture.smith"
+      "picture": "mentor.picture.smith", "pictureUnless": "trial.fisher.done"
     },
     "trial-fisher": {
       "family": "plain",
       "person": "npc:fisher",
       "demo": null,
-      "picture": "mentor.picture.fisher",
+      "picture": "mentor.picture.fisher", "pictureUnless": "trial.smith.done",
       "lines": {
         "show": "mentor.show.fisher",
         "first": "mentor.fisher.first",
@@ -382,7 +382,7 @@
       "family": "basket",
       "person": "npc:healer",
       "demo": null,
-      "picture": "mentor.picture.healer",
+      "picture": "mentor.picture.healer", "pictureUnless": "trial.scholar.done",
       "lines": {
         "show": "mentor.show.healer",
         "first": "mentor.healer.first",
@@ -395,7 +395,7 @@
       "family": "plain",
       "person": "npc:woodcutter",
       "demo": null,
-      "picture": "mentor.picture.woodcutter",
+      "picture": "mentor.picture.woodcutter", "pictureUnless": "trial.fisher.done",
       "lines": {
         "first": "mentor.woodcutter.first",
         "show": "mentor.show.woodcutter",

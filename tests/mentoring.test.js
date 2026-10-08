@@ -107,3 +107,17 @@ test('each person of a task has an own line for each move that names the things 
     }
   }
 });
+
+test('a line of a break names only a place where the child has something to do: after the trial of the smith, the fisher says only to rest (#57)', async () => {
+  for (const [done, line] of [[false, 'mentor.picture.fisher'], [true, 'mentor.break']]) {
+    const s = story('trial-fisher');
+    const first = s.steps.findIndex((x) => x.read === true);
+    const flags = { ...s.profile.flags, ...(done ? { 'trial.smith.done': true } : {}) };
+    const failures = await runHeadless({ ...s, profile: { ...s.profile, flags }, steps: [
+      ...s.steps.slice(0, first + 1),
+      { do: { type: 'mentor', key: 'trial-fisher', move: 'picture' } },
+      { until: { event: 'open', with: { textKey: line }, timeout: 10 } },
+    ] });
+    assert.deepEqual(failures, [], `the smith done: ${done}`);
+  }
+});
