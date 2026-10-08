@@ -38,6 +38,7 @@ export function newMentor(key) {
     pending: null, // the last move, until the next commit says whether it helped
     shown: false, // the person showed the action (unsure) in this task
     offered: false, // the person offered help after a miss
+    toldTry: false, // the person said to try first (a wave before any act) in this task
     checked: false, // the child checked since the last change
     checks: [], // the checks since the last commit: { changed }
   };
@@ -222,14 +223,25 @@ export function onIdle(st, { seconds, acted }, fam) {
   return null;
 }
 
-// A wave: the child calls the person. Before any try, the person says to try first and watches
-// (no hint); after a miss, the next move of the ladder. Return { when, diagnosis, move }.
-export function onWave(st, memory, fam, cfg, pL = 0) {
-  if (!st.tried) return { when: 'before', diagnosis: 'unsure', move: 'tryFirst' };
-  if (st.lastSolved) return { when: 'after', diagnosis: 'ok', move: 'wait' };
+// A wave: the child calls the person. A wave always helps (#64). At the first wave before any act
+// of the child in the task, the person says to try first and watches (no hint). At a second wave
+// before any act (the child is stuck), after an act but before a try, or after a right try, the
+// person shows the next step (show: points at the next thing and says it).
+// After a miss, the next move of the ladder; a move that does not help (a wait, the offer, try
+// first) is the show. acted: the child did something in the task. Return { when, diagnosis, move }.
+const NO_HELP = new Set(['wait', 'offer', 'tryFirst']);
+export function onWave(st, memory, fam, cfg, pL = 0, acted = false) {
+  if (!st.tried && !acted && !st.toldTry) {
+    st.toldTry = true;
+    return { when: 'before', diagnosis: 'unsure', move: 'tryFirst' };
+  }
+  if (!st.tried || st.lastSolved) return { when: st.tried ? 'after' : 'before', diagnosis: 'unsure', move: 'show' };
   st.level = Math.min(cfg.top, st.level + 1);
   const diag = st.lastDiag ?? 'miss';
-  const { move } = chooseMove(diag, { ...st, helped: {} }, null, fam, cfg, pL);
+  let { move } = chooseMove(diag, { ...st, helped: {} }, null, fam, cfg, pL);
+  // A wave always gets a line that shows the next step (#64): never a wait, an offer, or the picture
+  // of another station.
+  if (NO_HELP.has(move) || move === 'picture') move = 'show';
   st.helped[diag] = true;
   st.pending = { diagnosis: diag, move, pBefore: pL ?? null };
   return { when: 'after', diagnosis: diag, move };
@@ -241,8 +253,9 @@ export function onCheck(st) {
   st.checks.push({ changed: false });
 }
 
-// A change of the try (a part put or taken back). After a check, it is a self-correction: return
-// true, and the memory counts it (the handover of the checking).
+// A change of the try after a check that takes a thing away from the place (or changes its kind):
+// a self-correction (#64: a put is not). Return true, and the memory counts it (the handover of the
+// checking).
 export function onChange(st, memory) {
   if (!st.checked) return false;
   st.checked = false;

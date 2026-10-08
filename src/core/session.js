@@ -906,7 +906,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // p: the point of the target (half blocks); stand: where the hero walks to (p when not given).
   // A press while the hero walks to the target of a tap waits for the end of the walk (#47).
   let pressAfterWalk = false;
-  function goTo(p, id, along = null, stand = p) {
+  // exact: the walk ends at the stand point itself (a free point beside a stem), not near it.
+  function goTo(p, id, along = null, stand = p, { exact = false } = {}) {
     chosen = { id, along };
     pressAfterWalk = false;
     const face = () => {
@@ -917,7 +918,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
     };
     // Near enough to act there: only a turn to it.
-    if (distHb(hero().position, stand) <= REACH - 1) return face();
+    if (distHb(hero().position, stand) <= (exact ? 1 : REACH - 1)) return face();
+    if (exact && walkTo([{ x: stand.x / 2, y: stand.z / 2 }], face)) return;
     walkToThing({ x: stand.x / 2, y: stand.z / 2 }, face);
   }
   // A tap on a place of a task: the hero walks to it, and it is the target. On the line of stakes,
@@ -1209,7 +1211,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (tz) {
       const key = `event-${id}`;
       const r = mentoring.wave(key);
-      if (!r || r.move === 'wait' || r.move === 'tryFirst') mentoring.move(key, 'show');
+      if (!r?.waiting && (!r || r.move === 'wait' || r.move === 'tryFirst')) mentoring.move(key, 'show');
       return;
     }
     const def = eventDef(id);
@@ -1414,7 +1416,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (key) {
         // Before a try, or after a right one, the person shows the next step on the real things.
         const r = mentoring.wave(key);
-        if (!r || r.move === 'wait' || r.move === 'tryFirst') mentoring.move(key, 'show');
+        if (!r?.waiting && (!r || r.move === 'wait' || r.move === 'tryFirst')) mentoring.move(key, 'show');
         return;
       }
       // In a practice, a person who is not of the practice only greets the child: no talk of the
@@ -1852,11 +1854,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (holding() && zone?.zone.rect && zone.zone.rule !== 'heap' && zone.zone.rule !== 'pile' && tapTaskPlace({ x: m.x / 2, y: m.z / 2 })) return;
     // The child chose this plank now (the time to choose is a sign for the model).
     worldCommand(state, { type: 'aim', id: 'hero', item: thing.id });
-    if (thing.item.kind === 'stem') return goTo({ x: thing.position.x + (along ?? thing.item.size / 2), z: thing.position.z }, thing.id, along === null ? null : Math.round(along));
+    if (thing.item.kind === 'stem') {
+      const p = { x: thing.position.x + (along ?? thing.item.size / 2), z: thing.position.z };
+      return goTo(p, thing.id, along === null ? null : Math.round(along), besideStem(thing, p), { exact: true });
+    }
     // A standing culm: the hero stands at its side of the road (the clump is dense).
     if (thing.item.kind === 'culm') return goTo(thing.position, thing.id, null, { x: thing.position.x + 2, z: thing.position.z });
     const tz = thing.item.kind === 'iron' ? trialZone(thing.item.task.slice(6)) : null;
     goTo(tz?.zone.anvil ?? m, thing.id);
+  }
+
+  // The stand point at a point of a stem (half blocks): beside the stem, off its line, on the side
+  // of the hero, so that the walk ends at the point of the tap and not at an end of the stem (#64).
+  function besideStem(stem, p) {
+    const side = Math.sign(hero().position.z - stem.position.z) || 1;
+    return { x: p.x, z: stem.position.z + side * 2 };
   }
 
   // Walk to a person of a task, turn to the person, and do the work (fn).
@@ -1966,6 +1978,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     else if (e?.zone) goTo(c.at, e.id, null, standOf(e));
     // A standing culm: the hero stands at its side of the road (the clump is dense).
     else if (e?.item?.kind === 'culm') goTo(c.at, e.id, null, { x: c.at.x + 2, z: c.at.z });
+    else if (e?.item?.kind === 'stem') goTo(c.at, e.id, Math.round(c.at.x - e.position.x), besideStem(e, c.at), { exact: true });
     else goTo(c.at, c.target);
     if (hero().route || arrivals.size) pressAfterWalk = true;
   }
@@ -2473,6 +2486,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (target.thing) {
       const thing = getEntity(state, target.thing);
+      // With empty hands, a tap on a thing that lies on the place of a task is a check (#64).
+      if (!holding()) mentoring.checkThing(target.thing);
       // A tap on a bed of the healer: she says the name of its herb (#61).
       if (thing?.item?.kind?.startsWith('herb-') && zoneOf(thing.item.zone)?.zone.rule === 'heap') sayHerb('bed', thing.item.kind);
       if (thing?.item) tapThing(thing, target.along ?? null);
@@ -2511,8 +2526,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     const hit = target.ground;
     if (!hit) return;
-    // With empty hands, a tap at the place of a task is a check (the hero walks there and looks).
-    if (!holding()) mentoring.checkAt(hit.x * 2, hit.y * 2);
     if (tapTaskPlace(hit) || (raidOn() && tapRaidRoad(hit))) {
       emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.h });
       return;
@@ -2901,6 +2914,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // actions of the hands.
     if (ev.type === 'skill') mentoring.skill(ev);
     if (ev.type === 'skill') herbSaid = { key: null, n: 0 };
+    // A try uses up the puts before it: a press finishes again only after a new put of the child
+    // (#64: after a wrong tie, each press tied the same rods again, away from the heap).
+    if (ev.type === 'skill' && ev.task) childPut.delete(ev.task);
     if (ev.type === 'long') mentoring.long(ev);
     mentoring.worldEvent(ev);
     if ((ev.type === 'solid' || ev.type === 'break') && ev.give) {

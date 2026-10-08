@@ -35,14 +35,20 @@ test('a wave before any try gets "try first" and no hint; the ask is logged', as
   assert.ok(end.profile.log.events.some((e) => e.type === 'ask' && e.when === 'before' && e.move === 'tryFirst'));
 });
 
-test('a check at the place, then a change before the commit, is a self-correction', async () => {
+// A check is a tap on a thing that lies on the place, with empty hands; a self-correction is a
+// change after a check that takes a thing away (#64). A tap on the place itself, or a put, is not:
+// a lost child taps the basket to walk to it.
+test('a tap on a thing on the place is a check, and taking it back then is a self-correction', async () => {
   let end = null;
   const failures = await runHeadless(cart([
     ...put,
-    { tap: { zone: 'event-cart-place' } },
-    { until: { event: 'check', timeout: 5 } },
     ...put,
-    { expect: [{ event: 'selfFix', with: { key: 'event-cart' } }] },
+    { tap: { on: 'event-cart-place' } },
+    { until: { event: 'check', timeout: 5 } },
+    { press: { on: 'event-cart-place' } },
+    { until: { event: 'selfFix', with: { key: 'event-cart' }, timeout: 10 } },
+    { press: { zone: 'event-cart-place' } },
+    { until: { event: 'put', timeout: 30 } },
     // The person of the event checks the place.
     { press: { entity: 'event:cart' } },
     { until: { event: 'open', with: { screen: 'say' }, timeout: 30 } },
@@ -51,6 +57,24 @@ test('a check at the place, then a change before the commit, is a self-correctio
   assert.deepEqual(failures, []);
   assert.ok(end.profile.log.events.some((e) => e.type === 'check' && e.task === 'event-cart' && e.changed === true));
   assert.equal(end.profile.mentors['event-cart'].selfFix, 1);
+});
+
+test('a tap on the place itself, and a put after a check, are no check and no self-correction', async () => {
+  let end = null;
+  const events = [];
+  const failures = await runHeadless(cart([
+    ...put,
+    { tap: { zone: 'event-cart-place' } },
+    { wait: 3 },
+    ...put,
+    { press: { entity: 'event:cart' } },
+    { until: { event: 'open', with: { screen: 'say' }, timeout: 30 } },
+    { read: true },
+  ]), { log: true, onEnd: (x) => { end = x; }, onSession: (s) => s.listen((ev) => events.push(ev)) });
+  assert.deepEqual(failures, []);
+  assert.equal(events.filter((e) => e.type === 'check').length, 0, 'a tap on the place is no check');
+  assert.equal(events.filter((e) => e.type === 'selfFix').length, 0, 'a put is no self-correction');
+  assert.equal(end.profile.mentors['event-cart']?.selfFix ?? 0, 0);
 });
 
 test('a raise never makes the round in progress bigger: the heap and the goal stay, and the next round is bigger', async () => {

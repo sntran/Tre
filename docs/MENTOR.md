@@ -44,7 +44,8 @@ After each commit (and after a plank too long on the bridge, which the world jud
 | `picture` | The person says that another station is there (the child is never sent; the child chooses). When the trial of that station is done (`pictureUnless`), the person says only to rest (`mentor.break`, #57). |
 | `raise` | A bigger task next time, once in a task: the next round of a practice is one level higher, and the next event of the same kind is one level higher. A move never makes the task in progress bigger (#32); a help move can make it smaller, and says so. |
 | `break` | A break in the story (a rice ball). |
-| `tryFirst` | The answer to a wave before any try: the person watches. |
+| `count` | The answer of the world to each wrong try, before any other move (#64): the parts on the place counted aloud with the mark of what went wrong, or at the fisher the widest gap of the row, which glows. |
+| `tryFirst` | The answer to the first wave before any act of the child in the task: the person watches. A second wave before any act gets `show` (the child is stuck). |
 | `offer` | A small offer of help to a child who is stuck after a miss and does not wave (after `offerAfter` seconds). |
 
 **The contingent rule:** after a miss, the help level goes one up; after a success, one down; at mastery (P(L) at or over `mastery`) the person only watches (`wait`), except for boredom and a child ready for more. A miss climbs the ladder of its diagnosis with the help level; the other diagnoses climb with each repeat.
@@ -59,9 +60,13 @@ A child of six may not read yet, so the voice says every line of a person in a b
 
 ## The checking goes to the child
 
-- **A check is an action:** with empty hands, a tap at the place of a task (the hero walks there and looks) is a check. A part put or taken back after a check and before the commit is a **self-correction**.
+- **A check is an action:** with empty hands, a tap on a thing that lies on the place of a task (a rod on the mat, a bunch in the basket) is a check. A tap on the place itself (a child who walks to it) is not a check, and a put is never a self-correction (#64: the parent note counted a child who could not find the basket as a child who checked the work). A change after a check that takes a thing off the place, or changes its kind, before the commit is a **self-correction**.
 - **The marks fade into the child's own looking:** at first the person marks what went wrong after a miss. After `handover[0]` self-corrections, the person first waits `look` seconds; if the child looks (a check), the mark does not come. After `handover[1]` self-corrections, the person only watches.
-- **A wave asks for help:** the wave button (a hand, next to the buttons that turn the view) shows at a task with a mentor. Before any try, the person says "Cháu thử trước đã, để xem nào." and watches; after a miss, the person answers with the next move of the ladder.
+- **A wave asks for help, and a wave always helps (#64):** the wave button (a hand, next to the buttons that turn the view) shows at a task with a mentor. Only at the first wave before any act of the child in the task does the person say "Cháu thử trước đã, để xem nào." and watch; a second wave before any act gets `show`, because the child is stuck. After an act, or after a right try, the person shows the next step (`show`: points at the next thing and says it). After a miss, the person answers with the next move of the ladder; a move that does not help (a wait, the offer, try first, the picture of another station) becomes `show`, and a wave never gets a nod. After two same answers in a row, the next wave gets another move that shows the next step (`share` or `demo`), so that the line is not the same again and again. A wave during a count or a demo waits for its end, and no idle move (the offer "Cần giúp thì vẫy tay nhé.") comes in the `AFTER_WAVE` seconds after a wave.
+
+## The count comes first (#64)
+
+After each wrong try, the world answers first with the count of the child's own work, at each help level and before any move of the person (`count`, `countSteps` in `src/core/mentoring.js`): the teacher counts the rods on the mat, the healer counts each row that she lays out, and the fisher points at the widest gap of the row, which glows. At the woodcutter, the two pieces lie side by side, so that the child sees which one is short. The move of the person comes `COUNT_GAP` seconds after the count. While a count or a demo plays, no idle move starts, and no move ends it.
 - The pause to look before a commit: the person turns to the place while the child works (the gesture of the moves). There is no timer.
 
 ## The log
@@ -74,4 +79,4 @@ The bridge (the fisher, and Nghé for the cue), the small events of each day (th
 
 ## Tests and stories
 
-`tests/mentor.test.js` (the contingent shift, the diagnoses of made-up commits, boredom as fast as frustration, no answer to the same instance, no digit in a line, the memory, the handover, the wave, the offer, the save), `tests/mentoring.test.js` (the log of each move with its outcome, a wave before any try, a self-correction), `tests/learnlog.test.js` (the roll-ups of help, check, and ask), and the stories `mentor-bridge` (a missing plank, a mark, then success and only watching), `mentor-cart` (all the nets as if each is one stone, then a demonstration on another cart), `mentor-bored` (three fast clean bundles, then a bigger task), and `mentor-share` (three misses in a row, then a shared task).
+`tests/mentor.test.js` (the contingent shift, the diagnoses of made-up commits, boredom as fast as frustration, no answer to the same instance, no digit in a line, the memory, the handover, the wave, the offer, the save), `tests/mentoring.test.js` (the log of each move with its outcome, a wave before any try, a self-correction, a tap on the place that is no check), `tests/count.test.js` (the count first after a wrong tie and a wrong give, a wave during a count, the hero beside the stem), `tests/learnlog.test.js` (the roll-ups of help, check, and ask), and the stories `mentor-bridge` (a missing plank, a mark, then success and only watching), `mentor-cart` (all the nets as if each is one stone, then a demonstration on another cart), `mentor-bored` (three fast clean bundles, then a bigger task), and `mentor-share` (three misses in a row, then a shared task).

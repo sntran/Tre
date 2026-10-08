@@ -165,7 +165,7 @@ function pick(world, e, thing, env, dt) {
   e.carry = thing.look;
   hintSeen(world, dt);
   stopHint(world);
-  say(world, 'pick', e.id, { item: thing.id, sound: 'plank-up' });
+  say(world, 'pick', e.id, { item: thing.id, from: zoneEnt?.zone.id ?? null, sound: 'plank-up' });
 }
 
 function put(world, e, zoneEnt, env, dt, at = null) {

@@ -1,8 +1,8 @@
 {
   "name": "trial-smith-taps",
   "about": {
-    "vi": "Trong lúc làm việc của bác thợ rèn, chạm vào bác nhiều lần thì bác chỉ giúp hai lần, rồi chỉ gật đầu chờ cháu thử; không mở lại lời mở đầu.",
-    "en": "During the work of the smith, many taps on him ask for help: he helps two times, and then he only nods and waits for a try; they never open the start talk again."
+    "vi": "Trong lúc làm việc của bác thợ rèn, mỗi lần chạm vào bác là một lần xin giúp: lần nào bác cũng giúp, không bao giờ chỉ gật đầu, và không mở lại lời mở đầu.",
+    "en": "During the work of the smith, each tap on him asks for help: he helps each time (a wave never gets only a nod, #64), and the taps never open the start talk again."
   },
   "profile": { "name": "An", "grade": 1, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
   "clock": 540,
@@ -20,7 +20,8 @@
     { "repeat": 8, "steps": [
       { "press": { "entity": "npc:smith" } },
       { "wait": 1.5 },
-      { "expect": [{ "screen": null }, { "event": "open", "with": { "screen": "dialogue" }, "not": true }, { "event": "open", "with": { "screen": "callout" }, "not": true }, { "event": "nod", "with": { "id": "npc:smith" } }] }
-    ] }
+      { "expect": [{ "screen": null }, { "event": "open", "with": { "screen": "dialogue" }, "not": true }, { "event": "nod", "with": { "id": "npc:smith" }, "not": true }] }
+    ] },
+    { "until": { "event": "mentor", "with": { "key": "trial-smith" }, "timeout": 30 } }
   ]
 }

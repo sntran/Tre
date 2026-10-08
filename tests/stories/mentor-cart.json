@@ -111,6 +111,29 @@
         "event": "open",
         "with": {
           "screen": "callout",
+          "textKey": "mentor.mark"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "mentor.demo"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "wait": 3
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
           "textKey": "num.10"
         },
         "timeout": 10

@@ -189,3 +189,24 @@ test('the save keeps the memory of the mentors, and a bad memory does not load',
   bad.mentors['event-cart'].worked = { slip: { mark: 'often' } };
   assert.throws(() => deserialize(serialize(bad, 0)));
 });
+
+// A wave always helps (#64): "try first" only before any act of the child in the task; after an
+// act, or after a right try, the person shows the next step; after a miss, never a wait, the
+// offer, or a nod, at each help level and in each family.
+test('a wave always helps: try first only before any act, then the show, and never a wait', () => {
+  const plain = cfg.families.plain;
+  const mem = newMemory();
+  const st = newMentor('trial-fisher');
+  assert.equal(onWave(st, mem, plain, cfg, 0, false).move, 'tryFirst');
+  assert.equal(onWave(st, mem, plain, cfg, 0, false).move, 'show', 'a second wave before any act: the child is stuck');
+  assert.equal(onWave(newMentor('trial-fisher'), mem, plain, cfg, 0, true).move, 'show', 'after an act, before a try');
+  onCommit(st, mem, { parts: [], target: 1, solved: true, timeS: 30 }, plain, cfg);
+  assert.equal(onWave(st, mem, plain, cfg, 0, true).move, 'show', 'after a right try');
+  for (let k = 0; k < 6; k++) {
+    onCommit(st, mem, { parts: [], target: 1, solved: false, timeS: 30, fact: k }, plain, cfg);
+    for (const fam of [plain, sum, cfg.families.basket, cfg.families.bundle]) {
+      const m = onWave({ ...st, helped: {} }, mem, fam, cfg, 0, true).move;
+      assert.ok(!['wait', 'offer', 'tryFirst'].includes(m), `level ${st.level}: ${m}`);
+    }
+  }
+});

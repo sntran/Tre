@@ -19,6 +19,8 @@ const COUNT_PACE = 0.9; // seconds between two counted parts (counting pace)
 const FIRST_DELAY = 0.5; // seconds after the start of a task: the person shows the first step
 const WORK_NEAR = 24; // half blocks: a person this near the place of a task stands at the work
 const AWAY = 40; // half blocks: a person farther than this from the place of a task is not there (#51)
+const AFTER_WAVE = 20; // seconds after a wave: no idle move (the offer never answers a wave, #64)
+const COUNT_GAP = 0.6; // seconds between the count of the child's work and the move of the mentor
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
@@ -157,7 +159,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     for (const c of r.checks) log('check', { task: key, changed: c.changed });
     Object.assign(tr, { firstAct: null, lastCommit: t, lastAct: t, acted: false, left: false });
     emit({ type: 'mentor', key, diagnosis: r.diagnosis, move: r.move, level: r.level, remembered: r.remembered });
-    if (r.move !== 'wait') schedule(key, r.move, { remembered: r.remembered, delay: r.delay, target: input.target, solved: input.solved });
+    // The answer of the world to a wrong try comes first, at each help level (#64): the person
+    // counts the child's own work on the place (the rods on the mat, each row of the basket) and
+    // marks what went wrong. The move of the mentor comes after the count; a mark is the count.
+    const count = !input.solved && task ? doMove(key, 'count', { target: input.target, solved: false }) : 0;
+    if (count > 0 && r.move === 'mark') return;
+    if (r.move !== 'wait') schedule(key, r.move, { remembered: r.remembered, delay: (count > 0 ? count + COUNT_GAP : 0) + (r.delay ?? 0), target: input.target, solved: input.solved });
   }
 
   function schedule(key, move, info = {}) {
@@ -199,20 +206,23 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     tr.acted = true;
     tr.lastAct = t;
     tr.firstAct ??= t;
-    // A change of the try: a part put into the place, or taken back from it.
-    const change = ev.type === 'put' || ev.type === 'add' || ev.type === 'back' || ev.type === 'mark' || (ev.type === 'pick' && thing && task?.place && thing.item.zone === null && st.checked);
-    if (change && onChange(st, memoryOf(key))) emit({ type: 'selfFix', key });
+    // A self-correction: after a check, the child takes a thing back from the place (#64). A put,
+    // or a pick at a heap, is not one.
+    const takeBack = ev.type === 'pick' && Boolean(task?.place) && ev.from === task.place.zone.id;
+    if (takeBack && onChange(st, memoryOf(key))) emit({ type: 'selfFix', key });
   }
 
-  // A tap on the ground with empty hands: a check when it is at the place of a task (the child
-  // walks to it and looks). A mark that waits for the child to look first does not come.
-  function checkAt(x, z) {
+  // A tap with empty hands on a thing that lies on the place of a task (a rod on the mat, a bunch
+  // in the basket): a check (#64). A tap on the place itself, or a put, is not a check (a lost
+  // child taps the basket to walk to it). A mark that waits for the child to look first does not
+  // come.
+  function checkThing(id) {
+    const thing = getEntity(world(), id);
+    const zone = thing?.item?.zone;
+    if (!zone) return null;
     for (const key of states.keys()) {
       const task = taskOf(key);
-      if (!task) continue;
-      const r = task.place?.zone.rect;
-      const inside = r ? x >= r.x0 - 1 && x <= r.x1 + 1 && z >= r.z0 - 1 && z <= r.z1 + 1 : dist({ x, z }, task.at) < 6;
-      if (!inside) continue;
+      if (!task || task.place?.zone.id !== zone) continue;
       const st = stateOf(key, task);
       onCheck(st);
       const before = delayed.length;
@@ -251,21 +261,26 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
 
   // A wave: the child calls the person of the task (key: that task; else the task nearest to the
   // hero). A demonstration that showed its key part ends.
+  // While the person counts or shows (a script of the task plays), a wave waits for its end (#64).
   function wave(forKey = null) {
-    for (const s of query(world(), 'script')) {
-      if (s.script.keyAt !== undefined && s.script.t >= s.script.keyAt) {
-        endScript(world(), s);
-        return { skipped: s.script.key };
-      }
-    }
     const key = forKey ?? activeKey();
     if (!key) return null;
+    if (getEntity(world(), `script:${key}`)) {
+      waves.add(key);
+      return { waiting: key };
+    }
+    return answerWave(key);
+  }
+  const waves = new Set(); // the tasks with a wave that waits for the end of a script
+  function answerWave(key) {
     const task = taskOf(key);
     const st = stateOf(key, task);
-    const r = onWave(st, memoryOf(key), famOf(key), cfg, null);
+    const tr = tracks.get(key);
+    const r = onWave(st, memoryOf(key), famOf(key), cfg, null, Boolean(tr?.acted));
+    if (tr) tr.lastWave = now();
     log('ask', { task: key, when: r.when, move: r.move });
     emit({ type: 'mentor', key, diagnosis: r.diagnosis, move: r.move, level: st.level, asked: r.when });
-    if (r.move !== 'wait') doMove(key, r.move, {});
+    doMove(key, r.move, { asked: true });
     return r;
   }
 
@@ -276,6 +291,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const due = delayed.filter((d) => d.at <= t);
     delayed = delayed.filter((d) => d.at > t);
     for (const d of due) doMove(d.key, d.move, d.info);
+    for (const key of [...waves]) {
+      if (getEntity(world(), `script:${key}`) || delayed.some((d) => d.key === key)) continue;
+      waves.delete(key);
+      if (taskOf(key)) answerWave(key);
+    }
     const hero = getEntity(world(), 'hero');
     if (!hero) return;
     for (const [key, st] of states) {
@@ -285,6 +305,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       const d = dist(hero.position, task.at);
       if (st.lastSolved === false && tr.lastCommit !== null && t - tr.lastCommit < LEAVE_TIME && d > LEAVE) tr.left = true;
       if (d > NEAR || world().paused) continue;
+      // No idle move while the person counts or shows, or while a move waits, or soon after a wave
+      // (#64: the offer ended a demo in the middle of its count, and answered a wave).
+      if (getEntity(world(), `script:${key}`) || delayed.some((x) => x.key === key) || waves.has(key) || t - (tr.lastWave ?? -Infinity) < AFTER_WAVE) continue;
       const seconds = t - Math.max(tr.lastAct, tr.lastCommit ?? tr.startT);
       const r = onIdle(st, { seconds, acted: tr.acted || st.tried }, famOf(key));
       if (!r) continue;
@@ -300,6 +323,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // another station comes at most one time in a visit.
   const said = new Map(); // `${the id of a person}|${move}` -> { at (the last try then), n }
   let pictured = false;
+  const asked = new Map(); // the id of a person -> { move, n }: the answers to waves in a row
   // A move in the world: a script of the person (src/core/world/systems/mentor.js).
   function doMove(key, move, info = {}) {
     const w = world();
@@ -313,9 +337,20 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const last = said.get(`${whoNow}|${move}`);
     const n = last && last.at === tried ? last.n + 1 : 1;
     said.set(`${whoNow}|${move}`, { at: tried, n });
-    if (n > 2 || (move === 'picture' && pictured)) {
+    // The count of the child's work is the answer of the world: it always comes. A wave never gets
+    // a nod (#64).
+    if (move !== 'count' && !info.asked && (n > 2 || (move === 'picture' && pictured))) {
       emit({ type: 'nod', id: whoNow });
-      return;
+      return 0;
+    }
+    // A wave after the same answer two times in a row: another move that shows the next step, so
+    // that the line is not the same again and again.
+    const run = asked.get(whoNow);
+    if (info.asked && !info.other && move !== 'count' && run?.move === move && run.n >= 2) {
+      for (const m of ['show', 'share', 'demo'].filter((x) => x !== move)) {
+        const d = doMove(key, m, { ...info, other: true });
+        if (d) return d;
+      }
     }
     if (move === 'picture') pictured = true;
     let person = task?.person ?? getEntity(w, def.person);
@@ -342,9 +377,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       t = 2.2;
     }
     let keyAt;
-    const needsPlace = ['first', 'show', 'mark', 'cue', 'demo', 'smaller', 'share'].includes(move);
-    if (needsPlace && !task) return;
-    if (move === 'first') {
+    const needsPlace = ['first', 'show', 'mark', 'count', 'cue', 'demo', 'smaller', 'share'].includes(move);
+    if (needsPlace && !task) return 0;
+    if (move === 'count') {
+      t = countSteps(task, famOf(key), info, { say, point, mark, steps }, t);
+    } else if (move === 'first') {
       t = firstSteps(task, def, { say, point, mark, steps }, t);
     } else if (move === 'show' && carrying(key, task)) {
       // The thing of the task is in the hands (the sticks after the right cut): the line is the
@@ -394,11 +431,34 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       say(t, lineOf(key, move));
       t += 2;
     }
-    if (!steps.length) return;
+    if (!steps.length) return 0;
     endScript(w, getEntity(w, `script:${key}`));
     steps.push({ at: t + 0.5, end: true });
     steps.sort((a, b) => a.at - b.at);
     addEntity(w, { id: `script:${key}`, script: { key, move, t: 0, i: 0, steps, spawned: [], ...(keyAt !== undefined ? { keyAt } : {}) } });
+    if (info.asked) asked.set(whoNow, { move, n: run?.move === move ? run.n + 1 : 1 });
+    else asked.delete(whoNow);
+    return t + 0.5;
+  }
+
+  // The count of the child's own work after a wrong try (#64), the same at each help level: the
+  // parts on the place counted aloud with the mark of what went wrong (the mark), or, at a task with
+  // no parts to count, the mark of what went wrong only: the widest gap of the row of the fisher.
+  function countSteps(task, fam, info, s, t) {
+    if (itemsOf(task.place).length && (fam.reader === 'sum' || fam.reader === 'each')) return markSteps(task, fam, info, s, t);
+    if (task.place?.zone.rule === 'line') {
+      const z = task.place.zone;
+      const slots = itemsOf(task.place).map((e) => e.item.slot).filter((v) => v != null).sort((a, b) => a - b);
+      const ends = [...new Set([0, ...slots, z.length])].sort((a, b) => a - b);
+      let gap = null;
+      for (let i = 1; i < ends.length; i++) if (!gap || ends[i] - ends[i - 1] > gap.w) gap = { w: ends[i] - ends[i - 1], at: (ends[i] + ends[i - 1]) / 2 };
+      if (!gap) return t;
+      const p = { x: z.x + gap.at, z: z.z };
+      s.point(t, p, 2.5);
+      s.mark(t, p, 5);
+      return t + 2.5;
+    }
+    return t;
   }
 
   // The first step, one time at the start of a task: the person takes one thing from a heap, puts
@@ -588,7 +648,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     skill,
     long,
     worldEvent,
-    checkAt,
+    checkThing,
     wave,
     taskOfPerson,
     // A move of the mentor of a task now (for example show: the next step on the real things).
