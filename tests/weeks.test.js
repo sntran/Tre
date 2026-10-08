@@ -188,3 +188,20 @@ test('a session of a practice link gives all its minutes to its activity, also w
   assert.equal(w.acts['mua-trong'].minutes, 0.5, 'thirty seconds between the two commits');
   assert.equal(w.sessions, 3);
 });
+
+test('a stop by the time limit or a closed tab is no stop of the child: no stop and no left after a miss (#58)', () => {
+  const t = MON + DAY_MS;
+  const ended = (by, practice = null) => {
+    const w = week([commit(t + 10 * S, 'trial-drum', { off: 2 }), { ...session(t, t + 15 * S, practice), endedBy: by }]);
+    return [w.acts['mua-trong'].stops, w.acts['mua-trong'].left];
+  };
+  assert.deepEqual(ended('child'), [1, 1], 'the child stopped right after a miss');
+  assert.deepEqual(ended('parent'), [0, 0], 'the time limit stopped the game');
+  assert.deepEqual(ended('device'), [0, 0], 'the tab closed');
+  // A session of a practice link with no commit: a stop only when the child ended it.
+  const sent = (by) => week([{ ...session(t, t + 60 * S, 'mua-trong'), endedBy: by }]).acts['mua-trong'].stops;
+  assert.deepEqual([sent('child'), sent('parent')], [1, 0]);
+  // The places where the child stops: only the sessions that the child ended.
+  const r = rollupEvents([{ ...session(t, t + 60 * S), endedBy: 'parent', place: 'soc-son' }, { ...session(t + 3600 * S, t + 3660 * S), place: 'phu-dong' }], opts);
+  assert.deepEqual(r.base.sessions.stops, { 'phu-dong': 1 });
+});

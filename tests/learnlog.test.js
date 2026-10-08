@@ -116,7 +116,8 @@ test('the nine questions, on a fixed set of events', () => {
   // 8. Come back: two sessions in one week, one went on after the quest.
   const c = qComeBack(r);
   assert.deepEqual([c.sessions, c.perWeek, c.afterQuest], [2, 2, 0.5]);
-  assert.deepEqual(c.stops.map((x) => x.place).sort(), ['phu-dong', 'soc-son']);
+  // The time limit ended the session at Sóc Sơn: the child did not stop there (#58).
+  assert.deepEqual(c.stops.map((x) => x.place).sort(), ['phu-dong']);
   // 9. Sessions: the length, who ended it, and the first action.
   const s = qSessions(r);
   assert.equal(Math.round(s.minutes), 21);

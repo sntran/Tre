@@ -192,7 +192,8 @@ export function rollupEvents(events, { tz = 0, first = 0, mastered = 0.95, short
       const week = Math.floor(day / 7);
       s.weeks[week] = (s.weeks[week] ?? 0) + 1;
       s.afterQuest += ev.afterQuest ? 1 : 0;
-      if (ev.place) s.stops[ev.place] = (s.stops[ev.place] ?? 0) + 1;
+      // A stop is a stop of the child: the time limit (parent) or a closed tab (device) is not (#58).
+      if (ev.place && ev.endedBy === 'child') s.stops[ev.place] = (s.stops[ev.place] ?? 0) + 1;
       s.first[ev.first] = (s.first[ev.first] ?? 0) + 1;
       const min = ms / 60000;
       const i = LENGTHS.findIndex((x) => min < x);
@@ -424,8 +425,11 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
         prev = { a, t: ev.t, ok, parts: ev.parts, session: s };
       } else if (ev.type === 'session') {
         const k = seen.get(ev);
-        // A miss as the last commit of a session, a little before its end: the child left.
-        if (prev && !prev.ok && prev.session === ev && (ev.end - prev.t) / 1000 < sig.leave) closeMiss(prev, 'left');
+        // A miss as the last commit of a session, a little before its end: the child left. Only the
+        // child ends a session by a choice; the time limit (parent) or a closed tab (device) is no
+        // stop of the child (#58).
+        const byChild = ev.endedBy === 'child';
+        if (byChild && prev && !prev.ok && prev.session === ev && (ev.end - prev.t) / 1000 < sig.leave) closeMiss(prev, 'left');
         const min = Math.max(0, ev.end - ev.start) / 60000;
         w.sessions += 1;
         w.minutes += min;
@@ -438,7 +442,7 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
             r[ev.practice ? 'sent' : 'self'] += 1;
           }
           act(w, k.first).first += 1;
-          act(w, k.last).stops += 1;
+          if (byChild) act(w, k.last).stops += 1;
         }
         // A session of a practice link: all its minutes are of its activity, from the start to the
         // end, also with one commit or none (#52).
@@ -451,7 +455,7 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
           }
           if (!k) {
             r.first += 1;
-            r.stops += 1;
+            if (byChild) r.stops += 1;
           }
         }
         prev = null;
