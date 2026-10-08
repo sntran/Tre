@@ -329,6 +329,10 @@ p { line-height: 1.45; margin: 0.4em 0; }
 .goal-pips { display: flex; flex-wrap: wrap; gap: 3px; flex: none; max-width: 7.5em; margin-left: auto; }
 .pip { display: block; width: 14px; height: 14px; border: 1.5px solid var(--ink); background: var(--paper); opacity: 0.55; }
 .pip.on { opacity: 1; }
+/* The pips light up one at a time while the person says how many (#61). */
+.pip.intro { animation: pip-intro 0.5s ease-out both; }
+@keyframes pip-intro { 0% { transform: scale(1); opacity: 0.55; } 50% { transform: scale(1.6); opacity: 1; background-color: var(--yellow); } 100% { transform: scale(1); } }
+.flying-pip { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 30; }
 .pip-lump { border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%; }
 .pip-lump.on { background: var(--ash); }
 .pip-person { width: 12px; height: 16px; border-radius: 50% 50% 3px 3px / 40% 40% 3px 3px; }

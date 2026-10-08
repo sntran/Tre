@@ -567,3 +567,4 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 
 - **The names of the herbs, in the voice of the healer:** when the child takes a bunch, `healer.herb.ngai` ("Bó ngải cứu đây."), `healer.herb.tiato` ("Bó tía tô đây."), and `healer.herb.rauma` ("Bó rau má đây."). After a tap on a bed, `healer.bed.ngai` ("Đây là luống ngải cứu."), `healer.bed.tiato` ("Đây là luống tía tô."), and `healer.bed.rauma` ("Đây là luống rau má.").
 - **Please check:** the colors of perilla (tía tô): the palette of the prints has no purple, so its leaves are indigo below and green on top.
+- **How many bundles the teacher needs:** `teacher.need.1` to `teacher.need.4` ("Thầy cần một bó." to "Thầy cần bốn bó."), at the start of the task, while the pips of the goal bar light up.

@@ -183,6 +183,20 @@ test('the healer says the name of the herb when the child takes a bunch, and aft
   assert.ok(lines.includes('healer.bed.rauma'), `the name of the bed: ${lines.join(', ')}`);
 });
 
+test('at the start of the task, the teacher says how many bundles while the pips light up (#61)', async () => {
+  const seen = [];
+  const failures = await runHeadless({ name: 'need', practice: 'bo-que', profile, steps: [
+    { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } },
+    { read: true },
+    { wait: 1 },
+  ] }, { onSession: (s) => s.listen((ev) => {
+    if (ev.type === 'goalShow') seen.push(`pips ${ev.n}`);
+    if (ev.type === 'open' && ev.screen === 'callout' && /^teacher\.need\./.test(ev.textKey)) seen.push(ev.textKey);
+  }) });
+  assert.deepEqual(failures, []);
+  assert.deepEqual(seen, ['pips 2', 'teacher.need.2']);
+});
+
 test('the fish of the trap of the fisher jump over the water, where the ducks swim: the child sees the catch and the escape (#48)', () => {
   const life = JSON.parse(readFileSync('data/world/life.json', 'utf8'));
   const swim = Math.max(...Object.values(life.kinds).map((k) => k.steer?.float ?? 0));

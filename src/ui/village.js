@@ -447,7 +447,8 @@ export async function mountVillage(ctx, params = {}) {
       goalPips.replaceChildren(...(count ? Array.from({ length: count.need }, () => h('i', { class: `pip pip-${count.pip}` })) : []));
       goalPips.hidden = !count;
     }
-    if (count) [...goalPips.children].forEach((pip, i) => pip.classList.toggle('on', i < count.have));
+    // A tied bundle on its way to its pip is not in the count yet: the pip fills when it lands (#61).
+    if (count) [...goalPips.children].forEach((pip, i) => pip.classList.toggle('on', i < count.have - pipsFlying));
     // A thing on its way to the basket is not in the count yet: the count ticks up when it lands.
     // The counter of rice is the basket of the household (#26): a tap opens it.
     for (const item of data.items.hud) {
@@ -468,6 +469,7 @@ export async function mountVillage(ctx, params = {}) {
   const setArt = (el, art) => { if (el.dataset.art !== art) { el.dataset.art = art; el.src = `art/${art}.svg`; } };
   const goalText = h('span', { class: 'goal-text' });
   const goalPips = h('span', { class: 'goal-pips', 'aria-hidden': 'true', hidden: true });
+  let pipsFlying = 0; // the tied bundles on their way to their pips (#61)
   goalBtn.replaceChildren(img('ui/quest', 'btn-icon'), goalText, goalPips);
   const countNodes = new Map();
   function countNode(item) {
@@ -1098,6 +1100,44 @@ export async function mountVillage(ctx, params = {}) {
     // A longer line stays longer (a greeting of one line), and wraps (styles/main.css).
     bubbles.push({ id, el, age: 0, icon, line, life: lineLife(icon ? '' : text), width: el.offsetWidth, height: el.offsetHeight });
   }
+  // The pips of the goal bar light up one at a time, while the person says how many (#61).
+  function showPips() {
+    [...goalPips.children].forEach((pip, i) => {
+      pip.classList.remove('intro');
+      pip.style.animationDelay = `${0.2 + i * 0.6}s`;
+      void pip.offsetWidth;
+      pip.classList.add('intro');
+    });
+  }
+  // A tied bundle flies in an arc from the mat to its pip in the goal bar; the pip fills when it
+  // lands (#61).
+  function flyToPip(fromId) {
+    const q = getEntity(state, fromId)?.position;
+    if (!q || !goalPips.children.length) return;
+    const start = view.project(q.x / 2, q.y / 2 + 0.6, q.z / 2);
+    const el = h('i', { class: 'pip pip-bundle on flying-pip' });
+    marks.append(el);
+    pipsFlying += 1;
+    updateHud();
+    const t0 = performance.now();
+    const tick = (now) => {
+      const index = Math.max(0, (session.workCount()?.have ?? 1) - pipsFlying);
+      const box = goalPips.children[index]?.getBoundingClientRect();
+      const base = canvas.getBoundingClientRect();
+      const end = box ? { x: box.left + box.width / 2 - base.left, y: box.top + box.height / 2 - base.top } : { x: start.x, y: 0 };
+      const k = Math.max(0, Math.min(1, (now - t0) / 900));
+      const e = k * k * (3 - 2 * k);
+      el.style.transform = `translate(${start.x + (end.x - start.x) * e}px, ${start.y + (end.y - start.y) * e - Math.sin(k * Math.PI) * 60}px) translate(-50%, -50%) scale(${2 - k})`;
+      if (k < 1 && alive) {
+        requestAnimationFrame(tick);
+        return;
+      }
+      el.remove();
+      pipsFlying = Math.max(0, pipsFlying - 1);
+      if (alive) updateHud();
+    };
+    requestAnimationFrame(tick);
+  }
   // A thing (a coin) flies in an arc from an entity to its counter in the HUD. The counter ticks
   // up when it lands.
   function flyToCounter(fromId, item, delay) {
@@ -1147,6 +1187,7 @@ export async function mountVillage(ctx, params = {}) {
     for (const ev of session.events()) handle(ev);
   }
   function handle(ev) {
+    if (ev.type === 'tie') flyToPip(ev.id);
     switch (ev.type) {
       case 'open': openScreen(ev); return;
       case 'close':
@@ -1181,6 +1222,10 @@ export async function mountVillage(ctx, params = {}) {
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
       case 'workView': turnToWork(ev.points, ev.sight); return;
+      case 'goalShow':
+        updateHud();
+        showPips();
+        return;
       case 'gift':
         for (const [item, n] of Object.entries(ev.give)) {
           for (let i = 0; i < n; i++) flyToCounter(ev.from, item, ev.delay + i * 0.15);

@@ -701,6 +701,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     setupTrial(state, def, practicing ? practice.level : levelFor(data.trials, profile.grade), env, { demo: !(practicing && practice.round > 0), practice: practicing });
     mentoring.start(`trial-${id}`);
     emit({ type: 'hud' });
+    // The teacher says how many bundles he needs, while the pips of the goal bar light up one at a
+    // time (#61: before, only the pips showed it).
+    const need = workCount()?.need ?? 0;
+    if (need >= 1 && need <= 4) {
+      emit({ type: 'goalShow', n: need });
+      emit({ type: 'open', screen: 'callout', id: `npc:${def.npc}`, textKey: `teacher.need.${need}`, params: {} });
+    }
   }
   // A trial is done: the flag, the reward that flies to the counters, and the done line.
   function trialDone(id) {
