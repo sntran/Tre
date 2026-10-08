@@ -92,12 +92,31 @@
         "n1": {
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.n1",
+          "next": "n2",
           "effects": [
             {
               "open": "trial",
-              "id": "fisher"
+              "id": "fisher",
+              "now": true
             }
           ]
+        },
+        "n2": {
+          "speaker": "fisher",
+          "textKey": "dlg.fisher.trial.n2",
+          "names": ["stake:fisher:a", "stake:fisher:b", "zone:line"],
+          "next": "n3"
+        },
+        "n3": {
+          "speaker": "fisher",
+          "textKey": "dlg.fisher.trial.n3",
+          "names": [{ "id": "tide:fisher", "act": "rise" }],
+          "next": "n4"
+        },
+        "n4": {
+          "speaker": "fisher",
+          "textKey": "dlg.fisher.trial.n4",
+          "names": [{ "id": "mark:fisher:end", "act": "bob" }]
         }
       }
     },

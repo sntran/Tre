@@ -581,6 +581,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const s = screen;
     screen = null;
     emit({ type: 'close', screen: s.screen });
+    if (s.named) showNames(s, null, []);
     runPending();
   }
 
@@ -608,6 +609,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   function showLine(d, view) {
     takeEffects(d);
+    // A task that its line starts at once: the next lines name its things (#62).
+    const atOnce = d.opens.filter((c) => c.now && c.open === 'trial');
+    if (atOnce.length) {
+      d.opens = d.opens.filter((c) => !atOnce.includes(c));
+      for (const c of atOnce) openCommand(c);
+    }
     // A screen that the child fills in (the name of Nghé) opens at once, and the talk goes on only
     // when the child closes it (#37). The other screens of a talk open at its end.
     const now = view ? d.opens.filter((c) => INPUT_SCREENS.has(c.open)) : [];
@@ -626,6 +633,44 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey) });
+    showNames(d, view.speaker, view.names);
+  }
+  // The things that a line names (#62): the person points at the first one, the view makes them
+  // glow (a place glows as a rim on the ground) and shows them with the person above the talk box.
+  // A line with no names after a line with names ends the glow, and so does the end of the talk.
+  function showNames(d, speaker, list = []) {
+    // The water of the last line goes back down.
+    if (d.risen) {
+      const water = getEntity(state, d.risen);
+      if (water?.look === 'tide-1') water.look = 'tide-0';
+      d.risen = null;
+    }
+    const named = list.map((n) => ({ ...n, e: getEntity(state, n.id) })).filter((n) => n.e?.position);
+    const things = named.map((n) => n.e);
+    if (!things.length && !d.named) return;
+    d.named = things.length > 0;
+    if (d.named) setCue([]);
+    const rise = named.find((n) => n.act === 'rise' && n.e.look === 'tide-0');
+    if (rise) {
+      rise.e.look = 'tide-1';
+      d.risen = rise.e.id;
+    }
+    const person = speaker ? getEntity(state, `npc:${speaker}`) : null;
+    if (person && things.length) person.gesture = { act: 'point', x: things[0].position.x, z: things[0].position.z, t: 3 };
+    // A place: the corners of its rect, so that all of it is in view.
+    const pointsOf = (e) => {
+      const r = e.zone?.rect;
+      if (!r) return [{ ...e.position }];
+      return [[r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1]].map(([x, z]) => ({ x, y: e.zone.y, z }));
+    };
+    const places = things.filter((e) => e.zone);
+    emit({
+      type: 'names',
+      ids: things.filter((e) => !e.zone).map((e) => e.id),
+      spots: places.map((e) => spotOf(e.zone)),
+      bobs: named.filter((n) => n.act === 'bob').map((n) => n.e.id),
+      points: things.length ? [...things.flatMap(pointsOf), ...(person?.position ? [{ ...person.position }] : [])] : [],
+    });
   }
   // One line of text (a sign, a ferry, a thing that the hero found, a note with a seal, a line of
   // a person in a raid).
@@ -2249,10 +2294,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // ids: the things that glow; a place (a zone) glows as a thin rim on the ground (spots, in half
   // blocks: { x, z, r }).
   // A place on the ground (half blocks: { x, y, z, r }) for the glow of a zone.
-  const spotOf = (z) => {
+  function spotOf(z) {
     const r = z.rect;
     return r ? { x: (r.x0 + r.x1) / 2, y: z.y, z: (r.z0 + r.z1) / 2, r: Math.max(r.x1 - r.x0, r.z1 - r.z0) / 2 } : { x: z.x, y: z.y, z: z.z, r: 2 };
-  };
+  }
   // rings: the things with a ring of their own. The things of a heap have none; one rim goes
   // around the heap, so that the rings never cover the things (#44).
   function setCue(ids) {

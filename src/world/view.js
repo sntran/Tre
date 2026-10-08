@@ -45,6 +45,9 @@ export function inView(box, focus, { az = Math.PI / 4, size }) {
 // The part of the screen that the HUD and the buttons do not cover (parts of the height and the
 // width of the view): the quest bar at the top, the stick and the buttons at the bottom (#44).
 export const SAFE = Object.freeze({ top: 0.16, bottom: 0.2, side: 0.04 });
+// The safe part of the view while the talk box is open (#62): the box covers the bottom part of the
+// screen of a phone held upright.
+export const TALK_SAFE = Object.freeze({ top: 0.16, bottom: 0.38, side: 0.04 });
 
 // Is a box of the world fully in the safe part of the view?
 export function inSafe(box, focus, { az = Math.PI / 4, size, safe = SAFE }) {
@@ -59,8 +62,9 @@ export const figureBox = (p) => ({ x0: p.x - 0.5, x1: p.x + 0.5, y0: p.y, y1: p.
 // that the person, the heap, and the places are on the screen of a phone held upright. points:
 // world units (blocks) with the hero first. Returns { focus, level, fits }: the zoom level is the
 // near one when all the points fit there, else the far one. A point fits when it is fully in the
-// safe part of the screen (SAFE). When the work does not fit, the hero stays on the screen.
-export function leadFocus(points, { az = Math.PI / 4, width, height }) {
+// safe part of the screen (safe: SAFE, or TALK_SAFE while a talk names the things). When the work
+// does not fit, the hero stays on the screen.
+export function leadFocus(points, { az = Math.PI / 4, width, height, safe = SAFE }) {
   const lo = { x: Infinity, y: Infinity, z: Infinity };
   const hi = { x: -Infinity, y: -Infinity, z: -Infinity };
   for (const p of points) {
@@ -70,7 +74,7 @@ export function leadFocus(points, { az = Math.PI / 4, width, height }) {
     }
   }
   const mid = { x: (lo.x + hi.x) / 2, y: (lo.y + hi.y) / 2, z: (lo.z + hi.z) / 2 };
-  const fitsAt = (focus, level) => points.every((p) => inSafe(figureBox(p), focus, { az, size: viewSize(width, height, level) }));
+  const fitsAt = (focus, level) => points.every((p) => inSafe(figureBox(p), focus, { az, size: viewSize(width, height, level), safe }));
   const level = fitsAt(mid, 0) ? 0 : VIEW.zooms.length - 1;
   const fits = fitsAt(mid, level);
   if (fits) return { focus: mid, level, fits };
@@ -83,7 +87,7 @@ export function leadFocus(points, { az = Math.PI / 4, width, height }) {
   let b = 1;
   for (let k = 0; k < 12; k++) {
     const t = (a + b) / 2;
-    if (inSafe(figureBox(hero), at(t), { az, size })) a = t;
+    if (inSafe(figureBox(hero), at(t), { az, size, safe })) a = t;
     else b = t;
   }
   return { focus: at(a), level, fits };

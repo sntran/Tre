@@ -181,6 +181,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   let glowing = new Set();
   let ringed = new Set(); // the glowing things with a ring of their own (not the things of a heap)
   let glowSpots = [];
+  let bobbing = new Set(); // the things that bob while a line of a talk names them (#62)
   let glowT = 0;
   // The target of the action button: a thicker ink outline and a soft, still light under it (or on
   // its place); a ghost: a pale figure where a thing will go on a line (docs/TASKS.md).
@@ -394,6 +395,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         // A figure out of the view draws nothing (and casts no shadow).
         if (planes && !inView(planes, { x: f.at.x, y: f.at.y + L.height / 2, z: f.at.z }, Math.max(1, L.height))) continue;
         L.root.position.set(f.at.x, f.at.y, f.at.z);
+        if (bobbing.has(f.id)) L.root.position.y += 0.1 + 0.2 * breath;
         L.root.rotation.y = lerpAngle(a.facing, b.facing, t);
         // The thing that the action button acted on pulses once (a little bigger, then back).
         if (f.pulse > 0) f.pulse = Math.max(0, f.pulse - dt);
@@ -524,9 +526,11 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       if (f) f.pulse = PULSE;
     },
     // The cue: these things glow (entity ids), and these places glow on the ground (spots in half
-    // blocks: { x, y, z, r }). Empty lists stop the glow.
-    glow(ids = [], spots = [], rings = ids) {
+    // blocks: { x, y, z, r }). Empty lists stop the glow. bobs: the glowing things that bob up and
+    // down (a float that a line names).
+    glow(ids = [], spots = [], rings = ids, bobs = []) {
       glowing = new Set(ids);
+      bobbing = new Set(bobs);
       ringed = new Set(rings);
       glowSpots = spots;
     },

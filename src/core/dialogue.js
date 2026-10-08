@@ -12,7 +12,13 @@
 // A node with no "next" and no "choices" ends the dialogue. "mood" (optional): the face of the speaker in
 // the portrait (calm, happy, worried, surprised; calm when it is not given).
 // "effects" run when the node shows (or when the player picks a choice). "mark" (optional, on a
-// node): the seal of that line, in place of the seal of the dialogue (null: no seal).
+// node): the seal of that line, in place of the seal of the dialogue (null: no seal). "names"
+// (optional, on a node): the things that the line talks about, each an id or { id, act }. While
+// the line shows, the person points at them, they glow, and the view shows them (#62: a new word
+// with its thing). act: "bob" (the thing bobs, as a float), or "rise" (the water rises a little,
+// and goes back at the end of the line).
+// An effect { "open": "trial", "now": true } starts the task when its line shows, so that the
+// things of the task are there for the next lines.
 import { check } from './conditions.js';
 
 export function createDialogue(def, state) {
@@ -44,7 +50,7 @@ export function createDialogue(def, state) {
     if (!current) return null;
     const node = def.nodes[current];
     const choices = (node.choices ?? []).filter((c) => check(c.when, state));
-    return { id: current, speaker: node.speaker ?? null, textKey: node.textKey, params: node.params ?? {}, choices, mood: node.mood ?? null, mark: 'mark' in node ? node.mark : def.mark ?? null };
+    return { id: current, speaker: node.speaker ?? null, textKey: node.textKey, params: node.params ?? {}, choices, mood: node.mood ?? null, mark: 'mark' in node ? node.mark : def.mark ?? null, names: (node.names ?? []).map((n) => (typeof n === 'string' ? { id: n } : n)) };
   }
 
   // Go on. choice is the index of a choice, when the node has choices.

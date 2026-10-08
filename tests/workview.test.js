@@ -8,7 +8,7 @@ import { planeOf, load } from './helpers.js';
 import { placesOf } from '../src/core/world/env.js';
 import { readFileSync } from 'node:fs';
 import { workBoxes, workCovers, workTurn, TALL } from '../src/world/fade.js';
-import { VIEW, viewSize, inView, inSafe, figureBox, leadFocus } from '../src/world/view.js';
+import { VIEW, TALK_SAFE, viewSize, inView, inSafe, figureBox, leadFocus } from '../src/world/view.js';
 import { runHeadless } from './story-run.js';
 
 const ANGLES = [0, 1, 2, 3].map((k) => Math.PI / 4 + (k * Math.PI) / 2);
@@ -151,4 +151,49 @@ test('the session sends the work of a task and of an example with its points, so
   assert.ok(example && example.points.length >= 3, 'the example: its things and the duck girl');
   assert.ok(task && task.points.length >= 2, 'the task: its places and the duck girl');
   assert.ok(seen.indexOf(example) < seen.indexOf(task), 'the example first');
+});
+
+// A new word with its thing (#62): while a line of the fisher names a thing (the fish trap, the
+// tide, the red float), the thing is in the world, it glows, the fisher points at it, and with the
+// real camera on a phone held upright it is on the screen above the talk box, from each of the four
+// angles after the turn of the view.
+test('each thing that a line of the fisher names is in the world, glows, and is on a phone screen above the talk box', async () => {
+  const story = JSON.parse(readFileSync(new URL('./stories/practice-cam-coc.json', import.meta.url)));
+  story.steps = story.steps.slice(0, 3);
+  const lines = [];
+  let line = null;
+  const failures = await runHeadless(story, {
+    onSession: (s) => {
+      s.listen((ev) => {
+        if (ev.type === 'open' && ev.screen === 'dialogue') line = ev.textKey;
+        if (ev.type === 'names') {
+          const E = (id) => s.state.entities.find((e) => e.id === id);
+          lines.push({ line, ...ev, hero: { ...E('hero').position }, point: E('npc:fisher').gesture, tide: E('tide:fisher').look });
+        }
+      });
+    },
+  });
+  assert.deepEqual(failures, []);
+  const named = lines.filter((n) => n.points.length);
+  assert.deepEqual(named.map((n) => n.line), ['dlg.fisher.trial.n2', 'dlg.fisher.trial.n3', 'dlg.fisher.trial.n4']);
+  assert.deepEqual(named.map((n) => n.ids), [['stake:fisher:a', 'stake:fisher:b'], ['tide:fisher'], ['mark:fisher:end']]);
+  assert.equal(named[0].spots.length, 1, 'the row of the trap glows as a rim on the ground');
+  for (const n of named) assert.equal(n.point?.act, 'point', `${n.line}: the fisher points`);
+  assert.deepEqual(named.map((n) => n.tide), ['tide-0', 'tide-1', 'tide-0'], 'at the tide the water rises a little, and goes back');
+  assert.deepEqual(named.map((n) => n.bobs), [[], [], ['mark:fisher:end']], 'the red float bobs');
+  assert.deepEqual(lines.at(-1).points, [], 'the end of the talk ends the glow');
+  const { terrain } = planeOf(story.profile.seed, { blocks: load('data/world/blocks.json'), places: ['phu-dong'] });
+  const wu = (p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 });
+  for (const n of named) {
+    const pts = n.points.map(wu);
+    const hero = wu(n.hero);
+    for (const az of ANGLES) {
+      const steps = workTurn(workBoxes(terrain, pts), pts, az, VIEW.elevation);
+      const to = az + (steps * Math.PI) / 2;
+      const lead = leadFocus([hero, ...pts], { az: to, width: 390, height: 844, safe: TALK_SAFE });
+      assert.ok(lead.fits, `${n.line} from the angle ${ANGLES.indexOf(az)}: the things fit above the talk box`);
+      const size = viewSize(390, 844, lead.level);
+      for (const p of pts) assert.ok(inSafe(figureBox(p), lead.focus, { az: to, size, safe: TALK_SAFE }), `${n.line}: a named thing is under the talk box or off the screen`);
+    }
+  }
 });

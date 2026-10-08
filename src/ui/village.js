@@ -21,7 +21,7 @@ import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
 import { workBoxes, workTurn } from '../world/fade.js';
-import { VIEW, viewSize, inView, leadFocus } from '../world/view.js';
+import { VIEW, SAFE, TALK_SAFE, viewSize, inView, leadFocus } from '../world/view.js';
 import { heroLook, thingLook } from '../world/figures.js';
 import { tapTarget, thingUnder } from '../world/hit.js';
 import { h, img, button } from './dom.js';
@@ -1017,7 +1017,7 @@ export async function mountVillage(ctx, params = {}) {
       work = null;
       return heroAt;
     }
-    const lead = leadFocus([heroAt, ...work.points], { az: view.angle, width: size.width, height: size.height });
+    const lead = leadFocus([heroAt, ...work.points], { az: view.angle, width: size.width, height: size.height, safe: work.talk ? TALK_SAFE : SAFE });
     if (lead.level > view.state.level && !work.zoomed) {
       work.zoomed = true;
       view.setZoom(lead.level);
@@ -1224,6 +1224,15 @@ export async function mountVillage(ctx, params = {}) {
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
       case 'workView': turnToWork(ev.points, ev.sight); return;
+      // The things that a line of a talk names (#62): they glow, and the view shows them above the
+      // talk box. An empty list ends it.
+      case 'names':
+        figures.glow(ev.ids, ev.spots, ev.ids, ev.bobs);
+        if (ev.points.length) {
+          turnToWork(ev.points, ev.points);
+          work.talk = true;
+        } else if (work) work.talk = false;
+        return;
       case 'goalShow':
         updateHud();
         showPips();

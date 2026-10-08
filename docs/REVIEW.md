@@ -568,3 +568,8 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The names of the herbs, in the voice of the healer:** when the child takes a bunch, `healer.herb.ngai` ("Bó ngải cứu đây."), `healer.herb.tiato` ("Bó tía tô đây."), and `healer.herb.rauma` ("Bó rau má đây."). After a tap on a bed, `healer.bed.ngai` ("Đây là luống ngải cứu."), `healer.bed.tiato` ("Đây là luống tía tô."), and `healer.bed.rauma` ("Đây là luống rau má.").
 - **Please check:** the colors of perilla (tía tô): the palette of the prints has no purple, so its leaves are indigo below and green on top.
 - **How many bundles the teacher needs:** `teacher.need.1` to `teacher.need.4` ("Thầy cần một bó." to "Thầy cần bốn bó."), at the start of the task, while the pips of the goal bar light up.
+
+## The first time of a word, a calling card, and stars a child can read (#62)
+
+- **The fisher names each thing of the task while it glows:** `dlg.fisher.trial.n1` ("Giúp chú bắt cá ở sông nhé."), then `dlg.fisher.trial.n2` ("Đây là cái đăng: một hàng cọc trong sông. Chú cắm hai cọc đầu rồi."), `dlg.fisher.trial.n3` ("Lát nữa thủy triều lên: nước sông dâng cao."), and `dlg.fisher.trial.n4` ("Cháu cắm tiếp cọc tới cái phao đỏ này, đừng để khe nào rộng hơn khe của chú."). While a line shows, the fisher points at its thing, the thing glows, and the view shows it above the talk box.
+- **Please check:** "cái đăng" for the fish trap of stakes, and "thủy triều lên" for a river near the sea.
