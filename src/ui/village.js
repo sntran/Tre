@@ -11,6 +11,8 @@ import { keysToScreenDir, stickToScreenDir, screenToMap } from '../core/world/mo
 import { getEntity, query } from '../core/world/state.js';
 import { basketOf, counterLine } from '../core/items.js';
 import { levelOf } from '../core/growth.js';
+import { MINI, toMini, miniKind, onMini } from '../world/minimap.js';
+import { C } from '../render/palette.js';
 import { STEP } from '../core/world/step.js';
 import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, starOn, puddlesAt } from '../core/world/ambient.js';
 import { rainOf } from '../core/world/systems/sky.js';
@@ -427,7 +429,16 @@ export async function mountVillage(ctx, params = {}) {
   // A dark layer for the change of map, and the name of the new map.
   const fade = h('div', { class: params.arrive ? 'map-fade on' : 'map-fade' });
   const banner = params.arrive ? h('div', { class: 'map-name', text: t(mapData.nameKey) }) : null;
-  ctx.ui.append(duskTint, duskLayer, glowLayer, paper, raidLayer, marks, hud, turns, fade, ...(banner ? [banner] : []));
+  // The minimap in the corner (#8): the near places, the hero, and the stars. A tap opens the
+  // country map, as the map button does.
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  const miniCanvas = h('canvas', { class: 'minimap-canvas', width: MINI.size * DPR, height: MINI.size * DPR });
+  const miniBtn = h('button', { class: 'minimap', type: 'button', 'aria-label': t('ui.worldmap') }, [miniCanvas]);
+  miniBtn.addEventListener('click', () => {
+    ctx.log('action', { kind: 'travel' });
+    if (!busy) send({ type: 'travel' });
+  });
+  ctx.ui.append(duskTint, duskLayer, glowLayer, paper, raidLayer, marks, hud, miniBtn, turns, fade, ...(banner ? [banner] : []));
   if (params.arrive) {
     requestAnimationFrame(() => requestAnimationFrame(() => fade.classList.remove('on')));
     setTimeout(() => banner?.remove(), 2600);
@@ -1514,6 +1525,69 @@ export async function mountVillage(ctx, params = {}) {
     const half = Math.max(14, (feet.y - head.y) * 0.3);
     return { x0: feet.x - half, y0: head.y, x1: feet.x + half, y1: feet.y };
   }
+  // The minimap: the ground near the hero (again when the hero comes to a new cell or the view
+  // turns), and the dots of the hero, the people of the story, and the stars, about five times a
+  // second.
+  const mini = miniCanvas.getContext('2d');
+  let miniKey = '';
+  let miniAge = 0;
+  function drawMini(stars) {
+    if ((miniAge += 1) % 12 !== 0 || !alive) return;
+    const hp = hero().position;
+    const cx = hp.x / 2;
+    const cz = hp.z / 2;
+    const az = view.angle;
+    const s = MINI.size / (2 * MINI.radius);
+    const key = `${Math.floor(cx)}:${Math.floor(cz)}:${az.toFixed(2)}:${stars.length}`;
+    if (key === miniKey && miniAge % 60 !== 0) return;
+    miniKey = key;
+    mini.setTransform(DPR, 0, 0, DPR, 0, 0);
+    mini.clearRect(0, 0, MINI.size, MINI.size);
+    mini.save();
+    mini.beginPath();
+    mini.arc(MINI.size / 2, MINI.size / 2, MINI.size / 2, 0, Math.PI * 2);
+    mini.clip();
+    mini.fillStyle = C.paperDeep;
+    mini.fillRect(0, 0, MINI.size, MINI.size);
+    // The ground: the cells turned as the view (canvas rotate by the angle of the view).
+    mini.translate(MINI.size / 2, MINI.size / 2);
+    mini.rotate(az);
+    const hx = Math.floor(cx);
+    const hz = Math.floor(cz);
+    for (let dz = -MINI.radius; dz <= MINI.radius; dz++) {
+      for (let dx = -MINI.radius; dx <= MINI.radius; dx++) {
+        if (!onMini(dx, dz, MINI.radius + 1)) continue;
+        const x = hx + dx;
+        const z = hz + dz;
+        const type = tileMap.type(x, z);
+        if (!type) continue;
+        mini.fillStyle = C[miniKind(type, tileMap.solidAt(x, z))] ?? C.paperDeep;
+        mini.fillRect((x - cx) * s, (z - cz) * s, s + 0.4, s + 0.4);
+      }
+    }
+    mini.restore();
+    const dot = (p, color, r) => {
+      if (!onMini(p.x - cx, p.y - cz)) return;
+      const q = toMini(p.x - cx, p.y - cz, az);
+      mini.beginPath();
+      mini.arc(MINI.size / 2 + q.x, MINI.size / 2 + q.y, r, 0, Math.PI * 2);
+      mini.fillStyle = color;
+      mini.fill();
+      mini.lineWidth = 1;
+      mini.strokeStyle = C.ink;
+      mini.stroke();
+    };
+    // The people of the village, the stars of the story, and the hero in the middle.
+    for (const p of persons()) dot({ x: p.x, y: p.y }, C.paper, 2);
+    for (const m of stars) dot({ x: m.x, y: m.y }, C.yellow, 3.5);
+    dot({ x: cx, y: cz }, C.vermilion, 4);
+    // The rim of the print.
+    mini.beginPath();
+    mini.arc(MINI.size / 2, MINI.size / 2, MINI.size / 2 - 1, 0, Math.PI * 2);
+    mini.lineWidth = 2;
+    mini.strokeStyle = C.ink;
+    mini.stroke();
+  }
   function drawMarks() {
     if (starPulse && (starPulse.t -= 1 / 60) <= 0) starPulse = null;
     const hudRect = hud.getBoundingClientRect();
@@ -1558,6 +1632,7 @@ export async function mountVillage(ctx, params = {}) {
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
     }
     for (let i = stars; i < starPool.length; i++) starPool[i].hidden = true;
+    drawMini(busy ? [] : markers());
     // A small red pointer over each thing that a line of a talk names (#62): the glow alone does
     // not show on a thing in the water.
     let pointers = 0;

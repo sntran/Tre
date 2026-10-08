@@ -292,6 +292,7 @@ const FILES = [
   'src/world/fade.js',
   'src/world/hit.js',
   'src/world/marks.js',
+  'src/world/minimap.js',
   'src/world/sling.js',
   'src/world/figures.js',
   'src/world/fine.js',
