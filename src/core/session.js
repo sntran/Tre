@@ -2088,7 +2088,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const h = hero();
     if (screen || busy || h.fall) return null;
     if (raidOn()) return raidAction();
-    if (h.riding) return { act: 'ride-off', icon: 'ride-off', target: h.riding, run: () => worldCommand(state, { type: 'ride', id: 'hero' }) };
+    const getOff = () => worldCommand(state, { type: 'ride', id: 'hero' });
+    if (h.riding) {
+      // On Nghé, next to a person who can talk: the button shows the talk, and one press gets the
+      // hero down and opens the talk (#60).
+      const talk = candidates().find((c) => c.act === 'talk' && String(c.target).startsWith('npc:'));
+      if (talk) return { ...talk, run: () => { getOff(); talk.run(); } };
+      return { act: 'ride-off', icon: 'ride-off', target: h.riding, run: getOff };
+    }
     let list = candidates();
     // In a task, with no work in reach, the press walks the hero to the nearest work of the task:
     // the heap, the place for the thing in the hands, the anvil, the culms (#54). A talk, a look,

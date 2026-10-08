@@ -181,3 +181,26 @@ test('the fisher: at the row with empty hands, the look at the river is never th
   // A tap on the water next to the row is a tap on the place of the task (a check), so the look
   // waits for a tap on the river away from the work.
 });
+
+// On Nghé, a press next to a person talks (#60): the button shows the talk, and one press gets the
+// hero down and opens the talk. With no person in reach, the press gets the hero down.
+test('on Nghé next to a person, one press gets down and talks; with nobody near, it gets down', async () => {
+  let session = null;
+  const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'giong.spoke': true } };
+  await runHeadless({ name: 'x', profile, clock: 540, at: ['phu-dong', 30, 40], steps: [{ wait: 1 }] }, { onSession: (s) => { session = s; } });
+  const hero = () => getEntity(session.state, 'hero');
+  const nghe = session.state.entities.find((e) => e.follow?.target === 'hero');
+  // The hero gets on Nghé (as the button does it away from people) next to the healer.
+  Object.assign(nghe.position, { x: hero().position.x + 1, z: hero().position.z });
+  session.command({ type: 'ride', id: 'hero', mount: nghe.id });
+  session.events();
+  run(session, 1);
+  assert.ok(hero().riding, 'the hero rides Nghé');
+  const a = session.action();
+  assert.equal(a?.act, 'talk', `the button shows the talk: ${JSON.stringify(a)}`);
+  session.command({ type: 'hands' });
+  session.events();
+  run(session, 1);
+  assert.ok(!hero().riding, 'the hero gets down');
+  assert.equal(session.screen, 'dialogue', 'and the talk opens with the same press');
+});

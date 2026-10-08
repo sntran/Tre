@@ -62,6 +62,10 @@ A press does the act of the picture that the child saw. When the picture of the 
 
 While the task of a person is open, a look or a talk is the act of a press only when the child tapped that one (a tap on a thing of the map with a text chooses it). A tap on another thing of the task (a stake of the row) never makes the look at the river the act. With no work in reach, the press walks the hero to the work (#54).
 
+### On Nghé, one press talks (#60)
+
+On Nghé, when a person who can talk is in reach, the button shows the talk: one press gets the hero down and opens the talk. With no person in reach, the press gets the hero down, as before.
+
 ### The table of the tasks
 
 | Task | The targets, and the act at each one | The finish at the person (its picture) | The cue |
