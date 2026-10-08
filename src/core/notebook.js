@@ -61,3 +61,11 @@ export const entriesOfKey = (def, key) => def.entries.filter((e) => e.met === ke
 export function notebookCount(list) {
   return { have: list.filter((e) => e.met).length, all: list.length, sealed: list.filter((e) => e.sealed).length };
 }
+
+// The picture of a print that has no figure (an art key, art/<key>.svg): a place shows the map, and
+// a skill shows the picture of its subject (the subject names of data/skills.json).
+export const SUBJECT_ART = { math: 'ui/chalk', physical: 'ui/water', lifeEarth: 'ui/seedling', historyGeo: 'ui/quest' };
+export function printArt(entry) {
+  if (entry.kind === 'place') return 'ui/map';
+  return SUBJECT_ART[entry.subject] ?? 'ui/hint';
+}

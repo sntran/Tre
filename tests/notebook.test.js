@@ -1,7 +1,8 @@
 // The notebook (Sổ tay, #8): the fill rules of the prints (src/core/notebook.js, data/notebook.json).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { notebookOf, noteSeen, isMet, notebookCount, entriesOfKey, notebookSkills } from '../src/core/notebook.js';
+import { notebookOf, noteSeen, isMet, notebookCount, entriesOfKey, notebookSkills, printArt } from '../src/core/notebook.js';
+import { existsSync } from 'node:fs';
 import { createProfile } from '../src/core/profile.js';
 import { serialize, deserialize } from '../src/core/save.js';
 import { load } from './helpers.js';
@@ -90,4 +91,13 @@ test('in play, the notebook fills in: the talk of the fisher, the animals at the
   assert.ok(prints.includes('place:phu-dong'));
   assert.ok(prints.some((id) => id.startsWith('creature:')), 'an animal at the river');
   assert.equal(new Set(prints).size, prints.length, 'each print comes one time');
+});
+
+test('each skill print shows the picture of its subject, never the picture of a hint', () => {
+  for (const s of skills) {
+    const art = printArt({ kind: 'skill', subject: s.subject });
+    assert.notEqual(art, 'ui/hint', `${s.id}: the subject ${s.subject} has no picture`);
+    assert.ok(existsSync(new URL(`../art/${art}.svg`, import.meta.url)), `${s.id}: art/${art}.svg`);
+  }
+  assert.equal(printArt({ kind: 'place' }), 'ui/map');
 });

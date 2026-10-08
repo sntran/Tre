@@ -5,16 +5,12 @@ import { h, img, button } from './dom.js';
 import { t } from './i18n.js';
 import { speak } from './speak.js';
 import { portraitCanvas } from './portraits.js';
-import { notebookOf, notebookCount } from '../core/notebook.js';
-
-// The picture of a skill by its subject, and of a place.
-const SUBJECT_ART = { math: 'ui/chalk', sci: 'ui/water', hist: 'ui/seal' };
+import { notebookOf, notebookCount, printArt } from '../core/notebook.js';
 
 // The print of an entry: the figure of its look, the picture of a place, or of a subject.
 export function printOf(ctx, entry, size = 64) {
   if (entry.look && ctx.data.figures.figures[entry.look]) return portraitCanvas(ctx, ctx.data.figures.figures[entry.look], { framing: 'bust', size });
-  if (entry.kind === 'place') return img('ui/map', 'note-art');
-  return img(SUBJECT_ART[entry.subject] ?? 'ui/hint', 'note-art');
+  return img(printArt(entry), 'note-art');
 }
 
 // The pages of the notebook of a profile, as one element. A print that the child did not meet is a
