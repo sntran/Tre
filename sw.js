@@ -148,6 +148,7 @@ const FILES = [
   'i18n/vi.json',
   'index.html',
   'manifest.webmanifest',
+  'src/core/bubblevoice.js',
   'src/core/codec.js',
   'src/core/conditions.js',
   'src/core/dialogue.js',
