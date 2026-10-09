@@ -1780,6 +1780,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // onStuck: what a walk does when a person stops it on the way (a leg of a far walk plans again).
   const stucks = new Map(); // the token of a walk -> what it does when it is stuck
   let walkTick = -Infinity; // the tick of the last walk command
+  // The cells where a walk of the hero stopped (the event stuck): the next plans go around them
+  // for some seconds (#72: a walk to a star stopped behind a house, and each new plan took the
+  // same way and stopped there again). Key: the cell; value: the tick when it stops to count.
+  const stuckCells = new Map();
+  const STUCK_KEEP = 20; // seconds
+  function noteStuck(at) {
+    const until = state.tick + STUCK_KEEP / STEP;
+    const h = heroFrom();
+    for (const c of at ?? []) {
+      const x = Math.floor(c.x / 2);
+      const y = Math.floor(c.z / 2);
+      if (x !== h.x || y !== h.y) stuckCells.set(`${x},${y}`, until);
+    }
+  }
   function walkPath(path, end, onArrive, near = null, onStuck = null) {
     if (!path) return;
     const points = path.map((p) => ({ x: (p.x + 0.5) * 2, z: (p.y + 0.5) * 2 }));
@@ -1817,7 +1831,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The cell of the hero is never in a box: a hero who stands at the edge of a solid thing (a
     // culm, the mat) can always walk away from it (#44).
     const h = heroFrom();
-    const inBox = (x, y) => !(x === h.x && y === h.y) && (boxes.some((b) => (x + 0.5) * 2 > b.x0 - 0.5 && (x + 0.5) * 2 < b.x1 + 0.5 && (y + 0.5) * 2 > b.z0 - 0.5 && (y + 0.5) * 2 < b.z1 + 0.5)
+    for (const [k, until] of stuckCells) if (until <= state.tick) stuckCells.delete(k);
+    const inBox = (x, y) => !(x === h.x && y === h.y) && (stuckCells.has(`${x},${y}`) || boxes.some((b) => (x + 0.5) * 2 > b.x0 - 0.5 && (x + 0.5) * 2 < b.x1 + 0.5 && (y + 0.5) * 2 > b.z0 - 0.5 && (y + 0.5) * 2 < b.z1 + 0.5)
       || rounds.some((c) => Math.hypot((x + 0.5) * 2 - c.x, (y + 0.5) * 2 - c.z) < c.r) || gap(x, y));
     return Object.assign(Object.create(tileMap), {
       // The hero can always start from its own cell (in the water after a jump, at a thing).
@@ -1835,6 +1850,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const PERSON_FOLLOW = 4;
   const PERSON_NEAR = 3;
   const personNow = (p) => persons().find((x) => x.entity === p.entity) ?? p;
+  // A walk to a person (a tap on the person, or the end of a walk to the star of the person): a
+  // person who walks (to the station, home) is followed to where the person is now (#66: the walk
+  // to the healer ended where she stood at the tap). At the end the hero turns to the person, and
+  // the view shows the person and the hero near its middle (#72: the teacher was half off the
+  // screen at the end of the walk to his star).
+  function meetPerson(person, tries = PERSON_FOLLOW) {
+    chosen = { id: person.entity, along: null };
+    pendingPress = null;
+    walkToThing(personNow(person), () => {
+      const now = personNow(person);
+      if (tries > 0 && Math.hypot(now.x - heroCell().x, now.y - heroCell().y) > PERSON_NEAR) return meetPerson(person, tries - 1);
+      worldCommand(state, { type: 'face', id: 'hero', x: now.x * 2, z: now.y * 2 });
+      const e = getEntity(state, person.entity);
+      if (e) emit({ type: 'workView', key: `meet-${person.entity}`, points: [{ ...e.position }, { ...hero().position }], sight: [{ ...e.position }] });
+    });
+  }
   function walkToPerson(id) {
     const p = persons().find((x) => x.kind === 'npc' && x.ref === id);
     // A person who sleeps in the house is not there to talk to.
@@ -2820,18 +2851,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const person = persons().find((p) => p.entity === target.person);
       if (!person || (person.kind === 'encounter' && raidOn())) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
-      chosen = { id: person.entity, along: null };
-      pendingPress = null;
       // A press while the hero walks to the person (or to the enemies of an encounter) comes at the
-      // end of the walk, as at a place of a task (#50: a child presses at once). A person who walks
-      // (to the station, home): the walk goes on to where the person is now (#66: the walk to the
-      // healer ended where she stood at the tap).
-      const follow = (tries) => walkToThing(personNow(person), () => {
-        const now = personNow(person);
-        if (tries > 0 && Math.hypot(now.x - heroCell().x, now.y - heroCell().y) > PERSON_NEAR) return follow(tries - 1);
-        worldCommand(state, { type: 'face', id: 'hero', x: now.x * 2, z: now.y * 2 });
-      });
-      follow(PERSON_FOLLOW);
+      // end of the walk, as at a place of a task (#50: a child presses at once).
+      meetPerson(person);
       return;
     }
     const hit = target.ground;
@@ -2867,7 +2889,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     chosen = look ? { id: `look:${look.id}`, along: null } : null;
     // A tap on a star (or on its arrow at the edge of the screen): a walk all the way to the goal
     // along the roads, or to the ferry on the way (#53). A new tap, a talk, or a ferry stops it.
-    if (hit.goal && walkFar(hit)) return;
+    if (hit.goal) {
+      // The star of a person: the walk follows the person and ends next to the person (#72: the
+      // walk to the star of the teacher ended at the pile of planks, where he stood before).
+      const who = persons().find((q) => q.kind === 'npc' && Math.hypot(q.x - hit.x, q.y - hit.y) < STAR_PERSON);
+      if (walkFar(who ? { ...hit, person: who } : hit)) return;
+    }
     // A tap past an edge of the world (the deep sea, the mist): the walk stops at the edge.
     if (edgeAt(tile.x, tile.y)) {
       const stop = edgeStop(from, hit);
@@ -2902,6 +2929,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // ferry starts there. A new tap, a talk, or the ferry ends the walk (they end the arrival of the
   // leg). True when the hero walks or stands at the goal.
   const LEG = 2500; // the most cells of the search of one leg
+  const STAR_PERSON = 2.5; // cells: a star this near a person is the star of the person
+  const STAR_MEET = 10; // cells: this near the person of a star, the walk to the person takes over
   // The ferry that a far walk goes to: { final (the goal), at (the landing) }. A new tap on the same
   // goal keeps the way to that landing (#56: before, each new tap on the way along the bank turned
   // the walk back to the end of the sandbar, nearer to the star in a line). The ferry, or a tap on
@@ -2910,6 +2939,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function walkFar(goal, final = goal, waits = 0) {
     const from = heroFrom();
     const here = { x: from.x + 0.5, y: from.y + 0.5 };
+    // A walk to the star of a person: the goal is where the person is now, and near the person the
+    // walk to the person takes over (it ends next to the person, turned to the person).
+    if (final.person) {
+      const p = persons().find((q) => q.entity === final.person.entity);
+      if (p && Math.hypot(p.x - final.x, p.y - final.y) > 1) {
+        const moved = { ...final, x: p.x, y: p.y };
+        if (goal === final) goal = moved;
+        final = moved;
+      }
+      if (p && Math.hypot(p.x - here.x, p.y - here.y) <= STAR_MEET) {
+        meetPerson(p);
+        return true;
+      }
+    }
     if (goal === final && farPlan && Math.hypot(farPlan.final.x - final.x, farPlan.final.y - final.y) < 2) {
       const landing = landingToward(here, from, final);
       if (landing && !landing.part && Math.hypot(landing.at.x - farPlan.at.x, landing.at.y - farPlan.at.y) < 4) {
@@ -3425,6 +3468,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (ev.type === 'arrived' || ev.type === 'stuck') {
         const fn = arrivals.get(ev.token);
         arrivals.delete(ev.token);
+        // A leg of a far walk (a walk to a star) plans again around the place where it stopped.
+        if (ev.type === 'stuck' && stucks.has(ev.token)) noteStuck(ev.ahead);
         const again = ev.type === 'stuck' && fn ? stucks.get(ev.token) : null;
         stucks.delete(ev.token);
         if (again) again();

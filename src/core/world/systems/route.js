@@ -19,7 +19,8 @@ export function route(world, dt) {
     else r.still = 0;
     r.last = { x: p.x, z: p.z };
     const end = (type) => {
-      world.events.push({ type, id: e.id, token: r.token });
+      // A walk that is stuck tells the next points of its way (the walker plans around them).
+      world.events.push({ type, id: e.id, token: r.token, ...(type === 'stuck' ? { ahead: r.points.slice(0, 2).map((q) => ({ x: q.x, z: q.z })) } : {}) });
       delete e.route;
       delete e.intent;
     };
