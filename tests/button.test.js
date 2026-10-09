@@ -99,3 +99,55 @@ test('a press in the same step as the act of a press that waited does its own ac
   assert.equal(done, 2, 'the second press did its act');
   assert.equal(new Set(puts).size, 2, `two presses, two rods on the mat: ${puts.join(', ')}`);
 });
+
+test('during the walk to a tapped thing the button shows the act at the end of the walk, and a press during the walk does that act there and no other (#68)', async () => {
+  const session = await afterTalk('trial-scholar');
+  const hero = getEntity(session.state, 'hero');
+  const heap = getEntity(session.state, 'zone:rods');
+  const mat = getEntity(session.state, 'zone:mat').zone;
+  Object.assign(hero.position, { x: heap.position.x + 12, z: heap.position.z });
+  session.command({ type: 'tap', target: { thing: heap.zone.items[0] } });
+  session.events();
+  run(session, 0.3);
+  assert.ok(hero.route, 'the hero walks to the rod');
+  // The one move of the teacher (#63): a rod from the heap onto the mat.
+  const a = session.action();
+  assert.equal(`${a?.act} ${a?.target}`, 'put zone:mat', 'during the walk the picture is the act at the end of the walk');
+  const rods = mat.items.length;
+  const presses = [];
+  session.listen((e) => { if (e.type === 'press' || e.type === 'ride') presses.push(e); });
+  session.command({ type: 'hands', id: a.id });
+  session.events();
+  run(session, 10, () => presses.some((e) => e.done));
+  const done = presses.filter((e) => e.done);
+  assert.equal(done.length, 1, 'the press did one act');
+  assert.equal(`${done[0].id} ${done[0].act} ${done[0].target}`, `${a.id} put zone:mat`, 'the act of the picture at the end of the walk');
+  assert.ok(!presses.some((e) => e.type === 'ride'), 'no ride');
+  assert.equal(mat.items.length, rods + 1, 'one more rod on the mat');
+});
+
+test('a press of a picture whose act is gone does nothing: no other act, and the button pulses (#68)', async () => {
+  const session = await afterTalk('trial-scholar');
+  const hero = getEntity(session.state, 'hero');
+  const heap = getEntity(session.state, 'zone:rods');
+  const mat = getEntity(session.state, 'zone:mat').zone;
+  run(session, 1.5);
+  const a = session.action();
+  assert.equal(`${a?.act} ${a?.target}`, 'put zone:mat', 'the picture is the one move at the mat');
+  // The hero is far from the work before the press (the picture is old, and its act is out of
+  // reach).
+  Object.assign(hero.position, { x: heap.position.x + 40, z: heap.position.z });
+  delete hero.route;
+  run(session, 2.5);
+  const rods = mat.items.length;
+  const evs = [];
+  session.listen((e) => { if (['press', 'pulse', 'pick', 'put', 'ride'].includes(e.type)) evs.push(e); });
+  session.command({ type: 'hands', id: a.id });
+  session.events();
+  run(session, 2);
+  assert.ok(!evs.some((e) => e.type === 'press' && e.done), `no act: ${evs.map((e) => `${e.type}:${e.act ?? ''}`).join(' ')}`);
+  assert.ok(!evs.some((e) => ['pick', 'put', 'ride'].includes(e.type)), 'nothing moves');
+  assert.ok(evs.some((e) => e.type === 'pulse'), 'the button pulses');
+  assert.equal(mat.items.length, rods);
+  assert.equal(session.carried(), null);
+});
