@@ -982,6 +982,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     const a = pressed(id);
+    // The picture is a hold at the work (a slash), and the press walks there first.
+    if (a?.go && !busy) {
+      runAct(a, id ?? btn?.id ?? null);
+      return;
+    }
     if (!a?.hold || busy) return;
     holdAct = a;
     a.run();
@@ -2473,6 +2478,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (route) h.route = route;
     }
   }
+  // The act at the end of the walk of a press that walks to the work (go): the act of the button
+  // with the hero at the work (#68: the picture was the pick of a rod, and at the heap the press
+  // put a rod on the mat in one move). Null when no act of that task is there.
+  function actAfterGo(go) {
+    const h = hero();
+    const e = getEntity(state, go.target);
+    const tp = e?.zone ? standOf(e) : go.at;
+    if (!tp) return null;
+    const n = Math.hypot(h.position.x - tp.x, h.position.z - tp.z) || 1;
+    const at = e?.zone ? tp : { x: tp.x + ((h.position.x - tp.x) / n) * 1.5, z: tp.z + ((h.position.z - tp.z) / n) * 1.5 };
+    const keep = { x: h.position.x, z: h.position.z, facing: h.position.facing };
+    Object.assign(h.position, { x: at.x, z: at.z, facing: Math.atan2(go.at.x - at.x, go.at.z - at.z) });
+    try {
+      const a = action();
+      return a && !a.go && taskOfCandidate(a) === taskOfCandidate(go) ? a : null;
+    } finally {
+      Object.assign(h.position, keep);
+    }
+  }
   // The act of the button now, with its id. The id stays while the act (its kind and its target)
   // stays, also when a walk to the target ends.
   function button() {
@@ -2484,16 +2508,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (!ofTap(a)) a = actAtEnd();
       deferred = Boolean(a);
     }
-    const key = actKey(a);
+    // A press that walks to the work: the picture is the act there (show), and the press does that
+    // act at the end of the walk.
+    const show = a?.go ? actAfterGo(a) ?? a : a;
+    const key = actKey(show);
     if (btn && key === btn.key) {
       btn.a = a;
+      btn.show = show;
       btn.deferred = deferred;
       // A tap of the child on its thing makes the picture the choice of the child.
       if (ofTap(a)) btn.child = true;
       return btn;
     }
     const child = (state.tick - lastChild) * STEP < CHILD_CHANGE || ofTap(a);
-    btn = { id: ++btnSeq, key, a, deferred, t: state.tick, child, prev: btn?.key ?? null, first: !btn };
+    btn = { id: ++btnSeq, key, a, show, deferred, t: state.tick, child, prev: btn?.key ?? null, first: !btn };
     btnAll = [...btnAll.filter((b) => (state.tick - b.t) * STEP < KEEP_ACTS), btn];
     return btn;
   }
@@ -2539,9 +2567,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (!walked) hold(true, id);
       return;
     }
+    // A press that walks to the work: the act of its picture comes at the end of the walk.
+    if (a.go) {
+      a.run();
+      if (pendingPress) {
+        pendingPress.key = btn?.a?.go && btn.a.target === a.target ? btn.key : actKey(a);
+        emit({ type: 'press', id, act: null, wait: true, done: false });
+        return;
+      }
+    }
     // The hero turns to the target of the act (a place behind the hero, #44).
     if (a.at && a.act !== 'ride' && a.act !== 'ride-off') worldCommand(state, { type: 'face', id: 'hero', x: a.at.x, z: a.at.z });
-    a.run();
+    if (!a.go) a.run();
     // The act on the target of the last tap is done: the next press chooses again (#47: the next
     // press never takes back what was just put there).
     if (!a.go && ofTap(a)) chosen = null;
@@ -3560,10 +3597,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // walk to the tapped thing.
     action() {
       const b = button();
-      const a = b.a;
+      const a = b.show ?? b.a;
       if (!a) return null;
       const zone = getEntity(state, a.target)?.zone;
-      return { id: b.id, act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold), ghost: a.ghost ?? null, spot: zone && zone.rule !== 'span' ? spotOf(zone) : null, walk: b.deferred };
+      return { id: b.id, act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold), ghost: a.ghost ?? null, spot: zone && zone.rule !== 'span' ? spotOf(zone) : null, walk: b.deferred || Boolean(b.a?.go) };
     },
     // The place of a task under a map point (cells), or null: a tap there chooses the place.
     placeAt: (x, y) => workZoneAt(x * 2, y * 2)?.id ?? null,
