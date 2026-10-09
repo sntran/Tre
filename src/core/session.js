@@ -2728,6 +2728,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       p.n -= 1;
       p.t = state.tick;
       if (p.n <= 0) pendingPress = null;
+      // The act is of the child (a press of the child): the next picture is a change of the child
+      // and is the act at once (#68: after a pick at the end of a walk, the next press did nothing).
+      lastChild = state.tick;
       runAct(a, p.id, true);
       return;
     }

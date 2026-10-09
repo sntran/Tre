@@ -151,3 +151,42 @@ test('a press of a picture whose act is gone does nothing: no other act, and the
   assert.equal(mat.items.length, rods);
   assert.equal(session.carried(), null);
 });
+
+test('after a press that waited does its act at the end of the walk, the next picture is the change of the child: a press at once does it (#68)', async () => {
+  let session = null;
+  const failures = await runHeadless({ name: 'button-walked', profile: { name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'trial.fisher.done': true } }, clock: 540, at: ['phu-dong', 46, 61], steps: [{ until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } }, { read: true }, { press: { guess: 3 } }, { until: { event: 'guess', timeout: 5 } }, { wait: 2 }] }, { onSession: (s) => { session = s; } });
+  assert.deepEqual(failures, []);
+  const hero = getEntity(session.state, 'hero');
+  const pile = getEntity(session.state, 'zone:bridge-pile');
+  Object.assign(hero.position, { x: pile.position.x - 10, z: pile.position.z });
+  run(session, 0.5);
+  const plank = pile.zone.items[0];
+  session.command({ type: 'tap', target: { thing: plank } });
+  session.events();
+  run(session, 0.3);
+  const a = session.action();
+  assert.equal(a?.act, 'pick');
+  const presses = [];
+  session.listen((e) => { if (e.type === 'press') presses.push(e); });
+  session.command({ type: 'hands', id: a.id });
+  session.events();
+  for (let i = 0; i < 15 / STEP && !session.carried(); i++) {
+    session.step();
+    session.events();
+  }
+  assert.ok(session.carried(), 'the press that waited picked the plank');
+  // The child presses again at once (in less than half a second).
+  for (let i = 0; i < 3; i++) {
+    session.step();
+    session.events();
+  }
+  const b = session.action();
+  assert.ok(b && b.id !== a.id, 'a new picture');
+  presses.length = 0;
+  session.command({ type: 'hands', id: b.id });
+  session.events();
+  run(session, 1, () => presses.some((e) => e.done));
+  const done = presses.find((e) => e.done);
+  assert.ok(done, `the press does the act of the new picture at once: ${b.act} ${b.target}`);
+  assert.equal(`${done.act} ${done.target}`, `${b.act} ${b.target}`);
+});
