@@ -128,13 +128,18 @@ async function listenPresses() {
     const s = window.tre?.activeVillage?.session;
     if (!s || window.__pressOf === s) return false;
     window.__pressOf = s;
+    // A thing like another one: the same kind and size, of the same task (the stakes of one heap).
+    window.__likeOf = (target) => {
+      const it = window.tre?.activeVillage?.state().entities.find((x) => x.id === target)?.item;
+      return it ? `${it.kind}:${it.size ?? ''}:${it.task ?? ''}` : target;
+    };
     window.__pressGen = gen;
     window.__presses ??= [];
     window.__pressCount ??= 0;
     s.listen((e) => {
       if (e.type !== 'press') return;
       window.__pressCount += 1;
-      window.__presses.push({ gen, id: e.id, act: e.act ? `${e.act}|${e.target}` : '', done: e.done, wait: Boolean(e.wait) });
+      window.__presses.push({ gen, id: e.id, act: e.act ? `${e.act}|${e.target}` : '', like: e.act ? `${e.act}|${window.__likeOf(e.target)}` : '', done: e.done, wait: Boolean(e.wait) });
     });
     return true;
   }, nextGen).catch(() => false);
@@ -144,7 +149,9 @@ async function pictureOfButton(step) {
   await listenPresses();
   return page.evaluate((step) => {
     const b = document.querySelector('.act-btn');
-    return { step, gen: window.__pressGen ?? 0, id: b?.dataset.actId ? Number(b.dataset.actId) : null, shown: b?.dataset.act ?? '' };
+    const shown = b?.dataset.act ?? '';
+    const [act, target] = shown.split('|');
+    return { step, gen: window.__pressGen ?? 0, id: b?.dataset.actId ? Number(b.dataset.actId) : null, shown, like: shown && window.__likeOf ? `${act}|${window.__likeOf(target)}` : shown };
   }, step).catch(() => ({ step, gen: 0, id: null, shown: '' }));
 }
 // The press events since the last read belong to the step that ran then.
@@ -159,7 +166,9 @@ function checkPresses() {
     const end = presses[k + 1]?.step ?? Infinity;
     p.events = pressEvents.filter((e) => e.gen === p.gen && e.id === p.id && e.step >= p.step && e.step < end);
     for (const e of p.events) {
-      if (e.done && e.act !== p.shown) problems.push(`step ${p.step}: the button showed "${p.shown}", and the press did "${e.act}"`);
+      // The same act on a like thing is the act of the picture (#68: the walk to a tapped stake can
+      // end at another stake of the heap).
+      if (e.done && e.act !== p.shown && e.like !== p.like) problems.push(`step ${p.step}: the button showed "${p.shown}", and the press did "${e.act}"`);
     }
     // A press on an act that the button showed is never refused at once (a press that waits for the
     // end of a walk can do nothing there, when the walk ends stuck).
