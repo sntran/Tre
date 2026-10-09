@@ -288,6 +288,18 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // stuck child who does not ask), and a hero who leaves the station soon after a miss.
   function tick() {
     const t = now();
+    // While a screen is open (a talk box), the world and the scripts wait, and so do the moves that
+    // wait. A move that is due while the count of the child's work still plays waits for the end of
+    // the count (#69: a talk box stopped the count at four, and then the demo started and ended the
+    // count; the child took four as the count of the mat).
+    // The idle time of the child waits too: the time of a box is no idle time.
+    if (world()?.paused) {
+      for (const d of delayed) d.at += STEP;
+      for (const tr of tracks.values()) tr.lastAct += STEP;
+      return;
+    }
+    const counting = (key) => getEntity(world(), `script:${key}`)?.script.move === 'count';
+    for (const d of delayed) if (d.at <= t && counting(d.key)) d.at = t + STEP;
     const due = delayed.filter((d) => d.at <= t);
     delayed = delayed.filter((d) => d.at > t);
     for (const d of due) doMove(d.key, d.move, d.info);

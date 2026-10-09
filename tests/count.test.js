@@ -70,6 +70,43 @@ test('the teacher: after each wrong tie, he counts the rods on the mat before an
   }
 });
 
+// A talk box in the middle of the count stops the world: the count waits with it, and the next
+// move of the teacher comes only after the last number (#69: the children heard "một … bốn", and
+// then the demo; they took four as the count of the mat).
+test('the teacher: a talk box in the middle of the count never cuts it (9, 11, and 14 rods)', async () => {
+  const session = await afterTalk('trial-scholar');
+  const mat = () => getEntity(session.state, 'zone:mat').zone.items.length;
+  run(session, 20, () => !session.carried() && mat() === 0);
+  const moves = [];
+  session.listen((ev) => { if (ev.type === 'mentor') moves.push(ev.move); });
+  for (const n of [9, 11, 14]) {
+    // After a wrong tie the extra rods roll back: the presses fill the mat again to n.
+    for (let k = 0; k < 30 && mat() < n; k++) press(session, 1, 1.2);
+    run(session, 5, () => mat() >= n);
+    assert.equal(mat(), n, 'the rods on the mat');
+    tapAndPress(session, { person: 'npc:teacher' });
+    const lines = [];
+    const off = session.listen((ev) => { if (ev.type === 'open' && ev.screen === 'callout' && ev.id === 'npc:teacher') lines.push(ev.textKey); });
+    run(session, 30, () => lines.includes('num.3'));
+    // A box opens for ten seconds (the world waits, as with a talk box in the browser).
+    session.state.paused = true;
+    for (let i = 0; i < 10 / STEP; i++) {
+      session.step();
+      session.events();
+    }
+    session.state.paused = false;
+    run(session, 45);
+    off();
+    const nums = lines.filter((l) => /^num\./.test(l));
+    assert.deepEqual(nums.slice(0, n), Array.from({ length: n }, (_, i) => `num.${i + 1}`), `${n} rods: ${lines.join(' ')}`);
+    const last = lines.indexOf(`num.${n}`);
+    const other = lines.findIndex((l) => !/^num\./.test(l) && !/mark/.test(l));
+    assert.ok(other === -1 || other > last, `${n} rods: the count comes first: ${lines.join(' ')}`);
+    run(session, 30, () => !getEntity(session.state, 'script:trial-scholar') && !getEntity(session.state, 'zone:trial-scholar').zone.spring);
+  }
+  assert.ok(moves.some((m) => !['mark', 'wait', 'count'].includes(m)), `a move after the count at a higher level: ${moves.join(' ')}`);
+});
+
 test('the healer: after a wrong give, she counts each row before any other help', async () => {
   const session = await afterTalk('trial-healer');
   for (let k = 0; k < 2; k++) {
