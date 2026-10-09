@@ -16,6 +16,7 @@ import { stepFollower, moveCircle, faceOf, MOVE } from '../move.js';
 
 const SHAKE = 1.6; // seconds of a shake of the head
 const NEAR_HERO = 0.6; // half blocks: Nghé on the hero (nearer than this) steps past or away
+const PERSON_CLEAR = 1; // half blocks: Nghé stays this far out of the body of a person
 
 export function follow(world, dt, rng, env) {
   const hot = query(world, 'hot', 'position');
@@ -128,6 +129,30 @@ export function follow(world, dt, rng, env) {
       if (env.canEnter('land', p, to)) {
         p.x = to.x;
         p.z = to.z;
+      }
+    }
+    // Never in a person: Nghé in the body of a person (behind the hero at the anvil, in the place of
+    // the smith) steps out to the side of the person where it is (#72: the calf stood inside the
+    // smith).
+    for (const q of query(world, 'person', 'position')) {
+      if (q.hidden) continue;
+      const clear = (q.solid?.r ?? 1.8) + PERSON_CLEAR;
+      const qx = p.x - q.position.x;
+      const qz = p.z - q.position.z;
+      const qd = Math.hypot(qx, qz);
+      if (qd >= clear) continue;
+      // Out on the side of Nghé, or (in the middle) on the side away from the hero.
+      const hx = q.position.x - leader.position.x;
+      const hz = q.position.z - leader.position.z;
+      const hd = Math.hypot(hx, hz);
+      const [ux, uz] = qd > 1e-3 ? [qx / qd, qz / qd] : hd > 1e-3 ? [hx / hd, hz / hd] : [1, 0];
+      const sides = [[ux, uz], [-uz, ux], [uz, -ux], [-ux, -uz]];
+      for (const [sx, sz] of sides) {
+        const to = { x: q.position.x + sx * clear, z: q.position.z + sz * clear };
+        if (!env.canEnter('land', p, to)) continue;
+        p.x = to.x;
+        p.z = to.z;
+        break;
       }
     }
     p.y = env.groundY(p.x / 2, p.z / 2);

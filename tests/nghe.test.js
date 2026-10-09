@@ -80,6 +80,19 @@ test('Nghé steps back from the fire of the forge', () => {
   assert.ok(Math.hypot(nghe.position.x - 30, nghe.position.z - 30) >= 6.5, 'Nghé is out of the heat');
 });
 
+test('Nghé never stands in a person: in the body of the smith, Nghé steps out (#72)', () => {
+  const w = world();
+  addEntity(w, { id: 'npc:smith', person: { kind: 'npc', ref: 'smith' }, position: { x: 30, y: 6, z: 30, facing: 0 }, motion: { vx: 0, vz: 0, speed: 0 }, solid: { r: 1.8 } });
+  command(w, { type: 'place', id: 'hero', x: 26, z: 30 });
+  step(w, STEP, env);
+  const nghe = getEntity(w, 'friend:nghe');
+  for (const at of [{ x: 30, z: 30 }, { x: 30.5, z: 29.5 }, { x: 28.6, z: 30 }]) {
+    Object.assign(nghe.position, at);
+    run(w, 0.5);
+    assert.ok(Math.hypot(nghe.position.x - 30, nghe.position.z - 30) >= 2.7, `out of the smith from ${JSON.stringify(at)}: ${nghe.position.x.toFixed(2)}, ${nghe.position.z.toFixed(2)}`);
+  }
+});
+
 test('Nghé lies down beside the hero when the hero rests at night', () => {
   const w = world(22 * 60);
   run(w, 4);
