@@ -378,7 +378,9 @@
       "lines": {
         "show": "mentor.show.fisher",
         "first": "mentor.fisher.first",
-        "mark": "mentor.fisher.mark"
+        "mark": "mentor.fisher.mark",
+        "carry": "mentor.carry.fisher",
+        "wait": "fisher.tide.wait"
       }
     },
     "trial-healer": {
@@ -391,7 +393,9 @@
         "first": "mentor.healer.first",
         "mark": "mentor.healer.mark",
         "smaller": "mentor.healer.smaller",
-        "share": "mentor.healer.share"
+        "share": "mentor.healer.share",
+        "none": "mentor.healer.none",
+        "putEach": "healer.put"
       }
     },
     "trial-woodcutter": {

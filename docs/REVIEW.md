@@ -619,3 +619,10 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The demonstration comes one time, and it ends in words that a child knows:** `mentor.scholar.demoDone` ("Đủ {n} que, thầy buộc được.", "Đủ mười que, thầy buộc được.") in place of "Đấy, vừa khít.".
 - **The teacher counts his own rods:** `mentor.scholar.smallerPut` ("Thầy đặt {n} que. Con đặt tiếp nhé.") after he puts his rods one at a time and counts them aloud, in place of "Thầy đặt giúp con mấy que trước, con đặt nốt nhé."; and `mentor.scholar.sharePut` ("Thầy đặt {n} que, con đặt {m} que nhé.", for example "Thầy đặt năm que, con đặt năm que nhé.") in place of "Thầy với con cùng đếm nhé: thầy một nửa, con một nửa.".
 - **Please check:** "con đặt tiếp" in place of "con đặt nốt", and "Thừa hai que".
+
+## The smith, the healer, and the fisher (#70)
+
+- **The smith says why the iron bent:** `smith.bend.early` ("Sắt chưa đủ nóng, nên cong.") and `smith.bend.late` ("Sắt nguội mất rồi, nên cong."). The line `mentor.picture.smith` ("Ra sông xem chú đánh cá một lát, rồi quay lại cũng được.") now comes only after the iron of the child was hot one time.
+- **An empty row of the basket has a word:** `mentor.healer.none.ngai` ("Ngải cứu: chưa có bó nào."), `mentor.healer.none.tiato` ("Tía tô: chưa có bó nào."), and `mentor.healer.none.rauma` ("Rau má: chưa có bó nào."). Each put of the healer in a shared task says `healer.put.*` ("Rau má vào giỏ rồi.").
+- **The fisher, with a stake in the hands:** `mentor.carry.fisher` ("Cắm cái cọc này lên hàng nhé."), or `fisher.tide.wait` while the tide is in. After a wrong row: `mentor.fisher.mark` is now "Chỗ này hở quá, cá chui ra mất." in place of "Cháu nhìn khe này nhé: không khe nào được rộng hơn khe của chú.".
+- **Please check:** "hở quá" and "cá chui ra mất".

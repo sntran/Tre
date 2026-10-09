@@ -158,7 +158,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     }, fam, cfg);
     if (r.help) log('help', r.help);
     for (const c of r.checks) log('check', { task: key, changed: c.changed });
-    Object.assign(tr, { firstAct: null, lastCommit: t, lastAct: t, acted: false, left: false });
+    Object.assign(tr, { firstAct: null, lastCommit: t, lastAct: t, acted: false, left: false, target: input.target });
     emit({ type: 'mentor', key, diagnosis: r.diagnosis, move: r.move, level: r.level, remembered: r.remembered });
     // The answer of the world to a wrong try comes first, at each help level (#64): the person
     // counts the child's own work on the place (the rods on the mat, each row of the basket) and
@@ -411,7 +411,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // The thing of the task is in the hands (the sticks after the right cut): the line is the
       // next step with it, toward its place (#57), not the first step.
       const place = task.place?.position ?? task.at;
-      say(t, defOf(key).lines.carry);
+      // No place takes the thing now (the tide is in at the row of the fisher): the person says why
+      // (#70: with a stake in the hands, the child heard "take a stake from the heap" four times).
+      const tide = task.tz?.zone.tide;
+      const waits = Boolean(defOf(key).lines.wait && tide && tide.phase !== 'low');
+      say(t, waits ? defOf(key).lines.wait : defOf(key).lines.carry);
       point(t, place, 1.4);
       mark(t, place, 2.5);
       t += 2;
@@ -554,8 +558,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       const kinds = task.place.zone.kinds;
       const each = Math.round((info.target ?? kinds.length * 2) / kinds.length);
       let at = t + 1;
+      const none = task.byNghe ? null : defOf(task.key)?.lines?.none;
       kinds.forEach((k, row) => {
         const bunches = parts.filter((e) => e.item.kind === `herb-${k}`);
+        // An empty row has a word too (#70: the third kind had no bunch, and nobody said it).
+        if (!bunches.length && none) s.say(at + 0.1, `${none}.${k}`);
         bunches.forEach((e, i) => {
           s.point(at, e.position, COUNT_PACE);
           s.mark(at, e.position, COUNT_PACE + 0.3);
@@ -661,7 +668,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (fam.reader === 'each') {
       // The basket: a part of each kind that is short.
       const kinds = task.place?.zone.kinds ?? [];
-      const each = Math.round((info.target ?? 0) / Math.max(1, kinds.length));
+      // A move with no try just now (a wave, the debug panel): the target of the last try.
+      const each = Math.round((info.target ?? tracks.get(task.key)?.target ?? 0) / Math.max(1, kinds.length));
       const counts = Object.fromEntries(kinds.map((k) => [k, itemsOf(task.place).filter((e) => e.item.kind === `herb-${k}`).length]));
       for (const k of kinds) {
         const short = Math.max(0, each - counts[k]);
@@ -693,12 +701,17 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       if (n) s.say(t, after, { n: { key: `num.${n}` }, m: { key: `num.${Math.max(1, target - have - n)}` } });
       return t + 2.5;
     }
+    // The line of each put (the healer, #70: "Rau má vào giỏ rồi."), at the pace of a put that a
+    // child can follow.
+    const each = task.byNghe ? null : defOf(task.key)?.lines?.putEach;
+    const pace = each ? PUT_PACE : 0.8;
     picks.forEach((e, k) => {
-      const at = t + k * 0.8;
-      s.point(at, task.at, 0.8);
+      const at = t + k * pace;
+      s.point(at, task.at, pace);
       s.steps.push({ at: at + 0.3, put: { zone: task.place.id, item: e.id, person: task.person?.id ?? 'hero' } });
+      if (each) s.say(at + 0.4, `${each}.${String(e.item.kind).replace(/^herb-/, '')}`);
     });
-    return t + picks.length * 0.8 + 0.5;
+    return t + picks.length * pace + 0.5;
   }
 
   return {

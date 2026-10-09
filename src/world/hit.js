@@ -12,6 +12,7 @@ export const PERSON_PAD = 10; // screen pixels around the box of a person
 export const PERSON_PAD_AT_PLACE = -6; // next to a place of a task: only the body of the person
 export const FRIEND_PAD = 8; // screen pixels around Nghé
 export const PERSON_HEIGHT = 1.8; // blocks: a person when the renderer does not give the height
+export const BODY_DEPTH = 0.4; // blocks: a person this far behind a thing still stands on it
 
 // The camera of the view: it looks at the focus (blocks) from the angle az, at a zoom level, on a
 // screen of width x height pixels. project: a world point to a screen point (pixels from the top
@@ -171,7 +172,8 @@ function heapThingNear(things, hit) {
 // - inTask: a task or a folk game goes on now; carrying: a thing is in the hands of the hero;
 //   raidAt(p): the target of a raid (optional).
 // The order: a plank outline, a target of a raid, a thing of the hamlet; then a thing, but a place
-// of a task wins over a thing that only touches the finger with its margin (#47); then Nghé (not
+// of a task wins over a thing that only touches the finger with its margin (#47), and the body of
+// a person on the thing or in front of it wins over the thing (#70); then Nghé (not
 // in a task: in a task a tap on Nghé is a tap on what is under or behind Nghé, #47); then a place
 // of a task under the finger; then a person (next to a place of a task, only the body of the
 // person); then the ground.
@@ -194,7 +196,15 @@ export function tapTarget(p, w) {
   const onRow = row ? rowUnder(p, w.cam, row) : null;
   const inPlace = onRow || (hit && w.placeAt(hit.x, hit.y, 0));
   const thing = thingUnder(p, w.cam, w.things);
-  if (thing && (thing.inside || !inPlace)) return thing.e.item.fixed ? { thing: thing.e.id, along: thing.along } : { thing: thing.e.id };
+  if (thing && (thing.inside || !inPlace)) {
+    // A person whose body is under the finger and who stands on the thing or in front of it: the
+    // tap is for the person (#70: the healer stood on her bed of rau má, and each tap on her chose
+    // the bed, so the child could not give the basket).
+    const body = figureUnder(p, w.cam, (w.persons ?? []).filter((q) => !String(q.id).startsWith('encounter:')), PERSON_PAD_AT_PLACE);
+    const q = thing.e.position;
+    if (body && w.cam.nearness(body.x, body.y, body.z) >= w.cam.nearness(q.x / 2, q.y / 2, q.z / 2) - BODY_DEPTH) return { person: body.id };
+    return thing.e.item.fixed ? { thing: thing.e.id, along: thing.along } : { thing: thing.e.id };
+  }
   // The ground between the things of a heap: the nearest thing of the heap (a heap has no rect).
   const heaped = hit && !inPlace ? heapThingNear(w.things, hit) : null;
   if (heaped) return { thing: heaped.id };

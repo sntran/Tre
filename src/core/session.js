@@ -2021,8 +2021,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const healer = getEntity(state, 'npc:healer');
     if (!healer || !/^herb-(ngai|tiato|rauma)$/.test(kind)) return;
     const key = `healer.${what}.${kind.slice(5)}`;
-    herbSaid = herbSaid.key === key ? { key, n: herbSaid.n + 1 } : { key, n: 1 };
-    if (herbSaid.n > HERB_RUN) return;
+    // Only the line of a pick has the limit: the line of a put says what happened, and it always
+    // comes (#70: at four of each kind, the fourth put was silent, and the child did not know that
+    // the bunch went in).
+    if (what !== 'put') {
+      herbSaid = herbSaid.key === key ? { key, n: herbSaid.n + 1 } : { key, n: 1 };
+      if (herbSaid.n > HERB_RUN) return;
+    }
     emit({ type: 'open', screen: 'callout', id: healer.id, textKey: key, params: {} });
   }
   // A task or a folk game goes on now.
