@@ -2556,7 +2556,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     pendingPress.t ??= state.tick;
     const a = busy || screen ? null : action();
     const p = pendingPress;
-    if (a && (actKey(a) === p.key || (p.task && !WORKLESS.has(a.act) && taskOfCandidate(a) === p.task))) {
+    // A press during the walk to a tapped thing does the act of its picture, and no other act (#68:
+    // the picture was the pick of a bunch, and at the end of the walk the press put it in the
+    // basket). A press that walked to the work does the work of its task there.
+    if (a && (p.key ? actKey(a) === p.key : p.task && !WORKLESS.has(a.act) && taskOfCandidate(a) === p.task)) {
       // One act in each step; the next press of the walk in a next step (after a pick, a put).
       p.n -= 1;
       p.t = state.tick;
