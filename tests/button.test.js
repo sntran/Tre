@@ -68,3 +68,34 @@ test('a full mat takes no rod: the button never shows a put that the world refus
   run(session, 4, () => !session.carried());
   assert.equal(session.carried(), null, 'the rod is back on its heap');
 });
+
+test('a press in the same step as the act of a press that waited does its own act on a new thing, not the act on the same thing again (#68)', async () => {
+  const session = await afterTalk('trial-scholar');
+  const hero = getEntity(session.state, 'hero');
+  // The hero stands a few steps away from the heap of rods, and the child taps a rod there.
+  const heap = getEntity(session.state, 'zone:rods');
+  Object.assign(hero.position, { x: heap.position.x + 12, z: heap.position.z });
+  session.command({ type: 'tap', target: { thing: heap.zone.items[0] } });
+  session.events();
+  run(session, 0.2);
+  let done = 0;
+  const puts = [];
+  session.listen((e) => {
+    if (e.type === 'press' && e.done) done += 1;
+    if (e.type === 'put' && e.id === 'hero') puts.push(e.item);
+  });
+  // The first press during the walk waits for the end of the walk.
+  session.command({ type: 'hands' });
+  session.events();
+  for (let i = 0; i < 10 / STEP && !done; i++) {
+    session.step();
+    session.events();
+  }
+  assert.equal(done, 1, 'the press that waited did its act');
+  // The second press comes in the same step: the world did not take the first act yet.
+  session.command({ type: 'hands' });
+  session.events();
+  run(session, 2);
+  assert.equal(done, 2, 'the second press did its act');
+  assert.equal(new Set(puts).size, 2, `two presses, two rods on the mat: ${puts.join(', ')}`);
+});

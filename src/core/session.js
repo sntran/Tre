@@ -2448,6 +2448,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // A press during a walk: { key (the act of the picture), task (the work of a press that walks to
   // the work), t (the tick when the walk ended) }.
   let pendingPress = null;
+  // The step of the last act of a press: the world takes the act in its next step. A press in the
+  // same step waits for that step, so that its act is on the world after the first act (#68: two
+  // presses in one step put the same bunch in the basket two times, and only one bunch was there).
+  let actTick = -1;
   const actKey = (a) => (a ? `${a.act}|${a.target}` : null);
   // The hero walks (a route; or a walk command that the world takes in its next step), or a far
   // walk waits for the land or for a person on the way.
@@ -2558,6 +2562,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       emit({ type: 'press', id: pid, act: null, done: false });
       return;
     }
+    if (actTick === state.tick && !a.hold && !a.go) {
+      const key = actKey(a);
+      pendingPress = pendingPress?.key === key ? { ...pendingPress, n: pendingPress.n + 1 } : { key, task: null, t: null, n: 1, id: pid };
+      emit({ type: 'press', id: pid, act: null, wait: true, done: false });
+      return;
+    }
     runAct(a, pid);
   }
   // walked: the act comes at the end of a walk. An act that goes on while the button is down (a
@@ -2578,7 +2588,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     // The hero turns to the target of the act (a place behind the hero, #44).
     if (a.at && a.act !== 'ride' && a.act !== 'ride-off') worldCommand(state, { type: 'face', id: 'hero', x: a.at.x, z: a.at.z });
-    if (!a.go) a.run();
+    if (!a.go) {
+      a.run();
+      actTick = state.tick;
+    }
     // The act on the target of the last tap is done: the next press chooses again (#47: the next
     // press never takes back what was just put there).
     if (!a.go && ofTap(a)) chosen = null;
