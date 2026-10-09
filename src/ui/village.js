@@ -1108,7 +1108,7 @@ export async function mountVillage(ctx, params = {}) {
   // The mat of the teacher (#69): while the child works next to it, the view comes closer, so that
   // each rod on the mat is at least 8 pixels wide on a phone, and the middle of the view is between
   // the hero and the mat.
-  const MAT_CLOSE = 0.68;
+  const MAT_CLOSE = 0.6;
   const MAT_NEAR = 7; // world units from the middle of the mat
   function matFocus(heroAt) {
     const mat = getEntity(state, 'zone:mat');
