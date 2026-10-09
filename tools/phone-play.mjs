@@ -3,7 +3,8 @@
 // screen. No story command, no keyboard, and no teleport. The tool saves the frames of the play,
 // and it fails when the page has an error or a warning, when the frame loop stops, when a tap on
 // free ground that the hero can walk to does not move the hero, when a tap on a place of a task
-// does not choose it, or when a portrait in a frame stays empty.
+// does not choose it, when a portrait in a frame stays empty, or when a press of the big button
+// does an act that is not the picture that was on the button just before the press (#68).
 // Run it from the root of the repository with a local server on port 8123
 // (python3 -m http.server 8123), and Playwright (npm install playwright, or a global one):
 //   node tools/phone-play.mjs <plan.json> [--out <folder>] [--base <URL>] [--three <three.module.min.js>]
@@ -19,8 +20,10 @@
 //   { "tap": { "stem": 4 } }     a tap on the stem of the woodcutter, 4 half blocks from its start
 //   { "tap": { "row": 8 } }      a tap on the row of the fisher, 8 half blocks from its start
 //   { "tap": { "star": true } }  a tap on the goal star (or the arrow at the edge of the screen)
+//   { "tap": { "star": "healer" } } a tap on the star (or the arrow) with the face of that person
 //   { "walk": { "person": "woodcutter" }, "taps": 12 } taps toward a target until the hero is near it
-//   { "press": true }            a quick tap on the big button (the press and the release at once)
+//   { "press": true }            a quick tap on the big button (the press and the release at once);
+//                                the picture before it and the act of the press go in play.json
 //   { "hold": 1.5 }              the big button down for this many seconds
 //   { "hold": { "until": "expr", "timeout": 30, "print": "expr" }, "shot": "name" } the big button
 //                                down until the expression is true (a child who looks at the band),
@@ -111,6 +114,54 @@ async function finger(points, seconds = 0) {
   await touch('touchEnd');
 }
 const tapAt = (x, y) => finger([[x, y]]);
+// The picture of the big button and the act of each press (#68): before a press, the act on the
+// button (its kind, its target, and its id); the session tells the act of the press with the same
+// id. The play fails when a press does an act that is not the picture that was on the button.
+const presses = [];
+const pressEvents = [];
+// Each page (a new link, a profile) and each session of a page has its own number: the ids of the
+// acts start again in a new session.
+let nextGen = 1;
+async function listenPresses() {
+  const made = await page.evaluate((gen) => {
+    const s = window.tre?.activeVillage?.session;
+    if (!s || window.__pressOf === s) return false;
+    window.__pressOf = s;
+    window.__pressGen = gen;
+    window.__presses ??= [];
+    window.__pressCount ??= 0;
+    s.listen((e) => {
+      if (e.type !== 'press') return;
+      window.__pressCount += 1;
+      window.__presses.push({ gen, id: e.id, act: e.act ? `${e.act}|${e.target}` : '', done: e.done, wait: Boolean(e.wait) });
+    });
+    return true;
+  }, nextGen).catch(() => false);
+  if (made) nextGen += 1;
+}
+async function pictureOfButton(step) {
+  await listenPresses();
+  return page.evaluate((step) => {
+    const b = document.querySelector('.act-btn');
+    return { step, gen: window.__pressGen ?? 0, id: b?.dataset.actId ? Number(b.dataset.actId) : null, shown: b?.dataset.act ?? '' };
+  }, step).catch(() => ({ step, gen: 0, id: null, shown: '' }));
+}
+// The press events since the last read belong to the step that ran then.
+async function readPresses(step) {
+  const evs = await page.evaluate(() => (window.__presses ?? []).splice(0)).catch(() => []);
+  pressEvents.push(...evs.map((e) => ({ ...e, step })));
+}
+function checkPresses() {
+  // The events of a press: from its step up to the next press (a press during a walk does its act
+  // some steps later).
+  presses.forEach((p, k) => {
+    const end = presses[k + 1]?.step ?? Infinity;
+    p.events = pressEvents.filter((e) => e.gen === p.gen && e.id === p.id && e.step >= p.step && e.step < end);
+    for (const e of p.events) {
+      if (e.done && e.act !== p.shown) problems.push(`step ${p.step}: the button showed "${p.shown}", and the press did "${e.act}"`);
+    }
+  });
+}
 const center = async (selector) => {
   const box = await page.locator(selector).first().boundingBox();
   return box ? [box.x + box.width / 2, box.y + box.height / 2] : null;
@@ -142,7 +193,9 @@ async function pointOf(spec) {
       p = r ? v.pointOf((r.x0 + r.x1) / 4, (r.z0 + r.z1) / 4) : null;
     }
     else if (s.star) {
-      const el = document.querySelector('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])');
+      // { star: true }: the goal star; { star: 'healer' }: the star with the face of that person.
+      const all = [...document.querySelectorAll('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])')];
+      const el = s.star === true ? all[0] : all.find((x) => x.querySelector('.star-face')?.dataset.who === s.star);
       const r = el?.getBoundingClientRect();
       p = r ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null;
     }
@@ -245,6 +298,11 @@ async function shot(i, name) {
 try {
 for (const [i, s] of (plan.steps ?? []).entries()) {
   const before = problems.length;
+  // The events of the presses before the page goes (a new link, a profile). The press events of a
+  // tap that is not on the button count too (window.__pressCount, #68: a tap on the arrow of a talk
+  // box after the box closed pressed the big button).
+  await readPresses(i - 1);
+  await listenPresses();
   // A step with "if" runs only when the expression is true (a child who sees a torch taps the gate).
   if (s.if && !(await page.evaluate((expr) => Boolean(new Function('tre', `return (${expr});`)(window.tre)), s.if).catch(() => false))) continue;
   if (s.create !== undefined) {
@@ -311,10 +369,14 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
     }
     if (!near) problems.push(`step ${i}: the hero did not come to ${JSON.stringify(s.walk)}`);
   } else if (s.press) {
+    const shown = await pictureOfButton(i);
     const p = await center('.act-btn');
     await tapAt(...p);
     await sleep(s.after ?? 0.3);
+    await readPresses(i);
+    presses.push(shown);
   } else if (s.hold !== undefined) {
+    presses.push(await pictureOfButton(i));
     const p = await center('.act-btn');
     if (typeof s.hold === 'number' && !s.shot) await finger([p], s.hold);
     else {
@@ -511,12 +573,14 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
   problems.push(`the play stopped: ${err.message.split('\n')[0]}`);
   await page.screenshot({ path: `${out}/stopped.jpg`, type: 'jpeg', quality: 80 }).catch(() => {});
 }
+await readPresses((plan.steps ?? []).length);
+checkPresses();
 // The problems that a plan allows for now (a known problem of a later issue): a part of the text.
 const allowed = (p) => (plan.allow ?? []).some((a) => p.includes(a));
 const known = problems.filter(allowed);
 problems.splice(0, problems.length, ...problems.filter((p) => !allowed(p)));
 for (const p of known) console.log(`known: ${p}`);
-writeFileSync(`${out}/play.json`, JSON.stringify({ plan: args[0], problems, log, lights }, null, 2));
+writeFileSync(`${out}/play.json`, JSON.stringify({ plan: args[0], problems, log, lights, presses }, null, 2));
 for (const p of problems) console.log(p);
 console.log(`${plan.steps?.length ?? 0} steps, ${shots} frames in ${out}, ${problems.length} problems`);
 await browser.close();
