@@ -68,7 +68,7 @@ A press does the act of the picture that the child saw. When the picture of the 
 
 ### One act for the picture and the press (#68)
 
-The session keeps the act of the button (`session.action()`): its kind, its target, and an id. The view draws that act and sends its id with the press (`{ type: 'hands', id }`, and `{ type: 'hold', id }`). The session does that act, or nothing (the button pulses); no other path chooses an act at the press. The act of an older picture (up to two seconds old) is done only when it is still in reach. Each press tells its act in the event `press` (`id`, `act`, `target`, `done`). After a talk box closes, the big button takes no press for 0.6 seconds: the arrow of the talk box is above the big button, and a child taps the arrow one more time.
+The session keeps the act of the button (`session.action()`): its kind, its target, and an id. The view draws that act and sends its id with the press (`{ type: 'hands', id }`, and `{ type: 'hold', id }`). The session does that act, or nothing (the button pulses); no other path chooses an act at the press. The act of an older picture (up to two seconds old) is done only when it is still in reach. Each press tells its act in the event `press` (`id`, `act`, `target`, `done`). The buttons of a talk box (listen, next) sit on its top edge, away from the big button, and after a talk box closes the big button takes no press for 0.6 seconds: a child taps the next arrow one more time after the box closes.
 
 ### In a task, the button is for the task (#60)
 

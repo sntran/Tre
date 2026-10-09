@@ -412,7 +412,10 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .dialogue .mark { position: static; }
 .line { margin: 0; font-size: var(--text); line-height: 1.5; }
 .line.narrator { font-style: italic; }
-.dialogue-tools { display: flex; flex-direction: column; gap: 8px; align-self: center; }
+/* The buttons of the box (listen, next) sit on its top edge, away from the big button under the
+   bottom right corner of the box: one more tap on the next arrow after the box closes never presses
+   the big button (#68). */
+.dialogue-tools { position: absolute; top: calc(var(--touch) * -0.8); right: 14px; display: flex; flex-direction: row; gap: 8px; }
 .choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .choice { min-height: var(--touch-small); }
 
