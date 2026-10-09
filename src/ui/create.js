@@ -225,8 +225,12 @@ export async function mountCreate(ctx) {
         return art ? h('span', { class: 'grade-tile' }, [h('small', { text: t('grade.kinder') }), h('span', { class: 'grade-tile-name' }, [img(art, 'grade-art'), name])]) : name;
       };
       stage.append(choiceRow(gradeIds(grades), () => grade, gradeTile, (v) => { grade = v; }, 'create.grade.label', { words: true }));
-      stage.append(h('p', { class: 'center muted', text: t('create.grade.note') }));
-      stage.append(button(t('create.start'), finish, { cls: 'btn big red main-btn' }));
+      // The line under the classes goes with the button at the bottom edge, so that the button
+      // never covers it (#72).
+      stage.append(h('div', { class: 'main-actions grade-actions' }, [
+        h('p', { class: 'center muted', text: t('create.grade.note') }),
+        button(t('create.start'), finish, { cls: 'btn big red' }),
+      ]));
     }
   }
 

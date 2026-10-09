@@ -1164,4 +1164,9 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .grade-tile { display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.1; }
 .grade-tile small { font-size: 0.7em; font-weight: 600; opacity: 0.8; }
 .grade-tile-name { display: flex; align-items: center; gap: 4px; }
-.grade-art { width: 20px; height: 20px; }
+/* The rule ".tile-btn img" makes a picture as big as its tile: the bud and the leaf keep their
+   small size, so that the name shows next to them (#72). */
+.tile-btn .grade-art { flex: none; width: 28px; height: 28px; }
+/* The line under the classes stays over the button "Bắt đầu!", also when the screen scrolls (#72). */
+.grade-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.grade-actions p { margin: 0; }
