@@ -9,8 +9,9 @@ export const VIEW = Object.freeze({ elevation: Math.atan(0.5), zooms: [26, 40], 
 
 // The size of the view (world units) on a screen of width x height pixels at a zoom level. A phone
 // shows a little more of the world than an iPad.
-export function viewSize(width, height, level = 0) {
-  const h = VIEW.zooms[level] * (height < 500 ? 1.15 : 1);
+// scale: a closer view (under 1) at a small work, as the mat of the teacher (#69).
+export function viewSize(width, height, level = 0, scale = 1) {
+  const h = VIEW.zooms[level] * (height < 500 ? 1.15 : 1) * scale;
   return { w: h * (width / height), h };
 }
 

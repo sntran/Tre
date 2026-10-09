@@ -1,6 +1,6 @@
 // The teacher after a count (#69): the child hears what happens to the extra rods or the empty
 // places, the demonstration comes at most one time, the teacher puts his rods one at a time and says
-// how many, and a press of the one move counts
+// how many, the mat shows a frame of ten for grade 1 and below, and a press of the one move counts
 // as an act (no offer of help in the middle of the presses).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -105,6 +105,13 @@ test('the demonstration comes at most one time; the teacher puts his rods one at
   if (keys.includes('mentor.scholar.demo')) assert.ok(keys.includes('mentor.scholar.demoDone'), keys.join(' '));
   assert.ok(!keys.includes('mentor.demo.done'), 'the end of the demonstration in words that a child knows');
   for (const l of all.filter((x) => /^mentor\.scholar\.(smaller|share)Put$/.test(x.key))) assert.ok(/^num\.[1-9]$/.test(l.params.n.key), JSON.stringify(l));
+});
+
+test('the frame of ten shows for grade 1 and below, and fades for grade 2', async () => {
+  for (const [grade, look] of [[1, 'mat-frame'], [2, 'mat']]) {
+    const session = await atMat(grade);
+    assert.equal(getEntity(session.state, 'mat:scholar').look, look, `grade ${grade}`);
+  }
 });
 
 test('the presses of the one move are acts: no offer of help in the middle of them', async () => {

@@ -1105,7 +1105,23 @@ export async function mountVillage(ctx, params = {}) {
     const at = (p) => ({ x: p.x / 2, y: groundY(p.x / 2, p.z / 2), z: p.z / 2 });
     return [heroAt, ...r.posts.map(at), ...r.enemies.filter((e) => e.state !== 'retreat').map(at)];
   }
+  // The mat of the teacher (#69): while the child works next to it, the view comes closer, so that
+  // each rod on the mat is at least 8 pixels wide on a phone, and the middle of the view is between
+  // the hero and the mat.
+  const MAT_CLOSE = 0.68;
+  const MAT_NEAR = 7; // world units from the middle of the mat
+  function matFocus(heroAt) {
+    const mat = getEntity(state, 'zone:mat');
+    const open = mat && getEntity(state, 'zone:trial-scholar')?.zone.done === false;
+    const r = mat?.zone.rect;
+    const c = r ? { x: (r.x0 + r.x1) / 4, z: (r.z0 + r.z1) / 4 } : null;
+    const near = open && c && !hero().riding && Math.hypot(heroAt.x - c.x, heroAt.z - c.z) < MAT_NEAR;
+    view.setScale(near ? MAT_CLOSE : 1);
+    return near ? { ...heroAt, x: (heroAt.x + c.x * 2) / 3, z: (heroAt.z + c.z * 2) / 3 } : null;
+  }
   function leadToWork(heroAt) {
+    const close = matFocus(heroAt);
+    if (close) return close;
     if (!work) return heroAt;
     const mid = work.points.reduce((a, p) => ({ x: a.x + p.x / work.points.length, z: a.z + p.z / work.points.length }), { x: 0, z: 0 });
     if (Math.hypot(heroAt.x - mid.x, heroAt.z - mid.z) > WORK_AWAY) {

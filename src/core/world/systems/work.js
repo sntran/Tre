@@ -165,7 +165,10 @@ export function setupTrial(world, def, level, env, opts = {}) {
     const rods = heap('rods', { ...h, x: Math.min(h.x, m.x - 1 - 1 - 1 - 7 * 0.7) }, 'rod', { cols: 8, step: 0.7 });
     things(rods, 'rod', task.rods);
     addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts: 'rod', items: [], x: m.x, y: m.y, z: m.z, tied: 0, rect: rect(m, 4, 2) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1, facing: 0 } });
-    addEntity(world, { id: 'mat:scholar', keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: 'mat' });
+    // For grade 1 and below (level 0), the mat shows the places of a frame of ten; for the grades
+    // above it fades, as the representation fades inside a skill (#69).
+    // The mat is solid: the hero stands beside it, not on the rods (#69).
+    addEntity(world, { id: 'mat:scholar', keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: level <= 0 ? 'mat-frame' : 'mat', solid: { rect: { x0: m.x + 0.1, x1: m.x + 3.9, z0: m.z + 0.2, z1: m.z + 2.2 } } });
     // A coil of straw rope by the mat: only a picture. The tie is at the teacher (the finish of the
     // task), so the coil is no target of a tap (#47).
     addEntity(world, { id: 'band:scholar', keep: true, position: { x: m.x + 4.6, y: m.y, z: m.z + 1, facing: 0 }, look: 'band' });

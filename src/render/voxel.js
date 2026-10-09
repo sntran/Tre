@@ -959,7 +959,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
   // The camera: orthographic, turns in steps of 90°, two zoom levels, a soft follow.
   const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, -500, 500);
   const focus = new THREE.Vector3(0, 3, 0);
-  const state = { az: Math.PI / 4, azTarget: Math.PI / 4, level: 0, width: 1, height: 1 };
+  const state = { az: Math.PI / 4, azTarget: Math.PI / 4, level: 0, scale: 1, scaleTarget: 1, width: 1, height: 1 };
   const place = () => {
     const e = VIEW.elevation;
     const dir = new THREE.Vector3(Math.cos(e) * Math.sin(state.az), Math.sin(e), Math.cos(e) * Math.cos(state.az));
@@ -972,7 +972,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     state.width = w;
     state.height = h;
     renderer.setSize(w, h, false);
-    const size = viewSize(w, h, state.level);
+    const size = viewSize(w, h, state.level, state.scale);
     cam.left = -size.w / 2;
     cam.right = size.w / 2;
     cam.top = size.h / 2;
@@ -1054,6 +1054,9 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
       state.level = Math.max(0, Math.min(VIEW.zooms.length - 1, level));
       resize(state.width, state.height);
     },
+    // A closer view for a small work (scale under 1: the mat of the teacher, #69); it comes in a
+    // short time, not at once.
+    setScale(scale) { state.scaleTarget = scale; },
     // The angle of the camera now (for the stick and the keys).
     get angle() { return state.az; },
     // Put the camera at a point, and build the near chunks around it now (the start, a jump); the
@@ -1100,6 +1103,11 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
       const turning = state.az !== state.azTarget;
       state.az += (state.azTarget - state.az) * Math.min(1, dt * 7);
       if (Math.abs(state.azTarget - state.az) < 0.01) state.az = state.azTarget;
+      if (state.scale !== state.scaleTarget) {
+        state.scale += (state.scaleTarget - state.scale) * Math.min(1, dt * 4);
+        if (Math.abs(state.scaleTarget - state.scale) < 0.005) state.scale = state.scaleTarget;
+        resize(state.width, state.height);
+      }
       // While the view turns, it turns around the hero, so that the hero stays in the middle.
       const k = turning ? 1 : Math.min(1, dt * VIEW.lag);
       focus.x += (hero.x - focus.x) * k;
