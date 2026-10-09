@@ -4,7 +4,8 @@
 // and it fails when the page has an error or a warning, when the frame loop stops, when a tap on
 // free ground that the hero can walk to does not move the hero, when a tap on a place of a task
 // does not choose it, when a portrait in a frame stays empty, or when a press of the big button
-// does an act that is not the picture that was on the button just before the press (#68).
+// does an act that is not the picture that was on the button just before the press, or does
+// nothing on a picture with an act (#68).
 // Run it from the root of the repository with a local server on port 8123
 // (python3 -m http.server 8123), and Playwright (npm install playwright, or a global one):
 //   node tools/phone-play.mjs <plan.json> [--out <folder>] [--base <URL>] [--three <three.module.min.js>]
@@ -160,6 +161,9 @@ function checkPresses() {
     for (const e of p.events) {
       if (e.done && e.act !== p.shown) problems.push(`step ${p.step}: the button showed "${p.shown}", and the press did "${e.act}"`);
     }
+    // A press on an act that the button showed is never refused at once (a press that waits for the
+    // end of a walk can do nothing there, when the walk ends stuck).
+    if (p.shown && p.events.some((e) => !e.done && !e.wait) && !p.events.some((e) => e.done || e.wait)) problems.push(`step ${p.step}: the button showed "${p.shown}", and the press did nothing`);
   });
 }
 const center = async (selector) => {
