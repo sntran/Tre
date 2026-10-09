@@ -1,8 +1,8 @@
 {
   "name": "mentor-bridge-night",
   "about": {
-    "vi": "Ở cầu lúc đêm: chú đánh cá đã về nhà, nên Nghé nói thay: trước hết Nghé chỉ hàng ván mờ để đoán, rồi Nghé đếm từng tấm ván và chỉ chỗ thiếu.",
-    "en": "At the bridge at night: the fisher is at home, so Nghé speaks: first Nghé shows the pale planks of the guess, then Nghé counts the planks one by one and marks the empty part."
+    "vi": "Ở cầu lúc đêm: chú đánh cá đã về nhà, nên Nghé nói thay: trước hết Nghé chỉ những tấm ván giả để đoán, rồi Nghé đếm từng vạch trên ván, mỗi vạch sáng lên, và chỉ chỗ thiếu.",
+    "en": "At the bridge at night: the fisher is at home, so Nghé speaks: first Nghé shows the planks for the guess, then Nghé counts the marks of the planks one by one, each mark lights up, and Nghé marks the empty part."
   },
   "profile": {
     "name": "An",
@@ -120,19 +120,38 @@
       }
     },
     {
-      "wait": 1.2
+      "wait": 3.2
     },
     {
       "expect": [
         {
           "count": {
-            "entities": "mentor-mark",
-            "min": 1
+            "entities": "unit-glow",
+            "min": 4
           }
         },
         {
           "text": {
             "shown": "num.4"
+          }
+        }
+      ]
+    },
+    {
+      "wait": 3.2
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "unit-glow",
+            "min": 8
+          }
+        },
+        {
+          "count": {
+            "entities": "mentor-mark",
+            "min": 1
           }
         }
       ]

@@ -9,6 +9,7 @@ import { endScript } from './world/systems/mentor.js';
 import { basketRowAt, matSlot } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
+import { UNIT_PACE, COUNT_LEAD } from './world/zones.js';
 
 // The zones where the parts of a try go, in the order of the search.
 const PLACES = ['exact', 'bundle', 'basket', 'line', 'forge', 'woodpile', 'spots'];
@@ -539,8 +540,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // Mark what matters: count the parts on the place aloud, one at a time (each with the running
   // total as a word), then mark the empty part or the part too many.
   function markSteps(task, fam, info, s, t) {
-    s.say(t, lineOf(task.key, 'mark'));
     const parts = itemsOf(task.place);
+    if (task.place?.zone.rule === 'span' && parts.length) return unitSteps(task, parts, s, t);
+    s.say(t, lineOf(task.key, 'mark'));
     let total = 0;
     if (fam.reader === 'sum' && parts.length) {
       parts.forEach((e, i) => {
@@ -600,6 +602,38 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       }
       return t + 3.5;
     }
+    return t + 2;
+  }
+
+  // The count of a try on the bridge (#71: the count "ba, tám, mười ba" went plank by plank, and no
+  // child knew why): the person counts the units of the planks one by one from the near end,
+  // "một, hai, ba, bốn", and the mark of each unit lights up at its word. The count stops at the far
+  // bank: the part of a plank that is too long glows there, and the fisher says so (the place
+  // system). A short try ends with a point at the empty part of the gap. The world keeps the planks
+  // of the try for the time of the count (countTime in src/core/world/zones.js).
+  function unitSteps(task, parts, s, t) {
+    const z = task.place.zone;
+    const long = parts.reduce((a, e) => a + (e.item.size ?? 0), 0) > z.gap;
+    // After a plank that is too long, the line of the fisher comes from the world at once.
+    if (!long) s.say(t, lineOf(task.key, 'mark'));
+    let u = 0;
+    for (const e of parts) {
+      if (u >= z.gap) break;
+      s.point(t + COUNT_LEAD + u * UNIT_PACE, { x: z.lane, z: z.from + u + (e.item.size ?? 1) / 2 }, (e.item.size ?? 1) * UNIT_PACE);
+      // The top of the plank: a plank on the gap has its top at the deck, and one that is too long
+      // lies on the far bank, higher.
+      const top = e.position.y + 0.8 + 0.02;
+      for (let i = 0; i < (e.item.size ?? 1) && u < z.gap; i++) {
+        u += 1;
+        const at = t + COUNT_LEAD + (u - 1) * UNIT_PACE;
+        s.steps.push({ at, spawn: { look: 'unit-glow', x: z.lane, z: z.from + u - 0.5, y: top } });
+        if (u <= 30) s.say(at + 0.05, `num.${u}`);
+      }
+    }
+    t += COUNT_LEAD + u * UNIT_PACE;
+    const end = long ? { x: z.lane, z: z.from + z.gap + 1 } : { x: z.lane, z: z.from + u + 0.5 };
+    s.point(t, end, 2);
+    s.mark(t, end, 4);
     return t + 2;
   }
 

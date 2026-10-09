@@ -1,8 +1,8 @@
 {
   "name": "mentor-bridge",
   "about": {
-    "vi": "Người giao việc ở cầu: hai tấm ván bốn còn thiếu một tấm, chú đánh cá đếm từng tấm và chỉ chỗ thiếu; lần sau đúng, chú chỉ đứng xem.",
-    "en": "The mentor at the bridge: two planks of four are one plank short; the fisher counts the planks one by one and marks the empty part; the next try is right, and the fisher only watches."
+    "vi": "Người giao việc ở cầu: hai tấm ván bốn còn thiếu một tấm, chú đánh cá đếm từng vạch trên ván, mỗi vạch sáng lên khi chú đếm, rồi chú chỉ chỗ thiếu; lần sau đúng, chú chỉ đứng xem.",
+    "en": "The mentor at the bridge: two planks of four are one plank short; the fisher counts the marks of the planks one by one, each mark lights up at its word, and he marks the empty part; the next try is right, and the fisher only watches."
   },
   "profile": {
     "name": "An",
@@ -10,7 +10,8 @@
     "lang": "vi",
     "seed": 7,
     "flags": {
-      "intro.seen": true, "trial.fisher.done": true
+      "intro.seen": true,
+      "trial.fisher.done": true
     }
   },
   "clock": 540,
@@ -20,8 +21,18 @@
     61
   ],
   "steps": [
-    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
-    { "read": true },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "read": true
+    },
     {
       "wait": 1.5
     },
@@ -110,14 +121,14 @@
       }
     },
     {
-      "wait": 1.2
+      "wait": 3.2
     },
     {
       "expect": [
         {
           "count": {
-            "entities": "mentor-mark",
-            "min": 1
+            "entities": "unit-glow",
+            "min": 4
           }
         },
         {
@@ -128,13 +139,32 @@
       ]
     },
     {
+      "wait": 3.2
+    },
+    {
+      "expect": [
+        {
+          "count": {
+            "entities": "unit-glow",
+            "min": 8
+          }
+        },
+        {
+          "count": {
+            "entities": "mentor-mark",
+            "min": 1
+          }
+        }
+      ]
+    },
+    {
       "until": {
-        "event": "pulled",
-        "timeout": 20
+        "event": "float",
+        "timeout": 15
       }
     },
     {
-      "wait": 2
+      "wait": 0.5
     },
     {
       "press": {

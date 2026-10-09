@@ -52,7 +52,7 @@ import { placeBySchedule, atWork } from './world/systems/schedule.js';
 import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
-import { REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
+import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
 import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
 import { levelFor, taskOf } from './world/trials.js';
@@ -2028,6 +2028,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!lastPick || !openTask(lastPick.task)) return null;
     return lastPick.kind;
   }
+  // An open gap of the bridge (its zone id is the task of its planks).
+  const openSpan = (task) => {
+    const z = task ? getEntity(state, `zone:${task}`)?.zone : null;
+    return Boolean(z && z.rule === 'span' && !z.set);
+  };
+  // The length of plank that a press takes from the pile: the length of the last plank that the
+  // child took or put, or null (any). The length of the plank is the math of the bridge (#71: a press
+  // took a plank of 3 and then one of 5, and the child never chose): only a tap on a plank of the
+  // pile chooses another length.
+  function wantSize() {
+    if (!lastPick || !openSpan(lastPick.task)) return null;
+    return lastPick.size ?? null;
+  }
   // The tasks whose kind of thing only a tap changes: when the bed of that kind is empty, a press
   // takes nothing (#63). At the other tasks, a press takes another kind when the heap has no more.
   const SAME_KIND = new Set(['trial-healer']);
@@ -2244,6 +2257,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The hands: pick up a thing (on a span, only its last plank); take one back from a place.
       const want = wantKind();
       const wantLeft = want && query(state, 'item', 'position').some((e) => e.item.kind === want && !e.item.held && !e.hidden && ['heap', 'pile'].includes(zoneOf(e.item.zone)?.zone.rule));
+      // A tap on a plank of the pile chooses its length (the walk can end at a near plank of the
+      // same length).
+      const tappedPlank = chosen ? getEntity(state, chosen.id) : null;
+      const tappedSize = tappedPlank?.item && zoneOf(tappedPlank.item.zone)?.zone.rule === 'pile' ? tappedPlank.item.size : null;
+      const plankSize = tappedSize ?? wantSize();
+      const plankTask = tappedSize !== null ? tappedPlank.item.task : lastPick?.task;
+      const sizeLeft = plankSize !== null && query(state, 'item', 'position').some((e) => e.item.task === plankTask && e.item.size === plankSize && !e.item.held && !e.hidden && zoneOf(e.item.zone)?.zone.rule === 'pile');
       for (const e of query(state, 'item', 'position')) {
         if (e.hidden || e.item.held || e.item.set || e.item.fixed) continue;
         const zone = zoneOf(e.item.zone);
@@ -2261,6 +2281,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // Of the things of a task, the kind of the last pick first, while a heap has that kind. A
         // tap on a thing chooses it.
         if (want !== null && chosen?.id !== e.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || SAME_KIND.has(lastPick.task))) continue;
+        // Of the planks of the bridge, the length of the last pick, while the pile has one.
+        if (sizeLeft && rule === 'pile' && e.item.task === plankTask && e.item.size !== plankSize) continue;
         // A press picks a thing of a task only when a place of the task has room for it: no stake
         // after the row is at the float (#54: the stake stayed in the hands with no act).
         if (chosen?.id !== e.id && openTask(e.item.task) && !roomFor(e)) continue;
@@ -2287,7 +2309,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           } }, REACH);
           continue;
         }
-        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys, at: middleOf(e), size, rank: 1, work: openTask(e.item.task), run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
+        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys, at: middleOf(e), size, rank: 1, work: openTask(e.item.task), run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH + (rule === 'pile' ? PILE_REACH : 0));
       }
       // Take back: the thing that the child tapped on a place (the opposite of a put), from where
       // the hero stands to put. Only after a tap on the thing itself, with the heap in reach or
@@ -3358,7 +3380,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // step); a later move of the mentor never changes the kind of a press (#63).
       if ((ev.type === 'pick' || ev.type === 'put') && ev.item) {
         const it = getEntity(state, ev.item)?.item;
-        if (it?.task?.startsWith('trial-') && (ev.id === 'hero' || lastPick?.task !== it.task || !lastPick.child)) lastPick = { task: it.task, kind: it.kind, child: ev.id === 'hero' };
+        if ((it?.task?.startsWith('trial-') || openSpan(it?.task)) && (ev.id === 'hero' || lastPick?.task !== it.task || !lastPick.child)) lastPick = { task: it.task, kind: it.kind, size: it.size, child: ev.id === 'hero' };
         if (ev.type === 'pick' && ev.id === 'hero' && it?.task === 'trial-healer' && ev.item !== oneMove) sayHerb('herb', it.kind);
         if (ev.type === 'put' && ev.id === 'hero' && ev.item === oneMove) {
           oneMove = null;

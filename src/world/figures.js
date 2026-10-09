@@ -486,13 +486,15 @@ export function ferryBoat() {
 }
 
 // A new plank for the bridge, n units long (one unit is one half block). The units are pale and
-// ochre in turn, with a red dot painted on each, so that the child sees the length and can count
-// it. The plank lies along +z from its position; its top is at 0.8.
+// ochre in turn, with a red dot painted on each and a thin ink line between two units, as the
+// marks of a ruler (#71), so that the child sees the length and can count it. The plank lies along
+// +z from its position; its top is at 0.8.
 export function plank(n) {
   const parts = [];
   for (let i = 0; i < n; i++) {
     parts.push(P(`unit${i}`, [2, 0.8, 1], PLANK_TONES[i % 2], [0, 0.4, i + 0.5]));
     parts.push(P(`dot${i}`, [0.45, 0.04, 0.45], 'vermilion', [0, 0.82, i + 0.5], { mark: true }));
+    if (i > 0) parts.push(P(`tick${i}`, [2, 0.04, 0.1], 'ink', [0, 0.82, i], { mark: true }));
   }
   return { kind: 'still', parts, scale: 1, height: 0.8, shadow: 0 };
 }
@@ -535,6 +537,32 @@ export function gapMarks(n) {
   return { kind: 'still', parts, scale: 1, height: 0.2, shadow: 0 };
 }
 
+// The marks of a ruler along an open gap of the bridge, n units long (#71): a pale line on each
+// side of the lane of the planks, and a pale tick across for each unit, a long tick for each fifth.
+// They lie at the height of the top of the planks, so that a plank on the gap covers its ticks and
+// the lines stay beside it.
+export function rulerMarks(n) {
+  const parts = [];
+  for (const s of [-1, 1]) parts.push(P(`side${s}`, [0.2, 0.15, n], 'yellowPale', [s * 1.25, 0, n / 2]));
+  for (let i = 0; i <= n; i++) {
+    const long = i % 5 === 0;
+    parts.push(P(`t${i}`, [long ? 3.2 : 2.7, 0.15, long ? 0.25 : 0.15], 'yellowPale', [0, 0, i]));
+  }
+  return { kind: 'still', parts, scale: 1, height: 0.15, shadow: 0 };
+}
+
+// The glow on the part of a plank over the far bank (#71): n units, yellow, on the top of the plank.
+export function overGlow(n) {
+  const parts = [];
+  for (let i = 0; i < n; i++) parts.push(P(`u${i}`, [2.2, 0.12, 0.9], 'yellow', [0, 0.06, i + 0.5]));
+  return { kind: 'still', parts, scale: 1, height: 0.12, shadow: 0 };
+}
+
+// The glow of one unit of a plank at its word in a count (#71).
+export function unitGlow() {
+  return { kind: 'still', parts: [P('u', [2.2, 0.12, 0.9], 'yellow', [0, 0.06, 0])], scale: 1, height: 0.12, shadow: 0 };
+}
+
 // The things of the Five Trials (src/core/world/systems/work.js). Plain things with flat colors
 // (rule 9 of the design: the content object is plain; the village is rich). Units: half blocks.
 const still = (parts, height, shadow = 0) => ({ kind: 'still', parts, scale: 1, height, shadow });
@@ -558,6 +586,11 @@ export function thingLook(key) {
   // of an empty place after a count.
   if (k === 'mat-frame') return { kind: 'mat', frame: true };
   if (k === 'place-glow') return { kind: 'place-glow' };
+  // The marks of a ruler on a gap of the bridge, the glow over the far bank, and the glow of a
+  // counted unit (#71).
+  m = /^(ruler|over)-(\d+)$/.exec(k);
+  if (m) return { kind: m[1], n: Number(m[2]) };
+  if (k === 'unit-glow') return { kind: 'unit-glow' };
   // The small sign at a bed of the healer, with a picture of its herb and no word (#61).
   m = /^herb-(sign|tag)-(ngai|tiato|rauma)$/.exec(k);
   if (m) return { kind: 'herb-sign', herb: m[2], tag: m[1] === 'tag' };
@@ -1028,6 +1061,9 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'plank') return plank(look.n);
   if (look.kind === 'plank-ghost') return plankGhost(Boolean(look.on));
   if (look.kind === 'gap') return gapMarks(look.n);
+  if (look.kind === 'ruler') return rulerMarks(look.n);
+  if (look.kind === 'over') return overGlow(look.n);
+  if (look.kind === 'unit-glow') return unitGlow();
   if (look.kind === 'deck') return deck(look.n, look.w);
   if (look.kind === 'nghe') return fine ? ngheFine() : nghe();
   if (look.kind === 'duck') {

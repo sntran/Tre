@@ -33,6 +33,7 @@
       { "event": "prediction", "with": { "guess": 3, "used": 2, "solved": false, "gap": 12 } }
     ] },
     { "until": { "event": "pulled", "timeout": 20 } },
+    { "until": { "event": "float", "timeout": 15 } },
     { "wait": 2 },
     { "expect": [{ "hero": { "falls": false } }, { "zone": "bridge-gap", "planks": 1 }] },
     { "press": { "plank": 5 } },
@@ -45,7 +46,7 @@
     { "press": { "screenOf": "bridge-gap" } },
     { "until": { "event": "long", "timeout": 20 } },
     { "expect": [{ "event": "call", "with": { "key": "world.bridge.long" } }, { "text": { "shown": "world.bridge.long" } }, { "event": "skill", "not": true }] },
-    { "until": { "event": "float", "timeout": 10 } },
+    { "until": { "event": "float", "timeout": 15 } },
     { "wait": 1 },
     { "expect": [{ "zone": "bridge-gap", "planks": 2 }] },
     { "press": { "plank": 3 } },

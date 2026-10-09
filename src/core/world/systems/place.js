@@ -9,9 +9,13 @@
 //   short: the last plank dips, and the hero falls into the water. The planks and the marks of the
 //     empty part of the gap stay for some seconds, so that the child sees how much was missing.
 //     Nghé comes to the edge and pulls the hero out. The last plank floats back to the pile.
-// A plank that is too long answers at once: it sticks out past the far end and wobbles, the fisher
-// calls out, and it slides back into the water and floats back to the pile. Nothing is lost, so
-// that the two failures cost the same.
+// A plank that is too long answers at once: it sticks out past the far end and wobbles, its part
+// over the far bank glows, the fisher says "Tấm này dài quá.", and after the count of the person it
+// slides back into the water and floats back to the pile. Nothing is lost, so that the two
+// failures cost the same.
+// The gap has the marks of a ruler, one for each unit, beside the planks (rule 8 of the design:
+// the planks first, then the marks beside them). After a try the person counts the units one by
+// one, and the planks of the try stay until the count ends (countTime, #71).
 // Before the first commit on a new gap, a row of plank outlines lies on the bank, Nghé looks at the
 // hero, and the child taps how many planks the bridge will take (a prediction, no numeral).
 // After some failures, or after a commit with the signs of mashing, Nghé stands at the near end
@@ -24,7 +28,7 @@ import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { DAY_MINUTES } from '../clock.js';
 import { faceOf } from '../move.js';
 import {
-  REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, sizesOf, sum, openRound, openGap, reachOf, oldDeck, nearestPoint,
+  REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, sizesOf, sum, openRound, openGap, reachOf, oldDeck, nearestPoint, countTime, PILE_REACH,
 } from '../zones.js';
 import { isMashing } from '../../learnlog.js';
 import { putWork, canTakeWork, toHeap, freeSlot, takeOut } from './work.js';
@@ -127,7 +131,10 @@ function pick(world, e, thing, env, dt) {
   const at = zoneEnt?.zone.rule === 'span' ? zoneEnt.position : middleOf(thing);
   // From a place of a task, the hands take a thing back from where they put it.
   const nearPlace = working && dist(e.position, zoneEnt.position) <= REACH + 2;
-  if (dist(e.position, at) > REACH + (thing.item.size ?? 0) / 2 && !nearPlace) return say(world, 'far', e.id);
+  // A pile is long: the hands reach a plank of it a little farther, as a put on it (#71: the plank of
+  // the chosen length can lie in the back row).
+  const pileReach = zoneEnt?.zone.rule === 'pile' ? PILE_REACH : 0;
+  if (dist(e.position, at) > REACH + (thing.item.size ?? 0) / 2 + pileReach && !nearPlace) return say(world, 'far', e.id);
   // The time that the child took to choose this plank, from the last action on its gap.
   const task = getEntity(world, `zone:${thing.item.task}`);
   if (task?.zone.rule === 'span' && zoneEnt?.zone.rule !== 'span') {
@@ -192,7 +199,7 @@ function put(world, e, zoneEnt, env, dt, at = null) {
   }
   // A pile is long: the hero must be near the pile or near one of its planks.
   const near = [zoneEnt.position, ...(zone.rule === 'pile' ? zone.items.map((id) => getEntity(world, id)).filter(Boolean).map(middleOf) : [])];
-  if (Math.min(...near.map((q) => dist(e.position, q))) > REACH + (zone.rule === 'pile' ? 3 : 0)) return say(world, 'far', e.id);
+  if (Math.min(...near.map((q) => dist(e.position, q))) > REACH + (zone.rule === 'pile' ? PILE_REACH : 0)) return say(world, 'far', e.id);
   release(e, thing);
   thing.item.zone = zone.id;
   zone.items.push(thing.id);
@@ -214,7 +221,10 @@ function put(world, e, zoneEnt, env, dt, at = null) {
   // world shows the failure, but it is not a commit: it sends no skill event.
   const out = defOf(env, zone).outcomes.long;
   zone.fails += 1;
-  zone.effect = { kind: 'wobble', id: thing.id, t: 0, time: out.wobble };
+  zone.effect = { kind: 'wobble', id: thing.id, t: 0, time: out.wobble, rest: Math.max(out.wobble, countTime(zone.gap)) };
+  // The part of the plank over the far bank glows (#71).
+  const over = before + thing.item.size - zone.gap;
+  addEntity(world, { id: `why:${zone.id}:over`, why: { zone: zone.id }, position: { x: zone.lane, y: thing.position.y + 0.8, z: zone.from + zone.gap, facing: 0 }, look: `over-${over}` });
   say(world, 'long', zoneEnt.id, { item: thing.id, sound: out.sound });
   if (out.call) say(world, 'call', `npc:${out.call.who}`, { key: out.call.key });
 }
@@ -320,7 +330,7 @@ function tip(world, zoneEnt, def, h) {
   const lastId = zone.items[zone.items.length - 1];
   const p = h.position;
   const covered = sum(sizesOf(world, zone.items));
-  zone.effect = { kind: 'tip', id: lastId, t: 0, time: def.outcomes.short.show ?? 2 };
+  zone.effect = { kind: 'tip', id: lastId, t: 0, time: Math.max(def.outcomes.short.show ?? 2, countTime(covered)) };
   delete h.riding;
   delete h.intent;
   delete h.route;
@@ -341,6 +351,7 @@ function tickSpan(world, zoneEnt, dt, env, rng) {
   const def = defOf(env, zone);
   if (!def) return;
   decks(world, zoneEnt);
+  ruler(world, zoneEnt);
   zoneEnt.position = reachOf(zone);
   for (const g of query(world, 'guess')) {
     if (g.guess.left === undefined) continue;
@@ -362,7 +373,11 @@ function tickSpan(world, zoneEnt, dt, env, rng) {
     if (!thing) zone.effect = null;
     else if (fx.kind === 'wobble') {
       thing.tilt = Math.sin(fx.t * 18) * 0.12 * Math.max(0, 1 - fx.t / fx.time);
-      if (fx.t >= fx.time) zone.effect = { kind: 'slide', id: fx.id, t: 0 };
+      // The plank stays still with its glow until the count of the person ends.
+      if (fx.t >= (fx.rest ?? fx.time)) {
+        zone.effect = { kind: 'slide', id: fx.id, t: 0 };
+        if (getEntity(world, `why:${zone.id}:over`)) removeEntity(world, `why:${zone.id}:over`);
+      }
     } else if (fx.kind === 'slide') {
       // The plank slides back and down into the water.
       thing.tilt = -Math.min(0.6, fx.t * 1.5);
@@ -545,6 +560,7 @@ function clearTask(world, zone) {
   for (const e of query(world, 'item')) if (e.item.task === zone.id && !e.item.held) removeEntity(world, e.id);
   for (const p of query(world, 'zone')) if (p.zone.rule === 'pile') p.zone.items = p.zone.items.filter((id) => getEntity(world, id));
   for (const g of query(world, 'guess')) if (g.guess.zone === zone.id) removeEntity(world, g.id);
+  for (const w of query(world, 'why')) if (w.why.zone === zone.id) removeEntity(world, w.id);
   zone.items = [];
 }
 
@@ -583,4 +599,20 @@ function decks(world, zoneEnt) {
     if (e) removeEntity(world, id);
     addEntity(world, { id, deck: { zone: zone.id }, position: { x: zone.cx, y: zone.deckY - 1, z, facing: 0 }, look });
   }
+}
+
+// The marks of a ruler on an open gap, one for each unit, beside the planks and at the height of
+// their top: the child sees the length of the gap and of the part that is still empty (#71).
+function ruler(world, zoneEnt) {
+  const zone = zoneEnt.zone;
+  const id = `why:${zone.id}:ruler`;
+  const e = getEntity(world, id);
+  const look = `ruler-${zone.gap}`;
+  if (zone.set || !(zone.gap > 0)) {
+    if (e) removeEntity(world, id);
+    return;
+  }
+  if (e && e.look === look && e.position.z === zone.from) return;
+  if (e) removeEntity(world, id);
+  addEntity(world, { id, why: { zone: zone.id }, position: { x: zone.lane, y: zone.deckY - 0.1, z: zone.from, facing: 0 }, look });
 }

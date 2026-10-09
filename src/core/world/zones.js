@@ -21,12 +21,20 @@
 import { getEntity } from './state.js';
 
 export const REACH = 5; // half blocks: how near the hero must be to pick up or put down
+export const PILE_REACH = 3; // half blocks: a pile is long, and the hands reach this much farther there
 // The floor of the basket of the healer over the ground (half blocks): the basket stands on a low
 // stand, so that a child finds it (#64). The figure (src/world/figures.js) and the places of the
 // bunches in it (src/core/world/systems/work.js) use it.
 export const BASKET_FLOOR = 1;
 export const PILE_GAP = 1; // half blocks between two things in a row of a pile
 export const PILE_ROW = 3; // half blocks from one row of a pile to the next
+// The count of a try on the bridge (#71: "ba, tám, mười ba" was the length plank by plank, and no
+// child knew why): the person counts the units of the planks one by one, "một, hai, ba, bốn", and
+// the mark of each unit lights up at its word. The world keeps the planks of the try until the
+// count ends (countTime: the seconds of the count of n units).
+export const UNIT_PACE = 0.6; // seconds between two counted units
+export const COUNT_LEAD = 1.2; // seconds from the start of the count to its first unit
+export const countTime = (units) => COUNT_LEAD + units * UNIT_PACE + 1;
 
 // A new zone from the map (a rectangle in map cells) and its kind (data/world/zones.json).
 // env: for the height of the ground and the named places.

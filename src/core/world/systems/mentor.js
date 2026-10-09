@@ -7,7 +7,8 @@
 //   say { id, key, params }: a line in a bubble over the person (the event call).
 //   mark { x, z, ttl }: a mark on the ground (a red ring and a flag).
 //   spawn { look, x, z, facing, dy }: a thing of a demonstration (it goes at the end of the script;
-//     dy: half blocks over the ground, as a trap on the water).
+//     dy: half blocks over the ground, as a trap on the water; y: the height itself, as the glow of a
+//     unit of a plank on the bridge).
 //   look { k, look }: the k-th thing of the demonstration takes another look (a bundle that becomes
 //     a row of seedlings, the feed in a trough, a trap full of fish).
 //   hop { k }, gesture { k, act, t }: the k-th thing of the demonstration hops, or pecks.
@@ -72,7 +73,7 @@ function play(world, ent, dt, env) {
     if (st.spawn) {
       const id = `demo:${sc.key}:${made++}`;
       const y = env.groundY(st.spawn.x / 2, st.spawn.z / 2);
-      addEntity(world, { id, demo: { key: sc.key }, position: { x: st.spawn.x, y: y + (st.spawn.dy ?? 0), z: st.spawn.z, facing: st.spawn.facing ?? 0 }, look: st.spawn.look });
+      addEntity(world, { id, demo: { key: sc.key }, position: { x: st.spawn.x, y: st.spawn.y ?? y + (st.spawn.dy ?? 0), z: st.spawn.z, facing: st.spawn.facing ?? 0 }, look: st.spawn.look });
       sc.spawned.push(id);
     }
     const spawned = (k) => getEntity(world, sc.spawned[k]);

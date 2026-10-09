@@ -6,7 +6,7 @@ import { step, STEP } from '../src/core/world/step.js';
 import { envFor, placesOf } from '../src/core/world/env.js';
 import { addHero, addFriend, addZones } from '../src/core/world/populate.js';
 import { saveWorld, loadWorld, setHeroPlace } from '../src/core/world/save.js';
-import { skillEvents, judge, minParts, learnerRecord } from '../src/core/world/zones.js';
+import { skillEvents, judge, minParts, learnerRecord, countTime } from '../src/core/world/zones.js';
 import { isMashing, hasSweep } from '../src/core/learnlog.js';
 import { cueHint } from '../src/core/world/systems/place.js';
 import { DAY_MINUTES } from '../src/core/world/clock.js';
@@ -198,6 +198,22 @@ test('to put planks and take them back is free: no skill event until the hero st
   assert.equal(hero(w).hands.holds, null);
 });
 
+test('an open gap has the marks of a ruler, one for each unit, at the top of the planks; a solid bridge has none (#71)', () => {
+  const w = world();
+  run(w, 0.2);
+  const z = gap(w);
+  const ruler = getEntity(w, 'why:gap:ruler');
+  assert.equal(ruler?.look, `ruler-${z.gap}`);
+  assert.deepEqual([ruler.position.x, ruler.position.z], [z.lane, z.from]);
+  assert.ok(Math.abs(ruler.position.y - z.deckY) < 0.2, 'at the top of the planks');
+  lay(w, 4);
+  lay(w, 4);
+  lay(w, 4);
+  cross(w);
+  assert.ok(gap(w).set);
+  assert.equal(getEntity(w, 'why:gap:ruler'), null);
+});
+
 test('exactly right: at the commit the bridge becomes solid, with a drum, fish from the fisher, and an efficient first success', () => {
   const w = world();
   lay(w, 4);
@@ -218,7 +234,7 @@ test('exactly right: at the commit the bridge becomes solid, with a drum, fish f
   assert.ok(!hero(w).fall);
 });
 
-test('too long: the plank wobbles, the fisher calls out, and it floats back to the pile; nothing is lost', () => {
+test('too long: the plank wobbles, its part over the far bank glows, the fisher calls out, and after the count it floats back to the pile; nothing is lost', () => {
   const w = world();
   lay(w, 5);
   lay(w, 5);
@@ -230,14 +246,23 @@ test('too long: the plank wobbles, the fisher calls out, and it floats back to t
   assert.equal(skills(events).length, 0, 'a long plank is not a commit');
   const plank = getEntity(w, id);
   assert.ok(plank.position.z + 5 > gap(w).from + gap(w).gap, 'it sticks out past the far end');
+  // The part over the far bank glows (#71): 5 + 5 + 5 on a gap of 12 is 3 units too long.
+  const over = getEntity(w, 'why:gap:over');
+  assert.equal(over?.look, 'over-3');
+  assert.equal(over.position.z, gap(w).from + gap(w).gap);
   const tilts = new Set();
   for (let i = 0; i < 30; i++) {
     step(w, STEP, env);
     tilts.add(Math.sign(getEntity(w, id)?.tilt ?? 0));
   }
   assert.ok(tilts.has(1) && tilts.has(-1), 'it wobbles');
-  const later = run(w, 4);
+  // The plank stays for the count of the person, unit by unit up to the far bank (#71).
+  const count = countTime(gap(w).gap);
+  const still = run(w, count - 30 * STEP - 0.5);
+  assert.ok(!still.find((e) => e.type === 'float') && getEntity(w, 'why:gap:over'), 'it stays during the count');
+  const later = run(w, 2);
   assert.ok(later.find((e) => e.type === 'float'));
+  assert.equal(getEntity(w, 'why:gap:over'), null, 'the glow goes with the plank');
   assert.ok(getEntity(w, id), 'the plank is not lost');
   assert.ok(pile(w).items.includes(id), 'it is back on the pile');
   assert.equal(query(w, 'item').length, 9, 'all nine planks are still there');
@@ -281,13 +306,13 @@ test('when the mentor asks for a cue, Nghé stands on the bank at the near end a
   lay(w, 5);
   lay(w, 5);
   lay(w, 5); // long: 1
-  const first = run(w, 4);
+  const first = run(w, countTime(gap(w).gap) + 1);
   assert.ok(!first.find((e) => e.type === 'hint'), 'no hint of its own: the mentor chooses the moves');
   lay(w, 4, 3); // long again: 2
   // The mentor asks for a cue while the plank wobbles: it comes when the plank floats back.
   cueHint(w, getEntity(w, 'zone:gap'), env);
   assert.ok(!w.events.find((e) => e.type === 'hint'), 'not while the plank wobbles');
-  const later = run(w, 4);
+  const later = run(w, countTime(gap(w).gap) + 1);
   assert.ok(later.find((e) => e.type === 'hint'));
   run(w, 3);
   const nghe = getEntity(w, 'friend:nghe');

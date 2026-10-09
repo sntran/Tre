@@ -626,3 +626,10 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **An empty row of the basket has a word:** `mentor.healer.none.ngai` ("Ngải cứu: chưa có bó nào."), `mentor.healer.none.tiato` ("Tía tô: chưa có bó nào."), and `mentor.healer.none.rauma` ("Rau má: chưa có bó nào."). Each put of the healer in a shared task says `healer.put.*` ("Rau má vào giỏ rồi.").
 - **The fisher, with a stake in the hands:** `mentor.carry.fisher` ("Cắm cái cọc này lên hàng nhé."), or `fisher.tide.wait` while the tide is in. After a wrong row: `mentor.fisher.mark` is now "Chỗ này hở quá, cá chui ra mất." in place of "Cháu nhìn khe này nhé: không khe nào được rộng hơn khe của chú.".
 - **Please check:** "hở quá" and "cá chui ra mất".
+
+## The bridge: one task, marks, and the plank of the child (#71)
+
+- **A plank that is too long:** `world.bridge.long` is now "Tấm này dài quá." ("This plank is too long."), in place of "Dài quá rồi, cháu ơi! Thừa ra đằng kia kìa.". The part of the plank over the far bank glows while the line shows.
+- **The count after a try goes unit by unit:** the fisher (or Nghé at night) counts the marks of the planks with `num.1`, `num.2`, `num.3`, … from the near end, and each mark lights up at its word. The count stops at the far bank. It never says the length plank by plank ("ba, tám, mười ba").
+- **The planks for the guess:** `dlg.bridge.start.n3` ("Đây là những tấm ván giả.") and `dlg.bridge.start.n4` ("Cháu chạm vào hàng dài bằng chỗ gãy."), with the planks for the guess glowing; at night, Nghé says `mentor.nghe.bridge.guess` ("Đây là những tấm ván giả. Bạn chạm vào hàng dài bằng chỗ gãy."). The word "mờ" is gone.
+- **Please check:** "tấm ván giả" for the outlines of the guess, and "Tấm này dài quá." for a child of six.

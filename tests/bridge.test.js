@@ -34,3 +34,47 @@ test('after the trial of the fisher, the bridge starts: the planks for the guess
   const z = getEntity(s.state, 'zone:bridge-gap').zone;
   assert.ok(Math.hypot(pool.x - z.lane, pool.z - (z.from + z.gap / 2)) <= pool.r, 'the pool holds the gap');
 });
+
+test('a press takes a plank of the length of the last pick, and a tap on a plank of the pile chooses another length (#71)', async () => {
+  const picks = [];
+  const failures = await runHeadless({
+    name: 'bridge-choose',
+    profile: profile({ 'trial.fisher.done': true }),
+    clock: 540,
+    at: ['phu-dong', 46, 61],
+    steps: [
+      { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } },
+      { read: true },
+      { wait: 1.5 },
+      { press: { plank: 5 } },
+      { until: { event: 'pick', timeout: 20 } },
+      { press: { screenOf: 'bridge-gap' } },
+      { until: { event: 'put', timeout: 20 } },
+      { wait: 1.5 },
+      // A tap on the ground next to the pile, and then only the button: a plank of 5 again.
+      { tap: { cell: [47, 62] } },
+      { wait: 3 },
+      { press: true },
+      { until: { event: 'pick', timeout: 20 } },
+      { press: { screenOf: 'bridge-gap' } },
+      { until: { event: 'put', timeout: 20 } },
+      { wait: 1.5 },
+      // A tap on a plank of 3 chooses 3.
+      { press: { plank: 3 } },
+      { until: { event: 'pick', timeout: 20 } },
+    ],
+  }, { onSession: (x) => { x.listen((e) => { if (e.type === 'pick' && e.id === 'hero') picks.push(getEntity(x.state, e.item)?.item.size); }); } });
+  assert.deepEqual(failures, []);
+  assert.deepEqual(picks, [5, 5, 3]);
+});
+
+test('the looks of the marks: a ruler with a tick for each unit, the glow over the far bank, and the glow of a counted unit (#71)', async () => {
+  const { thingLook, figureOf, plank } = await import('../src/world/figures.js');
+  const ruler = figureOf(thingLook('ruler-12'));
+  assert.equal(ruler.parts.filter((p) => /^t\d+$/.test(p.name ?? p.id)).length, 13, 'a tick at each end of each unit');
+  assert.equal(figureOf(thingLook('over-3')).parts.length, 3);
+  assert.equal(figureOf(thingLook('unit-glow')).parts.length, 1);
+  // A plank of 5 has 5 dots and 4 lines between its units.
+  const p = plank(5);
+  assert.equal(p.parts.filter((x) => /^tick/.test(x.name ?? x.id)).length, 4);
+});
