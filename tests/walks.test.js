@@ -18,7 +18,8 @@ test('on the calf next to the scouts, one press gets the hero down and opens the
   Object.assign(hero.position, { x: enc.position.x - 4, y: enc.position.y, z: enc.position.z });
   Object.assign(nghe.position, { x: hero.position.x, y: hero.position.y, z: hero.position.z });
   hero.riding = nghe.id;
-  s.step();
+  // The child sees the new picture for a moment before the press (#60).
+  for (let i = 0; i < 24; i++) s.step();
   const a = s.action();
   assert.equal(a?.act, 'talk', 'the button shows the talk');
   assert.equal(a.target, 'encounter:scouts');

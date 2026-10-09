@@ -937,27 +937,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // it becomes the target of the action button (docs/TASKS.md). A tap never does a step of a task.
   let chosen = null; // the last tap: { id (an entity), along (a place along a stem or a line) }
   // p: the point of the target (half blocks); stand: where the hero walks to (p when not given).
-  // A press while the hero walks to the target of a tap waits for the end of the walk (#47).
-  let pressAfterWalk = false;
-  // The act and the target of the picture of the button at a press during a walk (#66: at the end
-  // of the walk, the act was chosen again, and a press on the talk put the child on the calf).
-  let pressShown = null;
-  // A press at the end of a walk when the button has no act on the target of the tap yet (it comes
-  // a moment later, when the hero has turned to it): the seconds that it still waits for that act.
-  let pressSoon = 0;
-  const PRESS_SOON = 0.6;
+  // A press while the hero walks to the target of a tap waits for the end of the walk (#47, #68:
+  // pendingPress).
   // exact: the walk ends at the stand point itself (a free point beside a stem), not near it.
   function goTo(p, id, along = null, stand = p, { exact = false } = {}) {
     chosen = { id, along };
-    pressAfterWalk = false;
-    pressSoon = 0;
-    const face = () => {
-      worldCommand(state, { type: 'face', id: 'hero', x: p.x, z: p.z });
-      if (pressAfterWalk) {
-        pressAfterWalk = false;
-        act(true);
-      }
-    };
+    pendingPress = null;
+    const face = () => worldCommand(state, { type: 'face', id: 'hero', x: p.x, z: p.z });
     // Near enough to act there: only a turn to it.
     if (distHb(hero().position, stand) <= (exact ? 1 : REACH - 1)) return face();
     if (exact && walkTo([{ x: stand.x / 2, y: stand.z / 2 }], face)) return;
@@ -988,19 +974,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The hold of the action button (the jar of feed, the slash at a culm): the act goes on while the
   // button is down, and its end comes when the button goes up.
   let holdAct = null;
-  function hold(on) {
+  function hold(on, id = null) {
     if (!on) {
       const a = holdAct;
       holdAct = null;
       a?.release?.();
       return;
     }
-    const a = pressAct();
+    const a = pressed(id);
     if (!a?.hold || busy) return;
     holdAct = a;
     a.run();
     acted();
     emit({ type: 'pulse', id: a.target });
+    emit({ type: 'press', id: id ?? btn?.id ?? null, act: a.act, target: a.target, done: true, hold: true });
   }
   // The end of a set of a practice: the reward, and the choice to stay or go back.
   function practiceEnd(person) {
@@ -1760,6 +1747,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // the end of the walk.
   // onStuck: what a walk does when a person stops it on the way (a leg of a far walk plans again).
   const stucks = new Map(); // the token of a walk -> what it does when it is stuck
+  let walkTick = -Infinity; // the tick of the last walk command
   function walkPath(path, end, onArrive, near = null, onStuck = null) {
     if (!path) return;
     const points = path.map((p) => ({ x: (p.x + 0.5) * 2, z: (p.y + 0.5) * 2 }));
@@ -1769,6 +1757,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stucks.clear();
     if (onArrive) arrivals.set(token, onArrive);
     if (onStuck) stucks.set(token, onStuck);
+    walkTick = state.tick;
     worldCommand(state, { type: 'walk', id: 'hero', points, token, near: near ? { x: near.x * 2, z: near.y * 2, d: near.d * 2 } : null });
   }
   const heroFrom = () => {
@@ -2042,10 +2031,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     else if (e?.item?.kind === 'culm') goTo(c.at, e.id, null, { x: c.at.x + 2, z: c.at.z });
     else if (e?.item?.kind === 'stem') goTo(c.at, e.id, Math.round(c.at.x - e.position.x), besideStem(e, c.at), { exact: true });
     else goTo(c.at, c.target);
-    if (hero().route || arrivals.size) {
-      pressAfterWalk = true;
-      pressShown = { act: c.act, target: c.target, task: taskOfCandidate(c) };
-    }
+    // The work of the same task at the end of the walk (#66: a press walked to the heap of rods,
+    // and at the mat the act of the button puts a rod of the heap on the mat).
+    if (walking()) pendingPress = { key: null, task: taskOfCandidate(c), t: null, n: 1, id: btn?.id ?? null };
   }
   // The task of a candidate of the button: of its thing, its place, or its person (a finish).
   function taskOfCandidate(c) {
@@ -2430,103 +2418,157 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     };
     return list.reduce((a, b) => (score(b) < score(a) ? b : a));
   }
-  // The picture on the big button (#60): the act that the child sees. A change of the picture that
-  // the child did not make (a person or Nghé comes into reach or goes, the hero stops at the end of
-  // a walk, the hero turns) starts its act SETTLE seconds after it shows: a child presses about half
-  // a second after the child sees a picture. In that time a press does the act of the old picture
-  // when it is still possible, or nothing (the button pulses once). A change that comes from a press
-  // or a tap of the child is the act at once (after a pick, the next press puts).
+  // The act of the big button (#68): one choice for the picture and the press. The session keeps
+  // the act of the button with an id (button()). The view draws that act and sends its id with
+  // the press, and the press does that act, or nothing (the button pulses). No other path chooses
+  // an act at the press (#68: the picture was the talk, and the press put the child on the calf).
+  // - During the walk to a tapped thing, the act of the button is the act on that thing at the end
+  //   of the walk (actAtEnd). A press waits for the end of the walk and then does that act if it is
+  //   there. After a walk that ends stuck, the press does nothing.
+  // - A change of the picture that the child did not make (a person or Nghé comes into reach or
+  //   goes, the hero stops at the end of a walk, the hero turns) settles for SETTLE seconds (#60):
+  //   a child presses about half a second after the child sees a picture. A press on a picture that
+  //   is younger does nothing. A change that comes from a press or a tap of the child is the act at
+  //   once (after a pick, the next press puts).
+  // - A press that names an older act of the button (the picture changed after the child saw it)
+  //   does that act when it is still in reach, or nothing.
   const SETTLE = 0.6;
   const CHILD_CHANGE = 0.4; // seconds after a command of the child: the change is of the child
-  let shown = null; // { key, a (the act), t (the tick of the change), prev (the picture before) }
+  const KEEP_ACTS = 2; // seconds: a press can name an act of the button this old
+  const PRESS_WAIT = 0.6; // seconds after the end of a walk: the act of a waiting press can still come
+  let btnSeq = 0;
+  let btn = null; // the act of the button now: { id, key, a (the act), deferred, t, child, prev }
+  let btnAll = []; // the acts of the button of the last KEEP_ACTS seconds
   let lastChild = -Infinity;
+  // A press during a walk: { key (the act of the picture), task (the work of a press that walks to
+  // the work), t (the tick when the walk ended) }.
+  let pendingPress = null;
   const actKey = (a) => (a ? `${a.act}|${a.target}` : null);
-  function watchPicture() {
-    const a = action();
+  // The hero walks (a route; or a walk command that the world takes in its next step), or a far
+  // walk waits for the land or for a person on the way.
+  const walking = () => Boolean(hero().route || farWait || state.tick - walkTick <= 1);
+  const ofTap = (a) => Boolean(a && chosen && (a.keys ?? [a.target]).includes(chosen.id));
+  // The act on the tapped thing at the end of the walk to it: the act of the button where the walk
+  // ends (the end of the route, or a point next to the thing when the walk goes in legs), with the
+  // hero turned to the thing. Null when the act there is not about the tapped thing.
+  function actAtEnd() {
+    const h = hero();
+    const thing = getEntity(state, chosen.id);
+    const tp = thing?.zone ? standOf(thing) : thing?.position ?? null;
+    let at = h.route?.points?.at(-1) ?? null;
+    if (tp && (!at || distHb(at, tp) > REACH + 2)) {
+      const n = Math.hypot(h.position.x - tp.x, h.position.z - tp.z) || 1;
+      at = { x: tp.x + ((h.position.x - tp.x) / n) * 2, z: tp.z + ((h.position.z - tp.z) / n) * 2 };
+    }
+    if (!at) return null;
+    const keep = { x: h.position.x, z: h.position.z, facing: h.position.facing };
+    const route = h.route;
+    Object.assign(h.position, { x: at.x, z: at.z, facing: tp ? Math.atan2(tp.x - at.x, tp.z - at.z) : keep.facing });
+    delete h.route;
+    try {
+      const a = action();
+      return ofTap(a) ? a : null;
+    } finally {
+      Object.assign(h.position, keep);
+      if (route) h.route = route;
+    }
+  }
+  // The act of the button now, with its id. The id stays while the act (its kind and its target)
+  // stays, also when a walk to the target ends.
+  function button() {
+    let a = action();
+    let deferred = false;
+    // During the walk to a tapped thing: the act on it at the end of the walk (also when it is in
+    // reach on the way: the act comes when the hero stands).
+    if (chosen && walking()) {
+      if (!ofTap(a)) a = actAtEnd();
+      deferred = Boolean(a);
+    }
     const key = actKey(a);
-    if (shown && key === shown.key) {
-      shown.a = a;
+    if (btn && key === btn.key) {
+      btn.a = a;
+      btn.deferred = deferred;
+      // A tap of the child on its thing makes the picture the choice of the child.
+      if (ofTap(a)) btn.child = true;
+      return btn;
+    }
+    const child = (state.tick - lastChild) * STEP < CHILD_CHANGE || ofTap(a);
+    btn = { id: ++btnSeq, key, a, deferred, t: state.tick, child, prev: btn?.key ?? null, first: !btn };
+    btnAll = [...btnAll.filter((b) => (state.tick - b.t) * STEP < KEEP_ACTS), btn];
+    return btn;
+  }
+  // The act of a press that names the act id of the button (no id: the act of the button now), or
+  // null (the button pulses). A press during a walk waits: { wait: true }.
+  function pressed(id) {
+    const now = button();
+    const b = id === null || id === undefined ? now : btnAll.find((x) => x.id === id) ?? null;
+    if (!b || !b.a) return null;
+    if (b !== now) {
+      // The picture changed after the child saw it: that act, while it is still in reach.
+      return b.deferred ? null : candidates().find((c) => c.act === b.a.act && c.target === b.a.target) ?? null;
+    }
+    if (!b.child && !b.first && (state.tick - b.t) * STEP < SETTLE) return null;
+    if (b.deferred) return { wait: true, key: b.key };
+    return b.a;
+  }
+  // The action button (or E): do the act of the picture, and the target pulses once. An act that
+  // goes on while the button is down starts with the hold of the button.
+  function press(id) {
+    // The id of the act of the press (a press with no id names the act of the button now).
+    const pid = id ?? button().id;
+    const a = pressed(id);
+    // Each press during the walk counts: a child who counts the presses (one bunch for each) gets
+    // that many acts at the end of the walk.
+    if (a?.wait) {
+      pendingPress = pendingPress?.key === a.key ? { ...pendingPress, n: pendingPress.n + 1 } : { key: a.key, task: null, t: null, n: 1, id: pid };
+      emit({ type: 'press', id: pid, act: null, wait: true, done: false });
       return;
     }
-    const child = (state.tick - lastChild) * STEP < CHILD_CHANGE || Boolean(a && chosen && (a.keys ?? [a.target]).includes(chosen.id));
-    shown = { key, a, t: state.tick, prev: child ? null : shown };
-  }
-  // The act of a press: the act of the picture, or of the old picture while a new one settles.
-  // Null: no act (the button pulses when a new picture took the place of an act that is gone).
-  // The act of a kept picture ({ act, target }) now, in reach, or null.
-  function keptAct(kept) {
-    const now = action();
-    if (now && now.act === kept.act && now.target === kept.target) return now;
-    const same = candidates().find((c) => c.act === kept.act && c.target === kept.target);
-    if (same) return same;
-    // The work of the same task: a press walked to the heap of rods, and at the mat the act of the
-    // button puts a rod of the heap on the mat. Never a talk or a ride in its place.
-    if (now && kept.task && !WORKLESS.has(now.act) && taskOfCandidate(now) === kept.task) return now;
-    return null;
-  }
-  function pressAct() {
-    watchPicture();
-    const a = shown.a;
-    if (!shown.prev || (state.tick - shown.t) * STEP >= SETTLE) return a;
-    const old = shown.prev.a;
-    const still = old && candidates().find((c) => c.act === old.act && c.target === old.target);
-    if (still) return still;
-    emit({ type: 'pulse', id: null });
-    return null;
-  }
-  // A press that waits at the end of a walk: the act on the target of the tap as soon as it is
-  // there; else, after PRESS_SOON seconds, nothing (the button pulses).
-  function stepPressSoon() {
-    if (pressSoon <= 0) return;
-    pressSoon -= STEP;
-    const a = action();
-    if (a && chosen && (a.keys ?? [a.target]).includes(chosen.id)) {
-      pressSoon = 0;
-      pressShown = { act: a.act, target: a.target };
-      act(true);
-    } else if (pressSoon <= 0) emit({ type: 'pulse', id: null });
-  }
-  // The action button (or E): do the act of the target, and the target pulses once. An act
-  // that goes on while the button is down starts here, and ends with the hold of the button.
-  // walked: the press came during the walk to the target. An act that goes on while the button is
-  // down (a slash) does not start then: the button is up (#54).
-  function act(walked = false) {
-    // A press at the end of a walk does the act of the picture at the press, on its target, when
-    // it can (#66); if not, nothing, and the button pulses. With no picture at the press, the act
-    // of the tap (the child chose it).
-    const kept = walked ? pressShown : null;
-    if (walked) pressShown = null;
-    let a = walked ? (kept ? keptAct(kept) : action()) : pressAct();
-    // No act on the target of the tap at the end of the walk yet: the press waits a moment for it
-    // (#66: in the browser, a tap on a pale row of the bridge and a press at once made no guess).
-    if (walked && !kept && chosen && !(a && (a.keys ?? [a.target]).includes(chosen.id))) {
-      pressSoon = PRESS_SOON;
+    if (!a) {
+      // A dim button does nothing; a press on an act that is gone pulses.
+      if (button().a || id !== null) emit({ type: 'pulse', id: null });
+      emit({ type: 'press', id: pid, act: null, done: false });
       return;
     }
-    if (walked && kept && !a) {
-      emit({ type: 'pulse', id: null });
+    runAct(a, pid);
+  }
+  // walked: the act comes at the end of a walk. An act that goes on while the button is down (a
+  // slash) does not start then: the button is up (#54).
+  function runAct(a, id, walked = false) {
+    if (a.hold) {
+      if (!walked) hold(true, id);
       return;
     }
-    // The hero still walks to the target of the last tap, and the button has no act on it yet:
-    // the press comes at the end of the walk (a child presses at once).
-    // The picture is not about the target of the tap yet (an older act): at the end of the walk the
-    // press does the act on the target of the tap (#66: a tap on a pale row of the bridge, and a
-    // press at once, kept the check of the button and made no guess).
-    if (chosen && (hero().route || arrivals.size) && !(a && (a.keys ?? [a.target]).includes(chosen.id))) {
-      pressAfterWalk = true;
-      pressShown = null;
-      return;
-    }
-    if (!a) return;
-    if (a.hold && walked) return;
-    if (a.hold) return hold(true);
     // The hero turns to the target of the act (a place behind the hero, #44).
     if (a.at && a.act !== 'ride' && a.act !== 'ride-off') worldCommand(state, { type: 'face', id: 'hero', x: a.at.x, z: a.at.z });
     a.run();
     // The act on the target of the last tap is done: the next press chooses again (#47: the next
     // press never takes back what was just put there).
-    if (!a.go && chosen && (a.keys ?? [a.target]).includes(chosen.id)) chosen = null;
+    if (!a.go && ofTap(a)) chosen = null;
     emit({ type: 'pulse', id: a.target });
+    emit({ type: 'press', id, act: a.act, target: a.target, done: true });
+  }
+  // A press that waits for the end of a walk: the act of its picture as soon as it is in reach (or
+  // the work of its task, after a press that walks to the work); else, PRESS_WAIT seconds after
+  // the end of the walk, nothing (the button pulses). A walk that ends stuck does not come near.
+  function stepPending() {
+    if (!pendingPress || walking()) return;
+    pendingPress.t ??= state.tick;
+    const a = busy || screen ? null : action();
+    const p = pendingPress;
+    if (a && (actKey(a) === p.key || (p.task && !WORKLESS.has(a.act) && taskOfCandidate(a) === p.task))) {
+      // One act in each step; the next press of the walk in a next step (after a pick, a put).
+      p.n -= 1;
+      p.t = state.tick;
+      if (p.n <= 0) pendingPress = null;
+      runAct(a, p.id, true);
+      return;
+    }
+    if ((state.tick - p.t) * STEP >= PRESS_WAIT) {
+      pendingPress = null;
+      emit({ type: 'pulse', id: null });
+      emit({ type: 'press', id: p.id, act: null, done: false });
+    }
   }
 
   // The cue: when the child does nothing for CUE_IDLE seconds in a task, the thing to touch next
@@ -2670,8 +2712,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (!person || (person.kind === 'encounter' && raidOn())) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
       chosen = { id: person.entity, along: null };
-      pressAfterWalk = false;
-      pressSoon = 0;
+      pendingPress = null;
       // A press while the hero walks to the person (or to the enemies of an encounter) comes at the
       // end of the walk, as at a place of a task (#50: a child presses at once). A person who walks
       // (to the station, home): the walk goes on to where the person is now (#66: the walk to the
@@ -2680,10 +2721,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const now = personNow(person);
         if (tries > 0 && Math.hypot(now.x - heroCell().x, now.y - heroCell().y) > PERSON_NEAR) return follow(tries - 1);
         worldCommand(state, { type: 'face', id: 'hero', x: now.x * 2, z: now.y * 2 });
-        if (pressAfterWalk) {
-          pressAfterWalk = false;
-          act(true);
-        }
       });
       follow(PERSON_FOLLOW);
       return;
@@ -3211,7 +3248,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     worldStep(state, STEP, env);
     // The picture of the button, as the child sees it (about each 0.1 seconds).
-    if (state.tick % 3 === 0 && !screen) watchPicture();
+    if (state.tick % 3 === 0 && !screen) button();
     stepSling();
     stepFarewell();
     stepCheer();
@@ -3219,7 +3256,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     checkNotebook();
     stepGuessLine();
     stepLeaveTask();
-    stepPressSoon();
+    stepPending();
     stepToolLines();
     stepFarWait();
     for (const fn of later.splice(0)) fn();
@@ -3401,7 +3438,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (busy) return;
     if (type === 'hold' || type === 'hands') lastPress = state.tick;
     if (type === 'hold') {
-      hold(true);
+      hold(true, cmd.id ?? null);
       return;
     }
     // In a raid, a tap on Nghé is the charge only when Nghé is a tool of this raid.
@@ -3427,7 +3464,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (type === 'tap') tap(cmd.target ?? {});
-    else if (type === 'hands') act();
+    else if (type === 'hands') press(cmd.id ?? null);
     // A wave: the child calls the person of the task (docs/MENTOR.md).
     else if (type === 'wave') mentoring.wave();
     else if (type === 'jump') { if (!folk.jump()) jump(); }
@@ -3444,8 +3481,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (type === 'move' && cmd.strength) {
         arrivals.clear();
         chosen = null;
-        pressAfterWalk = false;
-        pressSoon = 0;
+        pendingPress = null;
       }
       worldCommand(state, { id: 'hero', ...cmd });
     }
@@ -3516,12 +3552,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // All that the action button can act on now, with the distance of each (for tests and the
     // debug panel): [{ act, icon, target, d, rank }].
     targets: () => (screen || busy ? [] : candidates().map((c) => ({ act: c.act, icon: c.icon, target: c.target, at: c.at ?? null, d: Math.round(c.d * 10) / 10, rank: c.rank }))),
-    // The target of the action button now: { act, icon, target, hold, ghost } or null.
+    // The act of the action button now (#68): { id, act, icon, target, hold, ghost, spot, walk } or
+    // null. The view draws it and sends its id with a press. walk: the act comes at the end of the
+    // walk to the tapped thing.
     action() {
-      const a = action();
+      const b = button();
+      const a = b.a;
       if (!a) return null;
       const zone = getEntity(state, a.target)?.zone;
-      return { act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold), ghost: a.ghost ?? null, spot: zone && zone.rule !== 'span' ? spotOf(zone) : null };
+      return { id: b.id, act: a.act, icon: a.icon, target: a.target, hold: Boolean(a.hold), ghost: a.ghost ?? null, spot: zone && zone.rule !== 'span' ? spotOf(zone) : null, walk: b.deferred };
     },
     // The place of a task under a map point (cells), or null: a tap there chooses the place.
     placeAt: (x, y) => workZoneAt(x * 2, y * 2)?.id ?? null,

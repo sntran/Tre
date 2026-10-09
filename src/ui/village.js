@@ -372,16 +372,20 @@ export async function mountVillage(ctx, params = {}) {
   let actCarry = null;
   let actNow = null;
   let actHold = false;
+  // After a talk box closes, the big button takes no press for a moment: the arrow of the box is
+  // over the button, and one more tap on the arrow pressed the button (#68: a rod went on the mat
+  // before the child started to count).
+  const QUIET_AFTER_TALK = 600; // ms
+  let quietUntil = 0;
   actBtn.addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    if (busy) return;
-    // A press on a dim button goes to the game too: during a walk to a tapped thing, the act comes
-    // at the end of the walk (#66: a tap on a pale row of the bridge and a press at once made no
-    // guess, because the button had no act yet).
+    if (busy || performance.now() < quietUntil) return;
+    // The press names the act of the picture on the button (#68): the game does that act, or
+    // nothing. A press on a dim button goes to the game too: during a walk the act comes at the end.
     if (actNow?.hold) {
       actHold = true;
-      send({ type: 'hold', on: true });
-    } else send({ type: 'hands' });
+      send({ type: 'hold', on: true, id: actNow.id });
+    } else send({ type: 'hands', id: actNow?.id ?? null });
   });
   const actUp = () => {
     if (!actHold) return;
@@ -400,6 +404,9 @@ export async function mountVillage(ctx, params = {}) {
     const icon = a?.icon ?? 'hand-pick';
     if (icon !== actNow?.icon) actIcon.src = actIcon.src.replace(/ui\/[a-z-]+\.svg/, `ui/${icon}.svg`);
     actBtn.classList.toggle('dim', !a);
+    // The act of the picture, for the play of a phone that checks each press (#68).
+    actBtn.dataset.act = a ? `${a.act}|${a.target}` : '';
+    actBtn.dataset.actId = a ? String(a.id) : '';
     actNow = a;
     const carry = busy ? actCarry : session.carried();
     if (carry !== actCarry) {
@@ -830,7 +837,7 @@ export async function mountVillage(ctx, params = {}) {
       else if (what === 'jump') {
         jumpDown = performance.now();
         send({ type: 'jump' });
-      } else send({ type: 'hands' });
+      } else send({ type: 'hands', id: actNow?.id ?? null });
     } else {
       if (what === 'jump') jumpEnd();
       // The action key up: the pour of the jar stops (as the finger leaves the action button).
@@ -1367,6 +1374,7 @@ export async function mountVillage(ctx, params = {}) {
       case 'busy':
         busy = ev.on;
         if (busy) dropInput();
+        else quietUntil = performance.now() + QUIET_AFTER_TALK;
         return;
       case 'halt': dropInput(); return;
       case 'hud': updateHud(); return;
