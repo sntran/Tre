@@ -1208,6 +1208,12 @@ export async function mountVillage(ctx, params = {}) {
       el.addEventListener('click', (e) => {
         e.stopPropagation();
         sayLine(line, { force: true });
+        // A person or a thing under the bubble takes the tap too (#72: the line "Đi tìm bác thợ
+        // rèn." stood over the teacher, and a tap on him only said the line again).
+        if (busy || !alive) return;
+        const p = local(e);
+        const target = targetUnder(p);
+        if (target && !target.ground) onTap(p);
       });
     }
     marks.append(el);
