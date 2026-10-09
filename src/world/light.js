@@ -23,6 +23,18 @@ export function taskPools(entities, hero, pool = POOL) {
   const out = [];
   if (!hero) return out;
   for (const tz of entities) {
+    // An open gap of the bridge has a light too (#71: at night the child could not see the planks
+    // for the guess): its gap, its planks, and the planks for the guess.
+    if (tz.zone?.rule === 'span' && !tz.zone.set && !tz.zone.shut && tz.position) {
+      const z = tz.zone;
+      const pts = [tz.position, { x: z.lane, y: z.deckY, z: z.from }, { x: z.lane, y: z.deckY, z: z.from + z.gap }];
+      for (const e of entities) {
+        if (((e.item && e.item.task === z.id && !e.item.held) || (e.guess && e.guess.zone === z.id)) && e.position && !e.hidden) pts.push(e.position);
+      }
+      const p = poolOf(z.id, pts, hero, pool);
+      if (p) out.push(p);
+      continue;
+    }
     if (tz.zone?.rule !== 'trial' || tz.zone.done || !tz.position) continue;
     const owner = tz.zone.id;
     const pts = [tz.position];
@@ -37,17 +49,23 @@ export function taskPools(entities, hero, pool = POOL) {
         if (e.item.fixed && e.item.size) pts.push({ ...e.position, x: e.position.x + e.item.size });
       }
     }
-    const xs = pts.map((p) => p.x);
-    const zs = pts.map((p) => p.z);
-    const x0 = Math.min(...xs);
-    const x1 = Math.max(...xs);
-    const z0 = Math.min(...zs);
-    const z1 = Math.max(...zs);
-    const mid = { x: (x0 + x1) / 2, z: (z0 + z1) / 2 };
-    if (Math.hypot(mid.x - hero.x, mid.z - hero.z) > pool.near) continue;
-    const y = Math.min(...pts.map((p) => p.y ?? 0));
-    const r = Math.max(pool.min, Math.min(pool.max, Math.hypot(x1 - x0, z1 - z0) / 2 + pool.pad));
-    out.push({ task: owner, x: mid.x, y, z: mid.z, r });
+    const p = poolOf(owner, pts, hero, pool);
+    if (p) out.push(p);
   }
   return out;
+}
+
+// The pool of light around the points of a task, or null when it is too far from the hero.
+function poolOf(task, pts, hero, pool) {
+  const xs = pts.map((p) => p.x);
+  const zs = pts.map((p) => p.z);
+  const x0 = Math.min(...xs);
+  const x1 = Math.max(...xs);
+  const z0 = Math.min(...zs);
+  const z1 = Math.max(...zs);
+  const mid = { x: (x0 + x1) / 2, z: (z0 + z1) / 2 };
+  if (Math.hypot(mid.x - hero.x, mid.z - hero.z) > pool.near) return null;
+  const y = Math.min(...pts.map((p) => p.y ?? 0));
+  const r = Math.max(pool.min, Math.min(pool.max, Math.hypot(x1 - x0, z1 - z0) / 2 + pool.pad));
+  return { task, x: mid.x, y, z: mid.z, r };
 }

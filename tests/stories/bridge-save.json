@@ -4,7 +4,7 @@
     "vi": "Lưu game khi cầu mới xong một nửa, rồi mở lại: các tấm ván và vòng chơi vẫn như cũ, và cầu làm tiếp được.",
     "en": "Save in the middle of the bridge and load: the planks and the round are the same, and the bridge goes on."
   },
-  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "trial.fisher.done": true } },
   "clock": 540,
   "at": ["phu-dong", 46, 61],
   "steps": [

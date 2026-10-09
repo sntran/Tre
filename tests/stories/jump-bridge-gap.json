@@ -10,7 +10,7 @@
     "lang": "vi",
     "seed": 7,
     "flags": {
-      "intro.seen": true
+      "intro.seen": true, "trial.fisher.done": true
     }
   },
   "clock": 540,

@@ -572,8 +572,30 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // (at home at night).
   let guessTold = false;
   const GUESS_NEAR = 20; // half blocks: the hero stands this near the outlines for the line
+  // The bridge is a task of the fisher, and a person gives one task at a time (#71: the talk of the
+  // bridge opened at the first visit, and then the trial of the fisher started too). The bridge
+  // opens when the trial of the fisher is done, or while the fisher is not at work and his trial is
+  // not open (at night Nghé helps at the bridge). While it is closed, its outlines do not show and
+  // its planks do not move.
+  function bridgeOpen() {
+    if (profile.flags['trial.fisher.done']) return true;
+    const tz = trialZone('fisher');
+    if (tz && !tz.zone.done) return false;
+    const fisher = getEntity(state, 'npc:fisher');
+    return !(fisher && !fisher.hidden && atWork(fisher, state.clock.minutes));
+  }
+  function stepBridgeOpen() {
+    if (state.tick % 15 !== 0) return;
+    const open = bridgeOpen();
+    for (const g of query(state, 'guess', 'position')) {
+      if (open) delete g.hidden;
+      else g.hidden = true;
+    }
+    // A closed bridge has no light of its own at night (src/world/light.js).
+    for (const z of query(state, 'zone')) if (z.zone.rule === 'span') z.zone.shut = !open;
+  }
   function stepGuessLine() {
-    if (guessTold || busy || screen) return;
+    if (guessTold || busy || screen || !bridgeOpen()) return;
     const outlines = query(state, 'guess', 'position').filter((g) => g.guess.left === undefined);
     if (!outlines.length) return;
     const at = outlines[0].position;
@@ -2234,6 +2256,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           continue;
         }
         if (zone && rule !== 'heap' && rule !== 'pile') continue;
+        // The planks of a closed bridge do not move (#71).
+        if (rule === 'pile' && !bridgeOpen()) continue;
         // Of the things of a task, the kind of the last pick first, while a heap has that kind. A
         // tap on a thing chooses it.
         if (want !== null && chosen?.id !== e.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || SAME_KIND.has(lastPick.task))) continue;
@@ -2278,7 +2302,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       // The guess at the bridge: the plank outline in front of the hero (or the outline of the last
       // tap). A press chooses it: the bridge takes that many planks.
-      const outlines = query(state, 'guess', 'position').filter((g) => g.guess.left === undefined);
+      const outlines = query(state, 'guess', 'position').filter((g) => g.guess.left === undefined && !g.hidden);
       if (outlines.length) {
         const ahead = frontOf(hp);
         const g = outlines.find((x) => x.id === chosen?.id) ?? outlines.reduce((a, b) => (distHb(ahead, b.position) < distHb(ahead, a.position) ? b : a));
@@ -3062,7 +3086,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (d <= limit && (!best || d < best.d)) best = { target, d };
     };
     for (const g of query(state, 'guess', 'position')) {
-      if (g.guess.left !== undefined) continue;
+      if (g.guess.left !== undefined || g.hidden) continue;
       consider({ guess: { zone: g.guess.zone, n: g.guess.n } }, distHb(p, { x: g.position.x, z: g.position.z + 2 }), 1.2);
     }
     if (best) return best.target;
@@ -3317,6 +3341,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepCheer();
     checkSteps();
     checkNotebook();
+    stepBridgeOpen();
     stepGuessLine();
     stepLeaveTask();
     stepPending();

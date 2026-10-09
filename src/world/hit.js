@@ -119,7 +119,7 @@ export function figureUnder(p, cam, figs, pad, r = 0.7) {
 export function guessUnder(p, cam, guesses) {
   let best = null;
   for (const g of guesses) {
-    if (g.guess.left !== undefined) continue;
+    if (g.guess.left !== undefined || g.hidden) continue;
     const q = g.position;
     const b = cam.screenBox({ x0: q.x / 2 - 0.6, x1: q.x / 2 + 0.6, y0: q.y / 2, y1: q.y / 2 + 0.3, z0: q.z / 2, z1: q.z / 2 + 2 });
     if (!inBox(p, b, 4)) continue;

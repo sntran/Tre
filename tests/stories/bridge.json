@@ -4,7 +4,7 @@
     "vi": "Cây cầu gãy: đoán số tấm ván, rồi thử ngắn, dài, và vừa đủ; các cờ của mỗi lần bước lên cầu.",
     "en": "The broken bridge: the prediction, then a short, a long, and an exact bridge; the flags of each commit."
   },
-  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true } },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "trial.fisher.done": true } },
   "clock": 540,
   "at": ["phu-dong", 46, 61],
   "steps": [

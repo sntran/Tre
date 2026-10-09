@@ -1,0 +1,36 @@
+// The bridge as a task of the fisher (#71): one task at a time, the marks of a ruler, and the
+// plank that the child chooses.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { runHeadless } from './story-run.js';
+import { getEntity, query } from '../src/core/world/state.js';
+import { taskPools } from '../src/world/light.js';
+
+const profile = (flags) => ({ name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true, ...flags } });
+
+test('while the trial of the fisher is open, the bridge does not start: no talk, no planks for the guess, and no light of its own (#71)', async () => {
+  let s = null;
+  const opened = [];
+  const failures = await runHeadless({ name: 'bridge-shut', profile: profile({}), clock: 540, at: ['phu-dong', 46, 61], steps: [{ wait: 6 }] }, {
+    onSession: (x) => { s = x; x.listen((e) => { if (e.type === 'open') opened.push(e.textKey ?? e.screen); }); },
+  });
+  assert.deepEqual(failures, []);
+  assert.ok(!opened.some((k) => String(k).includes('bridge')), `no line of the bridge: ${opened.join(', ')}`);
+  const guesses = query(s.state, 'guess');
+  assert.ok(guesses.length && guesses.every((g) => g.hidden), 'the planks for the guess do not show');
+  assert.ok(getEntity(s.state, 'zone:bridge-gap').zone.shut);
+  const hero = getEntity(s.state, 'hero').position;
+  assert.ok(!taskPools(s.state.entities, hero).some((p) => p.task === 'bridge-gap'), 'no light of the bridge');
+});
+
+test('after the trial of the fisher, the bridge starts: the planks for the guess show, and the bridge has its light (#71)', async () => {
+  let s = null;
+  const failures = await runHeadless({ name: 'bridge-open', profile: profile({ 'trial.fisher.done': true }), clock: 540, at: ['phu-dong', 46, 61], steps: [{ until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } }] }, { onSession: (x) => { s = x; } });
+  assert.deepEqual(failures, []);
+  assert.ok(query(s.state, 'guess').every((g) => !g.hidden));
+  const hero = getEntity(s.state, 'hero').position;
+  const pool = taskPools(s.state.entities, hero).find((p) => p.task === 'bridge-gap');
+  assert.ok(pool, 'the bridge has a pool of light');
+  const z = getEntity(s.state, 'zone:bridge-gap').zone;
+  assert.ok(Math.hypot(pool.x - z.lane, pool.z - (z.from + z.gap / 2)) <= pool.r, 'the pool holds the gap');
+});

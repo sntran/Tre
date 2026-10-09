@@ -904,7 +904,7 @@
       "topKind": "shirt",
       "bottomKind": "trousers",
       "hair": "short",
-      "hat": "non",
+      "hat": "band",
       "item": "pole",
       "face": 3
     },
@@ -1257,7 +1257,7 @@
       "topKind": "shirt",
       "bottomKind": "shorts",
       "hair": "short",
-      "hat": "non",
+      "hat": "band",
       "item": "net",
       "face": 1
     },
