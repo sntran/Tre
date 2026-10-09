@@ -629,6 +629,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const who = near ? fisher : nghe && !nghe.hidden ? nghe : null;
     if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'mentor.bridge.next', params: {} });
     if (pile) setCue([pile.id]);
+    // The line names the pile and the gap: the view leads to the pile and to both ends of the gap
+    // (#71: at night the pile stayed out of the screen after the turn to the planks for the guess).
+    const gap = getEntity(state, 'zone:bridge-gap');
+    const ends = gap ? [gap.zone.from, gap.zone.from + gap.zone.gap].map((z) => ({ x: gap.zone.lane, y: gap.position.y, z })) : [];
+    const pts = [...(pile?.position ? [{ ...pile.position }] : []), ...ends];
+    if (pts.length) emit({ type: 'workView', key: 'bridge', points: pts, sight: pts });
   }
 
   // People and encounters, in map cells. They block their cells for the paths of taps.
