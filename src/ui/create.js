@@ -16,7 +16,10 @@ const STEP_MS = 350; // one step of the turn
 const PREVIEW = 220; // the size of the preview (CSS pixels)
 // The step of the look has four rows of pictures: the preview is smaller there, so that all the rows
 // fit over the main button on a phone held upright (#57: "Tiếp" covered the row of the clothes).
+// The step of the grade has four rows of classes and a line over its button: the preview is
+// smaller there too (#72: on a phone of 360 × 740, the button covered the last row).
 const PREVIEW_LOOK = 140;
+const SMALL_PREVIEW = new Set(['look', 'grade']);
 
 export async function mountCreate(ctx) {
   const opts = { ...ctx.data.figures.hero, nameMax: ctx.data.hero.nameMax };
@@ -141,10 +144,10 @@ export async function mountCreate(ctx) {
     thumbRows = [];
     stage.replaceChildren(dots());
     const name = steps[step];
-    const size = name === 'look' ? PREVIEW_LOOK : PREVIEW;
+    const size = SMALL_PREVIEW.has(name) ? PREVIEW_LOOK : PREVIEW;
     turnCanvas.style.width = `${size}px`;
     turnCanvas.style.height = `${size}px`;
-    preview.classList.toggle('small', name === 'look');
+    preview.classList.toggle('small', SMALL_PREVIEW.has(name));
     if (name === 'lang') {
       stage.append(title('create.lang'));
       for (const code of ['vi', 'en']) {
