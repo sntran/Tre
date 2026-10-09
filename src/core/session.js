@@ -2024,6 +2024,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     save('gift');
   }
 
+  // The moves of a person that count on their own things (src/core/mentoring.js).
+  const SHOW_MOVES = new Set(['demo', 'smaller', 'share']);
   // The finish of the task of a person when there is work to check (the person checks it):
   // { act, icon, run }, or null. The work system checks the rest.
   function finishOf(key) {
@@ -2031,6 +2033,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const tz = trialZone(id);
       return tz && !tz.zone.done ? tz : null;
     };
+    // While the person shows a move with a count of its own (the demonstration, the person's
+    // things first, the share; not a move that is only a line), the work waits for the end of that
+    // count: the child watches, and then finishes (#69: a tie in the middle of the demonstration
+    // stopped its count at four).
+    const show = getEntity(state, `script:${key}`)?.script;
+    if (show && SHOW_MOVES.has(show.move) && show.steps.some((st) => /^num\./.test(st.say?.key ?? ''))) return null;
     if (key === 'trial-scholar' && open('scholar') && zoneOf('mat')?.zone.items.length) return { act: 'tie', icon: 'rope', run: () => work('scholar', 'tie') };
     if (key === 'trial-healer' && open('healer') && zoneOf('basket')?.zone.items.length) return { act: 'give', icon: 'basket', run: () => work('healer', 'give') };
     const wood = key === 'trial-woodcutter' ? open('woodcutter') : null;

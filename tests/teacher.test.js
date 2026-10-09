@@ -150,3 +150,42 @@ test('smaller and share: the teacher puts his rods one at a time, counts them, a
     }
   }
 });
+
+test('while the teacher shows his own count, a tap on him and a press never tie: his count goes on to its end, and then the child ties', async () => {
+  const session = await atMat();
+  const { lines } = listenLines(session);
+  const shows = () => ['demo', 'smaller', 'share'].includes(getEntity(session.state, 'script:trial-scholar')?.script.move);
+  // Wrong tries until the teacher shows a move with his own count.
+  for (const n of [7, 12, 7, 12, 7, 12]) {
+    if (shows() || getEntity(session.state, 'zone:trial-scholar').zone.done || mat(session) > n) break;
+    tie(session, n);
+    run(session, 30, () => shows());
+  }
+  assert.ok(shows(), 'the teacher shows a move with his own count');
+  const move = getEntity(session.state, 'script:trial-scholar').script.move;
+  run(session, 2);
+  const ties = [];
+  const off = session.listen((ev) => { if (ev.type === 'tie') ties.push(ev); });
+  lines.length = 0;
+  // A child taps the teacher and presses, again and again, during his count.
+  for (let k = 0; k < 6 && shows(); k++) {
+    assert.ok(!session.targets().some((c) => c.act === 'tie'), `no tie while the teacher shows ${move}`);
+    session.command({ type: 'tap', target: { person: 'npc:teacher' } });
+    session.events();
+    session.command({ type: 'hands' });
+    session.events();
+    run(session, 1);
+  }
+  run(session, 30, () => !shows());
+  off();
+  assert.deepEqual(ties, [], 'no tie during his count');
+  const keys = lines.map((l) => l.key);
+  const end = { demo: 'mentor.scholar.demoDone', smaller: 'mentor.scholar.smallerPut', share: 'mentor.scholar.sharePut' }[move];
+  assert.ok(keys.includes(end), `his count goes on to its end: ${keys.join(' ')}`);
+  // Then the tie is there again.
+  run(session, 1);
+  session.command({ type: 'tap', target: { person: 'npc:teacher' } });
+  session.events();
+  run(session, 3);
+  assert.ok(session.targets().some((c) => c.act === 'tie'), 'after his count the child can tie');
+});
