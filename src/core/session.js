@@ -2093,11 +2093,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // Only the line of a pick has the limit: the line of a put says what happened, and it always
     // comes (#70: at four of each kind, the fourth put was silent, and the child did not know that
     // the bunch went in).
-    if (what !== 'put') {
-      herbSaid = herbSaid.key === key ? { key, n: herbSaid.n + 1 } : { key, n: 1 };
-      if (herbSaid.n > HERB_RUN) return;
-    }
-    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: key, params: {} });
+    const run = herbSaid.key === key ? herbSaid.n + 1 : 1;
+    herbSaid = { key, n: run };
+    if (what !== 'put' && run > HERB_RUN) return;
+    // The same put again and again: each fourth one has another form ("Thêm một bó rau má nữa."),
+    // so that no line comes more than three times in a row (#45).
+    const line = what === 'put' && run % (HERB_RUN + 1) === 0 ? `healer.more.${kind.slice(5)}` : key;
+    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: line, params: {} });
   }
   // A task or a folk game goes on now.
   const taskOn = () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done));

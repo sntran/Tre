@@ -625,7 +625,8 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The smith says why the iron bent:** `smith.bend.early` ("Sắt chưa đủ nóng, nên cong.") and `smith.bend.late` ("Sắt nguội mất rồi, nên cong."). The line `mentor.picture.smith` ("Ra sông xem chú đánh cá một lát, rồi quay lại cũng được.") now comes only after the iron of the child was hot one time.
 - **An empty row of the basket has a word:** `mentor.healer.none.ngai` ("Ngải cứu: chưa có bó nào."), `mentor.healer.none.tiato` ("Tía tô: chưa có bó nào."), and `mentor.healer.none.rauma` ("Rau má: chưa có bó nào."). Each put of the healer in a shared task says `healer.put.*` ("Rau má vào giỏ rồi.").
 - **The fisher, with a stake in the hands:** `mentor.carry.fisher` ("Cắm cái cọc này lên hàng nhé."), or `fisher.tide.wait` while the tide is in. After a wrong row: `mentor.fisher.mark` is now "Chỗ này hở quá, cá chui ra mất." in place of "Cháu nhìn khe này nhé: không khe nào được rộng hơn khe của chú.".
-- **Please check:** "hở quá" and "cá chui ra mất".
+- **The same put again and again:** each fourth put of the same herb in a row says `healer.more.ngai`, `.tiato`, `.rauma` ("Thêm một bó ngải cứu nữa.", "Thêm một bó tía tô nữa.", "Thêm một bó rau má nữa.") in place of "… vào giỏ rồi.", so that no line comes more than three times in a row.
+- **Please check:** "hở quá" and "cá chui ra mất". Also "Thêm một bó … nữa".
 
 ## The bridge: one task, marks, and the plank of the child (#71)
 
