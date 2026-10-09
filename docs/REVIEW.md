@@ -633,3 +633,8 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The count after a try goes unit by unit:** the fisher (or Nghé at night) counts the marks of the planks with `num.1`, `num.2`, `num.3`, … from the near end, and each mark lights up at its word. The count stops at the far bank. It never says the length plank by plank ("ba, tám, mười ba").
 - **The planks for the guess:** `dlg.bridge.start.n3` ("Đây là những tấm ván giả.") and `dlg.bridge.start.n4` ("Cháu chạm vào hàng dài bằng chỗ gãy."), with the planks for the guess glowing; at night, Nghé says `mentor.nghe.bridge.guess` ("Đây là những tấm ván giả. Bạn chạm vào hàng dài bằng chỗ gãy."). The word "mờ" is gone.
 - **Please check:** "tấm ván giả" for the outlines of the guess, and "Tấm này dài quá." for a child of six.
+
+## Small lines and screens (#72)
+
+- **The line of the star names what the child sees:** the star of a person shows the face of that person in a round picture, and at the edge of the screen it is a round picture with a red arrow. `dlg.grandma.intro.n4` is now "Chạm vào chỗ muốn đến, hoặc chạm vào hình tròn có mặt người." in place of "… hoặc chạm vào ngôi sao vàng.". `dlg.elder.trials.wait.n1` now ends with "Hình tròn có mặt người sẽ chỉ đường." in place of "Ngôi sao vàng sẽ chỉ đường.". `dlg.elder.busy.n1` is now "Gióng cần cháu giúp. Hãy chạm vào hình tròn có mặt người, hoặc ngôi sao vàng nhé." in place of "… Hãy làm theo ngôi sao vàng nhé.": at that time, a star goes to a person (with a face) or to a thing or the enemies of a raid (a yellow star with no face).
+- **Please check:** "hình tròn có mặt người" for a child of six.
