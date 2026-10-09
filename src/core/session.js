@@ -53,7 +53,7 @@ import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
 import { REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
-import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap } from './world/systems/work.js';
+import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
@@ -1984,7 +1984,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const ONE_MOVE = new Set(['bundle', 'basket']);
   function oneMovePlace(thing) {
     const h = hero().position;
-    return query(state, 'zone').find((z) => ONE_MOVE.has(z.zone.rule) && z.zone.task === thing.item.task && canPut(z.zone, thing) && distHb(h, nearestPoint(z, h)) <= REACH + 2) ?? null;
+    return query(state, 'zone').find((z) => ONE_MOVE.has(z.zone.rule) && z.zone.task === thing.item.task && canPut(z.zone, thing) && hasRoom(z.zone) && distHb(h, nearestPoint(z, h)) <= REACH + 2) ?? null;
   }
   // The tasks where the child put a thing, and the last thing that the child took from a heap
   // ({ task, kind }).
@@ -2090,7 +2090,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function roomFor(e) {
     return query(state, 'zone').some((z) => {
       const zone = z.zone;
-      if (zone.task !== e.item.task || ['heap', 'pile'].includes(zone.rule) || !canPut(zone, e)) return false;
+      if (zone.task !== e.item.task || ['heap', 'pile'].includes(zone.rule) || !canPut(zone, e) || !hasRoom(zone)) return false;
       if (zone.rule === 'line') return Math.max(0, ...query(state, 'item').filter((x) => x.item.zone === zone.id && x.item.slot != null).map((x) => x.item.slot)) < zone.length;
       if (zone.rule === 'spots') return freeSlot(state, zone) >= 0;
       return true;
@@ -2300,9 +2300,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     // A thing in the hands: the places that take it (a ghost shows where it goes on a line).
     const front = frontOf(hp);
+    // The places of a task that take the thing now (#68: a full mat takes no rod). When none of them
+    // does, the button shows the way back to the heap of the thing, also with no tap on the heap.
+    const takes = (z) => canPut(z.zone, held) && hasRoom(z.zone) && !['heap', 'pile', 'road'].includes(z.zone.rule);
+    const noPlace = Boolean(held.item.home) && openTask(held.item.task) && !query(state, 'zone').some(takes);
     for (const z of query(state, 'zone')) {
       const zone = z.zone;
-      if (!canPut(zone, held)) continue;
+      if (!canPut(zone, held) || !hasRoom(zone)) continue;
       // A place of a done task is never a target (#54: the forge of the smith and the hearth of the
       // iron horse are at the same place).
       if (zone.task?.startsWith('trial-') && trialZone(zone.task.slice(6))?.zone.done) continue;
@@ -2344,10 +2348,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at, work, rank: 0.5, run: () => put(null) }, REACH + 3);
       } else if (zone.rule === 'heap') {
         if (held.item.home !== zone.id) continue;
-        // Back on its own heap: only after a tap on the heap. A press after a pick never puts the
-        // thing back (#44, #54: pick, put back, pick, put back).
-        if (!chosen || ![z.id, ...zone.items].includes(chosen.id)) continue;
-        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: z.position, rank: 4, run: () => put(null) }, REACH + 2);
+        // Back on its own heap: only after a tap on the heap, or when no place takes the thing. A
+        // press after a pick never puts the thing back (#44, #54: pick, put back, pick, put back).
+        if (!noPlace && (!chosen || ![z.id, ...zone.items].includes(chosen.id))) continue;
+        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: z.position, rank: 4, work: noPlace, run: () => put(null) }, REACH + 2);
       } else if (zone.rule === 'road') {
         continue;
       } else {

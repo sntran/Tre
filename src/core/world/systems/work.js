@@ -523,6 +523,13 @@ export function canTakeWork(world, thing) {
   return true;
 }
 
+// Has a place of a task room for one more thing now? The mat of the teacher takes MAT_MAX rods
+// (#68: the button showed the put on a full mat, and the press did nothing).
+export function hasRoom(zone) {
+  if (zone.rule === 'bundle') return zone.items.length < MAT_MAX;
+  return true;
+}
+
 // The place system gives a thing in the hands to a zone of a task. at: the point of the tap (the
 // line of stakes). Return true when the thing went in.
 export function putWork(world, e, zone, thing, at, env) {
