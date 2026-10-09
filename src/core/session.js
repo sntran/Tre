@@ -1852,10 +1852,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const personNow = (p) => persons().find((x) => x.entity === p.entity) ?? p;
   // A walk to a person (a tap on the person, or the end of a walk to the star of the person): a
   // person who walks (to the station, home) is followed to where the person is now (#66: the walk
-  // to the healer ended where she stood at the tap). At the end the hero turns to the person, and
-  // the view shows the person and the hero near its middle (#72: the teacher was half off the
-  // screen at the end of the walk to his star).
-  function meetPerson(person, tries = PERSON_FOLLOW) {
+  // to the healer ended where she stood at the tap). At the end the hero turns to the person. At
+  // the end of a walk to a star (star), the view shows the person and the hero near its middle (#72:
+  // the teacher was half off the screen at the end of the walk to his star). After a tap on the
+  // person the view stays: the child saw the person, and at the mat the view is close (#69).
+  function meetPerson(person, tries = PERSON_FOLLOW, star = false) {
     chosen = { id: person.entity, along: null };
     pendingPress = null;
     const p = personNow(person);
@@ -1863,10 +1864,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const go = (cb) => (way ? walkPath(way, null, cb, { x: p.x, y: p.y, d: 2.2 }) : walkToThing(p, cb));
     go(() => {
       const now = personNow(person);
-      if (tries > 0 && Math.hypot(now.x - heroCell().x, now.y - heroCell().y) > PERSON_NEAR) return meetPerson(person, tries - 1);
+      if (tries > 0 && Math.hypot(now.x - heroCell().x, now.y - heroCell().y) > PERSON_NEAR) return meetPerson(person, tries - 1, star);
       worldCommand(state, { type: 'face', id: 'hero', x: now.x * 2, z: now.y * 2 });
       const e = getEntity(state, person.entity);
-      if (e) emit({ type: 'workView', key: `meet-${person.entity}`, points: [{ ...e.position }, { ...hero().position }], sight: [{ ...e.position }] });
+      if (e && star) emit({ type: 'workView', key: `meet-${person.entity}`, points: [{ ...e.position }, { ...hero().position }], sight: [{ ...e.position }] });
     });
   }
   function walkToPerson(id) {
@@ -2954,7 +2955,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         final = moved;
       }
       if (p && Math.hypot(p.x - here.x, p.y - here.y) <= STAR_MEET) {
-        meetPerson(p);
+        meetPerson(p, PERSON_FOLLOW, true);
         return true;
       }
     }
