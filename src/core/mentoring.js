@@ -195,6 +195,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // An event of the world: the actions of the hands of the hero (a thing taken, put, added, or
   // taken back) for the idle time, and the changes after a check (self-corrections).
   function worldEvent(ev) {
+    // The iron of the child turns hot (not the piece that the smith shows first).
+    if (ev.type === 'glow' && !String(ev.id).endsWith('-demo')) for (const [key, tr] of tracks) if (defOf(key)?.pictureAfterGlow) tr.sawGlow = true;
     if (!['pick', 'put', 'add', 'back', 'mark', 'drop'].includes(ev.type) || ev.by) return;
     if ((ev.type === 'pick' || ev.type === 'put' || ev.type === 'drop') && ev.id !== 'hero') return;
     const thing = ev.item ? getEntity(world(), ev.item) : null;
@@ -371,6 +373,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const trk = tracks.get(key);
     if (move === 'demo' && trk?.demoed) move = 'smaller';
     if (move === 'demo' && trk) trk.demoed = true;
+    // The picture of another station waits until the child has seen the iron hot one time (#70: the
+    // child who waited for red heard "go to the river" after two misses).
+    if (move === 'picture' && def.pictureAfterGlow && !trk?.sawGlow) move = 'show';
     if (move === 'picture') pictured = true;
     let person = task?.person ?? getEntity(w, def.person);
     // The person of the task is not there (at home at night, #51): Nghé says the lines, in the

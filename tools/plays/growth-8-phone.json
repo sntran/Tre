@@ -44,7 +44,7 @@
    "after": 0.5
   },
   {
-   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.look === 'iron-3'",
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.look === 'iron-hot'",
    "timeout": 180
   },
   {

@@ -749,17 +749,13 @@
       "kind": "iron",
       "glow": 0
     },
-    "iron-1": {
+    "iron-warm": {
       "kind": "iron",
       "glow": 1
     },
-    "iron-2": {
+    "iron-hot": {
       "kind": "iron",
       "glow": 2
-    },
-    "iron-3": {
-      "kind": "iron",
-      "glow": 3
     },
     "iron-bent": {
       "kind": "iron",

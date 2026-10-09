@@ -541,7 +541,8 @@ const still = (parts, height, shadow = 0) => ({ kind: 'still', parts, scale: 1, 
 // The tones of the herbs: [below, top]. Perilla (tía tô) is purple below and green on top: the
 // palette of the prints has no purple, so its leaves are indigo below (#61).
 const HERBS = { ngai: ['greenPale', 'ashLight'], tiato: ['indigo', 'green'], rauma: ['green', 'greenPale'] };
-const IRON = ['ash', 'vermilionPale', 'vermilion', 'yellowPale'];
+// The iron of the smith (#70): cold (grey), warm (dark red-brown), and hot (bright red). No yellow.
+const IRON = ['ash', 'wood', 'vermilion'];
 // The looks of the planting of Xóm Ruộng that come from their key (docs/PLANTING.md): a row of n
 // seedlings at a stage of growth (seedlings-<n>-<stage>), a bundle of n seedlings tied with straw
 // (bundle-<n>), a loose bunch (bunch-<n>), and a bamboo stake of a plot (plot-stake). Null for
@@ -719,7 +720,8 @@ export function workThing(look) {
       if (look.full) parts.push(P('water', [2.8, 0.05, 1.2], 'indigoPale', [1.6, 0.8, 1]));
       return still(parts, 1);
     }
-    // The iron bar on the anvil: dark, red, bright red, and white hot; bent; or a hard blade.
+    // The iron bar on the anvil: cold, warm, or hot (bright red, with a glow on the anvil and
+    // sparks, #70); bent; or a hard blade.
     case 'iron': {
       const anvil = [P('anvil', [1.4, 1, 1.2], 'ink', [0, -0.5, 0]), P('horn', [0.6, 0.3, 0.5], 'ink', [0, -0.15, 0.8])];
       if (look.bent) return still([...anvil, P('barA', [0.4, 0.3, 1.1], 'ash', [0, 0.15, -0.3]), P('barB', [0.4, 0.3, 1.1], 'ash', [0.35, 0.35, 0.6])], 0.6);
@@ -729,7 +731,12 @@ export function workThing(look) {
         const legs = [[-0.25, -0.5], [0.25, -0.5], [-0.25, 0.5], [0.25, 0.5]].map(([x, z], i) => P(`leg${i}`, [0.18, 0.6, 0.18], 'ink', [x, 0.3, z]));
         return still([...anvil, ...legs, P('body', [0.6, 0.45, 1.4], 'ash', [0, 0.8, 0]), P('neck', [0.35, 0.6, 0.35], 'ash', [0, 1.2, 0.6]), P('head', [0.35, 0.3, 0.7], 'ash', [0, 1.55, 0.85]), P('mane', [0.12, 0.5, 0.4], 'vermilion', [0, 1.4, 0.45]), P('tail', [0.15, 0.5, 0.15], 'ink', [0, 0.8, -0.8])], 1.8);
       }
-      return still([...anvil, P('bar', [0.4, 0.3, 2], IRON[Math.max(0, Math.min(3, look.glow ?? 0))], [0, 0.15, 0])], 0.4);
+      const g = Math.max(0, Math.min(2, look.glow ?? 0));
+      const bar = P('bar', [0.4, 0.3, 2], IRON[g], [0, 0.15, 0]);
+      if (g < 2) return still([...anvil, bar], 0.4);
+      const glow = P('glow', [1, 0.04, 2.4], 'vermilionPale', [0, 0.01, 0]);
+      const sparks = [[0.3, 0.7, -0.5], [-0.25, 0.9, 0.2], [0.15, 1.1, 0.7]].map(([x, y, z], i) => P(`spark${i}`, [0.12, 0.12, 0.12], 'vermilionPale', [x, y, z]));
+      return still([...anvil, glow, bar, ...sparks], 1.2);
     }
     // The iron horse that Gióng rides (#50): a horse of iron as big as grown Gióng, with a red
     // mane. The seat (the top of the back) is at STEED_SEAT over the ground; k: the size of the

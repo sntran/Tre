@@ -732,7 +732,11 @@ function act(world, e, want, env) {
     } else {
       iron.look = 'iron-bent';
       tz.zone.bent = BEND;
-      say(world, 'bend', iron.id, { sound: 'plank-down', early: value > 0 && tz.zone.heat % (task.glow.rise + task.hold + task.glow.dim + task.glow.cold) < task.glow.rise });
+      const early = value > 0 && tz.zone.heat % (task.glow.rise + task.hold + task.glow.dim + task.glow.cold) < task.glow.rise;
+      say(world, 'bend', iron.id, { sound: 'plank-down', early });
+      // The smith says what happened first, in words that a child knows (#70): not hot enough yet,
+      // or cold again.
+      say(world, 'call', 'npc:smith', { key: early ? 'smith.bend.early' : 'smith.bend.late' });
     }
   } else if (want.act === 'give') {
     const basket = zoneEnt(world, 'basket');
@@ -932,7 +936,7 @@ function tickForge(world, tz, dt, env) {
   if ((iron.glow ?? 0) < task.glow.hot && quenchResult(value, task.glow)) say(world, 'glow', iron.id, { sound: 'lantern' });
   // Round down, so that a glow at or over hot is truly hot (the cue reads it).
   iron.glow = Math.floor(value * 100) / 100;
-  iron.look = `iron-${Math.round(value * 3)}`;
+  iron.look = ironLook(value, task.glow);
   // The demo: a moment after the iron turns hot, the smith drops it into the water and says when.
   if (!tz.zone.demo || !quenchResult(value, task.glow)) return;
   tz.zone.demoHot = (tz.zone.demoHot ?? 0) + dt;
@@ -949,6 +953,14 @@ function tickForge(world, tz, dt, env) {
   tz.zone.next = DEMO_NEXT;
   say(world, 'hiss', iron.id, { sound: 'splash', at: iron.position });
   say(world, 'call', 'npc:smith', { key: 'smith.quench.show' });
+}
+
+// The look of the iron of the smith at a glow value (#70): bright red, with a glow and sparks, for
+// the whole hot time (a quench then is right); dark red-brown under it; grey when cold. Never
+// yellow: the smith says "đỏ rực", and the child waits for red.
+export function ironLook(value, glow) {
+  if (quenchResult(value, glow)) return 'iron-hot';
+  return value >= glow.hot / 2 ? 'iron-warm' : 'iron-0';
 }
 
 // The tide: it comes in after some seconds; the row of stakes is the commit. Then it goes out and

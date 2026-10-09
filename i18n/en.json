@@ -1273,6 +1273,8 @@
   "mentor.first.you": "Now it is your turn.",
   "smith.quench.watch": "Watch me do it one time.",
   "smith.quench.show": "When it glows red, dip it at once!",
+  "smith.bend.early": "The iron was not hot enough, so it bent.",
+  "smith.bend.late": "The iron got cold, so it bent.",
   "mentor.woodcutter.first": "Stand at the stem and press the big button to put a chalk mark where to cut.",
   "woodcutter.short": "This piece is too short, so it broke. The pieces must be the same length.",
   "mentor.ducks.first": "Stand at the jar. One press of the big button puts one scoop of feed into the trough.",

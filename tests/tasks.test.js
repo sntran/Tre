@@ -307,8 +307,9 @@ test('the things of the trials are solid: the hero walks into the trough and the
   const failures = await runHeadless({ name: 'task-solid', profile, clock: 540, at: ['phu-dong', 53, 43], steps: [
     { press: { entity: 'npc:smith' } }, { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 20 } }, { read: true },
     { until: { event: 'hiss', timeout: 30 } }, { until: { event: 'fire', timeout: 10 } },
-    // From the north into the trough, from the north into the anvil.
-    { walk: { to: [54.9, 44.1] } }, ...walk(-0.2, 1, 2),
+    // From the north into the trough, from the north into the anvil. At the start of the work the
+    // hero stands west of the anvil (#70): first a walk to the north of it.
+    { walk: { to: [54.2, 41.6] } }, { walk: { to: [54.9, 44.1] } }, ...walk(-0.2, 1, 2),
     { walk: { to: [54.2, 41.6] } }, ...walk(0, 1, 2),
   ] }, { onSession: (s) => {
     s.listen(() => {

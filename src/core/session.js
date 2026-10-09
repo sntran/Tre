@@ -821,6 +821,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     return out;
   }
+  const ANVIL_SIDE = 1.3; // cells west of the anvil: where the hero stands at the work of the smith
   // Start a trial: its things lie at their places on this map, at the level of the grade. The
   // trial of a practice starts again and again (at the level of the practice), with new things.
   function startTrial(id) {
@@ -843,6 +844,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // its things glow, and its box opens after this; the line of the need comes when the talk is
     // over). later: at the end of this step, when the box is open.
     later.push(() => queue(() => {
+      // The smith (#70): the hero goes to the side of the anvil away from the view (the view looks
+      // from the south-east), so that no figure stands in front of the iron.
+      const anvil = def.task === 'forge' ? env.places[def.places.anvil] : null;
+      if (anvil && !hero().riding) walkTo([{ x: anvil.x / 2 - ANVIL_SIDE, y: anvil.z / 2 - 0.2 }], null);
       const need = workCount()?.need ?? 0;
       if (need >= 1 && need <= 4) {
         emit({ type: 'goalShow', n: need });
