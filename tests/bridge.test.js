@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
 import { getEntity, query } from '../src/core/world/state.js';
 import { taskPools } from '../src/world/light.js';
+import { leadFocus } from '../src/world/view.js';
 
 const profile = (flags) => ({ name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true, ...flags } });
 
@@ -33,6 +34,26 @@ test('after the trial of the fisher, the bridge starts: the planks for the guess
   assert.ok(pool, 'the bridge has a pool of light');
   const z = getEntity(s.state, 'zone:bridge-gap').zone;
   assert.ok(Math.hypot(pool.x - z.lane, pool.z - (z.from + z.gap / 2)) <= pool.r, 'the pool holds the gap');
+});
+
+test('at night the line of Nghé turns the view to the planks for the guess: all of them fit on a phone with the hero (#71)', async () => {
+  let s = null;
+  const views = [];
+  const lines = [];
+  const failures = await runHeadless({ name: 'bridge-night-view', profile: profile({ 'trial.fisher.done': true }), clock: 1260, at: ['phu-dong', 46, 61], steps: [{ wait: 6 }] }, {
+    onSession: (x) => { s = x; x.listen((e) => { if (e.type === 'workView') views.push(e); if (e.type === 'open') lines.push(e.textKey); }); },
+  });
+  assert.deepEqual(failures, []);
+  assert.ok(lines.includes('mentor.nghe.bridge.guess'), `Nghé says the line of the guess: ${lines.join(', ')}`);
+  const view = views.find((v) => v.key === 'bridge');
+  assert.ok(view, 'the line comes with a view of the work');
+  const rows = query(s.state, 'guess');
+  assert.equal(view.points.length, rows.length);
+  for (const g of rows) assert.ok(view.points.some((p) => p.x === g.position.x && p.z === g.position.z), `the view holds ${g.id}`);
+  const h = getEntity(s.state, 'hero').position;
+  const pts = [h, ...view.points].map((p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 }));
+  const angles = [0, 1, 2, 3].map((k) => Math.PI / 4 + (k * Math.PI) / 2);
+  assert.ok(angles.some((az) => leadFocus(pts, { az, width: 390, height: 844 }).fits), 'the rows and the hero fit on a phone held upright');
 });
 
 test('a press takes a plank of the length of the last pick, and a tap on a plank of the pile chooses another length (#71)', async () => {

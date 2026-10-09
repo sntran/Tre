@@ -610,7 +610,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The fisher starts the bridge with a short talk: one new word in each line, and its thing
     // glows (#66: the bridge started by itself with one long line, and no child knew what to do).
     if (here) talk('bridge.start');
-    else if (nghe && !nghe.hidden) emit({ type: 'open', screen: 'callout', id: nghe.id, textKey: 'mentor.nghe.bridge.guess', params: {} });
+    else if (nghe && !nghe.hidden) {
+      emit({ type: 'open', screen: 'callout', id: nghe.id, textKey: 'mentor.nghe.bridge.guess', params: {} });
+      // The line of Nghé has no talk box that shows the rows: the view turns and leads to them, so
+      // that all the rows are on the screen (#71: at night the closer view cut the rows at the
+      // edge, and a child could not tap them).
+      const rows = outlines.map((g) => ({ ...g.position }));
+      emit({ type: 'workView', key: 'bridge', points: rows, sight: rows });
+    }
   }
   // After the guess, a line says what comes next, and the pile of planks glows (#66: the outlines
   // went away with no word).
