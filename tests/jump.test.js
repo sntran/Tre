@@ -92,7 +92,7 @@ test('a jump during a talk or a task in progress does nothing', async () => {
   const jumps = [];
   const story = {
     name: 'x', about: { vi: '-', en: '-' },
-    profile: { name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true } },
+    profile: { name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'trial.fisher.done': true } },
     clock: 540, at: ['phu-dong', 46, 61],
     steps: [
       { wait: 1 },

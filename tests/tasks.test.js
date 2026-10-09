@@ -369,7 +369,7 @@ test('the heap and the place of a task stand close, and two targets that the chi
 
 test('the guess at the bridge: a tap on an outline only walks there; the outline in front gets the light, and the button chooses it', async () => {
   const story = {
-    name: 'task-guess', profile: { name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true } }, clock: 540, at: ['phu-dong', 46, 61],
+    name: 'task-guess', profile: { name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'trial.fisher.done': true } }, clock: 540, at: ['phu-dong', 46, 61],
     steps: [
       { wait: 1 },
       // The fisher starts the bridge with a short talk (#66).

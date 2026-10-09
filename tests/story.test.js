@@ -53,7 +53,7 @@ test('the targets of the taps: a cell, a person, a plank of a size, a plank outl
 });
 
 test('each kind of fact: true and false', () => {
-  const s = sessionOf({ name: 't', profile: { flags: { 'intro.seen': true }, items: { coin: 2 } }, at: ['phu-dong', 46, 61], clock: 600 });
+  const s = sessionOf({ name: 't', profile: { flags: { 'intro.seen': true, 'trial.fisher.done': true }, items: { coin: 2 } }, at: ['phu-dong', 46, 61], clock: 600 });
   s.step();
   const ctx = { session: s, events: [{ type: 'open', screen: 'callout', textKey: 'world.greet.1' }, { type: 'skill', skill: 'math.add.20', solved: true, parts: [4, 4, 4] }], learner: { entry: () => ({ p: 0.6 }) }, data };
   const ok = (fact) => assert.equal(checkFact(fact, ctx), null, JSON.stringify(fact));
