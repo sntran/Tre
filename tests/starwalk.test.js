@@ -70,3 +70,32 @@ test('a walk to the star of a person who walks on ends next to the person, and t
   assert.equal(v?.key, 'meet-npc:teacher', 'the view turns to the teacher');
   assert.ok(v.points.some((p) => Math.hypot(p.x - teacher.position.x, p.z - teacher.position.z) < 1), 'the view holds the teacher');
 });
+
+test('a tap on the teacher at his mat walks toward him from each side, never away first (#72)', async () => {
+  const story = (await import('./helpers.js')).load('tests/stories/trial-scholar.json');
+  const away = [];
+  for (const [dx, dy] of [[6, 0], [-6, 0], [0, 6], [0, -6], [4, 4], [-4, -4], [4, -4], [-4, 4]]) {
+    let s = null;
+    await runHeadless({ ...story, name: 'tap-teacher', steps: [{ wait: 0.5 }] }, { onSession: (q) => { s = q; } });
+    const teacher = getEntity(s.state, 'npc:teacher');
+    const hero = getEntity(s.state, 'hero');
+    const start = { x: teacher.position.x + dx * 2, z: teacher.position.z + dy * 2 };
+    // A start in a house or in the water is not a place to stand.
+    if (!s.tileMap.walkable(Math.floor(start.x / 2), Math.floor(start.z / 2))) continue;
+    Object.assign(hero.position, start);
+    s.step();
+    const d0 = Math.hypot(hero.position.x - teacher.position.x, hero.position.z - teacher.position.z) / 2;
+    s.command({ type: 'tap', target: { person: 'npc:teacher' } });
+    s.events();
+    let most = d0;
+    for (let i = 0; i < 20 * 30; i++) {
+      s.step();
+      s.events();
+      most = Math.max(most, Math.hypot(hero.position.x - teacher.position.x, hero.position.z - teacher.position.z) / 2);
+      if (i > 15 && !hero.route) break;
+    }
+    const end = Math.hypot(hero.position.x - teacher.position.x, hero.position.z - teacher.position.z) / 2;
+    if (most > d0 + 1.5 || end > 3.5) away.push(`from ${dx},${dy}: start ${d0.toFixed(1)}, most ${most.toFixed(1)}, end ${end.toFixed(1)} cells`);
+  }
+  assert.deepEqual(away, []);
+});

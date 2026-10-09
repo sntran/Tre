@@ -1858,7 +1858,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function meetPerson(person, tries = PERSON_FOLLOW) {
     chosen = { id: person.entity, along: null };
     pendingPress = null;
-    walkToThing(personNow(person), () => {
+    const p = personNow(person);
+    const way = pathBeside(pathMap(), heroFrom(), p);
+    const go = (cb) => (way ? walkPath(way, null, cb, { x: p.x, y: p.y, d: 2.2 }) : walkToThing(p, cb));
+    go(() => {
       const now = personNow(person);
       if (tries > 0 && Math.hypot(now.x - heroCell().x, now.y - heroCell().y) > PERSON_NEAR) return meetPerson(person, tries - 1);
       worldCommand(state, { type: 'face', id: 'hero', x: now.x * 2, z: now.y * 2 });
@@ -3109,6 +3112,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (path) return path;
     }
     return null;
+  }
+
+  // The shortest path to a free cell beside a person (map cells), or null: the hero never walks
+  // around a mat or a wall to the far side of the person when a near side is free (#72: a tap on
+  // the teacher walked the hero away from him). An empty path when the hero stands there.
+  const BESIDE = 2;
+  function pathBeside(paths, from, p) {
+    const cx = Math.floor(p.x);
+    const cy = Math.floor(p.y);
+    let best = null;
+    for (let y = cy - BESIDE; y <= cy + BESIDE; y++) {
+      for (let x = cx - BESIDE; x <= cx + BESIDE; x++) {
+        if ((x === cx && y === cy) || !paths.walkable(x, y) || Math.hypot(x + 0.5 - p.x, y + 0.5 - p.y) > BESIDE + 0.5) continue;
+        if (x === from.x && y === from.y) return [];
+        const path = findPath(paths, from, { x, y }, { maxNodes: 4000 });
+        if (path && (!best || path.length < best.length)) best = path;
+      }
+    }
+    return best;
   }
 
   // A path to a blocked cell (a house, water, a paddy, a person): to a free cell next to it, or
