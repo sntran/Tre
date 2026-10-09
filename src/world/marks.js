@@ -44,6 +44,26 @@ export function placeArrow(p, { controls = [] } = {}) {
   return { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 };
 }
 
+// Arrows at the edge for targets in about the same direction (#72: the arrow of the healer was
+// under the arrow of the smith, and the child did not find her face): the arrow slides along its
+// edge, one arrow wide at a time, to a place where no other arrow is. edge: { x, y, angle } on the
+// edge of the box { left, right, top, bottom }; placed: the arrows before it. Return the edge point.
+export const ARROW_GAP = 48; // pixels between the middles of two arrows
+export function spreadArrow(edge, placed, box) {
+  const free = (q) => placed.every((o) => Math.hypot(o.x - q.x, o.y - q.y) >= ARROW_GAP);
+  if (free(edge)) return edge;
+  // A point on the left or the right edge slides up and down; one on the top or the bottom, to the sides.
+  const side = Math.abs(edge.x - box.left) < 1 || Math.abs(edge.x - box.right) < 1;
+  for (let k = 1; k <= 6; k++) {
+    for (const d of [k, -k]) {
+      const q = side ? { ...edge, y: edge.y + d * ARROW_GAP } : { ...edge, x: edge.x + d * ARROW_GAP };
+      if (q.y < box.top || q.y > box.bottom || q.x < box.left || q.x > box.right) continue;
+      if (free(q)) return q;
+    }
+  }
+  return edge;
+}
+
 // The longest time of a line of a person who is not on the screen (seconds): the bubble waits at
 // the edge only a short time.
 export const AWAY_LIFE = 3;

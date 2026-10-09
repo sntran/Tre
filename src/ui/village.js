@@ -19,7 +19,7 @@ import { rainOf } from '../core/world/systems/sky.js';
 import { createSession, middleOf } from '../core/session.js';
 import { createHearing } from '../core/hearing.js';
 import { LINE_LIFE, lineLife, linesAfter, nearHero as talksNear } from '../core/lines.js';
-import { placeStar, placeArrow, placeBubble, starBox, STAR, AWAY_LIFE } from '../world/marks.js';
+import { placeStar, placeArrow, spreadArrow, placeBubble, starBox, STAR, AWAY_LIFE } from '../world/marks.js';
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
@@ -1717,13 +1717,14 @@ export async function mountVillage(ctx, params = {}) {
         el.style.transform = `translate(${at.x - STAR / 2}px, ${at.y - STAR + bob}px) scale(${pulseOf(m) * (m.main ? MAIN_STAR : 1)})`;
         continue;
       }
-      // Targets in about the same direction share one arrow.
-      if (edges.some((q) => Math.hypot(q.x - edge.x, q.y - edge.y) < 56)) continue;
-      edges.push(edge);
+      // Targets in about the same direction: each has its own arrow with its face, side by side
+      // along the edge (#72).
+      const spot = spreadArrow(edge, edges, { left: inset.left, right: screen.w - inset.right, top: inset.top, bottom: screen.h - inset.bottom });
+      edges.push(spot);
       const el = arrowAt(arrows++);
       el.mark = m;
       const pulse = Math.sin(time * 5) * 3;
-      const at = placeArrow(edge, { controls });
+      const at = placeArrow(spot, { controls });
       marks.push({ x0: at.x - 22, y0: at.y - 22, x1: at.x + 22, y1: at.y + 22 });
       setFace(el, m.who);
       el.classList.toggle('main', Boolean(m.main));

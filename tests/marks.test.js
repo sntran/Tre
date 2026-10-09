@@ -3,7 +3,7 @@
 // the edge (src/world/marks.js).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { overlaps, starBox, placeStar, placeArrow, placeBubble, upOutOf } from '../src/world/marks.js';
+import { overlaps, starBox, placeStar, placeArrow, placeBubble, upOutOf, spreadArrow, ARROW_GAP } from '../src/world/marks.js';
 
 // A phone held upright: the HUD to y 130, the stick and the buttons at the bottom.
 const screen = { w: 390, h: 844, top: 130, bottom: 844 };
@@ -96,4 +96,17 @@ test('a bubble never covers a star: it goes to the other side of its person (#56
 test('upOutOf moves a box up over every box that it overlaps', () => {
   const b = upOutOf({ x0: 0, y0: 790, x1: 40, y1: 830 }, [{ x0: 0, y0: 800, x1: 50, y1: 844 }, { x0: 0, y0: 740, x1: 50, y1: 790 }]);
   assert.ok(b.y1 <= 736);
+});
+
+test('two targets in about the same direction each have their own arrow at the edge, side by side (#72)', () => {
+  const box = { left: 12, right: 378, top: 140, bottom: 832 };
+  const a = spreadArrow({ x: 378, y: 300, angle: 0 }, [], box);
+  const b = spreadArrow({ x: 378, y: 320, angle: 0.1 }, [a], box);
+  const c = spreadArrow({ x: 378, y: 310, angle: 0.05 }, [a, b], box);
+  for (const [p, q] of [[a, b], [a, c], [b, c]]) assert.ok(Math.hypot(p.x - q.x, p.y - q.y) >= ARROW_GAP, 'no arrow under another');
+  assert.ok([a, b, c].every((p) => p.x === 378 && p.y >= box.top && p.y <= box.bottom), 'all on the right edge');
+  // On the top edge, they go to the sides.
+  const t = spreadArrow({ x: 200, y: 140, angle: -1.5 }, [{ x: 200, y: 140 }], box);
+  assert.equal(t.y, 140);
+  assert.ok(Math.abs(t.x - 200) >= ARROW_GAP);
 });
