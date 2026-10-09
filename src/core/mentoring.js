@@ -6,7 +6,7 @@
 import { newMentor, newMemory, onCommit, onIdle, onWave, onCheck, onChange, demoTarget, demoParts, shareParts } from './mentor.js';
 import { getEntity, query, addEntity } from './world/state.js';
 import { endScript } from './world/systems/mentor.js';
-import { basketRowAt } from './world/systems/work.js';
+import { basketRowAt, matSlot } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
 
@@ -20,6 +20,7 @@ const FIRST_DELAY = 0.5; // seconds after the start of a task: the person shows 
 const WORK_NEAR = 24; // half blocks: a person this near the place of a task stands at the work
 const AWAY = 40; // half blocks: a person farther than this from the place of a task is not there (#51)
 const AFTER_WAVE = 20; // seconds after a wave: no idle move (the offer never answers a wave, #64)
+const PUT_PACE = 1.1; // seconds between two parts that a person puts for the child, counted aloud (#69)
 const COUNT_GAP = 0.6; // seconds between the count of the child's work and the move of the mentor
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -364,6 +365,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         if (d) return d;
       }
     }
+    // The demonstration comes at most one time in a task (#69: the children saw it three times and
+    // still did not know the count of their own mat); after it, the person puts some parts for the
+    // child.
+    const trk = tracks.get(key);
+    if (move === 'demo' && trk?.demoed) move = 'smaller';
+    if (move === 'demo' && trk) trk.demoed = true;
     if (move === 'picture') pictured = true;
     let person = task?.person ?? getEntity(w, def.person);
     // The person of the task is not there (at home at night, #51): Nghé says the lines, in the
@@ -566,6 +573,21 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     else if (target !== null && total > target && parts.length) end = parts[parts.length - 1].position;
     s.point(t, end, 2);
     s.mark(t, end, 4);
+    // After the count, the person says what happens next, in words that a child knows (#69): the
+    // extra things go back to the pile, or the place still has empty places (they glow). Never the
+    // target as a count.
+    const lines = task.byNghe ? {} : defOf(task.key)?.lines ?? {};
+    if (task.place?.zone.rule === 'bundle' && target !== null && total !== target) {
+      if (total > target && lines.extra) s.say(t + 0.3, lines.extra, { n: { key: `num.${total - target}` } });
+      if (total < target && lines.room) {
+        s.say(t + 0.3, lines.room);
+        for (let i = total; i < target; i++) {
+          const p = matSlot(task.place.zone, i);
+          s.steps.push({ at: t, spawn: { look: 'place-glow', x: p.x, z: p.z } });
+        }
+      }
+      return t + 3.5;
+    }
     return t + 2;
   }
 
@@ -597,7 +619,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       if (p.total <= 30) s.say(at + 0.1, `num.${p.total}`);
     });
     const last = t + 0.8 + parts.length * 1.3;
-    s.say(last, 'mentor.demo.done');
+    s.say(last, (!task.byNghe && def.lines?.demoDone) || 'mentor.demo.done', { n: { key: `num.${Math.min(150, other)}` } });
     return { t: last + 3.5, keyAt: t + 0.8 + Math.ceil(parts.length / 2) * 1.3 };
   }
 
@@ -622,8 +644,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // The person puts some parts into the place for the child: one part (smaller) or about half
   // (share). Never the whole task.
   function shareSteps(task, fam, move, info, s, t) {
-    s.say(t, lineOf(task.key, move));
-    t += 1.2;
+    // A line after the puts (the teacher, #69): the person puts the parts one at a time, counts them
+    // aloud, and then says how many the person put, and what the child does next.
+    const after = task.byNghe ? null : defOf(task.key)?.lines?.[`${move}Put`];
+    if (!after) {
+      s.say(t, lineOf(task.key, move));
+      t += 1.2;
+    }
     const free = task.piles.flatMap(itemsOf).filter((e) => !e.item.held && !e.item.set && !e.item.stray);
     let picks = [];
     if (fam.reader === 'each') {
@@ -646,6 +673,20 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         const i = left.findIndex((e) => (e.item.size ?? 1) === size);
         if (i >= 0) picks.push(left.splice(i, 1)[0]);
       }
+    }
+    if (after) {
+      const target = info.target ?? task.place?.zone.need ?? 10;
+      const have = itemsOf(task.place).reduce((a, e) => a + (e.item.size ?? 1), 0);
+      const n = picks.length;
+      picks.forEach((e, k) => {
+        const at = t + k * PUT_PACE;
+        s.point(at, task.at, PUT_PACE);
+        s.steps.push({ at: at + 0.3, put: { zone: task.place.id, item: e.id, person: task.person?.id ?? 'hero' } });
+        s.say(at + 0.4, `num.${k + 1}`);
+      });
+      t += n * PUT_PACE;
+      if (n) s.say(t, after, { n: { key: `num.${n}` }, m: { key: `num.${Math.max(1, target - have - n)}` } });
+      return t + 2.5;
     }
     picks.forEach((e, k) => {
       const at = t + k * 0.8;

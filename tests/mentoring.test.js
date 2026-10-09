@@ -125,7 +125,9 @@ test('each person of a task has an own line for each move that names the things 
     const fam = mentorsData.families[m.family];
     const moves = new Set(['first', 'show', ...Object.values(fam.ladders).flat()]);
     for (const move of THINGS.filter((x) => moves.has(x))) {
-      const line = m.lines?.[move];
+      // A line after the parts that the person puts (smallerPut, sharePut: the teacher, #69) takes
+      // the place of the line before them.
+      const line = m.lines?.[move] ?? m.lines?.[`${move}Put`];
       assert.ok(line && line !== mentorsData.lines[move], `${key}: an own line for the move ${move}`);
       assert.ok(vi[line] && en[line], `${key}: the line ${line} in the two languages`);
     }

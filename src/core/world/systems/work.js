@@ -21,7 +21,7 @@
 //     the pen); the action button is the commit of the sum (a tap on the person asks for help). Exact: done. Too few: the person
 //     waits. Too many: the last things go back to the pile.
 // When a task is done, the event "trial" goes out (the session sets the flag and gives the reward).
-export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'solid', 'events'];
+export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'solid', 'slide', 'events'];
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
 import { REACH, BASKET_FLOOR } from '../zones.js';
@@ -43,7 +43,9 @@ const FISHER_STAKES = new Set(['stake:fisher:a', 'stake:fisher:b']);
 // blocks) for SPRING_TIME seconds. BUNDLE_STEP: the space of the bundles in their row.
 const SPRING_TIME = 1.2;
 const COUNT_TIME = 0.9; // seconds: the count of one rod aloud by the teacher (COUNT_PACE in src/core/mentoring.js)
-const ROLL_STEP = 0.5; // seconds between two extra rods that roll back to the heap
+const ROLL_STEP = 1.2; // seconds between two extra rods that roll back to the heap
+const LAY_STEP = 0.5; // seconds between two bunches of the healer that go back after a wrong give
+const ROLL_TIME = 1; // seconds of the roll of one rod (#69: slow, so that the child sees it go)
 const BUNDLE_STEP = 1.3;
 const CUT_BREAK = 1;
 const PIECE_ROW = 1.6;
@@ -63,6 +65,7 @@ export function work(world, dt, rng, env) {
     for (const want of takeWork(e, () => true)) if (!e.fall) act(world, e, want, env);
   }
   if (world.paused) return;
+  for (const e of query(world, 'slide', 'position')) tickSlide(e, dt);
   for (const z of query(world, 'zone')) {
     if (z.zone.rule !== 'trial' || z.zone.done) continue;
     if (z.zone.task === 'forge' || z.zone.task === 'horse') tickForge(world, z, dt, env);
@@ -382,12 +385,17 @@ export function packHeap(world, zone) {
 // than ten rods (a wrong tie) make more rows, closer together, on the mat.
 export const MAT_ROW = 5;
 export const MAT_GAP = 0.8; // half blocks from the middle of a rod to the next one
+export const MAT_ROW_GAP = 1.3; // half blocks from a row of rods to the next one
+// The place of the rod i on the mat: two rows of five (a frame of ten, #69), and the rods over ten
+// in a row of their own outside the frame, where the child sees them.
+export function matSlot(zone, i) {
+  return { x: zone.x + 0.4 + (i % MAT_ROW) * MAT_GAP, z: zone.z + 0.6 + Math.floor(i / MAT_ROW) * MAT_ROW_GAP };
+}
 function packMat(world, zone) {
-  const rows = Math.max(2, Math.ceil(zone.items.length / MAT_ROW));
-  const step = rows <= 2 ? 1.3 : 2.6 / (rows - 1);
   zone.items.forEach((id, i) => {
     const e = getEntity(world, id);
-    if (e) e.position = { x: zone.x + 0.4 + (i % MAT_ROW) * MAT_GAP, y: zone.y + 0.15, z: zone.z + 0.6 + Math.floor(i / MAT_ROW) * step, facing: 0 };
+    const p = matSlot(zone, i);
+    if (e) e.position = { x: p.x, y: zone.y + 0.15, z: p.z, facing: 0 };
   });
 }
 
@@ -1089,8 +1097,23 @@ function tickSpring(world, tz, dt) {
     mat.zone.items = mat.zone.items.filter((x) => x !== id);
     packMat(world, mat.zone);
   }
-  rod.item.set = false;
+  // The rod rolls back slowly, so that the child sees it go (#69): it lies on the heap already, and
+  // a tap takes it only at the end of the roll.
+  const from = { ...rod.position };
   toHeap(world, rod);
+  rod.slide = { from, to: { ...rod.position }, t: 0 };
+  rod.position = { ...from };
+}
+
+// A thing that rolls from one point to another in ROLL_TIME seconds (an extra rod back to its heap).
+function tickSlide(e, dt) {
+  const sl = e.slide;
+  sl.t = Math.min(ROLL_TIME, sl.t + dt);
+  const k = sl.t / ROLL_TIME;
+  e.position = { ...e.position, x: sl.from.x + (sl.to.x - sl.from.x) * k, y: sl.from.y + (sl.to.y - sl.from.y) * k, z: sl.from.z + (sl.to.z - sl.from.z) * k };
+  if (sl.t < ROLL_TIME) return;
+  delete e.slide;
+  if (e.item) e.item.set = false;
 }
 
 // The rows of a wrong give: after the count, the extra bunches go back to their beds one at a time,
@@ -1107,7 +1130,7 @@ function tickLay(world, tz, dt) {
     toHeap(world, h);
   }
   if (lay.ids.length) {
-    lay.t = ROLL_STEP;
+    lay.t = LAY_STEP;
     return;
   }
   delete tz.zone.lay;

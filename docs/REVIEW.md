@@ -613,3 +613,9 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **Hero creation and the notebook:** `grade.kinder` ("Mẫu giáo") over the bud of "Chồi" and the leaf of "Lá"; `note.pageCount` ("{have} trên {all}") on each page of the notebook.
 - **Please check:** "cái máng" and "cái đe" for a child of six; "lần làm chưa đúng" in the note.
 
+## The teacher after a count (#69)
+
+- **After a wrong bundle, the teacher says what happens next:** with too many rods, `mentor.scholar.extra` ("Thừa {n} que, thầy để lại đống.", for example "Thừa hai que, thầy để lại đống."), while the extra rods roll back one at a time; with too few, `mentor.scholar.room` ("Chiếu còn chỗ trống."), while the empty places of the mat glow.
+- **The demonstration comes one time, and it ends in words that a child knows:** `mentor.scholar.demoDone` ("Đủ {n} que, thầy buộc được.", "Đủ mười que, thầy buộc được.") in place of "Đấy, vừa khít.".
+- **The teacher counts his own rods:** `mentor.scholar.smallerPut` ("Thầy đặt {n} que. Con đặt tiếp nhé.") after he puts his rods one at a time and counts them aloud, in place of "Thầy đặt giúp con mấy que trước, con đặt nốt nhé."; and `mentor.scholar.sharePut` ("Thầy đặt {n} que, con đặt {m} que nhé.", for example "Thầy đặt năm que, con đặt năm que nhé.") in place of "Thầy với con cùng đếm nhé: thầy một nửa, con một nửa.".
+- **Please check:** "con đặt tiếp" in place of "con đặt nốt", and "Thừa hai que".
