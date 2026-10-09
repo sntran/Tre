@@ -190,3 +190,62 @@ test('after a press that waited does its act at the end of the walk, the next pi
   assert.ok(done, `the press does the act of the new picture at once: ${b.act} ${b.target}`);
   assert.equal(`${done.act} ${done.target}`, `${b.act} ${b.target}`);
 });
+
+// The bridge after the guess, with the hero 10 half blocks from a plank of five at the far side of
+// the pile: on the way, the act on the tapped plank goes from one plank of five to the next.
+async function atPile() {
+  let session = null;
+  const failures = await runHeadless({ name: 'button-pile', profile: { name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'trial.fisher.done': true } }, clock: 540, at: ['phu-dong', 46, 61], steps: [{ until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } }, { read: true }, { press: { guess: 3 } }, { until: { event: 'guess', timeout: 5 } }, { wait: 2 }] }, { onSession: (s) => { session = s; } });
+  assert.deepEqual(failures, []);
+  const hero = getEntity(session.state, 'hero');
+  const plank = getEntity(session.state, 'plank:bridge-gap:8');
+  assert.equal(plank.item.size, 5);
+  Object.assign(hero.position, { x: plank.position.x - 10, z: plank.position.z });
+  run(session, 0.5);
+  session.command({ type: 'tap', target: { thing: plank.id } });
+  session.events();
+  session.step();
+  session.events();
+  return session;
+}
+const size = (session) => session.state.entities.find((e) => e.item?.held === 'hero')?.item.size ?? null;
+
+test('on the way to a tapped plank the picture keeps its id, and a press during the walk picks a plank of that length at the end (#68)', async () => {
+  const session = await atPile();
+  const hero = getEntity(session.state, 'hero');
+  const a = session.action();
+  assert.equal(a?.act, 'pick');
+  const ids = new Set();
+  const presses = [];
+  session.listen((e) => { if (e.type === 'press') presses.push(e); });
+  session.command({ type: 'hands', id: a.id });
+  session.events();
+  for (let i = 0; i < 15 / STEP && !session.carried(); i++) {
+    session.step();
+    session.events();
+    if (hero.route) ids.add(session.action()?.id);
+  }
+  assert.deepEqual([...ids], [a.id], 'one picture during the walk');
+  assert.ok(presses.some((e) => e.done && e.act === 'pick'), `the press picks: ${presses.map((e) => `${e.act}:${e.done}`).join(' ')}`);
+  assert.equal(size(session), 5);
+});
+
+test('a press on the picture of the walk to a tapped plank, just after the end of the walk, picks a plank of that length there (#68)', async () => {
+  const session = await atPile();
+  const hero = getEntity(session.state, 'hero');
+  const a = session.action();
+  for (let i = 0; i < 15 / STEP && hero.route; i++) {
+    session.step();
+    session.events();
+  }
+  session.step();
+  session.events();
+  const presses = [];
+  session.listen((e) => { if (e.type === 'press') presses.push(e); });
+  session.command({ type: 'hands', id: a.id });
+  session.events();
+  run(session, 2, () => presses.some((e) => e.done));
+  run(session, 0.5);
+  assert.ok(presses.some((e) => e.done && e.act === 'pick'), `the press picks: ${presses.map((e) => `${e.act}:${e.done}`).join(' ')}`);
+  assert.equal(size(session), 5);
+});

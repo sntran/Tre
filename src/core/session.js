@@ -2571,6 +2571,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // walk waits for the land or for a person on the way.
   const walking = () => Boolean(hero().route || farWait || state.tick - walkTick <= 1);
   const ofTap = (a) => Boolean(a && chosen && (a.keys ?? [a.target]).includes(chosen.id));
+  // An act matches the key of a picture when it is that act, or the same act on a thing like the
+  // one of the picture (the same kind and size, in the same place). #68: on the way to a plank of
+  // five, the picture went from one plank of five to the next, and a press on the first one did
+  // nothing at the end of the walk.
+  const alike = (x, y) => {
+    const a = getEntity(state, x)?.item;
+    const b = getEntity(state, y)?.item;
+    return Boolean(a && b && a.kind === b.kind && a.size === b.size && a.zone === b.zone);
+  };
+  const matches = (a, key) => {
+    if (!a || !key) return false;
+    if (actKey(a) === key) return true;
+    const [act, target] = key.split('|');
+    return a.act === act && alike(a.target, target);
+  };
   // The act on the tapped thing at the end of the walk to it: the act of the button where the walk
   // ends (the end of the route, or a point next to the thing when the walk goes in legs), with the
   // hero turned to the thing. Null when the act there is not about the tapped thing.
@@ -2630,7 +2645,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // act at the end of the walk.
     const show = a?.go ? actAfterGo(a) ?? a : a;
     const key = actKey(show);
-    if (btn && key === btn.key) {
+    // During the walk to a tapped thing, a picture of the same act on a like thing is the same
+    // picture: it keeps its id.
+    if (btn && (key === btn.key || (deferred && btn.deferred && matches(show, btn.key)))) {
+      btn.key = key;
       btn.a = a;
       btn.show = show;
       btn.deferred = deferred;
@@ -2650,8 +2668,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const b = id === null || id === undefined ? now : btnAll.find((x) => x.id === id) ?? null;
     if (!b || !b.a) return null;
     if (b !== now) {
-      // The picture changed after the child saw it: that act, while it is still in reach.
-      return b.deferred ? null : candidates().find((c) => c.act === b.a.act && c.target === b.a.target) ?? null;
+      // The picture changed after the child saw it: that act, while it is still in reach. A picture
+      // of the walk to a tapped thing: the act on that thing, at the end of the walk (the walk
+      // ended just before the press, or goes on).
+      if (b.deferred) return walking() && chosen ? { wait: true, key: b.key } : candidates().find((c) => matches(c, b.key)) ?? null;
+      return candidates().find((c) => c.act === b.a.act && c.target === b.a.target) ?? null;
     }
     if (!b.child && !b.first && (state.tick - b.t) * STEP < SETTLE) return null;
     if (b.deferred) return { wait: true, key: b.key };
@@ -2723,7 +2744,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A press during the walk to a tapped thing does the act of its picture, and no other act (#68:
     // the picture was the pick of a bunch, and at the end of the walk the press put it in the
     // basket). A press that walked to the work does the work of its task there.
-    if (a && (p.key ? actKey(a) === p.key : p.task && !WORKLESS.has(a.act) && taskOfCandidate(a) === p.task)) {
+    if (a && (p.key ? matches(a, p.key) : p.task && !WORKLESS.has(a.act) && taskOfCandidate(a) === p.task)) {
       // One act in each step; the next press of the walk in a next step (after a pick, a put).
       p.n -= 1;
       p.t = state.tick;
