@@ -10,6 +10,7 @@ Chúng tôi viết cho các bậc cha mẹ và cho bất kỳ ai muốn biết v
 
 | Ngày | Bài viết |
 | --- | --- |
+| 8/10/2026 | [Một lần đếm bị cắt ngang](2026-10-08-a-count-that-is-cut.vi.md) |
 | 8/10/2026 | [Cái nút biết trước đáp án](2026-10-08-the-button-knew-the-answer.vi.md) |
 | 7/10/2026 | [Đếm, không phải canh giờ](2026-10-07-a-count-not-a-clock.vi.md) |
 | 6/10/2026 | [Chơi như một đứa trẻ](2026-10-06-play-it-as-a-child.vi.md) |
