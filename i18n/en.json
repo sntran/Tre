@@ -1813,7 +1813,7 @@
   "note.unknown": "Not met yet",
   "note.pageCount": "{have} of {all}",
   "note.sealed": "Mastered",
-  "note.new": "A new print in the notebook: {name}.",
+  "note.new": "The notebook has a new print: {name}.",
   "note.open": "Open the notebook",
   "parent.tab.notebook": "Notebook",
   "parent.notebook.about": "The notebook of the child: each print is a skill, a legend, an animal, or a place that the child met in play. A red seal shows a mastered skill.",

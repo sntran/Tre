@@ -1307,13 +1307,23 @@ export async function mountVillage(ctx, params = {}) {
   }
   function showPrint(ev) {
     const name = t(ev.titleKey);
+    // The card shows the picture of the notebook next to the new print, so that a child who
+    // does not know the word "sổ tay" sees what it is (#72).
     const card = h('button', { class: 'print-card', type: 'button' }, [
+      img('ui/notebook', 'print-book'),
       h('span', { class: 'note-print' }, [printOf(ctx, ev, 40)]),
       h('span', { text: t('note.new', { name }) }),
     ]);
     card.addEventListener('click', () => { card.remove(); printCard = null; modals.notebook?.(ctx); });
     ctx.ui.append(card);
     printCard = card;
+    // The voice says the card in its turn, as a line of a bubble (#72: a child who cannot read
+    // yet did not know the card). A print of a math skill has the name of a math operation, and
+    // the village has no math operation word: that card shows with no voice.
+    if (!(ev.kind === 'skill' && ev.subject === 'math')) {
+      const line = { id: 'print', key: 'note.new', params: { name }, voice: lineVoice(null), kind: 'line' };
+      voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
+    }
     setTimeout(() => { if (printCard === card) { card.remove(); printCard = null; } }, 5000);
   }
   // The lights of the bursts of a success (#62): a warm light for a moment, also at night.

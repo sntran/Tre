@@ -1805,7 +1805,7 @@
   "note.unknown": "Chưa gặp",
   "note.pageCount": "{have} trên {all}",
   "note.sealed": "Đã thành thạo",
-  "note.new": "Sổ tay có một tranh mới: {name}.",
+  "note.new": "Sổ tay có tranh mới: {name}.",
   "note.open": "Mở sổ tay",
   "parent.tab.notebook": "Sổ tay",
   "parent.notebook.about": "Sổ tay của em: mỗi tranh là một việc, một truyền thuyết, một con vật hay một nơi em đã gặp khi chơi. Dấu đỏ là việc em đã thành thạo.",

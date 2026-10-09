@@ -71,6 +71,7 @@ const FILES = [
   'art/ui/lock.svg',
   'art/ui/map.svg',
   'art/ui/menu.svg',
+  'art/ui/notebook.svg',
   'art/ui/quest.svg',
   'art/ui/ride-off.svg',
   'art/ui/ride.svg',
