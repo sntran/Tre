@@ -252,7 +252,7 @@ test('the fisher: at the row with empty hands, the look at the river is never th
 test('on Nghé next to a person, one press gets down and talks; with nobody near, it gets down', async () => {
   let session = null;
   const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'giong.spoke': true } };
-  await runHeadless({ name: 'x', profile, clock: 540, at: ['phu-dong', 30, 40], steps: [{ wait: 1 }] }, { onSession: (s) => { session = s; } });
+  await runHeadless({ name: 'x', profile, clock: 540, at: ['phu-dong', 35, 42], steps: [{ wait: 1 }] }, { onSession: (s) => { session = s; } });
   const hero = () => getEntity(session.state, 'hero');
   const nghe = session.state.entities.find((e) => e.follow?.target === 'hero');
   // The hero gets on Nghé (as the button does it away from people) next to the healer.
@@ -275,7 +275,7 @@ test('on Nghé next to a person, one press gets down and talks; with nobody near
 test('after a tap on Nghé next to the hero, the button shows the ride, also with a person in reach', async () => {
   let session = null;
   const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'giong.spoke': true } };
-  await runHeadless({ name: 'x', profile, clock: 540, at: ['phu-dong', 30, 40], steps: [{ wait: 1 }] }, { onSession: (s) => { session = s; } });
+  await runHeadless({ name: 'x', profile, clock: 540, at: ['phu-dong', 35, 42], steps: [{ wait: 1 }] }, { onSession: (s) => { session = s; } });
   const hero = () => getEntity(session.state, 'hero');
   const nghe = session.state.entities.find((e) => e.follow?.target === 'hero');
   Object.assign(nghe.position, { x: hero().position.x + 1, z: hero().position.z });
