@@ -1,0 +1,228 @@
+{
+ "about": "#71 at night: the bridge has its own light; a chosen plank, the ruler marks, a press that takes the same length, a plank too long, and the count unit by unit.",
+ "start": "?story=bridge&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 6
+  },
+  {
+   "shot": "night-the-bridge-has-its-light"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "guess:bridge-gap:3"
+   },
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.some((e) => e.id === 'guess:bridge-gap:3' && !e.hidden)"
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "read": 6
+  },
+  {
+   "tap": {
+    "cell": [
+     9404,
+     6308
+    ]
+   },
+   "after": 3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:7"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null)"
+  },
+  {
+   "check": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null) === 5"
+  },
+  {
+   "tap": {
+    "thing": "zone:bridge-gap"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length === 1"
+  },
+  {
+   "shot": "night-the-ruler-marks-of-the-gap"
+  },
+  {
+   "tap": {
+    "cell": [
+     9404,
+     6308
+    ]
+   },
+   "after": 3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null)"
+  },
+  {
+   "check": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null) === 5"
+  },
+  {
+   "shot": "night-a-press-takes-the-same-length"
+  },
+  {
+   "tap": {
+    "thing": "zone:bridge-gap"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length === 2"
+  },
+  {
+   "tap": {
+    "cell": [
+     9404,
+     6308
+    ]
+   },
+   "after": 3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:3"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null)"
+  },
+  {
+   "tap": {
+    "thing": "zone:bridge-gap"
+   },
+   "after": 3
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'why:bridge-gap:over')",
+   "timeout": 30
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "night-too-long-the-part-over-the-bank-glows"
+  },
+  {
+   "until": "tre.activeVillage.heard().slice(-1)[0]?.key === 'num.4'",
+   "timeout": 60
+  },
+  {
+   "wait": 0.2
+  },
+  {
+   "shot": "night-the-count-goes-unit-by-unit"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.id === 'why:bridge-gap:over')",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-20).map((x) => x.text))"
+  }
+ ]
+}
