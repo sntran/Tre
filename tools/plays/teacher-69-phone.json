@@ -1,0 +1,414 @@
+{
+ "about": "#69: the teacher on a phone: the frame of ten and the closer view (a rod at least 8 pixels wide), and three wrong ties of 9, 11, and 14 rods. After each tie the heard lines have all the numbers of the count in order before any other line of the teacher, and then what happens next.",
+ "start": "?practice=bo-que",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "create": "Su"
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage && !tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:example'))",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "teacher-the-frame-of-ten-and-the-close-view"
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(() => { const v = tre.activeVillage; const r = v.state().entities.find((e) => e.look === 'rod' && e.item?.zone === 'mat'); if (!r) return null; const a = v.screenOf(r.position.x / 2 - 0.1 - 0.5, r.position.z / 2 - 0.5); const b = v.screenOf(r.position.x / 2 + 0.1 - 0.5, r.position.z / 2 - 0.5); return Math.round(Math.hypot(a.x - b.x, a.y - b.y) * 10) / 10; })()"
+  },
+  {
+   "check": "(() => { const v = tre.activeVillage; const r = v.state().entities.find((e) => e.look === 'rod' && e.item?.zone === 'mat'); if (!r) return null; const a = v.screenOf(r.position.x / 2 - 0.1 - 0.5, r.position.z / 2 - 0.5); const b = v.screenOf(r.position.x / 2 + 0.1 - 0.5, r.position.z / 2 - 0.5); return Math.round(Math.hypot(a.x - b.x, a.y - b.y) * 10) / 10; })() >= 8"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 9"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.scholar.mark')",
+   "timeout": 60
+  },
+  {
+   "until": "tre.activeVillage.heard().slice(-1)[0]?.key === 'num.5'",
+   "timeout": 60
+  },
+  {
+   "shot": "nine-rods-the-count"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.look === 'place-glow')",
+   "timeout": 60
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "nine-rods-the-empty-place-glows"
+  },
+  {
+   "until": "(() => { const h = tre.activeVillage.heard().map((x) => x.key); const i = h.lastIndexOf('mentor.scholar.mark'); const nums = h.slice(i + 1).filter((k) => /^num\\./.test(k)); return i >= 0 && nums.slice(0, 9).join() === Array.from({ length: 9 }, (_, k) => 'num.' + (k + 1)).join(); })()",
+   "timeout": 120
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.id === 'script:trial-scholar' || e.slide) && !tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.spring",
+   "timeout": 120
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-24).map((x) => x.text))"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.heard().map((x) => x.key); const i = h.lastIndexOf('mentor.scholar.mark'); const nums = h.slice(i + 1).filter((k) => /^num\\./.test(k)); return i >= 0 && nums.slice(0, 9).join() === Array.from({ length: 9 }, (_, k) => 'num.' + (k + 1)).join(); })()"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 11"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.scholar.mark')",
+   "timeout": 60
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.slide)",
+   "timeout": 120
+  },
+  {
+   "wait": 0.4
+  },
+  {
+   "shot": "eleven-rods-the-extra-rod-rolls-back"
+  },
+  {
+   "until": "(() => { const h = tre.activeVillage.heard().map((x) => x.key); const i = h.lastIndexOf('mentor.scholar.mark'); const nums = h.slice(i + 1).filter((k) => /^num\\./.test(k)); return i >= 0 && nums.slice(0, 11).join() === Array.from({ length: 11 }, (_, k) => 'num.' + (k + 1)).join(); })()",
+   "timeout": 120
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.id === 'script:trial-scholar' || e.slide) && !tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.spring",
+   "timeout": 120
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-24).map((x) => x.text))"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.heard().map((x) => x.key); const i = h.lastIndexOf('mentor.scholar.mark'); const nums = h.slice(i + 1).filter((k) => /^num\\./.test(k)); return i >= 0 && nums.slice(0, 11).join() === Array.from({ length: 11 }, (_, k) => 'num.' + (k + 1)).join(); })()"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 14"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length === 14"
+  },
+  {
+   "until": "!(tre.activeVillage.state().entities.some((e) => e.id === 'script:trial-scholar' && ['demo', 'smaller', 'share'].includes(e.script.move)))",
+   "timeout": 90
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.scholar.mark')",
+   "timeout": 60
+  },
+  {
+   "until": "tre.activeVillage.heard().slice(-1)[0]?.key === 'num.4'",
+   "timeout": 60
+  },
+  {
+   "shot": "fourteen-rods-the-count"
+  },
+  {
+   "until": "(() => { const h = tre.activeVillage.heard().map((x) => x.key); const i = h.lastIndexOf('mentor.scholar.mark'); const nums = h.slice(i + 1).filter((k) => /^num\\./.test(k)); return i >= 0 && nums.slice(0, 14).join() === Array.from({ length: 14 }, (_, k) => 'num.' + (k + 1)).join(); })()",
+   "timeout": 120
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.id === 'script:trial-scholar' || e.slide) && !tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.spring",
+   "timeout": 120
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-24).map((x) => x.text))"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.heard().map((x) => x.key); const i = h.lastIndexOf('mentor.scholar.mark'); const nums = h.slice(i + 1).filter((k) => /^num\\./.test(k)); return i >= 0 && nums.slice(0, 14).join() === Array.from({ length: 14 }, (_, k) => 'num.' + (k + 1)).join(); })()"
+  },
+  {
+   "wait": 6
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-24).map((x) => x.text))"
+  },
+  {
+   "shot": "after-three-tries"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.id === 'script:trial-scholar' || e.slide) && !tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.spring",
+   "timeout": 120
+  },
+  {
+   "wait": 2
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.heard().map((x) => x.key); return h.every((k, i) => k !== 'mentor.scholar.demo' || h.slice(i + 1).find((x) => !/^num\\./.test(x)) === 'mentor.scholar.demoDone'); })()"
+  }
+ ]
+}
