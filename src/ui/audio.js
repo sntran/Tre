@@ -124,6 +124,13 @@ const SOUNDS = {
   tom: (t) => tone(110, t, 0.3, { volume: 0.4, glide: 60 }),
   frog: (t) => { tone(180, t, 0.08, { type: 'square', volume: 0.04, glide: 120 }); tone(200, t + 0.12, 0.08, { type: 'square', volume: 0.04, glide: 130 }); },
   splash: (t) => { noise(t, 0.45, { volume: 0.35, filter: 1800, sweep: 500, q: 0.6 }); tone(420, t, 0.12, { volume: 0.08, glide: 900 }); },
+  // Hot iron in the water (#77: the smith says "Nghe tiếng xèo kìa!"): a short plop, then a long
+  // high hiss that goes down, with small crackles in it.
+  sizzle: (t) => {
+    noise(t, 0.12, { volume: 0.18, filter: 700, q: 0.8 });
+    noise(t + 0.03, 1.5, { volume: 0.3, filter: 7000, sweep: 2600, q: 0.35 });
+    for (const k of [0.1, 0.22, 0.31, 0.47, 0.6, 0.82]) noise(t + k, 0.03, { volume: 0.12, filter: 4200, q: 2 });
+  },
   crack: (t) => { noise(t, 0.12, { volume: 0.4, filter: 2500, q: 0.8 }); tone(160, t + 0.05, 0.3, { type: 'sawtooth', volume: 0.08, glide: 80 }); },
 };
 

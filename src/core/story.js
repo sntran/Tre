@@ -542,6 +542,9 @@ export function createLaws({ texts, limits }) {
   // region.*, as a text or as a value) are not checked.
   const exempt = (key) => /^(history|place|region)\./.test(key);
   function text(ev, params = {}) {
+    // The card of a new print of the notebook (#77: "Sổ tay có tranh mới: Cộng trong phạm vi 20."
+    // showed in the village).
+    if (ev.type === 'notebook') return text({ type: 'open', textKey: 'note.new', params: { name: { key: ev.titleKey } } }, params);
     if (ev.type !== 'open') return [];
     const keys = [ev.textKey, ...(ev.choices ?? []), ev.mark ? `mark.${ev.mark}` : null].filter((k) => k && !exempt(k));
     const values = Object.fromEntries(Object.entries({ ...params, ...(ev.params ?? {}) }).map(([k, v]) => [k, v?.key && exempt(v.key) ? '' : v]));

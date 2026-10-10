@@ -2,7 +2,7 @@
 // menu, or with a tap on the card of a new print; the parent area shows the same notebook.
 import { registerModal } from './registry.js';
 import { h, img, button } from './dom.js';
-import { t } from './i18n.js';
+import { t, tn } from './i18n.js';
 import { speak } from './speak.js';
 import { portraitCanvas } from './portraits.js';
 import { notebookOf, notebookCount, printArt, sentSkills } from '../core/notebook.js';
@@ -15,8 +15,9 @@ export function printOf(ctx, entry, size = 64) {
 
 // The pages of the notebook of a profile, as one element. A print that the child did not meet is a
 // gap with its place on the page (the child sees what is still to find); a tap on a print says its
-// name.
-export function notebookGrid(ctx, profile, { speakOnTap = true } = {}) {
+// name. curriculum: the parent area shows the name of the curriculum of a skill under the name that
+// the child knows (#77).
+export function notebookGrid(ctx, profile, { speakOnTap = true, curriculum = false } = {}) {
   const list = notebookOf(ctx.data.notebook, ctx.data.skills.skills, profile, sentSkills(ctx.data.trials ?? {}));
   const pages = [];
   // The pages in the order of the list (a page with a print first).
@@ -24,7 +25,8 @@ export function notebookGrid(ctx, profile, { speakOnTap = true } = {}) {
     const cards = list.filter((e) => e.kind === kind).map((e) => {
       const card = h(e.met ? 'button' : 'div', { class: `note-card${e.met ? '' : ' gap'}${e.sealed ? ' sealed' : ''}`, ...(e.met ? { type: 'button' } : {}), dataset: { id: e.id } }, [
         h('span', { class: 'note-print' }, e.met ? [printOf(ctx, e)] : []),
-        h('span', { class: 'note-name', text: e.met ? t(e.titleKey) : t('note.unknown') }),
+        h('span', { class: 'note-name', text: e.met ? tn(e.titleKey) : t('note.unknown') }),
+        curriculum && e.skillKey && e.skillKey !== e.titleKey ? h('span', { class: 'note-skill', text: t(e.skillKey) }) : null,
         e.sealed ? img('ui/seal', 'note-seal') : null,
       ]);
       if (e.met && speakOnTap) card.addEventListener('click', () => speak(e.titleKey, {}, { force: true }));

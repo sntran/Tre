@@ -53,7 +53,7 @@ export function createDialogue(def, state) {
     if (!current) return null;
     const node = def.nodes[current];
     const choices = (node.choices ?? []).filter((c) => check(c.when, state));
-    return { id: current, speaker: node.speaker ?? null, textKey: node.textKey, params: node.params ?? {}, choices, mood: node.mood ?? null, mark: 'mark' in node ? node.mark : def.mark ?? null, names: (node.names ?? []).map((n) => (typeof n === 'string' ? { id: n } : n)), calling: node.calling ?? null, faces: node.faces ?? [] };
+    return { id: current, speaker: node.speaker ?? null, textKey: node.textKey, params: node.params ?? {}, choices, mood: node.mood ?? null, mark: 'mark' in node ? node.mark : def.mark ?? null, names: (node.names ?? []).map((n) => (typeof n === 'string' ? { id: n } : n)), calling: node.calling ?? null, faces: node.faces ?? [], marks: Boolean(node.marks) };
   }
 
   // Go on. choice is the index of a choice, when the node has choices.

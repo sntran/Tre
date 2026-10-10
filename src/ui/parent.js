@@ -180,7 +180,7 @@ async function parentArea(ctx, opts = {}) {
       if (tab === 'week') drawWeek();
       if (tab === 'progress') drawProgress();
       // The same notebook as the child sees (#8).
-      if (tab === 'notebook') body.append(h('p', { class: 'parent-about', text: t('parent.notebook.about') }), notebookGrid(ctx, ctx.profile, { speakOnTap: false }));
+      if (tab === 'notebook') body.append(h('p', { class: 'parent-about', text: t('parent.notebook.about') }), notebookGrid(ctx, ctx.profile, { speakOnTap: false, curriculum: true }));
       if (tab === 'learning') drawLearning(body, ctx);
       if (tab === 'settings') drawSettings();
       if (tab === 'questions') drawQuestions();

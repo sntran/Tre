@@ -57,7 +57,7 @@ export function notebookOf(def, skills, profile, sent = new Set()) {
   for (const s of notebookSkills(def, skills, profile.grade ?? 1, learned, sent)) {
     const e = learned[s.id];
     const met = Boolean(e && e.n > 0);
-    out.push({ id: `skill:${s.id}`, kind: 'skill', skill: s.id, subject: s.subject, titleKey: `skill.${s.id}`, look: null, met, sealed: met && Boolean(e.mastered) });
+    out.push({ ...skillPrint(def, s), met, sealed: met && Boolean(e.mastered) });
   }
   for (const e of def.entries) out.push({ id: e.id, kind: e.kind, titleKey: e.titleKey, look: e.look ?? null, met: isMet(e.met, profile), sealed: false });
   // The pages with the most met prints first, then in their order; on a page, the met prints come
@@ -67,6 +67,16 @@ export function notebookOf(def, skills, profile, sent = new Set()) {
   for (const e of out) if (e.met) have[e.kind] = (have[e.kind] ?? 0) + 1;
   const rank = (a, b) => (have[b] ?? 0) - (have[a] ?? 0) || kinds.indexOf(a) - kinds.indexOf(b);
   return out.map((e, i) => ({ e, i })).sort((a, b) => rank(a.e.kind, b.e.kind) || Number(b.e.met) - Number(a.e.met) || a.i - b.i).map(({ e }) => e);
+}
+
+// The print of a skill (#77): the name that a child knows and the picture of the task where the
+// child used the skill (def.skills), never the name of the curriculum, which has a digit or the
+// name of an operation ("Cộng trong phạm vi 20"). skillKey: the name of the curriculum, for the
+// parent area. A skill with no print in def.skills has the name of the curriculum and the picture
+// of its subject.
+export function skillPrint(def, skill) {
+  const p = def.skills?.[skill.id];
+  return { id: `skill:${skill.id}`, kind: 'skill', skill: skill.id, subject: skill.subject, titleKey: p?.titleKey ?? `skill.${skill.id}`, skillKey: `skill.${skill.id}`, look: p?.look ?? null };
 }
 
 // The entries that a new key fills in (the entries whose rule is the key).

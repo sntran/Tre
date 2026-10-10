@@ -32,7 +32,7 @@ import { h, img, button } from './dom.js';
 import { t, tn, setSpeech, lang } from './i18n.js';
 import { speechTable, speechWay } from '../core/speech.js';
 import { speak, speaking } from './speak.js';
-import { bubbleLine, createVoiceQueue } from '../core/bubblevoice.js';
+import { bubbleLine, createVoiceQueue, doneBy } from '../core/bubblevoice.js';
 import { voiceOf } from '../core/voices.js';
 import { namesOf } from '../core/naming.js';
 import { createDialogueBox, glossLine } from './dialogue.js';
@@ -296,6 +296,9 @@ export async function mountVillage(ctx, params = {}) {
 
   let tapFx = null;
   let busy = session.busy; // true while a dialogue or a panel is open
+  // A line of a talk that names the round marks with a face (#77: "hình tròn có mặt người"): while
+  // it shows, the marks show over the talk and pulse, so that the child sees what the words name.
+  let marksLine = false;
   let alive = true;
   ctx.syncWorld = session.syncSave;
 
@@ -650,6 +653,7 @@ export async function mountVillage(ctx, params = {}) {
   const book = ctx.storybook ?? null; // a story of the storybook (src/ui/storybook.js)
   let bookScreen = null;
   function openScreen(ev) {
+    if (ev.screen === 'dialogue' || ev.screen === 'say') marksLine = Boolean(ev.marks);
     if (ev.screen === 'dialogue' || ev.screen === 'say') {
       // A line in the box is a new line of its speaker: the lines of the other people go, and so
       // does the last bubble of the speaker (#62: a hint of the smith stayed over his done talk).
@@ -907,7 +911,10 @@ export async function mountVillage(ctx, params = {}) {
       moving = false;
     }
     const target = targetUnder(p);
-    if (target?.person) sayAgain(target.person);
+    if (target?.person) {
+      sayAgain(target.person);
+      seenPerson = { id: target.person, t: performance.now() };
+    }
     if (target?.pet) {
       ctx.bus.emit('sound', 'tap');
       send({ type: 'pet', id: target.pet });
@@ -1104,9 +1111,21 @@ export async function mountVillage(ctx, params = {}) {
   // The points that the child must see (world units): the hero; in a raid also the posts and the
   // enemies, so that a tree or a roof in front of the road fades (#55: a child counts the post
   // where the enemy stands).
+  // After a tap on a person, the view does not turn (#77: a turn after each tap changes the
+  // directions of the stick and of the screen, and a child loses the way): what stands between the
+  // camera and the person fades, as for the hero, while the hero is near the person.
+  const SEEN_PERSON = 60000; // milliseconds
+  const SEEN_NEAR = 12; // blocks
+  let seenPerson = null;
+  function personSeen(heroAt) {
+    if (!seenPerson || performance.now() - seenPerson.t > SEEN_PERSON) return (seenPerson = null);
+    const f = figures.placeOf(seenPerson.id);
+    return f && Math.hypot(f.x - heroAt.x, f.z - heroAt.z) < SEEN_NEAR ? f : null;
+  }
   function seenPoints(heroAt) {
     const r = getEntity(state, 'raid')?.raid;
-    if (!r || r.result) return heroAt;
+    const person = personSeen(heroAt);
+    if (!r || r.result) return person ? [heroAt, person] : heroAt;
     const at = (p) => ({ x: p.x / 2, y: groundY(p.x / 2, p.z / 2), z: p.z / 2 });
     return [heroAt, ...r.posts.map(at), ...r.enemies.filter((e) => e.state !== 'retreat').map(at)];
   }
@@ -1353,7 +1372,8 @@ export async function mountVillage(ctx, params = {}) {
     showPrint(printQueue.shift());
   }
   function showPrint(ev) {
-    const name = t(ev.titleKey);
+    // The name that the child gave to Nghé (#77: "Mít, bạn của em").
+    const name = tn(ev.titleKey);
     // The card shows the picture of the notebook next to the new print, so that a child who
     // does not know the word "sổ tay" sees what it is (#72).
     const card = h('button', { class: 'print-card', type: 'button' }, [
@@ -1365,12 +1385,9 @@ export async function mountVillage(ctx, params = {}) {
     ctx.ui.append(card);
     printCard = card;
     // The voice says the card in its turn, as a line of a bubble (#72: a child who cannot read
-    // yet did not know the card). A print of a math skill has the name of a math operation, and
-    // the village has no math operation word: that card shows with no voice.
-    if (!(ev.kind === 'skill' && ev.subject === 'math')) {
-      const line = { id: 'print', key: 'note.new', params: { name }, voice: lineVoice(null), kind: 'line' };
-      voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
-    }
+    // yet did not know the card). A print of a skill has the name that a child knows (#77).
+    const line = { id: 'print', key: 'note.new', params: { name }, voice: lineVoice(null), kind: 'line' };
+    voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
     setTimeout(() => { if (printCard === card) { card.remove(); printCard = null; } }, 5000);
   }
   // The lights of the bursts of a success (#62): a warm light for a moment, also at night.
@@ -1437,6 +1454,7 @@ export async function mountVillage(ctx, params = {}) {
       case 'open': openScreen(ev); return;
       case 'close':
         if (ev.screen === 'dialogue' || ev.screen === 'say') {
+          marksLine = false;
           box?.close();
           box = null;
         } else {
@@ -1523,6 +1541,12 @@ export async function mountVillage(ctx, params = {}) {
   }
   // What the world did in a step: sounds, hearts, splashes, and dust.
   function worldEvent(ev) {
+    // A hint goes when the child does what it says (#77): its bubble, and its line if it still waits.
+    if (ev.id === 'hero' && ev.type === 'put') {
+      voiceQueue.forget((l) => doneBy(l.key, ev.type));
+      for (const b of bubbles.filter((x) => !x.icon && doneBy(x.line?.key, ev.type))) b.el.remove();
+      bubbles = bubbles.filter((x) => x.icon || !doneBy(x.line?.key, ev.type));
+    }
     if (ev.id === 'sky') {
       // The drum of the đình and a cock crow at dawn; the lanterns and a far temple bell at dusk.
       ctx.bus.emit('sound', ev.type === 'dawn' ? 'drum' : 'lantern');
@@ -1647,7 +1671,7 @@ export async function mountVillage(ctx, params = {}) {
   const STAR_PULSE = 1.6;
   const MAIN_STAR = 1.3; // the scale of the star of the next step of the story (#62)
   let starPulse = null;
-  const pulseOf = (m) => (starPulse && m.id === starPulse.id ? 1 + 0.6 * Math.sin((Math.PI * starPulse.t) / STAR_PULSE) : 1);
+  const pulseOf = (m) => (marksLine ? 1.15 + 0.2 * Math.sin(time * 6) : starPulse && m.id === starPulse.id ? 1 + 0.6 * Math.sin((Math.PI * starPulse.t) / STAR_PULSE) : 1);
   // The boxes of the controls (the stick and the buttons) on the screen, and of the hero: the marks
   // keep off them (src/world/marks.js, #53). The boxes of the buttons come again twice a second.
   let controlBoxes = [];
@@ -1734,8 +1758,8 @@ export async function mountVillage(ctx, params = {}) {
     mini.strokeStyle = C.ink;
     mini.stroke();
   }
-  function drawMarks() {
-    if (starPulse && (starPulse.t -= 1 / 60) <= 0) starPulse = null;
+  function drawMarks(dt) {
+    if (starPulse && (starPulse.t -= dt) <= 0) starPulse = null;
     const hudRect = hud.getBoundingClientRect();
     const canvasRect = canvas.getBoundingClientRect();
     const inset = { top: Math.max(0, hudRect.bottom - canvasRect.top) + 8, right: 12, bottom: 12, left: 12 };
@@ -1753,7 +1777,7 @@ export async function mountVillage(ctx, params = {}) {
       taskHereAt = performance.now();
       taskHereNow = session.taskHere();
     }
-    for (const m of busy || taskHereNow ? [] : markers()) {
+    for (const m of (busy && !marksLine) || taskHereNow ? [] : markers()) {
       const p = view.project(m.x, m.h, m.y);
       const edge = edgeMarker(screen, p, inset);
       if (!edge) {
@@ -1810,7 +1834,9 @@ export async function mountVillage(ctx, params = {}) {
     const workAt = bubbles.length ? workMarks() : [];
     for (let i = bubbles.length - 1; i >= 0; i--) {
       const b = bubbles[i];
-      b.age += 1 / 60;
+      // The age of a bubble is in seconds (#77: at 1/60 each frame, a phone that draws fewer frames
+      // kept each bubble longer than its line).
+      b.age += dt;
       const f = figures.placeOf(b.id);
       // A bubble stays at least as long as its line waits or is spoken (#60).
       if (!f || (b.age > b.life && !voiceHolds(b))) {
@@ -2073,7 +2099,7 @@ export async function mountVillage(ctx, params = {}) {
     view.render(dt, raidView.focus(leadToWork(heroAt)), time, { ...state.sky, puddles }, ambient, seenPoints(heroAt));
     drawSky();
     raidView.draw(dt, w, hh);
-    drawMarks();
+    drawMarks(dt);
   }
 
   const api = {

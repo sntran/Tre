@@ -1142,6 +1142,9 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 /* The notebook (Sổ tay, #8): pages of prints on dó paper, a gap for a print still to find, and a red
    seal on a mastered skill. */
 .notebook-panel { width: min(640px, 100%); max-height: 90vh; overflow-y: auto; }
+/* The head with the close button stays at the top while the child scrolls the prints (#77: "Where
+   did the X go? I can't get out!"). */
+.notebook-panel .panel-head { position: sticky; top: calc(var(--gap) * -1.4); z-index: 3; }
 .note-count { margin: 0 0 6px; font-size: var(--text-small); }
 .note-page h3 { margin: 12px 0 6px; font-size: var(--text); display: flex; align-items: baseline; gap: 8px; }
 .note-page-count { font-size: var(--text-small); font-weight: 600; opacity: 0.75; }
@@ -1152,6 +1155,8 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .note-card.gap .note-print { background: transparent; border-style: dashed; }
 .note-art { width: 40px; height: 40px; }
 .note-name { font-size: var(--text-small); line-height: 1.2; }
+/* The name of the curriculum of a skill, only in the parent area (#77). */
+.note-skill { font-size: 12px; line-height: 1.2; opacity: 0.75; }
 .note-seal { position: absolute; right: -6px; top: -6px; width: 28px; height: 28px; transform: rotate(-12deg); }
 .print-card { position: absolute; left: 50%; top: calc(var(--safe-top) + 132px); transform: translateX(-50%); display: flex; align-items: center; gap: 8px; max-width: calc(100% - 24px); padding: 6px 12px 6px 6px; border: var(--line); border-radius: var(--corner); background: var(--paper) var(--paper-texture); background-size: 256px; box-shadow: var(--frame); font: inherit; color: var(--ink); z-index: 25; animation: pop 0.4s; pointer-events: auto; }
 .print-card .note-print { flex: none; width: 44px; height: 44px; }
@@ -1160,6 +1165,8 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
    needs, up to the width of the screen: with "left: 50%" only, the line went on many short lines. */
 .print-card { width: max-content; text-align: left; }
 .print-card .print-book { flex: none; width: 36px; height: 36px; }
+/* The line of the card wraps in the card, and is never cut at the edge of the screen (#77). */
+.print-card > span:last-child { min-width: 0; overflow-wrap: anywhere; }
 
 /* The minimap (#8): a round print of the near places under the map button. */
 .minimap { position: absolute; right: 8px; top: calc(var(--safe-top) + 128px); width: 76px; height: 76px; padding: 0; border: none; border-radius: 50%; background: transparent; box-shadow: var(--frame); cursor: pointer; z-index: 5; }

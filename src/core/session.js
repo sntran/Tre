@@ -37,7 +37,7 @@ import { check } from './conditions.js';
 import { createTriggers } from './triggers.js';
 import { currentGoal, doneSteps } from './quests.js';
 import { addXp, questSteps } from './growth.js';
-import { noteSeen, entriesOfKey } from './notebook.js';
+import { noteSeen, entriesOfKey, skillPrint } from './notebook.js';
 import { offOf, weekOf } from './learnlog.js';
 import { snapFacts } from './planting.js';
 import { clueLine as clueOf, hiddenAt, areaOf, inArea, openFinds, wayOf, wayPoint } from './clues.js';
@@ -815,7 +815,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else runPending();
       return;
     }
-    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, faces: view.faces });
+    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
     showNames(d, view.speaker, view.names);
   }
   // The things that a line names (#62): the person points at the first one, the view makes them
@@ -3419,7 +3419,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The first skill event of a skill of the era: a new print in the notebook (#8).
     if (!met && (profile.learning?.skills?.[ev.skill]?.n ?? 0) > 0 && data.notebook) {
       const skill = data.skills?.skills?.find((s) => s.id === ev.skill);
-      if (skill && (skill.era ?? 1) <= (data.notebook.skillEra ?? 1)) emit({ type: 'notebook', id: `skill:${skill.id}`, titleKey: `skill.${skill.id}`, look: null, kind: 'skill', subject: skill.subject });
+      // The card has the name that a child knows and the picture of the task (#77), never the
+      // name of the curriculum.
+      if (skill && (skill.era ?? 1) <= (data.notebook.skillEra ?? 1)) {
+        const print = skillPrint(data.notebook, skill);
+        emit({ type: 'notebook', id: print.id, titleKey: print.titleKey, look: print.look, kind: 'skill', subject: skill.subject });
+      }
     }
     const pAfter = l?.entry(ev.skill).p ?? null;
     log('attempt', {

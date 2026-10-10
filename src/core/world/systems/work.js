@@ -732,7 +732,7 @@ function act(world, e, want, env) {
       iron.look = task.made ?? 'blade';
       iron.item.set = true;
       tz.zone.heat = null;
-      say(world, 'hiss', iron.id, { sound: 'splash', at: iron.position });
+      say(world, 'hiss', iron.id, { sound: 'sizzle', at: iron.position });
       finish(world, tz, iron.position);
     } else {
       iron.look = 'iron-bent';
@@ -963,7 +963,7 @@ function tickForge(world, tz, dt, env) {
   delete tz.zone.iron;
   tz.zone.heat = null;
   tz.zone.next = DEMO_NEXT;
-  say(world, 'hiss', iron.id, { sound: 'splash', at: iron.position });
+  say(world, 'hiss', iron.id, { sound: 'sizzle', at: iron.position });
   say(world, 'call', 'npc:smith', { key: 'smith.quench.show' });
 }
 

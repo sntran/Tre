@@ -34,6 +34,12 @@ export function bubbleLine(ev, voice = () => 'narrator') {
   return { id: ev.id ?? null, key: ev.textKey, params: ev.params ?? {}, voice: voice(speakerOf(ev.id)), kind: kind === 'line' && ev.happened ? 'world' : kind };
 }
 
+// A hint goes when the child does what it says (#77: "Cắm cái cọc này lên hàng nhé." stayed over the
+// fisher after the put, and the child thought that the put did not count). The key of the hint and
+// the events of the world that do it.
+const DONE_BY = [{ key: /^mentor\.carry\./, by: ['put'] }];
+export const doneBy = (key, type) => DONE_BY.some((d) => d.key.test(String(key ?? '')) && d.by.includes(type));
+
 const same = (a, b) => a.id === b.id && a.key === b.key && JSON.stringify(a.params) === JSON.stringify(b.params);
 // The same words, from any person: two children who greet the hero at once ("Chào Tí! Chào Tí!"),
 // or two villagers who say the same news (#67).
@@ -84,6 +90,10 @@ export function createVoiceQueue() {
       return line;
     },
     waiting: (id, key) => queue.some((q) => q.id === id && (key === undefined || q.key === key)),
+    // Take away the lines that wait and that test(line) is true for.
+    forget(test) {
+      for (let i = queue.length - 1; i >= 0; i--) if (test(queue[i])) queue.splice(i, 1);
+    },
     size: () => queue.length,
     clear: () => { queue.length = 0; },
   };

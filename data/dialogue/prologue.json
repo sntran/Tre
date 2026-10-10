@@ -24,6 +24,7 @@
     "n4": {
      "speaker": "grandma",
      "textKey": "dlg.grandma.intro.n4",
+     "marks": true,
      "effects": [
       {
        "set": "intro.seen"
@@ -107,7 +108,8 @@
    "nodes": {
     "n1": {
      "speaker": "elder",
-     "textKey": "dlg.elder.trials.wait.n1"
+     "textKey": "dlg.elder.trials.wait.n1",
+     "marks": true
     }
    }
   },
@@ -202,7 +204,8 @@
    "nodes": {
     "n1": {
      "speaker": "elder",
-     "textKey": "dlg.elder.busy.n1"
+     "textKey": "dlg.elder.busy.n1",
+     "marks": true
     }
    }
   }
