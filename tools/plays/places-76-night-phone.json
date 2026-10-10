@@ -1,0 +1,234 @@
+{
+ "about": "#76 at night: no face of another person at the teacher during the task, Nghé off the mat, the hero behind the anvil, the hero beside the fisher, and the row of the fisher big on the screen.",
+ "start": "?story=trial-scholar&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "document.querySelectorAll('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])').length"
+  },
+  {
+   "check": "document.querySelectorAll('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])').length === 0"
+  },
+  {
+   "shot": "night-teacher-no-faces-on-the-work"
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "press": true,
+   "after": 1.3
+  },
+  {
+   "wait": 20
+  },
+  {
+   "print": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.rect; const n = tre.activeVillage.state().entities.find((e) => e.id === 'friend:nghe').position; return Math.max(r.x0 - n.x, n.x - r.x1, r.z0 - n.z, n.z - r.z1); })()"
+  },
+  {
+   "check": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.rect; const n = tre.activeVillage.state().entities.find((e) => e.id === 'friend:nghe').position; return Math.max(r.x0 - n.x, n.x - r.x1, r.z0 - n.z, n.z - r.z1); })() >= 1.5"
+  },
+  {
+   "shot": "night-teacher-nghe-off-the-mat"
+  },
+  {
+   "print": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:teacher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })()"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:teacher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })() >= 0.9"
+  },
+  {
+   "goto": "?story=trial-smith&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-hot')",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "check": "(() => { const a = tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith').zone.anvil; const p = tre.activeVillage.pointOf(a.x / 2, a.z / 2); const h = tre.activeVillage.screenOfThing('hero'); return h.y < p.y; })()"
+  },
+  {
+   "shot": "night-smith-the-hero-behind-the-anvil"
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "night-smith-the-quench"
+  },
+  {
+   "goto": "?story=trial-fisher&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 60
+  },
+  {
+   "print": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:fisher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })()"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:fisher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })() >= 0.9"
+  },
+  {
+   "shot": "night-fisher-the-hero-beside-the-fisher"
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:2"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "row": 8
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "shot": "night-fisher-the-row-is-big"
+  }
+ ]
+}

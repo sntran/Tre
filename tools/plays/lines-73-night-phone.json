@@ -1,0 +1,353 @@
+{
+ "about": "#73 at night: every line is heard: two late quenches at the smith (the line of what happened before any later line, and no picture of another station in the first visit), the count of the healer with rows of 4, 5, and 4 (every number), and the escape of the fish at the fisher (the glowing space and its line, with no wave).",
+ "start": "?story=trial-smith&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-hot')",
+   "timeout": 120
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-0')",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().filter((x) => x.key === 'smith.bend.late').length >= 1",
+   "timeout": 30
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "night-smith-the-late-quench-is-heard"
+  },
+  {
+   "wait": 8
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-hot')",
+   "timeout": 120
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-0')",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().filter((x) => x.key === 'smith.bend.late').length >= 2",
+   "timeout": 30
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "wait": 8
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.heard().map((x) => x.key); const i = h.indexOf('smith.bend.late'); return i >= 0 && !h.slice(0, i).some((k) => /^mentor\\./.test(k) && k !== 'mentor.first.you'); })()"
+  },
+  {
+   "check": "!tre.activeVillage.heard().some((x) => x.key === 'mentor.picture.smith')"
+  },
+  {
+   "shot": "night-smith-after-two-late-quenches"
+  },
+  {
+   "goto": "?story=trial-healer&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-ngai"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-tiato"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-rauma"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 2
+  },
+  {
+   "check": "(() => { const p = tre.activeVillage.screenOfPerson('healer'); return Boolean(p && p.x > 20 && p.x < 370 && p.y > 140 && p.y < 700); })()"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "check": "document.querySelector('.act-btn')?.dataset.act?.startsWith('give|')"
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().filter((x) => x.key === 'num.5').length >= 1",
+   "timeout": 180
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "night-healer-the-count-of-the-rows"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 90
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.heard().map((x) => x.key).filter((k) => /^num\\./.test(k)); const want = [1, 2, 3, 4, 1, 2, 3, 4, 5, 1, 2, 3, 4].map((n) => 'num.' + n); for (let i = 0; i + want.length <= h.length; i++) if (want.every((k, j) => h[i + j] === k)) return true; return false; })()"
+  },
+  {
+   "shot": "night-healer-after-the-count"
+  },
+  {
+   "goto": "?story=trial-fisher&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "thing": "zone:stakes"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "place": "line"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'why:fisher:space')",
+   "timeout": 900
+  },
+  {
+   "wait": 0.6
+  },
+  {
+   "shot": "night-fisher-the-space-glows"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'fisher.escape')",
+   "timeout": 30
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "night-fisher-the-line-of-the-escape"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}

@@ -1,0 +1,459 @@
+{
+ "about": "#77: a new game where the calf is named Mít (the line about the round marks shows with a face on the screen, and the notebook says \"Mít, bạn của em\"), the card of a skill print with a name that a child knows, the page of the skills, the close button on the screen, the sizzle of the quench, the hint of the fisher that goes at the put, and a tap on the fisher.",
+ "start": "",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "create": "Su"
+  },
+  {
+   "read": 12
+  },
+  {
+   "click": "Chào nghé con"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "check": "(() => { const i = document.querySelector('.modal-layer .name-input'); i.value = 'Mít'; return true; })()"
+  },
+  {
+   "click": "Đồng ý"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "document.querySelectorAll('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])').length"
+  },
+  {
+   "check": "document.querySelectorAll('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])').length > 0"
+  },
+  {
+   "shot": "the-line-of-the-faces-with-a-face"
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 6
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Sổ tay",
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.notebook'))",
+   "timeout": 30
+  },
+  {
+   "print": "document.querySelector('.notebook').textContent.slice(0, 300)"
+  },
+  {
+   "check": "document.querySelector('.notebook').textContent.includes('Mít, bạn của em')"
+  },
+  {
+   "shot": "the-notebook-says-mit"
+  },
+  {
+   "button": ".notebook-panel .icon-btn",
+   "after": 0.5
+  },
+  {
+   "goto": "?story=trial-woodcutter",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.first')",
+   "timeout": 60
+  },
+  {
+   "check": "(() => { window.__cards = []; new MutationObserver(() => { const c = document.querySelector('.print-card'); if (c && window.__cards[window.__cards.length - 1]?.text !== c.textContent) window.__cards.push({ text: c.textContent }); }).observe(document.body, { childList: true, subtree: true }); return true; })()"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "window.__cards.length > 0",
+   "timeout": 120
+  },
+  {
+   "shot": "the-card-of-a-skill-print"
+  },
+  {
+   "print": "(window.__cards[0]?.text ?? '')"
+  },
+  {
+   "check": "(window.__cards[0]?.text ?? '').includes('Cái đăng') && !/[0-9]/.test((window.__cards[0]?.text ?? ''))"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'note.new')",
+   "timeout": 30
+  },
+  {
+   "wait": 6
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Sổ tay",
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.notebook'))",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-page-of-the-skills"
+  },
+  {
+   "drag": [
+    [
+     195,
+     700
+    ],
+    [
+     195,
+     200
+    ],
+    0.6
+   ]
+  },
+  {
+   "wait": 1
+  },
+  {
+   "check": "(() => { const p = document.querySelector('.notebook-panel'); const r = p.querySelector('.panel-head .icon-btn').getBoundingClientRect(); return p.scrollTop > 0 && r.top >= 0 && r.bottom <= innerHeight; })()"
+  },
+  {
+   "shot": "the-close-button-stays-on-the-screen"
+  },
+  {
+   "button": ".notebook-panel .icon-btn",
+   "after": 1
+  },
+  {
+   "check": "!document.querySelector('.notebook')"
+  },
+  {
+   "goto": "?story=trial-smith",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-hot')",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.sounds().some((x) => x.name === 'sizzle')",
+   "timeout": 30
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "the-quench-sizzles"
+  },
+  {
+   "goto": "?story=trial-fisher",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:2"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "until": "[...document.querySelectorAll('.world-bubble')].some((b) => b.textContent.includes('Cắm cái cọc'))",
+   "timeout": 40,
+   "if": "true"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1,
+   "if": "![...document.querySelectorAll('.world-bubble')].some((b) => b.textContent.includes('Cắm cái cọc'))"
+  },
+  {
+   "until": "[...document.querySelectorAll('.world-bubble')].some((b) => b.textContent.includes('Cắm cái cọc'))",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "the-hint-of-the-fisher"
+  },
+  {
+   "tap": {
+    "row": 8
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "check": "![...document.querySelectorAll('.world-bubble')].some((b) => b.textContent.includes('Cắm cái cọc'))"
+  },
+  {
+   "shot": "the-hint-goes-at-the-put"
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "a-tap-on-the-fisher"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}
