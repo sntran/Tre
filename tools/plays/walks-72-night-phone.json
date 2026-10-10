@@ -1,0 +1,79 @@
+{
+ "about": "#72 in the evening: walks to the stars of the teacher and the smith end next to the person, with the person in view; Nghé is never in a person.",
+ "start": "?story=trial-healer&clock=1170",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 3
+  },
+  {
+   "read": 10
+  },
+  {
+   "tap": {
+    "star": "teacher"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:teacher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })()"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:teacher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })() <= 4"
+  },
+  {
+   "check": "(() => { const p = tre.activeVillage.screenOfThing('npc:teacher'); return Boolean(p && p.visible && p.x > 60 && p.x < 330 && p.y > 150 && p.y < 650); })()"
+  },
+  {
+   "shot": "night-walk-to-the-star-of-the-teacher"
+  },
+  {
+   "tap": {
+    "star": "smith"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:smith')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })()"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:smith')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })() <= 4"
+  },
+  {
+   "check": "(() => { const p = tre.activeVillage.screenOfThing('npc:smith'); return Boolean(p && p.visible && p.x > 60 && p.x < 330 && p.y > 150 && p.y < 650); })()"
+  },
+  {
+   "shot": "night-walk-to-the-star-of-the-smith"
+  },
+  {
+   "wait": 6
+  },
+  {
+   "check": "(() => { const n = tre.activeVillage.state().entities.find((e) => e.follow?.target === 'hero'); return tre.activeVillage.state().entities.filter((e) => e.person && !e.hidden).every((q) => Math.hypot(q.position.x - n.position.x, q.position.z - n.position.z) >= 2.6); })()"
+  },
+  {
+   "shot": "night-nghe-beside-the-smith"
+  }
+ ]
+}

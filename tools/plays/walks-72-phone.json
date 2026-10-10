@@ -1,0 +1,211 @@
+{
+ "about": "#72: a new game to the five faces of the elder, then walks to the stars of the healer, the teacher, and the smith (each ends next to the person, with the person in the middle of the view), a tap on the teacher during another walk, and Nghé beside the smith.",
+ "start": "",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "create": "Su"
+  },
+  {
+   "read": 12
+  },
+  {
+   "click": "Chào nghé con"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "read": 12
+  },
+  {
+   "click": "Đồng ý"
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "star": true
+   }
+  },
+  {
+   "wait": 6
+  },
+  {
+   "read": 20
+  },
+  {
+   "press": true
+  },
+  {
+   "wait": 2
+  },
+  {
+   "read": 1,
+   "if": "!document.body.textContent.includes('Đó là thầy giáo')"
+  },
+  {
+   "read": 1,
+   "if": "!document.body.textContent.includes('Đó là thầy giáo')"
+  },
+  {
+   "read": 1,
+   "if": "!document.body.textContent.includes('Đó là thầy giáo')"
+  },
+  {
+   "read": 1,
+   "if": "!document.body.textContent.includes('Đó là thầy giáo')"
+  },
+  {
+   "read": 1,
+   "if": "!document.body.textContent.includes('Đó là thầy giáo')"
+  },
+  {
+   "read": 1,
+   "if": "!document.body.textContent.includes('Đó là thầy giáo')"
+  },
+  {
+   "wait": 4
+  },
+  {
+   "shot": "the-five-faces"
+  },
+  {
+   "read": 30
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-stars-of-the-trials"
+  },
+  {
+   "tap": {
+    "star": "healer"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:healer')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })()"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:healer')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })() <= 4"
+  },
+  {
+   "check": "(() => { const p = tre.activeVillage.screenOfThing('npc:healer'); return Boolean(p && p.visible && p.x > 60 && p.x < 330 && p.y > 150 && p.y < 650); })()"
+  },
+  {
+   "shot": "walk-to-the-star-of-the-healer"
+  },
+  {
+   "tap": {
+    "star": "teacher"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:teacher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })()"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:teacher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })() <= 4"
+  },
+  {
+   "check": "(() => { const p = tre.activeVillage.screenOfThing('npc:teacher'); return Boolean(p && p.visible && p.x > 60 && p.x < 330 && p.y > 150 && p.y < 650); })()"
+  },
+  {
+   "shot": "walk-to-the-star-of-the-teacher"
+  },
+  {
+   "tap": {
+    "star": "smith"
+   },
+   "after": 4
+  },
+  {
+   "print": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:teacher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })()"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:teacher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })()"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:teacher')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })() <= 4"
+  },
+  {
+   "shot": "a-tap-on-the-teacher"
+  },
+  {
+   "tap": {
+    "star": "smith"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:smith')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })()"
+  },
+  {
+   "check": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; const p = tre.activeVillage.state().entities.find((e) => e.id === 'npc:smith')?.position; return p ? Math.round(Math.hypot(h.x - p.x, h.z - p.z) / 2 * 10) / 10 : null; })() <= 4"
+  },
+  {
+   "check": "(() => { const p = tre.activeVillage.screenOfThing('npc:smith'); return Boolean(p && p.visible && p.x > 60 && p.x < 330 && p.y > 150 && p.y < 650); })()"
+  },
+  {
+   "shot": "walk-to-the-star-of-the-smith"
+  },
+  {
+   "wait": 6
+  },
+  {
+   "check": "(() => { const n = tre.activeVillage.state().entities.find((e) => e.follow?.target === 'hero'); return tre.activeVillage.state().entities.filter((e) => e.person && !e.hidden).every((q) => Math.hypot(q.position.x - n.position.x, q.position.z - n.position.z) >= 2.6); })()"
+  },
+  {
+   "shot": "nghe-beside-the-smith"
+  }
+ ]
+}
