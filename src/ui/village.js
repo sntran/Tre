@@ -1140,6 +1140,9 @@ export async function mountVillage(ctx, params = {}) {
     { zone: 'zone:basket', trial: 'zone:trial-healer', scale: 0.72, near: 8 },
     // The row of the fisher (#76: the view went so far out that the stakes were a few pixels).
     { zone: 'zone:line', trial: 'zone:trial-fisher', scale: 0.85, near: 12 },
+    // The stem of the woodcutter (the play of #75: after a cut, the pieces and their glow were a
+    // few pixels on a phone).
+    { zone: 'zone:trial-woodcutter', trial: 'zone:trial-woodcutter', scale: 0.8, near: 10 },
   ];
   function matFocus(heroAt) {
     for (const w of CLOSE_WORK) {
@@ -1147,7 +1150,8 @@ export async function mountVillage(ctx, params = {}) {
       const open = place && getEntity(state, w.trial)?.zone.done === false;
       const r = place?.zone.rect;
       const line = place?.zone.rule === 'line' ? place.zone : null;
-      const c = line ? { x: (line.x + line.length / 2) / 2, z: line.z / 2 } : r ? { x: (r.x0 + r.x1) / 4, z: (r.z0 + r.z1) / 4 } : place?.position ? { x: place.position.x / 2, z: place.position.z / 2 } : null;
+      const stem = place?.zone.stem;
+      const c = stem ? { x: (stem.x + stem.length / 2) / 2, z: stem.z / 2 } : line ? { x: (line.x + line.length / 2) / 2, z: line.z / 2 } : r ? { x: (r.x0 + r.x1) / 4, z: (r.z0 + r.z1) / 4 } : place?.position ? { x: place.position.x / 2, z: place.position.z / 2 } : null;
       const near = open && c && !hero().riding && Math.hypot(heroAt.x - c.x, heroAt.z - c.z) < w.near;
       if (!near) continue;
       view.setScale(w.scale);
