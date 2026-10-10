@@ -418,7 +418,8 @@ test('the healer: after a wrong give, each kind lies in a row and she counts eac
   const rows = basket.zone.items.map((id) => getEntity(session.state, id));
   assert.equal(rows.length, 7);
   assert.ok(rows.every((h) => h.item.set && h.position.z > basket.zone.rect.z1), 'the bunches lie in rows in front of the basket, and a tap does not take them');
-  run(session, 12);
+  // The count names each row and says the extra bunch (#74): it takes longer.
+  run(session, 24);
   assert.deepEqual(counts, [1, 2, 3, 1, 2, 1, 2], 'one count for each row');
   const after = kinds(session, 'basket');
   assert.deepEqual(after, { 'herb-ngai': 2, 'herb-tiato': 2, 'herb-rauma': 2 }, 'only the extra bunch went back');

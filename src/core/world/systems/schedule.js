@@ -27,7 +27,7 @@ export function stepAt(plan, hour) {
 export function atWork(e, minutes) {
   if (!e || e.hidden) return false;
   const sc = e.schedule;
-  if (!sc?.plan || sc.stay) return true;
+  if (!sc?.plan || sc.stay || sc.hold) return true;
   const at = stepAt(sc.plan, (minutes % 1440) / 60).at;
   return at !== 'home' && at !== 'gone' && at !== 'bed';
 }
@@ -58,7 +58,8 @@ export function schedule(world, dt, rng, env) {
   const night = world.sky?.night ?? 0;
   for (const e of query(world, 'schedule', 'position')) {
     const sc = e.schedule;
-    const plan = stepAt(sc.plan, hour);
+    // The person of a task stays at the spot of the work while the child works there (hold, #74).
+    const plan = sc.hold ? { at: 'spot' } : stepAt(sc.plan, hour);
     let at = plan.at;
     const home = sc.home ? env.homes[sc.home] : null;
     if (at === 'home' && (!home || sc.stay)) at = 'spot';

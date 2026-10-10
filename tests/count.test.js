@@ -119,7 +119,7 @@ test('the healer: after a wrong give, she counts each row before any other help'
     const lines = linesOf(session, 'npc:healer', 30);
     assert.ok(lines.includes('num.1'), `try ${k + 1}: the count: ${lines.join(' ')}`);
     const first = lines.findIndex((l) => /^num\./.test(l));
-    const other = lines.findIndex((l) => !/^num\./.test(l) && !/mark/.test(l) && !/^healer\./.test(l));
+    const other = lines.findIndex((l) => !/^num\./.test(l) && !/mark/.test(l) && !/^healer\./.test(l) && !/\.row\./.test(l));
     assert.ok(other === -1 || other > first, `try ${k + 1}: the count comes first: ${lines.join(' ')}`);
     run(session, 30, () => !getEntity(session.state, 'script:trial-healer') && !getEntity(session.state, 'zone:trial-healer').zone.lay);
   }

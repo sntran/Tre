@@ -35,9 +35,9 @@ test('a line of what happened is never replaced by a later line of the same pers
 
 test('every word of a count is said: the rows of 4, 5, and 4 at the healer while the voice is behind', () => {
   const rows = [4, 5, 4].flatMap((n) => Array.from({ length: n }, (_, i) => line(`num.${i + 1}`)));
-  const heard = heardOf([...rows, line('mentor.healer.share')]);
+  const heard = heardOf([...rows, line('mentor.offer')]);
   assert.deepEqual(heard.slice(0, 13), rows.map((l) => l.key));
-  assert.equal(heard[13], 'mentor.healer.share', 'the next line of the person waits for the last number');
+  assert.equal(heard[13], 'mentor.offer', 'the next line of the person waits for the last number');
 });
 
 test('the mentor: no picture of another station in the first visit to a task; in a later visit it can come', () => {

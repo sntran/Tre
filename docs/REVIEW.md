@@ -647,3 +647,12 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The escape of the fish has a line of the world:** `fisher.escape` ("Chỗ này hở quá, cá chui ra mất."), the same words as `mentor.fisher.mark`. It comes each time the fish swim out, at each level of help.
 - **A late quench says what the iron does next:** `smith.bend.late` is now "Sắt nguội mất rồi, nên cong. Sắt vào lò, lát nữa lại đỏ." ("The iron got cold, so it bent. The iron goes into the fire, and soon it is red again."), in place of "Sắt nguội mất rồi, nên cong.".
 - **Please check:** "Sắt vào lò, lát nữa lại đỏ." for a child of six.
+
+## When the work is right, the person says it (#74)
+
+- **The count of the work now:** `mentor.scholar.now` ("Giờ chiếu có {n} que.", for example "Giờ chiếu có mười que.") and `mentor.healer.now` ("Giờ mỗi loại có {n} bó.").
+- **The rows of the healer:** `mentor.healer.row.ngai`, `.tiato`, `.rauma` ("Ngải cứu:", "Tía tô:", "Rau má:") before the count of each row; `mentor.healer.extra.ngai`, `.tiato`, `.rauma` ("Thừa {n} bó ngải cứu, bà để lại luống.").
+- **A right bundle:** `scholar.tied` ("Thầy buộc được {n} bó.").
+- **A help says what it put:** `mentor.healer.putKind.ngai`, `.tiato`, `.rauma` ("Bà bỏ {n} bó ngải cứu."), for Nghé `mentor.nghe.putKind.*` ("Mình bỏ {n} bó ngải cứu."), and for the other people `mentor.putDone` ("Đặt {n} cái rồi."). The old lines are gone: `mentor.smaller`, `mentor.share`, `mentor.nghe.smaller`, `mentor.nghe.share`, `mentor.healer.smaller`, `mentor.healer.share`, `mentor.plant.smaller`, `mentor.plant.share`, `mentor.traps.smaller`, `mentor.traps.share` ("nốt", "một nửa").
+- **The fourth put:** `healer.more.*` is now "Lại một bó ngải cứu vào giỏ rồi." in place of "Thêm một bó ngải cứu nữa.".
+- **Please check:** "Đặt {n} cái rồi." for the people of the small events, the planting, and the fish traps; "Giờ mỗi loại có hai bó."; and "bà để lại luống".

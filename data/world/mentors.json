@@ -355,7 +355,8 @@
         "sharePut": "mentor.scholar.sharePut",
         "extra": "mentor.scholar.extra",
         "room": "mentor.scholar.room",
-        "demoDone": "mentor.scholar.demoDone"
+        "demoDone": "mentor.scholar.demoDone",
+        "now": "mentor.scholar.now"
       }
     },
     "trial-smith": {
@@ -392,10 +393,12 @@
         "show": "mentor.show.healer",
         "first": "mentor.healer.first",
         "mark": "mentor.healer.mark",
-        "smaller": "mentor.healer.smaller",
-        "share": "mentor.healer.share",
+        "putKind": "mentor.healer.putKind",
         "none": "mentor.healer.none",
-        "putEach": "healer.put"
+        "putEach": "healer.put",
+        "row": "mentor.healer.row",
+        "extra": "mentor.healer.extra",
+        "now": "mentor.healer.now"
       }
     },
     "trial-woodcutter": {
@@ -425,9 +428,7 @@
         "show": "mentor.show.plant",
         "first": "mentor.plant.first",
         "mark": "mentor.plant.mark",
-        "demo": "mentor.plant.demo",
-        "smaller": "mentor.plant.smaller",
-        "share": "mentor.plant.share"
+        "demo": "mentor.plant.demo"
       }
     },
     "trial-ducks": {
@@ -455,8 +456,6 @@
       "pictureWho": "duck-girl",
       "lines": {
         "mark": "mentor.traps.mark",
-        "smaller": "mentor.traps.smaller",
-        "share": "mentor.traps.share",
         "show": "mentor.show.traps",
         "first": "mentor.traps.first",
         "demo": "mentor.traps.demo"
@@ -481,8 +480,7 @@
     "mark": "mentor.mark",
     "cue": null,
     "demo": "mentor.demo",
-    "smaller": "mentor.smaller",
-    "share": "mentor.share",
+    "putDone": "mentor.putDone",
     "raise": "mentor.raise",
     "break": "mentor.break",
     "tryFirst": "mentor.tryFirst",
@@ -498,8 +496,9 @@
     "show": "mentor.again.show"
   },
   "ngheLines": {
-    "smaller": "mentor.nghe.smaller",
-    "share": "mentor.nghe.share",
+    "mentor.healer.putKind.ngai": "mentor.nghe.putKind.ngai",
+    "mentor.healer.putKind.tiato": "mentor.nghe.putKind.tiato",
+    "mentor.healer.putKind.rauma": "mentor.nghe.putKind.rauma",
     "raise": "mentor.nghe.raise",
     "tryFirst": "mentor.nghe.tryFirst",
     "mentor.first.you": "mentor.nghe.first.you",

@@ -24,7 +24,7 @@
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'solid', 'slide', 'events'];
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
-import { REACH, BASKET_FLOOR } from '../zones.js';
+import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime } from '../zones.js';
 import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
 
@@ -41,11 +41,6 @@ const PILE_GAP = 4; // half blocks from the end of the stem to the wood pile of 
 const FISHER_STAKES = new Set(['stake:fisher:a', 'stake:fisher:b']);
 // The band of the teacher that snaps (#48): the rods lie this far from the middle of the mat (half
 // blocks) for SPRING_TIME seconds. BUNDLE_STEP: the space of the bundles in their row.
-const SPRING_TIME = 1.2;
-const COUNT_TIME = 0.9; // seconds: the count of one rod aloud by the teacher (COUNT_PACE in src/core/mentoring.js)
-const ROLL_STEP = 1.2; // seconds between two extra rods that roll back to the heap
-const LAY_STEP = 0.5; // seconds between two bunches of the healer that go back after a wrong give
-const ROLL_TIME = 1; // seconds of the roll of one rod (#69: slow, so that the child sees it go)
 const BUNDLE_STEP = 1.3;
 const CUT_BREAK = 1;
 const PIECE_ROW = 1.6;
@@ -635,7 +630,12 @@ function act(world, e, want, env) {
       say(world, 'tie', mat.id, { sound: 'plank-up' });
       const heapZone = zoneEnt(world, 'rods');
       if ((heapZone?.zone.items.length ?? 0) < task.bundle) finish(world, tz, bundle.position);
-      else success(world, tz, bundle.position);
+      else {
+        success(world, tz, bundle.position);
+        // A right part has its line (#74: the pip turned orange, and nobody spoke).
+        const teacher = getEntity(world, 'npc:teacher');
+        if (teacher && !teacher.hidden) say(world, 'call', teacher.id, { key: 'scholar.tied', params: { n: { key: `num.${k + 1}` } }, happened: true });
+      }
     } else {
       // The band snaps (a puff of dust), and the rods stay on the mat in their rows, so that the
       // teacher counts them aloud with the child (#61: before, all the rods went back to the heap,
@@ -648,7 +648,7 @@ function act(world, e, want, env) {
         const rod = getEntity(world, id);
         if (rod) rod.item.set = true;
       }
-      if (extra.length) tz.zone.spring = { t: SPRING_TIME + n * COUNT_TIME, ids: extra };
+      if (extra.length) tz.zone.spring = { t: springTime(n), ids: extra };
       say(world, 'snap', mat.id, { count: n, at: { x: c.x, z: c.z }, sound: 'plank-down' });
     }
   } else if (want.act === 'exact') {
@@ -775,7 +775,8 @@ function act(world, e, want, env) {
       });
       const n = basket.zone.items.length;
       // The count of the healer: each bunch, and the empty end of each short row (src/core/mentoring.js).
-      tz.zone.lay = { t: SPRING_TIME + (n + basket.zone.kinds.length) * COUNT_TIME + basket.zone.kinds.length * 0.4, ids: extra.reverse() };
+      const extraKinds = new Set(extra.map((id) => getEntity(world, id)?.item.kind)).size;
+      tz.zone.lay = { t: layTime(n, basket.zone.kinds.length, extraKinds), ids: extra.reverse() };
       say(world, 'nope', healer?.id ?? basket.id, { sound: 'tap' });
     }
   } else if (want.act === 'mark') {

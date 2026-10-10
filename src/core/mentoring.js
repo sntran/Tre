@@ -9,7 +9,7 @@ import { endScript } from './world/systems/mentor.js';
 import { basketRowAt, matSlot } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
-import { UNIT_PACE, COUNT_LEAD } from './world/zones.js';
+import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd } from './world/zones.js';
 
 // The zones where the parts of a try go, in the order of the search.
 const PLACES = ['exact', 'bundle', 'basket', 'line', 'forge', 'woodpile', 'spots'];
@@ -169,8 +169,31 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // counts the child's own work on the place (the rods on the mat, each row of the basket) and
     // marks what went wrong. The move of the mentor comes after the count; a mark is the count.
     const count = !input.solved && task ? doMove(key, 'count', { target: input.target, solved: false }) : 0;
+    // The world fixes the work (the extra rods or bunches go back): the work is right, and no help
+    // comes (#74: no demonstration, no smaller, no share, no offer). The record keeps the try as a
+    // try with help.
+    if (count > 0 && rightAfterExtras(task, input.target)) {
+      if (st.pending) st.pending.move = 'fix';
+      st.offered = true;
+      return;
+    }
     if (count > 0 && r.move === 'mark') return;
     if (r.move !== 'wait') schedule(key, r.move, { remembered: r.remembered, delay: (count > 0 ? count + COUNT_GAP : 0) + (r.delay ?? 0), target: input.target, solved: input.solved });
+  }
+
+  // The work of a wrong try is right once its extra things are back: more rods than a bundle, or
+  // in each row of the basket at least the number, and more in one row.
+  function rightAfterExtras(task, target) {
+    if (!task?.place || target == null) return false;
+    const parts = itemsOf(task.place);
+    const z = task.place.zone;
+    if (z.rule === 'bundle') return parts.reduce((a, e) => a + (e.item.size ?? 1), 0) > target;
+    if (z.kinds) {
+      const each = Math.round(target / z.kinds.length);
+      const counts = z.kinds.map((k) => parts.filter((e) => e.item.kind === `herb-${k}`).length);
+      return counts.every((c) => c >= each) && counts.some((c) => c > each);
+    }
+    return false;
   }
 
   function schedule(key, move, info = {}) {
@@ -401,7 +424,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // The lines of the count say what happened to the work of the child (#73: such a line is never
     // cut or replaced by a later line).
     const happened = move === 'count';
-    const say = (at, k, params = {}) => { if (who && k) steps.push({ at, say: { id: who, key: away ? asNghe(k) : k, params, ...(happened ? { happened } : {}) } }); };
+    // ready: the line says that the work is right now (#74): the next press finishes the task.
+    const say = (at, k, params = {}, { ready = null } = {}) => { if (who && k) steps.push({ at, say: { id: who, key: away ? asNghe(k) : k, params, ...(happened ? { happened } : {}), ...(ready ? { ready } : {}) } }); };
     const point = (at, p, time = 1.2) => { if (who) steps.push({ at, point: { id: who, x: p.x, z: p.z, time } }); };
     const mark = (at, p, ttl = 3) => steps.push({ at, mark: { x: p.x, z: p.z, ttl } });
     if (info.remembered && cfg.again[move]) {
@@ -449,7 +473,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       t = out.t;
       keyAt = out.keyAt;
     } else if (move === 'smaller' || move === 'share') {
-      t = shareSteps(task, famOf(key), move, info, { say, point, steps }, t);
+      t = shareSteps(task, famOf(key), move, info, { say, point, steps }, t) ?? markSteps(task, famOf(key), info, { say, point, mark, steps }, t);
     } else if (move === 'picture') {
       // The line names the person of another station (pictureWho), by the name of the region. A
       // line that names a place where the child has nothing more to do (the trial there is done:
@@ -567,9 +591,17 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       const kinds = task.place.zone.kinds;
       const each = Math.round((info.target ?? kinds.length * 2) / kinds.length);
       let at = t + 1;
-      const none = task.byNghe ? null : defOf(task.key)?.lines?.none;
+      const lines = defOf(task.key)?.lines ?? {};
+      const none = task.byNghe ? null : lines.none;
+      const counts = kinds.map((k) => parts.filter((e) => e.item.kind === `herb-${k}`).length);
       kinds.forEach((k, row) => {
         const bunches = parts.filter((e) => e.item.kind === `herb-${k}`);
+        // Each row starts with its name (#74: "một, hai, ba, một, hai", and the child guessed which
+        // kind was which).
+        if (bunches.length && lines.row) {
+          s.say(at + 0.1, `${lines.row}.${k}`);
+          at += ROW_NAME;
+        }
         // An empty row has a word too (#70: the third kind had no bunch, and nobody said it).
         if (!bunches.length && none) s.say(at + 0.1, `${none}.${k}`);
         bunches.forEach((e, i) => {
@@ -584,8 +616,22 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
           s.mark(at, end, COUNT_PACE + 1);
           at += COUNT_PACE;
         }
+        // The extra bunches of the row go back to their bed, and the person says it (#74).
+        if (bunches.length > each) {
+          if (!task.byNghe && lines.extra) s.say(at + 0.1, `${lines.extra}.${k}`, { n: { key: `num.${bunches.length - each}` } });
+          at += EXTRA_LINE;
+        }
         at += 0.4;
       });
+      // The work is right when the extra bunches are back: the person says the count of the work
+      // now, and the next press gives the basket (#74).
+      if (counts.every((c) => c >= each) && counts.some((c) => c > each) && lines.now) {
+        const extras = counts.reduce((a, c) => a + Math.max(0, c - each), 0);
+        const end = layEnd(parts.length, kinds.length, counts.filter((c) => c > each).length, extras) + 0.6;
+        at = Math.max(at, end);
+        s.say(at, lines.now, { n: { key: `num.${each}` } }, { ready: task.key });
+        at += 2.5;
+      }
       return at + 1;
     } else t += 1;
     const target = info.target ?? null;
@@ -600,6 +646,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const lines = task.byNghe ? {} : defOf(task.key)?.lines ?? {};
     if (task.place?.zone.rule === 'bundle' && target !== null && total !== target) {
       if (total > target && lines.extra) s.say(t + 0.3, lines.extra, { n: { key: `num.${total - target}` } });
+      // The extra rods are back on the heap: the work is right, and the person says the count of
+      // the work now (#74: the demonstration came, and the child took its words for her bundle).
+      const now = defOf(task.key)?.lines?.now;
+      if (total > target && now) {
+        const at = Math.max(t + 3, springEnd(total, total - target) + 0.6);
+        s.say(at, now, { n: { key: `num.${target}` } }, { ready: task.key });
+        return at + 2.5;
+      }
       if (total < target && lines.room) {
         s.say(t + 0.3, lines.room);
         for (let i = total; i < target; i++) {
@@ -700,10 +754,6 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // A line after the puts (the teacher, #69): the person puts the parts one at a time, counts them
     // aloud, and then says how many the person put, and what the child does next.
     const after = task.byNghe ? null : defOf(task.key)?.lines?.[`${move}Put`];
-    if (!after) {
-      s.say(t, lineOf(task.key, move));
-      t += 1.2;
-    }
     const free = task.piles.flatMap(itemsOf).filter((e) => !e.item.held && !e.item.set && !e.item.stray);
     let picks = [];
     if (fam.reader === 'each') {
@@ -728,6 +778,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         if (i >= 0) picks.push(left.splice(i, 1)[0]);
       }
     }
+    // A help that puts nothing says nothing (#74: "Bà bỏ giúp cháu mấy bó trước" came, and the
+    // basket already had two of each): the count of the work comes in its place.
+    if (!picks.length) return null;
     if (after) {
       const target = info.target ?? task.place?.zone.need ?? 10;
       const have = itemsOf(task.place).reduce((a, e) => a + (e.item.size ?? 1), 0);
@@ -742,17 +795,31 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       if (n) s.say(t, after, { n: { key: `num.${n}` }, m: { key: `num.${Math.max(1, target - have - n)}` } });
       return t + 2.5;
     }
-    // The line of each put (the healer, #70: "Rau má vào giỏ rồi."), at the pace of a put that a
-    // child can follow.
-    const each = task.byNghe ? null : defOf(task.key)?.lines?.putEach;
-    const pace = each ? PUT_PACE : 0.8;
-    picks.forEach((e, k) => {
-      const at = t + k * pace;
-      s.point(at, task.at, pace);
-      s.steps.push({ at: at + 0.3, put: { zone: task.place.id, item: e.id, person: task.person?.id ?? 'hero' } });
-      if (each) s.say(at + 0.4, `${each}.${String(e.item.kind).replace(/^herb-/, '')}`);
-    });
-    return t + picks.length * pace + 0.5;
+    // Every other help puts as the teacher does (#74): the person puts each thing in view, counts it
+    // aloud, and says what was put ("Bà bỏ hai bó rau má."), one kind at a time. No "nốt", and no
+    // "một nửa".
+    const kindLine = fam.reader === 'each' ? defOf(task.key)?.lines?.putKind : null;
+    const groups = [];
+    for (const e of picks) {
+      const last = groups.at(-1);
+      if (kindLine && last && last[0].item.kind === e.item.kind) last.push(e);
+      else if (!kindLine && last) last.push(e);
+      else groups.push([e]);
+    }
+    for (const g of groups) {
+      g.forEach((e, k) => {
+        const at = t + k * PUT_PACE;
+        s.point(at, task.at, PUT_PACE);
+        s.steps.push({ at: at + 0.3, put: { zone: task.place.id, item: e.id, person: task.person?.id ?? 'hero' } });
+        s.say(at + 0.4, `num.${k + 1}`);
+      });
+      t += g.length * PUT_PACE;
+      const n = { n: { key: `num.${g.length}` } };
+      if (kindLine) s.say(t, `${kindLine}.${String(g[0].item.kind).replace(/^herb-/, '')}`, n);
+      else s.say(t, cfg.lines.putDone, n);
+      t += 2;
+    }
+    return t + 0.5;
   }
 
   return {

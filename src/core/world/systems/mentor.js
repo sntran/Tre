@@ -61,7 +61,7 @@ function play(world, ent, dt, env) {
       const who = getEntity(world, st.point.id);
       if (who?.position) who.gesture = { act: 'point', x: st.point.x, z: st.point.z, t: st.point.time ?? 1.2 };
     }
-    if (st.say) world.events.push({ type: 'call', id: st.say.id, key: st.say.key, params: st.say.params ?? {}, ...(st.say.happened ? { happened: true } : {}) });
+    if (st.say) world.events.push({ type: 'call', id: st.say.id, key: st.say.key, params: st.say.params ?? {}, ...(st.say.happened ? { happened: true } : {}), ...(st.say.ready ? { ready: st.say.ready } : {}) });
     // The star of a person pulses (the view shows it, also at the edge of the screen).
     if (st.star) world.events.push({ type: 'starPulse', id: st.star });
     if (st.mark) {

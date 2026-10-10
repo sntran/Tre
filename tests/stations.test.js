@@ -71,7 +71,7 @@ test('the healer: after a wrong give, an empty row has a word', async () => {
   assert.ok(keys.includes('mentor.healer.none.tiato') && keys.includes('mentor.healer.none.rauma'), keys.join(' '));
 });
 
-test('the healer: in a shared task she puts her bunches one at a time, each with its line', async () => {
+test('the healer: in a shared task she puts her bunches one at a time, counts them, and says how many of each kind she put (#74)', async () => {
   const session = await afterTalk('trial-healer');
   // A wrong give first (two bunches of one kind), so that the healer knows the target.
   send(session, { type: 'tap', target: { thing: bedThing(session, 'ngai') } });
@@ -95,9 +95,12 @@ test('the healer: in a shared task she puts her bunches one at a time, each with
   session.listen((ev) => { if (ev.type === 'put' && ev.id === 'npc:healer') adds += 1; });
   send(session, { type: 'mentor', key: 'trial-healer', move: 'share' });
   run(session, 20, () => !getEntity(session.state, 'script:trial-healer'));
-  const puts = lines.filter((l) => /^healer\.put\./.test(l.key)).length;
-  assert.ok(adds >= 1, `the healer put some bunches: ${lines.map((l) => l.key).join(' ')} basket ${getEntity(session.state, 'zone:basket').zone.items.join(',')}`);
-  assert.equal(puts, adds, lines.map((l) => l.key).join(' '));
+  const keys = lines.map((l) => l.key).join(' ');
+  assert.ok(adds >= 1, `the healer put some bunches: ${keys} basket ${getEntity(session.state, 'zone:basket').zone.items.join(',')}`);
+  assert.equal(lines.filter((l) => /^num\./.test(l.key)).length, adds, `each put is counted: ${keys}`);
+  const said = lines.filter((l) => /^mentor\.healer\.putKind\./.test(l.key)).reduce((a, l) => a + Number(String(l.params?.n?.key).slice(4)), 0);
+  assert.equal(said, adds, `she says how many of each kind she put: ${keys}`);
+  assert.ok(!lines.some((l) => /share|smaller/.test(l.key)), `no line of "một nửa" or "nốt": ${keys}`);
 });
 
 test('the fisher: with a stake in the hands, a wave names the place of the stake, never the heap', async () => {

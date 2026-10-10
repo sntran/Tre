@@ -35,6 +35,23 @@ export const PILE_ROW = 3; // half blocks from one row of a pile to the next
 export const UNIT_PACE = 0.6; // seconds between two counted units
 export const COUNT_LEAD = 1.2; // seconds from the start of the count to its first unit
 export const countTime = (units) => COUNT_LEAD + units * UNIT_PACE + 1;
+// The times of the count after a wrong tie or a wrong give, for the world and for the person who
+// counts (src/core/mentoring.js), so that the things go back after their words (#74).
+export const SPRING_TIME = 1.2; // seconds from the commit to the first counted rod or bunch
+export const COUNT_TIME = 0.9; // seconds: the count of one rod or bunch aloud
+export const ROLL_STEP = 1.2; // seconds between two extra rods that roll back to the heap
+export const ROLL_TIME = 1; // seconds of the roll of one rod (#69: slow, so that the child sees it go)
+export const LAY_STEP = 0.5; // seconds between two bunches of the healer that go back after a wrong give
+export const ROW_NAME = 1.2; // seconds: the name of a row of the healer before its count (#74)
+export const EXTRA_LINE = 2.4; // seconds: the line of the extra bunches of one kind (#74)
+// The teacher: the extra rods of a tie of n rods start to roll back at springTime(n), and the last
+// one is on the heap at springEnd(n, extras).
+export const springTime = (n) => SPRING_TIME + n * COUNT_TIME;
+export const springEnd = (n, extras) => springTime(n) + Math.max(0, extras - 1) * ROLL_STEP + ROLL_TIME;
+// The healer: after a give of n bunches in rows of kinds (extraKinds of them with extra bunches),
+// the extra bunches start to go back at layTime, and the last one is back at layEnd.
+export const layTime = (n, kinds, extraKinds) => SPRING_TIME + (n + kinds) * COUNT_TIME + kinds * (0.4 + ROW_NAME) + extraKinds * EXTRA_LINE;
+export const layEnd = (n, kinds, extraKinds, extras) => layTime(n, kinds, extraKinds) + Math.max(0, extras - 1) * LAY_STEP;
 
 // A new zone from the map (a rectangle in map cells) and its kind (data/world/zones.json).
 // env: for the height of the ground and the named places.

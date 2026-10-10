@@ -155,8 +155,9 @@ test('while the teacher shows his own count, a tap on him and a press never tie:
   const session = await atMat();
   const { lines } = listenLines(session);
   const shows = () => ['demo', 'smaller', 'share'].includes(getEntity(session.state, 'script:trial-scholar')?.script.move);
-  // Wrong tries until the teacher shows a move with his own count.
-  for (const n of [7, 12, 7, 12, 7, 12]) {
+  // Short tries until the teacher shows a move with his own count (a try with too many rods is
+  // right once the extra rods are back, and then no help comes, #74).
+  for (const n of [5, 6, 7, 8, 9, 9]) {
     if (shows() || getEntity(session.state, 'zone:trial-scholar').zone.done || mat(session) > n) break;
     tie(session, n);
     run(session, 30, () => shows());

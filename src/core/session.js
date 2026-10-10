@@ -584,6 +584,38 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const fisher = getEntity(state, 'npc:fisher');
     return !(fisher && !fisher.hidden && atWork(fisher, state.clock.minutes));
   }
+  // The person of a task stays at the task while the child works there (#74: the healer walked to
+  // the well in the middle of the task, and the basket was given far from her). The step of the
+  // plan of the day waits until the child leaves the place of the task (schedule.hold).
+  function stepHold() {
+    if (state.tick % 15 !== 0) return;
+    const h = getEntity(state, 'hero')?.position;
+    for (const p of query(state, 'person', 'schedule')) {
+      const task = mentoring.taskOfPerson(p.id);
+      const tz = task?.startsWith('trial-') ? trialZone(task.slice(6)) : null;
+      const hold = Boolean(tz && !tz.zone.done && h && inTaskArea(task, h));
+      if (hold) p.schedule.hold = true;
+      else delete p.schedule.hold;
+    }
+  }
+  // A walk to a heap of another kind chooses that heap, as a tap on it does (#74: the child walked
+  // to the bed of ngải cứu and pressed, and the press walked her to the bed of tía tô, the kind of
+  // the last pick). One time at each stop next to the heap.
+  let nearHeap = null;
+  function stepNearHeap() {
+    const h = getEntity(state, 'hero');
+    if (!h || walking() || holding() || h.riding) {
+      nearHeap = null;
+      return;
+    }
+    const want = wantKind();
+    const heaps = query(state, 'zone').filter((z) => z.zone.rule === 'heap' && z.position && z.zone.items.length && openTask(z.zone.task));
+    const here = heaps.map((z) => ({ z, d: distHb(h.position, z.position) })).filter((x) => x.d <= REACH).sort((a, b) => a.d - b.d)[0]?.z ?? null;
+    if (!here || here.id === nearHeap) return;
+    nearHeap = here.id;
+    const kind = getEntity(state, here.zone.items[0])?.item.kind;
+    if (want && kind && kind !== want && !chosen) chosen = { id: here.id, along: null };
+  }
   function stepBridgeOpen() {
     if (state.tick % 15 !== 0) return;
     const open = bridgeOpen();
@@ -2040,7 +2072,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const show = getEntity(state, `script:${key}`)?.script;
     if (show && SHOW_MOVES.has(show.move) && show.steps.some((st) => /^num\./.test(st.say?.key ?? ''))) return null;
     if (key === 'trial-scholar' && open('scholar') && zoneOf('mat')?.zone.items.length) return { act: 'tie', icon: 'rope', run: () => work('scholar', 'tie') };
-    if (key === 'trial-healer' && open('healer') && zoneOf('basket')?.zone.items.length) return { act: 'give', icon: 'basket', run: () => work('healer', 'give') };
+    // The basket is given only at the basket (#74: a walk to the face of the healer ended at the
+    // well, and the basket was given there).
+    const basket = zoneOf('basket');
+    if (key === 'trial-healer' && open('healer') && basket?.zone.items.length && distHb(hero().position, basket.position) <= REACH + 4) return { act: 'give', icon: 'basket', run: () => work('healer', 'give') };
     const wood = key === 'trial-woodcutter' ? open('woodcutter') : null;
     if (wood?.zone.marks?.length && !wood.zone.cut) return { act: 'cut', icon: 'knife', run: () => work('woodcutter', 'cut') };
     if (key === 'trial-plant' && planting.ready() === 'commit' && plotsOf(state)[0]?.plot.form !== 'choose') return { act: 'plant', icon: 'seedling', run: () => work('plant', 'plant') };
@@ -2066,6 +2101,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The tasks where the child put a thing, and the last thing that the child took from a heap
   // ({ task, kind }).
   const childPut = new Set();
+  // The tasks whose work is right after its extra things went back (#74): the person said the count
+  // of the work now, and the next press finishes the task (the tie, the give), until the child
+  // puts or takes a thing.
+  const readyFinish = new Set();
   let lastPick = null;
   // The thing of the last one-move press: its pick says nothing, and its put says the put (#64:
   // "Bó ngải cứu đây." at each press, and the child did not know if a bunch went in or out).
@@ -2241,6 +2280,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // With no tap, the finish comes only after a put of the child in the task: the first step
       // that the mentor shows is not a try of the child (#54).
       const task = mentoring.taskOfPerson(q.entity);
+      // The work is right now (#74): the finish comes first, before the one move of the heap.
+      if (fin && readyFinish.has(task)) {
+        add({ ...base, ...fin, rank: -20, work: true }, REACH + 3);
+        continue;
+      }
       if (fin && (tapped || (!TAP_FINISH.has(task) && !heapNear(null) && childPut.has(task)))) add({ ...base, ...fin, rank: 0, work: true }, REACH + 3);
       // With a heap in reach, the finish waits: it comes only when the press has no other work
       // (#54: the basket of the healer has enough of each kind, and the healer stands at it).
@@ -2338,7 +2382,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (rule === 'pile' && !bridgeOpen()) continue;
         // Of the things of a task, the kind of the last pick first, while a heap has that kind. A
         // tap on a thing chooses it.
-        if (want !== null && chosen?.id !== e.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || SAME_KIND.has(lastPick.task))) continue;
+        if (want !== null && chosen?.id !== e.id && chosen?.id !== zone?.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || SAME_KIND.has(lastPick.task))) continue;
         // Of the planks of the bridge, the length of the last pick, while the pile has one.
         if (sizeLeft && rule === 'pile' && e.item.task === plankTask && e.item.size !== plankSize) continue;
         // A press picks a thing of a task only when a place of the task has room for it: no stake
@@ -3336,6 +3380,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'ferried' && (ev.riders ?? []).includes('hero')) farPlan = null;
     // A person calls out: the fisher when a plank is too long, and the lines of the mentors.
     // happened: a line that says what happened (#73: never cut or replaced by a later line).
+    if (ev.type === 'call' && ev.ready) readyFinish.add(ev.ready);
     if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {}, ...(ev.happened ? { happened: true } : {}) });
     // The mentors read the commits (before the learner takes them), the plank too long, and the
     // actions of the hands.
@@ -3478,6 +3523,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     checkSteps();
     checkNotebook();
     stepBridgeOpen();
+    stepHold();
+    stepNearHeap();
     stepGuessLine();
     stepLeaveTask();
     stepPending();
@@ -3526,11 +3573,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (ev.type === 'dry') placeEvents();
         continue;
       }
+      // A new try ends the right work of the last one (#74).
+      if (['tie', 'snap', 'nope'].includes(ev.type)) readyFinish.clear();
       if (ev.id !== 'hero') {
         worldEvent(ev);
         continue;
       }
       mentoring.worldEvent(ev);
+      if (['put', 'pick', 'take', 'drop'].includes(ev.type)) readyFinish.clear();
       // The tasks where the child put a thing (#54).
       if (ev.type === 'put' && ev.zone) {
         const task = zoneOf(ev.zone)?.zone.task;

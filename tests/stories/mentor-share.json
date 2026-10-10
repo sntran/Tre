@@ -154,7 +154,7 @@
         "event": "open",
         "with": {
           "screen": "callout",
-          "textKey": "mentor.share"
+          "textKey": "mentor.putDone"
         },
         "timeout": 30
       }

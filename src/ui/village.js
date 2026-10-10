@@ -1108,16 +1108,26 @@ export async function mountVillage(ctx, params = {}) {
   // The mat of the teacher (#69): while the child works next to it, the view comes closer, so that
   // each rod on the mat is at least 8 pixels wide on a phone, and the middle of the view is between
   // the hero and the mat.
-  const MAT_CLOSE = 0.6;
-  const MAT_NEAR = 7; // world units from the middle of the mat
+  // The basket of the healer too (#74: the bunches in the basket were a few pixels, and the child
+  // did not know what was in it): next to the basket the view comes closer, between the hero and
+  // the basket.
+  const CLOSE_WORK = [
+    { zone: 'zone:mat', trial: 'zone:trial-scholar', scale: 0.6, near: 7 },
+    { zone: 'zone:basket', trial: 'zone:trial-healer', scale: 0.72, near: 8 },
+  ];
   function matFocus(heroAt) {
-    const mat = getEntity(state, 'zone:mat');
-    const open = mat && getEntity(state, 'zone:trial-scholar')?.zone.done === false;
-    const r = mat?.zone.rect;
-    const c = r ? { x: (r.x0 + r.x1) / 4, z: (r.z0 + r.z1) / 4 } : null;
-    const near = open && c && !hero().riding && Math.hypot(heroAt.x - c.x, heroAt.z - c.z) < MAT_NEAR;
-    view.setScale(near ? MAT_CLOSE : 1);
-    return near ? { ...heroAt, x: (heroAt.x + c.x * 2) / 3, z: (heroAt.z + c.z * 2) / 3 } : null;
+    for (const w of CLOSE_WORK) {
+      const place = getEntity(state, w.zone);
+      const open = place && getEntity(state, w.trial)?.zone.done === false;
+      const r = place?.zone.rect;
+      const c = r ? { x: (r.x0 + r.x1) / 4, z: (r.z0 + r.z1) / 4 } : place?.position ? { x: place.position.x / 2, z: place.position.z / 2 } : null;
+      const near = open && c && !hero().riding && Math.hypot(heroAt.x - c.x, heroAt.z - c.z) < w.near;
+      if (!near) continue;
+      view.setScale(w.scale);
+      return { ...heroAt, x: (heroAt.x + c.x * 2) / 3, z: (heroAt.z + c.z * 2) / 3 };
+    }
+    view.setScale(1);
+    return null;
   }
   function leadToWork(heroAt) {
     const close = matFocus(heroAt);

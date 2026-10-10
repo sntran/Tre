@@ -119,17 +119,24 @@ test('each person of a task has an own line for each move that names the things 
   const vi = load('i18n/vi.json');
   const en = load('i18n/en.json');
   const mentorsData = load('data/world/mentors.json');
-  const THINGS = ['first', 'show', 'mark', 'demo', 'smaller', 'share'];
+  const THINGS = ['first', 'show', 'mark', 'demo'];
   for (const [key, m] of Object.entries(mentorsData.mentors)) {
     if (!key.startsWith('trial-') && key !== 'bridge') continue;
     const fam = mentorsData.families[m.family];
     const moves = new Set(['first', 'show', ...Object.values(fam.ladders).flat()]);
     for (const move of THINGS.filter((x) => moves.has(x))) {
-      // A line after the parts that the person puts (smallerPut, sharePut: the teacher, #69) takes
-      // the place of the line before them.
-      const line = m.lines?.[move] ?? m.lines?.[`${move}Put`];
+      const line = m.lines?.[move];
       assert.ok(line && line !== mentorsData.lines[move], `${key}: an own line for the move ${move}`);
       assert.ok(vi[line] && en[line], `${key}: the line ${line} in the two languages`);
+    }
+    // A help that puts things says what was put, after the puts (#74): the line of the teacher
+    // (smallerPut, sharePut), the line of each kind of the healer (putKind), or the common line of
+    // the count of the puts. No line comes before the puts.
+    for (const move of ['smaller', 'share'].filter((x) => moves.has(x))) {
+      assert.ok(!m.lines?.[move], `${key}: no line before the puts of ${move}`);
+      const after = m.lines?.[`${move}Put`] ?? m.lines?.putKind ?? mentorsData.lines.putDone;
+      const keys = m.lines?.putKind && !m.lines?.[`${move}Put`] ? ['ngai', 'tiato', 'rauma'].map((k) => `${after}.${k}`) : [after];
+      for (const k of keys) assert.ok(vi[k] && en[k], `${key}: the line ${k} in the two languages`);
     }
   }
 });
