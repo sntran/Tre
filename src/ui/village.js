@@ -1137,7 +1137,9 @@ export async function mountVillage(ctx, params = {}) {
   // the basket.
   const CLOSE_WORK = [
     { zone: 'zone:mat', trial: 'zone:trial-scholar', scale: 0.6, near: 7 },
-    { zone: 'zone:basket', trial: 'zone:trial-healer', scale: 0.72, near: 8 },
+    // The healer stays on the screen too (the play of #74: she stood half off the screen at the
+    // right edge, and a tap on her to give the basket missed her).
+    { zone: 'zone:basket', trial: 'zone:trial-healer', scale: 0.72, near: 8, person: 'npc:healer' },
     // The row of the fisher (#76: the view went so far out that the stakes were a few pixels).
     { zone: 'zone:line', trial: 'zone:trial-fisher', scale: 0.85, near: 12 },
     // The stem of the woodcutter (the play of #75: after a cut, the pieces and their glow were a
@@ -1155,6 +1157,8 @@ export async function mountVillage(ctx, params = {}) {
       const near = open && c && !hero().riding && Math.hypot(heroAt.x - c.x, heroAt.z - c.z) < w.near;
       if (!near) continue;
       view.setScale(w.scale);
+      const p = w.person ? figures.placeOf(w.person) : null;
+      if (p && Math.hypot(p.x - c.x, p.z - c.z) < w.near) return { ...heroAt, x: (heroAt.x + c.x + p.x) / 3, z: (heroAt.z + c.z + p.z) / 3 };
       return { ...heroAt, x: (heroAt.x + c.x * 2) / 3, z: (heroAt.z + c.z * 2) / 3 };
     }
     view.setScale(1);
