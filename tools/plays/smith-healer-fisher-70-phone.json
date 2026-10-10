@@ -1,0 +1,281 @@
+{
+ "about": "#70: the smith (warm and hot iron, a miss says why, the quench), the healer (beside her beds, an empty row has a word, the right basket), and the fisher (a stake in the hands).",
+ "start": "?story=trial-smith",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-warm')",
+   "timeout": 120
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "smith-the-warm-iron"
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.5
+  },
+  {
+   "press": true,
+   "after": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => x.text))"
+  },
+  {
+   "shot": "smith-a-miss-says-why"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-hot')",
+   "timeout": 120
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "smith-the-hot-iron"
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => x.text))"
+  },
+  {
+   "shot": "smith-the-quench"
+  },
+  {
+   "read": 10
+  },
+  {
+   "goto": "?story=trial-healer",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-ngai"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-tiato"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "shot": "healer-beside-her-beds"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key.startsWith('mentor.healer.none'))",
+   "timeout": 60
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "healer-an-empty-row-has-a-word"
+  },
+  {
+   "wait": 6
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => x.text))"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-rauma"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "read": 10
+  },
+  {
+   "shot": "healer-the-right-basket"
+  },
+  {
+   "goto": "?story=trial-fisher",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "thing": "zone:stakes"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 14
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => x.text))"
+  },
+  {
+   "shot": "fisher-a-stake-in-the-hands"
+  },
+  {
+   "tap": {
+    "place": "line"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "shot": "fisher-one-stake"
+  }
+ ]
+}
