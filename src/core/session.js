@@ -2026,8 +2026,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // The stand point at a point of a stem (half blocks): beside the stem, off its line, on the side
   // of the hero, so that the walk ends at the point of the tap and not at an end of the stem (#64).
+  // The side is the one away from the camera, so that the body of the hero never covers the ring
+  // of the mark (#75); with the view along the stem, the side of the hero.
   function besideStem(stem, p) {
-    const side = Math.sign(hero().position.z - stem.position.z) || 1;
+    const cz = Math.cos(viewAz);
+    const side = Math.abs(cz) > 0.3 ? -Math.sign(cz) : Math.sign(hero().position.z - stem.position.z) || 1;
     return { x: p.x, z: stem.position.z + side * 2 };
   }
 
@@ -2101,6 +2104,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The tasks where the child put a thing, and the last thing that the child took from a heap
   // ({ task, kind }).
   const childPut = new Set();
+  // The angle of the view (radians; the camera looks from (sin, cos) of it): Math.PI / 4 until the
+  // view says another one.
+  let viewAz = Math.PI / 4;
   // The tasks whose work is right after its extra things went back (#74): the person said the count
   // of the work now, and the next press finishes the task (the tie, the give), until the child
   // puts or takes a thing.
@@ -2953,6 +2959,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     const hit = target.ground;
     if (!hit) return;
+    // A tap next to the stem of the woodcutter is a tap on its nearest ring (#75: the stem is thin,
+    // and taps beside it did not move the hero along it): the hero walks beside that ring, and the
+    // chalk shows there.
+    const stem = getEntity(state, 'stem:woodcutter');
+    if (stem && !stem.hidden && openTask(stem.item.task)) {
+      const hx = hit.x * 2;
+      const hz = hit.y * 2;
+      const n = stem.item.size;
+      if (Math.abs(hz - stem.position.z) <= 2.6 && hx > stem.position.x && hx < stem.position.x + n) {
+        tapThing(stem, Math.max(1, Math.min(n - 1, Math.round(hx - stem.position.x))));
+        return;
+      }
+    }
     if (tapTaskPlace(hit) || (raidOn() && tapRaidRoad(hit))) {
       emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.h });
       return;
@@ -3655,6 +3674,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   function command(cmd) {
     const type = cmd.type;
+    // The angle of the view on the screen (from the view, at each turn): the hero stands at the work
+    // on the side away from the camera (#75, #76).
+    if (type === 'view') {
+      if (Number.isFinite(cmd.az)) viewAz = cmd.az;
+      return;
+    }
     if (CHILD_ACTS.has(type)) {
       acted();
       lastChild = state.tick;

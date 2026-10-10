@@ -52,6 +52,22 @@ export const springEnd = (n, extras) => springTime(n) + Math.max(0, extras - 1) 
 // the extra bunches start to go back at layTime, and the last one is back at layEnd.
 export const layTime = (n, kinds, extraKinds) => SPRING_TIME + (n + kinds) * COUNT_TIME + kinds * (0.4 + ROW_NAME) + extraKinds * EXTRA_LINE;
 export const layEnd = (n, kinds, extraKinds, extras) => layTime(n, kinds, extraKinds) + Math.max(0, extras - 1) * LAY_STEP;
+// The woodcutter (#75): after a cut that is not right, the pieces lie side by side, and he counts the
+// rings of each piece ("Khúc này: một, hai, ba."), says the number of pieces when it is not the
+// number that he asked for, and then the short piece glows and breaks. The pieces stay a little, and
+// then the stem is whole again.
+export const PIECE_NAME = 1; // seconds: "Khúc này:" before the count of a piece
+export const PIECES_LINE = 2.6; // seconds: "Hai khúc. Anh cần ba khúc."
+export const SHORT_SHOW = 1.8; // seconds: the short piece glows, and the woodcutter says it, before it breaks
+export const CUT_STAY = 3; // seconds: the pieces stay after the count (and after the break)
+// The time of the line of the number of pieces is in each count, said or not, so that the time of
+// the pieces does not depend on the number of the task (#63: the button is blind to it).
+export const cutCount = (pieces) => COUNT_LEAD + pieces.length * (PIECE_NAME + 0.4) + pieces.reduce((a, b) => a + b, 0) * UNIT_PACE + PIECES_LINE;
+// The index of the short piece of a cut (shorter than the longest), or null when all are equal.
+export const shortPiece = (pieces) => {
+  const min = Math.min(...pieces);
+  return min < Math.max(...pieces) ? pieces.indexOf(min) : null;
+};
 
 // A new zone from the map (a rectangle in map cells) and its kind (data/world/zones.json).
 // env: for the height of the ground and the named places.

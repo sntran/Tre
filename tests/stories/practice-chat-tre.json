@@ -75,7 +75,7 @@
         "timeout": 10
       }
     },
-    { "until": { "event": "stem", "timeout": 5 } },
+    { "until": { "event": "stem", "timeout": 30 } },
     {
       "press": {
         "stem": 4
@@ -155,7 +155,7 @@
         "timeout": 10
       }
     },
-    { "until": { "event": "stem", "timeout": 5 } },
+    { "until": { "event": "stem", "timeout": 30 } },
     {
       "press": {
         "stem": 4

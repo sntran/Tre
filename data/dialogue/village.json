@@ -190,8 +190,9 @@
       "start": "n1",
       "nodes": {
         "n1": { "speaker": "woodcutter", "textKey": "dlg.woodcutter.trial.n1", "names": ["stem:woodcutter"], "next": "n2", "effects": [{ "open": "trial", "id": "woodcutter", "now": true }] },
-        "n2": { "speaker": "woodcutter", "textKey": "dlg.woodcutter.trial.n2", "names": ["stem:woodcutter"], "next": "n3" },
-        "n3": { "speaker": "woodcutter", "textKey": "dlg.woodcutter.trial.n3", "names": ["zone:woodpile"] }
+        "n2": { "speaker": "woodcutter", "textKey": "dlg.woodcutter.trial.n2", "names": ["tool:woodcutter:chalk"], "next": "n3" },
+        "n3": { "speaker": "woodcutter", "textKey": "dlg.woodcutter.trial.n3", "names": ["sample:woodcutter:0", "sample:woodcutter:1", "sample:woodcutter:2", "sample:woodcutter:3"], "next": "n4" },
+        "n4": { "speaker": "woodcutter", "textKey": "dlg.woodcutter.trial.n4", "names": ["zone:woodpile"] }
       }
     },
     {

@@ -656,3 +656,9 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **A help says what it put:** `mentor.healer.putKind.ngai`, `.tiato`, `.rauma` ("Bà bỏ {n} bó ngải cứu."), for Nghé `mentor.nghe.putKind.*` ("Mình bỏ {n} bó ngải cứu."), and for the other people `mentor.putDone` ("Đặt {n} cái rồi."). The old lines are gone: `mentor.smaller`, `mentor.share`, `mentor.nghe.smaller`, `mentor.nghe.share`, `mentor.healer.smaller`, `mentor.healer.share`, `mentor.plant.smaller`, `mentor.plant.share`, `mentor.traps.smaller`, `mentor.traps.share` ("nốt", "một nửa").
 - **The fourth put:** `healer.more.*` is now "Lại một bó ngải cứu vào giỏ rồi." in place of "Thêm một bó ngải cứu nữa.".
 - **Please check:** "Đặt {n} cái rồi." for the people of the small events, the planting, and the fish traps; "Giờ mỗi loại có hai bó."; and "bà để lại luống".
+
+## The woodcutter: the pieces, the marks, and the bamboo (#75)
+
+- **The count of the pieces:** `woodcutter.piece` ("Khúc này:") before the count of each piece; `woodcutter.pieces` ("Có {n} khúc. Anh cần {m} khúc.", for Nghé `mentor.nghe.pieces`: "Có {n} khúc. Mình cần {m} khúc."); `woodcutter.short` is now "Khúc này ngắn quá." in place of "Khúc này ngắn quá nên gãy rồi. Các khúc phải dài bằng nhau.".
+- **The first lines:** `dlg.woodcutter.trial.n1` "Đây là cây tre. Gió làm nó đổ.", `.n2` "Đây là phấn. Em vạch phấn ở chỗ cần chặt.", `.n3` "Anh cần {parts} khúc dài bằng nhau, như thế này.", and `.n4` "Mang các khúc tre ra đống gỗ này nhé." (the old n3), in place of "Cây tre này đổ vì gió." and "Em vạch phấn lên cây tre để chia nó thành {parts} khúc bằng nhau, rồi bảo anh chặt.".
+- **Please check:** "Gió làm nó đổ.", "ở chỗ cần chặt", and "Có hai khúc." for a child of six.

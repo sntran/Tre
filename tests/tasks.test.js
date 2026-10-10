@@ -129,7 +129,7 @@ test('the woodcutter: with the sticks in the hands after the right cut, his help
   ]);
 });
 
-test('the woodcutter: a cut that is not equal shows the pieces side by side, the short one breaks, the woodcutter says why, and a new stem comes (#48)', async () => {
+test('the woodcutter: a cut that is not equal shows the pieces side by side, he counts the rings of each piece, the short one glows and breaks, and a new stem comes (#48, #75)', async () => {
   await play('task-woodcutter-short', [51, 8.5], [
     ...start('woodcutter'),
     // The stem is 8 long, for 2 equal sticks: a mark at 3 gives 3 and 5.
@@ -138,10 +138,15 @@ test('the woodcutter: a cut that is not equal shows the pieces side by side, the
     { press: { entity: 'npc:woodcutter' } },
     { until: { event: 'snap', timeout: 10 } },
     { expect: [{ count: { entities: 'piece:woodcutter', min: 2, max: 2 } }, { event: 'skill', with: { solved: false } }] },
-    { until: { event: 'call', with: { key: 'woodcutter.short' }, timeout: 3 } },
-    { wait: 1.5 },
+    { until: { event: 'call', with: { key: 'woodcutter.piece' }, timeout: 5 } },
+    { until: { event: 'call', with: { key: 'num.3' }, timeout: 5 } },
+    { until: { event: 'call', with: { key: 'num.5' }, timeout: 10 } },
+    // The short piece glows while the woodcutter says it, and then it breaks.
+    { until: { event: 'call', with: { key: 'woodcutter.short' }, timeout: 10 } },
+    { expect: [{ count: { entities: 'piece:woodcutter', min: 2, max: 2 } }] },
+    { wait: 2.2 },
     { expect: [{ count: { entities: 'piece:woodcutter', min: 1, max: 1 } }] },
-    { wait: 1.5 },
+    { wait: 3.5 },
     { expect: [{ count: { entities: 'piece:woodcutter', max: 0 } }, { count: { entities: 'stem', min: 1, max: 1 } }] },
   ]);
 });

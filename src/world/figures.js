@@ -599,6 +599,12 @@ export function thingLook(key) {
   if (k === 'chalk-band') return { kind: 'chalk-band' };
   m = /^piece-(\d+)$/.exec(k);
   if (m) return { kind: 'stem', n: Number(m[1]), green: true };
+  // The glow of a ring of a piece at its number, and the glow of the short piece (#75).
+  if (k === 'ring-glow') return { kind: 'ring-glow' };
+  // The stick of chalk of the woodcutter (#75).
+  if (k === 'chalk-stick') return { kind: 'chalk-stick' };
+  m = /^piece-glow-(\d+)$/.exec(k);
+  if (m) return { kind: 'piece-glow', n: Number(m[1]) };
   // The things of the ducks, the fish traps, and the drum dance (docs/HAMLET.md).
   m = /^duck-trough-(\d+)$/.exec(k);
   if (m) return { kind: 'duck-trough', n: Number(m[1]) };
@@ -944,6 +950,9 @@ export function workThing(look) {
     case 'mentor-mark': return still([P('ring', [1.4, 0.06, 1.4], 'vermilion', [0, 0.03, 0]), P('hole', [0.9, 0.07, 0.9], 'paper', [0, 0.035, 0]), P('stick', [0.15, 1.6, 0.15], 'wood', [0, 0.8, 0]), P('flag', [0.6, 0.4, 0.08], 'vermilion', [0.3, 1.4, 0])], 1.6);
     // A chalk mark on the stem: a red band around the stem, much larger than the stem, so that it
     // shows on the top and on the sides (#48).
+    case 'chalk-stick': return still([P('stick', [0.3, 0.3, 1.1], 'ashLight', [0, 0.15, 0]), P('tip', [0.3, 0.3, 0.2], 'vermilion', [0, 0.15, 0.6])], 0.3);
+    case 'ring-glow': return still([P('glow', [1.12, 1.12, 0.92], 'yellow', [0, 0.5, 0])], 1.1);
+    case 'piece-glow': return still([P('glow', [1.14, 1.14, look.n], 'yellow', [0, 0.5, look.n / 2])], 1.1);
     case 'chalk-band': return still([P('band', [0.4, CHALK_BAND, CHALK_BAND], 'vermilion', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
     // A chalk mark across a culm (the height of a slash).
     case 'chalk': return still([P('mark', [1.3, 0.08, 0.25], 'vermilion', [0, 0.45, 0]), P('dotA', [0.25, 0.4, 0.25], 'vermilion', [-0.65, 0.25, 0]), P('dotB', [0.25, 0.4, 0.25], 'vermilion', [0.65, 0.25, 0])], 0.5);

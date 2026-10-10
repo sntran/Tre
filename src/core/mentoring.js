@@ -9,7 +9,7 @@ import { endScript } from './world/systems/mentor.js';
 import { basketRowAt, matSlot } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
-import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd } from './world/zones.js';
+import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd, PIECE_NAME, PIECES_LINE, shortPiece } from './world/zones.js';
 
 // The zones where the parts of a try go, in the order of the search.
 const PLACES = ['exact', 'bundle', 'basket', 'line', 'forge', 'woodpile', 'spots'];
@@ -505,6 +505,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // parts on the place counted aloud with the mark of what went wrong (the mark), or, at a task with
   // no parts to count, the mark of what went wrong only: the widest gap of the row of the fisher.
   function countSteps(task, fam, info, s, t) {
+    if (task.tz?.zone.cutPieces) return pieceSteps(task, s, t);
     if (itemsOf(task.place).length && (fam.reader === 'sum' || fam.reader === 'each')) return markSteps(task, fam, info, s, t);
     if (task.place?.zone.rule === 'line') {
       const z = task.place.zone;
@@ -519,6 +520,70 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       return t + 2.5;
     }
     return t;
+  }
+
+  // The mark of the woodcutter (#75: "look at the pieces between the marks" showed no piece): the
+  // pieces of the stem between the chalk marks light up one at a time, and he counts the rings of
+  // each ("Khúc này: một, hai, ba.").
+  function stemSteps(task, s, t) {
+    const z = task.tz.zone;
+    const st = z.stem;
+    const lines = defOf(task.key)?.lines ?? {};
+    s.say(t, lineOf(task.key, 'mark'));
+    let at = t + 2.2;
+    const ends = [0, ...[...new Set(z.marks)].filter((m) => m > 0 && m < st.length).sort((a, b) => a - b), st.length];
+    for (let i = 1; i < ends.length; i++) {
+      s.say(at, lines.piece ?? 'woodcutter.piece');
+      at += PIECE_NAME;
+      for (let j = ends[i - 1] + 1; j <= ends[i]; j++) {
+        const p = { x: st.x + j - 0.5, z: st.z };
+        s.point(at, p, UNIT_PACE);
+        s.steps.push({ at, spawn: { look: 'ring-glow', x: p.x, y: st.y, z: p.z, facing: Math.PI / 2 } });
+        if (j - ends[i - 1] <= 30) s.say(at + 0.05, `num.${j - ends[i - 1]}`);
+        at += UNIT_PACE;
+      }
+      at += 0.6;
+    }
+    return at + 0.5;
+  }
+
+  // The count of the pieces of a cut of the woodcutter (#75: "Khúc này ngắn quá" came, and nothing
+  // showed which piece): each piece lies in its row, and he counts its rings one at a time, each
+  // ring lights up at its number ("Khúc này: một, hai, ba."). When the number of pieces is not the
+  // number that he asked for, he says it ("Hai khúc. Anh cần ba khúc."). Then the short piece glows,
+  // he points at it, and it breaks ("Khúc này ngắn quá."). The times are those of the world
+  // (cutCount in src/core/world/zones.js).
+  function pieceSteps(task, s, t) {
+    const z = task.tz.zone;
+    const pieces = z.cutPieces;
+    const parts = z.cutParts ?? pieces.length;
+    const lines = defOf(task.key)?.lines ?? {};
+    let at = t + COUNT_LEAD;
+    pieces.forEach((len, i) => {
+      const e = getEntity(world(), `piece:woodcutter:${i}`);
+      if (!e) return;
+      s.say(at, lines.piece ?? 'woodcutter.piece');
+      at += PIECE_NAME;
+      for (let j = 1; j <= len; j++) {
+        const p = { x: e.position.x + j - 0.5, z: e.position.z };
+        s.point(at, p, UNIT_PACE);
+        s.steps.push({ at, spawn: { look: 'ring-glow', x: p.x, y: e.position.y, z: p.z, facing: Math.PI / 2 } });
+        if (j <= 30) s.say(at + 0.05, `num.${j}`);
+        at += UNIT_PACE;
+      }
+      at += 0.4;
+    });
+    if (pieces.length !== parts && lines.pieces) s.say(at, lines.pieces, { n: { key: `num.${Math.min(30, pieces.length)}` }, m: { key: `num.${Math.min(30, parts)}` } });
+    at += PIECES_LINE;
+    const short = shortPiece(pieces);
+    const e = short === null ? null : getEntity(world(), `piece:woodcutter:${short}`);
+    if (e) {
+      s.steps.push({ at, spawn: { look: `piece-glow-${pieces[short]}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
+      s.point(at, { x: e.position.x + pieces[short] / 2, z: e.position.z }, 1.6);
+      s.say(at + 0.1, lines.short ?? 'woodcutter.short');
+      at += 2;
+    }
+    return at;
   }
 
   // The first step, one time at the start of a task: the person takes one thing from a heap, puts
@@ -571,6 +636,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // Mark what matters: count the parts on the place aloud, one at a time (each with the running
   // total as a word), then mark the empty part or the part too many.
   function markSteps(task, fam, info, s, t) {
+    if (task.tz?.zone.stem && task.tz.zone.marks?.length && !task.tz.zone.cut) return stemSteps(task, s, t);
     const parts = itemsOf(task.place);
     if (task.place?.zone.rule === 'span' && parts.length) return unitSteps(task, parts, s, t);
     s.say(t, lineOf(task.key, 'mark'));

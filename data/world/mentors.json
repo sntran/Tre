@@ -410,7 +410,10 @@
         "first": "mentor.woodcutter.first",
         "show": "mentor.show.woodcutter",
         "mark": "mentor.woodcutter.mark",
-        "carry": "mentor.carry.woodcutter"
+        "carry": "mentor.carry.woodcutter",
+        "piece": "woodcutter.piece",
+        "pieces": "woodcutter.pieces",
+        "short": "woodcutter.short"
       }
     },
     "trial-plant": {
@@ -496,6 +499,7 @@
     "show": "mentor.again.show"
   },
   "ngheLines": {
+    "woodcutter.pieces": "mentor.nghe.pieces",
     "mentor.healer.putKind.ngai": "mentor.nghe.putKind.ngai",
     "mentor.healer.putKind.tiato": "mentor.nghe.putKind.tiato",
     "mentor.healer.putKind.rauma": "mentor.nghe.putKind.rauma",

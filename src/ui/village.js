@@ -339,8 +339,13 @@ export async function mountVillage(ctx, params = {}) {
   // Buttons that turn the view in steps of 90°.
   const turnLeft = h('button', { class: 'turn-btn', type: 'button', 'aria-label': t('ui.turn.left'), title: t('ui.turn.left'), text: '⟲' });
   const turnRight = h('button', { class: 'turn-btn', type: 'button', 'aria-label': t('ui.turn.right'), title: t('ui.turn.right'), text: '⟳' });
-  turnLeft.addEventListener('click', () => view.turn(-1));
-  turnRight.addEventListener('click', () => view.turn(1));
+  // A turn of the child: the view that the child chose stays (handTurn, #75).
+  const handTurnTo = (n) => {
+    handTurn = performance.now();
+    view.turn(n);
+  };
+  turnLeft.addEventListener('click', () => handTurnTo(-1));
+  turnRight.addEventListener('click', () => handTurnTo(1));
   // The wave: the child calls the person of the task near the hero (docs/MENTOR.md). It shows only
   // at a task with a mentor.
   const waveBtn = h('button', { class: 'turn-btn wave-btn', type: 'button', hidden: true, 'aria-label': t('ui.wave'), title: t('ui.wave') }, [img('ui/wave', 'btn-icon')]);
@@ -833,7 +838,7 @@ export async function mountVillage(ctx, params = {}) {
       e.preventDefault();
       if (what === 'move') keys.add(e.code);
       else if (e.repeat) return;
-      else if (what === 'turnLeft' || what === 'turnRight') view.turn(what === 'turnLeft' ? -1 : 1);
+      else if (what === 'turnLeft' || what === 'turnRight') handTurnTo(what === 'turnLeft' ? -1 : 1);
       else if (what === 'jump') {
         jumpDown = performance.now();
         send({ type: 'jump' });
@@ -1146,6 +1151,10 @@ export async function mountVillage(ctx, params = {}) {
     }
     return { ...heroAt, x: lead.focus.x, z: lead.focus.z };
   }
+  // The view that the child chose stays: for HAND_KEEP milliseconds after a turn of the child, no
+  // work turns the view by itself (#75: the child turned the view to a good side of the stem, and
+  // at the next walk the view turned back). The view still leads to the work.
+  const HAND_KEEP = 5 * 60 * 1000;
   function turnToWork(points, sight = []) {
     const wu = (p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 });
     const pts = (points ?? []).map(wu);
@@ -1155,6 +1164,7 @@ export async function mountVillage(ctx, params = {}) {
     const focus = wu(hero().position);
     const scr = viewSize(size.width, size.height, view.state.level);
     const inSight = (az) => sight.map(wu).every((p) => inView({ x0: p.x - 0.5, x1: p.x + 0.5, y0: p.y, y1: p.y + 1, z0: p.z - 0.5, z1: p.z + 0.5 }, focus, { az, size: scr }));
+    if (handTurn !== null && performance.now() - handTurn < HAND_KEEP) return;
     const steps = workTurn(workBoxes(terrain, pts), pts, view.angle, VIEW.elevation, inSight);
     if (steps) view.turn(steps);
   }
@@ -1206,6 +1216,8 @@ export async function mountVillage(ctx, params = {}) {
   // The bubbles that wait behind a line of what happened of the same person (#73: "Sắt nguội mất
   // rồi, nên cong." went, because the next line of the smith took its bubble in the same step).
   let laterBubbles = [];
+  let sentAngle = null;
+  let handTurn = null; // the time of the last turn of the view by the child
   const happenedHolds = (id) => bubbles.some((b) => b.id === id && !b.icon && b.line?.kind === 'world' && voiceHolds(b));
   function showLater() {
     if (!laterBubbles.length) return;
@@ -1778,6 +1790,12 @@ export async function mountVillage(ctx, params = {}) {
     for (let i = pointers; i < pointerPool.length; i++) pointerPool[i].hidden = true;
     stepVoice();
     showLater();
+    // The session knows the angle of the view on the screen (#75, #76: the hero stands at the work
+    // on the side away from the camera).
+    if (view.angle !== sentAngle) {
+      sentAngle = view.angle;
+      session.command({ type: 'view', az: view.angle });
+    }
     const workAt = bubbles.length ? workMarks() : [];
     for (let i = bubbles.length - 1; i >= 0; i--) {
       const b = bubbles[i];
