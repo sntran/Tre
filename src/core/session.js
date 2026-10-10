@@ -598,6 +598,32 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else delete p.schedule.hold;
     }
   }
+  // The hero never stands in the body of a person (#76: after a talk the hero stood in the fisher,
+  // and the teacher walked into the hero at his mat): a hero who stands still there steps out to a
+  // free side of the person, the side of the hero first.
+  const PERSON_BODY = 1.5; // half blocks from the middle of a person (the two bodies touch)
+  const PERSON_OUT = 2.6; // half blocks from the middle of a person: where the hero steps to
+  let stepOutAt = -Infinity;
+  function stepOutOfPerson() {
+    if (state.tick % 10 !== 0) return;
+    const h = getEntity(state, 'hero');
+    if (!h || walking() || h.riding || h.fall || screen || busy || (state.tick - stepOutAt) * STEP < 1) return;
+    for (const q of query(state, 'person', 'position')) {
+      if (q.hidden) continue;
+      const dx = h.position.x - q.position.x;
+      const dz = h.position.z - q.position.z;
+      const d = Math.hypot(dx, dz);
+      if (d >= PERSON_BODY) continue;
+      const [ux, uz] = d > 1e-3 ? [dx / d, dz / d] : [-Math.sin(viewAz), -Math.cos(viewAz)];
+      for (const [sx, sz] of [[ux, uz], [-uz, ux], [uz, -ux], [-ux, -uz]]) {
+        const to = { x: q.position.x + sx * PERSON_OUT, z: q.position.z + sz * PERSON_OUT };
+        if (!tileMap.walkable(Math.floor(to.x / 2), Math.floor(to.z / 2))) continue;
+        stepOutAt = state.tick;
+        worldCommand(state, { type: 'walk', id: 'hero', points: [to], token: null, near: null });
+        return;
+      }
+    }
+  }
   // A walk to a heap of another kind chooses that heap, as a tap on it does (#74: the child walked
   // to the bed of ngải cứu and pressed, and the press walked her to the bed of tía tô, the kind of
   // the last pick). One time at each stop next to the heap.
@@ -888,7 +914,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     return out;
   }
-  const ANVIL_SIDE = 1.3; // cells west of the anvil: where the hero stands at the work of the smith
+  const ANVIL_SIDE = 1.3; // cells from the anvil: where the hero stands at the work of the smith
+  // The stand point at the anvil (half blocks): on the side away from the camera, as the view is on
+  // the screen (#70, #76: the body of the hero covered the iron).
+  const anvilStand = (a) => ({ x: a.x - Math.sin(viewAz) * ANVIL_SIDE * 2, z: a.z - Math.cos(viewAz) * ANVIL_SIDE * 2 });
   // Start a trial: its things lie at their places on this map, at the level of the grade. The
   // trial of a practice starts again and again (at the level of the practice), with new things.
   function startTrial(id) {
@@ -911,10 +940,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // its things glow, and its box opens after this; the line of the need comes when the talk is
     // over). later: at the end of this step, when the box is open.
     later.push(() => queue(() => {
-      // The smith (#70): the hero goes to the side of the anvil away from the view (the view looks
-      // from the south-east), so that no figure stands in front of the iron.
+      // The smith (#70): the hero goes to the side of the anvil away from the view, so that no figure
+      // stands in front of the iron.
       const anvil = def.task === 'forge' ? env.places[def.places.anvil] : null;
-      if (anvil && !hero().riding) walkTo([{ x: anvil.x / 2 - ANVIL_SIDE, y: anvil.z / 2 - 0.2 }], null);
+      if (anvil && !hero().riding) {
+        const p = anvilStand(anvil);
+        walkTo([{ x: p.x / 2, y: p.z / 2 }], null);
+      }
       const need = workCount()?.need ?? 0;
       if (need >= 1 && need <= 4) {
         emit({ type: 'goalShow', n: need });
@@ -2021,7 +2053,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A standing culm: the hero stands at its side of the road (the clump is dense).
     if (thing.item.kind === 'culm') return goTo(thing.position, thing.id, null, { x: thing.position.x + 2, z: thing.position.z });
     const tz = thing.item.kind === 'iron' ? trialZone(thing.item.task.slice(6)) : null;
-    goTo(tz?.zone.anvil ?? m, thing.id);
+    if (tz?.zone.anvil) return goTo(tz.zone.anvil, thing.id, null, anvilStand(tz.zone.anvil));
+    goTo(m, thing.id);
   }
 
   // The stand point at a point of a stem (half blocks): beside the stem, off its line, on the side
@@ -2213,6 +2246,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return Math.hypot(p.x - z.position.x, p.z - z.position.z) <= AREA_PAD * 3;
     });
   }
+  // The open task whose place the hero is at (its key, trial-<id>), or null (#76: while the child
+  // works at a task, the faces of other people do not show, and the evening waits).
+  function taskHere() {
+    const h = hero()?.position;
+    const z = h ? query(state, 'zone').find((x) => x.zone.rule === 'trial' && !x.zone.done && inTaskArea(x.id.slice(5), h)) : null;
+    return z ? z.id.slice(5) : null;
+  }
+  // The task of a person of the trials here (data/trials.json), or null.
+  function personTaskHere() {
+    const task = taskHere();
+    return task && (data.trials?.trials ?? []).some((t) => `trial-${t.id}` === task) ? task : null;
+  }
   // A thing of a task in the hands flies back to its heap when the hero leaves the area of the task
   // (#66: a child with a bunch of the healer at the forge pressed to drop it, and the press walked
   // back to the healer). Then the hands and the button are free.
@@ -2232,7 +2277,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return query(state, 'zone').some((z) => {
       const zone = z.zone;
       if (zone.task !== e.item.task || ['heap', 'pile'].includes(zone.rule) || !canPut(zone, e) || !hasRoom(zone)) return false;
-      if (zone.rule === 'line') return Math.max(0, ...query(state, 'item').filter((x) => x.item.zone === zone.id && x.item.slot != null).map((x) => x.item.slot)) < zone.length;
+      // The line has room while it has a free point (#76: after a wrong row with a stake at the
+      // float, a press at the pile never took the stake that closes the space).
+      if (zone.rule === 'line') {
+        const used = new Set(query(state, 'item').filter((x) => x.item.zone === zone.id && x.item.slot != null).map((x) => x.item.slot));
+        for (let i = 1; i <= zone.length; i++) if (!used.has(i)) return true;
+        return false;
+      }
       if (zone.rule === 'spots') return freeSlot(state, zone) >= 0;
       return true;
     });
@@ -2482,13 +2533,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           continue;
         }
         const tapped = chosen?.id === z.id && chosen.along !== null ? chosen.along : null;
-        // With no tap, the point of the row nearest to the hero; when it has a stake, the next free
-        // point after it (one half block). The press never reads the space of the row (#63): the
-        // child chooses each space with a tap, and presses alone make a row that is too close.
+        // With no tap, the point of the row nearest to the hero; when it has a stake, the free point
+        // nearest to it, after it first (one half block). The press never reads the space of the
+        // row (#63): the child chooses each space with a tap, and presses alone make a row that is
+        // too close. At the end of the row, the free point before it (#76: after a stake at the
+        // float, a stake in the hands had no place).
         const row = query(state, 'item').filter((e) => e.item.zone === zone.id && !e.item.held && e.item.slot != null).map((e) => e.item.slot);
         let slot = Math.max(1, Math.min(zone.length, tapped ?? Math.round(hp.x - zone.x)));
-        if (tapped === null) while (row.includes(slot) && slot <= zone.length) slot += 1;
-        if (slot > zone.length || row.includes(slot)) continue;
+        if (tapped === null && row.includes(slot)) {
+          const near = slot;
+          slot = null;
+          for (let d = 1; d <= zone.length && slot === null; d++) {
+            if (near + d <= zone.length && !row.includes(near + d)) slot = near + d;
+            else if (near - d >= 1 && !row.includes(near - d)) slot = near - d;
+          }
+        }
+        if (slot === null || slot > zone.length || row.includes(slot)) continue;
         const at = { x: zone.x + slot, z: zone.z };
         add({ act: 'put', icon: 'hand-put', target: z.id, at, work, rank: 0, ghost: { look: held.look, x: at.x, y: zone.y, z: at.z, facing: 0 }, run: () => put(at) }, REACH + 2);
       } else if (zone.rule === 'spots') {
@@ -3504,6 +3564,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The last press or hold of the big button (a tick): the child works at a task only within
   // WORK_HOLD seconds after it. A child who waits next to a plot or a bridge does not work (#57).
   const WORK_HOLD = 30;
+  // The late afternoon (a minute of the day): the clock does not go past it while the hero is at
+  // the place of an open task of a person (#76).
+  const EVENING = 16.5 * 60;
+  let eveningTask = null;
   let lastPress = -Infinity;
   // The task of a person that the child works on now (its mentor key), or null. In a visit of a
   // practice, the set is open while the hero is at its place (#45).
@@ -3528,7 +3592,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // the tasks, and while the child only waits, the days go on (the rice grows, the feast comes at
     // dusk).
     const key = workKey();
-    state.clock.hold = Boolean(key || folk.active() || raidOn());
+    // The evening waits for the end of a task (#76: night came in the middle of a task three times,
+    // and the children could not see their work): at the late afternoon, the clock waits while the
+    // hero is at the place of an open task of a person, until the task is done or the child leaves
+    // its place. A task that starts later goes on into the evening (#57: a child who only waits next
+    // to the work does not hold the light), and the tasks of the hamlet (the plots, the ducks, the
+    // traps, the drum) do not hold it: the feast comes at dusk.
+    const day = state.clock.minutes % 1440;
+    if (state.tick % 15 === 0) eveningTask = day >= EVENING - 5 && day < EVENING + 1 ? personTaskHere() : null;
+    state.clock.hold = Boolean(key || folk.active() || raidOn() || (eveningTask && day >= EVENING - 0.5 && day < EVENING + 1));
     if (key !== stayKey) {
       stayKey = key;
       updateStays();
@@ -3544,6 +3616,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepBridgeOpen();
     stepHold();
     stepNearHeap();
+    stepOutOfPerson();
     stepGuessLine();
     stepLeaveTask();
     stepPending();
@@ -3843,6 +3916,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     },
     // A task or a folk game goes on now: a tap on Nghé is a tap on what is under or behind Nghé.
     // Any open task counts (a trial, a station, or a work task such as the rice for Gióng).
+    // The open task whose place the hero is at (#76).
+    taskHere,
     inTask: () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done)),
     // The work in view now (the last event workView while its task goes on), or null.
     work: () => (lastWork && (mentoring.activeKey() || folk.active() || String(lastWork.key).startsWith('example-')) ? lastWork : null),

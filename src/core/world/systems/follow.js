@@ -17,6 +17,7 @@ import { stepFollower, moveCircle, faceOf, MOVE } from '../move.js';
 const SHAKE = 1.6; // seconds of a shake of the head
 const NEAR_HERO = 0.6; // half blocks: Nghé on the hero (nearer than this) steps past or away
 const PERSON_CLEAR = 1; // half blocks: Nghé stays this far out of the body of a person
+const NGHE_BODY = 1.6; // half blocks: Nghé stays this far out of the places of a task (its body, #76)
 
 export function follow(world, dt, rng, env) {
   const hot = query(world, 'hot', 'position');
@@ -79,20 +80,30 @@ export function follow(world, dt, rng, env) {
     }
     // The places of a task that goes on: Nghé steps out of their rects, so that it never stands on a
     // place of the work (#47). The hero walks toward Nghé: Nghé steps aside.
+    // The body of Nghé is longer than its point, also when it lies down (#76: at night Nghé lay on the
+    // end of the mat): it stays NGHE_BODY half blocks out of the rects.
     for (const z of query(world, 'zone')) {
       const r = z.zone.rect;
       if (!r || !z.zone.task?.startsWith('trial-') || getEntity(world, `zone:${z.zone.task}`)?.zone.done) continue;
-      if (p.x < r.x0 || p.x > r.x1 || p.z < r.z0 || p.z > r.z1) continue;
-      // The nearest edge, one half block out.
-      const outs = [{ x: r.x0 - 1, z: p.z }, { x: r.x1 + 1, z: p.z }, { x: p.x, z: r.z0 - 1 }, { x: p.x, z: r.z1 + 1 }]
+      const b = NGHE_BODY;
+      const inside = (q) => q.x >= r.x0 - b && q.x <= r.x1 + b && q.z >= r.z0 - b && q.z <= r.z1 + b;
+      if (!inside(p)) continue;
+      // A step of the follow from out of the place into it is taken back: the place is a wall for
+      // Nghé, and the follow goes around it.
+      if (!inside(from)) {
+        p.x = from.x;
+        p.z = from.z;
+        continue;
+      }
+      // The nearest edge, out of the rect by the body of Nghé.
+      const outs = [{ x: r.x0 - b - 0.3, z: p.z }, { x: r.x1 + b + 0.3, z: p.z }, { x: p.x, z: r.z0 - b - 0.3 }, { x: p.x, z: r.z1 + b + 0.3 }]
         .sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z));
-      const out = outs.find((o) => env.canEnter('land', p, o));
-      if (!out) continue;
-      const d = Math.hypot(out.x - p.x, out.z - p.z);
-      const step = Math.min(d, dt * 8);
-      p.x += ((out.x - p.x) / d) * step;
-      p.z += ((out.z - p.z) / d) * step;
+      const out = outs.find((o) => env.canEnter('land', p, o)) ?? outs[0];
+      // Out in one step: the follow pulls Nghé toward the hero at each step, and a slow step out
+      // never won (#76).
       p.facing = Math.atan2(out.x - p.x, out.z - p.z);
+      p.x = out.x;
+      p.z = out.z;
       m.speed = Math.max(m.speed, 6);
     }
     const lv = leader.motion;

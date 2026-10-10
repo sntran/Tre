@@ -1119,13 +1119,16 @@ export async function mountVillage(ctx, params = {}) {
   const CLOSE_WORK = [
     { zone: 'zone:mat', trial: 'zone:trial-scholar', scale: 0.6, near: 7 },
     { zone: 'zone:basket', trial: 'zone:trial-healer', scale: 0.72, near: 8 },
+    // The row of the fisher (#76: the view went so far out that the stakes were a few pixels).
+    { zone: 'zone:line', trial: 'zone:trial-fisher', scale: 0.85, near: 12 },
   ];
   function matFocus(heroAt) {
     for (const w of CLOSE_WORK) {
       const place = getEntity(state, w.zone);
       const open = place && getEntity(state, w.trial)?.zone.done === false;
       const r = place?.zone.rect;
-      const c = r ? { x: (r.x0 + r.x1) / 4, z: (r.z0 + r.z1) / 4 } : place?.position ? { x: place.position.x / 2, z: place.position.z / 2 } : null;
+      const line = place?.zone.rule === 'line' ? place.zone : null;
+      const c = line ? { x: (line.x + line.length / 2) / 2, z: line.z / 2 } : r ? { x: (r.x0 + r.x1) / 4, z: (r.z0 + r.z1) / 4 } : place?.position ? { x: place.position.x / 2, z: place.position.z / 2 } : null;
       const near = open && c && !hero().riding && Math.hypot(heroAt.x - c.x, heroAt.z - c.z) < w.near;
       if (!near) continue;
       view.setScale(w.scale);
@@ -1218,6 +1221,8 @@ export async function mountVillage(ctx, params = {}) {
   let laterBubbles = [];
   let sentAngle = null;
   let handTurn = null; // the time of the last turn of the view by the child
+  let taskHereAt = 0; // the time when the view last asked the session for the task of the place
+  let taskHereNow = null;
   const happenedHolds = (id) => bubbles.some((b) => b.id === id && !b.icon && b.line?.kind === 'world' && voiceHolds(b));
   function showLater() {
     if (!laterBubbles.length) return;
@@ -1742,7 +1747,13 @@ export async function mountVillage(ctx, params = {}) {
     const edges = [];
     const marks = []; // the boxes of the stars and the arrows: a bubble never covers them (#56)
     const bob = Math.sin(time * 4) * 4;
-    for (const m of busy ? [] : markers()) {
+    // While the child works at a task, the faces of other people do not show on the screen (#76:
+    // the faces lay on the heap of rods, and a tap on the heap walked the child away).
+    if (performance.now() - taskHereAt > 300) {
+      taskHereAt = performance.now();
+      taskHereNow = session.taskHere();
+    }
+    for (const m of busy || taskHereNow ? [] : markers()) {
       const p = view.project(m.x, m.h, m.y);
       const edge = edgeMarker(screen, p, inset);
       if (!edge) {

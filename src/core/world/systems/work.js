@@ -994,6 +994,9 @@ function tickTide(world, tz, dt, env) {
     tide.t = 0;
   }
   tide.t += dt;
+  // While the child carries a stake to the row, the tide does not come (#76: the tide came first,
+  // and the stake in the hands could not go in): the water stays low.
+  if (tide.phase === 'low' && query(world, 'item').some((s) => s.item.held === 'hero' && String(s.id).startsWith('stake:fisher:'))) tide.t = Math.min(tide.t, tide.every - 10);
   if (tide.phase === 'low') {
     // The water rises in the last part of the wait, so that the child sees it come.
     const k = Math.max(0, (tide.t - (tide.every - 10)) / 10);
