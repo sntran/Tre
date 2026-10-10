@@ -10,6 +10,7 @@ We write it for parents and for anyone who wants to know why the game is the way
 
 | Date | Entry |
 | --- | --- |
+| 9 Oct 2026 | [Right, and nobody said so](2026-10-09-right-and-nobody-said-so.md) |
 | 8 Oct 2026 | [A count that is cut](2026-10-08-a-count-that-is-cut.md) |
 | 8 Oct 2026 | [The button knew the answer](2026-10-08-the-button-knew-the-answer.md) |
 | 7 Oct 2026 | [A count, not a clock](2026-10-07-a-count-not-a-clock.md) |
