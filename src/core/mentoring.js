@@ -122,6 +122,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     }
     const st = newMentor(key);
     st.round = round;
+    // The visits of the child to the task, over the games (#73: no picture of another station in
+    // the first visit).
+    if (round === 0) memoryOf(key).visits = (memoryOf(key).visits ?? 0) + 1;
     states.set(key, st);
     tracks.set(key, { startT: now(), firstAct: null, lastAct: now(), lastCommit: null, acted: false, left: false });
     delayed = delayed.filter((d) => d.key !== key);
@@ -156,6 +159,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       timeS: t - (tr.firstAct ?? tr.lastCommit ?? tr.startT), sizes: task ? sizesOf(task) : [], fact: String(input.target), left: tr.left,
       allTaken: task ? parts.length >= task.piles.flatMap(itemsOf).filter((e) => !e.item.stray).length + itemsOf(task.place).length : false,
       pL: input.skill ? learner()?.entry(input.skill)?.p ?? null : null,
+      firstVisit: (memoryOf(key).visits ?? 1) <= 1,
     }, fam, cfg);
     if (r.help) log('help', r.help);
     for (const c of r.checks) log('check', { task: key, changed: c.changed });
@@ -394,7 +398,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // and the words of a friend where the line says cháu.
     const moveOf = Object.fromEntries([...Object.entries(cfg.lines), ...Object.entries(def.lines ?? {})].filter(([, k]) => k).map(([m, k]) => [k, m]));
     const asNghe = (k) => cfg.ngheLines?.[moveOf[k] ?? k] ?? cfg.ngheLines?.[k] ?? (moveOf[k] ? cfg.lines[moveOf[k]] : k);
-    const say = (at, k, params = {}) => { if (who && k) steps.push({ at, say: { id: who, key: away ? asNghe(k) : k, params } }); };
+    // The lines of the count say what happened to the work of the child (#73: such a line is never
+    // cut or replaced by a later line).
+    const happened = move === 'count';
+    const say = (at, k, params = {}) => { if (who && k) steps.push({ at, say: { id: who, key: away ? asNghe(k) : k, params, ...(happened ? { happened } : {}) } }); };
     const point = (at, p, time = 1.2) => { if (who) steps.push({ at, point: { id: who, x: p.x, z: p.z, time } }); };
     const mark = (at, p, ttl = 3) => steps.push({ at, mark: { x: p.x, z: p.z, ttl } });
     if (info.remembered && cfg.again[move]) {

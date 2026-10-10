@@ -3335,7 +3335,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // Over the river: the far walk has no ferry to keep any more.
     if (ev.type === 'ferried' && (ev.riders ?? []).includes('hero')) farPlan = null;
     // A person calls out: the fisher when a plank is too long, and the lines of the mentors.
-    if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {} });
+    // happened: a line that says what happened (#73: never cut or replaced by a later line).
+    if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {}, ...(ev.happened ? { happened: true } : {}) });
     // The mentors read the commits (before the learner takes them), the plank too long, and the
     // actions of the hands.
     if (ev.type === 'skill') mentoring.skill(ev);

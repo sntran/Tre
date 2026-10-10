@@ -4,7 +4,9 @@
 //
 // A line: { id (the entity that says it), key (the text key), params, voice (a voice profile),
 // kind }. kind: 'count' (a word of a count: num.1, num.2, ...), 'greet' (a greeting of a person who
-// walks by), or 'line' (a hint, a wait, and every other line of a person).
+// walks by), 'world' (a line that says what happened: the iron bent, the piece is too short, the
+// extra rods go back; the event has happened, #73), or 'line' (a hint, a wait, and every other line
+// of a person).
 
 const COUNT = /^num\./;
 const GREET = /^world\.greet\./;
@@ -28,7 +30,8 @@ export function speakerOf(id) {
 // voice(speaker): the voice profile of a speaker (src/core/voices.js, voiceOf).
 export function bubbleLine(ev, voice = () => 'narrator') {
   if (!ev || ev.screen !== 'callout' || !ev.textKey) return null;
-  return { id: ev.id ?? null, key: ev.textKey, params: ev.params ?? {}, voice: voice(speakerOf(ev.id)), kind: kindOf(ev.textKey) };
+  const kind = kindOf(ev.textKey);
+  return { id: ev.id ?? null, key: ev.textKey, params: ev.params ?? {}, voice: voice(speakerOf(ev.id)), kind: kind === 'line' && ev.happened ? 'world' : kind };
 }
 
 const same = (a, b) => a.id === b.id && a.key === b.key && JSON.stringify(a.params) === JSON.stringify(b.params);
@@ -46,7 +49,9 @@ export const SAID_AGAIN = 12;
 //          words of a count keep their order, so that one number never cuts the last one);
 //   'drop' a greeting while the voice is busy, or the same line that already waits.
 //   A line with the same words as a line that waits, or as a line that the voice said in the last
-//   SAID_AGAIN seconds, also goes (not a word of a count).
+//   SAID_AGAIN seconds, also goes. A word of a count and a line of what happened never go (#73: the
+//   "hai" of a row went because the "hai" of the row before still waited), and a later line of the
+//   person waits behind them.
 // next(speaking): the line to speak now, or null while the voice is busy or nothing waits.
 // now: the time in seconds (null: no memory of the lines that the voice said).
 export function createVoiceQueue() {
@@ -56,12 +61,14 @@ export function createVoiceQueue() {
     offer(line, speaking = false, now = null) {
       if (!line) return 'drop';
       if (line.kind === 'greet' && (speaking || queue.length)) return 'drop';
-      if (queue.some((q) => same(q, line))) return 'drop';
-      if (line.kind !== 'count') {
+      const keep = line.kind === 'count' || line.kind === 'world';
+      if (!keep && queue.some((q) => same(q, line))) return 'drop';
+      if (!keep) {
         if (queue.some((q) => sameWords(q, line))) return 'drop';
         if (now !== null && said.some((x) => sameWords(x.line, line) && now - x.at < SAID_AGAIN)) return 'drop';
       }
-      // A newer hint of the same person takes the place of an older hint that still waits.
+      // A newer hint of the same person takes the place of an older hint that still waits (never of
+      // a line of what happened, nor of a word of a count).
       if (line.kind === 'line') {
         for (let i = queue.length - 1; i >= 0; i--) if (queue[i].id === line.id && queue[i].kind === 'line') queue.splice(i, 1);
       }

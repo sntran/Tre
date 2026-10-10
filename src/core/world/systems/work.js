@@ -736,7 +736,7 @@ function act(world, e, want, env) {
       say(world, 'bend', iron.id, { sound: 'plank-down', early });
       // The smith says what happened first, in words that a child knows (#70): not hot enough yet,
       // or cold again.
-      say(world, 'call', 'npc:smith', { key: early ? 'smith.bend.early' : 'smith.bend.late' });
+      say(world, 'call', 'npc:smith', { key: early ? 'smith.bend.early' : 'smith.bend.late', happened: true });
     }
   } else if (want.act === 'give') {
     const basket = zoneEnt(world, 'basket');
@@ -868,7 +868,7 @@ function act(world, e, want, env) {
       tz.zone.short = result.pieces.indexOf(shortest);
       say(world, 'snap', `zone:trial-woodcutter`, { pieces: result.pieces, short: shortest, sound: 'plank-down' });
       const person = query(world, 'person').find((p) => p.person.ref === 'woodcutter');
-      if (person) say(world, 'call', person.id, { key: 'woodcutter.short', params: {} });
+      if (person) say(world, 'call', person.id, { key: 'woodcutter.short', params: {}, happened: true });
     }
   }
 }
@@ -1021,6 +1021,16 @@ function tickTide(world, tz, dt, env) {
     // bank is on the other side).
     addEntity(world, { id: 'fish:fisher', keep: true, position: { x: line.zone.x + at, y: line.zone.y, z: line.zone.z + (r.solved ? 1 : 1.5), facing: 0 }, look: fish });
     say(world, r.solved ? 'catch' : 'escape', tz.id, { at: { x: line.zone.x + at, z: line.zone.z }, sound: 'splash' });
+    if (!r.solved) {
+      // The answer of the world to a wrong row, at each level of help (#73: after the handover of
+      // the checking, the fish swam out and nobody spoke): the widest space glows while the fish
+      // swim through it, and the fisher (or Nghé, while the fisher is away) says it.
+      addEntity(world, { id: 'why:fisher:space', keep: true, position: { x: line.zone.x + r.widest.from, y: line.zone.y, z: line.zone.z, facing: Math.PI / 2 }, look: `over-${Math.max(1, Math.round(r.widest.size))}` });
+      const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+      const nghe = getEntity(world, 'friend:nghe');
+      const who = fisher ?? (nghe && !nghe.hidden ? nghe : null);
+      if (who) say(world, 'call', who.id, { key: 'fisher.escape', params: {}, happened: true });
+    }
   } else if (tide.phase === 'out' && tide.t >= TIDE_OUT) {
     const r = tide.result;
     if (r?.solved) {
@@ -1028,6 +1038,7 @@ function tickTide(world, tz, dt, env) {
       return;
     }
     removeEntity(world, 'fish:fisher');
+    removeEntity(world, 'why:fisher:space');
     tide.phase = 'low';
     tide.t = 0;
     tide.result = null;

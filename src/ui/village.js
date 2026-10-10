@@ -1193,7 +1193,21 @@ export async function mountVillage(ctx, params = {}) {
     if (b) sayLine(b.line, { force: true });
     return Boolean(b);
   }
+  // The bubbles that wait behind a line of what happened of the same person (#73: "Sắt nguội mất
+  // rồi, nên cong." went, because the next line of the smith took its bubble in the same step).
+  let laterBubbles = [];
+  const happenedHolds = (id) => bubbles.some((b) => b.id === id && !b.icon && b.line?.kind === 'world' && voiceHolds(b));
+  function showLater() {
+    if (!laterBubbles.length) return;
+    const due = laterBubbles.filter((x) => !happenedHolds(x[0]));
+    laterBubbles = laterBubbles.filter((x) => happenedHolds(x[0]));
+    for (const args of due) showBubble(...args);
+  }
   function showBubble(id, text, icon = null, line = null) {
+    if (!icon && line?.kind !== 'world' && (happenedHolds(id) || laterBubbles.some((x) => x[0] === id))) {
+      laterBubbles.push([id, text, icon, line]);
+      return;
+    }
     // A heart over Nghé is no line of a person.
     if (!icon && !String(id).startsWith('friend:')) talkOver(id);
     // A new line of a person takes the place of the last one (a mentor counts aloud, one word at a time).
@@ -1753,6 +1767,7 @@ export async function mountVillage(ctx, params = {}) {
     }
     for (let i = pointers; i < pointerPool.length; i++) pointerPool[i].hidden = true;
     stepVoice();
+    showLater();
     const workAt = bubbles.length ? workMarks() : [];
     for (let i = bubbles.length - 1; i >= 0; i--) {
       const b = bubbles[i];

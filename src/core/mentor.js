@@ -194,6 +194,9 @@ export function onCommit(st, memory, input, fam, cfg) {
     if (stage === 2) move = 'wait';
     else if (stage === 1) delay = fam.look;
   }
+  // No picture of another station in the first visit to a task (#73: after a second miss in the
+  // first visit, both children felt sent away): the move before it on the ladder.
+  if (move === 'picture' && input.firstVisit) move = withoutPicture(fam.ladders[diag] ?? fam.ladders.miss ?? []);
   // A bigger task comes once in a task.
   if (move === 'raise' && st.raised) move = 'wait';
   if (move === 'raise') st.raised = true;
@@ -230,6 +233,13 @@ export function onIdle(st, { seconds, acted }, fam) {
 // After a miss, the next move of the ladder; a move that does not help (a wait, the offer, try
 // first) is the show. acted: the child did something in the task. Return { when, diagnosis, move }.
 const NO_HELP = new Set(['wait', 'offer', 'tryFirst']);
+// The move of a ladder in place of the picture: the last move before it that helps, else the first
+// move that helps, else the show.
+function withoutPicture(ladder) {
+  const i = ladder.indexOf('picture');
+  const before = ladder.slice(0, Math.max(0, i)).filter((m) => m !== 'wait' && m !== 'break');
+  return before.at(-1) ?? ladder.find((m) => !['wait', 'picture', 'break'].includes(m)) ?? 'show';
+}
 export function onWave(st, memory, fam, cfg, pL = 0, acted = false) {
   if (!st.tried && !acted && !st.toldTry) {
     st.toldTry = true;
@@ -239,9 +249,14 @@ export function onWave(st, memory, fam, cfg, pL = 0, acted = false) {
   st.level = Math.min(cfg.top, st.level + 1);
   const diag = st.lastDiag ?? 'miss';
   let { move } = chooseMove(diag, { ...st, helped: {} }, null, fam, cfg, pL);
-  // A wave always gets a line that shows the next step (#64): never a wait, an offer, or the picture
-  // of another station.
-  if (NO_HELP.has(move) || move === 'picture') move = 'show';
+  // A wave always gets a line that shows the next step (#64): never a wait, an offer, the picture
+  // of another station, or a break (#73: after "Nghỉ tay một chút, ăn nắm cơm đã.", a wave said
+  // it again). The next move of the ladder that helps, at the help level.
+  const helps = (m) => !NO_HELP.has(m) && m !== 'picture' && m !== 'break';
+  if (!helps(move)) {
+    const ladder = [...new Set([...(fam.ladders[diag] ?? []), ...(fam.ladders.miss ?? [])])].filter(helps);
+    move = ladder[Math.min(ladder.length - 1, Math.max(0, st.level - 1))] ?? 'show';
+  }
   st.helped[diag] = true;
   st.pending = { diagnosis: diag, move, pBefore: pL ?? null };
   return { when: 'after', diagnosis: diag, move };

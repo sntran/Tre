@@ -641,3 +641,9 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **Please check:** "hình tròn có mặt người" for a child of six.
 - **The card of a new print is spoken:** `note.new` is now "Sổ tay có tranh mới: {name}." (for example "Sổ tay có tranh mới: Con vịt."), in place of "Sổ tay có một tranh mới: {name}.". The voice says the card in its turn, and the card shows a small picture of the notebook (`art/ui/notebook.svg`). The card of a print of a math skill (for example "Cộng trong phạm vi 10") shows with no voice: the village has no math operation word.
 - **Please check:** "Sổ tay có tranh mới" for a child of six. The card of a math skill still shows the name of the skill as text in the village: is that good, or should that card not show in the village?
+
+## Every line is heard (#73)
+
+- **The escape of the fish has a line of the world:** `fisher.escape` ("Chỗ này hở quá, cá chui ra mất."), the same words as `mentor.fisher.mark`. It comes each time the fish swim out, at each level of help.
+- **A late quench says what the iron does next:** `smith.bend.late` is now "Sắt nguội mất rồi, nên cong. Sắt vào lò, lát nữa lại đỏ." ("The iron got cold, so it bent. The iron goes into the fire, and soon it is red again."), in place of "Sắt nguội mất rồi, nên cong.".
+- **Please check:** "Sắt vào lò, lát nữa lại đỏ." for a child of six.
