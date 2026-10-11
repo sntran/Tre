@@ -1,0 +1,375 @@
+{
+ "about": "#83: the same places with the view of now and the view before: the start and a walk, a pinch to the far view and a walk back to the near view, the mat of the teacher, the anvil of the smith, the row of the fisher, the beds of the healer, the stem of the woodcutter and its pieces, the bridge, and the raid at the gate.",
+ "start": "?story=trial-scholar",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "start"
+  },
+  {
+   "tap": [
+    195,
+    330
+   ],
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "shot": "walking"
+  },
+  {
+   "pinch": 0.35,
+   "after": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "a-pinch-shows-the-far-view"
+  },
+  {
+   "tap": [
+    195,
+    520
+   ],
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "a-walk-brings-the-near-view-back"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "teacher-the-mat-and-the-heap"
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "teacher-rods-on-the-mat"
+  },
+  {
+   "goto": "?story=trial-smith",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-hot')",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "smith-the-anvil-and-the-trough"
+  },
+  {
+   "goto": "?story=trial-fisher",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 90
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "fisher-the-whole-row"
+  },
+  {
+   "goto": "?story=trial-healer",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "healer-the-beds-and-the-basket"
+  },
+  {
+   "goto": "?story=trial-woodcutter",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.first')",
+   "timeout": 90
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "woodcutter-the-stem"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'woodcutter.piece')",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "woodcutter-the-pieces"
+  },
+  {
+   "goto": "?story=mentor-bridge",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "bridge-the-gap-and-the-piles"
+  },
+  {
+   "goto": "?story=raid-first-sling",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "scouts"
+   },
+   "taps": 10
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "person": "scouts"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && !r.result && r.enemies.length >= 1); })()",
+   "timeout": 180
+  },
+  {
+   "wait": 6
+  },
+  {
+   "shot": "raid-the-posts-and-the-enemies"
+  }
+ ]
+}

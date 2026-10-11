@@ -1,0 +1,232 @@
+{
+ "about": "#83 at night: the same places with the view of now and the view before: the start, the mat of the teacher, the row of the fisher, the stem of the woodcutter, and the raid at the gate.",
+ "start": "?story=trial-scholar&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "night-start"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "night-teacher-the-mat-and-the-heap"
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "night-teacher-rods-on-the-mat"
+  },
+  {
+   "goto": "?story=trial-fisher&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 90
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "night-fisher-the-whole-row"
+  },
+  {
+   "goto": "?story=trial-woodcutter&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.first')",
+   "timeout": 90
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "night-woodcutter-the-stem"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'woodcutter.piece')",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "night-woodcutter-the-pieces"
+  },
+  {
+   "goto": "?story=raid-first-sling&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "scouts"
+   },
+   "taps": 10
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "person": "scouts"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && !r.result && r.enemies.length >= 1); })()",
+   "timeout": 180
+  },
+  {
+   "wait": 6
+  },
+  {
+   "shot": "night-raid-the-posts-and-the-enemies"
+  }
+ ]
+}
