@@ -10,6 +10,7 @@ Chúng tôi viết cho các bậc cha mẹ và cho bất kỳ ai muốn biết v
 
 | Ngày | Bài viết |
 | --- | --- |
+| 11/10/2026 | [Một câu bằng tiếng Anh](2026-10-11-one-line-in-english.vi.md) |
 | 9/10/2026 | [Đúng rồi, mà không ai nói](2026-10-09-right-and-nobody-said-so.vi.md) |
 | 8/10/2026 | [Một lần đếm bị cắt ngang](2026-10-08-a-count-that-is-cut.vi.md) |
 | 8/10/2026 | [Cái nút biết trước đáp án](2026-10-08-the-button-knew-the-answer.vi.md) |

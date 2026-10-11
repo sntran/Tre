@@ -245,7 +245,7 @@ Báo cáo nghiên cứu trong `docs/research/learning-by-doing.md` tập hợp c
 
 **Phản hồi và thất bại**
 
-12. **Thế giới cho thấy kết quả trong vòng một giây, và cho thấy vì sao.** Cây cầu cho thấy tấm ván nào bị hụt. Mũi tên cho thấy nó rơi ở đâu. Phản hồi về nhiệm vụ và quá trình có hiệu quả gấp đôi một dấu đúng-hay-sai (Wisniewski, Zierer and Hattie); phản hồi tức thì tốt hơn phản hồi trì hoãn với người mới học (Shute). Sau một lần thử chưa đúng, thế giới cho thấy và nói số đếm của chính việc trẻ đã làm (que trên chiếu, từng hàng trong giỏ) trước tiên, ở mọi mức giúp đỡ, rồi người hướng dẫn mới giúp. Một câu nói điều đã xảy ra không bao giờ bị cắt hay bị câu sau thay chỗ. Khi thế giới sửa việc (que thừa trở về đống), người đó nói số đếm của việc lúc này, và không có giúp đỡ nào khi việc đã đúng ([nhật ký](devlog/2026-10-09-right-and-nobody-said-so.vi.md)).
+12. **Thế giới cho thấy kết quả trong vòng một giây, và cho thấy vì sao.** Cây cầu cho thấy tấm ván nào bị hụt. Mũi tên cho thấy nó rơi ở đâu. Phản hồi về nhiệm vụ và quá trình có hiệu quả gấp đôi một dấu đúng-hay-sai (Wisniewski, Zierer and Hattie); phản hồi tức thì tốt hơn phản hồi trì hoãn với người mới học (Shute). Sau một lần thử chưa đúng, thế giới cho thấy và nói số đếm của chính việc trẻ đã làm (que trên chiếu, từng hàng trong giỏ) trước tiên, ở mọi mức giúp đỡ, rồi người hướng dẫn mới giúp. Một câu nói điều đã xảy ra không bao giờ bị cắt hay bị câu sau thay chỗ. Khi thế giới sửa việc (que thừa trở về đống), người đó nói số đếm của việc lúc này, và không có giúp đỡ nào khi việc đã đúng ([nhật ký](devlog/2026-10-09-right-and-nobody-said-so.vi.md)). Không nhiệm vụ nào trở thành không làm được sau một lần thử: khi đồ của nhiệm vụ hết, người đó mang thêm, và bản ghi giữ lại số đã dùng.
 13. **Thế giới lên tiếng, không bao giờ là người chấm điểm.** Không có "sai", không có dấu X đỏ, không khen ngợi, không so sánh với trẻ khác. Phản hồi nhắm vào bản thân người học khiến một phần ba các can thiệp phản hồi trở nên có hại (Kluger and DeNisi).
 14. **Thất bại thì rẻ, riêng tư, và tức thì.** Hoàn tác miễn phí. Thử lại chỉ một lần chạm và dưới hai giây. Số lần thử được ẩn đi. Thông báo thua nêu tên điều cần thay đổi, không bao giờ nêu tên đứa trẻ (Celeste; Zoombinis).
 
@@ -482,7 +482,7 @@ Trận đánh vẫn mở ở mọi giai đoạn. Người chơi lớn hơn có t
 
 **Ngôn ngữ:**
 
-- Người chơi chọn tiếng Việt hoặc tiếng Anh cho toàn bộ trò chơi: chữ, giọng nói và phần trợ giúp.
+- Người chơi chọn tiếng Việt hoặc tiếng Anh cho toàn bộ trò chơi: chữ, giọng nói và phần trợ giúp. Trong game, trẻ có thể bấm để nghe một câu bằng ngôn ngữ kia (rồi câu đó được nói lại bằng ngôn ngữ của game), và có thể đổi cả game trong menu. Cha mẹ có thể tắt từng cái. Một câu bằng ngôn ngữ mạnh hơn giúp trẻ hiểu, nhưng con của người nhập cư khi được chọn tự do thường chuyển hẳn sang ngôn ngữ của số đông ([nhật ký](devlog/2026-10-11-one-line-in-english.vi.md)).
 - Toàn bộ chữ nằm trong các tệp ngôn ngữ theo khóa (key). Không có chữ nào trong mã nguồn.
 - Tên người, tên địa danh và tên gọi giữ nguyên tiếng Việt có dấu ở cả hai ngôn ngữ, ví dụ Thánh Gióng và Văn Miếu. Chế độ tiếng Anh hiện nghĩa ngắn gọn ở lần đầu xuất hiện.
 - Giọng nói dùng Web Speech API trước. Về sau có thể thay bằng tệp giọng thu sẵn, từng khóa một.
@@ -517,7 +517,7 @@ Mọi dữ liệu nằm lại trên thiết bị. Không có tài khoản, khôn
 - **Mã xuất:** phụ huynh có thể xuất hồ sơ thành tệp hoặc một đoạn mã chữ ngắn, và nhập vào thiết bị khác.
 - **Cuộc phiêu lưu mới và điểm khôi phục:** nút "Cuộc phiêu lưu mới" luôn có trên màn hình đầu; trẻ không bao giờ thấy ô lưu. Game giữ bản lưu của ba bình minh gần nhất của mỗi hồ sơ làm điểm khôi phục; cha mẹ có thể quay lại một điểm, đổi tên, xuất mã hoặc xóa hồ sơ sau cổng cha mẹ.
 - **Cổng phụ huynh:** khu vực phụ huynh chỉ mở khi phụ huynh giữ một nút trong 3 giây và trả lời một câu hỏi đơn giản dành cho người lớn.
-- **Cài đặt phụ huynh:** ngôn ngữ, giới hạn thời gian mỗi ngày, âm thanh và nhạc, mức độ nặng nhẹ khi thua, và trình chỉnh sửa câu hỏi phụ huynh.
+- **Cài đặt phụ huynh:** ngôn ngữ (và trẻ có được đổi ngôn ngữ trong game không), giới hạn thời gian mỗi ngày, âm thanh và nhạc, mức độ nặng nhẹ khi thua, và trình chỉnh sửa câu hỏi phụ huynh.
 - **Giới hạn thời gian:** khi hết giờ, nhân vật về nhà nghỉ ngơi. Trò chơi lưu lại và kết thúc ở một điểm yên bình, không bao giờ giữa trận đánh.
 - **Trang phụ huynh:** hiện mức của từng kỹ năng, các kỳ thi đã đỗ và các kỹ năng cần luyện thêm.
 

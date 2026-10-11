@@ -246,7 +246,7 @@ The research report in `docs/research/learning-by-doing.md` collects the evidenc
 
 **Feedback and failure**
 
-12. **The world shows the result within one second, and shows why.** The bridge shows which plank fell short. The arrow shows where it landed. Feedback about the task and the process has twice the effect of a right-or-wrong mark (Wisniewski, Zierer and Hattie); immediate feedback beats delayed feedback for novices (Shute). After a wrong try, the world first shows and says the count of the child's own work (the rods on the mat, each row of the basket), at each level of help, and only then the mentor helps. A line that says what happened is never cut or replaced by a later line. When the world fixes the work (the extra rods go back to the heap), the person says the count of the work now, and no help comes while the work is right ([devlog](devlog/2026-10-09-right-and-nobody-said-so.md)).
+12. **The world shows the result within one second, and shows why.** The bridge shows which plank fell short. The arrow shows where it landed. Feedback about the task and the process has twice the effect of a right-or-wrong mark (Wisniewski, Zierer and Hattie); immediate feedback beats delayed feedback for novices (Shute). After a wrong try, the world first shows and says the count of the child's own work (the rods on the mat, each row of the basket), at each level of help, and only then the mentor helps. A line that says what happened is never cut or replaced by a later line. When the world fixes the work (the extra rods go back to the heap), the person says the count of the work now, and no help comes while the work is right ([devlog](devlog/2026-10-09-right-and-nobody-said-so.md)). A task never becomes impossible after a try: when the things of a task run out, the person brings more, and the record keeps the count.
 13. **The world speaks, never a grader.** No "wrong", no red X, no praise, no comparison with other children. Feedback about the self made one third of feedback interventions harmful (Kluger and DeNisi).
 14. **Failure is cheap, private, and instant.** Undo is free. A retry is one tap and under two seconds. Attempt counts are hidden. A defeat message names what to change, never the child (Celeste; Zoombinis).
 
@@ -484,7 +484,7 @@ Battles stay open at all stages. An older player can fight, build, or do both.
 
 **Language:**
 
-- The player chooses Vietnamese or English for the full game: text, voice, and help.
+- The player chooses Vietnamese or English for the full game: text, voice, and help. In the game, the child can hear one line in the other language with a tap (then the line comes again in the language of the game), and can change the whole game in the menu. The parent can turn off each of the two. A line in the stronger language helps a child understand, but children of immigrants who choose freely often move to the majority language for good ([devlog](devlog/2026-10-11-one-line-in-english.md)).
 - All text is in language files with keys. There is no text in the code.
 - Names of people, places, and titles stay in Vietnamese with marks in both languages, for example Thánh Gióng and Văn Miếu. English mode shows a short meaning the first time.
 - Voice uses the Web Speech API first. Recorded voice files can replace it later, key by key.
@@ -519,7 +519,7 @@ All data stays on the device. There are no accounts, no server, no ads, and no a
 - **Export code:** a parent can export a profile as a file or a short text code, and import it on another device.
 - **New adventure and restore points:** "Cuộc phiêu lưu mới" is always on the title screen; the child never sees save slots. The game keeps the save of the last three dawns of each profile as restore points, and a parent can rewind to one, rename, export, or delete a profile behind the parent gate.
 - **Parent gate:** the parent area opens only after a parent holds a button for 3 seconds and answers a simple adult question.
-- **Parent settings:** language, time limit per day, sound and music, difficulty of losses, and the parent question editor.
+- **Parent settings:** language (and whether the child can change it in the game), time limit per day, sound and music, difficulty of losses, and the parent question editor.
 - **Time limit:** when the time is over, the hero goes home to rest. The game saves and ends at a calm point, never in the middle of a battle.
 - **Parent page:** shows the level of each skill, the exams passed, and the skills to practice.
 
