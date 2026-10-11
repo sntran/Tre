@@ -65,6 +65,10 @@
       "task": "id",
       "changed": "bool"
     },
+    "lang": {
+      "what": ["line", "switch"],
+      "to": ["vi", "en"]
+    },
     "ask": {
       "task": "id",
       "when": ["before", "after"],

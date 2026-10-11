@@ -1,6 +1,6 @@
 // Voice. speak(key) plays a recorded file from audio/<lang>/ when it exists.
 // If no file exists, it uses the Web Speech API.
-import { lang, say } from './i18n.js';
+import { lang, say, sayOther, otherLang } from './i18n.js';
 import { chooseVoice } from '../core/voices.js';
 
 const recorded = {};
@@ -84,6 +84,12 @@ export function speak(key, params = null, { force = false, queue = false, voice 
     return;
   }
   speakText(say(key, params), code, { queue: true, voice, force: true, onEnd });
+}
+
+// Say one line in the other language (#82), in the voice of its speaker. onEnd: when it ends.
+export function speakOther(key, params = null, { voice = 'narrator', onEnd = null } = {}) {
+  stop();
+  speakText(sayOther(key, params), otherLang(), { voice, force: true, onEnd });
 }
 
 // onEnd of a line that nothing speaks (the voice is off, or the device has no voice): soon.

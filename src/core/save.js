@@ -639,6 +639,8 @@ function validateSettings(settings, v) {
   if (!['vi', 'en'].includes(settings.lang)) fail('settings.lang');
   num(settings.timeLimit, 'settings.timeLimit', 0, 24 * 60);
   for (const k of ['sound', 'music', 'voice']) bool(settings[k], `settings.${k}`);
+  // The choices of the language for the child (#82); an older save has none (on).
+  for (const k of ['langSwitch', 'otherLine']) if (settings[k] !== undefined) bool(settings[k], `settings.${k}`);
   if (!['auto', 'none', 'small', 'normal'].includes(settings.loss)) fail('settings.loss');
   list(settings.questions, 'settings.questions', LIMITS.questions);
   for (const q of settings.questions) validateQuestion(q, v);

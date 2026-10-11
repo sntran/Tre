@@ -198,6 +198,13 @@ export function weeklyNote(rollups, profile, week, data = {}) {
   const together = TOGETHER.map((id) => [id, W.acts[id]?.minutes ?? 0]).filter(([, m]) => m > 0).sort((a, b) => b[1] - a[1])[0];
   if (together) line(2, `parent.week.together.${together[0]}`);
 
+  // 8. The language (#82): the lines that the child heard in the other language, and the changes
+  // of the language in the menu. No line that says 0.
+  const [heard, changed] = W.lang ?? [0, 0];
+  if (heard && changed) line(9, 'parent.week.lang', { lines: count('lines', heard), times: count('times', changed) });
+  else if (heard) line(9, 'parent.week.langLines', { lines: count('lines', heard) });
+  else if (changed) line(9, 'parent.week.langSwitch', { times: count('times', changed) });
+
   // The lines that matter most, in the order of the note.
   const lines = found.slice().sort((a, b) => b.prio - a.prio || a.at - b.at).slice(0, MAX_LINES).sort((a, b) => a.at - b.at).map((x) => x.l);
 

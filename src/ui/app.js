@@ -329,6 +329,18 @@ export async function startApp(root) {
         button(t('ui.continue'), close, { cls: 'btn big' }),
         // The notebook of prints (#8).
         button(t('note.title'), () => { close(); modals.notebook?.(c); }, { cls: 'btn paper', icon: 'ui/seal' }),
+        // The language of the whole game (#82), when the parent allows it (settings.langSwitch).
+        c.profile?.settings?.langSwitch !== false ? h('div', { class: 'menu-lang' }, [
+          h('span', { class: 'menu-lang-name', text: t('ui.lang.title') }),
+          ...['vi', 'en'].map((code) => button(t(`lang.${code}`), async () => {
+            if (code !== c.profile.settings.lang) {
+              c.log?.('lang', { what: 'switch', to: code });
+              await c.setLanguage(code);
+              await c.save('lang');
+            }
+            close();
+          }, { cls: `btn paper${code === c.profile.settings.lang ? ' chosen' : ''}` })),
+        ]) : null,
         button(t('ui.parents'), () => { close(); c.openParent(); }, { cls: 'btn paper', icon: 'ui/lock' }),
         button(t('ui.save.exit'), async () => { close(); await c.save('exit'); c.toast('ui.saved'); c.go('title'); }, { cls: 'btn paper' }),
       ]),

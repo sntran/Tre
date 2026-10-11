@@ -12,6 +12,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   voice: true,
   loss: 'auto', // 'auto' | 'none' | 'small' | 'normal'
   questions: [], // questions from the parent editor
+  langSwitch: true, // the child can change the language of the game in the menu (#82)
+  otherLine: true, // the child can hear one line in the other language (#82)
 });
 
 export function createProfile({ id, name, gender = 'boy', skin = 1, face = 1, hair = 1, clothes = 1, grade = 1, lang = 'vi', now = 0, seed = 1 }) {

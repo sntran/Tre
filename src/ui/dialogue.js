@@ -3,8 +3,8 @@
 import { createDialogue } from '../core/dialogue.js';
 import { applyEffects, conditionState } from '../core/game.js';
 import { h, img, button } from './dom.js';
-import { t, tg, lang, regionalWords } from './i18n.js';
-import { speak, stop } from './speak.js';
+import { t, tg, lang, regionalWords, tOther, otherLang } from './i18n.js';
+import { speak, stop, speakOther } from './speak.js';
 import { voiceOf } from '../core/voices.js';
 import { namesOf, talkGloss } from '../core/naming.js';
 import { newGlosses } from '../core/speech.js';
@@ -91,6 +91,27 @@ function facesRow(ctx, list = []) {
 // A dialogue box that shows the lines that come from elsewhere (the session of the village, or
 // runDialogue). line: { speaker, textKey, params, choices (text keys), mark }. next(): the child
 // goes on; choose(i): the child picks a choice.
+// One line in the other language (#82): the line shows and is said in the other language, and then
+// it is said again in the language of the game, which stays. The parent can turn the button off
+// (settings.otherLine).
+export const otherLineOn = (ctx) => ctx.profile?.settings?.otherLine !== false;
+export function otherOnce(ctx, el, key, params, voice) {
+  const original = el.textContent;
+  el.textContent = tOther(key, params);
+  el.lang = otherLang();
+  ctx.log?.('lang', { what: 'line', to: otherLang() });
+  speakOther(key, params, {
+    voice,
+    onEnd: () => {
+      if (el.isConnected) {
+        el.textContent = original;
+        el.removeAttribute('lang');
+      }
+      speak(key, params, { force: true, voice });
+    },
+  });
+}
+
 export function createDialogueBox(ctx, { next, choose }) {
   const layer = h('div', { class: 'dialogue-layer' });
   const box = h('div', { class: 'dialogue', role: 'dialog', 'aria-live': 'polite' });
@@ -129,13 +150,15 @@ export function createDialogueBox(ctx, { next, choose }) {
       narrator ? null : h('div', { class: 'speaker', text: speakerName(ctx, line.speaker) }),
       mark,
     ]);
+    const lineEl = h('p', { class: narrator ? 'line narrator' : 'line', text });
     const body = h('div', { class: 'dialogue-body' }, [
       head,
-      h('p', { class: narrator ? 'line narrator' : 'line', text }),
+      lineEl,
       gloss ? h('p', { class: 'speech-gloss', text: gloss }) : null,
     ]);
     box.append(body);
     const tools = h('div', { class: 'dialogue-tools' }, [
+      otherLineOn(ctx) ? button(otherLang().toUpperCase(), () => otherOnce(ctx, lineEl, line.textKey, params, voice), { cls: 'icon-btn other-lang', aria: t('ui.otherLine') }) : null,
       button(null, () => speak(line.textKey, params, { force: true, voice }), { cls: 'icon-btn', icon: 'ui/speak', aria: t('ui.listen') }),
     ]);
     box.append(tools);

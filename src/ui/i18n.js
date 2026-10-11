@@ -1,5 +1,5 @@
 // Load the language files and put text into the DOM.
-import { createI18n } from '../core/i18n.js';
+import { createI18n, otherLine } from '../core/i18n.js';
 import { glossesOf } from '../core/speech.js';
 
 const dicts = {};
@@ -36,6 +36,8 @@ export async function setLanguage(lang) {
   const dict = await loadDict(lang);
   // Use the other language only when a key is missing. A test makes sure this does not occur.
   const other = lang === 'vi' ? 'en' : 'vi';
+  // The other language is ready too: the child can hear one line in it (#82).
+  await loadDict(other).catch(() => null);
   active = createI18n(dict, lang, dicts[other] ?? null);
   active.setSpeech(speech);
   document.documentElement.lang = lang;
@@ -69,6 +71,24 @@ export function setChosenNames(names) {
 // Short text with the glossary names only, with no meaning (for example for the quest bar).
 export function tn(key, params) {
   return active.plain(t(key, params), chosenNames);
+}
+
+// One line in the other language (#82): the language of the game stays. The names stay as they
+// are, and a word of a count (num.*) stays in the language of the game.
+export const otherLang = () => (active.lang === 'vi' ? 'en' : 'vi');
+function otherOf() {
+  const code = otherLang();
+  const other = createI18n(dicts[code] ?? {}, code, dicts[active.lang] ?? null);
+  other.setSpeech(null);
+  return other;
+}
+// The text of a line in the other language, with the names only (for the box and the bubbles).
+export function tOther(key, params) {
+  return otherLine(active, otherOf(), key, { ...globals, ...(params ?? {}) }, chosenNames);
+}
+// The text of a line in the other language, for the voice.
+export function sayOther(key, params) {
+  return otherLine(active, otherOf(), key, { ...globals, ...(params ?? {}) }, chosenNames, true);
 }
 
 // Text for the voice.

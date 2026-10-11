@@ -489,6 +489,10 @@ async function parentArea(ctx, opts = {}) {
         toggleRow(t('parent.sound'), s.sound, (v) => { s.sound = v; ctx.bus.emit('settings', s); save(); }),
         toggleRow(t('parent.music'), s.music, (v) => { s.music = v; ctx.bus.emit('settings', s); save(); }),
         toggleRow(t('parent.voice'), s.voice, (v) => { s.voice = v; setVoiceEnabled(v); save(); }),
+        // The language in the game for the child (#82): the switch in the menu, and one line in the
+        // other language. On when the save has no choice.
+        toggleRow(t('parent.langSwitch'), s.langSwitch !== false, (v) => { s.langSwitch = v; save(); }),
+        toggleRow(t('parent.otherLine'), s.otherLine !== false, (v) => { s.otherLine = v; save(); }),
         selectField(t('parent.loss'), ['auto', 'none', 'small', 'normal'].map((v) => [v, t(`parent.loss.${v}`)]), s.loss, (v) => { s.loss = v; save(); }),
         h('p', { class: 'muted', text: t('parent.loss.note') }),
       );

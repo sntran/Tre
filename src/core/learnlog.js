@@ -328,6 +328,7 @@ const emptyWeek = () => ({
   recall: [0, 0, 0, 0, 0, 0], // the seconds of right commits of the facts of the table, in buckets
   quiz: [0, 0], // the short questions of the teacher on the facts: [questions, right]
   quizKnown: [0, 0], // the same, on the facts that are confident in the world
+  lang: [0, 0], // the language (#82): [lines heard in the other language, changes of the language]
 });
 
 // Add two plain values: numbers add, lists of numbers add item by item, objects add key by key.
@@ -385,6 +386,7 @@ export function weekRollups(events, { tz = 0, signals = SIGNALS, activities = {}
     };
     for (const ev of list) {
       const w = W(ev.t);
+      if (ev.type === 'lang') w.lang[ev.what === 'switch' ? 1 : 0] += 1;
       if (ev.type === 'attempt' && ev.phase === 'commit') {
         const a = activityOf(ev.task, activities);
         const r = act(w, a);

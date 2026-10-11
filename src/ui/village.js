@@ -29,13 +29,13 @@ import { VIEW, SAFE, TALK_SAFE, viewSize, inView, leadFocus } from '../world/vie
 import { heroLook, thingLook } from '../world/figures.js';
 import { tapTarget, thingUnder } from '../world/hit.js';
 import { h, img, button } from './dom.js';
-import { t, tn, setSpeech, lang } from './i18n.js';
+import { t, tn, setSpeech, lang, otherLang } from './i18n.js';
 import { speechTable, speechWay } from '../core/speech.js';
 import { speak, speaking } from './speak.js';
 import { bubbleLine, createVoiceQueue, doneBy } from '../core/bubblevoice.js';
 import { voiceOf } from '../core/voices.js';
 import { namesOf } from '../core/naming.js';
-import { createDialogueBox, glossLine } from './dialogue.js';
+import { createDialogueBox, glossLine, otherOnce, otherLineOn } from './dialogue.js';
 import { printOf } from './notebook.js';
 import { modals } from './registry.js';
 import { createRaidView } from './raid.js';
@@ -299,6 +299,7 @@ export async function mountVillage(ctx, params = {}) {
   // A line of a talk that names the round marks with a face (#77: "hình tròn có mặt người"): while
   // it shows, the marks show over the talk and pulse, so that the child sees what the words name.
   let marksLine = false;
+  let boxLine = null; // the line that the talk box shows now (#82: a change of the language shows it again)
   let brightGhost = null; // the ghost of the act of the button that shows over the bodies (#80)
   let alive = true;
   ctx.syncWorld = session.syncSave;
@@ -668,6 +669,7 @@ export async function mountVillage(ctx, params = {}) {
       bubbles = bubbles.filter((x) => x.id !== `npc:${ev.speaker}` || x.icon);
       box ??= createDialogueBox(ctx, { next: () => send({ type: 'next' }), choose: (n) => send({ type: 'choose', n }) });
       box.show(ev);
+      boxLine = ev;
       return;
     }
     if (ev.screen === 'callout') {
@@ -1276,7 +1278,14 @@ export async function mountVillage(ctx, params = {}) {
       bubbles[i].el.remove();
       bubbles.splice(i, 1);
     }
-    const el = icon ? h('div', { class: 'world-bubble icon' }, [img(`ui/${icon}`, 'bubble-icon')]) : h('div', { class: 'world-bubble', text });
+    // A spoken line (not a word of a count) has a small button with the other language (#82).
+    const textEl = h('span', { class: 'bubble-text', text });
+    const other = !icon && line && line.kind !== 'count' && otherLineOn(ctx) ? h('button', { class: 'other-lang', type: 'button', text: otherLang().toUpperCase(), 'aria-label': t('ui.otherLine') }) : null;
+    other?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      otherOnce(ctx, textEl, line.key, line.params, line.voice);
+    });
+    const el = icon ? h('div', { class: 'world-bubble icon' }, [img(`ui/${icon}`, 'bubble-icon')]) : h('div', { class: 'world-bubble' }, [textEl, other]);
     if (line) {
       el.classList.add('spoken');
       el.addEventListener('click', (e) => {
@@ -2208,6 +2217,8 @@ export async function mountVillage(ctx, params = {}) {
   requestAnimationFrame(frame);
   // Show the new language in the top bar after a change in the parent area.
   const offLang = ctx.bus.on('lang', () => {
+    // The open line of a talk shows (and is said) in the new language (#82).
+    if (box && boxLine) box.show(boxLine);
     heroFace.setAttribute('aria-label', t('ui.home'));
     menuBtn.setAttribute('aria-label', t('ui.menu'));
     jumpBtn.setAttribute('aria-label', t('ui.jump'));

@@ -697,3 +697,10 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The iron of the smith:** the smith gives 2 iron and the woodcutter 3 bamboo, in place of rice. The iron horse still needs 6 iron, so the child still finds the lumps of ore; the pips of that step start at the iron that the child has.
 - **The map:** the number of a chapter is gone (`world.chapter`); the card of a region shows the name of its era ("Thời Hùng Vương").
 - **Please check:** "Tranh mới: Con gà." for a child of six, and "Lò cò" as the print of the hopscotch.
+
+## The language in the game (#82)
+
+- **The parent area:** `parent.langSwitch` ("Con được đổi ngôn ngữ trong game") and `parent.otherLine` ("Con được nghe một câu bằng ngôn ngữ kia").
+- **The menu:** `ui.lang.title` ("Ngôn ngữ / Language"); the button of a line says `ui.otherLine` ("Nghe câu này bằng tiếng Anh") to a screen reader.
+- **The weekly note:** `parent.week.lang` ("{name} nghe {lines} bằng ngôn ngữ kia, và đổi ngôn ngữ của game {times}."), `parent.week.langLines`, `parent.week.langSwitch`, and `parent.count.lines` ("{n} câu").
+- **Please check:** "ngôn ngữ kia" for a parent, and "game" in the words of the parent area.
