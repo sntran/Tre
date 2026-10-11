@@ -95,19 +95,38 @@ function facesRow(ctx, list = []) {
 // it is said again in the language of the game, which stays. The parent can turn the button off
 // (settings.otherLine).
 export const otherLineOn = (ctx) => ctx.profile?.settings?.otherLine !== false;
+// The line in the other language shows for at least this time, and for a long line longer (a
+// device with no voice ends the voice at once).
+const OTHER_SHOW_MS = 3500;
+const OTHER_CHAR_MS = 60;
 export function otherOnce(ctx, el, key, params, voice) {
+  // A second tap while the other line shows does nothing.
+  if (el.dataset.other) return;
+  el.dataset.other = '1';
   const original = el.textContent;
   el.textContent = tOther(key, params);
   el.lang = otherLang();
   ctx.log?.('lang', { what: 'line', to: otherLang() });
+  let spoken = false;
+  let shown = false;
+  const back = () => {
+    if (!spoken || !shown) return;
+    if (el.isConnected) {
+      el.textContent = original;
+      el.removeAttribute('lang');
+    }
+    delete el.dataset.other;
+    speak(key, params, { force: true, voice });
+  };
+  setTimeout(() => {
+    shown = true;
+    back();
+  }, Math.max(OTHER_SHOW_MS, el.textContent.length * OTHER_CHAR_MS));
   speakOther(key, params, {
     voice,
     onEnd: () => {
-      if (el.isConnected) {
-        el.textContent = original;
-        el.removeAttribute('lang');
-      }
-      speak(key, params, { force: true, voice });
+      spoken = true;
+      back();
     },
   });
 }

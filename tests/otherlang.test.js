@@ -123,7 +123,10 @@ test('the buttons: the talk box and a spoken bubble have the button of the other
   assert.match(dialogue, /otherLineOn\(ctx\) \? button\(otherLang\(\)\.toUpperCase\(\)/);
   assert.match(dialogue, /export const otherLineOn = \(ctx\) => ctx\.profile\?\.settings\?\.otherLine !== false;/);
   // The line in the other language first, and then again in the language of the game.
-  assert.match(dialogue, /speakOther\(key, params, \{[\s\S]*onEnd: \(\) => \{[\s\S]*speak\(key, params, \{ force: true, voice \}\);/);
+  assert.match(dialogue, /const back = \(\) => \{\n\s+if \(!spoken \|\| !shown\) return;[\s\S]*speak\(key, params, \{ force: true, voice \}\);/);
+  // The other line shows for a time also on a device with no voice, and a second tap does nothing.
+  assert.match(dialogue, /Math\.max\(OTHER_SHOW_MS, el\.textContent\.length \* OTHER_CHAR_MS\)/);
+  assert.match(dialogue, /if \(el\.dataset\.other\) return;/);
   const village = source('src/ui/village.js');
   assert.match(village, /line\.kind !== 'count' && otherLineOn\(ctx\)/);
   assert.match(village, /if \(box && boxLine\) box\.show\(boxLine\);/);
