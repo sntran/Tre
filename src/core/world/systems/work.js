@@ -234,7 +234,7 @@ export function setupTrial(world, def, level, env, opts = {}) {
       addEntity(world, { id: `sign:${def.id}:bed-${kind}`, keep: true, position: { x: at.x - 1, y: at.y, z: at.z - 1, facing: 0 }, look: `herb-sign-${kind}` });
     });
     const b = P(def.places.basket);
-    addEntity(world, { id: 'zone:basket', keep: true, zone: { id: 'basket', task: owner, rule: 'basket', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, items: [], x: b.x, y: b.y, z: b.z, rect: rect(b, 3 * BASKET_PART, 1.6) }, position: { x: b.x + 1.5 * BASKET_PART, y: b.y, z: b.z - 1.5, facing: 0 } });
+    addEntity(world, { id: 'zone:basket', keep: true, zone: { id: 'basket', task: owner, rule: 'basket', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, each: task.each, items: [], x: b.x, y: b.y, z: b.z, rect: rect(b, 3 * BASKET_PART, 1.6) }, position: { x: b.x + 1.5 * BASKET_PART, y: b.y, z: b.z - 1.5, facing: 0 } });
     addEntity(world, { id: 'basket:healer', keep: true, position: { x: b.x, y: b.y, z: b.z, facing: 0 }, look: 'basket' });
     // Each part of the basket has the picture of its herb on the back wall (#61).
     def.kinds.forEach((kind, k) => addEntity(world, { id: `sign:${def.id}:basket-${kind}`, keep: true, position: { x: b.x + (k + 0.5) * BASKET_PART, y: b.y, z: b.z - 0.1, facing: 0 }, look: `herb-tag-${kind}` }));
@@ -540,6 +540,20 @@ export function canTakeWork(world, thing) {
   return true;
 }
 
+// Can the hero give the basket to the healer now (#79: the button showed the basket, and a press
+// did nothing, because the button and the world had two rules)? The basket has bunches and no
+// count lies in rows, and the hero is next to the basket, or next to the healer while she is at her
+// beds. The button of the session and the give of the world use this one rule.
+const GIVE_AT_BEDS = 16; // half blocks: the healer this near the basket is at her beds
+export function giveReady(world, at) {
+  const tz = trialZone(world, 'healer');
+  const basket = zoneEnt(world, 'basket');
+  if (!tz || tz.zone.done || tz.zone.lay || !basket?.zone.items.length || !at) return false;
+  if (dist(at, basket.position) <= REACH + 4) return true;
+  const healer = query(world, 'person').find((p) => p.person.ref === 'healer' && !p.hidden);
+  return Boolean(healer && dist(at, healer.position) <= REACH + 3 && dist(healer.position, basket.position) <= GIVE_AT_BEDS);
+}
+
 // Has a place of a task room for one more thing now? The mat of the teacher takes MAT_MAX rods
 // (#68: the button showed the put on a full mat, and the press did nothing).
 export function hasRoom(zone) {
@@ -752,9 +766,7 @@ function act(world, e, want, env) {
   } else if (want.act === 'give') {
     const basket = zoneEnt(world, 'basket');
     const healer = query(world, 'person').find((p) => p.person.ref === 'healer');
-    if (!basket || !basket.zone.items.length || (healer && !near(healer.position, REACH + 3))) return;
-    // While the bunches of a wrong give lie in rows for the count, the healer takes no basket.
-    if (tz.zone.lay) return;
+    if (!giveReady(world, e.position)) return;
     const counts = {};
     for (const id of basket.zone.items) {
       const k = getEntity(world, id)?.item.kind.slice(5);

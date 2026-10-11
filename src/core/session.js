@@ -53,7 +53,7 @@ import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
 import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
-import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom } from './world/systems/work.js';
+import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
 import { levelFor, taskOf } from './world/trials.js';
 import { nextLevel } from './practice.js';
@@ -2108,10 +2108,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const show = getEntity(state, `script:${key}`)?.script;
     if (show && SHOW_MOVES.has(show.move) && show.steps.some((st) => /^num\./.test(st.say?.key ?? ''))) return null;
     if (key === 'trial-scholar' && open('scholar') && zoneOf('mat')?.zone.items.length) return { act: 'tie', icon: 'rope', run: () => work('scholar', 'tie') };
-    // The basket is given only at the basket (#74: a walk to the face of the healer ended at the
-    // well, and the basket was given there).
-    const basket = zoneOf('basket');
-    if (key === 'trial-healer' && open('healer') && basket?.zone.items.length && distHb(hero().position, basket.position) <= REACH + 4) return { act: 'give', icon: 'basket', run: () => work('healer', 'give') };
+    // The basket is given at the basket, or to the healer at her beds (#74: a walk to the face of
+    // the healer ended at the well, and the basket was given there; #79: the button and the world
+    // had two rules, and a press did nothing). One rule: giveReady.
+    if (key === 'trial-healer' && open('healer') && giveReady(state, hero().position)) return { act: 'give', icon: 'basket', run: () => work('healer', 'give') };
     const wood = key === 'trial-woodcutter' ? open('woodcutter') : null;
     if (wood?.zone.marks?.length && !wood.zone.cut) return { act: 'cut', icon: 'knife', run: () => work('woodcutter', 'cut') };
     if (key === 'trial-plant' && planting.ready() === 'commit' && plotsOf(state)[0]?.plot.form !== 'choose') return { act: 'plant', icon: 'seedling', run: () => work('plant', 'plant') };

@@ -408,6 +408,7 @@
         "first": "mentor.healer.first",
         "mark": "mentor.healer.mark",
         "putKind": "mentor.healer.putKind",
+        "give": "mentor.healer.give",
         "none": "mentor.healer.none",
         "putEach": "healer.put",
         "row": "mentor.healer.row",

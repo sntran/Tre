@@ -92,6 +92,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return Boolean(held?.item && (held.item.task === key || held.item.task === task.tz?.zone.task));
   }
 
+  // Has the basket of the healer bunches of each kind (#79)?
+  function basketHasEach(key, task) {
+    const z = task?.place?.zone;
+    if (!defOf(key)?.lines?.give || z?.rule !== 'basket') return false;
+    const kinds = new Set(itemsOf(task.place).map((e) => e.item.kind));
+    return (z.kinds ?? []).every((k) => kinds.has(`herb-${k}`));
+  }
   // Is the row of the fisher at the float, with no stake in the hands (#78)?
   function rowFull(key, task) {
     const z = task?.place?.zone;
@@ -491,6 +498,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       point(t, stake.position, 2);
       mark(t, stake.position, 3);
       t += 3;
+    } else if (move === 'show' && basketHasEach(key, task)) {
+      // The basket has bunches of each kind: the hint is the give, never another bunch (#79: "Lấy
+      // một bó lá ở luống …" came with two of each in the basket).
+      say(t, defOf(key).lines.give);
+      point(t, task.place.position, 1.4);
+      mark(t, task.place.position, 2.5);
+      if (task.person?.position) point(t + 1.6, task.person.position, 1.4);
+      t += 3;
     } else if (move === 'show') {
       const pile = task.piles[0]?.position ?? task.at;
       say(t, lineOf(key, 'show'));
@@ -695,7 +710,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // front of the basket. She counts each row aloud from one, with a point at each bunch, and a
       // short row has the mark at its empty end.
       const kinds = task.place.zone.kinds;
-      const each = Math.round((info.target ?? kinds.length * 2) / kinds.length);
+      // The number of the task that the child plays now (#79: a wave after a right count of four of
+      // each used two of each, the number of grade 1, and took the right bunches out).
+      const each = task.place.zone.each ?? Math.round((info.target ?? kinds.length * 2) / kinds.length);
       let at = t + 1;
       const lines = defOf(task.key)?.lines ?? {};
       const none = task.byNghe ? null : lines.none;
@@ -866,7 +883,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // The basket: a part of each kind that is short.
       const kinds = task.place?.zone.kinds ?? [];
       // A move with no try just now (a wave, the debug panel): the target of the last try.
-      const each = Math.round((info.target ?? tracks.get(task.key)?.target ?? 0) / Math.max(1, kinds.length));
+      const each = task.place?.zone.each ?? Math.round((info.target ?? tracks.get(task.key)?.target ?? 0) / Math.max(1, kinds.length));
       const counts = Object.fromEntries(kinds.map((k) => [k, itemsOf(task.place).filter((e) => e.item.kind === `herb-${k}`).length]));
       for (const k of kinds) {
         const short = Math.max(0, each - counts[k]);

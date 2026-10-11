@@ -157,7 +157,8 @@
       "nodes": {
         "n1": { "speaker": "healer", "textKey": "dlg.healer.trial.n1", "names": ["zone:bed-ngai"], "next": "n2", "effects": [{ "open": "trial", "id": "healer", "now": true }] },
         "n2": { "speaker": "healer", "textKey": "dlg.healer.trial.n2", "names": ["zone:bed-tiato"], "next": "n3" },
-        "n3": { "speaker": "healer", "textKey": "dlg.healer.trial.n3", "names": ["zone:bed-rauma"], "next": "n4" },
+        "n3": { "speaker": "healer", "textKey": "dlg.healer.trial.n3", "names": ["zone:bed-rauma"], "next": "tap" },
+        "tap": { "speaker": "healer", "textKey": "dlg.healer.trial.tap", "names": ["zone:bed-ngai", "zone:bed-tiato", "zone:bed-rauma"], "next": "n4" },
         "n4": { "speaker": "healer", "textKey": "dlg.healer.trial.n4", "names": ["zone:basket"], "next": "n5" },
         "n5": { "speaker": "healer", "textKey": "dlg.healer.trial.n5" }
       }

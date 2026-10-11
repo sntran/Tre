@@ -64,6 +64,8 @@ export function groundPick(cam, tileMap) {
   };
 }
 
+// The places of a task where a thing lies after a put (a tap must be on the body of the thing).
+const PLACED = new Set(['basket', 'mat', 'hearth', 'share']);
 // The height of a stake of the row of the fisher over the water, for a tap (blocks).
 const STAKE_TALL = 1.2;
 const inBox = (p, b, pad) => p.x >= b.x0 - pad && p.x <= b.x1 + pad && p.y >= b.y0 - pad && p.y <= b.y1 + pad;
@@ -206,7 +208,9 @@ export function tapTarget(p, w) {
   // put goes to the free point nearest to it (#78).
   const found = thingUnder(p, w.cam, w.things);
   const thing = found && !(w.carrying && found.e.item.zone === 'line') ? found : null;
-  if (thing && (thing.inside || !inPlace)) {
+  // A thing on a place of a task (a bunch in the basket, a rod on the mat) is chosen only by a tap on
+  // its body, never by a tap next to it (#79: a tap near the basket took a bunch out).
+  if (thing && (thing.inside || (!inPlace && !PLACED.has(thing.e.item.zone)))) {
     // A person whose body is under the finger and who stands on the thing or in front of it: the
     // tap is for the person (#70: the healer stood on her bed of rau má, and each tap on her chose
     // the bed, so the child could not give the basket).

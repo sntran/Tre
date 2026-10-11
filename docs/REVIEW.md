@@ -676,3 +676,9 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **New lines of the fisher:** `fisher.more` ("Chú mang thêm cọc."), `fisher.full` ("Đủ hàng rồi. Xem nước lên nào!"), and `mentor.fisher.tight` ("Chạm vào cái cọc này, rồi bấm nút lớn để nhổ lên.").
 - **Each help says who put the things:** `mentor.putDone` ("Đặt {n} cái rồi.") is gone. In its place: `mentor.cart.putDone` ("Bác chèn {n} hòn đá."), `mentor.flood.putDone` ("Cô đổ {n} thùng nước."), `mentor.market.putDone` ("Cô đặt {n} phần gạo."), `mentor.duck.putDone` ("Cô mang {n} con vịt về."), `mentor.plant.putDone` ("Cô cắm {n} bó mạ."), `mentor.traps.putDone` ("Chú đặt {n} cái lờ."), and for Nghé `mentor.nghe.putDone` ("Mình đặt {n} cái."). The fisher no longer puts stakes, so he has no such line.
 - **Please check:** "phần gạo" for the help at the market, and "nhổ lên" for a stake of the row.
+
+## The healer: the right number after a wave, and a give that always works (#79)
+
+- **A new first line:** `dlg.healer.trial.tap` ("Chạm vào luống nào, cháu lấy lá luống đó."), after the names of the three beds, with the beds glowing.
+- **The hint with a full basket:** `mentor.healer.give` ("Cháu đến chỗ bà và bấm nút lớn: bà nhận giỏ."), the same words as the last first line.
+- **Please check:** "Chạm vào luống nào, cháu lấy lá luống đó." for a child of six.
