@@ -1174,7 +1174,7 @@ export async function mountVillage(ctx, params = {}) {
   // takes the place of the fixed close views of #69, #74, #75, and #76. In a raid, the posts and the
   // enemies all show. The frame is never closer than FRAME_CLOSE of the near view, and never farther
   // than the far view. A far view that the child chose with a pinch stays until the child walks.
-  const FRAME_CLOSE = 0.6;
+  const FRAME_CLOSE = 0.8;
   const wu = (p) => ({ x: p.x / 2, y: (p.y ?? 0) / 2, z: p.z / 2 });
   function workFrame(heroAt) {
     if (view.state.level !== 0 || hero().riding) return null;

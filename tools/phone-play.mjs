@@ -21,6 +21,7 @@
 //                                place of a task, where the screen shows it
 //   { "tap": { "stem": 4 } }     a tap on the stem of the woodcutter, 4 half blocks from its start
 //   { "tap": { "row": 8 } }      a tap on the row of the fisher, 8 half blocks from its start
+//   { "tap": { "person": "teacher", "dx": 60 } } a tap 60 points to the right of a target
 //   { "tap": { "star": true } }  a tap on the goal star (or the arrow at the edge of the screen)
 //   { "tap": { "star": "healer" } } a tap on the star (or the arrow) with the face of that person
 //   { "walk": { "person": "woodcutter" }, "taps": 12 } taps toward a target until the hero is near it
@@ -371,7 +372,9 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
     await page.waitForFunction(() => window.tre.activeVillage, null, { timeout: 120000 });
     await sleep(3);
   } else if (s.tap !== undefined) {
-    const p = await pointOf(s.tap);
+    // dx, dy: points from the target (a finger beside a person, #84).
+    const at = await pointOf(s.tap);
+    const p = at && !Array.isArray(s.tap) ? [at[0] + (s.tap.dx ?? 0), at[1] + (s.tap.dy ?? 0)] : at;
     if (!p) problems.push(`step ${i}: nothing on the screen for ${JSON.stringify(s.tap)}`);
     else {
       // A tap on free ground that the hero can walk to moves the hero (#53: a long press ended as a

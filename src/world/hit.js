@@ -256,7 +256,7 @@ export function tapTarget(p, w) {
 // hero and the person, or the hero in the middle, at the angle az. The renderer looks at a point
 // 1.5 over the ground (LIFT).
 const LIFT = 1.5;
-const FRAME_CLOSE = 0.6;
+const FRAME_CLOSE = 0.8;
 const WORK_AWAY = 16;
 export function sessionCamera(session, { az = Math.PI / 4, width = 390, height = 844 } = {}) {
   const half = (p) => ({ x: p.x / 2, y: (p.y ?? 0) / 2, z: p.z / 2 });
