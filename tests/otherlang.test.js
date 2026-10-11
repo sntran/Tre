@@ -142,4 +142,6 @@ test('the buttons: the talk box and a spoken bubble have the button of the other
   // The card of a calling stands over the buttons of the talk box, so the button of the other
   // language does not cover it.
   assert.match(source('styles/main.css'), /\.talk-calling \{[^}]*bottom: calc\(100% \+ var\(--touch\) \* 0\.8 \+ 6px\);/);
+  // The head of each panel, with its close button, stays at the top while the panel scrolls.
+  assert.match(source('styles/main.css'), /\.panel > \.panel-head \{ position: sticky; top: calc\(var\(--gap\) \* -1\.4\); z-index: 3; \}/);
 });
