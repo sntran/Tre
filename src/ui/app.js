@@ -345,7 +345,9 @@ export async function startApp(root) {
 
   // The simple menu of the village.
   registerModal('menu', (c) => new Promise((resolve) => {
-    const layer = h('div', { class: 'modal-layer' });
+    // The menu and the parent area stand over an open talk box (#84: the talk box covered the
+    // bottom of the parent area).
+    const layer = h('div', { class: 'modal-layer over-talk' });
     const close = () => { layer.remove(); resolve(); };
     const panel = h('div', { class: 'panel', style: { width: 'min(460px, 100%)' } }, [
       h('div', { class: 'panel-head' }, [h('h2', { text: t('ui.menu') }), button(null, close, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') })]),

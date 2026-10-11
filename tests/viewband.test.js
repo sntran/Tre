@@ -130,3 +130,11 @@ test('the weekly page has the line of the taps only when more than 1 in 5 of at 
   assert.match(source('src/ui/parent.js'), /l\.key === 'parent\.week\.taps' \? button\(t\('parent\.week\.taps\.open'\), \(\) => \{ tab = 'settings';/);
   assert.ok(!/parent\.week\.taps/.test(source('src/ui/village.js')));
 });
+
+test('the menu and the parent area stand over an open talk box', () => {
+  assert.match(source('styles/main.css'), /\.modal-layer\.over-talk \{ z-index: 40; \}/);
+  assert.match(source('styles/main.css'), /\.dialogue-layer \{[^}]*z-index: 30;/);
+  assert.match(source('src/ui/app.js'), /registerModal\('menu'[\s\S]{0,200}class: 'modal-layer over-talk'/);
+  assert.equal(source('src/ui/parent.js').match(/class: 'modal-layer over-talk'/g).length, 2);
+});
+

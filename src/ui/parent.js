@@ -27,7 +27,7 @@ import { setVoiceEnabled } from './speak.js';
 function gate(ctx) {
   const cfg = ctx.data.game.parentGate;
   return new Promise((resolve) => {
-    const layer = h('div', { class: 'modal-layer' });
+    const layer = h('div', { class: 'modal-layer over-talk' });
     const panel = h('div', { class: 'panel parent', style: { width: 'min(560px, 100%)' } });
     const close = (ok) => { layer.remove(); resolve(ok); };
     layer.append(panel);
@@ -144,7 +144,7 @@ function diaryLink() {
 async function parentArea(ctx, opts = {}) {
   const { data } = ctx;
   await new Promise((resolve) => {
-    const layer = h('div', { class: 'modal-layer' });
+    const layer = h('div', { class: 'modal-layer over-talk' });
     const panel = h('div', { class: 'panel parent' });
     const body = h('div');
     const close = () => { layer.remove(); resolve(); };
