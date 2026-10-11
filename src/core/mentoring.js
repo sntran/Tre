@@ -190,7 +190,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     }, fam, cfg);
     if (r.help) log('help', r.help);
     for (const c of r.checks) log('check', { task: key, changed: c.changed });
-    Object.assign(tr, { firstAct: null, lastCommit: t, lastAct: t, acted: false, left: false, target: input.target });
+    Object.assign(tr, { firstAct: null, lastCommit: t, lastAct: t, acted: false, left: false, fixed: false, target: input.target });
     emit({ type: 'mentor', key, diagnosis: r.diagnosis, move: r.move, level: r.level, remembered: r.remembered });
     // The answer of the world to a wrong try comes first, at each help level (#64): the person
     // counts the child's own work on the place (the rods on the mat, each row of the basket) and
@@ -203,6 +203,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (count > 0 && rightAfterExtras(task, input.target)) {
       if (st.pending) st.pending.move = 'fix';
       st.offered = true;
+      // Until the child acts again, a wave gets the next step (#79: the give of the basket).
+      tr.fixed = true;
       return;
     }
     if (count > 0 && r.move === 'mark') return;
@@ -265,6 +267,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const tr = tracks.get(key);
     const t = now();
     tr.acted = true;
+    tr.fixed = false;
     tr.lastAct = t;
     tr.firstAct ??= t;
     // A self-correction: after a check, the child takes a thing back from the place (#64). A put,
@@ -352,8 +355,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (tr) tr.lastWave = now();
     log('ask', { task: key, when: r.when, move: r.move });
     emit({ type: 'mentor', key, diagnosis: r.diagnosis, move: r.move, level: st.level, asked: r.when });
-    const again = afterCount.delete(key) && COUNTS.has(r.move);
-    doMove(key, again ? 'show' : r.move, { asked: true });
+    // A wave after a count with no act of the child since then gets the next step too (#79: after
+    // the right count of the basket, a wave made the healer count all of it again).
+    const counted = afterCount.delete(key) || Boolean(tr && tr.lastCommit !== null && !tr.acted);
+    // The count made the work right (the extras went back): the next step is to finish.
+    doMove(key, tr?.fixed ? 'show' : r.move, { asked: true, counted });
     return r;
   }
 
@@ -446,6 +452,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const trk = tracks.get(key);
     if (move === 'demo' && trk?.demoed) move = shares ? 'smaller' : 'mark';
     if ((move === 'smaller' || move === 'share') && !shares) move = 'mark';
+    // After a count, a wave gets the next step, never the same count again (#80, #79).
+    if (info.counted && COUNTS.has(move)) move = 'show';
     if (move === 'demo' && trk) trk.demoed = true;
     // The picture of another station waits until the child has seen the iron hot one time (#70: the
     // child who waited for red heard "go to the river" after two misses).
