@@ -1045,11 +1045,14 @@ export async function mountVillage(ctx, params = {}) {
       // The events of the start (a talk) show with the first frame.
       flush();
     }
-    const dt = Math.min(0.05, (now - last) / 1000);
+    const real = Math.max(0, (now - last) / 1000);
+    const dt = Math.min(0.05, real);
     last = now;
     time += dt;
     sendInput();
-    updateAction(dt);
+    // The picture of the button follows the real time: on a slow phone a frame is longer than the
+    // step of the world, and the picture must not lag behind the world (#78).
+    updateAction(real);
     // The world moves in fixed steps; the drawing is smooth between two steps. A story of the
     // storybook can play faster (&speed=4).
     acc += dt * (book?.speed ?? 1);

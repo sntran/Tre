@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
 import { STEP } from './restless.js';
 import { getEntity, query } from '../src/core/world/state.js';
+import { readFileSync } from 'node:fs';
 
 const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
 const FISHER = [27, 64.5];
@@ -161,4 +162,10 @@ test('quick presses on a picture that a phone shows a moment late are never refu
     if (a?.act && mine.some((e) => !e.done && !e.wait && !e.again) && !mine.some((e) => e.done || e.wait || e.again)) refused.push(`${k}: ${a.act} ${a.target}`);
   }
   assert.deepEqual(refused, []);
+});
+
+test('the picture of the button follows the real time, also when the frames are slow', () => {
+  const village = readFileSync(new URL('../src/ui/village.js', import.meta.url), 'utf8');
+  assert.match(village, /const real = Math\.max\(0, \(now - last\) \/ 1000\);\n\s+const dt = Math\.min\(0\.05, real\);/);
+  assert.match(village, /updateAction\(real\);/);
 });
