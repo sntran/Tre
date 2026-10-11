@@ -1,0 +1,866 @@
+{
+ "about": "#84: four new heroes of Pre-K, grade 1, grade 4, and grade 7 at the first talk; the parent chooses \"Rất gần\"; 30 taps that miss beside grandma, the weekly line, and its button to the setting.",
+ "start": "",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "goto": "",
+   "after": 3
+  },
+  {
+   "wait": 2
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "create": "Bi",
+   "grade": -1
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 120
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "tre.profile.grade"
+  },
+  {
+   "print": "tre.activeVillage.heroPoints()"
+  },
+  {
+   "shot": "band-of-grade--1"
+  },
+  {
+   "goto": "",
+   "after": 3
+  },
+  {
+   "wait": 2
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "create": "Su",
+   "grade": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 120
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "tre.profile.grade"
+  },
+  {
+   "print": "tre.activeVillage.heroPoints()"
+  },
+  {
+   "shot": "band-of-grade-1"
+  },
+  {
+   "goto": "",
+   "after": 3
+  },
+  {
+   "wait": 2
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "create": "Na",
+   "grade": 4
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 120
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "tre.profile.grade"
+  },
+  {
+   "print": "tre.activeVillage.heroPoints()"
+  },
+  {
+   "shot": "band-of-grade-4"
+  },
+  {
+   "goto": "",
+   "after": 3
+  },
+  {
+   "wait": 2
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "create": "Tu",
+   "grade": 7
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 120
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "tre.profile.grade"
+  },
+  {
+   "print": "tre.activeVillage.heroPoints()"
+  },
+  {
+   "shot": "band-of-grade-7"
+  },
+  {
+   "read": 12
+  },
+  {
+   "click": "Chào nghé con",
+   "after": 2
+  },
+  {
+   "check": "(() => { const i = document.querySelector('.modal-layer .name-input'); i.value = 'Mít'; return true; })()"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 2
+  },
+  {
+   "read": 40
+  },
+  {
+   "wait": 3
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "tre.activeVillage.working()"
+  },
+  {
+   "print": "tre.activeVillage.heroPoints()"
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Tầm nhìn",
+   "value": "very-near",
+   "after": 1
+  },
+  {
+   "shot": "the-setting-of-the-view"
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "tre.activeVillage.heroPoints()"
+  },
+  {
+   "check": "tre.activeVillage.heroPoints() > 75"
+  },
+  {
+   "shot": "very-near-after-the-parent-area"
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Tầm nhìn",
+   "value": "far",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "tre.activeVillage.heroPoints()"
+  },
+  {
+   "shot": "far-after-the-parent-area"
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "tap": {
+    "person": "grandma",
+    "dx": 75
+   },
+   "then": {
+    "person": "grandma"
+   },
+   "gap": 0.4,
+   "after": 0.6
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.profile.log.events.filter((e) => e.type === 'taps'))"
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Tuần này",
+   "after": 1.5,
+   "if": "!document.querySelector('.modal-layer')?.textContent.includes('Ghi chú của tuần')"
+  },
+  {
+   "print": "document.querySelector('.week-note')?.textContent"
+  },
+  {
+   "check": "document.querySelector('.week-note').textContent.includes('Con hay chạm trượt')"
+  },
+  {
+   "shot": "the-weekly-line-of-the-taps"
+  },
+  {
+   "button": ".week-note .week-view",
+   "after": 1.5
+  },
+  {
+   "check": "Boolean(document.querySelector('select[aria-label=\"Tầm nhìn\"]'))"
+  },
+  {
+   "shot": "the-button-opens-the-setting"
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  }
+ ]
+}
