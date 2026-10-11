@@ -22,6 +22,7 @@
 //   { "tap": { "stem": 4 } }     a tap on the stem of the woodcutter, 4 half blocks from its start
 //   { "tap": { "row": 8 } }      a tap on the row of the fisher, 8 half blocks from its start
 //   { "tap": { "person": "teacher", "dx": 60 } } a tap 60 points to the right of a target
+//   { "tap": {...}, "then": {...}, "gap": 0.4 } a second tap soon after the first
 //   { "tap": { "star": true } }  a tap on the goal star (or the arrow at the edge of the screen)
 //   { "tap": { "star": "healer" } } a tap on the star (or the arrow) with the face of that person
 //   { "walk": { "person": "woodcutter" }, "taps": 12 } taps toward a target until the hero is near it
@@ -385,6 +386,14 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
       // A tap on a place of a task chooses that place (#48: a slow tap in the area of the stick did
       // nothing).
       if (s.tap.place && !(await chose(`zone:${s.tap.place}`))) problems.push(`step ${i}: a tap on the place ${s.tap.place} at ${p.map(Math.round)} did not choose it`);
+      // "then": a second tap soon after the first, in the same step (#84: a tap beside a person and
+      // then a tap on the person, within 1.5 seconds).
+      if (s.then) {
+        await sleep(s.gap ?? 0.4);
+        const q = await pointOf(s.then);
+        if (q) await tapAt(q[0] + (s.then.dx ?? 0), q[1] + (s.then.dy ?? 0));
+        else problems.push(`step ${i}: nothing on the screen for ${JSON.stringify(s.then)}`);
+      }
     }
     await sleep(s.after ?? 0.3);
   } else if (s.walk !== undefined) {
