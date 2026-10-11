@@ -140,3 +140,25 @@ test('the tide and the lines of the fisher wait while the child is at another pl
   assert.ok(!lines.some((l) => l.type === 'tide'), 'no tide while the child is away');
   assert.ok(!lines.some((l) => l.key && l.id === 'npc:fisher'), `no line of the fisher: ${lines.filter((l) => l.id === 'npc:fisher').map((l) => l.key).join(' ')}`);
 });
+
+test('quick presses on a picture that a phone shows a moment late are never refused: a press on the act that an earlier press just did is a part of it', async () => {
+  const session = await atRow();
+  const presses = [];
+  session.listen((ev) => { if (ev.type === 'press') presses.push(ev); });
+  const refused = [];
+  for (let k = 0; k < 40; k++) {
+    if (getEntity(session.state, 'zone:trial-fisher')?.zone.tide.phase !== 'low') {
+      run(session, 2);
+      continue;
+    }
+    // The screen shows the picture of the last frame: the finger comes 0.15 seconds later.
+    const a = session.action();
+    run(session, 0.15);
+    const before = presses.length;
+    send(session, { type: 'hands', id: a?.id ?? null });
+    run(session, 0.9);
+    const mine = presses.slice(before).filter((e) => e.id === a?.id);
+    if (a?.act && mine.some((e) => !e.done && !e.wait && !e.again) && !mine.some((e) => e.done || e.wait || e.again)) refused.push(`${k}: ${a.act} ${a.target}`);
+  }
+  assert.deepEqual(refused, []);
+});

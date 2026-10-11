@@ -2689,7 +2689,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   //   does that act when it is still in reach, or nothing.
   const SETTLE = 0.6;
   const CHILD_CHANGE = 0.4; // seconds after a command of the child: the change is of the child
-  const KEEP_ACTS = 2; // seconds: a press can name an act of the button this old
+  const KEEP_ACTS = 2; // seconds: a press can name an act that was on the button this long ago
   const PRESS_WAIT = 0.6; // seconds after the end of a walk: the act of a waiting press can still come
   let btnSeq = 0;
   let btn = null; // the act of the button now: { id, key, a (the act), deferred, t, child, prev }
@@ -2703,6 +2703,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // presses in one step put the same bunch in the basket two times, and only one bunch was there).
   let actTick = -1;
   const actKey = (a) => (a ? `${a.act}|${a.target}` : null);
+  // The act of the last press that was done: { key, tick }. A second press on its picture a moment
+  // after (the picture had no time to change on the screen) is a part of that press (#78: a child
+  // presses again while the first press waits for the walk, and the act comes just before).
+  let lastDone = null;
+  const AGAIN = 1; // seconds
   // The hero walks (a route; or a walk command that the world takes in its next step), or a far
   // walk waits for the land or for a person on the way.
   const walking = () => Boolean(hero().route || farWait || state.tick - walkTick <= 1);
@@ -2793,8 +2798,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return btn;
     }
     const child = (state.tick - lastChild) * STEP < CHILD_CHANGE || ofTap(a);
+    // A picture that goes stays nameable for KEEP_ACTS seconds after it went (end), also after a
+    // long walk with it on the button.
+    if (btn) btn.end = state.tick;
     btn = { id: ++btnSeq, key, a, show, deferred, t: state.tick, child, prev: btn?.key ?? null, first: !btn };
-    btnAll = [...btnAll.filter((b) => (state.tick - b.t) * STEP < KEEP_ACTS), btn];
+    btnAll = [...btnAll.filter((b) => (state.tick - (b.end ?? state.tick)) * STEP < KEEP_ACTS), btn];
     return btn;
   }
   // The act of a press that names the act id of the button (no id: the act of the button now), or
@@ -2828,6 +2836,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (!a) {
+      const b = id === null || id === undefined ? null : btnAll.find((x) => x.id === id);
+      if (b && lastDone?.key === b.key && (state.tick - lastDone.tick) * STEP < AGAIN) {
+        emit({ type: 'press', id: pid, act: null, done: false, again: true });
+        return;
+      }
       // A dim button does nothing; a press on an act that is gone pulses.
       if (button().a || id !== null) emit({ type: 'pulse', id: null });
       emit({ type: 'press', id: pid, act: null, done: false });
@@ -2866,6 +2879,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The act on the target of the last tap is done: the next press chooses again (#47: the next
     // press never takes back what was just put there).
     if (!a.go && ofTap(a)) chosen = null;
+    lastDone = { key: actKey(a), tick: state.tick };
     emit({ type: 'pulse', id: a.target });
     emit({ type: 'press', id, act: a.act, target: a.target, done: true });
   }

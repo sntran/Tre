@@ -139,7 +139,7 @@ async function listenPresses() {
     s.listen((e) => {
       if (e.type !== 'press') return;
       window.__pressCount += 1;
-      window.__presses.push({ gen, id: e.id, act: e.act ? `${e.act}|${e.target}` : '', like: e.act ? `${e.act}|${window.__likeOf(e.target)}` : '', done: e.done, wait: Boolean(e.wait) });
+      window.__presses.push({ gen, id: e.id, act: e.act ? `${e.act}|${e.target}` : '', like: e.act ? `${e.act}|${window.__likeOf(e.target)}` : '', done: e.done, wait: Boolean(e.wait), again: Boolean(e.again) });
     });
     return true;
   }, nextGen).catch(() => false);
@@ -172,7 +172,7 @@ function checkPresses() {
     }
     // A press on an act that the button showed is never refused at once (a press that waits for the
     // end of a walk can do nothing there, when the walk ends stuck).
-    if (p.shown && p.events.some((e) => !e.done && !e.wait) && !p.events.some((e) => e.done || e.wait)) problems.push(`step ${p.step}: the button showed "${p.shown}", and the press did nothing`);
+    if (p.shown && p.events.some((e) => !e.done && !e.wait && !e.again) && !p.events.some((e) => e.done || e.wait || e.again)) problems.push(`step ${p.step}: the button showed "${p.shown}", and the press did nothing`);
   });
 }
 const center = async (selector) => {
