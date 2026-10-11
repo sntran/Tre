@@ -69,6 +69,10 @@
       "what": ["line", "switch"],
       "to": ["vi", "en"]
     },
+    "taps": {
+      "taps": "count",
+      "misses": "count"
+    },
     "ask": {
       "task": "id",
       "when": ["before", "after"],

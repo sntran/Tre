@@ -704,3 +704,9 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The menu:** `ui.lang.title` ("Ngôn ngữ / Language"); the button of a line says `ui.otherLine` ("Nghe câu này bằng tiếng Anh") to a screen reader.
 - **The weekly note:** `parent.week.lang` ("{name} nghe {lines} bằng ngôn ngữ kia, và đổi ngôn ngữ của game {times}."), `parent.week.langLines`, `parent.week.langSwitch`, and `parent.count.lines` ("{n} câu").
 - **Please check:** "ngôn ngữ kia" for a parent, and "game" in the words of the parent area.
+
+## The near view by grade (#84)
+
+- **The setting of the parent area:** `parent.view` ("Tầm nhìn") with `parent.view.grade` ("Theo lớp"), `parent.view.very-near` ("Rất gần"), `parent.view.near` ("Gần"), `parent.view.middle` ("Vừa"), and `parent.view.far` ("Xa").
+- **The weekly page:** `parent.week.taps` ("Con hay chạm trượt. Có thể thử tầm nhìn gần hơn.") and its button `parent.week.taps.open` ("Đổi tầm nhìn").
+- **Please check:** the bands (16, 18, 21, and 24 world units) are a first guess for the play tests; and "chạm trượt" for a parent.

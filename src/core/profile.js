@@ -14,6 +14,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   questions: [], // questions from the parent editor
   langSwitch: true, // the child can change the language of the game in the menu (#82)
   otherLine: true, // the child can hear one line in the other language (#82)
+  view: 'grade', // the near view (#84): by grade, or a band that the parent chose (src/core/viewband.js)
 });
 
 export function createProfile({ id, name, gender = 'boy', skin = 1, face = 1, hair = 1, clothes = 1, grade = 1, lang = 'vi', now = 0, seed = 1 }) {

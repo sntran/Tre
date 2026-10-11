@@ -1,6 +1,7 @@
 // The save format. Each save has a format name and a version number.
 // Old saves go through the migrations, so that they work after updates.
 // The export code is compressed text with a checksum. A bad code does not load.
+import { VIEW_CHOICES } from './viewband.js';
 import { isGrade } from './grades.js';
 import { newWorldSave } from './world/save.js';
 import { compress, decompress, crc32, toBase64Url, fromBase64Url, utf8Encode, utf8Decode } from './codec.js';
@@ -641,6 +642,8 @@ function validateSettings(settings, v) {
   for (const k of ['sound', 'music', 'voice']) bool(settings[k], `settings.${k}`);
   // The choices of the language for the child (#82); an older save has none (on).
   for (const k of ['langSwitch', 'otherLine']) if (settings[k] !== undefined) bool(settings[k], `settings.${k}`);
+  // The near view (#84); an older save has none (by grade).
+  if (settings.view !== undefined && !VIEW_CHOICES.includes(settings.view)) fail('settings.view');
   if (!['auto', 'none', 'small', 'normal'].includes(settings.loss)) fail('settings.loss');
   list(settings.questions, 'settings.questions', LIMITS.questions);
   for (const q of settings.questions) validateQuestion(q, v);

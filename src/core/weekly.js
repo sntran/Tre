@@ -7,6 +7,7 @@
 // session is not "better": the note names the healthy signs (comes back, finishes, chooses to play
 // on) and warns about restless or frustrated play. With small numbers it says so.
 
+import { manyMisses } from './taps.js';
 import { allVariants, SIGNALS, activityOf } from './learnlog.js';
 import { factKey } from './planting.js';
 
@@ -204,6 +205,11 @@ export function weeklyNote(rollups, profile, week, data = {}) {
   if (heard && changed) line(9, 'parent.week.lang', { lines: count('lines', heard), times: count('times', changed) });
   else if (heard) line(9, 'parent.week.langLines', { lines: count('lines', heard) });
   else if (changed) line(9, 'parent.week.langSwitch', { times: count('times', changed) });
+
+  // 9. The taps that miss (#84): one line, only when many taps of the week miss. The page shows a
+  // button that opens the setting of the view.
+  const [taps, misses] = W.taps ?? [0, 0];
+  if (manyMisses(taps, misses)) line(9, 'parent.week.taps', {});
 
   // The lines that matter most, in the order of the note.
   const lines = found.slice().sort((a, b) => b.prio - a.prio || a.at - b.at).slice(0, MAX_LINES).sort((a, b) => a.at - b.at).map((x) => x.l);

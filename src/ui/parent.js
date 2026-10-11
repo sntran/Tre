@@ -1,6 +1,7 @@
 // The parent area: the gate, the progress page, the settings, the question
 // editor, and the export code. The area opens only after a parent holds a
 // button for 3 seconds and answers a question for adults.
+import { VIEW_CHOICES } from '../core/viewband.js';
 import { notebookGrid } from './notebook.js';
 import { makeGateQuestion, checkGateAnswer, holdProgress } from '../core/parentgate.js';
 import { drawLearning } from './research.js';
@@ -396,7 +397,11 @@ async function parentArea(ctx, opts = {}) {
       const say = (l) => (l.parts ? l.parts.map(say).join(' ') : t(l.key, l.params));
       body.append(
         h('h3', { text: t('parent.week.title') }),
-        h('ul', { class: 'week-note' }, note.lines.map((l) => h('li', { text: say(l) }))),
+        // The line of the taps that miss has a button to the setting of the view (#84).
+        h('ul', { class: 'week-note' }, note.lines.map((l) => h('li', {}, [
+          h('span', { text: say(l) }),
+          l.key === 'parent.week.taps' ? button(t('parent.week.taps.open'), () => { tab = 'settings'; drawTabs(); draw(); }, { cls: 'btn small paper week-view' }) : null,
+        ]))),
         h('p', { class: 'muted', text: t('parent.week.about', { name }) }),
       );
       // The table of this week and of last week, side by side.
@@ -474,6 +479,9 @@ async function parentArea(ctx, opts = {}) {
           ctx.makeLearner();
           save();
         }),
+        // The near view of the child (#84): by grade, or a band. The view takes it when the child
+        // comes back to the game, never during play.
+        selectField(t('parent.view'), VIEW_CHOICES.map((v) => [v, t(`parent.view.${v}`)]), s.view ?? 'grade', (v) => { s.view = v; save(); }),
         selectField(t('parent.time'), data.game.time.choices.map((m) => [m, m ? t('parent.minutes', { n: m }) : t('parent.time.none')]), s.timeLimit, (v) => {
           s.timeLimit = Number(v);
           save();

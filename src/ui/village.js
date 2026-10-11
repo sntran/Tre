@@ -25,7 +25,8 @@ import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
 import { workBoxes, workTurn } from '../world/fade.js';
 import { taskPools } from '../world/light.js';
-import { VIEW, SAFE, TALK_SAFE, viewSize, inView, frameWork } from '../world/view.js';
+import { VIEW, SAFE, TALK_SAFE, viewSize, inView, frameWork, mmOf } from '../world/view.js';
+import { createTapCount } from '../core/taps.js';
 import { heroLook, thingLook } from '../world/figures.js';
 import { tapTarget, thingUnder } from '../world/hit.js';
 import { h, img, button } from './dom.js';
@@ -912,6 +913,27 @@ export async function mountVillage(ctx, params = {}) {
     onTap(p);
     return true;
   }
+  // The taps of the world and the taps that miss (#84; src/core/taps.js): a tap on the ground near
+  // a person, a face, or a thing that the next tap chooses is a miss. The counts go into the
+  // learning log every TAP_LOG taps and when the village ends.
+  const TAP_LOG = 50;
+  const tapCount = createTapCount({ mmPerPoint: mmOf(window.innerWidth, window.innerHeight) });
+  function logTaps() {
+    const c = tapCount.take();
+    if (c.taps) ctx.log('taps', c);
+  }
+  // A tap chose something: a person, a thing, Nghé, or a place of a task (a ground target in a
+  // place, or on the row of the fisher).
+  function chooses(target) {
+    if (!target) return false;
+    if (!target.ground) return true;
+    const row = session.line();
+    return Boolean(session.placeAt(target.ground.x, target.ground.y) || (row && target.ground.y === row.z / 2));
+  }
+  function countTap(p, chose) {
+    tapCount.tap(performance.now() / 1000, p.x, p.y, chose);
+    if (tapCount.counts.taps >= TAP_LOG) logTaps();
+  }
   function onTap(p) {
     // A long press that did not move walked toward the finger: stop that walk before the tap, so
     // that the stop of the next frame does not end the walk of the tap (#53).
@@ -924,6 +946,7 @@ export async function mountVillage(ctx, params = {}) {
       sayAgain(target.person);
       seenPerson = { id: target.person, t: performance.now() };
     }
+    countTap(p, chooses(target));
     if (target?.pet) {
       ctx.bus.emit('sound', 'tap');
       send({ type: 'pet', id: target.pet });
@@ -1667,6 +1690,9 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     ctx.log('action', { kind: 'star' });
+    const r = e.currentTarget.getBoundingClientRect();
+    const base = canvas.getBoundingClientRect();
+    countTap({ x: r.left + r.width / 2 - base.left, y: r.top + r.height / 2 - base.top }, true);
     sayStar(m);
     send({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h, thing: false, object: null, goal: true } } });
     nearAgain();
@@ -2216,6 +2242,8 @@ export async function mountVillage(ctx, params = {}) {
   // screen can draw the progress; with no loading screen, they are built now.
   view.jump(h0.x / 2, h0.y / 2 + 1.5, h0.z / 2, { build: !loading });
   requestAnimationFrame(frame);
+  // A new near view after the parent area (#84): the camera takes it now, out of play.
+  const offView = ctx.bus.on('view', () => view.resize(size.width, size.height));
   // Show the new language in the top bar after a change in the parent area.
   const offLang = ctx.bus.on('lang', () => {
     // The open line of a talk shows (and is said) in the new language (#82).
@@ -2251,6 +2279,8 @@ export async function mountVillage(ctx, params = {}) {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('keyup', onKey);
       offLang();
+      offView();
+      logTaps();
       figures.dispose();
       motes.dispose();
       for (const el of [duskTint, duskLayer, glowLayer, paper, raidLayer, marks, hud, turns, fade, banner, meter, debugPanel, bookScreen]) el?.remove();

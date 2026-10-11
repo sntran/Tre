@@ -1,6 +1,8 @@
 // The app: load the data, keep the current profile, switch scenes, and save.
 import { setLanguage as loadLanguage, t, useSeenGloss, seenGlossList, setGlobalParams, setChosenNames } from './i18n.js';
 import { chosenGlossNames, startLanguage } from '../core/profile.js';
+import { nearOf } from '../core/viewband.js';
+import { nearView, setNearView } from '../world/view.js';
 import { loadRecordedKeys, setVoiceEnabled, setVoiceProfiles, speak } from './speak.js';
 import { loadData } from './data.js';
 import { createSeen } from '../core/fresh.js';
@@ -251,6 +253,7 @@ export async function startApp(root) {
       const changed = code !== profile.settings.lang;
       profile.settings.lang = code;
       await ctx.setLanguage(code);
+      ctx.applyView();
       setVoiceEnabled(profile.settings.voice);
       bus.emit('settings', profile.settings);
       await loading.painted;
@@ -290,8 +293,22 @@ export async function startApp(root) {
     },
 
     // The parent area. opts: { tab, profile, action } opens a tab (and an action on a profile).
+    // The parent area. When the child comes back, the near view follows the grade or the setting
+    // that the parent changed (#84).
     openParent(opts = {}) {
-      return modals.parent ? modals.parent(ctx, opts) : Promise.resolve();
+      return (modals.parent ? modals.parent(ctx, opts) : Promise.resolve()).then((r) => {
+        ctx.applyView();
+        return r;
+      });
+    },
+
+    // The near view of the child (#84): the band of the grade, or the band that the parent chose.
+    // Only at the start of a game and after the parent area, never during play.
+    applyView() {
+      const near = ctx.profile ? nearOf(ctx.profile, data?.game?.view) : null;
+      if (!near || near === nearView()) return;
+      setNearView(near);
+      bus.emit('view', near);
     },
 
     openMenu() {

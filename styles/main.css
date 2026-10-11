@@ -684,6 +684,7 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 /* The note of the week (#25): the lines, two small tables side by side, and a box for each activity. */
 .week-note { margin: 6px 0 4px; padding-left: 1.2em; line-height: 1.45; }
 .week-note li { margin: 3px 0; }
+.week-note .week-view { margin-left: 8px; vertical-align: middle; }
 .facts-pair { display: flex; gap: 16px; flex-wrap: wrap; }
 .facts-pair h4 { margin: 4px 0 0; }
 .facts.small td { width: 15px; height: 15px; }

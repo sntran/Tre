@@ -55,6 +55,49 @@
       }
     ]
   },
+  "view": {
+    "_about": "The near view by grade (#84): its height in world units on a phone of 390 x 844 (src/world/view.js keeps the size on the glass on other screens). A younger child sees a bigger hero: about 13 mm high on the glass of a phone for Pre-K and K, 11 mm for grades 1 and 2, 10 mm for 3 to 5, and 8.5 mm from grade 6. Each grade id of grades.list has a band. The parent can choose a band in place of the grade (settings.view). The numbers are a first guess for the play tests.",
+    "bands": [
+      {
+        "id": "very-near",
+        "near": 16,
+        "grades": [
+          -1,
+          0
+        ]
+      },
+      {
+        "id": "near",
+        "near": 18,
+        "grades": [
+          1,
+          2
+        ]
+      },
+      {
+        "id": "middle",
+        "near": 21,
+        "grades": [
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "id": "far",
+        "near": 24,
+        "grades": [
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      }
+    ]
+  },
   "voices": {
     "_about": "Voice profiles. pitch and rate change the browser voice. gender chooses a male or a female voice when the device has one. Each person in npcs.json and friends.json has a voice profile.",
     "narrator": {
