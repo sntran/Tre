@@ -1095,6 +1095,8 @@ export async function mountVillage(ctx, params = {}) {
     draw(dt, acc / STEP);
     frames += 1;
     if (frames % 15 === 0) waveBtn.hidden = busy || !session.mentorTask;
+    // A new near view that waits for the end of a task, a raid, or a talk (#84).
+    if (frames % 30 === 0 && ctx.viewPending && !working()) ctx.applyView();
     // The sound of the place changes with the light and the rain.
     if (frames % 30 === 0) {
       const sk = state.sky ?? { night: 0, rain: 0 };
@@ -1203,6 +1205,8 @@ export async function mountVillage(ctx, params = {}) {
     view.setScale(f.h / nearH);
     return { ...heroAt, x: f.focus.x, z: f.focus.z };
   }
+  // A task, a raid, or a talk goes on (#84: the near view of a new grade waits for its end).
+  const working = () => Boolean(session.mentorTask || session.screen || (getEntity(state, 'raid')?.raid && !getEntity(state, 'raid').raid.result));
   // The far view of a pinch is for a look around (#83): it goes back to the near view when the
   // child walks (a tap, the stick), taps a face, or starts work.
   function nearAgain() {
@@ -2225,6 +2229,15 @@ export async function mountVillage(ctx, params = {}) {
     stats: (opts) => view.stats(opts),
     // The world state, for automatic tests (read only).
     state: () => state,
+    // A task, a raid, or a talk goes on: the near view does not change now (#84).
+    working,
+    // The height of the hero on the screen (points), for the plays on a phone (#83, #84).
+    heroPoints: () => {
+      const p = hero().position;
+      const a = view.project(p.x / 2, p.y / 2, p.z / 2);
+      const b = view.project(p.x / 2, p.y / 2 + 1.5, p.z / 2);
+      return Math.round(Math.hypot(a.x - b.x, a.y - b.y));
+    },
     // The sounds of the world that played: { name, t (seconds), id }, for automatic tests.
     sounds: () => soundsHeard.slice(),
     // The count of the pull of the slingshot now (0 with no pull), for automatic tests.

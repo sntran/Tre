@@ -13,7 +13,8 @@
 // "allow": [...] }. allow: parts of the text of known problems that do not fail the play (for a
 // problem that a later issue fixes).
 // The steps:
-//   { "create": "Nam" }          pass the hero creation (a new game or the short creation of a link)
+//   { "create": "Nam" }          pass the hero creation (a new game or the short creation of a link);
+//                                with "grade": 4, a tap on the tile of that grade
 //   { "tap": [x, y] }            a tap at a point of the screen
 //   { "tap": { "person": "teacher" } }, { "tap": { "thing": "rod:1" } }, { "tap": { "cell": [x, y] } },
 //   { "tap": { "place": "mat" } } a tap on a person, a thing, a cell of the map, or the middle of a
@@ -340,6 +341,15 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
     for (let k = 0; k < 12 && !(await page.evaluate(() => Boolean(window.tre.activeVillage))); k++) {
       const input = await page.$('.name-input');
       if (input && !(await input.inputValue())) await input.fill(s.create);
+      // { "create": "Su", "grade": 4 }: a tap on the tile of that grade at the step of the grade.
+      if (s.grade !== undefined) {
+        const tile = page.locator(`.option-grid button[aria-label$=" ${s.grade}"]:visible`).first();
+        const tb = await tile.boundingBox().catch(() => null);
+        if (tb && (await tile.getAttribute('aria-pressed')) !== 'true') {
+          await tapAt(tb.x + tb.width / 2, tb.y + tb.height / 2);
+          await sleep(0.5);
+        }
+      }
       // The main button of the screen: the last red button (a chosen tile is red too). When it is
       // under the bottom of the screen, the child must scroll to find it: a problem.
       const main = page.locator('.btn.big.red:visible').last();

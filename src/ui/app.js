@@ -303,10 +303,17 @@ export async function startApp(root) {
     },
 
     // The near view of the child (#84): the band of the grade, or the band that the parent chose.
-    // Only at the start of a game and after the parent area, never during play.
+    // Only at the start of a game and after the parent area, never during play: during a task, a
+    // raid, or a talk it waits (viewPending), and the village takes it when that ends.
+    viewPending: false,
     applyView() {
-      const near = ctx.profile ? nearOf(ctx.profile, data?.game?.view) : null;
+      const near = ctx.profile ? nearOf(ctx.profile, data.game.view) : null;
       if (!near || near === nearView()) return;
+      if (ctx.activeVillage?.working()) {
+        ctx.viewPending = true;
+        return;
+      }
+      ctx.viewPending = false;
       setNearView(near);
       bus.emit('view', near);
     },

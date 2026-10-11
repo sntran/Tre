@@ -85,6 +85,10 @@ test('the view does not change during play: a new grade or setting takes effect 
   assert.match(app, /modals\.parent \? modals\.parent\(ctx, opts\) : Promise\.resolve\(\)\)\.then\(\(r\) => \{\n\s+ctx\.applyView\(\);/);
   for (const f of ['src/ui/village.js', 'src/ui/parent.js', 'src/world/hit.js', 'src/render/voxel.js']) assert.ok(!/setNearView\(/.test(source(f)), f);
   assert.match(source('src/ui/village.js'), /ctx\.bus\.on\('view', \(\) => view\.resize\(size\.width, size\.height\)\)/);
+  // Back from the parent area during a task, a raid, or a talk: the new view waits for its end.
+  assert.match(app, /if \(ctx\.activeVillage\?\.working\(\)\) \{\n\s+ctx\.viewPending = true;\n\s+return;/);
+  assert.match(source('src/ui/village.js'), /if \(frames % 30 === 0 && ctx\.viewPending && !working\(\)\) ctx\.applyView\(\);/);
+  assert.match(source('src/ui/village.js'), /const working = \(\) => Boolean\(session\.mentorTask \|\| session\.screen \|\| /);
 });
 
 test('a tap that chooses nothing is a miss when a second tap near it chooses something within 1.5 s', () => {
