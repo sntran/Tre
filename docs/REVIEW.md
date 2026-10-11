@@ -689,3 +689,11 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The erase of a mark:** `mentor.woodcutter.erase` ("Chạm vào vạch phấn này là xóa."), one time on a mark, when the child marks too many again after a cut with too many pieces.
 - **Please check:** "là xóa" for a child of six.
 
+## The smaller problems of the play test of #78 (#81)
+
+- **The notebook is said one time:** `note.first` ("Sổ tay của cháu đây. Mỗi khi gặp một điều mới, cháu có thêm một tranh.", in the voice of grandma) at the first card; then each card says `note.newName` ("Tranh mới: {name}.").
+- **Who the Nho sinh were:** `dlg.teacher.trial.done.who` and `calling.scholar.who` ("Nho sinh là học trò ngày xưa.").
+- **The print of the task where the child earned the skill:** `print.math.add.20.trial-woodcutter` "Bó tre", `.folk-loco` "Lò cò", `.trial-healer` "Giỏ lá", `.bridge` "Cầu tre"; `print.math.count.120.trial-healer` "Bó ngải cứu", `.trial-horse` "Quặng nung".
+- **The iron of the smith:** the smith gives 2 iron and the woodcutter 3 bamboo, in place of rice. The iron horse still needs 6 iron, so the child still finds the lumps of ore; the pips of that step start at the iron that the child has.
+- **The map:** the number of a chapter is gone (`world.chapter`); the card of a region shows the name of its era ("Thời Hùng Vương").
+- **Please check:** "Tranh mới: Con gà." for a child of six, and "Lò cò" as the print of the hopscotch.

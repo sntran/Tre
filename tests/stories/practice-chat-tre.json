@@ -221,7 +221,11 @@
         },
         {
           "item": "rice",
-          "count": 13
+          "count": 10
+        },
+        {
+          "item": "bamboo",
+          "count": 3
         },
         {
           "practice": {

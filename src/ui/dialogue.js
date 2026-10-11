@@ -69,7 +69,8 @@ function callingCard(ctx, id) {
   if (!c) return null;
   return h('div', { class: 'calling-card talk-calling', 'aria-hidden': 'true' }, [
     portraitCanvas(ctx, ctx.data.figures.figures[c.look], { framing: 'full', size: 64 }),
-    h('span', { class: 'calling-words' }, [h('strong', { text: t(c.nameKey) })]),
+    // Who they were, for a name that a child does not know (#81: "Nho sinh").
+    h('span', { class: 'calling-words' }, [h('strong', { text: t(c.nameKey) }), c.whoKey ? h('small', { text: t(c.whoKey) }) : null]),
   ]);
 }
 

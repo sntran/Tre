@@ -296,9 +296,9 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
         const open = world.isOpen(s.id, state);
         const kind = s.id === here ? 'here' : open ? 'open' : 'locked';
         const r = sealPx * k;
-        const chapters = groups.find((q) => q.id === s.id).ids.map((id) => world.region(id).chapter);
+        // No number of a chapter on the map of the child (#81: "Chương 3 – why 3, I just started").
         const g = el('g', { class: `map-seal ${kind}${chosen === s.id ? ' selected' : ''}`, tabindex: 0, role: 'button',
-          'aria-label': inEra(region) ? `${t(region.nameKey)}. ${t('world.chapter', { n: region.chapter })}` : chapters.map((n) => t('world.chapter', { n })).join(', ') });
+          'aria-label': inEra(region) || open ? t(region.nameKey) : t('world.locked') });
         if (Math.hypot(s.x - s.ax, s.y - s.ay) > r * 0.6) {
           g.append(el('line', { x1: s.ax, y1: s.ay, x2: s.x, y2: s.y, stroke: C.ink, 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' }));
           g.append(el('circle', { cx: s.ax, cy: s.ay, r: 2 * k, fill: C.ink }));
@@ -316,11 +316,7 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
             const face = el('image', { 'clip-path': `url(#${clip})`, x: s.x - r, y: s.y - r, width: r * 2, height: r * 2 });
             portraitImage(ctx, heroLookOf(ctx, profile.hero), { size: 64 }).then((c) => { if (c) face.setAttribute('href', c.toDataURL()); });
             g.append(face);
-          } else {
-            const n = el('text', { x: s.x, y: s.y + r * 0.35, 'font-size': r, 'text-anchor': 'middle', class: 'place-name big' });
-            n.textContent = String(region.chapter);
-            g.append(n);
-          }
+          } else g.append(el('circle', { cx: s.x, cy: s.y, r: r * 0.3, fill: C.ink }));
         }
         g.addEventListener('click', (ev) => { ev.stopPropagation(); select(region); });
         g.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') select(region); });
@@ -334,7 +330,8 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
       drawTop();
       const open = world.isOpen(region.id, state);
       const named = inEra(region) || open;
-      const lines = [h('div', { class: 'region-chapter', text: t('world.chapter', { n: region.chapter }) })];
+      // The name of the chapter (its era), with no number (#81).
+      const lines = region.eraKey ? [h('div', { class: 'region-chapter', text: t(region.eraKey) })] : [];
       if (named) lines.push(h('h3', { text: t(region.nameKey) }));
       // The way from the region of the hero, drawn in red, with its length and days.
       const way = region.id === here ? null : world.travelWay(here, region.id);

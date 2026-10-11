@@ -15,7 +15,7 @@
       "places": { "heap": "school-rods", "mat": "school-mat" }
     },
     {
-      "id": "smith", "npc": "smith", "calling": "smith", "flag": "trial.smith.done", "reward": { "rice": 3 },
+      "id": "smith", "npc": "smith", "calling": "smith", "flag": "trial.smith.done", "reward": { "iron": 2 },
       "task": "forge",
       "_task": "The fire burns when the child comes: the ore is in the forge (this many lumps) and the water is in the trough. The smith quenches one piece himself first. Then the iron on the anvil glows (rise), stays hot (hold), and dims (dim), again and again. The action button at the anvil drops the iron into the water (the commit): while it is hot (glow at or over hot), it hisses and becomes hard; too early or too late, it bends and goes back into the fire.",
       "glow": { "rise": 2.5, "dim": 2.5, "cold": 1.5, "hot": 0.6 },
@@ -52,7 +52,7 @@
       "places": { "beds": ["healer-bed-1", "healer-bed-2", "healer-bed-3"], "basket": "healer-basket" }
     },
     {
-      "id": "woodcutter", "npc": "woodcutter", "calling": "woodcutter", "flag": "trial.woodcutter.done", "reward": { "rice": 3 },
+      "id": "woodcutter", "npc": "woodcutter", "calling": "woodcutter", "flag": "trial.woodcutter.done", "reward": { "bamboo": 3 },
       "task": "cut",
       "_task": "A fallen bamboo stem lies on the ground (length). The woodcutter needs it in this many equal sticks (parts). A tap on the stem puts a chalk mark there (it snaps to the half-block grid), and a tap on a mark takes it away. A tap on the woodcutter cuts at the marks (the commit): equal sticks are tied into a bundle, and the child carries it to the wood pile by the bridge; sticks that are not equal break, and a new stem comes.",
       "levels": [

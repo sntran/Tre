@@ -52,7 +52,7 @@ test('the law of the stories checks the card of a new print', () => {
   assert.deepEqual(laws.text({ type: 'notebook', id: 'creature:nghe', titleKey: 'note.creature.nghe', kind: 'creature' }), []);
 });
 
-test('the first cut of the woodcutter sends the card of a print with the name that a child knows and its picture', async () => {
+test('the first cut of the woodcutter sends the card of a print with the name that a child knows and the picture of the woodcutter', async () => {
   const cards = [];
   const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
   const failures = await runHeadless({ name: 'small-77', profile, clock: 540, at: ['phu-dong', 51, 8.5], steps: [
@@ -68,9 +68,10 @@ test('the first cut of the woodcutter sends the card of a print with the name th
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
   const card = cards.find((c) => c.kind === 'skill');
   assert.ok(card, cards.map((c) => c.id).join(' '));
-  assert.equal(card.titleKey, 'print.math.add.20');
-  assert.equal(card.look, 'stake-set');
-  assert.equal(createI18n(vi, 'vi').t('note.new', { name: { key: card.titleKey } }), 'Sổ tay có tranh mới: Cái đăng.');
+  // The print of the task where the child earned the skill (#81): the bundle of the woodcutter.
+  assert.equal(card.titleKey, 'print.math.add.20.trial-woodcutter');
+  assert.equal(card.look, 'sticks-2');
+  assert.equal(createI18n(vi, 'vi').t('note.new', { name: { key: card.titleKey } }), 'Sổ tay có tranh mới: Bó tre.');
 });
 
 test('the notebook uses the name that the child gave to the calf', () => {

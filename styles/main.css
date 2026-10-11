@@ -1165,6 +1165,12 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
    needs, up to the width of the screen: with "left: 50%" only, the line went on many short lines. */
 .print-card { width: max-content; text-align: left; }
 .print-card .print-book { flex: none; width: 36px; height: 36px; }
+/* The menu button glows at the first card of the notebook: the notebook is in the menu (#81). */
+.icon-btn.glow-once { animation: glow-once 1.2s ease-in-out 5; }
+@keyframes glow-once { 50% { box-shadow: 0 0 12px 5px var(--yellow); transform: scale(1.12); } }
+/* The card stays between the two edges of the screen: centered with auto margins, never pushed past
+   the right edge by a shift of half its width (#81: "Sổ tay có t… đỏ." on a screen of 390). */
+.print-card { left: 12px; right: 12px; width: fit-content; max-width: none; margin-inline: auto; transform: none; }
 /* The line of the card wraps in the card, and is never cut at the edge of the screen (#77). */
 .print-card > span:last-child { min-width: 0; overflow-wrap: anywhere; }
 

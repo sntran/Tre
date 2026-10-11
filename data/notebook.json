@@ -7,9 +7,9 @@
   "place"
  ],
  "skillEra": 1,
- "_skills": "The print of each skill (#77): the name that a child knows (titleKey, no digit and no name of an operation) and the picture of the task where the child used the skill (look: a look of data/figures.json). Each skill has its own picture. The names of the curriculum (skill.<id>) show only in the parent area.",
+ "_skills": "The print of each skill (#77; from: the print of the skill when the child earned it first at that task, #81): the name that a child knows (titleKey, no digit and no name of an operation) and the picture of the task where the child used the skill (look: a look of data/figures.json). Each skill has its own picture. The names of the curriculum (skill.<id>) show only in the parent area.",
  "skills": {
-  "math.count.120": { "titleKey": "print.math.count.120", "look": "rod" },
+  "math.count.120": { "titleKey": "print.math.count.120", "look": "rod", "from": { "trial-healer": { "titleKey": "print.math.count.120.trial-healer", "look": "herb-ngai" }, "trial-horse": { "titleKey": "print.math.count.120.trial-horse", "look": "ore-hot" } } },
   "math.place.1000": { "titleKey": "print.math.place.1000", "look": "rod-bundle" },
   "math.share.equal": { "titleKey": "print.math.share.equal", "look": "gift-2" },
   "math.div.10": { "titleKey": "print.math.div.10", "look": "share-mat" },
@@ -17,7 +17,7 @@
   "math.add.10": { "titleKey": "print.math.add.10", "look": "rice-pot-5" },
   "math.sub.10": { "titleKey": "print.math.sub.10", "look": "bowls-3" },
   "math.shapes": { "titleKey": "print.math.shapes", "look": "staffs-2" },
-  "math.add.20": { "titleKey": "print.math.add.20", "look": "stake-set" },
+  "math.add.20": { "titleKey": "print.math.add.20", "look": "stake-set", "from": { "trial-woodcutter": { "titleKey": "print.math.add.20.trial-woodcutter", "look": "sticks-2" }, "folk-loco": { "titleKey": "print.math.add.20.folk-loco", "look": "stones-1" }, "trial-healer": { "titleKey": "print.math.add.20.trial-healer", "look": "basket-low" }, "bridge": { "titleKey": "print.math.add.20.bridge", "look": "deck-3" } } },
   "math.sub.20": { "titleKey": "print.math.sub.20", "look": "pails-3" },
   "math.addsub.100": { "titleKey": "print.math.addsub.100", "look": "sack" },
   "math.addsub.1000": { "titleKey": "print.math.addsub.1000", "look": "cart" },

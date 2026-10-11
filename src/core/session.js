@@ -1078,11 +1078,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The hold of the action button (the jar of feed, the slash at a culm): the act goes on while the
   // button is down, and its end comes when the button goes up.
   let holdAct = null;
-  function hold(on, id = null) {
+  // held: the seconds of the hold by the times of the touch (#81), or null.
+  function hold(on, id = null, held = null) {
     if (!on) {
       const a = holdAct;
       holdAct = null;
-      a?.release?.();
+      a?.release?.(held);
       return;
     }
     const a = pressed(id);
@@ -1889,14 +1890,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   };
   // The tile map for the walks of the hero: the cells under a solid box of a thing of a task (a
   // trough, a heap) are blocked too, so that a walk goes around them.
-  function pathMap() {
+  // people: false: only the walls and the solid things with a box (the mat, a heap), with no round
+  // bodies of people and no narrow gaps next to them (findWay).
+  function pathMap({ people = true } = {}) {
     const solids = query(state, 'solid', 'position').filter((e) => !e.hidden && e.id !== 'hero');
     const boxes = solids.filter((e) => e.solid.rect).map((e) => e.solid.rect);
     // A person or a solid thing near the hero (a person at work, a pot, a cart): its cells, so
     // that a walk goes around and never pushes into it (#44; a pot in a narrow way stopped a walk,
     // #53). People far away (they move) and Nghé (she steps aside) do not count.
     const hp = hero().position;
-    const rounds = solids.filter((e) => !e.solid.rect && e.solid.r && !e.follow && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) < 16)
+    const rounds = solids.filter((e) => people && !e.solid.rect && e.solid.r && !e.follow && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) < 16)
       .map((e) => ({ x: e.position.x, z: e.position.z, r: e.solid.r, person: Boolean(e.person) }));
     // A narrow gap between a person and a wall is no way: a cell beside a wall where the body of
     // the hero touches the person (the walk cannot step around the person there). #56: the mother
@@ -1916,6 +1919,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       walkable: (x, y) => (x === h.x && y === h.y) || (tileMap.walkable(x, y) && !inBox(x, y)),
       isBlocked: (x, y) => tileMap.isBlocked(x, y) || inBox(x, y),
     });
+  }
+  // A path (map cells): around the people near the hero, or, when they close every way (#81: next
+  // to the teacher, a buffalo, and the posts of a house, no tap moved the hero), with only the walls
+  // (the route steps around the people on the way). With nearest, a path that does not leave the
+  // cell of the hero counts as none.
+  function findWay(from, to, opts = {}) {
+    const way = findPath(pathMap(), from, to, opts);
+    if (way && (!opts.nearest || way.length || (from.x === to.x && from.y === to.y))) return way;
+    return findPath(pathMap({ people: false }), from, to, opts) ?? way;
   }
   function walkToThing(target, onArrive) {
     const tile = { x: Math.floor(target.x), y: Math.floor(target.y) };
@@ -1956,7 +1968,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // Walk to a point (map cells) and then along more points, and then do something.
   function walkTo(points, onArrive) {
     const [first] = points;
-    const path = findPath(pathMap(), heroFrom(), { x: Math.floor(first.x), y: Math.floor(first.y) });
+    const path = findWay(heroFrom(), { x: Math.floor(first.x), y: Math.floor(first.y) });
     if (!path) return false;
     walkPath(path.slice(0, -1), points, onArrive);
     return true;
@@ -2154,6 +2166,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // "Bó ngải cứu đây." at each press, and the child did not know if a bunch went in or out).
   let oneMove = null;
   // A task (its owner, trial-<id>) that is open now.
+  const doneTask = (task) => Boolean(task?.startsWith('trial-') && trialZone(task.slice(6))?.zone.done);
   const openTask = (task) => {
     if (!task?.startsWith('trial-')) return false;
     const tz = trialZone(task.slice(6));
@@ -2401,7 +2414,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         for (const e of query(state, 'item', 'position')) {
           if (e.item.kind !== 'culm' || e.hidden) continue;
           const culm = e.item.slot;
-          add({ act: 'slash', icon: 'knife', target: e.id, at: e.position, rank: 0, work: true, hold: true, run: () => work('staffs', 'aim', { culm }), release: () => work('staffs', 'slash', { culm }) }, REACH + 2);
+          add({ act: 'slash', icon: 'knife', target: e.id, at: e.position, rank: 0, work: true, hold: true, run: () => work('staffs', 'aim', { culm }), release: (held) => work('staffs', 'slash', { culm, held }) }, REACH + 2);
         }
       }
       // The stem of the woodcutter: a chalk mark at the place in front of the hero (or at the place
@@ -2445,6 +2458,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (zone && rule !== 'heap' && rule !== 'pile') continue;
         // The planks of a closed bridge do not move (#71).
         if (rule === 'pile' && !bridgeOpen()) continue;
+        // A press never takes a thing from the heap of a done task (#81: after the task of the
+        // teacher, a press took a rod, and then the button stayed grey).
+        if (doneTask(e.item.task)) continue;
         // Of the things of a task, the kind of the last pick first, while a heap has that kind. A
         // tap on a thing chooses it.
         if (want !== null && chosen?.id !== e.id && chosen?.id !== zone?.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || SAME_KIND.has(lastPick.task))) continue;
@@ -2518,14 +2534,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const front = frontOf(hp);
     // The places of a task that take the thing now (#68: a full mat takes no rod). When none of them
     // does, the button shows the way back to the heap of the thing, also with no tap on the heap.
-    const takes = (z) => canPut(z.zone, held) && hasRoom(z.zone) && !['heap', 'pile', 'road'].includes(z.zone.rule);
-    const noPlace = Boolean(held.item.home) && openTask(held.item.task) && !query(state, 'zone').some(takes);
+    const takes = (z) => canPut(z.zone, held) && hasRoom(z.zone) && !['heap', 'pile', 'road'].includes(z.zone.rule) && !doneTask(z.zone.task);
+    // A thing of a done task (taken before #81) goes back to its heap with a press too.
+    const noPlace = Boolean(held.item.home) && (openTask(held.item.task) || doneTask(held.item.task)) && !query(state, 'zone').some(takes);
     for (const z of query(state, 'zone')) {
       const zone = z.zone;
       if (!canPut(zone, held) || !hasRoom(zone)) continue;
       // A place of a done task is never a target (#54: the forge of the smith and the hearth of the
-      // iron horse are at the same place).
-      if (zone.task?.startsWith('trial-') && trialZone(zone.task.slice(6))?.zone.done) continue;
+      // iron horse are at the same place), but a thing of the task goes back to its own heap.
+      if (zone.rule !== 'heap' && doneTask(zone.task)) continue;
       const work = openTask(zone.task);
       const put = (at, opts = {}) => worldCommand(state, { type: 'put', id: 'hero', zone: zone.id, ...(at ? { at } : {}), ...opts });
       if (zone.rule === 'span') {
@@ -3073,6 +3090,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A tap on a star (or on its arrow at the edge of the screen): a walk all the way to the goal
     // along the roads, or to the ferry on the way (#53). A new tap, a talk, or a ferry stops it.
     if (hit.goal) {
+      // A tap on a face during a folk game ends the game, and the hero walks to that person (#81:
+      // in the middle of the hopscotch, a tap on the face of the smith did nothing).
+      const game = folk.active();
+      if (game) {
+        folk.stop();
+        emit({ type: 'open', screen: 'callout', id: game === 'loco' ? 'npc:loco-child' : 'npc:rope-child', textKey: `${game === 'loco' ? 'loco' : 'rope'}.leave`, params: {} });
+      }
       // The star of a person: the walk follows the person and ends next to the person (#72: the
       // walk to the star of the teacher ended at the pile of planks, where he stood before).
       const who = persons().find((q) => q.kind === 'npc' && Math.hypot(q.x - hit.x, q.y - hit.y) < STAR_PERSON);
@@ -3085,7 +3109,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     const paths = pathMap();
-    if (paths.walkable(tile.x, tile.y)) walkPath(findPath(paths, from, tile)?.slice(0, -1), { x: hit.x, y: hit.y }, null);
+    if (paths.walkable(tile.x, tile.y)) walkPath(findWay(from, tile)?.slice(0, -1), { x: hit.x, y: hit.y }, null);
     else if (hit.under) {
       // A tap on a roof, a wall, or a tree: the hero walks around it to the free cell nearest to
       // the ground under the finger, the side that the child sees past it (#53).
@@ -3149,10 +3173,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The last step: onto the cell of the goal when the hero can stand there, so that the hero
       // comes into the zone of a place (the gate of Văn Miếu, #51).
       const tile = { x: Math.floor(goal.x), y: Math.floor(goal.y) };
-      if ((from.x !== tile.x || from.y !== tile.y) && pathMap().walkable(tile.x, tile.y)) walkPath(findPath(pathMap(), from, tile), { x: goal.x, y: goal.y }, null);
+      if ((from.x !== tile.x || from.y !== tile.y) && pathMap().walkable(tile.x, tile.y)) walkPath(findWay(from, tile), { x: goal.x, y: goal.y }, null);
       return true;
     }
-    const way = findPath(pathMap(), from, { x: Math.floor(goal.x), y: Math.floor(goal.y) }, { maxNodes: LEG, nearest: true });
+    const way = findWay(from, { x: Math.floor(goal.x), y: Math.floor(goal.y) }, { maxNodes: LEG, nearest: true });
     const end = way?.length ? way[way.length - 1] : null;
     if (!end || Math.hypot(goal.x - end.x - 0.5, goal.y - end.y - 0.5) > left - 1) {
       // No nearer because the land ahead is not made yet (the chunks come a little later in the
@@ -3431,7 +3455,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The card has the name that a child knows and the picture of the task (#77), never the
       // name of the curriculum.
       if (skill && (skill.era ?? 1) <= (data.notebook.skillEra ?? 1)) {
-        const print = skillPrint(data.notebook, skill);
+        // The print of the task where the child earned the skill (#81).
+        const from = ev.task ?? null;
+        profile.notebook ??= { seen: {} };
+        profile.notebook.from ??= {};
+        profile.notebook.from[skill.id] ??= from;
+        const print = skillPrint(data.notebook, skill, profile.notebook.from[skill.id]);
         emit({ type: 'notebook', id: print.id, titleKey: print.titleKey, look: print.look, kind: 'skill', subject: skill.subject });
       }
     }
@@ -3820,7 +3849,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     // The end of a hold of the button: letting go always counts, even while a line shows.
     if (type === 'hold' && !cmd.on) {
-      hold(false);
+      hold(false, null, cmd.held ?? null);
       return;
     }
     if (busy) return;

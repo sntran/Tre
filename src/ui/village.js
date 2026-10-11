@@ -357,16 +357,18 @@ export async function mountVillage(ctx, params = {}) {
   // The jump (src/core/world/jump.js): a round button at the bottom right, and Space (or J).
   const jumpBtn = h('button', { class: 'turn-btn jump-btn', type: 'button', 'aria-label': t('ui.jump'), title: t('ui.jump') }, [img('ui/jump', 'btn-icon')]);
   // A press jumps at once; its end tells the length of the press (on the court of nhảy lò cò a long
-  // press hops two squares, over the shard).
+  // press hops two squares, over the shard). The length is the time between the two events of the
+  // touch (event.timeStamp), not the time of the handlers (#81: in a slow frame a short tap read as
+  // a long press).
   let jumpDown = null;
   jumpBtn.addEventListener('pointerdown', (e) => {
     e.preventDefault();
-    jumpDown = performance.now();
+    jumpDown = e.timeStamp;
     send({ type: 'jump' });
   });
-  const jumpEnd = () => {
+  const jumpEnd = (e) => {
     if (jumpDown === null) return;
-    send({ type: 'jumpUp', held: (performance.now() - jumpDown) / 1000 });
+    send({ type: 'jumpUp', held: Math.max(0, (e?.timeStamp ?? performance.now()) - jumpDown) / 1000 });
     jumpDown = null;
   };
   for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) jumpBtn.addEventListener(ev, jumpEnd);
@@ -386,6 +388,7 @@ export async function mountVillage(ctx, params = {}) {
   // before the child started to count).
   const QUIET_AFTER_TALK = 600; // ms
   let quietUntil = 0;
+  let holdDown = 0; // the time of the touch of a hold (event.timeStamp, #81)
   actBtn.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     if (busy || performance.now() < quietUntil) return;
@@ -393,13 +396,14 @@ export async function mountVillage(ctx, params = {}) {
     // nothing. A press on a dim button goes to the game too: during a walk the act comes at the end.
     if (actNow?.hold) {
       actHold = true;
+      holdDown = e.timeStamp;
       send({ type: 'hold', on: true, id: actNow.id });
     } else send({ type: 'hands', id: actNow?.id ?? null });
   });
-  const actUp = () => {
+  const actUp = (e) => {
     if (!actHold) return;
     actHold = false;
-    send({ type: 'hold', on: false });
+    send({ type: 'hold', on: false, held: Math.max(0, (e?.timeStamp ?? performance.now()) - holdDown) / 1000 });
   };
   for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) actBtn.addEventListener(ev, actUp);
   // The picture of the button follows the hands and the task in reach.
@@ -846,11 +850,11 @@ export async function mountVillage(ctx, params = {}) {
       else if (e.repeat) return;
       else if (what === 'turnLeft' || what === 'turnRight') handTurnTo(what === 'turnLeft' ? -1 : 1);
       else if (what === 'jump') {
-        jumpDown = performance.now();
+        jumpDown = e.timeStamp;
         send({ type: 'jump' });
       } else send({ type: 'hands', id: actNow?.id ?? null });
     } else {
-      if (what === 'jump') jumpEnd();
+      if (what === 'jump') jumpEnd(e);
       // The action key up: the pour of the jar stops (as the finger leaves the action button).
       if (what === 'act') send({ type: 'hold', on: false });
       keys.delete(e.code);
@@ -1395,10 +1399,22 @@ export async function mountVillage(ctx, params = {}) {
     ctx.ui.append(card);
     printCard = card;
     // The voice says the card in its turn, as a line of a bubble (#72: a child who cannot read
-    // yet did not know the card). A print of a skill has the name that a child knows (#77).
-    const line = { id: 'print', key: 'note.new', params: { name }, voice: lineVoice(null), kind: 'line' };
+    // yet did not know the card). A print of a skill has the name that a child knows (#77). The
+    // word "sổ tay" is said one time (#81: the voice said "Sổ tay có tranh mới" eight times, and a
+    // child did not know the word): at the first card grandma says what the notebook is, and the
+    // menu button (where the notebook is) glows; each card then says only the new picture.
+    const first = !profile.notebook?.told;
+    if (first) {
+      profile.notebook ??= { seen: {} };
+      profile.notebook.told = true;
+      voiceQueue.offer({ id: 'print-first', key: 'note.first', params: {}, voice: lineVoice('grandma'), kind: 'line' }, speaking() || Boolean(spoken), performance.now() / 1000);
+      menuBtn.classList.remove('glow-once');
+      void menuBtn.offsetWidth;
+      menuBtn.classList.add('glow-once');
+    }
+    const line = { id: 'print', key: 'note.newName', params: { name }, voice: lineVoice(null), kind: 'line' };
     voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
-    setTimeout(() => { if (printCard === card) { card.remove(); printCard = null; } }, 5000);
+    setTimeout(() => { if (printCard === card) { card.remove(); printCard = null; } }, first ? 10000 : 5000);
   }
   // The lights of the bursts of a success (#62): a warm light for a moment, also at night.
   let cheerLights = [];
@@ -1638,7 +1654,13 @@ export async function mountVillage(ctx, params = {}) {
     e.preventDefault();
     e.stopPropagation();
     const m = e.currentTarget.mark;
-    if (!m || busy || !alive) return;
+    if (!m || !alive) return;
+    // During the line about the round marks with a face, a tap on a face goes on to the next line
+    // (#81: the children tapped the face as grandma said, and nothing happened).
+    if (busy) {
+      if (marksLine) send({ type: 'next' });
+      return;
+    }
     ctx.log('action', { kind: 'star' });
     sayStar(m);
     send({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h, thing: false, object: null, goal: true } } });

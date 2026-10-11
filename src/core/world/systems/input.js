@@ -86,7 +86,7 @@ export function input(world, dt, rng, env) {
     } else if (c.type === 'work') {
       // The acts of one step stay in their order: a quick tap on a hold button gives the press
       // and the release in one step, and the release must come after the press.
-      const w = { trial: c.trial, act: c.act, item: c.item ?? null, at: c.at ?? null, culm: c.culm ?? null, plot: c.plot ?? null, which: c.which ?? null };
+      const w = { trial: c.trial, act: c.act, item: c.item ?? null, at: c.at ?? null, culm: c.culm ?? null, plot: c.plot ?? null, which: c.which ?? null, held: c.held ?? null };
       e.work = [...(e.work ?? []), w];
     } else if (c.type === 'poke' && e.act === 'sleep') {
       e.flick = 0.8;

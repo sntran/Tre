@@ -362,6 +362,8 @@ export function validate(profile, { grades = null } = {}) {
   if (profile.notebook !== undefined) {
     if (!isObj(profile.notebook)) fail('notebook');
     for (const [, v] of entries(profile.notebook.seen ?? {}, 'notebook.seen')) int(v, 'notebook.seen value', 0, 1e9);
+    // The task where the child earned each skill first (#81): its print.
+    for (const [, v] of entries(profile.notebook.from ?? {}, 'notebook.from')) if (v !== null) str(v, 'notebook.from value', 60, 1);
   }
   if (profile.world !== undefined) validateWorld(profile.world, { fail, num, int, str, list, isObj });
   if (profile.log !== undefined) validateLog(profile.log, { fail, num, int, str, list, isObj });

@@ -29,6 +29,13 @@
           "speaker": "teacher",
           "textKey": "dlg.teacher.trial.done.n1",
           "calling": "scholar",
+          "mood": "happy",
+          "next": "who"
+        },
+        "who": {
+          "speaker": "teacher",
+          "textKey": "dlg.teacher.trial.done.who",
+          "calling": "scholar",
           "mood": "happy"
         }
       }

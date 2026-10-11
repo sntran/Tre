@@ -839,7 +839,9 @@ function act(world, e, want, env) {
     delete tz.zone.aim;
     removeEntity(world, 'aim:staffs');
     if (want.at == null && aim?.culm !== i) return;
-    const at = Math.round(want.at ?? aim.at);
+    // The height by the time of the touch when the view sends it (#81), else by the time of the world.
+    const byTouch = want.held != null && aim?.culm === i ? Math.min(task.reach, 1 + Math.floor(want.held / AIM_RISE)) : null;
+    const at = Math.round(want.at ?? byTouch ?? aim.at);
     if (!c || !culm || tz.zone.cut || at < 1 || at >= task.height) return;
     if (at > task.reach) return say(world, 'high', tz.id, { culm: i, sound: 'tap' });
     removeEntity(world, culm.id);

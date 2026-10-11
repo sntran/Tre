@@ -1,5 +1,5 @@
 {
-  "_about": "The five callings (nghề). A calling never blocks a subject. look: the look of the mentor in data/figures.json, drawn at full length with the tool of the calling. lineKey: one short line of what the child learns with the mentor in the world (the card of the choice, #51).",
+  "_about": "The five callings (nghề). A calling never blocks a subject. look: the look of the mentor in data/figures.json, drawn at full length with the tool of the calling. lineKey: one short line of what the child learns with the mentor in the world (the card of the choice, #51). whoKey: who they were, under the name on the card next to the talk box, for a name that a child does not know (#81: Nho sinh).",
   "callings": [
     {
       "id": "scholar",
@@ -7,7 +7,8 @@
       "nameKey": "calling.scholar.name",
       "mentorKey": "calling.scholar.mentor",
       "subjectKey": "calling.scholar.subject",
-      "lineKey": "calling.scholar.line"
+      "lineKey": "calling.scholar.line",
+      "whoKey": "calling.scholar.who"
     },
     {
       "id": "smith",

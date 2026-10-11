@@ -57,7 +57,7 @@ export function notebookOf(def, skills, profile, sent = new Set()) {
   for (const s of notebookSkills(def, skills, profile.grade ?? 1, learned, sent)) {
     const e = learned[s.id];
     const met = Boolean(e && e.n > 0);
-    out.push({ ...skillPrint(def, s), met, sealed: met && Boolean(e.mastered) });
+    out.push({ ...skillPrint(def, s, profile.notebook?.from?.[s.id] ?? null), met, sealed: met && Boolean(e.mastered) });
   }
   for (const e of def.entries) out.push({ id: e.id, kind: e.kind, titleKey: e.titleKey, look: e.look ?? null, met: isMet(e.met, profile), sealed: false });
   // The pages with the most met prints first, then in their order; on a page, the met prints come
@@ -74,9 +74,13 @@ export function notebookOf(def, skills, profile, sent = new Set()) {
 // name of an operation ("Cộng trong phạm vi 20"). skillKey: the name of the curriculum, for the
 // parent area. A skill with no print in def.skills has the name of the curriculum and the picture
 // of its subject.
-export function skillPrint(def, skill) {
+// from: the task where the child earned the skill first (a skill event task: trial-woodcutter,
+// folk-loco, bridge): the print of that task when the skill has one (#81: the print of the stakes
+// of the fisher came at the first cut of the woodcutter and at the hopscotch).
+export function skillPrint(def, skill, from = null) {
   const p = def.skills?.[skill.id];
-  return { id: `skill:${skill.id}`, kind: 'skill', skill: skill.id, subject: skill.subject, titleKey: p?.titleKey ?? `skill.${skill.id}`, skillKey: `skill.${skill.id}`, look: p?.look ?? null };
+  const v = from ? p?.from?.[from] : null;
+  return { id: `skill:${skill.id}`, kind: 'skill', skill: skill.id, subject: skill.subject, titleKey: v?.titleKey ?? p?.titleKey ?? `skill.${skill.id}`, skillKey: `skill.${skill.id}`, look: v?.look ?? p?.look ?? null };
 }
 
 // The entries that a new key fills in (the entries whose rule is the key).
