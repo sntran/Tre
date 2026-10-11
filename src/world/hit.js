@@ -4,10 +4,14 @@
 // same hit test, so that a story taps where a child taps.
 // World units here: blocks (x, z on the ground, y up). The positions of the entities are in half
 // blocks.
-import { VIEW, viewSize, leadFocus } from './view.js';
+import { VIEW, viewSize, frameWork } from './view.js';
 import { pickGround, pickTopOf, columnTop } from './terrain.js';
 
 export const THING_PAD = 6; // screen pixels around the box of a thing, for small fingers
+// The area that takes the tap of a small thing of a task is at least TAP_AREA points across, about
+// 10 mm on a phone (#83: children of 5 to 10 miss a target of 4.8 mm about 30 times in 100, and a
+// target of 9.6 mm about 5 times in 100).
+export const TAP_AREA = 60;
 export const PERSON_PAD = 10; // screen pixels around the box of a person
 export const PERSON_PAD_AT_PLACE = -6; // next to a place of a task: only the body of the person
 export const FRIEND_PAD = 8; // screen pixels around Nghé
@@ -18,9 +22,10 @@ export const BODY_DEPTH = 0.4; // blocks: a person this far behind a thing still
 // screen of width x height pixels. project: a world point to a screen point (pixels from the top
 // left); screenBox: the screen box of a world box; nearness: bigger is nearer to the camera; ray:
 // the ray of a screen point (for the pick of the ground).
-export function viewCamera({ focus, az = Math.PI / 4, level = 0, width, height }) {
+// scale: the frame of a work (viewSize).
+export function viewCamera({ focus, az = Math.PI / 4, level = 0, width, height, scale = 1 }) {
   const e = VIEW.elevation;
-  const size = viewSize(width, height, level);
+  const size = viewSize(width, height, level, scale);
   const dir = [Math.cos(e) * Math.sin(az), Math.sin(e), Math.cos(e) * Math.cos(az)];
   const right = [Math.cos(az), 0, -Math.sin(az)];
   const up = [dir[1] * right[2] - dir[2] * right[1], dir[2] * right[0] - dir[0] * right[2], dir[0] * right[1] - dir[1] * right[0]];
@@ -68,7 +73,7 @@ export function groundPick(cam, tileMap) {
 const PLACED = new Set(['basket', 'mat', 'hearth', 'share']);
 // The height of a stake of the row of the fisher over the water, for a tap (blocks).
 const STAKE_TALL = 1.2;
-const inBox = (p, b, pad) => p.x >= b.x0 - pad && p.x <= b.x1 + pad && p.y >= b.y0 - pad && p.y <= b.y1 + pad;
+const inBox = (p, b, pad, padY = pad) => p.x >= b.x0 - pad && p.x <= b.x1 + pad && p.y >= b.y0 - padY && p.y <= b.y1 + padY;
 
 // Can a tap choose this thing? A thing that is set does not move, but a fixed thing of a task (a
 // stem, the iron, a culm) answers a tap.
@@ -95,7 +100,8 @@ export function thingUnder(p, cam, things, pad = THING_PAD) {
       y0: q.y / 2, y1: q.y / 2 + (up ? tall : 0.5),
       z0: Math.min(q.z, end.z) / 2 - 0.5, z1: Math.max(q.z, end.z) / 2 + 0.5,
     });
-    if (!inBox(p, b, pad)) continue;
+    // A small thing takes a tap in an area of at least TAP_AREA points (#83).
+    if (!inBox(p, b, Math.max(pad, (TAP_AREA - (b.x1 - b.x0)) / 2), Math.max(pad, (TAP_AREA - (b.y1 - b.y0)) / 2))) continue;
     const a = cam.project(q.x / 2, q.y / 2 + (up ? 0 : 0.4), q.z / 2);
     const c = cam.project(end.x / 2, q.y / 2 + (up ? tall : 0.4), end.z / 2);
     const dx = c.x - a.x;
@@ -141,8 +147,9 @@ export function guessUnder(p, cam, guesses) {
 }
 
 // The point of the row of the fisher nearest to a screen point: { a (half blocks from its start),
-// d (pixels) }, or null when the finger is not on the row.
-const ROW_PAD = 18;
+// d (pixels) }, or null when the finger is not on the row. A point takes a tap in a circle of
+// TAP_AREA points (#83).
+const ROW_PAD = TAP_AREA / 2;
 function rowUnder(p, cam, row) {
   let best = null;
   for (let a = 1; a <= row.length; a++) {
@@ -245,14 +252,25 @@ export function tapTarget(p, w) {
 }
 
 // The camera of the game on a phone for a headless session (the tests and the story step tap:
-// { screenOf }): the focus on the hero, led toward the work in view (leadFocus), at the angle az.
+// { screenOf }): as the village does (#83), the frame of the work in view (frameWork) with the
+// hero and the person, or the hero in the middle, at the angle az. The renderer looks at a point
+// 1.5 over the ground (LIFT).
+const LIFT = 1.5;
+const FRAME_CLOSE = 0.6;
+const WORK_AWAY = 16;
 export function sessionCamera(session, { az = Math.PI / 4, width = 390, height = 844 } = {}) {
   const half = (p) => ({ x: p.x / 2, y: (p.y ?? 0) / 2, z: p.z / 2 });
   const hero = session.state.entities.find((e) => e.id === 'hero');
   const at = half(hero.position);
   const work = session.work?.();
-  const lead = work?.points?.length ? leadFocus([at, ...work.points.map(half)], { az, width, height }) : { focus: at, level: 0 };
-  return viewCamera({ focus: lead.focus, az, level: lead.level, width, height });
+  const pts = (work?.points ?? []).map(half);
+  const person = work?.person ? session.state.entities.find((e) => e.id === work.person) : null;
+  const mid = pts.length ? pts.reduce((a, p) => ({ x: a.x + p.x / pts.length, z: a.z + p.z / pts.length }), { x: 0, z: 0 }) : null;
+  if (!mid || hero.riding || Math.hypot(at.x - mid.x, at.z - mid.z) > WORK_AWAY) return viewCamera({ focus: { ...at, y: at.y + LIFT }, az, width, height });
+  if (person?.position) pts.push(half(person.position));
+  const nearH = viewSize(width, height, 0).h;
+  const f = frameWork([at, ...pts], { az, width, height, min: nearH * FRAME_CLOSE, max: viewSize(width, height, VIEW.zooms.length - 1).h, lift: LIFT });
+  return viewCamera({ focus: { ...f.focus, y: at.y + LIFT }, az, width, height, scale: f.h / nearH });
 }
 
 // What the screen of a headless session shows (the same lists as the village gives to tapTarget):

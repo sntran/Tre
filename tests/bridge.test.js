@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
 import { getEntity, query } from '../src/core/world/state.js';
 import { taskPools } from '../src/world/light.js';
-import { leadFocus } from '../src/world/view.js';
+import { frameWork, viewSize } from '../src/world/view.js';
 
 const profile = (flags) => ({ name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true, ...flags } });
 
@@ -51,7 +51,7 @@ test('at night the lines of Nghé turn the view to the planks for the guess, and
   assert.equal(view.points.length, view.rows.length);
   for (const g of view.rows) assert.ok(view.points.some((p) => p.x === g.x && p.z === g.z), `the view holds ${g.id}`);
   const angles = [0, 1, 2, 3].map((k) => Math.PI / 4 + (k * Math.PI) / 2);
-  const fits = (v) => angles.some((az) => leadFocus([v.hero, ...v.points].map((p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 })), { az, width: 390, height: 844 }).fits);
+  const fits = (v) => angles.some((az) => frameWork([v.hero, ...v.points].map((p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 })), { az, width: 390, height: 844, max: viewSize(390, 844, 1).h }).fits);
   assert.ok(fits(view), 'the rows and the hero fit on a phone held upright');
   // After the guess, the line of the next step names the pile and the gap: the view leads to them.
   assert.ok(lines.includes('mentor.bridge.next'), `the line of the next step: ${lines.join(', ')}`);

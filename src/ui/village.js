@@ -25,7 +25,7 @@ import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
 import { workBoxes, workTurn } from '../world/fade.js';
 import { taskPools } from '../world/light.js';
-import { VIEW, SAFE, TALK_SAFE, viewSize, inView, leadFocus } from '../world/view.js';
+import { VIEW, SAFE, TALK_SAFE, viewSize, inView, frameWork } from '../world/view.js';
 import { heroLook, thingLook } from '../world/figures.js';
 import { tapTarget, thingUnder } from '../world/hit.js';
 import { h, img, button } from './dom.js';
@@ -781,6 +781,7 @@ export async function mountVillage(ctx, params = {}) {
       stick.kx = kx;
       stick.ky = ky;
       stick.far = Math.max(stick.far, Math.hypot(kx, ky));
+      if (stick.far >= 12) nearAgain();
       return;
     }
     if (hold && hold.id === e.pointerId) {
@@ -928,6 +929,8 @@ export async function mountVillage(ctx, params = {}) {
       send({ type: 'pet', id: target.pet });
     } else if (target) send({ type: 'tap', target });
     else ctx.bus.emit('sound', 'tap');
+    // The tap is on the view that the child saw; the walk then goes on in the near view (#83).
+    if (target && !target.pet) nearAgain();
   }
 
   canvas.addEventListener('pointerdown', onDown);
@@ -1140,68 +1143,58 @@ export async function mountVillage(ctx, params = {}) {
     const at = (p) => ({ x: p.x / 2, y: groundY(p.x / 2, p.z / 2), z: p.z / 2 });
     return [heroAt, ...r.posts.map(at), ...r.enemies.filter((e) => e.state !== 'retreat').map(at)];
   }
-  // The mat of the teacher (#69): while the child works next to it, the view comes closer, so that
-  // each rod on the mat is at least 8 pixels wide on a phone, and the middle of the view is between
-  // the hero and the mat.
-  // The basket of the healer too (#74: the bunches in the basket were a few pixels, and the child
-  // did not know what was in it): next to the basket the view comes closer, between the hero and
-  // the basket.
-  const CLOSE_WORK = [
-    { zone: 'zone:mat', trial: 'zone:trial-scholar', scale: 0.6, near: 7 },
-    // The healer stays on the screen too (the play of #74: she stood half off the screen at the
-    // right edge, and a tap on her to give the basket missed her).
-    { zone: 'zone:basket', trial: 'zone:trial-healer', scale: 0.72, near: 8, person: 'npc:healer' },
-    // The row of the fisher (#76: the view went so far out that the stakes were a few pixels).
-    { zone: 'zone:line', trial: 'zone:trial-fisher', scale: 0.85, near: 12 },
-    // The stem of the woodcutter (the play of #75: after a cut, the pieces and their glow were a
-    // few pixels on a phone).
-    { zone: 'zone:trial-woodcutter', trial: 'zone:trial-woodcutter', scale: 0.8, near: 10 },
-  ];
-  function matFocus(heroAt) {
-    for (const w of CLOSE_WORK) {
-      const place = getEntity(state, w.zone);
-      const open = place && getEntity(state, w.trial)?.zone.done === false;
-      const r = place?.zone.rect;
-      const line = place?.zone.rule === 'line' ? place.zone : null;
-      const stem = place?.zone.stem;
-      const c = stem ? { x: (stem.x + stem.length / 2) / 2, z: stem.z / 2 } : line ? { x: (line.x + line.length / 2) / 2, z: line.z / 2 } : r ? { x: (r.x0 + r.x1) / 4, z: (r.z0 + r.z1) / 4 } : place?.position ? { x: place.position.x / 2, z: place.position.z / 2 } : null;
-      const near = open && c && !hero().riding && Math.hypot(heroAt.x - c.x, heroAt.z - c.z) < w.near;
-      if (!near) continue;
-      view.setScale(w.scale);
-      const p = w.person ? figures.placeOf(w.person) : null;
-      if (p && Math.hypot(p.x - c.x, p.z - c.z) < w.near) return { ...heroAt, x: (heroAt.x + c.x + p.x) / 3, z: (heroAt.z + c.z + p.z) / 3 };
-      return { ...heroAt, x: (heroAt.x + c.x * 2) / 3, z: (heroAt.z + c.z * 2) / 3 };
+  // The frame of the work (#83): at a task, the view shows the whole work (the mat and the heap, the
+  // beds and the basket, the whole row with the float, the stem with its pieces, the anvil and the
+  // trough) with the hero and the person, as big as it can, in the safe part of the screen. It
+  // takes the place of the fixed close views of #69, #74, #75, and #76. In a raid, the posts and the
+  // enemies all show. The frame is never closer than FRAME_CLOSE of the near view, and never farther
+  // than the far view. A far view that the child chose with a pinch stays until the child walks.
+  const FRAME_CLOSE = 0.6;
+  const wu = (p) => ({ x: p.x / 2, y: (p.y ?? 0) / 2, z: p.z / 2 });
+  function workFrame(heroAt) {
+    if (view.state.level !== 0 || hero().riding) return null;
+    let pts = null;
+    let safe = SAFE;
+    const r = getEntity(state, 'raid')?.raid;
+    if (r && !r.result) pts = [...seenPoints(heroAt).slice(1), ...raidView.points().map((p) => ({ ...p, y: groundY(p.x, p.z) }))];
+    else {
+      // The work of the open task (also after a walk away and back), or the last work of the view
+      // (a walk to a face, an example, the bridge); the things that a talk names come first.
+      const live = session.work();
+      const w = work?.talk ? work : live ? { points: live.points.map(wu), person: live.person } : work;
+      if (w?.points.length) {
+        const mid = w.points.reduce((a, p) => ({ x: a.x + p.x / w.points.length, z: a.z + p.z / w.points.length }), { x: 0, z: 0 });
+        if (Math.hypot(heroAt.x - mid.x, heroAt.z - mid.z) > WORK_AWAY) {
+          if (w === work) work = null;
+        } else {
+          pts = [...w.points];
+          const p = w.person ? figures.placeOf(w.person) : null;
+          if (p && Math.hypot(p.x - mid.x, p.z - mid.z) < WORK_AWAY) pts.push(p);
+          if (w.talk) safe = TALK_SAFE;
+        }
+      }
     }
-    view.setScale(1);
-    return null;
+    if (!pts?.length) return null;
+    const nearH = viewSize(size.width, size.height, 0).h;
+    const f = frameWork([heroAt, ...pts], { az: view.angle, width: size.width, height: size.height, safe, min: nearH * FRAME_CLOSE, max: viewSize(size.width, size.height, VIEW.zooms.length - 1).h, lift: 1.5 });
+    view.setScale(f.h / nearH);
+    return { ...heroAt, x: f.focus.x, z: f.focus.z };
   }
-  function leadToWork(heroAt) {
-    const close = matFocus(heroAt);
-    if (close) return close;
-    if (!work) return heroAt;
-    const mid = work.points.reduce((a, p) => ({ x: a.x + p.x / work.points.length, z: a.z + p.z / work.points.length }), { x: 0, z: 0 });
-    if (Math.hypot(heroAt.x - mid.x, heroAt.z - mid.z) > WORK_AWAY) {
-      if (work.zoomed) view.setZoom(work.level);
-      work = null;
-      return heroAt;
-    }
-    const lead = leadFocus([heroAt, ...work.points], { az: view.angle, width: size.width, height: size.height, safe: work.talk ? TALK_SAFE : SAFE });
-    if (lead.level > view.state.level && !work.zoomed) {
-      work.zoomed = true;
-      view.setZoom(lead.level);
-    }
-    return { ...heroAt, x: lead.focus.x, z: lead.focus.z };
+  // The far view of a pinch is for a look around (#83): it goes back to the near view when the
+  // child walks (a tap, the stick), taps a face, or starts work.
+  function nearAgain() {
+    if (view.state.level !== 0) view.setZoom(0);
   }
   // The view that the child chose stays: for HAND_KEEP milliseconds after a turn of the child, no
   // work turns the view by itself (#75: the child turned the view to a good side of the stem, and
   // at the next walk the view turned back). The view still leads to the work.
   const HAND_KEEP = 5 * 60 * 1000;
-  function turnToWork(points, sight = []) {
+  function turnToWork(points, sight = [], person = null) {
     const wu = (p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 });
     const pts = (points ?? []).map(wu);
     if (!pts.length) return;
-    if (work?.zoomed) view.setZoom(work.level);
-    work = { points: pts, level: view.state.level, zoomed: false };
+    work = { points: pts, person: person ?? null };
+    nearAgain();
     const focus = wu(hero().position);
     const scr = viewSize(size.width, size.height, view.state.level);
     const inSight = (az) => sight.map(wu).every((p) => inView({ x0: p.x - 0.5, x1: p.x + 0.5, y0: p.y, y1: p.y + 1, z0: p.z - 0.5, z1: p.z + 0.5 }, focus, { az, size: scr }));
@@ -1523,7 +1516,7 @@ export async function mountVillage(ctx, params = {}) {
       case 'cue': figures.glow(ev.ids, ev.spots, ev.rings); return;
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
-      case 'workView': turnToWork(ev.points, ev.sight); return;
+      case 'workView': turnToWork(ev.points, ev.sight, ev.person); return;
       // A new print in the notebook (#8): a small card at the top for a moment; a tap opens the
       // notebook.
       case 'notebook': printQueue.push(ev); return;
@@ -1676,6 +1669,7 @@ export async function mountVillage(ctx, params = {}) {
     ctx.log('action', { kind: 'star' });
     sayStar(m);
     send({ type: 'tap', target: { ground: { x: m.x, y: m.y, h: m.h, thing: false, object: null, goal: true } } });
+    nearAgain();
   };
   const tappable = (el) => {
     el.addEventListener('pointerdown', starTap);
@@ -2143,7 +2137,11 @@ export async function mountVillage(ctx, params = {}) {
     const puddles = puddlesAt((d) => rainOf(state.seed, d, data.day ?? undefined), state.clock.minutes);
     const heroAt = figures.placeOf('hero');
     if (!heroAt) return;
-    view.render(dt, raidView.focus(leadToWork(heroAt)), time, { ...state.sky, puddles }, ambient, seenPoints(heroAt));
+    // In a raid the frame shows the posts, the enemies, and the sources (#83); else the focus of
+    // the raid view (the first trap) when the frame did not apply.
+    const lead = workFrame(heroAt);
+    if (!lead) view.setScale(1);
+    view.render(dt, lead ?? raidView.focus(heroAt), time, { ...state.sky, puddles }, ambient, seenPoints(heroAt));
     drawSky();
     raidView.draw(dt, w, hh);
     drawMarks(dt);

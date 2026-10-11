@@ -8,7 +8,14 @@ import { planeOf, load } from './helpers.js';
 import { placesOf } from '../src/core/world/env.js';
 import { readFileSync } from 'node:fs';
 import { workBoxes, workCovers, workTurn, TALL } from '../src/world/fade.js';
-import { VIEW, TALK_SAFE, viewSize, inView, inSafe, figureBox, leadFocus } from '../src/world/view.js';
+import { VIEW, TALK_SAFE, viewSize, inView, inSafe, figureBox, frameWork } from '../src/world/view.js';
+
+// The frame of a work on a phone held upright (#83: the village frames each work as big as it
+// can, and never farther than the far view).
+const frame = (points, opts) => {
+  const f = frameWork(points, { width: 390, height: 844, max: viewSize(390, 844, 1).h, ...opts });
+  return { ...f, size: { w: (f.h * 390) / 844, h: f.h } };
+};
 import { runHeadless } from './story-run.js';
 
 const ANGLES = [0, 1, 2, 3].map((k) => Math.PI / 4 + (k * Math.PI) / 2);
@@ -77,9 +84,9 @@ test('with the real camera on a phone held upright (the focus on the hero after 
     const hero = atWork ? { x: w.person.x + ((w.person.x - mid.x) / d) * 1.5, y: w.person.y, z: w.person.z + ((w.person.z - mid.z) / d) * 1.5 } : { ...w.places[0], x: w.places[0].x + 1.5 };
     for (const az of ANGLES) {
       const points = [hero, ...(atWork ? [w.person] : []), ...w.places, ...(w.example ? [w.example] : [])];
-      const lead = leadFocus(points, { az, width: 390, height: 844 });
+      const lead = frame(points, { az });
       assert.ok(lead.fits, `${w.id} from the angle ${ANGLES.indexOf(az)}: the work fits on the screen`);
-      const size = viewSize(390, 844, lead.level);
+      const size = lead.size;
       for (const p of points) assert.ok(inSafe(figureBox(p), lead.focus, { az, size }), `${w.id}: a point of the work is not fully on the screen, or is under the HUD or the buttons`);
     }
   }
@@ -190,9 +197,9 @@ test('each thing that a line of the fisher names is in the world, glows, and is 
     for (const az of ANGLES) {
       const steps = workTurn(workBoxes(terrain, pts), pts, az, VIEW.elevation);
       const to = az + (steps * Math.PI) / 2;
-      const lead = leadFocus([hero, ...pts], { az: to, width: 390, height: 844, safe: TALK_SAFE });
+      const lead = frame([hero, ...pts], { az: to, safe: TALK_SAFE });
       assert.ok(lead.fits, `${n.line} from the angle ${ANGLES.indexOf(az)}: the things fit above the talk box`);
-      const size = viewSize(390, 844, lead.level);
+      const size = lead.size;
       for (const p of pts) assert.ok(inSafe(figureBox(p), lead.focus, { az: to, size, safe: TALK_SAFE }), `${n.line}: a named thing is under the talk box or off the screen`);
     }
   }

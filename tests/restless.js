@@ -13,7 +13,7 @@
 import { createRng } from '../src/core/rng.js';
 import { getEntity, query } from '../src/core/world/state.js';
 import { findPath } from '../src/core/tilemap.js';
-import { leadFocus } from '../src/world/view.js';
+import { frameWork, viewSize } from '../src/world/view.js';
 
 const STEP = 1 / 30;
 const ANGLES = [0, 1, 2, 3].map((k) => Math.PI / 4 + (k * Math.PI) / 2);
@@ -44,7 +44,7 @@ export function playRestless(session, { steps = 240, seed = 1, repeats = 3 } = {
     if (ev.type === 'workView' && ev.points?.length) {
       const h = hero().position;
       const pts = [{ x: h.x / 2, y: h.y / 2, z: h.z / 2 }, ...ev.points.map((p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 }))];
-      if (!ANGLES.some((az) => leadFocus(pts, { az, width: 390, height: 844 }).fits)) broken.add(`the work of ${ev.key} does not fit on a phone held upright`);
+      if (!ANGLES.some((az) => frameWork(pts, { az, width: 390, height: 844, max: viewSize(390, 844, 1).h }).fits)) broken.add(`the work of ${ev.key} does not fit on a phone held upright`);
     }
     if (ev.type === 'open' && ev.screen === 'dialogue' && typeof ev.id === 'string') {
       const p = getEntity(session.state, ev.id)?.position;

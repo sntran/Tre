@@ -152,6 +152,16 @@ export function createRaidView({ view, figures, session, layer, send }) {
       if (ev.type === 'hit') pops.push({ id: ev.id, n: ev.damage, age: 0 });
       if (ev.type === 'raid' && ev.on === false) this.cancel();
     },
+    // The points that the frame of a raid shows besides the posts and the enemies (#83): the end of
+    // the road, the sources of the elements, and the pile of the traps (blocks; the view puts them on
+    // the ground).
+    points() {
+      const r = raid();
+      if (!r) return [];
+      const at = (p) => ({ x: p.x / 2, y: (p.y ?? 0) / 2, z: p.z / 2 });
+      const pile = r.hold?.tool === 'traps' ? query(state(), 'item', 'position').filter((e) => e.item.kind === 'trap' && !e.item.set && !e.item.held).map((e) => at(e.position)) : [];
+      return [at({ x: r.wall.x + r.dir.x * 14, z: r.wall.z + r.dir.z * 14 }), ...r.sources.map(at), ...pile];
+    },
     // The focus of the camera in a raid: between the hero and the middle of the road, so that the
     // child sees the enemies come.
     focus(heroPlace) {

@@ -127,13 +127,26 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return [...new Set(all.map((e) => e.item.size ?? 1))].sort((a, b) => a - b);
   }
 
-  // The points of the work of a task (half blocks): its zones, its place, and its person when the
-  // person stands at the work. The view turns so that nothing covers them (the event workView, #38).
+  // The points of the work of a task (half blocks): its zones (the corners of a place, both ends
+  // of the row of the fisher and of the stem of the woodcutter, #83: the view frames the whole
+  // work), its place, and its person when the person stands at the work. The view turns so that
+  // nothing covers them, and frames them (the event workView, #38).
+  function zonePoints(z) {
+    const y = z.position.y;
+    const r = z.zone.rect;
+    if (z.zone.rule === 'line') return [{ x: z.zone.x, y, z: z.zone.z }, { x: z.zone.x + z.zone.length, y, z: z.zone.z }];
+    if (z.zone.stem) return [{ x: z.zone.stem.x, y, z: z.zone.stem.z }, { x: z.zone.stem.x + z.zone.stem.length, y, z: z.zone.stem.z }];
+    if (r) return [{ x: r.x0, y, z: r.z0 }, { x: r.x1, y, z: r.z1 }];
+    return [z.position];
+  }
   function workPoints(key) {
     const task = taskOf(key);
     if (!task) return [];
     const owner = key.startsWith('event-') ? `trial-${key}` : key;
-    const pts = [task.at, ...query(world(), 'zone').filter((z) => z.zone.task === owner && z.position).map((z) => z.position)];
+    const pts = [task.at, ...query(world(), 'zone').filter((z) => z.zone.task === owner && z.position).flatMap(zonePoints)];
+    // The stem of the woodcutter is on the zone of the trial.
+    const trial = getEntity(world(), `zone:${owner}`);
+    if (trial?.zone.stem && trial.position) pts.push(...zonePoints(trial));
     const p = task.person?.position;
     if (p && dist(p, task.at) <= WORK_NEAR) pts.push(p);
     return pts.filter(Boolean).map((q) => (q === p ? q : { x: q.x, y: q.y ?? env()?.groundY(q.x / 2, q.z / 2) ?? 0, z: q.z }));
@@ -145,7 +158,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (key !== 'bridge') {
       const points = workPoints(key);
       const person = taskOf(key)?.person?.position;
-      emit({ type: 'workView', key, points, sight: person && points.includes(person) ? [person] : [] });
+      emit({ type: 'workView', key, points, sight: person && points.includes(person) ? [person] : [], person: taskOf(key)?.person?.id ?? null });
     }
     const st = newMentor(key);
     st.round = round;

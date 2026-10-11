@@ -41,6 +41,8 @@
 //   { "profile": "week.json" }   a test profile into the store of the browser, and the page again
 //   { "stick": [dx, dy, 1.5] }   the stick: a finger down at the stick, moved by dx, dy, for seconds
 //   { "drag": [[x0, y0], [x1, y1], 0.6] } a finger that moves over the screen (the slingshot)
+//   { "pinch": 0.4 }             two fingers that come together (under 1: the far view) or go
+//                                apart (over 1: the near view)
 //   { "read": 10 }               taps on the box of a talk, up to this many lines
 //   { "wait": 2 }                seconds of play with no finger
 //   { "restless": 20, "seed": 1 } seconds of random taps, presses, and jumps near the hero
@@ -115,6 +117,22 @@ async function finger(points, seconds = 0) {
   await touch('touchEnd');
 }
 const tapAt = (x, y) => finger([[x, y]]);
+// Two fingers on the middle of the screen that go apart (k over 1) or come together (k under 1):
+// a pinch (#83: a pinch out shows the far view).
+async function pinch(k, seconds = 0.6) {
+  const cx = width / 2;
+  const cy = height / 2;
+  const at = (d) => [{ x: cx - d, y: cy, id: 1 }, { x: cx + d, y: cy, id: 2 }];
+  const d0 = k < 1 ? 120 : 40;
+  const d1 = d0 * k;
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at(d0) });
+  const n = Math.max(1, Math.round(seconds * 30));
+  for (let i = 1; i <= n; i++) {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: at(d0 + (d1 - d0) * (i / n)) });
+    await sleep(seconds / n);
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+}
 // The picture of the big button and the act of each press (#68): before a press, the act on the
 // button (its kind, its target, and its id); the session tells the act of the press with the same
 // id. The play fails when a press does an act that is not the picture that was on the button.
@@ -508,6 +526,9 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
     const x = 80;
     const y = height - 80;
     await finger([[x, y], [x + dx, y + dy]], seconds);
+  } else if (s.pinch !== undefined) {
+    await pinch(s.pinch, s.seconds ?? 0.6);
+    await sleep(s.after ?? 1);
   } else if (s.drag) {
     const [a, b, seconds = 0.6] = s.drag;
     await finger([a, b], seconds);
