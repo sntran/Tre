@@ -2047,6 +2047,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The child chose this plank now (the time to choose is a sign for the model).
     worldCommand(state, { type: 'aim', id: 'hero', item: thing.id });
     if (thing.item.kind === 'stem') {
+      // A tap on a mark takes it off at once (#80: no child found that a tap and a press take a mark
+      // off).
+      const wood = trialZone('woodcutter');
+      if (along !== null && wood?.zone.marks.includes(Math.round(along)) && !wood.zone.cut) return work('woodcutter', 'mark', { at: Math.round(along) });
       const p = { x: thing.position.x + (along ?? thing.item.size / 2), z: thing.position.z };
       return goTo(p, thing.id, along === null ? null : Math.round(along), besideStem(thing, p), { exact: true });
     }
@@ -2059,11 +2063,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // The stand point at a point of a stem (half blocks): beside the stem, off its line, on the side
   // of the hero, so that the walk ends at the point of the tap and not at an end of the stem (#64).
-  // The side is the one away from the camera, so that the body of the hero never covers the ring
-  // of the mark (#75); with the view along the stem, the side of the hero.
+  // The hero stays on its side of the stem (#80: a tap on the middle of the stem walked the hero
+  // around an end to the far side); the ghost of the chalk shows over its body. A hero on the line
+  // of the stem goes to the side away from the camera (#75).
   function besideStem(stem, p) {
     const cz = Math.cos(viewAz);
-    const side = Math.abs(cz) > 0.3 ? -Math.sign(cz) : Math.sign(hero().position.z - stem.position.z) || 1;
+    const side = Math.sign(hero().position.z - stem.position.z) || (Math.abs(cz) > 0.3 ? -Math.sign(cz) : 1);
     return { x: p.x, z: stem.position.z + side * 2 };
   }
 
@@ -2406,12 +2411,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (wood && stem && !stem.hidden && !wood.zone.cut) {
         const s = wood.zone.stem;
         const tapped = chosen?.id === stem.id && chosen.along !== null ? chosen.along : null;
-        const at = Math.max(1, Math.min(s.length - 1, tapped ?? Math.round(frontOf(hp).x - s.x)));
+        // The ring of the tap, or else the ring at the feet of the hero (#80: the chalk went one ring
+        // in front of the hero, to one side or the other as the hero faced).
+        const at = Math.max(1, Math.min(s.length - 1, tapped ?? Math.round(hp.x - s.x)));
         const point = { x: s.x + at, z: s.z };
         const marked = wood.zone.marks.includes(at);
         // A mark goes away only after a tap on it: a second press never takes away the mark that
-        // the child just made (#47).
-        if (!(marked && tapped === null)) add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, work: !marked, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z }, run: () => work('woodcutter', 'mark', { at }) }, REACH + 2);
+        // the child just made (#47). The ghost of the chalk is as bright as a mark, and the view
+        // shows it over the bodies (bright).
+        if (!(marked && tapped === null)) add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, work: !marked, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z, bright: true }, run: () => work('woodcutter', 'mark', { at }) }, REACH + 2);
       }
       // The hands: pick up a thing (on a span, only its last plank); take one back from a place.
       const want = wantKind();

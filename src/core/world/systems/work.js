@@ -24,7 +24,7 @@
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'solid', 'slide', 'events'];
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
-import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, shortPiece, SHORT_SHOW, CUT_STAY } from '../zones.js';
+import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, shortPiece, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
 import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
 
@@ -809,7 +809,8 @@ function act(world, e, want, env) {
     const at = Math.round(want.at);
     if (at <= 0 || at >= s.length) return;
     const id = `chalk:woodcutter:${at}`;
-    if (tz.zone.marks.includes(at)) {
+    const off = tz.zone.marks.includes(at);
+    if (off) {
       tz.zone.marks = tz.zone.marks.filter((m) => m !== at);
       tz.zone.resets += 1;
       removeEntity(world, id);
@@ -817,7 +818,7 @@ function act(world, e, want, env) {
       tz.zone.marks.push(at);
       addEntity(world, { id, keep: true, position: { x: s.x + at, y: s.y, z: s.z, facing: 0 }, look: 'chalk-band' });
     }
-    say(world, 'mark', stem.id, { at, sound: 'tap' });
+    say(world, 'mark', stem.id, { at, off, sound: 'tap' });
   } else if (want.act === 'aim') {
     // While the button is down, the mark of the slash goes up the culm, one ring at a time.
     const culm = getEntity(world, `culm:staffs:${want.culm}`);
@@ -874,32 +875,31 @@ function act(world, e, want, env) {
     for (const m of tz.zone.marks) removeEntity(world, `chalk:woodcutter:${m}`);
     tz.zone.marks = [];
     const stem = getEntity(world, 'stem:woodcutter');
-    if (result.solved) {
-      // Equal sticks, tied into a bundle, to carry to the wood pile by the bridge.
-      for (const e of query(world, 'position').filter((x) => /^(sample|tool):woodcutter:/.test(x.id))) removeEntity(world, e.id);
-      if (stem) removeEntity(world, stem.id);
-      addEntity(world, { id: 'sticks:woodcutter', keep: true, item: { kind: 'sticks', size: 2, task: `trial-woodcutter`, zone: null, home: null, held: null, set: false }, position: { x: s.x + s.length / 2 - 1, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `sticks-${task.parts}` });
-      say(world, 'chop', `zone:trial-woodcutter`, { sound: 'plank-up', pieces: result.pieces });
-    } else {
-      // The sticks are not right: they lie side by side, so that the child sees them, and the
-      // woodcutter counts the rings of each piece (the move count, src/core/mentoring.js). Then
-      // the short one glows and breaks, and then a new stem comes (#48, #75: the pieces were gone
-      // before the child saw which one was short).
-      const short = shortPiece(result.pieces);
-      if (stem) stem.hidden = true;
-      const n = result.pieces.length;
-      result.pieces.forEach((len, i) => {
-        addEntity(world, { id: `piece:woodcutter:${i}`, keep: true, position: { x: s.x, y: s.y, z: s.z + (i - (n - 1) / 2) * PIECE_ROW, facing: Math.PI / 2 }, look: `piece-${len}` });
-      });
-      const count = cutCount(result.pieces);
-      tz.zone.cutPieces = [...result.pieces];
-      tz.zone.cutParts = task.parts;
-      tz.zone.cutAt = 0;
-      tz.zone.breakAt = short === null ? null : count + SHORT_SHOW;
-      tz.zone.cut = (short === null ? count : count + SHORT_SHOW) + CUT_STAY;
-      tz.zone.short = short;
-      say(world, 'snap', `zone:trial-woodcutter`, { pieces: result.pieces, short: short === null ? null : result.pieces[short], sound: 'plank-down' });
-    }
+    // The pieces lie side by side, so that the child sees them, and the woodcutter counts the
+    // rings of each piece (the move count, src/core/mentoring.js). After a wrong cut the short one
+    // glows and breaks, and then a new stem comes (#48, #75: the pieces were gone before the
+    // child saw which one was short). After a right cut he says that the pieces are equal, and
+    // then they are tied into a bundle (#80: the stem went away with no count and no line).
+    if (result.solved) for (const e of query(world, 'position').filter((x) => /^(sample|tool):woodcutter:/.test(x.id))) removeEntity(world, e.id);
+    const short = result.solved ? null : shortPiece(result.pieces);
+    if (stem) stem.hidden = true;
+    const n = result.pieces.length;
+    result.pieces.forEach((len, i) => {
+      addEntity(world, { id: `piece:woodcutter:${i}`, keep: true, position: { x: s.x, y: s.y, z: s.z + (i - (n - 1) / 2) * PIECE_ROW, facing: Math.PI / 2 }, look: `piece-${len}` });
+    });
+    const count = cutCount(result.pieces);
+    tz.zone.cutPieces = [...result.pieces];
+    tz.zone.cutParts = task.parts;
+    tz.zone.cutAt = 0;
+    tz.zone.breakAt = short === null ? null : count + SHORT_SHOW;
+    tz.zone.cut = (short === null ? count : count + SHORT_SHOW) + (result.solved ? CUT_STAY_RIGHT : CUT_STAY);
+    tz.zone.short = short;
+    tz.zone.cutSolved = result.solved;
+    // After a cut with too many pieces, the woodcutter shows one time that a tap on a mark takes it
+    // off, when the child marks too many again (#80: no child found that).
+    if (!result.solved && result.pieces.length > task.parts) tz.zone.tooMany = task.parts;
+    tz.zone.sticks = task.parts;
+    if (!result.solved) say(world, 'snap', `zone:trial-woodcutter`, { pieces: result.pieces, short: short === null ? null : result.pieces[short], sound: 'plank-down' });
   }
 }
 
@@ -1258,6 +1258,15 @@ function tickStem(world, tz, dt) {
   delete tz.zone.cutParts;
   for (const e of query(world, 'position').filter((x) => String(x.id).startsWith('piece:woodcutter:'))) removeEntity(world, e.id);
   const stem = getEntity(world, 'stem:woodcutter');
+  if (tz.zone.cutSolved) {
+    // Equal sticks, tied into a bundle, to carry to the wood pile by the bridge.
+    delete tz.zone.cutSolved;
+    const s = tz.zone.stem;
+    if (stem) removeEntity(world, stem.id);
+    addEntity(world, { id: 'sticks:woodcutter', keep: true, item: { kind: 'sticks', size: 2, task: 'trial-woodcutter', zone: null, home: null, held: null, set: false }, position: { x: s.x + s.length / 2 - 1, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `sticks-${tz.zone.sticks ?? 2}` });
+    say(world, 'chop', 'zone:trial-woodcutter', { sound: 'plank-up' });
+    return;
+  }
   if (stem) {
     stem.hidden = false;
     say(world, 'stem', stem.id, { sound: 'plank-down' });

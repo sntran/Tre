@@ -428,7 +428,9 @@
         "carry": "mentor.carry.woodcutter",
         "piece": "woodcutter.piece",
         "pieces": "woodcutter.pieces",
-        "short": "woodcutter.short"
+        "short": "woodcutter.short",
+        "equal": "woodcutter.equal",
+        "erase": "mentor.woodcutter.erase"
       }
     },
     "trial-plant": {

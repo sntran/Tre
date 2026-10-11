@@ -21,7 +21,7 @@
     { "press": { "stem": 4 } },
     { "until": { "event": "mark", "timeout": 10 } },
     { "press": { "entity": "npc:woodcutter" } },
-    { "until": { "event": "chop", "timeout": 10 } },
+    { "until": { "event": "chop", "timeout": 40 } },
     { "expect": [{ "event": "skill", "with": { "solved": true, "parts": [4, 4] } }, { "count": { "entities": "sticks-2", "min": 1 } }] },
     { "press": { "item": "sticks" } },
     { "until": { "event": "pick", "timeout": 10 } },

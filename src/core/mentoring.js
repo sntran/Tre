@@ -195,7 +195,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // The answer of the world to a wrong try comes first, at each help level (#64): the person
     // counts the child's own work on the place (the rods on the mat, each row of the basket) and
     // marks what went wrong. The move of the mentor comes after the count; a mark is the count.
-    const count = !input.solved && task ? doMove(key, 'count', { target: input.target, solved: false }) : 0;
+    // A right cut of the woodcutter is counted too (#80: the stem went away with no count and no line).
+    const count = task && (!input.solved || task.tz?.zone.cutPieces) ? doMove(key, 'count', { target: input.target, solved: Boolean(input.solved) }) : 0;
     // The world fixes the work (the extra rods or bunches go back): the work is right, and no help
     // comes (#74: no demonstration, no smaller, no share, no offer). The record keeps the try as a
     // try with help.
@@ -255,7 +256,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (!['pick', 'put', 'add', 'back', 'mark', 'drop'].includes(ev.type) || ev.by) return;
     if ((ev.type === 'pick' || ev.type === 'put' || ev.type === 'drop') && ev.id !== 'hero') return;
     const thing = ev.item ? getEntity(world(), ev.item) : null;
-    const key = keyOf(thing?.item?.task ?? (ev.zone ? getEntity(world(), `zone:${ev.zone}`)?.zone.task : null) ?? (String(ev.id).startsWith('zone:') ? getEntity(world(), ev.id)?.zone?.task : null));
+    // The task of the event: of its thing, its place, or the thing that it happened to (a mark on the
+    // stem of the woodcutter, #80).
+    const key = keyOf(thing?.item?.task ?? (ev.zone ? getEntity(world(), `zone:${ev.zone}`)?.zone.task : null) ?? (String(ev.id).startsWith('zone:') ? getEntity(world(), ev.id)?.zone?.task : getEntity(world(), ev.id)?.item?.task) ?? null);
     if (!defOf(key)) return;
     const task = taskOf(key);
     const st = stateOf(key, task);
@@ -268,6 +271,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // or a pick at a heap, is not one.
     const takeBack = ev.type === 'pick' && Boolean(task?.place) && ev.from === task.place.zone.id;
     if (takeBack && onChange(st, memoryOf(key))) emit({ type: 'selfFix', key });
+    // Too many marks again after a cut with too many pieces: one time, the woodcutter shows on a mark
+    // that a tap takes it off (#80).
+    const z = task?.tz?.zone;
+    if (ev.type === 'mark' && !ev.off && z?.tooMany && !z.eraseShown && z.marks.length >= z.tooMany && defOf(key).lines?.erase) doMove(key, 'erase');
   }
 
   // A tap with empty hands on a thing that lies on the place of a task (a rod on the mat, a bunch
@@ -323,13 +330,20 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   function wave(forKey = null) {
     const key = forKey ?? activeKey();
     if (!key) return null;
-    if (getEntity(world(), `script:${key}`)) {
+    const playing = getEntity(world(), `script:${key}`)?.script;
+    if (playing) {
+      // The wave waits for the end of the count (#64), and then its answer is never another count
+      // (#80: two waves gave two counts of the pieces, one after the other).
       waves.add(key);
+      if (playing.steps?.some((st) => /^num\./.test(st.say?.key ?? ''))) afterCount.add(key);
       return { waiting: key };
     }
     return answerWave(key);
   }
   const waves = new Set(); // the tasks with a wave that waits for the end of a script
+  const afterCount = new Set(); // the tasks whose waiting wave came during a count
+  // The moves that are a count of the work of the child: after a count, a wave gets the next step.
+  const COUNTS = new Set(['count', 'mark']);
   function answerWave(key) {
     const task = taskOf(key);
     const st = stateOf(key, task);
@@ -338,7 +352,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (tr) tr.lastWave = now();
     log('ask', { task: key, when: r.when, move: r.move });
     emit({ type: 'mentor', key, diagnosis: r.diagnosis, move: r.move, level: st.level, asked: r.when });
-    doMove(key, r.move, { asked: true });
+    const again = afterCount.delete(key) && COUNTS.has(r.move);
+    doMove(key, again ? 'show' : r.move, { asked: true });
     return r;
   }
 
@@ -482,6 +497,16 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       point(t, place, 1.4);
       mark(t, place, 2.5);
       t += 2;
+    } else if (move === 'erase') {
+      const z = task?.tz?.zone;
+      const m = z?.marks?.at(-1);
+      if (m == null) return 0;
+      z.eraseShown = true;
+      const p = { x: z.stem.x + m, z: z.stem.z };
+      say(t, defOf(key).lines.erase);
+      point(t, p, 2);
+      mark(t, p, 3);
+      t += 3;
     } else if (move === 'show' && rowFull(key, task)) {
       // The row is at the float and waits for the tide: the hint is to wait and look at the water,
       // never to take a stake (#78: the child heard "Lấy một cái cọc ở đống …" four times with a
@@ -629,6 +654,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       at += 0.4;
     });
     if (pieces.length !== parts && lines.pieces) s.say(at, lines.pieces, { n: { key: `num.${Math.min(30, pieces.length)}` }, m: { key: `num.${Math.min(30, parts)}` } });
+    // A right cut: he says what happened ("Hai khúc dài bằng nhau.", #80).
+    else if (lines.equal && shortPiece(pieces) === null) s.say(at, lines.equal, { n: { key: `num.${Math.min(30, pieces.length)}` } });
     at += PIECES_LINE;
     const short = shortPiece(pieces);
     const e = short === null ? null : getEntity(world(), `piece:woodcutter:${short}`);

@@ -19,6 +19,23 @@ const NEAR_HERO = 0.6; // half blocks: Nghé on the hero (nearer than this) step
 const PERSON_CLEAR = 1; // half blocks: Nghé stays this far out of the body of a person
 const NGHE_BODY = 1.6; // half blocks: Nghé stays this far out of the places of a task (its body, #76)
 
+// The rects of the places of the tasks that go on (half blocks): the places with a rect, and the
+// stem of the woodcutter with its pieces (#80: Nghé stood on the stem and covered the marks).
+function workRects(world) {
+  const out = [];
+  for (const z of query(world, 'zone')) {
+    const r = z.zone.rect;
+    if (r && z.zone.task?.startsWith('trial-') && !getEntity(world, `zone:${z.zone.task}`)?.zone.done) out.push(r);
+    const s = z.zone.rule === 'trial' && !z.zone.done ? z.zone.stem : null;
+    if (s) {
+      // The pieces of a cut lie in rows two half blocks apart on both sides of the line of the stem.
+      const w = z.zone.cutPieces?.length ? z.zone.cutPieces.length + 0.5 : 0.8;
+      out.push({ x0: s.x - 0.5, x1: s.x + s.length + 0.5, z0: s.z - w, z1: s.z + w });
+    }
+  }
+  return out;
+}
+
 export function follow(world, dt, rng, env) {
   const hot = query(world, 'hot', 'position');
   for (const e of query(world, 'follow', 'position', 'motion')) {
@@ -82,9 +99,7 @@ export function follow(world, dt, rng, env) {
     // place of the work (#47). The hero walks toward Nghé: Nghé steps aside.
     // The body of Nghé is longer than its point, also when it lies down (#76: at night Nghé lay on the
     // end of the mat): it stays NGHE_BODY half blocks out of the rects.
-    for (const z of query(world, 'zone')) {
-      const r = z.zone.rect;
-      if (!r || !z.zone.task?.startsWith('trial-') || getEntity(world, `zone:${z.zone.task}`)?.zone.done) continue;
+    for (const r of workRects(world)) {
       const b = NGHE_BODY;
       const inside = (q) => q.x >= r.x0 - b && q.x <= r.x1 + b && q.z >= r.z0 - b && q.z <= r.z1 + b;
       if (!inside(p)) continue;

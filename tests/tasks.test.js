@@ -91,23 +91,22 @@ test('the healer: the button puts a bunch into the basket, takes one back after 
   ]);
 });
 
-test('the woodcutter: the button puts a chalk mark at the place in front of the hero, takes it away after a tap on the mark, and the woodcutter cuts', async () => {
+test('the woodcutter: the button puts a chalk mark at the ring of the tap, a tap on the mark takes it away at once, and the woodcutter cuts', async () => {
   await play('task-woodcutter', [51, 8.5], [
     ...start('woodcutter'),
     { press: { stem: 3 } },
     { until: { event: 'mark', timeout: 10 } },
-    // The next press never takes away the mark that was just made (#47); a tap on the mark does.
+    // The next press never takes away the mark that was just made (#47); a tap on the mark takes
+    // it away at once (#80).
     { expect: [{ count: { entities: 'chalk', min: 1, max: 1 } }, { count: { entities: 'chalk-band', min: 1, max: 1 } }] },
     { tap: { stem: 3 } },
-    { wait: 1 },
-    { expect: [{ action: { act: 'unmark', icon: 'clear' } }] },
-    { press: { stem: 3 } },
     { until: { event: 'mark', timeout: 10 } },
-    { expect: [{ count: { entities: 'chalk', max: 0 } }, { action: { act: 'mark', icon: 'chalk' } }] },
+    { expect: [{ count: { entities: 'chalk-band', max: 0 } }] },
     { press: { stem: 4 } },
     { until: { event: 'mark', timeout: 10 } },
     { press: { entity: 'npc:woodcutter' } },
-    { until: { event: 'chop', timeout: 10 } },
+    // After a right cut he counts the pieces too, and then the sticks come (#80).
+    { until: { event: 'chop', timeout: 40 } },
     { expect: [{ event: 'pulse', with: { id: 'npc:woodcutter' } }, { event: 'skill', with: { solved: true } }] },
   ]);
 });
@@ -118,7 +117,7 @@ test('the woodcutter: with the sticks in the hands after the right cut, his help
     { press: { stem: 4 } },
     { until: { event: 'mark', timeout: 10 } },
     { press: { entity: 'npc:woodcutter' } },
-    { until: { event: 'chop', timeout: 10 } },
+    { until: { event: 'chop', timeout: 40 } },
     { wait: 2 },
     { press: true },
     { until: { event: 'pick', timeout: 10 } },

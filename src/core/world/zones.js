@@ -60,6 +60,7 @@ export const PIECE_NAME = 1; // seconds: "Khúc này:" before the count of a pie
 export const PIECES_LINE = 2.6; // seconds: "Hai khúc. Anh cần ba khúc."
 export const SHORT_SHOW = 1.8; // seconds: the short piece glows, and the woodcutter says it, before it breaks
 export const CUT_STAY = 3; // seconds: the pieces stay after the count (and after the break)
+export const CUT_STAY_RIGHT = 1.5; // seconds: after the count of a right cut, the pieces stay, and then the bundle comes (#80)
 // The time of the line of the number of pieces is in each count, said or not, so that the time of
 // the pieces does not depend on the number of the task (#63: the button is blind to it).
 export const cutCount = (pieces) => COUNT_LEAD + pieces.length * (PIECE_NAME + 0.4) + pieces.reduce((a, b) => a + b, 0) * UNIT_PACE + PIECES_LINE;

@@ -299,6 +299,7 @@ export async function mountVillage(ctx, params = {}) {
   // A line of a talk that names the round marks with a face (#77: "hình tròn có mặt người"): while
   // it shows, the marks show over the talk and pulse, so that the child sees what the words name.
   let marksLine = false;
+  let brightGhost = null; // the ghost of the act of the button that shows over the bodies (#80)
   let alive = true;
   ctx.syncWorld = session.syncSave;
 
@@ -427,6 +428,7 @@ export async function mountVillage(ctx, params = {}) {
     }
     // The target has a thicker outline and a soft light; a thing on a line shows as a ghost.
     figures.mark(a?.target ?? null, a?.spot ?? null, a?.ghost ?? null);
+    brightGhost = a?.ghost?.bright ? a.ghost : null;
   }
   // The buttons are a block of two columns at the bottom right, away from the stick at the bottom
   // left (#44): the wave over the jump, the two turns over the big button.
@@ -1822,7 +1824,10 @@ export async function mountVillage(ctx, params = {}) {
     // A small red pointer over each thing that a line of a talk names (#62): the glow alone does
     // not show on a thing in the water.
     let pointers = 0;
-    for (const n of namePoints) {
+    // The red pointer also shows over a bright ghost (the chalk of the woodcutter, #80), over the
+    // bodies of the hero and of Nghé, so that the child sees where a press puts the mark.
+    const ghostPoint = brightGhost ? [{ spot: { x: brightGhost.x, y: brightGhost.y - 0.6, z: brightGhost.z } }] : [];
+    for (const n of [...namePoints, ...ghostPoint]) {
       const f = n.id ? figures.placeOf(n.id) : null;
       const at = f ? { x: f.x, y: f.y + (f.height ?? 1) + 0.3, z: f.z } : n.spot ? { x: n.spot.x / 2, y: (n.spot.y ?? 0) / 2 + 1, z: n.spot.z / 2 } : null;
       if (!at) continue;

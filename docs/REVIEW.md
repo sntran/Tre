@@ -682,3 +682,10 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **A new first line:** `dlg.healer.trial.tap` ("Chạm vào luống nào, cháu lấy lá luống đó."), after the names of the three beds, with the beds glowing.
 - **The hint with a full basket:** `mentor.healer.give` ("Cháu đến chỗ bà và bấm nút lớn: bà nhận giỏ."), the same words as the last first line.
 - **Please check:** "Chạm vào luống nào, cháu lấy lá luống đó." for a child of six.
+
+## The woodcutter: the chalk goes where the child chose (#80)
+
+- **A right cut has its line:** `woodcutter.equal` ("{n} khúc dài bằng nhau.", for example "Hai khúc dài bằng nhau."), after the count of the rings of each piece.
+- **The erase of a mark:** `mentor.woodcutter.erase` ("Chạm vào vạch phấn này là xóa."), one time on a mark, when the child marks too many again after a cut with too many pieces.
+- **Please check:** "là xóa" for a child of six.
+

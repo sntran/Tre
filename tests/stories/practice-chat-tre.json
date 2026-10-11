@@ -91,7 +91,7 @@
     {
       "until": {
         "event": "chop",
-        "timeout": 10
+        "timeout": 40
       }
     },
     {
@@ -171,7 +171,7 @@
     {
       "until": {
         "event": "chop",
-        "timeout": 10
+        "timeout": 40
       }
     },
     {

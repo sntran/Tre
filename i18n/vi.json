@@ -1278,6 +1278,8 @@
   "smith.bend.early": "Sắt chưa đủ nóng, nên cong.",
   "smith.bend.late": "Sắt nguội mất rồi, nên cong. Sắt vào lò, lát nữa lại đỏ.",
   "mentor.woodcutter.first": "Đứng bên thân tre và bấm nút lớn để vạch phấn ở chỗ cần chặt.",
+  "woodcutter.equal": "{n} khúc dài bằng nhau.",
+  "mentor.woodcutter.erase": "Chạm vào vạch phấn này là xóa.",
   "woodcutter.short": "Khúc này ngắn quá.",
   "woodcutter.piece": "Khúc này:",
   "woodcutter.pieces": "Có {n} khúc. Anh cần {m} khúc.",

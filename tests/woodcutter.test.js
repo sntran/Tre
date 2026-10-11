@@ -94,12 +94,13 @@ test('a cut with the wrong number of pieces says the number of pieces and the nu
   assert.deepEqual(snaps, [], 'no piece breaks');
 });
 
-test('a tap beside the stem walks the hero to that ring, beside the stem on the side away from the camera, never on the stem', async () => {
+test('a tap beside the stem walks the hero to that ring, beside the stem on the side where the hero is (#80), never on the stem', async () => {
   const session = await atStem();
   const stem = getEntity(session.state, 'stem:woodcutter');
   const hero = getEntity(session.state, 'hero');
   // A tap on the ground one half block beside ring 5 of the stem.
   const at = 5;
+  const side = Math.sign(hero.position.z - stem.position.z);
   session.command({ type: 'tap', target: { ground: { x: (stem.position.x + at) / 2, y: (stem.position.z + 1) / 2 } } });
   session.events();
   run(session, 0.3);
@@ -107,8 +108,8 @@ test('a tap beside the stem walks the hero to that ring, beside the stem on the 
   run(session, 0.5);
   assert.ok(Math.abs(hero.position.x - (stem.position.x + at)) <= 1.2, `the hero is at the ring: ${(hero.position.x - stem.position.x).toFixed(1)}`);
   assert.ok(Math.abs(hero.position.z - stem.position.z) >= 1, `the hero is beside the stem, not on it: ${(hero.position.z - stem.position.z).toFixed(1)}`);
-  // The view looks from the south-east (the angle of the view, Math.PI / 4): the far side is north.
-  assert.ok(hero.position.z < stem.position.z, 'the hero stands on the side away from the camera');
+  // The hero stays on its side of the stem: a tap never walks it around an end (#80).
+  assert.equal(Math.sign(hero.position.z - stem.position.z), side || Math.sign(hero.position.z - stem.position.z), 'the hero stays on its side of the stem');
   const a = session.action();
   assert.equal(a?.act, 'mark');
   assert.ok(a.ghost && Math.abs(a.ghost.x - (stem.position.x + at)) < 0.01, 'the chalk shows at the ring of the tap');
