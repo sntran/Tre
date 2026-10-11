@@ -1,0 +1,197 @@
+{
+ "about": "#81 at night: the smith gives 2 iron, and the first card at the woodcutter is \"Bó tre\" and stays on the screen.",
+ "start": "?story=trial-smith&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "tre.profile.inventory.iron ?? 0"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-hot') || Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.3,
+   "if": "!document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!document.querySelector('.dialogue-layer')"
+  },
+  {
+   "wait": 4
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-hot') || Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.3,
+   "if": "!document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!document.querySelector('.dialogue-layer')"
+  },
+  {
+   "wait": 4
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'iron:smith' && e.look === 'iron-hot') || Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.3,
+   "if": "!document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 0.5,
+   "if": "!document.querySelector('.dialogue-layer')"
+  },
+  {
+   "wait": 4
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 180
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "tre.profile.inventory.iron ?? 0"
+  },
+  {
+   "check": "tre.profile.inventory.iron === 2"
+  },
+  {
+   "shot": "night-the-smith-gives-iron"
+  },
+  {
+   "goto": "?story=trial-woodcutter&clock=1260",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.first')",
+   "timeout": 60
+  },
+  {
+   "check": "(() => { window.__cards = []; window.__glow = false; new MutationObserver(() => { const c = document.querySelector('.print-card'); if (document.querySelector('.hud .glow-once')) window.__glow = true; if (c && window.__cards[window.__cards.length - 1]?.text !== c.textContent) { const r = c.getBoundingClientRect(); window.__cards.push({ text: c.textContent, l: Math.round(r.left), r: Math.round(r.right) }); } }).observe(document.body, { childList: true, subtree: true, attributes: true }); return true; })()"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "window.__cards.length > 0",
+   "timeout": 180
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "print": "JSON.stringify(window.__cards)"
+  },
+  {
+   "check": "window.__cards[0].text.includes('Bó tre') && window.__cards[0].l >= 0 && window.__cards[0].r <= innerWidth"
+  },
+  {
+   "shot": "night-the-card-of-the-sticks"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}

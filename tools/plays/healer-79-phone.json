@@ -1,0 +1,268 @@
+{
+ "about": "#79: grade 1, the line of the tap on a bed with the beds glowing, two of each kind, the hint with a full basket is the give, and a tap on the healer at her beds shows the give, and a press gives.",
+ "start": "?story=trial-healer",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "check": "(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Chạm vào luống nào')"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => /^zone:bed-/.test(e.id) && e.glow).length"
+  },
+  {
+   "shot": "the-line-of-the-tap-on-a-bed"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-ngai"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "check": "(() => { window.__in = tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length; return true; })()"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 2"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length === window.__in + 2"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-tiato"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "check": "(() => { window.__in = tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length; return true; })()"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < window.__in + 2"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length === window.__in + 2"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-rauma"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "check": "(() => { window.__in = tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length; return true; })()"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < window.__in + 2"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length === window.__in + 2"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.healer.give')",
+   "timeout": 40
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "a-full-basket-the-hint-is-the-give"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "(document.querySelector('.act-btn')?.dataset.act ?? '')"
+  },
+  {
+   "check": "(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('give|')"
+  },
+  {
+   "shot": "next-to-the-healer-the-button-shows-the-give"
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer')) || tre.activeVillage.heard().some((x) => x.key === 'mentor.healer.now')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-press-gives-the-basket"
+  },
+  {
+   "read": 10
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}

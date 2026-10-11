@@ -1,0 +1,418 @@
+{
+ "about": "#80: a tap on the middle of the stem (the hero stays on its side, and the chalk goes at the ring of the tap), a tap on a mark takes it off, a walk with the stick and a press (the chalk at the feet), a cut with too many pieces, the erase shown one time, and the right cut counted before the sticks.",
+ "start": "?story=trial-woodcutter",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.first')",
+   "timeout": 60
+  },
+  {
+   "print": "Math.sign(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter').position.z)"
+  },
+  {
+   "check": "(() => { window.__side = Math.sign(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter').position.z); return true; })()"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "Math.sign(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter').position.z)"
+  },
+  {
+   "check": "Math.sign(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter').position.z) === window.__side"
+  },
+  {
+   "print": "Math.round((tre.activeVillage.session.action()?.ghost?.x ?? NaN) - tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter').position.x)"
+  },
+  {
+   "shot": "a-tap-on-the-middle-the-hero-stays-on-its-side"
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "shot": "the-mark-at-the-ring-of-the-tap"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "check": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks) === '[]'"
+  },
+  {
+   "shot": "a-tap-on-a-mark-takes-it-off"
+  },
+  {
+   "stick": [
+    40,
+    0,
+    0.5
+   ]
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "Math.round((tre.activeVillage.session.action()?.ghost?.x ?? NaN) - tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter').position.x)"
+  },
+  {
+   "shot": "after-a-walk-with-the-stick-the-ghost-at-the-feet"
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "tap": {
+    "stem": 1
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(1)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 2
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(2)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 3
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(3)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(4)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 5
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(5)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 6
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(6)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 7
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(7)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 8
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(8)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 2
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks).includes('2')"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks).includes('4')"
+  },
+  {
+   "tap": {
+    "stem": 6
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks).includes('6')"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'woodcutter.pieces')",
+   "timeout": 300
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "too-many-pieces"
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.cut)",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "stem": 2
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks).includes('2')"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks).includes('4')"
+  },
+  {
+   "tap": {
+    "stem": 6
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks).includes('6')"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.erase')",
+   "timeout": 30,
+   "if": "true"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "print": "tre.activeVillage.heard().filter((x) => x.key === 'mentor.woodcutter.erase').length"
+  },
+  {
+   "shot": "the-woodcutter-shows-the-erase"
+  },
+  {
+   "tap": {
+    "stem": 2
+   },
+   "after": 1
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "tap": {
+    "stem": 6
+   },
+   "after": 1
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "check": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks) === '[4]'"
+  },
+  {
+   "check": "(() => { window.__p = tre.activeVillage.heard().filter((x) => x.key === 'woodcutter.piece').length; return true; })()"
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'woodcutter.equal')",
+   "timeout": 180
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "print": "tre.activeVillage.heard().filter((x) => x.key === 'woodcutter.piece').length - window.__p"
+  },
+  {
+   "shot": "a-right-cut-is-counted"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'sticks:woodcutter'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-sticks-come"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}

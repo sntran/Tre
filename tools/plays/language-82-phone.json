@@ -1,0 +1,168 @@
+{
+ "about": "#82: the woodcutter: \"EN\" in the talk box and in a bubble (the line in English, then again in Vietnamese), and the menu changes the whole game to English in the middle of the task (the cut is counted in English) and back.",
+ "start": "?story=trial-woodcutter",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "check": "(() => { window.__line = (document.querySelector('.dialogue .line')?.textContent ?? ''); return true; })()"
+  },
+  {
+   "shot": "the-talk-box-has-en"
+  },
+  {
+   "check": "(() => { window.__log = []; const t0 = performance.now(); new MutationObserver(() => { const l = document.querySelector('.dialogue .line'); const last = window.__log[window.__log.length - 1]; if (l && last?.[1] !== l.textContent) window.__log.push([Math.round(performance.now() - t0), l.textContent, l.lang || '']); }).observe(document.body, { childList: true, subtree: true, characterData: true }); return true; })()"
+  },
+  {
+   "button": ".dialogue .other-lang",
+   "after": 0.2
+  },
+  {
+   "shot": "en-in-the-talk-box"
+  },
+  {
+   "until": "(document.querySelector('.dialogue .line')?.textContent ?? '') === window.__line",
+   "timeout": 30
+  },
+  {
+   "print": "JSON.stringify(window.__log)"
+  },
+  {
+   "check": "window.__log[0]?.[2] === 'en' && window.__log.some((x) => x[2] !== 'en' && x[0] - window.__log[0][0] >= 3000)"
+  },
+  {
+   "shot": "the-line-comes-back-in-vietnamese"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.world-bubble .other-lang'))",
+   "timeout": 60
+  },
+  {
+   "button": ".world-bubble .other-lang",
+   "after": 0.2
+  },
+  {
+   "shot": "en-in-a-bubble"
+  },
+  {
+   "print": "([...document.querySelectorAll('.world-bubble .bubble-text')].find((b) => b.lang)?.textContent ?? '')"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "shot": "the-menu-has-the-language"
+  },
+  {
+   "click": "English",
+   "after": 2
+  },
+  {
+   "print": "document.documentElement.lang"
+  },
+  {
+   "check": "document.documentElement.lang === 'en' && tre.profile.settings.lang === 'en'"
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'woodcutter.equal')",
+   "timeout": 180
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => x.text))"
+  },
+  {
+   "shot": "the-task-goes-on-in-english"
+  },
+  {
+   "wait": 4
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Menu']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "shot": "the-menu-in-english"
+  },
+  {
+   "click": "Tiếng Việt",
+   "after": 2
+  },
+  {
+   "check": "document.documentElement.lang === 'vi' && tre.profile.settings.lang === 'vi' && tre.profile.hero.name === 'An'"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "back-in-vietnamese"
+  }
+ ]
+}

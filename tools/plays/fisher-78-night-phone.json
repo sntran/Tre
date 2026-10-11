@@ -1,0 +1,449 @@
+{
+ "about": "#78 at night: a tap on each point of the row shows the ghost there, a tap on a stake of the row and a press take it back, a tap on a used point puts at the nearest free point, no tide and no line while the child is away, and the row to the float with the tide soon after.",
+ "start": "?story=trial-fisher&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:2"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "row": 6
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "Math.round((tre.activeVillage.session.action()?.ghost?.x ?? NaN) - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)"
+  },
+  {
+   "shot": "night-a-tap-on-a-point-shows-the-ghost-there"
+  },
+  {
+   "tap": {
+    "row": 10
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "Math.round((tre.activeVillage.session.action()?.ghost?.x ?? NaN) - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:2"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "tre.activeVillage.session.action()?.act"
+  },
+  {
+   "shot": "night-a-tap-on-a-stake-of-the-row"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "shot": "night-the-stake-is-back-in-the-hands"
+  },
+  {
+   "tap": {
+    "row": 8
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "Math.round((tre.activeVillage.session.action()?.ghost?.x ?? NaN) - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:3"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "row": 8
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "Math.round((tre.activeVillage.session.action()?.ghost?.x ?? NaN) - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)"
+  },
+  {
+   "shot": "night-a-tap-on-a-used-point"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1,
+   "if": "Boolean(document.querySelector('.modal-layer'))"
+  },
+  {
+   "tap": [
+    360,
+    300
+   ],
+   "after": 3
+  },
+  {
+   "tap": [
+    360,
+    300
+   ],
+   "after": 3
+  },
+  {
+   "tap": [
+    360,
+    300
+   ],
+   "after": 3
+  },
+  {
+   "tap": [
+    360,
+    300
+   ],
+   "after": 3
+  },
+  {
+   "tap": [
+    360,
+    300
+   ],
+   "after": 3
+  },
+  {
+   "tap": [
+    360,
+    300
+   ],
+   "after": 3
+  },
+  {
+   "tap": [
+    360,
+    300
+   ],
+   "after": 3
+  },
+  {
+   "tap": [
+    360,
+    300
+   ],
+   "after": 3
+  },
+  {
+   "tap": [
+    360,
+    300
+   ],
+   "after": 3
+  },
+  {
+   "tap": [
+    360,
+    300
+   ],
+   "after": 3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "print": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.z))"
+  },
+  {
+   "check": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.z)) > 40"
+  },
+  {
+   "check": "(() => { window.__fl = tre.activeVillage.heard().filter((x) => /^(fisher|mentor\\.fisher)/.test(x.key)).length; return true; })()"
+  },
+  {
+   "wait": 60
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "check": "tre.activeVillage.heard().filter((x) => /^(fisher|mentor\\.fisher)/.test(x.key)).length === window.__fl"
+  },
+  {
+   "shot": "night-away-from-the-fisher-no-line-no-tide"
+  },
+  {
+   "walk": {
+    "person": "fisher"
+   },
+   "taps": 16
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.z))"
+  },
+  {
+   "shot": "night-back-at-the-row"
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:4"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "row": 12
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "Math.round((tre.activeVillage.session.action()?.ghost?.x ?? NaN) - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:5"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "row": 16
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "Math.round((tre.activeVillage.session.action()?.ghost?.x ?? NaN) - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'fisher.full')",
+   "timeout": 40
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "night-the-row-is-full"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low'",
+   "timeout": 30
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "night-the-water-rises"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}

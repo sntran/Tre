@@ -1,0 +1,560 @@
+{
+ "about": "#81: a new game (a tap on a face during its line goes on), the teacher (the first card says what the notebook is, the menu glows, the card stays on the screen, the done talk says who the Nho sinh were), taps on the ground next to the mat after the task, no pick at the heap of the done task, the map with no number of a chapter, and a tap on a face during the hopscotch.",
+ "start": "",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "create": "Su"
+  },
+  {
+   "read": 12
+  },
+  {
+   "click": "Chào nghé con"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "check": "(() => { const i = document.querySelector('.modal-layer .name-input'); i.value = 'Mít'; return true; })()"
+  },
+  {
+   "click": "Đồng ý"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "check": "(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "shot": "the-line-of-the-faces"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 1.5
+  },
+  {
+   "print": "(document.querySelector('.dialogue-layer')?.textContent ?? '')"
+  },
+  {
+   "check": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('mặt người')"
+  },
+  {
+   "shot": "a-tap-on-a-face-goes-on-to-the-next-line"
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 4
+  },
+  {
+   "goto": "?story=trial-scholar",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 60
+  },
+  {
+   "check": "(() => { window.__cards = []; window.__glow = false; new MutationObserver(() => { const c = document.querySelector('.print-card'); if (document.querySelector('.hud .glow-once')) window.__glow = true; if (c && window.__cards[window.__cards.length - 1]?.text !== c.textContent) { const r = c.getBoundingClientRect(); window.__cards.push({ text: c.textContent, l: Math.round(r.left), r: Math.round(r.right) }); } }).observe(document.body, { childList: true, subtree: true, attributes: true }); return true; })()"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length === 10"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "window.__cards.length > 0",
+   "timeout": 120
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "the-first-card-and-the-notebook"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'note.first')",
+   "timeout": 30
+  },
+  {
+   "print": "JSON.stringify(window.__cards)"
+  },
+  {
+   "print": "window.__glow"
+  },
+  {
+   "check": "window.__glow && window.__cards[0].l >= 0 && window.__cards[0].r <= innerWidth"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length === 0",
+   "timeout": 120
+  },
+  {
+   "wait": 6
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length === 10"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 180
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Nho sinh là')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Nho sinh là')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Nho sinh là')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Nho sinh là')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Nho sinh là')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Nho sinh là')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Nho sinh là')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Nho sinh là')"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "check": "(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('Nho sinh là')"
+  },
+  {
+   "shot": "who-the-nho-sinh-were"
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 6
+  },
+  {
+   "tap": [
+    110,
+    330
+   ],
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": [
+    290,
+    360
+   ],
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "shot": "a-tap-next-to-the-mat-walks"
+  },
+  {
+   "tap": [
+    120,
+    600
+   ],
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": [
+    280,
+    620
+   ],
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "(document.querySelector('.act-btn')?.dataset.act ?? '')"
+  },
+  {
+   "check": "!(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('pick|')"
+  },
+  {
+   "shot": "no-pick-at-the-heap-of-a-done-task"
+  },
+  {
+   "button": ".minimap",
+   "after": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "document.querySelector('.modal-layer')?.textContent.slice(0, 200)"
+  },
+  {
+   "check": "!/Chương\\s*\\d/.test(document.body.textContent)"
+  },
+  {
+   "shot": "the-map-with-no-number-of-a-chapter"
+  },
+  {
+   "goto": "?practice=nhay-lo-co",
+   "after": 3
+  },
+  {
+   "click": "Cuộc phiêu lưu mới",
+   "if": "[...document.querySelectorAll('button')].some((b) => b.textContent.includes('Cuộc phiêu lưu mới'))"
+  },
+  {
+   "create": "Bin"
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "read": 15
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^loco\\.(call|start)/.test(x.key))",
+   "timeout": 300
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-hopscotch"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'loco.leave')",
+   "timeout": 30
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "a-tap-on-a-face-ends-the-hopscotch"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "shot": "the-hero-walks-to-the-face"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}

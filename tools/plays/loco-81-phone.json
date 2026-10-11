@@ -1,0 +1,109 @@
+{
+ "about": "#81: the hopscotch with the children of the village, and a tap on a face during it: the game ends with the line of the children, and the hero walks to the person.",
+ "start": "?story=trial-scholar",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify((() => { const e = tre.activeVillage.state().entities.find((x) => x.id === 'npc:loco-child'); return e ? [Math.round(e.position.x / 2), Math.round(e.position.z / 2)] : null; })())"
+  },
+  {
+   "print": "JSON.stringify([Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)])"
+  },
+  {
+   "walk": {
+    "thing": "npc:loco-child"
+   },
+   "taps": 20
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "print": "JSON.stringify([Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)])"
+  },
+  {
+   "tap": {
+    "thing": "npc:loco-child"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^loco\\.(call|start)/.test(x.key))",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "document.querySelectorAll('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])').length"
+  },
+  {
+   "shot": "the-hopscotch-in-the-village"
+  },
+  {
+   "print": "JSON.stringify([Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)])"
+  },
+  {
+   "check": "(() => { window.__at = JSON.stringify([Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)]); return true; })()"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'loco.leave')",
+   "timeout": 30
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "a-tap-on-a-face-ends-the-hopscotch"
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify([Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)])"
+  },
+  {
+   "check": "JSON.stringify([Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)]) !== window.__at"
+  },
+  {
+   "shot": "the-hero-walks-to-the-person"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}

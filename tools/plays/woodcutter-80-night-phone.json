@@ -1,0 +1,235 @@
+{
+ "about": "#80 at night: one mark at 3 and two waves give one count, the marks off with taps, a mark at 4, and the right cut is counted, with its line, before the sticks.",
+ "start": "?story=trial-woodcutter&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.first')",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "stem": 3
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks).includes('3')"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 30
+  },
+  {
+   "print": "tre.activeVillage.heard().filter((x) => x.key === 'woodcutter.piece').length"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  },
+  {
+   "shot": "night-two-waves-one-count"
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.cut)",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "tap": {
+    "stem": 1
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(1)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 2
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(2)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 3
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(3)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(4)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 5
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(5)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 6
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(6)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 7
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(7)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 8
+   },
+   "after": 1,
+   "if": "JSON.parse(JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)).includes(8)"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks).includes('4')"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "check": "(() => { window.__p = tre.activeVillage.heard().filter((x) => x.key === 'woodcutter.piece').length; return true; })()"
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'woodcutter.equal')",
+   "timeout": 180
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "print": "tre.activeVillage.heard().filter((x) => x.key === 'woodcutter.piece').length - window.__p"
+  },
+  {
+   "shot": "night-a-right-cut-is-counted"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'sticks:woodcutter'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "night-the-sticks-come"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}

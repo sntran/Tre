@@ -1,0 +1,208 @@
+{
+ "about": "#82 at night: a new game: \"EN\" in the first talk, the whole game in English and back with the calf named Mít, the weekly page of the parent with one line heard in English and two changes, the parent turns both choices off, and the menu and the lines have no button of the language.",
+ "start": "",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "wait": 3
+  },
+  {
+   "click": "Cuộc phiêu lưu mới"
+  },
+  {
+   "create": "Su"
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue .other-lang'))",
+   "timeout": 120
+  },
+  {
+   "check": "(() => { window.__line = (document.querySelector('.dialogue .line')?.textContent ?? ''); return true; })()"
+  },
+  {
+   "check": "(() => { window.__log = []; const t0 = performance.now(); new MutationObserver(() => { const l = document.querySelector('.dialogue .line'); const last = window.__log[window.__log.length - 1]; if (l && last?.[1] !== l.textContent) window.__log.push([Math.round(performance.now() - t0), l.textContent, l.lang || '']); }).observe(document.body, { childList: true, subtree: true, characterData: true }); return true; })()"
+  },
+  {
+   "button": ".dialogue .other-lang",
+   "after": 0.2
+  },
+  {
+   "shot": "night-en-in-the-first-talk"
+  },
+  {
+   "until": "(document.querySelector('.dialogue .line')?.textContent ?? '') === window.__line",
+   "timeout": 30
+  },
+  {
+   "print": "JSON.stringify(window.__log)"
+  },
+  {
+   "check": "window.__log[0]?.[2] === 'en'"
+  },
+  {
+   "read": 12
+  },
+  {
+   "click": "Chào nghé con",
+   "after": 2,
+   "if": "[...document.querySelectorAll('button')].some((b) => b.textContent.includes('Chào nghé con'))"
+  },
+  {
+   "check": "(() => { const i = document.querySelector('.modal-layer .name-input'); if (i) i.value = 'Mít'; return true; })()"
+  },
+  {
+   "click": "Đồng ý",
+   "if": "Boolean(document.querySelector('.modal-layer .name-input'))"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "read": 30
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "English",
+   "after": 2
+  },
+  {
+   "check": "document.documentElement.lang === 'en'"
+  },
+  {
+   "shot": "night-the-game-in-english"
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Menu']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Tiếng Việt",
+   "after": 2
+  },
+  {
+   "check": "document.documentElement.lang === 'vi' && tre.profile.friendNames && Object.values(tre.profile.friendNames).includes('Mít')"
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Tuần này",
+   "after": 1.5,
+   "if": "!document.querySelector('.modal-layer')?.textContent.includes('Ghi chú của tuần')"
+  },
+  {
+   "print": "document.querySelector('.modal-layer')?.textContent.slice(0, 600)"
+  },
+  {
+   "check": "/nghe 1 câu bằng ngôn ngữ kia, và đổi ngôn ngữ của game 2 lần/.test(document.querySelector('.modal-layer').textContent)"
+  },
+  {
+   "shot": "night-the-weekly-page-counts-the-language"
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "check": "(() => { document.querySelector('input[aria-label=\"Con được đổi ngôn ngữ trong game\"]').scrollIntoView({ block: 'center' }); return true; })()"
+  },
+  {
+   "button": "input[aria-label=\"Con được đổi ngôn ngữ trong game\"]",
+   "after": 0.6
+  },
+  {
+   "check": "!document.querySelector('input[aria-label=\"Con được đổi ngôn ngữ trong game\"]').checked"
+  },
+  {
+   "check": "(() => { document.querySelector('input[aria-label=\"Con được nghe một câu bằng ngôn ngữ kia\"]').scrollIntoView({ block: 'center' }); return true; })()"
+  },
+  {
+   "button": "input[aria-label=\"Con được nghe một câu bằng ngôn ngữ kia\"]",
+   "after": 0.6
+  },
+  {
+   "check": "!document.querySelector('input[aria-label=\"Con được nghe một câu bằng ngôn ngữ kia\"]').checked"
+  },
+  {
+   "shot": "night-the-parent-turns-both-off"
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "check": "!document.querySelector('.menu-lang')"
+  },
+  {
+   "shot": "night-no-language-in-the-menu"
+  },
+  {
+   "click": "Chơi tiếp",
+   "after": 1
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "check": "Boolean(document.querySelector('.dialogue .line')) && !document.querySelector('.other-lang')"
+  },
+  {
+   "shot": "night-no-en-button"
+  }
+ ]
+}
