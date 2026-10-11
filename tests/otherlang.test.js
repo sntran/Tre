@@ -139,4 +139,7 @@ test('the buttons: the talk box and a spoken bubble have the button of the other
   assert.equal(viDict['parent.langSwitch'], 'Con được đổi ngôn ngữ trong game');
   assert.equal(viDict['parent.otherLine'], 'Con được nghe một câu bằng ngôn ngữ kia');
   assert.equal(viDict['ui.lang.title'], 'Ngôn ngữ / Language');
+  // The card of a calling stands over the buttons of the talk box, so the button of the other
+  // language does not cover it.
+  assert.match(source('styles/main.css'), /\.talk-calling \{[^}]*bottom: calc\(100% \+ var\(--touch\) \* 0\.8 \+ 6px\);/);
 });

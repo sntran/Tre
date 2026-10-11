@@ -641,7 +641,8 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .calling-card strong { font-family: var(--display); font-size: var(--text-big); }
 .calling-card small { font-size: var(--text-small); }
 /* The card of a calling over the talk box, when a line names the calling (#62). */
-.talk-calling { position: absolute; left: var(--gap); bottom: calc(100% - var(--gap) * 0.5); cursor: default; animation: pop 0.5s; pointer-events: none; }
+/* The card of a calling stands over the buttons of the box, as the faces do: no button covers it (#82). */
+.talk-calling { position: absolute; left: var(--gap); bottom: calc(100% + var(--touch) * 0.8 + 6px); cursor: default; animation: pop 0.5s; pointer-events: none; }
 /* The faces of the people that a line names, over the talk box, one after the other (#67). */
 /* The faces stand in one row of equal columns that fit the screen: on a phone of 390 px, the
    five faces of the elder show side by side, and a long name goes on two lines. The row is over
