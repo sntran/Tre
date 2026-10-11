@@ -92,6 +92,26 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return Boolean(held?.item && (held.item.task === key || held.item.task === task.tz?.zone.task));
   }
 
+  // Is the row of the fisher at the float, with no stake in the hands (#78)?
+  function rowFull(key, task) {
+    const z = task?.place?.zone;
+    if (!defOf(key)?.lines?.full || z?.rule !== 'line') return false;
+    return itemsOf(task.place).some((e) => e.item.slot === z.length);
+  }
+  // A stake of the child on the row that the row does not need (its two neighbors are at most the
+  // space of the row apart), while the person has not shown the take back yet (#78); or null.
+  function tightStake(key, task) {
+    const z = task?.place?.zone;
+    if (!defOf(key)?.lines?.tight || z?.rule !== 'line' || task.tz?.zone.tightShown) return null;
+    // All the stakes of the row (the two of the fisher are not in the items of the place).
+    const row = query(world(), 'item').filter((e) => e.item.zone === z.id && !e.item.held && e.item.slot != null).sort((a, b) => a.item.slot - b.item.slot);
+    for (let i = 1; i < row.length - 1; i++) {
+      if (/^stake:fisher:[ab]$/.test(row[i].id)) continue;
+      if (row[i + 1].item.slot - row[i - 1].item.slot <= z.space) return row[i];
+    }
+    return null;
+  }
+
   // The things in a zone (entities).
   const itemsOf = (zoneEnt) => (zoneEnt?.zone.items ?? []).map((id) => getEntity(world(), id)).filter(Boolean);
   // The sizes of the things that the child can choose (on the piles and on the place).
@@ -389,8 +409,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // A wave after the same answer two times in a row: another move that shows the next step, so
     // that the line is not the same again and again.
     const run = asked.get(whoNow);
+    // A family with no share in its ladders never puts things into the work of the child (#78:
+    // the fisher put two stakes into the row of the child, and they did not close the space).
+    const shares = Object.values(famOf(key)?.ladders ?? {}).some((l) => l.includes('share') || l.includes('smaller'));
     if (info.asked && !info.other && move !== 'count' && run?.move === move && run.n >= 2) {
-      for (const m of ['show', 'share', 'demo'].filter((x) => x !== move)) {
+      for (const m of ['show', 'share', 'demo'].filter((x) => x !== move && (shares || x !== 'share'))) {
         const d = doMove(key, m, { ...info, other: true });
         if (d) return d;
       }
@@ -399,7 +422,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // still did not know the count of their own mat); after it, the person puts some parts for the
     // child.
     const trk = tracks.get(key);
-    if (move === 'demo' && trk?.demoed) move = 'smaller';
+    if (move === 'demo' && trk?.demoed) move = shares ? 'smaller' : 'mark';
+    if ((move === 'smaller' || move === 'share') && !shares) move = 'mark';
     if (move === 'demo' && trk) trk.demoed = true;
     // The picture of another station waits until the child has seen the iron hot one time (#70: the
     // child who waited for red heard "go to the river" after two misses).
@@ -451,6 +475,22 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       point(t, place, 1.4);
       mark(t, place, 2.5);
       t += 2;
+    } else if (move === 'show' && rowFull(key, task)) {
+      // The row is at the float and waits for the tide: the hint is to wait and look at the water,
+      // never to take a stake (#78: the child heard "Lấy một cái cọc ở đống …" four times with a
+      // full row, and with an empty pile).
+      say(t, defOf(key).lines.full);
+      point(t, task.at, 1.4);
+      t += 2.5;
+    } else if ((move === 'show' || move === 'mark') && tightStake(key, task)) {
+      // A row that is too tight: one time in the task, the person shows on a stake that a tap and a
+      // press take it back (#78: the children never found that a stake of the row comes back).
+      const stake = tightStake(key, task);
+      if (task.tz) task.tz.zone.tightShown = true;
+      say(t, defOf(key).lines.tight);
+      point(t, stake.position, 2);
+      mark(t, stake.position, 3);
+      t += 3;
     } else if (move === 'show') {
       const pile = task.piles[0]?.position ?? task.at;
       say(t, lineOf(key, 'show'));
@@ -881,8 +921,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       });
       t += g.length * PUT_PACE;
       const n = { n: { key: `num.${g.length}` } };
+      // Each line of a help says who put the things (#78: "Đặt hai cái rồi." had no subject, and a
+      // child heard "you put two"): the line of the person, or of Nghé.
       if (kindLine) s.say(t, `${kindLine}.${String(g[0].item.kind).replace(/^herb-/, '')}`, n);
-      else s.say(t, cfg.lines.putDone, n);
+      else s.say(t, task.byNghe ? 'mentor.nghe.putDone' : defOf(task.key)?.lines?.putDone, n);
       t += 2;
     }
     return t + 0.5;

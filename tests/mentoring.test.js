@@ -134,7 +134,7 @@ test('each person of a task has an own line for each move that names the things 
     // the count of the puts. No line comes before the puts.
     for (const move of ['smaller', 'share'].filter((x) => moves.has(x))) {
       assert.ok(!m.lines?.[move], `${key}: no line before the puts of ${move}`);
-      const after = m.lines?.[`${move}Put`] ?? m.lines?.putKind ?? mentorsData.lines.putDone;
+      const after = m.lines?.[`${move}Put`] ?? m.lines?.putKind ?? m.lines?.putDone;
       const keys = m.lines?.putKind && !m.lines?.[`${move}Put`] ? ['ngai', 'tiato', 'rauma'].map((k) => `${after}.${k}`) : [after];
       for (const k of keys) assert.ok(vi[k] && en[k], `${key}: the line ${k} in the two languages`);
     }

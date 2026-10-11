@@ -64,6 +64,8 @@ export function groundPick(cam, tileMap) {
   };
 }
 
+// The height of a stake of the row of the fisher over the water, for a tap (blocks).
+const STAKE_TALL = 1.2;
 const inBox = (p, b, pad) => p.x >= b.x0 - pad && p.x <= b.x1 + pad && p.y >= b.y0 - pad && p.y <= b.y1 + pad;
 
 // Can a tap choose this thing? A thing that is set does not move, but a fixed thing of a task (a
@@ -78,18 +80,22 @@ export function thingUnder(p, cam, things, pad = THING_PAD) {
   for (const e of things) {
     if (!tappable(e)) continue;
     const q = e.position;
-    // A standing culm (or cut piece) goes up from its foot; other things lie along their facing.
-    const up = e.item.kind === 'culm' || e.item.kind === 'stump';
+    // A standing culm (or cut piece) goes up from its foot, and so does a stake of the row of the
+    // fisher (#78: the taps on the stakes of the row never chose a stake); other things lie along
+    // their facing.
+    const stake = e.item.kind === 'stake' && e.item.zone === 'line';
+    const up = e.item.kind === 'culm' || e.item.kind === 'stump' || stake;
+    const tall = stake ? STAKE_TALL : e.item.size / 2;
     const end = up ? { x: q.x, z: q.z } : { x: q.x + Math.sin(q.facing ?? 0) * e.item.size, z: q.z + Math.cos(q.facing ?? 0) * e.item.size };
     // The box of the thing with a margin of half a block for small fingers.
     const b = cam.screenBox({
       x0: Math.min(q.x, end.x) / 2 - 0.5, x1: Math.max(q.x, end.x) / 2 + 0.5,
-      y0: q.y / 2, y1: q.y / 2 + (up ? e.item.size / 2 : 0.5),
+      y0: q.y / 2, y1: q.y / 2 + (up ? tall : 0.5),
       z0: Math.min(q.z, end.z) / 2 - 0.5, z1: Math.max(q.z, end.z) / 2 + 0.5,
     });
     if (!inBox(p, b, pad)) continue;
     const a = cam.project(q.x / 2, q.y / 2 + (up ? 0 : 0.4), q.z / 2);
-    const c = cam.project(end.x / 2, q.y / 2 + (up ? e.item.size / 2 : 0.4), end.z / 2);
+    const c = cam.project(end.x / 2, q.y / 2 + (up ? tall : 0.4), end.z / 2);
     const dx = c.x - a.x;
     const dy = c.y - a.y;
     const k = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
@@ -97,7 +103,8 @@ export function thingUnder(p, cam, things, pad = THING_PAD) {
     // On the body of the thing: near its line on the screen (a third of a block, at least 6 pixels).
     const top = cam.project(q.x / 2, q.y / 2 + 1, q.z / 2);
     const block = Math.hypot(top.x - a.x, top.y - a.y + 0) / Math.cos(VIEW.elevation) || 1;
-    if (!best || d < best.d) best = { e, d, along: Math.round(k * e.item.size), inside: d <= Math.max(6, block / 3) };
+    // A stake of the row is thin: a finger at most half a block (and 14 pixels) from it is on it.
+    if (!best || d < best.d) best = { e, d, along: Math.round(k * e.item.size), inside: d <= (stake ? Math.max(14, block / 2) : Math.max(6, block / 3)) };
   }
   return best;
 }
@@ -195,7 +202,10 @@ export function tapTarget(p, w) {
   const row = w.line?.() ?? null;
   const onRow = row ? rowUnder(p, w.cam, row) : null;
   const inPlace = onRow || (hit && w.placeAt(hit.x, hit.y, 0));
-  const thing = thingUnder(p, w.cam, w.things);
+  // With a stake in the hands, a tap on a stake of the row is a tap on its point of the row: the
+  // put goes to the free point nearest to it (#78).
+  const found = thingUnder(p, w.cam, w.things);
+  const thing = found && !(w.carrying && found.e.item.zone === 'line') ? found : null;
   if (thing && (thing.inside || !inPlace)) {
     // A person whose body is under the finger and who stands on the thing or in front of it: the
     // tap is for the person (#70: the healer stood on her bed of rau má, and each tap on her chose

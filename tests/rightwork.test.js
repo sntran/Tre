@@ -34,7 +34,7 @@ function linesOf(session, id) {
   session.listen((ev) => { if (ev.type === 'open' && ev.screen === 'callout' && ev.id === id) lines.push({ key: ev.textKey, params: ev.params ?? {} }); });
   return lines;
 }
-const HELPS = /^mentor\.(demo|scholar\.(demo|smallerPut|sharePut)|healer\.putKind|putDone|again|offer)/;
+const HELPS = /^mentor\.(demo|scholar\.(demo|smallerPut|sharePut)|healer\.putKind|(?:[a-z]+\.)?putDone|again|offer)/;
 const mat = (session) => getEntity(session.state, 'zone:mat').zone.items.length;
 const press = (session, n) => {
   for (let k = 0; k < n; k++) {

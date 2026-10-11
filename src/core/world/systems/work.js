@@ -38,6 +38,12 @@ const NEW_STEM = 1.2; // seconds: a new culm comes after staffs that are not equ
 const PILE_GAP = 4; // half blocks from the end of the stem to the wood pile of a practice
 // The two stakes that the fisher put himself (the space of the row): not a try of the child.
 const FISHER_STAKES = new Set(['stake:fisher:a', 'stake:fisher:b']);
+// The row of the fisher at the float (#78): this many seconds with no put or pick, and then the
+// water rises, FLOAT_RISE seconds before the tide.
+const FLOAT_WAIT = 4;
+const FLOAT_RISE = 3;
+// The stakes that the fisher brings to an empty pile (#78).
+const MORE_STAKES = 4;
 // The band of the teacher that snaps (#48): the rods lie this far from the middle of the mat (half
 // blocks) for SPRING_TIME seconds. BUNDLE_STEP: the space of the bundles in their row.
 const BUNDLE_STEP = 1.3;
@@ -993,11 +999,27 @@ function tickTide(world, tz, dt, env) {
     tide.started = true;
     tide.t = 0;
   }
+  // The tide of a task that the child left waits, and so do the lines of the fisher (#78: "Cắm
+  // thêm cọc trước đã …" came at the beds of the healer, far from the river).
+  if (tide.phase === 'low' && env.here && !env.here(tz.id.slice(5))) return;
   tide.t += dt;
+  const held = query(world, 'item').some((s) => s.item.held === 'hero' && String(s.id).startsWith('stake:fisher:'));
   // While the child carries a stake to the row, the tide does not come (#76: the tide came first,
   // and the stake in the hands could not go in): the water stays low.
-  if (tide.phase === 'low' && query(world, 'item').some((s) => s.item.held === 'hero' && String(s.id).startsWith('stake:fisher:'))) tide.t = Math.min(tide.t, tide.every - 10);
+  if (tide.phase === 'low' && held) tide.t = Math.min(tide.t, tide.every - 10);
   if (tide.phase === 'low') {
+    bringStakes(world, tz, line, row, held);
+    // The row is at the float: a few seconds after the last stake, the water rises, and the fisher
+    // says it (#78: the child put the row to the float, and nothing happened for a minute).
+    const atFloat = row.some((s) => s.item.slot === line.zone.length);
+    const now = [...row.map((s) => s.item.slot)].sort((a, b) => a - b).join(',');
+    if (world.events.some((ev) => (ev.type === 'put' || ev.type === 'pick') && ev.id === 'hero')) tide.still = 0;
+    else tide.still = (tide.still ?? 0) + dt;
+    if (atFloat && !held && now !== tide.last && tide.still >= FLOAT_WAIT && tide.t < tide.every - FLOAT_RISE) {
+      tide.t = tide.every - FLOAT_RISE;
+      const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+      if (fisher) say(world, 'call', fisher.id, { key: 'fisher.full', params: {}, happened: true });
+    }
     // The water rises in the last part of the wait, so that the child sees it come.
     const k = Math.max(0, (tide.t - (tide.every - 10)) / 10);
     if (water) water.look = `tide-${Math.min(2, Math.floor(k * 3))}`;
@@ -1044,7 +1066,7 @@ function tickTide(world, tz, dt, env) {
       const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
       const nghe = getEntity(world, 'friend:nghe');
       const who = fisher ?? (nghe && !nghe.hidden ? nghe : null);
-      if (who) say(world, 'call', who.id, { key: 'fisher.escape', params: {}, happened: true });
+      if (who && (!env.here || env.here(tz.id.slice(5)))) say(world, 'call', who.id, { key: 'fisher.escape', params: {}, happened: true });
     }
   } else if (tide.phase === 'out' && tide.t >= TIDE_OUT) {
     const r = tide.result;
@@ -1058,6 +1080,25 @@ function tickTide(world, tz, dt, env) {
     tide.t = 0;
     tide.result = null;
   }
+}
+
+// The pile never runs out while the row needs a stake (#78: a row of presses puts the stakes one
+// half block apart, and the pile was empty long before the float). When the pile is empty, no stake
+// is in the hands, and the row is not at the float, the fisher brings more stakes and says it. The
+// record keeps the count of the stakes of the row (efficient is still the fewest stakes).
+function bringStakes(world, tz, line, row, held) {
+  const pile = zoneEnt(world, 'stakes');
+  if (!pile || held || row.some((s) => s.item.slot === line.zone.length)) return;
+  if (pile.zone.items.some((id) => getEntity(world, id) && !getEntity(world, id).item.held)) return;
+  for (let i = 0; i < MORE_STAKES; i++) {
+    const id = `stake:fisher:${tz.zone.made++}`;
+    addEntity(world, { id, keep: true, item: { kind: 'stake', size: 1, task: tz.id.slice(5), zone: pile.zone.id, home: pile.zone.id, held: null, set: false }, position: { x: pile.zone.x, y: pile.zone.y, z: pile.zone.z, facing: 0 }, look: 'stake' });
+    pile.zone.items.push(id);
+  }
+  packHeap(world, pile.zone);
+  const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+  if (fisher) say(world, 'call', fisher.id, { key: 'fisher.more', params: {}, happened: true });
+  say(world, 'more', pile.id, { sound: 'plank-down', n: MORE_STAKES });
 }
 
 // A new stem comes after sticks that were not equal.

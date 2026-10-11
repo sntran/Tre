@@ -267,7 +267,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const onThisMap = profile.world.map === map.id;
     visit = (profile.maps[map.id] ??= { first: Math.round(profile.world.clock.minutes), things: {} });
     terrain.loadEdits?.(visit.chunks ?? {});
-    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, fords: fordsOf(map), day: data.day, zones: data.zones, trials: data.trials, switches, joys: data.life?.joys ?? null });
+    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, fords: fordsOf(map), day: data.day, zones: data.zones, trials: data.trials, switches, joys: data.life?.joys ?? null, here: (task) => inTaskArea(task, hero()?.position) });
 
     // The world state of this map. The save keeps the hero, and the kept entities of each chunk; the
     // rest comes from the map and the seed.
@@ -2537,10 +2537,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // nearest to it, after it first (one half block). The press never reads the space of the
         // row (#63): the child chooses each space with a tap, and presses alone make a row that is
         // too close. At the end of the row, the free point before it (#76: after a stake at the
-        // float, a stake in the hands had no place).
+        // float, a stake in the hands had no place). A tap on a point with a stake chooses the free
+        // point nearest to the tap in the same way (#78: a tap at the float gave no act).
         const row = query(state, 'item').filter((e) => e.item.zone === zone.id && !e.item.held && e.item.slot != null).map((e) => e.item.slot);
         let slot = Math.max(1, Math.min(zone.length, tapped ?? Math.round(hp.x - zone.x)));
-        if (tapped === null && row.includes(slot)) {
+        if (row.includes(slot)) {
           const near = slot;
           slot = null;
           for (let d = 1; d <= zone.length && slot === null; d++) {

@@ -154,7 +154,7 @@
         "event": "open",
         "with": {
           "screen": "callout",
-          "textKey": "mentor.putDone"
+          "textKey": "mentor.cart.putDone"
         },
         "timeout": 30
       }

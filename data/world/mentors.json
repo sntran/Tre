@@ -308,7 +308,10 @@
         "prop": "cart",
         "target": "mud"
       },
-      "picture": "mentor.picture.cart"
+      "picture": "mentor.picture.cart",
+      "lines": {
+        "putDone": "mentor.cart.putDone"
+      }
     },
     "event-flood": {
       "family": "groups",
@@ -318,7 +321,10 @@
         "prop": null,
         "target": "ditch"
       },
-      "picture": "mentor.picture.flood"
+      "picture": "mentor.picture.flood",
+      "lines": {
+        "putDone": "mentor.flood.putDone"
+      }
     },
     "event-market": {
       "family": "groups",
@@ -328,13 +334,19 @@
         "prop": null,
         "target": null
       },
-      "picture": "mentor.picture.market"
+      "picture": "mentor.picture.market",
+      "lines": {
+        "putDone": "mentor.market.putDone"
+      }
     },
     "event-duck": {
       "family": "groups",
       "person": "event:duck",
       "demo": null,
-      "picture": "mentor.picture.duck"
+      "picture": "mentor.picture.duck",
+      "lines": {
+        "putDone": "mentor.duck.putDone"
+      }
     },
     "trial-scholar": {
       "family": "bundle",
@@ -381,7 +393,9 @@
         "first": "mentor.fisher.first",
         "mark": "mentor.fisher.mark",
         "carry": "mentor.carry.fisher",
-        "wait": "fisher.tide.wait"
+        "wait": "fisher.tide.wait",
+        "full": "fisher.full",
+        "tight": "mentor.fisher.tight"
       }
     },
     "trial-healer": {
@@ -431,7 +445,8 @@
         "show": "mentor.show.plant",
         "first": "mentor.plant.first",
         "mark": "mentor.plant.mark",
-        "demo": "mentor.plant.demo"
+        "demo": "mentor.plant.demo",
+        "putDone": "mentor.plant.putDone"
       }
     },
     "trial-ducks": {
@@ -461,7 +476,8 @@
         "mark": "mentor.traps.mark",
         "show": "mentor.show.traps",
         "first": "mentor.traps.first",
-        "demo": "mentor.traps.demo"
+        "demo": "mentor.traps.demo",
+        "putDone": "mentor.traps.putDone"
       }
     },
     "trial-drum": {
@@ -483,7 +499,6 @@
     "mark": "mentor.mark",
     "cue": null,
     "demo": "mentor.demo",
-    "putDone": "mentor.putDone",
     "raise": "mentor.raise",
     "break": "mentor.break",
     "tryFirst": "mentor.tryFirst",
