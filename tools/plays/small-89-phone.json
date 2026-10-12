@@ -1,0 +1,585 @@
+{
+ "about": "#89: a new game of grade 1 (a card that says what the voice says; the stars of the five people pulse at their names); the line of Gióng with the card of the ore; the healer after her count; the woodcutter with a mark; and the practice of grade 1.",
+ "start": "",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "goto": "?story=hero-portrait",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "until": "Boolean(document.querySelector('.print-card'))",
+   "timeout": 60,
+   "after": 0
+  },
+  {
+   "print": "(document.querySelector('.print-card')?.textContent ?? '')",
+   "after": 0
+  },
+  {
+   "shot": "a-card-says-what-the-voice-says"
+  },
+  {
+   "until": "!document.querySelector('.print-card')",
+   "timeout": 30,
+   "after": 0
+  },
+  {
+   "until": "Boolean(document.querySelector('.print-card'))",
+   "timeout": 30,
+   "after": 0
+  },
+  {
+   "print": "(document.querySelector('.print-card')?.textContent ?? '')",
+   "after": 0
+  },
+  {
+   "shot": "the-next-card-comes-later"
+  },
+  {
+   "walk": {
+    "person": "elder"
+   },
+   "taps": 25
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "person": "elder"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('bà lang')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('bà lang')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('bà lang')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('bà lang')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('bà lang')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('bà lang')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('bà lang')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('bà lang')"
+  },
+  {
+   "check": "(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('bà lang')"
+  },
+  {
+   "wait": 0.8
+  },
+  {
+   "shot": "the-elder-names-the-five-a-star-pulses-1"
+  },
+  {
+   "wait": 1.0
+  },
+  {
+   "shot": "the-elder-names-the-five-a-star-pulses-2"
+  },
+  {
+   "wait": 1.0
+  },
+  {
+   "shot": "the-elder-names-the-five-a-star-pulses-3"
+  },
+  {
+   "read": 20
+  },
+  {
+   "goto": "?story=giong-speaks",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "giong-boy"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(document.querySelector('.dialogue-layer')?.textContent ?? '')"
+  },
+  {
+   "check": "(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('bụi tre') && Boolean(document.querySelector('.word-card'))"
+  },
+  {
+   "shot": "the-line-of-giong-and-the-card-of-the-ore"
+  },
+  {
+   "read": 10
+  },
+  {
+   "goto": "?story=trial-healer",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-ngai"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "check": "(() => { window.__in = tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length; return true; })()"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 3"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 3"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 3"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 3"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 3"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < window.__in + 3"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length === window.__in + 3"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-tiato"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "check": "(() => { window.__in = tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length; return true; })()"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < window.__in + 2"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length === window.__in + 2"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-rauma"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "check": "(() => { window.__in = tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length; return true; })()"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < window.__in + 2"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < window.__in + 2"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket').zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length === window.__in + 2"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.healer.now')",
+   "timeout": 150
+  },
+  {
+   "shot": "the-count-of-the-healer"
+  },
+  {
+   "button": ".world-bubble .other-lang",
+   "after": 0.3,
+   "if": "Boolean(document.querySelector('.world-bubble .other-lang'))"
+  },
+  {
+   "print": "[...document.querySelectorAll('.world-bubble')].map((b) => b.textContent).join(' | ')"
+  },
+  {
+   "shot": "the-line-in-english-the-whole-sentence"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.healer.next')",
+   "timeout": 60
+  },
+  {
+   "wait": 0.4
+  },
+  {
+   "print": "document.querySelector('.act-btn').className"
+  },
+  {
+   "shot": "give-me-the-basket-and-the-button-glows"
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "goto": "?story=trial-woodcutter",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.first')",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "stem": 3
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.cut')",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "a-mark-and-no-cut-count-then-cut"
+  },
+  {
+   "goto": "?story=giong-speaks",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "teacher"
+   },
+   "taps": 25
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "click": "Con muốn luyện tập ạ.",
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .choice-grid'))",
+   "timeout": 30
+  },
+  {
+   "shot": "the-practice-list"
+  },
+  {
+   "click": "Thầy chọn giúp con",
+   "after": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 160)"
+  },
+  {
+   "answer": "right",
+   "after": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 160)"
+  },
+  {
+   "answer": "right",
+   "after": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 160)"
+  },
+  {
+   "answer": "right",
+   "after": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 160)"
+  },
+  {
+   "answer": "right",
+   "after": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 160)"
+  },
+  {
+   "answer": "right",
+   "after": 2
+  },
+  {
+   "shot": "the-questions-of-grade-1"
+  }
+ ]
+}
