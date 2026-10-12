@@ -229,3 +229,20 @@ test('a demonstration is next to the child', async () => {
   assert.ok(worst > 0, 'a demonstration came');
   assert.ok(worst <= 16, `the demonstration is next to the hero (${worst.toFixed(1)} half blocks at most)`);
 });
+
+test('when the planks fill the gap to the far bank, a press with empty hands walks out on them and the bridge is solid', async () => {
+  let s = null;
+  const failures = await runHeadless({
+    name: 'bridge-press-cross', profile: profile(open), clock: 540, at: ['phu-dong', 46, 61],
+    steps: [
+      ...start,
+      ...plank(4), { until: { event: 'put', timeout: 20 } }, { wait: 1.5 },
+      ...plank(4), { until: { event: 'put', timeout: 20 } }, { wait: 1.5 },
+      ...plank(4), { until: { event: 'put', timeout: 20 } }, { wait: 1.5 },
+      { press: true },
+      { until: { event: 'solid', timeout: 30 } },
+    ],
+  }, { onSession: (x) => { s = x; } });
+  assert.deepEqual(failures, []);
+  assert.ok(getEntity(s.state, 'zone:bridge-gap').zone.set);
+});

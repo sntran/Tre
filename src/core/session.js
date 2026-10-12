@@ -2564,6 +2564,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const g = outlines.find((x) => x.id === chosen?.id) ?? outlines.reduce((a, b) => (distHb(ahead, b.position) < distHb(ahead, a.position) ? b : a));
         add({ act: 'guess', icon: 'check', target: g.id, at: g.position, rank: 0.5, run: () => worldCommand(state, { type: 'guess', id: 'hero', zone: g.guess.zone, n: g.guess.n }) }, REACH);
       }
+      // A gap of the bridge that the planks fill to the far bank: with empty hands, a press walks out
+      // on the planks, and the step on the last plank tries the bridge (#85: after the last plank,
+      // each press took another plank from the pile).
+      if (!held && bridgeOpen()) {
+        for (const z of spans()) {
+          const covered = z.zone.items.reduce((a, id) => a + (getEntity(state, id)?.item.size ?? 0), 0);
+          if (z.zone.set || !z.zone.items.length || covered !== z.zone.gap) continue;
+          add({ act: 'cross', icon: 'check', target: z.id, at: z.position, work: true, rank: -20, run: () => goOnSpan(z, z.zone.from + covered - 0.5) }, FAR_WORK);
+        }
+      }
       // A thing of the map with a text or a find (the well, the banyan, a sign, a field, the ore of
       // the forge): the button looks at it when the hero is next to it (#44: a tap only walks).
       const ht = heroFrom();
