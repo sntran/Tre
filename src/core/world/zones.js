@@ -21,13 +21,15 @@
 import { getEntity } from './state.js';
 
 export const REACH = 5; // half blocks: how near the hero must be to pick up or put down
-export const PILE_REACH = 3; // half blocks: a pile is long, and the hands reach this much farther there
+export const PILE_REACH = 4; // half blocks: a pile is long and deep, and the hands reach this much farther there
 // The floor of the basket of the healer over the ground (half blocks): the basket stands on a low
 // stand, so that a child finds it (#64). The figure (src/world/figures.js) and the places of the
 // bunches in it (src/core/world/systems/work.js) use it.
 export const BASKET_FLOOR = 1;
-export const PILE_GAP = 1; // half blocks between two things in a row of a pile
-export const PILE_ROW = 3; // half blocks from one row of a pile to the next
+// The space between two planks of a row, and between two rows (#85: on a phone the three lengths
+// of the pile looked the same).
+export const PILE_GAP = 2; // half blocks between two things in a row of a pile
+export const PILE_ROW = 4; // half blocks from one row of a pile to the next
 // The count of a try on the bridge (#71: "ba, tám, mười ba" was the length plank by plank, and no
 // child knew why): the person counts the units of the planks one by one, "một, hai, ba, bốn", and
 // the mark of each unit lights up at its word. The world keeps the planks of the try until the

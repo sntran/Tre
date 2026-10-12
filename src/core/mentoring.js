@@ -866,6 +866,16 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const end = long ? { x: z.lane, z: z.from + z.gap + 1 } : { x: z.lane, z: z.from + u + 0.5 };
     s.point(t, end, 2);
     s.mark(t, end, 4);
+    if (long) {
+      // After the count of a plank that is too long: the next step, and the planks of the pile that
+      // are shorter than it glow until the next pick (#85: the child took the same long plank five
+      // times, and nothing said what to do next).
+      const size = parts.at(-1)?.item.size ?? Infinity;
+      const shorter = task.piles.flatMap(itemsOf).filter((e) => !e.item.held && (e.item.size ?? 1) < size).map((e) => e.id);
+      s.say(t + 2, lineOf(task.key, 'shorter'));
+      s.steps.push({ at: t + 2, glow: { ids: shorter } });
+      return t + 4.5;
+    }
     return t + 2;
   }
 
@@ -901,10 +911,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return { t: last + 3.5, keyAt: t + 0.8 + Math.ceil(parts.length / 2) * 1.3 };
   }
 
-  // A free place on the ground next to the person, away from the place of the task.
+  // A free place on the ground next to the child, away from the place of the task: a demonstration
+  // happens where the child sees it (#85: the fisher showed it 16 blocks from the gap, and the
+  // child saw nothing). The view frames it until it ends (workFrame in src/ui/village.js).
   function demoSpot(task) {
     const e = env();
-    const p = task.person?.position ?? task.at;
+    const p = getEntity(world(), 'hero')?.position ?? task.person?.position ?? task.at;
     const away = { x: p.x - task.at.x, z: p.z - task.at.z };
     const n = Math.hypot(away.x, away.z) || 1;
     const dirs = [[away.x / n, away.z / n], [-away.z / n, away.x / n], [away.z / n, -away.x / n], [1, 0], [0, 1], [-1, 0], [0, -1]];

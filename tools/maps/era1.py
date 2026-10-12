@@ -220,7 +220,7 @@ A.triggers += [
     {'id': 'field-home', 'x': 3, 'y': 19, 'w': 8, 'h': 6, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-east', 'x': 33, 'y': 2, 'w': 6, 'h': 25, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-south', 'x': 26, 'y': 39, 'w': 12, 'h': 3, 'on': 'tap', 'action': {'textKey': 'map.field'}},
-    {'id': 'river', 'x': 0, 'y': 33, 'w': 40, 'h': 5, 'on': 'tap', 'action': {'textKey': 'map.river'}},
+    {'id': 'river', 'x': 0, 'y': 33, 'w': 40, 'h': 5, 'on': 'tap', 'action': {'textKey': 'map.river', 'taskText': {'bridge': 'map.river.bridge'}}},
 ]
 A.paths = {'east-road': [[39.5, 14.8], [32.5, 14.8]]}
 

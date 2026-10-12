@@ -494,7 +494,8 @@ export function plank(n) {
   for (let i = 0; i < n; i++) {
     parts.push(P(`unit${i}`, [2, 0.8, 1], PLANK_TONES[i % 2], [0, 0.4, i + 0.5]));
     parts.push(P(`dot${i}`, [0.45, 0.04, 0.45], 'vermilion', [0, 0.82, i + 0.5], { mark: true }));
-    if (i > 0) parts.push(P(`tick${i}`, [2, 0.04, 0.1], 'ink', [0, 0.82, i], { mark: true }));
+    // A thick ink line between two units, so that each unit is one block on a phone (#85).
+    if (i > 0) parts.push(P(`tick${i}`, [2, 0.06, 0.18], 'ink', [0, 0.82, i], { mark: true }));
   }
   return { kind: 'still', parts, scale: 1, height: 0.8, shadow: 0 };
 }

@@ -91,7 +91,7 @@
         "n1": { "speaker": "fisher", "textKey": "dlg.bridge.start.n1", "names": ["zone:bridge-gap"], "next": "n2" },
         "n2": { "speaker": "fisher", "textKey": "dlg.bridge.start.n2", "names": ["zone:bridge-pile"], "next": "n3" },
         "n3": { "speaker": "fisher", "textKey": "dlg.bridge.start.n3", "names": ["guess:bridge-gap:1", "guess:bridge-gap:2", "guess:bridge-gap:3", "guess:bridge-gap:4", "guess:bridge-gap:5", "guess:bridge-gap:6"], "next": "n4" },
-        "n4": { "speaker": "fisher", "textKey": "dlg.bridge.start.n4", "names": ["guess:bridge-gap:1", "guess:bridge-gap:2", "guess:bridge-gap:3", "guess:bridge-gap:4", "guess:bridge-gap:5", "guess:bridge-gap:6"] }
+        "n4": { "speaker": "fisher", "textKey": "dlg.bridge.start.n4", "names": [{ "id": "zone:bridge-gap", "act": "ends" }, { "id": "guess:bridge-gap:1", "act": "seq" }, { "id": "guess:bridge-gap:2", "act": "seq" }, { "id": "guess:bridge-gap:3", "act": "seq" }, { "id": "guess:bridge-gap:4", "act": "seq" }, { "id": "guess:bridge-gap:5", "act": "seq" }, { "id": "guess:bridge-gap:6", "act": "seq" }] }
       }
     },
     {

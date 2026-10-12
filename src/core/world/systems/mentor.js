@@ -37,7 +37,9 @@ export function mentor(world, dt, rng, env) {
     const g = e.gesture;
     g.t -= dt;
     if (g.t <= 0) {
-      delete e.gesture;
+      // A gesture can have a next gesture (#85: a point at one end of the gap, then at the other).
+      if (g.then) e.gesture = g.then;
+      else delete e.gesture;
       continue;
     }
     if (g.x !== undefined) e.position.facing = faceOf(g.x - e.position.x, g.z - e.position.z);
@@ -98,6 +100,8 @@ function play(world, ent, dt, env) {
       sc.put = sc.put.filter((id) => id !== st.back.item);
     }
     if (st.cue) cueHint(world, getEntity(world, st.cue.zone), env);
+    // Things that glow until the child takes one of them (the shorter planks of the bridge, #85).
+    if (st.glow) world.events.push({ type: 'glowThings', ids: st.glow.ids });
     if (st.nudge) {
       const friend = query(world, 'follow')[0];
       if (friend && !friend.follow.goal) friend.follow.goal = { x: st.nudge.x - 2.5, z: st.nudge.z, face: faceOf(2.5, 0), act: 'stretch', nudge: true };

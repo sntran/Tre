@@ -1073,6 +1073,7 @@ export async function mountVillage(ctx, params = {}) {
     }
     const real = Math.max(0, (now - last) / 1000);
     const dt = Math.min(0.05, real);
+    stepSeq(real);
     last = now;
     time += dt;
     sendInput();
@@ -1199,6 +1200,9 @@ export async function mountVillage(ctx, params = {}) {
         }
       }
     }
+    // A demonstration of a person on another instance shows until it ends (#85).
+    const demo = query(state, 'demo', 'position').map((e) => wu(e.position));
+    if (demo.length) pts = [...(pts ?? []), ...demo];
     if (!pts?.length) return null;
     const nearH = viewSize(size.width, size.height, 0).h;
     const f = frameWork([heroAt, ...pts], { az: view.angle, width: size.width, height: size.height, safe, min: nearH * FRAME_CLOSE, max: viewSize(size.width, size.height, VIEW.zooms.length - 1).h, lift: 1.5 });
@@ -1540,7 +1544,13 @@ export async function mountVillage(ctx, params = {}) {
         }
         figures.pulse(ev.id);
         return;
-      case 'cue': figures.glow(ev.ids, ev.spots, ev.rings); return;
+      case 'cue':
+        baseGlow = [ev.ids, ev.spots, ev.rings, []];
+        showGlow();
+        return;
+      case 'glowSeq':
+        startSeq(ev.ids);
+        return;
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
       case 'workView': turnToWork(ev.points, ev.sight, ev.person); return;
@@ -1565,7 +1575,8 @@ export async function mountVillage(ctx, params = {}) {
       // The things that a line of a talk names (#62): they glow, and the view shows them above the
       // talk box. An empty list ends it.
       case 'names':
-        figures.glow(ev.ids, ev.spots, ev.ids, ev.bobs);
+        baseGlow = [ev.ids, ev.spots, ev.ids, ev.bobs];
+        startSeq(ev.seq ?? []);
         namePoints = [...ev.ids.map((id) => ({ id })), ...ev.spots.map((spot) => ({ spot }))];
         if (ev.points.length) {
           turnToWork(ev.points, ev.points);
@@ -1736,6 +1747,28 @@ export async function mountVillage(ctx, params = {}) {
   const pointerPool = [];
   const pointerAt = pooled(pointerPool, () => h('div', { class: 'name-pointer', 'aria-hidden': 'true' }));
   let namePoints = [];
+  // The glow of the cue or of a line, and the things that glow one after another on top of it
+  // (#85: the rows of the guess at the bridge, two rounds).
+  let baseGlow = [[], [], [], []];
+  let seq = null;
+  const SEQ_STEP = 0.7; // seconds for each thing
+  const SEQ_ROUNDS = 2;
+  function startSeq(ids) {
+    seq = ids.length ? { ids, t: 0 } : null;
+    showGlow();
+  }
+  function stepSeq(dt) {
+    if (!seq) return;
+    const k = Math.floor(seq.t / SEQ_STEP);
+    seq.t += dt;
+    if (seq.t >= SEQ_STEP * seq.ids.length * SEQ_ROUNDS) seq = null;
+    if (!seq || Math.floor(seq.t / SEQ_STEP) !== k) showGlow();
+  }
+  function showGlow() {
+    const [ids, spots, rings, bobs] = baseGlow;
+    const one = seq ? [seq.ids[Math.floor(seq.t / SEQ_STEP) % seq.ids.length]] : [];
+    figures.glow([...ids, ...one], spots, [...rings, ...one], bobs);
+  }
   const STAR_PULSE = 1.6;
   const MAIN_STAR = 1.3; // the scale of the star of the next step of the story (#62)
   let starPulse = null;

@@ -297,7 +297,8 @@
         "show": "mentor.show.bridge",
         "first": "mentor.bridge.first",
         "mark": "mentor.bridge.mark",
-        "demo": "mentor.bridge.demo"
+        "demo": "mentor.bridge.demo",
+        "shorter": "mentor.bridge.shorter"
       }
     },
     "event-cart": {
@@ -524,6 +525,7 @@
     "raise": "mentor.nghe.raise",
     "tryFirst": "mentor.nghe.tryFirst",
     "mentor.first.you": "mentor.nghe.first.you",
-    "mentor.bridge.guess": "mentor.nghe.bridge.guess"
+    "mentor.bridge.guess": "mentor.nghe.bridge.guess",
+    "shorter": "mentor.nghe.bridge.shorter"
   }
 }

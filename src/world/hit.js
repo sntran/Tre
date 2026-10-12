@@ -266,8 +266,13 @@ export function sessionCamera(session, { az = Math.PI / 4, width = 390, height =
   const pts = (work?.points ?? []).map(half);
   const person = work?.person ? session.state.entities.find((e) => e.id === work.person) : null;
   const mid = pts.length ? pts.reduce((a, p) => ({ x: a.x + p.x / pts.length, z: a.z + p.z / pts.length }), { x: 0, z: 0 }) : null;
-  if (!mid || hero.riding || Math.hypot(at.x - mid.x, at.z - mid.z) > WORK_AWAY) return viewCamera({ focus: { ...at, y: at.y + LIFT }, az, width, height });
-  if (person?.position) pts.push(half(person.position));
+  // A demonstration on another instance shows until it ends (#85).
+  const demo = session.state.entities.filter((e) => e.demo && e.position).map((e) => half(e.position));
+  if ((!mid || Math.hypot(at.x - mid.x, at.z - mid.z) > WORK_AWAY) && !demo.length) return viewCamera({ focus: { ...at, y: at.y + LIFT }, az, width, height });
+  if (hero.riding) return viewCamera({ focus: { ...at, y: at.y + LIFT }, az, width, height });
+  if (!mid || Math.hypot(at.x - mid.x, at.z - mid.z) > WORK_AWAY) pts.length = 0;
+  pts.push(...demo);
+  if (person?.position && mid) pts.push(half(person.position));
   const nearH = viewSize(width, height, 0).h;
   const f = frameWork([at, ...pts], { az, width, height, min: nearH * FRAME_CLOSE, max: viewSize(width, height, VIEW.zooms.length - 1).h, lift: LIFT });
   return viewCamera({ focus: { ...f.focus, y: at.y + LIFT }, az, width, height, scale: f.h / nearH });

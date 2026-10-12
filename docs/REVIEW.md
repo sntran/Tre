@@ -710,3 +710,11 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The setting of the parent area:** `parent.view` ("Tầm nhìn") with `parent.view.grade` ("Theo lớp"), `parent.view.very-near` ("Rất gần"), `parent.view.near` ("Gần"), `parent.view.middle` ("Vừa"), and `parent.view.far` ("Xa").
 - **The weekly page:** `parent.week.taps` ("Con hay chạm trượt. Có thể thử tầm nhìn gần hơn.") and its button `parent.week.taps.open` ("Đổi tầm nhìn").
 - **Please check:** the bands (16, 18, 21, and 24 world units) are a first guess for the play tests; and "chạm trượt" for a parent.
+
+## The bridge (#85)
+
+- **After a plank that is too long:** `mentor.bridge.shorter` ("Cháu lấy một tấm ngắn hơn nhé.") and, for Nghé, `mentor.nghe.bridge.shorter` ("Bạn lấy một tấm ngắn hơn nhé.").
+- **The guess:** `dlg.bridge.start.n3` ("Đây là những hàng ván mờ."), `dlg.bridge.start.n4` ("Cháu tìm hàng ván mờ dài bằng chỗ gãy, rồi chạm vào hàng đó."), and the line of Nghé `mentor.nghe.bridge.guess`.
+- **The check of the guess:** `mentor.bridge.guessRight` ("Cháu đoán {n} tấm. Cháu đặt {m} tấm: đoán đúng rồi!"), `mentor.bridge.guessOff` ("Cháu đoán {n} tấm. Cháu đặt {m} tấm."), and the lines of Nghé with "Bạn".
+- **The river while the bridge is broken:** `map.river.bridge` ("Sông Đuống chảy về phía đông. Chỗ này nước sâu. Cầu đã gãy. Chú đánh cá cần cháu sửa cầu.").
+- **Please check:** "hàng ván mờ" for a child of six, and "đoán đúng rồi" after a right guess.

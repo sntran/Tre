@@ -670,6 +670,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (here) talk('bridge.start');
     else if (nghe && !nghe.hidden) {
       emit({ type: 'open', screen: 'callout', id: nghe.id, textKey: 'mentor.nghe.bridge.guess', params: {} });
+      // Nghé points at the two ends of the gap, and the rows glow one after another (#85).
+      const gap = getEntity(state, 'zone:bridge-gap');
+      if (gap) pointAtEnds(nghe, endsOf(gap));
+      emit({ type: 'glowSeq', ids: outlines.map((g) => g.id) });
       // The line of Nghé has no talk box that shows the rows: the view turns and leads to them, so
       // that all the rows are on the screen (#71: at night the closer view cut the rows at the
       // edge, and a child could not tap them).
@@ -693,6 +697,24 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const ends = gap ? [gap.zone.from, gap.zone.from + gap.zone.gap].map((z) => ({ x: gap.zone.lane, y: gap.position.y, z })) : [];
     const pts = [...(pile?.position ? [{ ...pile.position }] : []), ...ends];
     if (pts.length) emit({ type: 'workView', key: 'bridge', points: pts, sight: pts });
+  }
+
+  // When the gap is solid, the person says the guess against the planks that the child put, in
+  // words (#85: the child never heard if the guess was right). One time for each gap.
+  const guessChecked = new Set();
+  function guessCheck(zoneId) {
+    const z = getEntity(state, zoneId)?.zone;
+    if (!z || typeof z.guess !== 'number' || guessChecked.has(`${zoneId}:${z.round ?? 0}`)) return;
+    guessChecked.add(`${zoneId}:${z.round ?? 0}`);
+    const used = z.items.length;
+    const fisher = getEntity(state, 'npc:fisher');
+    const at = getEntity(state, zoneId).position;
+    const near = fisher && !fisher.hidden && at && atWork(fisher, state.clock.minutes) && Math.hypot(fisher.position.x - at.x, fisher.position.z - at.z) <= 40;
+    const nghe = getEntity(state, 'friend:nghe');
+    const who = near ? fisher : nghe && !nghe.hidden ? nghe : null;
+    if (!who) return;
+    const key = `mentor.${near ? '' : 'nghe.'}bridge.guess${z.guess === used ? 'Right' : 'Off'}`;
+    emit({ type: 'open', screen: 'callout', id: who.id, textKey: key, params: { n: { key: `num.${Math.min(30, z.guess)}` }, m: { key: `num.${Math.min(30, used)}` } } });
   }
 
   // People and encounters, in map cells. They block their cells for the paths of taps.
@@ -818,6 +840,23 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
     showNames(d, view.speaker, view.names);
   }
+  // The two ends of a place: the ends of a gap of the bridge, or the middles of the short sides of
+  // a rect.
+  function endsOf(e) {
+    const z = e.zone;
+    if (z?.rule === 'span') return [z.from, z.from + z.gap].map((v) => ({ x: z.lane, y: e.position.y, z: v }));
+    const r = z?.rect;
+    if (!r) return [{ ...e.position }];
+    const y = z.y ?? e.position.y;
+    if (r.x1 - r.x0 >= r.z1 - r.z0) return [{ x: r.x0, y, z: (r.z0 + r.z1) / 2 }, { x: r.x1, y, z: (r.z0 + r.z1) / 2 }];
+    return [{ x: (r.x0 + r.x1) / 2, y, z: r.z0 }, { x: (r.x0 + r.x1) / 2, y, z: r.z1 }];
+  }
+  // A person points at the near end first, and then at the far end.
+  function pointAtEnds(who, ends) {
+    const p = who.position;
+    const [a, b] = [...ends].sort((u, v) => Math.hypot(u.x - p.x, u.z - p.z) - Math.hypot(v.x - p.x, v.z - p.z));
+    who.gesture = { act: 'point', x: a.x, z: a.z, t: 1.8, ...(b ? { then: { act: 'point', x: b.x, z: b.z, t: 2.2 } } : {}) };
+  }
   // The things that a line names (#62): the person points at the first one, the view makes them
   // glow (a place glows as a rim on the ground) and shows them with the person above the talk box.
   // A line with no names after a line with names ends the glow, and so does the end of the talk.
@@ -840,7 +879,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       d.risen = rise.e.id;
     }
     const person = speaker ? getEntity(state, `npc:${speaker}`) : null;
-    if (person && things.length) person.gesture = { act: 'point', x: things[0].position.x, z: things[0].position.z, t: 3 };
+    // A place with the act "ends": the person points at one end of it, and then at the other end
+    // (#85: the two ends of the gap of the bridge).
+    const ends = named.find((n) => n.act === 'ends');
+    if (person && ends) pointAtEnds(person, endsOf(ends.e));
+    else if (person && things.length) person.gesture = { act: 'point', x: things[0].position.x, z: things[0].position.z, t: 3 };
     // A place: the corners of its rect, so that all of it is in view.
     const pointsOf = (e) => {
       const r = e.zone?.rect;
@@ -850,9 +893,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const places = things.filter((e) => e.zone);
     emit({
       type: 'names',
-      ids: things.filter((e) => !e.zone).map((e) => e.id),
+      ids: named.filter((n) => !n.e.zone && n.act !== 'seq').map((n) => n.e.id),
       spots: places.map((e) => spotOf(e.zone)),
       bobs: named.filter((n) => n.act === 'bob').map((n) => n.e.id),
+      // The things with the act "seq" glow one after another (#85: the rows of the guess).
+      seq: named.filter((n) => n.act === 'seq').map((n) => n.e.id),
       points: things.length ? [...things.flatMap(pointsOf), ...(person?.position ? [{ ...person.position }] : [])] : [],
     });
   }
@@ -1511,6 +1556,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // Actions of trigger zones, people, and encounters -------------------------------
 
+  // The text of a thing of the map while a task is open there (taskText: { task: key }): #85, the
+  // line of the river told the child to wade across while the fisher asked for the bridge.
+  function textOfAction(a) {
+    const open = (task) => (task === 'bridge' ? bridgeOpen() && !getEntity(state, 'zone:bridge-gap')?.zone.set : openTask(task));
+    return Object.entries(a.taskText ?? {}).find(([task]) => open(task))?.[1] ?? a.textKey;
+  }
   function doAction(zone) {
     const a = zone.action;
     if (zone.once) profile.flags[`zone.${zone.id}`] = true;
@@ -1537,7 +1588,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       say(a.textKey);
       return;
     }
-    if (a.textKey) say(a.textKey);
+    if (a.textKey) say(textOfAction(a));
     if (a.open) queue(() => openCommand({ open: a.open }));
   }
 
@@ -2548,7 +2599,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (zone.rule === 'span') {
         const before = zone.items.reduce((a, id) => a + (getEntity(state, id)?.item.size ?? 0), 0);
         const slot = spanSlot(zone, before, held.item.size);
-        add({ act: 'put', icon: 'hand-put', target: z.id, at: z.position, work, rank: 0, ghost: { look: held.look, x: slot.x, y: slot.y, z: slot.z, facing: 0 }, run: () => put(null) }, REACH);
+        // An open gap of the bridge is the work of its plank: a press far from it walks there (#85).
+        add({ act: 'put', icon: 'hand-put', target: z.id, at: z.position, work: work || (bridgeOpen() && openSpan(zone.id)), rank: 0, ghost: { look: held.look, x: slot.x, y: slot.y, z: slot.z, facing: 0 }, run: () => put(null) }, REACH);
       } else if (zone.rule === 'line') {
         if (trialZone('fisher')?.zone.tide?.phase !== 'low') {
           // The tide is in: the line takes no stake now. The fisher says a short line, and the stake
@@ -2584,6 +2636,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const at = { x: zone.slots[k].x, z: zone.slots[k].z };
         add({ act: 'put', icon: 'hand-put', target: z.id, at, work, rank: 0, ghost: { look: held.look, x: at.x, y: zone.y, z: at.z, facing: 0 }, run: () => put(at) }, REACH + 2);
       } else if (zone.rule === 'pile') {
+        // Back on the pile only after a tap on the pile or on one of its planks, or when no place
+        // takes the plank: a press with a plank in the hands goes to the gap (#85: the press put
+        // the plank back on the pile, and the child did not see where it went).
+        if (!noPlace && (!chosen || ![z.id, ...zone.items].includes(chosen.id))) continue;
         // A pile is long: near the pile or near one of its planks.
         // A tap on a plank of the pile makes the pile the target too.
         const near = [z.position, ...zone.items.map((id) => getEntity(state, id)).filter(Boolean).map(middleOf)];
@@ -2638,7 +2694,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // across the village (#66: a press walked the child from the fisher to the bridge, and from the
     // smith back to the healer).
     const far = list.far.filter((c) => inTaskArea(taskOfCandidate(c), h.position));
-    if (taskOn() && !tappedNear && !list.some((c) => c.work || !WORKLESS.has(c.act)) && far.length) {
+    // A drop on the ground is no work of the task (#85: with a plank in the hands at the pile, the
+    // press walks to the gap).
+    const drop = (c) => c.act === 'put' && c.rank >= 10;
+    if (taskOn() && !tappedNear && !list.some((c) => (c.work || !WORKLESS.has(c.act)) && !drop(c)) && far.length) {
       const c = far.reduce((a, b) => (b.d + b.rank * 0.5 < a.d + a.rank * 0.5 ? b : a));
       return { ...c, go: true, hold: false, release: null, run: () => goWork(c) };
     }
@@ -2647,6 +2706,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // a look or a talk stays only when the child tapped that one (#60: a tap on a stake of the row
     // of the fisher never made the look at the river the act).
     if (taskOn()) list = list.filter((c) => c.work || !WORKLESS.has(c.act) || tapped(c));
+    // At the place of a task, the look at a sign or a place is never the act, also after a tap
+    // (#85: at the bridge the eye read the river, and the child left the planks).
+    if (mentoring.activeKey()) list = list.filter((c) => c.act !== 'look');
     if (!list.length) return null;
     // With a thing in the hands: a place in reach that takes it always comes before the ground,
     // and the hero turns to it (#44). The ground is a target only when no place is in reach.
@@ -2953,7 +3015,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     idleT = 0;
     setCue([]);
   }
+  // The things that a help made glow (#85): they glow until the child takes one, also during a walk.
+  let glowing = [];
   function updateCue() {
+    if (glowing.length && !screen && !busy) {
+      setCue(glowing.filter((id) => getEntity(state, id) && !getEntity(state, id).item?.held));
+      return;
+    }
     if (screen || busy || raidOn() || hero().fall || (hero().motion?.speed ?? 0) > 0.5) {
       acted();
       return;
@@ -3526,6 +3594,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // (#64: after a wrong tie, each press tied the same rods again, away from the heap).
     if (ev.type === 'skill' && ev.task) childPut.delete(ev.task);
     if (ev.type === 'long') mentoring.long(ev);
+    // The things that a help makes glow until the child takes one (the shorter planks, #85).
+    if (ev.type === 'glowThings') glowing = [...ev.ids];
+    if ((ev.type === 'pick' && ev.id === 'hero') || ev.type === 'solid') glowing = [];
+    if (ev.type === 'solid') guessCheck(ev.id);
     mentoring.worldEvent(ev);
     if ((ev.type === 'solid' || ev.type === 'break') && ev.give) {
       // The gift flies from the thing to its counter in the HUD; no number is written in the world.
