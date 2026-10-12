@@ -1,0 +1,249 @@
+{
+ "about": "#86: the walk to the scouts, away from the court of the hopscotch, with no invite; a short stone and the words of the elder; a long stone, and the point at the enemy and the posts; the sounds of the shot and of the landing; a tap on a star that stays at the gate; and a walk away with the stick: the raid waits, and the elder calls one time.",
+ "start": "?story=raid-first-sling",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "scouts"
+   },
+   "taps": 12
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "person": "scouts"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "tre.activeVillage.heard().some((x) => x.key === 'loco.invite')"
+  },
+  {
+   "shot": "the-scouts-wait-away-from-the-court"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "print": "document.querySelector('.dialogue-layer')?.textContent ?? ''"
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && !r.result && r.enemies.length >= 1); })()",
+   "timeout": 180
+  },
+  {
+   "read": 4
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && r.enemies.some((e) => e.state === 'wait')); })()",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'raid.miss.short') || tre.activeVillage.heard().some((x) => x.key === 'raid.miss.long')",
+   "timeout": 90
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "a-short-stone-the-words-of-where-it-fell"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'raid.miss.long')",
+   "timeout": 90
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "shot": "a-long-stone-and-the-point-at-the-enemy-and-the-posts"
+  },
+  {
+   "print": "JSON.stringify([...new Set(tre.activeVillage.sounds().map((x) => x.name))])"
+  },
+  {
+   "check": "JSON.stringify([...new Set(tre.activeVillage.sounds().map((x) => x.name))]).includes('sling') && JSON.stringify([...new Set(tre.activeVillage.sounds().map((x) => x.name))]).includes('thud')"
+  },
+  {
+   "wait": 4
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && r.enemies.some((e) => e.state !== 'gone' && e.state !== 'retreat')); })()",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 3,
+   "if": "Boolean(document.querySelector('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])'))"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return r ? Math.round(Math.hypot(h.x - r.wall.x, h.z - r.wall.z)) : -1; })()"
+  },
+  {
+   "check": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return r ? Math.round(Math.hypot(h.x - r.wall.x, h.z - r.wall.z)) : -1; })() <= 6"
+  },
+  {
+   "shot": "a-tap-on-a-star-in-the-raid-stays-at-the-gate"
+  },
+  {
+   "stick": [
+    -80,
+    0,
+    6
+   ]
+  },
+  {
+   "stick": [
+    0,
+    -80,
+    6
+   ],
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.away"
+  },
+  {
+   "stick": [
+    80,
+    0,
+    6
+   ],
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.away"
+  },
+  {
+   "stick": [
+    0,
+    80,
+    6
+   ],
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.away"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.away)",
+   "timeout": 30
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'raid.away')",
+   "timeout": 30
+  },
+  {
+   "print": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return r ? Math.round(Math.hypot(h.x - r.wall.x, h.z - r.wall.z)) : -1; })()"
+  },
+  {
+   "shot": "far-from-the-wall-the-raid-waits-and-the-elder-calls"
+  },
+  {
+   "walk": {
+    "thing": "post:1"
+   },
+   "taps": 20,
+   "near": 90
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.away",
+   "timeout": 30
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && r.enemies.some((e) => e.state !== 'gone' && e.state !== 'retreat')); })()",
+   "timeout": 60
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "press": true,
+   "after": 0.35
+  },
+  {
+   "wait": 5
+  },
+  {
+   "shot": "back-at-the-gate-four-presses"
+  }
+ ]
+}
