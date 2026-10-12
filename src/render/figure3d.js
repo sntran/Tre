@@ -11,7 +11,6 @@ import { colorIndex, toneRgb, FACE_TONES } from '../world/voxel.js';
 import { figureOf } from '../world/figures.js';
 import { createAnimator, animate } from '../world/animate.js';
 import { trackCarries, flightAt } from '../world/carry.js';
-import { inFront, stepFade } from '../world/fade.js';
 import { detailFor, inView, lodFor } from '../world/lod.js';
 import { createSway, swayStep } from '../world/sway.js';
 import { C } from './palette.js';
@@ -24,6 +23,14 @@ const HULL = 0.046; // the ink outline around each part, in blocks (the same for
 const MAX_PARTS = 4096;
 const MAX_FIGURES = 512;
 const MAX_PUFFS = 64;
+const MAX_HERO_PARTS = 256;
+// The hero behind a house, a tree, a person, or an animal shows through as a pale yellow outline
+// (#87: the people turned pale in front of the hero, and the hero did not show at all). The color
+// is the light edge of the hero at night (#65): an ink line did not show on dark clothes. The copy
+// of the hero for the outline comes this many blocks toward the camera, so that a part of the hero
+// never draws an outline over the hero.
+const XRAY_NEAR = 0.5;
+const XRAY_HULL = 2.4; // the outline is this many times the ink of a part
 const WADE = 0.4; // blocks: how deep the feet go in the surf (the sea is 0.5 over the sand)
 const RIDER = 0.35; // world units: the seat of a rider over the ground
 // The night (0 to 1): the ink is softer at night. The color of the dusk is one multiply layer over
@@ -172,6 +179,26 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     scene.add(m);
   }
   shadows.renderOrder = 1;
+  // The outline of a covered hero: first the pixels where the hero shows (stencil bit 4), then a
+  // mask of the parts of the hero that something covers (stencil bit 2; bit 1 is the mask of the
+  // faded houses, src/render/voxel.js), and then the pale line around the mask, only where
+  // something covers the hero and the hero does not show. A part of the hero behind another part
+  // of the hero (an arm behind the body) draws no line over the hero. All three draw after all.
+  const xray = { depthWrite: false, depthFunc: THREE.GreaterDepth, transparent: true, stencilWrite: true, stencilRef: 2, stencilFuncMask: 2, stencilWriteMask: 2 };
+  const xSelf = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({
+    colorWrite: false, depthWrite: false, transparent: true, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4,
+    stencilWrite: true, stencilRef: 4, stencilFuncMask: 4, stencilWriteMask: 4, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp,
+  }), MAX_HERO_PARTS);
+  const xMask = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ ...xray, colorWrite: false, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp }), MAX_HERO_PARTS);
+  const xLine = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ ...xray, color: new THREE.Color(C.yellowPale), stencilRef: 0, stencilFuncMask: 6, stencilFunc: THREE.EqualStencilFunc, stencilZPass: THREE.KeepStencilOp }), MAX_HERO_PARTS);
+  for (const [m, k] of [[xSelf, 29], [xMask, 30], [xLine, 31]]) {
+    m.frustumCulled = false;
+    m.count = 0;
+    m.renderOrder = k;
+    scene.add(m);
+  }
+  const near = new THREE.Vector3();
+  const nearM = new THREE.Matrix4();
   // The cue: the thing to touch next breathes a little bigger, with a thin warm ring on the ground
   // at its edge (the things in glowing, the places in glowSpots). The ring never covers the thing
   // or the hero (#44): it is only a rim, and a thing at the feet of the hero has none.
@@ -369,13 +396,11 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       const heroFig = [...figures.values()].find((f) => f.control) ?? null;
       const hero = heroFig?.curr ?? null;
       const lod = lodFor(zoom());
-      // The way to the camera (its turn and its elevation), for the people in front of the hero.
-      let camAz = null;
-      let camEl = null;
-      if (camera && heroFig?.at) {
+      // The way to the camera, for the outline of a covered hero. xn counts the parts of the outline.
+      let xn = 0;
+      if (camera) {
         camera.getWorldDirection(tmpDir);
-        camAz = Math.atan2(-tmpDir.x, -tmpDir.z);
-        camEl = Math.asin(Math.max(-1, Math.min(1, -tmpDir.y)));
+        near.copy(tmpDir).multiplyScalar(-XRAY_NEAR);
       }
       for (const f of figures.values()) {
         const a = f.prev;
@@ -397,15 +422,9 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         // A figure deep in the mist is paper: it draws nothing. The hero always draws.
         const mist = f.control ? 0 : mistAt(f.at.x, f.at.z);
         if (mist >= 0.78) continue;
-        // A person or an animal between the camera and the hero fades, as a house does (#44): the
-        // hero is always seen.
-        if (!f.control && camAz !== null && f.height > 1) {
-          const box = { x0: f.at.x - 0.6, x1: f.at.x + 0.6, y0: f.at.y, y1: f.at.y + f.height, z0: f.at.z - 0.6, z1: f.at.z + 0.6 };
-          f.cover = stepFade(f.cover ?? 0, inFront(box, heroFig.at, camAz, camEl), dt);
-        } else f.cover = 0;
         // A ghost is pale, as a thing far in the mist; a bright ghost (the chalk, #80) is as bright as
-        // the thing.
-        const pale = Math.max(f.ghost && !f.bright ? 0.6 : smooth(0, 0.45, mist), (f.cover ?? 0) * 0.72);
+        // the thing. People and animals keep their colors: a covered hero shows as an outline (#87).
+        const pale = f.ghost && !f.bright ? 0.6 : smooth(0, 0.45, mist);
         const tint = (rgb) => color.setRGB(rgb[0] + (PAPER_RGB[0] - rgb[0]) * pale, rgb[1] + (PAPER_RGB[1] - rgb[1]) * pale, rgb[2] + (PAPER_RGB[2] - rgb[2]) * pale);
         // The animation goes on for every figure, so that a figure that comes into the view is in
         // step.
@@ -473,6 +492,14 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
           hulls.setColorAt(n, hullColor);
           plain.array[n] = p.mark ? 1 : 0;
           n += 1;
+          if (f.control && xn < MAX_HERO_PARTS && camera) {
+            xSelf.setMatrixAt(xn, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
+            nearM.makeTranslation(near.x, near.y, near.z).multiply(m4);
+            xMask.setMatrixAt(xn, tmp.multiplyMatrices(nearM, local.makeScale(w, h, d)));
+            const k = p.mark || p.noInk ? 0 : 1;
+            xLine.setMatrixAt(xn, tmp.multiplyMatrices(nearM, local.makeScale((w + L.hull * XRAY_HULL) * k, (h + L.hull * XRAY_HULL) * k, (d + L.hull * XRAY_HULL) * k)));
+            xn += 1;
+          }
         }
         if (L.figure.shadow && s < MAX_FIGURES && mist < 0.45) {
           const r = Math.max(0.8, L.figure.shadow * L.unit * 1.6);
@@ -549,7 +576,10 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       parts.count = n;
       hulls.count = n;
       shadows.count = s;
-      for (const m of [parts, hulls, shadows]) m.instanceMatrix.needsUpdate = true;
+      xSelf.count = xn;
+      xMask.count = xn;
+      xLine.count = xn;
+      for (const m of [parts, hulls, shadows, xSelf, xMask, xLine]) m.instanceMatrix.needsUpdate = true;
       parts.instanceColor.needsUpdate = true;
       hulls.instanceColor.needsUpdate = true;
       plain.needsUpdate = true;
@@ -597,7 +627,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       return f?.at ? { ...f.at, height: f.height } : null;
     },
     dispose() {
-      for (const m of [parts, hulls, shadows, glows, light, dust, spray, leafMesh]) {
+      for (const m of [parts, hulls, shadows, glows, light, dust, spray, leafMesh, xSelf, xMask, xLine]) {
         scene.remove(m);
         m.material.dispose();
         m.dispose();

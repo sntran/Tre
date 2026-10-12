@@ -894,7 +894,8 @@ export async function mountVillage(ctx, params = {}) {
       under: (px, py) => view.pick(px, py),
       placeAt: (x, y, pad) => session.taskPlaceAt(x, y, pad),
       line: () => session.line(),
-      inTask: session.inTask(),
+      openThing: (e) => session.openThing(e.id),
+      openSpanAt: (x, y) => session.openSpanAt(x, y),
       carrying: Boolean(session.carried()),
       raidAt: (p) => raidView.targetAt(p),
     };
@@ -1165,7 +1166,17 @@ export async function mountVillage(ctx, params = {}) {
   function seenPoints(heroAt) {
     const r = getEntity(state, 'raid')?.raid;
     const person = personSeen(heroAt);
-    if (!r || r.result) return person ? [heroAt, person] : heroAt;
+    if (!r || r.result) {
+      // At a task, the points of the work and its person: what is in front of them fades fully
+      // (#87: the roof of the small house covered the mat of the teacher as dots).
+      const live = session.work();
+      const near = (p) => Math.hypot(p.x - heroAt.x, p.z - heroAt.z) < WORK_AWAY;
+      const pts = live ? live.points.map(wu).filter(near).map((p) => ({ ...p, y: groundY(p.x, p.z), work: true })) : [];
+      const who = live?.person ? figures.placeOf(live.person) : null;
+      if (who && near(who)) pts.push({ ...who, work: true });
+      const out = [heroAt, ...(person ? [person] : []), ...pts];
+      return out.length > 1 ? out : heroAt;
+    }
     const at = (p) => ({ x: p.x / 2, y: groundY(p.x / 2, p.z / 2), z: p.z / 2 });
     return [heroAt, ...r.posts.map(at), ...r.enemies.filter((e) => e.state !== 'retreat').map(at)];
   }
@@ -1232,7 +1243,10 @@ export async function mountVillage(ctx, params = {}) {
     const scr = viewSize(size.width, size.height, view.state.level);
     const inSight = (az) => sight.map(wu).every((p) => inView({ x0: p.x - 0.5, x1: p.x + 0.5, y0: p.y, y1: p.y + 1, z0: p.z - 0.5, z1: p.z + 0.5 }, focus, { az, size: scr }));
     if (handTurn !== null && performance.now() - handTurn < HAND_KEEP) return;
-    const steps = workTurn(workBoxes(terrain, pts), pts, view.angle, VIEW.elevation, inSight);
+    // The person of the task is a point of the work too (#87): no roof covers the person.
+    const who = person ? figures.placeOf(person) : null;
+    const all = who ? [...pts, { x: who.x, y: who.y, z: who.z }] : pts;
+    const steps = workTurn(workBoxes(terrain, all), all, view.angle, VIEW.elevation, inSight);
     if (steps) view.turn(steps);
   }
 

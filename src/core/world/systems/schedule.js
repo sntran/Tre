@@ -130,7 +130,8 @@ export function schedule(world, dt, rng, env) {
         }
       }
     }
-    if (at === 'spot') target = sc.spot;
+    // The person of a task steps to the side while the child works (aside, #87).
+    if (at === 'spot') target = (sc.hold && sc.aside) || sc.spot;
     else if (at === 'bed' && e.steer.medium === 'water') target = (sc.bank ??= env.bankNear(e.position.x, e.position.z));
     else if (at === 'bed') target = sc.bed;
     else if (at !== 'range' && env.places[at]) target = { x: env.places[at].x + (sc.offset?.x ?? 0), z: env.places[at].z + (sc.offset?.z ?? 0) };

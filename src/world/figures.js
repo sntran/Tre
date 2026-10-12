@@ -730,14 +730,16 @@ export function workThing(look) {
     case 'plot-stake': return still([P('pole', [0.18, 1.6, 0.18], 'yellow', [0, 0.8, 0]), P('top', [0.24, 0.12, 0.24], 'ochre', [0, 1.62, 0])], 1.7);
     // A counting rod: a stick of bamboo, thick enough to see on a phone at the zoom of the start
     // (more than 4 pixels wide, #61).
-    case 'rod': return still([P('stick', [0.4, 0.3, 1.2], 'yellow', [0, 0.15, 0]), P('endA', [0.4, 0.3, 0.12], 'ochre', [0, 0.15, 0.66]), P('endB', [0.4, 0.3, 0.12], 'ochre', [0, 0.15, -0.66])], 0.32);
+    // Thin, as que tính are (#87: the thick rods looked like blocks, and a child could not count
+    // them on the mat).
+    case 'rod': return still([P('stick', [0.22, 0.16, 0.9], 'yellow', [0, 0.08, 0]), P('endA', [0.22, 0.16, 0.08], 'ochre', [0, 0.08, 0.49]), P('endB', [0.22, 0.16, 0.08], 'ochre', [0, 0.08, -0.49])], 0.18);
     // Ten rods tied with a red band.
     case 'rod-bundle': return still([P('rods', [0.8, 0.8, 1.5], 'yellow', [0, 0.4, 0]), P('ends', [0.7, 0.7, 1.52], 'ochre', [0, 0.4, 0]), P('band', [0.9, 0.9, 0.3], 'vermilion', [0, 0.4, 0])], 0.9);
     // A reed mat on the ground.
     case 'mat': {
-      const parts = [P('mat', [4.4, 0.08, 2.6], 'yellowPale', [2, 0.04, 1.2]), P('edgeN', [4.4, 0.1, 0.2], 'ochre', [2, 0.05, -0.05]), P('edgeS', [4.4, 0.1, 0.2], 'ochre', [2, 0.05, 2.45])];
+      const parts = [P('mat', [6, 0.08, 2.8], 'yellowPale', [2.8, 0.04, 1.25]), P('edgeN', [6, 0.1, 0.2], 'ochre', [2.8, 0.05, -0.1]), P('edgeS', [6, 0.1, 0.2], 'ochre', [2.8, 0.05, 2.6])];
       // A frame of ten (#69): two rows of five places (matSlot in src/core/world/systems/work.js),
-      // so that a child sees the empty places and the full rows. A rod over ten lies outside it.
+      // so that a child sees the empty places and the full rows. A rod over ten lies beside it.
       if (look.frame) {
         for (let c = 0; c <= 5; c++) parts.push(P(`col${c}`, [0.1, 0.1, 2.6], 'ochre', [c * 0.8, 0.09, 1.25]));
         parts.push(P('mid', [4, 0.1, 0.1], 'ochre', [2, 0.09, 1.25]));

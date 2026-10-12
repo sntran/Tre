@@ -185,12 +185,14 @@ function heapThingNear(things, hit) {
 // - placeAt(x, y, pad): a place of a task at a map point (cells), with a pad in half blocks;
 // - line(): the row of the open task of the fisher, { x, y, z, length } in half blocks, or null
 //   (optional);
-// - inTask: a task or a folk game goes on now; carrying: a thing is in the hands of the hero;
-//   raidAt(p): the target of a raid (optional).
+// - openThing(e): the thing is of a task that is open now (optional; else every thing is);
+//   openSpanAt(x, y): the map point is on the gap of an open bridge (optional);
+//   carrying: a thing is in the hands of the hero; raidAt(p): the target of a raid (optional).
 // The order: a plank outline, a target of a raid, a thing of the hamlet; then a thing, but a place
 // of a task wins over a thing that only touches the finger with its margin (#47), and the body of
-// a person on the thing or in front of it wins over the thing (#70); then Nghé (not
-// in a task: in a task a tap on Nghé is a tap on what is under or behind Nghé, #47); then a place
+// a person on the thing or in front of it wins over the thing (#70); Nghé when no thing and no
+// place of an open task is under the finger (#87; else a tap on Nghé is a tap on what is under or
+// behind Nghé, #47); then a place
 // of a task under the finger; then a person (next to a place of a task, only the body of the
 // person); then the ground.
 // Returns a target for the session ({ guess }, { hamlet }, { thing }, { pet }, { person },
@@ -215,6 +217,13 @@ export function tapTarget(p, w) {
   // put goes to the free point nearest to it (#78).
   const found = thingUnder(p, w.cam, w.things);
   const thing = found && !(w.carrying && found.e.item.zone === 'line') ? found : null;
+  // Nghé: a tap on her is a pet when no thing and no place of an open task is under the finger,
+  // also during a task and after it (#87: after the task of the teacher, Nghé stood on the heap of
+  // the done task, and each tap on her was a walk). A person under the finger comes first (#56).
+  const pal = figureUnder(p, w.cam, w.friends ?? [], FRIEND_PAD, 0.8);
+  const taskThing = thing && (w.openThing ? w.openThing(thing.e) : true);
+  const taskPlace = inPlace || (hit && w.openSpanAt?.(hit.x, hit.y));
+  if (pal && !taskThing && !taskPlace && !figureUnder(p, w.cam, w.persons ?? [], PERSON_PAD)) return { pet: pal.id };
   // A thing on a place of a task (a bunch in the basket, a rod on the mat) is chosen only by a tap on
   // its body, never by a tap next to it (#79: a tap near the basket took a bunch out).
   if (thing && (thing.inside || (!inPlace && !PLACED.has(thing.e.item.zone)))) {
@@ -237,7 +246,7 @@ export function tapTarget(p, w) {
   // is under the finger (#56: Nghé stood next to the elder, and a tap on him petted her).
   const nearPlace = hit && w.placeAt(hit.x, hit.y);
   const person = figureUnder(p, w.cam, w.persons ?? [], nearPlace ? PERSON_PAD_AT_PLACE : PERSON_PAD);
-  const friend = w.inTask || person ? null : figureUnder(p, w.cam, w.friends ?? [], FRIEND_PAD, 0.8);
+  const friend = person || taskPlace ? null : pal;
   if (friend) return { pet: friend.id };
   // A place of a task under the finger comes before a person who stands in front of it (#31,
   // #47); next to a place, only a tap on the body of the person is for the person.
@@ -295,7 +304,8 @@ export function sessionScreen(session, cam) {
     pick: groundPick(cam, session.tileMap),
     placeAt: (x, y, pad) => session.taskPlaceAt(x, y, pad),
     line: () => session.line(),
-    inTask: session.inTask(),
+    openThing: (e) => session.openThing(e.id),
+    openSpanAt: (x, y) => session.openSpanAt(x, y),
     carrying: Boolean(session.carried()),
   };
 }

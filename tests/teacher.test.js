@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
 import { STEP } from './restless.js';
-import { getEntity } from '../src/core/world/state.js';
+import { getEntity, command as worldCommand } from '../src/core/world/state.js';
 import { load } from './helpers.js';
 
 async function atMat(grade = null) {
@@ -189,4 +189,24 @@ test('while the teacher shows his own count, a tap on him and a press never tie:
   session.events();
   run(session, 3);
   assert.ok(session.targets().some((c) => c.act === 'tie'), 'after his count the child can tie');
+});
+
+// #87: in the play, a press at the teacher every 8 seconds tied the rods again during the count
+// after a snap (the count of 11 rods takes 11 seconds), the band snapped again, and the count
+// started again. The extra rod never rolled back, and the task did not end.
+test('no tie during the count after a snap: the extra rod rolls back', async () => {
+  const session = await atMat();
+  tie(session, 11);
+  const spring = () => getEntity(session.state, 'zone:trial-scholar').zone.spring;
+  run(session, 5, () => spring());
+  assert.ok(spring(), 'the band snapped');
+  assert.notEqual(session.action()?.act, 'tie', 'no tie on the button during the count');
+  let snaps = 0;
+  const off = session.listen((ev) => { if (ev.type === 'snap') snaps += 1; });
+  // A tie that comes to the world during the count (a press on a picture that the button kept).
+  worldCommand(session.state, { type: 'work', id: 'hero', trial: 'scholar', act: 'tie' });
+  run(session, 30, () => quiet(session));
+  off();
+  assert.equal(snaps, 0, 'no second snap');
+  assert.equal(mat(session), 10, 'the extra rod is back on the heap');
 });

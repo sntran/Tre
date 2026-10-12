@@ -79,21 +79,24 @@ test('the rods on the mat lie in rows of five with a space between two rods, all
   assert.equal(zs.length, 2, 'two rows');
   const width = figureOf({ kind: 'rod' }, 'coarse').parts.find((p) => p.name === 'stick' || p.id === 'stick')?.size?.[0] ?? 0.4;
   for (let k = 1; k < xs.length; k++) assert.ok(xs[k] - xs[k - 1] >= width + 0.3, 'a space between two rods');
-  // The picture of the mat: 4.4 by 2.6 half blocks from 0.2 before its point.
+  // The frame of ten on the mat: 4 by 2.5 half blocks from its point (#87: thin rods, rows apart).
   for (const p of at) {
-    assert.ok(p.x - width / 2 >= mat.x - 0.2 && p.x + width / 2 <= mat.x + 4.2, 'on the mat across');
-    assert.ok(p.z - 0.6 >= mat.z - 0.1 && p.z + 0.6 <= mat.z + 2.5, 'on the mat along');
+    assert.ok(p.x - width / 2 >= mat.x && p.x + width / 2 <= mat.x + 4, 'in the frame across');
+    assert.ok(p.z - 0.45 >= mat.z && p.z + 0.45 <= mat.z + 2.5, 'in the frame along');
   }
+  const rowsApart = Math.abs(Number(zs[1]) - Number(zs[0])) - 0.9;
+  assert.ok(rowsApart >= 0.4, 'a space between the two rows');
 });
 
-test('a rod is more than 4 pixels wide on a phone at the zoom of the start, and the hero stands on the far side of the mat (#61)', async () => {
+test('a rod is thin, and more than 7 pixels wide on a phone at the zoom of the start, and the hero stands on the far side of the mat (#61, #87)', async () => {
   const f = figureOf({ kind: 'rod' }, 'coarse');
   const width = Math.min(...f.parts.map((p) => p.size[0]));
+  assert.ok(width <= 0.25, 'a thin rod, as que tính are');
   for (const az of ANGLES) {
     const cam = viewCamera({ focus: { x: 0, y: 0, z: 0 }, az, level: 0, width: 390, height: 844 });
     const a = cam.project(0, 0, 0);
-    const b = cam.project(width / 2, 0, 0);
-    assert.ok(Math.hypot(b.x - a.x, b.y - a.y) > 4, `the width of a rod from ${az.toFixed(2)}: ${Math.hypot(b.x - a.x, b.y - a.y).toFixed(1)} px`);
+    const b = cam.project(width, 0, 0);
+    assert.ok(Math.hypot(b.x - a.x, b.y - a.y) > 7, `the width of a rod from ${az.toFixed(2)}: ${Math.hypot(b.x - a.x, b.y - a.y).toFixed(1)} px`);
   }
   // The hero works at the mat from the place of the mat: from the camera of the start, that place
   // is behind the mat (higher on the screen), so the hero does not hide the rods.

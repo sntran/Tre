@@ -163,7 +163,7 @@ export function setupTrial(world, def, level, env, opts = {}) {
     const h = P(def.places.heap);
     const rods = heap('rods', { ...h, x: Math.min(h.x, m.x - 1 - 1 - 1 - 7 * 0.7) }, 'rod', { cols: 8, step: 0.7 });
     things(rods, 'rod', task.rods);
-    addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts: 'rod', items: [], x: m.x, y: m.y, z: m.z, tied: 0, rect: rect(m, 4, 2) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1, facing: 0 } });
+    addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts: 'rod', items: [], x: m.x, y: m.y, z: m.z, tied: 0, rect: rect(m, 5.5, 2) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1, facing: 0 } });
     // For grade 1 and below (level 0), the mat shows the places of a frame of ten; for the grades
     // above it fades, as the representation fades inside a skill (#69).
     // The mat is solid: the hero stands beside it, not on the rods (#69).
@@ -394,11 +394,19 @@ export function packHeap(world, zone) {
 // than ten rods (a wrong tie) make more rows, closer together, on the mat.
 export const MAT_ROW = 5;
 export const MAT_GAP = 0.8; // half blocks from the middle of a rod to the next one
-export const MAT_ROW_GAP = 1.3; // half blocks from a row of rods to the next one
+export const MAT_ROW_GAP = 1.4; // half blocks from a row of rods to the next one
+export const MAT_TEN = 10; // the places of the frame
+const MAT_SIDE = 4.7; // half blocks from the start of the mat: the rods over ten lie beside the frame
+const MAT_SIDE_GAP = 0.5;
 // The place of the rod i on the mat: two rows of five (a frame of ten, #69), and the rods over ten
-// in a row of their own outside the frame, where the child sees them.
+// beside the frame, never on it (#87: the eleventh rod lay on the frame, and the rods looked
+// stacked).
 export function matSlot(zone, i) {
-  return { x: zone.x + 0.4 + (i % MAT_ROW) * MAT_GAP, z: zone.z + 0.6 + Math.floor(i / MAT_ROW) * MAT_ROW_GAP };
+  if (i >= MAT_TEN) {
+    const k = i - MAT_TEN;
+    return { x: zone.x + MAT_SIDE + (k % 3) * MAT_SIDE_GAP, z: zone.z + 0.55 + Math.floor(k / 3) * MAT_ROW_GAP };
+  }
+  return { x: zone.x + 0.4 + (i % MAT_ROW) * MAT_GAP, z: zone.z + 0.55 + Math.floor(i / MAT_ROW) * MAT_ROW_GAP };
 }
 function packMat(world, zone) {
   zone.items.forEach((id, i) => {
@@ -639,7 +647,7 @@ function act(world, e, want, env) {
     // The teacher ties the rods on the mat (the hero stands at the teacher, or at the mat).
     const mat = zoneEnt(world, 'mat');
     const teacher = query(world, 'person').find((p) => p.person.ref === 'teacher');
-    if (!mat || !mat.zone.items.length || !(near(mat.position, REACH + 3) || near(teacher?.position, REACH + 3))) return;
+    if (!mat || !mat.zone.items.length || tz.zone.spring || !(near(mat.position, REACH + 3) || near(teacher?.position, REACH + 3))) return;
     const n = mat.zone.items.length;
     const solved = tieResult(n, task.bundle);
     commit(world, tz, task, { solved, parts: [n], target: task.bundle });

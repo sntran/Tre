@@ -32,13 +32,18 @@ export { VIEW };
 // layer]; the layer reads its gust (paddy, hedge, tree: src/core/world/ambient.js). The leaves hold
 // three positions with a soft ease between them, as a print, each with its own phase from its place;
 // a gust pushes them downwind. A kite (layer 3) flies only on a windy day.
-// The fade of an owner (a number up to 65535) from a texture of 256 x 256 values.
+// The fade of an owner (a number up to 65535) from a texture of 256 x 256 values: the red is the
+// fade, and the green is more fade for a thing in front of the work of a task (#87), up to a fade
+// with no dots and no ink at all.
 const FADE_GLSL = `
   uniform sampler2D uFade;
   float fadeOf(float owner) {
     if (owner < 0.5) return 0.0;
-    return texture2D(uFade, vec2((mod(owner, 256.0) + 0.5) / 256.0, (floor(owner / 256.0) + 0.5) / 256.0)).r;
+    vec4 t = texture2D(uFade, vec2((mod(owner, 256.0) + 0.5) / 256.0, (floor(owner / 256.0) + 0.5) / 256.0));
+    return t.r + t.g;
   }`;
+// The green of a full fade: with it, the fade times FADE_HOLES is 1, so that all the dots go.
+const FULL_G = Math.round(255 * (1 / FADE_HOLES - 1));
 // The paper over the far land and the mist: 0 near the hero, 1 far away (uFar: where the fade
 // starts and ends, world units) or deep in the mist (mist: 0 to 1 for each vertex).
 const PAPER_GLSL = `
@@ -476,7 +481,7 @@ function inkMaterial(uniforms, hull = false) {
         float fade = fadeOf(owner);
         // The ink stays after the colors go, then it stops: none on the far land, none deep in the
         // mist.
-        vAlpha = (outer > 0.5 ? 1.0 - fade * ${FADE_OUTLINE.toFixed(2)} : 1.0 - fade) * inkOf(paperOf(P, mist));
+        vAlpha = max(0.0, outer > 0.5 ? 1.0 - fade * ${FADE_OUTLINE.toFixed(2)} : 1.0 - fade) * inkOf(paperOf(P, mist));
         vec3 d = normalize(O - P);
         vec3 p = normalize(cross(d, uView)) * width * 0.5 * side;
         gl_Position = projectionMatrix * viewMatrix * vec4(P + p - d * width * 0.5, 1.0);
@@ -988,10 +993,12 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
   // (src/world/fade.js). The texture keeps the stipple: 0 under FADE_MIN, so that a thing that only
   // touches the line, or that was in front once, keeps no dots.
   // seen: the hero, or a list of points that the child must see (the hero first; in a raid also
-  // the posts and the enemies, #55).
+  // the posts and the enemies, #55; at a task the points of the work and its person, with work:
+  // true, #87). A thing in front of a point of the work fades fully.
   function updateFades(seen, dt) {
     const points = Array.isArray(seen) ? seen : [seen];
     const hero = points[0];
+    const covers = (o, p) => inFront(o.b, p, state.az, VIEW.elevation) && (!o.building || hidesHero(o.b, p, state.az, VIEW.elevation, (x, y, z) => terrain.hits(o.who, x, y, z)));
     if (boxVersion !== terrain.version) {
       boxVersion = terrain.version;
       boxes = terrain.objects.map((o) => ({ who: o.who, b: terrain.boxOf(o), building: BUILDINGS.has(o.kind) }));
@@ -1002,14 +1009,17 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
       const was = fades.get(o.who) ?? 0;
       // A building fades only when its blocks or its roof hide the hero; a tree, a bush, or a
       // haystack (a smooth look) when the line crosses its box (#53).
-      const hit = points.some((p) => inFront(o.b, p, state.az, VIEW.elevation) && (!o.building || hidesHero(o.b, p, state.az, VIEW.elevation, (x, y, z) => terrain.hits(o.who, x, y, z))));
+      const full = points.some((p) => p.work && covers(o, p));
+      const hit = full || points.some((p) => !p.work && covers(o, p));
       const next = stepFade(was, hit, dt);
-      if (next === was) continue;
+      const value = Math.round(stippleOf(next) * 255);
+      const more = full ? Math.round(stippleOf(next) * FULL_G) : 0;
+      if (next === was && fadeData[o.who * 4 + 1] === more) continue;
       if (next) fades.set(o.who, next);
       else fades.delete(o.who);
-      const value = Math.round(stippleOf(next) * 255);
-      if (fadeData[o.who * 4] !== value) {
+      if (fadeData[o.who * 4] !== value || fadeData[o.who * 4 + 1] !== more) {
         fadeData[o.who * 4] = value;
+        fadeData[o.who * 4 + 1] = more;
         changed = true;
       }
     }

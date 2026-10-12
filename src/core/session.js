@@ -603,7 +603,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const tz = task?.startsWith('trial-') ? trialZone(task.slice(6)) : null;
       const hold = Boolean(tz && !tz.zone.done && h && inTaskArea(task, h));
       if (hold) p.schedule.hold = true;
-      else delete p.schedule.hold;
+      else {
+        delete p.schedule.hold;
+        delete p.schedule.aside;
+      }
     }
   }
   // The hero never stands in the body of a person (#76: after a talk the hero stood in the fisher,
@@ -630,6 +633,40 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         worldCommand(state, { type: 'walk', id: 'hero', points: [to], token: null, near: null });
         return;
       }
+    }
+  }
+  // At a task, the hero does not stand behind the person, as the camera sees it (#87: the healer
+  // stood in front of the hero, and the hero did not show): the person of the task steps to the
+  // side, away from the hero, and stays there while the child works (schedule.aside). The hero
+  // stays at the work.
+  const BEHIND = { near: 0.2, far: 2.5, side: 1.4, step: 3.2 }; // half blocks
+  let still = 0;
+  function stepFromBehind() {
+    const h = getEntity(state, 'hero');
+    const key = String(mentoring.activeKey() ?? '');
+    if (!h || walking() || h.riding || h.fall || screen || busy || !key.startsWith('trial-')) {
+      still = 0;
+      return;
+    }
+    still += STEP;
+    if (still < 0.6) return;
+    const q = getEntity(state, mentoring.personOf(key));
+    if (!q?.position || q.hidden || !q.schedule?.hold || q.route || q.schedule.aside) return;
+    const cx = Math.sin(viewAz);
+    const cz = Math.cos(viewAz);
+    const dx = q.position.x - h.position.x;
+    const dz = q.position.z - h.position.z;
+    const along = dx * cx + dz * cz;
+    const side = dx * cz - dz * cx;
+    if (along < BEHIND.near || along > BEHIND.far || Math.abs(side) > BEHIND.side) return;
+    // To the side where the person already is, then the other side.
+    const k = side >= 0 ? 1 : -1;
+    for (const s of [k, -k]) {
+      const to = { x: q.position.x + s * cz * BEHIND.step, z: q.position.z - s * cx * BEHIND.step };
+      if (!tileMap.walkable(Math.floor(to.x / 2), Math.floor(to.z / 2))) continue;
+      q.schedule.aside = to;
+      Object.assign(q.position, { x: to.x, z: to.z });
+      return;
     }
   }
   // A walk to a heap of another kind chooses that heap, as a tap on it does (#74: the child walked
@@ -2267,7 +2304,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // stopped its count at four).
     const show = getEntity(state, `script:${key}`)?.script;
     if (show && SHOW_MOVES.has(show.move) && show.steps.some((st) => /^num\./.test(st.say?.key ?? ''))) return null;
-    if (key === 'trial-scholar' && open('scholar') && zoneOf('mat')?.zone.items.length) return { act: 'tie', icon: 'rope', run: () => work('scholar', 'tie') };
+    // No tie while the extra rods of a snap wait for the end of the count (#87: each press tied
+    // again, the band snapped again, and the count started again).
+    if (key === 'trial-scholar' && open('scholar') && zoneOf('mat')?.zone.items.length && !getEntity(state, 'zone:trial-scholar')?.zone.spring) return { act: 'tie', icon: 'rope', run: () => work('scholar', 'tie') };
     // The basket is given at the basket, or to the healer at her beds (#74: a walk to the face of
     // the healer ended at the well, and the basket was given there; #79: the button and the world
     // had two rules, and a press did nothing). One rule: giveReady.
@@ -3871,6 +3910,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepHold();
     stepNearHeap();
     stepOutOfPerson();
+    stepFromBehind();
     stepGuessLine();
     stepLeaveTask();
     stepPending();
@@ -4174,6 +4214,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The open task whose place the hero is at (#76).
     taskHere,
     inTask: () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done)),
+    // Is a map point (cells) on the gap of an open bridge (a tap there is work, not a pet of Nghé)?
+    openSpanAt: (x, y) => bridgeOpen() && Boolean(spanAt(Math.floor(x), Math.floor(y))),
+    // Is a thing a thing of a task that is open now (a tap on it is work, not a pet of Nghé, #87)?
+    openThing(id) {
+      const task = getEntity(state, id)?.item?.task;
+      if (!task) return false;
+      if (task.startsWith('trial-')) return openTask(task);
+      if (task === 'bridge') return bridgeOpen() && !getEntity(state, 'zone:bridge-gap')?.zone.set;
+      if (task === 'raid') return raidOn();
+      return true;
+    },
     // The work in view now (the last event workView while its task goes on), or null.
     work: () => (lastWork && (mentoring.activeKey() || folk.active() || String(lastWork.key).startsWith('example-')) ? lastWork : null),
     // The last tap: the id of its target (an entity), or null (#47).
