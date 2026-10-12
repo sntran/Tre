@@ -1,0 +1,206 @@
+{
+ "about": "#88 at night: taps at the gap of the fisher: three stakes reach the float, the tide comes, and no help and no new stakes come.",
+ "start": "?story=trial-fisher&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 60
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:stakes').zone.items.filter((id) => !tre.activeVillage.state().entities.find((e) => e.id === id)?.item.held).length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:stakes').zone.items.filter((id) => !tre.activeVillage.state().entities.find((e) => e.id === id)?.item.held).length === 6"
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:0"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "row": 8
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "shot": "night-a-stake-at-the-gap-of-the-fisher"
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:1"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "row": 12
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:2"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "row": 16
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.session.carried())",
+   "timeout": 30
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "night-three-stakes-reach-the-float"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'fisher.full')",
+   "timeout": 90
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low'",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "night-the-tide"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0)"
+  },
+  {
+   "check": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !tre.activeVillage.heard().some((x) => x.key === 'fisher.more')"
+  },
+  {
+   "shot": "night-the-fish-stay-in-no-help"
+  }
+ ]
+}
