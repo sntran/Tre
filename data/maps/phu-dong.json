@@ -284,7 +284,7 @@
  ],
  "encounters": [
   {"id": "river", "raid": "river", "x": 11.0, "y": 62.6, "figure": "river-serpent", "when": {"flags": ["giong.spoke"], "notFlags": ["river.calmed"]}},
-  {"id": "scouts", "raid": "scouts", "x": 68.6, "y": 29.2, "figure": "scout", "when": {"flags": ["giong.spoke"], "notFlags": ["scouts.won"]}},
-  {"id": "patrol", "raid": "patrol", "x": 68.6, "y": 29.2, "figure": "scout", "when": {"flags": ["giong.farewell"]}}
+  {"id": "scouts", "raid": "scouts", "x": 77.5, "y": 42.5, "figure": "scout", "when": {"flags": ["giong.spoke"], "notFlags": ["scouts.won"]}},
+  {"id": "patrol", "raid": "patrol", "x": 77.5, "y": 42.5, "figure": "scout", "when": {"flags": ["giong.farewell"]}}
  ]
 }

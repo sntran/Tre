@@ -132,7 +132,29 @@ const SOUNDS = {
     for (const k of [0.1, 0.22, 0.31, 0.47, 0.6, 0.82]) noise(t + k, 0.03, { volume: 0.12, filter: 4200, q: 2 });
   },
   crack: (t) => { noise(t, 0.12, { volume: 0.4, filter: 2500, q: 0.8 }); tone(160, t + 0.05, 0.3, { type: 'sawtooth', volume: 0.08, glide: 80 }); },
+  // The raid (#86: the shot and the landing of a stone were silent). The band of the slingshot
+  // twangs, the stone hisses through the air, and it lands with a dull knock.
+  sling: (t) => { tone(240, t, 0.18, { type: 'triangle', volume: 0.25, glide: 520 }); noise(t, 0.06, { volume: 0.15, filter: 1500 }); },
+  whoosh: (t) => noise(t, 0.4, { volume: 0.2, filter: 600, sweep: 3200, q: 0.8 }),
+  thud: (t) => { tone(90, t, 0.22, { volume: 0.5, glide: 50 }); noise(t, 0.1, { volume: 0.3, filter: 400, q: 0.8 }); },
+  snap: (t) => { noise(t, 0.05, { volume: 0.4, filter: 3500, q: 1 }); tone(1400, t, 0.04, { type: 'square', volume: 0.06, glide: 700 }); },
+  thunder: (t) => { noise(t, 1.8, { volume: 0.5, filter: 220, sweep: 80, q: 0.5 }); noise(t + 0.05, 0.3, { volume: 0.3, filter: 900, sweep: 300, q: 0.6 }); },
+  // The hamlet and the fields: a bronze drum, a small drum, the laugh of a drummer, a peck of a
+  // duck, the pour of water, and a seed that drops into the mud.
+  bronze: (t) => { tone(147, t, 2.2, { volume: 0.3 }); tone(294.7, t, 1.4, { volume: 0.1 }); tone(441, t, 0.8, { volume: 0.05 }); noise(t, 0.08, { volume: 0.2, filter: 500 }); },
+  'drum-small': (t) => tone(160, t, 0.18, { volume: 0.35, glide: 90 }),
+  laugh: (t) => [0, 0.14, 0.28].forEach((k, i) => tone(420 - i * 30, t + k, 0.1, { type: 'triangle', volume: 0.08, glide: 360 - i * 30 })),
+  peck: (t) => { tone(1100, t, 0.03, { type: 'square', volume: 0.05 }); noise(t, 0.03, { volume: 0.08, filter: 3000 }); },
+  pour: (t) => { noise(t, 0.8, { volume: 0.2, filter: 1600, sweep: 900, q: 0.7 }); for (let i = 0; i < 4; i++) tone(600 + i * 90, t + 0.1 + i * 0.15, 0.06, { volume: 0.05, glide: 800 + i * 90 }); },
+  seed: (t) => tone(700, t, 0.05, { type: 'triangle', volume: 0.07, glide: 500 }),
+  // The trough of the ducks: a scoop of water, a notch at each five, and a bigger notch at ten.
+  scoop: (t) => noise(t, 0.18, { volume: 0.15, filter: 1400, sweep: 700, q: 0.8 }),
+  notch: (t) => tone(660, t, 0.08, { type: 'triangle', volume: 0.12 }),
+  'notch-big': (t) => { tone(660, t, 0.1, { type: 'triangle', volume: 0.14 }); tone(990, t + 0.08, 0.16, { type: 'triangle', volume: 0.12 }); },
 };
+
+// The names of the sounds, for the test that each sound of the world plays (#86).
+export const SOUND_NAMES = Object.keys(SOUNDS);
 
 // The sound of the place: insects by day, frogs by night, the rain, and the wind. Quiet loops.
 let amb = null;

@@ -424,7 +424,7 @@ export function createFolk(deps) {
   // The children ask a hero who comes near and does not play.
   function invite(h) {
     for (const kind of ['loco', 'rope']) {
-      if (!geo[kind] || (kind === 'rope' && !ropeOn()) || deps.busy()) continue;
+      if (!geo[kind] || (kind === 'rope' && !ropeOn()) || deps.busy() || deps.quiet?.()) continue;
       const centre = kind === 'loco' ? along(geo.loco, 2 * S) : geo.rope.o;
       if (dist(h.position, centre) <= INVITE && now >= inviteAt[kind]) {
         inviteAt[kind] = now + AGAIN;

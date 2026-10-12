@@ -68,7 +68,7 @@ import { createHamlet } from './hamlet-session.js';
 import { plotsOf } from './world/systems/plant.js';
 import { jumpLength, planJump } from './world/jump.js';
 import { MOVE, inputToward } from './world/move.js';
-import { createRaid, raidLevel } from './world/raids.js';
+import { createRaid, raidLevel, along, KEEP_SIDE } from './world/raids.js';
 import { setupRaid, roadPoint } from './world/systems/raid.js';
 import { lossLevel } from './profile.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from './world/save.js';
@@ -215,6 +215,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     callout: (textKey, params, id) => emit({ type: 'open', screen: 'callout', id, textKey, params }),
     command: (c) => worldCommand(state, c), goTo: (p) => goTo(p, null), skill: (ev) => skillEvent(ev),
     feastOn: () => Boolean(hamlet.feast), practice: () => practice?.task ?? null, busy: () => busy || Boolean(screen), day: () => today(),
+    // No invite while an enemy of an encounter is in reach, in a raid, or on the walk to a star (#86).
+    quiet: () => raidOn() || encounterNear() || starWalk(),
     setDone: (game) => {
       if (practice?.task !== game) return false;
       practiceEnd(practice.person);
@@ -222,6 +224,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     },
   });
   const FOLK = new Set(['loco', 'rope']);
+  const ENCOUNTER_NEAR = 12; // half blocks
+  const encounterNear = () => {
+    const h = getEntity(state, 'hero')?.position;
+    return Boolean(h) && persons().some((p) => p.kind === 'encounter' && !getEntity(state, p.entity)?.hidden && Math.hypot(p.x * 2 - h.x, p.y * 2 - h.z) <= ENCOUNTER_NEAR);
+  };
 
   const hero = () => getEntity(state, 'hero');
   const heroCell = () => ({ x: hero().position.x / 2, y: hero().position.z / 2 });
@@ -591,6 +598,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (state.tick % 15 !== 0) return;
     const h = getEntity(state, 'hero')?.position;
     for (const p of query(state, 'person', 'schedule')) {
+      if (p.raidCoach) continue;
       const task = mentoring.taskOfPerson(p.id);
       const tz = task?.startsWith('trial-') ? trialZone(task.slice(6)) : null;
       const hold = Boolean(tz && !tz.zone.done && h && inTaskArea(task, h));
@@ -1664,6 +1672,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     setupRaid(state, raid, def, env, { helpers: data.raids.helperLooks, companion: data.raids.companions?.[def.companion] });
     placeHero(def.wall[0], def.wall[1]);
     worldCommand(state, { type: 'face', id: 'hero', x: raid.wall.x + raid.dir.x * 10, z: raid.wall.z + raid.dir.z * 10 });
+    coachToWall(raid);
     raidEnc = encId ? persons().find((p) => p.kind === 'encounter' && p.ref === encId)?.entity ?? null : null;
     const fig = raidEnc ? getEntity(state, raidEnc) : null;
     if (fig) fig.hidden = true;
@@ -1703,9 +1712,91 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return true;
   }
   const order = (o) => worldCommand(state, { type: 'raid', id: 'raid', ...o });
+  // The elder stands near the wall in a raid with the slingshot (#86): he says where each stone
+  // fell, and after two misses in a row he points at the enemy and then at the posts. He stands
+  // off the road, across it from the posts, and goes back to his day after the raid.
+  const COACH = 'npc:elder';
+  function coachToWall(raid) {
+    raidMisses = 0;
+    awayTold = false;
+    placeCoach(raid);
+  }
+  // The elder comes to the wall also when his part of the map wakes after the start of the raid.
+  function stepCoach() {
+    if (state.tick % 15 !== 0) return;
+    const raid = raidEnt()?.raid;
+    if (raid && !raid.result) placeCoach(raid);
+  }
+  function placeCoach(raid) {
+    const e = getEntity(state, COACH);
+    if (!raid.tools.includes('sling') || !e?.schedule || e.hidden || e.raidCoach) return;
+    // The first free cell near the wall, off the part of the road that stays clear in a raid
+    // (KEEP_SIDE): across the road from the posts, then on the side of the posts.
+    const side = { x: -raid.dir.z, z: raid.dir.x };
+    const off = KEEP_SIDE + 0.5;
+    const spots = [[-1.5, -off], [-3, -off], [0, -off - 1.5], [-1.5, off], [-3, off], [0, off + 1.5], [-5, -off], [-5, off]]
+      .map(([a, b]) => ({ x: raid.wall.x + raid.dir.x * a + side.x * b, z: raid.wall.z + raid.dir.z * a + side.z * b }));
+    const free = spots.find((p) => tileMap.walkable(Math.floor(p.x / 2), Math.floor(p.z / 2)));
+    if (!free) return;
+    const { x, z } = free;
+    e.raidCoach = { spot: e.schedule.spot, hold: e.schedule.hold ?? false };
+    e.schedule.spot = { x, z };
+    e.schedule.hold = true;
+    e.position = { x, y: env.groundY(x / 2, z / 2), z, facing: Math.atan2(raid.dir.x, raid.dir.z) };
+    delete e.route;
+  }
+  function coachBack() {
+    const e = getEntity(state, COACH);
+    if (!e?.raidCoach) return;
+    e.schedule.spot = e.raidCoach.spot;
+    if (!e.raidCoach.hold) delete e.schedule.hold;
+    delete e.raidCoach;
+  }
+  // The hero went far from the wall: the raid waits, and the elder calls one time in a raid.
+  let awayTold = false;
+  function raidAway() {
+    if (awayTold) return;
+    awayTold = true;
+    const coach = getEntity(state, COACH);
+    const nghe = getEntity(state, 'friend:nghe');
+    const who = coach?.raidCoach && !coach.hidden ? coach : nghe && !nghe.hidden ? nghe : null;
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.away', params: {} });
+  }
+  // A stone that missed: the elder (or Nghé) says if it fell short of the first enemy or flew
+  // past it. No count, and no numeral.
+  let raidMisses = 0;
+  function raidLand(ev) {
+    const raid = raidEnt()?.raid;
+    if (!raid || raid.result) return;
+    if (ev.hit) {
+      raidMisses = 0;
+      return;
+    }
+    const front = raid.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone' && e.state !== 'stunned')
+      .sort((a, b) => along(raid, a) - along(raid, b))[0];
+    if (!front) return;
+    const coach = getEntity(state, COACH);
+    const near = coach?.raidCoach && !coach.hidden;
+    const nghe = getEntity(state, 'friend:nghe');
+    const who = near ? coach : nghe && !nghe.hidden ? nghe : null;
+    const short = ev.count < along(raid, front);
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: short ? 'raid.miss.short' : 'raid.miss.long', params: {} });
+    raidMisses += 1;
+    if (raidMisses < 2 || !near) return;
+    raidMisses = 0;
+    // The point: at the enemy, and then at the post nearest to it; the enemy and the posts up to
+    // it glow one after another.
+    const d = along(raid, front);
+    const upTo = raid.posts.filter((q) => q.d <= d + 2.5);
+    const post = upTo.at(-1) ?? raid.posts[0];
+    const at = getEntity(state, front.id)?.position ?? { x: front.x, z: front.z };
+    coach.gesture = { act: 'point', x: at.x, z: at.z, t: 1.8, ...(post ? { then: { act: 'point', x: post.x, z: post.z, t: 2.2 } } : {}) };
+    emit({ type: 'glowSeq', ids: [front.id, ...upTo.map((q) => `post:${raid.posts.indexOf(q) + 1}`)] });
+  }
   // The end of a raid: a win gives its flags, its gifts, and its talks; a loss keeps the raid for
   // another time (the enemies took some rice, and nothing else).
   function raidEnd(ev) {
+    coachBack();
     const r = raidEnt();
     const def = data.raids.raids[r?.raid.id];
     if (!def) return;
@@ -1797,6 +1888,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     say('share.rest');
   }
   function raidOver() {
+    coachBack();
     const fig = raidEnc ? getEntity(state, raidEnc) : null;
     if (fig) fig.hidden = false;
     raidEnc = null;
@@ -3133,6 +3225,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (target.person) {
       const person = persons().find((p) => p.entity === target.person);
       if (!person || (person.kind === 'encounter' && raidOn())) return;
+      // In a raid a face does not lead away from the wall (#86).
+      const wall = raidEnt()?.raid.wall;
+      if (wall && Math.hypot(person.x * 2 - wall.x, person.y * 2 - wall.z) > RAID_NEAR) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
       // A press while the hero walks to the person (or to the enemies of an encounter) comes at the
       // end of the walk, as at a place of a task (#50: a child presses at once).
@@ -3141,6 +3236,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     const hit = target.ground;
     if (!hit) return;
+    starWalkAt = -Infinity;
     // A tap next to the stem of the woodcutter is a tap on its nearest ring (#75: the stem is thin,
     // and taps beside it did not move the hero along it): the hero walks beside that ring, and the
     // chalk shows there.
@@ -3186,6 +3282,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A tap on a star (or on its arrow at the edge of the screen): a walk all the way to the goal
     // along the roads, or to the ferry on the way (#53). A new tap, a talk, or a ferry stops it.
     if (hit.goal) {
+      // In a raid a star does not lead away from the wall (#86).
+      if (raidOn()) return;
+      starWalkAt = state.tick;
       // A tap on a face during a folk game ends the game, and the hero walks to that person (#81:
       // in the middle of the hopscotch, a tap on the face of the smith did nothing).
       const game = folk.active();
@@ -3234,6 +3333,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const LEG = 2500; // the most cells of the search of one leg
   const STAR_PERSON = 2.5; // cells: a star this near a person is the star of the person
   const STAR_MEET = 10; // cells: this near the person of a star, the walk to the person takes over
+  const RAID_NEAR = 24; // half blocks: in a raid, a tap on a person farther from the wall does nothing
+  // The tick of the last tap on a star: the children of a folk game do not ask during the walk to it.
+  // The walk ends when the hero stops, or at another tap.
+  let starWalkAt = -Infinity;
+  function starWalk() {
+    if (starWalkAt > -Infinity && !walking() && (state.tick - starWalkAt) * STEP > 1.5) starWalkAt = -Infinity;
+    return starWalkAt > -Infinity;
+  }
   // The ferry that a far walk goes to: { final (the goal), at (the landing) }. A new tap on the same
   // goal keeps the way to that landing (#56: before, each new tap on the way along the bank turned
   // the walk back to the end of the sandbar, nearer to the star in a line). The ferry, or a tap on
@@ -3572,6 +3679,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // hero, in a talk, or in a practice (#45); and never from an enemy. A clue of the way comes
   // with the next greeting. A greeting with no words has no sound.
   function greeting(ev) {
+    // No greeting in a raid (#86: the elder at the wall greeted the child in the middle of it).
+    if (raidOn()) return;
     const who = getEntity(state, ev.id)?.person;
     // A person of the map has a greet in data/npcs.json; the villagers of the land and the people of
     // a small event greet as grown people; an enemy (an encounter) does not greet.
@@ -3644,6 +3753,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A load that the child chose and carried (a tray of rice): its size and the time of the walk.
     if (ev.type === 'carry') log('carry', { task: ev.task, size: ev.size, seconds: Math.round(ev.ticks * STEP * 10) / 10 });
     // The prediction before the first commit on a gap, and the result.
+    if (ev.type === 'land' && String(ev.id).startsWith('stone:')) raidLand(ev);
+    if (ev.type === 'away' && ev.id === 'raid') raidAway();
     if (ev.type === 'prediction') {
       log('prediction', { task: ev.task, gap: ev.gap, guess: ev.guess, used: ev.used, solved: ev.solved });
       save('prediction');
@@ -3764,6 +3875,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepLeaveTask();
     stepPending();
     stepToolLines();
+    stepCoach();
     stepFarWait();
     for (const fn of later.splice(0)) fn();
     const events = state.events;

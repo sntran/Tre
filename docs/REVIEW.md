@@ -718,3 +718,9 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The check of the guess:** `mentor.bridge.guessRight` ("Cháu đoán {n} tấm. Cháu đặt {m} tấm: đoán đúng rồi!"), `mentor.bridge.guessOff` ("Cháu đoán {n} tấm. Cháu đặt {m} tấm."), and the lines of Nghé with "Bạn".
 - **The river while the bridge is broken:** `map.river.bridge` ("Sông Đuống chảy về phía đông. Chỗ này nước sâu. Cầu đã gãy. Chú đánh cá cần cháu sửa cầu.").
 - **Please check:** "hàng ván mờ" for a child of six, and "đoán đúng rồi" after a right guess.
+
+## The first raid (#86)
+
+- **After a miss:** `raid.miss.short` ("Hòn đá rơi trước lính rồi.") and `raid.miss.long` ("Hòn đá bay qua lính rồi.").
+- **Away from the gate:** `raid.away` ("Cháu ơi, quay lại cổng làng!").
+- **Please check:** "lính" for the scouts of the first raid, and the new sounds (`sling`, `thud`, and the others), which are made in code.

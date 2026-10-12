@@ -163,12 +163,14 @@ A.npcs = [
     {'id': 'giong-hero', 'x': 30.0, 'y': 17.6},
     {'id': 'fisher', 'x': 14.6, 'y': 31.6},
 ]
+# The scouts wait in the open field south-east of the gate, far from the court of the hopscotch
+# (#86: next to the court, one press meant the game and the raid).
 A.encounters = [
     {'id': 'river', 'raid': 'river', 'x': 5.5, 'y': 31.3, 'figure': 'river-serpent',
      'when': {'flags': ['giong.spoke'], 'notFlags': ['river.calmed']}},
-    {'id': 'scouts', 'raid': 'scouts', 'x': 34.3, 'y': 14.6, 'figure': 'scout',
+    {'id': 'scouts', 'raid': 'scouts', 'x': 38.75, 'y': 21.25, 'figure': 'scout',
      'when': {'flags': ['giong.spoke'], 'notFlags': ['scouts.won']}},
-    {'id': 'patrol', 'raid': 'patrol', 'x': 34.3, 'y': 14.6, 'figure': 'scout',
+    {'id': 'patrol', 'raid': 'patrol', 'x': 38.75, 'y': 21.25, 'figure': 'scout',
      'when': {'flags': ['giong.farewell']}},
 ]
 # The bridge over the water blocks; the ground system opens its deck from the state of the zone

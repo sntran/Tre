@@ -42,6 +42,7 @@ const HURT = 3; // half blocks: the blow of the general pushes the hero back
 const MARK = 4; // seconds: a stone lies where it landed, so that short or long shows on the road
 const AIM = 8; // half blocks: the shot is for the enemy nearest to the count, within this distance
 const LANE = 2.5; // half blocks: a stone hits an enemy this far to the side of the line of the road
+const AWAY = 24; // half blocks from the road at the wall: a hero farther away makes the raid wait (#86)
 // The first raid of a tool waits for the child (#50): with a new slingshot, the first enemy stops
 // this far from the wall (half blocks) until the first hit, and no other wave comes; with new
 // traps, no enemy comes until the child has a trap in the hands.
@@ -188,6 +189,14 @@ export function createRaid(raids, id, level = 0, loss = null, teach = [], easy =
   };
 }
 
+// How far a point is from the part of the road at the wall (from the wall to the last post or the
+// end of the road for traps), in half blocks.
+export function awayFrom(raid, p) {
+  const end = Math.max(0, ...raid.posts.map((q) => q.d), raid.road?.to ?? 0);
+  const d = Math.max(0, Math.min(end, along(raid, p)));
+  return Math.hypot(p.x - (raid.wall.x + raid.dir.x * d), p.z - (raid.wall.z + raid.dir.z * d));
+}
+
 // The distance of a point along the road from the wall, and to the side of the line of the road.
 export const along = (raid, p) => (p.x - raid.wall.x) * raid.dir.x + (p.z - raid.wall.z) * raid.dir.z;
 export const across = (raid, p) => (p.x - raid.wall.x) * -raid.dir.z + (p.z - raid.wall.z) * raid.dir.x;
@@ -200,6 +209,15 @@ const active = (raid) => raid.enemies.filter(alive);
 export function stepRaid(raid, dt, ctx = {}) {
   const out = [];
   if (raid.result) return out;
+  // A hero far from the wall (#86: a tap on a star walked the child to the river while the raid
+  // went on at the gate): the raid waits, with the enemies where they are, until the hero comes
+  // back.
+  const away = Boolean(ctx.hero) && awayFrom(raid, ctx.hero) > AWAY;
+  if (away !== Boolean(raid.away)) {
+    raid.away = away;
+    out.push({ type: away ? 'away' : 'back', id: 'raid' });
+  }
+  if (away) return out;
   raid.t += dt;
   // While the raid waits for the child, no new wave comes.
   if (!raid.hold) raid.phaseT += dt;

@@ -1182,6 +1182,8 @@ export async function mountVillage(ctx, params = {}) {
     let pts = null;
     let safe = SAFE;
     const r = getEntity(state, 'raid')?.raid;
+    // A hero away from the wall: the raid waits, and the view follows the hero (#86).
+    if (r && !r.result && r.away) return null;
     if (r && !r.result) pts = [...seenPoints(heroAt).slice(1), ...raidView.points().map((p) => ({ ...p, y: groundY(p.x, p.z) }))];
     else {
       // The work of the open task (also after a walk away and back), or the last work of the view

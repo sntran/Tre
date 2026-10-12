@@ -88,6 +88,15 @@ The boss has phases: the soldiers first; then the general comes (Gióng stands a
 
 The second soldier raid has a jar and a brazier, and the boss adds the small forge of the smith by the crossroads ("I brought my forge to the crossroads"), so that the child can use the whole chain of the elements there.
 
+## The first raid after the play test (#86)
+
+- **Each sound plays.** The sounds of the raid (`sling`, `whoosh`, `thud`, `snap`, `thunder`), of the hamlet (`bronze`, `drum-small`, `laugh`, `peck`, `pour`, `scoop`, `notch`, `notch-big`), and of the fields (`seed`) are in `src/ui/audio.js`. `tests/sounds.test.js` checks that each sound name in `src` and in `data` has a sound.
+- **The elder at the wall.** In a raid with the slingshot, the elder stands near the wall, off the part of the road that stays clear (`placeCoach` in `src/core/session.js`; also when his part of the map wakes later). After a stone that missed, he says where it fell, against the first enemy on the road: "Hòn đá rơi trước lính rồi." or "Hòn đá bay qua lính rồi." After two misses in a row he points at the enemy and then at the post nearest to it, and the enemy and the posts up to it glow one after another (no count). At the end of the raid he goes back to his day. No greeting comes in a raid. When the elder is not there, Nghé says the line.
+- **The raid that the child chooses.** The scouts wait in the open field south-east of the gate, far from the court of the hopscotch (at least 12 cells from each end of the court). The children of a folk game do not ask while an enemy of an encounter is in reach, in a raid, or on the walk to a star.
+- **The child stays at the gate.** In a raid, a tap on a star does not walk, and a tap on a person more than 12 blocks from the wall does nothing. When the hero goes more than 12 blocks from the part of the road at the wall (`awayFrom` in `src/core/world/raids.js`), the raid waits: no time passes for the enemies, the stones, and the waves (the events `away` and `back`), the view follows the hero, and the elder calls one time in a raid: "Cháu ơi, quay lại cổng làng!".
+
+Tests: `tests/raid86.test.js`, `tests/sounds.test.js`.
+
 ## Skill events
 
 Each commit is one skill event for the learner (the child never sees it):
