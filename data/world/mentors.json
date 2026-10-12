@@ -387,7 +387,7 @@
     "trial-fisher": {
       "family": "plain",
       "person": "npc:fisher",
-      "demo": null,
+      "demo": { "thing": "stake", "prop": null },
       "picture": "mentor.picture.fisher", "pictureUnless": "trial.smith.done",
       "lines": {
         "show": "mentor.show.fisher",
@@ -396,7 +396,8 @@
         "carry": "mentor.carry.fisher",
         "wait": "fisher.tide.wait",
         "full": "fisher.full",
-        "tight": "mentor.fisher.tight"
+        "tight": "mentor.fisher.tight",
+        "fit": "mentor.fisher.fit"
       }
     },
     "trial-healer": {

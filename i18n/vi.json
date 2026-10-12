@@ -1361,6 +1361,8 @@
   "mentor.fisher.tight": "Chạm vào cái cọc này, rồi bấm nút lớn để nhổ lên.",
   "fisher.full": "Đủ hàng rồi. Xem nước lên nào!",
   "fisher.more": "Chú mang thêm cọc.",
+  "fisher.empty": "Hết cọc rồi. Có khe hẹp hơn khe của chú.",
+  "mentor.fisher.fit": "Khe rộng bằng khe của chú là vừa.",
   "mentor.healer.give": "Cháu đến chỗ bà và bấm nút lớn: bà nhận giỏ.",
   "mentor.healer.putKind.ngai": "Bà bỏ {n} bó ngải cứu.",
   "mentor.healer.putKind.tiato": "Bà bỏ {n} bó tía tô.",

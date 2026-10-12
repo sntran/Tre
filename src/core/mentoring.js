@@ -887,6 +887,23 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       s.say(t, lineOf(task.key, 'mark'));
       return { t: t + 2 };
     }
+    // The row of the fisher (#88): his gap on a short row of four stakes next to the child, with no
+    // count.
+    if (d.thing === 'stake') {
+      const space = task.place?.zone.space ?? 4;
+      const spot = demoSpot(task);
+      s.say(t, lineOf(task.key, 'fit'));
+      for (let k = 0; k < 4; k++) {
+        const at = t + 1 + k * 1.3;
+        const pos = { x: spot.x - 1.5 * space + k * space, z: spot.z };
+        s.point(at, pos, 1.2);
+        s.steps.push({ at, spawn: { look: 'stake', x: pos.x, z: pos.z, facing: 0 } });
+        // Each gap of the short row glows, as wide as the gap of the fisher.
+        if (k > 0) s.steps.push({ at: at + 0.3, spawn: { look: `over-${space}`, x: pos.x - space, z: pos.z, facing: Math.PI / 2 } });
+      }
+      const last = t + 1 + 4 * 1.3;
+      return { t: last + 2.5, keyAt: t + 1 + 2 * 1.3 };
+    }
     const sizes = sizesOf(task);
     const target = info.target ?? task.place?.zone.need ?? task.place?.zone.gap ?? 10;
     const other = d.same ? target : demoTarget(target, sizes.length ? sizes : [1]);

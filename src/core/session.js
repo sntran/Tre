@@ -635,6 +635,24 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
     }
   }
+  // The pile of the fisher is empty (#88): the first time, after the line of the fisher, the hint
+  // of a stake that a tap and a press take back (tight); the second time, the demonstration of his
+  // gap on a short row next to the child, and then the work system brings the stakes.
+  let tightAt = null;
+  function emptyPile(ev) {
+    const key = 'trial-fisher';
+    if (ev.n === 1) tightAt = state.tick + Math.round(3.5 / STEP);
+    if (ev.n === 2) {
+      tightAt = null;
+      mentoring.move(key, 'demo');
+      log('stakes', { task: key, help: 'demo', stakes: 0 });
+    }
+  }
+  function stepTight() {
+    if (tightAt === null || state.tick < tightAt || busy || screen) return;
+    tightAt = null;
+    mentoring.move('trial-fisher', 'mark');
+  }
   // At a task, the hero does not stand behind the person, as the camera sees it (#87: the healer
   // stood in front of the hero, and the hero did not show): the person of the task steps to the
   // side, away from the hero, and stays there while the child works (schedule.aside). The hero
@@ -3758,6 +3776,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'long') mentoring.long(ev);
     // The things that a help makes glow until the child takes one (the shorter planks, #85).
     if (ev.type === 'glowThings') glowing = [...ev.ids];
+    if (ev.type === 'empty') emptyPile(ev);
+    if (ev.type === 'more' && ev.task) log('stakes', { task: ev.task.replace(/^zone:/, ''), help: 'stakes', stakes: ev.n });
     if ((ev.type === 'pick' && ev.id === 'hero') || ev.type === 'solid') glowing = [];
     if (ev.type === 'solid') guessCheck(ev.id);
     mentoring.worldEvent(ev);
@@ -3911,6 +3931,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepNearHeap();
     stepOutOfPerson();
     stepFromBehind();
+    stepTight();
     stepGuessLine();
     stepLeaveTask();
     stepPending();

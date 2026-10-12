@@ -43,7 +43,9 @@ const FISHER_STAKES = new Set(['stake:fisher:a', 'stake:fisher:b']);
 const FLOAT_WAIT = 4;
 const FLOAT_RISE = 3;
 // The stakes that the fisher brings to an empty pile (#78).
-const MORE_STAKES = 4;
+const EMPTY_IDLE = 20; // seconds with an empty pile after the marks of the narrow gaps: then the help (#88)
+const NARROW_MARKS = 12; // seconds that the marks of the narrow gaps show
+const HELP_WAIT = 1.5; // seconds after the end of the demonstration, before the new stakes
 // The band of the teacher that snaps (#48): the rods lie this far from the middle of the mat (half
 // blocks) for SPRING_TIME seconds. BUNDLE_STEP: the space of the bundles in their row.
 const BUNDLE_STEP = 1.3;
@@ -1030,7 +1032,7 @@ function tickTide(world, tz, dt, env) {
   // and the stake in the hands could not go in): the water stays low.
   if (tide.phase === 'low' && held) tide.t = Math.min(tide.t, tide.every - 10);
   if (tide.phase === 'low') {
-    bringStakes(world, tz, line, row, held);
+    emptyPile(world, tz, line, row, held, dt);
     // The row is at the float: a few seconds after the last stake, the water rises, and the fisher
     // says it (#78: the child put the row to the float, and nothing happened for a minute).
     const atFloat = row.some((s) => s.item.slot === line.zone.length);
@@ -1104,23 +1106,87 @@ function tickTide(world, tz, dt, env) {
   }
 }
 
-// The pile never runs out while the row needs a stake (#78: a row of presses puts the stakes one
-// half block apart, and the pile was empty long before the float). When the pile is empty, no stake
-// is in the hands, and the row is not at the float, the fisher brings more stakes and says it. The
-// record keeps the count of the stakes of the row (efficient is still the fewest stakes).
-function bringStakes(world, tz, line, row, held) {
+// The pile keeps the stakes of the level (#88: since #78 the fisher brought more stakes each time
+// the pile was empty, and presses alone finished the row). When the pile is empty, no stake is in
+// the hands, and the row is not at the float:
+// - the first time, the fisher says that a gap is narrower than his gap, and the narrow gaps of the
+//   row glow (event empty, n 1);
+// - when the pile is empty again after that, or after EMPTY_IDLE seconds, the fisher shows his gap on
+//   a short row next to the child (event empty, n 2: the session starts the demonstration), and
+//   after it he brings the stakes that the rest of the row needs at his gap. Later, he brings them
+//   again with no demonstration, so that the task is never impossible (rule 12).
+function emptyPile(world, tz, line, row, held, dt) {
+  const z = tz.zone;
   const pile = zoneEnt(world, 'stakes');
-  if (!pile || held || row.some((s) => s.item.slot === line.zone.length)) return;
-  if (pile.zone.items.some((id) => getEntity(world, id) && !getEntity(world, id).item.held)) return;
-  for (let i = 0; i < MORE_STAKES; i++) {
-    const id = `stake:fisher:${tz.zone.made++}`;
+  if (!pile) return;
+  if (z.narrowT > 0) {
+    z.narrowT -= dt;
+    if (z.narrowT <= 0 || world.events.some((ev) => ev.type === 'pick' && ev.id === 'hero' && String(ev.item).startsWith('stake:'))) clearNarrow(world);
+  }
+  const inPile = pile.zone.items.some((id) => getEntity(world, id) && !getEntity(world, id).item.held);
+  if (inPile) {
+    if (z.empties === 1) z.refilled = true;
+    z.emptyT = 0;
+    return;
+  }
+  if (held || row.some((s) => s.item.slot === line.zone.length)) return;
+  z.emptyT = (z.emptyT ?? 0) + dt;
+  const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+  if (!z.empties) {
+    z.empties = 1;
+    z.refilled = false;
+    z.emptyT = 0;
+    markNarrow(world, z, line, row);
+    if (fisher) say(world, 'call', fisher.id, { key: 'fisher.empty', params: {}, happened: true });
+    say(world, 'empty', tz.id, { n: 1 });
+    return;
+  }
+  if (z.empties === 1 && (z.refilled || z.emptyT >= EMPTY_IDLE)) {
+    z.empties = 2;
+    z.helpT = HELP_WAIT;
+    clearNarrow(world);
+    say(world, 'empty', tz.id, { n: 2 });
+    return;
+  }
+  if (z.empties < 2) return;
+  // The stakes come after the demonstration (the session plays it) ends.
+  if (query(world, 'demo').length) return;
+  z.helpT = (z.helpT ?? 0) - dt;
+  if (z.helpT > 0) return;
+  // The narrow gaps glow again with each bring of stakes: the new stakes come with a pointer to the
+  // gap, not only with more presses.
+  markNarrow(world, z, line, row);
+  const last = Math.max(0, ...row.map((s) => s.item.slot ?? 0));
+  const n = Math.max(1, Math.ceil((line.zone.length - last) / line.zone.space));
+  for (let i = 0; i < n; i++) {
+    const id = `stake:fisher:${z.made++}`;
     addEntity(world, { id, keep: true, item: { kind: 'stake', size: 1, task: tz.id.slice(5), zone: pile.zone.id, home: pile.zone.id, held: null, set: false }, position: { x: pile.zone.x, y: pile.zone.y, z: pile.zone.z, facing: 0 }, look: 'stake' });
     pile.zone.items.push(id);
   }
   packHeap(world, pile.zone);
-  const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+  z.helpT = HELP_WAIT;
   if (fisher) say(world, 'call', fisher.id, { key: 'fisher.more', params: {}, happened: true });
-  say(world, 'more', pile.id, { sound: 'plank-down', n: MORE_STAKES });
+  say(world, 'more', pile.id, { sound: 'plank-down', n, task: tz.id });
+}
+// The gaps of the row that are narrower than the gap of the fisher glow (a mark, rule 34).
+function markNarrow(world, z, line, row) {
+  clearNarrow(world);
+  const stakes = row.filter((s) => s.item.slot != null).sort((a, b) => a.item.slot - b.item.slot);
+  const slots = [0, ...stakes.map((s) => s.item.slot)];
+  const glow = [];
+  slots.forEach((a, i) => {
+    const b = slots[i + 1];
+    if (b === undefined || b === a || b - a >= line.zone.space) return;
+    addEntity(world, { id: `why:fisher:narrow:${i}`, keep: true, position: { x: line.zone.x + a, y: line.zone.y, z: line.zone.z, facing: Math.PI / 2 }, look: `over-${Math.max(1, Math.round(b - a))}` });
+    // The stake at the end of a narrow gap glows too, until the child takes a stake: a gap of one
+    // half block is too small to see.
+    if (!FISHER_STAKES.has(stakes[i].id)) glow.push(stakes[i].id);
+  });
+  if (glow.length) world.events.push({ type: 'glowThings', ids: glow });
+  z.narrowT = NARROW_MARKS;
+}
+function clearNarrow(world) {
+  for (const e of query(world, 'position').filter((x) => String(x.id).startsWith('why:fisher:narrow:'))) removeEntity(world, e.id);
 }
 
 // A new stem comes after sticks that were not equal.

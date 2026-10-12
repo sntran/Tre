@@ -724,3 +724,9 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **After a miss:** `raid.miss.short` ("Hòn đá rơi trước lính rồi.") and `raid.miss.long` ("Hòn đá bay qua lính rồi.").
 - **Away from the gate:** `raid.away` ("Cháu ơi, quay lại cổng làng!").
 - **Please check:** "lính" for the scouts of the first raid, and the new sounds (`sling`, `thud`, and the others), which are made in code.
+
+## The fisher (#88)
+
+- **The empty pile:** `fisher.empty` ("Hết cọc rồi. Có khe hẹp hơn khe của chú.").
+- **The demonstration:** `mentor.fisher.fit` ("Khe rộng bằng khe của chú là vừa.").
+- **Please check:** "khe" for a child of six (the space between two stakes).
