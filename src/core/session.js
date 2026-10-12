@@ -2995,11 +2995,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const heapOf = (e) => zoneOf(e?.item?.zone);
     const zones = new Set();
     const rings = [];
+    const long = [];
     for (const id of ids) {
       const e = getEntity(state, id);
       const heap = heapOf(e);
       if (e?.zone) zones.add(e.id);
       else if (heap?.zone?.rule === 'heap') zones.add(heap.id);
+      // A plank of a pile: a ring around all of its length (#85: the ring under a plank did not
+      // show, and the shorter planks did not look different).
+      else if (heap?.zone?.rule === 'pile' && e.position) long.push({ ...middleOf(e), y: e.position.y, r: e.item.size / 2 + 0.6 });
       else rings.push(id);
     }
     // The rim goes around the things of a place too, also when they lie out of its rect.
@@ -3009,7 +3013,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const far = Math.max(0, ...z.items.map((t) => getEntity(state, t)?.position).filter(Boolean).map((p) => Math.hypot(p.x - spot.x, p.z - spot.z) + 1));
       return { ...spot, r: Math.max(spot.r, far) };
     });
-    emit({ type: 'cue', ids, spots, rings });
+    emit({ type: 'cue', ids, spots: [...spots, ...long], rings });
   }
   function acted() {
     idleT = 0;

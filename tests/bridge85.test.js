@@ -24,6 +24,7 @@ test('after a plank that is too long, the fisher says to take a shorter one, and
   let s = null;
   const lines = [];
   const cues = [];
+  const spots = [];
   const failures = await runHeadless({
     name: 'bridge-shorter', profile: profile(open), clock: 540, at: ['phu-dong', 46, 61],
     steps: [
@@ -47,7 +48,10 @@ test('after a plank that is too long, the fisher says to take a shorter one, and
       s = x;
       x.listen((e) => {
         if (e.type === 'open') lines.push(e.textKey);
-        if (e.type === 'cue') cues.push(e.ids);
+        if (e.type === 'cue') {
+          cues.push(e.ids);
+          spots.push(e.spots);
+        }
       });
     },
   });
@@ -59,6 +63,10 @@ test('after a plank that is too long, the fisher says to take a shorter one, and
   assert.ok(cues.some((ids) => ids.length && [...ids].sort().join() === shorter.join()), `the shorter planks glow: ${JSON.stringify(cues.at(-1))}`);
   assert.ok(!cues.some((ids) => ids.some((id) => getEntity(s.state, id)?.item?.size === 5)), 'no plank of five glows');
   assert.deepEqual(cues.at(-1), [], 'the glow ends after the pick');
+  // Each shorter plank has a ring around all of its length.
+  const glow = spots.find((x) => x.length === shorter.length);
+  assert.ok(glow, 'a ring for each shorter plank');
+  for (const r of glow) assert.ok(r.r >= 2, 'the ring is as long as the plank');
 });
 
 test('the three lengths of the pile lie in rows with a clear space between them, and each unit of a plank shows', async () => {
