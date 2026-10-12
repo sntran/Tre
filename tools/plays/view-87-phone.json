@@ -1,0 +1,2318 @@
+{
+ "about": "#87: the first line of each of the five tasks and of the bridge, with the work and the person in sight; the rods of the teacher in a frame of ten; a tap on Nghé after the task of the teacher; and three turns of the view at the school (a covered hero is an outline, and the people keep their colors).",
+ "start": "?story=trial-scholar",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "shot": "teacher-the-first-line-the-mat-in-sight"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'mat').length"
+  },
+  {
+   "shot": "the-rods-a-frame-of-ten-thin-rods"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) < 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('put')"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 1.5,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && !(document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "press": true,
+   "after": 8,
+   "if": "!Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done']) && !document.querySelector('.dialogue-layer') && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length ?? 0) >= 10 && (document.querySelector('.act-btn')?.dataset.act ?? '').startsWith('tie')"
+  },
+  {
+   "read": 3,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.session.profile.flags?.['trial.scholar.done'])",
+   "timeout": 240
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "thing": "friend:nghe"
+   },
+   "after": 1.5
+  },
+  {
+   "stick": [
+    -80,
+    0,
+    0.8
+   ],
+   "if": "!tre.activeVillage.sounds().some((x) => x.name === 'moo')"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "friend:nghe"
+   },
+   "after": 1.5,
+   "if": "!tre.activeVillage.sounds().some((x) => x.name === 'moo')"
+  },
+  {
+   "print": "tre.activeVillage.sounds().some((x) => x.name === 'moo')"
+  },
+  {
+   "check": "tre.activeVillage.sounds().some((x) => x.name === 'moo')"
+  },
+  {
+   "shot": "after-the-task-a-tap-on-nghe-pets-her"
+  },
+  {
+   "check": "(() => { const s = tre.activeVillage.state(); const h = s.entities.find((e) => e.id === 'hero').position; const n = s.entities.find((e) => e.id === 'friend:nghe'); n.position.x = h.x + 1.3; n.position.z = h.z + 1.3; return true; })()",
+   "after": 0
+  },
+  {
+   "shot": "check-nghe-in-front-of-the-hero-the-outline"
+  },
+  {
+   "button": ".turn-btn:not(.wave-btn):not(.jump-btn):not(.act-btn)",
+   "after": 2
+  },
+  {
+   "shot": "a-turn-of-the-view-1"
+  },
+  {
+   "button": ".turn-btn:not(.wave-btn):not(.jump-btn):not(.act-btn)",
+   "after": 2
+  },
+  {
+   "shot": "a-turn-of-the-view-2"
+  },
+  {
+   "button": ".turn-btn:not(.wave-btn):not(.jump-btn):not(.act-btn)",
+   "after": 2
+  },
+  {
+   "shot": "a-turn-of-the-view-3"
+  },
+  {
+   "button": ".turn-btn:not(.wave-btn):not(.jump-btn):not(.act-btn)",
+   "after": 2
+  },
+  {
+   "goto": "?story=trial-smith",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "shot": "smith-the-first-line"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "goto": "?story=trial-fisher",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "shot": "fisher-the-first-line"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "goto": "?story=trial-healer",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "shot": "healer-the-first-line"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "goto": "?story=trial-woodcutter",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "shot": "woodcutter-the-first-line"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 3
+  },
+  {
+   "goto": "?story=bridge",
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "shot": "bridge-the-first-line"
+  }
+ ]
+}
