@@ -85,16 +85,20 @@ const GENERATORS = {
   count(p, rng) {
     const modes = p.tens ? ['next', 'prev', 'plus10'] : ['next', 'prev'];
     const op = rng.pick(modes);
-    const n = op === 'next' ? rng.int(0, p.max - 1) : op === 'prev' ? rng.int(1, p.max) : rng.int(1, p.max - 10);
-    // The example number m: for "prev", the example counts back from m + 1.
+    // "n thêm 10": n from the first to the last number of tens (#89: ten more than a two-digit
+    // number is grade 1, 1.NBT.C.5; "102 thêm 10" came in a practice of grade 1).
+    const [lo, hi] = Array.isArray(p.tens) ? p.tens : [1, p.max - 10];
+    const n = op === 'next' ? rng.int(0, p.max - 1) : op === 'prev' ? rng.int(1, p.max) : rng.int(lo, hi);
+    // The example number m: for "prev", the example counts back from m + 1. The example of "thêm
+    // 10" has some ones, so that it names bundles and sticks.
     const answer = op === 'next' ? n + 1 : op === 'prev' ? n - 1 : n + 10;
-    const m = retry(() => (op === 'plus10' ? rng.int(1, p.max - 10) : rng.int(1, p.max - 1)), (v) => {
+    const m = retry(() => (op === 'plus10' ? rng.int(Math.max(11, lo), hi) : rng.int(1, p.max - 1)), (v) => {
       const shown = op === 'plus10' ? [v, v + 10] : [v, v + 1];
-      return !shown.includes(n) && !shown.includes(answer);
+      return !shown.includes(n) && !shown.includes(answer) && (op !== 'plus10' || v % 10 !== 0);
     });
     const promptKey = { next: 'prob.count.after', prev: 'prob.count.before', plus10: 'prob.count.ten' }[op];
     const example = op === 'plus10'
-      ? k('ex.count.ten', { m, m10: m + 10 })
+      ? k('ex.count.ten', { m, m10: m + 10, t: Math.floor(m / 10), o: m % 10 })
       : op === 'next' ? k('ex.count.after', { m, m1: m + 1 }) : k('ex.count.before', { m: m + 1, m1: m });
     return {
       kind: 'numeric',

@@ -900,7 +900,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else runPending();
       return;
     }
-    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
+    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, word: view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
     showNames(d, view.speaker, view.names);
   }
   // The two ends of a place: the ends of a gap of the bridge, or the middles of the short sides of
@@ -3764,7 +3764,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'ferried' && (ev.riders ?? []).includes('hero')) farPlan = null;
     // A person calls out: the fisher when a plank is too long, and the lines of the mentors.
     // happened: a line that says what happened (#73: never cut or replaced by a later line).
-    if (ev.type === 'call' && ev.ready) readyFinish.add(ev.ready);
+    if (ev.type === 'call' && ev.ready) {
+      readyFinish.add(ev.ready);
+      // The big button glows with the finish (#89).
+      emit({ type: 'actGlow' });
+    }
     if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {}, ...(ev.happened ? { happened: true } : {}) });
     // The mentors read the commits (before the learner takes them), the plank too long, and the
     // actions of the hands.

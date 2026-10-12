@@ -71,7 +71,7 @@ test('the first cut of the woodcutter sends the card of a print with the name th
   // The print of the task where the child earned the skill (#81): the bundle of the woodcutter.
   assert.equal(card.titleKey, 'print.math.add.20.trial-woodcutter');
   assert.equal(card.look, 'sticks-2');
-  assert.equal(createI18n(vi, 'vi').t('note.new', { name: { key: card.titleKey } }), 'Sổ tay có tranh mới: Bó tre.');
+  assert.equal(createI18n(vi, 'vi').t('note.newName', { name: { key: card.titleKey } }), 'Tranh mới: Bó tre.');
 });
 
 test('the notebook uses the name that the child gave to the calf', () => {

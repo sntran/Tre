@@ -62,6 +62,15 @@ function personOf(ctx, speaker) {
   return namesOf(ctx.data, region)[speaker] ?? null;
 }
 
+// The card of a word that a child may not know, next to the talk box (#89: "quặng sắt"): the
+// word and what it is. word: { nameKey, textKey }, or null.
+function wordCard(word) {
+  if (!word) return null;
+  return h('div', { class: 'calling-card talk-calling word-card', 'aria-hidden': 'true' }, [
+    h('span', { class: 'calling-words' }, [h('strong', { text: t(word.nameKey) }), h('small', { text: t(word.textKey) })]),
+  ]);
+}
+
 // The card of a calling next to the talk box, when a line names the calling (#62): the picture of
 // its mentor, as at Văn Miếu, and its name. Null when the line names none.
 function callingCard(ctx, id) {
@@ -78,11 +87,14 @@ function callingCard(ctx, id) {
 // speaker names them (#67: "thầy giáo, bác thợ rèn, chú đánh cá, …"). The first face comes after
 // FACE_FIRST seconds, and each next face FACE_PACE seconds later (about one name of the voice).
 // Null when the line names none.
-const FACE_FIRST = 1.2;
-const FACE_PACE = 1.1;
+export const FACE_FIRST = 1.2;
+export const FACE_PACE = 1.1;
 function facesRow(ctx, list = []) {
   if (!list.length) return null;
-  return h('div', { class: 'talk-faces', 'aria-hidden': 'true' }, list.map((who, i) => h('span', { class: 'talk-face', style: { animationDelay: `${FACE_FIRST + i * FACE_PACE}s` } }, [
+  // Each face comes, and then pulses at its name (#89: the children did not know "bà lang" and
+  // "tiều phu").
+  const at = (i) => FACE_FIRST + i * FACE_PACE;
+  return h('div', { class: 'talk-faces', 'aria-hidden': 'true' }, list.map((who, i) => h('span', { class: 'talk-face', style: { animationDelay: `${at(i)}s, ${at(i) + 0.4}s` } }, [
     portraitCanvas(ctx, speakerLookOf(ctx, who), { framing: 'bust', size: 44 }),
     h('small', { text: speakerName(ctx, who) }),
   ])));
@@ -152,7 +164,7 @@ export function createDialogueBox(ctx, { next, choose }) {
     box.replaceChildren();
     layer.querySelector('.talk-calling')?.remove();
     layer.querySelector('.talk-faces')?.remove();
-    const card = callingCard(ctx, line.calling);
+    const card = callingCard(ctx, line.calling) ?? wordCard(line.word);
     if (card) layer.prepend(card);
     const faces = facesRow(ctx, line.faces);
     if (faces) layer.prepend(faces);

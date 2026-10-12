@@ -51,6 +51,7 @@
     "n3": {
      "speaker": "giong",
      "textKey": "dlg.giong.speaks.n3",
+     "word": { "nameKey": "word.ore", "textKey": "word.ore.what" },
      "effects": [
       {
        "set": "giong.spoke"

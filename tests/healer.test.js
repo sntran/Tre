@@ -154,3 +154,21 @@ test('the first lines show the tap on a bed, with the beds glowing', () => {
   assert.equal(vi[tap.textKey], 'Chạm vào luống nào, cháu lấy lá luống đó.');
   assert.deepEqual(tap.names, ['zone:bed-ngai', 'zone:bed-tiato', 'zone:bed-rauma']);
 });
+
+test('after a count that made the basket right, the healer says the next step, and the big button glows with the give (#89)', async () => {
+  const session = await afterTalk(2);
+  putFrom(session, 'ngai', 5);
+  putFrom(session, 'tiato', 4);
+  putFrom(session, 'rauma', 4);
+  const lines = linesOf(session, 'npc:healer');
+  let glows = 0;
+  session.listen((ev) => { if (ev.type === 'actGlow') glows += 1; });
+  send(session, { type: 'tap', target: { person: 'npc:healer' } });
+  send(session, { type: 'hands' });
+  run(session, 90, () => lines.some((l) => l.key === 'mentor.healer.next'));
+  const keys = lines.map((l) => l.key);
+  assert.ok(keys.indexOf('mentor.healer.next') > keys.indexOf('mentor.healer.now'), keys.join(' '));
+  assert.ok(glows > 0, 'the button glows');
+  assert.equal(load('i18n/vi.json')['mentor.healer.next'], 'Cháu đưa giỏ cho bà nhé.');
+  assert.equal(session.action()?.act, 'give');
+});

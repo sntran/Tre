@@ -730,3 +730,12 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The empty pile:** `fisher.empty` ("Hết cọc rồi. Có khe hẹp hơn khe của chú.").
 - **The demonstration:** `mentor.fisher.fit` ("Khe rộng bằng khe của chú là vừa.").
 - **Please check:** "khe" for a child of six (the space between two stakes).
+
+## The smaller problems (#89)
+
+- **The practice:** `practice.read` ("Con muốn luyện gì? Bấm nút đỏ, thầy chọn giúp con."), `hint.count.plus10` ("Thêm 10 là thêm một bó mười que."), and `ex.count.ten` ("Ví dụ: {t} bó và {o} que là {m}. Thêm một bó là {m10}.").
+- **The healer:** `mentor.healer.next` ("Cháu đưa giỏ cho bà nhé.").
+- **The woodcutter:** `mentor.woodcutter.cut` ("Cháu đếm đốt từng khúc, rồi bấm nút lớn để chặt.").
+- **The iron:** "bụi tre" in `dlg.giong.speaks.n3`, `dlg.smith.need.iron.n1`, and `dlg.woodcutter.ore.n1`; the card `word.ore` ("Quặng sắt") and `word.ore.what` ("Quặng sắt là đá có sắt bên trong.").
+- **The weekly note:** `parent.week.move.first`, `.fix`, `.count`, and `.erase`.
+- **Please check:** "bó" and "que" in the hint of the practice, and "đốt" for the rings of the bamboo.

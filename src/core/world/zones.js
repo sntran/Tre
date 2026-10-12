@@ -22,10 +22,11 @@ import { getEntity } from './state.js';
 
 export const REACH = 5; // half blocks: how near the hero must be to pick up or put down
 export const PILE_REACH = 4; // half blocks: a pile is long and deep, and the hands reach this much farther there
-// The floor of the basket of the healer over the ground (half blocks): the basket stands on a low
-// stand, so that a child finds it (#64). The figure (src/world/figures.js) and the places of the
-// bunches in it (src/core/world/systems/work.js) use it.
-export const BASKET_FLOOR = 1;
+// The floor of the basket of the healer over the ground (half blocks): the basket is a woven giỏ
+// on the ground (#89; on a low stand in #64, it looked like a table). The figure
+// (src/world/figures.js) and the places of the bunches in it (src/core/world/systems/work.js) use
+// it.
+export const BASKET_FLOOR = 0.15;
 // The space between two planks of a row, and between two rows (#85: on a phone the three lengths
 // of the pile looked the same).
 export const PILE_GAP = 2; // half blocks between two things in a row of a pile

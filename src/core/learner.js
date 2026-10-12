@@ -65,8 +65,9 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
   function levelFor(id) {
     const skill = graph.get(id);
     const e = entry(id);
-    // Near mastery, check the highest level: mastery needs correct answers at that level.
-    if (!e.mastered && e.p >= m.almost && (e.top ?? 0) < (m.minTopCorrect ?? 0)) return skill.levels.length;
+    // Near mastery, check the highest level: mastery needs correct answers at that level. The check
+    // waits for some answers at the levels below (#89).
+    if (!e.mastered && e.p >= m.almost && e.n >= (m.almostAfter ?? 0) && (e.top ?? 0) < (m.minTopCorrect ?? 0)) return skill.levels.length;
     const ratings = skill.levels.map((_, i) => itemRating(skill, i + 1));
     return chooseLevel(e.r, ratings, r);
   }

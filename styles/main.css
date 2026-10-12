@@ -653,7 +653,8 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
    five faces of the elder show side by side, and a long name goes on two lines. The row is over
    the buttons of the box (listen, next), so that no button covers a face (#72). */
 .talk-faces { position: absolute; left: var(--gap); right: var(--gap); bottom: calc(100% + var(--touch) * 0.8 + 6px); display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 84px); justify-content: start; align-items: stretch; gap: 4px; pointer-events: none; }
-.talk-face { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 4px 2px; border: var(--line); border-radius: var(--corner); background: var(--diep); box-shadow: var(--frame); animation: face-in 0.5s both; }
+.talk-face { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 4px 2px; border: var(--line); border-radius: var(--corner); background: var(--diep); box-shadow: var(--frame); animation: face-in 0.5s both, face-name 1s ease-in-out both; }
+@keyframes face-name { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.25); box-shadow: 0 0 10px 4px var(--yellow); } }
 @keyframes face-in { 0% { opacity: 0; transform: scale(0.8); } 70% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: scale(1); } }
 .talk-face small { font-size: var(--text-small); line-height: 1.1; text-align: center; overflow-wrap: break-word; }
 .calling-card[aria-pressed="true"] { background: var(--yellow-pale); box-shadow: inset 0 0 0 3px var(--vermilion), var(--press); }
@@ -1179,7 +1180,7 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .print-card { width: max-content; text-align: left; }
 .print-card .print-book { flex: none; width: 36px; height: 36px; }
 /* The menu button glows at the first card of the notebook: the notebook is in the menu (#81). */
-.icon-btn.glow-once { animation: glow-once 1.2s ease-in-out 5; }
+.icon-btn.glow-once, .act-btn.glow-once { animation: glow-once 1.2s ease-in-out 5; }
 @keyframes glow-once { 50% { box-shadow: 0 0 12px 5px var(--yellow); transform: scale(1.12); } }
 /* The card stays between the two edges of the screen: centered with auto margins, never pushed past
    the right edge by a shift of half its width (#81: "Sổ tay có t… đỏ." on a screen of 390). */

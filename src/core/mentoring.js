@@ -544,6 +544,15 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       point(t, stake.position, 2);
       mark(t, stake.position, 3);
       t += 3;
+    } else if (move === 'show' && defOf(key).lines?.cut && task?.tz?.zone.marks?.length && !task.tz.zone.cut) {
+      // A stem with a mark and no cut: the hint is the next step, the count and the cut (#89: a wave
+      // said "Vạch một dấu phấn …" with a mark on the stem).
+      const z = task.tz.zone;
+      const p = z.stem ? { x: z.stem.x + z.marks.at(-1), z: z.stem.z } : task.at;
+      say(t, defOf(key).lines.cut);
+      point(t, p, 2);
+      mark(t, p, 3);
+      t += 3;
     } else if (move === 'show' && basketHasEach(key, task)) {
       // The basket has bunches of each kind: the hint is the give, never another bunch (#79: "Lấy
       // một bó lá ở luống …" came with two of each in the basket).
@@ -802,6 +811,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         at = Math.max(at, end);
         s.say(at, lines.now, { n: { key: `num.${each}` } }, { ready: task.key });
         at += 2.5;
+        // The next step in words, and the big button glows with the give (#89: after the count the
+        // healer waited, and the child did not know that a press gives the basket).
+        if (lines.next) {
+          s.say(at, lines.next, {}, { ready: task.key });
+          at += 2.5;
+        }
       }
       return at + 1;
     } else t += 1;

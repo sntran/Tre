@@ -21,10 +21,10 @@ const en = createI18n(enDict, 'en', viDict);
 const source = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const schema = load('data/config/learnlog.json');
 
-test('one line in the other language: the words of a count stay in the language of the game, and the names stay', () => {
+test('one line in the other language: the whole sentence, also a number in it, and the names stay (#89)', () => {
   const n = { key: 'num.2' };
-  assert.equal(otherLine(vi, en, 'woodcutter.equal', { n }), `${capitalize(vi.t('num.2'))} pieces of the same length.`);
-  assert.equal(otherLine(en, vi, 'woodcutter.equal', { n }), `${capitalize(en.t('num.2'))} khúc dài bằng nhau.`);
+  assert.equal(otherLine(vi, en, 'woodcutter.equal', { n }), 'Two pieces of the same length.');
+  assert.equal(otherLine(en, vi, 'woodcutter.equal', { n }), `${capitalize(vi.t('num.2'))} khúc dài bằng nhau.`);
   // The name that the child gave to the calf stays in the line of the other language.
   const line = otherLine(vi, en, 'dlg.grandma.intro.ride', {}, { nghecalf: 'Mướp' });
   assert.match(line, /Mướp/);

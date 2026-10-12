@@ -415,7 +415,7 @@
         "putEach": "healer.put",
         "row": "mentor.healer.row",
         "extra": "mentor.healer.extra",
-        "now": "mentor.healer.now"
+        "now": "mentor.healer.now", "next": "mentor.healer.next"
       }
     },
     "trial-woodcutter": {
@@ -432,7 +432,7 @@
         "pieces": "woodcutter.pieces",
         "short": "woodcutter.short",
         "equal": "woodcutter.equal",
-        "erase": "mentor.woodcutter.erase"
+        "erase": "mentor.woodcutter.erase", "cut": "mentor.woodcutter.cut"
       }
     },
     "trial-plant": {

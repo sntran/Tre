@@ -36,7 +36,7 @@ import { speak, speaking } from './speak.js';
 import { bubbleLine, createVoiceQueue, doneBy } from '../core/bubblevoice.js';
 import { voiceOf } from '../core/voices.js';
 import { namesOf } from '../core/naming.js';
-import { createDialogueBox, glossLine, otherOnce, otherLineOn } from './dialogue.js';
+import { createDialogueBox, glossLine, otherOnce, otherLineOn, FACE_FIRST, FACE_PACE } from './dialogue.js';
 import { printOf } from './notebook.js';
 import { modals } from './registry.js';
 import { createRaidView } from './raid.js';
@@ -300,6 +300,7 @@ export async function mountVillage(ctx, params = {}) {
   // A line of a talk that names the round marks with a face (#77: "hình tròn có mặt người"): while
   // it shows, the marks show over the talk and pulse, so that the child sees what the words name.
   let marksLine = false;
+  let facePulse = null; // { list (the people of the line), t0 }
   let boxLine = null; // the line that the talk box shows now (#82: a change of the language shows it again)
   let brightGhost = null; // the ghost of the act of the button that shows over the bodies (#80)
   let alive = true;
@@ -662,6 +663,9 @@ export async function mountVillage(ctx, params = {}) {
   let bookScreen = null;
   function openScreen(ev) {
     if (ev.screen === 'dialogue' || ev.screen === 'say') marksLine = Boolean(ev.marks);
+    // A line that names people with their faces: the star of each person (also at the edge of the
+    // screen) pulses at its name (#89: the children did not know "bà lang" and "tiều phu").
+    if (ev.screen === 'dialogue' || ev.screen === 'say') facePulse = ev.faces?.length ? { list: ev.faces, t0: performance.now() } : null;
     if (ev.screen === 'dialogue' || ev.screen === 'say') {
       // A line in the box is a new line of its speaker: the lines of the other people go, and so
       // does the last bubble of the speaker (#62: a hint of the smith stayed over his done talk).
@@ -1426,15 +1430,22 @@ export async function mountVillage(ctx, params = {}) {
   // prints wait while a talk or a screen is open (the child reads), and show one at a time.
   let printCard = null;
   const printQueue = [];
+  // The cards come one at a time, at least PRINT_GAP apart, and never while a person speaks (#89:
+  // the market line, the first card, and two more cards came in one moment).
+  const PRINT_GAP = 3000; // milliseconds from the end of a card to the next card
+  let printGone = -Infinity;
+  const dropPrint = () => {
+    printCard?.remove();
+    printCard = null;
+    printGone = performance.now();
+  };
   function pumpPrints() {
     const modal = ctx.ui.querySelector('.modal-layer');
     // A screen opens over the card: the card goes (the print stays in the notebook), so that it is
     // not a target next to the buttons of the screen.
-    if (printCard && modal) {
-      printCard.remove();
-      printCard = null;
-    }
+    if (printCard && modal) dropPrint();
     if (printCard || !printQueue.length || box || busy || modal) return;
+    if (performance.now() - printGone < PRINT_GAP || speaking() || spoken || voiceQueue.size()) return;
     showPrint(printQueue.shift());
   }
   function showPrint(ev) {
@@ -1445,9 +1456,10 @@ export async function mountVillage(ctx, params = {}) {
     const card = h('button', { class: 'print-card', type: 'button' }, [
       img('ui/notebook', 'print-book'),
       h('span', { class: 'note-print' }, [printOf(ctx, ev, 40)]),
-      h('span', { text: t('note.new', { name }) }),
+      // The card says what the voice says (#89).
+      h('span', { text: t('note.newName', { name }) }),
     ]);
-    card.addEventListener('click', () => { card.remove(); printCard = null; modals.notebook?.(ctx); });
+    card.addEventListener('click', () => { dropPrint(); modals.notebook?.(ctx); });
     ctx.ui.append(card);
     printCard = card;
     // The voice says the card in its turn, as a line of a bubble (#72: a child who cannot read
@@ -1466,7 +1478,7 @@ export async function mountVillage(ctx, params = {}) {
     }
     const line = { id: 'print', key: 'note.newName', params: { name }, voice: lineVoice(null), kind: 'line' };
     voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
-    setTimeout(() => { if (printCard === card) { card.remove(); printCard = null; } }, first ? 10000 : 5000);
+    setTimeout(() => { if (printCard === card) dropPrint(); }, first ? 10000 : 5000);
   }
   // The lights of the bursts of a success (#62): a warm light for a moment, also at night.
   let cheerLights = [];
@@ -1533,6 +1545,7 @@ export async function mountVillage(ctx, params = {}) {
       case 'close':
         if (ev.screen === 'dialogue' || ev.screen === 'say') {
           marksLine = false;
+          facePulse = null;
           box?.close();
           box = null;
         } else {
@@ -1598,6 +1611,12 @@ export async function mountVillage(ctx, params = {}) {
           turnToWork(ev.points, ev.points);
           work.talk = true;
         } else if (work) work.talk = false;
+        return;
+      // The big button glows one time: the next press finishes the task (#89).
+      case 'actGlow':
+        actBtn.classList.remove('glow-once');
+        void actBtn.offsetWidth;
+        actBtn.classList.add('glow-once');
         return;
       case 'goalShow':
         updateHud();
@@ -1788,7 +1807,13 @@ export async function mountVillage(ctx, params = {}) {
   const STAR_PULSE = 1.6;
   const MAIN_STAR = 1.3; // the scale of the star of the next step of the story (#62)
   let starPulse = null;
-  const pulseOf = (m) => (marksLine ? 1.15 + 0.2 * Math.sin(time * 6) : starPulse && m.id === starPulse.id ? 1 + 0.6 * Math.sin((Math.PI * starPulse.t) / STAR_PULSE) : 1);
+  const namePulse = (m) => {
+    const i = facePulse ? facePulse.list.indexOf(m.who) : -1;
+    if (i < 0) return 1;
+    const dt = (performance.now() - facePulse.t0) / 1000 - (FACE_FIRST + i * FACE_PACE);
+    return dt >= 0 && dt < 1 ? 1 + 0.6 * Math.sin(Math.PI * dt) : 1;
+  };
+  const pulseOf = (m) => (marksLine ? 1.15 + 0.2 * Math.sin(time * 6) : starPulse && m.id === starPulse.id ? 1 + 0.6 * Math.sin((Math.PI * starPulse.t) / STAR_PULSE) : namePulse(m));
   // The boxes of the controls (the stick and the buttons) on the screen, and of the hero: the marks
   // keep off them (src/world/marks.js, #53). The boxes of the buttons come again twice a second.
   let controlBoxes = [];
@@ -1894,7 +1919,7 @@ export async function mountVillage(ctx, params = {}) {
       taskHereAt = performance.now();
       taskHereNow = session.taskHere();
     }
-    for (const m of (busy && !marksLine) || taskHereNow ? [] : markers()) {
+    for (const m of (busy && !marksLine && !facePulse) || taskHereNow ? [] : markers()) {
       const p = view.project(m.x, m.h, m.y);
       const edge = edgeMarker(screen, p, inset);
       if (!edge) {

@@ -15,11 +15,14 @@
 // node): the seal of that line, in place of the seal of the dialogue (null: no seal). "names"
 // (optional, on a node): the things that the line talks about, each an id or { id, act }. While
 // the line shows, the person points at them, they glow, and the view shows them (#62: a new word
-// with its thing). act: "bob" (the thing bobs, as a float), or "rise" (the water rises a little,
-// and goes back at the end of the line). "calling" (optional, on a node): the id of a calling
-// that the line names; the card of the calling shows next to the talk box (#62). "faces"
-// (optional, on a node): the people that the line names, in the order of the words; their faces
-// show over the talk box one after the other, as the speaker names them (#67).
+// with its thing). act: "bob" (the thing bobs, as a float), "rise" (the water rises a little,
+// and goes back at the end of the line), "ends" (the person points at one end of the place and
+// then at the other, #85), or "seq" (these things glow one after another, #85). "calling"
+// (optional, on a node): the id of a calling that the line names; the card of the calling shows
+// next to the talk box (#62). "word" (optional, on a node): { nameKey, textKey }, a card with a
+// word that a child may not know and what it is (#89). "faces" (optional, on a node): the people
+// that the line names, in the order of the words; their faces show over the talk box one after
+// the other, as the speaker names them (#67), and their stars pulse at their names (#89).
 // An effect { "open": "trial", "now": true } starts the task when its line shows, so that the
 // things of the task are there for the next lines.
 import { check } from './conditions.js';
@@ -53,7 +56,7 @@ export function createDialogue(def, state) {
     if (!current) return null;
     const node = def.nodes[current];
     const choices = (node.choices ?? []).filter((c) => check(c.when, state));
-    return { id: current, speaker: node.speaker ?? null, textKey: node.textKey, params: node.params ?? {}, choices, mood: node.mood ?? null, mark: 'mark' in node ? node.mark : def.mark ?? null, names: (node.names ?? []).map((n) => (typeof n === 'string' ? { id: n } : n)), calling: node.calling ?? null, faces: node.faces ?? [], marks: Boolean(node.marks) };
+    return { id: current, speaker: node.speaker ?? null, textKey: node.textKey, params: node.params ?? {}, choices, mood: node.mood ?? null, mark: 'mark' in node ? node.mark : def.mark ?? null, names: (node.names ?? []).map((n) => (typeof n === 'string' ? { id: n } : n)), calling: node.calling ?? null, word: node.word ?? null, faces: node.faces ?? [], marks: Boolean(node.marks) };
   }
 
   // Go on. choice is the index of a choice, when the node has choices.

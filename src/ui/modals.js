@@ -5,6 +5,7 @@ import { runQuiz } from './quiz.js';
 import { h, button } from './dom.js';
 import { portraitCanvas } from './portraits.js';
 import { speak } from './speak.js';
+import { voiceOf } from '../core/voices.js';
 import { t, setChosenNames } from './i18n.js';
 import { setFriendName, chosenGlossNames } from '../core/profile.js';
 
@@ -46,6 +47,8 @@ function chooseSkill(ctx) {
       list,
     ]));
     ctx.ui.append(layer);
+    // The list is read aloud (#89: "So many words! No voice reads them.").
+    speak('practice.read', null, { voice: voiceOf('teacher', { npcs: ctx.data.npcs?.npcs, friends: ctx.data.friends?.friends, voices: ctx.data.game?.voices }, ctx.profile) });
   });
 }
 

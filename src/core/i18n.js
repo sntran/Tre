@@ -38,14 +38,14 @@ export function capitalize(text) {
   return text.charAt(0).toLocaleUpperCase() + text.slice(1);
 }
 
-// One line in the other language (#82): game and other are two texts (createI18n). A word of a
-// count (a param { key: 'num.<n>' }) stays in the language of the game, and the names stay as they
-// are (plain, with the names that the child chose). forVoice: the text for the voice (<key>.say).
+// One line in the other language (#82): game and other are two texts (createI18n). The whole
+// sentence is in the other language, also a number in it (#89: "Hai pieces of the same length."
+// mixed two languages); the names stay as they are (plain, with the names that the child chose).
+// The words of a count, said one by one while a person counts, have no line in the other language
+// (the view gives them no button). forVoice: the text for the voice (<key>.say).
 export function otherLine(game, other, key, params = {}, names = null, forVoice = false) {
-  const out = {};
-  for (const [k, v] of Object.entries(params ?? {})) out[k] = v && typeof v === 'object' && /^num\./.test(v.key ?? '') ? game.t(v.key, v.params) : v;
   const sayKey = `${key}.say`;
-  return other.plain(other.t(forVoice && other.has(sayKey) ? sayKey : key, out), names);
+  return other.plain(other.t(forVoice && other.has(sayKey) ? sayKey : key, params ?? {}), names);
 }
 
 export function createI18n(dict, lang, fallback = null) {

@@ -141,3 +141,14 @@ test('waves while he counts give no second count', async () => {
   run(session, 30);
   assert.equal(lines.filter((l) => l.key === 'woodcutter.piece').length, 2, `one count of two pieces: ${lines.map((l) => l.key).join(' ')}`);
 });
+
+test('with a mark on the stem and no cut, a wave gets the next step: count the rings, then cut (#89)', async () => {
+  const session = await atStem([{ press: { stem: 3 } }, { until: { event: 'mark', timeout: 10 } }]);
+  run(session, 2);
+  const lines = calls(session);
+  send(session, { type: 'wave' });
+  run(session, 8);
+  const keys = lines.map((l) => l.key);
+  assert.ok(keys.includes('mentor.woodcutter.cut'), keys.join(' '));
+  assert.ok(!keys.includes('mentor.show.woodcutter'), 'not the line of the first mark');
+});
