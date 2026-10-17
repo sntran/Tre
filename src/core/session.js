@@ -770,14 +770,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!z || typeof z.guess !== 'number' || guessChecked.has(`${zoneId}:${z.round ?? 0}`)) return;
     guessChecked.add(`${zoneId}:${z.round ?? 0}`);
     const used = z.items.length;
-    const fisher = getEntity(state, 'npc:fisher');
-    const at = getEntity(state, zoneId).position;
-    const near = fisher && !fisher.hidden && at && atWork(fisher, state.clock.minutes) && Math.hypot(fisher.position.x - at.x, fisher.position.z - at.z) <= 40;
-    const nghe = getEntity(state, 'friend:nghe');
-    const who = near ? fisher : nghe && !nghe.hidden ? nghe : null;
+    const { who, near } = bridgeSpeaker(zoneId);
     if (!who) return;
     const key = `mentor.${near ? '' : 'nghe.'}bridge.guess${z.guess === used ? 'Right' : 'Off'}`;
     emit({ type: 'open', screen: 'callout', id: who.id, textKey: key, params: { n: { key: `num.${Math.min(30, z.guess)}` }, m: { key: `num.${Math.min(30, used)}` } } });
+  }
+  // Who speaks at the bridge: the fisher when he is at work near the gap, or else Nghé.
+  function bridgeSpeaker(zoneId) {
+    const fisher = getEntity(state, 'npc:fisher');
+    const at = getEntity(state, zoneId)?.position;
+    const near = Boolean(fisher && !fisher.hidden && at && atWork(fisher, state.clock.minutes) && Math.hypot(fisher.position.x - at.x, fisher.position.z - at.z) <= 40);
+    const nghe = getEntity(state, 'friend:nghe');
+    return { who: near ? fisher : nghe && !nghe.hidden ? nghe : null, near };
+  }
+  // A put leaves a rest of the gap that no plank of the pile fits (#90): the person says so at once,
+  // and the last plank glows; the big button takes it back (no tap needed while it glows).
+  function bridgeStuck(ev) {
+    const { who, near } = bridgeSpeaker(ev.id);
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: `mentor.${near ? '' : 'nghe.'}bridge.stuck`, params: {} });
+    glowing = [ev.item];
   }
 
   // People and encounters, in map cells. They block their cells for the paths of taps.
@@ -2650,9 +2661,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const rule = zone?.zone.rule;
         if (rule === 'span') {
           if (!canTake(zone.zone, e.id)) continue;
-          // The last plank comes back only after a tap on it: a press never undoes a put (#47, #54).
-          if (chosen?.id !== e.id) continue;
-          add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [e.id, zone.id], at: zone.position, rank: 1, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
+          // The last plank comes back only after a tap on it: a press never undoes a put (#47, #54);
+          // or when no plank of the pile fits the rest of the gap and the last plank glows (#90).
+          const stuck = zone.zone.stuck === e.id;
+          if (chosen?.id !== e.id && !stuck) continue;
+          add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [e.id, zone.id], at: zone.position, rank: stuck ? 2 : 1, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH);
           continue;
         }
         if (zone && rule !== 'heap' && rule !== 'pile') continue;
@@ -3780,6 +3793,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'long') mentoring.long(ev);
     // The things that a help makes glow until the child takes one (the shorter planks, #85).
     if (ev.type === 'glowThings') glowing = [...ev.ids];
+    if (ev.type === 'stuck') bridgeStuck(ev);
     if (ev.type === 'empty') emptyPile(ev);
     if (ev.type === 'more' && ev.task) log('stakes', { task: ev.task.replace(/^zone:/, ''), help: 'stakes', stakes: ev.n });
     if ((ev.type === 'pick' && ev.id === 'hero') || ev.type === 'solid') glowing = [];

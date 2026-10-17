@@ -883,12 +883,20 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     s.mark(t, end, 4);
     if (long) {
       // After the count of a plank that is too long: the next step, and the planks of the pile that
-      // are shorter than it glow until the next pick (#85: the child took the same long plank five
-      // times, and nothing said what to do next).
-      const size = parts.at(-1)?.item.size ?? Infinity;
-      const shorter = task.piles.flatMap(itemsOf).filter((e) => !e.item.held && (e.item.size ?? 1) < size).map((e) => e.id);
-      s.say(t + 2, lineOf(task.key, 'shorter'));
-      s.steps.push({ at: t + 2, glow: { ids: shorter } });
+      // fit the rest of the gap glow until the next pick (#85: the child took the same long plank
+      // five times, and nothing said what to do next; #90: the planks shorter than the long one
+      // glowed, but none of them fitted a rest of 1 or 2). When no plank fits the rest, the person
+      // says so, and the last plank that stays glows: the big button takes it back.
+      const rest = z.gap - parts.slice(0, -1).reduce((a, e) => a + (e.item.size ?? 0), 0);
+      const fit = task.piles.flatMap(itemsOf).filter((e) => !e.item.held && (e.item.size ?? 1) <= rest).map((e) => e.id);
+      const stay = parts.at(-2);
+      if (!fit.length && stay) {
+        s.say(t + 2, lineOf(task.key, 'stuck'));
+        s.steps.push({ at: t + 2, glow: { ids: [stay.id] } });
+      } else {
+        s.say(t + 2, lineOf(task.key, 'shorter'));
+        s.steps.push({ at: t + 2, glow: { ids: fit } });
+      }
       return t + 4.5;
     }
     return t + 2;

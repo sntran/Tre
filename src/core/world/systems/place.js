@@ -16,6 +16,10 @@
 // The gap has the marks of a ruler, one for each unit, beside the planks (rule 8 of the design:
 // the planks first, then the marks beside them). After a try the person counts the units one by
 // one, and the planks of the try stay until the count ends (countTime, #71).
+// When a put leaves a rest of the gap that no plank of the pile fits (#90: the gap of 12 after 5
+// and 5, and the pile has planks of 3, 4, and 5), the way cannot be finished: the world says so at
+// once (the event 'stuck', with the last plank on the gap), before the child tries more planks.
+// The last plank stays the plank to take back until the gap changes.
 // Before the first commit on a new gap, a row of plank outlines lies on the bank, Nghé looks at the
 // hero, and the child taps how many planks the bridge will take (a prediction, no numeral).
 // After some failures, or after a commit with the signs of mashing, Nghé stands at the near end
@@ -157,6 +161,7 @@ function pick(world, e, thing, env, dt) {
     if (zoneEnt.zone.rule === 'pile') packPile(world, zoneEnt.zone);
     else if (!working) {
       // A plank taken back from the span: a reset of the attempt.
+      delete zoneEnt.zone.stuck;
       const a = attemptOf(world, zoneEnt.zone);
       a.last = world.tick;
       a.resets = (a.resets ?? 0) + 1;
@@ -216,7 +221,20 @@ function put(world, e, zoneEnt, env, dt, at = null) {
   a.tries.push({ slot: zone.items.length - 1, size: thing.item.size });
   // The first plank on a new gap: the row of outlines for the prediction goes away.
   if (zone.guess === 'pending') endGuess(world, zoneEnt, null);
-  if (judge(before + thing.item.size, zone.gap) !== 'long') return say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: 'plank-down' });
+  delete zone.stuck;
+  if (judge(before + thing.item.size, zone.gap) !== 'long') {
+    say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: 'plank-down' });
+    const rest = zone.gap - before - thing.item.size;
+    if (rest > 0 && !pileSizes(world, zone).some((n) => n <= rest)) {
+      zone.stuck = thing.id;
+      say(world, 'stuck', zoneEnt.id, { item: thing.id, rest });
+    }
+    return;
+  }
+  // A plank that is too long after planks that leave a rest that no plank fits: the plank before
+  // it is the plank to take back (the person says so after the count, src/core/mentoring.js).
+  const stay = zone.items.at(-2);
+  if (stay && !pileSizes(world, zone).some((n) => n <= zone.gap - before)) zone.stuck = stay;
   // Too long: the plank sticks out past the far end and wobbles, and the fisher calls out. The
   // world shows the failure, but it is not a commit: it sends no skill event.
   const out = defOf(env, zone).outcomes.long;
@@ -227,6 +245,12 @@ function put(world, e, zoneEnt, env, dt, at = null) {
   addEntity(world, { id: `why:${zone.id}:over`, why: { zone: zone.id }, position: { x: zone.lane, y: thing.position.y + 0.8, z: zone.from + zone.gap, facing: 0 }, look: `over-${over}` });
   say(world, 'long', zoneEnt.id, { item: thing.id, sound: out.sound });
   if (out.call) say(world, 'call', `npc:${out.call.who}`, { key: out.call.key });
+}
+
+// The sizes of the planks in the piles of a span (not in the hands).
+function pileSizes(world, zone) {
+  const piles = query(world, 'zone').filter((z) => z.zone.rule === 'pile' && z.zone.accepts === zone.accepts);
+  return piles.flatMap((p) => p.zone.items.map((id) => getEntity(world, id)).filter((x) => x && !x.item.held).map((x) => x.item.size ?? 1));
 }
 
 // Put a thing on the ground in front of the entity, on the half-block grid, square to the grid.
