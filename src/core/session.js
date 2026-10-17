@@ -2668,7 +2668,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // A mark goes away only after a tap on it: a second press never takes away the mark that
         // the child just made (#47). The ghost of the chalk is as bright as a mark, and the view
         // shows it over the bodies (bright).
-        if (!(marked && tapped === null)) add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, work: !marked, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z, bright: true }, run: () => work('woodcutter', 'mark', { at }) }, REACH + 2);
+        // A mark at the ring of a tap also walks the hero to that ring, so that the next press is
+        // the knife, not a second mark at the feet (#91: a child of five pressed two times fast
+        // after a tap, and got two marks).
+        const feet = Math.round(hp.x - s.x);
+        const run = () => {
+          work('woodcutter', 'mark', { at });
+          markTick = state.tick;
+          if (!marked && tapped !== null && tapped !== feet) goTo(point, null, null, { x: point.x, z: hp.z }, { exact: true });
+        };
+        if (!(marked && tapped === null)) add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, work: !marked, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z, bright: true }, run }, REACH + 2);
       }
       // The hands: pick up a thing (on a span, only its last plank); take one back from a place.
       const want = wantKind();
@@ -2966,6 +2975,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // presses again while the first press waits for the walk, and the act comes just before).
   let lastDone = null;
   const AGAIN = 1; // seconds
+  // A second press in the first MARK_AGAIN seconds after a chalk mark, with no new tap, does
+  // nothing (#91: the second of two fast presses made a second mark, or cut at once).
+  const MARK_AGAIN = 1; // seconds
+  let markTick = -Infinity;
+  let tapTick = -Infinity;
   // The hero walks (a route; or a walk command that the world takes in its next step), or a far
   // walk waits for the land or for a person on the way.
   const walking = () => Boolean(hero().route || farWait || state.tick - walkTick <= 1);
@@ -3102,6 +3116,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       // A dim button does nothing; a press on an act that is gone pulses.
       if (button().a || id !== null) emit({ type: 'pulse', id: null });
+      emit({ type: 'press', id: pid, act: null, done: false });
+      return;
+    }
+    if ((state.tick - markTick) * STEP < MARK_AGAIN && tapTick < markTick) {
       emit({ type: 'press', id: pid, act: null, done: false });
       return;
     }
@@ -3275,6 +3293,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // A tap: the hero, a plank outline, a plank, a person, a thing with a trigger zone, or a place
   // on the ground.
   function tap(target) {
+    tapTick = state.tick;
     emit({ type: 'sound', sound: 'tap' });
     if (hero().fall) return;
     // A row of the guess at the bridge: the hero walks to its foot on the bank, and it is the target
