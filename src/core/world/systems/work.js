@@ -1183,14 +1183,19 @@ function emptyPile(world, tz, line, row, held, dt) {
   if (fisher) say(world, 'call', fisher.id, { key: 'fisher.more', params: {}, happened: true });
   say(world, 'more', pile.id, { sound: 'plank-down', n, task: tz.id });
 }
-// The stakes that the row still needs at the gap of the fisher: the stakes for each gap that is too
-// wide, and the stakes from the last stake to the float (a stake stands at the float).
+// The stakes that the row still needs: the stakes for each gap that is too wide (at the gap of the
+// fisher), and the stakes from the last stake to the float (a stake stands at the float).
 export function stakesNeeded(line, row) {
   const space = line.zone.space;
   const slots = [...new Set([0, ...row.filter((s) => s.item.slot != null).map((s) => s.item.slot)])].sort((a, b) => a - b);
   let n = 0;
   for (let i = 1; i < slots.length; i++) n += Math.max(0, Math.ceil((slots[i] - slots[i - 1]) / space) - 1);
-  return n + Math.ceil((line.zone.length - slots.at(-1)) / space);
+  // The rest to the float at the gap that the child uses, when it is narrower than the gap of the
+  // fisher (the play of #92: a child who only pressed put the stakes one apart, and the stakes came
+  // six times), so that one bring finishes the row.
+  const last = slots.length > 1 ? slots.at(-1) - slots.at(-2) : space;
+  const step = last > 0 && last < space ? last : space;
+  return n + Math.ceil((line.zone.length - slots.at(-1)) / step);
 }
 // The gaps of the row that are narrower than the gap of the fisher glow (a mark, rule 34).
 function markNarrow(world, z, line, row) {

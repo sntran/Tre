@@ -8,6 +8,7 @@ import { runHeadless } from './story-run.js';
 import { STEP } from './restless.js';
 import { getEntity, query } from '../src/core/world/state.js';
 import { tapTarget } from '../src/core/story.js';
+import { stakesNeeded } from '../src/core/world/systems/work.js';
 
 const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
 const FISHER = [27, 64.5];
@@ -120,4 +121,14 @@ test('after the demonstration, one bring of stakes is enough for the row, and a 
   const after = seen.slice(atFloat);
   assert.ok(after.includes('tide'), `the tide comes: ${after.join(', ')}`);
   assert.ok(!after.includes('more') && !after.includes('fisher.more'), 'no more stakes at the float');
+});
+
+test('the bring counts the rest at the gap that the child uses, when it is narrower than the gap of the fisher', () => {
+  const line = { zone: { space: 4, length: 16 } };
+  const row = (...slots) => slots.map((slot) => ({ item: { slot } }));
+  // At the gap of the fisher: a gap of 8 needs one stake, and the rest from 8 to 16 two stakes.
+  assert.equal(stakesNeeded(line, row(4, 12)), 1 + 1);
+  assert.equal(stakesNeeded(line, row(4, 8)), 2);
+  // A child who only presses puts the stakes one apart: the rest comes at that gap, in one bring.
+  assert.equal(stakesNeeded(line, row(1, 2, 3)), 13);
 });
