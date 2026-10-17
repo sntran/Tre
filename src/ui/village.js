@@ -1319,6 +1319,9 @@ export async function mountVillage(ctx, params = {}) {
     }
     // A heart over Nghé is no line of a person.
     if (!icon && !String(id).startsWith('friend:')) talkOver(id);
+    // A line of a person comes first: the card of a new print goes (the print stays in the
+    // notebook; #90: the card covered the line of the row of the guess).
+    if (!icon && printCard) dropPrint();
     // A new line of a person takes the place of the last one (a mentor counts aloud, one word at a time).
     for (let i = bubbles.length - 1; i >= 0; i--) {
       if (bubbles[i].id !== id || Boolean(bubbles[i].icon) !== Boolean(icon)) continue;
