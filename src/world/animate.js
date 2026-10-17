@@ -96,7 +96,9 @@ export function animate(a, input) {
     }
     lift = Math.abs(Math.cos(a.phase)) * 0.18 * s;
     lean = input.want === 'pole' ? lean : input.want === 'reach' ? 0.35 : 0.08 * s;
-    sink = a.rest * 1.2;
+    // A person who eats sits on the heels, higher than a rest on the ground, so that the body stays
+    // over a deck or a mat (the play of #94: the hero sank into the end of the bridge).
+    sink = a.rest * (input.want === 'eat' ? 0.5 : 1.2);
     const look = moving ? 0 : (input.lookAt ?? Math.sin(a.idle * 0.8) * 0.35 * Math.min(1, a.idle / 2));
     // The head bobs a little with each step.
     rot.head = [Math.sin(a.phase * 2) * 0.05 * s, look, 0];
