@@ -333,9 +333,11 @@ export function setupTrial(world, def, level, env, opts = {}) {
     addEntity(world, { id: 'stem:woodcutter', keep: true, item: { kind: 'stem', size: task.length, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: s.x, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `stem-${task.length}`, solid: { rect: { x0: s.x - 0.2, x1: s.x + task.length + 0.2, z0: s.z - 0.6, z1: s.z + 0.6 } } });
     // The things of the first lines, one new word at a time (#75): a stick of chalk on the ground at
     // the start of the stem, and a sample of equal pieces of a short stick (another thing, not this
-    // stem), one piece for each part, side by side.
+    // stem), one piece for each part, side by side. The sample lies by the far end of the stem, away
+    // from the woodcutter and the hero who talks to him (#91: it lay under them, and a child did not
+    // see "như thế này").
     addEntity(world, { id: 'tool:woodcutter:chalk', keep: true, position: { x: s.x - 1.2, y: s.y, z: s.z + 2.2, facing: 0.4 }, look: 'chalk-stick' });
-    for (let i = 0; i < task.parts; i++) addEntity(world, { id: `sample:woodcutter:${i}`, keep: true, position: { x: s.x - 4, y: s.y, z: s.z + 2.2 + i * 1.3, facing: Math.PI / 2 }, look: 'piece-2' });
+    for (let i = 0; i < task.parts; i++) addEntity(world, { id: `sample:woodcutter:${i}`, keep: true, position: { x: s.x + task.length - 3, y: s.y, z: s.z + 2.2 + i * 1.3, facing: Math.PI / 2 }, look: 'piece-2' });
     // In a practice the wood pile is next to the end of the stem, so that a round is the math and
     // not a long walk to the bridge (#48).
     const w = opts.practice ? { x: s.x + task.length + PILE_GAP, y: env.groundY((s.x + task.length + PILE_GAP) / 2, s.z / 2), z: s.z } : P(def.places.pile);

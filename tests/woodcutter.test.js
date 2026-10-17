@@ -121,16 +121,19 @@ test('the first lines bring one new word each, with its thing', () => {
   const nodes = ['n1', 'n2', 'n3', 'n4'].map((k) => talk.nodes[k]);
   assert.deepEqual(nodes.map((n) => vi[n.textKey]), ['Đây là cây tre. Gió làm nó đổ.', 'Đây là phấn. Em vạch phấn ở chỗ cần chặt.', 'Anh cần {parts} khúc dài bằng nhau, như thế này.', 'Mang các khúc tre ra đống gỗ này nhé.']);
   assert.deepEqual(nodes[1].names, ['tool:woodcutter:chalk']);
-  assert.ok(nodes[2].names.every((n) => n.startsWith('sample:woodcutter:')));
+  // The sample and the stem together: the frame shows both (#91).
+  assert.ok(nodes[2].names.some((n) => n.startsWith('sample:woodcutter:')) && nodes[2].names.includes('stem:woodcutter'));
 });
 
-test('the chalk and a sample of equal pieces lie at the start of the stem', async () => {
+test('the chalk lies at the start of the stem, and a sample of equal pieces by its far end, away from the woodcutter (#91)', async () => {
   const session = await atStem();
   assert.ok(getEntity(session.state, 'tool:woodcutter:chalk'), 'the chalk');
   const z = getEntity(session.state, 'zone:trial-woodcutter').zone;
   const samples = session.state.entities.filter((e) => String(e.id).startsWith('sample:woodcutter:'));
   assert.ok(samples.length >= 2 && samples.every((e) => e.look === 'piece-2'), `the sample: ${samples.map((e) => e.look).join(' ')}`);
-  void z;
+  const wood = getEntity(session.state, 'npc:woodcutter');
+  for (const e of samples) assert.ok(Math.hypot(e.position.x - wood.position.x, e.position.z - wood.position.z) > 3, 'the sample is not under the woodcutter');
+  for (const e of samples) assert.ok(e.position.x > z.stem.x + z.stem.length / 2, 'by the far end of the stem');
 });
 
 test('the wave after a cut points at the pieces between the marks: each lights up and he counts its rings', async () => {

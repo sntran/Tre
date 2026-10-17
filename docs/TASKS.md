@@ -96,6 +96,8 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **After too few pieces, how to add a mark.** When the new stem comes after a cut with too few pieces, the woodcutter says "Cháu đi đến chỗ khác trên cây tre, rồi bấm nút để vạch thêm một dấu." (`woodcutter.addMark`), and a thin yellow band (`mark-glow`) glows at each ring where a mark can go, until the hero walks or makes a mark (`addMark` of the zone).
 
+**The example shows.** The sample of equal pieces lies by the far end of the stem, on the side of the talk, away from the woodcutter and from the hero who talks to him (before, it lay under them). The line "Anh cần hai khúc dài bằng nhau, như thế này." names the sample and the stem, so that the frame shows both.
+
 ### The bridge after the play test of #85 to #89 (#90)
 
 **No dead end.** When a put leaves a rest of the gap that no plank of the pile fits (the gap of 12 after 5 and 5, or after 3, 4, and 4, with planks of 3, 4, and 5), the world sends `stuck` at once, and the person says "Chỗ còn lại ngắn quá, không tấm nào vừa. Cháu nhấc tấm cuối lên, rồi thay tấm khác." (`mentor.bridge.stuck`; Nghé when the fisher is not at work). The last plank on the gap glows, and while it is the plank to take back (`zone.stuck`), a press with empty hands at the edge takes it back with no tap. After a plank that is too long, only the planks of the pile that fit the rest of the gap glow; when none fits, the line of the take-back comes in place of `shorter`, and the plank before the long one glows.
