@@ -22,7 +22,8 @@
 //     face: the point that they turn to; apart: a person this close to that entity moves a little away).
 //   gone { k }: the k-th thing of the demonstration goes (the rice ball that the hero ate).
 //   cue { zone }: Nghé shows the gap of the bridge (the hint of the place system).
-//   nudge { x, z, time }: Nghé goes next to a place and stretches its neck toward it.
+//   nudge { x, z, time, from }: Nghé goes next to a place (from: its offset, else 2.5 to the -x
+//     side) and stretches its neck toward it.
 //   end: the things of the demonstration go, and the script ends.
 export const WRITES = ['script', 'gesture', 'position', 'mentorMark', 'follow', 'item', 'zone', 'hidden', 'hands', 'carry', 'look', 'hop', 'events'];
 
@@ -129,7 +130,10 @@ function play(world, ent, dt, env) {
     if (st.glow) world.events.push({ type: 'glowThings', ids: st.glow.ids });
     if (st.nudge) {
       const friend = query(world, 'follow')[0];
-      if (friend && !friend.follow.goal) friend.follow.goal = { x: st.nudge.x - 2.5, z: st.nudge.z, face: faceOf(2.5, 0), act: 'stretch', nudge: true };
+      // from: where Nghé stands, from the point (the rice ball of a break: from the side, so that
+      // Nghé never stands in front of the hero, #94).
+      const off = st.nudge.from ?? { x: -2.5, z: 0 };
+      if (friend && !friend.follow.goal) friend.follow.goal = { x: st.nudge.x + off.x, z: st.nudge.z + off.z, face: faceOf(-off.x, -off.z), act: 'stretch', nudge: true };
     }
     if (st.unnudge) for (const f of query(world, 'follow')) if (f.follow.goal?.nudge) delete f.follow.goal;
     if (st.end) {

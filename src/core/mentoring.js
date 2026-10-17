@@ -33,6 +33,7 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const REST_TIME = 4.4; // seconds that the person and the hero sit in a break
 const BALL_UP = 0.1; // half blocks over the ground: the rice ball on its leaf
 const BALL_OUT = 1.6; // half blocks from the hero toward the camera
+const NGHE_SIDE = 2.2; // half blocks from the rice ball to Nghé, to the side of the view
 
 export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {}, nameOf = () => '' }) {
   const cfg = data.mentors;
@@ -651,7 +652,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     s.steps.push({ at: t + 0.8, sit: { ids: ['hero'], time: REST_TIME, act: 'eat', face: ball } });
     // At the height of the feet of the hero (on a deck, the ground is under it).
     s.steps.push({ at: t + 0.8, spawn: { look: 'rice-ball', x: ball.x, z: ball.z, ...(Number.isFinite(p.y) ? { y: p.y + BALL_UP } : { dy: BALL_UP }) } });
-    s.steps.push({ at: t + 1.4, nudge: { x: ball.x, z: ball.z, time: REST_TIME } });
+    // Nghé comes to the rice ball from the side of the view, never in front of the hero.
+    const side = { x: Math.cos(dir) * NGHE_SIDE, z: -Math.sin(dir) * NGHE_SIDE };
+    s.steps.push({ at: t + 1.4, nudge: { x: ball.x, z: ball.z, time: REST_TIME, from: side } });
     s.steps.push({ at: t + 2.4, look: { k: 0, look: 'rice-ball-half' }, sound: { sound: 'peck', id: 'hero' } });
     s.steps.push({ at: t + 3.6, look: { k: 0, look: 'rice-ball-bit' }, sound: { sound: 'peck', id: 'friend:nghe' } });
     s.steps.push({ at: t + 4.6, gone: { k: 0 } });
