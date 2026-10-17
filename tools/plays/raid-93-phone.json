@@ -1,0 +1,213 @@
+{
+ "about": "#93: a child who presses one time and looks: the ring of the pull, two short stones, the elder shows three quick presses at an empty post, four more misses, and Nghé helps to end the raid.",
+ "start": "?story=raid-first-sling",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "scouts"
+   },
+   "taps": 12
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "person": "scouts"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && !r.result && r.enemies.length >= 1); })()",
+   "timeout": 180
+  },
+  {
+   "read": 4
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && r.enemies.some((e) => e.state === 'wait')); })()",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "shot": "one-press-the-ring-of-the-pull-at-the-first-post"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'raid.miss.short')",
+   "timeout": 240
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r) && (r.result || (r.pull === 0 && r.stones.length === 0 && !(r.reload > 0))); })()",
+   "timeout": 240
+  },
+  {
+   "wait": 2
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r) && (r.result || (r.pull === 0 && r.stones.length === 0 && !(r.reload > 0))); })()",
+   "timeout": 240
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => x.key))"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'raid.demo.look')",
+   "timeout": 240
+  },
+  {
+   "wait": 2.2
+  },
+  {
+   "shot": "the-elder-shows-three-quick-presses-at-an-empty-post"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'raid.demo.back')",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => x.key))"
+  },
+  {
+   "shot": "the-stone-at-the-third-post-and-the-slingshot-back"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && r.enemies.some((e) => e.state !== 'gone' && e.state !== 'retreat')); })()",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 0.3,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'raid.help.nghe')"
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r) && (r.result || (r.pull === 0 && r.stones.length === 0 && !(r.reload > 0))); })()",
+   "timeout": 240
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && r.enemies.some((e) => e.state !== 'gone' && e.state !== 'retreat')); })()",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 0.3,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'raid.help.nghe')"
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r) && (r.result || (r.pull === 0 && r.stones.length === 0 && !(r.reload > 0))); })()",
+   "timeout": 240
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && r.enemies.some((e) => e.state !== 'gone' && e.state !== 'retreat')); })()",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 0.3,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'raid.help.nghe')"
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r) && (r.result || (r.pull === 0 && r.stones.length === 0 && !(r.reload > 0))); })()",
+   "timeout": 240
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && r.enemies.some((e) => e.state !== 'gone' && e.state !== 'retreat')); })()",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 0.3,
+   "if": "!tre.activeVillage.heard().some((x) => x.key === 'raid.help.nghe')"
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r) && (r.result || (r.pull === 0 && r.stones.length === 0 && !(r.reload > 0))); })()",
+   "timeout": 240
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'raid.help.nghe')",
+   "timeout": 240
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "shot": "nghe-runs-to-the-wall"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result ?? null)",
+   "timeout": 240
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result ?? null"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-scout-goes-away-the-raid-ends-with-help"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => x.key))"
+  }
+ ]
+}
