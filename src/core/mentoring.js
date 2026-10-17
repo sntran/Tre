@@ -107,9 +107,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   }
   // A stake of the child on the row that the row does not need (its two neighbors are at most the
   // space of the row apart), while the person has not shown the take back yet (#78); or null.
-  function tightStake(key, task) {
+  // again: also after the first time (with an empty pile, #92).
+  function tightStake(key, task, again = false) {
     const z = task?.place?.zone;
-    if (!defOf(key)?.lines?.tight || z?.rule !== 'line' || task.tz?.zone.tightShown) return null;
+    if (!defOf(key)?.lines?.tight || z?.rule !== 'line' || (task.tz?.zone.tightShown && !again)) return null;
     // All the stakes of the row (the two of the fisher are not in the items of the place).
     const row = query(world(), 'item').filter((e) => e.item.zone === z.id && !e.item.held && e.item.slot != null).sort((a, b) => a.item.slot - b.item.slot);
     for (let i = 1; i < row.length - 1; i++) {
@@ -119,6 +120,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return null;
   }
 
+  // The piles of a task have no thing that the hands can take.
+  const pileEmpty = (task) => task.piles.length > 0 && !task.piles.flatMap(itemsOf).some((e) => !e.item.held);
   // The things in a zone (entities).
   const itemsOf = (zoneEnt) => (zoneEnt?.zone.items ?? []).map((id) => getEntity(world(), id)).filter(Boolean);
   // The sizes of the things that the child can choose (on the piles and on the place).
@@ -535,10 +538,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       say(t, defOf(key).lines.full);
       point(t, task.at, 1.4);
       t += 2.5;
-    } else if ((move === 'show' || move === 'mark') && tightStake(key, task)) {
+    } else if ((move === 'show' || move === 'mark') && (tightStake(key, task) || (pileEmpty(task) && tightStake(key, task, true)))) {
       // A row that is too tight: one time in the task, the person shows on a stake that a tap and a
-      // press take it back (#78: the children never found that a stake of the row comes back).
-      const stake = tightStake(key, task);
+      // press take it back (#78: the children never found that a stake of the row comes back). With
+      // an empty pile, this is the hint each time: the step that the child can do now, never a
+      // stake from the empty pile (#92).
+      const stake = tightStake(key, task) ?? tightStake(key, task, true);
       if (task.tz) task.tz.zone.tightShown = true;
       say(t, defOf(key).lines.tight);
       point(t, stake.position, 2);
