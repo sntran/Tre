@@ -3198,9 +3198,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const heap = heapOf(e);
       if (e?.zone) zones.add(e.id);
       else if (heap?.zone?.rule === 'heap') zones.add(heap.id);
-      // A plank of a pile: a ring around all of its length (#85: the ring under a plank did not
-      // show, and the shorter planks did not look different).
-      else if (heap?.zone?.rule === 'pile' && e.position) long.push({ ...middleOf(e), y: e.position.y, r: e.item.size / 2 + 0.6 });
+      // A plank of a pile or of a gap: a ring around all of its length (#85: the ring under a plank
+      // did not show, and the shorter planks did not look different; #90: the last plank to take
+      // back).
+      else if ((heap?.zone?.rule === 'pile' || heap?.zone?.rule === 'span') && e.position) long.push({ ...middleOf(e), y: e.position.y, r: e.item.size / 2 + 0.6 });
       else rings.push(id);
     }
     // The rim goes around the things of a place too, also when they lie out of its rect.
