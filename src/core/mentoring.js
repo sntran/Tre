@@ -647,9 +647,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const dir = Number.isFinite(az) ? az : (p.facing ?? 0);
     const ball = { x: p.x + Math.sin(dir) * BALL_OUT, z: p.z + Math.cos(dir) * BALL_OUT };
     if (who) s.steps.push({ at: t + 0.2, point: { id: who, x: p.x, z: p.z, time: 0.6 } });
-    if (who) s.steps.push({ at: t + 0.8, sit: { ids: [who], time: REST_TIME } });
+    if (who) s.steps.push({ at: t + 0.8, sit: { ids: [who], time: REST_TIME, apart: 'hero' } });
     s.steps.push({ at: t + 0.8, sit: { ids: ['hero'], time: REST_TIME, act: 'eat', face: ball } });
-    s.steps.push({ at: t + 0.8, spawn: { look: 'rice-ball', x: ball.x, z: ball.z, dy: BALL_UP } });
+    // At the height of the feet of the hero (on a deck, the ground is under it).
+    s.steps.push({ at: t + 0.8, spawn: { look: 'rice-ball', x: ball.x, z: ball.z, ...(Number.isFinite(p.y) ? { y: p.y + BALL_UP } : { dy: BALL_UP }) } });
     s.steps.push({ at: t + 1.4, nudge: { x: ball.x, z: ball.z, time: REST_TIME } });
     s.steps.push({ at: t + 2.4, look: { k: 0, look: 'rice-ball-half' }, sound: { sound: 'peck', id: 'hero' } });
     s.steps.push({ at: t + 3.6, look: { k: 0, look: 'rice-ball-bit' }, sound: { sound: 'peck', id: 'friend:nghe' } });

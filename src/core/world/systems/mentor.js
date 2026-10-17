@@ -19,7 +19,7 @@
 //   back { item }: the thing that the person put goes back from the place to its own heap (the
 //     end of a first step).
 //   sit { ids, time, act, face }: the person and the hero sit (a break, #94; act eat: the hero eats;
-//     face: the point that they turn to).
+//     face: the point that they turn to; apart: a person this close to that entity moves a little away).
 //   gone { k }: the k-th thing of the demonstration goes (the rice ball that the hero ate).
 //   cue { zone }: Nghé shows the gap of the bridge (the hint of the place system).
 //   nudge { x, z, time }: Nghé goes next to a place and stretches its neck toward it.
@@ -32,6 +32,7 @@ import { handPut, backHome } from './work.js';
 import { cueHint } from './place.js';
 
 let made = 0;
+const SIT_APART = 2.6; // half blocks between the hero and a person who sits next to the hero
 
 export function mentor(world, dt, rng, env) {
   // A pointing person turns to what it points at, until the end of the gesture (a gesture with no
@@ -88,6 +89,18 @@ function play(world, ent, dt, env) {
       for (const id of st.sit.ids) {
         const who = getEntity(world, id);
         if (!who?.position) continue;
+        // A person in the body of the hero sits a little apart (the play of #94: the person sat in
+        // the same place, and the hero showed only as its outline).
+        const other = st.sit.apart ? getEntity(world, st.sit.apart)?.position : null;
+        if (other) {
+          const dx = who.position.x - other.x;
+          const dz = who.position.z - other.z;
+          const d = Math.hypot(dx, dz);
+          if (d < SIT_APART) {
+            const [ux, uz] = d > 0.1 ? [dx / d, dz / d] : [1, 0];
+            Object.assign(who.position, { x: other.x + ux * SIT_APART, z: other.z + uz * SIT_APART });
+          }
+        }
         if (st.sit.face) who.position.facing = faceOf(st.sit.face.x - who.position.x, st.sit.face.z - who.position.z);
         who.gesture = { act: st.sit.act ?? 'sit', t: st.sit.time };
       }
