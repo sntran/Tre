@@ -3229,9 +3229,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const zones = new Set();
     const rings = [];
     const long = [];
+    // A stake of the row of the fisher bobs too (#92: the children did not see which stake).
+    const bobs = [];
     for (const id of ids) {
       const e = getEntity(state, id);
       const heap = heapOf(e);
+      if (heap?.zone?.rule === 'line') bobs.push(id);
       if (e?.zone) zones.add(e.id);
       else if (heap?.zone?.rule === 'heap') zones.add(heap.id);
       // A plank of a pile or of a gap: a ring around all of its length (#85: the ring under a plank
@@ -3247,7 +3250,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const far = Math.max(0, ...z.items.map((t) => getEntity(state, t)?.position).filter(Boolean).map((p) => Math.hypot(p.x - spot.x, p.z - spot.z) + 1));
       return { ...spot, r: Math.max(spot.r, far) };
     });
-    emit({ type: 'cue', ids, spots: [...spots, ...long], rings });
+    emit({ type: 'cue', ids, spots: [...spots, ...long], rings, bobs });
   }
   function acted() {
     idleT = 0;

@@ -1577,7 +1577,7 @@ export async function mountVillage(ctx, params = {}) {
         figures.pulse(ev.id);
         return;
       case 'cue':
-        baseGlow = [ev.ids, ev.spots, ev.rings, []];
+        baseGlow = [ev.ids, ev.spots, ev.rings, ev.bobs ?? []];
         showGlow();
         return;
       case 'glowSeq':

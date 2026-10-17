@@ -1160,8 +1160,19 @@ function emptyPile(world, tz, line, row, held, dt) {
   // The narrow gaps glow again with each bring of stakes: the new stakes come with a pointer to the
   // gap, not only with more presses.
   markNarrow(world, z, line, row);
-  const last = Math.max(0, ...row.map((s) => s.item.slot ?? 0));
-  const n = Math.max(1, Math.ceil((line.zone.length - last) / line.zone.space));
+  // At once, the stakes for each gap that is too wide and for the rest to the float (#92: after the
+  // demonstration, one stake came after each put, nine times, and each was a walk to the pile).
+  // They lie next to the end of the row.
+  const n = stakesNeeded(line, row);
+  if (n <= 0) return;
+  if (!z.nearPile) {
+    const last = Math.max(0, ...row.map((s) => s.item.slot ?? 0));
+    const side = Math.sign(pile.zone.z - line.zone.z) || 1;
+    const x = line.zone.x + Math.min(line.zone.length, last + 2);
+    Object.assign(pile.zone, { x, z: line.zone.z + side * NEAR_ROW });
+    pile.position = { ...pile.position, x, z: line.zone.z + side * NEAR_ROW };
+    z.nearPile = true;
+  }
   for (let i = 0; i < n; i++) {
     const id = `stake:fisher:${z.made++}`;
     addEntity(world, { id, keep: true, item: { kind: 'stake', size: 1, task: tz.id.slice(5), zone: pile.zone.id, home: pile.zone.id, held: null, set: false }, position: { x: pile.zone.x, y: pile.zone.y, z: pile.zone.z, facing: 0 }, look: 'stake' });
@@ -1172,6 +1183,15 @@ function emptyPile(world, tz, line, row, held, dt) {
   if (fisher) say(world, 'call', fisher.id, { key: 'fisher.more', params: {}, happened: true });
   say(world, 'more', pile.id, { sound: 'plank-down', n, task: tz.id });
 }
+// The stakes that the row still needs at the gap of the fisher: the stakes for each gap that is too
+// wide, and the stakes from the last stake to the float (a stake stands at the float).
+export function stakesNeeded(line, row) {
+  const space = line.zone.space;
+  const slots = [...new Set([0, ...row.filter((s) => s.item.slot != null).map((s) => s.item.slot)])].sort((a, b) => a - b);
+  let n = 0;
+  for (let i = 1; i < slots.length; i++) n += Math.max(0, Math.ceil((slots[i] - slots[i - 1]) / space) - 1);
+  return n + Math.ceil((line.zone.length - slots.at(-1)) / space);
+}
 // The gaps of the row that are narrower than the gap of the fisher glow (a mark, rule 34).
 function markNarrow(world, z, line, row) {
   clearNarrow(world);
@@ -1181,7 +1201,9 @@ function markNarrow(world, z, line, row) {
   slots.forEach((a, i) => {
     const b = slots[i + 1];
     if (b === undefined || b === a || b - a >= line.zone.space) return;
-    addEntity(world, { id: `why:fisher:narrow:${i}`, keep: true, position: { x: line.zone.x + a, y: line.zone.y, z: line.zone.z, facing: Math.PI / 2 }, look: `over-${Math.max(1, Math.round(b - a))}` });
+    // A bright frame on the water around the narrow gap, as clear as the ring of a cue (#92: the
+    // children did not see the flat marks of #88).
+    addEntity(world, { id: `why:fisher:narrow:${i}`, keep: true, position: { x: line.zone.x + a, y: line.zone.y + 0.1, z: line.zone.z, facing: Math.PI / 2 }, look: `gap-frame-${Math.max(1, Math.round(b - a))}` });
     // The stake at the end of a narrow gap glows too, until the child takes a stake: a gap of one
     // half block is too small to see.
     if (!FISHER_STAKES.has(stakes[i].id)) glow.push(stakes[i].id);
@@ -1317,6 +1339,7 @@ function tickLay(world, tz, dt) {
   say(world, 'counted', basket.id, { sound: 'pickup' });
 }
 
+const NEAR_ROW = 3; // half blocks from the row of the fisher to the stakes that he brings (#92)
 const ADD_MARK_WALK = 1.5; // half blocks: a walk this long ends the glow of the free rings
 function tickStem(world, tz, dt) {
   // The free rings glow until the hero walks or makes a mark (#91).
