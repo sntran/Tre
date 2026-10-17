@@ -4,9 +4,13 @@ import { readFileSync } from 'node:fs';
 import { newMentor, newMemory, onCommit } from '../src/core/mentor.js';
 import { load } from './helpers.js';
 import { runHeadless } from './story-run.js';
-import { getEntity, query } from '../src/core/world/state.js';
 import { spokenOf } from '../src/core/voices.js';
 import { fadeFor, SIGHT_R } from '../src/world/fade.js';
+import { createTileMap } from '../src/core/tilemap.js';
+import { createWorldState, addEntity, command, getEntity, query } from '../src/core/world/state.js';
+import { step, STEP } from '../src/core/world/step.js';
+import { envFor } from '../src/core/world/env.js';
+import { addHero, addFriend } from '../src/core/world/populate.js';
 
 const cfg = load('data/world/mentors.json');
 const vi = load('i18n/vi.json');
@@ -148,4 +152,28 @@ test('a card waits while a person does a move and until the voice is quiet, so t
   const village = readFileSync(new URL('../src/ui/village.js', import.meta.url), 'utf8');
   assert.match(village, /if \(speaking\(\) \|\| spoken \|\| voiceQueue\.size\(\)\) voiceAt = performance\.now\(\);/);
   assert.match(village, /performance\.now\(\) - Math\.max\(printGone, voiceAt\) < PRINT_GAP \|\| query\(state, 'script'\)\.length/);
+});
+
+test('Nghé steps out of a heap of a task that goes on (the bunches of the healer, #94)', () => {
+  const tiles = load('data/tiles.json').types;
+  const open = { width: 30, height: 30, legend: { '.': 'grass' }, layers: { ground: Array(30).fill('.'.repeat(30)), height: Array(30).fill('2'.repeat(30)), objects: [] } };
+  const env = envFor(createTileMap(open, tiles));
+  const w = createWorldState({ seed: 1, clock: { minutes: 600 } });
+  addHero(w, env, { x: 10, y: 15, facing: Math.PI / 2 });
+  addFriend(w, env, 'nghe');
+  addEntity(w, { id: 'zone:trial-healer', zone: { id: 'trial-healer', rule: 'trial', task: 'trial-healer', items: [], done: false }, position: { x: 20, y: 4, z: 30, facing: 0 } });
+  const items = [];
+  for (let k = 0; k < 4; k++) {
+    const id = `herb:${k}`;
+    items.push(id);
+    addEntity(w, { id, item: { kind: 'herb', size: 1, task: 'trial-healer', zone: 'bed', held: null, set: false }, position: { x: 30 + k * 0.8, y: 4, z: 30, facing: 0 }, look: 'herb' });
+  }
+  addEntity(w, { id: 'zone:bed', zone: { id: 'bed', task: 'trial-healer', rule: 'heap', accepts: 'herb', items, x: 30, y: 4, z: 30 }, position: { x: 30, y: 4, z: 30, facing: 0 } });
+  command(w, { type: 'place', id: 'hero', x: 26, z: 30 });
+  step(w, STEP, env);
+  const nghe = getEntity(w, 'friend:nghe');
+  Object.assign(nghe.position, { x: 31, z: 30 });
+  for (let i = 0; i < 15; i++) step(w, STEP, env);
+  const near = Math.min(...items.map((id) => getEntity(w, id).position).map((p) => Math.hypot(p.x - nghe.position.x, p.z - nghe.position.z)));
+  assert.ok(near > 1.5, `Nghé is out of the bunches: ${near.toFixed(2)}`);
 });

@@ -40,7 +40,14 @@ function workRects(world) {
   const out = [];
   for (const z of query(world, 'zone')) {
     const r = z.zone.rect;
-    if (r && z.zone.task?.startsWith('trial-') && !getEntity(world, `zone:${z.zone.task}`)?.zone.done) out.push(r);
+    const open = z.zone.task?.startsWith('trial-') && !getEntity(world, `zone:${z.zone.task}`)?.zone.done;
+    if (r && open) out.push(r);
+    // A heap of a task has no rect: the box of its things (the play of #94: Nghé stood in the
+    // bunches of the healer).
+    if (!r && open && z.zone.rule === 'heap') {
+      const ps = z.zone.items.map((id) => getEntity(world, id)?.position).filter(Boolean);
+      if (ps.length) out.push({ x0: Math.min(...ps.map((q) => q.x)) - 0.5, x1: Math.max(...ps.map((q) => q.x)) + 0.5, z0: Math.min(...ps.map((q) => q.z)) - 0.5, z1: Math.max(...ps.map((q) => q.z)) + 0.5 });
+    }
     const s = z.zone.rule === 'trial' && !z.zone.done ? z.zone.stem : null;
     if (s) {
       // The pieces of a cut lie in rows two half blocks apart on both sides of the line of the stem.
