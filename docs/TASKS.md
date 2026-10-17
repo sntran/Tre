@@ -120,6 +120,20 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **The demonstration has a gap.** The demonstration of the bridge puts its planks across a small gap of its own length: a strip of water between two stones (`demo-gap-<n>`, the `target` of `bridge.demo` in `data/world/mentors.json`), on a free piece of land next to the child with room for all of it (`demoSpot` with a length). The view frames it until it ends.
 
+### Help and looks after the play test of #85 to #89 (#94)
+
+**A break is a real break.** The move `break` sits the person and the hero down; a rice ball comes into the hands of the hero, the hero eats it (about four seconds; the pose `eat`), and Nghé comes for a bite. Then the next help comes at once: the demonstration (one time in a task), else a smaller task, else the mark (`restSteps` and `nextHelp` in `src/core/mentoring.js`; the steps `sit` and `gone` of `src/core/world/systems/mentor.js`). Only the frustration has a break: misses in a row with the signs of haste (fast, mashing, or resets), or leaving after a miss, never slow, careful tries (`isHasty` in `src/core/mentor.js`). The picture of a station where the child has nothing more to do is the next help, with no line of a break.
+
+**No praise after a mistake.** The line of `raise` says only what comes next ("Lần sau có việc lớn hơn cho cháu."), and the move never comes right after a try that was not right (the person fixed it).
+
+**The line of the hero is read aloud.** In a talk with one choice (a line of the hero as a button), the voice says the line and then the choice, in the voice of the hero (`spokenOf` in `src/core/voices.js`).
+
+**The hero and Nghé stand beside the work.** A stand point of a place that is between the camera and the place (the mat of the teacher, the basket of the healer) goes to a side of the place, as the camera sees it (`besideWork` in the session), and a hero who stops in front of the place steps to that side one time (`stepFromFront`). Nghé stays out of a band in front of each place of a task that goes on, toward the camera (`frontBand` in `src/core/world/systems/follow.js`; the angle of the view comes from `env.view`). A row of the fisher, a gap of the bridge, and a place where the hero works inside keep their stand points.
+
+**No large dotted roof.** A building never fades for the hero alone: the outline of the hero shows through it (#87). It fades only for a point of the work of an open task or its person, and only near the lines of sight of those points (`fadeFor` and `SIGHT_R` in `src/world/fade.js`; the blue of the fade texture and `nearSight` in `src/render/voxel.js`), so that the rest of the roof is drawn whole.
+
+**One card at a time, with its voice.** A card waits while the voice speaks, 3 seconds after its last line, and while a person does a move (a script of a mentor or of an example), so that the voice of a card comes with its card and never between two lines of a person.
+
 ### The smaller problems of the play test of #85 (#89)
 
 1. **The practice of grade 1:** "n thêm 10" of `math.count.120` uses n from 10 to 89 (`tens` of the level in `data/skills.json`; 1.NBT.C.5). The check of the top level near mastery waits for `almostAfter` answers (4, `data/config/learning.json`), so that two right answers do not take a new skill to its top level. The hint names the bundles of the teacher: "Thêm 10 là thêm một bó mười que." and "Ví dụ: 3 bó và 4 que là 34. Thêm một bó là 44."
