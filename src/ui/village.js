@@ -1435,8 +1435,13 @@ export async function mountVillage(ctx, params = {}) {
   const printQueue = [];
   // The cards come one at a time, at least PRINT_GAP apart, and never while a person speaks (#89:
   // the market line, the first card, and two more cards came in one moment).
-  const PRINT_GAP = 3000; // milliseconds from the end of a card to the next card
+  const PRINT_GAP = 3000; // milliseconds from the end of a card, or of the last line, to the next card
   let printGone = -Infinity;
+  // The voice of a card comes with its card, never between two lines of a person (#94: during the
+  // demonstration of the fisher, "Như thế này nhé.", two cards, and "Giờ đến lượt cháu." came
+  // together): the cards wait while the voice speaks, PRINT_GAP after its last line, and while a
+  // person does a move (a script of a mentor or of an example).
+  let voiceAt = -Infinity;
   const dropPrint = () => {
     printCard?.remove();
     printCard = null;
@@ -1447,8 +1452,9 @@ export async function mountVillage(ctx, params = {}) {
     // A screen opens over the card: the card goes (the print stays in the notebook), so that it is
     // not a target next to the buttons of the screen.
     if (printCard && modal) dropPrint();
+    if (speaking() || spoken || voiceQueue.size()) voiceAt = performance.now();
     if (printCard || !printQueue.length || box || busy || modal) return;
-    if (performance.now() - printGone < PRINT_GAP || speaking() || spoken || voiceQueue.size()) return;
+    if (performance.now() - Math.max(printGone, voiceAt) < PRINT_GAP || query(state, 'script').length) return;
     showPrint(printQueue.shift());
   }
   function showPrint(ev) {

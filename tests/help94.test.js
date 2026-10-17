@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { newMentor, newMemory, onCommit } from '../src/core/mentor.js';
 import { load } from './helpers.js';
 import { runHeadless } from './story-run.js';
@@ -143,3 +144,8 @@ test('a roof never fades for the hero alone, and fades only near the lines of si
   assert.ok(SIGHT_R > 1 && SIGHT_R < 4, 'the tube is about as wide as a place of the work');
 });
 
+test('a card waits while a person does a move and until the voice is quiet, so that its voice comes with it (#94)', () => {
+  const village = readFileSync(new URL('../src/ui/village.js', import.meta.url), 'utf8');
+  assert.match(village, /if \(speaking\(\) \|\| spoken \|\| voiceQueue\.size\(\)\) voiceAt = performance\.now\(\);/);
+  assert.match(village, /performance\.now\(\) - Math\.max\(printGone, voiceAt\) < PRINT_GAP \|\| query\(state, 'script'\)\.length/);
+});
