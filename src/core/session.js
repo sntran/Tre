@@ -1026,6 +1026,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       startFarewell();
       return;
     }
+    // A raid again from the elder (#93): the raid starts at its wall.
+    if (c.open === 'raid') {
+      startRaid(c.id);
+      return;
+    }
     // A trial is work in the village: its things lie in the world, and no screen opens.
     if (c.open === 'trial') {
       startTrial(c.id);
@@ -1778,6 +1783,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const t of def.tools ?? ['sling']) profile.flags[`raid.used.${t}`] = Number(profile.flags[`raid.used.${t}`] ?? 0) + 1;
     const raid = createRaid(data.raids, id, raidLevel(data.raids, profile.grade), lossLevel(profile), teach, easy);
     slingPull = null;
+    raidTeach = { sling: teach.includes('sling') || Boolean(profile.flags[`raid.${id}.again`]), singles: 0, demo: null, shown: false, misses: 0, time: 0, help: null };
     setupRaid(state, raid, def, env, { helpers: data.raids.helperLooks, companion: data.raids.companions?.[def.companion] });
     placeHero(def.wall[0], def.wall[1]);
     worldCommand(state, { type: 'face', id: 'hero', x: raid.wall.x + raid.dir.x * 10, z: raid.wall.z + raid.dir.z * 10 });
@@ -1876,10 +1882,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   let raidMisses = 0;
   function raidLand(ev) {
     const raid = raidEnt()?.raid;
-    if (!raid || raid.result) return;
+    if (!raid || raid.result || ev.demo) return;
+    const teach = raidTeach;
     if (ev.hit) {
       raidMisses = 0;
+      teach.singles = 0;
       return;
+    }
+    // Two stones in a row that were short and came from one press each: the elder shows the
+    // quick presses (#93). After that, four more misses bring the help of Nghé.
+    if (teach.shown) {
+      teach.misses += 1;
+      if (teach.misses >= RAID_HELP_MISSES) raidHelp();
     }
     const front = raid.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone' && e.state !== 'stunned')
       .sort((a, b) => along(raid, a) - along(raid, b))[0];
@@ -1889,6 +1903,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const nghe = getEntity(state, 'friend:nghe');
     const who = near ? coach : nghe && !nghe.hidden ? nghe : null;
     const short = ev.count < along(raid, front);
+    teach.singles = short && ev.count <= POST_STEP ? teach.singles + 1 : 0;
+    if (teach.sling && !teach.shown && !teach.demo && teach.singles >= 2 && near) {
+      raidDemo(raid, coach);
+      return;
+    }
     if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: short ? 'raid.miss.short' : 'raid.miss.long', params: {} });
     raidMisses += 1;
     if (raidMisses < 2 || !near) return;
@@ -1902,6 +1921,68 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     coach.gesture = { act: 'point', x: at.x, z: at.z, t: 1.8, ...(post ? { then: { act: 'point', x: post.x, z: post.z, t: 2.2 } } : {}) };
     emit({ type: 'glowSeq', ids: [front.id, ...upTo.map((q) => `post:${raid.posts.indexOf(q) + 1}`)] });
   }
+  // The first raid of the slingshot (#93): { sling (the raid teaches it), singles (short stones of
+  // one press in a row), demo (the shot of the elder now), shown, misses (after the demonstration),
+  // time (seconds in the raid), help (the tick when Nghé and the child drive the enemy away) }.
+  let raidTeach = { sling: false, singles: 0, demo: null, shown: false, misses: 0, time: 0, help: null };
+  const DEMO_PRESS = 0.6; // seconds between two presses of the elder
+  const RAID_HELP_MISSES = 4;
+  const RAID_HELP_TIME = 180; // seconds in the raid
+  // The elder takes the slingshot for one shot at a post with no enemy, and presses fast while he
+  // says the count: the ring goes to the third post, and the stone flies there. No numeral shows.
+  function raidDemo(raid, coach) {
+    const free = (k) => k * POST_STEP <= raid.sling.max && !raid.enemies.some((e) => e.state !== 'gone' && e.state !== 'retreat' && Math.abs(along(raid, e) - k * POST_STEP) <= 4);
+    const k = [3, 2, 4].find(free) ?? 3;
+    slingPull = null;
+    raidTeach.demo = { t: 0, k, posts: 0, coach: coach.id };
+    emit({ type: 'open', screen: 'callout', id: coach.id, textKey: 'raid.demo.look', params: {} });
+  }
+  function stepRaidDemo() {
+    const teach = raidTeach;
+    const raid = raidEnt()?.raid;
+    if (!raid || raid.result) return;
+    teach.time += STEP;
+    if (teach.sling && !teach.help && teach.time >= RAID_HELP_TIME) raidHelp();
+    if (teach.help !== null && state.tick >= teach.help) {
+      teach.help = Infinity;
+      order({ act: 'drive' });
+    }
+    const d = teach.demo;
+    if (!d) return;
+    d.t += STEP;
+    const due = Math.min(d.k, Math.floor((d.t - 1.2) / DEMO_PRESS) + 1);
+    while (d.posts < due) {
+      d.posts += 1;
+      emit({ type: 'open', screen: 'callout', id: d.coach, textKey: `num.${d.posts}`, params: {} });
+      emit({ type: 'pulse', id: 'ring:pull' });
+      emit({ type: 'pulse', id: `post:${d.posts}` });
+    }
+    const fire = 1.2 + (d.k - 1) * DEMO_PRESS + 1;
+    if (!d.fired && d.t >= fire) {
+      d.fired = true;
+      order({ act: 'shoot', count: d.k * POST_STEP, unit: POST_STEP, demo: true });
+    }
+    if (d.t >= fire + 2.5) {
+      emit({ type: 'open', screen: 'callout', id: d.coach, textKey: 'raid.demo.back', params: {} });
+      teach.demo = null;
+      teach.shown = true;
+      teach.singles = 0;
+    }
+  }
+  // Nghé runs to the wall, and the child and Nghé drive the enemy away together: the raid ends as
+  // won with help (#93: the story never stops at a raid).
+  function raidHelp() {
+    const teach = raidTeach;
+    const raid = raidEnt()?.raid;
+    if (!raid || raid.result || teach.help !== null) return;
+    teach.help = state.tick + Math.round(1.6 / STEP);
+    const nghe = getEntity(state, 'friend:nghe');
+    if (nghe && !nghe.hidden) {
+      const at = { x: raid.wall.x + raid.dir.x * 2, z: raid.wall.z + raid.dir.z * 2 };
+      if (nghe.follow) nghe.follow.goal = { x: at.x, z: at.z, face: Math.atan2(raid.dir.x, raid.dir.z) };
+      emit({ type: 'open', screen: 'callout', id: nghe.id, textKey: 'raid.help.nghe', params: {} });
+    }
+  }
   // The end of a raid: a win gives its flags, its gifts, and its talks; a loss keeps the raid for
   // another time (the enemies took some rice, and nothing else).
   function raidEnd(ev) {
@@ -1910,8 +1991,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const def = data.raids.raids[r?.raid.id];
     if (!def) return;
     profile.stats ??= {};
-    log('raid', { raid: r.raid.id, won: Boolean(ev.won) });
-    if (ev.won) {
+    log('raid', { raid: r.raid.id, won: Boolean(ev.won), help: Boolean(ev.helped) });
+    // A raid won with help can come again from the elder; a raid won alone ends that.
+    if (ev.helped) profile.flags[`raid.${r.raid.id}.again`] = true;
+    else if (ev.won) delete profile.flags[`raid.${r.raid.id}.again`];
+    const replay = Boolean(ev.won && [].concat(def.win?.set ?? []).length && [].concat(def.win.set).every((f) => profile.flags[f]));
+    if (ev.won && replay) {
+      // A raid played again from the elder: no second gift, note, or talk.
+      profile.stats.battlesWon = (profile.stats.battlesWon ?? 0) + 1;
+      save('raid');
+    } else if (ev.won) {
       profile.stats.battlesWon = (profile.stats.battlesWon ?? 0) + 1;
       grow('raid');
       const win = def.win ?? {};
@@ -2049,6 +2138,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // once after a tap on the hero. A child counts the presses, not the time.
     const r = raidEnt()?.raid;
     if (!r || r.result || !r.tools.includes('sling')) return null;
+    // The slingshot is in the hands of the elder (#93).
+    if (raidTeach.demo) return null;
     return { act: 'sling', icon: 'sling', target: 'hero', run: () => {
       const most = Math.floor(r.sling.max / POST_STEP);
       slingPull = { posts: Math.min(most, (slingPull?.posts ?? 0) + 1), t: 0 };
@@ -2069,7 +2160,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function stepSling() {
     const r = raidEnt()?.raid;
     // The posts up to the pull light up, and a ring lies on the road at the count.
-    if (r) r.pull = slingPull ? pullCount() : dragPull;
+    if (r) r.pull = raidTeach.demo ? raidTeach.demo.posts * POST_STEP : slingPull ? pullCount() : dragPull;
     if (!slingPull) return;
     slingPull.t += STEP;
     if (slingPull.t >= FIRE_WAIT) fireSling();
@@ -4018,6 +4109,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The picture of the button, as the child sees it (about each 0.1 seconds).
     if (state.tick % 3 === 0 && !screen) button();
     stepSling();
+    stepRaidDemo();
     stepFarewell();
     stepCheer();
     checkSteps();

@@ -68,6 +68,14 @@
         },
         {
           "when": {
+            "flags": [
+              "raid.scouts.again"
+            ]
+          },
+          "dialogue": "elder.raid.again"
+        },
+        {
+          "when": {
             "notFlags": [
               "giong.farewell"
             ]

@@ -9,7 +9,7 @@
 export const WRITES = ['raid', 'orders', 'over', 'horns', 'position', 'look', 'act', 'carry', 'item', 'zone', 'follow', 'raider', 'hot', 'source', 'raidTap', 'raidThing', 'fixedThing', 'raidAway', 'hidden', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
-import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, setTraps, trapPut, stoneAt, torchAt, along, releaseHold, offRoad, KEEP_SIDE } from '../raids.js';
+import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, driveAway, setTraps, trapPut, stoneAt, torchAt, along, releaseHold, offRoad, KEEP_SIDE } from '../raids.js';
 import { packHeap } from './work.js';
 
 const OVER = 2.5; // seconds: the things of the raid stay after the end
@@ -62,7 +62,8 @@ export function raid(world, dt, rng, env) {
 function order(world, r, o, hero, friend) {
   const raid = r.raid;
   let evs = [];
-  if (o.act === 'shoot') evs = shoot(raid, o.count, o.unit ?? 1);
+  if (o.act === 'shoot') evs = shoot(raid, o.count, o.unit ?? 1, Boolean(o.demo));
+  else if (o.act === 'drive') evs = driveAway(raid);
   else if (o.act === 'release') evs = releaseHold(raid, o.tool);
   else if (o.act === 'predict') evs = predict(raid, o.post);
   else if (o.act === 'bar') evs = barGate(raid);

@@ -97,6 +97,13 @@ The second soldier raid has a jar and a brazier, and the boss adds the small for
 
 Tests: `tests/raid86.test.js`, `tests/sounds.test.js`.
 
+## The first raid after the play test of #85 to #89 (#93)
+
+- **The elder shows the quick presses.** In the first raid of the slingshot (or a raid again from the elder), after two stones in a row that were short and came from one press each, the elder takes the slingshot for one shot: "Xem ông này.", and he presses fast while he counts "một, hai, ba". The ring of the pull goes to the third post (or the second or fourth, where no enemy stands), and his stone flies there. His stone never hits and is no try of the child (no skill event). Then: "Cháu bấm nhanh như thế nhé." While he shoots, the big button has no act.
+- **The ring of the pull shows.** The ring on the road is wide and solid yellow with ink, and the ring and the post of the pull pulse at each press.
+- **The first raid ends.** After the demonstration and four more misses, or three minutes in the raid, Nghé runs to the wall ("Bạn ơi, bọn mình cùng đuổi nó đi!"), and the child and Nghé drive the enemies away together: the raid ends as won with help (`driveAway` in `src/core/world/raids.js`; the record `raid` has `help`). The story goes on. The raid can come again from the elder (`raid.<id>.again`, the talk `elder.raid.again`), with no second gift.
+- **The pace of a child.** For grades K to 2 the stone flies 2.4 seconds after the last press (1.8 from grade 3). No measure of the pace of a child who presses and counts aloud was found; 2.4 seconds is a choice with room for a child of six who says each number before the next press.
+
 ## Skill events
 
 Each commit is one skill event for the learner (the child never sees it):

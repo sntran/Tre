@@ -492,6 +492,11 @@ function tickStones(raid, dt, out) {
     const at = { x: raid.wall.x + raid.dir.x * s.count, z: raid.wall.z + raid.dir.z * s.count };
     // The enemy where the stone lands, at that moment: the count along the road, and anywhere in
     // the lane of the road (an enemy that walks a little to the side is on the road too, #50).
+    if (s.demo) {
+      out.push({ type: 'land', id: s.id, at, count: s.count, hit: false, demo: true, sound: 'thud' });
+      raid.marks.push({ id: `mark:${s.id}`, ...at, t: MARK, look: 'stone' });
+      continue;
+    }
     const onLane = (e) => Math.abs(along(raid, e) - s.count) <= raid.sling.hit && Math.abs(across(raid, e)) <= LANE;
     const target = raid.enemies.filter((e) => alive(e) && e.state !== 'stunned' && onLane(e)).sort((a, b) => dist(a, at) - dist(b, at))[0] ?? null;
     let solved = false;
@@ -603,9 +608,16 @@ function skill(raid, what, r) {
 // and the stone lands exactly there. Return the events (none when the slingshot is not ready).
 // ball: what flies (a rice ball for the creatures of the river), from the data of the raid.
 // unit: half blocks of one step of the pull (5: a press of the big button is one post, #55).
-export function shoot(raid, count, unit = 1) {
-  if (raid.result || raid.reload > 0 || !(count >= 1)) return [];
+// demo: a stone of a person who shows the quick presses (#93): it never hits, and it sends no skill
+// event and no prediction.
+export function shoot(raid, count, unit = 1, demo = false) {
+  if (raid.result || (raid.reload > 0 && !demo) || !(count >= 1)) return [];
   const flight = flightFor(count, raid.sling);
+  if (demo) {
+    const s = { id: `stone:${++raid.made}`, count: flight.count, flight, t: 0, first: false, unit, demo: true };
+    raid.stones.push(s);
+    return [{ type: 'shoot', id: s.id, count: flight.count, sound: 'sling', demo: true }];
+  }
   raid.reload = raid.sling.reload;
   // The first shot of the raid carries the prediction; a pull with no tap on a post skips it.
   const first = raid.shots === 0;
@@ -725,6 +737,23 @@ export function pour(raid, sourceId, at) {
     out.push(skill(raid, 'chain', { solved: shocked.length > 0, efficient: shocked.length > 1, first: true, parts: [shocked.length], target: shocked.length }));
     return out;
   }
+  return out;
+}
+
+// The child and Nghé drive the enemies away together (#93: a child who never hit stayed in the first
+// raid with no end): every enemy walks away, and the raid ends as won with help.
+export function driveAway(raid) {
+  if (raid.result) return [];
+  const out = [{ type: 'drive', id: 'raid', sound: 'drum-small' }];
+  for (const e of raid.enemies) {
+    if (e.state === 'gone') continue;
+    e.state = 'retreat';
+    e.hits = e.max;
+    out.push({ type: 'retreat', id: e.id, calm: false });
+  }
+  raid.helped = true;
+  raid.result = 'won';
+  out.push({ type: 'end', id: 'raid', won: true, helped: true, taken: { ...raid.taken }, sound: 'drum' });
   return out;
 }
 

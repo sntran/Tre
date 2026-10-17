@@ -193,6 +193,14 @@
       }
     },
     {
+      "id": "elder.raid.again",
+      "_about": "#93: a raid that the child won with the help of Nghé can come again from the elder.",
+      "start": "n1",
+      "nodes": {
+        "n1": { "speaker": "elder", "textKey": "dlg.elder.raid.again.n1", "effects": [{ "open": "raid", "id": "scouts" }] }
+      }
+    },
+    {
       "id": "woodcutter.trial",
       "_about": "#67: short lines, one new word in each line, with its thing shown (names).",
       "start": "n1",

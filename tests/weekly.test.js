@@ -108,10 +108,10 @@ test('a raid gives no reason for its misses and no person who helped (#55)', () 
       out.push({ type: 'help', t: t + 10 * S + i * S + 500, variant: 'base', task: 'raid-scouts', diagnosis: 'missing', move: 'mark', pBefore: null, success: true, efficient: true });
     }
     // The raid ends with a loss, a little after the last miss.
-    out.push({ type: 'raid', t: t + 18 * S, variant: 'base', raid: 'scouts', won: false });
+    out.push({ type: 'raid', t: t + 18 * S, variant: 'base', raid: 'scouts', won: false, help: false });
     out.push(session(t, t + 120 * S));
   }
-  out.push({ type: 'raid', t: MON + 4 * DAY_MS, variant: 'base', raid: 'river', won: true });
+  out.push({ type: 'raid', t: MON + 4 * DAY_MS, variant: 'base', raid: 'river', won: true, help: false });
   for (const ev of out.filter((e) => e.type === 'raid')) checkEvent(ev, schema);
   const note = weeklyNote(rollupEvents(out, opts), profile(), W, data);
   const keys = note.lines.flatMap((l) => (l.parts ?? [l]).map((x) => x.key));

@@ -91,7 +91,7 @@
       "solved": "bool"
     },
     "set": { "activity": "id", "end": ["done", "stay", "back"] },
-    "raid": { "raid": "id", "won": "bool" },
+    "raid": { "raid": "id", "won": "bool", "help": "bool" },
     "quiz": { "skill": "id", "fact": "id?", "known": "bool", "correct": "bool" }
   },
   "signals": {
