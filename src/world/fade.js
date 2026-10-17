@@ -93,6 +93,23 @@ function rayRange(b, o, d) {
   return [t0, t1];
 }
 
+// What a thing of the terrain does for the points that the child must see: { hit, full, local }.
+// points: the hero first, then the points of the work of an open task and its person (work: true).
+// covers(p): the thing covers the point. A building never fades for the hero alone: the outline of
+// the hero shows through it (#87). It fades only for a point of the work or of its person, and only
+// near the lines of sight of those points (local), so that the rest of the roof is drawn whole (#94:
+// a roof showed as dots over half of the screen). Another thing (a tree, a stack) fades for the
+// hero, and fully for a point of the work.
+export function fadeFor(building, points, covers) {
+  const full = points.some((p) => p.work && covers(p));
+  if (building) return { hit: full, full, local: full };
+  return { hit: full || points.some((p) => !p.work && covers(p)), full, local: false };
+}
+// World units from the line of sight of a point of the work: in this tube a building fades (local).
+export const SIGHT_R = 2.2;
+// The most points of the work that a local fade keeps (the shader has room for this many).
+export const SIGHT_MAX = 8;
+
 // One step of a fade toward 1 (in front) or 0, with a snap at the ends.
 export function stepFade(fade, hit, dt) {
   const target = hit ? 1 : 0;

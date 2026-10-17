@@ -14,7 +14,7 @@ import { pickGround } from '../world/terrain.js';
 import { C } from './palette.js';
 import { night } from './figure3d.js';
 import { rendererFor } from './gl.js';
-import { inFront, hidesHero, stepFade, stippleOf, BUILDINGS, FADE_HOLES, FADE_OUTLINE } from '../world/fade.js';
+import { inFront, hidesHero, stepFade, stippleOf, fadeFor, toCamera, BUILDINGS, FADE_HOLES, FADE_OUTLINE, SIGHT_R, SIGHT_MAX } from '../world/fade.js';
 import { VIEW, viewSize } from '../world/view.js';
 
 export function hasWebGL() {
@@ -41,6 +41,24 @@ const FADE_GLSL = `
     if (owner < 0.5) return 0.0;
     vec4 t = texture2D(uFade, vec2((mod(owner, 256.0) + 0.5) / 256.0, (floor(owner / 256.0) + 0.5) / 256.0));
     return t.r + t.g;
+  }
+  // The fade of a building is local (#94): only near the lines of sight of the work (blue).
+  float localOf(float owner) {
+    if (owner < 0.5) return 0.0;
+    return texture2D(uFade, vec2((mod(owner, 256.0) + 0.5) / 256.0, (floor(owner / 256.0) + 0.5) / 256.0)).b;
+  }`;
+// The lines of sight of the points of the work (world units): 1 for a point near one of them, in
+// front of its point (toward the camera), else 0.
+const SIGHT_GLSL = `
+  uniform vec3 uSeen[${SIGHT_MAX}]; uniform float uSeenN; uniform vec3 uToCam;
+  float nearSight(vec3 w) {
+    for (int i = 0; i < ${SIGHT_MAX}; i++) {
+      if (float(i) >= uSeenN) break;
+      vec3 d = w - uSeen[i];
+      float t = dot(d, uToCam);
+      if (t > 0.0 && length(d - t * uToCam) < ${SIGHT_R.toFixed(2)}) return 1.0;
+    }
+    return 0.0;
   }`;
 // The green of a full fade: with it, the fade times FADE_HOLES is 1, so that all the dots go.
 const FULL_G = Math.round(255 * (1 / FADE_HOLES - 1));
@@ -237,7 +255,7 @@ function flatMaterial(uniforms) {
     vertexShader: `
       attribute vec3 tone; attribute float owner; attribute vec2 sway; attribute float mist;
       attribute vec4 surface; attribute vec2 soil; attribute vec4 strip;
-      varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
+      varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW; varying float vLocal;
       varying vec4 vSurface; varying vec2 vSoil; varying vec4 vStrip;
       ${FADE_GLSL}
       ${PAPER_GLSL}
@@ -248,6 +266,7 @@ function flatMaterial(uniforms) {
         vSoil = soil;
         vStrip = strip;
         vFade = fadeOf(owner);
+        vLocal = localOf(owner);
         vec4 w = modelMatrix * vec4(position, 1.0);
         vW = w.xyz;
         vPaper = paperOf(w.xyz, mist);
@@ -255,16 +274,18 @@ function flatMaterial(uniforms) {
       }`,
     fragmentShader: `
       uniform vec3 uPaper; uniform float uPuddles;
-      varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
+      varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW; varying float vLocal;
       varying vec4 vSurface; varying vec2 vSoil; varying vec4 vStrip;
       ${STAGES_GLSL}
       ${GROUND_GLSL}
+      ${SIGHT_GLSL}
       // A 4 x 4 ordered dither: 0 to 1 in a fixed pattern over the screen.
       float bayer2(vec2 a) { a = floor(a); return fract(a.x / 2.0 + a.y * a.y * 0.75); }
       float bayer4(vec2 a) { return bayer2(0.5 * a) * 0.25 + bayer2(a); }
       void main() {
         // A faded thing keeps a part of its dots: a soft see-through shape, not lines (#53).
-        if (vFade > 0.001 && vFade * ${FADE_HOLES.toFixed(2)} > bayer4(gl_FragCoord.xy)) discard;
+        float fade = vLocal > 0.5 ? vFade * nearSight(vW) : vFade;
+        if (fade > 0.001 && fade * ${FADE_HOLES.toFixed(2)} > bayer4(gl_FragCoord.xy)) discard;
         gl_FragColor = vec4(onPaper(groundOf(vColor, vW, vSurface, vSoil, vStrip, uPuddles), uPaper, vPaper, vW), 1.0);
       }`,
   });
@@ -282,9 +303,10 @@ function maskMaterial(uniforms) {
   m.stencilFunc = THREE.AlwaysStencilFunc;
   m.stencilZPass = THREE.ReplaceStencilOp;
   m.fragmentShader = `
-    varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW;
+    varying vec3 vColor; varying float vFade; varying float vPaper; varying vec3 vW; varying float vLocal;
+    ${SIGHT_GLSL}
     void main() {
-      if (vFade <= 0.001) discard;
+      if ((vLocal > 0.5 ? vFade * nearSight(vW) : vFade) <= 0.001) discard;
       gl_FragColor = vec4(vColor, 1.0);
     }`;
   return m;
@@ -472,6 +494,7 @@ function inkMaterial(uniforms, hull = false) {
       ${PAPER_GLSL}
       ${STAGES_GLSL}
       ${SWAY_GLSL}
+      ${SIGHT_GLSL}
       void main() {
         vHull = hull;
         vec4 W = modelMatrix * vec4(position, 1.0);
@@ -479,6 +502,7 @@ function inkMaterial(uniforms, hull = false) {
         vec3 P = W.xyz + swayOf(W.xyz, sway);
         vec3 O = WO.xyz + swayOf(WO.xyz, swayO);
         float fade = fadeOf(owner);
+        if (localOf(owner) > 0.5) fade *= nearSight(P);
         // The ink stays after the colors go, then it stops: none on the far land, none deep in the
         // mist.
         vAlpha = max(0.0, outer > 0.5 ? 1.0 - fade * ${FADE_OUTLINE.toFixed(2)} : 1.0 - fade) * inkOf(paperOf(P, mist));
@@ -563,6 +587,7 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
     uTime: { value: 0 }, uGust: { value: new THREE.Vector3() }, uWind: { value: new THREE.Vector2(0.8, 0.6) }, uWindy: { value: 0 },
     uPuddles: { value: 0 },
     uFocus: { value: new THREE.Vector3() }, uFar: { value: new THREE.Vector2(CHUNK * 2.6, CHUNK * 4.2) }, uPaper: { value: paper },
+    uSeen: { value: Array.from({ length: SIGHT_MAX }, () => new THREE.Vector3()) }, uSeenN: { value: 0 }, uToCam: { value: new THREE.Vector3(0, 1, 0) },
   };
   const flatMat = track(flatMaterial(uniforms));
   flatMat.name = 'world';
@@ -1003,23 +1028,30 @@ export function createVoxelWorld(canvas, terrain, opts = {}) {
       boxVersion = terrain.version;
       boxes = terrain.objects.map((o) => ({ who: o.who, b: terrain.boxOf(o), building: BUILDINGS.has(o.kind) }));
     }
+    // The lines of sight of the points of the work, for the local fade of a building (#94).
+    const seenWork = points.filter((p) => p.work).slice(0, SIGHT_MAX);
+    const d = toCamera(state.az, VIEW.elevation);
+    uniforms.uToCam.value.set(d.x, d.y, d.z);
+    seenWork.forEach((p, i) => uniforms.uSeen.value[i].set(p.x, p.y + 0.6, p.z));
+    uniforms.uSeenN.value = seenWork.length;
     let changed = false;
     for (const o of boxes) {
       if (Math.abs(o.b.x0 - hero.x) > 40 || Math.abs(o.b.z0 - hero.z) > 40) continue;
       const was = fades.get(o.who) ?? 0;
-      // A building fades only when its blocks or its roof hide the hero; a tree, a bush, or a
-      // haystack (a smooth look) when the line crosses its box (#53).
-      const full = points.some((p) => p.work && covers(o, p));
-      const hit = full || points.some((p) => !p.work && covers(o, p));
+      // A building fades only when its blocks or its roof hide a point of the work, and only there;
+      // a tree, a bush, or a haystack (a smooth look) when the line crosses its box (#53).
+      const { hit, full, local } = fadeFor(o.building, points, (p) => covers(o, p));
       const next = stepFade(was, hit, dt);
       const value = Math.round(stippleOf(next) * 255);
       const more = full ? Math.round(stippleOf(next) * FULL_G) : 0;
-      if (next === was && fadeData[o.who * 4 + 1] === more) continue;
+      const near = local ? 255 : 0;
+      if (next === was && fadeData[o.who * 4 + 1] === more && fadeData[o.who * 4 + 2] === near) continue;
       if (next) fades.set(o.who, next);
       else fades.delete(o.who);
-      if (fadeData[o.who * 4] !== value || fadeData[o.who * 4 + 1] !== more) {
+      if (fadeData[o.who * 4] !== value || fadeData[o.who * 4 + 1] !== more || fadeData[o.who * 4 + 2] !== near) {
         fadeData[o.who * 4] = value;
         fadeData[o.who * 4 + 1] = more;
+        fadeData[o.who * 4 + 2] = near;
         changed = true;
       }
     }

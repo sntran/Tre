@@ -5,6 +5,7 @@ import { load } from './helpers.js';
 import { runHeadless } from './story-run.js';
 import { getEntity, query } from '../src/core/world/state.js';
 import { spokenOf } from '../src/core/voices.js';
+import { fadeFor, SIGHT_R } from '../src/world/fade.js';
 
 const cfg = load('data/world/mentors.json');
 const vi = load('i18n/vi.json');
@@ -129,3 +130,16 @@ test('at the mat of the teacher, the hero and Nghé stand beside the work, never
     assert.ok(!inFront(nghe, r, az), `az ${az.toFixed(2)}: Nghé at ${nghe.x.toFixed(1)}, ${nghe.z.toFixed(1)} is in front of the mat`);
   }
 });
+
+test('a roof never fades for the hero alone, and fades only near the lines of sight of the work (#94)', () => {
+  const hero = { x: 0, y: 0, z: 0 };
+  const work = { x: 4, y: 0, z: 0, work: true };
+  // A roof in front of the hero only: drawn whole (the outline of the hero shows).
+  assert.deepEqual(fadeFor(true, [hero, work], (p) => p === hero), { hit: false, full: false, local: false });
+  // A roof in front of the work: it fades, and only there.
+  assert.deepEqual(fadeFor(true, [hero, work], (p) => p === work), { hit: true, full: true, local: true });
+  // A tree in front of the hero still fades (a few dots), with no local tube.
+  assert.deepEqual(fadeFor(false, [hero], (p) => p === hero), { hit: true, full: false, local: false });
+  assert.ok(SIGHT_R > 1 && SIGHT_R < 4, 'the tube is about as wide as a place of the work');
+});
+
