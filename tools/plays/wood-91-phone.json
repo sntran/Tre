@@ -1,0 +1,281 @@
+{
+ "about": "#91 (grade 1): the example and the stem in the frame; a tap and two quick presses make one mark, then the knife; two cuts that are not equal, and the halving on a short stem next to the child; a right cut.",
+ "start": "?story=trial-woodcutter",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 300
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "until": "(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')",
+   "timeout": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-example-and-the-stem-in-the-frame"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.first')",
+   "timeout": 300
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "stem": 3
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 300
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 0.25
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 45",
+   "timeout": 120
+  },
+  {
+   "check": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks) === '[3]'"
+  },
+  {
+   "print": "tre.activeVillage.session.action()?.act"
+  },
+  {
+   "check": "tre.activeVillage.session.action()?.act === 'cut'"
+  },
+  {
+   "shot": "a-tap-and-two-quick-presses-make-one-mark-then-the-knife"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'woodcutter.short')",
+   "timeout": 300
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-14).map((x) => x.key))"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "a-cut-that-is-not-equal"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter').hidden && !tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.cut",
+   "timeout": 400
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "stem": 5
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 300
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 0.25
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 45",
+   "timeout": 120
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter').hidden && !tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.cut",
+   "timeout": 400
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.demo)",
+   "timeout": 300
+  },
+  {
+   "wait": 6
+  },
+  {
+   "shot": "the-halving-on-a-short-stem-next-to-the-child"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.demo)",
+   "timeout": 300
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify({act: tre.activeVillage.session.action()?.act, screen: tre.activeVillage.session.screen, prints: tre.activeVillage.prints(), route: Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route)})"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 300
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 45",
+   "timeout": 120
+  },
+  {
+   "print": "JSON.stringify({act: tre.activeVillage.session.action()?.act, screen: tre.activeVillage.session.screen, prints: tre.activeVillage.prints(), route: Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route)})"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'sticks:woodcutter')",
+   "timeout": 300
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "two-equal-pieces"
+  }
+ ]
+}

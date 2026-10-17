@@ -1,0 +1,242 @@
+{
+ "about": "#91 at night (grade 2, three pieces): the example in the frame; one mark and a cut give too few pieces, the line of how to add a mark and the free rings glow until a walk; two marks give three equal pieces.",
+ "start": "?story=woodcutter-three&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 300
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "until": "(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('như thế này')",
+   "timeout": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "night-the-example-and-the-stem-in-the-frame"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.woodcutter.first')",
+   "timeout": 300
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "stem": 6
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 300
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 45",
+   "timeout": 120
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /woodcutter.addMark/.test(x.key))",
+   "timeout": 300
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-14).map((x) => x.key))"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => String(e.id).startsWith('why:woodcutter:free:')).length"
+  },
+  {
+   "shot": "night-too-few-pieces-the-line-and-the-free-rings-glow"
+  },
+  {
+   "stick": [
+    60,
+    0,
+    0.6
+   ]
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => String(e.id).startsWith('why:woodcutter:free:')).length"
+  },
+  {
+   "shot": "night-after-a-walk-the-glow-ends"
+  },
+  {
+   "tap": {
+    "stem": 4
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 300
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 45",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "stem": 8
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 300
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter').zone.marks)"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 45",
+   "timeout": 120
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'sticks:woodcutter')",
+   "timeout": 300
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "night-three-equal-pieces"
+  }
+ ]
+}
