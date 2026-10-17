@@ -90,6 +90,14 @@ After a wrong tie or give, the person counts the work of the child; the healer n
 
 After a cut that is not right, the pieces lie side by side, and the woodcutter counts the rings of each piece, "Khúc này: một, hai, ba.", and each ring lights up at its number (`pieceSteps` in `src/core/mentoring.js`). When the number of pieces is not the number that he asked for, he says it ("Có hai khúc. Anh cần ba khúc."); the button still cuts after one mark, because the number of marks is the math. Then the short piece glows, he points at it and says "Khúc này ngắn quá.", and it breaks; equal pieces do not break. The pieces stay a little, and then the stem is whole again. The world and the count share their times (`cutCount` in `src/core/world/zones.js`); the time of the line of the number of pieces is in each count, said or not, so that the button stays blind to the number of the task. A tap on the ground beside the stem is a tap on its nearest ring: the hero walks beside that ring, and the chalk shows there. The stem is solid, and the hero stands beside it on the side away from the camera (the view tells the session its angle with the command `view`). After the child turns the view, no work turns the view by itself for five minutes (`HAND_KEEP` in `src/ui/village.js`). The first lines bring one new word each with its thing: the bamboo, the chalk (a stick of chalk at the start of the stem), and "Anh cần ba khúc dài bằng nhau, như thế này." with a sample of equal short pieces. The mark of the mentor lights the pieces between the chalk marks one at a time and counts their rings.
 
+### The fisher after #88 (#92)
+
+**The marks show.** Each narrow gap of the row has a bright yellow frame on the water around it (`gap-frame-<n>`), as clear as the ring of a cue, and the stake at its end glows and bobs (the `bobs` of the event `cue`) while the fisher points at it with "Chạm vào cái cọc này, …".
+
+**A hint never asks for a thing that is not there.** With an empty pile, the hint of a wave (`show`) is the take-back of a marked stake (`tight`), also after the first time; never "Lấy một cái cọc ở đống, …".
+
+**The stakes for the rest at once.** After the demonstration, the fisher brings in one go the stakes that the row still needs at his gap: one for each part of a gap that is too wide, and the rest to the float (`stakesNeeded` in `src/core/world/systems/work.js`). The pile moves next to the end of the row (`NEAR_ROW`), so that the child does not walk far for each stake. A row that needs no stake (a stake stands at the float) gets no stakes, and the water rises after `FLOAT_WAIT`.
+
 ### The woodcutter after the play test of #85 to #89 (#91)
 
 **One mark for a tap and two presses.** A press that marks the ring of a tap also walks the hero to that ring, so that the next press is the knife, not a second mark at the feet. A second press in the first second after a mark (`MARK_AGAIN`), with no new tap, does nothing: not a second mark, and not a cut.
