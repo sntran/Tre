@@ -1,0 +1,33 @@
+{
+  "name": "woodcutter-three",
+  "about": {
+    "vi": "Anh tiều phu cần ba khúc (lớp 2): một vạch rồi chặt là ít khúc quá; anh nói cách vạch thêm một dấu, các đốt sáng lên; hai vạch cho ba khúc bằng nhau.",
+    "en": "The woodcutter needs three pieces (grade 2): one mark and a cut give too few pieces; he says how to add a mark, and the free rings glow; two marks give three equal pieces."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "clock": 540,
+  "at": ["phu-dong", 51, 8.5],
+  "steps": [
+    { "press": { "entity": "npc:woodcutter" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "entity": "stem:woodcutter", "look": "stem-12" }] },
+    { "press": { "stem": 6 } },
+    { "until": { "event": "mark", "timeout": 10 } },
+    { "wait": 1.5 },
+    { "press": { "entity": "npc:woodcutter" } },
+    { "until": { "event": "snap", "timeout": 10 } },
+    { "until": { "event": "call", "with": { "key": "woodcutter.addMark" }, "timeout": 60 } },
+    { "expect": [{ "count": { "entities": "why:woodcutter:free", "min": 11 } }] },
+    { "press": { "stem": 4 } },
+    { "until": { "event": "mark", "timeout": 10 } },
+    { "wait": 1.5 },
+    { "expect": [{ "count": { "entities": "why:woodcutter:free", "max": 0 } }] },
+    { "press": { "stem": 8 } },
+    { "until": { "event": "mark", "timeout": 10 } },
+    { "wait": 1.5 },
+    { "press": { "entity": "npc:woodcutter" } },
+    { "until": { "event": "chop", "timeout": 60 } },
+    { "expect": [{ "event": "skill", "with": { "solved": true, "parts": [4, 4, 4] } }] }
+  ]
+}
