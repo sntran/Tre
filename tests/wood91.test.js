@@ -52,3 +52,31 @@ test('a tap on the stem and two quick presses make one mark, and then the button
   assert.ok(Math.abs(hero.position.x - (stem.position.x + 4)) <= 1.2, `the hero walked to the ring: ${(hero.position.x - stem.position.x).toFixed(1)}`);
   assert.equal(session.action()?.act, 'cut', 'then the button is the knife');
 });
+
+test('after a cut with too few pieces, the woodcutter says how to add a mark, and the free rings glow until the child walks', async () => {
+  const keys = [];
+  const session = await atStem([], (s) => { s.listen((ev) => { if (ev.type === 'call') keys.push(ev.key); }); });
+  const stem = getEntity(session.state, 'stem:woodcutter');
+  const hero = getEntity(session.state, 'hero');
+  Object.assign(hero.position, { x: stem.position.x + 3, z: stem.position.z + 2.5 });
+  delete hero.route;
+  run(session, 0.5);
+  send(session, { type: 'tap', target: { thing: stem.id, along: 3 } });
+  run(session, 0.3);
+  send(session, { type: 'hands' });
+  run(session, 1.5);
+  // One mark gives two pieces; the task of level 1 needs three.
+  getEntity(session.state, 'zone:trial-woodcutter').zone.level = 1;
+  send(session, { type: 'hands' });
+  run(session, 40, () => keys.includes('woodcutter.addMark'));
+  assert.ok(keys.includes('woodcutter.addMark'), `the line of how to add a mark: ${keys.join(', ')}`);
+  const glows = () => session.state.entities.filter((e) => String(e.id).startsWith('why:woodcutter:free:'));
+  assert.ok(glows().length > 0, 'the free rings glow');
+  run(session, 2);
+  assert.ok(glows().length > 0, 'they glow while the child waits');
+  send(session, { type: 'move', id: 'hero', dx: 1, dz: 0, strength: 1 });
+  run(session, 1.5);
+  send(session, { type: 'move', id: 'hero', dx: 0, dz: 0, strength: 0 });
+  run(session, 0.5);
+  assert.equal(glows().length, 0, 'the glow ends when the child walks');
+});

@@ -1291,6 +1291,7 @@
   "woodcutter.short": "This piece is too short.",
   "woodcutter.piece": "This piece:",
   "woodcutter.pieces": "There are {n} pieces. I need {m} pieces.",
+  "woodcutter.addMark": "Walk to another place on the bamboo, and then press the button to add one more mark.",
   "mentor.nghe.pieces": "There are {n} pieces. We need {m} pieces.",
   "mentor.ducks.first": "Stand at the jar. One press of the big button puts one scoop of feed into the trough.",
   "mentor.drum.first": "Stand at the bronze drum and press the big button on the beat when the group jumps.",

@@ -646,6 +646,8 @@ export function thingLook(key) {
   if (m) return { kind: 'stem', n: Number(m[1]), green: true };
   // The glow of a ring of a piece at its number, and the glow of the short piece (#75).
   if (k === 'ring-glow') return { kind: 'ring-glow' };
+  // A place on the stem where a chalk mark can go: a thin yellow band (#91).
+  if (k === 'mark-glow') return { kind: 'mark-glow' };
   // The stick of chalk of the woodcutter (#75).
   if (k === 'chalk-stick') return { kind: 'chalk-stick' };
   m = /^piece-glow-(\d+)$/.exec(k);
@@ -1007,6 +1009,7 @@ export function workThing(look) {
     // shows on the top and on the sides (#48).
     case 'chalk-stick': return still([P('stick', [0.3, 0.3, 1.1], 'ashLight', [0, 0.15, 0]), P('tip', [0.3, 0.3, 0.2], 'vermilion', [0, 0.15, 0.6])], 0.3);
     case 'ring-glow': return still([P('glow', [1.12, 1.12, 0.92], 'yellow', [0, 0.5, 0])], 1.1);
+    case 'mark-glow': return still([P('glow', [0.25, CHALK_BAND + 0.1, CHALK_BAND + 0.1], 'yellow', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
     case 'piece-glow': return still([P('glow', [1.14, 1.14, look.n], 'yellow', [0, 0.5, look.n / 2])], 1.1);
     case 'chalk-band': return still([P('band', [0.4, CHALK_BAND, CHALK_BAND], 'vermilion', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
     // A chalk mark across a culm (the height of a slash).

@@ -1313,7 +1313,18 @@ function tickLay(world, tz, dt) {
   say(world, 'counted', basket.id, { sound: 'pickup' });
 }
 
+const ADD_MARK_WALK = 1.5; // half blocks: a walk this long ends the glow of the free rings
 function tickStem(world, tz, dt) {
+  // The free rings glow until the hero walks or makes a mark (#91).
+  const free = tz.zone.addMark;
+  if (free) {
+    const hero = getEntity(world, 'hero');
+    const marked = world.events.some((ev) => ev.type === 'mark');
+    if (marked || !hero || Math.hypot(hero.position.x - free.x, hero.position.z - free.z) > ADD_MARK_WALK) {
+      delete tz.zone.addMark;
+      for (const e of query(world, 'position').filter((x) => String(x.id).startsWith('why:woodcutter:free:'))) removeEntity(world, e.id);
+    }
+  }
   if (!tz.zone.cut) return;
   tz.zone.cut -= dt;
   tz.zone.cutAt = (tz.zone.cutAt ?? 0) + dt;
@@ -1327,6 +1338,9 @@ function tickStem(world, tz, dt) {
     delete tz.zone.short;
   }
   if (tz.zone.cut > 0) return;
+  // A cut with too few pieces: the child must add a mark (#91: after one mark the button was the
+  // knife, and a child cut too soon two times).
+  const few = !tz.zone.cutSolved && (tz.zone.cutPieces?.length ?? 0) < (tz.zone.cutParts ?? 0);
   delete tz.zone.cut;
   delete tz.zone.cutAt;
   delete tz.zone.breakAt;
@@ -1346,5 +1360,14 @@ function tickStem(world, tz, dt) {
   if (stem) {
     stem.hidden = false;
     say(world, 'stem', stem.id, { sound: 'plank-down' });
+    const hero = getEntity(world, 'hero');
+    if (few && hero) {
+      // The woodcutter says how to add a mark, and each ring where a mark can go glows.
+      const s = tz.zone.stem;
+      for (let j = 1; j < s.length; j++) addEntity(world, { id: `why:woodcutter:free:${j}`, why: { zone: tz.id }, position: { x: s.x + j, y: s.y, z: s.z, facing: 0 }, look: 'mark-glow' });
+      tz.zone.addMark = { x: hero.position.x, z: hero.position.z };
+      const person = query(world, 'person').find((p) => p.person.ref === 'woodcutter');
+      if (person) say(world, 'call', person.id, { key: 'woodcutter.addMark', params: {}, happened: true });
+    }
   }
 }
