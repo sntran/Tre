@@ -30,6 +30,9 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 // the learner or null; log(kind, fields): the learning log; emit(ev): an event of the session;
 // world(): the world state; env(): the facts of the map; raise(key): the task asks for a bigger
 // task (a move raise), returns nothing; nameOf(id): the name of a person (a text parameter).
+const REST_TIME = 4.4; // seconds that the person and the hero sit in a break
+const BALL_UP = 1.4; // half blocks over the ground: the rice ball in the hands of the sitting hero
+
 export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {}, nameOf = () => '' }) {
   const cfg = data.mentors;
   const states = new Map(); // key -> the mentor of the task
@@ -466,6 +469,16 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // still did not know the count of their own mat); after it, the person puts some parts for the
     // child.
     const trk = tracks.get(key);
+    // The help that comes after a break, at once (#94): the demonstration, else a smaller task,
+    // else the mark of what went wrong.
+    const nextHelp = () => (def.demo && !trk?.demoed ? 'demo' : shares ? 'smaller' : 'mark');
+    // A break is a real break (#94: "Nghỉ tay một chút, ăn nắm cơm đã." and no rice ball came): the
+    // person and the hero sit, the hero eats a rice ball, Nghé gets a bite, and the next help comes.
+    const rest = move === 'break' && Boolean(task);
+    if (rest) move = nextHelp();
+    // The picture of a station where the child has nothing more to do (pictureUnless): the next
+    // help, never a line of a break with no break (#57, #94).
+    if (move === 'picture' && def.pictureUnless && profile.flags?.[def.pictureUnless] && task) move = nextHelp();
     if (move === 'demo' && trk?.demoed) move = shares ? 'smaller' : 'mark';
     if ((move === 'smaller' || move === 'share') && !shares) move = 'mark';
     // After a count, a wave gets the next step, never the same count again (#80, #79).
@@ -502,6 +515,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       say(0, cfg.again[move]);
       t = 2.2;
     }
+    if (rest) t = restSteps(key, who, { say, steps }, t);
     let keyAt;
     const needsPlace = ['first', 'show', 'mark', 'count', 'cue', 'demo', 'smaller', 'share'].includes(move);
     if (needsPlace && !task) return 0;
@@ -596,8 +610,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // The line names the person of another station (pictureWho), by the name of the region. A
       // line that names a place where the child has nothing more to do (the trial there is done:
       // pictureUnless) says only to rest (#57).
-      if (def.pictureUnless && profile.flags?.[def.pictureUnless]) say(t, lineOf(key, 'break'));
-      else say(t, def.picture, def.pictureWho ? { who: nameOf(def.pictureWho) } : {});
+      say(t, def.picture, def.pictureWho ? { who: nameOf(def.pictureWho) } : {});
       t += 2;
     } else if (move === 'raise') {
       say(t, lineOf(key, 'raise'));
@@ -617,6 +630,27 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (info.asked) asked.set(whoNow, { move, n: run?.move === move ? run.n + 1 : 1 });
     else asked.delete(whoNow);
     return t + 0.5;
+  }
+
+  // The steps of a break (#94): the line, the person and the hero sit, a rice ball comes into the
+  // hands of the hero, the hero eats it (about four seconds), and Nghé comes for a bite.
+  function restSteps(key, who, s, t) {
+    const w = world();
+    const hero = getEntity(w, 'hero');
+    s.say(t, lineOf(key, 'break'));
+    if (!hero?.position) return t + 2;
+    const p = hero.position;
+    const ball = { x: p.x + Math.sin(p.facing ?? 0) * 0.7, z: p.z + Math.cos(p.facing ?? 0) * 0.7 };
+    if (who) s.steps.push({ at: t + 0.2, point: { id: who, x: p.x, z: p.z, time: 0.6 } });
+    if (who) s.steps.push({ at: t + 0.8, sit: { ids: [who], time: REST_TIME } });
+    s.steps.push({ at: t + 0.8, sit: { ids: ['hero'], time: REST_TIME, act: 'eat' } });
+    s.steps.push({ at: t + 0.8, spawn: { look: 'rice-ball', x: ball.x, z: ball.z, dy: BALL_UP } });
+    s.steps.push({ at: t + 1.4, nudge: { x: ball.x, z: ball.z, time: REST_TIME } });
+    s.steps.push({ at: t + 2.4, look: { k: 0, look: 'rice-ball-half' }, sound: { sound: 'peck', id: 'hero' } });
+    s.steps.push({ at: t + 3.6, look: { k: 0, look: 'rice-ball-bit' }, sound: { sound: 'peck', id: 'friend:nghe' } });
+    s.steps.push({ at: t + 4.6, gone: { k: 0 } });
+    s.steps.push({ at: t + 4.8, unnudge: true });
+    return t + 5;
   }
 
   // The count of the child's own work after a wrong try (#64), the same at each help level: the

@@ -9,7 +9,7 @@
 //   diagnoses: unsure (no action at the start), missing (off by exactly one part), units (as many
 //     parts as the target: the child counted the things, not their units), slip (a small error
 //     after a normal time), counting (right, but slow for the size), guess (fast and far off, or
-//     the mashing flag), stuck (the same fact missed twice), frustrated (misses in a row, or
+//     the mashing flag), stuck (the same fact missed twice), frustrated (fast misses in a row, or
 //     leaving after a miss), bored (fast clean commits in a row), ready (fast and right with a high
 //     P(L)), miss (another miss), and ok (right).
 //   moves: wait, show, mark, cue (Nghé points), demo (on another instance), smaller, share,
@@ -27,6 +27,7 @@ export function newMentor(key) {
     key,
     level: 0, // the help level now (0: only watch)
     misses: 0, // misses in a row
+    hasty: 0, // the misses of this run with the signs of frustration (isHasty)
     clean: 0, // fast clean commits in a row
     facts: {}, // the misses of each fact (the target of the try)
     repeat: { diag: null, n: 0 }, // the same diagnosis in a row
@@ -87,13 +88,19 @@ export function readCommit(input, fam) {
   return out;
 }
 
+// A miss with the signs of frustration: fast, with the signs of mashing, or with resets.
+const isHasty = (obs, input) => obs.fast || Boolean(input.mashing) || (input.resets ?? 0) > 0;
+
 // The diagnosis of a commit. st: the mentor before this commit. pL: P(L) of the skill (or null).
 export function diagnose(input, st, fam, cfg) {
   const obs = readCommit(input, fam);
   const pL = input.pL ?? 0;
   // The signs of mashing on a miss: a guess (a right try with them is no evidence, and no miss).
   if (input.mashing && !obs.solved) return 'guess';
-  if (!obs.solved && (st.misses + 1 >= fam.frustrated || (input.left && st.misses >= 1))) return 'frustrated';
+  // Frustration: misses in a row that came fast or with resets (#94: a break after slow, careful tries came to a
+  // child who was confused, not tired), or leaving after a miss.
+  const hasty = (st.hasty ?? 0) + (isHasty(obs, input) ? 1 : 0);
+  if (!obs.solved && ((st.misses + 1 >= fam.frustrated && hasty >= fam.frustrated - 1) || (input.left && st.misses >= 1))) return 'frustrated';
   if (obs.solved) {
     const clean = obs.fast && !(input.resets > 0) ? st.clean + 1 : 0;
     if (clean >= fam.bored) return 'bored';
@@ -177,9 +184,11 @@ export function onCommit(st, memory, input, fam, cfg) {
   const fact = String(input.fact ?? input.target ?? '');
   if (obs.solved) {
     st.misses = 0;
+    st.hasty = 0;
     st.clean = obs.fast && !(input.resets > 0) ? st.clean + 1 : 0;
   } else {
     st.misses += 1;
+    if (isHasty(obs, input)) st.hasty = (st.hasty ?? 0) + 1;
     st.clean = 0;
     st.facts[fact] = (st.facts[fact] ?? 0) + 1;
     memory.errors[diag] = (memory.errors[diag] ?? 0) + 1;

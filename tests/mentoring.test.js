@@ -141,8 +141,8 @@ test('each person of a task has an own line for each move that names the things 
   }
 });
 
-test('a line of a break names only a place where the child has something to do: after the trial of the smith, the fisher says only to rest (#57)', async () => {
-  for (const [done, line] of [[false, 'mentor.picture.fisher'], [true, 'mentor.break']]) {
+test('a picture names only a place where the child has something to do: after the trial of the smith, the fisher gives the next help, with no line of a break (#57, #94)', async () => {
+  for (const [done, line] of [[false, 'mentor.picture.fisher'], [true, 'mentor.fisher.fit']]) {
     const s = story('trial-fisher');
     const first = s.steps.findIndex((x) => x.read === true);
     const flags = { ...s.profile.flags, ...(done ? { 'trial.smith.done': true } : {}) };

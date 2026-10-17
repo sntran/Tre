@@ -1004,6 +1004,11 @@ export function workThing(look) {
     }
     // A bowl of rice (bát gạo, #26, #42): the measure that every kitchen uses, a bowl of glazed clay
     // on a small foot, full of rice in a low mound.
+    // A rice ball (nắm cơm, #94) on a piece of banana leaf: whole, half eaten by the hero, and the
+    // last bit after the bite of Nghé.
+    case 'rice-ball': return still([P('leaf', [0.7, 0.06, 0.7], 'green', [0, 0.03, 0]), P('rice', [0.5, 0.42, 0.45], 'paper', [0, 0.27, 0])], 0.4);
+    case 'rice-ball-half': return still([P('leaf', [0.7, 0.06, 0.7], 'green', [0, 0.03, 0]), P('rice', [0.5, 0.26, 0.45], 'paper', [0, 0.19, 0])], 0.4);
+    case 'rice-ball-bit': return still([P('leaf', [0.7, 0.06, 0.7], 'green', [0, 0.03, 0]), P('rice', [0.22, 0.14, 0.2], 'paper', [0.1, 0.13, 0])], 0.4);
     case 'rice-bowl': return still([P('foot', [0.4, 0.1, 0.4], 'ashLight', [0, 0.05, 0]), P('bowl', [0.7, 0.24, 0.7], 'diep', [0, 0.22, 0]), P('band', [0.74, 0.06, 0.74], 'indigoPale', [0, 0.31, 0]), P('rice', [0.56, 0.1, 0.56], 'paper', [0, 0.38, 0])], 0.44);
     // The mud under the wheel of a stuck cart.
     case 'mud': return still([P('mud', [2.6, 0.06, 2], 'wood', [0, 0.03, 0]), P('wet', [1.6, 0.07, 1.2], 'ink', [0.2, 0.04, 0.1]), P('rut', [0.5, 0.08, 2.2], 'ochre', [-0.8, 0.05, 0])], 0.1);

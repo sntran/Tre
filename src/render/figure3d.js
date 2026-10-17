@@ -137,7 +137,7 @@ export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
 // The pose that the act of an entity asks for (a raid: an enemy on a trap sits, a stunned general
 // kneels, the general lifts his staff; Nghé lowers her horns in a charge; the fisher holds up a
 // fish).
-const WANTS = { point: 'point', catch: 'lift', sit: 'rest', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns', pole: 'pole', laugh: 'happy' };
+const WANTS = { point: 'point', catch: 'lift', sit: 'rest', eat: 'eat', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns', pole: 'pole', laugh: 'happy' };
 const PULSE = 0.4; // seconds: a figure pulses once when the action button acts on it
 const GLOW_BEAT = 1.4; // seconds: one slow breath of the glow of the thing to touch next
 const MAX_GLOWS = 64;

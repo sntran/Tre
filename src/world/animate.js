@@ -6,7 +6,7 @@
 // shakes its head (no); 'stretch': Nghé stretches its neck toward something; 'horns': Nghé
 // lowers its horns; 'lift': a person lifts the right arm high; 'point': a person points to the
 // front (a mentor); 'crouch' and 'jump': the hero before a jump and in the air; 'pole': a
-// ferryman pushes his pole. The fine figures (src/world/fine.js)
+// ferryman pushes his pole; 'eat': a person sits and eats. The fine figures (src/world/fine.js)
 // have knees and feet: a knee bends while its leg swings through, the heel lifts behind, and the
 // head bobs a little with each step. The coarse figures have no shins and no feet, so these
 // rotations change nothing on them.
@@ -27,7 +27,7 @@ export function animate(a, input) {
   const moving = speed > GAIT.walk;
   a.idle = moving ? 0 : a.idle + dt;
   const k = (t) => Math.min(1, dt * t);
-  const wantRest = input.want === 'rest' && !moving;
+  const wantRest = (input.want === 'rest' || input.want === 'eat') && !moving;
   const riding = input.want === 'ride';
   const happy = input.want === 'happy';
   a.rest += ((wantRest ? 1 : 0) - a.rest) * k(wantRest ? 1.5 : 4);
@@ -77,6 +77,11 @@ export function animate(a, input) {
     if (input.want === 'point') {
       rot.armR = [-1.35, 0, 0.1];
       rot.head = [0.12, 0, 0];
+    }
+    // Eat: sitting, the right hand goes up to the mouth and down again (a rice ball in a break, #94).
+    if (input.want === 'eat') {
+      rot.armR = [-1.6 + Math.sin(a.time * 4) * 0.35, 0, 0.35];
+      rot.armL = [-0.9, 0, -0.2];
     }
     // Lift: the arm with the staff goes up high (the general before a big blow).
     if (input.want === 'lift') rot.armR = [-2.9 + Math.sin(a.time * 6) * 0.08, 0, 0];
