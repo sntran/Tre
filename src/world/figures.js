@@ -547,6 +547,23 @@ export function plankRow(n, on = false) {
   return { kind: 'still', parts, scale: 1, height: 0.5, shadow: 0 };
 }
 
+// The small gap of a demonstration at the bridge (#90): a strip of water n units long between two
+// stones, on the ground, so that the planks of the demonstration fill a gap that the child sees. It
+// lies along +z from its position.
+export function demoGap(n) {
+  return {
+    kind: 'still',
+    parts: [
+      P('water', [2.4, 0.05, n], 'indigo', [0, 0.03, n / 2]),
+      P('stoneN', [2.6, 0.8, 1], 'ash', [0, 0.4, -0.5]),
+      P('stoneS', [2.6, 0.8, 1], 'ash', [0, 0.4, n + 0.5]),
+    ],
+    scale: 1,
+    height: 0.8,
+    shadow: 0,
+  };
+}
+
 // The marks of the empty part of a gap after a fall: n red frames of one unit each (the red of
 // the dots on the planks), over the water at the height of the deck, so that the child sees how
 // many units were missing.
@@ -614,6 +631,8 @@ export function thingLook(key) {
   m = /^(ruler|over)-(\d+)$/.exec(k);
   if (m) return { kind: m[1], n: Number(m[2]) };
   // A row of n plank outlines for the guess at the bridge, or the same row filled (#90).
+  m = /^demo-gap-(\d+)$/.exec(k);
+  if (m) return { kind: 'demo-gap', n: Number(m[1]) };
   m = /^plank-row-(\d+)(-on)?$/.exec(k);
   if (m) return { kind: 'plank-row', n: Number(m[1]), on: Boolean(m[2]) };
   if (k === 'unit-glow') return { kind: 'unit-glow' };
@@ -1106,6 +1125,7 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'plank') return plank(look.n);
   if (look.kind === 'plank-ghost') return plankGhost(Boolean(look.on));
   if (look.kind === 'plank-row') return plankRow(look.n, Boolean(look.on));
+  if (look.kind === 'demo-gap') return demoGap(look.n);
   if (look.kind === 'gap') return gapMarks(look.n);
   if (look.kind === 'ruler') return rulerMarks(look.n);
   if (look.kind === 'over') return overGlow(look.n);

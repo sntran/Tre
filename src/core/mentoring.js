@@ -956,11 +956,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const target = info.target ?? task.place?.zone.need ?? task.place?.zone.gap ?? 10;
     const other = d.same ? target : demoTarget(target, sizes.length ? sizes : [1]);
     const parts = demoParts(other, sizes.length ? sizes : [1]);
-    const spot = demoSpot(task);
+    // The planks of a demonstration lie across a small gap of their own length between two stones
+    // (#90: the planks lay on bare ground, and "vừa khít" fitted nothing that the child saw).
+    const spot = demoSpot(task, d.thing === 'plank' ? other : 0);
     s.say(t, lineOf(task.key, 'demo'));
     t += 1.2;
     if (d.prop) s.steps.push({ at: t, spawn: { look: d.prop, x: spot.x - 3, z: spot.z, facing: Math.PI / 2 } });
-    if (d.target) s.steps.push({ at: t, spawn: { look: d.target, x: spot.x, z: spot.z } });
+    if (d.target) s.steps.push({ at: t, spawn: { look: d.target === 'gap' ? `demo-gap-${other}` : d.target, x: spot.x, z: spot.z } });
     let along = 0;
     parts.forEach((p, k) => {
       const at = t + 0.8 + k * 1.3;
@@ -979,8 +981,18 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // A free place on the ground next to the child, away from the place of the task: a demonstration
   // happens where the child sees it (#85: the fisher showed it 16 blocks from the gap, and the
   // child saw nothing). The view frames it until it ends (workFrame in src/ui/village.js).
-  function demoSpot(task) {
+  // len: the length of the demonstration along +z (half blocks): all of it must be free land.
+  function demoSpot(task, len = 0) {
     const e = env();
+    const free = (x, z) => {
+      const cx = Math.floor(x / 2);
+      const cz = Math.floor(z / 2);
+      return e?.near && !e.near(cx, cz).isBlocked(cx, cz) && e.groundAt?.(x, z) !== 'water' && e.groundAt?.(x, z) !== 'shallow';
+    };
+    const room = (q) => {
+      for (let z = q.z - 2; z <= q.z + len + 2; z += 2) if (!free(q.x, z)) return false;
+      return true;
+    };
     const p = getEntity(world(), 'hero')?.position ?? task.person?.position ?? task.at;
     const away = { x: p.x - task.at.x, z: p.z - task.at.z };
     const n = Math.hypot(away.x, away.z) || 1;
@@ -988,9 +1000,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     for (const r of [8, 7, 6, 5, 4]) {
       for (const [dx, dz] of dirs) {
         const q = { x: Math.round(p.x + dx * r), z: Math.round(p.z + dz * r) };
-        const cx = Math.floor(q.x / 2);
-        const cz = Math.floor(q.z / 2);
-        if (e?.near && !e.near(cx, cz).isBlocked(cx, cz) && e.groundAt?.(q.x, q.z) !== 'water' && e.groundAt?.(q.x, q.z) !== 'shallow') return q;
+        if (room(q)) return q;
       }
     }
     return { x: p.x + 3, z: p.z };

@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
-import { getEntity } from '../src/core/world/state.js';
+import { getEntity, query } from '../src/core/world/state.js';
 
 const profile = (flags) => ({ name: 'An', grade: 2, lang: 'vi', seed: 7, flags: { 'intro.seen': true, ...flags } });
 const open = { 'trial.fisher.done': true };
@@ -199,4 +199,49 @@ test('the rows of the guess lie beside the gap; at the foot of a row it glows, t
   assert.deepEqual(row, ['mentor.bridge.row', 'num.3'], 'the person says the row before the check');
   assert.ok(cues.some((ids) => ids.length === 1 && ids[0] === 'guess:bridge-gap:3'), `the row glows: ${JSON.stringify(cues)}`);
   assert.equal(getEntity(s.state, 'zone:bridge-gap').zone.guess, 3, 'the check chooses that row');
+});
+
+test('the demonstration puts its planks across a small gap of its own length between two stones, on land beside the child', async () => {
+  let s = null;
+  const seen = new Map();
+  const failures = await runHeadless({
+    name: 'bridge-demo-gap', profile: profile(open), clock: 540, at: ['phu-dong', 46, 61],
+    steps: [
+      ...start,
+      { press: { guess: 3 } },
+      { until: { event: 'guess', timeout: 3 } },
+      { wait: 2 },
+      ...plank(4), { until: { event: 'put', timeout: 20 } }, { wait: 1.5 },
+      ...plank(4), { until: { event: 'put', timeout: 20 } }, { wait: 1.5 },
+      ...plank(5), { until: { event: 'long', timeout: 20 } },
+      { until: { event: 'float', timeout: 20 } },
+      { wait: 6 },
+      ...plank(3), { until: { event: 'put', timeout: 20 } }, { wait: 1 },
+      { press: { screenOf: 'bridge-gap' } },
+      { until: { event: 'float', timeout: 30 } },
+      { wait: 14 },
+    ],
+  }, {
+    onSession: (x) => {
+      s = x;
+      x.listen(() => {
+        for (const d of query(x.state, 'demo', 'position')) if (!seen.has(d.id)) seen.set(d.id, { look: d.look, ...d.position });
+      });
+    },
+  });
+  assert.deepEqual(failures, []);
+  const all = [...seen.values()];
+  const gap = all.find((d) => /^demo-gap-\d+$/.test(d.look));
+  assert.ok(gap, `a gap of the demonstration: ${all.map((d) => d.look).join(', ')}`);
+  const n = Number(gap.look.split('-').at(-1));
+  const planks = all.filter((d) => /^plank-\d+$/.test(d.look));
+  assert.ok(planks.length >= 2, 'planks of the demonstration');
+  const sum = planks.reduce((a, p) => a + Number(p.look.split('-')[1]), 0);
+  assert.equal(sum, n, 'the planks fill the gap exactly');
+  for (const p of planks) {
+    assert.equal(p.x, gap.x, 'the planks lie across the gap');
+    assert.ok(p.z >= gap.z && p.z < gap.z + n, 'each plank starts in the gap');
+  }
+  const env = s.env;
+  for (let z = gap.z - 2; z <= gap.z + n + 2; z += 2) assert.notEqual(env.groundAt(gap.x, z), 'water', 'the gap of the demonstration is on land');
 });

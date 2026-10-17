@@ -100,6 +100,8 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **The rows of the guess lie next to the gap.** Row n has n plank outlines of 4 units end to end (`plank-row-<n>`), and each row lies parallel to the gap from the level of its near end, side by side with a space between two rows (`ROW_SIDE`, `ROW_STEP` in `src/core/world/systems/place.js`), so that a child compares each row with the gap. There are no more rows than the gap can take planks (the gap over the shortest plank: 4 rows for a gap of 12). The foot of each row is on the bank. A tap on a row walks the hero to its foot; there the row glows, and the person says it: "Hàng này dài ba tấm." (`mentor.bridge.row`); then the check of the big button chooses it. The talk of the guess frames the gap and each row from end to end.
 
+**The demonstration has a gap.** The demonstration of the bridge puts its planks across a small gap of its own length: a strip of water between two stones (`demo-gap-<n>`, the `target` of `bridge.demo` in `data/world/mentors.json`), on a free piece of land next to the child with room for all of it (`demoSpot` with a length). The view frames it until it ends.
+
 ### The smaller problems of the play test of #85 (#89)
 
 1. **The practice of grade 1:** "n thêm 10" of `math.count.120` uses n from 10 to 89 (`tens` of the level in `data/skills.json`; 1.NBT.C.5). The check of the top level near mastery waits for `almostAfter` answers (4, `data/config/learning.json`), so that two right answers do not take a new skill to its top level. The hint names the bundles of the teacher: "Thêm 10 là thêm một bó mười que." and "Ví dụ: 3 bó và 4 que là 34. Thêm một bó là 44."
