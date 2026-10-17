@@ -170,3 +170,33 @@ test('a second count counts on from the planks that stayed: "tám, chín, mườ
   // (A demonstration can come after the short try, with its own numbers.)
   assert.deepEqual(second.slice(0, 4), ['num.8', 'num.9', 'num.10', 'num.11'], `the second count counts on: ${second.join(' ')}`);
 });
+
+test('the rows of the guess lie beside the gap; at the foot of a row it glows, the person says it, and the check chooses it', async () => {
+  let s = null;
+  const lines = [];
+  const cues = [];
+  const failures = await runHeadless({
+    name: 'bridge-rows', profile: profile(open), clock: 540, at: ['phu-dong', 46, 61],
+    steps: [
+      ...start,
+      { tap: { guess: 3 } },
+      { until: { event: 'open', with: { textKey: 'mentor.bridge.row' }, timeout: 20 } },
+      { wait: 1 },
+      { press: true },
+      { until: { event: 'guess', timeout: 5 } },
+    ],
+  }, {
+    onSession: (x) => {
+      s = x;
+      x.listen((e) => {
+        if (e.type === 'open') lines.push([e.textKey, e.params?.n?.key]);
+        if (e.type === 'cue') cues.push(e.ids);
+      });
+    },
+  });
+  assert.deepEqual(failures, []);
+  const row = lines.find(([k]) => k === 'mentor.bridge.row');
+  assert.deepEqual(row, ['mentor.bridge.row', 'num.3'], 'the person says the row before the check');
+  assert.ok(cues.some((ids) => ids.length === 1 && ids[0] === 'guess:bridge-gap:3'), `the row glows: ${JSON.stringify(cues)}`);
+  assert.equal(getEntity(s.state, 'zone:bridge-gap').zone.guess, 3, 'the check chooses that row');
+});

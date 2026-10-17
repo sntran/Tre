@@ -48,8 +48,9 @@ test('at night the lines of Nghé turn the view to the planks for the guess, and
   const view = views.find((v) => v.key === 'bridge');
   assert.ok(view, 'the line comes with a view of the work');
   assert.ok(view.rows.length > 0);
-  assert.equal(view.points.length, view.rows.length);
+  // The view holds each row from end to end and the two ends of the gap (#90).
   for (const g of view.rows) assert.ok(view.points.some((p) => p.x === g.x && p.z === g.z), `the view holds ${g.id}`);
+  for (const g of view.rows) assert.ok(view.points.some((p) => p.x === g.x && p.z > g.z), `the view holds the end of ${g.id}`);
   const angles = [0, 1, 2, 3].map((k) => Math.PI / 4 + (k * Math.PI) / 2);
   const fits = (v) => angles.some((az) => frameWork([v.hero, ...v.points].map((p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 })), { az, width: 390, height: 844, max: viewSize(390, 844, 1).h }).fits);
   assert.ok(fits(view), 'the rows and the hero fit on a phone held upright');

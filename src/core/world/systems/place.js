@@ -20,8 +20,11 @@
 // and 5, and the pile has planks of 3, 4, and 5), the way cannot be finished: the world says so at
 // once (the event 'stuck', with the last plank on the gap), before the child tries more planks.
 // The last plank stays the plank to take back until the gap changes.
-// Before the first commit on a new gap, a row of plank outlines lies on the bank, Nghé looks at the
-// hero, and the child taps how many planks the bridge will take (a prediction, no numeral).
+// Before the first commit on a new gap, rows of plank outlines lie beside the gap, Nghé looks at the
+// hero, and the child chooses how many planks the bridge will take (a prediction, no numeral).
+// Row n has n outlines end to end, and each row lies parallel to the gap from the level of its near
+// end, so that the child compares each row with the gap (#90: the outlines lay end to end on the
+// bank as one long line). The foot of a row is on the bank: the hero stands there to choose it.
 // After some failures, or after a commit with the signs of mashing, Nghé stands at the near end
 // of the planks and stretches its neck toward the gap. The next round opens at the next dawn;
 // after the last round, the rain of a later day breaks one or two planks. Each commit sends skill
@@ -46,6 +49,9 @@ const DROP = 0.35; // seconds: the hero falls into the water
 const PULL = 0.8; // seconds: Nghé pulls the hero to the edge
 const SLIDE = 0.8; // seconds: a plank that is too long slides back into the water
 const GLANCE = 1.2; // seconds: Nghé glances at the outlines when the child skips the prediction
+const ROW_SIDE = 7; // half blocks from the lane of the gap to the first row of the guess
+const ROW_STEP = 3; // half blocks between two rows of the guess (an outline of a row is 1.2 wide)
+const ROW_PLANK = 4; // the length of each outline of a row (half blocks)
 const RULER_DOWN = 0.45; // the ruler of a gap under the top of the planks (half blocks)
 const GROUND_BACK = 120; // steps (4 seconds): a thing of a task on the ground goes back to its heap
 
@@ -295,13 +301,13 @@ function endGuess(world, zoneEnt, n) {
   // A skip: Nghé glances once at the row of outlines, with no text, before it goes.
   const row = query(world, 'guess').filter((g) => g.guess.zone === zoneEnt.zone.id);
   if (n === null && row.length) {
-    const mid = row[Math.floor(row.length / 2)].position;
-    for (const f of query(world, 'follow')) f.follow.glance = { x: mid.x, z: mid.z + 2, t: GLANCE };
+    const mid = row[Math.floor(row.length / 2)].guess.foot;
+    for (const f of query(world, 'follow')) f.follow.glance = { x: mid.x, z: mid.z, t: GLANCE };
   }
   for (const g of query(world, 'guess')) {
     if (g.guess.zone !== zoneEnt.zone.id) continue;
-    if (n !== null && g.guess.n <= n) {
-      g.look = 'plank-ghost-on';
+    if (n !== null && g.guess.n === n) {
+      g.look = `plank-row-${n}-on`;
       g.guess.left = 1.2;
     } else removeEntity(world, g.id);
   }
@@ -455,12 +461,16 @@ function showGuess(world, zoneEnt, def, env, hero) {
   const zone = zoneEnt.zone;
   const at = env.places[def.predict.at];
   if (!at || query(world, 'guess').some((g) => g.guess.zone === zone.id)) return;
-  for (let n = 1; n <= def.predict.max; n++) {
+  // No more rows than the gap can take planks (the gap over the shortest plank): the rows of a
+  // first gap fit on a phone with the talk box.
+  const rows = Math.min(def.predict.max, Math.ceil(zone.gap / Math.min(...(zone.sizes?.length ? zone.sizes : [1]))));
+  for (let n = 1; n <= rows; n++) {
+    const x = zone.lane - ROW_SIDE - (n - 1) * ROW_STEP;
     addEntity(world, {
       id: `guess:${zone.id}:${n}`,
-      guess: { zone: zone.id, n },
-      position: { x: Math.round(at.x + (n - 1) * 2.5), y: at.y, z: Math.round(at.z), facing: 0 },
-      look: 'plank-ghost',
+      guess: { zone: zone.id, n, foot: { x, z: Math.round(at.z) }, len: n * ROW_PLANK },
+      position: { x, y: zone.deckY - 0.5, z: zone.from, facing: 0 },
+      look: `plank-row-${n}`,
     });
   }
   // Nghé goes beside the outlines and looks at the hero.

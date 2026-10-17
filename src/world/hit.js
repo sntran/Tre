@@ -130,17 +130,23 @@ export function figureUnder(p, cam, figs, pad, r = 0.7) {
   return best?.f ?? null;
 }
 
-// The plank outline of the prediction at the bridge under a screen point (the row lies on the bank).
+// The row of plank outlines of the prediction at the bridge under a screen point (#90: each row lies
+// beside the gap, len half blocks along +z from its position).
 export function guessUnder(p, cam, guesses) {
   let best = null;
   for (const g of guesses) {
     if (g.guess.left !== undefined || g.hidden) continue;
     const q = g.position;
-    const b = cam.screenBox({ x0: q.x / 2 - 0.6, x1: q.x / 2 + 0.6, y0: q.y / 2, y1: q.y / 2 + 0.3, z0: q.z / 2, z1: q.z / 2 + 2 });
+    const len = (g.guess.len ?? 4) / 2;
+    const b = cam.screenBox({ x0: q.x / 2 - 0.6, x1: q.x / 2 + 0.6, y0: q.y / 2, y1: q.y / 2 + 0.3, z0: q.z / 2, z1: q.z / 2 + len });
     if (!inBox(p, b, 4)) continue;
-    // The outlines stand close together: the one whose middle is nearest to the finger.
-    const c = cam.project(q.x / 2, q.y / 2 + 0.1, q.z / 2 + 1);
-    const d = Math.hypot(p.x - c.x, p.y - c.y);
+    // The rows lie close together: the one whose line is nearest to the finger.
+    const a = cam.project(q.x / 2, q.y / 2 + 0.1, q.z / 2);
+    const c = cam.project(q.x / 2, q.y / 2 + 0.1, q.z / 2 + len);
+    const vx = c.x - a.x;
+    const vy = c.y - a.y;
+    const k = Math.max(0, Math.min(1, ((p.x - a.x) * vx + (p.y - a.y) * vy) / (vx * vx + vy * vy || 1)));
+    const d = Math.hypot(p.x - (a.x + vx * k), p.y - (a.y + vy * k));
     if (!best || d < best.d) best = { g, d };
   }
   return best?.g ?? null;

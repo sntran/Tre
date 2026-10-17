@@ -715,11 +715,33 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A closed bridge has no light of its own at night (src/world/light.js).
     for (const z of query(state, 'zone')) if (z.zone.rule === 'span') z.zone.shut = !open;
   }
+  // The row of the guess at a point: the row that the child tapped when its foot is in reach, or
+  // else the row whose foot is nearest and in reach, or null.
+  function rowAt(p) {
+    const rows = query(state, 'guess', 'position').filter((g) => g.guess.left === undefined && !g.hidden && g.guess.foot);
+    const near = rows.map((g) => ({ g, d: distHb(p, g.guess.foot) })).filter((x) => x.d <= REACH).sort((a, b) => a.d - b.d);
+    return near.find((x) => x.g.id === chosen?.id)?.g ?? near[0]?.g ?? null;
+  }
+  // A row of the guess glows when the hero stands at its foot, and the person says it in words
+  // before the check: "Hàng này dài ba tấm." (#90: a child pressed the check at a row that the
+  // child did not choose, and heard "Cháu đoán sáu tấm.").
+  let rowSaid = null;
+  function stepGuessRow() {
+    if (state.tick % 6 !== 0 || busy || screen || !bridgeOpen()) return;
+    const hero = getEntity(state, 'hero');
+    if (hero.route) return;
+    const g = rowAt(hero.position);
+    if (!g || g.id === rowSaid) return;
+    rowSaid = g.id;
+    glowing = [g.id];
+    const { who, near } = bridgeSpeaker(`zone:${g.guess.zone}`);
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: `mentor.${near ? '' : 'nghe.'}bridge.row`, params: { n: { key: `num.${g.guess.n}` } } });
+  }
   function stepGuessLine() {
     if (guessTold || busy || screen || !bridgeOpen()) return;
     const outlines = query(state, 'guess', 'position').filter((g) => g.guess.left === undefined);
     if (!outlines.length) return;
-    const at = outlines[0].position;
+    const at = outlines[0].guess.foot ?? outlines[0].position;
     // A walk that the child chose goes on: the line waits until the hero stops near the outlines
     // (#66: the talk of the bridge stopped a walk from the stakes to the smith).
     const hero = getEntity(state, 'hero');
@@ -730,6 +752,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const here = atWork(fisher, state.clock.minutes) && Math.hypot(fisher.position.x - at.x, fisher.position.z - at.z) <= 40;
     // The fisher starts the bridge with a short talk: one new word in each line, and its thing
     // glows (#66: the bridge started by itself with one long line, and no child knew what to do).
+    // The view shows the gap and all the rows while the person says the line of the guess (#90: the
+    // close camera could not show all the rows).
+    const gapE = getEntity(state, 'zone:bridge-gap');
+    const rowPts = outlines.flatMap((g) => [{ ...g.position }, { ...g.position, z: g.position.z + (g.guess.len ?? 4) }, ...(g.guess.foot ? [{ x: g.guess.foot.x, y: g.position.y, z: g.guess.foot.z }] : [])]);
+    const ends = gapE ? [gapE.zone.from, gapE.zone.from + gapE.zone.gap].map((z) => ({ x: gapE.zone.lane, y: gapE.position.y, z })) : [];
+    emit({ type: 'workView', key: 'bridge', points: [...rowPts, ...ends], sight: [...rowPts, ...ends] });
     if (here) talk('bridge.start');
     else if (nghe && !nghe.hidden) {
       emit({ type: 'open', screen: 'callout', id: nghe.id, textKey: 'mentor.nghe.bridge.guess', params: {} });
@@ -737,11 +765,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const gap = getEntity(state, 'zone:bridge-gap');
       if (gap) pointAtEnds(nghe, endsOf(gap));
       emit({ type: 'glowSeq', ids: outlines.map((g) => g.id) });
-      // The line of Nghé has no talk box that shows the rows: the view turns and leads to them, so
-      // that all the rows are on the screen (#71: at night the closer view cut the rows at the
-      // edge, and a child could not tap them).
-      const rows = outlines.map((g) => ({ ...g.position }));
-      emit({ type: 'workView', key: 'bridge', points: rows, sight: rows });
     }
   }
   // After the guess, a line says what comes next, and the pile of planks glows (#66: the outlines
@@ -961,6 +984,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A place: the corners of its rect, so that all of it is in view.
     const pointsOf = (e) => {
       const r = e.zone?.rect;
+      // A row of the guess: from end to end, and its foot on the bank (#90).
+      if (e.guess?.len) return [{ ...e.position }, { ...e.position, z: e.position.z + e.guess.len }, ...(e.guess.foot ? [{ ...e.position, ...e.guess.foot }] : [])];
       if (!r) return [{ ...e.position }];
       return [[r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1]].map(([x, z]) => ({ x, y: e.zone.y, z }));
     };
@@ -2722,9 +2747,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // tap). A press chooses it: the bridge takes that many planks.
       const outlines = query(state, 'guess', 'position').filter((g) => g.guess.left === undefined && !g.hidden);
       if (outlines.length) {
-        const ahead = frontOf(hp);
-        const g = outlines.find((x) => x.id === chosen?.id) ?? outlines.reduce((a, b) => (distHb(ahead, b.position) < distHb(ahead, a.position) ? b : a));
-        add({ act: 'guess', icon: 'check', target: g.id, at: g.position, rank: 0.5, run: () => worldCommand(state, { type: 'guess', id: 'hero', zone: g.guess.zone, n: g.guess.n }) }, REACH);
+        const g = outlines.find((x) => x.id === chosen?.id) ?? rowAt(hp);
+        if (g) add({ act: 'guess', icon: 'check', target: g.id, at: g.guess.foot ?? g.position, rank: 0.5, run: () => worldCommand(state, { type: 'guess', id: 'hero', zone: g.guess.zone, n: g.guess.n }) }, REACH);
       }
       // A gap of the bridge that the planks fill to the far bank: with empty hands, a press walks out
       // on the planks, and the step on the last plank tries the bridge (#85: after the last plank,
@@ -2967,7 +2991,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function actAtEnd() {
     const h = hero();
     const thing = getEntity(state, chosen.id);
-    const tp = thing?.zone ? standOf(thing) : thing?.position ?? null;
+    // A row of the guess: the hero stands at its foot on the bank (#90).
+    const tp = thing?.zone ? standOf(thing) : thing?.guess?.foot ?? thing?.position ?? null;
     let at = h.route?.points?.at(-1) ?? null;
     if (tp && (!at || distHb(at, tp) > REACH + 2)) {
       const n = Math.hypot(h.position.x - tp.x, h.position.z - tp.z) || 1;
@@ -3251,13 +3276,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function tap(target) {
     emit({ type: 'sound', sound: 'tap' });
     if (hero().fall) return;
-    // A plank outline of the guess at the bridge: the hero walks to it, and it is the target (the
-    // action button chooses it).
+    // A row of the guess at the bridge: the hero walks to its foot on the bank, and it is the target
+    // (the action button chooses it).
     if (target.guess) {
       const g = getEntity(state, `guess:${target.guess.zone}:${target.guess.n}`);
       if (g) {
-        emit({ type: 'tapfx', x: g.position.x / 2, y: g.position.z / 2, h: groundY(g.position.x / 2, g.position.z / 2) });
-        goTo(g.position, g.id);
+        const foot = g.guess.foot ?? g.position;
+        emit({ type: 'tapfx', x: foot.x / 2, y: foot.z / 2, h: groundY(foot.x / 2, foot.z / 2) });
+        goTo({ x: foot.x, z: foot.z }, g.id);
       }
       return;
     }
@@ -3651,7 +3677,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     };
     for (const g of query(state, 'guess', 'position')) {
       if (g.guess.left !== undefined || g.hidden) continue;
-      consider({ guess: { zone: g.guess.zone, n: g.guess.n } }, distHb(p, { x: g.position.x, z: g.position.z + 2 }), 1.2);
+      // A tap on a row (any point of it) or on its foot on the bank.
+      const along = Math.max(g.position.z, Math.min(g.position.z + (g.guess.len ?? 4), p.z));
+      const d = Math.min(distHb(p, { x: g.position.x, z: along }), g.guess.foot ? distHb(p, g.guess.foot) : Infinity);
+      consider({ guess: { zone: g.guess.zone, n: g.guess.n } }, d, 1.2);
     }
     if (best) return best.target;
     // The things of a raid that a tap is for: the gate, a spot, the bamboo.
@@ -3951,6 +3980,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepFromBehind();
     stepTight();
     stepGuessLine();
+    stepGuessRow();
     stepLeaveTask();
     stepPending();
     stepToolLines();

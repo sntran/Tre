@@ -136,7 +136,8 @@ test('the guess has clear words; the fisher points at the two ends of the gap, a
   assert.equal(vi['dlg.bridge.start.n4'], 'Cháu tìm hàng ván mờ dài bằng chỗ gãy, rồi chạm vào hàng đó.');
   const last = names.find((e) => e.seq?.length);
   assert.ok(last, 'the second line has rows that glow one after another');
-  assert.deepEqual(last.seq, [1, 2, 3, 4, 5, 6].map((n) => `guess:bridge-gap:${n}`));
+  // One row for each count of planks that the gap can take: 12 over 3 is 4 (#90).
+  assert.deepEqual(last.seq, [1, 2, 3, 4].map((n) => `guess:bridge-gap:${n}`));
   assert.ok(!last.ids.some((id) => id.startsWith('guess:')), 'the rows do not all glow at once');
   const z = getEntity(s.state, 'zone:bridge-gap').zone;
   assert.ok(gesture?.then, 'a point, and then a second point');
@@ -155,7 +156,7 @@ test('at night Nghé says the guess line with the same words, points at the ends
   assert.ok(lines.includes('mentor.nghe.bridge.guess'));
   assert.equal(load('i18n/vi.json')['mentor.nghe.bridge.guess'], 'Đây là những hàng ván mờ. Bạn tìm hàng ván mờ dài bằng chỗ gãy, rồi chạm vào hàng đó.');
   assert.equal(seqs.length, 1);
-  assert.equal(seqs[0].length, 6);
+  assert.equal(seqs[0].length, 4);
 });
 
 const guessRun = async (guess, sizes) => {

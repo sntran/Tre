@@ -148,7 +148,8 @@ export function tapTarget(session, spec) {
   }
   if (spec.guess !== undefined) {
     const g = query(state, 'guess', 'position').find((x) => x.guess.n === spec.guess && x.guess.left === undefined);
-    return g ? { target: { guess: { zone: g.guess.zone, n: g.guess.n } }, point: { x: g.position.x / 2, y: g.position.z / 2 + 1 } } : null;
+    const foot = g?.guess.foot ?? g?.position;
+    return g ? { target: { guess: { zone: g.guess.zone, n: g.guess.n } }, point: { x: foot.x / 2, y: foot.z / 2 } } : null;
   }
   if (spec.on) {
     // The last thing put on a place of a task (a tap on the thing itself, to take it back).

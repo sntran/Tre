@@ -527,6 +527,26 @@ export function plankGhost(on = false) {
   return { kind: 'still', parts, scale: 1, height: 0.5, shadow: 0 };
 }
 
+// A row of n plank outlines end to end for the guess at the bridge (#90), or the same row filled
+// when the child chose it. Each outline is 4 units long and narrower than a plank (1.2), so that
+// two rows side by side have a clear space between them. It lies along +z from its position and
+// shows no numeral.
+export function plankRow(n, on = false) {
+  const parts = [];
+  for (let i = 0; i < n; i++) {
+    const z = i * 4;
+    if (on) {
+      for (let u = 0; u < 4; u++) parts.push(P(`unit${i}_${u}`, [1.2, 0.5, 1], 'yellowPale', [0, 0.25, z + u + 0.5]));
+      continue;
+    }
+    parts.push(P(`sideL${i}`, [0.22, 0.3, 4], 'diep', [-0.5, 0.15, z + 2]));
+    parts.push(P(`sideR${i}`, [0.22, 0.3, 4], 'diep', [0.5, 0.15, z + 2]));
+    parts.push(P(`endN${i}`, [1.2, 0.3, 0.22], 'diep', [0, 0.15, z + 0.12]));
+    parts.push(P(`endS${i}`, [1.2, 0.3, 0.22], 'diep', [0, 0.15, z + 3.88]));
+  }
+  return { kind: 'still', parts, scale: 1, height: 0.5, shadow: 0 };
+}
+
 // The marks of the empty part of a gap after a fall: n red frames of one unit each (the red of
 // the dots on the planks), over the water at the height of the deck, so that the child sees how
 // many units were missing.
@@ -593,6 +613,9 @@ export function thingLook(key) {
   // counted unit (#71).
   m = /^(ruler|over)-(\d+)$/.exec(k);
   if (m) return { kind: m[1], n: Number(m[2]) };
+  // A row of n plank outlines for the guess at the bridge, or the same row filled (#90).
+  m = /^plank-row-(\d+)(-on)?$/.exec(k);
+  if (m) return { kind: 'plank-row', n: Number(m[1]), on: Boolean(m[2]) };
   if (k === 'unit-glow') return { kind: 'unit-glow' };
   // The small sign at a bed of the healer, with a picture of its herb and no word (#61).
   m = /^herb-(sign|tag)-(ngai|tiato|rauma)$/.exec(k);
@@ -1082,6 +1105,7 @@ export function figureOf(look, detail = 'fine') {
   if (thing) return thing;
   if (look.kind === 'plank') return plank(look.n);
   if (look.kind === 'plank-ghost') return plankGhost(Boolean(look.on));
+  if (look.kind === 'plank-row') return plankRow(look.n, Boolean(look.on));
   if (look.kind === 'gap') return gapMarks(look.n);
   if (look.kind === 'ruler') return rulerMarks(look.n);
   if (look.kind === 'over') return overGlow(look.n);

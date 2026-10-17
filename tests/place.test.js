@@ -354,19 +354,28 @@ test('a child who thinks before each plank is not mashing, and the first choice 
   assert.equal(ev.efficient, true);
 });
 
-test('predict, then commit: the plank outlines lie on the bank, Nghé looks at the hero, and the child taps how many', () => {
+test('predict, then commit: rows of plank outlines lie beside the gap, Nghé looks at the hero, and the child chooses how many (#90)', () => {
   const w = world();
   const z = gap(w);
   command(w, { type: 'place', id: 'hero', x: z.lane, z: z.from - 6 });
   run(w, 0.2);
   const ghosts = query(w, 'guess');
-  assert.equal(ghosts.length, 6);
-  assert.ok(ghosts.every((g) => g.look === 'plank-ghost'));
+  assert.equal(ghosts.length, Math.min(6, Math.ceil(z.gap / Math.min(...z.sizes))), 'no more rows than the gap can take planks');
+  // Row n has n outlines of 4 units end to end, parallel to the gap from the level of its near end,
+  // side by side with a space between two rows, and its foot is on the bank.
+  for (const g of ghosts) {
+    assert.equal(g.look, `plank-row-${g.guess.n}`);
+    assert.equal(g.position.z, z.from, 'level with the near end of the gap');
+    assert.equal(g.guess.len, 4 * g.guess.n);
+    assert.ok(g.guess.foot.z < z.from, 'the foot is on the bank');
+  }
+  const xs = ghosts.map((g) => g.position.x).sort((a, b) => a - b);
+  for (let i = 1; i < xs.length; i++) assert.ok(xs[i] - xs[i - 1] >= 3, 'a space between two rows');
   assert.ok(getEntity(w, 'friend:nghe').follow.goal?.guess, 'Nghé goes to the outlines and looks at the hero');
   command(w, { type: 'guess', id: 'hero', zone: 'gap', n: 3 });
   step(w, STEP, env);
   assert.equal(gap(w).guess, 3);
-  assert.deepEqual(query(w, 'guess').map((g) => [g.guess.n, g.look]), [[1, 'plank-ghost-on'], [2, 'plank-ghost-on'], [3, 'plank-ghost-on']]);
+  assert.deepEqual(query(w, 'guess').map((g) => [g.guess.n, g.look]), [[3, 'plank-row-3-on']], 'the chosen row fills');
   run(w, 1.5);
   assert.equal(query(w, 'guess').length, 0, 'then the row goes away');
   lay(w, 3);
@@ -382,7 +391,7 @@ test('a child who builds before the prediction skips it, and Nghé glances once 
   const z = gap(w);
   command(w, { type: 'place', id: 'hero', x: z.lane, z: z.from - 6 });
   run(w, 0.2);
-  assert.equal(query(w, 'guess').length, 6);
+  assert.equal(query(w, 'guess').length, Math.min(6, Math.ceil(z.gap / Math.min(...z.sizes))));
   lay(w, 4);
   const nghe = getEntity(w, 'friend:nghe');
   assert.ok(nghe.follow.glance, 'a glance at the row');

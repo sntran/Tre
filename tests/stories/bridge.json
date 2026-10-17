@@ -11,7 +11,7 @@
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 5 } },
     { "read": true },
     { "wait": 1 },
-    { "expect": [{ "zone": "bridge-gap", "state": "open", "gap": 12, "planks": 0 }, { "count": { "entities": "plank-ghost", "min": 6 } }] },
+    { "expect": [{ "zone": "bridge-gap", "state": "open", "gap": 12, "planks": 0 }, { "count": { "entities": "guess", "min": 4, "max": 4 } }] },
     { "press": { "guess": 3 } },
     { "until": { "event": "guess", "timeout": 3 } },
     { "wait": 2 },
