@@ -18,7 +18,8 @@
 //   put { zone, item, person }: the person puts a thing of the pile into the place.
 //   back { item }: the thing that the person put goes back from the place to its own heap (the
 //     end of a first step).
-//   sit { ids, time, act }: the person and the hero sit (a break, #94; act eat: the hero eats).
+//   sit { ids, time, act, face }: the person and the hero sit (a break, #94; act eat: the hero eats;
+//     face: the point that they turn to).
 //   gone { k }: the k-th thing of the demonstration goes (the rice ball that the hero ate).
 //   cue { zone }: Nghé shows the gap of the bridge (the hint of the place system).
 //   nudge { x, z, time }: Nghé goes next to a place and stretches its neck toward it.
@@ -86,7 +87,9 @@ function play(world, ent, dt, env) {
     if (st.sit) {
       for (const id of st.sit.ids) {
         const who = getEntity(world, id);
-        if (who?.position) who.gesture = { act: st.sit.act ?? 'sit', t: st.sit.time };
+        if (!who?.position) continue;
+        if (st.sit.face) who.position.facing = faceOf(st.sit.face.x - who.position.x, st.sit.face.z - who.position.z);
+        who.gesture = { act: st.sit.act ?? 'sit', t: st.sit.time };
       }
     }
     if (st.hop && spawned(st.hop.k)) spawned(st.hop.k).hop = { t: 0 };

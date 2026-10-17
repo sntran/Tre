@@ -31,7 +31,8 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 // world(): the world state; env(): the facts of the map; raise(key): the task asks for a bigger
 // task (a move raise), returns nothing; nameOf(id): the name of a person (a text parameter).
 const REST_TIME = 4.4; // seconds that the person and the hero sit in a break
-const BALL_UP = 1.4; // half blocks over the ground: the rice ball in the hands of the sitting hero
+const BALL_UP = 0.1; // half blocks over the ground: the rice ball on its leaf
+const BALL_OUT = 1.6; // half blocks from the hero toward the camera
 
 export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {}, nameOf = () => '' }) {
   const cfg = data.mentors;
@@ -640,10 +641,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     s.say(t, lineOf(key, 'break'));
     if (!hero?.position) return t + 2;
     const p = hero.position;
-    const ball = { x: p.x + Math.sin(p.facing ?? 0) * 0.7, z: p.z + Math.cos(p.facing ?? 0) * 0.7 };
+    // The rice ball lies on its leaf on the side of the camera, so that the child sees it (the play
+    // of #94: in the hands it was behind the body of the hero), and the hero turns to it.
+    const az = env()?.view?.();
+    const dir = Number.isFinite(az) ? az : (p.facing ?? 0);
+    const ball = { x: p.x + Math.sin(dir) * BALL_OUT, z: p.z + Math.cos(dir) * BALL_OUT };
     if (who) s.steps.push({ at: t + 0.2, point: { id: who, x: p.x, z: p.z, time: 0.6 } });
     if (who) s.steps.push({ at: t + 0.8, sit: { ids: [who], time: REST_TIME } });
-    s.steps.push({ at: t + 0.8, sit: { ids: ['hero'], time: REST_TIME, act: 'eat' } });
+    s.steps.push({ at: t + 0.8, sit: { ids: ['hero'], time: REST_TIME, act: 'eat', face: ball } });
     s.steps.push({ at: t + 0.8, spawn: { look: 'rice-ball', x: ball.x, z: ball.z, dy: BALL_UP } });
     s.steps.push({ at: t + 1.4, nudge: { x: ball.x, z: ball.z, time: REST_TIME } });
     s.steps.push({ at: t + 2.4, look: { k: 0, look: 'rice-ball-half' }, sound: { sound: 'peck', id: 'hero' } });
