@@ -27,6 +27,7 @@ import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js
 import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, shortPiece, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
 import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
+import { atWork } from './schedule.js';
 
 const BEND = 1.2; // seconds: the bent iron cools before it goes back into the fire
 const TIDE_IN = 2.5; // seconds: the tide stands high over the stakes
@@ -57,6 +58,7 @@ const DEMO_WAIT = 0.8; // seconds: the smith quenches his demo piece this long a
 const DEMO_NEXT = 1.6; // seconds: then the iron of the child comes on the anvil
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+const PERSON_AWAY = 40; // half blocks: a person farther than this from the hero is not at the task (#51)
 const say = (world, type, id, extra = {}) => world.events.push({ type, id, ...extra });
 const trialZone = (world, id) => getEntity(world, `zone:trial-${id}`);
 const zoneEnt = (world, id) => getEntity(world, `zone:${id}`);
@@ -1368,8 +1370,11 @@ function tickStem(world, tz, dt) {
       const s = tz.zone.stem;
       for (let j = 1; j < s.length; j++) addEntity(world, { id: `why:woodcutter:free:${j}`, why: { zone: tz.id }, position: { x: s.x + j, y: s.y, z: s.z, facing: 0 }, look: 'mark-glow' });
       tz.zone.addMark = { x: hero.position.x, z: hero.position.z };
-      const person = query(world, 'person').find((p) => p.person.ref === 'woodcutter');
-      if (person) say(world, 'call', person.id, { key: 'woodcutter.addMark', params: {}, happened: true });
+      // The woodcutter says it, or Nghé while he is away (at home at night).
+      const person = query(world, 'person').find((p) => p.person.ref === 'woodcutter' && atWork(p, world.clock.minutes) && dist(p.position, hero.position) <= PERSON_AWAY);
+      const nghe = getEntity(world, 'friend:nghe');
+      const who = person ?? (nghe && !nghe.hidden ? nghe : null);
+      if (who) say(world, 'call', who.id, { key: person ? 'woodcutter.addMark' : 'mentor.nghe.woodcutter.addMark', params: {}, happened: true });
     }
   }
 }

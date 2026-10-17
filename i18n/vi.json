@@ -1292,6 +1292,7 @@
   "woodcutter.piece": "Khúc này:",
   "woodcutter.pieces": "Có {n} khúc. Anh cần {m} khúc.",
   "woodcutter.addMark": "Cháu đi đến chỗ khác trên cây tre, rồi bấm nút để vạch thêm một dấu.",
+  "mentor.nghe.woodcutter.addMark": "Bạn đi đến chỗ khác trên cây tre, rồi bấm nút để vạch thêm một dấu.",
   "mentor.nghe.pieces": "Có {n} khúc. Mình cần {m} khúc.",
   "mentor.ducks.first": "Đứng bên cái vại nhé. Bấm nút lớn một lần là một gáo cám vào máng.",
   "mentor.drum.first": "Đứng bên trống đồng và bấm nút lớn vào nhịp mà nhóm nhảy nhé.",

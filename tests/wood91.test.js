@@ -81,6 +81,29 @@ test('after a cut with too few pieces, the woodcutter says how to add a mark, an
   assert.equal(glows().length, 0, 'the glow ends when the child walks');
 });
 
+test('while the woodcutter is away, Nghé says how to add a mark (#91)', async () => {
+  const calls = [];
+  const session = await atStem([], (s) => { s.listen((ev) => { if (ev.type === 'call') calls.push(`${ev.id} ${ev.key}`); }); });
+  const stem = getEntity(session.state, 'stem:woodcutter');
+  const hero = getEntity(session.state, 'hero');
+  Object.assign(hero.position, { x: stem.position.x + 3, z: stem.position.z + 2.5 });
+  delete hero.route;
+  run(session, 0.5);
+  send(session, { type: 'tap', target: { thing: stem.id, along: 3 } });
+  run(session, 0.3);
+  send(session, { type: 'hands' });
+  run(session, 1.5);
+  getEntity(session.state, 'zone:trial-woodcutter').zone.level = 1;
+  send(session, { type: 'hands' });
+  // He goes away while he counts the pieces.
+  const man = getEntity(session.state, 'npc:woodcutter');
+  run(session, 40, () => {
+    if (calls.some((c) => /woodcutter.pieces/.test(c))) Object.assign(man.position, { x: stem.position.x + 60, z: stem.position.z });
+    return calls.some((c) => /addMark/.test(c));
+  });
+  assert.ok(calls.includes('friend:nghe mentor.nghe.woodcutter.addMark'), calls.join(', '));
+});
+
 test('a child of grade K gets the halving on a short stem after two cuts that are not equal; a child of grade 2 does not', async () => {
   for (const grade of [0, 2]) {
     const keys = [];
