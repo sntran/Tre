@@ -548,6 +548,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       say(t, defOf(key).lines.tight);
       point(t, stake.position, 2);
       mark(t, stake.position, 3);
+      // The stake glows with a ring of its own and bobs until the child takes a stake (the play of
+      // #92: the frame showed no stake that stood out).
+      steps.push({ at: t, glow: { ids: [stake.id] } });
       t += 3;
     } else if (move === 'show' && defOf(key).lines?.cut && task?.tz?.zone.marks?.length && !task.tz.zone.cut) {
       // A stem with a mark and no cut: the hint is the next step, the count and the cut (#89: a wave

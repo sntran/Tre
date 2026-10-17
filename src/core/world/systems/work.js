@@ -57,6 +57,7 @@ const MAT_MAX = 14; // the most rods on the mat of the teacher
 const DEMO_WAIT = 0.8; // seconds: the smith quenches his demo piece this long after it turns hot
 const DEMO_NEXT = 1.6; // seconds: then the iron of the child comes on the anvil
 
+const WATER_UP = 1.3; // half blocks over the bed of the river: just over its surface (WATER.river of src/world/terrain.js)
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const PERSON_AWAY = 40; // half blocks: a person farther than this from the hero is not at the task (#51)
 const say = (world, type, id, extra = {}) => world.events.push({ type, id, ...extra });
@@ -1208,7 +1209,9 @@ function markNarrow(world, z, line, row) {
     if (b === undefined || b === a || b - a >= line.zone.space) return;
     // A bright frame on the water around the narrow gap, as clear as the ring of a cue (#92: the
     // children did not see the flat marks of #88).
-    addEntity(world, { id: `why:fisher:narrow:${i}`, keep: true, position: { x: line.zone.x + a, y: line.zone.y + 0.1, z: line.zone.z, facing: Math.PI / 2 }, look: `gap-frame-${Math.max(1, Math.round(b - a))}` });
+    // It lies on the surface of the water (the play of #92: at the height of the bed, the river
+    // covered it).
+    addEntity(world, { id: `why:fisher:narrow:${i}`, keep: true, position: { x: line.zone.x + a, y: line.zone.y + WATER_UP, z: line.zone.z, facing: Math.PI / 2 }, look: `gap-frame-${Math.max(1, Math.round(b - a))}` });
     // The stake at the end of a narrow gap glows too, until the child takes a stake: a gap of one
     // half block is too small to see.
     if (!FISHER_STAKES.has(stakes[i].id)) glow.push(stakes[i].id);
