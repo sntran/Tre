@@ -197,8 +197,9 @@ export function onCommit(st, memory, input, fam, cfg) {
   // No picture of another station in the first visit to a task (#73: after a second miss in the
   // first visit, both children felt sent away): the move before it on the ladder.
   if (move === 'picture' && input.firstVisit) move = withoutPicture(fam.ladders[diag] ?? fam.ladders.miss ?? []);
-  // A bigger task comes once in a task.
-  if (move === 'raise' && st.raised) move = 'wait';
+  // A bigger task comes once in a task, and never right after a try that was not right (#94: the
+  // teacher fixed 11 rods, tied ten, and said "Nhanh và đúng cả.").
+  if (move === 'raise' && (st.raised || (st.tried && st.lastSolved === false))) move = 'wait';
   if (move === 'raise') st.raised = true;
   if (move !== 'wait') st.helped[diag] = true;
   st.tried = true;
