@@ -858,26 +858,51 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // bank: the part of a plank that is too long glows there, and the fisher says so (the place
   // system). A short try ends with a point at the empty part of the gap. The world keeps the planks
   // of the try for the time of the count (countTime in src/core/world/zones.js).
+  // The planks of the last count of each gap (its round): a later count of the same gap counts on
+  // from the planks that stayed (#90: after each plank that was too long, the fisher counted every
+  // unit from "một" to "mười hai" again, about 10 seconds, and the children waited).
+  const counted = new Map();
   function unitSteps(task, parts, s, t) {
     const z = task.place.zone;
     const long = parts.reduce((a, e) => a + (e.item.size ?? 0), 0) > z.gap;
     // After a plank that is too long, the line of the fisher comes from the world at once.
     if (!long) s.say(t, lineOf(task.key, 'mark'));
+    const key = `${task.place.id}:${z.round ?? 0}`;
+    const last = counted.get(key) ?? [];
+    counted.set(key, parts.map((e) => e.id));
+    let stay = 0;
+    while (stay < parts.length && parts[stay].id === last[stay]) stay += 1;
+    // The planks that stayed: their units glow at once, and the count starts with the last of
+    // them ("… mười một, mười hai"). The plank after them is never one that stayed.
+    stay = Math.min(stay, parts.length - 1);
     let u = 0;
-    for (const e of parts) {
+    let from = 0;
+    for (const e of parts.slice(0, stay)) {
+      const top = e.position.y + 0.8 + 0.02;
+      for (let i = 0; i < (e.item.size ?? 1) && u < z.gap; i++) {
+        u += 1;
+        s.steps.push({ at: t, spawn: { look: 'unit-glow', x: z.lane, z: z.from + u - 0.5, y: top } });
+      }
+    }
+    if (u > 0) {
+      s.point(t + COUNT_LEAD, { x: z.lane, z: z.from + u - 0.5 }, UNIT_PACE);
+      if (u <= 30) s.say(t + COUNT_LEAD + 0.05, `num.${u}`);
+      from = u - 1;
+    }
+    for (const e of parts.slice(stay)) {
       if (u >= z.gap) break;
-      s.point(t + COUNT_LEAD + u * UNIT_PACE, { x: z.lane, z: z.from + u + (e.item.size ?? 1) / 2 }, (e.item.size ?? 1) * UNIT_PACE);
+      s.point(t + COUNT_LEAD + (u - from) * UNIT_PACE, { x: z.lane, z: z.from + u + (e.item.size ?? 1) / 2 }, (e.item.size ?? 1) * UNIT_PACE);
       // The top of the plank: a plank on the gap has its top at the deck, and one that is too long
       // lies on the far bank, higher.
       const top = e.position.y + 0.8 + 0.02;
       for (let i = 0; i < (e.item.size ?? 1) && u < z.gap; i++) {
         u += 1;
-        const at = t + COUNT_LEAD + (u - 1) * UNIT_PACE;
+        const at = t + COUNT_LEAD + (u - 1 - from) * UNIT_PACE;
         s.steps.push({ at, spawn: { look: 'unit-glow', x: z.lane, z: z.from + u - 0.5, y: top } });
         if (u <= 30) s.say(at + 0.05, `num.${u}`);
       }
     }
-    t += COUNT_LEAD + u * UNIT_PACE;
+    t += COUNT_LEAD + (u - from) * UNIT_PACE;
     const end = long ? { x: z.lane, z: z.from + z.gap + 1 } : { x: z.lane, z: z.from + u + 0.5 };
     s.point(t, end, 2);
     s.mark(t, end, 4);

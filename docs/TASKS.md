@@ -94,6 +94,8 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No dead end.** When a put leaves a rest of the gap that no plank of the pile fits (the gap of 12 after 5 and 5, or after 3, 4, and 4, with planks of 3, 4, and 5), the world sends `stuck` at once, and the person says "Chỗ còn lại ngắn quá, không tấm nào vừa. Cháu nhấc tấm cuối lên, rồi thay tấm khác." (`mentor.bridge.stuck`; Nghé when the fisher is not at work). The last plank on the gap glows, and while it is the plank to take back (`zone.stuck`), a press with empty hands at the edge takes it back with no tap. After a plank that is too long, only the planks of the pile that fit the rest of the gap glow; when none fits, the line of the take-back comes in place of `shorter`, and the plank before the long one glows.
 
+**A count that counts on.** The first count of a gap counts all its units. A later count of the same gap (the same round) starts at the end of the planks that stayed from the last count: their units glow at once, the person says the last of them, and counts on ("… mười một, mười hai"; `counted` in `src/core/mentoring.js`).
+
 ### The smaller problems of the play test of #85 (#89)
 
 1. **The practice of grade 1:** "n thêm 10" of `math.count.120` uses n from 10 to 89 (`tens` of the level in `data/skills.json`; 1.NBT.C.5). The check of the top level near mastery waits for `almostAfter` answers (4, `data/config/learning.json`), so that two right answers do not take a new skill to its top level. The hint names the bundles of the teacher: "Thêm 10 là thêm một bó mười que." and "Ví dụ: 3 bó và 4 que là 34. Thêm một bó là 44."

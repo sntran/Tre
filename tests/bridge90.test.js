@@ -133,3 +133,40 @@ test('after a plank that is too long, only the planks that fit the rest glow', a
   assert.ok(glow.length > 0, 'some planks glow');
   for (const id of glow) assert.equal(getEntity(s.state, id).item.size, 3, `only the planks of 3 fit a rest of 3: ${id}`);
 });
+
+test('a second count counts on from the planks that stayed: "tám, chín, mười, mười một"', async () => {
+  const said = [];
+  let mark = -1;
+  const failures = await runHeadless({
+    name: 'bridge-count-on', profile: profile(open), clock: 540, at: ['phu-dong', 46, 61],
+    steps: [
+      ...start,
+      { press: { guess: 3 } },
+      { until: { event: 'guess', timeout: 3 } },
+      { wait: 2 },
+      ...plank(4), { until: { event: 'put', timeout: 20 } }, { wait: 1.5 },
+      ...plank(4), { until: { event: 'put', timeout: 20 } }, { wait: 1.5 },
+      ...plank(5), { until: { event: 'long', timeout: 20 } },
+      { until: { event: 'float', timeout: 20 } },
+      { wait: 6 },
+      ...plank(3), { until: { event: 'put', timeout: 20 } }, { wait: 1 },
+      { press: { screenOf: 'bridge-gap' } },
+      { until: { event: 'float', timeout: 30 } },
+      { wait: 8 },
+    ],
+  }, {
+    onSession: (x) => {
+      x.listen((e) => {
+        if (e.type === 'open' && /^num\./.test(e.textKey ?? '')) said.push(e.textKey);
+        if (e.type === 'float' && mark < 0) mark = said.length;
+      });
+    },
+  });
+  assert.deepEqual(failures, []);
+  const first = said.slice(0, mark);
+  const second = said.slice(mark);
+  assert.equal(first[0], 'num.1', `the first count counts all: ${first.join(' ')}`);
+  assert.equal(first.at(-1), 'num.12');
+  // (A demonstration can come after the short try, with its own numbers.)
+  assert.deepEqual(second.slice(0, 4), ['num.8', 'num.9', 'num.10', 'num.11'], `the second count counts on: ${second.join(' ')}`);
+});
