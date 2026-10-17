@@ -1,0 +1,249 @@
+{
+ "about": "#94: the bridge: three fast planks that are too long: a break with a rice ball, a bite for Nghé, and the next help at once.",
+ "start": "?story=bridge",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "guess:bridge-gap:3"
+   },
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 3
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:6"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:7"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "wait": 4
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:3"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'why:bridge-gap:over')",
+   "timeout": 200
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.id === 'why:bridge-gap:over')",
+   "timeout": 400
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:4"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'why:bridge-gap:over')",
+   "timeout": 200
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.id === 'why:bridge-gap:over')",
+   "timeout": 400
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.demo)",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:0"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.break')",
+   "timeout": 400
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.look === 'rice-ball-half' && !e.hidden)",
+   "timeout": 120
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => x.key))"
+  },
+  {
+   "shot": "a-break-the-hero-eats-a-rice-ball"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.look === 'rice-ball-bit' && !e.hidden)",
+   "timeout": 120
+  },
+  {
+   "shot": "nghe-gets-a-bite"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.look === 'rice-ball-bit' && !e.hidden) && tre.activeVillage.heard().slice(tre.activeVillage.heard().findLastIndex((x) => x.key === 'mentor.break') + 1).some((x) => /^num\\./.test(x.key))",
+   "timeout": 200
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => x.key))"
+  },
+  {
+   "shot": "the-next-help-comes-at-once"
+  }
+ ]
+}

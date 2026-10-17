@@ -1,0 +1,674 @@
+{
+ "about": "#94: the teacher: the hero and Nghé stand beside the mat in two views; after the task, no dotted roof over the screen.",
+ "start": "?story=trial-scholar",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2.2
+  },
+  {
+   "press": true,
+   "after": 2.2
+  },
+  {
+   "press": true,
+   "after": 2.2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify((({x, z}) => ({x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10}))(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position))"
+  },
+  {
+   "print": "JSON.stringify((({x, z}) => ({x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10}))(tre.activeVillage.state().entities.find((e) => e.id === 'friend:nghe').position))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.rect)"
+  },
+  {
+   "shot": "the-hero-and-nghe-beside-the-mat"
+  },
+  {
+   "button": ".turn-btn:not(.wave-btn):not(.jump-btn):not(.act-btn)"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "press": true,
+   "after": 2.2
+  },
+  {
+   "press": true,
+   "after": 2.2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify((({x, z}) => ({x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10}))(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position))"
+  },
+  {
+   "print": "JSON.stringify((({x, z}) => ({x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10}))(tre.activeVillage.state().entities.find((e) => e.id === 'friend:nghe').position))"
+  },
+  {
+   "shot": "after-a-turn-of-the-view-still-beside-the-mat"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done) && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "read": 6,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.done)",
+   "timeout": 120
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => x.key))"
+  },
+  {
+   "shot": "after-the-task-no-dotted-roof"
+  },
+  {
+   "stick": [
+    0,
+    60,
+    1.5
+   ]
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "a-walk-by-the-house-the-roof-is-whole"
+  }
+ ]
+}

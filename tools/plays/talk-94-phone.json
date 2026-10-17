@@ -1,0 +1,121 @@
+{
+ "about": "#94: the first talk: the line of the hero in a talk with one choice is spoken in the voice of the hero.",
+ "start": "?story=new-profile",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "print": "(window.__said = [], (() => { const f = speechSynthesis.speak.bind(speechSynthesis); speechSynthesis.speak = (u) => { window.__said.push(u.text); return f(u); }; })(), 1)"
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "read": 1,
+   "if": "!Boolean(document.querySelector('.dialogue .btn.choice'))"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue .btn.choice'))",
+   "timeout": 20
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(window.__said.slice(-3))"
+  },
+  {
+   "check": "window.__said.some((x) => x.includes('Chào nghé con'))"
+  },
+  {
+   "shot": "the-line-of-the-hero-is-spoken"
+  }
+ ]
+}

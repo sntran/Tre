@@ -1,0 +1,113 @@
+{
+ "about": "#94 at night: the healer: after some presses, the hero and Nghé stand beside the work, not between the camera and it.",
+ "start": "?story=trial-healer&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 120
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 300
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 60",
+   "timeout": 120
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 60",
+   "timeout": 120
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 60",
+   "timeout": 120
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 60",
+   "timeout": 120
+  },
+  {
+   "print": "JSON.stringify((({x, z}) => ({x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10}))(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position))"
+  },
+  {
+   "print": "JSON.stringify((({x, z}) => ({x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10}))(tre.activeVillage.state().entities.find((e) => e.id === 'friend:nghe').position))"
+  },
+  {
+   "shot": "night-the-hero-and-nghe-beside-the-work-of-the-healer"
+  }
+ ]
+}
