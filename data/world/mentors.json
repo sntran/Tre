@@ -423,7 +423,7 @@
     "trial-woodcutter": {
       "family": "plain",
       "person": "npc:woodcutter",
-      "demo": null,
+      "demo": { "thing": "stem", "length": 6 },
       "picture": "mentor.picture.woodcutter", "pictureUnless": "trial.fisher.done",
       "lines": {
         "first": "mentor.woodcutter.first",
@@ -434,7 +434,8 @@
         "pieces": "woodcutter.pieces",
         "short": "woodcutter.short",
         "equal": "woodcutter.equal",
-        "erase": "mentor.woodcutter.erase", "cut": "mentor.woodcutter.cut"
+        "erase": "mentor.woodcutter.erase", "cut": "mentor.woodcutter.cut",
+        "demo": "mentor.woodcutter.demo", "demoDone": "mentor.woodcutter.demoDone"
       }
     },
     "trial-plant": {

@@ -80,3 +80,38 @@ test('after a cut with too few pieces, the woodcutter says how to add a mark, an
   run(session, 0.5);
   assert.equal(glows().length, 0, 'the glow ends when the child walks');
 });
+
+test('a child of grade K gets the halving on a short stem after two cuts that are not equal; a child of grade 2 does not', async () => {
+  for (const grade of [0, 2]) {
+    const keys = [];
+    const looks = new Set();
+    const session = await atStem([], (s) => {
+      s.listen((ev) => { if (ev.type === 'open' || ev.type === 'call') keys.push(ev.textKey ?? ev.key); });
+      s.listen(() => { for (const e of s.state.entities) if (e.demo) looks.add(e.look); });
+    }, grade);
+    const stem = getEntity(session.state, 'stem:woodcutter');
+    const hero = getEntity(session.state, 'hero');
+    const len = getEntity(session.state, 'zone:trial-woodcutter').zone.stem.length;
+    for (let k = 0; k < 2; k++) {
+      Object.assign(hero.position, { x: stem.position.x + 3, z: stem.position.z + 2.5 });
+      delete hero.route;
+      run(session, 0.5);
+      // A mark off the middle: two pieces that are not equal.
+      send(session, { type: 'tap', target: { thing: stem.id, along: len / 2 - 1 } });
+      run(session, 0.3);
+      send(session, { type: 'hands' });
+      run(session, 1.5);
+      send(session, { type: 'hands' });
+      run(session, 2);
+      run(session, 180, () => !stem.hidden && !getEntity(session.state, 'zone:trial-woodcutter').zone.cut);
+      run(session, 1);
+    }
+    run(session, 20);
+    if (grade === 0) {
+      assert.ok(keys.includes('mentor.woodcutter.demo'), `the line of the demonstration: ${keys.join(', ')}`);
+      assert.ok(looks.has('stem-6') && looks.has('chalk-band'), `a short stem with a mark: ${[...looks].join(', ')}`);
+    } else {
+      assert.ok(!keys.includes('mentor.woodcutter.demo'), 'no demonstration at grade 2 after two cuts');
+    }
+  }
+});

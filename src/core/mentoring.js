@@ -937,6 +937,30 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     }
     // The row of the fisher (#88): his gap on a short row of four stakes next to the child, with no
     // count.
+    // The halving of the woodcutter (#91): a short stem next to the child, a mark in the middle,
+    // and he counts the rings of each half.
+    if (d.thing === 'stem') {
+      const len = d.length ?? 6;
+      const half = len / 2;
+      const spot = demoSpot(task, len);
+      s.say(t, lineOf(task.key, 'demo'));
+      s.steps.push({ at: t + 1, spawn: { look: `stem-${len}`, x: spot.x, z: spot.z, facing: 0 } });
+      s.point(t + 2, { x: spot.x, z: spot.z + half }, 1.2);
+      s.steps.push({ at: t + 2.2, spawn: { look: 'chalk-band', x: spot.x, z: spot.z + half, facing: Math.PI / 2 } });
+      let at = t + 3.4;
+      for (let k = 0; k < 2; k++) {
+        for (let j = 1; j <= half; j++) {
+          const p = { x: spot.x, z: spot.z + k * half + j - 0.5 };
+          s.point(at, p, UNIT_PACE);
+          s.steps.push({ at, spawn: { look: 'ring-glow', x: p.x, z: p.z, facing: 0 } });
+          s.say(at + 0.05, `num.${j}`);
+          at += UNIT_PACE;
+        }
+        at += 0.6;
+      }
+      s.say(at, lineOf(task.key, 'demoDone'), { n: { key: `num.${half}` } });
+      return { t: at + 3, keyAt: t + 2.2 };
+    }
     if (d.thing === 'stake') {
       const space = task.place?.zone.space ?? 4;
       const spot = demoSpot(task);

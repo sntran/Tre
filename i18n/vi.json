@@ -1301,6 +1301,8 @@
   "mentor.show.healer": "Lấy một bó lá ở luống, rồi bỏ vào giỏ nhé.",
   "mentor.show.woodcutter": "Vạch một dấu phấn lên cây tre nhé.",
   "mentor.woodcutter.cut": "Cháu đếm đốt từng khúc, rồi bấm nút lớn để chặt.",
+  "mentor.woodcutter.demo": "Xem này, anh làm thử ở một cây tre ngắn.",
+  "mentor.woodcutter.demoDone": "Mỗi khúc {n} đốt: hai khúc dài bằng nhau.",
   "mentor.carry.woodcutter": "Mang các khúc tre ra đống gỗ nhé.",
   "mentor.carry.fisher": "Cắm cái cọc này lên hàng nhé.",
   "mentor.show.plant": "Lấy một bó mạ ở đống, rồi cắm xuống ô ruộng nhé.",

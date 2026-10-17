@@ -638,6 +638,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The pile of the fisher is empty (#88): the first time, after the line of the fisher, the hint
   // of a stake that a tap and a press take back (tight); the second time, the demonstration of his
   // gap on a short row next to the child, and then the work system brings the stakes.
+  // The woodcutter (#91): for a child of grade 1 or below, after two cuts that are not equal, he
+  // shows the halving on a short stem next to the child when the new stem comes, before a third try.
+  let woodFails = 0;
+  let woodDemo = false;
+  function woodCut(ev) {
+    if (ev.type === 'snap' && ev.id === 'zone:trial-woodcutter' && Array.isArray(ev.pieces)) {
+      woodFails += 1;
+      if (woodFails === 2 && Number(profile.grade) <= 1) woodDemo = true;
+    }
+    if (ev.type === 'stem' && ev.id === 'stem:woodcutter' && woodDemo) {
+      woodDemo = false;
+      mentoring.move('trial-woodcutter', 'demo');
+    }
+  }
   let tightAt = null;
   function emptyPile(ev) {
     const key = 'trial-fisher';
@@ -1077,6 +1091,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // In a later round of a practice, the smith does not show his quench again.
     setupTrial(state, def, practicing ? practice.level : levelFor(data.trials, profile.grade), env, { demo: !(practicing && practice.round > 0), practice: practicing });
     mentoring.start(`trial-${id}`);
+    if (id === 'woodcutter') {
+      woodFails = 0;
+      woodDemo = false;
+    }
     emit({ type: 'hud' });
     // The teacher says how many bundles he needs, while the pips of the goal bar light up one at a
     // time (#61: before, only the pips showed it).
@@ -3843,6 +3861,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The things that a help makes glow until the child takes one (the shorter planks, #85).
     if (ev.type === 'glowThings') glowing = [...ev.ids];
     if (ev.type === 'stuck') bridgeStuck(ev);
+    if (ev.type === 'snap' || ev.type === 'stem') woodCut(ev);
     if (ev.type === 'empty') emptyPile(ev);
     if (ev.type === 'more' && ev.task) log('stakes', { task: ev.task.replace(/^zone:/, ''), help: 'stakes', stakes: ev.n });
     if ((ev.type === 'pick' && ev.id === 'hero') || ev.type === 'solid') glowing = [];

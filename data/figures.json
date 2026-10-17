@@ -836,6 +836,10 @@
       "kind": "basket",
       "full": true
     },
+    "stem-6": {
+      "kind": "stem",
+      "n": 6
+    },
     "stem-8": {
       "kind": "stem",
       "n": 8
