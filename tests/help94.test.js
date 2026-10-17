@@ -94,3 +94,38 @@ test('the line of the hero in a talk with one choice is said in the voice of the
   assert.equal(spokenOf({ speaker: 'narrator', textKey: 'a', choices: ['b', 'c'] }, data, girl).length, 1);
   assert.equal(spokenOf({ speaker: 'narrator', textKey: 'a' }, data, girl).length, 1);
 });
+
+// Is a point between the camera and a rect of work (the camera toward (sin, cos) of az)?
+const inFront = (p, r, az, margin = 0) => {
+  const cx = Math.sin(az);
+  const cz = Math.cos(az);
+  const mid = { x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2 };
+  const half = (Math.abs(cz) * (r.x1 - r.x0) + Math.abs(cx) * (r.z1 - r.z0)) / 2;
+  const along = (p.x - mid.x) * cx + (p.z - mid.z) * cz;
+  const side = (p.x - mid.x) * cz - (p.z - mid.z) * cx;
+  return along > 0 && Math.abs(side) < half - margin;
+};
+
+test('at the mat of the teacher, the hero and Nghé stand beside the work, never between the camera and the rods (#94)', async () => {
+  for (const az of [Math.PI / 4, (5 * Math.PI) / 4, (3 * Math.PI) / 4, -Math.PI / 4]) {
+    let s = null;
+    const failures = await runHeadless({
+      name: 'mat-beside', profile: { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } }, clock: 540, at: ['phu-dong', 54, 27],
+      steps: [
+        { do: { type: 'view', az } },
+        { press: { entity: 'npc:teacher' } },
+        { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 20 } },
+        { read: true },
+        { until: { event: 'call', with: { key: 'mentor.first.you' }, timeout: 15 } },
+        { repeat: 3, steps: [{ press: { item: 'rod' } }, { until: { event: 'put', timeout: 10 } }] },
+        { wait: 3 },
+      ],
+    }, { onSession: (x) => { s = x; } });
+    assert.deepEqual(failures, [], `az ${az.toFixed(2)}`);
+    const r = getEntity(s.state, 'zone:mat').zone.rect;
+    const hero = getEntity(s.state, 'hero').position;
+    const nghe = getEntity(s.state, 'friend:nghe').position;
+    assert.ok(!inFront(hero, r, az), `az ${az.toFixed(2)}: the hero at ${hero.x.toFixed(1)}, ${hero.z.toFixed(1)} is in front of the mat ${JSON.stringify(r)}`);
+    assert.ok(!inFront(nghe, r, az), `az ${az.toFixed(2)}: Nghé at ${nghe.x.toFixed(1)}, ${nghe.z.toFixed(1)} is in front of the mat`);
+  }
+});

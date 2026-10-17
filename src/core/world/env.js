@@ -100,6 +100,9 @@ export function envFor(tileMap, extra = {}) {
     // here(task): is the hero at the place of the task (trial-<id>)? Null: always (#78: the tide of
     // the fisher waits, and his lines wait, while the child is at another place).
     here: extra.here ?? null,
+    // view(): the angle of the view on the screen (radians; the camera is toward (sin, cos) of it),
+    // so that Nghé keeps out of the line between the camera and the work (#94). Null: no view.
+    view: extra.view ?? (() => null),
     // The switches of the experiments (src/core/experiments.js), for example predict.
     switches: extra.switches ?? {},
     // The small joys (the joys of data/world/life.json): the catch of the fisher, and the notice of Nghé.

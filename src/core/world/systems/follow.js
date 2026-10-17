@@ -18,6 +18,21 @@ const SHAKE = 1.6; // seconds of a shake of the head
 const NEAR_HERO = 0.6; // half blocks: Nghé on the hero (nearer than this) steps past or away
 const PERSON_CLEAR = 1; // half blocks: Nghé stays this far out of the body of a person
 const NGHE_BODY = 1.6; // half blocks: Nghé stays this far out of the places of a task (its body, #76)
+const FRONT = 4; // half blocks: Nghé stays out of this band in front of a place, toward the camera (#94)
+
+// Is q in the band between the camera and the rect r (az: the angle of the view; the camera is
+// toward (sin, cos) of it)? Return the side of q in the view and the half width of the band, or
+// null.
+function frontBand(q, r, az, b) {
+  const cx = Math.sin(az);
+  const cz = Math.cos(az);
+  const mid = { x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2 };
+  const depth = (Math.abs(cx) * (r.x1 - r.x0) + Math.abs(cz) * (r.z1 - r.z0)) / 2;
+  const half = (Math.abs(cz) * (r.x1 - r.x0) + Math.abs(cx) * (r.z1 - r.z0)) / 2 + b;
+  const along = (q.x - mid.x) * cx + (q.z - mid.z) * cz;
+  const side = (q.x - mid.x) * cz - (q.z - mid.z) * cx;
+  return along > 0 && along < depth + FRONT && Math.abs(side) < half ? { side, half, cx, cz } : null;
+}
 
 // The rects of the places of the tasks that go on (half blocks): the places with a rect, and the
 // stem of the woodcutter with its pieces (#80: Nghé stood on the stem and covered the marks).
@@ -120,6 +135,31 @@ export function follow(world, dt, rng, env) {
       p.x = out.x;
       p.z = out.z;
       m.speed = Math.max(m.speed, 6);
+    }
+    // Nghé is never between the camera and a place of the work (#94: Nghé stood in front of the mat,
+    // and a child could not count the rods): out of the band to its nearer side, as the camera sees
+    // it.
+    const az = env.view?.();
+    if (Number.isFinite(az)) {
+      for (const r of workRects(world)) {
+        const band = frontBand(p, r, az, NGHE_BODY);
+        if (!band) continue;
+        if (!frontBand(from, r, az, NGHE_BODY)) {
+          p.x = from.x;
+          p.z = from.z;
+          continue;
+        }
+        const k = Math.sign(band.side) || 1;
+        const outs = [k, -k].map((s) => {
+          const d = s * (band.half + 0.3) - band.side;
+          return { x: p.x + band.cz * d, z: p.z - band.cx * d };
+        });
+        const out = outs.find((o) => env.canEnter('land', p, o)) ?? outs[0];
+        p.facing = Math.atan2(out.x - p.x, out.z - p.z);
+        p.x = out.x;
+        p.z = out.z;
+        m.speed = Math.max(m.speed, 6);
+      }
     }
     const lv = leader.motion;
     if (lv && (lv.speed ?? 0) > 0.5) {

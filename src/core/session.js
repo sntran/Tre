@@ -274,7 +274,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const onThisMap = profile.world.map === map.id;
     visit = (profile.maps[map.id] ??= { first: Math.round(profile.world.clock.minutes), things: {} });
     terrain.loadEdits?.(visit.chunks ?? {});
-    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, fords: fordsOf(map), day: data.day, zones: data.zones, trials: data.trials, switches, joys: data.life?.joys ?? null, here: (task) => inTaskArea(task, hero()?.position) });
+    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, fords: fordsOf(map), day: data.day, zones: data.zones, trials: data.trials, switches, joys: data.life?.joys ?? null, here: (task) => inTaskArea(task, hero()?.position), view: () => viewAz });
 
     // The world state of this map. The save keeps the hero, and the kept entities of each chunk; the
     // rest comes from the map and the seed.
@@ -701,6 +701,43 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
   }
+  // The hero never stands between the camera and a place of the work (#94: the hero stood in front
+  // of the mat with the rods, and the rods on the mat were under the hero): a hero who stops there
+  // steps to a side of the place, as the camera sees it (besideWork). One time at each stop.
+  const FRONT_NEAR = 6; // half blocks from the near edge of the place, toward the camera
+  let frontStill = 0;
+  let frontDone = null;
+  function stepFromFront() {
+    const h = getEntity(state, 'hero');
+    const key = String(mentoring.activeKey() ?? '');
+    if (!h || walking() || h.riding || h.fall || screen || busy || !key.startsWith('trial-')) {
+      frontStill = 0;
+      return;
+    }
+    frontStill += STEP;
+    if (frontStill < 0.6) return;
+    const here = `${h.position.x.toFixed(1)},${h.position.z.toFixed(1)},${viewAz.toFixed(2)}`;
+    if (frontDone === here) return;
+    frontDone = here;
+    const cx = Math.sin(viewAz);
+    const cz = Math.cos(viewAz);
+    for (const z of query(state, 'zone')) {
+      const r = z.zone.rect;
+      if (!r || z.zone.task !== key || z.zone.rule === 'line' || z.zone.rule === 'span' || !z.zone.stand) continue;
+      const st = z.zone.stand;
+      if (st.x > r.x0 && st.x < r.x1 && st.z > r.z0 && st.z < r.z1) continue;
+      // The distance from the edge of the place nearest to the camera, toward the camera.
+      const mid = { x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2 };
+      const front = (Math.abs(cx) * (r.x1 - r.x0) + Math.abs(cz) * (r.z1 - r.z0)) / 2;
+      const along = (h.position.x - mid.x) * cx + (h.position.z - mid.z) * cz - front;
+      if (along > FRONT_NEAR) continue;
+      const to = besideWork(h.position, r);
+      if (to === h.position) continue;
+      worldCommand(state, { type: 'walk', id: 'hero', points: [to], token: null, near: null });
+      frontDone = `${to.x.toFixed(1)},${to.z.toFixed(1)},${viewAz.toFixed(2)}`;
+      return;
+    }
+  }
   // A walk to a heap of another kind chooses that heap, as a tap on it does (#74: the child walked
   // to the bed of ngải cứu and pressed, and the press walked her to the bed of tía tô, the kind of
   // the last pick). One time at each stop next to the heap.
@@ -1077,6 +1114,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     return out;
   }
+  // The stand point beside a rect of work (half blocks), or the stand itself when it is not in front
+  // of the work. The camera is toward (sin, cos) of viewAz; the side of the view is (cos, -sin).
+  const SIDE_OUT = 0.8; // half blocks out of the side of the rect, as the camera sees it
+  function besideWork(stand, r) {
+    const cx = Math.sin(viewAz);
+    const cz = Math.cos(viewAz);
+    const mid = { x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2 };
+    const half = (Math.abs(cz) * (r.x1 - r.x0) + Math.abs(cx) * (r.z1 - r.z0)) / 2;
+    const sideOf = (p) => (p.x - mid.x) * cz - (p.z - mid.z) * cx;
+    const along = (stand.x - mid.x) * cx + (stand.z - mid.z) * cz;
+    if (along <= 0 || Math.abs(sideOf(stand)) >= half) return stand;
+    const h = hero()?.position;
+    const k = Math.sign((h ? sideOf(h) : 0) || sideOf(stand)) || 1;
+    for (const s of [k, -k]) {
+      const p = { x: mid.x + s * cz * (half + SIDE_OUT), z: mid.z - s * cx * (half + SIDE_OUT) };
+      if (tileMap.walkable(Math.floor(p.x / 2), Math.floor(p.z / 2))) return p;
+    }
+    return stand;
+  }
   const ANVIL_SIDE = 1.3; // cells from the anvil: where the hero stands at the work of the smith
   // The stand point at the anvil (half blocks): on the side away from the camera, as the view is on
   // the screen (#70, #76: the body of the hero covered the iron).
@@ -1224,7 +1280,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // the place of the tap along the line is the target place.
   // The point of a place is the middle of its rect; the hero stands at its stand point to work
   // there (src/core/world/systems/work.js).
-  const standOf = (wz) => wz.zone.stand ?? wz.position;
+  // A stand point on the side of the camera, in front of the work, goes to a side of the work as
+  // the camera sees it (#94: the hero stood between the camera and the mat, and the rods were under
+  // the hero): on the side of the hero, else the other side. A row (line) and a gap (span) keep
+  // their stand, and so does a stand in the rect (the hero works inside it).
+  const standOf = (wz) => {
+    const st = wz.zone.stand ?? wz.position;
+    const r = wz.zone.rect;
+    if (!r || wz.zone.rule === 'line' || wz.zone.rule === 'span') return st;
+    if (st.x > r.x0 && st.x < r.x1 && st.z > r.z0 && st.z < r.z1) return st;
+    return besideWork(st, r);
+  };
   // The point of a place nearest to p (half blocks): in its rect, or its point.
   const nearIn = nearestPoint;
   function tapTaskPlace(hit) {
@@ -4119,6 +4185,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepNearHeap();
     stepOutOfPerson();
     stepFromBehind();
+    stepFromFront();
     stepTight();
     stepGuessLine();
     stepGuessRow();
