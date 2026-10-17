@@ -1,0 +1,433 @@
+{
+ "about": "#90 at night: the rows of the guess beside the gap, the row said at its foot, a plank on the gap, only the planks that fit glow, two planks that are too long, the demonstration across a small gap, the count that counts on, the take-back after a 3 with a rest of 1, and the solid bridge.",
+ "start": "?story=bridge&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 6
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.nghe.bridge.guess')",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "night-the-rows-lie-beside-the-gap"
+  },
+  {
+   "tap": {
+    "thing": "guess:bridge-gap:3"
+   },
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.nghe.bridge.row')",
+   "timeout": 30
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "night-at-the-foot-of-row-three-it-glows-and-is-said"
+  },
+  {
+   "print": "tre.activeVillage.session.action()?.act"
+  },
+  {
+   "check": "tre.activeVillage.session.action()?.act === 'guess'"
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:3"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null)"
+  },
+  {
+   "check": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null) === 4"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length === 1"
+  },
+  {
+   "shot": "night-a-plank-on-the-gap-looks-like-a-plank"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:4"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null)"
+  },
+  {
+   "check": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null) === 4"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length === 2"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:6"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null)"
+  },
+  {
+   "check": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null) === 5"
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'why:bridge-gap:over')",
+   "timeout": 40
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.nghe.bridge.shorter')",
+   "timeout": 400
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "night-only-the-planks-that-fit-glow"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.id === 'why:bridge-gap:over')",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:6"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null)"
+  },
+  {
+   "check": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null) === 5"
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.id === 'why:bridge-gap:over')",
+   "timeout": 40
+  },
+  {
+   "until": "tre.activeVillage.state().entities.filter((e) => e.demo && /^plank/.test(e.look)).length >= 2",
+   "timeout": 400
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "night-the-demonstration-fills-a-small-gap"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.demo)",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-16).map((x) => x.text))"
+  },
+  {
+   "shot": "night-the-count-counts-on"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.id === 'why:bridge-gap:over')",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:0"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null)"
+  },
+  {
+   "check": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null) === 3"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length === 3"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.nghe.bridge.stuck')",
+   "timeout": 30
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "night-no-plank-fits-the-rest-the-last-plank-glows"
+  },
+  {
+   "print": "tre.activeVillage.session.action()?.act"
+  },
+  {
+   "check": "tre.activeVillage.session.action()?.act === 'pick'"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null)"
+  },
+  {
+   "check": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null) === 3"
+  },
+  {
+   "tap": {
+    "thing": "zone:bridge-pile"
+   },
+   "after": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 400
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:5"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null)"
+  },
+  {
+   "check": "(tre.activeVillage.state().entities.find((e) => e.item?.held === 'hero')?.item.size ?? null) === 4"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone.items.length === 3"
+  },
+  {
+   "print": "tre.activeVillage.session.action()?.act"
+  },
+  {
+   "check": "tre.activeVillage.session.action()?.act === 'cross'"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 60
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.nghe.bridge.guessRight') || tre.activeVillage.heard().some((x) => x.key === 'mentor.nghe.bridge.guessOff')",
+   "timeout": 300
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "night-the-bridge-is-solid"
+  }
+ ]
+}
