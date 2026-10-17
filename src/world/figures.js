@@ -1080,14 +1080,16 @@ export function raidThing(look) {
       for (let i = 0; i < n; i++) parts.push(P(`band${i}`, [0.7, 0.35, 0.7], 'vermilion', [0, 3.9 - i * 0.6, 0]));
       return still(parts, 4.8);
     }
-    // The count of the pull on the road: a small ring of marks (#55). It is not the arc.
+    // The count of the pull on the road: a ring (#55). It is not the arc. It is wide and bright,
+    // with ink, so that a ring at the second or third post shows in the frame of a raid on a phone
+    // (#93: a child did not see the ring move between the posts).
     case 'pull-ring': {
       const parts = [];
-      for (let i = 0; i < 8; i++) {
-        const a = (i / 8) * Math.PI * 2;
-        parts.push(P(`m${i}`, [0.5, 0.08, 0.5], i % 2 ? 'yellow' : 'vermilion', [Math.cos(a) * 1.2, 0.04, Math.sin(a) * 1.2], { mark: true }));
+      for (let i = 0; i < 16; i++) {
+        const a = (i / 16) * Math.PI * 2;
+        parts.push(P(`m${i}`, [0.75, 0.22, 0.75], 'yellow', [Math.cos(a) * 1.8, 0.11, Math.sin(a) * 1.8]));
       }
-      return still(parts, 0.1);
+      return still(parts, 0.22);
     }
     // A bamboo trap on the road: a frame with a spring; closed after it snaps.
     case 'trap': {

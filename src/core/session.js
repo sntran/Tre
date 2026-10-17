@@ -2052,6 +2052,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return { act: 'sling', icon: 'sling', target: 'hero', run: () => {
       const most = Math.floor(r.sling.max / POST_STEP);
       slingPull = { posts: Math.min(most, (slingPull?.posts ?? 0) + 1), t: 0 };
+      // The ring and the post of the pull pulse at each press (#93).
+      later.push(() => {
+        emit({ type: 'pulse', id: 'ring:pull' });
+        emit({ type: 'pulse', id: `post:${slingPull?.posts ?? 1}` });
+      });
     } };
   }
   // The stone of the pull of the button flies now.
@@ -2095,8 +2100,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   let dragPull = 0; // half blocks: the pull of a drag on the hero now
   const POST_STEP = 5;
   // Two counting paces (COUNT_PACE in src/core/mentoring.js): a child who says each number aloud
-  // while pressing is slower than the mentors (#67).
-  const FIRE_WAIT = 1.8;
+  // while pressing is slower than the mentors (#67). For grades K to 2 the wait is longer (#93): a
+  // child of six who says "một, hai, ba" aloud and presses at each word can take more than 1.8
+  // seconds between two presses, and then each press flew alone.
+  const FIRE_WAIT = Number(profile.grade) <= 2 ? 2.4 : 1.8;
   function pullCount() {
     const r = raidEnt()?.raid;
     if (!slingPull || !r) return 0;

@@ -257,9 +257,13 @@ export function playRaid(session, encounter, { seed = 1, miscount = 0.25, second
       run(0.3);
       t += 0.3;
     }
-    // The stone flies one second after the last press.
-    run(1.1);
-    t += 1.1;
+    // The stone flies some time after the last press (longer for the youngest, #93): wait for it.
+    for (let w = 0; w < 4 && (session.raidPull?.() ?? 0) > 0; w += 0.1) {
+      run(0.1);
+      t += 0.1;
+    }
+    run(0.3);
+    t += 0.3;
     rest = 0.5 + rng() * 1.5;
   }
   run(3);
