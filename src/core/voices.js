@@ -16,6 +16,16 @@ export function voiceOf(speaker, data, profile = null) {
   return data.voices?.speakers?.[speaker] ?? 'narrator';
 }
 
+// The lines that the voice says for a line of a talk, in order: { key, voice }. A talk with one
+// choice shows a line of the hero as a button: the voice says it too, in the voice of the hero,
+// after the line (#94: a child who cannot read tapped the bright button that nobody read).
+// line: { speaker, textKey, choices (text keys) }.
+export function spokenOf(line, data, profile = null) {
+  const out = [{ key: line.textKey, voice: voiceOf(line.speaker, data, profile) }];
+  if (line.choices?.length === 1) out.push({ key: line.choices[0], voice: voiceOf('hero', data, profile) });
+  return out;
+}
+
 // Words in the names of browser voices that tell a male or a female voice.
 const MALE = ['male', 'nam minh', 'namminh', 'microsoft an', 'david', 'daniel', 'fred', 'alex', 'tom', 'aaron', 'arthur', 'guy', 'mark', 'george', 'ryan', 'eric', 'christopher', 'rishi', 'oliver'];
 const FEMALE = ['female', 'linh', 'hoaimy', 'hoai my', 'samantha', 'victoria', 'karen', 'moira', 'tessa', 'zira', 'aria', 'jenny', 'susan', 'fiona', 'serena', 'kate', 'libby', 'sonia', 'google'];

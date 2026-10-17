@@ -5,7 +5,7 @@ import { applyEffects, conditionState } from '../core/game.js';
 import { h, img, button } from './dom.js';
 import { t, tg, lang, regionalWords, tOther, otherLang } from './i18n.js';
 import { speak, stop, speakOther } from './speak.js';
-import { voiceOf } from '../core/voices.js';
+import { voiceOf, spokenOf } from '../core/voices.js';
 import { namesOf, talkGloss } from '../core/naming.js';
 import { newGlosses } from '../core/speech.js';
 import { capitalize } from '../core/i18n.js';
@@ -206,7 +206,7 @@ export function createDialogueBox(ctx, { next, choose }) {
         next();
       };
     }
-    speak(line.textKey, params, { voice });
+    spokenOf(line, voiceData(ctx), ctx.profile).forEach((x, i) => speak(x.key, params, { voice: x.voice, queue: i > 0 }));
   }
 
   function close() {

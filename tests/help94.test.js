@@ -4,6 +4,7 @@ import { newMentor, newMemory, onCommit } from '../src/core/mentor.js';
 import { load } from './helpers.js';
 import { runHeadless } from './story-run.js';
 import { getEntity, query } from '../src/core/world/state.js';
+import { spokenOf } from '../src/core/voices.js';
 
 const cfg = load('data/world/mentors.json');
 const vi = load('i18n/vi.json');
@@ -83,4 +84,13 @@ test('a break at the bridge: the hero sits and eats a rice ball, Nghé comes for
   const after = lines.slice(lines.lastIndexOf('mentor.break') + 1);
   assert.ok(after.some((k) => /^num\./.test(k)), `the next help comes after the break: ${after.join(', ')}`);
   assert.ok(!query(s.state, 'demo').some((e) => /^rice-ball/.test(e.look) && !e.hidden), 'the rice ball is gone');
+});
+
+test('the line of the hero in a talk with one choice is said in the voice of the hero, after the line (#94)', () => {
+  const data = { npcs: {}, friends: {}, voices: { speakers: {} } };
+  const girl = { hero: { gender: 'girl' } };
+  assert.deepEqual(spokenOf({ speaker: 'nghe', textKey: 'dlg.grandma.intro.nghe2', choices: ['dlg.grandma.intro.nghe2.c1'] }, data, girl).map((x) => [x.key, x.voice]), [['dlg.grandma.intro.nghe2', 'narrator'], ['dlg.grandma.intro.nghe2.c1', 'girl']]);
+  // Two choices are a choice of the child: the voice says only the line.
+  assert.equal(spokenOf({ speaker: 'narrator', textKey: 'a', choices: ['b', 'c'] }, data, girl).length, 1);
+  assert.equal(spokenOf({ speaker: 'narrator', textKey: 'a' }, data, girl).length, 1);
 });
