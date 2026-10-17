@@ -1410,6 +1410,7 @@
   "example.traps": "Watch me fill a small order first: {k} fish. I set {n} traps of {m} fish.",
   "example.drum": "Watch a short dance first: a group of {n} jumps on beat {n}, beat {m}, and beat {k}.",
   "mentor.raise": "Next time there is a bigger job for you.",
+  "mentor.scholar.raise": "Next time I have a bigger job for you.",
   "mentor.break": "Stop for a moment. Eat a rice ball first.",
   "mentor.tryFirst": "Try first. I watch.",
   "mentor.offer": "Wave to me when you want help.",

@@ -370,7 +370,8 @@
         "extra": "mentor.scholar.extra",
         "room": "mentor.scholar.room",
         "demoDone": "mentor.scholar.demoDone",
-        "now": "mentor.scholar.now"
+        "now": "mentor.scholar.now",
+        "raise": "mentor.scholar.raise"
       }
     },
     "trial-smith": {

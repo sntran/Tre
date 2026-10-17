@@ -92,7 +92,7 @@ test('a raise never makes the round in progress bigger: the heap and the goal st
       // The teacher raises in the round: "next time" a bigger task. The heap of this round stays.
       { do: { type: 'mentor', key: 'trial-scholar', move: 'raise' } },
       { wait: 3 },
-      { expect: [{ event: 'call', with: { key: 'mentor.raise' } }, { count: { entities: 'rod', min: 24, max: 24 } }] },
+      { expect: [{ event: 'call', with: { key: 'mentor.scholar.raise' } }, { count: { entities: 'rod', min: 24, max: 24 } }] },
       bundle, ...tie, bundle, ...tie,
       // Fewer than ten rods are left: the round ends, and the next round is bigger.
       { until: { event: 'open', with: { screen: 'say', textKey: 'practiceLink.again' }, timeout: 10 } },

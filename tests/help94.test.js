@@ -24,7 +24,7 @@ test('a bigger task comes only after a right try that came after no miss, and it
   const r = onCommit(st, mem, tryOf([5, 2], 7), sum, cfg);
   assert.equal(r.diagnosis, 'ready');
   assert.equal(r.move, 'wait');
-  for (const key of ['mentor.raise', 'mentor.nghe.raise']) {
+  for (const key of ['mentor.raise', 'mentor.nghe.raise', 'mentor.scholar.raise']) {
     assert.doesNotMatch(vi[key], /đúng|giỏi|nhanh/i, key);
     assert.doesNotMatch(en[key], /right|good|fast/i, key);
   }
