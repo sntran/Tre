@@ -46,6 +46,7 @@ const DROP = 0.35; // seconds: the hero falls into the water
 const PULL = 0.8; // seconds: Nghé pulls the hero to the edge
 const SLIDE = 0.8; // seconds: a plank that is too long slides back into the water
 const GLANCE = 1.2; // seconds: Nghé glances at the outlines when the child skips the prediction
+const RULER_DOWN = 0.45; // the ruler of a gap under the top of the planks (half blocks)
 const GROUND_BACK = 120; // steps (4 seconds): a thing of a task on the ground goes back to its heap
 
 export function place(world, dt, rng, env) {
@@ -625,8 +626,10 @@ function decks(world, zoneEnt) {
   }
 }
 
-// The marks of a ruler on an open gap, one for each unit, beside the planks and at the height of
-// their top: the child sees the length of the gap and of the part that is still empty (#71).
+// The marks of a ruler on an open gap, one for each unit, beside the planks and under their top:
+// the child sees the length of the gap and of the part that is still empty (#71). A plank on the
+// gap covers its ticks, so that it looks as the planks of the pile (#90: the ticks lay over the
+// planks, and a plank on the gap looked as a pale ladder, as the rails of the broken bridge).
 function ruler(world, zoneEnt) {
   const zone = zoneEnt.zone;
   const id = `why:${zone.id}:ruler`;
@@ -638,5 +641,5 @@ function ruler(world, zoneEnt) {
   }
   if (e && e.look === look && e.position.z === zone.from) return;
   if (e) removeEntity(world, id);
-  addEntity(world, { id, why: { zone: zone.id }, position: { x: zone.lane, y: zone.deckY - 0.1, z: zone.from, facing: 0 }, look });
+  addEntity(world, { id, why: { zone: zone.id }, position: { x: zone.lane, y: zone.deckY - RULER_DOWN, z: zone.from, facing: 0 }, look });
 }

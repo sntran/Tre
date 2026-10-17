@@ -542,8 +542,8 @@ export function gapMarks(n) {
 
 // The marks of a ruler along an open gap of the bridge, n units long (#71): a pale line on each
 // side of the lane of the planks, and a pale tick across for each unit, a long tick for each fifth.
-// They lie at the height of the top of the planks, so that a plank on the gap covers its ticks and
-// the lines stay beside it.
+// They lie under the top of the planks, so that a plank on the gap covers its ticks and the lines
+// stay beside it (#90).
 export function rulerMarks(n) {
   const parts = [];
   for (const s of [-1, 1]) parts.push(P(`side${s}`, [0.2, 0.15, n], 'yellowPale', [s * 1.25, 0, n / 2]));

@@ -198,14 +198,15 @@ test('to put planks and take them back is free: no skill event until the hero st
   assert.equal(hero(w).hands.holds, null);
 });
 
-test('an open gap has the marks of a ruler, one for each unit, at the top of the planks; a solid bridge has none (#71)', () => {
+test('an open gap has the marks of a ruler, one for each unit, under the top of the planks; a solid bridge has none (#71, #90)', () => {
   const w = world();
   run(w, 0.2);
   const z = gap(w);
   const ruler = getEntity(w, 'why:gap:ruler');
   assert.equal(ruler?.look, `ruler-${z.gap}`);
   assert.deepEqual([ruler.position.x, ruler.position.z], [z.lane, z.from]);
-  assert.ok(Math.abs(ruler.position.y - z.deckY) < 0.2, 'at the top of the planks');
+  // A plank on the gap has its top at the deck and is 0.8 high: it covers the ticks (#90).
+  assert.ok(ruler.position.y + 0.15 < z.deckY && ruler.position.y > z.deckY - 0.8, 'under the top of the planks');
   lay(w, 4);
   lay(w, 4);
   lay(w, 4);
