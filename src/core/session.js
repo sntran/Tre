@@ -1039,8 +1039,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // A row of the guess: from end to end, and its foot on the bank (#90).
       if (e.guess?.len) return [{ ...e.position }, { ...e.position, z: e.position.z + e.guess.len }, ...(e.guess.foot ? [{ ...e.position, ...e.guess.foot }] : [])];
       // A thing: a margin of NAME_PAD around it, so that a tall thing (the float) is not cut at the
-      // edge of the frame (#97).
-      if (!r) return [[0, 0], [NAME_PAD, 0], [-NAME_PAD, 0], [0, NAME_PAD], [0, -NAME_PAD]].map(([dx, dz]) => ({ ...e.position, x: e.position.x + dx, z: e.position.z + dz }));
+      // edge of the frame (#97). A long thing (a stem, a piece of a stem) lies from its point along
+      // its facing: both of its ends are in the frame (#98: the stem went out of the frame).
+      if (!r) {
+        const len = Number(/^(?:piece|stem)-(\d+)$/.exec(e.look ?? '')?.[1] ?? 0);
+        const f = e.position.facing ?? 0;
+        const ends = [{ ...e.position }, ...(len ? [{ ...e.position, x: e.position.x + Math.sin(f) * len, z: e.position.z + Math.cos(f) * len }] : [])];
+        return ends.flatMap((p) => [[0, 0], [NAME_PAD, 0], [-NAME_PAD, 0], [0, NAME_PAD], [0, -NAME_PAD]].map(([dx, dz]) => ({ ...p, x: p.x + dx, z: p.z + dz })));
+      }
       return [[r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1]].map(([x, z]) => ({ x, y: e.zone.y, z }));
     };
     const places = things.filter((e) => e.zone);

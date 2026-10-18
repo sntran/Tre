@@ -8,6 +8,8 @@ import { load } from './helpers.js';
 import { getEntity } from '../src/core/world/state.js';
 import { taskPlaces, wayOut } from '../src/core/world/systems/steer.js';
 import { badPiece } from '../src/core/world/zones.js';
+import { frameWork, TALK_SAFE, viewSize, VIEW } from '../src/world/view.js';
+import { viewCamera } from '../src/world/hit.js';
 
 const story = (name) => load(`tests/stories/${name}.json`);
 
@@ -93,4 +95,36 @@ test('after a cut into 4 and 8 for three pieces, he says the number, the 8 glows
   const order = ['woodcutter.pieces', 'woodcutter.long', 'woodcutter.addMark'].map((k) => calls.indexOf(k));
   assert.ok(order.every((i) => i >= 0) && order[0] < order[1] && order[1] < order[2], calls.join(' '));
   assert.equal(glow, 'piece-glow-8', 'the long piece glows');
+});
+
+test('the line "như thế này" of the woodcutter frames all of the example and the stem on a phone, at each grade and angle', async () => {
+  const W = 390;
+  const H = 844;
+  const wu = (p) => ({ x: p.x / 2, y: (p.y ?? 0) / 2, z: p.z / 2 });
+  for (const grade of [1, 2, 3]) {
+    const s = story('woodcutter-three');
+    s.profile = { ...s.profile, grade };
+    let session = null;
+    let names = null;
+    await runHeadless({ ...s, steps: s.steps.slice(0, 2) }, { onSession: (x) => { session = x; x.listen((ev) => { if (ev.type === 'names' && ev.ids.some((id) => id.startsWith('sample:'))) names = ev; }); } });
+    for (let i = 0; i < 400 && !names; i++) {
+      if (session.screen) session.command({ type: 'next' });
+      session.step();
+      session.events();
+    }
+    assert.ok(names, `grade ${grade}: the line names the example`);
+    const at = wu(getEntity(session.state, 'hero').position);
+    const nearH = viewSize(W, H, 0).h;
+    for (const az of [0, 1, 2, 3].map((k) => Math.PI / 4 + (k * Math.PI) / 2)) {
+      // The frame of a talk, as the village makes it (src/ui/village.js, workFrame).
+      const f = frameWork([at, ...names.points.map(wu)], { az, width: W, height: H, safe: TALK_SAFE, min: nearH * 0.8, max: viewSize(W, H, VIEW.zooms.length - 1).h, lift: 1.5 });
+      const cam = viewCamera({ focus: { ...f.focus, y: at.y + 1.5 }, az, width: W, height: H, scale: f.h / nearH });
+      for (const e of session.state.entities.filter((x) => /^(sample|stem):woodcutter/.test(x.id))) {
+        const len = Number(/-(\d+)$/.exec(e.look)[1]) / 2;
+        const p = wu(e.position);
+        const b = cam.screenBox({ x0: p.x - 0.3, x1: p.x + len + 0.3, y0: p.y, y1: p.y + 0.6, z0: p.z - 0.3, z1: p.z + 0.3 });
+        assert.ok(b.x0 >= 0 && b.x1 <= W && b.y0 >= H * 0.12 && b.y1 <= H * (1 - TALK_SAFE.bottom), `grade ${grade}, ${az.toFixed(2)}: ${e.id} in the frame ${JSON.stringify(b)}`);
+      }
+    }
+  }
 });
