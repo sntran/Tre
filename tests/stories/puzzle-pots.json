@@ -1,0 +1,54 @@
+{
+  "name": "puzzle-pots",
+  "about": {
+    "vi": "Sau thử thách của bà lang, bà ở giếng cần đúng hai bát nước (lớp 1), với cái nồi năm bát và cái nồi ba bát; vẫy tay thì bà gợi ý.",
+    "en": "After the task of the healer, she is at the well and needs exactly two bowls of water (grade 1), with a pot of five bowls and a pot of three; a wave gives a hint."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true,
+      "trial.healer.done": true
+    }
+  },
+  "clock": 13660,
+  "at": [
+    "phu-dong",
+    42,
+    28
+  ],
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "puzzle.pots.start.two"
+        },
+        "timeout": 40
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "do": {
+        "type": "wave"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "puzzle.pots.hint.1"
+        },
+        "timeout": 10
+      }
+    }
+  ]
+}

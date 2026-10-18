@@ -1,0 +1,53 @@
+{
+  "name": "puzzle-ferry",
+  "about": {
+    "vi": "Một ngày có người khách ở bến đò với con chó, con gà và bao gạo: chở con chó trước thì gà mổ gạo, rồi mọi thứ về chỗ cũ; vẫy tay thì khách gợi ý.",
+    "en": "A day with a traveler at the boat with a dog, a chicken, and a sack of rice: the dog first, and the chicken pecks at the rice, and all come back; a wave gives a hint."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 13660,
+  "at": [
+    "phu-dong",
+    11,
+    63
+  ],
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "puzzle.ferry.start"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "do": {
+        "type": "wave"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "puzzle.ferry.hint.1"
+        },
+        "timeout": 10
+      }
+    }
+  ]
+}
