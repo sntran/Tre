@@ -10,6 +10,7 @@ We write it for parents and for anyone who wants to know why the game is the way
 
 | Date | Entry |
 | --- | --- |
+| 18 Oct 2026 | [A help that sees the work](2026-10-18-a-help-that-sees-the-work.md) |
 | 11 Oct 2026 | [Never stuck, and never for free](2026-10-11-never-stuck-never-free.md) |
 | 11 Oct 2026 | [A view that grows with the child](2026-10-11-a-view-that-grows.md) |
 | 11 Oct 2026 | [One line in English](2026-10-11-one-line-in-english.md) |
