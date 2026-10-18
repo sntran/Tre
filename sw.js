@@ -80,6 +80,8 @@ const FILES = [
   'art/ui/seedling.svg',
   'art/ui/bud.svg',
   'art/ui/leaf.svg',
+  'art/ui/boat.svg',
+  'art/ui/pole.svg',
   'art/ui/shard.svg',
   'art/ui/sling.svg',
   'art/ui/speak.svg',

@@ -56,7 +56,9 @@
       "person": "fisher",
       "trial": "fisher",
       "skills": [
-        "math.add.20"
+        "math.add.20",
+        "math.div.10",
+        "math.decimal"
       ],
       "set": 2,
       "story": "practice-cam-coc"

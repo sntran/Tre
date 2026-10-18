@@ -105,6 +105,36 @@ export function stakeResult(offsets, length, space) {
   return { solved, efficient: solved && at.length === fewest, count: at.length, fewest, gaps, widest };
 }
 
+// The row of a level of the fisher (#102): stakes that the child puts one at a time at the gap of
+// the first two stakes (gaps, grades 1 and 2), or a load of a boat that brings the stakes in one
+// trip. The gap is one pole (sào): the row is k poles from the stake of the fisher (measure, grade
+// 3: k stakes), or k poles from the bank with a stake at each end (trees, grade 4: k + 1 stakes).
+// At grade 5 (half) the gap is one pole and a half, and the row is x poles from the bank (x ÷ 1,5 +
+// 1 stakes). Units: half blocks; halves: the length of the row in half poles. rng: { int, pick }.
+export function rowPlan(task, rng) {
+  if (task.form === 'measure' || task.form === 'trees') {
+    const k = rng.int(task.poles[0], task.poles[1]);
+    const start = task.form === 'measure';
+    return { form: task.form, pole: task.pole, space: task.pole, k, length: k * task.pole, start, need: start ? k : k + 1 };
+  }
+  if (task.form === 'half') {
+    const halves = rng.pick(task.halves);
+    const space = task.pole * 1.5;
+    const length = (halves * task.pole) / 2;
+    return { form: 'half', pole: task.pole, space, halves, length, start: false, need: length / space + 1 };
+  }
+  return { form: 'gaps', space: task.space, length: task.space * task.gaps };
+}
+// A load of the boat of the fisher (#102) on a row that has `placed` stakes (with the stake of the
+// fisher): the stakes that the boat sets at the gap from the last stake (set), the stakes over the
+// float (over: they go back), and the stakes that the row still needs (left). Solved: the load is
+// the stakes that the row needs.
+export function boatResult(load, placed, plan) {
+  const need = plan.length / plan.space + 1 - placed;
+  const set = Math.min(load, need);
+  return { solved: load === need, need, set, over: load - set, left: need - set };
+}
+
 // The healer: the count of each kind in the basket against the number of each kind (need: one
 // number for all kinds, or a number for each kind).
 export function basketResult(counts, kinds, need) {

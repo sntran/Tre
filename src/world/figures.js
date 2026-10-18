@@ -651,6 +651,12 @@ export function thingLook(key) {
   m = /^basket-grid-(\d+)$/.exec(k);
   if (m) return { kind: 'basket-grid', n: Number(m[1]) };
   if (k === 'place-glow') return { kind: 'place-glow' };
+  // The fisher from grade 3 (#102): the small boat of the stakes, a stake that lies in it, the pole
+  // of the fisher (n half blocks, with a mark at its half at grade 5), and the knot at the end of a
+  // length of the pole on the row.
+  if (k === 'skiff' || k === 'stake-lie' || k === 'pole-knot') return { kind: k };
+  m = /^pole-(\d+)(-half)?$/.exec(k);
+  if (m) return { kind: 'fisher-pole', n: Number(m[1]), half: Boolean(m[2]) };
   // The marks of a ruler on a gap of the bridge, the glow over the far bank, and the glow of a
   // counted unit (#71).
   m = /^(ruler|over)-(\d+)$/.exec(k);
@@ -886,6 +892,19 @@ export function workThing(look) {
       ], STEED_SEAT + 1 * k);
     }
     // A stake of the fish trap, half in the water.
+    // The boat of the stakes (#102): a small dugout along +z, low in the water.
+    case 'skiff': return still([P('hull', [1.8, 0.7, 4], 'wood', [0, -0.15, 2]), P('rimL', [0.25, 0.3, 3.8], 'ochre', [-0.85, 0.3, 2]), P('rimR', [0.25, 0.3, 3.8], 'ochre', [0.85, 0.3, 2]), P('bow', [1, 0.5, 0.4], 'ochre', [0, 0.35, 3.9]), P('stern', [1.2, 0.4, 0.4], 'wood', [0, 0.3, 0.1])], 0.7);
+    // A stake that lies in the boat, along +x.
+    case 'stake-lie': return still([P('pole', [3.2, 0.32, 0.32], 'ochre', [1.6, 0.16, 0]), P('tip', [0.3, 0.34, 0.34], 'yellowPale', [3.1, 0.17, 0])], 0.4);
+    // The pole of the fisher (sào): a long thin bamboo along +z, with a dark band at each end, and a
+    // red band at its half at grade 5.
+    case 'fisher-pole': {
+      const parts = [P('pole', [0.3, 0.3, look.n], 'yellow', [0, 0.15, look.n / 2]), P('endA', [0.36, 0.36, 0.14], 'ink', [0, 0.15, 0.07]), P('endB', [0.36, 0.36, 0.14], 'ink', [0, 0.15, look.n - 0.07])];
+      if (look.half) parts.push(P('half', [0.38, 0.38, 0.18], 'vermilion', [0, 0.15, look.n / 2], { mark: true }));
+      return still(parts, 0.4);
+    }
+    // The knot at the end of a length of the pole on the row: a small red float.
+    case 'pole-knot': return still([P('knot', [0.5, 0.35, 0.5], 'vermilion', [0, 0.18, 0]), P('stick', [0.1, 0.7, 0.1], 'ink', [0, 0.6, 0])], 1);
     case 'stake': return still([P('pole', [0.55, 4, 0.55], look.set ? 'wood' : 'ochre', [0, 1.2, 0]), P('top', [0.6, 0.2, 0.6], 'yellowPale', [0, 3.25, 0]), P('tie', [0.62, 0.2, 0.62], 'ink', [0, 2.4, 0])], 3.3);
     // The red float at the end of the line of the trap.
     case 'float': return still([P('buoy', [0.8, 0.6, 0.8], 'vermilion', [0, 0.1, 0]), P('flag', [0.12, 1.4, 0.12], 'wood', [0, 0.9, 0]), P('cloth', [0.1, 0.5, 0.6], 'vermilion', [0, 1.4, 0.3])], 1.7);

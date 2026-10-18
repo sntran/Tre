@@ -25,7 +25,7 @@ export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'ke
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
 import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, badPiece, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
-import { taskOf, basketPlan, rodsPlan, MODEL_DOSES, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
+import { taskOf, basketPlan, rodsPlan, rowPlan, boatResult, MODEL_DOSES, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
 import { createRng, hashSeed } from '../../rng.js';
 import { STEP } from '../step.js';
@@ -59,6 +59,13 @@ const MAT_MAX = 14; // the most rods on the mat of the teacher
 const DEMO_WAIT = 0.8; // seconds: the smith quenches his demo piece this long after it turns hot
 const DEMO_NEXT = 1.6; // seconds: then the iron of the child comes on the anvil
 
+// The boat of the fisher from grade 3 (#102): its length (half blocks), the seconds of its way to
+// the row and back, and the seconds for each stake that it sets.
+const BOAT_LONG = 4;
+const BOAT_GO = 2.5;
+const BOAT_STAKE = 0.8;
+const BOAT_SIDE = 1.8; // half blocks: the boat goes along the row on the side of the river
+const MEASURE_SIDE = 0.9; // half blocks: the pole lies along the row on the side of the bank
 const BACK_AGAIN = 1; // seconds: a stake that came back does not go into the same hole with no walk (#97)
 const WATER_UP = 1.3; // half blocks over the bed of the river: just over its surface (WATER.river of src/world/terrain.js)
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -246,23 +253,46 @@ export function setupTrial(world, def, level, env, opts = {}) {
     const a = P(def.places.anvil);
     Object.assign(tz.zone, { anvil: { x: a.x, y: a.y, z: a.z }, heat: null, iron: 'iron:horse', blows: 0, quenches: 0 });
   } else if (def.task === 'stakes') {
+    // The row of the level (#102): its plan. From grade 3 the stakes go in a boat, and the boat
+    // brings them in one trip: the child finds the number of the stakes first.
+    const plan = rowPlan(task, createRng(hashSeed(`${world.seed}:${def.id}:${level}:${world.tick}`)));
+    tz.zone.plan = plan;
+    const boat = plan.form !== 'gaps';
     const stakes = heap('stakes', P(def.places.stakes), 'stake', { cols: 4 });
-    const length = task.space * task.gaps;
-    things(stakes, 'stake', task.gaps + 1 - 2 + (def.extra ?? 2));
+    const length = plan.length;
+    things(stakes, 'stake', boat ? plan.need + (def.extra ?? 2) : task.gaps + 1 - 2 + (def.extra ?? 2));
     const l = P(def.places.line);
     const line = addEntity(world, {
       id: 'zone:line',
       keep: true,
-      zone: { id: 'line', task: owner, rule: 'line', accepts: 'stake', items: [], x: l.x, y: l.y, z: l.z, length, space: task.space, rect: { x0: l.x - 1, x1: l.x + length + 1, z0: l.z - 2, z1: l.z + 2 } },
+      zone: { id: 'line', task: owner, rule: 'line', accepts: boat ? [] : 'stake', items: [], x: l.x, y: l.y, z: l.z, length, space: plan.space, rect: { x0: l.x - 1, x1: l.x + length + 1, z0: l.z - 2, z1: l.z + 2 } },
       position: { x: l.x + length / 2, y: l.y, z: l.z - 3, facing: 0 },
     });
-    // The fisher put the first two stakes: the space between them is the space of the row.
-    for (const [n, at] of [['a', 0], ['b', task.space]]) {
+    // The fisher put the first two stakes: the space between them is the space of the row. With the
+    // boat, one stake at the start (measure), or none: the row starts at the bank.
+    const first = boat ? (plan.start ? [['a', 0]] : []) : [['a', 0], ['b', task.space]];
+    for (const [n, at] of first) {
       addEntity(world, { id: `stake:fisher:${n}`, keep: true, item: { kind: 'stake', size: 1, task: owner, zone: 'line', held: null, set: true, slot: at }, position: { x: l.x + at, y: l.y, z: l.z, facing: 0 }, look: 'stake-set' });
+    }
+    if (boat) {
+      // The boat lies in the water by the pile: a press at the pile puts one stake into it. The pole
+      // of the fisher (one gap long) lies on the bank at the start of the row: a press at the row lays
+      // it along the row, one length at a time.
+      const h = stakes.zone;
+      const at = { x: h.x - 1, y: l.y, z: l.z };
+      addEntity(world, { id: 'zone:boat', keep: true, zone: { id: 'boat', task: owner, rule: 'boat', accepts: 'stake', items: [], x: at.x, y: at.y, z: at.z, home: { x: at.x, z: at.z }, rect: { x0: at.x - 0.4, x1: at.x + BOAT_LONG + 0.4, z0: at.z - 1, z1: at.z + 1 } }, position: { x: at.x + BOAT_LONG / 2, y: at.y, z: at.z, facing: 0 } });
+      // The boat and the pole are things that a tap chooses (fixed: the hands do not take them).
+      const fixed = (kind, size) => ({ kind, size, task: owner, zone: null, held: null, set: true, fixed: true });
+      addEntity(world, { id: 'boat:fisher', keep: true, item: fixed('boat', BOAT_LONG), position: { x: at.x, y: at.y + WATER_UP, z: at.z, facing: Math.PI / 2 }, look: 'skiff' });
+      const px = l.x - plan.pole - 0.6;
+      addEntity(world, { id: 'pole:fisher', keep: true, item: fixed('pole', plan.pole), position: { x: px, y: env.groundY(px / 2, (l.z - 3) / 2), z: l.z - 3, facing: Math.PI / 2 }, look: plan.form === 'half' ? `pole-${plan.pole}-half` : `pole-${plan.pole}` });
+      Object.assign(tz.zone, { measured: 0, trip: null, near: 0 });
+      tz.zone.tideStarted = true;
     }
     addEntity(world, { id: 'mark:fisher:end', keep: true, position: { x: l.x + length, y: l.y, z: l.z, facing: 0 }, look: 'end-mark' });
     addEntity(world, { id: 'tide:fisher', keep: true, position: { x: l.x, y: l.y, z: l.z, facing: 0 }, look: 'tide-0', tide: { length } });
-    tz.zone.tide = { t: 0, every: task.tide, phase: 'low' };
+    tz.zone.tide = { t: 0, every: task.tide ?? 80, phase: 'low', started: Boolean(tz.zone.tideStarted) };
+    delete tz.zone.tideStarted;
     void line;
   } else if (def.task === 'basket') {
     // The basket of the level (#101): the number of each kind, and the numbers of its form.
@@ -569,6 +599,17 @@ const sizeSum = (world, zone) => (zone?.items ?? []).reduce((a, id) => a + (getE
 
 // The bands that the child took lie in a row beside the mat (#101).
 export const BAND_STEP = 0.9;
+// The stakes in the boat of the fisher lie across it, side by side (#102), and go with it.
+function packBoat(world, zone) {
+  const boat = getEntity(world, 'boat:fisher');
+  const at = boat?.position ?? { x: zone.x, y: zone.y, z: zone.z };
+  zone.items.forEach((id, i) => {
+    const e = getEntity(world, id);
+    if (!e) return;
+    e.position = { x: at.x + 0.4, y: at.y + 0.2 + Math.floor(i / 4) * 0.32, z: at.z - 0.6 + (i % 4) * 0.4, facing: 0 };
+    e.look = 'stake-lie';
+  });
+}
 function packBandRow(world, zone) {
   zone.items.forEach((id, i) => {
     const e = getEntity(world, id);
@@ -601,6 +642,7 @@ export function toHeap(world, thing) {
   thing.item.zone = home.zone.id;
   thing.item.held = null;
   thing.hidden = false;
+  if (thing.look === 'stake-lie') thing.look = 'stake';
   if (!home.zone.items.includes(thing.id)) home.zone.items.push(thing.id);
   packHeap(world, home.zone);
 }
@@ -645,6 +687,10 @@ export function takeOut(world, thing) {
   if (z.zone.rule === 'hearth') packHearth(world, z.zone);
   if (z.zone.rule === 'share') packShare(world, z.zone);
   if (z.zone.rule === 'exact') packExact(world, z.zone);
+  if (z.zone.rule === 'boat') {
+    thing.look = 'stake';
+    packBoat(world, z.zone);
+  }
 }
 
 // The sacks on a mat lie in rows of three, and then in a second layer.
@@ -700,6 +746,7 @@ export function canTakeWork(world, thing) {
   if (thing.item.zone === 'forge') return false;
   if (thing.item.task === 'trial-share' && trialZone(world, 'share')?.zone.leave !== null) return false;
   if (thing.item.zone === 'hearth') return trialZone(world, 'horse')?.zone.heat === null;
+  if (thing.item.zone === 'boat') return !trialZone(world, 'fisher')?.zone.trip;
   if (thing.item.zone === 'line') {
     const tz = trialZone(world, 'fisher');
     return tz?.zone.tide?.phase === 'low';
@@ -725,6 +772,8 @@ export function giveReady(world, at) {
 // (#68: the button showed the put on a full mat, and the press did nothing).
 export function hasRoom(zone) {
   if (zone.rule === 'bundle') return zone.items.length < MAT_MAX;
+  // The boat of the fisher takes stakes only at the bank (#102).
+  if (zone.rule === 'boat') return !zone.away;
   return true;
 }
 
@@ -783,6 +832,12 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.slot = slot;
     zone.items.push(thing.id);
     thing.position = { x: zone.x + slot, y: zone.y, z: zone.z, facing: 0 };
+  } else if (zone.rule === 'boat') {
+    // The boat of the fisher takes stakes while it lies at the bank (#102).
+    if (tz.zone.trip || zone.away) return false;
+    thing.item.zone = zone.id;
+    zone.items.push(thing.id);
+    packBoat(world, zone);
   } else if (zone.rule === 'basket') {
     // A bunch of the model basket stays out of the basket of the child (#101).
     if (thing.item.model) return false;
@@ -949,6 +1004,40 @@ function act(world, e, want, env) {
       if (extra.length) tz.zone.spring = { t: springTime(n), ids: extra };
       say(world, 'snap', mat.id, { count: n, at: { x: c.x, z: c.z }, sound: 'plank-down' });
     }
+  } else if (want.act === 'send') {
+    // The boat of the fisher (#102): the load of the boat is the commit; the boat brings the stakes
+    // to the row in one trip, and sets them at the gap from the last stake.
+    const boat = zoneEnt(world, 'boat');
+    const line = zoneEnt(world, 'line');
+    const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher');
+    if (!boat || !line || tz.zone.trip || !boat.zone.items.length || tz.zone.tide?.phase !== 'low') return;
+    if (!(near(boat.position, REACH + 3) || near(fisher?.position, REACH + 3))) return;
+    const placed = query(world, 'item').filter((t) => t.item.zone === 'line').length;
+    const load = boat.zone.items.length;
+    const r = boatResult(load, placed, tz.zone.plan);
+    commit(world, tz, task, { solved: r.solved, parts: [load], target: r.need });
+    tz.zone.trip = { phase: 'go', t: 0, ...r, made: 0 };
+    boat.zone.away = true;
+    removeEntity(world, 'why:fisher:open');
+    say(world, 'boat', boat.id, { load, sound: 'splash' });
+  } else if (want.act === 'measure') {
+    // The pole of the fisher (#102): each press lays it one length further along the row, with a knot
+    // at its end, so that the child can count the lengths. After the float, it starts again.
+    const line = zoneEnt(world, 'line');
+    const plan = tz.zone.plan;
+    const pole = getEntity(world, 'pole:fisher');
+    if (!line || !pole || !plan?.pole || tz.zone.trip) return;
+    let m = tz.zone.measured ?? 0;
+    if (m * plan.pole >= line.zone.length) {
+      for (const e of query(world, 'position').filter((x) => String(x.id).startsWith('measure:fisher:'))) removeEntity(world, e.id);
+      m = 0;
+    }
+    const from = m * plan.pole;
+    const y = line.zone.y + WATER_UP;
+    pole.position = { x: line.zone.x + from, y, z: line.zone.z - MEASURE_SIDE, facing: Math.PI / 2 };
+    addEntity(world, { id: `measure:fisher:${m}`, keep: true, position: { x: line.zone.x + Math.min(line.zone.length, from + plan.pole), y, z: line.zone.z - MEASURE_SIDE, facing: 0 }, look: 'pole-knot' });
+    tz.zone.measured = m + 1;
+    say(world, 'measure', tz.id, { n: m + 1, sound: 'tap' });
   } else if (want.act === 'exact') {
     // The person of a small event checks the work: the sum of the sizes on the place is the commit.
     const place = zoneEnt(world, `${task.id}-place`);
@@ -1311,6 +1400,8 @@ function tickTide(world, tz, dt, env) {
   if (!tide || !line) return;
   const task = taskFor(env, tz.zone);
   const row = query(world, 'item').filter((s) => s.item.zone === 'line');
+  // From grade 3 the boat brings the stakes (#102): the tide comes when the row is at the float.
+  if (tide.phase === 'low' && tz.zone.plan && tz.zone.plan.form !== 'gaps') return tickBoat(world, tz, line, water, dt);
   // The clock of the tide starts at the first stake of the child (#48): the wait is the time of the
   // child, not of the talk or of the first step that the fisher shows.
   if (!tide.started) {
@@ -1419,6 +1510,102 @@ function tickTide(world, tz, dt, env) {
     tide.phase = 'low';
     tide.t = 0;
     tide.result = null;
+  }
+}
+
+// The trip of the boat of the fisher (#102): it goes to the row, sets its stakes one at a time at
+// the gap from the last stake, and comes back. Stakes over the float go back to the pile, and the
+// fisher says how many. A row at the float: the tide comes in, and the fish stay in the trap. A row
+// that stops short: the fisher says the gaps that are left (or, one stake short of a row from the
+// bank, that the end at the float needs a stake too) and points at them, and the water comes a
+// step nearer.
+function tickBoat(world, tz, line, water, dt) {
+  const trip = tz.zone.trip;
+  const boat = zoneEnt(world, 'boat');
+  const look = getEntity(world, 'boat:fisher');
+  if (!trip || !boat || !look) return;
+  const plan = tz.zone.plan;
+  const l = line.zone;
+  const home = boat.zone.home;
+  const slotOf = (i) => Math.min(l.length, i * l.space);
+  const placed = () => query(world, 'item').filter((t) => t.item.zone === 'line').length;
+  const move = (to) => {
+    look.position = { ...look.position, x: to.x, z: to.z };
+    packBoat(world, boat.zone);
+  };
+  const lerp = (a, b, k) => ({ x: a.x + (b.x - a.x) * k, z: a.z + (b.z - a.z) * k });
+  const along = (slot) => ({ x: l.x + slot - BOAT_LONG / 2, z: l.z + BOAT_SIDE });
+  trip.t += dt;
+  if (trip.phase === 'go') {
+    const to = along(slotOf(placed()));
+    trip.from ??= { x: look.position.x, z: look.position.z };
+    move(lerp(trip.from, to, Math.min(1, trip.t / BOAT_GO)));
+    if (trip.t < BOAT_GO) return;
+    Object.assign(trip, { phase: 'set', t: 0, from: { x: look.position.x, z: look.position.z } });
+    return;
+  }
+  if (trip.phase === 'set') {
+    const n = placed();
+    move(lerp(trip.from, along(slotOf(n)), Math.min(1, trip.t / BOAT_STAKE)));
+    if (trip.t < BOAT_STAKE) return;
+    if (trip.made < trip.need && boat.zone.items.length) {
+      const stake = getEntity(world, boat.zone.items.shift());
+      const slot = slotOf(n);
+      Object.assign(stake.item, { zone: 'line', slot, set: true });
+      stake.look = 'stake-set';
+      stake.position = { x: l.x + slot, y: l.y, z: l.z, facing: 0 };
+      l.items.push(stake.id);
+      packBoat(world, boat.zone);
+      trip.made += 1;
+      say(world, 'drive', stake.id, { slot, sound: 'plank-down' });
+      Object.assign(trip, { t: 0, from: { x: look.position.x, z: look.position.z } });
+      if (trip.made < trip.need && boat.zone.items.length) return;
+    }
+    // The end of the set: the stakes over the float go back to the pile.
+    const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+    const pile = zoneEnt(world, 'stakes');
+    if (boat.zone.items.length) {
+      const over = boat.zone.items.length;
+      for (const id of boat.zone.items.splice(0)) {
+        const t = getEntity(world, id);
+        if (t) toHeap(world, t);
+      }
+      if (pile) packHeap(world, pile.zone);
+      if (fisher) say(world, 'call', fisher.id, { key: over === 1 ? 'fisher.over.one' : 'fisher.over', params: { n: { key: `num.${Math.min(30, over)}` } }, happened: true });
+      say(world, 'roll', pile?.id ?? tz.id, { sound: 'plank-down' });
+    }
+    const last = Math.max(0, ...query(world, 'item').filter((t) => t.item.zone === 'line').map((t) => t.item.slot ?? 0));
+    const full = query(world, 'item').some((t) => t.item.zone === 'line' && t.item.slot === l.length);
+    if (full) {
+      // The row is at the float: the boat stays, and the tide comes in.
+      tz.zone.trip = null;
+      boat.zone.away = false;
+      const tide = tz.zone.tide;
+      Object.assign(tide, { phase: 'in', t: 0, result: { solved: true, widest: { from: 0, size: 0 } } });
+      if (water) water.look = 'tide-3';
+      say(world, 'tide', tz.id, { sound: 'splash' });
+      return;
+    }
+    // Short: the open part of the row glows on the water, the fisher points at it and says it.
+    const from = last;
+    const open = l.length - from;
+    addEntity(world, { id: 'why:fisher:open', keep: true, position: { x: l.x + from, y: l.y + WATER_UP, z: l.z, facing: Math.PI / 2 }, look: `gap-frame-${Math.max(1, Math.round(open))}` });
+    const gaps = Math.round(open / l.space);
+    const key = !plan.start && gaps === 1 ? 'fisher.end' : gaps === 1 ? 'fisher.gaps.one' : 'fisher.gaps';
+    if (fisher) {
+      fisher.gesture = { act: 'point', x: l.x + (key === 'fisher.end' ? l.length : from + open / 2), z: l.z, t: 3 };
+      say(world, 'call', fisher.id, { key, params: { n: { key: `num.${Math.min(30, gaps)}` } }, happened: true });
+    }
+    tz.zone.near = Math.min(2, (tz.zone.near ?? 0) + 1);
+    if (water) water.look = `tide-${tz.zone.near}`;
+    Object.assign(trip, { phase: 'back', t: 0, from: { x: look.position.x, z: look.position.z } });
+    return;
+  }
+  if (trip.phase === 'back') {
+    move(lerp(trip.from, home, Math.min(1, trip.t / BOAT_GO)));
+    if (trip.t < BOAT_GO) return;
+    tz.zone.trip = null;
+    boat.zone.away = false;
   }
 }
 

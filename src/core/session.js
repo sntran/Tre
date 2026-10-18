@@ -985,8 +985,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else runPending();
       return;
     }
-    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: levelLine(view.speaker, view.textKey), params: { ...trialWords(view.speaker), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, word: view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
-    showNames(d, view.speaker, view.names);
+    const line = levelLine(view.speaker, view.textKey);
+    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: line.key, params: { ...trialWords(view.speaker), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, word: view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
+    showNames(d, view.speaker, line.names ?? view.names);
   }
   // The two ends of a place: the ends of a gap of the bridge, or the middles of the short sides of
   // a rect.
@@ -1138,6 +1139,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (plan?.recipe) Object.assign(out, { a: num(plan.recipe[def.kinds[0]]), b: num(plan.recipe[def.kinds[1]]), c: num(plan.recipe[def.kinds[2]]), k: num(plan.doses) });
         if (plan?.n) out.n = num(plan.n);
       }
+      if (def.task === 'stakes') {
+        // The numbers of the row of the level (#102): k poles, or x poles and a half.
+        const plan = def.npc === speaker ? trialZone(def.id)?.zone.plan : null;
+        if (plan?.k) out.k = num(plan.k);
+        if (plan?.halves) out.x = { key: `fisher.poles.${plan.halves}` };
+      }
       if (def.task === 'cut') out.parts = num(t.parts);
       if (def.task === 'slash') out.staffs = num(t.parts);
       if (def.task === 'horse') out.lumps = num(t.ore);
@@ -1145,13 +1152,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return out;
   }
   // The line of a talk of a task at the level of the child (#101): a level can have its own line
-  // for a line of the talk (talk in data/trials.json).
+  // for a line of the talk (talk in data/trials.json), and its own things to name ({ key, names },
+  // #102). Return { key, names } (names: null keeps the names of the talk).
   function levelLine(speaker, key) {
     const def = data.trials?.trials.find((t) => t.npc === speaker && t.kind !== 'task');
-    if (!def) return key;
+    if (!def) return { key, names: null };
     const z = trialZone(def.id)?.zone;
     const level = z?.level ?? (practice?.trial === def.id ? practice.level : trialLevelOf(def));
-    return taskOf(def, level).talk?.[key] ?? key;
+    const line = taskOf(def, level).talk?.[key] ?? key;
+    return typeof line === 'string' ? { key: line, names: null } : { key: line.key, names: line.names.map((n) => (typeof n === 'string' ? { id: n } : n)) };
   }
   // The stand point beside a rect of work (half blocks), or the stand itself when it is not in front
   // of the work. The camera is toward (sin, cos) of viewAz; the side of the view is (cos, -sin).
@@ -2701,6 +2710,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (key === 'trial-healer' && open('healer') && giveReady(state, hero().position)) return { act: 'give', icon: 'basket', run: () => work('healer', 'give') };
     const wood = key === 'trial-woodcutter' ? open('woodcutter') : null;
     if (wood?.zone.marks?.length && !wood.zone.cut) return { act: 'cut', icon: 'knife', run: () => work('woodcutter', 'cut') };
+    // From grade 3 the fisher sends the boat with the stakes that the child put in it (#102).
+    if (key === 'trial-fisher' && boatReady()) return { act: 'send', icon: 'boat', run: () => work('fisher', 'send') };
     if (key === 'trial-plant' && planting.ready() === 'commit' && plotsOf(state)[0]?.plot.form !== 'choose') return { act: 'plant', icon: 'seedling', run: () => work('plant', 'plant') };
     if (key === 'trial-traps') {
       const r = hamlet.round('traps');
@@ -2714,9 +2725,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return null;
   }
 
+  // The boat of the fisher lies at the bank with stakes in it, and the tide is low (#102).
+  function boatReady() {
+    const tz = trialZone('fisher');
+    return Boolean(tz && !tz.zone.done && tz.zone.plan && tz.zone.plan.form !== 'gaps' && !tz.zone.trip && tz.zone.tide?.phase === 'low' && zoneOf('boat')?.zone.items.length);
+  }
   // The place of a one-press move (#61): the mat of the teacher or the basket of the healer that
   // takes the thing, when the hero stands in reach of it. Null: the press only picks.
-  const ONE_MOVE = new Set(['bundle', 'basket', 'leaf', 'bandrow']);
+  const ONE_MOVE = new Set(['bundle', 'basket', 'leaf', 'bandrow', 'boat']);
   function oneMovePlace(thing) {
     const h = hero().position;
     // The mats of the teacher at grades 4 and 5 take a thing only by a put at the mat (#101): a
@@ -2879,7 +2895,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     });
   }
   // The places that the hands take a thing back from (the opposite of a put).
-  const TAKE_BACK = new Set(['bundle', 'basket', 'line', 'exact', 'share', 'spots', 'hearth']);
+  const TAKE_BACK = new Set(['bundle', 'basket', 'line', 'exact', 'share', 'spots', 'hearth', 'boat']);
   // The point in front of the hero (half blocks), for the places on a line.
   const frontOf = (hp, d = 2) => ({ x: hp.x + Math.sin(hp.facing ?? 0) * d, z: hp.z + Math.cos(hp.facing ?? 0) * d });
 
@@ -2978,6 +2994,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           if (e.plotPart.which !== 'plot' && e.plotPart.which !== 'decoy') continue;
           add({ act: 'choose', icon: 'check', target: e.id, at: e.position, rank: 0, run: () => work('plant', 'choose', { plot: e.plotPart.plot, which: e.plotPart.which }) }, REACH + 1);
         }
+      }
+      // The boat of the fisher (#102): a tap on the boat sends it with its load, and a press at the row
+      // lays the pole of the fisher one length further (a tap on the row or the pole first).
+      const fz = open('fisher');
+      const boatZ = zoneOf('boat');
+      if (fz?.zone.plan && boatZ && !fz.zone.trip && fz.zone.tide?.phase === 'low') {
+        const boatE = getEntity(state, 'boat:fisher');
+        if (boatReady() && boatE && (chosen?.id === boatE.id || chosen?.id === boatZ.id)) add({ act: 'send', icon: 'boat', target: boatE.id, keys: [boatE.id, boatZ.id], at: boatZ.position, rank: -1, work: true, run: () => work('fisher', 'send') }, REACH + 3);
+        const lineZ = zoneOf('line');
+        const pole = getEntity(state, 'pole:fisher');
+        const tappedRow = chosen?.id === lineZ?.id || chosen?.id === pole?.id;
+        if (lineZ && pole) add({ act: 'measure', icon: 'pole', target: lineZ.id, keys: [lineZ.id, pole.id], at: nearestPoint(lineZ, hp), rank: tappedRow ? -1 : 2, work: tappedRow, run: () => work('fisher', 'measure') }, REACH + 2);
       }
       // The standing culms of the staffs: while the button is down, the mark of the slash goes up
       // the culm; when it goes up, the slash is at the mark.

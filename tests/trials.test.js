@@ -88,12 +88,14 @@ test('the woodcutter: the marks cut the stem into equal sticks, or not', () => {
   assert.equal(cutResult([3, 6, 9], 12, 3).solved, false, 'four sticks, not three');
 });
 
-test('the stakes of the fisher and the marks of the woodcutter share the number-line skill of the bridge', () => {
+test('the stakes of the fisher and the marks of the woodcutter share the number-line skill of the bridge at grades 1 and 2', () => {
   const bridge = load('data/world/zones.json').bridge.skills.sum;
   for (const id of ['fisher', 'woodcutter']) {
-    assert.deepEqual(def(id).levels.map((l) => l.skill), [bridge, bridge, bridge], id);
-    assert.deepEqual(def(id).levels.map((l) => l.level), [1, 2, 3], `${id}: the level grows with the grade`);
+    assert.deepEqual(def(id).levels.slice(0, 2).map((l) => l.skill), [bridge, bridge], id);
+    assert.deepEqual(def(id).levels.slice(0, 2).map((l) => l.level), [1, 2], `${id}: the level grows with the grade`);
   }
+  // From grade 3 (#102): the row as a measure, the problem of the trees, and a gap of one pole and a half.
+  assert.deepEqual(def('fisher').levels.slice(2).map((l) => [l.form, l.skill]), [['measure', 'math.div.10'], ['trees', 'math.div.10'], ['half', 'math.decimal']]);
 });
 
 test('a commit of a trial is one skill event with the skill of its level', () => {
