@@ -28,7 +28,7 @@ import { taskPools } from '../world/light.js';
 import { VIEW, SAFE, TALK_SAFE, viewSize, inView, frameWork, mmOf } from '../world/view.js';
 import { createTapCount } from '../core/taps.js';
 import { heroLook, thingLook } from '../world/figures.js';
-import { tapTarget, thingUnder } from '../world/hit.js';
+import { tapTarget, thingUnder, askingChild } from '../world/hit.js';
 import { h, img, button } from './dom.js';
 import { t, tn, setSpeech, lang, otherLang } from './i18n.js';
 import { speechTable, speechWay } from '../core/speech.js';
@@ -885,7 +885,7 @@ export async function mountVillage(ctx, params = {}) {
     return {
       cam: view,
       things: query(state, 'item', 'position'),
-      persons: persons().map((q) => figureAt(q.entity)).filter(Boolean),
+      persons: [...persons().map((q) => figureAt(q.entity)), ...query(state, 'folkChild', 'position').filter((e) => askingChild(e, session)).map((e) => figureAt(e.id))].filter(Boolean),
       friends,
       guesses: query(state, 'guess', 'position'),
       hamlet: query(state, 'hamletTap', 'position').map((e) => figureAt(e.id, { hamletTap: e.hamletTap })).filter(Boolean),

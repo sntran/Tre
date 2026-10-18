@@ -177,3 +177,22 @@ test('in the village at dusk, Bà says the riddle of the evening, and a tap on a
   assert.equal(session.profile.riddles.open, null);
   assert.equal(session.profile.riddles.found[0].id, 'ga');
 });
+
+test('in the village, a tap on the hopscotch child on the screen is a tap on the child, and a trick question comes', async () => {
+  const { tapTarget, viewCamera, sessionScreen } = await import('../src/world/hit.js');
+  const s = load('tests/stories/trick-hopscotch.json');
+  let session = null;
+  const said = [];
+  const failures = await runHeadless(s, { onSession: (x) => { session = x; x.listen((e) => { if (e.type === 'open' && e.textKey) said.push(e.textKey); }); } });
+  assert.deepEqual(failures, []);
+  const kid = session.state.entities.find((e) => e.id === 'npc:loco-child');
+  for (let n = 0; n < 12 && !said.some((k) => /^trick\./.test(k)); n++) {
+    const q = { x: kid.position.x / 2, y: kid.position.y / 2, z: kid.position.z / 2 };
+    const cam = viewCamera({ focus: q, width: 390, height: 844 });
+    const t = tapTarget(cam.project(q.x, q.y + 0.8, q.z), sessionScreen(session, cam));
+    assert.equal(t?.person, 'npc:loco-child', JSON.stringify(t));
+    session.command({ type: 'tap', target: t });
+    for (let i = 0; i < 30; i++) { session.step(); session.events(); }
+  }
+  assert.ok(said.some((k) => /^trick\./.test(k)), said.join(', '));
+});

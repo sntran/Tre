@@ -203,6 +203,10 @@ function heapThingNear(things, hit) {
 // person); then the ground.
 // Returns a target for the session ({ guess }, { hamlet }, { thing }, { pet }, { person },
 // { ground }), a target of a raid, or null.
+// A child of a folk game who can ask a trick question (#103) takes a tap as a person, out of a
+// game (in a game, a tap goes to the court).
+export const askingChild = (e, session) => Boolean(e.folkChild && String(e.id).startsWith('npc:') && !session.inTask());
+
 export function tapTarget(p, w) {
   // The plank outlines of the prediction take a tap only with empty hands: with a plank in the
   // hands, the child puts it (#47).
@@ -305,7 +309,7 @@ export function sessionScreen(session, cam) {
   return {
     cam,
     things: list.filter((e) => e.item && e.position),
-    persons: list.filter((e) => e.person && e.position && !e.hidden).map((e) => fig(e)),
+    persons: list.filter((e) => (e.person || askingChild(e, session)) && e.position && !e.hidden).map((e) => fig(e)),
     friends: friend ? [fig(friend, { height: 1.1 }), ...(hero.riding ? [{ ...fig(hero), id: friend.id }] : [])] : [],
     guesses: list.filter((e) => e.guess && e.position),
     hamlet: list.filter((e) => e.hamletTap && e.position).map((e) => fig(e, { hamletTap: e.hamletTap, height: 0.8 })),

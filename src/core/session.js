@@ -3764,6 +3764,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (e) goTo(e.position, e.id);
       return;
     }
+    // A child of a folk game, out of the game: a trick question sometimes (#103), and the hero walks
+    // to the child.
+    const kid = target.person ? getEntity(state, target.person) : null;
+    if (kid?.folkChild && !folk.active()) {
+      emit({ type: 'tapfx', x: kid.position.x / 2, y: kid.position.z / 2, h: groundY(kid.position.x / 2, kid.position.z / 2) });
+      riddles.child(kid.id.replace(/^npc:/, ''), kid.id);
+      goTo(kid.position, null);
+      return;
+    }
     if (target.person) {
       const person = persons().find((p) => p.entity === target.person);
       if (!person || (person.kind === 'encounter' && raidOn())) return;
