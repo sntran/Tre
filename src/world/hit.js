@@ -225,7 +225,10 @@ export function tapTarget(p, w) {
   const inPlace = onRow || (hit && w.placeAt(hit.x, hit.y, 0));
   // With a stake in the hands, a tap on a stake of the row is a tap on its point of the row: the
   // put goes to the free point nearest to it (#78).
-  const found = thingUnder(p, w.cam, w.things);
+  // A thing under the finger that is not in the hands comes first (#104: the pot in the hands of
+  // the hero stood in front of the bucket of the well).
+  const loose = thingUnder(p, w.cam, w.things.filter((e) => !e.item?.inHands));
+  const found = loose?.inside ? loose : thingUnder(p, w.cam, w.things);
   const thing = found && !(w.carrying && found.e.item.zone === 'line') ? found : null;
   // Nghé: a tap on her is a pet when no thing and no place of an open task is under the finger,
   // also during a task and after it (#87: after the task of the teacher, Nghé stood on the heap of

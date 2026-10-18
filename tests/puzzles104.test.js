@@ -222,3 +222,19 @@ test('the scene of a wrong pair on the other bank is in the view with the hero',
   const chicken = getEntity(p.session.state, 'pz:chicken').position;
   assert.ok(views[0].points.some((q) => Math.hypot(q.x - chicken.x, q.z - chicken.z) < 2), 'the chicken is a point of the view');
 });
+
+test('with a pot in the hands in front of the bucket of the well, a tap on the bucket chooses the bucket', async () => {
+  const { tapTarget, viewCamera, sessionScreen } = await import('../src/world/hit.js');
+  const p = await at([42, 28], 1, { 'trial.healer.done': true });
+  assert.ok(p.run(20, () => p.said.includes('puzzle.pots.start.two')));
+  p.tapThing('pz:pot:0');
+  assert.equal(p.press(), 'take');
+  // The pot in the hands stands on the bucket, as the camera sees it.
+  const b = getEntity(p.session.state, 'pz:well').position;
+  const pot = getEntity(p.session.state, 'pz:pot:0');
+  pot.position = { ...b, x: b.x + 0.5, z: b.z + 0.5, y: b.y + 0.2 };
+  const q = { x: b.x / 2, y: b.y / 2, z: b.z / 2 };
+  const cam = viewCamera({ focus: q, width: 390, height: 844 });
+  const t = tapTarget(cam.project(q.x, q.y + 0.3, q.z), sessionScreen(p.session, cam));
+  assert.equal(t?.thing, 'pz:well', JSON.stringify(t));
+});
