@@ -245,7 +245,8 @@ export function tapTarget(p, w) {
     // A person whose body is under the finger and who stands on the thing or in front of it: the
     // tap is for the person (#70: the healer stood on her bed of rau má, and each tap on her chose
     // the bed, so the child could not give the basket).
-    const body = figureUnder(p, w.cam, (w.persons ?? []).filter((q) => !String(q.id).startsWith('encounter:')), PERSON_PAD_AT_PLACE);
+    // A thing of a puzzle is the work there: it keeps the tap (#104: the healer stood at the jar).
+    const body = String(thing.e.item.kind).startsWith('pz') ? null : figureUnder(p, w.cam, (w.persons ?? []).filter((q) => !String(q.id).startsWith('encounter:')), PERSON_PAD_AT_PLACE);
     const q = thing.e.position;
     if (body && w.cam.nearness(body.x, body.y, body.z) >= w.cam.nearness(q.x / 2, q.y / 2, q.z / 2) - BODY_DEPTH) return { person: body.id };
     return thing.e.item.fixed ? { thing: thing.e.id, along: thing.along } : { thing: thing.e.id };

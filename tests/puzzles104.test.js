@@ -213,14 +213,14 @@ test('with a pot in the hands, a tap on the well is a tap on the well, not on th
 test('the scene of a wrong pair on the other bank is in the view with the hero', async () => {
   const p = await at([11, 63], 1);
   const views = [];
-  p.session.listen((e) => { if (e.type === 'workView' && e.key === 'puzzle-ferry') views.push(e); });
+  p.session.listen((e) => { if (e.type === 'workView' && e.key === 'puzzle') views.push(e); });
   p.tapThing('pz:dog');
   assert.equal(p.press(), 'load');
   assert.equal(p.press(), 'cross');
   p.run(25, () => views.length > 0);
-  assert.equal(views.length, 1, 'the view turns to the scene');
+  assert.ok(views.length >= 1, 'the view turns to the scene');
   const chicken = getEntity(p.session.state, 'pz:chicken').position;
-  assert.ok(views[0].points.some((q) => Math.hypot(q.x - chicken.x, q.z - chicken.z) < 2), 'the chicken is a point of the view');
+  assert.ok(views.at(-1).points.some((q) => Math.hypot(q.x - chicken.x, q.z - chicken.z) < 2), 'the chicken is a point of the view');
 });
 
 test('with a pot in the hands in front of the bucket of the well, a tap on the bucket chooses the bucket', async () => {
@@ -237,4 +237,17 @@ test('with a pot in the hands in front of the bucket of the well, a tap on the b
   const cam = viewCamera({ focus: q, width: 390, height: 844 });
   const t = tapTarget(cam.project(q.x, q.y + 0.3, q.z), sessionScreen(p.session, cam));
   assert.equal(t?.thing, 'pz:well', JSON.stringify(t));
+});
+
+test('the healer in front of her jar: a tap on the jar is a tap on the jar', async () => {
+  const { tapTarget, viewCamera, sessionScreen } = await import('../src/world/hit.js');
+  const p = await at([42, 28], 1, { 'trial.healer.done': true });
+  assert.ok(p.run(20, () => Boolean(getEntity(p.session.state, 'pz:jar'))));
+  const jar = getEntity(p.session.state, 'pz:jar').position;
+  const healer = getEntity(p.session.state, 'npc:healer');
+  healer.position = { ...healer.position, x: jar.x + 0.4, z: jar.z + 0.4 };
+  const q = { x: jar.x / 2, y: jar.y / 2, z: jar.z / 2 };
+  const cam = viewCamera({ focus: q, width: 390, height: 844 });
+  const t = tapTarget(cam.project(q.x, q.y + 0.3, q.z), sessionScreen(p.session, cam));
+  assert.equal(t?.thing, 'pz:jar', JSON.stringify(t));
 });

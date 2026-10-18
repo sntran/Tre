@@ -309,6 +309,7 @@ export function createPuzzles(deps) {
         const t = getEntity(w(), 'pz:traveler');
         if (t && dist(t.position, h) <= 12) {
           ferry.offered = true;
+          deps.look([...F.things.map((x) => ({ ...getEntity(w(), thingId(x)).position })), { ...boat().position }, { ...h }]);
           deps.say(t.id, 'puzzle.ferry.start', {});
         }
       }
@@ -321,6 +322,8 @@ export function createPuzzles(deps) {
         else if (!healerE && mark) removeEntity(w(), 'pz:mark:pots');
         if (!pots.offered && healerE && !deps.busy() && dist(healerE.position, h) <= 12) {
           pots.offered = true;
+          // The view turns to a side where nothing covers the things of the puzzle.
+          deps.look([...['pz:pot:0', 'pz:pot:1', 'pz:well', 'pz:jar', 'pz:drain'].map((id) => ({ ...getEntity(w(), id).position })), { ...h }]);
           deps.say(healerE.id, pots.lv.need === 4 ? 'puzzle.pots.start' : 'puzzle.pots.start.two', {});
         }
         // The pot in the hands goes with the hero, in front. It takes a tap only on its body

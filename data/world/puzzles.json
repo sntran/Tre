@@ -16,7 +16,7 @@
   "pots": {
     "id": "pots", "map": "phu-dong", "every": 2, "person": "healer", "after": "trial.healer.done", "era": 1, "tale": false, "who": null, "source": "singmaster",
     "anchor": "well",
-    "well": [1.5, 3.5], "spots": [[3.5, 4], [4.8, 4]], "drain": [-0.5, 4.8], "jar": [2, 5.6], "at": [2.5, 6.8],
+    "well": [2.6, 1.0], "spots": [[3.5, 4], [4.8, 4]], "drain": [-0.5, 4.8], "jar": [2, 5.6], "at": [2.5, 6.8],
     "levels": [
       { "grades": [-1, 2], "sizes": [5, 3], "need": 2, "skill": "math.sub.10", "level": 1 },
       { "grades": [3, 12], "sizes": [5, 3], "need": 4, "skill": "math.addsub.100", "level": 1 }
