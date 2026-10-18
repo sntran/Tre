@@ -1,0 +1,36 @@
+{
+  "name": "woodcutter-four",
+  "about": {
+    "vi": "Anh tiều phu cần bốn khúc (lớp 3): một vạch ở đốt 8 rồi chặt là ít khúc quá; khúc dài 8 sáng lên và anh nói khúc này dài quá, không bao giờ nói khúc 4 ngắn quá; ba vạch cho bốn khúc bằng nhau.",
+    "en": "The woodcutter needs four pieces (grade 3): one mark at ring 8 and a cut give too few pieces; the long piece of 8 glows and he says that it is too long, never that the piece of 4 is too short; three marks give four equal pieces."
+  },
+  "profile": { "name": "An", "grade": 3, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "clock": 540,
+  "at": ["phu-dong", 51, 8.5],
+  "steps": [
+    { "press": { "entity": "npc:woodcutter" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "entity": "stem:woodcutter", "look": "stem-12" }] },
+    { "press": { "stem": 8 } },
+    { "until": { "event": "mark", "timeout": 10 } },
+    { "wait": 1.5 },
+    { "press": { "entity": "npc:woodcutter" } },
+    { "until": { "event": "snap", "timeout": 10 } },
+    { "until": { "event": "call", "with": { "key": "woodcutter.long" }, "timeout": 60 } },
+    { "expect": [{ "event": "call", "with": { "key": "woodcutter.pieces" } }, { "event": "call", "with": { "key": "woodcutter.short" }, "not": true }] },
+    { "until": { "event": "call", "with": { "key": "woodcutter.addMark" }, "timeout": 60 } },
+    { "press": { "stem": 3 } },
+    { "until": { "event": "mark", "timeout": 10 } },
+    { "wait": 1.5 },
+    { "press": { "stem": 6 } },
+    { "until": { "event": "mark", "timeout": 10 } },
+    { "wait": 1.5 },
+    { "press": { "stem": 9 } },
+    { "until": { "event": "mark", "timeout": 10 } },
+    { "wait": 1.5 },
+    { "press": { "entity": "npc:woodcutter" } },
+    { "until": { "event": "chop", "timeout": 60 } },
+    { "expect": [{ "event": "skill", "with": { "solved": true, "parts": [3, 3, 3, 3] } }] }
+  ]
+}
