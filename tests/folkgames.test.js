@@ -22,12 +22,15 @@ test('the court: ten squares in the Vietnamese order, 1 to 5 up and 6 to 10 down
   for (const [skill, list] of Object.entries(L.levels)) {
     for (const c of list) steps.add(c.step);
     for (let seed = 1; seed < 30; seed++) {
-      const plan = courtPlan(L.levels, skill, createRng(seed));
+      const plan = courtPlan(L.levels, skill, createRng(seed), 1 + (seed % list.length));
       const top = courtOf(plan).at(-1).value;
       assert.ok(top <= 150, `${skill}: ${top} has a word in num.*`);
     }
   }
   assert.deepEqual([...steps].sort((a, b) => a - b), [1, 2, 3, 4, 5, 10]);
+  // The level chooses the court (#99): the court from 1 at the first level of counting.
+  for (let seed = 1; seed < 20; seed++) assert.equal(courtPlan(L.levels, 'math.count.120', createRng(seed), 1).start, 1);
+  for (let seed = 1; seed < 20; seed++) assert.ok(courtPlan(L.levels, 'math.count.120', createRng(seed), 2).start >= 36);
 });
 
 test('the throw: the longer the hold, the farther the shard; in the called square, on a line, or out', () => {

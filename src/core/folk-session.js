@@ -6,7 +6,8 @@
 // deps: data (folkgames), profile, world(), env(), learner(), seed(), emit, callout(textKey,
 // params, entity id), command(cmd) (a command of the world), goTo(point), skill(ev) (a skill event
 // for the learner and the learning log), feastOn(), practice() (the task of a practice, or null),
-// setDone(game) (the end of a set: true when a practice ends it), busy(), day().
+// setDone(game) (the end of a set: true when a practice ends it), busy(), day(), view() (the angle
+// of the view: the camera is toward (sin, cos) of it).
 
 import { addEntity, removeEntity, getEntity } from './world/state.js';
 import { createRng, hashSeed } from './rng.js';
@@ -116,14 +117,20 @@ export function createFolk(deps) {
     n += 1;
     if (kind === 'loco') {
       const skill = skillOf(def.loCo.levels);
-      const plan = courtPlan(def.loCo.levels, skill, rngOf('court'));
-      game = { kind, skill, level: levelOf(skill), plan, court: courtOf(plan), rounds: 0, misses: {}, demoed: false, call: null, prev: null, phase: 'walk', wait: 8, retry: false, first: true };
+      // The level of the child chooses the court (#99: a child of grade 1 got a court from 47).
+      const level = levelOf(skill);
+      const plan = courtPlan(def.loCo.levels, skill, rngOf('court'), level);
+      game = { kind, skill, level, plan, court: courtOf(plan), rounds: 0, misses: {}, demoed: false, call: null, prev: null, phase: 'walk', wait: 8, retry: false, first: true };
       setCourt(game.court);
+      standAside();
       // The view turns so that no house covers the court (the event workView, #38).
       const pts = courtPoints(geo.loco, game.court);
       deps.emit({ type: 'workView', key: 'folk-loco', points: [...pts.squares, pts.rest, pts.start].map((p) => at(p)), sight: [at(pts.start)] });
-      if (plan.start !== 1) say('loco.start', { n: num(plan.start) });
-      else say('loco.join', {});
+      // The children always say where to start (#99), also on a court that does not start at 1.
+      if (plan.start !== 1) {
+        say('loco.start', { n: num(plan.start) });
+        later(2.5, () => { if (game?.kind === 'loco' && game.phase === 'walk') say('loco.join', {}); });
+      } else say('loco.join', {});
       walkToStart();
     } else {
       showRope(true);
@@ -143,17 +150,52 @@ export function createFolk(deps) {
     const p = (deps.profile.folk ??= {});
     p[kind] = deps.day();
   }
-  const say = (key, params, who = null) => deps.callout(key, params, who ?? (game?.kind === 'rope' ? 'npc:rope-child' : 'npc:loco-child'));
+  // The last line of the children, and how many times in a row it came.
+  const heard = { key: null, n: 0 };
+  const say = (key, params, who = null) => {
+    heard.n = heard.key === key ? heard.n + 1 : 1;
+    heard.key = key;
+    deps.callout(key, params, who ?? (game?.kind === 'rope' ? 'npc:rope-child' : 'npc:loco-child'));
+  };
+  // A wave never gets the same line a third time in a row: the child just heard it two times (#99:
+  // a child who waved again and again heard one line many times).
+  const waveSay = (key, params) => {
+    if (heard.key === key && heard.n >= 2) return;
+    say(key, params);
+  };
 
   // ---------------------------------------------------------------- Nhảy lò cò
+  // The children stand beside the court on the side away from the camera, so that they never cover
+  // the squares (#99: the court was behind the three children).
+  function standAside() {
+    const f = geo.loco;
+    const az = deps.view?.() ?? Math.PI / 4;
+    const toCam = f.side.x * Math.sin(az) + f.side.z * Math.cos(az);
+    const b = toCam > 0 ? -2.1 : 2.1;
+    def.loCo.children.forEach((_, k) => {
+      const e = getEntity(world(), k === 0 ? 'npc:loco-child' : `folk:child:${k}`);
+      if (!e) return;
+      const p = along(f, (0.5 + k * 1.6) * S, b * S);
+      e.position = at(p, facingOf(p, along(f, (1 + k * 1.5) * S)));
+    });
+  }
+  // The start line glows until the hero stands on it (#99).
+  function startGlow(on) {
+    const id = 'folk:start';
+    if (!on) return removeEntity(world(), id);
+    const p = courtPoints(geo.loco, game.court).start;
+    if (!getEntity(world(), id)) addEntity(world(), { id, keep: false, look: 'place-glow', position: at(p, Math.atan2(geo.loco.dir.x, geo.loco.dir.z)) });
+  }
   function walkToStart() {
     const pts = courtPoints(geo.loco, game.court);
     game.phase = 'walk';
     game.wait = 8;
+    startGlow(true);
     deps.goTo(pts.start);
   }
   // The hero at the start line, facing along the court: a child calls the square.
   function standAtStart() {
+    startGlow(false);
     const pts = courtPoints(geo.loco, game.court);
     deps.command({ type: 'place', id: 'hero', x: pts.start.x, z: pts.start.z });
     deps.command({ type: 'face', id: 'hero', x: pts.start.x + geo.loco.dir.x * 4, z: pts.start.z + geo.loco.dir.z * 4 });
@@ -359,6 +401,7 @@ export function createFolk(deps) {
     inviteAt[kind] = now + AGAIN;
     say(key, params);
     deps.emit({ type: 'folk', game: kind, on: false, rounds: game.rounds });
+    if (kind === 'loco') startGlow(false);
     game = null;
     const shard = getEntity(world(), 'folk:shard');
     if (shard) shard.hidden = true;
@@ -366,6 +409,7 @@ export function createFolk(deps) {
   }
   function stop() {
     if (!game) return;
+    if (game.kind === 'loco') startGlow(false);
     inviteAt[game.kind] = now + AGAIN;
     deps.emit({ type: 'folk', game: game.kind, on: false, rounds: game.rounds });
     game = null;
@@ -451,12 +495,28 @@ export function createFolk(deps) {
     }
   }
 
+  // A wave in a game (#99, rule 41): a child says the next step now. Return true in a game.
+  function wave() {
+    if (!game) return false;
+    if (game.kind === 'rope') waveSay('rope.goal', { n: num(game.plan.target) });
+    else if (game.phase === 'walk') {
+      startGlow(true);
+      waveSay('loco.join', {});
+    } else if (game.phase === 'throw' || game.phase === 'aim') {
+      const c = game.call;
+      if (c) waveSay(c.base !== null ? 'loco.call.near' : 'loco.call', c.base !== null ? { base: num(game.court[c.base].value), more: num(c.more) } : { n: num(game.court[c.square].value) });
+      later(1.5, () => { if (game?.phase === 'throw') waveSay('loco.how.throw', {}); });
+    } else if (game.phase === 'hop') waveSay('loco.how.hop', {});
+    else waveSay('loco.how.wait', {});
+    return true;
+  }
+
   // A press of the jump: the rope counts it at once; the court waits for the end of the press.
   const jump = () => (game?.kind === 'rope' ? ropePress() : game?.kind === 'loco' && game.phase === 'hop');
   const jumpUp = (held) => hopPress(held);
 
   return {
-    mapStart, tick, join, stop, candidates, jump, jumpUp,
+    mapStart, tick, join, stop, candidates, jump, jumpUp, wave,
     active: () => game?.kind ?? null,
     stateOf: () => (game ? { kind: game.kind, phase: game.phase, rounds: game.rounds, skill: game.skill, call: game.call?.square ?? null, count: game.rope?.count ?? null, group: game.plan?.group ?? null, target: game.plan?.target ?? null, court: game.court?.map((s) => s.value) ?? null } : null),
   };

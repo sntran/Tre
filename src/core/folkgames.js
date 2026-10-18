@@ -6,11 +6,12 @@
 //   the rope counts by groups: each jump on the beat is one group ("năm, mười, mười lăm").
 
 // ---------------------------------------------------------------- Nhảy lò cò
-// The court of a level: the start number, the step, and the squares. rng picks a court of the
-// level and a start among its starts.
-export function courtPlan(levels, skill, rng) {
+// The court of a level: the start number, the step, and the squares. The courts of a skill are in
+// the order of the levels: the level of the child (1 is the first) chooses the court (#99), and rng
+// picks a start among its starts.
+export function courtPlan(levels, skill, rng, level = 1) {
   const list = levels[skill] ?? levels['math.count.120'];
-  const c = list.length > 1 ? rng.pick(list) : list[0];
+  const c = list[Math.max(0, Math.min(list.length - 1, Math.round(level) - 1))];
   const start = c.starts ? rng.pick(c.starts) : c.start;
   return { skill, start, step: c.step, squares: c.squares, near: Boolean(c.near) };
 }
