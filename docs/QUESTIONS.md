@@ -262,3 +262,11 @@ These questions need a person who knows Vietnamese history and geography. Until 
    - `tay`: "Đố bạn: cái gì tay trái cầm được mà tay phải không cầm được?" — "Tay phải! Tay phải không tự cầm được tay phải. Ai cũng nghĩ tới một đồ vật."
 111. **The words of the riddles for a child of six.** Some words are old (đầu hè, lũy, chon chót màu son). Bà says how the words fit the thing after the child finds it. Are the riddles good for a child of six, or does the first riddle of a child need simpler words?
 112. **"Năm bảy vợ".** A known riddle of the rooster says "ngày năm bảy vợ". The set does not use it, so that no line is about the wives of an animal. Is that right?
+
+## Questions about the puzzles solved by doing (#104)
+
+113. **The record of the tale of the elephant.** The tale of the elephant weighed with a boat, told of Lương Thế Vinh and the Ming envoy Chu Hy, needs a published record (a book or an article, with its page) before its chapter. `data/world/puzzles.json` has the source `tale-record` with no book yet. The lines of the tale (`tale.elephant.n1` to `n4`) start with "Người ta kể rằng". A person who knows Vietnamese history checks them.
+114. **The sources of the two puzzles.** The river crossing names problem 18 of *Propositiones ad acuendos juvenes* (attributed to Alcuin of York, about 800) and Marcia Ascher, "A River-Crossing Problem in Cross-Cultural Perspective", *Mathematics Magazine* 63 (1), 1990, pages 26 to 29, for the forms of the puzzle in Africa and other lands. The pots name David Singmaster, *Sources in Recreational Mathematics*, for the measuring problems with jugs. Each needs a check (`checked` is false). The lines of the traveler and of the healer:
+   - "Đò nhỏ quá, mỗi chuyến cháu chỉ chở được một thứ thôi. Mà để con chó với con gà một mình thì chó đuổi gà, để con gà với bao gạo thì gà mổ gạo."
+   - "Bà cần đúng bốn bát nước để sắc thuốc, mà chỉ có cái nồi năm bát với cái nồi ba bát."
+115. **The days of the puzzles.** The ferry comes one day in three, and the pots one day in two after the task of the healer. Are these good, or should a parent see when a puzzle waits?
