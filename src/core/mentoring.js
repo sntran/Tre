@@ -38,6 +38,15 @@ const BALL_UP = 0.1; // half blocks over the ground: the rice ball on its leaf
 const BALL_OUT = 1.6; // half blocks from the hero toward the camera
 const NGHE_SIDE = 2.2; // half blocks from the rice ball to Nghé, to the side of the view
 
+// A number of hundredths in words, as a text parameter (#101): "một phẩy hai mươi lăm" (1,25),
+// "một phẩy không năm" (1,05), "hai" (2,00).
+export function decimalWords(h) {
+  const a = { key: `num.${Math.floor(h / 100)}` };
+  const b = h % 100;
+  if (!b) return { key: 'decimal.whole', params: { a } };
+  return { key: b < 10 ? 'decimal.small' : 'decimal.words', params: { a, b: { key: `num.${b}` } } };
+}
+
 export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {}, nameOf = () => '' }) {
   const cfg = data.mentors;
   const states = new Map(); // key -> the mentor of the task
@@ -741,6 +750,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // no parts to count, the mark of what went wrong only: the widest gap of the row of the fisher.
   function countSteps(task, fam, info, s, t) {
     if (task.tz?.zone.cutPieces) return pieceSteps(task, s, t);
+    // The teacher at grades 4 and 5 (#101): the desks and the box, or the table.
+    const form = task.tz?.zone.plan?.form;
+    if (form === 'share') return deskSteps(task, s, t);
+    if (form === 'decimal' && !itemsOf(task.place).length) return tableSteps(task, s, t);
     if (itemsOf(task.place).length && (fam.reader === 'sum' || fam.reader === 'each')) return markSteps(task, fam, info, s, t);
     if (task.place?.zone.rule === 'line') {
       const z = task.place.zone;
@@ -877,6 +890,67 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     }
     s.say(t, 'mentor.first.you');
     return t + 1.5;
+  }
+
+  // The count of the desks of grade 4 (#101): the total of each desk ("mười một"), then the box
+  // ("Hộp: thừa hai."), and then what the count shows: rods that are not shared yet, desks that are
+  // not equal, or enough rods in the box for one more on each desk.
+  function deskSteps(task, s, t) {
+    const w = world();
+    const plan = task.tz.zone.plan;
+    const lines = defOf(task.key)?.lines ?? {};
+    const total = (z) => (z?.zone.items ?? []).reduce((a, id) => a + (getEntity(w, id)?.item.value ?? getEntity(w, id)?.item.size ?? 0), 0);
+    const sums = [];
+    for (let i = 0; i < plan.k; i++) {
+      const d = getEntity(w, `zone:desk-${i}`);
+      const n = total(d);
+      sums.push(n);
+      s.point(t, d.position, 1.2);
+      s.mark(t, { x: d.zone.x, z: d.zone.z }, 1.6);
+      s.say(t + 0.1, n ? `num.${Math.min(150, n)}` : 'num.0');
+      t += 1.4;
+    }
+    const box = getEntity(w, 'zone:box');
+    const rest = total(box);
+    if (box && lines.box) {
+      s.point(t, box.position, 1.2);
+      s.say(t + 0.1, lines.box, { n: { key: `num.${Math.min(150, rest)}` } });
+      t += 2;
+    }
+    const left = total(getEntity(w, 'zone:rods')) + total(task.place);
+    const key = left ? lines.shareLeft : !sums.every((v) => v === sums[0]) ? lines.shareUnequal : rest >= plan.k ? lines.shareMore : null;
+    if (key) {
+      s.say(t, key);
+      t += 2.4;
+    }
+    return t;
+  }
+  // The count of the table of grade 5 (#101): the big bundles, the bundles, and the rods, and the
+  // number that they make, in words ("Một bó lớn, hai bó, năm que: một phẩy hai mươi lăm."). Then
+  // the number that the teacher needs.
+  function tableSteps(task, s, t) {
+    const w = world();
+    const table = getEntity(w, 'zone:table');
+    const things = (table?.zone.items ?? []).map((id) => getEntity(w, id)).filter(Boolean);
+    const lines = defOf(task.key)?.lines ?? {};
+    const of = (size) => things.filter((e) => (e.item.value ?? 1) === size);
+    let sum = 0;
+    for (const [size, key] of [[100, 'scholar.part.big'], [10, 'scholar.part.ten'], [1, 'scholar.part.rod']]) {
+      const list = of(size);
+      if (!list.length) continue;
+      sum += size * list.length;
+      list.forEach((e) => s.mark(t, e.position, 1.6));
+      s.point(t, list[0].position, 1.2);
+      s.say(t + 0.1, key, { n: { key: `num.${list.length}` } });
+      t += 1.6;
+    }
+    s.say(t, 'scholar.part.value', { x: decimalWords(sum) });
+    t += 2.6;
+    if (lines.need) {
+      s.say(t, lines.need, { x: decimalWords(task.tz.zone.plan.x) });
+      t += 2.4;
+    }
+    return t;
   }
 
   // The count of the bundles by their size (#101, grade 3): at each bundle the running total

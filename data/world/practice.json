@@ -18,7 +18,10 @@
       "trial": "scholar",
       "skills": [
         "math.count.120",
-        "math.place.1000"
+        "math.place.1000",
+        "math.mul.10",
+        "math.div.10",
+        "math.decimal"
       ],
       "set": 2,
       "story": "practice-bo-que"

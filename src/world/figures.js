@@ -646,6 +646,7 @@ export function thingLook(key) {
   // The healer from grade 3 (#101): a leaf for a dose, a small model basket, and a basket with a
   // place for each bunch in rows of six.
   if (k === 'herb-leaf') return { kind: 'herb-leaf' };
+  if (k === 'rod-bigbundle' || k === 'rod-box' || k === 'rod-table') return { kind: k };
   if (k === 'basket-small') return { kind: 'basket-small' };
   m = /^basket-grid-(\d+)$/.exec(k);
   if (m) return { kind: 'basket-grid', n: Number(m[1]) };
@@ -806,6 +807,11 @@ export function workThing(look) {
     // them on the mat).
     case 'rod': return still([P('stick', [0.22, 0.16, 0.9], 'yellow', [0, 0.08, 0]), P('endA', [0.22, 0.16, 0.08], 'ochre', [0, 0.08, 0.49]), P('endB', [0.22, 0.16, 0.08], 'ochre', [0, 0.08, -0.49])], 0.18);
     // Ten rods tied with a red band.
+    // A big bundle of ten bundles (grade 5, #101), a box for the rods that are left, and the low
+    // table of the teacher.
+    case 'rod-bigbundle': return still([P('rods', [1.6, 1.4, 1.6], 'yellow', [0, 0.7, 0]), P('ends', [1.5, 1.3, 1.62], 'ochre', [0, 0.7, 0]), P('band1', [1.7, 1.5, 0.25], 'vermilion', [0, 0.7, -0.4]), P('band2', [1.7, 1.5, 0.25], 'vermilion', [0, 0.7, 0.4])], 1.5);
+    case 'rod-box': return still([P('floor', [2.2, 0.1, 2.2], 'wood', [0, 0.05, 0]), P('wallN', [2.2, 0.6, 0.15], 'wood', [0, 0.3, -1.05]), P('wallS', [2.2, 0.35, 0.15], 'wood', [0, 0.18, 1.05]), P('wallW', [0.15, 0.6, 2.2], 'wood', [-1.05, 0.3, 0]), P('wallE', [0.15, 0.6, 2.2], 'wood', [1.05, 0.3, 0])], 0.6);
+    case 'rod-table': return still([P('top', [2.6, 0.15, 2.6], 'wood', [0, 0.05, 0]), P('rim', [2.7, 0.1, 0.15], 'ochre', [0, 0.1, -1.25])], 0.2);
     case 'rod-bundle': return still([P('rods', [0.8, 0.8, 1.5], 'yellow', [0, 0.4, 0]), P('ends', [0.7, 0.7, 1.52], 'ochre', [0, 0.4, 0]), P('band', [0.9, 0.9, 0.3], 'vermilion', [0, 0.4, 0])], 0.9);
     // A reed mat on the ground.
     case 'mat': {

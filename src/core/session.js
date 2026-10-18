@@ -57,7 +57,7 @@ import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveRea
 import { taskPools, POOL } from '../world/light.js';
 import { levelFor, taskOf, trialLevel } from './world/trials.js';
 import { nextLevel } from './practice.js';
-import { createMentoring } from './mentoring.js';
+import { createMentoring, decimalWords } from './mentoring.js';
 import { playExample, stopExample } from './examples.js';
 import { endScript } from './world/systems/mentor.js';
 import { namesOf } from './naming.js';
@@ -1127,6 +1127,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // The numbers of the rods of the level (#101).
         const plan = def.npc === speaker ? trialZone(def.id)?.zone.plan : null;
         if (plan?.g) Object.assign(out, { n: num(plan.n), g: num(plan.g) });
+        if (plan?.form === 'share') Object.assign(out, { n: num(plan.n), k: num(plan.k) });
+        if (plan?.form === 'decimal') out.x = decimalWords(plan.x);
       }
       if (def.task === 'forge') out.ore = num(t.ore);
       if (def.task === 'basket') {
@@ -2689,7 +2691,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (show && SHOW_MOVES.has(show.move) && show.steps.some((st) => /^num\./.test(st.say?.key ?? ''))) return null;
     // No tie while the extra rods of a snap wait for the end of the count (#87: each press tied
     // again, the band snapped again, and the count started again).
-    if (key === 'trial-scholar' && open('scholar') && zoneOf('mat')?.zone.items.length && !getEntity(state, 'zone:trial-scholar')?.zone.spring) return { act: 'tie', icon: 'rope', run: () => work('scholar', 'tie') };
+    // Grades 4 and 5 (#101): the press at the teacher checks the desks, or the table.
+    const form = getEntity(state, 'zone:trial-scholar')?.zone.plan?.form;
+    const checks = (form === 'share' && query(state, 'zone').some((z) => z.zone.rule === 'desk' && z.zone.items.length)) || (form === 'decimal' && zoneOf('table')?.zone.items.length);
+    if (key === 'trial-scholar' && open('scholar') && (zoneOf('mat')?.zone.items.length || checks) && !getEntity(state, 'zone:trial-scholar')?.zone.spring) return { act: 'tie', icon: 'rope', run: () => work('scholar', 'tie') };
     // The basket is given at the basket, or to the healer at her beds (#74: a walk to the face of
     // the healer ended at the well, and the basket was given there; #79: the button and the world
     // had two rules, and a press did nothing). One rule: giveReady.
@@ -2714,7 +2719,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const ONE_MOVE = new Set(['bundle', 'basket', 'leaf', 'bandrow']);
   function oneMovePlace(thing) {
     const h = hero().position;
-    return query(state, 'zone').find((z) => ONE_MOVE.has(z.zone.rule) && z.zone.task === thing.item.task && canPut(z.zone, thing) && hasRoom(z.zone) && distHb(h, nearestPoint(z, h)) <= REACH + 2) ?? null;
+    // The mats of the teacher at grades 4 and 5 take a thing only by a put at the mat (#101): a
+    // bundle can go to a desk or to the table too.
+    return query(state, 'zone').find((z) => ONE_MOVE.has(z.zone.rule) && z.zone.oneMove !== false && z.zone.task === thing.item.task && canPut(z.zone, thing) && hasRoom(z.zone) && distHb(h, nearestPoint(z, h)) <= REACH + 2) ?? null;
   }
   // The tasks where the child put a thing, and the last thing that the child took from a heap
   // ({ task, kind }).

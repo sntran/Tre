@@ -172,10 +172,25 @@ export function setupTrial(world, def, level, env, opts = {}) {
     // The heap ends a step before the rect of the mat, so that no rod lies on the mat and a tap on
     // the mat chooses the mat (#47): 8 columns 0.7 apart, a rod as long as about one half block.
     const h = P(def.places.heap);
-    const rods = heap('rods', { ...h, x: Math.min(h.x, m.x - 1 - 1 - 1 - 7 * 0.7) }, 'rod', { cols: 8, step: 0.7 });
-    things(rods, 'rod', plan.n);
+    const tens = plan.form === 'share' || plan.form === 'decimal';
+    const rods = heap('rods', { ...h, x: Math.min(h.x, m.x - 1 - 1 - 1 - 7 * 0.7) }, tens ? ['rod', 'rodbundle', 'bigbundle'] : 'rod', { cols: 8, step: 0.7 });
+    // Grades 4 and 5 (#101): the rods lie as bundles of ten and loose rods.
+    if (tens) addRods(world, rods.zone, 'rodbundle', plan.form === 'share' ? plan.tens : plan.bundles, owner, tz);
+    things(rods, 'rod', plan.form === 'share' ? plan.ones : plan.form === 'decimal' ? plan.rods : plan.n);
     const size = plan.g ?? task.bundle;
-    addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts: 'rod', items: [], x: m.x, y: m.y, z: m.z, tied: 0, bundle: size, rect: rect(m, 7.5, 3) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1.6, facing: 0 } });
+    // The mat of grade 4 opens a bundle into ten rods; the mat of grade 5 ties ten bundles into a
+    // big bundle.
+    const accepts = plan.form === 'share' ? ['rod', 'rodbundle'] : plan.form === 'decimal' ? 'rodbundle' : 'rod';
+    addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts, items: [], x: m.x, y: m.y, z: m.z, tied: 0, bundle: size, untie: plan.form === 'share', oneMove: !tens, rect: rect(m, 7.5, 3) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1.6, facing: 0 } });
+    // The desks of the pupils in a column west of the heap, where the ground is open, and the box
+    // of the teacher by the heap (grade 4); the table of the teacher (grade 5).
+    const west = rods.zone.x - 3.2;
+    if (plan.form === 'share') {
+      for (let i = 0; i < plan.k; i++) addDesk(world, `desk-${i}`, { x: west, y: m.y, z: m.z - 0.4 + i * DESK_STEP }, ['rod', 'rodbundle'], owner, 'share-mat');
+      addDesk(world, 'box', { x: rods.zone.x + 2, y: m.y, z: m.z + 3.2 }, ['rod', 'rodbundle'], owner, 'rod-box');
+    } else if (plan.form === 'decimal') {
+      addDesk(world, 'table', { x: west, y: m.y, z: m.z + 1.2 }, ['rod', 'rodbundle', 'bigbundle'], owner, 'rod-table');
+    }
     // For grade 1 and below (level 0), the mat shows the places of a frame of ten; for the grades
     // above it fades, as the representation fades inside a skill (#69). Equal bundles of g (grade 3)
     // have a frame of g places.
@@ -516,6 +531,42 @@ function layDose(world, def, recipe, at, y, tag) {
     for (let i = 0; i < recipe[k]; i++) addEntity(world, { id: `${tag}:${def.id}:${k}:${i}`, keep: true, position: { x: at.x - 0.6 + i * 0.45, y: y + 0.05, z: at.z - 0.45 + row * 0.45, facing: 0 }, look: `herb-${k}` });
   });
 }
+// Bundles of ten (or big bundles of a hundred) on a heap of the teacher (#101). The number of rods
+// of a thing is its value; its size stays one (the size of a thing is its length on the ground).
+const VALUE_OF = { rod: 1, rodbundle: 10, bigbundle: 100 };
+const LOOK_OF = { rod: 'rod', rodbundle: 'rod-bundle', bigbundle: 'rod-bigbundle' };
+function addRods(world, zone, kind, n, owner, tz) {
+  for (let i = 0; i < n; i++) {
+    const id = `${kind}:scholar:${tz.zone.made++}`;
+    addEntity(world, { id, keep: true, item: { kind, size: 1, value: VALUE_OF[kind], task: owner, zone: zone.id, home: zone.id, held: null, set: false }, position: { x: zone.x, y: zone.y, z: zone.z, facing: 0 }, look: LOOK_OF[kind] });
+    zone.items.push(id);
+  }
+  packHeap(world, zone);
+}
+// A desk of a pupil, the box, or the table of the teacher (#101): a place for bundles and rods.
+export const DESK_STEP = 3.2;
+function addDesk(world, id, at, accepts, owner, look) {
+  addEntity(world, { id: `zone:${id}`, keep: true, zone: { id, task: owner, rule: 'desk', accepts, items: [], x: at.x, y: at.y, z: at.z, rect: { x0: at.x - 1.2, x1: at.x + 1.2, z0: at.z - 1.2, z1: at.z + 1.2 } }, position: { x: at.x, y: at.y, z: at.z + 1.8, facing: 0 } });
+  addEntity(world, { id: `${look}:scholar:${id}`, keep: true, position: { x: at.x, y: at.y, z: at.z, facing: 0 }, look });
+}
+// The things on a desk: the big bundles and the bundles in a row, and the rods in rows of five.
+function packDesk(world, zone) {
+  const list = zone.items.map((id) => getEntity(world, id)).filter(Boolean).sort((a, b) => (b.item.value ?? 1) - (a.item.value ?? 1));
+  let big = 0;
+  let rod = 0;
+  for (const e of list) {
+    if ((e.item.value ?? 1) >= 10) {
+      e.position = { x: zone.x - 0.9 + big * 0.6, y: zone.y + 0.1, z: zone.z - 0.5, facing: Math.PI / 2 };
+      big += 1;
+    } else {
+      e.position = { x: zone.x - 0.9 + (rod % 5) * 0.45, y: zone.y + 0.1, z: zone.z + 0.3 + Math.floor(rod / 5) * 0.5, facing: 0 };
+      rod += 1;
+    }
+  }
+}
+// The sum of the sizes of the things of a zone (bundles count ten, big bundles a hundred).
+const sizeSum = (world, zone) => (zone?.items ?? []).reduce((a, id) => a + (getEntity(world, id)?.item.value ?? getEntity(world, id)?.item.size ?? 0), 0);
+
 // The bands that the child took lie in a row beside the mat (#101).
 export const BAND_STEP = 0.9;
 function packBandRow(world, zone) {
@@ -588,6 +639,7 @@ export function takeOut(world, thing) {
   if (z.zone.rule === 'heap') packHeap(world, z.zone);
   if (z.zone.rule === 'leaf') packLeaf(world, z.zone);
   if (z.zone.rule === 'bandrow') packBandRow(world, z.zone);
+  if (z.zone.rule === 'desk') packDesk(world, z.zone);
   if (z.zone.rule === 'bundle') packMat(world, z.zone);
   if (z.zone.rule === 'basket') packBasket(world, z.zone);
   if (z.zone.rule === 'hearth') packHearth(world, z.zone);
@@ -689,6 +741,20 @@ export function putWork(world, e, zone, thing, at, env) {
     packHeap(world, zone);
   } else if (zone.rule === 'bundle') {
     if (zone.items.length >= MAT_MAX) return false;
+    // Grade 4 (#101): a bundle on the mat of the teacher opens into ten rods (one bundle at a time).
+    if (zone.untie && thing.item.kind === 'rodbundle') {
+      if (zone.items.length) return false;
+      removeEntity(world, thing.id);
+      const tz2 = tz;
+      for (let i = 0; i < 10; i++) {
+        const id = `rod:scholar:${tz2.zone.made++}`;
+        addEntity(world, { id, keep: true, item: { kind: 'rod', size: 1, task: thing.item.task, zone: zone.id, home: 'rods', held: null, set: false }, position: { x: zone.x, y: zone.y, z: zone.z, facing: 0 }, look: 'rod' });
+        zone.items.push(id);
+      }
+      packMat(world, zone);
+      say(world, 'untie', e.id, { zone: zone.id, sound: 'plank-up' });
+      return true;
+    }
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packMat(world, zone);
@@ -723,6 +789,10 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packBasket(world, zone);
+  } else if (zone.rule === 'desk') {
+    thing.item.zone = zone.id;
+    zone.items.push(thing.id);
+    packDesk(world, zone);
   } else if (zone.rule === 'bandrow') {
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
@@ -789,6 +859,13 @@ function act(world, e, want, env) {
     // The teacher ties the rods on the mat (the hero stands at the teacher, or at the mat).
     const mat = zoneEnt(world, 'mat');
     const teacher = query(world, 'person').find((p) => p.person.ref === 'teacher');
+    const form = tz.zone.plan?.form;
+    // Grade 4 (#101): the press at the teacher is the check of the desks. Grade 5: with no bundle on
+    // the mat, the check of the table.
+    if ((form === 'share' || (form === 'decimal' && !mat?.zone.items.length)) && !tz.zone.spring) {
+      if (!(near(mat?.position, REACH + 3) || near(teacher?.position, REACH + 3))) return;
+      return form === 'share' ? checkDesks(world, tz, task, teacher) : checkTable(world, tz, task, teacher);
+    }
     if (!mat || !mat.zone.items.length || tz.zone.spring || !(near(mat.position, REACH + 3) || near(teacher?.position, REACH + 3))) return;
     const n = mat.zone.items.length;
     const size = mat.zone.bundle ?? task.bundle;
@@ -810,6 +887,16 @@ function act(world, e, want, env) {
     }
     const solved = tieResult(n, size);
     commit(world, tz, task, { solved, parts: [n], target: size });
+    if (solved && form === 'decimal') {
+      // Ten bundles tie into a big bundle (#101): it lies on the heap, for the table.
+      for (const id of mat.zone.items) removeEntity(world, id);
+      mat.zone.items = [];
+      const heapZone = zoneEnt(world, 'rods');
+      addRods(world, heapZone.zone, 'bigbundle', 1, `trial-${tz.zone.trial}`, tz);
+      say(world, 'tie', mat.id, { sound: 'plank-up' });
+      success(world, tz, mat.position);
+      return;
+    }
     if (solved) {
       // Ten rods (or g rods, #101) tie into a bundle, and the bundle goes to the row by the teacher.
       for (const id of mat.zone.items) removeEntity(world, id);
@@ -1094,6 +1181,35 @@ function act(world, e, want, env) {
     tz.zone.sticks = task.parts;
     if (!result.solved) say(world, 'snap', `zone:trial-woodcutter`, { pieces: result.pieces, short: short === null || bad.long ? null : result.pieces[short], long: bad?.long ? result.pieces[short] : null, sound: 'plank-down' });
   }
+}
+
+// The check of the desks of grade 4 (#101): the desks are equal, the box has less than one rod for
+// each desk, and no rod is left on the heap or the mat. The count is the mentor's (deskSteps).
+function checkDesks(world, tz, task, teacher) {
+  const plan = tz.zone.plan;
+  const sums = Array.from({ length: plan.k }, (_, i) => sizeSum(world, zoneEnt(world, `desk-${i}`)?.zone));
+  const box = sizeSum(world, zoneEnt(world, 'box')?.zone);
+  const left = sizeSum(world, zoneEnt(world, 'rods')?.zone) + sizeSum(world, zoneEnt(world, 'mat')?.zone);
+  const solved = left === 0 && sums.every((v) => v === sums[0]) && box < plan.k;
+  commit(world, tz, task, { solved, parts: [...sums, box], target: plan.n });
+  if (solved) finish(world, tz, zoneEnt(world, 'desk-0')?.position);
+  else say(world, 'nope', teacher?.id ?? tz.id, { sound: 'tap' });
+}
+// The check of the table of grade 5 (#101): big bundles, bundles, and rods make the number.
+function checkTable(world, tz, task, teacher) {
+  const plan = tz.zone.plan;
+  const table = zoneEnt(world, 'table');
+  if (!table?.zone.items.length) return;
+  const sum = sizeSum(world, table.zone);
+  const solved = sum === plan.x;
+  commit(world, tz, task, { solved, parts: [sum], target: plan.x });
+  if (solved) {
+    for (const id of table.zone.items) {
+      const e = getEntity(world, id);
+      if (e) e.item.set = true;
+    }
+    finish(world, tz, table.position);
+  } else say(world, 'nope', teacher?.id ?? tz.id, { sound: 'tap' });
 }
 
 // A tray of bowls goes into the pot of Gióng: each full ten, Gióng eats and grows one head taller;
