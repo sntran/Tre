@@ -657,6 +657,14 @@ export function thingLook(key) {
   // of the fisher (n half blocks, with a mark at its half at grade 5), and the knot at the end of a
   // length of the pole on the row.
   if (k === 'skiff' || k === 'stake-lie' || k === 'pole-knot') return { kind: k };
+  // The puzzles of the day (#104): the boat of the ferry with its middle at its point, the mark of a
+  // side quest over a person, a pot of n bowls with its water, the jar of the healer, the drain at
+  // the well, and a little rice on the ground.
+  if (k === 'skiff-mid' || k === 'mark-side' || k === 'drain' || k === 'rice-spill') return { kind: k };
+  m = /^pzpot-(\d+)-(\d+)$/.exec(k);
+  if (m) return { kind: 'pzpot', n: Number(m[1]), level: Number(m[2]) };
+  m = /^pzjar-(\d+)-(\d+)(-over)?$/.exec(k);
+  if (m) return { kind: 'pzjar', n: Number(m[1]), level: Number(m[2]), over: Boolean(m[3]) };
   // The smith from grade 3 (#102): the colors of the iron in the fire, a bar off the anvil (in the
   // water or on the rack), the anvil alone, the steam of a warm trough, and the rack in the air.
   m = /^iron-(dark|cherry|orange|yellow)$/.exec(k);
@@ -918,6 +926,29 @@ export function workThing(look) {
       ], STEED_SEAT + 1 * k);
     }
     // A stake of the fish trap, half in the water.
+    // The boat of the ferry puzzle (#104): the skiff with its middle at its point.
+    case 'skiff-mid': return still([P('hull', [1.8, 0.7, 4], 'wood', [0, -0.15, 0]), P('rimL', [0.25, 0.3, 3.8], 'ochre', [-0.85, 0.3, 0]), P('rimR', [0.25, 0.3, 3.8], 'ochre', [0.85, 0.3, 0]), P('bow', [1, 0.5, 0.4], 'ochre', [0, 0.35, 1.9]), P('stern', [1.2, 0.4, 0.4], 'wood', [0, 0.3, -1.9])], 0.7);
+    // The mark of a side quest: a small paper scroll with a red tie, over the person.
+    case 'mark-side': return still([P('scroll', [0.9, 0.5, 0.25], 'paper', [0, 0.25, 0]), P('tie', [0.2, 0.55, 0.3], 'vermilion', [0, 0.25, 0]), P('endA', [0.15, 0.6, 0.3], 'ochre', [-0.48, 0.25, 0]), P('endB', [0.15, 0.6, 0.3], 'ochre', [0.48, 0.25, 0])], 0.6);
+    // A clay pot of n bowls: a ring on its side for each bowl, and the water to its level, blue,
+    // through the side (no numeral).
+    case 'pzpot': {
+      const h = 0.28 * look.n;
+      const parts = [P('body', [1.1, h, 1.1], 'ochre', [0, h / 2, 0]), P('rim', [1.25, 0.12, 1.25], 'wood', [0, h + 0.06, 0])];
+      for (let i = 0; i < look.n; i++) parts.push(P(`bowl${i}`, [1.16, 0.2, 1.16], i < look.level ? 'indigoPale' : 'ochre', [0, 0.14 + i * 0.28, 0]), P(`line${i}`, [1.18, 0.04, 1.18], 'ink', [0, 0.28 * (i + 1), 0], { mark: true }));
+      return still(parts, h + 0.2);
+    }
+    // The jar of the healer: n bowls, the water to its level, and water on the ground when it ran over.
+    case 'pzjar': {
+      const h = 0.3 * look.n + 0.3;
+      const parts = [P('body', [1.3, h, 1.3], 'wood', [0, h / 2, 0]), P('neck', [0.9, 0.2, 0.9], 'ochre', [0, h + 0.1, 0])];
+      for (let i = 0; i < look.n; i++) parts.push(P(`bowl${i}`, [1.36, 0.22, 1.36], i < look.level ? 'indigoPale' : 'wood', [0, 0.3 + i * 0.3, 0]), P(`line${i}`, [1.38, 0.04, 1.38], 'ink', [0, 0.3 + 0.3 * (i + 1) - 0.08, 0], { mark: true }));
+      if (look.over) parts.push(P('spill', [2.6, 0.04, 2.2], 'indigoPale', [0.4, 0.02, 0.4]), P('top', [0.95, 0.1, 0.95], 'indigoPale', [0, h + 0.2, 0]));
+      return still(parts, h + 0.3);
+    }
+    // The drain at the well: a short channel of stones.
+    case 'drain': return still([P('bed', [0.8, 0.1, 2], 'ink', [0, 0.05, 0]), P('sideA', [0.25, 0.25, 2], 'ash', [-0.5, 0.12, 0]), P('sideB', [0.25, 0.25, 2], 'ash', [0.5, 0.12, 0])], 0.3);
+    case 'rice-spill': return still([0, 1, 2, 3, 4, 5].map((i) => P(`grain${i}`, [0.12, 0.06, 0.12], 'paper', [Math.cos(i * 1.7) * 0.5, 0.03, Math.sin(i * 2.3) * 0.5])), 0.1);
     // The rack of the smith (#102): two posts and a bar, where a piece cools in the air.
     case 'iron-rack': return still([P('postA', [0.25, 1.4, 0.25], 'wood', [0, 0.7, 0.2]), P('postB', [0.25, 1.4, 0.25], 'wood', [0, 0.7, 2.2]), P('bar', [0.3, 0.2, 2.4], 'ochre', [0, 1.3, 1.2]), P('foot', [1, 0.15, 2.6], 'wood', [0, 0.08, 1.2])], 1.5);
     // The boat of the stakes (#102): a small dugout along +z, low in the water.

@@ -912,6 +912,17 @@
       "item": "pole",
       "face": 3
     },
+    "traveler": {
+      "skin": "skin2",
+      "top": "indigoPale",
+      "bottom": "ochre",
+      "sash": "vermilion",
+      "topKind": "shirt",
+      "bottomKind": "trousers",
+      "hair": "short",
+      "hat": "non",
+      "face": 1
+    },
     "carter": {
       "skin": "skin4",
       "top": "ochre",
