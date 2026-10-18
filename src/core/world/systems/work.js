@@ -675,6 +675,11 @@ function act(world, e, want, env) {
         // A right part has its line (#74: the pip turned orange, and nobody spoke).
         const teacher = getEntity(world, 'npc:teacher');
         if (teacher && !teacher.hidden) say(world, 'call', teacher.id, { key: 'scholar.tied', params: { n: { key: `num.${k + 1}` } }, happened: true });
+        // He says at once how many bundles are left, and the heap glows (#96: after the first
+        // bundle nobody spoke, and the children guessed from the goal bar).
+        const left = Math.floor((heapZone?.zone.items.length ?? 0) / task.bundle);
+        if (teacher && !teacher.hidden && left > 0) say(world, 'call', teacher.id, { key: 'scholar.more', params: { n: { key: `num.${left}` } }, happened: true });
+        if (left > 0) world.events.push({ type: 'glowThings', ids: [...heapZone.zone.items] });
       }
     } else {
       // The band snaps (a puff of dust), and the rods stay on the mat in their rows, so that the
@@ -1038,6 +1043,8 @@ function tickTide(world, tz, dt, env) {
   if (tide.phase === 'low' && held) tide.t = Math.min(tide.t, tide.every - 10);
   if (tide.phase === 'low') {
     emptyPile(world, tz, line, row, held, dt);
+    const hole = tz.zone.hole;
+    if (hole && row.some((s) => s.item.slot > hole.from && s.item.slot < hole.from + hole.size)) delete tz.zone.hole;
     // The row is at the float: a few seconds after the last stake, the water rises, and the fisher
     // says it (#78: the child put the row to the float, and nothing happened for a minute).
     const atFloat = row.some((s) => s.item.slot === line.zone.length);
@@ -1057,6 +1064,12 @@ function tickTide(world, tz, dt, env) {
     // A row that did not change since the last tide, or with no stake of the child, is no try
     // (#48): the water comes and goes, and the fisher says to put more stakes first.
     const key = [...offsets].sort((a, b) => a - b).join(',');
+    // A row that did not change after an escape gets no new tide: the hole is still the next step
+    // (#96: the child heard "Cắm thêm cọc trước đã …" with no stake to put).
+    if (key === tide.last && tz.zone.hole) {
+      tide.t = 0;
+      return;
+    }
     if (key === tide.last || !row.some((s) => !FISHER_STAKES.has(s.id))) {
       tide.phase = 'in';
       tide.t = 0;
@@ -1088,6 +1101,8 @@ function tickTide(world, tz, dt, env) {
     addEntity(world, { id: 'fish:fisher', keep: true, position: { x: line.zone.x + at, y: line.zone.y, z: line.zone.z + (r.solved ? 1 : 1.5), facing: 0 }, look: fish });
     say(world, r.solved ? 'catch' : 'escape', tz.id, { at: { x: line.zone.x + at, z: line.zone.z }, sound: 'splash' });
     if (!r.solved) {
+      // The hole of the escape is the next step until a stake stands in it (#96, #97).
+      tz.zone.hole = { from: r.widest.from, size: r.widest.size };
       // The answer of the world to a wrong row, at each level of help (#73: after the handover of
       // the checking, the fish swam out and nobody spoke): the widest space glows while the fish
       // swim through it, and the fisher (or Nghé, while the fisher is away) says it.

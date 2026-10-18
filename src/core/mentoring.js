@@ -30,6 +30,9 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 // the learner or null; log(kind, fields): the learning log; emit(ev): an event of the session;
 // world(): the world state; env(): the facts of the map; raise(key): the task asks for a bigger
 // task (a move raise), returns nothing; nameOf(id): the name of a person (a text parameter).
+const HOLE_MARK = 8; // seconds that the mark of the hole of an escape stays
+const ROD_GLOW = 0.35; // seconds between two rods that glow in the hint of a full mat (#96)
+const BUNDLE = 10; // rods in a bundle of the teacher
 const REST_TIME = 4.4; // seconds that the person and the hero sit in a break
 const BALL_UP = 0.1; // half blocks over the ground: the rice ball on its leaf
 const BALL_OUT = 1.6; // half blocks from the hero toward the camera
@@ -103,6 +106,25 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (!defOf(key)?.lines?.give || z?.rule !== 'basket') return false;
     const kinds = new Set(itemsOf(task.place).map((e) => e.item.kind));
     return (z.kinds ?? []).every((k) => kinds.has(`herb-${k}`));
+  }
+  // The hole of the last escape of the fish at the row of the fisher, while no stake stands in it.
+  function holeOf(key, task) {
+    if (!defOf(key)?.lines?.hole || task?.place?.zone.rule !== 'line') return null;
+    return task.tz?.zone.hole ?? null;
+  }
+  // The lost thing of an event nearest to the hero (a duck that ran away, not a duck of another
+  // farm), or null.
+  function lostThing(task) {
+    const hp = getEntity(world(), 'hero')?.position;
+    const lost = query(world(), 'item').filter((e) => keyOf(e.item.task) === task?.key && !e.item.stray && !e.item.held && /-lost-\d+$/.test(e.item.zone ?? '') && e.position && !e.hidden);
+    if (!lost.length || !hp) return null;
+    return lost.sort((a, b) => Math.hypot(a.position.x - hp.x, a.position.z - hp.z) - Math.hypot(b.position.x - hp.x, b.position.z - hp.z))[0];
+  }
+  // Has the mat of the teacher a bundle of rods or more (#96)?
+  function matFull(key, task) {
+    const z = task?.place?.zone;
+    if (!defOf(key)?.lines?.tie || z?.rule !== 'bundle') return false;
+    return itemsOf(task.place).length >= (z.bundle ?? BUNDLE);
   }
   // Is the row of the fisher at the float, with no stake in the hands (#78)?
   function rowFull(key, task) {
@@ -442,6 +464,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const def = defOf(key);
     let task = taskOf(key);
     if (!w || !def) return;
+    // No hint after the end of a task (#96): only the count of what happened.
+    if (task?.tz?.zone.done && move !== 'count') return 0;
     // A try is a commit (rule 33: the help goes one level up only after a try). The lines count
     // for each person, so that two tasks of one person count together.
     const whoNow = (task?.person ?? getEntity(w, def.person))?.id ?? key;
@@ -547,6 +571,27 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       point(t, p, 2);
       mark(t, p, 3);
       t += 3;
+    } else if (move === 'show' && matFull(key, task)) {
+      // A full mat: the step after the put is the count and the tie (#96: with 10 or 11 rods on the
+      // mat, "Lấy một que ở đống kia …" made a child put one more). The rods glow one by one, and
+      // then the teacher.
+      const rods = itemsOf(task.place);
+      say(t, defOf(key).lines.tie);
+      rods.forEach((e, i) => steps.push({ at: t + 0.6 + i * ROD_GLOW, glow: { ids: [e.id] } }));
+      const after = t + 0.6 + rods.length * ROD_GLOW;
+      if (task.person?.id) steps.push({ at: after, glow: { ids: [task.person.id] } });
+      if (task.person?.position) point(after, task.person.position, 1.6);
+      t = after + 1.6;
+    } else if ((move === 'show' || move === 'mark') && holeOf(key, task) && !pileEmpty(task)) {
+      // After an escape, the next step is the hole (#96, #97): the free point in the middle of the
+      // space glows, and the person points at it. Never "Đủ hàng rồi …" with the fish gone.
+      const h = holeOf(key, task);
+      const z = task.place.zone;
+      const p = { x: z.x + h.from + h.size / 2, z: z.z };
+      say(t, defOf(key).lines.hole);
+      point(t, p, 2);
+      mark(t, p, HOLE_MARK);
+      t += 3;
     } else if (move === 'show' && rowFull(key, task)) {
       // The row is at the float and waits for the tide: the hint is to wait and look at the water,
       // never to take a stake (#78: the child heard "Lấy một cái cọc ở đống …" four times with a
@@ -584,6 +629,17 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       point(t, task.place.position, 1.4);
       mark(t, task.place.position, 2.5);
       if (task.person?.position) point(t + 1.6, task.person.position, 1.4);
+      t += 3;
+    } else if (move === 'show' && lostThing(task)) {
+      // The lost ducks: no heap (#96: "Lấy một cái ở đống kia …" sent a child to look for a pile).
+      // The nearest lost duck glows, and then the pen.
+      const duck = lostThing(task);
+      say(t, lineOf(key, 'show'));
+      steps.push({ at: t, glow: { ids: [duck.id] } });
+      point(t, duck.position, 1.4);
+      mark(t, duck.position, 2.5);
+      point(t + 1.6, task.at, 1.4);
+      mark(t + 1.6, task.at, 2.5);
       t += 3;
     } else if (move === 'show') {
       const pile = task.piles[0]?.position ?? task.at;

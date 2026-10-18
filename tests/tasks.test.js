@@ -169,7 +169,7 @@ test('the fisher: the button puts a stake on the line at the ghost, and with emp
   ]);
 });
 
-test('the fisher: the tide waits for the first stake of the child, and a tide with no change of the row is no try (#48)', async () => {
+test('the fisher: the tide waits for the first stake of the child, and a row with no change after an escape gets no tide (#48, #96)', async () => {
   let session = null;
   const events = [];
   const failures = await runHeadless({ name: 'task-fisher-tide', profile, clock: 540, at: ['phu-dong', 27, 64.5], steps: [
@@ -183,13 +183,15 @@ test('the fisher: the tide waits for the first stake of the child, and a tide wi
     { wait: 2 },
     { press: true },
     { until: { event: 'put', timeout: 15 } },
-    // The first tide after the stake is a try; the next one with the same row is not.
+    // The first tide after the stake is a try. After the escape, the row that did not change gets
+    // no new tide (#96): the hole of the escape waits for a stake.
     { until: { event: 'tide', timeout: 100 } },
     { expect: [{ event: 'skill', with: { solved: false } }] },
-    { until: { event: 'call', with: { key: 'fisher.tide.more' }, timeout: 120 } },
+    { wait: 120 },
   ] }, { onSession: (s) => { session = s; s.listen((ev) => events.push(ev)); } });
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
   assert.equal(events.filter((ev) => ev.type === 'skill').length, 1, 'one try, for the row that changed');
+  assert.equal(events.filter((ev) => ev.type === 'tide').length, 1, 'no tide for the row that did not change');
   void session;
 });
 

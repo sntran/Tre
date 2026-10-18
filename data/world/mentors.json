@@ -312,7 +312,8 @@
       },
       "picture": "mentor.picture.cart",
       "lines": {
-        "putDone": "mentor.cart.putDone"
+        "putDone": "mentor.cart.putDone",
+        "show": "mentor.cart.show"
       }
     },
     "event-flood": {
@@ -325,7 +326,8 @@
       },
       "picture": "mentor.picture.flood",
       "lines": {
-        "putDone": "mentor.flood.putDone"
+        "putDone": "mentor.flood.putDone",
+        "show": "mentor.flood.show"
       }
     },
     "event-market": {
@@ -338,7 +340,8 @@
       },
       "picture": "mentor.picture.market",
       "lines": {
-        "putDone": "mentor.market.putDone"
+        "putDone": "mentor.market.putDone",
+        "show": "mentor.market.show"
       }
     },
     "event-duck": {
@@ -347,7 +350,8 @@
       "demo": null,
       "picture": "mentor.picture.duck",
       "lines": {
-        "putDone": "mentor.duck.putDone"
+        "putDone": "mentor.duck.putDone",
+        "show": "mentor.duck.show"
       }
     },
     "trial-scholar": {
@@ -371,7 +375,8 @@
         "room": "mentor.scholar.room",
         "demoDone": "mentor.scholar.demoDone",
         "now": "mentor.scholar.now",
-        "raise": "mentor.scholar.raise"
+        "raise": "mentor.scholar.raise",
+        "tie": "mentor.scholar.tie"
       }
     },
     "trial-smith": {
@@ -399,7 +404,8 @@
         "wait": "fisher.tide.wait",
         "full": "fisher.full",
         "tight": "mentor.fisher.tight",
-        "fit": "mentor.fisher.fit"
+        "fit": "mentor.fisher.fit",
+        "hole": "mentor.fisher.hole"
       }
     },
     "trial-healer": {

@@ -68,6 +68,9 @@ function play(world, ent, dt, env) {
       const who = getEntity(world, st.point.id);
       if (who?.position) who.gesture = { act: 'point', x: st.point.x, z: st.point.z, t: st.point.time ?? 1.2 };
     }
+    // A line of the next step (ready) never comes after the end of its task (#96: after the give
+    // of the basket, "Cháu đưa giỏ cho bà nhé." came, and the big button glowed).
+    if (st.say?.ready && taskDone(world, st.say.ready)) continue;
     if (st.say) world.events.push({ type: 'call', id: st.say.id, key: st.say.key, params: st.say.params ?? {}, ...(st.say.happened ? { happened: true } : {}), ...(st.say.ready ? { ready: st.say.ready } : {}) });
     // The star of a person pulses (the view shows it, also at the edge of the screen).
     if (st.star) world.events.push({ type: 'starPulse', id: st.star });
@@ -141,6 +144,12 @@ function play(world, ent, dt, env) {
       return;
     }
   }
+}
+
+// Is the task of a key done (its trial zone, zone:trial-<task>)?
+function taskDone(world, key) {
+  const k = String(key);
+  return Boolean(getEntity(world, `zone:${k.startsWith('trial-') ? k : `trial-${k}`}`)?.zone?.done);
 }
 
 // The end of a script: the things of its demonstration go. early: the script stops before its
