@@ -1,0 +1,61 @@
+{
+  "name": "riddle-evening",
+  "about": {
+    "vi": "Buổi chiều ở nhà: bà đố một câu đố (con gà); vẫy tay thì bà gợi ý những chữ chỉ tới con vật; sổ tay giữ câu đố.",
+    "en": "The evening at home: Grandma says a riddle (the chicken); a wave gives the clue, the words that point to the animal; the notebook keeps the riddle."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 1030,
+  "at": [
+    "phu-dong",
+    11,
+    27
+  ],
+  "steps": [
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "riddle.ask.grandma"
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "wait": 2
+    },
+    {
+      "do": {
+        "type": "wave"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "riddle.ga.clue"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
+        {
+          "flag": "trial.fisher.done",
+          "is": false
+        }
+      ]
+    }
+  ]
+}
