@@ -97,6 +97,26 @@ test('after a cut into 4 and 8 for three pieces, he says the number, the 8 glows
   assert.equal(glow, 'piece-glow-8', 'the long piece glows');
 });
 
+test('a bigger task for the next time is said at the end of the task, not after the first bundle', async () => {
+  const s = story('trial-scholar');
+  const first = s.steps.findIndex((x) => x.read === true) + 2;
+  const put = (n) => ({ repeat: n, steps: [{ press: { item: 'rod' } }, { until: { event: 'put', timeout: 10 } }] });
+  const tie = [{ press: { entity: 'npc:teacher' } }, { until: { event: 'tie', timeout: 10 } }];
+  const opened = [];
+  const failures = await runHeadless({ ...s, steps: [...s.steps.slice(0, first),
+    put(10), ...tie,
+    { do: { type: 'mentor', key: 'trial-scholar', move: 'raise' } },
+    { wait: 3 },
+    { expect: [{ event: 'call', with: { key: 'mentor.scholar.raise' }, not: true }] },
+    put(10), ...tie,
+    { until: { event: 'open', with: { screen: 'say', textKey: 'mentor.scholar.raise' }, timeout: 15 } },
+    { read: true },
+    { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 15 } },
+  ] }, { onSession: (x) => x.listen((e) => { if (e.type === 'open' && (e.screen === 'say' || e.screen === 'dialogue' || e.textKey === 'mentor.scholar.raise')) opened.push(e.textKey ?? e.screen); }) });
+  assert.deepEqual(failures.map((f) => `${f.step}: ${f.message}`), [], opened.join(', '));
+  assert.equal(opened.filter((k) => k === 'mentor.scholar.raise').length, 1, opened.join(', '));
+});
+
 test('the line "như thế này" of the woodcutter frames all of the example and the stem on a phone, at each grade and angle', async () => {
   const W = 390;
   const H = 844;

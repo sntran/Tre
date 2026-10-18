@@ -89,12 +89,16 @@ test('a raise never makes the round in progress bigger: the heap and the goal st
       { read: true },
       { until: { event: 'call', with: { key: 'mentor.first.you' }, timeout: 15 } },
       { expect: [{ count: { entities: 'rod', min: 24, max: 24 } }] },
-      // The teacher raises in the round: "next time" a bigger task. The heap of this round stays.
+      // The teacher raises in the round: "next time" a bigger task. The heap of this round stays,
+      // and the line waits for the end of the round (#98).
       { do: { type: 'mentor', key: 'trial-scholar', move: 'raise' } },
       { wait: 3 },
-      { expect: [{ event: 'call', with: { key: 'mentor.scholar.raise' } }, { count: { entities: 'rod', min: 24, max: 24 } }] },
+      { expect: [{ event: 'call', with: { key: 'mentor.scholar.raise' }, not: true }, { count: { entities: 'rod', min: 24, max: 24 } }] },
       bundle, ...tie, bundle, ...tie,
-      // Fewer than ten rods are left: the round ends, and the next round is bigger.
+      // Fewer than ten rods are left: the round ends with the line of the bigger task, and the next
+      // round is bigger.
+      { until: { event: 'open', with: { screen: 'say', textKey: 'mentor.scholar.raise' }, timeout: 10 } },
+      { read: true },
       { until: { event: 'open', with: { screen: 'say', textKey: 'practiceLink.again' }, timeout: 10 } },
       { read: true },
       { expect: [{ count: { entities: 'rod', min: 36 } }] },

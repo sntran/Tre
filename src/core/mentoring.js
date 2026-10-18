@@ -43,6 +43,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   const states = new Map(); // key -> the mentor of the task
   const tracks = new Map(); // key -> { startT, firstAct, lastAct, lastCommit, acted, left, round }
   let delayed = []; // moves that wait: { at, key, move, info }
+  const raises = new Set(); // the tasks with a bigger task for the next time, said at their end (#98)
   const firstShown = new Set(); // the tasks whose first step the person showed in this visit
   let lastSkill = null;
   const now = () => (world()?.tick ?? 0) * STEP;
@@ -267,7 +268,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   }
 
   function schedule(key, move, info = {}) {
-    if (info.delay > 0) delayed.push({ at: now() + info.delay, key, move, info });
+    // A bigger task waits for the end of the task (#98): it is noted at once, so that the end of a
+    // task in the same step finds it.
+    if (move === 'raise') doMove(key, move, info);
+    else if (info.delay > 0) delayed.push({ at: now() + info.delay, key, move, info });
     else doMove(key, move, info);
   }
 
@@ -461,8 +465,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const def = defOf(key);
     let task = taskOf(key);
     if (!w || !def) return;
-    // No hint after the end of a task (#96): only the count of what happened.
-    if (task?.tz?.zone.done && move !== 'count') return 0;
+    // No hint after the end of a task (#96): only the count of what happened. A bigger task for
+    // the next time is no hint: its line comes at the end (endRaise).
+    if (task?.tz?.zone.done && move !== 'count' && move !== 'raise') return 0;
     // A try is a commit (rule 33: the help goes one level up only after a try). The lines count
     // for each person, so that two tasks of one person count together.
     const whoNow = (task?.person ?? getEntity(w, def.person))?.id ?? key;
@@ -668,11 +673,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       say(t, def.picture, def.pictureWho ? { who: nameOf(def.pictureWho) } : {});
       t += 2;
     } else if (move === 'raise') {
-      say(t, lineOf(key, 'raise'));
+      // The line of a bigger task says "next time" (#98: after the first of three bundles, the
+      // child did the same work two more times): it waits for the end of the task (endRaise). The
+      // memory of the mentor takes the lift at once.
       const mem = memoryOf(key);
       mem.lift = Math.min(2, (mem.lift ?? 0) + 1);
       raise(key);
-      t += 2;
+      raises.add(key);
+      return 0;
     } else {
       say(t, lineOf(key, move));
       t += 2;
@@ -1227,12 +1235,19 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     activeKey,
     // The person of a task (an entity id), or null.
     personOf: (key) => defOf(key)?.person ?? null,
+    // At the end of a task: the line of a bigger task for the next time, when a move raise came in
+    // the task (#98), with the id of its person; else null. It is said one time.
+    endRaise(key) {
+      if (!raises.delete(key)) return null;
+      return { textKey: lineOf(key, 'raise'), person: defOf(key)?.person ?? null };
+    },
     // The mentor of a task (for the tests and the debug panel).
     stateOf: (key) => states.get(key) ?? null,
     reset() {
       states.clear();
       tracks.clear();
       delayed = [];
+      raises.clear();
     },
   };
 }

@@ -1201,8 +1201,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
     }));
   }
+  // The line of a bigger task for the next time, at the end of the task where the mentor chose it
+  // (#98): it comes before the end talk.
+  function raiseLine(key) {
+    const r = mentoring.endRaise(key);
+    if (r) say(r.textKey, {}, null, String(r.person ?? 'narrator').replace(/^npc:/, ''));
+  }
   // A trial is done: the flag, the reward that flies to the counters, and the done line.
   function trialDone(id) {
+    raiseLine(`trial-${id}`);
     const def = trialDef(id);
     if (def?.task === 'share') {
       shareDone();
@@ -1701,6 +1708,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give, delay: 0.3 });
     emit({ type: 'hud' });
     save('event');
+    raiseLine(`event-${id}`);
     say(def.lines.done, {}, null, def.person);
     queue(() => clearEvent(id));
   }
