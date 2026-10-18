@@ -74,7 +74,11 @@
     {
       "wait": 2
     },
-    { "press": { "entity": "event:cart" } },
+    {
+      "press": {
+        "entity": "event:cart"
+      }
+    },
     {
       "until": {
         "event": "open",
@@ -99,7 +103,11 @@
     {
       "wait": 3
     },
-    { "press": { "entity": "event:cart" } },
+    {
+      "press": {
+        "entity": "event:cart"
+      }
+    },
     {
       "until": {
         "event": "open",
@@ -122,9 +130,23 @@
       "read": true
     },
     {
-      "wait": 3
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "callout",
+          "textKey": "mentor.demo.done"
+        },
+        "timeout": 30
+      }
     },
-    { "press": { "entity": "event:cart" } },
+    {
+      "wait": 4
+    },
+    {
+      "press": {
+        "entity": "event:cart"
+      }
+    },
     {
       "until": {
         "event": "open",

@@ -81,6 +81,16 @@
       "until": {
         "event": "open",
         "with": {
+          "screen": "callout",
+          "textKey": "mentor.mark"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
           "screen": "say"
         },
         "timeout": 30
@@ -105,16 +115,6 @@
     },
     {
       "read": true
-    },
-    {
-      "until": {
-        "event": "open",
-        "with": {
-          "screen": "callout",
-          "textKey": "mentor.mark"
-        },
-        "timeout": 10
-      }
     },
     {
       "until": {

@@ -1950,6 +1950,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     awayTold = false;
     placeCoach(raid);
   }
+  // The lines of a small event that wait for the count of its person: { key, params, person, script }.
+  let verdicts = [];
+  function stepVerdicts() {
+    if (!verdicts.length) return;
+    verdicts = verdicts.filter((v) => {
+      if (getEntity(state, v.script)) return true;
+      say(v.key, v.params, null, v.person);
+      return false;
+    });
+  }
   // The elder comes to the wall also when his part of the map wakes after the start of the raid.
   function stepCoach() {
     if (state.tick % 15 !== 0) return;
@@ -4155,10 +4165,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'trial' && ev.done && String(ev.trial).startsWith('event-')) eventDone(ev.trial.slice(6));
     else if (ev.type === 'trial' && ev.done) trialDone(ev.trial);
     // A small event of the day: too few on the place, or too many (the last things go back).
+    // The line waits for the count of the person (#100, rule 12: the count of the work of the child
+    // comes first, and then what it shows).
     if ((ev.type === 'short' || ev.type === 'roll') && String(ev.id).startsWith('zone:event-')) {
-      const def = eventDef(String(ev.id).slice(11, -6));
+      const id = String(ev.id).slice(11, -6);
+      const def = eventDef(id);
       const key = def?.lines[ev.type === 'short' ? 'short' : 'over'];
-      if (key) say(key, {}, null, def.person);
+      if (key) verdicts.push({ key, params: ev.n ? { n: { key: `num.${Math.min(150, ev.n)}` } } : {}, person: def.person, script: `script:event-${id}` });
     }
     // The raid: the talks of the phases of the boss, the rice at the gate, and the end.
     if (ev.type === 'phase' && ev.dialogue) talk(ev.dialogue);
@@ -4299,6 +4312,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepPending();
     stepToolLines();
     stepCoach();
+    stepVerdicts();
     stepFarWait();
     for (const fn of later.splice(0)) fn();
     const events = state.events;

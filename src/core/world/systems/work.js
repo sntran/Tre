@@ -629,6 +629,9 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packExact(world, zone);
+    // A duck walks from the hands of the hero to the others in the pen (#100: a duck went in with
+    // no sign, and a child could not tell).
+    if (thing.item.kind === 'duck') walkFrom(thing, e.position);
   } else if (zone.rule === 'spots') {
     // A spot for one thing (a fish trap in the stream): the free spot nearest to the tap.
     const k = freeSlot(world, zone, at);
@@ -644,8 +647,21 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.position = { x: zone.x + 0.5, y: zone.y, z: zone.z + 0.5, facing: Math.PI / 2 };
     finish(world, tz, thing.position);
   } else return false;
-  say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: 'plank-down' });
+  say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: thingSound(thing) });
   return true;
+}
+
+// The sound of a thing that goes down: a duck quacks; other things knock (#100).
+export const thingSound = (thing) => (thing?.item?.kind === 'duck' ? 'quack' : 'plank-down');
+const WALK_PACE = 2.5; // half blocks each second: a duck that walks to its place
+// A thing that walks from a point to its place now (a duck): a slide with the time of a walk, and
+// the thing turns the way that it goes.
+export function walkFrom(thing, from) {
+  const to = { ...thing.position };
+  const d = Math.hypot(to.x - from.x, to.z - from.z);
+  if (d < 0.3) return;
+  thing.slide = { from: { ...to, x: from.x, z: from.z }, to, t: 0, time: Math.max(0.4, Math.min(3, d / WALK_PACE)), face: true, set: thing.item?.set ?? false };
+  thing.position = { ...thing.slide.from, facing: Math.atan2(to.x - from.x, to.z - from.z) };
 }
 
 // The work of the hands: tie (the teacher ties the rods on the mat), exact (the person of a small
@@ -741,7 +757,7 @@ function act(world, e, want, env) {
       packExact(world, place.zone);
       say(world, 'roll', place.id, { sound: 'plank-down' });
     } else {
-      say(world, 'short', place.id, { sound: 'tap' });
+      say(world, 'short', place.id, { sound: 'tap', n: sum });
     }
   } else if (want.act === 'blow') {
     // The bellows: the count of the lumps in the hearth is the commit.
@@ -1392,14 +1408,17 @@ function tickSpring(world, tz, dt) {
 }
 
 // A thing that rolls from one point to another in ROLL_TIME seconds (an extra rod back to its heap).
+// A slide with `time` is a walk (a duck): it takes that time, and the thing keeps its set.
 function tickSlide(e, dt) {
   const sl = e.slide;
-  sl.t = Math.min(ROLL_TIME, sl.t + dt);
-  const k = sl.t / ROLL_TIME;
+  const time = sl.time ?? ROLL_TIME;
+  sl.t = Math.min(time, sl.t + dt);
+  const k = sl.t / time;
   e.position = { ...e.position, x: sl.from.x + (sl.to.x - sl.from.x) * k, y: sl.from.y + (sl.to.y - sl.from.y) * k, z: sl.from.z + (sl.to.z - sl.from.z) * k };
-  if (sl.t < ROLL_TIME) return;
+  if (sl.t < time) return;
   delete e.slide;
-  if (e.item) e.item.set = false;
+  if (sl.face) e.position.facing = sl.to.facing ?? e.position.facing;
+  if (e.item) e.item.set = sl.set ?? false;
 }
 
 // The rows of a wrong give: after the count, the extra bunches go back to their beds one at a time,

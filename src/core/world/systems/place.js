@@ -29,7 +29,7 @@
 // of the planks and stretches its neck toward the gap. The next round opens at the next dawn;
 // after the last round, the rain of a later day breaks one or two planks. Each commit sends skill
 // events for the learner (the child never sees them).
-export const WRITES = ['hands', 'item', 'zone', 'position', 'hidden', 'look', 'tilt', 'carry', 'fall', 'follow', 'intent', 'route', 'motion', 'riding', 'keep', 'deck', 'guess', 'why', 'events'];
+export const WRITES = ['hands', 'item', 'zone', 'position', 'hidden', 'look', 'tilt', 'carry', 'fall', 'follow', 'intent', 'route', 'motion', 'riding', 'keep', 'deck', 'guess', 'why', 'slide', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
 import { DAY_MINUTES } from '../clock.js';
@@ -38,7 +38,7 @@ import {
   REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, sizesOf, sum, openRound, openGap, reachOf, oldDeck, nearestPoint, countTime, PILE_REACH,
 } from '../zones.js';
 import { isMashing } from '../../learnlog.js';
-import { putWork, canTakeWork, toHeap, freeSlot, takeOut } from './work.js';
+import { putWork, canTakeWork, toHeap, freeSlot, takeOut, thingSound, walkFrom } from './work.js';
 import { putRaid } from './raid.js';
 
 // The zones of the tasks of the trials: the work system puts the things there.
@@ -85,8 +85,11 @@ function tidy(world, env) {
     // person puts it back), so that the work never stops for a lost rod (#44).
     if (t.item.dropped !== undefined && !t.item.held && !t.item.zone && t.item.home && world.tick - t.item.dropped >= GROUND_BACK) {
       delete t.item.dropped;
+      const from = { ...t.position };
       toHeap(world, t);
-      say(world, 'back', t.id, { item: t.id, sound: 'plank-down' });
+      // A duck put down outside the pen walks away, back to where it was (#100).
+      if (t.item.kind === 'duck' && Math.hypot(t.position.x - from.x, t.position.z - from.z) < 14) walkFrom(t, from);
+      say(world, 'back', t.id, { item: t.id, sound: thingSound(t) });
       continue;
     }
     if (!t.item.held || getEntity(world, t.item.held)?.hands?.holds === t.id) continue;
@@ -279,7 +282,7 @@ function drop(world, e, env) {
   release(e, thing);
   thing.position = { x, y: env.groundY(x / 2, z / 2), z, facing };
   if (thing.item.home) thing.item.dropped = world.tick;
-  say(world, 'drop', e.id, { item: thing.id, sound: 'plank-down' });
+  say(world, 'drop', e.id, { item: thing.id, sound: thingSound(thing) });
 }
 
 function release(e, thing) {
