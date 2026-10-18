@@ -2039,7 +2039,8 @@ export async function mountVillage(ctx, params = {}) {
   }
 
   // The boxes on the screen of the work of each open task near the hero (#64): the things of the
-  // task (a bed, a heap, the stem), and its places (a mat, the basket). A bubble never covers them.
+  // task (a bed, a heap, the stem), its places (a mat, the basket), and the things of a puzzle. A
+  // bubble never covers them.
   const WORK_MARK_NEAR = 40; // half blocks from the hero
   function workMarks() {
     const hp = getEntity(state, 'hero')?.position;
@@ -2073,6 +2074,10 @@ export async function mountVillage(ctx, params = {}) {
         const key = e.item.zone ? `zone:${e.item.zone}` : e.id;
         grow(key, p.x - 0.6, p.y, p.z - 0.6, 1.6);
         grow(key, p.x + len + 0.6, p.y, p.z + 0.6, 1.6);
+      } else if (String(e.item?.kind).startsWith('pz') && !e.item.inHands) {
+        // The things of a puzzle (#104: the line of the traveler covered the chicken and the rice).
+        grow(e.id, p.x - 0.6, p.y, p.z - 0.6, 1.6);
+        grow(e.id, p.x + 0.6, p.y, p.z + 0.6, 1.6);
       } else if (e.id === 'basket:healer' && open('trial-healer')) {
         grow(e.id, p.x, p.y, p.z, 3.4);
         grow(e.id, p.x + 5.6, p.y, p.z + 1.8, 3.4);
