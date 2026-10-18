@@ -59,7 +59,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   const defOf = (key) => cfg?.mentors?.[key] ?? null;
   const famOf = (key) => cfg.families[defOf(key).family];
   // The line of a move: the own line of the mentor of the task, else the common line.
-  const lineOf = (key, move) => defOf(key)?.lines?.[move] ?? cfg.lines[move];
+  // A level of a task with a form (#101) can have its own line of a move: <move>.<form>.
+  const lineOf = (key, move) => {
+    const lines = defOf(key)?.lines ?? {};
+    const form = world()?.entities ? getEntity(world(), `zone:${key}`)?.zone.plan?.form : null;
+    return (form && lines[`${move}.${form}`]) || lines[move] || cfg.lines[move];
+  };
   const memoryOf = (key) => {
     profile.mentors ??= {};
     return (profile.mentors[key] ??= newMemory());
@@ -915,6 +920,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (box && lines.box) {
       s.point(t, box.position, 1.2);
       s.say(t + 0.1, lines.box, { n: { key: `num.${Math.min(150, rest)}` } });
+      t += 2;
+    }
+    // From grade 4, the whole after the groups (#101).
+    if (lines.whole) {
+      s.say(t, lines.whole, { n: { key: `num.${Math.min(150, sums.reduce((a, b) => a + b, 0) + rest)}` } });
       t += 2;
     }
     const left = total(getEntity(w, 'zone:rods')) + total(task.place);

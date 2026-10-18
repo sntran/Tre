@@ -365,7 +365,7 @@
       },
       "picture": "mentor.picture.scholar", "pictureUnless": "trial.healer.done",
       "lines": {
-        "show": "mentor.show.scholar",
+        "show": "mentor.show.scholar", "show.groups": "mentor.show.scholar.groups", "show.share": "mentor.show.scholar.share", "show.decimal": "mentor.show.scholar.decimal", "whole": "mentor.scholar.whole",
         "first": "mentor.scholar.first",
         "mark": "mentor.scholar.mark",
         "demo": "mentor.scholar.demo",
@@ -416,7 +416,7 @@
       "demo": null,
       "picture": "mentor.picture.healer", "pictureUnless": "trial.scholar.done",
       "lines": {
-        "show": "mentor.show.healer",
+        "show": "mentor.show.healer", "show.model": "mentor.show.healer.model",
         "first": "mentor.healer.first",
         "mark": "mentor.healer.mark",
         "putKind": "mentor.healer.putKind",
