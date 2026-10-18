@@ -1120,7 +1120,7 @@ export function workThing(look) {
     case 'ring-glow': return still([P('glow', [1.12, 1.12, 0.92], 'yellow', [0, 0.5, 0])], 1.1);
     case 'mark-glow': return still([P('glow', [0.25, CHALK_BAND + 0.1, CHALK_BAND + 0.1], 'yellow', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
     // The outline of a laid piece: an ink frame over a piece of n rings, with a red post at each end.
-    case 'lay': return still([P('w', [0.08, 0.08, look.n], 'ink', [-0.62, 1.16, look.n / 2]), P('e', [0.08, 0.08, look.n], 'ink', [0.62, 1.16, look.n / 2]), P('a', [1.32, 1.3, 0.12], 'vermilion', [0, 0.65, 0.06]), P('b', [1.32, 1.3, 0.12], 'vermilion', [0, 0.65, look.n - 0.06])], 1.3);
+    case 'lay': return still([P('w', [0.14, 0.14, look.n], 'vermilion', [-0.66, 1.5, look.n / 2]), P('e', [0.14, 0.14, look.n], 'vermilion', [0.66, 1.5, look.n / 2]), P('a', [1.46, 1.6, 0.16], 'vermilion', [0, 0.8, 0.08]), P('b', [1.46, 1.6, 0.16], 'vermilion', [0, 0.8, look.n - 0.08]), P('top', [1.46, 0.08, look.n], 'vermilionPale', [0, 1.62, look.n / 2])], 1.7);
     case 'piece-glow': return still([P('glow', [1.14, 1.14, look.n], 'yellow', [0, 0.5, look.n / 2])], 1.1);
     case 'chalk-band': return still([P('band', [0.4, CHALK_BAND, CHALK_BAND], 'vermilion', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
     // A chalk mark across a culm (the height of a slash).

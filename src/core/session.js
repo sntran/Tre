@@ -3025,8 +3025,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           add({ act: 'choose', icon: 'check', target: e.id, at: e.position, rank: 0, run: () => work('plant', 'choose', { plot: e.plotPart.plot, which: e.plotPart.which }) }, REACH + 1);
         }
       }
-      // The boat of the fisher (#102): a tap on the boat sends it with its load, and a press at the row
-      // lays the pole of the fisher one length further (a tap on the row or the pole first).
+      // The boat of the fisher (#102): a tap on the boat sends it with its load, and a tap on the row or
+      // the pole and a press lay the pole of the fisher one length further.
       const fz = open('fisher');
       const boatZ = zoneOf('boat');
       if (fz?.zone.plan && boatZ && !fz.zone.trip && fz.zone.tide?.phase === 'low') {
@@ -3035,7 +3035,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const lineZ = zoneOf('line');
         const pole = getEntity(state, 'pole:fisher');
         const tappedRow = chosen?.id === lineZ?.id || chosen?.id === pole?.id;
-        if (lineZ && pole) add({ act: 'measure', icon: 'pole', target: lineZ.id, keys: [lineZ.id, pole.id], at: nearestPoint(lineZ, hp), rank: tappedRow ? -1 : 2, work: tappedRow, run: () => work('fisher', 'measure') }, REACH + 2);
+        // Only after a tap on the row or the pole: a press at the pile always loads the boat.
+        if (lineZ && pole && tappedRow) add({ act: 'measure', icon: 'pole', target: lineZ.id, keys: [lineZ.id, pole.id], at: nearestPoint(lineZ, hp), rank: -1, work: true, run: () => work('fisher', 'measure') }, REACH + 2);
       }
       // The standing culms of the staffs: while the button is down, the mark of the slash goes up
       // the culm; when it goes up, the slash is at the mark.
