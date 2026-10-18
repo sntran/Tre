@@ -105,6 +105,32 @@ test('the hopscotch of a child of grade 1: the court from 1, the children answer
   assert.ok(said.slice(before).some((k) => /^loco\./.test(k)), `a child answers the wave: ${said.slice(before).join(', ')}`);
 });
 
+test('when the view turns after the start of the hopscotch, the children go to the side away from the camera again', async () => {
+  const { createFolk } = await import('../src/core/folk-session.js');
+  const { createWorldState, addEntity } = await import('../src/core/world/state.js');
+  const data = load('data/world/folkgames.json');
+  const world = createWorldState({ seed: 1 });
+  addEntity(world, { id: 'hero', position: { x: -20, y: 0, z: 0, facing: 0 } });
+  let az = Math.PI / 4;
+  const folk = createFolk({
+    data, profile: {}, world: () => world, env: () => ({ places: { hopscotch: { x: 0, z: 0 }, 'hopscotch-to': { x: 10, z: 0 } }, groundY: () => 0 }),
+    learner: () => ({ levelFor: () => 1, unlocked: () => true, isMastered: () => false }),
+    seed: () => 1, emit: () => {}, callout: () => {}, command: () => {}, goTo: () => {}, skill: () => {},
+    feastOn: () => false, practice: () => null, busy: () => false, day: () => 0, view: () => az,
+  });
+  folk.mapStart();
+  assert.ok(folk.join('loco'));
+  folk.tick(0.1);
+  // The view turns to the court (the workView of the start).
+  az = (5 * Math.PI) / 4;
+  folk.tick(0.1);
+  const toCam = { x: Math.sin(az), z: Math.cos(az) };
+  for (const id of ['npc:loco-child', 'folk:child:1', 'folk:child:2']) {
+    const p = getEntity(world, id).position;
+    assert.ok(p.z * toCam.z <= 0, `${id} at ${p.z.toFixed(1)}: not between the camera and the court`);
+  }
+});
+
 test('the children say where to start, also on a court that does not start at 1, the start glows until the hero stands there, and the children stand away from the camera', async () => {
   const { createFolk } = await import('../src/core/folk-session.js');
   const { createWorldState, addEntity } = await import('../src/core/world/state.js');

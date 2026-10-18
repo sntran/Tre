@@ -170,6 +170,7 @@ export function createFolk(deps) {
   function standAside() {
     const f = geo.loco;
     const az = deps.view?.() ?? Math.PI / 4;
+    if (game) game.standAz = az;
     const toCam = f.side.x * Math.sin(az) + f.side.z * Math.cos(az);
     const b = toCam > 0 ? -2.1 : 2.1;
     def.loCo.children.forEach((_, k) => {
@@ -441,6 +442,9 @@ export function createFolk(deps) {
     const shard = getEntity(world(), 'folk:shard');
     if (shard?.thrown) { shard.thrown.t += dt; if (shard.thrown.t > 0.6) delete shard.thrown; }
     if (!game) return invite(h);
+    // The view turned (to the court, at the start of the game): the children go to the side away
+    // from the camera again (#99: they stood in front of the court).
+    if (game.kind === 'loco' && game.phase !== 'hop' && deps.view && deps.view() !== game.standAz && !world().entities.some((e) => e.hop && e.folkChild)) standAside();
     const centre = game.kind === 'loco' ? along(geo.loco, 3 * S) : geo.rope.o;
     if (dist(h.position, centre) > LEAVE && game.phase !== 'walk') {
       say(`${game.kind === 'loco' ? 'loco' : 'rope'}.leave`, {});
