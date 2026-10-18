@@ -69,7 +69,9 @@ export function createPuzzles(deps) {
   function setFerry() {
     const s = st('ferry');
     const day = deps.day();
-    if (ferry?.day === day) return;
+    // A puzzle that the child started goes on past midnight, until it is solved (#104: at night the
+    // ferry went away in the middle of the crossings).
+    if (ferry?.day === day || (ferry?.started && !ferry.solved)) return;
     clearFerry();
     if (!F || !isDay(F) || s.solved === day) return;
     const at = placeOf(F, F.at);
@@ -111,6 +113,7 @@ export function createPuzzles(deps) {
   function load(t) {
     if (!ferry || ferry.load || ferry.scene || boat().ferry.state !== 'wait') return;
     ferry.load = t;
+    ferry.started = true;
     ferry.where[t] = 'boat';
     const p = boat().position;
     getEntity(w(), thingId(t)).position = { x: p.x, y: p.y + 0.7, z: p.z, facing: 0 };
@@ -174,6 +177,7 @@ export function createPuzzles(deps) {
     if (F.things.every((t) => ferry.where[t] === 'b')) {
       const s = st('ferry');
       s.solved = deps.day();
+      ferry.solved = true;
       s.days.push(deps.day());
       s.crossings = s.tries;
       deps.log('puzzle', { id: 'ferry', crossings: s.tries, least: F.least });
@@ -227,7 +231,7 @@ export function createPuzzles(deps) {
   const PZ = data.pots;
   function setPots() {
     const day = deps.day();
-    if (pots?.day === day) return;
+    if (pots?.day === day || (pots?.started && !pots.solved)) return;
     clearPots();
     if (!PZ || !isDay(PZ) || !deps.profile.flags?.[PZ.after] || st('pots').solved === day) return;
     if (!placeOf(PZ, PZ.well)) return;
@@ -286,6 +290,7 @@ export function createPuzzles(deps) {
       if (solved) {
         const s = st('pots');
         s.solved = deps.day();
+        p.solved = true;
         s.days.push(deps.day());
         deps.log('puzzle', { id: 'pots', need: p.lv.need, hint: p.hint });
         if (h) deps.say(h.id, 'puzzle.pots.done', {});

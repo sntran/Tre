@@ -272,3 +272,13 @@ test('a grade changed before the first move of the pots gives the need of the ne
   assert.ok(p.run(5, () => p.said.includes('puzzle.pots.start')), p.said.join(', '));
   assert.equal(p.session.puzzles.state().pots.lv.need, 4);
 });
+
+test('a puzzle that the child started goes on past midnight', async () => {
+  const p = await at([11, 63], 1);
+  p.tapThing('pz:dog');
+  assert.equal(p.press(), 'load');
+  p.session.state.clock.minutes += 1440;
+  p.run(1);
+  assert.ok(p.session.puzzles.state().ferry, 'the ferry stays');
+  assert.equal(p.session.puzzles.state().ferry.where.dog, 'boat');
+});
