@@ -126,6 +126,18 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **The float in the frame.** A thing that a line names has a margin of 2.5 half blocks in the frame of the talk (`NAME_PAD`), so that the float is not cut at the edge of the screen.
 
+### Lines that are true (#100)
+
+**The elder before any task.** Before the first of the five tasks, the elder says "Năm người tài giỏi đang chờ cháu. Hình tròn có mặt người sẽ chỉ đường." (`elder.trials.start`); "Cháu đã giúp được vài người ..." (`elder.trials.wait`) comes only after one task or more.
+
+**The people of the events.** The name, the figure, the words of the lines, and the voice of each person of an event agree: the farmer is "Cô nông dân", with a skirt and long hair under her nón, and the voice of a woman; the carter is "Bác đánh xe", with the voice of a man; the seller is "Cô bán hàng" (`voices.speakers` in `data/config/game.json`). A test checks each person.
+
+**The count, and then what it shows.** The line of a small event after a wrong try (`short`, `over`) waits until the person has counted the things on the place (the script of the mentor), and the line of the ducks starts with the count: "Mười một con. Chưa đủ đàn, vẫn còn con lạc."
+
+**A duck at the pen.** A duck that goes into the pen quacks and walks from the hands of the hero to the others (`walkFrom`, a slide with the time of a walk). A duck put down outside the pen quacks, and after a few seconds it walks back to where it was.
+
+**The map.** The + of the map of the country zooms toward the point of the hero.
+
 ### Counts that a child can follow (#98)
 
 **Each rod of the mat alone.** The places of the frame of ten are 1 half block apart (`MAT_GAP`), and the rows 1.8 apart (`MAT_ROW_GAP`): between two rods there is a space wider than a rod with its ink. The rods over ten lie outside the frame, beside it, in two columns (`matSlot`), and the coil of rope lies past them. The mat is 7.9 by 3.6 half blocks.
