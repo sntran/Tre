@@ -24,7 +24,7 @@
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'solid', 'slide', 'events'];
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
-import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, shortPiece, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
+import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, badPiece, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
 import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
 import { STEP } from '../step.js';
@@ -910,9 +910,12 @@ function act(world, e, want, env) {
     // rings of each piece (the move count, src/core/mentoring.js). After a wrong cut the short one
     // glows and breaks, and then a new stem comes (#48, #75: the pieces were gone before the
     // child saw which one was short). After a right cut he says that the pieces are equal, and
-    // then they are tied into a bundle (#80: the stem went away with no count and no line).
+    // then they are tied into a bundle (#80: the stem went away with no count and no line). With a
+    // wrong number of pieces, the piece that glows and breaks is a long one, never a piece of the
+    // right length (#98).
     if (result.solved) for (const e of query(world, 'position').filter((x) => /^(sample|tool):woodcutter:/.test(x.id))) removeEntity(world, e.id);
-    const short = result.solved ? null : shortPiece(result.pieces);
+    const bad = result.solved ? null : badPiece(result.pieces, task.parts);
+    const short = bad ? bad.i : null;
     if (stem) stem.hidden = true;
     const n = result.pieces.length;
     result.pieces.forEach((len, i) => {
@@ -930,7 +933,7 @@ function act(world, e, want, env) {
     // off, when the child marks too many again (#80: no child found that).
     if (!result.solved && result.pieces.length > task.parts) tz.zone.tooMany = task.parts;
     tz.zone.sticks = task.parts;
-    if (!result.solved) say(world, 'snap', `zone:trial-woodcutter`, { pieces: result.pieces, short: short === null ? null : result.pieces[short], sound: 'plank-down' });
+    if (!result.solved) say(world, 'snap', `zone:trial-woodcutter`, { pieces: result.pieces, short: short === null || bad.long ? null : result.pieces[short], long: bad?.long ? result.pieces[short] : null, sound: 'plank-down' });
   }
 }
 

@@ -72,6 +72,19 @@ export const shortPiece = (pieces) => {
   const min = Math.min(...pieces);
   return min < Math.max(...pieces) ? pieces.indexOf(min) : null;
 };
+// The piece of a wrong cut that the woodcutter names (#98): { i, long }, or null. With the right
+// number of pieces that are not equal, the shortest piece is short. With a wrong number, a piece
+// that is longer than a right piece (the stem in `parts` equal pieces) is long, and no piece is
+// short: a piece of the right length is never called short.
+export function badPiece(pieces, parts) {
+  if (pieces.length === parts) {
+    const i = shortPiece(pieces);
+    return i === null ? null : { i, long: false };
+  }
+  const right = pieces.reduce((a, b) => a + b, 0) / parts;
+  const max = Math.max(...pieces);
+  return max > right ? { i: pieces.indexOf(max), long: true } : null;
+}
 
 // A new zone from the map (a rectangle in map cells) and its kind (data/world/zones.json).
 // env: for the height of the ground and the named places.

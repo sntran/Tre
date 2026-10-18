@@ -1292,6 +1292,7 @@
   "mentor.woodcutter.first": "Đứng bên thân tre và bấm nút lớn để vạch phấn ở chỗ cần chặt.",
   "woodcutter.equal": "{n} khúc dài bằng nhau.",
   "mentor.woodcutter.erase": "Chạm vào vạch phấn này là xóa.",
+  "woodcutter.long": "Khúc này dài quá.",
   "woodcutter.short": "Khúc này ngắn quá.",
   "woodcutter.piece": "Khúc này:",
   "woodcutter.pieces": "Có {n} khúc. Anh cần {m} khúc.",

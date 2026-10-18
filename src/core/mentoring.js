@@ -9,7 +9,7 @@ import { endScript } from './world/systems/mentor.js';
 import { basketRowAt, matSlot, spareStake } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
-import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd, PIECE_NAME, PIECES_LINE, shortPiece } from './world/zones.js';
+import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd, PIECE_NAME, PIECES_LINE, shortPiece, badPiece } from './world/zones.js';
 
 // The zones where the parts of a try go, in the order of the search.
 const PLACES = ['exact', 'bundle', 'basket', 'line', 'forge', 'woodpile', 'spots'];
@@ -791,12 +791,15 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // A right cut: he says what happened ("Hai khúc dài bằng nhau.", #80).
     else if (lines.equal && shortPiece(pieces) === null) s.say(at, lines.equal, { n: { key: `num.${Math.min(30, pieces.length)}` } });
     at += PIECES_LINE;
-    const short = shortPiece(pieces);
-    const e = short === null ? null : getEntity(world(), `piece:woodcutter:${short}`);
+    // The piece that he names (#98): the short one of a cut with the right number of pieces, or a
+    // long one of a cut with a wrong number. A piece of the right length is never short.
+    const bad = badPiece(pieces, parts);
+    const e = bad === null ? null : getEntity(world(), `piece:woodcutter:${bad.i}`);
     if (e) {
-      s.steps.push({ at, spawn: { look: `piece-glow-${pieces[short]}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
-      s.point(at, { x: e.position.x + pieces[short] / 2, z: e.position.z }, 1.6);
-      s.say(at + 0.1, lines.short ?? 'woodcutter.short');
+      const len = pieces[bad.i];
+      s.steps.push({ at, spawn: { look: `piece-glow-${len}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
+      s.point(at, { x: e.position.x + len / 2, z: e.position.z }, 1.6);
+      s.say(at + 0.1, bad.long ? lines.long ?? 'woodcutter.long' : lines.short ?? 'woodcutter.short');
       at += 2;
     }
     return at;

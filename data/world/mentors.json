@@ -439,6 +439,7 @@
         "piece": "woodcutter.piece",
         "pieces": "woodcutter.pieces",
         "short": "woodcutter.short",
+        "long": "woodcutter.long",
         "equal": "woodcutter.equal",
         "erase": "mentor.woodcutter.erase", "cut": "mentor.woodcutter.cut",
         "demo": "mentor.woodcutter.demo", "demoDone": "mentor.woodcutter.demoDone"

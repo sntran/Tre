@@ -7,6 +7,7 @@ import { runHeadless } from './story-run.js';
 import { load } from './helpers.js';
 import { getEntity } from '../src/core/world/state.js';
 import { taskPlaces, wayOut } from '../src/core/world/systems/steer.js';
+import { badPiece } from '../src/core/world/zones.js';
 
 const story = (name) => load(`tests/stories/${name}.json`);
 
@@ -50,4 +51,46 @@ test('no animal of the village stands on the mat or the heap of the teacher whil
   assert.deepEqual(failures, []);
   assert.ok(session.state.entities.some((e) => e.kind === 'chicken' && !e.hidden), 'the chickens of the school yard');
   assert.deepEqual(inside.slice(0, 5), [], 'no animal on the mat or the heap');
+});
+
+test('the woodcutter names a long piece after a wrong number of pieces, and a short piece only after the right number', () => {
+  // Vy: a stem of 12 for four pieces of 3.
+  assert.deepEqual(badPiece([8, 4], 4), { i: 0, long: true });
+  assert.deepEqual(badPiece([4, 3, 5], 4), { i: 2, long: true });
+  // The right number of pieces that are not equal: the short one, as before.
+  assert.deepEqual(badPiece([3, 5], 2), { i: 0, long: false });
+  assert.equal(badPiece([4, 4], 2), null);
+  // Too many pieces, none longer than a right piece: no piece is named.
+  assert.equal(badPiece([2, 2, 2, 2], 2), null);
+  // Never a piece of the right length.
+  for (const [pieces, parts] of [[[8, 4], 4], [[4, 3, 5], 4], [[3, 9], 4], [[4, 8], 3], [[2, 4, 6], 3], [[1, 3, 4, 4], 3]]) {
+    const bad = badPiece(pieces, parts);
+    const right = pieces.reduce((a, b) => a + b, 0) / parts;
+    if (bad) assert.notEqual(pieces[bad.i], right, `${pieces} for ${parts}`);
+  }
+});
+
+test('after a cut into 4 and 8 for three pieces, he says the number, the 8 glows as long, and the 4 is never short; then the line of the added mark', async () => {
+  const s = story('woodcutter-three');
+  const at = s.steps.findIndex((x) => x.press?.stem === 6);
+  const calls = [];
+  let session = null;
+  let glow = null;
+  const steps = [...s.steps.slice(0, at), { press: { stem: 4 } }, { until: { event: 'mark', timeout: 10 } }, { wait: 1.5 }, { press: { entity: 'npc:woodcutter' } }, { until: { event: 'snap', timeout: 10 } },
+    { until: { event: 'call', with: { key: 'woodcutter.addMark' }, timeout: 60 } }];
+  const failures = await runHeadless({ ...s, steps }, {
+    onSession: (x) => {
+      session = x;
+      x.listen((ev) => {
+        if (ev.type === 'call') calls.push(ev.key);
+        const g = session.state.entities.find((e) => /^piece-glow-/.test(e.look ?? ''));
+        if (g && !glow) glow = g.look;
+      });
+    },
+  });
+  assert.deepEqual(failures.map((f) => `${f.step}: ${f.message}`), [], calls.join(' '));
+  assert.ok(!calls.includes('woodcutter.short'), calls.join(' '));
+  const order = ['woodcutter.pieces', 'woodcutter.long', 'woodcutter.addMark'].map((k) => calls.indexOf(k));
+  assert.ok(order.every((i) => i >= 0) && order[0] < order[1] && order[1] < order[2], calls.join(' '));
+  assert.equal(glow, 'piece-glow-8', 'the long piece glows');
 });

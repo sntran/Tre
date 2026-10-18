@@ -1292,6 +1292,7 @@
   "mentor.woodcutter.first": "Stand at the stem and press the big button to put a chalk mark where to cut.",
   "woodcutter.equal": "{n} pieces of the same length.",
   "mentor.woodcutter.erase": "Tap this chalk mark to take it off.",
+  "woodcutter.long": "This piece is too long.",
   "woodcutter.short": "This piece is too short.",
   "woodcutter.piece": "This piece:",
   "woodcutter.pieces": "There are {n} pieces. I need {m} pieces.",
