@@ -173,3 +173,27 @@ test('a puzzle never blocks a task or the story: no act of a puzzle while a task
   assert.deepEqual(acts, []);
   assert.ok(!Object.keys(p.session.profile.flags).some((f) => /puzzle/.test(f)));
 });
+
+test('Nghé never stands on a thing of a puzzle, so that a tap on the thing is not a tap on Nghé', async () => {
+  const p = await at([11, 63], 1);
+  const nghe = p.session.state.entities.find((e) => e.follow?.target === 'hero');
+  assert.ok(nghe, 'Nghé follows the hero');
+  const dog = getEntity(p.session.state, 'pz:dog').position;
+  Object.assign(nghe.position, { x: dog.x, z: dog.z });
+  p.run(2);
+  const off = (q) => Math.max(Math.abs(nghe.position.x - q.x), Math.abs(nghe.position.z - q.z)) > 1;
+  for (const t of ['dog', 'chicken', 'rice']) assert.ok(off(getEntity(p.session.state, `pz:${t}`).position), t);
+});
+
+test('a tap on a thing of a puzzle with Nghé next to it is a tap on the thing, not a pet of Nghé', async () => {
+  const { tapTarget, viewCamera, sessionScreen } = await import('../src/world/hit.js');
+  const p = await at([42, 28], 1, { 'trial.healer.done': true });
+  assert.ok(p.run(20, () => Boolean(getEntity(p.session.state, 'pz:pot:0'))), 'the pots are there');
+  const nghe = p.session.state.entities.find((e) => e.follow?.target === 'hero');
+  const pot = getEntity(p.session.state, 'pz:pot:0').position;
+  Object.assign(nghe.position, { x: pot.x + 1, z: pot.z + 1 });
+  const q = { x: pot.x / 2, y: pot.y / 2, z: pot.z / 2 };
+  const cam = viewCamera({ focus: q, width: 390, height: 844 });
+  const t = tapTarget(cam.project(q.x, q.y + 0.3, q.z), sessionScreen(p.session, cam));
+  assert.equal(t?.thing, 'pz:pot:0', JSON.stringify(t));
+});

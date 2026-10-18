@@ -34,8 +34,9 @@ function frontBand(q, r, az, b) {
   return along > 0 && along < depth + FRONT && Math.abs(side) < half ? { side, half, cx, cz } : null;
 }
 
-// The rects of the places of the tasks that go on (half blocks): the places with a rect, and the
-// stem of the woodcutter with its pieces (#80: Nghé stood on the stem and covered the marks).
+// The rects of the places of the tasks that go on (half blocks): the places with a rect, the stem
+// of the woodcutter with its pieces (#80: Nghé stood on the stem and covered the marks), and the
+// things of a puzzle.
 function workRects(world) {
   const out = [];
   for (const z of query(world, 'zone')) {
@@ -54,6 +55,13 @@ function workRects(world) {
       const w = z.zone.cutPieces?.length ? z.zone.cutPieces.length + 0.5 : 0.8;
       out.push({ x0: s.x - 0.5, x1: s.x + s.length + 0.5, z0: s.z - w, z1: s.z + w });
     }
+  }
+  // The things of a puzzle (#104: Nghé stood on the dog of the ferry, and a tap on the dog was a tap
+  // on Nghé).
+  for (const e of query(world, 'item')) {
+    if (!String(e.item.kind).startsWith('pz') || e.item.held) continue;
+    const q = e.position;
+    out.push({ x0: q.x - 1, x1: q.x + 1, z0: q.z - 1, z1: q.z + 1 });
   }
   return out;
 }

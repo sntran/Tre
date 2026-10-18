@@ -4763,7 +4763,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     openSpanAt: (x, y) => bridgeOpen() && Boolean(spanAt(Math.floor(x), Math.floor(y))),
     // Is a thing a thing of a task that is open now (a tap on it is work, not a pet of Nghé, #87)?
     openThing(id) {
-      const task = getEntity(state, id)?.item?.task;
+      const item = getEntity(state, id)?.item;
+      // A thing of a puzzle is work too (#104: a tap on a pot at the well was a pet of Nghé).
+      if (String(item?.kind).startsWith('pz')) return true;
+      const task = item?.task;
       if (!task) return false;
       if (task.startsWith('trial-')) return openTask(task);
       if (task === 'bridge') return bridgeOpen() && !getEntity(state, 'zone:bridge-gap')?.zone.set;
