@@ -264,3 +264,11 @@ test('a tap on the ring of straw of the pot in the hands and a press put the pot
   const spot = getEntity(p.session.state, 'pz:spot:0').position;
   assert.ok(Math.hypot(pot.x - spot.x, pot.z - spot.z) < 0.1, 'the pot is on its ring');
 });
+
+test('a grade changed before the first move of the pots gives the need of the new grade', async () => {
+  const p = await at([42, 28], 1, { 'trial.healer.done': true });
+  assert.ok(p.run(20, () => p.said.includes('puzzle.pots.start.two')));
+  p.session.profile.grade = 3;
+  assert.ok(p.run(5, () => p.said.includes('puzzle.pots.start')), p.said.join(', '));
+  assert.equal(p.session.puzzles.state().pots.lv.need, 4);
+});

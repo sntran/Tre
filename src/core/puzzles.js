@@ -259,6 +259,7 @@ export function createPuzzles(deps) {
     const p = pots;
     if (!p || p.demo) return;
     const caps = p.lv.sizes;
+    p.started = true;
     if (act === 'take') p.held = i;
     else if (act === 'set') {
       getEntity(w(), `pz:pot:${p.held}`).position = { ...placeOf(PZ, PZ.spots[p.held]), facing: 0 };
@@ -323,6 +324,15 @@ export function createPuzzles(deps) {
         }
       }
       if (pots && h) {
+        // The grade changed (in the parent area) before the first move: the need of the new grade,
+        // and the healer says it again.
+        const lv = potsLevel(PZ, deps.grade());
+        if (!pots.started && lv.need !== pots.lv.need) {
+          pots.lv = lv;
+          pots.offered = false;
+          const jar = getEntity(w(), 'pz:jar');
+          if (jar) jar.look = `pzjar-${lv.need}-0`;
+        }
         const healerE = healerNear();
         // The mark of a side quest over the healer while she is at the well.
         const mark = getEntity(w(), 'pz:mark:pots');
