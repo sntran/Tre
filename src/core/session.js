@@ -62,6 +62,7 @@ import { playExample, stopExample } from './examples.js';
 import { endScript } from './world/systems/mentor.js';
 import { namesOf } from './naming.js';
 import { createFolk } from './folk-session.js';
+import { createRiddles } from './riddles.js';
 import { nearHero as talksNear } from './lines.js';
 import { createPlanting } from './planting-session.js';
 import { createHamlet } from './hamlet-session.js';
@@ -222,6 +223,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       practiceEnd(practice.person);
       return true;
     },
+  });
+  // The folk riddles of the evening and the trick questions of the children (#103,
+  // docs/RIDDLES.md): optional, and nothing in the story waits for them.
+  const riddles = createRiddles({
+    data: data.riddles ?? { riddles: [], tricks: [], tellers: [], children: [], evening: [0, -1], near: 0, find: 0, wait: 0, chance: 0 },
+    profile, world: () => state, map: () => map, day: () => today(), minutes: () => state.clock.minutes,
+    busy: () => busy || Boolean(screen) || taskOn() || raidOn() || folk.active(),
+    say: (id, textKey, params) => emit({ type: 'open', screen: 'callout', id, textKey, params }),
+    sound: (name) => emit({ sound: name, type: 'sound' }),
+    point: (who, p) => { who.gesture = { act: 'point', x: p.x, z: p.z, t: 3 }; },
+    walkTo: (p) => goTo(p, null),
+    rng: () => createRng(hashSeed(`${state.seed}:trick:${today()}:${state.tick}`)).next(),
   });
   const FOLK = new Set(['loco', 'rope']);
   const ENCOUNTER_NEAR = 12; // half blocks
@@ -3680,6 +3693,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     tapTick = state.tick;
     emit({ type: 'sound', sound: 'tap' });
     if (hero().fall) return;
+    // The thing of an open riddle, anywhere: the tap finds it (#103). The tap still does what a tap
+    // does: a tap on another thing is only a tap on that thing.
+    const tapped = target.thing ?? target.pet ?? target.sleeper ?? target.person;
+    riddles.tap(target.ground ? { x: target.ground.x * 2, z: target.ground.y * 2 } : tapped ? getEntity(state, tapped)?.position : null, target.ground?.object ?? null);
     // A row of the guess at the bridge: the hero walks to its foot on the bank, and it is the target
     // (the action button chooses it).
     if (target.guess) {
@@ -3729,6 +3746,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const wall = raidEnt()?.raid.wall;
       if (wall && Math.hypot(person.x * 2 - wall.x, person.y * 2 - wall.z) > RAID_NEAR) return;
       emit({ type: 'tapfx', x: person.x, y: person.y, h: groundY(person.x, person.y) });
+      // A child of the village sometimes asks a trick question (#103).
+      if (person.ref) riddles.child(person.ref, person.entity);
       // A press while the hero walks to the person (or to the enemies of an encounter) comes at the
       // end of the walk, as at a place of a task (#50: a child presses at once).
       meetPerson(person);
@@ -4472,6 +4491,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     planting.tick(STEP);
     hamlet.tick(STEP);
     folk.tick(STEP);
+    riddles.tick(STEP);
     checkFound();
     checkRest();
     checkEdge();
@@ -4619,7 +4639,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     else if (type === 'wave') {
       // In a raid and in a folk game the wave is there too (#99, rule 41).
       if (raidOn() && !raidEnt().raid.result) raidWave();
-      else if (!folk.wave()) mentoring.wave();
+      else if (folk.wave()) return;
+      // Near Bà with an open riddle and no task: the clue, or on a later day the answer (#103).
+      else if (!mentoring.activeKey() && riddles.wave()) return;
+      else mentoring.wave();
     }
     else if (type === 'jump') { if (!folk.jump()) jump(); }
     // The end of a press of the jump: a hop on the court of nhảy lò cò (a long press hops two squares).
@@ -4630,7 +4653,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     else if (WORLD.has(type)) {
       // A tap on Nghé (a pet, with a heart) chooses her: next to the hero, the button shows the
       // ride, also with other things in reach (#60; not in a task, a raid, or a folk game).
-      if (type === 'pet' && cmd.id) chosen = { id: cmd.id, along: null };
+      if (type === 'pet' && cmd.id) {
+        chosen = { id: cmd.id, along: null };
+        riddles.tap(getEntity(state, cmd.id)?.position ?? null);
+      }
       // A walk with the stick or the keys ends a walk of a tap.
       if (type === 'move' && cmd.strength) {
         arrivals.clear();
@@ -4750,7 +4776,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The task with a mentor that the hero works on now (the view shows the wave), or null.
     get mentorTask() { return mentoring.activeKey(); },
     // A wave has an answer now: a task, a raid, or a folk game (#99).
-    get canWave() { return Boolean(mentoring.activeKey() || (raidOn() && !raidEnt().raid.result) || folk.active()); },
+    get canWave() { return Boolean(mentoring.activeKey() || (raidOn() && !raidEnt().raid.result) || folk.active() || riddles.canWave()); },
+    // The riddles and the trick questions (#103).
+    riddles,
     // The persons of the stations of a practice of a whole place (#37): the view puts a star over each.
     stations: () => [...stations()],
     workCount,

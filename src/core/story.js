@@ -63,6 +63,8 @@ export const STORY_EPOCH = Date.UTC(2026, 0, 5, 2, 0);
 const DAY = 1440;
 // No digit, no operator, and no question mark in a text of the village or a raid.
 const WORLD_TEXT = /[0-9+−×÷=?]/;
+const WORLD_MATH = /[0-9+−×÷=]/;
+const FOLK_TEXT = /^(riddle|trick)\./;
 
 // A story with its cells on the plane. world: the world of the regions (src/world/regions.js).
 export function storyOnPlane(story, world) {
@@ -554,7 +556,9 @@ export function createLaws({ texts, limits }) {
     for (const key of keys) {
       for (const [lang, t] of Object.entries(i18n)) {
         const shown = t.gloss(t.t(key, values));
-        if (WORLD_TEXT.test(shown)) problems.push(`${key} (${lang}): "${shown}"`);
+        // A folk riddle and a trick question of a child are not quizzes (#103): they can end with a
+        // question mark, and they have no digit and no operator.
+        if ((FOLK_TEXT.test(key) ? WORLD_MATH : WORLD_TEXT).test(shown)) problems.push(`${key} (${lang}): "${shown}"`);
       }
     }
     return problems;

@@ -41,6 +41,7 @@ export const FILES = {
   planting: 'data/world/planting.json',
   hamlet: 'data/world/hamlet.json',
   folkgames: 'data/world/folkgames.json',
+  riddles: 'data/world/riddles.json',
   naming: 'data/world/naming.json',
   origins: 'data/world/origins.json',
   clues: 'data/world/clues.json',

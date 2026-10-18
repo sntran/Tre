@@ -37,7 +37,22 @@ export function notebookGrid(ctx, profile, { speakOnTap = true, curriculum = fal
     if (cards.length) pages.push(h('section', { class: 'note-page' }, [h('h3', {}, [t(`note.${kind}`), h('span', { class: 'note-page-count', text: t('note.pageCount', n) })]), h('div', { class: 'note-grid' }, cards)]));
   }
   const c = notebookCount(list);
-  return h('div', { class: 'notebook' }, [h('p', { class: 'note-count', text: t('parent.notebook.count', c) }), ...pages]);
+  return h('div', { class: 'notebook' }, [h('p', { class: 'note-count', text: t('parent.notebook.count', c) }), riddlePage(profile, { speakOnTap, curriculum }), ...pages]);
+}
+
+// The page of the riddles of Bà (#103): the riddle that waits, with a button that says it again,
+// and the riddles that the child found. The parent area shows how each was found (alone, after a
+// clue, or with the answer); it is no score.
+function riddlePage(profile, { speakOnTap, curriculum }) {
+  const r = profile.riddles ?? {};
+  const say = (key) => (speakOnTap ? button(t('note.riddle.say'), () => speak('riddle.again', { riddle: { key } }, { force: true }), { cls: 'btn paper small' }) : null);
+  const open = r.open ? h('div', { class: 'note-riddle open' }, [h('p', { class: 'note-riddle-head', text: t('note.riddle.open') }), h('p', { class: 'note-riddle-text', text: t(`riddle.${r.open.id}`) }), say(`riddle.${r.open.id}`)])
+    : h('p', { class: 'note-riddle-none', text: t('note.riddle.none') });
+  const found = (r.found ?? []).map((f) => h('div', { class: 'note-card riddle' }, [
+    h('span', { class: 'note-name', text: t(`riddle.${f.id}.name`) }),
+    curriculum ? h('span', { class: 'note-skill', text: t(`note.riddle.${f.how}`) }) : null,
+  ]));
+  return h('section', { class: 'note-page riddles' }, [h('h3', {}, [t('note.riddles')]), open, found.length ? h('div', { class: 'note-grid' }, found) : null]);
 }
 
 registerModal('notebook', (ctx) => new Promise((resolve) => {

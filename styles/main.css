@@ -1165,6 +1165,12 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .note-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
 .note-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; border: var(--line); border-radius: var(--corner); background: var(--paper) var(--paper-texture); background-size: 256px; box-shadow: var(--frame); font: inherit; color: var(--ink); text-align: center; }
 .note-card.gap { border-style: dashed; box-shadow: none; opacity: 0.55; background: var(--paper-deep); }
+/* The riddles of Bà (issue 103): the riddle that waits, with a button that says it again. */
+.note-riddle { padding: 8px 10px; border: var(--line); border-radius: var(--corner); background: var(--paper) var(--paper-texture); background-size: 256px; box-shadow: var(--frame); }
+.note-riddle-head { margin: 0 0 4px; font-size: var(--text-small); color: var(--vermilion); }
+.note-riddle-text { margin: 0 0 8px; font-size: var(--text); line-height: 1.4; }
+.note-riddle-none { margin: 0; font-size: var(--text-small); }
+.note-card.riddle { padding: 10px 6px; }
 .note-print { display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--diep); overflow: hidden; }
 .note-card.gap .note-print { background: transparent; border-style: dashed; }
 .note-art { width: 40px; height: 40px; }
