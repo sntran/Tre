@@ -640,6 +640,9 @@ export function thingLook(key) {
   // The mat of the teacher with the places of a frame of ten (grade 1 and below, #69), and the glow
   // of an empty place after a count.
   if (k === 'mat-frame') return { kind: 'mat', frame: true };
+  // A frame of g places for equal bundles of g (grade 3, #101).
+  m = /^mat-frame-(\d+)$/.exec(k);
+  if (m) return { kind: 'mat', frame: true, n: Number(m[1]) };
   // The healer from grade 3 (#101): a leaf for a dose, a small model basket, and a basket with a
   // place for each bunch in rows of six.
   if (k === 'herb-leaf') return { kind: 'herb-leaf' };
@@ -812,7 +815,15 @@ export function workThing(look) {
       const parts = [P('mat', [7.9, 0.08, 3.6], 'yellowPale', [3.55, 0.04, 1.5]), P('edgeN', [7.9, 0.1, 0.2], 'ochre', [3.55, 0.05, -0.3]), P('edgeS', [7.9, 0.1, 0.2], 'ochre', [3.55, 0.05, 3.3])];
       // A frame of ten (#69): two rows of five places (matSlot in src/core/world/systems/work.js),
       // so that a child sees the empty places and the full rows. A rod over ten lies outside it.
-      if (look.frame) {
+      if (look.frame && look.n) {
+        // g places (#101): the outline of each place, five in the first row and the rest in the
+        // second, as the rods lie (matSlot).
+        for (let i = 0; i < look.n; i++) {
+          const x = (i % 5) + 0.5;
+          const z = i < 5 ? 0.7 : 2.5;
+          parts.push(P(`n${i}`, [0.9, 0.1, 0.08], 'ochre', [x, 0.09, z - 0.8]), P(`s${i}`, [0.9, 0.1, 0.08], 'ochre', [x, 0.09, z + 0.8]), P(`w${i}`, [0.08, 0.1, 1.6], 'ochre', [x - 0.45, 0.09, z]), P(`e${i}`, [0.08, 0.1, 1.6], 'ochre', [x + 0.45, 0.09, z]));
+        }
+      } else if (look.frame) {
         for (let c = 0; c <= 5; c++) parts.push(P(`col${c}`, [0.1, 0.1, 3.2], 'ochre', [c, 0.09, 1.5]));
         parts.push(P('mid', [5, 0.1, 0.1], 'ochre', [2.5, 0.09, 1.5]));
         parts.push(P('top', [5, 0.1, 0.1], 'ochre', [2.5, 0.09, -0.1]), P('bottom', [5, 0.1, 0.1], 'ochre', [2.5, 0.09, 3.1]));

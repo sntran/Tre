@@ -25,7 +25,7 @@ export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'ke
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
 import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, badPiece, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
-import { taskOf, basketPlan, MODEL_DOSES, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
+import { taskOf, basketPlan, rodsPlan, MODEL_DOSES, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
 import { createRng, hashSeed } from '../../rng.js';
 import { STEP } from '../step.js';
@@ -165,17 +165,33 @@ export function setupTrial(world, def, level, env, opts = {}) {
   const rect = (p, w, d) => ({ x0: p.x - 1, x1: p.x + w + 1, z0: p.z - 1, z1: p.z + d + 1 });
 
   if (def.task === 'bundle') {
+    // The rods of the level (#101): its plan.
+    const plan = rodsPlan(task, createRng(hashSeed(`${world.seed}:${def.id}:${level}:${world.tick}`)));
+    tz.zone.plan = plan;
     const m = P(def.places.mat);
     // The heap ends a step before the rect of the mat, so that no rod lies on the mat and a tap on
     // the mat chooses the mat (#47): 8 columns 0.7 apart, a rod as long as about one half block.
     const h = P(def.places.heap);
     const rods = heap('rods', { ...h, x: Math.min(h.x, m.x - 1 - 1 - 1 - 7 * 0.7) }, 'rod', { cols: 8, step: 0.7 });
-    things(rods, 'rod', task.rods);
-    addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts: 'rod', items: [], x: m.x, y: m.y, z: m.z, tied: 0, rect: rect(m, 7.5, 3) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1.6, facing: 0 } });
+    things(rods, 'rod', plan.n);
+    const size = plan.g ?? task.bundle;
+    addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts: 'rod', items: [], x: m.x, y: m.y, z: m.z, tied: 0, bundle: size, rect: rect(m, 7.5, 3) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1.6, facing: 0 } });
     // For grade 1 and below (level 0), the mat shows the places of a frame of ten; for the grades
-    // above it fades, as the representation fades inside a skill (#69).
+    // above it fades, as the representation fades inside a skill (#69). Equal bundles of g (grade 3)
+    // have a frame of g places.
     // The mat is solid: the hero stands beside it, not on the rods (#69).
-    addEntity(world, { id: 'mat:scholar', keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: level <= 0 ? 'mat-frame' : 'mat', solid: { rect: { x0: m.x + 0.1, x1: m.x + 7.1, z0: m.z + 0.2, z1: m.z + 2.8 } } });
+    addEntity(world, { id: 'mat:scholar', keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: plan.g ? `mat-frame-${plan.g}` : level <= 0 ? 'mat-frame' : 'mat', solid: { rect: { x0: m.x + 0.1, x1: m.x + 7.1, z0: m.z + 0.2, z1: m.z + 2.8 } } });
+    if (plan.form === 'groups') {
+      // A basket of bands by the teacher, and the row of the bands that the child took, beside the
+      // mat: a press at the basket takes one band to the row (the prediction of the child: one band
+      // for each bundle). A tie of g rods takes one band of the row.
+      const at = { x: m.x - 3.2, y: m.y, z: m.z + 3.6 };
+      const bands = heap('bands', at, 'band', { cols: 3, step: 0.6 });
+      things(bands, 'band', plan.bands);
+      addEntity(world, { id: `basket:${def.id}:bands`, keep: true, position: { x: at.x - 0.6, y: at.y, z: at.z - 0.6, facing: 0 }, look: 'basket-small' });
+      const row = { x: m.x + 0.5, y: m.y, z: m.z + 3.8 };
+      addEntity(world, { id: 'zone:bandrow', keep: true, zone: { id: 'bandrow', task: owner, rule: 'bandrow', accepts: 'band', items: [], x: row.x, y: row.y, z: row.z, rect: { x0: row.x - 0.8, x1: row.x + 7, z0: row.z - 0.7, z1: row.z + 0.7 } }, position: { x: row.x + 3, y: row.y, z: row.z - 1.5, facing: 0 } });
+    }
     // A coil of straw rope by the mat: only a picture. The tie is at the teacher (the finish of the
     // task), so the coil is no target of a tap (#47).
     addEntity(world, { id: 'band:scholar', keep: true, position: { x: m.x + 8.3, y: m.y, z: m.z + 1.5, facing: 0 }, look: 'band' });
@@ -500,6 +516,14 @@ function layDose(world, def, recipe, at, y, tag) {
     for (let i = 0; i < recipe[k]; i++) addEntity(world, { id: `${tag}:${def.id}:${k}:${i}`, keep: true, position: { x: at.x - 0.6 + i * 0.45, y: y + 0.05, z: at.z - 0.45 + row * 0.45, facing: 0 }, look: `herb-${k}` });
   });
 }
+// The bands that the child took lie in a row beside the mat (#101).
+export const BAND_STEP = 0.9;
+function packBandRow(world, zone) {
+  zone.items.forEach((id, i) => {
+    const e = getEntity(world, id);
+    if (e) e.position = { x: zone.x + i * BAND_STEP, y: zone.y, z: zone.z, facing: 0 };
+  });
+}
 // The bunches on a leaf of the model (#101): each kind in its row.
 function packLeaf(world, zone) {
   const n = {};
@@ -563,6 +587,7 @@ export function takeOut(world, thing) {
   z.zone.items = z.zone.items.filter((i) => i !== thing.id);
   if (z.zone.rule === 'heap') packHeap(world, z.zone);
   if (z.zone.rule === 'leaf') packLeaf(world, z.zone);
+  if (z.zone.rule === 'bandrow') packBandRow(world, z.zone);
   if (z.zone.rule === 'bundle') packMat(world, z.zone);
   if (z.zone.rule === 'basket') packBasket(world, z.zone);
   if (z.zone.rule === 'hearth') packHearth(world, z.zone);
@@ -698,6 +723,10 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packBasket(world, zone);
+  } else if (zone.rule === 'bandrow') {
+    thing.item.zone = zone.id;
+    zone.items.push(thing.id);
+    packBandRow(world, zone);
   } else if (zone.rule === 'leaf') {
     if (!thing.item.model) return false;
     thing.item.zone = zone.id;
@@ -762,12 +791,33 @@ function act(world, e, want, env) {
     const teacher = query(world, 'person').find((p) => p.person.ref === 'teacher');
     if (!mat || !mat.zone.items.length || tz.zone.spring || !(near(mat.position, REACH + 3) || near(teacher?.position, REACH + 3))) return;
     const n = mat.zone.items.length;
-    const solved = tieResult(n, task.bundle);
-    commit(world, tz, task, { solved, parts: [n], target: task.bundle });
+    const size = mat.zone.bundle ?? task.bundle;
+    const plan = tz.zone.plan;
+    const row = plan?.form === 'groups' ? zoneEnt(world, 'bandrow') : null;
+    if (row) {
+      // Equal bundles (#101): a tie takes a band of the row. With no band, the teacher says where
+      // the bands are, and nothing is tied.
+      if (!row.zone.items.length) {
+        if (teacher && !teacher.hidden) say(world, 'call', teacher.id, { key: 'scholar.band.none', params: {}, happened: true });
+        world.events.push({ type: 'glowThings', ids: [...(zoneEnt(world, 'bands')?.zone.items ?? [])] });
+        return;
+      }
+      // The first tie: the bands that the child took are the prediction (one band for each bundle).
+      if (!tz.zone.predicted) {
+        tz.zone.predicted = row.zone.items.length;
+        say(world, 'skill', tz.id, { ...trialSkill({ ...task, skill: task.band ?? 'math.div.10', level: 1 }, { solved: row.zone.items.length === plan.bundles, parts: [row.zone.items.length], target: plan.bundles, first: true, resets: 0 }), predict: true });
+      }
+    }
+    const solved = tieResult(n, size);
+    commit(world, tz, task, { solved, parts: [n], target: size });
     if (solved) {
-      // Ten rods tie into a bundle, and the bundle goes to the row by the teacher.
+      // Ten rods (or g rods, #101) tie into a bundle, and the bundle goes to the row by the teacher.
       for (const id of mat.zone.items) removeEntity(world, id);
       mat.zone.items = [];
+      if (row) {
+        removeEntity(world, row.zone.items.pop());
+        packBandRow(world, row.zone);
+      }
       const k = mat.zone.tied++;
       // The bundles stand in a row on the side of the mat away from the teacher and the heap, in
       // view of the work (#48).
@@ -775,15 +825,25 @@ function act(world, e, want, env) {
       const bundle = addEntity(world, { id: `bundle:scholar:${k}`, keep: true, position: { x: r.x0 + 1.4 + k * BUNDLE_STEP, y: mat.zone.y, z: r.z1 + 1.2, facing: Math.PI / 2 }, look: 'rod-bundle' });
       say(world, 'tie', mat.id, { sound: 'plank-up' });
       const heapZone = zoneEnt(world, 'rods');
-      if ((heapZone?.zone.items.length ?? 0) < task.bundle) finish(world, tz, bundle.position);
-      else {
+      const loose = heapZone?.zone.items.length ?? 0;
+      if (row && !loose) {
+        // All the rods are tied: a band that is left stays, and the teacher counts the bundles and it.
+        if (row.zone.items.length) say(world, 'bands', mat.id, { left: row.zone.items.length, loose: 0, g: size, end: true });
+        finish(world, tz, bundle.position);
+      } else if (!row && loose < size) finish(world, tz, bundle.position);
+      else if (row && !row.zone.items.length) {
+        // The bands ran out and rods are left: the teacher counts the bundles by g and the rods that
+        // are left, and the child can take more bands.
+        success(world, tz, bundle.position);
+        say(world, 'bands', mat.id, { left: 0, loose, g: size, end: false });
+      } else {
         success(world, tz, bundle.position);
         // A right part has its line (#74: the pip turned orange, and nobody spoke).
         const teacher = getEntity(world, 'npc:teacher');
         if (teacher && !teacher.hidden) say(world, 'call', teacher.id, { key: 'scholar.tied', params: { n: { key: `num.${k + 1}` } }, happened: true });
         // He says at once how many bundles are left, and the heap glows (#96: after the first
         // bundle nobody spoke, and the children guessed from the goal bar).
-        const left = Math.floor((heapZone?.zone.items.length ?? 0) / task.bundle);
+        const left = Math.floor((heapZone?.zone.items.length ?? 0) / size);
         if (teacher && !teacher.hidden && left > 0) say(world, 'call', teacher.id, { key: 'scholar.more', params: { n: { key: `num.${left}` } }, happened: true });
         if (left > 0) world.events.push({ type: 'glowThings', ids: [...heapZone.zone.items] });
       }
@@ -794,7 +854,7 @@ function act(world, e, want, env) {
       // the heap, one at a time. With too few, all the rods stay. While the extra rods wait, a tap
       // does not take them.
       const c = { x: (mat.zone.rect.x0 + mat.zone.rect.x1) / 2, z: (mat.zone.rect.z0 + mat.zone.rect.z1) / 2 };
-      const extra = mat.zone.items.slice(task.bundle);
+      const extra = mat.zone.items.slice(size);
       for (const id of extra) {
         const rod = getEntity(world, id);
         if (rod) rod.item.set = true;

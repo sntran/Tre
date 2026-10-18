@@ -376,7 +376,8 @@
         "demoDone": "mentor.scholar.demoDone",
         "now": "mentor.scholar.now",
         "raise": "mentor.scholar.raise",
-        "tie": "mentor.scholar.tie"
+        "tie": "mentor.scholar.tie",
+        "loose": "mentor.scholar.loose", "bandLeft": "mentor.scholar.bandLeft", "bandMore": "mentor.scholar.bandMore"
       }
     },
     "trial-smith": {

@@ -45,6 +45,29 @@ export function taskOf(def, level) {
 // The teacher: ten rods tie into a bundle.
 export const tieResult = (count, bundle = 10) => count === bundle;
 
+// The rods of a level of the teacher (#101): bundles of ten (grades 1 and 2); equal bundles of g
+// with one band for each bundle (groups, grade 3); a number of two digits shared among desks, with
+// the rest in a box (share, grade 4); or hundredths: a big bundle of ten bundles is one, a bundle
+// one tenth, a rod one hundredth (decimal, grade 5). rng: { int }.
+export function rodsPlan(task, rng) {
+  if (task.form === 'groups') {
+    const g = rng.int(task.group[0], task.group[1]);
+    let b = rng.int(task.bundles[0], task.bundles[1]);
+    while (g * b > task.most && b > task.bundles[0]) b -= 1;
+    return { form: 'groups', g, bundles: b, n: g * b, bands: b + 2 };
+  }
+  if (task.form === 'share') {
+    const n = rng.int(task.rods[0], task.rods[1]);
+    const k = rng.int(task.desks[0], task.desks[1]);
+    return { form: 'share', n, k, tens: Math.floor(n / 10), ones: n % 10, each: Math.floor(n / k), rest: n % k };
+  }
+  if (task.form === 'decimal') {
+    const x = rng.int(task.hundredths[0], task.hundredths[1]);
+    return { form: 'decimal', x, bundles: Math.floor(x / 10) + 3, rods: (x % 10) + 4 };
+  }
+  return { form: 'tens', n: task.rods };
+}
+
 // The glow of the iron at t seconds after it went into the fire: it rises, stays hot (hold),
 // dims, stays cold, and rises again. 0 is cold, 1 is white hot.
 export function glowAt(t, glow, hold) {

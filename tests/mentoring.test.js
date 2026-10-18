@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
 import { load } from './helpers.js';
+import { getEntity } from '../src/core/world/state.js';
 
 const story = (name) => load(`tests/stories/${name}.json`);
 // The start of the cart event of the stories (grade 3, the sums to twenty not mastered yet).
@@ -78,6 +79,7 @@ test('a tap on the place itself, and a put after a check, are no check and no se
 });
 
 test('a raise never makes the round in progress bigger: the heap and the goal stay, and the next round is bigger', async () => {
+  let session = null;
   const bundle = { repeat: 10, steps: [{ press: { item: 'rod' } }, { until: { event: 'put', timeout: 10 } }] };
   const tie = [{ press: { entity: 'npc:teacher' } }, { until: { event: 'tie', timeout: 10 } }];
   const failures = await runHeadless({
@@ -101,10 +103,12 @@ test('a raise never makes the round in progress bigger: the heap and the goal st
       { read: true },
       { until: { event: 'open', with: { screen: 'say', textKey: 'practiceLink.again' }, timeout: 10 } },
       { read: true },
-      { expect: [{ count: { entities: 'rod', min: 36 } }] },
+      { wait: 1 },
     ],
-  });
+  }, { onSession: (x) => { session = x; } });
   assert.deepEqual(failures.map((f) => `step ${f.step}: ${f.message}`), []);
+  // The next round is at a higher level (#101: from level 2 the rods of the level have a form).
+  assert.ok(getEntity(session.state, 'zone:trial-scholar').zone.level >= 2, 'a bigger next round');
 });
 
 test('each station says the move "show" with its own words, and each line is in both languages (#45)', () => {

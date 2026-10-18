@@ -10,7 +10,9 @@
       "levels": [
         { "rods": 24, "skill": "math.count.120", "level": 2 },
         { "rods": 27, "skill": "math.place.1000", "level": 1 },
-        { "rods": 36, "skill": "math.place.1000", "level": 2 }
+        { "form": "groups", "group": [3, 9], "bundles": [3, 6], "most": 60, "skill": "math.mul.10", "level": 1, "band": "math.div.10", "talk": { "dlg.teacher.trial.n3": "dlg.teacher.trial.n3.groups", "dlg.teacher.trial.n4": "dlg.teacher.trial.n4.groups" } },
+        { "form": "share", "rods": [40, 99], "desks": [3, 5], "skill": "math.div.10", "level": 2, "talk": { "dlg.teacher.trial.n3": "dlg.teacher.trial.n3.share", "dlg.teacher.trial.n4": "dlg.teacher.trial.n4.share" } },
+        { "form": "decimal", "hundredths": [105, 299], "skill": "math.decimal", "level": 1, "talk": { "dlg.teacher.trial.n3": "dlg.teacher.trial.n3.decimal", "dlg.teacher.trial.n4": "dlg.teacher.trial.n4.decimal" } }
       ],
       "places": { "heap": "school-rods", "mat": "school-mat" }
     },

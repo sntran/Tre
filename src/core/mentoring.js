@@ -277,6 +277,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
 
   // A skill event of the world (the first one of a commit: a commit can send two skills).
   function skill(ev) {
+    // A prediction (the bands of the teacher, #101) is a skill of its own, not a try of the work.
+    if (ev.predict) return;
     const key = keyOf(ev.task);
     if (!defOf(key)) return;
     const mark = `${ev.id}:${world()?.tick}`;
@@ -299,6 +301,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   function worldEvent(ev) {
     // The iron of the child turns hot (not the piece that the smith shows first).
     if (ev.type === 'glow' && !String(ev.id).endsWith('-demo')) for (const [key, tr] of tracks) if (defOf(key)?.pictureAfterGlow) tr.sawGlow = true;
+    // The bands of the teacher ran out, or one is left at the end (#101): he counts the bundles by g.
+    if (ev.type === 'bands') {
+      const key = keyOf(getEntity(world(), ev.id)?.zone?.task);
+      if (defOf(key)) doMove(key, 'bundles', ev);
+      return;
+    }
     if (!['pick', 'put', 'add', 'back', 'mark', 'drop'].includes(ev.type) || ev.by) return;
     if ((ev.type === 'pick' || ev.type === 'put' || ev.type === 'drop') && ev.id !== 'hero') return;
     const thing = ev.item ? getEntity(world(), ev.item) : null;
@@ -470,7 +478,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (!w || !def) return;
     // No hint after the end of a task (#96): only the count of what happened. A bigger task for
     // the next time is no hint: its line comes at the end (endRaise).
-    if (task?.tz?.zone.done && move !== 'count' && move !== 'raise') return 0;
+    if (task?.tz?.zone.done && move !== 'count' && move !== 'raise' && move !== 'bundles') return 0;
     // A try is a commit (rule 33: the help goes one level up only after a try). The lines count
     // for each person, so that two tasks of one person count together.
     const whoNow = (task?.person ?? getEntity(w, def.person))?.id ?? key;
@@ -663,6 +671,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         steps.push({ at: t + 6, unnudge: true });
         t += 6;
       }
+    } else if (move === 'bundles') {
+      t = bundleSteps(task, info, { say, point, mark, steps }, t);
     } else if (move === 'demo') {
       const out = demoSteps(task, def, info, { say, point, steps }, t);
       t = out.t;
@@ -867,6 +877,36 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     }
     s.say(t, 'mentor.first.you');
     return t + 1.5;
+  }
+
+  // The count of the bundles by their size (#101, grade 3): at each bundle the running total
+  // ("sáu, mười hai, mười tám"), then the rods that are left and the bands that are left, and the
+  // next step when the bands ran out. info: { g, loose, left, end }.
+  function bundleSteps(task, info, s, t) {
+    const bundles = world().entities.filter((e) => /^bundle:scholar:\d+$/.test(e.id)).sort((a, b) => a.position.x - b.position.x);
+    const lines = defOf(task.key)?.lines ?? {};
+    bundles.forEach((e, k) => {
+      s.point(t, e.position, 1);
+      s.mark(t, e.position, 1.4);
+      s.say(t + 0.1, `num.${Math.min(150, info.g * (k + 1))}`);
+      t += 1;
+    });
+    t += 0.4;
+    if (info.loose > 0 && lines.loose) {
+      s.say(t, lines.loose, { n: { key: `num.${Math.min(150, info.loose)}` } });
+      t += 2.2;
+    }
+    if (info.left > 0 && lines.bandLeft) {
+      s.say(t, lines.bandLeft, { n: { key: `num.${info.left}` } });
+      t += 2.2;
+    }
+    if (!info.end && lines.bandMore) {
+      const bands = getEntity(world(), 'zone:bands');
+      if (bands) s.point(t, bands.position, 1.6);
+      s.say(t, lines.bandMore);
+      t += 2.2;
+    }
+    return t;
   }
 
   // Mark what matters: count the parts on the place aloud, one at a time (each with the running

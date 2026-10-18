@@ -56,7 +56,7 @@
     "help": {
       "task": "id",
       "diagnosis": ["unsure", "missing", "units", "slip", "counting", "guess", "stuck", "frustrated", "bored", "ready", "miss", "ok"],
-      "move": ["wait", "show", "mark", "cue", "demo", "smaller", "share", "picture", "raise", "break", "tryFirst", "offer", "first", "fix", "count", "erase"],
+      "move": ["wait", "show", "mark", "cue", "demo", "smaller", "share", "picture", "raise", "break", "tryFirst", "offer", "first", "fix", "count", "erase", "bundles"],
       "pBefore": "prob?",
       "success": "bool",
       "efficient": "bool"
@@ -81,7 +81,7 @@
     "ask": {
       "task": "id",
       "when": ["before", "after"],
-      "move": ["wait", "show", "mark", "cue", "demo", "smaller", "share", "picture", "raise", "break", "tryFirst", "offer", "first", "fix", "count", "erase"]
+      "move": ["wait", "show", "mark", "cue", "demo", "smaller", "share", "picture", "raise", "break", "tryFirst", "offer", "first", "fix", "count", "erase", "bundles"]
     },
     "prediction": {
       "task": "id",

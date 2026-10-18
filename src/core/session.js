@@ -985,7 +985,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else runPending();
       return;
     }
-    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: levelLine(view.speaker, view.textKey), params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, word: view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
+    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: levelLine(view.speaker, view.textKey), params: { ...trialWords(view.speaker), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, word: view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
     showNames(d, view.speaker, view.names);
   }
   // The two ends of a place: the ends of a gap of the bridge, or the middles of the short sides of
@@ -1116,18 +1116,23 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const trialZone = (id) => getEntity(state, `zone:trial-${id}`);
   // The numbers of the trials at the level of the child, as words for the talks (num.<n>): the
   // rods of a bundle, the ore of the forge, the herbs of each kind, and the sticks of the stem.
-  function trialWords() {
+  function trialWords(speaker = null) {
     const out = {};
     if (!data.trials) return out;
     const num = (n) => ({ key: `num.${n}` });
     for (const def of data.trials.trials) {
       const t = taskOf(def, practice?.trial === def.id ? practice.level : trialLevelOf(def));
-      if (def.task === 'bundle') out.bundle = num(t.bundle);
+      if (def.task === 'bundle') {
+        out.bundle = num(t.bundle);
+        // The numbers of the rods of the level (#101).
+        const plan = def.npc === speaker ? trialZone(def.id)?.zone.plan : null;
+        if (plan?.g) Object.assign(out, { n: num(plan.n), g: num(plan.g) });
+      }
       if (def.task === 'forge') out.ore = num(t.ore);
       if (def.task === 'basket') {
         out.each = num(t.each ?? 0);
         // The numbers of the basket of the level (#101): the recipe, the doses, and the bunches.
-        const plan = trialZone(def.id)?.zone.plan;
+        const plan = def.npc === speaker ? trialZone(def.id)?.zone.plan : null;
         if (plan?.recipe) Object.assign(out, { a: num(plan.recipe[def.kinds[0]]), b: num(plan.recipe[def.kinds[1]]), c: num(plan.recipe[def.kinds[2]]), k: num(plan.doses) });
         if (plan?.n) out.n = num(plan.n);
       }
@@ -2706,7 +2711,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // The place of a one-press move (#61): the mat of the teacher or the basket of the healer that
   // takes the thing, when the hero stands in reach of it. Null: the press only picks.
-  const ONE_MOVE = new Set(['bundle', 'basket', 'leaf']);
+  const ONE_MOVE = new Set(['bundle', 'basket', 'leaf', 'bandrow']);
   function oneMovePlace(thing) {
     const h = hero().position;
     return query(state, 'zone').find((z) => ONE_MOVE.has(z.zone.rule) && z.zone.task === thing.item.task && canPut(z.zone, thing) && hasRoom(z.zone) && distHb(h, nearestPoint(z, h)) <= REACH + 2) ?? null;
