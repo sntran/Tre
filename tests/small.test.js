@@ -114,6 +114,7 @@ test('the lines about the round marks with a face show the marks, and the close 
       assert.equal(talk.view().marks, true, `${d.id}.${id}: the view of the line`);
     }
   }
-  assert.equal(n, 3);
+  // The grandmother, and the elder before a task and while the child does the tasks (#100).
+  assert.equal(n, 4);
   assert.match(source('styles/main.css'), /\.notebook-panel \.panel-head \{ position: sticky;/);
 });

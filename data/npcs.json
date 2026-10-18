@@ -30,11 +30,26 @@
         },
         {
           "when": {
+            "anyFlags": [
+              "trial.scholar.done",
+              "trial.smith.done",
+              "trial.fisher.done",
+              "trial.healer.done",
+              "trial.woodcutter.done"
+            ],
             "notFlags": [
               "prologue.done"
             ]
           },
           "dialogue": "elder.trials.wait"
+        },
+        {
+          "when": {
+            "notFlags": [
+              "prologue.done"
+            ]
+          },
+          "dialogue": "elder.trials.start"
         },
         {
           "when": {

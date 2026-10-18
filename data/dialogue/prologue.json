@@ -103,6 +103,17 @@
    }
   },
   {
+   "id": "elder.trials.start",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "elder",
+     "textKey": "dlg.elder.trials.start.n1",
+     "marks": true
+    }
+   }
+  },
+  {
    "id": "elder.trials.wait",
    "start": "n1",
    "nodes": {

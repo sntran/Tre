@@ -138,9 +138,7 @@
       "pitch": 1.7,
       "rate": 1.05
     },
-    "speakers": {
-      "examiner": "elderMan"
-    }
+    "speakers": { "examiner": "elderMan", "farmer": "woman", "carter": "man", "seller": "woman" }
   },
   "_maxProfilesAbout": "The number of profiles (adventures) on one device. With all of them in use, a new adventure opens the parent gate, where a parent can remove one.",
   "party": {
