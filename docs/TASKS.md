@@ -126,6 +126,18 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **The float in the frame.** A thing that a line names has a margin of 2.5 half blocks in the frame of the talk (`NAME_PAD`), so that the float is not cut at the edge of the screen.
 
+### Counts that a child can follow (#98)
+
+**Each rod of the mat alone.** The places of the frame of ten are 1 half block apart (`MAT_GAP`), and the rows 1.8 apart (`MAT_ROW_GAP`): between two rods there is a space wider than a rod with its ink. The rods over ten lie outside the frame, beside it, in two columns (`matSlot`), and the coil of rope lies past them. The mat is 7.9 by 3.6 half blocks.
+
+**No animal on the mat.** The places of an open task can touch (the heap and the mat of the teacher). An animal in a place goes out by the shortest way out of all of them (`wayOut` in `src/core/world/systems/steer.js`). Before, a chicken on the line between the heap and the mat went from one place into the other and back, and stayed on the mat.
+
+**The woodcutter never calls a right piece short.** The piece that he names comes from `badPiece` (`src/core/world/zones.js`): with the right number of pieces that are not equal, the shortest is short ("Khúc này ngắn quá."); with a wrong number, a piece longer than a right piece glows and breaks, and he says "Khúc này dài quá." (`woodcutter.long`). After too few pieces, the line of the number comes first, then the long piece, then the line of the added mark (#91).
+
+**The example in the frame.** A long thing that a line names (a stem, a piece: the looks `stem-<n>` and `piece-<n>`) has both of its ends in the frame of the talk, each with the margin `NAME_PAD`.
+
+**"Lần sau" at the end.** The move `raise` keeps its line until the end of the task (`endRaise` in `src/core/mentoring.js`): the session says it before the end talk of a trial or an event. The lift of the next task comes at once, as before.
+
 ### The bridge after the play test of #85 to #89 (#90)
 
 **No dead end.** When a put leaves a rest of the gap that no plank of the pile fits (the gap of 12 after 5 and 5, or after 3, 4, and 4, with planks of 3, 4, and 5), the world sends `stuck` at once, and the person says "Chỗ còn lại ngắn quá, không tấm nào vừa. Cháu nhấc tấm cuối lên, rồi thay tấm khác." (`mentor.bridge.stuck`; Nghé when the fisher is not at work). The last plank on the gap glows, and while it is the plank to take back (`zone.stuck`), a press with empty hands at the edge takes it back with no tap. After a plank that is too long, only the planks of the pile that fit the rest of the gap glow; when none fits, the line of the take-back comes in place of `shorter`, and the plank before the long one glows.
