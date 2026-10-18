@@ -2144,7 +2144,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const k = [3, 2, 4].find(free) ?? 3;
     slingPull = null;
     raidTeach.demo = { t: 0, k, posts: 0, coach: coach.id };
-    emit({ type: 'open', screen: 'callout', id: coach.id, textKey: 'raid.demo.look', params: {} });
+    // The coach says it as the person that it is (#99: the fisher said "Xem ông này.").
+    emit({ type: 'open', screen: 'callout', id: coach.id, textKey: data.raids?.raids[raid.id]?.lookKey ?? 'raid.demo.look', params: {} });
   }
   function stepRaidDemo() {
     const teach = raidTeach;

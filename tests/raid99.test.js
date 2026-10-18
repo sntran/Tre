@@ -26,7 +26,7 @@ test('every line that a raid says names only the things of that raid: who comes,
   for (const [id, def] of Object.entries(raids.raids)) {
     const w = def.words;
     assert.ok(w?.who && w.ball && w.wall, `${id}: its words`);
-    const keys = [...(def.tools ?? ['sling']).map((t) => raids.toolLines[t]?.textKey).filter(Boolean), 'raid.away', 'raid.miss.short', 'raid.miss.long', 'raid.help.nghe', 'raid.demo.look', 'raid.demo.back'];
+    const keys = [...(def.tools ?? ['sling']).map((t) => raids.toolLines[t]?.textKey).filter(Boolean), 'raid.away', 'raid.miss.short', 'raid.miss.long', 'raid.help.nghe', def.lookKey ?? 'raid.demo.look', 'raid.demo.back'];
     if ((def.tools ?? ['sling']).includes('sling')) keys.push(raids.toolLines.drag.textKey);
     for (const key of keys) {
       const text = i18n.t(key, paramsOf(w));
@@ -68,7 +68,7 @@ test('in the raid of the river, the lines name thuồng luồng, nắm cơm, and
   session.command({ type: 'wave' });
   run(session, 8);
   const keys = said.map((l) => l.key);
-  assert.ok(keys.includes('raid.demo.look'), `the wave: the elder shows one throw: ${keys.join(', ')}`);
+  assert.ok(keys.includes('raid.demo.look.fisher'), `the wave: the fisher shows one throw, as a chú: ${keys.join(', ')}`);
   session.command({ type: 'wave' });
   run(session, 2);
   const last = said.at(-1);
