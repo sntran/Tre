@@ -731,7 +731,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const front = (Math.abs(cx) * (r.x1 - r.x0) + Math.abs(cz) * (r.z1 - r.z0)) / 2;
       const along = (h.position.x - mid.x) * cx + (h.position.z - mid.z) * cz - front;
       if (along > FRONT_NEAR) continue;
-      const to = besideWork(h.position, r);
+      const to = besideWork(h.position, r, z.zone.task);
       if (to === h.position) continue;
       worldCommand(state, { type: 'walk', id: 'hero', points: [to], token: null, near: null });
       frontDone = `${to.x.toFixed(1)},${to.z.toFixed(1)},${viewAz.toFixed(2)}`;
@@ -1117,7 +1117,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The stand point beside a rect of work (half blocks), or the stand itself when it is not in front
   // of the work. The camera is toward (sin, cos) of viewAz; the side of the view is (cos, -sin).
   const SIDE_OUT = 0.8; // half blocks out of the side of the rect, as the camera sees it
-  function besideWork(stand, r) {
+  // Does a walk from a point (half blocks) reach each place of a task: its places with a rect, and
+  // its heaps and piles (#95: the step aside at the mat went to a cell next to the teacher from
+  // which no tap could walk)? A cell with no open cell next to it is no point.
+  function wayBack(p, task) {
+    const paths = pathMap();
+    const from = { x: Math.floor(p.x / 2), y: Math.floor(p.z / 2) };
+    if (!tileMap.walkable(from.x, from.y)) return false;
+    if (![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => paths.open(from.x + dx, from.y + dy))) return false;
+    const places = query(state, 'zone').filter((z) => z.zone.task === task && z.position && (z.zone.rect || z.zone.rule === 'heap' || z.zone.rule === 'pile'));
+    return places.every((z) => {
+      const t = z.zone.rect ? nearestPoint(z, p) : z.position;
+      if (Math.hypot(t.x - p.x, t.z - p.z) <= REACH) return true;
+      return Boolean(pathToward(paths, from, { x: Math.floor(t.x / 2), y: Math.floor(t.z / 2) }));
+    });
+  }
+  function besideWork(stand, r, task = null) {
     const cx = Math.sin(viewAz);
     const cz = Math.cos(viewAz);
     const mid = { x: (r.x0 + r.x1) / 2, z: (r.z0 + r.z1) / 2 };
@@ -1129,7 +1144,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const k = Math.sign((h ? sideOf(h) : 0) || sideOf(stand)) || 1;
     for (const s of [k, -k]) {
       const p = { x: mid.x + s * cz * (half + SIDE_OUT), z: mid.z - s * cx * (half + SIDE_OUT) };
-      if (tileMap.walkable(Math.floor(p.x / 2), Math.floor(p.z / 2))) return p;
+      if (tileMap.walkable(Math.floor(p.x / 2), Math.floor(p.z / 2)) && (!task || wayBack(p, task))) return p;
     }
     return stand;
   }
@@ -1289,7 +1304,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const r = wz.zone.rect;
     if (!r || wz.zone.rule === 'line' || wz.zone.rule === 'span') return st;
     if (st.x > r.x0 && st.x < r.x1 && st.z > r.z0 && st.z < r.z1) return st;
-    return besideWork(st, r);
+    return besideWork(st, r, wz.zone.task);
   };
   // The point of a place nearest to p (half blocks): in its rect, or its point.
   const nearIn = nearestPoint;
@@ -2288,8 +2303,24 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (x !== h.x || y !== h.y) stuckCells.set(`${x},${y}`, until);
     }
   }
+  // The last walk of a plan: its first cell and its cells, for a step back (#95).
+  let lastWalk = null;
+  // A walk that ends (or stops with stuck) in a cell with no open cell next to it takes one step
+  // back along its way (#95: a walk to the star of the teacher stopped in such a cell, and no tap
+  // moved the hero).
+  function stepBackIfShut() {
+    if (!lastWalk || hero().route || screen) return;
+    if (!pathMap().shut) return;
+    const h = heroFrom();
+    const cells = [lastWalk.start, ...lastWalk.cells];
+    const i = cells.findIndex((c) => c.x === h.x && c.y === h.y);
+    const back = (i > 0 ? cells.slice(0, i) : cells).reverse().find((c) => c.x !== h.x || c.y !== h.y);
+    lastWalk = null;
+    if (back) worldCommand(state, { type: 'walk', id: 'hero', points: [{ x: (back.x + 0.5) * 2, z: (back.y + 0.5) * 2 }], token: null, near: null });
+  }
   function walkPath(path, end, onArrive, near = null, onStuck = null) {
     if (!path) return;
+    lastWalk = { start: heroFrom(), cells: path.map((c) => ({ x: c.x, y: c.y })) };
     const points = path.map((p) => ({ x: (p.x + 0.5) * 2, z: (p.y + 0.5) * 2 }));
     for (const e of end ? [].concat(end) : []) points.push({ x: e.x * 2, z: e.y * 2 });
     const token = nextToken++;
@@ -2343,6 +2374,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The hero can always start from its own cell (in the water after a jump, at a thing).
       walkable: (x, y) => (x === h.x && y === h.y) || (tileMap.walkable(x, y) && !inBox(x, y)),
       isBlocked: (x, y) => tileMap.isBlocked(x, y) || inBox(x, y),
+      // The cell of the hero has no open cell next to it (with the people and the narrow gaps).
+      shut,
+      // Is a cell open, with the people and the narrow gaps (not the cell of the hero)?
+      open,
     });
   }
   // A path (map cells): around the people near the hero, or, when they close every way (#81: next
@@ -4270,6 +4305,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const back = ev.token === turning;
         if (back) turning = null;
         if (ev.type === 'arrived' || back) fn?.();
+        stepBackIfShut();
       }
     }
     mentoring.tick();
