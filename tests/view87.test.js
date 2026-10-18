@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runHeadless } from './story-run.js';
 import { getEntity, query } from '../src/core/world/state.js';
-import { matSlot, MAT_ROW } from '../src/core/world/systems/work.js';
+import { matSlot, MAT_ROW, MAT_FRAME } from '../src/core/world/systems/work.js';
 import { figureOf } from '../src/world/figures.js';
 
 const story = (name) => JSON.parse(readFileSync(new URL(`./stories/${name}.json`, import.meta.url), 'utf8'));
@@ -34,13 +34,18 @@ test('the rods of the mat make a frame of ten: thin rods, two rows apart, and th
   const zs = [...new Set(ten.map((p) => p.z))];
   assert.equal(xs.length, MAT_ROW);
   assert.equal(zs.length, 2);
-  for (let i = 1; i < xs.length; i++) assert.ok(xs[i] - xs[i - 1] - stick.size[0] >= 0.5, 'a space between two rods');
-  assert.ok(zs[1] - zs[0] - stick.size[2] >= 0.4, 'a space between the two rows');
+  // A rod shows with its ink outline (about 0.4 half blocks); the space between two rods is wider (#98).
+  for (let i = 1; i < xs.length; i++) assert.ok(xs[i] - xs[i - 1] - stick.size[0] >= 0.7, 'a space between two rods');
+  assert.ok(zs[1] - zs[0] - stick.size[2] >= 0.8, 'a space between the two rows');
   // The rods over ten lie beside the frame, not on it.
   for (let i = 10; i < 14; i++) {
     const p = matSlot(zone, i);
-    assert.ok(p.x - stick.size[0] / 2 > 4.2, `rod ${i + 1} is beside the frame`);
-    assert.ok(!ten.some((q) => Math.abs(q.x - p.x) < 0.3 && Math.abs(q.z - p.z) < 0.5));
+    assert.ok(p.x - stick.size[0] / 2 > MAT_FRAME + 0.3, `rod ${i + 1} is outside the frame`);
+    assert.ok(!ten.some((q) => Math.abs(q.x - p.x) < 0.7 && Math.abs(q.z - p.z) < 1.2));
+    for (let j = 10; j < i; j++) {
+      const q = matSlot(zone, j);
+      assert.ok(Math.abs(q.x - p.x) >= 0.9 || Math.abs(q.z - p.z) >= 1.2, `rod ${i + 1} lies apart from rod ${j + 1}`);
+    }
   }
 });
 

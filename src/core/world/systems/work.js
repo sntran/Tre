@@ -170,14 +170,14 @@ export function setupTrial(world, def, level, env, opts = {}) {
     const h = P(def.places.heap);
     const rods = heap('rods', { ...h, x: Math.min(h.x, m.x - 1 - 1 - 1 - 7 * 0.7) }, 'rod', { cols: 8, step: 0.7 });
     things(rods, 'rod', task.rods);
-    addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts: 'rod', items: [], x: m.x, y: m.y, z: m.z, tied: 0, rect: rect(m, 5.5, 2) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1, facing: 0 } });
+    addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts: 'rod', items: [], x: m.x, y: m.y, z: m.z, tied: 0, rect: rect(m, 7.5, 3) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1.6, facing: 0 } });
     // For grade 1 and below (level 0), the mat shows the places of a frame of ten; for the grades
     // above it fades, as the representation fades inside a skill (#69).
     // The mat is solid: the hero stands beside it, not on the rods (#69).
-    addEntity(world, { id: 'mat:scholar', keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: level <= 0 ? 'mat-frame' : 'mat', solid: { rect: { x0: m.x + 0.1, x1: m.x + 3.9, z0: m.z + 0.2, z1: m.z + 2.2 } } });
+    addEntity(world, { id: 'mat:scholar', keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: level <= 0 ? 'mat-frame' : 'mat', solid: { rect: { x0: m.x + 0.1, x1: m.x + 7.1, z0: m.z + 0.2, z1: m.z + 2.8 } } });
     // A coil of straw rope by the mat: only a picture. The tie is at the teacher (the finish of the
     // task), so the coil is no target of a tap (#47).
-    addEntity(world, { id: 'band:scholar', keep: true, position: { x: m.x + 4.6, y: m.y, z: m.z + 1, facing: 0 }, look: 'band' });
+    addEntity(world, { id: 'band:scholar', keep: true, position: { x: m.x + 8.3, y: m.y, z: m.z + 1.5, facing: 0 }, look: 'band' });
   } else if (def.task === 'forge') {
     // The quench is the skill of this trial (#34): the fire burns when the child comes. The ore is
     // in the forge and the water is in the trough. The smith quenches one piece himself first (the
@@ -397,25 +397,26 @@ export function packHeap(world, zone) {
   });
 }
 
-// The rods on the mat: two rows, side by side.
 // The rods on the mat lie in rows of five, with a space between two rods: a full row is five, and
-// two full rows are ten (#61). A child sees how many in a known pattern, as in a frame of ten. More
-// than ten rods (a wrong tie) make more rows, closer together, on the mat.
+// two full rows are ten (#61). A child sees how many in a known pattern, as in a frame of ten. The
+// rods over ten (a wrong tie) lie outside the frame, beside it.
 export const MAT_ROW = 5;
-export const MAT_GAP = 0.8; // half blocks from the middle of a rod to the next one
-export const MAT_ROW_GAP = 1.4; // half blocks from a row of rods to the next one
+export const MAT_GAP = 1.0; // half blocks from the middle of a rod to the next one
+export const MAT_ROW_GAP = 1.8; // half blocks from a row of rods to the next one
 export const MAT_TEN = 10; // the places of the frame
-const MAT_SIDE = 4.7; // half blocks from the start of the mat: the rods over ten lie beside the frame
-const MAT_SIDE_GAP = 0.5;
+export const MAT_FRAME = MAT_ROW * MAT_GAP; // half blocks: the length of the frame of ten
+const MAT_SIDE = MAT_FRAME + 0.9; // half blocks from the start of the mat: the rods over ten
+const MAT_SIDE_GAP = 1.0;
+const MAT_Z = 0.7; // half blocks from the north edge of the mat to the middle of the first row
 // The place of the rod i on the mat: two rows of five (a frame of ten, #69), and the rods over ten
-// beside the frame, never on it (#87: the eleventh rod lay on the frame, and the rods looked
-// stacked).
+// outside the frame, beside it, in two columns (#87, #98: the rods looked stacked, and a child could
+// not count them). Between two rods there is a space wider than a rod.
 export function matSlot(zone, i) {
   if (i >= MAT_TEN) {
     const k = i - MAT_TEN;
-    return { x: zone.x + MAT_SIDE + (k % 3) * MAT_SIDE_GAP, z: zone.z + 0.55 + Math.floor(k / 3) * MAT_ROW_GAP };
+    return { x: zone.x + MAT_SIDE + (k % 2) * MAT_SIDE_GAP, z: zone.z + MAT_Z + Math.floor(k / 2) * MAT_ROW_GAP };
   }
-  return { x: zone.x + 0.4 + (i % MAT_ROW) * MAT_GAP, z: zone.z + 0.55 + Math.floor(i / MAT_ROW) * MAT_ROW_GAP };
+  return { x: zone.x + MAT_GAP / 2 + (i % MAT_ROW) * MAT_GAP, z: zone.z + MAT_Z + Math.floor(i / MAT_ROW) * MAT_ROW_GAP };
 }
 function packMat(world, zone) {
   zone.items.forEach((id, i) => {

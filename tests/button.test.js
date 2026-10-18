@@ -105,7 +105,8 @@ test('during the walk to a tapped thing the button shows the act at the end of t
   const hero = getEntity(session.state, 'hero');
   const heap = getEntity(session.state, 'zone:rods');
   const mat = getEntity(session.state, 'zone:mat').zone;
-  Object.assign(hero.position, { x: heap.position.x + 12, z: heap.position.z });
+  // East of the mat (#98: the mat is wider, and 12 half blocks east of the heap is on it, by the teacher).
+  Object.assign(hero.position, { x: heap.position.x + 17, z: heap.position.z });
   session.command({ type: 'tap', target: { thing: heap.zone.items[0] } });
   session.events();
   run(session, 0.3);

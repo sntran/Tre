@@ -79,13 +79,13 @@ test('the rods on the mat lie in rows of five with a space between two rods, all
   assert.equal(zs.length, 2, 'two rows');
   const width = figureOf({ kind: 'rod' }, 'coarse').parts.find((p) => p.name === 'stick' || p.id === 'stick')?.size?.[0] ?? 0.4;
   for (let k = 1; k < xs.length; k++) assert.ok(xs[k] - xs[k - 1] >= width + 0.3, 'a space between two rods');
-  // The frame of ten on the mat: 4 by 2.5 half blocks from its point (#87: thin rods, rows apart).
+  // The frame of ten on the mat: 5 by 3.2 half blocks from its point (#87, #98: thin rods, rows apart).
   for (const p of at) {
-    assert.ok(p.x - width / 2 >= mat.x && p.x + width / 2 <= mat.x + 4, 'in the frame across');
-    assert.ok(p.z - 0.45 >= mat.z && p.z + 0.45 <= mat.z + 2.5, 'in the frame along');
+    assert.ok(p.x - width / 2 >= mat.x && p.x + width / 2 <= mat.x + 5, 'in the frame across');
+    assert.ok(p.z - 0.45 >= mat.z - 0.1 && p.z + 0.45 <= mat.z + 3.1, 'in the frame along');
   }
   const rowsApart = Math.abs(Number(zs[1]) - Number(zs[0])) - 0.9;
-  assert.ok(rowsApart >= 0.4, 'a space between the two rows');
+  assert.ok(rowsApart >= 0.8, 'a space between the two rows');
 });
 
 test('a rod is thin, and more than 7 pixels wide on a phone at the zoom of the start, and the hero stands on the far side of the mat (#61, #87)', async () => {

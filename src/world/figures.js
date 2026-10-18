@@ -800,17 +800,21 @@ export function workThing(look) {
     case 'rod-bundle': return still([P('rods', [0.8, 0.8, 1.5], 'yellow', [0, 0.4, 0]), P('ends', [0.7, 0.7, 1.52], 'ochre', [0, 0.4, 0]), P('band', [0.9, 0.9, 0.3], 'vermilion', [0, 0.4, 0])], 0.9);
     // A reed mat on the ground.
     case 'mat': {
-      const parts = [P('mat', [6, 0.08, 2.8], 'yellowPale', [2.8, 0.04, 1.25]), P('edgeN', [6, 0.1, 0.2], 'ochre', [2.8, 0.05, -0.1]), P('edgeS', [6, 0.1, 0.2], 'ochre', [2.8, 0.05, 2.6])];
+      // The mat (#98): the frame of ten is 5 half blocks long (a rod in the middle of each place,
+      // MAT_GAP in src/core/world/systems/work.js), and the rods over ten lie beside it, at x 5.9 and
+      // 6.9.
+      const parts = [P('mat', [7.9, 0.08, 3.6], 'yellowPale', [3.55, 0.04, 1.5]), P('edgeN', [7.9, 0.1, 0.2], 'ochre', [3.55, 0.05, -0.3]), P('edgeS', [7.9, 0.1, 0.2], 'ochre', [3.55, 0.05, 3.3])];
       // A frame of ten (#69): two rows of five places (matSlot in src/core/world/systems/work.js),
-      // so that a child sees the empty places and the full rows. A rod over ten lies beside it.
+      // so that a child sees the empty places and the full rows. A rod over ten lies outside it.
       if (look.frame) {
-        for (let c = 0; c <= 5; c++) parts.push(P(`col${c}`, [0.1, 0.1, 2.6], 'ochre', [c * 0.8, 0.09, 1.25]));
-        parts.push(P('mid', [4, 0.1, 0.1], 'ochre', [2, 0.09, 1.25]));
+        for (let c = 0; c <= 5; c++) parts.push(P(`col${c}`, [0.1, 0.1, 3.2], 'ochre', [c, 0.09, 1.5]));
+        parts.push(P('mid', [5, 0.1, 0.1], 'ochre', [2.5, 0.09, 1.5]));
+        parts.push(P('top', [5, 0.1, 0.1], 'ochre', [2.5, 0.09, -0.1]), P('bottom', [5, 0.1, 0.1], 'ochre', [2.5, 0.09, 3.1]));
       }
       return still(parts, 0.1);
     }
     // The glow of an empty place of the mat after a count (#69): a ring of light around the place.
-    case 'place-glow': return still([P('n', [0.8, 0.12, 0.1], 'vermilion', [0, 0.12, -0.62]), P('s', [0.8, 0.12, 0.1], 'vermilion', [0, 0.12, 0.62]), P('w', [0.1, 0.12, 1.3], 'vermilion', [-0.36, 0.12, 0]), P('e', [0.1, 0.12, 1.3], 'vermilion', [0.36, 0.12, 0])], 0.15);
+    case 'place-glow': return still([P('n', [0.9, 0.12, 0.1], 'vermilion', [0, 0.12, -0.75]), P('s', [0.9, 0.12, 0.1], 'vermilion', [0, 0.12, 0.75]), P('w', [0.1, 0.12, 1.6], 'vermilion', [-0.42, 0.12, 0]), P('e', [0.1, 0.12, 1.6], 'vermilion', [0.42, 0.12, 0])], 0.15);
     // A coil of straw rope.
     case 'band': return still([P('coil', [0.9, 0.3, 0.9], 'ochre', [0, 0.15, 0]), P('hole', [0.4, 0.32, 0.4], 'wood', [0, 0.16, 0]), P('end', [0.2, 0.2, 0.6], 'ochre', [0.5, 0.1, 0.4])], 0.35);
     // A lump of iron ore; red hot in the forge.

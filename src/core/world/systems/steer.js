@@ -32,6 +32,23 @@ export function taskPlaces(world) {
   return out;
 }
 const inRect = (r, p) => p.x > r.x0 && p.x < r.x1 && p.z > r.z0 && p.z < r.z1;
+// The way out of the places from a point in one: the direction (+x, -x, +z, or -z) with the
+// shortest walk to a point that is in no place. inPlace(p): the place that has the point, or null.
+export function wayOut(p, inPlace) {
+  let best = null;
+  for (const [ox, oz] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+    const q = { x: p.x, z: p.z };
+    let d = 0;
+    for (let r = inPlace(q), n = 0; r && n < 8; r = inPlace(q), n++) {
+      const step = ox < 0 ? q.x - r.x0 : ox > 0 ? r.x1 - q.x : oz < 0 ? q.z - r.z0 : r.z1 - q.z;
+      q.x += ox * (step + 0.01);
+      q.z += oz * (step + 0.01);
+      d += step + 0.01;
+    }
+    if (!inPlace(q) && (!best || d < best.d)) best = { d, ox, oz };
+  }
+  return best ? [best.ox, best.oz] : [-1, 0];
+}
 
 export function steer(world, dt, rng, env) {
   const movers = query(world, 'steer', 'position', 'motion').filter((e) => !e.hidden && !e.climb);
@@ -128,9 +145,10 @@ export function steer(world, dt, rng, env) {
     const enter = animal && places.length ? (medium, from, to) => roadOk(medium, from, to) && (Boolean(inPlace(from)) || !inPlace(to)) : roadOk;
     const place = animal ? inPlace(p) : null;
     if (place) {
-      // Out by the nearest side of the place.
-      const sides = [[p.x - place.x0, -1, 0], [place.x1 - p.x, 1, 0], [p.z - place.z0, 0, -1], [place.z1 - p.z, 0, 1]];
-      const [, ox, oz] = sides.reduce((a, b) => (b[0] < a[0] ? b : a));
+      // Out by the nearest way out of all the places: two places can touch (the heap and the mat of
+      // the teacher), and the nearest side of one place can go into the other (#98: a chicken
+      // stayed on the line between the heap and the mat).
+      const [ox, oz] = wayOut(p, inPlace);
       dx = ox * s.speed * 1.5;
       dz = oz * s.speed * 1.5;
       if (s.wander) s.wander.on = false;

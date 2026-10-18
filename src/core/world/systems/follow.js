@@ -121,6 +121,7 @@ export function follow(world, dt, rng, env) {
     // place of the work (#47). The hero walks toward Nghé: Nghé steps aside.
     // The body of Nghé is longer than its point, also when it lies down (#76: at night Nghé lay on the
     // end of the mat): it stays NGHE_BODY half blocks out of the rects.
+    let stepped = false;
     for (const r of workRects(world)) {
       const b = NGHE_BODY;
       const inside = (q) => q.x >= r.x0 - b && q.x <= r.x1 + b && q.z >= r.z0 - b && q.z <= r.z1 + b;
@@ -142,6 +143,7 @@ export function follow(world, dt, rng, env) {
       p.x = out.x;
       p.z = out.z;
       m.speed = Math.max(m.speed, 6);
+      stepped = true;
     }
     // Nghé is never between the camera and a place of the work (#94: Nghé stood in front of the mat,
     // and a child could not count the rods): out of the band to its nearer side, as the camera sees
@@ -151,7 +153,9 @@ export function follow(world, dt, rng, env) {
       for (const r of workRects(world)) {
         const band = frontBand(p, r, az, NGHE_BODY);
         if (!band) continue;
-        if (!frontBand(from, r, az, NGHE_BODY)) {
+        // A step of the follow into the band is taken back; a step out of a place into the band
+        // goes on to its side (#98: the mat is wider, and Nghé went back onto it).
+        if (!stepped && !frontBand(from, r, az, NGHE_BODY)) {
           p.x = from.x;
           p.z = from.z;
           continue;
