@@ -98,7 +98,8 @@ test('a hint goes when the child does what it says: the line that waits goes at 
 
 test('the right quench sizzles: the hiss of the iron has the sound of hot iron in water', () => {
   const work = source('src/core/world/systems/work.js');
-  assert.equal((work.match(/say\(world, 'hiss', iron\.id, \{ sound: 'sizzle'/g) ?? []).length, 2);
+  // The piece that the smith shows, the piece of the child, and the piece of the fair test in the water (#102).
+  assert.equal((work.match(/say\(world, 'hiss', iron\.id, \{ sound: 'sizzle'/g) ?? []).length, 3);
   assert.match(source('src/ui/audio.js'), /\n {2}sizzle: \(t\) =>/);
 });
 

@@ -19,12 +19,14 @@
     {
       "id": "smith", "npc": "smith", "calling": "smith", "flag": "trial.smith.done", "reward": { "iron": 2 },
       "task": "forge",
-      "_task": "The fire burns when the child comes: the ore is in the forge (this many lumps) and the water is in the trough. The smith quenches one piece himself first. Then the iron on the anvil glows (rise), stays hot (hold), and dims (dim), again and again. The action button at the anvil drops the iron into the water (the commit): while it is hot (glow at or over hot), it hisses and becomes hard; too early or too late, it bends and goes back into the fire.",
+      "_task": "The fire burns when the child comes: the ore is in the forge (this many lumps) and the water is in the trough. The smith quenches one piece himself first. Then the iron on the anvil glows (rise), stays hot (hold), and dims (dim), again and again. The action button at the anvil drops the iron into the water (the commit): while it is hot (glow at or over hot), it hisses and becomes hard; too early or too late, it bends and goes back into the fire. From grade 3 (#102) the iron goes through its colors in the fire (colors: the seconds of dark red, cherry red, orange, yellow, and the cool time out of the fire), and no pulse says when: a quench at cherry red is right, and the smith says the color of a piece that bends. The task has pieces of a number (pieces), one at a time. water (grade 4): the steam over the trough grows with each piece, and after warmAfter pieces the warm water leaves a piece soft, until the child pours a pail from the jar into the trough. fair (grade 5): two pieces from the same fire, one into the water and one onto the rack; the smith bends both, and the record keeps whether only one thing changed (fair); then the rest of the pieces.",
       "glow": { "rise": 2.5, "dim": 2.5, "cold": 1.5, "hot": 0.6 },
       "levels": [
         { "ore": 2, "hold": 3, "skill": "sci.matter.states", "level": 1 },
         { "ore": 3, "hold": 2, "skill": "sci.matter.states", "level": 2 },
-        { "ore": 4, "hold": 1.4, "skill": "sci.matter.materials", "level": 2 }
+        { "form": "color", "ore": 4, "pieces": 3, "colors": { "dark": 2.6, "cherry": 1.8, "orange": 1.4, "yellow": 1.4, "cool": 2 }, "skill": "sci.matter.materials", "level": 2, "talk": { "dlg.smith.trial.n3": "dlg.smith.trial.n3.color", "dlg.smith.trial.n4": "dlg.smith.trial.n4.color" } },
+        { "form": "water", "ore": 4, "pieces": 5, "warmAfter": 3, "colors": { "dark": 2.6, "cherry": 1.8, "orange": 1.4, "yellow": 1.4, "cool": 2 }, "skill": "sci.energy", "level": 1, "talk": { "dlg.smith.trial.n2": { "key": "dlg.smith.trial.n2.water", "names": ["zone:trough", "jar:smith"] }, "dlg.smith.trial.n3": "dlg.smith.trial.n3.color", "dlg.smith.trial.n4": "dlg.smith.trial.n4.color" } },
+        { "form": "fair", "ore": 4, "pieces": 2, "colors": { "dark": 2.6, "cherry": 1.8, "orange": 1.4, "yellow": 1.4, "cool": 2 }, "skill": "sci.energy", "level": 2, "talk": { "dlg.smith.trial.n3": { "key": "dlg.smith.trial.n3.fair", "names": ["iron:smith-demo"] }, "dlg.smith.trial.n4": { "key": "dlg.smith.trial.n4.fair", "names": ["zone:trough", "rack:smith"] } } }
       ],
       "places": { "forge": "smith-forge", "anvil": "smith-anvil", "trough": "smith-trough" }
     },

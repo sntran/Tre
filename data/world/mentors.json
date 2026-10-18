@@ -386,7 +386,7 @@
       "person": "npc:smith",
       "demo": null,
       "first": [],
-      "lines": {
+      "lines": { "show.color": "mentor.show.smith.color", "show.water": "mentor.show.smith.color", "show.fair": "mentor.show.smith.fair",
         "first": "smith.quench.watch",
         "show": "mentor.show.smith",
         "mark": "mentor.smith.mark"
@@ -398,7 +398,7 @@
       "person": "npc:fisher",
       "demo": { "thing": "stake", "prop": null },
       "picture": "mentor.picture.fisher", "pictureUnless": "trial.smith.done",
-      "lines": {
+      "lines": { "show.measure": "mentor.show.fisher.boat", "show.trees": "mentor.show.fisher.boat", "show.half": "mentor.show.fisher.boat", "carry.measure": "mentor.carry.fisher.boat", "carry.trees": "mentor.carry.fisher.boat", "carry.half": "mentor.carry.fisher.boat",
         "show": "mentor.show.fisher",
         "first": "mentor.fisher.first",
         "mark": "mentor.fisher.mark",
@@ -433,7 +433,7 @@
       "person": "npc:woodcutter",
       "demo": { "thing": "stem", "length": 6 },
       "picture": "mentor.picture.woodcutter", "pictureUnless": "trial.fisher.done",
-      "lines": {
+      "lines": { "mark.unit": "mentor.woodcutter.mark.part", "mark.equiv": "mentor.woodcutter.mark.part", "mark.unlike": "mentor.woodcutter.mark.part",
         "first": "mentor.woodcutter.first",
         "show": "mentor.show.woodcutter",
         "mark": "mentor.woodcutter.mark",

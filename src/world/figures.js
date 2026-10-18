@@ -626,6 +626,8 @@ const still = (parts, height, shadow = 0) => ({ kind: 'still', parts, scale: 1, 
 const HERBS = { ngai: ['greenPale', 'ashLight'], tiato: ['indigo', 'green'], rauma: ['green', 'greenPale'] };
 // The iron of the smith (#70): cold (grey), warm (dark red-brown), and hot (bright red). No yellow.
 const IRON = ['ash', 'wood', 'vermilion'];
+// The colors of the iron in the fire from grade 3 (#102): [the bar, the glow].
+const IRON_COLORS = { dark: ['wood', null], cherry: ['vermilion', 'vermilionPale'], orange: ['ochre', 'yellow'], yellow: ['yellow', 'yellowPale'] };
 // The looks of the planting of Xóm Ruộng that come from their key (docs/PLANTING.md): a row of n
 // seedlings at a stage of growth (seedlings-<n>-<stage>), a bundle of n seedlings tied with straw
 // (bundle-<n>), a loose bunch (bunch-<n>), and a bamboo stake of a plot (plot-stake). Null for
@@ -655,6 +657,16 @@ export function thingLook(key) {
   // of the fisher (n half blocks, with a mark at its half at grade 5), and the knot at the end of a
   // length of the pole on the row.
   if (k === 'skiff' || k === 'stake-lie' || k === 'pole-knot') return { kind: k };
+  // The smith from grade 3 (#102): the colors of the iron in the fire, a bar off the anvil (in the
+  // water or on the rack), the anvil alone, the steam of a warm trough, and the rack in the air.
+  m = /^iron-(dark|cherry|orange|yellow)$/.exec(k);
+  if (m) return { kind: 'iron', color: m[1] };
+  m = /^bar-(0|dark|cherry|bent|hard)$/.exec(k);
+  if (m) return { kind: 'iron', bare: true, ...(m[1] === 'bent' ? { bent: true } : m[1] === 'hard' ? { blade: true } : m[1] === '0' ? { glow: 0 } : { color: m[1] }) };
+  if (k === 'anvil') return { kind: 'iron', anvilOnly: true };
+  m = /^trough-steam-(\d)$/.exec(k);
+  if (m) return { kind: 'trough', full: true, steam: Number(m[1]) };
+  if (k === 'iron-rack') return { kind: 'iron-rack' };
   m = /^pole-(\d+)(-half)?$/.exec(k);
   if (m) return { kind: 'fisher-pole', n: Number(m[1]), half: Boolean(m[2]) };
   // The marks of a ruler on a gap of the bridge, the glow over the far bank, and the glow of a
@@ -859,12 +871,23 @@ export function workThing(look) {
     case 'trough': {
       const parts = [P('floor', [3.2, 0.3, 1.6], 'wood', [1.6, 0.15, 1]), P('sideN', [3.2, 0.9, 0.3], 'ochre', [1.6, 0.45, 0.2]), P('sideS', [3.2, 0.9, 0.3], 'ochre', [1.6, 0.45, 1.8]), P('endW', [0.3, 0.9, 1.6], 'ochre', [0, 0.45, 1]), P('endE', [0.3, 0.9, 1.6], 'ochre', [3.2, 0.45, 1])];
       if (look.full) parts.push(P('water', [2.8, 0.05, 1.2], 'indigoPale', [1.6, 0.8, 1]));
-      return still(parts, 1);
+      // The steam of warm water (#102): more puffs over the trough after each piece.
+      for (let i = 0; i < (look.steam ?? 0); i++) parts.push(P(`steam${i}`, [0.7, 0.5 + i * 0.25, 0.7], 'paper', [0.8 + i * 0.8, 1.4 + i * 0.35, 1 + (i % 2 ? 0.3 : -0.3)]));
+      return still(parts, 1 + (look.steam ?? 0) * 0.6);
     }
     // The iron bar on the anvil: cold, warm, or hot (bright red, with a glow on the anvil and
     // sparks, #70); bent; or a hard blade.
     case 'iron': {
-      const anvil = [P('anvil', [1.4, 1, 1.2], 'ink', [0, -0.5, 0]), P('horn', [0.6, 0.3, 0.5], 'ink', [0, -0.15, 0.8])];
+      const anvil = look.bare ? [] : [P('anvil', [1.4, 1, 1.2], 'ink', [0, -0.5, 0]), P('horn', [0.6, 0.3, 0.5], 'ink', [0, -0.15, 0.8])];
+      if (look.anvilOnly) return still(anvil, 0.1);
+      // The colors of the fire (#102): dark red, cherry red (with the glow and the sparks), orange,
+      // and yellow, each brighter than the one before.
+      if (look.color) {
+        const [bar, glow] = IRON_COLORS[look.color];
+        const parts = [...anvil, P('bar', [0.4, 0.3, 2], bar, [0, 0.15, 0])];
+        if (glow) parts.push(P('glow', [1, 0.04, 2.4], glow, [0, 0.01, 0]), ...[[0.3, 0.7, -0.5], [-0.25, 0.9, 0.2], [0.15, 1.1, 0.7]].map(([x, y, z], i) => P(`spark${i}`, [0.12, 0.12, 0.12], glow, [x, y, z])));
+        return still(parts, glow ? 1.2 : 0.4);
+      }
       if (look.bent) return still([...anvil, P('barA', [0.4, 0.3, 1.1], 'ash', [0, 0.15, -0.3]), P('barB', [0.4, 0.3, 1.1], 'ash', [0.35, 0.35, 0.6])], 0.6);
       if (look.blade) return still([...anvil, P('blade', [0.5, 0.2, 2.2], 'ashLight', [0, 0.1, 0]), P('grip', [0.35, 0.3, 0.6], 'wood', [0, 0.15, -1.3])], 0.4);
       if (look.horse) {
@@ -895,6 +918,8 @@ export function workThing(look) {
       ], STEED_SEAT + 1 * k);
     }
     // A stake of the fish trap, half in the water.
+    // The rack of the smith (#102): two posts and a bar, where a piece cools in the air.
+    case 'iron-rack': return still([P('postA', [0.25, 1.4, 0.25], 'wood', [0, 0.7, 0.2]), P('postB', [0.25, 1.4, 0.25], 'wood', [0, 0.7, 2.2]), P('bar', [0.3, 0.2, 2.4], 'ochre', [0, 1.3, 1.2]), P('foot', [1, 0.15, 2.6], 'wood', [0, 0.08, 1.2])], 1.5);
     // The boat of the stakes (#102): a small dugout along +z, low in the water.
     case 'skiff': return still([P('hull', [1.8, 0.7, 4], 'wood', [0, -0.15, 2]), P('rimL', [0.25, 0.3, 3.8], 'ochre', [-0.85, 0.3, 2]), P('rimR', [0.25, 0.3, 3.8], 'ochre', [0.85, 0.3, 2]), P('bow', [1, 0.5, 0.4], 'ochre', [0, 0.35, 3.9]), P('stern', [1.2, 0.4, 0.4], 'wood', [0, 0.3, 0.1])], 0.7);
     // A stake that lies in the boat, along +x.

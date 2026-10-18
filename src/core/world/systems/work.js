@@ -25,7 +25,7 @@ export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'ke
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
 import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, badPiece, layCount, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
-import { taskOf, basketPlan, rodsPlan, rowPlan, boatResult, stemPlan, fracCut, MODEL_DOSES, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
+import { taskOf, basketPlan, rodsPlan, rowPlan, boatResult, stemPlan, fracCut, colorAt, colorRight, fairResult, MODEL_DOSES, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
 import { createRng, hashSeed } from '../../rng.js';
 import { STEP } from '../step.js';
@@ -232,8 +232,25 @@ export function setupTrial(world, def, level, env, opts = {}) {
     addEntity(world, { id: 'zone:trough', keep: true, zone: { id: 'trough', task: owner, rule: 'trough', accepts: 'bucket', items: [], full: true, x: t.x, y: t.y, z: t.z, rect: rect(t, 3, 2) }, position: { x: t.x + 1.5, y: t.y, z: t.z + 2, facing: 0 } });
     addEntity(world, { id: 'trough:smith', keep: true, position: { x: t.x, y: t.y, z: t.z, facing: 0 }, look: 'trough-full', solid: { rect: { x0: t.x - 0.2, x1: t.x + 3.4, z0: t.z, z1: t.z + 2 } } });
     const a = P(def.places.anvil);
-    Object.assign(tz.zone, { anvil: { x: a.x, y: a.y, z: a.z }, heat: 0 });
-    if (opts.demo === false) addIron(world, tz, 'iron:smith');
+    // From grade 3 (#102): the colors of the fire and pieces of a number (pieces); the warm water
+    // and the jar with its pails (water, grade 4); the fair test with the rack in the air (fair,
+    // grade 5).
+    const form = task.form ?? 'pulse';
+    Object.assign(tz.zone, { anvil: { x: a.x, y: a.y, z: a.z }, heat: 0, form, hard: 0, plan: { form } });
+    if (form === 'water') {
+      getEntity(world, 'zone:trough').zone.warm = 0;
+      const j = { x: t.x + 4.8, y: t.y, z: t.z + 0.4 };
+      const jar = heap('jar', j, 'bucket', { cols: 2, step: 1.1 });
+      things(jar, 'bucket', 2);
+      addEntity(world, { id: 'jar:smith', keep: true, position: { x: j.x + 0.5, y: j.y, z: j.z - 1.6, facing: 0 }, look: 'jar' });
+    }
+    if (form === 'fair') {
+      const r = { x: a.x + 3.4, y: a.y, z: a.z - 1.2 };
+      tz.zone.rack = r;
+      addEntity(world, { id: 'rack:smith', keep: true, item: { kind: 'rack', size: 2.4, task: owner, zone: null, held: null, set: true, fixed: true }, position: { ...r, facing: 0 }, look: 'iron-rack' });
+    }
+    if (opts.demo === false && form === 'fair') startTest(world, tz);
+    else if (opts.demo === false) addIron(world, tz, 'iron:smith');
     else {
       Object.assign(tz.zone, { demo: true, iron: 'iron:smith-demo' });
       addIron(world, tz, 'iron:smith-demo');
@@ -779,6 +796,8 @@ export function hasRoom(zone) {
   if (zone.rule === 'bundle') return zone.items.length < MAT_MAX;
   // The boat of the fisher takes stakes only at the bank (#102).
   if (zone.rule === 'boat') return !zone.away;
+  // The trough of the smith takes a pail only when its water is warm (#102).
+  if (zone.rule === 'trough') return zone.warm > 0;
   return true;
 }
 
@@ -837,6 +856,16 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.slot = slot;
     zone.items.push(thing.id);
     thing.position = { x: zone.x + slot, y: zone.y, z: zone.z, facing: 0 };
+  } else if (zone.rule === 'trough') {
+    // A pail of cold water from the jar into the trough of the smith (#102): the water is cold
+    // again, and the pail goes back to the jar.
+    if (zone.warm == null) return false;
+    zone.warm = 0;
+    const look = getEntity(world, 'trough:smith');
+    if (look) look.look = 'trough-full';
+    toHeap(world, thing);
+    say(world, 'pour', e.id, { zone: zone.id, sound: 'splash' });
+    return true;
   } else if (zone.rule === 'boat') {
     // The boat of the fisher takes stakes while it lies at the bank (#102).
     if (tz.zone.trip || zone.away) return false;
@@ -1108,27 +1137,53 @@ function act(world, e, want, env) {
       packHearth(world, hearth.zone);
       say(world, 'roll', hearth.id, { sound: 'plank-down' });
     }
-  } else if (want.act === 'quench') {
+  } else if (want.act === 'quench' || want.act === 'rack') {
+    // The fair test of grade 5 (#102): a piece into the water, or onto the rack.
+    if (tz.zone.test) {
+      if (near(tz.zone.anvil, REACH + 3) || (want.act === 'rack' && near(tz.zone.rack, REACH + 3))) testMove(world, tz, want.act === 'rack' ? 'rack' : 'water');
+      return;
+    }
+    if (want.act === 'rack') return;
     const iron = getEntity(world, tz.zone.iron ?? 'iron:smith');
     if (!iron || tz.zone.heat === null || tz.zone.bent || tz.zone.demo || !near(tz.zone.anvil, REACH + 3)) return;
     const value = glowAt(tz.zone.heat, task.glow, task.hold);
-    const solved = quenchResult(value, task.glow);
+    // From grade 3 (#102): the color of the iron, and at grade 4 the water of the trough too.
+    const color = task.colors ? colorAt(tz.zone.heat, task.colors) : null;
+    const trough = zoneEnt(world, 'trough');
+    const warm = tz.zone.form === 'water' && (trough?.zone.warm ?? 0) >= task.warmAfter;
+    const right = color ? colorRight(color) : quenchResult(value, task.glow);
+    const solved = right && !warm;
     if (tz.zone.quenches !== undefined) tz.zone.quenches += 1;
-    commit(world, tz, task, { solved, first: tz.zone.quenches === undefined ? undefined : tz.zone.quenches === 1, parts: [Math.round(value * 10)], target: Math.round(task.glow.hot * 10) });
+    commit(world, tz, task, { solved, first: tz.zone.quenches === undefined ? undefined : tz.zone.quenches === 1, parts: color ? [['dark', 'cherry', 'orange', 'yellow', 'cool'].indexOf(color)] : [Math.round(value * 10)], target: color ? 1 : Math.round(task.glow.hot * 10) });
+    // The heat of the iron goes into the water: the steam over the trough grows with each piece.
+    if (tz.zone.form === 'water' && trough) {
+      trough.zone.warm += 1;
+      const look = getEntity(world, 'trough:smith');
+      if (look) look.look = `trough-steam-${Math.min(3, trough.zone.warm)}`;
+    }
     if (solved) {
       iron.look = task.made ?? 'blade';
       iron.item.set = true;
       tz.zone.heat = null;
       say(world, 'hiss', iron.id, { sound: 'sizzle', at: iron.position });
-      finish(world, tz, iron.position);
+      if (task.colors) hardPiece(world, tz, task, iron);
+      else finish(world, tz, iron.position);
     } else {
       iron.look = 'iron-bent';
       tz.zone.bent = BEND;
-      const early = value > 0 && tz.zone.heat % (task.glow.rise + task.hold + task.glow.dim + task.glow.cold) < task.glow.rise;
-      say(world, 'bend', iron.id, { sound: 'plank-down', early });
+      const early = color ? color === 'dark' || color === 'cool' : value > 0 && tz.zone.heat % (task.glow.rise + task.hold + task.glow.dim + task.glow.cold) < task.glow.rise;
+      say(world, 'bend', iron.id, { sound: 'plank-down', early, color, warm });
       // The smith says what happened first, in words that a child knows (#70): not hot enough yet,
-      // or cold again.
-      say(world, 'call', 'npc:smith', { key: early ? 'smith.bend.early' : 'smith.bend.late', happened: true });
+      // or cold again. From grade 3, the color that it had (#102); in warm water, the water, and he
+      // points at the jar.
+      const key = warm && right ? 'smith.warm' : color ? `smith.color.${color}` : early ? 'smith.bend.early' : 'smith.bend.late';
+      say(world, 'call', 'npc:smith', { key, happened: true });
+      if (key === 'smith.warm') {
+        const smith = getEntity(world, 'npc:smith');
+        const jar = zoneEnt(world, 'jar');
+        if (smith && jar) smith.gesture = { act: 'point', x: jar.position.x, z: jar.position.z, t: 3 };
+        if (jar) world.events.push({ type: 'glowThings', ids: [...jar.zone.items] });
+      }
     }
   } else if (want.act === 'give') {
     const basket = zoneEnt(world, 'basket');
@@ -1357,17 +1412,20 @@ function addIron(world, tz, id) {
 }
 
 function tickForge(world, tz, dt, env) {
-  // After the demo of the smith, the iron of the child comes on the anvil.
+  const task = taskFor(env, tz.zone);
+  // After the demo of the smith, the iron of the child comes on the anvil (at grade 5, the two
+  // pieces of the fair test first).
   if (tz.zone.next) {
     tz.zone.next -= dt;
     if (tz.zone.next > 0) return;
     delete tz.zone.next;
     tz.zone.heat = 0;
-    addIron(world, tz, 'iron:smith');
+    if (tz.zone.form === 'fair' && !tz.zone.tested) startTest(world, tz);
+    else addIron(world, tz, 'iron:smith');
   }
+  if (tz.zone.test) return tickTest(world, tz, task, dt);
   const iron = getEntity(world, tz.zone.iron ?? 'iron:smith');
   if (!iron || tz.zone.heat === null) return;
-  const task = taskFor(env, tz.zone);
   if (tz.zone.bent) {
     tz.zone.bent -= dt;
     if (tz.zone.bent > 0) return;
@@ -1375,14 +1433,24 @@ function tickForge(world, tz, dt, env) {
     tz.zone.heat = 0;
   }
   tz.zone.heat += dt;
-  const value = glowAt(tz.zone.heat, task.glow, task.hold);
-  // The iron turns hot: a sound, so that the child hears the moment too.
-  if ((iron.glow ?? 0) < task.glow.hot && quenchResult(value, task.glow)) say(world, 'glow', iron.id, { sound: 'lantern' });
-  // Round down, so that a glow at or over hot is truly hot (the cue reads it).
-  iron.glow = Math.floor(value * 100) / 100;
-  iron.look = ironLook(value, task.glow);
+  let hot;
+  if (task.colors) {
+    // The colors of the fire (#102): no sound and no glow of the cue says when.
+    const color = colorAt(tz.zone.heat, task.colors);
+    iron.color = color;
+    iron.look = color === 'cool' ? 'iron-0' : `iron-${color}`;
+    hot = colorRight(color);
+  } else {
+    const value = glowAt(tz.zone.heat, task.glow, task.hold);
+    // The iron turns hot: a sound, so that the child hears the moment too.
+    if ((iron.glow ?? 0) < task.glow.hot && quenchResult(value, task.glow)) say(world, 'glow', iron.id, { sound: 'lantern' });
+    // Round down, so that a glow at or over hot is truly hot (the cue reads it).
+    iron.glow = Math.floor(value * 100) / 100;
+    iron.look = ironLook(value, task.glow);
+    hot = quenchResult(value, task.glow);
+  }
   // The demo: a moment after the iron turns hot, the smith drops it into the water and says when.
-  if (!tz.zone.demo || !quenchResult(value, task.glow)) return;
+  if (!tz.zone.demo || !hot) return;
   tz.zone.demoHot = (tz.zone.demoHot ?? 0) + dt;
   if (tz.zone.demoHot < DEMO_WAIT) return;
   const a = tz.zone.anvil;
@@ -1396,7 +1464,93 @@ function tickForge(world, tz, dt, env) {
   tz.zone.heat = null;
   tz.zone.next = DEMO_NEXT;
   say(world, 'hiss', iron.id, { sound: 'sizzle', at: iron.position });
-  say(world, 'call', 'npc:smith', { key: 'smith.quench.show' });
+  say(world, 'call', 'npc:smith', { key: task.colors ? 'smith.quench.show.color' : 'smith.quench.show' });
+}
+
+// A hard piece of the smith (#102): it goes to the row of pieces beside the anvil, and the next
+// iron comes, until the pieces of the task are done.
+const BLADE_ROW = 0.7; // half blocks between two pieces of the row
+function hardPiece(world, tz, task, iron) {
+  tz.zone.hard += 1;
+  if (tz.zone.hard >= (task.pieces ?? 1)) return finish(world, tz, iron.position);
+  const a = tz.zone.anvil;
+  removeEntity(world, iron.id);
+  addEntity(world, { id: `blade:smith:${tz.zone.hard}`, keep: true, position: { x: a.x - 2.4, y: a.y, z: a.z + 0.6 + tz.zone.hard * BLADE_ROW, facing: Math.PI / 2 }, look: 'bar-hard' });
+  tz.zone.heat = null;
+  tz.zone.next = DEMO_NEXT;
+  success(world, tz, a);
+}
+
+// The fair test of grade 5 (#102): the smith takes two pieces out of the same fire at the same
+// time, cherry red, and lays them on the anvil. A press puts one into the water, and a tap on the
+// rack puts the other in the air. Then he bends both.
+const TEST_CHECK = 1.6; // seconds after the second piece: the smith bends both
+const TEST_SHOW = 3.5; // seconds: the bent piece and the hard piece lie there, and he says why
+function startTest(world, tz) {
+  const a = tz.zone.anvil;
+  if (!getEntity(world, 'anvil:smith')) addEntity(world, { id: 'anvil:smith', keep: true, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'anvil' });
+  ['iron:smith', 'iron:smith-b'].forEach((id, i) => {
+    removeEntity(world, id);
+    addEntity(world, { id, keep: true, item: { kind: 'iron', size: 2, task: 'trial-smith', zone: null, held: null, set: true, fixed: true }, position: { x: a.x, y: a.y + 1, z: a.z + (i ? 0.45 : -0.45), facing: Math.PI / 2 }, look: 'bar-cherry' });
+  });
+  tz.zone.heat = null;
+  tz.zone.test = { t: 0, tries: [] };
+  say(world, 'fire', tz.id, { sound: 'lantern' });
+}
+// A move of a piece of the test: into the water (how 'water') or onto the rack ('rack').
+function testMove(world, tz, how) {
+  const test = tz.zone.test;
+  if (!test || test.check != null) return;
+  const id = ['iron:smith', 'iron:smith-b'].find((x) => !test.tries.some((q) => q.id === x) && getEntity(world, x));
+  if (!id) return;
+  const iron = getEntity(world, id);
+  const k = test.tries.length;
+  test.tries.push({ id, how, t: test.t });
+  if (how === 'water') {
+    const t = zoneEnt(world, 'trough').zone;
+    iron.position = { x: t.x + 1 + k * 1.2, y: t.y + 0.6, z: t.z + 1, facing: 0 };
+    iron.look = 'bar-0';
+    say(world, 'hiss', iron.id, { sound: 'sizzle', at: iron.position });
+  } else {
+    const r = tz.zone.rack;
+    iron.position = { x: r.x, y: r.y + 1.45, z: r.z + 0.4 + k * 1.2, facing: 0 };
+    say(world, 'rack', iron.id, { sound: 'plank-down' });
+  }
+  if (test.tries.length === 2) test.check = TEST_CHECK;
+}
+function tickTest(world, tz, task, dt) {
+  const test = tz.zone.test;
+  test.t += dt;
+  // A piece on the rack cools in the air, slowly: it goes dark red.
+  for (const q of test.tries) if (q.how === 'rack' && test.t - q.t > 2) getEntity(world, q.id).look = 'bar-dark';
+  if (test.check == null) return;
+  test.check -= dt;
+  if (test.check > 0) return;
+  if (test.show == null) {
+    // The smith bends both: the piece from the water is hard, the piece from the air bends.
+    for (const q of test.tries) getEntity(world, q.id).look = q.how === 'water' ? 'bar-hard' : 'bar-bent';
+    const r = fairResult(test.tries);
+    tz.zone.commits += 1;
+    if (!r.compare) tz.zone.fails += 1;
+    say(world, 'skill', tz.id, { ...trialSkill(task, { solved: r.compare, first: tz.zone.commits === 1, parts: test.tries.map((q) => (q.how === 'water' ? 1 : 0)), target: 1 }), fair: r.fair, compare: r.compare });
+    say(world, 'bend', tz.id, { sound: 'plank-down', test: true });
+    const ways = new Set(test.tries.map((q) => q.how));
+    say(world, 'call', 'npc:smith', { key: r.compare ? 'smith.fair.right' : ways.has('water') ? 'smith.fair.water' : 'smith.fair.rack', happened: true });
+    test.show = TEST_SHOW;
+    return;
+  }
+  test.show -= dt;
+  if (test.show > 0) return;
+  const r = fairResult(test.tries);
+  for (const id of ['iron:smith', 'iron:smith-b']) removeEntity(world, id);
+  delete tz.zone.test;
+  if (r.compare) {
+    // The test showed the way: then the rest of the pieces, one at a time, in the fire.
+    tz.zone.tested = true;
+    removeEntity(world, 'anvil:smith');
+    say(world, 'call', 'npc:smith', { key: 'smith.fair.rest', happened: true });
+    tz.zone.next = DEMO_NEXT;
+  } else startTest(world, tz);
 }
 
 // The look of the iron of the smith at a glow value (#70): bright red, with a glow and sparks, for

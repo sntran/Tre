@@ -712,12 +712,23 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       say(t, lineOf(key, move));
       t += 2;
     }
+    // A wave that gets the same line a third time in a row with no try: the person shows it with
+    // the hands only (#102: at the colors of the fire, the mark and the show have one line).
+    const line = steps.find((x) => x.say)?.say.key ?? null;
+    if (info.asked && line && run?.line === line && run.n >= 2) {
+      for (let i = steps.length - 1; i >= 0; i--) if (steps[i].say) steps.splice(i, 1);
+      asked.set(whoNow, { move, line, n: run.n + 1 });
+      if (!steps.length) {
+        emit({ type: 'nod', id: whoNow });
+        return 0;
+      }
+    }
     if (!steps.length) return 0;
     endScript(w, getEntity(w, `script:${key}`));
     steps.push({ at: t + 0.5, end: true });
     steps.sort((a, b) => a.at - b.at);
     addEntity(w, { id: `script:${key}`, script: { key, move, t: 0, i: 0, steps, spawned: [], ...(keyAt !== undefined ? { keyAt } : {}) } });
-    if (info.asked) asked.set(whoNow, { move, n: run?.move === move ? run.n + 1 : 1 });
+    if (info.asked) asked.set(whoNow, { move, line, n: run && (run.move === move || (line && run.line === line)) ? run.n + 1 : 1 });
     else asked.delete(whoNow);
     return t + 0.5;
   }

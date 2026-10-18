@@ -39,7 +39,8 @@
       "trial": "smith",
       "skills": [
         "sci.matter.states",
-        "sci.matter.materials"
+        "sci.matter.materials",
+        "sci.energy"
       ],
       "set": 2,
       "story": "practice-ren-sat"

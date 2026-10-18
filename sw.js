@@ -82,6 +82,7 @@ const FILES = [
   'art/ui/leaf.svg',
   'art/ui/boat.svg',
   'art/ui/pole.svg',
+  'art/ui/rack.svg',
   'art/ui/shard.svg',
   'art/ui/sling.svg',
   'art/ui/speak.svg',

@@ -81,6 +81,32 @@ export function glowAt(t, glow, hold) {
 // The iron hardens in the water while it is hot.
 export const quenchResult = (value, glow) => value >= glow.hot;
 
+// The colors of the iron in the fire from grade 3 (#102): dark red, cherry red, orange, and
+// yellow, each for its seconds (colors), and then the smith takes it out of the fire to cool (cool),
+// again and again. No pulse says when: the child looks at the color. The quench is right at cherry
+// red.
+export const IRON_COLORS = ['dark', 'cherry', 'orange', 'yellow', 'cool'];
+export function colorAt(t, colors) {
+  const cycle = IRON_COLORS.reduce((a, c) => a + colors[c], 0);
+  let k = ((t % cycle) + cycle) % cycle;
+  for (const c of IRON_COLORS) {
+    if (k < colors[c]) return c;
+    k -= colors[c];
+  }
+  return 'cool';
+}
+export const colorRight = (color) => color === 'cherry';
+// The fair test of the smith at grade 5 (#102): two pieces from the same fire, one into the water
+// and one onto the rack in the air. tries: [{ how: 'water' | 'rack', t }]. compare: the two ways are
+// not the same (a test); fair: and only that changed (the two at about the same time, within
+// FAIR_TIME seconds).
+export const FAIR_TIME = 4;
+export function fairResult(tries) {
+  const [a, b] = tries;
+  const compare = Boolean(a && b && a.how !== b.how);
+  return { compare, fair: compare && Math.abs(a.t - b.t) <= FAIR_TIME };
+}
+
 // The fisher: the stakes (offsets along the line from the first stake, in half blocks) against
 // the space of the row and the length of the line. solved: no space wider than the space of the
 // row, and a stake at the end mark. efficient: solved with the fewest stakes. widest: the start

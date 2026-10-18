@@ -1131,7 +1131,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (plan?.form === 'share') Object.assign(out, { n: num(plan.n), k: num(plan.k) });
         if (plan?.form === 'decimal') out.x = decimalWords(plan.x);
       }
-      if (def.task === 'forge') out.ore = num(t.ore);
+      if (def.task === 'forge') {
+        out.ore = num(t.ore);
+        // The pieces of the level (#102).
+        if (t.pieces) out.pieces = num(t.pieces);
+      }
       if (def.task === 'basket') {
         out.each = num(t.each ?? 0);
         // The numbers of the basket of the level (#101): the recipe, the doses, and the bunches.
@@ -2979,6 +2983,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // While the smith shows the quench on his own piece, the iron is his.
         const iron = tz?.zone.heat !== null && tz?.zone.heat !== undefined && !tz.zone.bent && !tz.zone.demo ? getEntity(state, tz.zone.iron ?? 'iron:smith') : null;
         if (iron) add({ act: 'quench', icon: 'water', target: iron.id, at: tz.zone.anvil, rank: 0, work: true, run: () => work(id, 'quench') }, REACH + 3);
+        // The fair test of grade 5 (#102): a press puts a piece into the water, and a tap on the
+        // rack puts a piece in the air.
+        const test = tz?.zone.test;
+        const piece = test && test.check == null ? ['iron:smith', 'iron:smith-b'].find((x) => !test.tries.some((q) => q.id === x)) : null;
+        if (piece) {
+          add({ act: 'quench', icon: 'water', target: piece, at: tz.zone.anvil, rank: 0, work: true, run: () => work(id, 'quench') }, REACH + 3);
+          if (chosen?.id === 'rack:smith') add({ act: 'rack', icon: 'rack', target: 'rack:smith', at: tz.zone.rack, rank: -1, work: true, run: () => work(id, 'rack') }, REACH + 3);
+        }
       }
       const hearth = zoneOf('hearth');
       const bellows = query(state, 'item', 'position').find((e) => e.item.kind === 'bellows' && !e.hidden);
