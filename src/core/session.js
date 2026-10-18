@@ -2308,6 +2308,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // trough, a heap) are blocked too, so that a walk goes around them.
   // people: false: only the walls and the solid things with a box (the mat, a heap), with no round
   // bodies of people and no narrow gaps next to them (findWay).
+  const ESCAPE = 2; // cells around a hero with no way out where a plan does not count the people
   function pathMap({ people = true } = {}) {
     const solids = query(state, 'solid', 'position').filter((e) => !e.hidden && e.id !== 'hero');
     const boxes = solids.filter((e) => e.solid.rect).map((e) => e.solid.rect);
@@ -2328,8 +2329,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // culm, the mat) can always walk away from it (#44).
     const h = heroFrom();
     for (const [k, until] of stuckCells) if (until <= state.tick) stuckCells.delete(k);
-    const inBox = (x, y) => !(x === h.x && y === h.y) && (stuckCells.has(`${x},${y}`) || boxes.some((b) => (x + 0.5) * 2 > b.x0 - 0.5 && (x + 0.5) * 2 < b.x1 + 0.5 && (y + 0.5) * 2 > b.z0 - 0.5 && (y + 0.5) * 2 < b.z1 + 0.5)
-      || rounds.some((c) => Math.hypot((x + 0.5) * 2 - c.x, (y + 0.5) * 2 - c.z) < c.r) || gap(x, y));
+    const inThing = (x, y) => stuckCells.has(`${x},${y}`) || boxes.some((b) => (x + 0.5) * 2 > b.x0 - 0.5 && (x + 0.5) * 2 < b.x1 + 0.5 && (y + 0.5) * 2 > b.z0 - 0.5 && (y + 0.5) * 2 < b.z1 + 0.5);
+    const inPeople = (x, y) => rounds.some((c) => Math.hypot((x + 0.5) * 2 - c.x, (y + 0.5) * 2 - c.z) < c.r) || gap(x, y);
+    // A tap always walks (#95: next to the teacher, a wall, a closed cell, and a narrow gap left the
+    // cell of the hero with no way out, and no tap moved the hero): when no cell next to the hero is
+    // open, the first steps (ESCAPE cells around the hero) go without the people and the narrow
+    // gaps. The hero goes out the way that it came in.
+    const open = (x, y) => tileMap.walkable(x, y) && !inThing(x, y) && !inPeople(x, y);
+    const shut = people && ![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => open(h.x + dx, h.y + dy));
+    const nearHero = (x, y) => Math.abs(x - h.x) <= ESCAPE && Math.abs(y - h.y) <= ESCAPE;
+    const inBox = (x, y) => !(x === h.x && y === h.y) && (inThing(x, y) || (!(shut && nearHero(x, y)) && inPeople(x, y)));
     return Object.assign(Object.create(tileMap), {
       // The hero can always start from its own cell (in the water after a jump, at a thing).
       walkable: (x, y) => (x === h.x && y === h.y) || (tileMap.walkable(x, y) && !inBox(x, y)),
