@@ -43,3 +43,13 @@ test('in the story of each trial, the pool holds the person of the task and the 
     assert.ok(Math.hypot(person.x - pools[0].x, person.z - pools[0].z) <= pools[0].r, `${trial}: the pool holds the person`);
   }
 });
+
+test('a raid that goes on and the things of a puzzle have a pool of light at night (#99, #104)', () => {
+  const hero = { x: 0, y: 2, z: 0 };
+  const raid = { id: 'raid', raid: { result: null, posts: [{ x: 4, z: 0 }, { x: 8, z: 0 }, { x: 12, z: 0 }] } };
+  const pots = [{ id: 'pz:pot:0', item: { kind: 'pzpot' }, position: { x: -6, y: 2, z: 2 } }, { id: 'pz:jar', item: { kind: 'pzjar' }, position: { x: -4, y: 2, z: 4 } }];
+  const pools = taskPools([raid, ...pots], hero);
+  assert.ok(pools.some((p) => p.task === 'raid' && p.x === 8), JSON.stringify(pools));
+  assert.ok(pools.some((p) => p.task === 'puzzle'), JSON.stringify(pools));
+  assert.equal(taskPools([{ ...raid, raid: { ...raid.raid, result: 'won' } }], hero).length, 0, 'no light after the raid');
+});

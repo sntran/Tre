@@ -19,6 +19,7 @@ export function edgeOf(id, night = 0) {
 // hero. Return [{ task, x, y, z, r }]: the middle of the work and the radius of its pool (half
 // blocks), for each open task with its work within NEAR of the hero.
 export const POOL = Object.freeze({ near: 60, pad: 4, min: 7, max: 24 });
+const PUZZLE_NEAR = 24; // half blocks: the hero this near to the middle of the things of a puzzle
 export function taskPools(entities, hero, pool = POOL) {
   const out = [];
   if (!hero) return out;
@@ -32,6 +33,13 @@ export function taskPools(entities, hero, pool = POOL) {
         if (((e.item && e.item.task === z.id && !e.item.held) || (e.guess && e.guess.zone === z.id)) && e.position && !e.hidden) pts.push(e.position);
       }
       const p = poolOf(z.id, pts, hero, pool);
+      if (p) out.push(p);
+      continue;
+    }
+    // A raid that goes on has a light on its posts (#99: at night the child could not see the posts
+    // of the raid of the river).
+    if (tz.raid && !tz.raid.result && tz.raid.posts?.length) {
+      const p = poolOf('raid', tz.raid.posts.map((q) => ({ x: q.x, y: hero.y ?? 0, z: q.z })), hero, pool);
       if (p) out.push(p);
       continue;
     }
@@ -52,6 +60,10 @@ export function taskPools(entities, hero, pool = POOL) {
     const p = poolOf(owner, pts, hero, pool);
     if (p) out.push(p);
   }
+  // The things of a puzzle (#104) have a light too, when the hero is at them.
+  const pz = entities.filter((e) => String(e.item?.kind).startsWith('pz') && !e.item.inHands && e.position && !e.hidden).map((e) => e.position);
+  const p = pz.length ? poolOf('puzzle', pz, hero, { ...pool, near: PUZZLE_NEAR }) : null;
+  if (p) out.push(p);
   return out;
 }
 
