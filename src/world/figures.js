@@ -549,12 +549,16 @@ export function plankRow(n, on = false) {
 
 // The mark of a narrow gap of the row of the fisher (#92): a bright yellow frame on the water around
 // the gap, n units long along +z, wider than a stake, so that it shows from the close view.
-export function gapFrame(n) {
+// dim: a frame of a narrow gap next to a stake that is not the stake to take back (#97): thin and
+// pale, so that the bright frame stands out.
+export function gapFrame(n, dim = false) {
+  const c = dim ? 'yellowPale' : 'yellow';
+  const w = dim ? 0.15 : 0.3;
   return still([
-    P('sideL', [0.3, 0.25, n + 0.3], 'yellow', [-1.3, 0.12, n / 2]),
-    P('sideR', [0.3, 0.25, n + 0.3], 'yellow', [1.3, 0.12, n / 2]),
-    P('endN', [2.9, 0.25, 0.3], 'yellow', [0, 0.12, 0]),
-    P('endS', [2.9, 0.25, 0.3], 'yellow', [0, 0.12, n]),
+    P('sideL', [w, 0.25, n + w], c, [-1.3, 0.12, n / 2]),
+    P('sideR', [w, 0.25, n + w], c, [1.3, 0.12, n / 2]),
+    P('endN', [2.6 + w, 0.25, w], c, [0, 0.12, 0]),
+    P('endS', [2.6 + w, 0.25, w], c, [0, 0.12, n]),
   ], 0.25);
 }
 
@@ -642,8 +646,8 @@ export function thingLook(key) {
   m = /^(ruler|over)-(\d+)$/.exec(k);
   if (m) return { kind: m[1], n: Number(m[2]) };
   // A row of n plank outlines for the guess at the bridge, or the same row filled (#90).
-  m = /^gap-frame-(\d+)$/.exec(k);
-  if (m) return { kind: 'gap-frame', n: Number(m[1]) };
+  m = /^gap-frame-(\d+)(-dim)?$/.exec(k);
+  if (m) return { kind: 'gap-frame', n: Number(m[1]), dim: Boolean(m[2]) };
   m = /^demo-gap-(\d+)$/.exec(k);
   if (m) return { kind: 'demo-gap', n: Number(m[1]) };
   m = /^plank-row-(\d+)(-on)?$/.exec(k);
@@ -1149,7 +1153,7 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'plank-ghost') return plankGhost(Boolean(look.on));
   if (look.kind === 'plank-row') return plankRow(look.n, Boolean(look.on));
   if (look.kind === 'demo-gap') return demoGap(look.n);
-  if (look.kind === 'gap-frame') return gapFrame(look.n);
+  if (look.kind === 'gap-frame') return gapFrame(look.n, look.dim);
   if (look.kind === 'gap') return gapMarks(look.n);
   if (look.kind === 'ruler') return rulerMarks(look.n);
   if (look.kind === 'over') return overGlow(look.n);

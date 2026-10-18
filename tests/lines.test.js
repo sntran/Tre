@@ -100,14 +100,14 @@ async function escape(mentors = {}) {
   run(session, 1);
   const space = getEntity(session.state, 'why:fisher:space');
   run(session, 8);
-  return { lines, glow: glow[0] && Boolean(space), gone: !getEntity(session.state, 'why:fisher:space') };
+  return { lines, glow: glow[0] && Boolean(space), stays: Boolean(getEntity(session.state, 'why:fisher:space')) };
 }
 
-test('the fish swim out: the widest space glows, and the fisher says it, also after the handover of the checking', async () => {
+test('the fish swim out: the widest space glows until a stake stands in it (#97), and the fisher says it, also after the handover of the checking', async () => {
   for (const mentors of [{}, { 'trial-fisher': { ...newMemory(), selfFix: 9, visits: 4 } }]) {
     const r = await escape(mentors);
     assert.ok(r.glow, 'the widest space glows while the fish swim out');
-    assert.ok(r.gone, 'the glow goes with the fish');
+    assert.ok(r.stays, 'the mark of the hole stays after the fish, until a stake stands in it (#97)');
     const said = r.lines.find((l) => l.key === 'fisher.escape');
     assert.ok(said?.happened, `the line of the escape: ${r.lines.map((l) => l.key).join(' ')}`);
   }

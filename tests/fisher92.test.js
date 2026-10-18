@@ -59,16 +59,17 @@ function lines(session) {
   return out;
 }
 
-test('at the first empty pile, each narrow gap has a frame on the water, and the stake at its end glows and bobs', async () => {
+test('at the first empty pile, each narrow gap has a frame on the water, and one stake to take back glows and bobs (#92, #97)', async () => {
   const cues = [];
   const session = await atRow((s) => s.listen((ev) => { if (ev.type === 'cue') cues.push(ev); }));
   const seen = lines(session);
   pressUntil(session, () => seen.includes('empty 1'));
   run(session, 1);
   const frames = session.state.entities.filter((e) => String(e.id).startsWith('why:fisher:narrow:'));
-  assert.ok(frames.length > 0 && frames.every((e) => /^gap-frame-\d+$/.test(e.look)), `the frames: ${frames.map((e) => e.look).join(', ')}`);
+  assert.ok(frames.length > 0 && frames.every((e) => /^gap-frame-\d+(-dim)?$/.test(e.look)), `the frames: ${frames.map((e) => e.look).join(', ')}`);
+  assert.ok(frames.some((e) => !/-dim$/.test(e.look)), 'the frames next to the stake to take back are bright');
   const bob = cues.filter((c) => c.bobs?.length).at(-1);
-  assert.ok(bob && bob.bobs.every((id) => /^stake:/.test(id)), 'the stakes at the ends of the narrow gaps bob');
+  assert.ok(bob && bob.bobs.length === 1 && /^stake:/.test(bob.bobs[0]), `one stake bobs: ${bob?.bobs.join(', ')}`);
   run(session, 6);
   assert.ok(seen.includes('mentor.fisher.tight'), `the hint of the take back: ${seen.join(', ')}`);
 });

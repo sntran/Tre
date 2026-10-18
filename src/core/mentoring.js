@@ -6,7 +6,7 @@
 import { newMentor, newMemory, onCommit, onIdle, onWave, onCheck, onChange, demoTarget, demoParts, shareParts } from './mentor.js';
 import { getEntity, query, addEntity } from './world/state.js';
 import { endScript } from './world/systems/mentor.js';
-import { basketRowAt, matSlot } from './world/systems/work.js';
+import { basketRowAt, matSlot, spareStake } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
 import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd, PIECE_NAME, PIECES_LINE, shortPiece } from './world/zones.js';
@@ -139,12 +139,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const z = task?.place?.zone;
     if (!defOf(key)?.lines?.tight || z?.rule !== 'line' || (task.tz?.zone.tightShown && !again)) return null;
     // All the stakes of the row (the two of the fisher are not in the items of the place).
-    const row = query(world(), 'item').filter((e) => e.item.zone === z.id && !e.item.held && e.item.slot != null).sort((a, b) => a.item.slot - b.item.slot);
-    for (let i = 1; i < row.length - 1; i++) {
-      if (/^stake:fisher:[ab]$/.test(row[i].id)) continue;
-      if (row[i + 1].item.slot - row[i - 1].item.slot <= z.space) return row[i];
-    }
-    return null;
+    const row = query(world(), 'item').filter((e) => e.item.zone === z.id && !e.item.held && e.item.slot != null);
+    // The same stake that glows at the empty pile: the last one that the row does not need (#97).
+    return spareStake(task.place, row);
   }
 
   // The piles of a task have no thing that the hands can take.

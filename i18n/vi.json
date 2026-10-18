@@ -1383,6 +1383,8 @@
   "fisher.empty": "Hết cọc rồi. Có khe hẹp hơn khe của chú.",
   "mentor.fisher.fit": "Khe rộng bằng khe của chú là vừa.",
   "mentor.fisher.hole": "Cắm một cọc vào chỗ hở này nhé.",
+  "mentor.nghe.fisher.back": "Bạn đi về phía phao, rồi cắm nhé.",
+  "mentor.fisher.back": "Đi về phía phao, rồi cắm.",
   "mentor.healer.give": "Cháu đến chỗ bà và bấm nút lớn: bà nhận giỏ.",
   "mentor.healer.putKind.ngai": "Bà bỏ {n} bó ngải cứu.",
   "mentor.healer.putKind.tiato": "Bà bỏ {n} bó tía tô.",

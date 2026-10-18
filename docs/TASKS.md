@@ -116,6 +116,16 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **Help sooner for the youngest.** For a child of grade K or 1 (grade 1 or below), after two cuts that are not equal, the woodcutter shows the halving when the new stem comes, before a third try: a short stem of 6 next to the child, a chalk mark in its middle, and he counts the rings of each half ("Mỗi khúc ba đốt: hai khúc dài bằng nhau."; the `demo` of `trial-woodcutter` in `data/world/mentors.json`, `woodCut` in the session).
 
+### The fisher after #92 (#97)
+
+**The hole of the escape shows.** After an escape, the frame of the widest space lies on the surface of the water (`why:fisher:space`, at `WATER_UP`), the fisher points at it while he says "Chỗ này hở quá, cá chui ra mất.", and it stays until a stake stands in the space. Then the hint is the hole ("Cắm một cọc vào chỗ hở này nhé."). With an empty pile, the hint is the take-back of the stake to take back; with no such stake, the fisher brings one stake (rule 12).
+
+**One stake to take back.** Only the last stake of the child that the row does not need (`spareStake`) glows and bobs; the frames of the narrow gaps next to it are bright, and the others are dim (`gap-frame-<n>-dim`) until that stake is up. The hint of the take-back names the same stake.
+
+**A stake that comes back goes to a new place.** After a take-back, the fisher says "Đi về phía phao, rồi cắm.", and a ring on the water glows at his gap from the last stake (`why:fisher:next`) until the child puts the stake. A put from the point where the stake came from, with no walk, in the first second, does nothing (`BACK_AGAIN`).
+
+**The float in the frame.** A thing that a line names has a margin of 2.5 half blocks in the frame of the talk (`NAME_PAD`), so that the float is not cut at the edge of the screen.
+
 ### The bridge after the play test of #85 to #89 (#90)
 
 **No dead end.** When a put leaves a rest of the gap that no plank of the pile fits (the gap of 12 after 5 and 5, or after 3, 4, and 4, with planks of 3, 4, and 5), the world sends `stuck` at once, and the person says "Chỗ còn lại ngắn quá, không tấm nào vừa. Cháu nhấc tấm cuối lên, rồi thay tấm khác." (`mentor.bridge.stuck`; Nghé when the fisher is not at work). The last plank on the gap glows, and while it is the plank to take back (`zone.stuck`), a press with empty hands at the edge takes it back with no tap. After a plank that is too long, only the planks of the pile that fit the rest of the gap glow; when none fits, the line of the take-back comes in place of `shorter`, and the plank before the long one glows.

@@ -1008,6 +1008,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The things that a line names (#62): the person points at the first one, the view makes them
   // glow (a place glows as a rim on the ground) and shows them with the person above the talk box.
   // A line with no names after a line with names ends the glow, and so does the end of the talk.
+  const NAME_PAD = 2.5; // half blocks around a thing that a line names, in the frame
   function showNames(d, speaker, list = []) {
     // The water of the last line goes back down.
     if (d.risen) {
@@ -1037,7 +1038,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const r = e.zone?.rect;
       // A row of the guess: from end to end, and its foot on the bank (#90).
       if (e.guess?.len) return [{ ...e.position }, { ...e.position, z: e.position.z + e.guess.len }, ...(e.guess.foot ? [{ ...e.position, ...e.guess.foot }] : [])];
-      if (!r) return [{ ...e.position }];
+      // A thing: a margin of NAME_PAD around it, so that a tall thing (the float) is not cut at the
+      // edge of the frame (#97).
+      if (!r) return [[0, 0], [NAME_PAD, 0], [-NAME_PAD, 0], [0, NAME_PAD], [0, -NAME_PAD]].map(([dx, dz]) => ({ ...e.position, x: e.position.x + dx, z: e.position.z + dz }));
       return [[r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1]].map(([x, z]) => ({ x, y: e.zone.y, z }));
     };
     const places = things.filter((e) => e.zone);

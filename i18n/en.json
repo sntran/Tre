@@ -1383,6 +1383,8 @@
   "fisher.empty": "The stakes are all gone. Some gaps are narrower than my gap.",
   "mentor.fisher.fit": "A gap as wide as my gap is right.",
   "mentor.fisher.hole": "Put a stake into this hole.",
+  "mentor.nghe.fisher.back": "Walk toward the float, then put the stake.",
+  "mentor.fisher.back": "Walk toward the float, then put the stake.",
   "mentor.healer.give": "Come to me and press the big button: I take the basket.",
   "mentor.healer.putKind.ngai": "I put {n} bunches of mugwort in.",
   "mentor.healer.putKind.tiato": "I put {n} bunches of perilla in.",

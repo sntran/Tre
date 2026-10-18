@@ -27,6 +27,7 @@ import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js
 import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, shortPiece, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
 import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
+import { STEP } from '../step.js';
 import { atWork } from './schedule.js';
 
 const BEND = 1.2; // seconds: the bent iron cools before it goes back into the fire
@@ -57,6 +58,7 @@ const MAT_MAX = 14; // the most rods on the mat of the teacher
 const DEMO_WAIT = 0.8; // seconds: the smith quenches his demo piece this long after it turns hot
 const DEMO_NEXT = 1.6; // seconds: then the iron of the child comes on the anvil
 
+const BACK_AGAIN = 1; // seconds: a stake that came back does not go into the same hole with no walk (#97)
 const WATER_UP = 1.3; // half blocks over the bed of the river: just over its surface (WATER.river of src/world/terrain.js)
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const PERSON_AWAY = 40; // half blocks: a person farther than this from the hero is not at the task (#51)
@@ -605,6 +607,12 @@ export function putWork(world, e, zone, thing, at, env) {
     const slot = Math.max(1, Math.min(zone.length, Math.round((at?.x ?? zone.x) - zone.x)));
     const taken = query(world, 'item').some((s) => s.item.zone === 'line' && s.item.slot === slot && s.id !== thing.id);
     if (taken) return false;
+    // A stake that comes back goes to a new place (#97: after a take-back, a press at once put the
+    // stake into the same hole): a put from the point where it came from, with no walk, in the first
+    // second, does nothing.
+    const from = thing.item.from;
+    if (from?.zone === zone.id && world.tick - from.tick < BACK_AGAIN / STEP && dist(e.position, from.at) < 1) return false;
+    delete thing.item.from;
     thing.item.zone = zone.id;
     thing.item.slot = slot;
     zone.items.push(thing.id);
@@ -1044,7 +1052,13 @@ function tickTide(world, tz, dt, env) {
   if (tide.phase === 'low') {
     emptyPile(world, tz, line, row, held, dt);
     const hole = tz.zone.hole;
-    if (hole && row.some((s) => s.item.slot > hole.from && s.item.slot < hole.from + hole.size)) delete tz.zone.hole;
+    if (hole && row.some((s) => s.item.slot > hole.from && s.item.slot < hole.from + hole.size)) {
+      delete tz.zone.hole;
+      delete tz.zone.holeBrought;
+      removeEntity(world, 'why:fisher:space');
+    }
+    backHint(world, tz, line, row);
+    holeStake(world, tz, line, row, held);
     // The row is at the float: a few seconds after the last stake, the water rises, and the fisher
     // says it (#78: the child put the row to the float, and nothing happened for a minute).
     const atFloat = row.some((s) => s.item.slot === line.zone.length);
@@ -1106,10 +1120,14 @@ function tickTide(world, tz, dt, env) {
       // The answer of the world to a wrong row, at each level of help (#73: after the handover of
       // the checking, the fish swam out and nobody spoke): the widest space glows while the fish
       // swim through it, and the fisher (or Nghé, while the fisher is away) says it.
-      addEntity(world, { id: 'why:fisher:space', keep: true, position: { x: line.zone.x + r.widest.from, y: line.zone.y, z: line.zone.z, facing: Math.PI / 2 }, look: `over-${Math.max(1, Math.round(r.widest.size))}` });
+      // On the surface of the water (#97: at the height of the bed, the river covered it), until a
+      // stake stands in the hole.
+      addEntity(world, { id: 'why:fisher:space', keep: true, position: { x: line.zone.x + r.widest.from, y: line.zone.y + WATER_UP, z: line.zone.z, facing: Math.PI / 2 }, look: `gap-frame-${Math.max(1, Math.round(r.widest.size))}` });
       const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
       const nghe = getEntity(world, 'friend:nghe');
       const who = fisher ?? (nghe && !nghe.hidden ? nghe : null);
+      // The person points at the hole while he says "Chỗ này …".
+      if (who) who.gesture = { act: 'point', x: line.zone.x + at, z: line.zone.z, t: 3 };
       if (who && (!env.here || env.here(tz.id.slice(5)))) say(world, 'call', who.id, { key: 'fisher.escape', params: {}, happened: true });
     }
   } else if (tide.phase === 'out' && tide.t >= TIDE_OUT) {
@@ -1119,7 +1137,6 @@ function tickTide(world, tz, dt, env) {
       return;
     }
     removeEntity(world, 'fish:fisher');
-    removeEntity(world, 'why:fisher:space');
     tide.phase = 'low';
     tide.t = 0;
     tide.result = null;
@@ -1189,15 +1206,30 @@ function emptyPile(world, tz, line, row, held, dt) {
     pile.position = { ...pile.position, x, z: line.zone.z + side * NEAR_ROW };
     z.nearPile = true;
   }
+  bringStakes(world, tz, pile, n, fisher);
+  z.helpT = HELP_WAIT;
+}
+// The fisher brings n stakes to the pile, and says it.
+function bringStakes(world, tz, pile, n, fisher) {
   for (let i = 0; i < n; i++) {
-    const id = `stake:fisher:${z.made++}`;
+    const id = `stake:fisher:${tz.zone.made++}`;
     addEntity(world, { id, keep: true, item: { kind: 'stake', size: 1, task: tz.id.slice(5), zone: pile.zone.id, home: pile.zone.id, held: null, set: false }, position: { x: pile.zone.x, y: pile.zone.y, z: pile.zone.z, facing: 0 }, look: 'stake' });
     pile.zone.items.push(id);
   }
   packHeap(world, pile.zone);
-  z.helpT = HELP_WAIT;
   if (fisher) say(world, 'call', fisher.id, { key: 'fisher.more', params: {}, happened: true });
   say(world, 'more', pile.id, { sound: 'plank-down', n, task: tz.id });
+}
+// After an escape with an empty pile and no stake to take back, the fisher brings one stake for the
+// hole (#97, rule 12: the task is never impossible).
+function holeStake(world, tz, line, row, held) {
+  const z = tz.zone;
+  const pile = zoneEnt(world, 'stakes');
+  if (!z.hole || z.holeBrought || held || !pile || z.tide?.phase !== 'low') return;
+  if (pile.zone.items.some((id) => getEntity(world, id) && !getEntity(world, id).item.held)) return;
+  if (spareStake(line, row)) return;
+  z.holeBrought = true;
+  bringStakes(world, tz, pile, 1, query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden));
 }
 // The stakes that the row still needs: the stakes for each gap that is too wide (at the gap of the
 // fisher), and the stakes from the last stake to the float (a stake stands at the float).
@@ -1213,26 +1245,57 @@ export function stakesNeeded(line, row) {
   const step = last > 0 && last < space ? last : space;
   return n + Math.ceil((line.zone.length - slots.at(-1)) / step);
 }
-// The gaps of the row that are narrower than the gap of the fisher glow (a mark, rule 34).
+// The stake to take back (#97): the last stake of the child that the row does not need (the gap
+// from the stake before it to the stake after it is not wider than the gap of the fisher), or null.
+export function spareStake(line, row) {
+  const stakes = row.filter((s) => s.item.slot != null).sort((a, b) => a.item.slot - b.item.slot);
+  for (let i = stakes.length - 2; i >= 0; i--) {
+    if (FISHER_STAKES.has(stakes[i].id)) continue;
+    const before = i > 0 ? stakes[i - 1].item.slot : 0;
+    if (stakes[i + 1].item.slot - before <= line.zone.space) return stakes[i];
+  }
+  return null;
+}
+// The gaps of the row that are narrower than the gap of the fisher show as frames on the water (a
+// mark, rule 34). Only the stake to take back glows and bobs, and only the frames next to it are
+// bright; the others are dim until that stake is up (#97: with every gap narrow, every stake and
+// frame glowed, and "cái cọc này" marked nothing).
 function markNarrow(world, z, line, row) {
   clearNarrow(world);
   const stakes = row.filter((s) => s.item.slot != null).sort((a, b) => a.item.slot - b.item.slot);
   const slots = [0, ...stakes.map((s) => s.item.slot)];
-  const glow = [];
+  const spare = spareStake(line, row);
+  const at = spare?.item.slot;
   slots.forEach((a, i) => {
     const b = slots[i + 1];
     if (b === undefined || b === a || b - a >= line.zone.space) return;
-    // A bright frame on the water around the narrow gap, as clear as the ring of a cue (#92: the
-    // children did not see the flat marks of #88).
-    // It lies on the surface of the water (the play of #92: at the height of the bed, the river
-    // covered it).
-    addEntity(world, { id: `why:fisher:narrow:${i}`, keep: true, position: { x: line.zone.x + a, y: line.zone.y + WATER_UP, z: line.zone.z, facing: Math.PI / 2 }, look: `gap-frame-${Math.max(1, Math.round(b - a))}` });
-    // The stake at the end of a narrow gap glows too, until the child takes a stake: a gap of one
-    // half block is too small to see.
-    if (!FISHER_STAKES.has(stakes[i].id)) glow.push(stakes[i].id);
+    // A frame on the surface of the water around the narrow gap, as clear as the ring of a cue
+    // (#92: at the height of the bed, the river covered it).
+    const bright = a === at || b === at;
+    addEntity(world, { id: `why:fisher:narrow:${i}`, keep: true, position: { x: line.zone.x + a, y: line.zone.y + WATER_UP, z: line.zone.z, facing: Math.PI / 2 }, look: `gap-frame-${Math.max(1, Math.round(b - a))}${bright ? '' : '-dim'}` });
   });
-  if (glow.length) world.events.push({ type: 'glowThings', ids: glow });
+  if (spare) world.events.push({ type: 'glowThings', ids: [spare.id] });
   z.narrowT = NARROW_MARKS;
+}
+// After a take-back from the row, the fisher says to walk toward the float, and the point at his
+// gap from the last stake glows until the child puts the stake (#97: the stake went back into the
+// same hole, and nobody said that the ghost stake follows the hero).
+function backHint(world, tz, line, row) {
+  const back = world.events.find((ev) => ev.type === 'pick' && ev.id === 'hero' && ev.from === line.zone.id);
+  if (back) {
+    const last = Math.max(0, ...row.map((s) => s.item.slot ?? 0));
+    const slot = Math.min(line.zone.length, last + line.zone.space);
+    removeEntity(world, 'why:fisher:next');
+    addEntity(world, { id: 'why:fisher:next', keep: true, position: { x: line.zone.x + slot, y: line.zone.y + WATER_UP, z: line.zone.z, facing: 0 }, look: 'pull-ring' });
+    const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+    const nghe = getEntity(world, 'friend:nghe');
+    const who = fisher ?? (nghe && !nghe.hidden ? nghe : null);
+    if (who) {
+      say(world, 'call', who.id, { key: fisher ? 'mentor.fisher.back' : 'mentor.nghe.fisher.back', params: {} });
+      who.gesture = { act: 'point', x: line.zone.x + slot, z: line.zone.z, t: 2.5 };
+    }
+  }
+  if (world.events.some((ev) => ev.type === 'put' && ev.id === 'hero' && ev.zone === line.zone.id)) removeEntity(world, 'why:fisher:next');
 }
 function clearNarrow(world) {
   for (const e of query(world, 'position').filter((x) => String(x.id).startsWith('why:fisher:narrow:'))) removeEntity(world, e.id);

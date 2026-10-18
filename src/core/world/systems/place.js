@@ -161,6 +161,8 @@ function pick(world, e, thing, env, dt) {
     if (working) {
       // A take back from a place of a task (the opposite of a put).
       takeOut(world, thing);
+      // Where the thing came from, for a put that would go back into the same place (#97).
+      if (thing.item.slot != null) thing.item.from = { zone: zoneEnt.zone.id, slot: thing.item.slot, tick: world.tick, at: { x: e.position.x, z: e.position.z } };
       delete thing.item.slot;
       const tz = zoneEnt.zone.rule === 'heap' ? null : getEntity(world, `zone:${thing.item.task}`);
       if (tz?.zone.rule === 'trial') tz.zone.resets = (tz.zone.resets ?? 0) + 1;
