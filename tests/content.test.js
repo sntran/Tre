@@ -92,7 +92,7 @@ test('the Five Trials measure skills at or below the grade of each level', () =>
   const grades = load('data/trials.json').grades;
   for (const trial of trials) {
     for (const [g, level] of Object.entries(grades)) {
-      const id = trial.levels[level - 1].skill;
+      const id = trial.levels[Math.min(level, trial.levels.length) - 1].skill;
       const skill = graph.get(id);
       assert.ok(skill, id);
       assert.ok(skill.grade <= Math.max(2, Number(g)), `${trial.id}: ${id} (grade ${skill.grade}) for grade ${g}`);

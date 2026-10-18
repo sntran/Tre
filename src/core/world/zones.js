@@ -181,6 +181,9 @@ export function canPut(zone, item) {
   const kinds = [].concat(zone.accepts);
   if (!kinds.includes(item.item.kind)) return false;
   if (zone.rule === 'span') return !zone.set && !zone.effect;
+  // The bunches of the model basket of the healer go only onto its leaves and back (#101).
+  if (zone.rule === 'leaf' || zone.model) return Boolean(item.item.model);
+  if (zone.rule === 'basket' || zone.rule === 'heap') return !item.item.model;
   return true;
 }
 

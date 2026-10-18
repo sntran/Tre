@@ -640,6 +640,12 @@ export function thingLook(key) {
   // The mat of the teacher with the places of a frame of ten (grade 1 and below, #69), and the glow
   // of an empty place after a count.
   if (k === 'mat-frame') return { kind: 'mat', frame: true };
+  // The healer from grade 3 (#101): a leaf for a dose, a small model basket, and a basket with a
+  // place for each bunch in rows of six.
+  if (k === 'herb-leaf') return { kind: 'herb-leaf' };
+  if (k === 'basket-small') return { kind: 'basket-small' };
+  m = /^basket-grid-(\d+)$/.exec(k);
+  if (m) return { kind: 'basket-grid', n: Number(m[1]) };
   if (k === 'place-glow') return { kind: 'place-glow' };
   // The marks of a ruler on a gap of the bridge, the glow over the far bank, and the glow of a
   // counted unit (#71).
@@ -939,6 +945,19 @@ export function workThing(look) {
       ];
       if (look.full) parts.push(P('leaves', [4.2, 0.4, 1.4], 'green', [2.4, f + 0.3, 0.8]));
       return still(parts, 3.4);
+    }
+    // A banana leaf on the ground: one dose of the healer lies on it (#101).
+    case 'herb-leaf': return still([P('leaf', [2.4, 0.06, 1.5], 'green', [0, 0.03, 0]), P('rib', [2.2, 0.08, 0.1], 'greenPale', [0, 0.05, 0], { mark: true })], 0.1);
+    // A small basket of the model of two doses (#101).
+    case 'basket-small': return still([P('floor', [3.2, 0.12, 1.4], 'ochre', [1.4, 0.06, 0.6]), P('wallN', [3.2, 0.5, 0.15], 'ochre', [1.4, 0.25, -0.1]), P('wallS', [3.2, 0.25, 0.15], 'ochre', [1.4, 0.12, 1.3]), P('wallW', [0.15, 0.5, 1.4], 'ochre', [-0.2, 0.25, 0.6]), P('wallE', [0.15, 0.5, 1.4], 'ochre', [3.0, 0.25, 0.6]), P('rim', [3.3, 0.08, 0.2], 'wood', [1.4, 0.5, -0.1])], 0.6);
+    // A basket with a place for each bunch, in rows of six (GRID_ROW in src/core/world/systems/work.js),
+    // so that one half and one third of the bunches are rows (#101).
+    case 'basket-grid': {
+      const rows = Math.ceil(look.n / 6);
+      const d = rows * 0.8;
+      const parts = [P('floor', [5.2, BASKET_FLOOR, d + 0.4], 'ochre', [2.4, BASKET_FLOOR / 2, d / 2 + 0.2]), P('wallN', [5.2, BASKET_WALL, 0.2], 'ochre', [2.4, BASKET_WALL / 2, -0.1]), P('wallS', [5.2, BASKET_WALL * 0.5, 0.2], 'ochre', [2.4, BASKET_WALL * 0.25, d + 0.5]), P('wallW', [0.2, BASKET_WALL, d + 0.6], 'ochre', [-0.2, BASKET_WALL / 2, d / 2 + 0.2]), P('wallE', [0.2, BASKET_WALL, d + 0.6], 'ochre', [5.0, BASKET_WALL / 2, d / 2 + 0.2])];
+      for (let i = 0; i < look.n; i++) parts.push(P(`place${i}`, [0.6, 0.04, 0.6], 'yellowPale', [0.4 + (i % 6) * 0.8, BASKET_FLOOR + 0.02, 0.4 + Math.floor(i / 6) * 0.8], { mark: true }));
+      return still(parts, 1.2);
     }
     // The wood pile of the woodcutter (#57): two rows of logs on a low rack, so that the place
     // where the sticks go has a picture, not only the light of the cue.

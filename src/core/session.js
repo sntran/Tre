@@ -55,7 +55,7 @@ import { rainOf } from './world/systems/sky.js';
 import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
 import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
-import { levelFor, taskOf } from './world/trials.js';
+import { levelFor, taskOf, trialLevel } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring } from './mentoring.js';
 import { playExample, stopExample } from './examples.js';
@@ -150,7 +150,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // progress bigger (its line says "next time"); the memory of the mentor (lift) raises the next
     // small event one level.
     raise: (key) => {
-      if (practice && key === `trial-${practice.trial}`) practice.level = Math.min(2, practice.level + 1);
+      if (practice && key === `trial-${practice.trial}`) practice.level = Math.min((trialDef(practice.trial)?.levels.length ?? 3) - 1, practice.level + 1);
     },
   });
 
@@ -985,7 +985,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else runPending();
       return;
     }
-    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: view.textKey, params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, word: view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
+    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: levelLine(view.speaker, view.textKey), params: { ...trialWords(), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, word: view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
     showNames(d, view.speaker, view.names);
   }
   // The two ends of a place: the ends of a gap of the bridge, or the middles of the short sides of
@@ -1104,24 +1104,47 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The Five Trials (data/trials.json and src/core/world/systems/work.js) --------------------
 
   const trialDef = (id) => data.trials?.trials.find((t) => t.id === id) ?? null;
+  // The level of a task for this child: the grade, one step up or down with P(L) of its skill (#101).
+  const entryOf = (skill) => {
+    try {
+      return skill ? learner()?.entry?.(skill) ?? null : null;
+    } catch {
+      return null;
+    }
+  };
+  const trialLevelOf = (def, base = levelFor(data.trials, profile.grade)) => trialLevel(def, base, entryOf, data.trials);
   const trialZone = (id) => getEntity(state, `zone:trial-${id}`);
   // The numbers of the trials at the level of the child, as words for the talks (num.<n>): the
   // rods of a bundle, the ore of the forge, the herbs of each kind, and the sticks of the stem.
   function trialWords() {
     const out = {};
     if (!data.trials) return out;
-    const level = levelFor(data.trials, profile.grade);
     const num = (n) => ({ key: `num.${n}` });
     for (const def of data.trials.trials) {
-      const t = taskOf(def, practice?.trial === def.id ? practice.level : level);
+      const t = taskOf(def, practice?.trial === def.id ? practice.level : trialLevelOf(def));
       if (def.task === 'bundle') out.bundle = num(t.bundle);
       if (def.task === 'forge') out.ore = num(t.ore);
-      if (def.task === 'basket') out.each = num(t.each);
+      if (def.task === 'basket') {
+        out.each = num(t.each ?? 0);
+        // The numbers of the basket of the level (#101): the recipe, the doses, and the bunches.
+        const plan = trialZone(def.id)?.zone.plan;
+        if (plan?.recipe) Object.assign(out, { a: num(plan.recipe[def.kinds[0]]), b: num(plan.recipe[def.kinds[1]]), c: num(plan.recipe[def.kinds[2]]), k: num(plan.doses) });
+        if (plan?.n) out.n = num(plan.n);
+      }
       if (def.task === 'cut') out.parts = num(t.parts);
       if (def.task === 'slash') out.staffs = num(t.parts);
       if (def.task === 'horse') out.lumps = num(t.ore);
     }
     return out;
+  }
+  // The line of a talk of a task at the level of the child (#101): a level can have its own line
+  // for a line of the talk (talk in data/trials.json).
+  function levelLine(speaker, key) {
+    const def = data.trials?.trials.find((t) => t.npc === speaker && t.kind !== 'task');
+    if (!def) return key;
+    const z = trialZone(def.id)?.zone;
+    const level = z?.level ?? (practice?.trial === def.id ? practice.level : trialLevelOf(def));
+    return taskOf(def, level).talk?.[key] ?? key;
   }
   // The stand point beside a rect of work (half blocks), or the stand itself when it is not in front
   // of the work. The camera is toward (sin, cos) of viewAz; the side of the view is (cos, -sin).
@@ -1174,7 +1197,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The things that the child brought go into the task (the iron for the horse).
     if (def.take && !trialZone(id)) applyEffects(profile, [{ take: def.take }, ...(def.startSet ? [{ set: def.startSet }] : [])]);
     // In a later round of a practice, the smith does not show his quench again.
-    setupTrial(state, def, practicing ? practice.level : levelFor(data.trials, profile.grade), env, { demo: !(practicing && practice.round > 0), practice: practicing });
+    setupTrial(state, def, practicing ? practice.level : trialLevelOf(def), env, { demo: !(practicing && practice.round > 0), practice: practicing });
     mentoring.start(`trial-${id}`);
     if (id === 'woodcutter') {
       woodFails = 0;
@@ -1236,7 +1259,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const z = trialZone(def.id).zone;
     practice.round += 1;
     grow('round');
-    practice.level = nextLevel(practice.level, z, def.levels.length - 1);
+    // The next round: one step up or down by the commits of this round, and by P(L) of the skill of
+    // the level (#101: a child whose P(L) goes over 0.8 gets the next level).
+    const byMastery = trialLevel(def, practice.level, entryOf, data.trials);
+    practice.level = byMastery !== practice.level ? byMastery : nextLevel(practice.level, z, def.levels.length - 1);
     const rec = (profile.practice ??= {})[practice.id] ??= { level: practice.level, sets: 0 };
     rec.level = practice.level;
     if (practice.round < practice.set) {
@@ -2680,7 +2706,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // The place of a one-press move (#61): the mat of the teacher or the basket of the healer that
   // takes the thing, when the hero stands in reach of it. Null: the press only picks.
-  const ONE_MOVE = new Set(['bundle', 'basket']);
+  const ONE_MOVE = new Set(['bundle', 'basket', 'leaf']);
   function oneMovePlace(thing) {
     const h = hero().position;
     return query(state, 'zone').find((z) => ONE_MOVE.has(z.zone.rule) && z.zone.task === thing.item.task && canPut(z.zone, thing) && hasRoom(z.zone) && distHb(h, nearestPoint(z, h)) <= REACH + 2) ?? null;

@@ -12,13 +12,16 @@ test('the level of the tasks follows the grade that the player gave', () => {
   assert.equal(levelFor(trials, 1), 0);
   assert.equal(levelFor(trials, 2), 1);
   assert.equal(levelFor(trials, 3), 2);
-  assert.equal(levelFor(trials, 5), 2, 'a higher grade uses the nearest grade');
+  assert.equal(levelFor(trials, 4), 3);
+  assert.equal(levelFor(trials, 5), 4);
+  assert.equal(levelFor(trials, 9), 4, 'a higher grade uses the nearest grade');
   const t = taskOf(def('scholar'), 1);
   assert.equal(t.rods, 27);
   assert.equal(t.skill, 'math.place.1000');
-  // Each trial has three levels, and each level measures a skill of the skill map.
+  // Each trial has three levels, or five (one for each grade, #101), and each level measures a
+  // skill of the skill map.
   for (const d of trials.trials) {
-    assert.equal(d.levels.length, 3, d.id);
+    assert.ok([3, 5].includes(d.levels.length), d.id);
     for (const l of d.levels) assert.ok(skills.has(l.skill), `${d.id}: ${l.skill}`);
     // A trial names its calling; a task of the story (kind: task) has none. The share of the loot
     // has no person and no flag: it comes again after each raid with loot.

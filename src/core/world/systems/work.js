@@ -25,8 +25,9 @@ export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'ke
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
 import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, badPiece, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
-import { taskOf, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
+import { taskOf, basketPlan, MODEL_DOSES, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
+import { createRng, hashSeed } from '../../rng.js';
 import { STEP } from '../step.js';
 import { atWork } from './schedule.js';
 
@@ -233,18 +234,51 @@ export function setupTrial(world, def, level, env, opts = {}) {
     tz.zone.tide = { t: 0, every: task.tide, phase: 'low' };
     void line;
   } else if (def.task === 'basket') {
+    // The basket of the level (#101): the number of each kind, and the numbers of its form.
+    const plan = basketPlan(task, def.kinds, createRng(hashSeed(`${world.seed}:${def.id}:${level}:${world.tick}`)));
+    tz.zone.plan = plan;
     def.kinds.forEach((kind, i) => {
       const at = P(def.places.beds[i]);
       const bed = heap(`bed-${kind}`, at, `herb-${kind}`, { cols: 4 });
-      things(bed, `herb-${kind}`, def.bed ?? 7);
+      things(bed, `herb-${kind}`, Math.max(def.bed ?? 7, plan.need[kind] + 3));
       // A small sign with a picture of the herb at the far corner of the bed (#61).
       addEntity(world, { id: `sign:${def.id}:bed-${kind}`, keep: true, position: { x: at.x - 1, y: at.y, z: at.z - 1, facing: 0 }, look: `herb-sign-${kind}` });
     });
     const b = P(def.places.basket);
-    addEntity(world, { id: 'zone:basket', keep: true, zone: { id: 'basket', task: owner, rule: 'basket', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, each: task.each, items: [], x: b.x, y: b.y, z: b.z, rect: rect(b, 3 * BASKET_PART, 1.6) }, position: { x: b.x + 1.5 * BASKET_PART, y: b.y, z: b.z - 1.5, facing: 0 } });
-    addEntity(world, { id: 'basket:healer', keep: true, position: { x: b.x, y: b.y, z: b.z, facing: 0 }, look: 'basket' });
-    // Each part of the basket has the picture of its herb on the back wall (#61).
-    def.kinds.forEach((kind, k) => addEntity(world, { id: `sign:${def.id}:basket-${kind}`, keep: true, position: { x: b.x + (k + 0.5) * BASKET_PART, y: b.y, z: b.z - 0.1, facing: 0 }, look: `herb-tag-${kind}` }));
+    // A basket of a number of bunches by fractions (grade 5) has a place for each bunch, in rows of
+    // six, so that one half and one third are rows (GRID_ROW).
+    const grid = plan.form === 'fraction' ? plan.n : null;
+    const depth = grid ? Math.ceil(grid / GRID_ROW) * GRID_STEP : 1.6;
+    addEntity(world, { id: 'zone:basket', keep: true, zone: { id: 'basket', task: owner, rule: 'basket', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, each: plan.each ?? null, need: plan.need, grid, items: [], x: b.x, y: b.y, z: b.z, rect: rect(b, 3 * BASKET_PART, depth) }, position: { x: b.x + 1.5 * BASKET_PART, y: b.y, z: b.z - 1.5, facing: 0 } });
+    addEntity(world, { id: 'basket:healer', keep: true, position: { x: b.x, y: b.y, z: b.z, facing: 0 }, look: grid ? `basket-grid-${grid}` : 'basket' });
+    // Each part of the basket has the picture of its herb on the back wall (#61); a basket of places
+    // has no parts.
+    if (!grid) def.kinds.forEach((kind, k) => addEntity(world, { id: `sign:${def.id}:basket-${kind}`, keep: true, position: { x: b.x + (k + 0.5) * BASKET_PART, y: b.y, z: b.z - 0.1, facing: 0 }, look: `herb-tag-${kind}` }));
+    // Grade 3: one dose of the recipe lies on a leaf beside the basket, so that the recipe is seen
+    // as things. Grade 4: a model basket of two doses, and two empty leaves: the child can deal its
+    // bunches onto the leaves (a press at a leaf puts one), and one leaf is one dose.
+    const side = { x: b.x - 4.2, z: b.z + 0.6 };
+    if (plan.form === 'doses') {
+      addEntity(world, { id: `leaf:${def.id}:dose`, keep: true, position: { x: side.x, y: b.y, z: side.z, facing: 0 }, look: 'herb-leaf' });
+      layDose(world, def, plan.recipe, side, b.y, 'dose');
+    } else if (plan.form === 'model') {
+      const model = heap('model', { x: side.x - 1.2, y: b.y, z: side.z - 2.4 }, def.kinds.map((k) => `herb-${k}`), { cols: 6, step: 0.5 });
+      for (const k of def.kinds) {
+        for (let i = 0; i < plan.recipe[k] * MODEL_DOSES; i++) {
+          const id = `herb-${k}:model:${tz.zone.made++}`;
+          addEntity(world, { id, keep: true, item: { kind: `herb-${k}`, size: 1, task: owner, zone: 'model', home: 'model', held: null, set: false, model: true }, position: { ...model.position }, look: `herb-${k}` });
+          model.zone.items.push(id);
+        }
+      }
+      model.zone.model = true;
+      packHeap(world, model.zone);
+      addEntity(world, { id: `basket:${def.id}:model`, keep: true, position: { x: side.x - 1.6, y: b.y, z: side.z - 2.8, facing: 0 }, look: 'basket-small' });
+      for (let j = 0; j < MODEL_DOSES; j++) {
+        const at = { x: side.x - 1.4 + j * 2.6, y: b.y, z: side.z + 1.2 };
+        addEntity(world, { id: `zone:leaf-${j}`, keep: true, zone: { id: `leaf-${j}`, task: owner, rule: 'leaf', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, items: [], x: at.x, y: at.y, z: at.z, rect: { x0: at.x - 1.1, x1: at.x + 1.1, z0: at.z - 0.7, z1: at.z + 0.7 } }, position: { x: at.x, y: at.y, z: at.z + 1, facing: 0 } });
+        addEntity(world, { id: `leaf:${def.id}:${j}`, keep: true, position: { x: at.x, y: at.y, z: at.z, facing: 0 }, look: 'herb-leaf' });
+      }
+    }
   } else if (def.task === 'feed') {
     // Trays of 3 and 5 bowls on the path of the paddies, and the pot in front of the house of Gióng.
     const trays = heap('trays', P(def.places.trays), 'bowls', { cols: 3, step: 1.6 });
@@ -430,14 +464,51 @@ function packMat(world, zone) {
 // The basket of the healer has three parts, BASKET_PART half blocks wide, one for each kind. The
 // bunches stand up in a row in their part, so that each bunch shows from the camera (#61).
 export const BASKET_PART = 1.6;
+// A basket of places (grade 5, #101): rows of GRID_ROW places, GRID_STEP half blocks apart. The
+// bunches fill the places in the order of the kinds of one half, one third, and the rest.
+export const GRID_ROW = 6;
+export const GRID_STEP = 0.8;
+export const gridAt = (zone, i) => ({ x: zone.x + 0.4 + (i % GRID_ROW) * GRID_STEP, z: zone.z + 0.4 + Math.floor(i / GRID_ROW) * GRID_STEP });
 function packBasket(world, zone) {
+  if (zone.grid) {
+    const order = [...zone.kinds].reverse();
+    const list = zone.items.map((id) => getEntity(world, id)).filter((e) => e && !e.item.set)
+      .sort((a, b) => order.indexOf(a.item.kind.slice(5)) - order.indexOf(b.item.kind.slice(5)));
+    list.forEach((e, i) => {
+      const p = gridAt(zone, i);
+      e.position = { x: p.x, y: zone.y + BASKET_FLOOR, z: p.z, facing: 0 };
+    });
+    return;
+  }
   const n = {};
   for (const id of zone.items) {
     const e = getEntity(world, id);
     if (!e || e.item.set) continue;
     const k = zone.kinds.indexOf(e.item.kind.slice(5));
     const i = (n[k] = (n[k] ?? -1) + 1);
-    e.position = { x: zone.x + 0.3 + k * BASKET_PART + (i % 4) * 0.34, y: zone.y + BASKET_FLOOR, z: zone.z + 0.45 + Math.floor(i / 4) * 0.6, facing: 0 };
+    // More than eight bunches of a kind: rows of five, closer (doses of a recipe, #101).
+    const cols = (zone.need?.[zone.kinds[k]] ?? 0) > 8 ? 5 : 4;
+    const step = cols === 5 ? 0.27 : 0.34;
+    e.position = { x: zone.x + 0.3 + k * BASKET_PART + (i % cols) * step, y: zone.y + BASKET_FLOOR, z: zone.z + 0.45 + Math.floor(i / cols) * (cols === 5 ? 0.42 : 0.6), facing: 0 };
+  }
+}
+
+// A dose of the recipe as things on a leaf (#101): each kind in its row, the bunches side by side.
+// They only show the recipe: no tap takes them.
+function layDose(world, def, recipe, at, y, tag) {
+  def.kinds.forEach((k, row) => {
+    for (let i = 0; i < recipe[k]; i++) addEntity(world, { id: `${tag}:${def.id}:${k}:${i}`, keep: true, position: { x: at.x - 0.6 + i * 0.45, y: y + 0.05, z: at.z - 0.45 + row * 0.45, facing: 0 }, look: `herb-${k}` });
+  });
+}
+// The bunches on a leaf of the model (#101): each kind in its row.
+function packLeaf(world, zone) {
+  const n = {};
+  for (const id of zone.items) {
+    const e = getEntity(world, id);
+    if (!e) continue;
+    const row = zone.kinds.indexOf(e.item.kind.slice(5));
+    const i = (n[row] = (n[row] ?? -1) + 1);
+    e.position = { x: zone.x - 0.7 + i * 0.4, y: zone.y + 0.05, z: zone.z - 0.45 + row * 0.45, facing: 0 };
   }
 }
 
@@ -491,6 +562,7 @@ export function takeOut(world, thing) {
   if (!z) return;
   z.zone.items = z.zone.items.filter((i) => i !== thing.id);
   if (z.zone.rule === 'heap') packHeap(world, z.zone);
+  if (z.zone.rule === 'leaf') packLeaf(world, z.zone);
   if (z.zone.rule === 'bundle') packMat(world, z.zone);
   if (z.zone.rule === 'basket') packBasket(world, z.zone);
   if (z.zone.rule === 'hearth') packHearth(world, z.zone);
@@ -585,6 +657,8 @@ export function putWork(world, e, zone, thing, at, env) {
   const tz = trialZone(world, thing.item.task.slice(6));
   if (!tz) return false;
   if (zone.rule === 'heap') {
+    // The bunches of the model basket go back only to it, and the others only to their beds (#101).
+    if (Boolean(zone.model) !== Boolean(thing.item.model)) return false;
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packHeap(world, zone);
@@ -619,9 +693,16 @@ export function putWork(world, e, zone, thing, at, env) {
     zone.items.push(thing.id);
     thing.position = { x: zone.x + slot, y: zone.y, z: zone.z, facing: 0 };
   } else if (zone.rule === 'basket') {
+    // A bunch of the model basket stays out of the basket of the child (#101).
+    if (thing.item.model) return false;
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packBasket(world, zone);
+  } else if (zone.rule === 'leaf') {
+    if (!thing.item.model) return false;
+    thing.item.zone = zone.id;
+    zone.items.push(thing.id);
+    packLeaf(world, zone);
   } else if (zone.rule === 'feed') {
     feed(world, tz, thing, env);
     return true;
@@ -817,8 +898,10 @@ function act(world, e, want, env) {
       const k = getEntity(world, id)?.item.kind.slice(5);
       if (k) counts[k] = (counts[k] ?? 0) + 1;
     }
-    const result = basketResult(counts, basket.zone.kinds, task.each);
-    commit(world, tz, task, { solved: result.solved, parts: basket.zone.kinds.map((k) => counts[k] ?? 0), target: task.each * basket.zone.kinds.length });
+    const need = basket.zone.need ?? task.each;
+    const want = (k) => (typeof need === 'number' ? need : need[k]);
+    const result = basketResult(counts, basket.zone.kinds, need);
+    commit(world, tz, task, { solved: result.solved, parts: basket.zone.kinds.map((k) => counts[k] ?? 0), target: basket.zone.kinds.reduce((a, k) => a + want(k), 0) });
     if (result.solved) {
       for (const id of basket.zone.items) removeEntity(world, id);
       basket.zone.items = [];
@@ -838,7 +921,7 @@ function act(world, e, want, env) {
         bunches.forEach((h, i) => {
           h.item.set = true;
           h.position = { ...basketRowAt(basket.zone, row, i), y: basket.zone.y, facing: 0 };
-          if (i >= task.each) extra.push(h.id);
+          if (i >= want(k)) extra.push(h.id);
         });
       });
       const n = basket.zone.items.length;

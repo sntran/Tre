@@ -13,10 +13,27 @@
 // and seconds.
 import { byGrade } from '../grades.js';
 
-// The level (0, 1, or 2) of the tasks for a grade.
+// The levels of the tasks: one for each grade from 1 to 5 (#101; Pre-K and K use the first).
+export const TOP_LEVEL = 4;
+// The level (0 to TOP_LEVEL) of the tasks for a grade.
 export function levelFor(trials, grade) {
   const level = byGrade(trials.grades ?? {}, grade) ?? 1;
-  return Math.max(0, Math.min(2, level - 1));
+  return Math.max(0, Math.min(TOP_LEVEL, level - 1));
+}
+
+// The level of a task for a child (#101): the level of the grade (base), one step up when P(L)
+// of the skill of that level is over up, and one step down when it is under down, as the events of
+// a day do. A skill with no evidence yet keeps the level of the grade. entryOf(skill): the entry of
+// the learner ({ p, n }), or null. The era of a skill never stops a level.
+export function trialLevel(def, base, entryOf, { up = 0.8, down = 0.3 } = {}) {
+  const max = def.levels.length - 1;
+  let level = Math.max(0, Math.min(max, base));
+  const e = entryOf(taskOf(def, level).skill);
+  if (e && e.n > 0) {
+    if (e.p > up && level < max) level += 1;
+    else if (e.p < down && level > 0) level -= 1;
+  }
+  return level;
 }
 
 // The numbers of a task at a level: the level entry and the rest of the definition.
@@ -65,11 +82,36 @@ export function stakeResult(offsets, length, space) {
   return { solved, efficient: solved && at.length === fewest, count: at.length, fewest, gaps, widest };
 }
 
-// The healer: the count of each kind in the basket against the number of each.
-export function basketResult(counts, kinds, each) {
-  const extra = Object.fromEntries(kinds.map((k) => [k, Math.max(0, (counts[k] ?? 0) - each)]));
-  const solved = kinds.every((k) => (counts[k] ?? 0) === each) && Object.keys(counts).every((k) => kinds.includes(k) || !counts[k]);
+// The healer: the count of each kind in the basket against the number of each kind (need: one
+// number for all kinds, or a number for each kind).
+export function basketResult(counts, kinds, need) {
+  const want = (k) => (typeof need === 'number' ? need : need[k] ?? 0);
+  const extra = Object.fromEntries(kinds.map((k) => [k, Math.max(0, (counts[k] ?? 0) - want(k))]));
+  const solved = kinds.every((k) => (counts[k] ?? 0) === want(k)) && Object.keys(counts).every((k) => kinds.includes(k) || !counts[k]);
   return { solved, extra, total: kinds.reduce((a, k) => a + (counts[k] ?? 0), 0) };
+}
+
+// The basket of a level of the healer (#101): the number of bunches of each kind (need), and the
+// numbers of its form. The same number of each kind (each, grades 1 and 2); doses of a recipe
+// (recipe: a number of each kind for one dose, doses: the doses that she needs, grade 3); the same
+// from a model basket of two doses (grade 4); or a number of bunches by fractions: one half rau
+// má, one third tía tô, the rest ngải cứu (grade 5). rng: { int, pick }.
+export const MODEL_DOSES = 2;
+export function basketPlan(task, kinds, rng) {
+  if (task.form === 'doses' || task.form === 'model') {
+    const recipe = Object.fromEntries(kinds.map((k) => [k, rng.int(task.recipe[0], task.recipe[1])]));
+    // Not the same number of each kind: the recipe is seen as a recipe, not as "each".
+    if (kinds.every((k) => recipe[k] === recipe[kinds[0]])) recipe[kinds[0]] = recipe[kinds[0]] === task.recipe[1] ? task.recipe[0] : recipe[kinds[0]] + 1;
+    let doses = rng.int(task.doses[0], task.doses[1]);
+    if (task.form === 'model' && doses === MODEL_DOSES) doses += 1;
+    return { form: task.form, recipe, doses, need: Object.fromEntries(kinds.map((k) => [k, recipe[k] * doses])) };
+  }
+  if (task.form === 'fraction') {
+    const n = rng.pick(task.sizes);
+    const [rest, third, half] = kinds;
+    return { form: 'fraction', n, need: { [half]: n / 2, [third]: n / 3, [rest]: n - n / 2 - n / 3 } };
+  }
+  return { form: 'each', each: task.each, need: Object.fromEntries(kinds.map((k) => [k, task.each])) };
 }
 
 // The woodcutter: the pieces of a stem cut at the marks, and whether they are the equal parts.

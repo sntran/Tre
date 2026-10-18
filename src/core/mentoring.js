@@ -314,6 +314,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     tr.fixed = false;
     tr.lastAct = t;
     tr.firstAct ??= t;
+    // The child did the gesture of a task (a thing from a heap to a place): the first step of a
+    // task is not shown again in any task (#101). The flag is in the profile.
+    if (ev.type === 'put' && ev.id === 'hero' && task?.place && ev.zone === task.place.zone.id && profile?.flags) profile.flags['gesture.carry'] = true;
     // A self-correction: after a check, the child takes a thing back from the place (#64). A put,
     // or a pick at a heap, is not one.
     const takeBack = ev.type === 'pick' && Boolean(task?.place) && ev.from === task.place.zone.id;
@@ -821,13 +824,19 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   function firstSteps(task, def, s, t) {
     const w = world();
     // def.first 'point': the person only points at the heap and at the place (a task of exact rounds).
-    if (def.first === 'point' && task.piles[0] && task.place) {
+    // The demonstration fades (#101, rule 31): a child of grade 3 or more, or a child who did the
+    // gesture in a task before, gets only the point at the heap and at the place, the line of the
+    // task, and the first try.
+    const knows = (profile?.grade ?? 1) >= 3 || Boolean(profile?.flags?.['gesture.carry']);
+    if ((def.first === 'point' || (knows && !Array.isArray(def.first))) && task.piles[0] && task.place) {
       s.say(t, lineOf(task.key, 'show'));
       s.point(t, task.piles[0].position, 1.4);
       s.mark(t, task.piles[0].position, 2.5);
       s.point(t + 1.6, task.at, 1.4);
       s.mark(t + 1.6, task.at, 2.5);
-      return t + 3;
+      if (def.first === 'point') return t + 3;
+      s.say(t + 3, 'mentor.first.you');
+      return t + 4.5;
     }
     const pairs = (task.byNghe ? [] : Array.isArray(def.first) ? def.first : task.piles[0] && task.place ? [{ from: task.piles[0].zone.id, to: task.place.zone.id }] : [])
       .map((p) => ({ heap: getEntity(w, `zone:${p.from}`), place: getEntity(w, `zone:${p.to}`) }))
@@ -885,10 +894,18 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // The number of the task that the child plays now (#79: a wave after a right count of four of
       // each used two of each, the number of grade 1, and took the right bunches out).
       const each = task.place.zone.each ?? Math.round((info.target ?? kinds.length * 2) / kinds.length);
+      // The number of each kind (#101: from grade 3 the kinds have their own numbers).
+      const needOf = (k) => (task.place.zone.need && typeof task.place.zone.need === 'object' ? task.place.zone.need[k] : each);
       let at = t + 1;
       const lines = defOf(task.key)?.lines ?? {};
       const none = task.byNghe ? null : lines.none;
       const counts = kinds.map((k) => parts.filter((e) => e.item.kind === `herb-${k}`).length);
+      // From grade 3 the count is by groups (#101): by doses at grade 3, and the total of each kind
+      // and then the whole from grade 4. No count by ones over ten.
+      const level = task.tz?.zone.level ?? 0;
+      const plan = task.tz?.zone.plan ?? null;
+      const byGroups = level === 2;
+      const byTotals = level >= 3;
       kinds.forEach((k, row) => {
         const bunches = parts.filter((e) => e.item.kind === `herb-${k}`);
         // Each row starts with its name (#74: "một, hai, ba, một, hai", and the child guessed which
@@ -899,32 +916,59 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         }
         // An empty row has a word too (#70: the third kind had no bunch, and nobody said it).
         if (!bunches.length && none) s.say(at + 0.1, `${none}.${k}`);
-        bunches.forEach((e, i) => {
-          s.point(at, e.position, COUNT_PACE);
-          s.mark(at, e.position, COUNT_PACE + 0.3);
-          if (i < 30) s.say(at + 0.1, `num.${i + 1}`);
-          at += COUNT_PACE;
-        });
-        if (bunches.length < each) {
+        if (byGroups && plan?.recipe && bunches.length) {
+          // Grade 3 (#101): the count by doses. At the last bunch of each dose: "một thang".
+          const g = plan.recipe[k];
+          bunches.forEach((e, i) => {
+            s.mark(at, e.position, COUNT_PACE + 0.3);
+            if ((i + 1) % g === 0) {
+              s.point(at, e.position, COUNT_PACE);
+              const d = (i + 1) / g;
+              s.say(at + 0.1, d === 1 ? 'count.dose.one' : 'count.dose', { n: { key: `num.${d}` } });
+              at += COUNT_PACE;
+            } else at += COUNT_PACE * 0.4;
+          });
+        } else if (byTotals && bunches.length) {
+          // Grade 4 and 5 (#101): the total of each row, then the whole basket at the end.
+          bunches.forEach((e) => s.mark(at, e.position, 1.6));
+          s.point(at, bunches[bunches.length - 1].position, 1.4);
+          s.say(at + 0.1, bunches.length === 1 ? 'count.bunches.one' : 'count.bunches', { n: { key: `num.${Math.min(150, bunches.length)}` } });
+          at += 1.8;
+        } else {
+          bunches.forEach((e, i) => {
+            s.point(at, e.position, COUNT_PACE);
+            s.mark(at, e.position, COUNT_PACE + 0.3);
+            if (i < 30) s.say(at + 0.1, `num.${i + 1}`);
+            at += COUNT_PACE;
+          });
+        }
+        if (bunches.length < needOf(k)) {
           const end = basketRowAt(task.place.zone, row, bunches.length);
           s.point(at, end, COUNT_PACE);
           s.mark(at, end, COUNT_PACE + 1);
           at += COUNT_PACE;
         }
         // The extra bunches of the row go back to their bed, and the person says it (#74).
-        if (bunches.length > each) {
-          if (!task.byNghe && lines.extra) s.say(at + 0.1, `${lines.extra}.${k}`, { n: { key: `num.${bunches.length - each}` } });
+        if (bunches.length > needOf(k)) {
+          if (!task.byNghe && lines.extra) s.say(at + 0.1, `${lines.extra}.${k}`, { n: { key: `num.${bunches.length - needOf(k)}` } });
           at += EXTRA_LINE;
         }
         at += 0.4;
       });
+      if (byTotals && parts.length) {
+        s.say(at, 'count.whole', { n: { key: `num.${Math.min(150, parts.length)}` } });
+        at += 2;
+      }
       // The work is right when the extra bunches are back: the person says the count of the work
       // now, and the next press gives the basket (#74).
-      if (counts.every((c) => c >= each) && counts.some((c) => c > each) && lines.now) {
-        const extras = counts.reduce((a, c) => a + Math.max(0, c - each), 0);
-        const end = layEnd(parts.length, kinds.length, counts.filter((c) => c > each).length, extras) + 0.6;
+      const over = (c, i) => c > needOf(kinds[i]);
+      if (counts.every((c, i) => c >= needOf(kinds[i])) && counts.some(over) && lines.now) {
+        const extras = counts.reduce((a, c, i) => a + Math.max(0, c - needOf(kinds[i])), 0);
+        const end = layEnd(parts.length, kinds.length, counts.filter(over).length, extras) + 0.6;
         at = Math.max(at, end);
-        s.say(at, lines.now, { n: { key: `num.${each}` } }, { ready: task.key });
+        // With the same number of each kind, the line says it; else the line of the work now.
+        const same = kinds.every((k) => needOf(k) === needOf(kinds[0]));
+        s.say(at, same ? lines.now : lines.nowEach ?? lines.now, { n: { key: `num.${needOf(kinds[0])}` } }, { ready: task.key });
         at += 2.5;
         // The next step in words, and the big button glows with the give (#89: after the count the
         // healer waited, and the child did not know that a press gives the basket).
@@ -1158,9 +1202,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       const kinds = task.place?.zone.kinds ?? [];
       // A move with no try just now (a wave, the debug panel): the target of the last try.
       const each = task.place?.zone.each ?? Math.round((info.target ?? tracks.get(task.key)?.target ?? 0) / Math.max(1, kinds.length));
+      const need = task.place?.zone.need;
       const counts = Object.fromEntries(kinds.map((k) => [k, itemsOf(task.place).filter((e) => e.item.kind === `herb-${k}`).length]));
       for (const k of kinds) {
-        const short = Math.max(0, each - counts[k]);
+        const short = Math.max(0, (need && typeof need === 'object' ? need[k] : each) - counts[k]);
         const n = move === 'smaller' ? Math.min(1, Math.max(0, short - 1)) : Math.floor(short / 2);
         picks.push(...free.filter((e) => e.item.kind === `herb-${k}`).slice(0, n));
         if (move === 'smaller' && n) break;

@@ -168,7 +168,8 @@ export function tapTarget(session, spec) {
   if (spec.item) {
     // The first thing of this kind (and of this size, and of another owner or not, when the step
     // gives it) that lies in a heap or a pile.
-    const of = (it) => it?.kind === spec.item && (spec.size === undefined || it.size === spec.size) && (spec.stray === undefined || Boolean(it.stray) === spec.stray);
+    // A thing of the model basket of the healer (#101) only when the step asks for it (model: true).
+    const of = (it) => it?.kind === spec.item && (spec.size === undefined || it.size === spec.size) && (spec.stray === undefined || Boolean(it.stray) === spec.stray) && Boolean(it.model) === Boolean(spec.model);
     for (const z of query(state, 'zone')) {
       if (z.zone.rule !== 'pile' && z.zone.rule !== 'heap') continue;
       const id = z.zone.items.find((i) => of(getEntity(state, i)?.item));

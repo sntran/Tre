@@ -72,7 +72,9 @@
       "skills": [
         "math.count.120",
         "math.add.20",
-        "math.mul.10"
+        "math.mul.10",
+        "math.mul.multi",
+        "math.frac.unlike"
       ],
       "set": 2,
       "story": "practice-hai-thuoc"
