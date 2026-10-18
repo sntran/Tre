@@ -10,8 +10,8 @@
 //
 // deps: data (puzzles), profile, world(), env() (groundY), map() (its objects), day(), seed(),
 // grade(), busy(), chosen() (the id of the last tap), say(id, textKey, params), sound(name),
-// give(gift, from), skill(ev), log(kind, data), look(points) (the view shows these points, half
-// blocks; the last is the hero).
+// give(gift, from), skill(ev), log(kind, data), look(points) (the view shows these points with the
+// hero, half blocks).
 import { getEntity, addEntity, removeEntity } from './world/state.js';
 import { hashSeed } from './rng.js';
 
@@ -150,6 +150,7 @@ export function createPuzzles(deps) {
       for (const t of F.things) if (ferry.where[t] === 'boat') ferry.where[t] = ferry.snapshot.side;
       ferry.load = null;
       pack();
+      lookAtBank(f.side);
       return;
     }
     if (ferry.load) {
@@ -164,11 +165,12 @@ export function createPuzzles(deps) {
       // The view shows the scene on the other bank with the hero (#104: the scene was out of the
       // frame).
       const pts = pair.slice(0, 2).map((t) => ({ ...getEntity(w(), thingId(t)).position }));
-      deps.look([...pts, { ...hero().position }]);
+      deps.look(pts);
       deps.say('pz:traveler', `puzzle.ferry.${pair[2]}`, {});
       deps.sound(pair[2] === 'chase' ? 'bark' : 'peck');
       return;
     }
+    lookAtBank(f.side);
     if (F.things.every((t) => ferry.where[t] === 'b')) {
       const s = st('ferry');
       s.solved = deps.day();
@@ -179,6 +181,11 @@ export function createPuzzles(deps) {
       deps.give(F.gift, 'pz:traveler');
       s.tries = 0;
     }
+  }
+  // The view shows the bank of the hero: its things and the boat.
+  function lookAtBank(side) {
+    const pts = F.things.filter((t) => ferry.where[t] === side).map((t) => ({ ...getEntity(w(), thingId(t)).position }));
+    deps.look([...pts, { ...boat().position }]);
   }
   // The scene of a wrong pair: the dog runs around the chicken, or the chicken pecks and some rice
   // spills. No animal is hurt. Then the boat brings the hero back, and all come back.
@@ -226,6 +233,8 @@ export function createPuzzles(deps) {
     if (!placeOf(PZ, PZ.well)) return;
     const lv = potsLevel(PZ, deps.grade());
     pots = { day, lv, levels: [0, 0], held: null, jar: 0, hint: 0, offered: false, demo: null };
+    // The place of each pot: a ring of straw. A tap on it and a press put the pot in the hands back.
+    lv.sizes.forEach((cap, i) => addEntity(w(), { keep: true, id: `pz:spot:${i}`, item: { kind: 'pzspot', size: 1, task: null, zone: null, held: null, set: true, fixed: true, covered: true }, position: { ...placeOf(PZ, PZ.spots[i]), facing: 0 }, look: 'band' }));
     lv.sizes.forEach((cap, i) => addEntity(w(), { keep: true, id: `pz:pot:${i}`, item: { kind: 'pzpot', size: 1, task: null, zone: null, held: null, set: true, fixed: true }, position: { ...placeOf(PZ, PZ.spots[i]), facing: 0 }, look: `pzpot-${cap}-0` }));
     addEntity(w(), { keep: true, id: 'pz:jar', item: { kind: 'pzjar', size: 1, task: null, zone: null, held: null, set: true, fixed: true }, position: { ...placeOf(PZ, PZ.jar), facing: 0 }, look: `pzjar-${lv.need}-0` });
     // The bucket of the well: a tap on it and a press fill the pot in the hands.
@@ -233,7 +242,7 @@ export function createPuzzles(deps) {
     addEntity(w(), { keep: true, id: 'pz:drain', item: { kind: 'pzdrain', size: 1, task: null, zone: null, held: null, set: true, fixed: true }, position: { ...placeOf(PZ, PZ.drain), facing: 0 }, look: 'drain' });
   }
   function clearPots() {
-    for (const id of ['pz:pot:0', 'pz:pot:1', 'pz:jar', 'pz:well', 'pz:drain', 'pz:mark:pots']) if (getEntity(w(), id)) removeEntity(w(), id);
+    for (const id of ['pz:pot:0', 'pz:pot:1', 'pz:spot:0', 'pz:spot:1', 'pz:jar', 'pz:well', 'pz:drain', 'pz:mark:pots']) if (getEntity(w(), id)) removeEntity(w(), id);
     pots = null;
   }
   const potLook = (i) => {
@@ -309,7 +318,7 @@ export function createPuzzles(deps) {
         const t = getEntity(w(), 'pz:traveler');
         if (t && dist(t.position, h) <= 12) {
           ferry.offered = true;
-          deps.look([...F.things.map((x) => ({ ...getEntity(w(), thingId(x)).position })), { ...boat().position }, { ...h }]);
+          deps.look([...F.things.map((x) => ({ ...getEntity(w(), thingId(x)).position })), { ...boat().position }]);
           deps.say(t.id, 'puzzle.ferry.start', {});
         }
       }
@@ -323,7 +332,7 @@ export function createPuzzles(deps) {
         if (!pots.offered && healerE && !deps.busy() && dist(healerE.position, h) <= 12) {
           pots.offered = true;
           // The view turns to a side where nothing covers the things of the puzzle.
-          deps.look([...['pz:pot:0', 'pz:pot:1', 'pz:well', 'pz:jar', 'pz:drain'].map((id) => ({ ...getEntity(w(), id).position })), { ...h }]);
+          deps.look(['pz:pot:0', 'pz:pot:1', 'pz:well', 'pz:jar', 'pz:drain'].map((id) => ({ ...getEntity(w(), id).position })));
           deps.say(healerE.id, pots.lv.need === 4 ? 'puzzle.pots.start' : 'puzzle.pots.start.two', {});
         }
         // The pot in the hands goes with the hero, in front. It takes a tap only on its body
@@ -331,6 +340,9 @@ export function createPuzzles(deps) {
         for (const i of [0, 1]) {
           const e = getEntity(w(), `pz:pot:${i}`);
           if (e) e.item.inHands = pots.held === i;
+          // A ring of straw with its pot on it takes no tap: the tap is for the pot.
+          const r = getEntity(w(), `pz:spot:${i}`);
+          if (r) r.item.covered = pots.held !== i;
         }
         if (pots.held !== null) {
           const e = getEntity(w(), `pz:pot:${pots.held}`);
@@ -370,8 +382,10 @@ export function createPuzzles(deps) {
           if (o) add({ act: 'pour', icon: 'jar', target: o.id, at: o.position, rank: chosen === o.id ? -1 : 1, run: () => potAct('pour', other) }, reach);
           add({ act: 'empty', icon: 'clear', target: 'pz:drain', at: at(PZ.drain), rank: chosen === 'pz:drain' ? -1 : 1, run: () => potAct('empty') }, reach);
           add({ act: 'give', icon: 'hand-give', target: 'pz:jar', at: at(PZ.jar), rank: chosen === 'pz:jar' ? -1 : 1, run: () => potAct('jar') }, reach);
-          // A tap on the pot in the hands, and then a press, puts it back at its place.
-          if (chosen === `pz:pot:${pots.held}`) add({ act: 'set', icon: 'hand-put', target: chosen, at: { x: h.x, y: h.y, z: h.z }, rank: -1, run: () => potAct('set') }, reach);
+          // A tap on the place of the pot in the hands (its ring of straw), and then a press, puts
+          // it back there.
+          const spot = getEntity(w(), `pz:spot:${pots.held}`);
+          if (spot && chosen === spot.id) add({ act: 'set', icon: 'hand-put', target: spot.id, at: spot.position, rank: -1, run: () => potAct('set') }, reach);
         }
       }
     },

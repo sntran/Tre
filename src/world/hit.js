@@ -77,7 +77,9 @@ const inBox = (p, b, pad, padY = pad) => p.x >= b.x0 - pad && p.x <= b.x1 + pad 
 
 // Can a tap choose this thing? A thing that is set does not move, but a fixed thing of a task (a
 // stem, the iron, a culm) answers a tap.
-export const tappable = (e) => Boolean(e.item && e.position && !e.hidden && !(e.item.set && !e.item.fixed));
+// A thing in the hands of the hero takes no tap (inHands, #104: the pot in the hands at the well),
+// and nor does a thing under another one (covered: the ring of straw under its pot).
+export const tappable = (e) => Boolean(e.item && e.position && !e.hidden && !e.item.inHands && !e.item.covered && !(e.item.set && !e.item.fixed));
 
 // The thing under a screen point: the one whose middle line on the screen is nearest to the finger.
 // inside: the finger is on the body of the thing, not only on its margin and pad. along: the place along the
@@ -225,10 +227,7 @@ export function tapTarget(p, w) {
   const inPlace = onRow || (hit && w.placeAt(hit.x, hit.y, 0));
   // With a stake in the hands, a tap on a stake of the row is a tap on its point of the row: the
   // put goes to the free point nearest to it (#78).
-  // A thing under the finger that is not in the hands comes first (#104: the pot in the hands of
-  // the hero stood in front of the bucket of the well).
-  const loose = thingUnder(p, w.cam, w.things.filter((e) => !e.item?.inHands));
-  const found = loose?.inside ? loose : thingUnder(p, w.cam, w.things);
+  const found = thingUnder(p, w.cam, w.things);
   const thing = found && !(w.carrying && found.e.item.zone === 'line') ? found : null;
   // Nghé: a tap on her is a pet when no thing and no place of an open task is under the finger,
   // also during a task and after it (#87: after the task of the teacher, Nghé stood on the heap of
@@ -239,9 +238,7 @@ export function tapTarget(p, w) {
   if (pal && !taskThing && !taskPlace && !figureUnder(p, w.cam, w.persons ?? [], PERSON_PAD)) return { pet: pal.id };
   // A thing on a place of a task (a bunch in the basket, a rod on the mat) is chosen only by a tap on
   // its body, never by a tap next to it (#79: a tap near the basket took a bunch out).
-  // A thing in the hands of the hero takes a tap only on its body (#104: a tap on the well, two
-  // cells away, chose the pot in the hands).
-  if (thing && (thing.inside || (!inPlace && !PLACED.has(thing.e.item.zone) && !thing.e.item.inHands))) {
+  if (thing && (thing.inside || (!inPlace && !PLACED.has(thing.e.item.zone)))) {
     // A person whose body is under the finger and who stands on the thing or in front of it: the
     // tap is for the person (#70: the healer stood on her bed of rau má, and each tap on her chose
     // the bed, so the child could not give the basket).

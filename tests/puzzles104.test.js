@@ -251,3 +251,16 @@ test('the healer in front of her jar: a tap on the jar is a tap on the jar', asy
   const t = tapTarget(cam.project(q.x, q.y + 0.3, q.z), sessionScreen(p.session, cam));
   assert.equal(t?.thing, 'pz:jar', JSON.stringify(t));
 });
+
+test('a tap on the ring of straw of the pot in the hands and a press put the pot back at its place', async () => {
+  const p = await at([42, 28], 1, { 'trial.healer.done': true });
+  assert.ok(p.run(20, () => p.said.includes('puzzle.pots.start.two')));
+  p.tapThing('pz:pot:0');
+  assert.equal(p.press(), 'take');
+  p.tapThing('pz:spot:0');
+  assert.equal(p.press(), 'set');
+  assert.equal(p.session.puzzles.state().pots.held, null);
+  const pot = getEntity(p.session.state, 'pz:pot:0').position;
+  const spot = getEntity(p.session.state, 'pz:spot:0').position;
+  assert.ok(Math.hypot(pot.x - spot.x, pot.z - spot.z) < 0.1, 'the pot is on its ring');
+});
