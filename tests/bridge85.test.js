@@ -207,7 +207,8 @@ test('at the bridge, the eye is never the act of the button, and the river line 
       onSession: (x) => { x.listen((e) => { if (e.type === 'open' && e.textKey) said.push(e.textKey); }); },
     });
     assert.deepEqual(fails, []);
-    return said;
+    // The traveler of the ferry puzzle (#104) may offer his puzzle there on its days.
+    return said.filter((k) => !k.startsWith('puzzle.'));
   };
   assert.deepEqual(await river(open), ['map.river.bridge']);
   assert.deepEqual(await river({}), ['map.river']);

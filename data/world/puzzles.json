@@ -1,0 +1,36 @@
+{
+  "_about": "The puzzles solved by doing (#104; docs/PUZZLES.md, src/core/puzzles.js). A puzzle is a side quest: a person offers it on some days (every: one day in this many, by the seed and the day; after: a flag that must be set first), it is optional, and nothing in the story waits for it. Its person has a small mark of a side quest (look mark-side), not the star of the story. No count of mistakes and no score of mastery for the puzzle itself; skill: the skill event of its math, where it has one. Each line is spoken, and a wave gives the next hint (hints, in order; a hint is never a question). era, tale (true for a tale told of a real person), who, and source (a published record: book or article, with its page; page null and checked false: not checked yet; book null: a record to find, docs/QUESTIONS.md). Places are cells from the top left corner of a map object (anchor). ferry (the river-crossing puzzle): the landings (a, b: the water spots of the boat; landA, landB: where the hero steps off), the bank spots of the things (spotsA, spotsB), the traveler (at), the pairs that cannot stay alone (pairs: [eater, eaten, scene]), and the gift. pots (the water-pouring puzzle at the well): the pots (sizes, in bowls), the need of each grade (levels: grades from, sizes, need, skill), and the places. tales: the tales of later eras, data only.",
+  "ferry": {
+    "id": "ferry", "map": "phu-dong", "every": 3, "person": "traveler", "era": 1, "tale": false, "who": null, "source": "alcuin", "sources": ["alcuin", "ascher1990"],
+    "anchor": "boat",
+    "a": [-11.5, 4.5], "b": [-11.5, 12.5], "landA": [-11.5, 2.6], "landB": [-11.5, 14.6],
+    "at": [-8.5, 2],
+    "spotsA": [[-13.5, 1.2], [-12, 1.5], [-10.5, 1.2]],
+    "spotsB": [[-13, 15.5], [-11.5, 15.8], [-10, 15.5]],
+    "things": ["dog", "chicken", "rice"],
+    "pairs": [["dog", "chicken", "chase"], ["chicken", "rice", "peck"]],
+    "least": 7,
+    "gift": { "egg": 2 },
+    "hints": ["puzzle.ferry.hint.1", "puzzle.ferry.hint.2", "puzzle.ferry.hint.3"]
+  },
+  "pots": {
+    "id": "pots", "map": "phu-dong", "every": 2, "person": "healer", "after": "trial.healer.done", "era": 1, "tale": false, "who": null, "source": "singmaster",
+    "anchor": "well",
+    "well": [1.5, 3.5], "spots": [[3.5, 4], [4.8, 4]], "drain": [-0.5, 4.8], "jar": [2, 5.6], "at": [2.5, 6.8],
+    "levels": [
+      { "grades": [-1, 2], "sizes": [5, 3], "need": 2, "skill": "math.sub.10", "level": 1 },
+      { "grades": [3, 12], "sizes": [5, 3], "need": 4, "skill": "math.addsub.100", "level": 1 }
+    ],
+    "gift": { "egg": 1 },
+    "hints": ["puzzle.pots.hint.1", "puzzle.pots.hint.2", "puzzle.pots.hint.3"]
+  },
+  "tales": [
+    { "id": "elephant", "era": 3, "tale": true, "who": "Lương Thế Vinh", "envoy": "Chu Hy", "skills": ["sci.water.float", "math.addsub.1000"], "source": "tale-record", "lines": ["tale.elephant.n1", "tale.elephant.n2", "tale.elephant.n3", "tale.elephant.n4"] }
+  ],
+  "sources": {
+    "alcuin": { "book": "Propositiones ad acuendos juvenes, problem 18 (the wolf, the goat, and the cabbage), attributed to Alcuin of York", "author": "Alcuin of York", "publisher": null, "year": 800, "page": null, "checked": false },
+    "ascher1990": { "book": "A River-Crossing Problem in Cross-Cultural Perspective", "author": "Marcia Ascher", "publisher": "Mathematics Magazine 63 (1)", "year": 1990, "page": "26-29", "checked": false },
+    "singmaster": { "book": "Sources in Recreational Mathematics, an Annotated Bibliography (the measuring problems with jugs)", "author": "David Singmaster", "publisher": null, "year": 2004, "page": null, "checked": false },
+    "tale-record": { "book": null, "note": "To find before the chapter of its era: a published record of the tale of the elephant weighed with a boat, told of Lương Thế Vinh (docs/QUESTIONS.md).", "year": null, "page": null, "checked": false }
+  }
+}

@@ -63,6 +63,7 @@ import { endScript } from './world/systems/mentor.js';
 import { namesOf } from './naming.js';
 import { createFolk } from './folk-session.js';
 import { createRiddles } from './riddles.js';
+import { createPuzzles } from './puzzles.js';
 import { nearHero as talksNear } from './lines.js';
 import { createPlanting } from './planting-session.js';
 import { createHamlet } from './hamlet-session.js';
@@ -235,6 +236,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     point: (who, p) => { who.gesture = { act: 'point', x: p.x, z: p.z, t: 3 }; },
     walkTo: (p) => goTo(p, null),
     rng: () => createRng(hashSeed(`${state.seed}:trick:${today()}:${state.tick}`)).next(),
+  });
+  // The puzzles solved by doing (#104, docs/PUZZLES.md): side quests on some days.
+  const puzzles = createPuzzles({
+    data: data.puzzles ?? {}, profile, world: () => state, env: () => env, map: () => map, day: () => today(), seed: () => state.seed, grade: () => profile.grade ?? 1,
+    busy: () => busy || Boolean(screen) || taskOn() || raidOn() || folk.active(),
+    chosen: () => chosen?.id ?? null,
+    say: (id, textKey, params) => emit({ type: 'open', screen: 'callout', id, textKey, params }),
+    sound: (name) => emit({ sound: name, type: 'sound' }),
+    give: (gift, from) => {
+      applyEffects(profile, [{ give: gift }]);
+      emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: gift, delay: 0.3 });
+      emit({ type: 'hud' });
+      save('puzzle');
+    },
+    skill: (ev) => {
+      skillEvent(ev);
+      emit({ type: 'skill', ...ev });
+    },
+    log: (kind, d) => log(kind, d),
   });
   const FOLK = new Set(['loco', 'rope']);
   const ENCOUNTER_NEAR = 12; // half blocks
@@ -1902,6 +1922,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       talk(pickTalk(data.npcs.npcs[who.id], profile));
     }
     else if (who.kind === 'event') tapEvent(who.id);
+    else if (who.kind === 'puzzle') puzzles.talk(who.id);
     else if (who.kind === 'encounter') {
       // No raid of the story starts in a practice (#51).
       if (practice) return;
@@ -2989,6 +3010,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!held) {
       // The folk games of the children: join them, and the throw of the shard (a hold).
       folk.candidates(add, REACH);
+      // The puzzles of the day: the boat of the ferry, the pots at the well (#104).
+      puzzles.candidates(add, REACH);
       // The acts of things: the glowing iron (quench), the bellows on the lumps (blow), a bronze
       // drum (a beat), the jar of feed (a scoop for each press).
       for (const id of ['smith', 'horse']) {
@@ -4228,6 +4251,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function worldEvent(ev) {
     // Over the river: the far walk has no ferry to keep any more.
     if (ev.type === 'ferried' && (ev.riders ?? []).includes('hero')) farPlan = null;
+    puzzles.worldEvent(ev);
     // A person calls out: the fisher when a plank is too long, and the lines of the mentors.
     // happened: a line that says what happened (#73: never cut or replaced by a later line).
     if (ev.type === 'call' && ev.ready) {
@@ -4493,6 +4517,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     hamlet.tick(STEP);
     folk.tick(STEP);
     riddles.tick(STEP);
+    puzzles.tick(STEP);
     checkFound();
     checkRest();
     checkEdge();
@@ -4588,6 +4613,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       placeEvents(cmd.id);
       return;
     }
+    // A story or the debug panel brings a puzzle today (#104).
+    if (type === 'puzzle') {
+      puzzles.force(cmd.id);
+      return;
+    }
     // A story or the debug panel makes a move of the mentor of a task now (key, move).
     if (type === 'mentor') {
       mentoring.move(cmd.key, cmd.move);
@@ -4643,6 +4673,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else if (folk.wave()) return;
       // Near Bà with an open riddle and no task: the clue, or on a later day the answer (#103).
       else if (!mentoring.activeKey() && riddles.wave()) return;
+      // Near the person of a puzzle: the next hint (#104).
+      else if (!mentoring.activeKey() && puzzles.wave()) return;
       else mentoring.wave();
     }
     else if (type === 'jump') { if (!folk.jump()) jump(); }
@@ -4777,7 +4809,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The task with a mentor that the hero works on now (the view shows the wave), or null.
     get mentorTask() { return mentoring.activeKey(); },
     // A wave has an answer now: a task, a raid, or a folk game (#99).
-    get canWave() { return Boolean(mentoring.activeKey() || (raidOn() && !raidEnt().raid.result) || folk.active() || riddles.canWave()); },
+    get canWave() { return Boolean(mentoring.activeKey() || (raidOn() && !raidEnt().raid.result) || folk.active() || riddles.canWave() || puzzles.canWave()); },
+    // The puzzles of the day (#104).
+    puzzles,
     // The riddles and the trick questions (#103).
     riddles,
     // The persons of the stations of a practice of a whole place (#37): the view puts a star over each.
