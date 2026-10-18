@@ -240,3 +240,25 @@ These questions need a person who knows Vietnamese history and geography. Until 
 107. **The names of the skills in the notebook.** The notebook of the child shows a print for each skill of the era with its name from the parent page (for example "Cộng trong phạm vi 10"). The notebook is a screen of the menu, not the village, but a name of a skill can name a math operation. Should the child see other names here (the work where the child learned it, for example "Bó que với thầy giáo"), or no name at all?
 108. **The experience of each deed.** A done task gives 10, a won raid 15, a done step of a quest 5, a round of a practice or of the hamlet 4, and a small event 3; level 1 needs 20, and each next level 10 more (`src/core/growth.js`). A lost raid gives none. Are these good for the game?
 
+
+## Questions about the riddles and the trick questions (#103)
+
+109. **The text and the source of each riddle.** The ten riddles of `data/world/riddles.json` are well known in the oral tradition, but this first set took their words from pages of riddles on the web, not from a book. Each riddle names a published collection to check it against (`sources`): *Câu đố Việt Nam*, Nguyễn Văn Trung, Nhà xuất bản Thành phố Hồ Chí Minh, 1985, or the five books of *Câu đố dân gian cho bé* (2015). The page is null and `checked` is false until a person who knows Vietnamese folklore finds each riddle in a book, corrects its words to the book, and adds the page. A riddle that no book has goes out of the set.
+   - `ga` (Con gà): "Con gì mào đỏ, gáy ò ó o, từ sáng tinh mơ, gọi người thức dậy?" — the fit: "Mào đỏ, gáy ò ó o lúc sáng sớm: con gà đấy!"
+   - `vit` (Con vịt): "Con gì chân ngắn, mà lại có màng, mỏ bẹt màu vàng, hay kêu cạp cạp?" — the fit: "Chân có màng, mỏ bẹt màu vàng, kêu cạp cạp: con vịt đấy!"
+   - `cho` (Con chó): "Thường nằm đầu hè, giữ nhà cho chủ, người lạ nó sủa, người quen nó mừng. Là con gì?" — the fit: "Nằm ở hè, giữ nhà, sủa người lạ, mừng người quen: con chó đấy!"
+   - `tre` (Cây tre): "Đốt nhiều mà chẳng cháy đâu, bao nhiêu tóc mọc trên đầu xanh tươi, bên nhau thành lũy dưới trời, lớn lên giúp ích cho người bấy lâu. Là cây gì?" — the fit: "Nhiều đốt, lá xanh như tóc, mọc bên nhau thành lũy: cây tre đấy!"
+   - `chuoi` (Cây chuối): "Cây gì áo kép, áo đơn, lá như những cánh buồm con xanh rờn, hoa thì chon chót màu son, trái thì trăm ngón tay thon xếp hàng?" — the fit: "Lá như cánh buồm, hoa màu son, quả như trăm ngón tay: cây chuối đấy!"
+   - `da` (Cây đa): "Cây gì rễ tít trên cao, đứng ở đầu làng, tỏa bóng mát che?" — the fit: "Rễ thòng từ trên cao, đứng đầu làng, bóng mát rộng: cây đa đấy!"
+   - `rom` (Cây rơm): "Cây gì không lá không thân, mình vàng, không rễ, ở gần nhà ta?" — the fit: "Không lá, không thân, không rễ, mình vàng, ở gần nhà: cây rơm đấy!"
+   - `trau` (Con trâu): "Con gì ăn cỏ, đầu có hai sừng, lỗ mũi buộc thừng, kéo cày rất giỏi?" — the fit: "Hai sừng, mũi buộc thừng, kéo cày: con trâu đấy!"
+   - `vit2` (Con vịt): "Dáng đi lạch bạch, sáng sớm ra đồng, bơi có giỏi không, mò tôm, bắt cá. Là con gì?" — the fit: "Đi lạch bạch, bơi giỏi, mò tôm bắt cá: con vịt đấy!"
+   - `trau2` (Con trâu): "Bốn ông đập đất, một ông phất cờ, một ông vơ cỏ, một ông bỏ phân. Là con gì?" — the fit: "Bốn chân đập đất, đuôi phất như cờ, miệng vơ cỏ: con trâu đấy!"
+110. **The trick questions of the children.** The same for the five trick questions (câu đố mẹo). They fit the era (charcoal, a buffalo, a frog, a hole, a hand) and laugh at nobody. Each needs a published collection and a page.
+   - `than`: "Đố bạn: cái gì đen khi mua về, đỏ khi dùng, và xám khi bỏ đi?" — "Than! Mua về thì than đen, cháy thì đỏ, cháy hết thì thành tro xám. Nghe như ba thứ, mà chỉ là một thứ."
+   - `trau`: "Đố bạn: con trâu đứng quay đầu về phía mặt trời mọc. Đuôi nó chỉ về phía nào?" — "Chỉ xuống đất! Ai cũng nghĩ tới phía mặt trời lặn, mà đuôi trâu thì lúc nào cũng thõng xuống đất."
+   - `ech`: "Đố bạn: con gì ăn cũng ngồi, ngồi cũng ngồi, đứng cũng ngồi?" — "Con ếch! Ếch đứng hay ngồi thì trông vẫn như đang ngồi."
+   - `ho`: "Đố bạn: cái gì càng lấy đi thì càng to?" — "Cái hố! Càng đào đất đi, hố càng to. Mình hay nghĩ cái gì lấy đi thì nhỏ lại."
+   - `tay`: "Đố bạn: cái gì tay trái cầm được mà tay phải không cầm được?" — "Tay phải! Tay phải không tự cầm được tay phải. Ai cũng nghĩ tới một đồ vật."
+111. **The words of the riddles for a child of six.** Some words are old (đầu hè, lũy, chon chót màu son). Bà says how the words fit the thing after the child finds it. Are the riddles good for a child of six, or does the first riddle of a child need simpler words?
+112. **"Năm bảy vợ".** A known riddle of the rooster says "ngày năm bảy vợ". The set does not use it, so that no line is about the wives of an animal. Is that right?
