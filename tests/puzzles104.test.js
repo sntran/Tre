@@ -197,3 +197,16 @@ test('a tap on a thing of a puzzle with Nghé next to it is a tap on the thing, 
   const t = tapTarget(cam.project(q.x, q.y + 0.3, q.z), sessionScreen(p.session, cam));
   assert.equal(t?.thing, 'pz:pot:0', JSON.stringify(t));
 });
+
+test('with a pot in the hands, a tap on the well is a tap on the well, not on the pot in the hands', async () => {
+  const { tapTarget, viewCamera, sessionScreen } = await import('../src/world/hit.js');
+  const p = await at([42, 28], 1, { 'trial.healer.done': true });
+  assert.ok(p.run(20, () => p.said.includes('puzzle.pots.start.two')));
+  p.tapThing('pz:pot:0');
+  assert.equal(p.press(), 'take');
+  const o = p.session.map.layers.objects.find((x) => x.id === 'well');
+  const q = { x: o.x + 1.5, y: 3, z: o.y + 3.2 };
+  const cam = viewCamera({ focus: q, width: 390, height: 844 });
+  const t = tapTarget(cam.project(q.x, q.y, q.z), sessionScreen(p.session, cam));
+  assert.notEqual(t?.thing, 'pz:pot:0', JSON.stringify(t));
+});

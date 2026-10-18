@@ -232,7 +232,9 @@ export function tapTarget(p, w) {
   if (pal && !taskThing && !taskPlace && !figureUnder(p, w.cam, w.persons ?? [], PERSON_PAD)) return { pet: pal.id };
   // A thing on a place of a task (a bunch in the basket, a rod on the mat) is chosen only by a tap on
   // its body, never by a tap next to it (#79: a tap near the basket took a bunch out).
-  if (thing && (thing.inside || (!inPlace && !PLACED.has(thing.e.item.zone)))) {
+  // A thing in the hands of the hero takes a tap only on its body (#104: a tap on the well, two
+  // cells away, chose the pot in the hands).
+  if (thing && (thing.inside || (!inPlace && !PLACED.has(thing.e.item.zone) && !thing.e.item.inHands))) {
     // A person whose body is under the finger and who stands on the thing or in front of it: the
     // tap is for the person (#70: the healer stood on her bed of rau má, and each tap on her chose
     // the bed, so the child could not give the basket).

@@ -316,7 +316,12 @@ export function createPuzzles(deps) {
           pots.offered = true;
           deps.say(healerE.id, pots.lv.need === 4 ? 'puzzle.pots.start' : 'puzzle.pots.start.two', {});
         }
-        // The pot in the hands goes with the hero, in front.
+        // The pot in the hands goes with the hero, in front. It takes a tap only on its body
+        // (inHands, src/world/hit.js).
+        for (const i of [0, 1]) {
+          const e = getEntity(w(), `pz:pot:${i}`);
+          if (e) e.item.inHands = pots.held === i;
+        }
         if (pots.held !== null) {
           const e = getEntity(w(), `pz:pot:${pots.held}`);
           const f = hero().position.facing ?? 0;
