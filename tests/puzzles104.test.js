@@ -129,8 +129,7 @@ const SCENE_END = 30;
 
 test('the pots: grade 1 needs two bowls in one pour; from grade 3, four bowls, with too much and too little first', async () => {
   const flags = { 'trial.healer.done': true };
-  const well = (p) => p.session.map.layers.objects.find((o) => o.id === 'well');
-  const fill = (p) => { const o = well(p); p.tapCell(o.x + 1.5, o.y + 3.2); assert.equal(p.press(), 'fill'); };
+  const fill = (p) => { p.tapThing('pz:well'); assert.equal(p.press(), 'fill'); };
   const g1 = await at([42, 28], 1, flags);
   assert.ok(g1.run(20, () => g1.said.includes('puzzle.pots.start.two')), g1.said.join(', '));
   g1.tapThing('pz:pot:0');

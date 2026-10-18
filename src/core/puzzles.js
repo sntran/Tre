@@ -223,10 +223,12 @@ export function createPuzzles(deps) {
     pots = { day, lv, levels: [0, 0], held: null, jar: 0, hint: 0, offered: false, demo: null };
     lv.sizes.forEach((cap, i) => addEntity(w(), { keep: true, id: `pz:pot:${i}`, item: { kind: 'pzpot', size: 1, task: null, zone: null, held: null, set: true, fixed: true }, position: { ...placeOf(PZ, PZ.spots[i]), facing: 0 }, look: `pzpot-${cap}-0` }));
     addEntity(w(), { keep: true, id: 'pz:jar', item: { kind: 'pzjar', size: 1, task: null, zone: null, held: null, set: true, fixed: true }, position: { ...placeOf(PZ, PZ.jar), facing: 0 }, look: `pzjar-${lv.need}-0` });
+    // The bucket of the well: a tap on it and a press fill the pot in the hands.
+    addEntity(w(), { keep: true, id: 'pz:well', item: { kind: 'pzwell', size: 1, task: null, zone: null, held: null, set: true, fixed: true }, position: { ...placeOf(PZ, PZ.well), facing: 0 }, look: 'bucket' });
     addEntity(w(), { keep: true, id: 'pz:drain', item: { kind: 'pzdrain', size: 1, task: null, zone: null, held: null, set: true, fixed: true }, position: { ...placeOf(PZ, PZ.drain), facing: 0 }, look: 'drain' });
   }
   function clearPots() {
-    for (const id of ['pz:pot:0', 'pz:pot:1', 'pz:jar', 'pz:drain', 'pz:mark:pots']) if (getEntity(w(), id)) removeEntity(w(), id);
+    for (const id of ['pz:pot:0', 'pz:pot:1', 'pz:jar', 'pz:well', 'pz:drain', 'pz:mark:pots']) if (getEntity(w(), id)) removeEntity(w(), id);
     pots = null;
   }
   const potLook = (i) => {
@@ -356,7 +358,7 @@ export function createPuzzles(deps) {
         } else {
           const other = pots.held === 0 ? 1 : 0;
           const o = getEntity(w(), `pz:pot:${other}`);
-          add({ act: 'fill', icon: 'water', target: 'pz:pot:' + pots.held, at: at(PZ.well), rank: chosen === null ? 1 : 2, run: () => potAct('fill') }, reach + 1);
+          add({ act: 'fill', icon: 'water', target: 'pz:well', at: at(PZ.well), rank: chosen === 'pz:well' ? -1 : chosen === null ? 1 : 2, run: () => potAct('fill') }, reach + 1);
           if (o) add({ act: 'pour', icon: 'jar', target: o.id, at: o.position, rank: chosen === o.id ? -1 : 1, run: () => potAct('pour', other) }, reach);
           add({ act: 'empty', icon: 'clear', target: 'pz:drain', at: at(PZ.drain), rank: chosen === 'pz:drain' ? -1 : 1, run: () => potAct('empty') }, reach);
           add({ act: 'give', icon: 'hand-give', target: 'pz:jar', at: at(PZ.jar), rank: chosen === 'pz:jar' ? -1 : 1, run: () => potAct('jar') }, reach);

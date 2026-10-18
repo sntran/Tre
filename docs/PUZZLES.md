@@ -26,7 +26,7 @@ A traveler waits on the bank by the boat of Phù Đổng with a dog, a chicken, 
 
 After her task is done, on some days, the healer at the well (11:30 to 12:30) says: "Bà cần đúng bốn bát nước để sắc thuốc, mà chỉ có cái nồi năm bát với cái nồi ba bát."
 
-- A tap on a pot and a press take it. With a pot in the hands: a press at the well fills it; a tap on the other pot and a press pour until that pot is full or the pot in the hands is empty; a press at the drain empties it; a tap on the jar of the healer and a press is the check; a tap on the pot in the hands and a press put it back at its place.
+- A tap on a pot and a press take it. With a pot in the hands: a tap on the bucket of the well and a press fill it; a tap on the other pot and a press pour until that pot is full or the pot in the hands is empty; a press at the drain empties it; a tap on the jar of the healer and a press is the check; a tap on the pot in the hands and a press put it back at its place.
 - Each pot shows its water through its side: a ring for each bowl, blue to the level (no numeral).
 - The check: just right, and the healer thanks the child and gives an egg; too much, the jar runs over; too little, the jar stays low; she says which, and pours it back into the well. Each check is a skill event: `math.sub.10` for grades 1 and 2 (the need is two bowls: one pour), `math.addsub.100` from grade 3 (four bowls: a plan of several steps).
 - The hints of a wave: "Đổ đầy cái nồi lớn trước.", "Đổ nồi lớn sang nồi nhỏ, rồi xem nồi lớn còn lại bao nhiêu nhé.", and then she shows the first two steps: the big pot fills, and then it pours into the small one.
