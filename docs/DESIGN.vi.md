@@ -216,6 +216,18 @@ Game giữ một cấp độ riêng cho mỗi kỹ năng. Một người chơi c
 
 **Bản đồ kỹ năng:** mỗi kỹ năng có một ID, một lớp, một môn học, và các kỹ năng đi trước nó. Bản đồ kỹ năng theo Common Core và NGSS. Ví dụ: "cộng trong phạm vi 20" đi trước "cộng số có hai chữ số."
 
+**Nhiệm vụ lớn lên theo lớp:** mỗi nhiệm vụ trong làng có một mức cho mỗi lớp từ lớp 1 đến lớp 5; mẫu giáo dùng mức của lớp 1, với số nhỏ hơn. Mức bắt đầu ở lớp mà cha mẹ chọn, rồi lên hoặc xuống một bậc theo mức thành thạo của kỹ năng đó, như các sự việc trong ngày (P(L) trên 0,8 hoặc dưới 0,3). Thời kỳ của một kỹ năng chỉ cho biết câu chuyện dùng kỹ năng đó lần đầu ở đâu; nó không bao giờ giữ một em lớp 4 ở nhiệm vụ của lớp 1. Ý của mỗi mức lấy từ các khối lớp của Common Core và của chương trình Việt Nam năm 2018 (quy tắc 6, 15 và 36). Trong một lần thử chơi, một em lớp 4 gọi việc đặt que và hái lá là "trò con nít" và chỉ thích hai nhiệm vụ có toán đúng lớp mình.
+
+| Nhiệm vụ | Lớp 1 | Lớp 2 | Lớp 3 | Lớp 4 | Lớp 5 |
+| --- | --- | --- | --- | --- | --- |
+| Que tính của thầy đồ | một hai bó mười que | chục và đơn vị (giá trị theo hàng) | các bó bằng nhau từ 3 đến 9 que: trẻ lấy trước mỗi bó một sợi dây (nhân và chia) | số que có hai chữ số chia đều cho 3 đến 5 bàn: chia bó trước, rồi chia que, phần dư trả lại (phép chia có dư) | một bó lớn 100 que là một, một bó là một phần mười, một que là một phần trăm (số thập phân) |
+| Giỏ của bà lang | mỗi loại hai bó | mỗi loại bốn bó | một số thang của một bài thuốc (phép nhân) | từ một giỏ mẫu hai thang, làm giỏ nhiều thang hơn (tìm một thang trước: rút về đơn vị) | một giỏ có số bó theo phân số: một nửa, một phần ba, còn lại (phân số của một số) |
+| Hàng cọc của chú đánh cá | không khe nào rộng hơn khe của chú, ước bằng mắt | như vậy, hàng dài hơn | hàng dài một số sào của chú: mang cọc một chuyến là đủ (phép chia để đo) | hàng từ bờ đến phao, hai đầu đều có cọc: số cọc bằng số khe thêm một (bài toán trồng cây) | khe dài một sào rưỡi (số thập phân) |
+| Cây tre của anh tiều phu | hai khúc bằng nhau | ba khúc bằng nhau | một phần tư cây tre, hoặc các khúc dài cho trước (phân số đơn vị) | ba phần tư để làm cầu, phần còn lại làm cọc (phân số a/b) | một phần ba và một phần tư của cây tre 12 đốt, và phần còn lại (phân số khác mẫu) |
+| Thanh sắt của bác thợ rèn | nhúng khi sắt đỏ, có tín hiệu | như vậy, trong thời gian ngắn hơn | đọc màu của sắt nóng, không có tín hiệu | nước trong máng ấm lên sau mỗi thanh, thanh sau cần nước mới (nhiệt truyền đi) | một thí nghiệm công bằng: một thanh nóng nhúng nước, một thanh để nguội ngoài không khí, rồi bác thợ rèn uốn cả hai |
+
+Từ lớp 3, người giao việc đếm việc của trẻ theo nhóm (theo số que một bó, theo thang, theo hàng), và từ lớp 4 thì nói tổng của mỗi nhóm rồi tổng cả, không bao giờ đếm dài từng cái một. Lần làm mẫu thao tác đầu tiên ("Xem thầy làm …") nhạt dần: em từ lớp 3 trở lên, hoặc em đã làm thao tác đó ở một nhiệm vụ khác, chỉ được chỉ vào đống và vào chỗ đặt, và lần thử đầu là của trẻ (quy tắc 31). Sự hướng dẫn giúp được người mới học có thể cản trở người đã biết nhiều hơn (Kalyuga và cộng sự 2003).
+
 **Cách tạo bài toán:**
 
 - **Sinh theo quy tắc:** code tạo bài toán và vật lý mới mỗi lần, từ một mẫu và cấp độ kỹ năng. Ví dụ: một tấm khiên số 12 với 4 thẻ, trong đó ít nhất một cặp tạo thành 12.
