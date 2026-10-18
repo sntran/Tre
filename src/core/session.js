@@ -214,7 +214,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     data: data.folkgames, profile, learner, emit, world: () => state, env: () => env, seed: () => state.seed,
     callout: (textKey, params, id) => emit({ type: 'open', screen: 'callout', id, textKey, params }),
     command: (c) => worldCommand(state, c), goTo: (p) => goTo(p, null), skill: (ev) => skillEvent(ev),
-    feastOn: () => Boolean(hamlet.feast), practice: () => practice?.task ?? null, busy: () => busy || Boolean(screen), day: () => today(),
+    feastOn: () => Boolean(hamlet.feast), practice: () => practice?.task ?? null, busy: () => busy || Boolean(screen), day: () => today(), view: () => viewAz,
     // No invite while an enemy of an encounter is in reach, in a raid, or on the walk to a star (#86).
     quiet: () => raidOn() || encounterNear() || starWalk(),
     setDone: (game) => {
@@ -1857,6 +1857,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const RAID_STOP = Object.freeze({ first: 4, lost: 6 });
   const raidEnt = () => getEntity(state, 'raid');
   const raidOn = () => Boolean(raidEnt());
+  // The words of the lines that every raid says (#99): who comes (lính, thuồng luồng), what the
+  // slingshot throws (hòn đá, nắm cơm), and where the hero stands (cổng làng, chỗ lội, ngã tư).
+  function raidWords(id = raidEnt()?.raid.id) {
+    const w = data.raids?.raids[id]?.words ?? {};
+    const who = w.who ?? 'raid.who.soldier';
+    const ball = w.ball ?? 'raid.ball.stone';
+    // A word at the start of a line gets its capital letter from the translation (src/core/i18n.js).
+    return { who: { key: who }, ball: { key: ball }, wall: { key: w.wall ?? 'raid.wall.gate' } };
+  }
   let raidEnc = null; // the encounter of the raid now (its figure hides while the raid goes on)
   // Start a raid on this map: the hero stands at the wall, and the enemies come.
   function startRaid(id, encId = null) {
@@ -1900,7 +1909,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const line = data.raids.toolLines?.[tool];
       if (!line || profile.flags[`raid.tool.${tool}`]) continue;
       profile.flags[`raid.tool.${tool}`] = true;
-      lines.push({ tool, textKey: line.textKey, speaker: line.speaker });
+      lines.push({ tool, textKey: line.textKey, speaker: tool === 'sling' && def.coach ? def.coach : line.speaker });
     }
     if (drag) {
       profile.flags['raid.tool.drag'] = true;
@@ -1918,7 +1927,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const first = lines.findIndex((l) => l.tool);
     let now = lines.findIndex((l, i) => i > first && l.tool && !l.with);
     if (first < 0 || now < 0) now = lines.length;
-    for (const l of lines.slice(0, now)) say(l.textKey, l.params ?? {}, null, l.speaker);
+    for (const l of lines) l.params = { ...raidWords(id), ...(l.params ?? {}) };
+    for (const l of lines.slice(0, now)) say(l.textKey, l.params, null, l.speaker);
     toolLines = { list: lines.slice(now), t: TOOL_GAP };
     emit({ type: 'raid', on: true, id });
     emit({ type: 'hud' });
@@ -1929,6 +1939,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // fell, and after two misses in a row he points at the enemy and then at the posts. He stands
   // off the road, across it from the posts, and goes back to his day after the raid.
   const COACH = 'npc:elder';
+  // The person at the wall of the raid now: the elder, or the coach of the raid (#99: the fisher at
+  // the ford of the river, where the elder does not come).
+  const coachId = () => {
+    const c = data.raids?.raids[raidEnt()?.raid.id]?.coach;
+    return c ? `npc:${c}` : COACH;
+  };
   function coachToWall(raid) {
     raidMisses = 0;
     awayTold = false;
@@ -1941,7 +1957,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (raid && !raid.result) placeCoach(raid);
   }
   function placeCoach(raid) {
-    const e = getEntity(state, COACH);
+    const e = getEntity(state, coachId());
     if (!raid.tools.includes('sling') || !e?.schedule || e.hidden || e.raidCoach) return;
     // The first free cell near the wall, off the part of the road that stays clear in a raid
     // (KEEP_SIDE): across the road from the posts, then on the side of the posts.
@@ -1959,7 +1975,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     delete e.route;
   }
   function coachBack() {
-    const e = getEntity(state, COACH);
+    const e = getEntity(state, coachId());
     if (!e?.raidCoach) return;
     e.schedule.spot = e.raidCoach.spot;
     if (!e.raidCoach.hold) delete e.schedule.hold;
@@ -1970,10 +1986,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function raidAway() {
     if (awayTold) return;
     awayTold = true;
-    const coach = getEntity(state, COACH);
+    const coach = getEntity(state, coachId());
     const nghe = getEntity(state, 'friend:nghe');
     const who = coach?.raidCoach && !coach.hidden ? coach : nghe && !nghe.hidden ? nghe : null;
-    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.away', params: {} });
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.away', params: raidWords() });
   }
   // A stone that missed: the elder (or Nghé) says if it fell short of the first enemy or flew
   // past it. No count, and no numeral.
@@ -1996,7 +2012,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const front = raid.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone' && e.state !== 'stunned')
       .sort((a, b) => along(raid, a) - along(raid, b))[0];
     if (!front) return;
-    const coach = getEntity(state, COACH);
+    const coach = getEntity(state, coachId());
     const near = coach?.raidCoach && !coach.hidden;
     const nghe = getEntity(state, 'friend:nghe');
     const who = near ? coach : nghe && !nghe.hidden ? nghe : null;
@@ -2006,7 +2022,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       raidDemo(raid, coach);
       return;
     }
-    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: short ? 'raid.miss.short' : 'raid.miss.long', params: {} });
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: short ? 'raid.miss.short' : 'raid.miss.long', params: raidWords() });
     raidMisses += 1;
     if (raidMisses < 2 || !near) return;
     raidMisses = 0;
@@ -2066,6 +2082,35 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       teach.shown = true;
       teach.singles = 0;
     }
+  }
+  // A wave in a raid (#99): the next step of the raid. With the slingshot, the elder shows one throw
+  // the first time (#93), and then he points at the first enemy and the posts up to it and says the
+  // line of the presses; with no elder at the wall, Nghé says the line.
+  function raidWave() {
+    const raid = raidEnt()?.raid;
+    if (!raid || raid.result || raidTeach.demo) return;
+    const coach = getEntity(state, coachId());
+    const near = coach?.raidCoach && !coach.hidden;
+    const nghe = getEntity(state, 'friend:nghe');
+    const who = near ? coach : nghe && !nghe.hidden ? nghe : null;
+    if (!who) return;
+    if (!raid.tools.includes('sling')) {
+      emit({ type: 'open', screen: 'callout', id: who.id, textKey: raid.introKey ?? data.raids.raids[raid.id]?.introKey, params: {} });
+      return;
+    }
+    if (near && !raidTeach.shown) {
+      raidDemo(raid, coach);
+      return;
+    }
+    emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.tool.sling', params: raidWords() });
+    const front = raid.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone' && e.state !== 'stunned').sort((a, b) => along(raid, a) - along(raid, b))[0];
+    if (!front) return;
+    const d = along(raid, front);
+    const upTo = raid.posts.filter((q) => q.d <= d + 2.5);
+    const post = upTo.at(-1) ?? raid.posts[0];
+    const at = getEntity(state, front.id)?.position ?? { x: front.x, z: front.z };
+    if (near) coach.gesture = { act: 'point', x: at.x, z: at.z, t: 1.8, ...(post ? { then: { act: 'point', x: post.x, z: post.z, t: 2.2 } } : {}) };
+    emit({ type: 'glowSeq', ids: [front.id, ...upTo.map((q) => `post:${raid.posts.indexOf(q) + 1}`)] });
   }
   // Nghé runs to the wall, and the child and Nghé drive the enemy away together: the raid ends as
   // won with help (#93: the story never stops at a raid).
@@ -4474,7 +4519,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (type === 'tap') tap(cmd.target ?? {});
     else if (type === 'hands') press(cmd.id ?? null);
     // A wave: the child calls the person of the task (docs/MENTOR.md).
-    else if (type === 'wave') mentoring.wave();
+    else if (type === 'wave') {
+      // In a raid and in a folk game the wave is there too (#99, rule 41).
+      if (raidOn() && !raidEnt().raid.result) raidWave();
+      else if (!folk.wave()) mentoring.wave();
+    }
     else if (type === 'jump') { if (!folk.jump()) jump(); }
     // The end of a press of the jump: a hop on the court of nhảy lò cò (a long press hops two squares).
     else if (type === 'jumpUp') folk.jumpUp(Number(cmd.held) || 0);
@@ -4603,6 +4652,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     get profile() { return profile; },
     // The task with a mentor that the hero works on now (the view shows the wave), or null.
     get mentorTask() { return mentoring.activeKey(); },
+    // A wave has an answer now: a task, a raid, or a folk game (#99).
+    get canWave() { return Boolean(mentoring.activeKey() || (raidOn() && !raidEnt().raid.result) || folk.active()); },
     // The persons of the stations of a practice of a whole place (#37): the view puts a star over each.
     stations: () => [...stations()],
     workCount,

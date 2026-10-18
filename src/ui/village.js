@@ -1100,7 +1100,7 @@ export async function mountVillage(ctx, params = {}) {
     if (!alive) return;
     draw(dt, acc / STEP);
     frames += 1;
-    if (frames % 15 === 0) waveBtn.hidden = busy || !session.mentorTask;
+    if (frames % 15 === 0) waveBtn.hidden = busy || !session.canWave;
     // A new near view that waits for the end of a task, a raid, or a talk (#84).
     if (frames % 30 === 0 && ctx.viewPending && !working()) ctx.applyView();
     // The sound of the place changes with the light and the rain.
@@ -1928,7 +1928,10 @@ export async function mountVillage(ctx, params = {}) {
       taskHereAt = performance.now();
       taskHereNow = session.taskHere();
     }
-    for (const m of (busy && !marksLine && !facePulse) || taskHereNow ? [] : markers()) {
+    // In a raid the hero stays at the wall (#86), so no star shows: each star leads away from it
+    // (#99: "Đi tới chỗ ngôi sao." came, and the hero did not move).
+    const raidNow = Boolean(getEntity(state, 'raid')?.raid && !getEntity(state, 'raid').raid.result);
+    for (const m of (busy && !marksLine && !facePulse) || taskHereNow || raidNow ? [] : markers()) {
       const p = view.project(m.x, m.h, m.y);
       const edge = edgeMarker(screen, p, inset);
       if (!edge) {

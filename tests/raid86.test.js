@@ -1,6 +1,7 @@
 // The first raid of the play test of #86: words after a miss, a raid that the child chooses, and a
 // child who stays at the gate.
 import { test } from 'node:test';
+import { createI18n } from '../src/core/i18n.js';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
 import { getEntity, query } from '../src/core/world/state.js';
@@ -45,9 +46,11 @@ test('after a stone that falls short or flies past, the elder at the wall says w
   assert.ok(seqs[0][0].startsWith('raider:'), 'the enemy glows first');
   assert.ok(seqs[0].slice(1).every((id) => id.startsWith('post:')), 'and then the posts');
   assert.ok(gesture?.then, 'the elder points two times');
-  const vi = load('i18n/vi.json');
-  assert.equal(vi['raid.miss.short'], 'Hòn đá rơi trước lính rồi.');
-  assert.equal(vi['raid.miss.long'], 'Hòn đá bay qua lính rồi.');
+  // The words of the raid of the scouts (#99).
+  const w = { who: { key: 'raid.who.soldier' }, ball: { key: 'raid.ball.stone' }, wall: { key: 'raid.wall.gate' } };
+  const i18n = createI18n(load('i18n/vi.json'), 'vi');
+  assert.equal(i18n.t('raid.miss.short', w), 'Hòn đá rơi trước lính rồi.');
+  assert.equal(i18n.t('raid.miss.long', w), 'Hòn đá bay qua lính rồi.');
 });
 
 test('after the raid the elder goes back to his day', async () => {
@@ -103,7 +106,7 @@ test('a child who walks far from the wall with the stick: the enemies wait, and 
   assert.deepEqual(events, ['away', 'back']);
   assert.deepEqual(after, before, 'the enemies waited');
   assert.equal(lines.filter((k) => k === 'raid.away').length, 1);
-  assert.equal(load('i18n/vi.json')['raid.away'], 'Cháu ơi, quay lại cổng làng!');
+  assert.equal(createI18n(load('i18n/vi.json'), 'vi').t('raid.away', { wall: { key: 'raid.wall.gate' } }), 'Cháu ơi, quay lại cổng làng!');
   assert.ok(getEntity(s.state, 'raid'), 'the raid goes on');
 });
 
