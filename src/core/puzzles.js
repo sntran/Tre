@@ -10,7 +10,8 @@
 //
 // deps: data (puzzles), profile, world(), env() (groundY), map() (its objects), day(), seed(),
 // grade(), busy(), chosen() (the id of the last tap), say(id, textKey, params), sound(name),
-// give(gift, from), skill(ev), log(kind, data).
+// give(gift, from), skill(ev), log(kind, data), look(points) (the view shows these points, half
+// blocks; the last is the hero).
 import { getEntity, addEntity, removeEntity } from './world/state.js';
 import { hashSeed } from './rng.js';
 
@@ -160,6 +161,10 @@ export function createPuzzles(deps) {
     const pair = wrongPair(F, ferry.where, left);
     if (pair) {
       ferry.scene = { pair, t: 0, bank: left };
+      // The view shows the scene on the other bank with the hero (#104: the scene was out of the
+      // frame).
+      const pts = pair.slice(0, 2).map((t) => ({ ...getEntity(w(), thingId(t)).position }));
+      deps.look([...pts, { ...hero().position }]);
       deps.say('pz:traveler', `puzzle.ferry.${pair[2]}`, {});
       deps.sound(pair[2] === 'chase' ? 'bark' : 'peck');
       return;

@@ -209,3 +209,16 @@ test('with a pot in the hands, a tap on the well is a tap on the well, not on th
   const t = tapTarget(cam.project(q.x, q.y, q.z), sessionScreen(p.session, cam));
   assert.notEqual(t?.thing, 'pz:pot:0', JSON.stringify(t));
 });
+
+test('the scene of a wrong pair on the other bank is in the view with the hero', async () => {
+  const p = await at([11, 63], 1);
+  const views = [];
+  p.session.listen((e) => { if (e.type === 'workView' && e.key === 'puzzle-ferry') views.push(e); });
+  p.tapThing('pz:dog');
+  assert.equal(p.press(), 'load');
+  assert.equal(p.press(), 'cross');
+  p.run(25, () => views.length > 0);
+  assert.equal(views.length, 1, 'the view turns to the scene');
+  const chicken = getEntity(p.session.state, 'pz:chicken').position;
+  assert.ok(views[0].points.some((q) => Math.hypot(q.x - chicken.x, q.z - chicken.z) < 2), 'the chicken is a point of the view');
+});
