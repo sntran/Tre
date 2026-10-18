@@ -1,0 +1,37 @@
+{
+  "name": "trick-hopscotch",
+  "about": {
+    "vi": "Buổi sáng ở chỗ nhảy lò cò: chạm vào bạn nhỏ, đôi khi bạn đố một câu đố mẹo, rồi chờ một chút mới nói đáp án.",
+    "en": "A morning at the hopscotch: a tap on the child sometimes gives a trick question, and the answer after a short wait."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 600,
+  "at": [
+    "phu-dong",
+    71,
+    26.5
+  ],
+  "steps": [
+    {
+      "wait": 3
+    },
+    {
+      "expect": [
+        {
+          "entity": "npc:loco-child",
+          "near": "hero",
+          "within": 5
+        }
+      ]
+    }
+  ]
+}
