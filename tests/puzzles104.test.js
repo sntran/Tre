@@ -181,7 +181,7 @@ test('Nghé never stands on a thing of a puzzle, so that a tap on the thing is n
   Object.assign(nghe.position, { x: dog.x, z: dog.z });
   p.run(2);
   const off = (q) => Math.max(Math.abs(nghe.position.x - q.x), Math.abs(nghe.position.z - q.z)) > 1;
-  for (const t of ['dog', 'chicken', 'rice']) assert.ok(off(getEntity(p.session.state, `pz:${t}`).position), t);
+  for (const t of ['dog', 'chicken', 'rice']) assert.ok(off(getEntity(p.session.state, `pz:${t}`).position), `${t}: Nghé at ${JSON.stringify(nghe.position)}`);
 });
 
 test('a tap on a thing of a puzzle with Nghé next to it is a tap on the thing, not a pet of Nghé', async () => {

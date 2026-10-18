@@ -135,8 +135,9 @@ export function follow(world, dt, rng, env) {
       const inside = (q) => q.x >= r.x0 - b && q.x <= r.x1 + b && q.z >= r.z0 - b && q.z <= r.z1 + b;
       if (!inside(p)) continue;
       // A step of the follow from out of the place into it is taken back: the place is a wall for
-      // Nghé, and the follow goes around it.
-      if (!inside(from)) {
+      // Nghé, and the follow goes around it. A step out of another place goes on out of this one
+      // (#104: the things of a puzzle stand close).
+      if (!inside(from) && !stepped) {
         p.x = from.x;
         p.z = from.z;
         continue;
