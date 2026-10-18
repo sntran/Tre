@@ -47,7 +47,7 @@ export function decimalWords(h) {
   return { key: b < 10 ? 'decimal.small' : 'decimal.words', params: { a, b: { key: `num.${b}` } } };
 }
 
-export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {}, nameOf = () => '' }) {
+export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {}, nameOf = () => '', chosen = () => null }) {
   const cfg = data.mentors;
   const states = new Map(); // key -> the mentor of the task
   const tracks = new Map(); // key -> { startT, firstAct, lastAct, lastCommit, acted, left, round }
@@ -955,7 +955,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     }
     t += 0.6;
     for (const { heap, place } of pairs) {
-      const thing = itemsOf(heap).find((e) => !e.item.held && !e.item.set && !e.item.stray);
+      // Not the thing that the child tapped: the hero walks to it (#95: the teacher took the rod of
+      // the tap, and the hero stood).
+      const free = itemsOf(heap).filter((e) => !e.item.held && !e.item.set && !e.item.stray);
+      const thing = free.find((e) => e.id !== chosen()) ?? free[0];
       if (!thing) continue;
       const to = place.zone.rect ? { x: (place.zone.rect.x0 + place.zone.rect.x1) / 2, z: (place.zone.rect.z0 + place.zone.rect.z1) / 2 } : { x: place.zone.x, z: place.zone.z };
       s.point(t, heap.position, 1);

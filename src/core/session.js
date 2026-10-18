@@ -147,7 +147,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   let practice = null;
   // The mentors of the tasks: the person who gives a task watches the child and answers (docs/MENTOR.md).
   const mentoring = createMentoring({
-    data, profile, learner, log, emit, world: () => state, env: () => env, nameOf: (id) => nameOf(id),
+    data, profile, learner, log, emit, world: () => state, env: () => env, nameOf: (id) => nameOf(id), chosen: () => chosen?.id ?? null,
     // A bigger task: the next round of a practice is one level higher. A move never makes the task in
     // progress bigger (its line says "next time"); the memory of the mentor (lift) raises the next
     // small event one level.

@@ -90,3 +90,21 @@ for (const c of cases) {
     }
   });
 }
+
+test('a tap on a rod at the end of the talk walks the hero to it: the first step of the teacher takes another rod', async () => {
+  let s = null;
+  const failures = await runHeadless({ name: 'walk-first', profile, clock: 540, at: ['phu-dong', 54, 27], steps: start.slice(0, 3) }, { onSession: (x) => { s = x; } });
+  assert.deepEqual(failures, []);
+  const hero = getEntity(s.state, 'hero');
+  const heap = getEntity(s.state, 'zone:rods');
+  const tapped = heap.zone.items[0];
+  const taken = [];
+  s.listen((e) => { if (e.type === 'add' && e.by === 'npc:teacher') taken.push(e.item); });
+  // The child taps a rod at once, as the teacher starts the first step.
+  send(s, { type: 'tap', target: { thing: tapped } });
+  run(s, 6, () => taken.length > 0 && !hero.route);
+  assert.ok(taken.length, 'the teacher shows the first step');
+  assert.ok(!taken.includes(tapped), `the teacher took another rod: ${taken.join(', ')}`);
+  const rod = getEntity(s.state, tapped);
+  assert.ok(rod.item.zone === 'rods' && near(hero.position, rod.position) < 4, 'the hero is at the rod of the tap');
+});
