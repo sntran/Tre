@@ -198,8 +198,20 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
     const svg = el('svg', { class: 'country-svg', xmlns: NS, preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': t('ui.worldmap') });
     const map = h('div', { class: 'country' }, [svg]);
     const zoom = (k) => setView(view.w * k, null, null);
+    // The + zooms toward the hero (#100: it zoomed into the middle of the view, far from the hero):
+    // the point of the hero on the sheet, or the place of the region of the hero.
+    const heroPoint = () => {
+      const heroEnt = profile.world?.entities?.find((e) => e.id === 'hero');
+      const g = heroEnt ? world.geoAt(hereMap, heroEnt.position.x / 2, heroEnt.position.z / 2) : null;
+      const at = g ?? base.place[world.region(here)?.place]?.at ?? null;
+      return at ? proj.toMap(at) : null;
+    };
+    const zoomIn = () => {
+      const p = heroPoint();
+      setView(view.w * 0.7, p?.x ?? null, p?.y ?? null);
+    };
     const tools = h('div', { class: 'country-tools' }, [
-      button('+', () => zoom(0.7), { cls: 'icon-btn', aria: t('world.zoomin') }),
+      button('+', zoomIn, { cls: 'icon-btn', aria: t('world.zoomin') }),
       button('−', () => zoom(1 / 0.7), { cls: 'icon-btn', aria: t('world.zoomout') }),
     ]);
     map.append(tools);
