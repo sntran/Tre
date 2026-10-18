@@ -78,9 +78,11 @@ export const AWAY_LIFE = 3;
 // the arrows; foot: the screen point of the feet of the person, or null. A bubble never covers the
 // work of an open task (#64: the hint of the woodcutter lay over the stem, and a tap on the stem hit
 // the bubble): it goes higher, over the work, or to the other side of its person. work: the boxes of
-// the work. Return { x0, y0, x1, y1, away, tail } (tail: the screen point of the person when away,
-// else null).
-export function placeBubble(head, w, h, { screen, hero = null, controls = [], stars = [], foot = null, work = [] }) {
+// the work. A bubble never goes under the minimap in the top corner (#98: it covered the end of
+// "Khúc này dài quá"): it goes to the left of it, or under it. corner: the box of the minimap, or
+// null. Return { x0, y0, x1, y1, away, tail } (tail: the screen point of the person when away, else
+// null).
+export function placeBubble(head, w, h, { screen, hero = null, controls = [], stars = [], foot = null, work = [], corner = null }) {
   const margin = 8;
   const top = screen.top ?? 0;
   const bottom = screen.bottom ?? screen.h;
@@ -130,6 +132,12 @@ export function placeBubble(head, w, h, { screen, hero = null, controls = [], st
     const sides = (busy.x0 + busy.x1) / 2 > head.x ? [left, right] : [right, left];
     const other = [higher, overHead, ...sides].find(free);
     if (other) b = other;
+  }
+  if (corner && overlaps(b, corner)) {
+    const gap = 4;
+    const left = { ...b, x0: corner.x0 - gap - w, x1: corner.x0 - gap };
+    const y0 = corner.y1 + gap;
+    b = left.x0 >= margin ? left : { ...b, y0, y1: y0 + h };
   }
   return { ...b, away, tail: away ? { x: head.x, y: head.y } : null };
 }

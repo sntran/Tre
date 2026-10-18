@@ -1989,6 +1989,8 @@ export async function mountVillage(ctx, params = {}) {
       session.command({ type: 'view', az: view.angle });
     }
     const workAt = bubbles.length ? workMarks() : [];
+    const mini = !bubbles.length || miniBtn.hidden || !miniBtn.offsetParent ? null : miniBtn.getBoundingClientRect();
+    const corner = mini && { x0: mini.left - canvasRect.left, y0: mini.top - canvasRect.top, x1: mini.right - canvasRect.left, y1: mini.bottom - canvasRect.top };
     for (let i = bubbles.length - 1; i >= 0; i--) {
       const b = bubbles[i];
       // The age of a bubble is in seconds (#77: at 1/60 each frame, a phone that draws fewer frames
@@ -2006,7 +2008,7 @@ export async function mountVillage(ctx, params = {}) {
       // talks from the edge with a tail toward the person, for a short time (#53).
       const rise = Math.min(b.age, LINE_LIFE) * 10 + (b.icon ? 40 : 0);
       const foot = view.project(f.x, f.y, f.z);
-      const at = placeBubble({ x: q.x, y: q.y - rise }, b.width, b.height, { screen: { w: size.width, h: size.height, top: inset.top, bottom: size.height }, hero: heroAt, controls, stars: marks, foot, work: workAt });
+      const at = placeBubble({ x: q.x, y: q.y - rise }, b.width, b.height, { screen: { w: size.width, h: size.height, top: inset.top, bottom: size.height }, hero: heroAt, controls, stars: marks, foot, work: workAt, corner });
       if (at.away) b.life = Math.min(b.life, AWAY_LIFE);
       const side = !at.tail ? null : at.tail.x < at.x0 ? 'left' : at.tail.x > at.x1 ? 'right' : at.tail.y > at.y1 ? 'down' : 'up';
       if (b.side !== side) {

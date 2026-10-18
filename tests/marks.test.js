@@ -110,3 +110,12 @@ test('two targets in about the same direction each have their own arrow at the e
   assert.equal(t.y, 140);
   assert.ok(Math.abs(t.x - 200) >= ARROW_GAP);
 });
+
+test('a bubble never goes under the minimap: it goes to the left of it, or under it (#98)', () => {
+  // The woodcutter at the right of the screen: "Khúc này dài quá" went under the minimap.
+  const mini = { x0: 306, y0: 128, x1: 382, y1: 204 };
+  const left = placeBubble({ x: 290, y: 205 }, 170, 30, { screen, controls, corner: mini });
+  assert.ok(!overlaps(left, mini) && left.x0 >= 8 && left.x1 <= mini.x0, 'to the left of the minimap');
+  const under = placeBubble({ x: 290, y: 205 }, 330, 30, { screen, controls, corner: mini });
+  assert.ok(!overlaps(under, mini) && under.y0 >= mini.y1, 'a wide bubble goes under it');
+});
