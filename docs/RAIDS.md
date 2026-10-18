@@ -104,6 +104,16 @@ Tests: `tests/raid86.test.js`, `tests/sounds.test.js`.
 - **The first raid ends.** After the demonstration and four more misses, or three minutes in the raid, Nghé runs to the wall ("Bạn ơi, bọn mình cùng đuổi nó đi!"), and the child and Nghé drive the enemies away together: the raid ends as won with help (`driveAway` in `src/core/world/raids.js`; the record `raid` has `help`). The story goes on. The raid can come again from the elder (`raid.<id>.again`, the talk `elder.raid.again`), with no second gift.
 - **The pace of a child.** For grades K to 2 the stone flies 2.4 seconds after the last press (1.8 from grade 3). No measure of the pace of a child who presses and counts aloud was found; 2.4 seconds is a choice with room for a child of six who says each number before the next press.
 
+## The words of each raid, the wave, and the stars (#99)
+
+**Each raid names its own things.** The lines that every raid says (`raid.tool.sling`, `raid.miss.short`, `raid.miss.long`, `raid.away`, `raid.tool.traps`) have the parameters `{who}`, `{ball}`, and `{wall}`. Each raid gives them in `words` (`data/raids.json`): lính, hòn đá, and cổng làng for the scouts; thuồng luồng, nắm cơm, and chỗ lội for the river; lính and ngã tư for the soldiers and the boss. A test translates each line of each raid and checks that it names no thing that the raid does not have (`tests/raid99.test.js`).
+
+**The coach of a raid.** The person at the wall is the elder, or the `coach` of the raid: the fisher at the ford of the river, where the elder does not come. The coach says where each stone fell, shows one throw (#93), and says the line of the slingshot.
+
+**The wave in a raid.** The wave button shows in a raid (rule 41). A wave gives the next step: the first time, the coach shows one throw; then the coach points at the first enemy and the posts up to it, which glow one after another, and says the line of the presses. With no coach at the wall, Nghé says the line.
+
+**No star in a raid.** The hero stays at the wall (#86), so no star shows on the screen while the raid goes on: each star leads away from the wall.
+
 ## Skill events
 
 Each commit is one skill event for the learner (the child never sees it):

@@ -38,6 +38,13 @@ Other children, other courts, other starting numbers, and other calls make each 
 
 The children are peers, not tutors, but they read the errors as the mentors do (#24): after two landings on the shard, or two long hops over a square with no shard, an older child shows the skip once, on another square (`demo`). After two presses too soon (mashing), the children draw a shorter court (`short`: eight squares) and say "Nhảy từ từ thôi."
 
+### After the play test of #95 (#99)
+
+- **The level chooses the court.** The courts of a skill in `data/world/folkgames.json` are in the order of the levels, and the level of the child chooses one (`courtPlan`). For counting to 120, the court from 1 is the first level; the courts from 36 to 101 are the second.
+- **Where to start.** The children always say "Hay quá! Ra vạch đầu đi, bọn mình gọi ô cho.", also after "Hôm nay sân bắt đầu từ {n} nhé." on a court that does not start at 1. The start line glows (`folk:start`) until the hero stands on it.
+- **The court in view.** When the child joins, the three children stand beside the court on the side away from the camera (the angle of the view), so that they never cover the squares.
+- **The wave.** The wave button shows in a folk game. A wave gets the next step from a child: where to start, the call of the square and how to throw (a hold of the big button), how to hop, or the goal of the rope.
+
 ## Nhảy dây
 
 - **The rope** (`rope` and `rope-to` in the places of `xom-ruong`): two children (`npc:rope-child`, Cò, and a friend) turn a long rope at the feast of the new rice (#23), and in a practice of the rope. The rope touches the ground at each beat.
