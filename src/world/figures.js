@@ -685,6 +685,9 @@ export function thingLook(key) {
   if (k === 'chalk-stick') return { kind: 'chalk-stick' };
   m = /^piece-glow-(\d+)$/.exec(k);
   if (m) return { kind: 'piece-glow', n: Number(m[1]) };
+  // The outline of a piece that the woodcutter lays along another piece (#102).
+  m = /^lay-(\d+)$/.exec(k);
+  if (m) return { kind: 'lay', n: Number(m[1]) };
   // The things of the ducks, the fish traps, and the drum dance (docs/HAMLET.md).
   m = /^duck-trough-(\d+)$/.exec(k);
   if (m) return { kind: 'duck-trough', n: Number(m[1]) };
@@ -1091,6 +1094,8 @@ export function workThing(look) {
     case 'chalk-stick': return still([P('stick', [0.3, 0.3, 1.1], 'ashLight', [0, 0.15, 0]), P('tip', [0.3, 0.3, 0.2], 'vermilion', [0, 0.15, 0.6])], 0.3);
     case 'ring-glow': return still([P('glow', [1.12, 1.12, 0.92], 'yellow', [0, 0.5, 0])], 1.1);
     case 'mark-glow': return still([P('glow', [0.25, CHALK_BAND + 0.1, CHALK_BAND + 0.1], 'yellow', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
+    // The outline of a laid piece: an ink frame over a piece of n rings, with a red post at each end.
+    case 'lay': return still([P('w', [0.08, 0.08, look.n], 'ink', [-0.62, 1.16, look.n / 2]), P('e', [0.08, 0.08, look.n], 'ink', [0.62, 1.16, look.n / 2]), P('a', [1.32, 1.3, 0.12], 'vermilion', [0, 0.65, 0.06]), P('b', [1.32, 1.3, 0.12], 'vermilion', [0, 0.65, look.n - 0.06])], 1.3);
     case 'piece-glow': return still([P('glow', [1.14, 1.14, look.n], 'yellow', [0, 0.5, look.n / 2])], 1.1);
     case 'chalk-band': return still([P('band', [0.4, CHALK_BAND, CHALK_BAND], 'vermilion', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
     // A chalk mark across a culm (the height of a slash).
@@ -1101,7 +1106,9 @@ export function workThing(look) {
       // Staffs for the men of the village are longer than sticks.
       const long = look.long ? 3.6 : 2.4;
       for (let i = 0; i < look.n; i++) parts.push(P(`stick${i}`, [0.45, 0.45, long], 'green', [(i - (look.n - 1) / 2) * 0.5, 0.25 + (i % 2) * 0.1, 0]));
-      parts.push(P('band', [look.n * 0.5 + 0.2, 0.6, 0.3], 'vermilion', [0, 0.3, 0]));
+      // One stick has no band: the rings of its nodes show it as bamboo.
+      if (look.n === 1) for (const k of [-1, 1]) parts.push(P(`node${k}`, [0.55, 0.55, 0.12], 'green-deep', [0, 0.25, (k * long) / 4]));
+      else parts.push(P('band', [look.n * 0.5 + 0.2, 0.6, 0.3], 'vermilion', [0, 0.3, 0]));
       return still(parts, 0.7);
     }
     default: return null;

@@ -60,11 +60,13 @@
     {
       "id": "woodcutter", "npc": "woodcutter", "calling": "woodcutter", "flag": "trial.woodcutter.done", "reward": { "bamboo": 3 },
       "task": "cut",
-      "_task": "A fallen bamboo stem lies on the ground (length). The woodcutter needs it in this many equal sticks (parts). A tap on the stem puts a chalk mark there (it snaps to the half-block grid), and a tap on a mark takes it away. A tap on the woodcutter cuts at the marks (the commit): equal sticks are tied into a bundle, and the child carries it to the wood pile by the bridge; sticks that are not equal break, and a new stem comes.",
+      "_task": "A fallen bamboo stem lies on the ground (length). The woodcutter needs it in this many equal sticks (parts). A tap on the stem puts a chalk mark there (it snaps to the half-block grid), and a tap on a mark takes it away. A tap on the woodcutter cuts at the marks (the commit): equal sticks are tied into a bundle, and the child carries it to the wood pile by the bridge; sticks that are not equal break, and a new stem comes. From grade 3 (#102) the stem has parts: unit (grade 3): one part of the stem for the bridge (one half, one third, one fourth, or one sixth of a stem of stems rings, as the rings allow), and the rest stays; equiv (grade 4): a/b of the stem for the bridge (fracs), and the rest for stakes; unlike (grade 5): one third for the bridge, one fourth for the fence, and the rest for the kitchen (12 or 24 rings). Each piece is compared with the length that the task asks for. The check of the woodcutter lays a piece along another, one time after another, and says the part.",
       "levels": [
         { "length": 8, "parts": 2, "skill": "math.add.20", "level": 1 },
         { "length": 12, "parts": 3, "skill": "math.add.20", "level": 2 },
-        { "length": 12, "parts": 4, "skill": "math.add.20", "level": 3 }
+        { "form": "unit", "stems": [8, 12, 16], "parts": [2, 3, 4, 6], "skill": "math.frac.unit", "level": 1, "talk": { "dlg.woodcutter.trial.n3": { "key": "dlg.woodcutter.trial.n3.unit", "names": ["stem:woodcutter"] }, "dlg.woodcutter.trial.n4": "dlg.woodcutter.trial.n4.part", "dlg.woodcutter.trial.done.n1": "dlg.woodcutter.trial.done.part" } },
+        { "form": "equiv", "stems": [8, 12, 16], "fracs": [[3, 4], [2, 3]], "skill": "math.frac.equiv", "level": 1, "talk": { "dlg.woodcutter.trial.n3": { "key": "dlg.woodcutter.trial.n3.equiv", "names": ["stem:woodcutter"] }, "dlg.woodcutter.trial.n4": "dlg.woodcutter.trial.n4.part", "dlg.woodcutter.trial.done.n1": "dlg.woodcutter.trial.done.part" } },
+        { "form": "unlike", "stems": [12, 24], "skill": "math.frac.unlike", "level": 1, "talk": { "dlg.woodcutter.trial.n3": { "key": "dlg.woodcutter.trial.n3.unlike", "names": ["stem:woodcutter"] }, "dlg.woodcutter.trial.n4": "dlg.woodcutter.trial.n4.part", "dlg.woodcutter.trial.done.n1": "dlg.woodcutter.trial.done.part" } }
       ],
       "places": { "stem": "woodcutter-stem", "pile": "woodpile" }
     },

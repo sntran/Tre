@@ -1145,7 +1145,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (plan?.k) out.k = num(plan.k);
         if (plan?.halves) out.x = { key: `fisher.poles.${plan.halves}` };
       }
-      if (def.task === 'cut') out.parts = num(t.parts);
+      if (def.task === 'cut') {
+        out.parts = num(t.parts);
+        // The part of the stem of the level (#102).
+        const plan = def.npc === speaker ? trialZone(def.id)?.zone.plan : null;
+        if (plan?.b) out.part = { key: `frac.${plan.a}.${plan.b}` };
+      }
       if (def.task === 'slash') out.staffs = num(t.parts);
       if (def.task === 'horse') out.lumps = num(t.ore);
     }

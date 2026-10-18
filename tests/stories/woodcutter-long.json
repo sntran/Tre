@@ -1,10 +1,10 @@
 {
-  "name": "woodcutter-four",
+  "name": "woodcutter-long",
   "about": {
-    "vi": "Anh tiều phu cần bốn khúc (lớp 3): một vạch ở đốt 8 rồi chặt là ít khúc quá; khúc dài 8 sáng lên và anh nói khúc này dài quá, không bao giờ nói khúc 4 ngắn quá; ba vạch cho bốn khúc bằng nhau.",
-    "en": "The woodcutter needs four pieces (grade 3): one mark at ring 8 and a cut give too few pieces; the long piece of 8 glows and he says that it is too long, never that the piece of 4 is too short; three marks give four equal pieces."
+    "vi": "Anh tiều phu cần ba khúc (lớp 2): một vạch ở đốt 8 rồi chặt là ít khúc quá; khúc dài 8 sáng lên và anh nói khúc này dài quá, không bao giờ nói khúc 4 ngắn quá; hai vạch cho ba khúc bằng nhau.",
+    "en": "The woodcutter needs three pieces (grade 2): one mark at ring 8 and a cut give too few pieces; the long piece of 8 glows and he says that it is too long, never that the piece of 4 is too short; two marks give three equal pieces."
   },
-  "profile": { "name": "An", "grade": 3, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
   "clock": 540,
   "at": ["phu-dong", 51, 8.5],
   "steps": [
@@ -20,17 +20,14 @@
     { "until": { "event": "call", "with": { "key": "woodcutter.long" }, "timeout": 60 } },
     { "expect": [{ "event": "call", "with": { "key": "woodcutter.pieces" } }, { "event": "call", "with": { "key": "woodcutter.short" }, "not": true }] },
     { "until": { "event": "call", "with": { "key": "woodcutter.addMark" }, "timeout": 60 } },
-    { "press": { "stem": 3 } },
+    { "press": { "stem": 4 } },
     { "until": { "event": "mark", "timeout": 10 } },
     { "wait": 1.5 },
-    { "press": { "stem": 6 } },
-    { "until": { "event": "mark", "timeout": 10 } },
-    { "wait": 1.5 },
-    { "press": { "stem": 9 } },
+    { "press": { "stem": 8 } },
     { "until": { "event": "mark", "timeout": 10 } },
     { "wait": 1.5 },
     { "press": { "entity": "npc:woodcutter" } },
     { "until": { "event": "chop", "timeout": 60 } },
-    { "expect": [{ "event": "skill", "with": { "solved": true, "parts": [3, 3, 3, 3] } }] }
+    { "expect": [{ "event": "skill", "with": { "solved": true, "parts": [4, 4, 4] } }] }
   ]
 }

@@ -121,7 +121,8 @@ test('the line "như thế này" of the woodcutter frames all of the example and
   const W = 390;
   const H = 844;
   const wu = (p) => ({ x: p.x / 2, y: (p.y ?? 0) / 2, z: p.z / 2 });
-  for (const grade of [1, 2, 3]) {
+  // From grade 3 the woodcutter names a part in words, with no example (#102).
+  for (const grade of [1, 2]) {
     const s = story('woodcutter-three');
     s.profile = { ...s.profile, grade };
     let session = null;

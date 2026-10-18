@@ -96,7 +96,10 @@
       "person": "woodcutter",
       "trial": "woodcutter",
       "skills": [
-        "math.add.20"
+        "math.add.20",
+        "math.frac.unit",
+        "math.frac.equiv",
+        "math.frac.unlike"
       ],
       "set": 2,
       "story": "practice-chat-tre"

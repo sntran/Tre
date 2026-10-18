@@ -9,7 +9,7 @@ import { endScript } from './world/systems/mentor.js';
 import { basketRowAt, matSlot, spareStake } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
-import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd, PIECE_NAME, PIECES_LINE, shortPiece, badPiece } from './world/zones.js';
+import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd, PIECE_NAME, PIECES_LINE, shortPiece, badPiece, layPlan, LAY_PACE, LAY_LINE } from './world/zones.js';
 
 // The zones where the parts of a try go, in the order of the search.
 const PLACES = ['exact', 'bundle', 'basket', 'line', 'forge', 'woodpile', 'spots'];
@@ -754,6 +754,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // parts on the place counted aloud with the mark of what went wrong (the mark), or, at a task with
   // no parts to count, the mark of what went wrong only: the widest gap of the row of the fisher.
   function countSteps(task, fam, info, s, t) {
+    if (task.tz?.zone.cutPlan) return laySteps(task, s, t);
     if (task.tz?.zone.cutPieces) return pieceSteps(task, s, t);
     // The teacher at grades 4 and 5 (#101): the desks and the box, or the table.
     const form = task.tz?.zone.plan?.form;
@@ -834,6 +835,72 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // long one of a cut with a wrong number. A piece of the right length is never short.
     const bad = badPiece(pieces, parts);
     const e = bad === null ? null : getEntity(world(), `piece:woodcutter:${bad.i}`);
+    if (e) {
+      const len = pieces[bad.i];
+      s.steps.push({ at, spawn: { look: `piece-glow-${len}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
+      s.point(at, { x: e.position.x + len / 2, z: e.position.z }, 1.6);
+      s.say(at + 0.1, bad.long ? lines.long ?? 'woodcutter.long' : lines.short ?? 'woodcutter.short');
+      at += 2;
+    }
+    return at;
+  }
+
+  // The check of a cut of parts of a stem (#102): the woodcutter lays a piece along another, one
+  // time after another, an outline at each lay, and counts ("một, hai, ba, bốn"), and says the part
+  // when the lays fit ("Một phần tư cây tre."). At grade 5 he lays the piece of one third and the
+  // piece of one fourth along an outline of the whole stem, and says the rest. Then the piece that
+  // is not its length glows, and he says why ("Khúc này dài quá."). The times are those of the world
+  // (layCount in src/core/world/zones.js).
+  const STEM_ROW = 2; // half blocks: the outline of the whole stem, past the last piece
+  function laySteps(task, s, t) {
+    const z = task.tz.zone;
+    const pieces = z.cutPieces;
+    const plan = z.cutPlan;
+    const lines = defOf(task.key)?.lines ?? {};
+    const pieceAt = (i) => getEntity(world(), `piece:woodcutter:${i}`);
+    let at = t + COUNT_LEAD;
+    if (pieces.length !== plan.want.length) {
+      s.say(at, lines.pieces ?? 'woodcutter.pieces', { n: { key: `num.${Math.min(30, pieces.length)}` }, m: { key: `num.${Math.min(30, plan.want.length)}` } });
+      return at + PIECES_LINE;
+    }
+    // The outline of the whole stem lies on the far side of the pieces.
+    const st = z.stem;
+    const last = pieceAt(pieces.length - 1)?.position;
+    const stem = last ? { x: st.x, y: last.y, z: last.z + STEM_ROW } : null;
+    const lay = (x, y, zz, len) => s.steps.push({ at, spawn: { look: `lay-${len}`, x, y, z: zz, facing: Math.PI / 2 } });
+    for (const op of layPlan(pieces, plan)) {
+      const e = pieceAt(op.piece);
+      const onto = op.onto === 'stem' ? stem : pieceAt(op.onto)?.position;
+      if (!e || !onto) continue;
+      const len = pieces[op.piece];
+      s.steps.push({ at, spawn: { look: `piece-glow-${len}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
+      if (op.onto === 'stem') lay(stem.x, stem.y, stem.z, st.length);
+      if (op.from === 2) {
+        s.point(at, { x: e.position.x + len / 2, z: e.position.z }, LAY_PACE);
+        s.say(at + 0.05, 'num.1');
+        at += LAY_PACE;
+      }
+      for (let j = 0; j < op.n; j++) {
+        const x = onto.x + j * len;
+        lay(x, onto.y, onto.z, len);
+        s.point(at, { x: x + len / 2, z: onto.z }, LAY_PACE);
+        s.say(at + 0.05, `num.${op.from + j}`);
+        at += LAY_PACE;
+      }
+      if (op.part) {
+        s.say(at, 'woodcutter.part', { part: { key: `frac.${op.part.a}.${op.part.b}` } });
+        at += LAY_LINE;
+      }
+    }
+    const bad = z.cutBad;
+    if (!bad && plan.form === 'unlike') {
+      const i = pieces.indexOf(plan.want[2]);
+      const e = pieceAt(i);
+      if (e) s.steps.push({ at, spawn: { look: `piece-glow-${pieces[i]}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
+      s.say(at, 'woodcutter.rest');
+      at += LAY_LINE;
+    }
+    const e = bad ? pieceAt(bad.i) : null;
     if (e) {
       const len = pieces[bad.i];
       s.steps.push({ at, spawn: { look: `piece-glow-${len}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });

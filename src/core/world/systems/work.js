@@ -24,8 +24,8 @@
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'solid', 'slide', 'events'];
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
-import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, badPiece, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
-import { taskOf, basketPlan, rodsPlan, rowPlan, boatResult, MODEL_DOSES, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
+import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, badPiece, layCount, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
+import { taskOf, basketPlan, rodsPlan, rowPlan, boatResult, stemPlan, fracCut, MODEL_DOSES, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
 import { createRng, hashSeed } from '../../rng.js';
 import { STEP } from '../step.js';
@@ -426,21 +426,26 @@ export function setupTrial(world, def, level, env, opts = {}) {
     if (task.length) addEntity(world, { id: 'sample:staffs', keep: true, item: { kind: 'stump', size: task.length, slot: -1, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: c.x, y: c.y, z: c.z + CULM_STEP, facing: 0 }, look: `stump-${task.length}` });
   } else if (def.task === 'cut') {
     const s = P(def.places.stem);
-    tz.zone.stem = { x: s.x, y: s.y, z: s.z, length: task.length };
+    // The stem of the level (#102): equal pieces, or parts of the stem.
+    const plan = stemPlan(task, createRng(hashSeed(`${world.seed}:${def.id}:${level}:${world.tick}`)));
+    tz.zone.plan = plan;
+    const length = plan.length;
+    tz.zone.stem = { x: s.x, y: s.y, z: s.z, length };
     tz.zone.marks = [];
     // The stem is solid: the hero stands beside it, never on it (#75: the body covered the ring of
     // the mark).
-    addEntity(world, { id: 'stem:woodcutter', keep: true, item: { kind: 'stem', size: task.length, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: s.x, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `stem-${task.length}`, solid: { rect: { x0: s.x - 0.2, x1: s.x + task.length + 0.2, z0: s.z - 0.6, z1: s.z + 0.6 } } });
+    addEntity(world, { id: 'stem:woodcutter', keep: true, item: { kind: 'stem', size: length, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: s.x, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `stem-${length}`, solid: { rect: { x0: s.x - 0.2, x1: s.x + length + 0.2, z0: s.z - 0.6, z1: s.z + 0.6 } } });
     // The things of the first lines, one new word at a time (#75): a stick of chalk on the ground at
     // the start of the stem, and a sample of equal pieces of a short stick (another thing, not this
     // stem), one piece for each part, side by side. The sample lies by the far end of the stem, away
     // from the woodcutter and the hero who talks to him (#91: it lay under them, and a child did not
     // see "như thế này").
     addEntity(world, { id: 'tool:woodcutter:chalk', keep: true, position: { x: s.x - 1.2, y: s.y, z: s.z + 2.2, facing: 0.4 }, look: 'chalk-stick' });
-    for (let i = 0; i < task.parts; i++) addEntity(world, { id: `sample:woodcutter:${i}`, keep: true, position: { x: s.x + task.length - 3, y: s.y, z: s.z + 2.2 + i * 1.3, facing: Math.PI / 2 }, look: 'piece-2' });
+    // A stem of parts (#102) has no sample: the woodcutter names the part in words.
+    if (plan.form === 'equal') for (let i = 0; i < task.parts; i++) addEntity(world, { id: `sample:woodcutter:${i}`, keep: true, position: { x: s.x + length - 3, y: s.y, z: s.z + 2.2 + i * 1.3, facing: Math.PI / 2 }, look: 'piece-2' });
     // In a practice the wood pile is next to the end of the stem, so that a round is the math and
     // not a long walk to the bridge (#48).
-    const w = opts.practice ? { x: s.x + task.length + PILE_GAP, y: env.groundY((s.x + task.length + PILE_GAP) / 2, s.z / 2), z: s.z } : P(def.places.pile);
+    const w = opts.practice ? { x: s.x + length + PILE_GAP, y: env.groundY((s.x + length + PILE_GAP) / 2, s.z / 2), z: s.z } : P(def.places.pile);
     addEntity(world, { id: 'zone:woodpile', keep: true, zone: { id: 'woodpile', task: owner, rule: 'woodpile', accepts: 'sticks', items: [], x: w.x, y: w.y, z: w.z, rect: rect(w, 3, 2) }, position: { x: w.x + 1, y: w.y, z: w.z + 2, facing: 0 } });
     if (!getEntity(world, 'pile:woodcutter')) addEntity(world, { id: 'pile:woodcutter', keep: true, position: { x: w.x, y: w.y, z: w.z, facing: 0 }, look: 'woodpile' });
   }
@@ -1236,7 +1241,12 @@ function act(world, e, want, env) {
     const s = tz.zone.stem;
     const person = query(world, 'person').find((p) => p.person.ref === 'woodcutter');
     if (!s || !tz.zone.marks.length || tz.zone.cut || (person && !near(person.position, REACH + 3))) return;
-    const result = cutResult(tz.zone.marks, s.length, task.parts);
+    // A stem of parts (#102): each piece against the length that the task asks for.
+    const plan = tz.zone.plan?.form && tz.zone.plan.form !== 'equal' ? tz.zone.plan : null;
+    const parts = plan ? plan.want.length : task.parts;
+    const equal = cutResult(tz.zone.marks, s.length, parts);
+    const frac = plan ? fracCut(equal.pieces, plan) : null;
+    const result = frac ? { solved: frac.solved, pieces: equal.pieces } : equal;
     commit(world, tz, task, { solved: result.solved, parts: result.pieces, target: s.length });
     for (const m of tz.zone.marks) removeEntity(world, `chalk:woodcutter:${m}`);
     tz.zone.marks = [];
@@ -1249,25 +1259,31 @@ function act(world, e, want, env) {
     // wrong number of pieces, the piece that glows and breaks is a long one, never a piece of the
     // right length (#98).
     if (result.solved) for (const e of query(world, 'position').filter((x) => /^(sample|tool):woodcutter:/.test(x.id))) removeEntity(world, e.id);
-    const bad = result.solved ? null : badPiece(result.pieces, task.parts);
+    const bad = result.solved ? null : frac ? frac.bad : badPiece(result.pieces, task.parts);
     const short = bad ? bad.i : null;
     if (stem) stem.hidden = true;
     const n = result.pieces.length;
     result.pieces.forEach((len, i) => {
       addEntity(world, { id: `piece:woodcutter:${i}`, keep: true, position: { x: s.x, y: s.y, z: s.z + (i - (n - 1) / 2) * PIECE_ROW, facing: Math.PI / 2 }, look: `piece-${len}` });
     });
-    const count = cutCount(result.pieces);
+    // The check of a cut of parts is the lays of the woodcutter (layCount), with the line of the
+    // piece that is not its length in it.
+    const count = plan ? layCount(result.pieces, plan, result.solved, bad) : cutCount(result.pieces);
+    const show = plan ? 0 : SHORT_SHOW;
     tz.zone.cutPieces = [...result.pieces];
-    tz.zone.cutParts = task.parts;
+    tz.zone.cutParts = parts;
+    tz.zone.cutPlan = plan;
+    tz.zone.cutBad = bad;
     tz.zone.cutAt = 0;
-    tz.zone.breakAt = short === null ? null : count + SHORT_SHOW;
-    tz.zone.cut = (short === null ? count : count + SHORT_SHOW) + (result.solved ? CUT_STAY_RIGHT : CUT_STAY);
+    tz.zone.breakAt = short === null ? null : count + show;
+    tz.zone.cut = (short === null ? count : count + show) + (result.solved ? CUT_STAY_RIGHT : CUT_STAY);
     tz.zone.short = short;
     tz.zone.cutSolved = result.solved;
     // After a cut with too many pieces, the woodcutter shows one time that a tap on a mark takes it
     // off, when the child marks too many again (#80: no child found that).
-    if (!result.solved && result.pieces.length > task.parts) tz.zone.tooMany = task.parts;
-    tz.zone.sticks = task.parts;
+    if (!result.solved && result.pieces.length > parts) tz.zone.tooMany = parts;
+    // A stem of parts gives one piece for the bridge; the other pieces stay by the stem.
+    tz.zone.sticks = plan ? 1 : task.parts;
     if (!result.solved) say(world, 'snap', `zone:trial-woodcutter`, { pieces: result.pieces, short: short === null || bad.long ? null : result.pieces[short], long: bad?.long ? result.pieces[short] : null, sound: 'plank-down' });
   }
 }
@@ -1926,8 +1942,21 @@ function tickStem(world, tz, dt) {
   delete tz.zone.cut;
   delete tz.zone.cutAt;
   delete tz.zone.breakAt;
+  const pieces = tz.zone.cutPieces ?? [];
+  const plan = tz.zone.cutPlan;
   delete tz.zone.cutPieces;
   delete tz.zone.cutParts;
+  delete tz.zone.cutPlan;
+  delete tz.zone.cutBad;
+  // A right cut of parts (#102): the piece for the bridge goes to the wood pile, and the rest stays
+  // by the stem.
+  if (tz.zone.cutSolved && plan) {
+    const bridge = pieces.indexOf(plan.want[0]);
+    pieces.forEach((len, i) => {
+      const e = getEntity(world, `piece:woodcutter:${i}`);
+      if (e && i !== bridge) addEntity(world, { id: `rest:woodcutter:${i}`, keep: true, position: { ...e.position }, look: e.look });
+    });
+  }
   for (const e of query(world, 'position').filter((x) => String(x.id).startsWith('piece:woodcutter:'))) removeEntity(world, e.id);
   const stem = getEntity(world, 'stem:woodcutter');
   if (tz.zone.cutSolved) {
@@ -1935,7 +1964,10 @@ function tickStem(world, tz, dt) {
     delete tz.zone.cutSolved;
     const s = tz.zone.stem;
     if (stem) removeEntity(world, stem.id);
-    addEntity(world, { id: 'sticks:woodcutter', keep: true, item: { kind: 'sticks', size: 2, task: 'trial-woodcutter', zone: null, home: null, held: null, set: false }, position: { x: s.x + s.length / 2 - 1, y: s.y, z: s.z, facing: Math.PI / 2 }, look: `sticks-${tz.zone.sticks ?? 2}` });
+    // Equal sticks (or the piece for the bridge, #102) lie in the middle of the stem; next to the
+    // pieces that stay, they lie in front of them.
+    const front = plan ? PIECE_ROW * (pieces.length / 2 + 0.5) : 0;
+    addEntity(world, { id: 'sticks:woodcutter', keep: true, item: { kind: 'sticks', size: 2, task: 'trial-woodcutter', zone: null, home: null, held: null, set: false }, position: { x: s.x + s.length / 2 - 1, y: s.y, z: s.z - front, facing: Math.PI / 2 }, look: `sticks-${tz.zone.sticks ?? 2}` });
     say(world, 'chop', 'zone:trial-woodcutter', { sound: 'plank-up' });
     return;
   }

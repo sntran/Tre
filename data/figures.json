@@ -1003,6 +1003,10 @@
     "chalk": {
       "kind": "chalk"
     },
+    "sticks-1": {
+      "kind": "sticks",
+      "n": 1
+    },
     "sticks-2": {
       "kind": "sticks",
       "n": 2

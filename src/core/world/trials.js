@@ -182,6 +182,46 @@ export function staffResult(pieces, length = null) {
   return { solved: broken.length === 0, keep, broken };
 }
 
+// The stem of a level of the woodcutter (#102): equal pieces (equal, grades 1 and 2); one part of
+// the stem for the bridge, and the rest stays (unit, grade 3: one half, one third, one fourth, or
+// one sixth, as the rings allow); a/b of the stem for the bridge, and the rest for stakes (equiv,
+// grade 4); or one third for the bridge, one fourth for the fence, and the rest for the kitchen
+// (unlike, grade 5: 12 or 24 rings, a common part of thirds and fourths). want: the lengths of the
+// pieces that the task asks for (the first is the piece for the bridge). Units: rings (half blocks).
+export function stemPlan(task, rng) {
+  if (task.form === 'unit') {
+    const length = rng.pick(task.stems);
+    const d = rng.pick(task.parts.filter((n) => length % n === 0));
+    return { form: 'unit', length, a: 1, b: d, want: [length / d, length - length / d] };
+  }
+  if (task.form === 'equiv') {
+    const length = rng.pick(task.stems);
+    const [a, b] = rng.pick(task.fracs.filter(([, n]) => length % n === 0));
+    return { form: 'equiv', length, a, b, want: [(a * length) / b, length - (a * length) / b] };
+  }
+  if (task.form === 'unlike') {
+    const length = rng.pick(task.stems);
+    return { form: 'unlike', length, want: [length / 3, length / 4, length - length / 3 - length / 4] };
+  }
+  return { form: 'equal', length: task.length, parts: task.parts };
+}
+// The pieces of a cut of a level with parts of the stem (#102) against the pieces that the task
+// asks for. Each piece is compared with a length that the task asks for, never only with the other
+// pieces: the pieces and the lengths in order of size, side by side, and the first piece that is not
+// its length is named (bad: { i, long }), with the length that it should be (want). With a wrong
+// number of pieces, no piece is named.
+export function fracCut(pieces, plan) {
+  const want = [...plan.want];
+  if (pieces.length !== want.length) return { solved: false, bad: null, count: true };
+  const order = pieces.map((p, i) => ({ p, i })).sort((x, y) => x.p - y.p);
+  const sorted = [...want].sort((x, y) => x - y);
+  // A stem of two parts: the piece for the bridge is the part that the task names.
+  const pairs = order.map((o, k) => ({ ...o, w: sorted[k] }));
+  const first = want.length === 2 ? pairs.find((q) => q.w === want[0]) ?? pairs[0] : null;
+  const wrong = first ? (first.p === first.w ? null : first) : pairs.find((q) => q.p !== q.w) ?? null;
+  return { solved: !wrong, bad: wrong ? { i: wrong.i, long: wrong.p > wrong.w, want: wrong.w } : null, count: false };
+}
+
 export function cutResult(marks, length, parts) {
   const at = [...new Set(marks)].filter((m) => m > 0 && m < length).sort((a, b) => a - b);
   const ends = [0, ...at, length];
