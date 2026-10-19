@@ -1,0 +1,204 @@
+{
+ "about": "#100: the lost ducks: the farmer is Cô nông dân; a duck at the pen quacks and walks to the others; the farmer counts first and then says what the count shows. At night.",
+ "start": "?story=event-duck&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "duck"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) || tre.activeVillage.heard().some((x) => x.key === 'event.duck.start')",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(document.querySelector('.dialogue-layer')?.textContent ?? '')"
+  },
+  {
+   "shot": "night-duck-the-farmer-her-name-and-her-portrait"
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'duck' && !e.item.stray && !e.item.held && e.item.zone !== 'event-duck-place').sort((a, b) => Math.hypot(a.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, a.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) - Math.hypot(b.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, b.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z))[0]?.id"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'duck' && !e.item.stray && !e.item.held && e.item.zone !== 'event-duck-place').sort((a, b) => Math.hypot(a.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, a.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) - Math.hypot(b.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, b.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z))[0]?.id"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "place": "event-duck-place"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 0.4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.sounds().slice(-2))"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'duck' && e.slide).length"
+  },
+  {
+   "shot": "night-duck-a-duck-at-the-pen-quacks-and-walks-to-the-others"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:event-duck-place').zone.items.length"
+  },
+  {
+   "tap": {
+    "person": "duck"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer'))",
+   "timeout": 120
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "(document.querySelector('.dialogue-layer')?.textContent ?? '')"
+  },
+  {
+   "shot": "night-duck-the-count-then-what-it-shows"
+  },
+  {
+   "read": 4
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'duck' && !e.item.stray && !e.item.held && e.item.zone !== 'event-duck-place').sort((a, b) => Math.hypot(a.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, a.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) - Math.hypot(b.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, b.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z))[0]?.id"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'duck' && !e.item.stray && !e.item.held && e.item.zone !== 'event-duck-place').sort((a, b) => Math.hypot(a.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, a.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) - Math.hypot(b.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, b.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z))[0]?.id"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "place": "event-duck-place"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 0.4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.sounds().slice(-2))"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'duck' && e.slide).length"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:event-duck-place').zone.items.length"
+  },
+  {
+   "tap": {
+    "person": "duck"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer'))",
+   "timeout": 120
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "(document.querySelector('.dialogue-layer')?.textContent ?? '')"
+  },
+  {
+   "shot": "night-duck-the-flock-is-whole"
+  }
+ ]
+}

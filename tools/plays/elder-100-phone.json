@@ -1,0 +1,96 @@
+{
+ "about": "#100: before any task, the elder says that five people wait, not that a task is done; on the map, + zooms toward the hero.",
+ "start": "?story=trial-scholar",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "elder"
+   },
+   "taps": 14
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "person": "elder"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "(document.querySelector('.dialogue-layer')?.textContent ?? '')"
+  },
+  {
+   "check": "(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('đang chờ cháu') && !(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('đã giúp')"
+  },
+  {
+   "shot": "elder-before-any-task"
+  },
+  {
+   "read": 4
+  },
+  {
+   "button": ".map-btn",
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.country-svg'))",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "document.querySelector('.country-svg').getAttribute('viewBox')"
+  },
+  {
+   "button": ".country-tools .icon-btn",
+   "after": 1
+  },
+  {
+   "button": ".country-tools .icon-btn",
+   "after": 1
+  },
+  {
+   "button": ".country-tools .icon-btn",
+   "after": 1.5
+  },
+  {
+   "print": "document.querySelector('.country-svg').getAttribute('viewBox')"
+  },
+  {
+   "shot": "map-three-presses-of-plus-toward-the-hero"
+  }
+ ]
+}
