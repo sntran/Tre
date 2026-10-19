@@ -483,7 +483,7 @@ New texts, in `i18n/vi.json` and `i18n/en.json` (`docs/LEARNLOG.md`, "The weekly
 
 ## The greetings of the people (#49)
 
-- **The words of a greeting by the age of the person** (`greet` in `data/npcs.json`): an old person says one of `world.greet.1` ("Chào {name}!"), `world.greet.2` ("Chào cháu!"), and `world.greet.3` ("Cháu ngoan quá!"); a grown person says `world.greet.1` or `world.greet.2`; a big sister (the duck girl) says `world.greet.1` or `world.greet.young` ("Chào em!"); a child of a folk game says `world.greet.1` or `world.greet.child` ("Chào bạn!"). Gióng and the enemies do not greet.
+- **The words of a greeting by the age of the person** (`greet` in `data/npcs.json`): an old person says one of `world.greet.1` ("Chào {name}!") and `world.greet.2` ("Chào cháu!"), and never praises (#113: "Cháu ngoan quá!" for a walk was praise for nothing); a grown person says `world.greet.1` or `world.greet.2`; a big sister (the duck girl) says `world.greet.1` or `world.greet.young` ("Chào em!"); a child of a folk game says `world.greet.1` or `world.greet.child` ("Chào bạn!"). Gióng and the enemies do not greet.
 - A person greets one time when the child comes near, and not again for some minutes; never during the work of the people near the child.
 - **Please check:** "Chào em!" from the duck girl, and "Chào bạn!" from a child to a child.
 

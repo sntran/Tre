@@ -92,7 +92,8 @@ const WORLD = new Set(['move', 'stop', 'pet', 'ride', 'aim', 'pick', 'put', 'dro
 // says "Cháu ngoan quá!", a child greets a child as a friend, and a person with no greet (Gióng,
 // the enemies) does not greet. A person greets one time, and not again for GREET_AGAIN seconds.
 const GREETS = {
-  elder: ['world.greet.1', 'world.greet.2', 'world.greet.3'],
+  // A greeting never praises: "Cháu ngoan quá!" for a walk is praise for nothing (#113, rule 34).
+  elder: ['world.greet.1', 'world.greet.2'],
   grown: ['world.greet.1', 'world.greet.2'],
   young: ['world.greet.1', 'world.greet.young'],
   child: ['world.greet.1', 'world.greet.child'],

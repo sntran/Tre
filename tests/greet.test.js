@@ -12,12 +12,13 @@ const vi = load('i18n/vi.json');
 const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
 const greetKey = (k) => /^world\.(greet|market)/.test(k ?? '');
 
-test('each person has words of greeting for the age; Gióng does not greet; only an old person says "Cháu ngoan quá!"', () => {
+test('each person has words of greeting for the age; Gióng does not greet; an old person says "Chào cháu!" and never praises (#113)', () => {
   for (const [id, n] of Object.entries(npcs)) assert.ok(['elder', 'grown', 'young', 'child', 'none'].includes(n.greet), `${id}: greet ${n.greet}`);
   for (const id of ['giong-boy', 'giong-hero', 'giong-sky']) assert.equal(npcs[id].greet, 'none', id);
   for (const id of ['loco-child', 'rope-child']) assert.equal(npcs[id].greet, 'child', id);
   for (const id of ['elder', 'grandma', 'drummer']) assert.equal(npcs[id].greet, 'elder', id);
-  assert.equal(vi['world.greet.3'], 'Cháu ngoan quá!');
+  assert.equal(vi['world.greet.2'], 'Chào cháu!');
+  assert.equal(vi['world.greet.3'], undefined, 'no "Cháu ngoan quá!"');
   assert.equal(vi['world.greet.child'], 'Chào bạn!');
 });
 

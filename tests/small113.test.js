@@ -122,3 +122,13 @@ test('the card of a new animal comes only while the animal is on the screen, and
   hold({ x: hp.x + 2, y: hp.y, z: hp.z + 2 });
   assert.ok(cards.some((c) => c.from === dog.id), 'the card when the dog is on the screen');
 });
+
+test('no greeting has a word of praise, and an old person says hello', () => {
+  for (const lang of ['vi', 'en']) {
+    const dict = load(`i18n/${lang}.json`);
+    for (const [k, v] of Object.entries(dict)) {
+      if (!/^world\.greet\./.test(k)) continue;
+      assert.ok(!/ngoan|giỏi|tốt lắm|good (child|boy|girl)|well done|clever/i.test(v), `${lang} ${k}: ${v}`);
+    }
+  }
+});
