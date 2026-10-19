@@ -689,7 +689,9 @@ export async function mountVillage(ctx, params = {}) {
       const gloss = glossLine(ctx, ev.textKey, { params: ev.params, speaker: String(ev.id ?? '').startsWith('npc:') ? ev.id.slice(4) : null });
       // The line is spoken in the voice of its person, in its turn (#60, src/core/bubblevoice.js).
       const line = bubbleLine(ev, lineVoice);
-      showBubble(ev.id, gloss ? `${t(ev.textKey, ev.params)}\n${gloss}` : t(ev.textKey, ev.params), null, line);
+      // The names of the glossary show as names (#114: "[[nghecalf]] của cháu là trâu con đấy.").
+      const text = tn(ev.textKey, ev.params);
+      showBubble(ev.id, gloss ? `${text}\n${gloss}` : text, null, line);
       voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
       // The gloss is spoken after the line (#106).
       if (gloss && line) voiceQueue.offer({ id: line.id, key: null, text: gloss, params: {}, voice: line.voice, kind: 'world' }, true, performance.now() / 1000);
@@ -1851,7 +1853,7 @@ export async function mountVillage(ctx, params = {}) {
     const role = name?.key === `npc.${m.who}.name`;
     const key = m.key === 'star.go.person' && role ? 'star.go.role' : m.key ?? 'star.go.place';
     const line = { id: 'hero', key, params, voice: lineVoice('hero'), kind: 'line' };
-    showBubble('hero', t(line.key, params), null, line);
+    showBubble('hero', tn(line.key, params), null, line);
     voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
   }
   // The pulse of the star of a station (seconds left), when the head of the hamlet points at it.
