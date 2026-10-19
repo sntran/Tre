@@ -1,0 +1,172 @@
+{
+ "about": "#104: the pots puzzle at grade 1: the offer, a wrong try in the world, a hint with a wave, and the end.",
+ "start": "?story=puzzle-pots",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'puzzle.pots.start') || tre.activeVillage.heard().some((x) => x.key === 'puzzle.pots.start.two')",
+   "timeout": 90
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "pots-grade-1-the-healer-at-the-well"
+  },
+  {
+   "tap": {
+    "thing": "pz:pot:0"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "pz:well"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "shot": "pots-grade-1-the-big-pot-full"
+  },
+  {
+   "tap": {
+    "thing": "pz:jar"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'puzzle.pots.over')",
+   "timeout": 20
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "pots-grade-1-too-much-runs-over"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "tap": {
+    "thing": "pz:well"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "pz:pot:1"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.session.puzzles.state().pots.levels)"
+  },
+  {
+   "shot": "pots-grade-1-poured-into-the-small-pot"
+  },
+  {
+   "tap": {
+    "thing": "pz:jar"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'puzzle.pots.done')",
+   "timeout": 20
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "pots-grade-1-just-right"
+  }
+ ]
+}
