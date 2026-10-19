@@ -1,0 +1,65 @@
+{
+ "about": "#96: the lost ducks: a wave names a duck and the pen, not a heap. At night.",
+ "start": "?story=event-duck&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "duck"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer, .callout'))",
+   "timeout": 60
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.duck.show')",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => x.key))"
+  },
+  {
+   "check": "!tre.activeVillage.heard().some((x) => x.key === 'mentor.show')"
+  },
+  {
+   "shot": "night-ducks-a-wave-names-a-duck-and-the-pen"
+  }
+ ]
+}

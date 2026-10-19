@@ -1,0 +1,186 @@
+{
+ "about": "#96: the teacher: a child who presses at the heap: a wave with a full mat gives the count and the tie; after the first of two bundles, he says that one more is needed.",
+ "start": "?story=trial-scholar",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 90
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 60",
+   "timeout": 300
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length >= 10"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 40",
+   "timeout": 300
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.scholar.tie')",
+   "timeout": 60
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => x.key))"
+  },
+  {
+   "shot": "teacher-a-wave-with-a-full-mat-the-count-and-the-tie"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'scholar.more')",
+   "timeout": 90
+  },
+  {
+   "wait": 0.8
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => x.key))"
+  },
+  {
+   "shot": "teacher-after-the-first-bundle-one-more"
+  }
+ ]
+}
