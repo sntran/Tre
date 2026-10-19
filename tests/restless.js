@@ -5,7 +5,7 @@
 // - no step throws an error;
 // - a thing of a task never goes to the ground when a place for it was in reach at the press;
 // - a person never says the same line more than three times in a row with no try of the child
-//   (a commit) between (#45);
+//   (a commit) between (#45), except a help that the child asked for with a wave (#105);
 // - a tap on a cell that the hero can walk to moves the hero;
 // - when a task starts, its person, heap, and places fit on a phone held upright with the camera of
 //   the game (the focus led toward the work, src/world/view.js);
@@ -33,7 +33,7 @@ export function playRestless(session, { steps = 240, seed = 1, repeats = 3 } = {
     if (ev.type === 'skill') lines.clear();
     // A line of a person that the child sees: a callout (a call of a mentor opens one) or a line
     // that waits for a tap.
-    const key = ev.type === 'open' && (ev.screen === 'callout' || ev.screen === 'say') ? ev.textKey : null;
+    const key = ev.type === 'open' && (ev.screen === 'callout' || ev.screen === 'say') && !ev.asked ? ev.textKey : null;
     const who = ev.id ?? ev.who ?? null;
     if (key && who) {
       const run = lines.get(who);

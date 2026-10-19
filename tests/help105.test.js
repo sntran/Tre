@@ -127,3 +127,20 @@ test('three presses that do nothing are a try: a wave after them shows where to 
   assert.ok(!said.includes('mentor.tryFirst'), said.join(', '));
   assert.ok(said.some((k) => k.startsWith('mentor.show.scholar')), said.join(', '));
 });
+
+test('a wave is never silent: each of six waves in a row gives a spoken line', async () => {
+  const s = load('tests/stories/trial-scholar.json');
+  const first = s.steps.findIndex((x) => x.read === true) + 1;
+  let session = null;
+  const said = [];
+  const failures = await runHeadless({ ...s, steps: [...s.steps.slice(0, first), { until: { event: 'call', with: { key: 'mentor.first.you' }, timeout: 60 } }, { wait: 2 }] }, {
+    onSession: (x) => { session = x; x.listen((e) => { if (e.type === 'open' && e.screen === 'callout' && e.asked) said.push(e.textKey); }); },
+  });
+  assert.deepEqual(failures, []);
+  for (let i = 0; i < 6; i++) {
+    const before = said.length;
+    session.command({ type: 'wave' });
+    run(session, 6);
+    assert.ok(said.length > before, `wave ${i + 1}: ${said.join(', ')}`);
+  }
+});

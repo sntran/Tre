@@ -201,7 +201,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     seed: () => state.seed, clock: () => state.clock.minutes, rain: () => state.sky?.rain ?? 0,
     say: (...a) => say(...a), talk: (id) => talk(id), save: (why) => save(why), busy: () => busy,
     grow: (kind) => grow(kind),
-    callout: (textKey, params, who) => emit({ type: 'open', screen: 'callout', id: `npc:${who}`, textKey, params }),
+    callout: (textKey, params, who, extra = {}) => emit({ type: 'open', screen: 'callout', id: `npc:${who}`, textKey, params, ...extra }),
     // The end of a set of a practice of an activity: the practice ends there.
     setDone: (act) => {
       if (practice?.task !== act) return false;
@@ -214,7 +214,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // Xóm Ruộng (docs/FOLKGAMES.md).
   const folk = createFolk({
     data: data.folkgames, profile, learner, emit, world: () => state, env: () => env, seed: () => state.seed,
-    callout: (textKey, params, id) => emit({ type: 'open', screen: 'callout', id, textKey, params }),
+    callout: (textKey, params, id, extra = {}) => emit({ type: 'open', screen: 'callout', id, textKey, params, ...extra }),
     command: (c) => worldCommand(state, c), goTo: (p) => goTo(p, null), skill: (ev) => skillEvent(ev),
     feastOn: () => Boolean(hamlet.feast), practice: () => practice?.task ?? null, busy: () => busy || Boolean(screen), day: () => today(), view: () => viewAz,
     // No invite while an enemy of an encounter is in reach, in a raid, or on the walk to a star (#86).
@@ -4274,7 +4274,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The big button glows with the finish (#89).
       emit({ type: 'actGlow' });
     }
-    if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {}, ...(ev.happened ? { happened: true } : {}) });
+    if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {}, ...(ev.happened ? { happened: true } : {}), ...(ev.asked ? { asked: true } : {}) });
     // The mentors read the commits (before the learner takes them), the plank too long, and the
     // actions of the hands.
     if (ev.type === 'skill') mentoring.skill(ev);

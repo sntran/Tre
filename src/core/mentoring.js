@@ -596,7 +596,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // cut or replaced by a later line).
     const happened = move === 'count';
     // ready: the line says that the work is right now (#74): the next press finishes the task.
-    const say = (at, k, params = {}, { ready = null } = {}) => { if (who && k) steps.push({ at, say: { id: who, key: away ? asNghe(k) : k, params, ...(happened ? { happened } : {}), ...(ready ? { ready } : {}) } }); };
+    // asked: the line answers a wave; the child asked for it, also when it was said before (#105).
+    const say = (at, k, params = {}, { ready = null } = {}) => { if (who && k) steps.push({ at, say: { id: who, key: away ? asNghe(k) : k, params, ...(happened ? { happened } : {}), ...(ready ? { ready } : {}), ...(info.asked ? { asked: true } : {}) } }); };
     const point = (at, p, time = 1.2) => { if (who) steps.push({ at, point: { id: who, x: p.x, z: p.z, time } }); };
     const mark = (at, p, ttl = 3) => steps.push({ at, mark: { x: p.x, z: p.z, ttl } });
     if (info.remembered && cfg.again[move]) {
@@ -760,17 +761,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       say(t, lineOf(key, move));
       t += 2;
     }
-    // A wave that gets the same line a third time in a row with no try: the person shows it with
-    // the hands only (#102: at the colors of the fire, the mark and the show have one line).
+    // A wave is never silent (#105): when the help has no new move, the person says the last help
+    // again and points, because the child asked for it.
     const line = steps.find((x) => x.say)?.say.key ?? null;
-    if (info.asked && line && run?.line === line && run.n >= 2) {
-      for (let i = steps.length - 1; i >= 0; i--) if (steps[i].say) steps.splice(i, 1);
-      asked.set(whoNow, { move, line, n: run.n + 1 });
-      if (!steps.length) {
-        emit({ type: 'nod', id: whoNow });
-        return 0;
-      }
-    }
     if (!steps.length) return 0;
     endScript(w, getEntity(w, `script:${key}`));
     steps.push({ at: t + 0.5, end: true });

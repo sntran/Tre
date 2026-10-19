@@ -150,19 +150,12 @@ export function createFolk(deps) {
     const p = (deps.profile.folk ??= {});
     p[kind] = deps.day();
   }
-  // The last line of the children, and how many times in a row it came.
-  const heard = { key: null, n: 0 };
-  const say = (key, params, who = null) => {
-    heard.n = heard.key === key ? heard.n + 1 : 1;
-    heard.key = key;
-    deps.callout(key, params, who ?? (game?.kind === 'rope' ? 'npc:rope-child' : 'npc:loco-child'));
+  const say = (key, params, who = null, extra = {}) => {
+    deps.callout(key, params, who ?? (game?.kind === 'rope' ? 'npc:rope-child' : 'npc:loco-child'), extra);
   };
-  // A wave never gets the same line a third time in a row: the child just heard it two times (#99:
-  // a child who waved again and again heard one line many times).
-  const waveSay = (key, params) => {
-    if (heard.key === key && heard.n >= 2) return;
-    say(key, params);
-  };
+  // A wave is never silent (#105): the child asked, so a child says the next step again, also when
+  // it was the last line.
+  const waveSay = (key, params) => say(key, params, null, { asked: true });
 
   // ---------------------------------------------------------------- Nhảy lò cò
   // The children stand beside the court on the side away from the camera, so that they never cover

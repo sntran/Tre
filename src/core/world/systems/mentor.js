@@ -71,7 +71,7 @@ function play(world, ent, dt, env) {
     // A line of the next step (ready) never comes after the end of its task (#96: after the give
     // of the basket, "Cháu đưa giỏ cho bà nhé." came, and the big button glowed).
     if (st.say?.ready && taskDone(world, st.say.ready)) continue;
-    if (st.say) world.events.push({ type: 'call', id: st.say.id, key: st.say.key, params: st.say.params ?? {}, ...(st.say.happened ? { happened: true } : {}), ...(st.say.ready ? { ready: st.say.ready } : {}) });
+    if (st.say) world.events.push({ type: 'call', id: st.say.id, key: st.say.key, params: st.say.params ?? {}, ...(st.say.happened ? { happened: true } : {}), ...(st.say.ready ? { ready: st.say.ready } : {}), ...(st.say.asked ? { asked: true } : {}) });
     // The star of a person pulses (the view shows it, also at the edge of the screen).
     if (st.star) world.events.push({ type: 'starPulse', id: st.star });
     if (st.mark) {
