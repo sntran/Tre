@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
 import { STEP } from './restless.js';
-import { getEntity, query } from '../src/core/world/state.js';
+import { getEntity, query, removeEntity } from '../src/core/world/state.js';
 import { tapTarget } from '../src/core/story.js';
 import { stakesNeeded } from '../src/core/world/systems/work.js';
 
@@ -37,12 +37,25 @@ const send = (session, cmd) => {
 };
 const slots = (session) => query(session.state, 'item').filter((e) => e.item.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b);
 const low = (session) => getEntity(session.state, 'zone:trial-fisher')?.zone.tide.phase === 'low';
-// Presses only, until a condition (at most k presses).
+// A child who puts each stake at half of the gap from the last stake (the narrowest place that
+// takes a stake, #109), until a condition (at most k presses). The pile has fewer stakes, so that
+// it runs out (with all of its stakes, the narrowest row reaches the float).
+function fewer(session, n = 2) {
+  const pile = getEntity(session.state, 'zone:stakes').zone;
+  for (const id of pile.items.splice(0, n)) removeEntity(session.state, id);
+}
 function pressUntil(session, until, k = 160) {
+  const hero = getEntity(session.state, 'hero');
+  const z = getEntity(session.state, 'zone:line').zone;
   for (let i = 0; i < k && !until(); i++) {
     if (!low(session)) {
       run(session, 2);
       continue;
+    }
+    if (String(hero.hands?.holds ?? '').startsWith('stake:')) {
+      const at = Math.min(z.length, Math.max(0, ...slots(session)) + z.space / 2);
+      send(session, { type: 'tap', target: tapTarget(session, { line: at }).target });
+      run(session, 4, () => !hero.route || until());
     }
     send(session, { type: 'hands', id: session.action()?.id });
     run(session, 3, until);
@@ -63,6 +76,7 @@ test('at the first empty pile, each narrow gap has a thin grey frame on the wate
   const cues = [];
   const session = await atRow((s) => s.listen((ev) => { if (ev.type === 'cue') cues.push(ev); }));
   const seen = lines(session);
+  fewer(session);
   pressUntil(session, () => seen.includes('empty 1'));
   run(session, 1);
   const frames = session.state.entities.filter((e) => String(e.id).startsWith('why:fisher:narrow:'));
@@ -76,6 +90,7 @@ test('at the first empty pile, each narrow gap has a thin grey frame on the wate
 test('with an empty pile, a wave gives the take back, never a stake from the pile', async () => {
   const session = await atRow();
   const seen = lines(session);
+  fewer(session);
   pressUntil(session, () => seen.includes('empty 1'));
   run(session, 10, () => seen.includes('mentor.fisher.tight'));
   run(session, 3);
@@ -92,6 +107,7 @@ test('with an empty pile, a wave gives the take back, never a stake from the pil
 test('after the demonstration, one bring of stakes is enough for the row, and a row at the float gets the tide and no stakes', async () => {
   const session = await atRow();
   const seen = lines(session);
+  fewer(session);
   pressUntil(session, () => seen.includes('more'));
   assert.ok(seen.includes('empty 2'), 'the demonstration came first');
   run(session, 2);

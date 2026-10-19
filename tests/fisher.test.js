@@ -6,6 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
+import { tapTarget } from '../src/core/story.js';
 import { STEP } from './restless.js';
 import { getEntity, query } from '../src/core/world/state.js';
 import { readFileSync } from 'node:fs';
@@ -50,24 +51,27 @@ const pileLeft = (session) => getEntity(session.state, 'zone:stakes').zone.items
 // A stake from the pile, and then the row at this point (half blocks from its start).
 const stakeTo = (n, at) => [{ press: { thing: `stake:fisher:${n}` } }, { until: { event: 'pick', timeout: 15 } }, { tap: { line: at } }, { wait: 2 }, { press: true }, { until: { event: 'put', timeout: 15 } }];
 
-test('a child who only presses still reaches the float: when the pile is empty, the fisher brings more stakes and says it', async () => {
+test('a child who only presses gets the line of the narrow place, then the ring of the fisher, and a tap at the ring puts the stake (#109)', async () => {
   const session = await atRow();
   const lines = heard(session);
   const z = line(session);
-  for (let k = 0; k < 120 && !slots(session).includes(z.length); k++) {
-    if (getEntity(session.state, 'zone:trial-fisher')?.zone.tide.phase !== 'low') {
-      run(session, 2);
-      continue;
-    }
-    const a = session.action();
-    send(session, { type: 'hands', id: a?.id });
+  for (let k = 0; k < 8; k++) {
+    send(session, { type: 'hands', id: session.action()?.id });
     run(session, 3);
   }
-  assert.ok(slots(session).includes(z.length), `the row reaches the float: ${slots(session).join(',')}`);
-  assert.ok(lines.some((l) => l.key === 'fisher.more'), 'the fisher says that he brings more stakes');
-  // No hint names the pile while it is empty.
-  const empty = lines.filter((l) => l.key === 'mentor.show.fisher');
-  assert.ok(empty.length === 0 || pileLeft(session) > 0, 'no hint asks for a stake of an empty pile');
+  const s = [...new Set([0, ...slots(session)])];
+  for (let i = 1; i < s.length; i++) assert.ok(s[i] - s[i - 1] >= z.space / 2, `no squeeze: ${s.join(',')}`);
+  assert.ok(lines.some((l) => l.key === 'fisher.tight.here'), 'the place is narrow');
+  assert.ok(lines.some((l) => l.key === 'fisher.tight.ring'), 'the ring');
+  const ring = getEntity(session.state, 'why:fisher:next');
+  assert.ok(ring && session.carried(), 'a ring, and the stake in the hands');
+  const at = Math.round(ring.position.x - z.x);
+  send(session, { type: 'tap', target: tapTarget(session, { line: at }).target });
+  run(session, 4);
+  send(session, { type: 'hands', id: session.action()?.id });
+  run(session, 3);
+  assert.ok(slots(session).includes(at), `the stake at the ring: ${slots(session).join(',')}`);
+  assert.ok(!getEntity(session.state, 'why:fisher:next'), 'the ring goes');
 });
 
 test('a tap on a stake of the row chooses it on the screen, and a press takes it back', async () => {
@@ -111,7 +115,8 @@ test('while the row is at the float, the hint is to wait for the tide, never to 
 });
 
 test('the help of the fisher never puts a stake into the row of the child; a tight row gets the line of the take back one time', async () => {
-  const session = await atRow([...stakeTo(2, 5), ...stakeTo(3, 6)]);
+  // Narrow gaps, but not narrower than half of the gap (#109: no stake goes in there).
+  const session = await atRow([...stakeTo(2, 6), ...stakeTo(3, 8)]);
   const lines = heard(session);
   const before = slots(session).join(',');
   for (let k = 0; k < 6; k++) {

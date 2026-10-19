@@ -131,6 +131,19 @@ export function stakeResult(offsets, length, space) {
   return { solved, efficient: solved && at.length === fewest, count: at.length, fewest, gaps, widest };
 }
 
+// A stake at a point of the row that makes a space narrower than half of the gap of the fisher
+// (#109: presses at the pile with no walk squeezed every stake between the first two stakes). A
+// stake into a hole (a space wider than the gap) always goes in. slots: the points of the stakes
+// (the bank is 0); slot: the point of the new stake; space: the gap of the fisher (half blocks).
+export function tightSlot(slots, slot, space) {
+  const at = [...new Set([0, ...slots])].sort((a, b) => a - b);
+  const lo = Math.max(...at.filter((x) => x < slot));
+  const above = at.filter((x) => x > slot);
+  const hi = above.length ? Math.min(...above) : null;
+  if (hi !== null && hi - lo > space) return false;
+  return slot - lo < space / 2 || (hi !== null && hi - slot < space / 2);
+}
+
 // The row of a level of the fisher (#102): stakes that the child puts one at a time at the gap of
 // the first two stakes (gaps, grades 1 and 2), or a load of a boat that brings the stakes in one
 // trip. The gap is one pole (sào): the row is k poles from the stake of the fisher (measure, grade

@@ -25,7 +25,7 @@ export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'ke
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
 import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, badPiece, layCount, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
-import { taskOf, basketPlan, rodsPlan, rowPlan, boatResult, stemPlan, fracCut, colorAt, colorRight, fairResult, MODEL_DOSES, tieResult, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
+import { taskOf, basketPlan, rodsPlan, rowPlan, boatResult, stemPlan, fracCut, colorAt, colorRight, fairResult, MODEL_DOSES, tieResult, tightSlot, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
 import { createRng, hashSeed } from '../../rng.js';
 import { STEP } from '../step.js';
@@ -902,6 +902,14 @@ export function putWork(world, e, zone, thing, at, env) {
     const slot = Math.max(1, Math.min(zone.length, Math.round((at?.x ?? zone.x) - zone.x)));
     const taken = query(world, 'item').some((s) => s.item.zone === 'line' && s.item.slot === slot && s.id !== thing.id);
     if (taken) return false;
+    // No stake of the child into a space that is already too narrow (#109): the fisher points at
+    // the last stake of the row and says to go on from it.
+    const slots = query(world, 'item').filter((s) => s.item.zone === 'line' && s.item.slot != null && s.id !== thing.id).map((s) => s.item.slot);
+    if (e.id === 'hero' && tightSlot(slots, slot, zone.space)) {
+      tightHint(world, tz, zone);
+      return false;
+    }
+    if (e.id === 'hero') tz.zone.tights = 0;
     // A stake that comes back goes to a new place (#97: after a take-back, a press at once put the
     // stake into the same hole): a put from the point where it came from, with no walk, in the first
     // second, does nothing.
@@ -1973,21 +1981,48 @@ function markNarrow(world, z, line, row) {
   }
   z.narrowT = NARROW_MARKS;
 }
+// A put into a space that is too narrow (#109): the fisher points at the last stake of the row,
+// and it glows and bobs. At the second such press in a row, a ring shows his gap from the last
+// stake, and he says to walk to it. The press never walks there by itself: a press never reads a
+// number that the child must find (#63), and a tap at the ring chooses the place.
+export const TIGHT_RING = 2;
+function tightHint(world, tz, line) {
+  const row = query(world, 'item').filter((s) => s.item.zone === line.id && s.item.slot != null);
+  const last = row.reduce((a, s) => (!a || s.item.slot > a.item.slot ? s : a), null);
+  const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+  tz.zone.tights = (tz.zone.tights ?? 0) + 1;
+  if (tz.zone.tights >= TIGHT_RING && last && !getEntity(world, 'why:fisher:next')) {
+    const slot = Math.min(line.length, last.item.slot + line.space);
+    addEntity(world, { id: 'why:fisher:next', keep: true, position: { x: line.x + slot, y: line.y + WATER_UP, z: line.z, facing: 0 }, look: 'pull-ring' });
+    if (fisher) {
+      say(world, 'call', fisher.id, { key: 'fisher.tight.ring', params: {}, happened: true });
+      fisher.gesture = { act: 'point', x: line.x + slot, z: line.z, t: 2.5 };
+    }
+    return;
+  }
+  if (fisher) say(world, 'call', fisher.id, { key: 'fisher.tight.here', params: {}, happened: true });
+  if (!last) return;
+  world.events.push({ type: 'glowThings', ids: [last.id] });
+  if (fisher) fisher.gesture = { act: 'point', x: last.position.x, z: last.position.z, t: 2.5 };
+}
 // After a take-back from the row, the fisher says to walk toward the float, and the point at his
 // gap from the last stake glows until the child puts the stake (#97: the stake went back into the
 // same hole, and nobody said that the ghost stake follows the hero).
 function backHint(world, tz, line, row) {
   const back = world.events.find((ev) => ev.type === 'pick' && ev.id === 'hero' && ev.from === line.zone.id);
   if (back) {
+    // With a hole open (its frame shows), the ring and the line go to the middle of the hole (#109:
+    // the line said to walk toward the float, and the hole stayed); else toward the float (#97).
+    const hole = tz.zone.hole;
     const last = Math.max(0, ...row.map((s) => s.item.slot ?? 0));
-    const slot = Math.min(line.zone.length, last + line.zone.space);
+    const slot = hole ? Math.round(hole.from + hole.size / 2) : Math.min(line.zone.length, last + line.zone.space);
     removeEntity(world, 'why:fisher:next');
     addEntity(world, { id: 'why:fisher:next', keep: true, position: { x: line.zone.x + slot, y: line.zone.y + WATER_UP, z: line.zone.z, facing: 0 }, look: 'pull-ring' });
     const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
     const nghe = getEntity(world, 'friend:nghe');
     const who = fisher ?? (nghe && !nghe.hidden ? nghe : null);
     if (who) {
-      say(world, 'call', who.id, { key: fisher ? 'mentor.fisher.back' : 'mentor.nghe.fisher.back', params: {} });
+      say(world, 'call', who.id, { key: hole ? 'mentor.fisher.back.hole' : fisher ? 'mentor.fisher.back' : 'mentor.nghe.fisher.back', params: {} });
       who.gesture = { act: 'point', x: line.zone.x + slot, z: line.zone.z, t: 2.5 };
     }
   }

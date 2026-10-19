@@ -156,6 +156,8 @@ export function playPresses(session, { presses = 40, wait = 2.5, hold = 1, until
     // A chalk mark on the stem of the woodcutter, and a tray into the pot of Gióng, are puts too.
     if (ev.type === 'mark' && ev.at != null) log?.push(`${ev.id} mark at ${ev.at}`);
     if (ev.type === 'carry') log?.push(`${ev.id} tray of ${ev.size}`);
+    // A stake that the fisher does not take at a narrow place is what the child sees too (#109).
+    if (ev.type === 'call' && /^fisher\.tight\./.test(ev.key ?? '')) log?.push(`${ev.id} ${ev.key}`);
     if (ev.type === 'pick' && ev.id === 'hero' && ev.item === lastPut) broken.add(`a press took back ${ev.item}, which the last press put`);
     if (ev.type === 'drop' && ev.id === 'hero' && String(getEntity(session.state, ev.item)?.item?.task ?? '').startsWith('trial-')) broken.add(`a press put ${ev.item} on the ground`);
   });

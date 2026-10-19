@@ -1,4 +1,5 @@
-// The fisher after the play test of #85 (#88): presses alone do not finish the row. The pile keeps
+// The fisher after the play test of #85 (#88): presses alone do not finish the row (since #109, a
+// press puts no stake into a space narrower than half of the gap). The pile keeps
 // the stakes of the level; at the first empty pile the fisher says that a gap is narrower than his
 // gap, and the narrow gaps glow; at the second, he shows his gap on a short row next to the child,
 // and then he brings the stakes that the rest of the row needs.
@@ -6,7 +7,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
 import { STEP } from './restless.js';
-import { getEntity, query } from '../src/core/world/state.js';
+import { getEntity, query, removeEntity } from '../src/core/world/state.js';
+import { tapTarget } from '../src/core/story.js';
 import { load } from './helpers.js';
 
 const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
@@ -39,7 +41,7 @@ test('the pile has the stakes of the level: three for the row at the gap of the 
   assert.equal(getEntity(session.state, 'zone:stakes').zone.items.length, 6);
 });
 
-test('a child who only presses runs out, gets the line and the marks, runs out again, gets the demonstration and then the stakes, and reaches the float', async () => {
+test('a child who puts each stake close to the last one runs out, gets the line and the marks, runs out again, gets the demonstration and then the stakes, and reaches the float', async () => {
   const { session } = await atRow();
   const seen = [];
   let narrow = 0;
@@ -57,10 +59,21 @@ test('a child who only presses runs out, gets the line and the marks, runs out a
     if (query(session.state, 'demo', 'position').length) demo += 1;
   });
   const z = getEntity(session.state, 'zone:line').zone;
+  // Fewer stakes in the pile, so that the narrowest row runs out (#109: with all of the pile, it
+  // reaches the float). Each stake goes at half of the gap from the last stake.
+  const pile = getEntity(session.state, 'zone:stakes').zone;
+  for (const id of pile.items.splice(0, 2)) removeEntity(session.state, id);
+  const hero = getEntity(session.state, 'hero');
   for (let k = 0; k < 160 && !slots(session).includes(z.length); k++) {
     if (getEntity(session.state, 'zone:trial-fisher')?.zone.tide.phase !== 'low') {
       run(session, 2);
       continue;
+    }
+    if (String(hero.hands?.holds ?? '').startsWith('stake:')) {
+      const at = Math.min(z.length, Math.max(0, ...slots(session)) + z.space / 2);
+      session.command({ type: 'tap', target: tapTarget(session, { line: at }).target });
+      session.events();
+      run(session, 4, () => !hero.route);
     }
     const a = session.action();
     session.command({ type: 'hands', id: a?.id });

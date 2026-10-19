@@ -10,6 +10,7 @@ import { playPresses, blindPresses, STEP } from './restless.js';
 import { getEntity, query } from '../src/core/world/state.js';
 import { load } from './helpers.js';
 import { taskOf } from '../src/core/world/trials.js';
+import { tapTarget } from '../src/core/story.js';
 
 // The session of a story at the end of the talk of the mentor (its first read).
 async function afterTalk(name) {
@@ -228,8 +229,10 @@ test('when Nghé comes into reach 0.2 seconds before a press, the press does not
 test('the fisher: at the row with empty hands, the look at the river is never the act of a press', async () => {
   const session = await afterTalk('trial-fisher');
   assert.deepEqual(playPresses(session, { presses: 6 }), []);
+  // A stake that the presses could not put at a narrow place (#109) goes in at a tap on the row.
   if (session.carried()) {
-    session.command({ type: 'hands' });
+    const line = zone(session, 'line');
+    tapAndPress(session, tapTarget(session, { line: Math.max(...query(session.state, 'item').filter((e) => e.item.zone === 'line').map((e) => e.item.slot)) + line.space }).target);
     run(session, 2);
   }
   const look = session.targets().find((t) => t.act === 'look');

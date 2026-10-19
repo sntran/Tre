@@ -4,6 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
+import { tapTarget } from '../src/core/story.js';
 import { STEP } from './restless.js';
 import { getEntity, query } from '../src/core/world/state.js';
 
@@ -130,7 +131,7 @@ test('the tide waits while the child carries a stake to the row', async () => {
   assert.ok(session.carried(), 'a stake in the hands');
   run(session, 120);
   assert.ok(!events.includes('tide'), 'no tide while the stake is in the hands');
-  send(session, { type: 'tap', target: { line: 12 } });
+  send(session, { type: 'tap', target: tapTarget(session, { line: 12 }).target });
   run(session, 2);
   send(session, { type: 'hands' });
   run(session, 3);
