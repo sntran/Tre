@@ -1424,7 +1424,23 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (k >= 0) goTo(z.slots[k], wz.id, k);
       else goTo(wz.position, wz.id, null, standOf(wz));
     } else goTo(wz.position, wz.id, null, standOf(wz));
+    // With a thing in the hands the tap is the place of a put, not a check.
+    if (!holding()) deskSay(wz);
     return true;
+  }
+  // A tap on a desk or on the box of the share (#107: "Tapping a desk doesn't tell me how many
+  // sticks."): the teacher says what is on it, in the count of grade 4 ("Bàn này: hai bó, hai
+  // que."). A check of the child, never a commit.
+  function deskSay(z) {
+    if (z?.zone.rule !== 'desk' || z.zone.id === 'table' || !openTask(z.zone.task)) return;
+    const things = z.zone.items.map((id) => getEntity(state, id)).filter(Boolean);
+    const part = (n, one, many) => (n === 1 ? { key: one } : { key: many, params: { n: { key: `num.${Math.min(150, n)}` } } });
+    const tens = things.filter((e) => e.item.kind === 'rodbundle').length;
+    const rods = things.filter((e) => e.item.kind === 'rod').length;
+    const parts = [...(tens ? [part(tens, 'scholar.what.ten', 'scholar.what.tens')] : []), ...(rods ? [part(rods, 'scholar.what.rod', 'scholar.what.rods')] : [])];
+    const what = parts.length === 2 ? { key: 'scholar.what.two', params: { a: parts[0], b: parts[1] } } : parts[0] ?? { key: 'scholar.what.none' };
+    const teacher = mentoring.personOf('trial-scholar');
+    if (teacher) emit({ type: 'open', screen: 'callout', id: teacher, textKey: z.zone.id === 'box' ? 'scholar.on.box' : 'scholar.on.desk', params: { what } });
   }
   // The hold of the action button (the jar of feed, the slash at a culm): the act goes on while the
   // button is down, and its end comes when the button goes up.
@@ -3752,6 +3768,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const thing = getEntity(state, target.thing);
       // With empty hands, a tap on a thing that lies on the place of a task is a check (#64).
       if (!holding()) mentoring.checkThing(target.thing);
+      // A thing on a desk or in the box: the teacher says what is there (#107).
+      if (thing?.item?.zone) deskSay(zoneOf(thing.item.zone));
       // A tap on a bed of the healer: she says the name of its herb (#61).
       if (thing?.item?.kind?.startsWith('herb-') && zoneOf(thing.item.zone)?.zone.rule === 'heap') sayHerb('bed', thing.item.kind);
       if (thing?.item) tapThing(thing, target.along ?? null);

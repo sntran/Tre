@@ -78,3 +78,12 @@ test('the desks stand at most 3 cells from the heap, each with a mat of its own 
     assert.equal(new Set(looks).size, desks.length, looks.join(', '));
   }
 });
+
+test('a tap on a desk: the teacher says what it has, in the count of grade 4', async () => {
+  const h = await atTeacher(4);
+  assert.ok(h.move('rods', 'rodbundle', 'desk-0'));
+  assert.ok(h.move('rods', 'rod', 'desk-0'));
+  const before = h.said.length;
+  h.tapAt('zone:desk-0');
+  assert.ok(h.said.slice(before).includes('scholar.on.desk'), h.said.slice(before).join(', '));
+});
