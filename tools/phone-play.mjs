@@ -29,6 +29,7 @@
 //   { "press": true }            a quick tap on the big button (the press and the release at once);
 //                                the picture before it and the act of the press go in play.json
 //   { "hold": 1.5 }              the big button down for this many seconds
+//   { "hold": 0.5, "at": ".jump-btn" } another button down for this many seconds
 //   { "hold": { "until": "expr", "timeout": 30, "print": "expr" }, "shot": "name" } the big button
 //                                down until the expression is true (a child who looks at the band),
 //                                with a value and a frame before the finger goes up
@@ -429,8 +430,9 @@ for (const [i, s] of (plan.steps ?? []).entries()) {
     await readPresses(i);
     presses.push(shown);
   } else if (s.hold !== undefined) {
-    presses.push(await pictureOfButton(i));
-    const p = await center('.act-btn');
+    // "at": another button to hold (the jump button: a long hop over the shard, #114).
+    if (!s.at) presses.push(await pictureOfButton(i));
+    const p = await center(s.at ?? '.act-btn');
     if (typeof s.hold === 'number' && !s.shot) await finger([p], s.hold);
     else {
       await touch('touchStart', ...p);
