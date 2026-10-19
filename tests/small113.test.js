@@ -173,3 +173,31 @@ test('the line of the elder about the drum comes with the drum, also after a loa
   const drum = list.find((d) => d.id === 'elder.drum');
   assert.ok(Object.values(drum.nodes).some((n) => (n.effects ?? []).some((e) => e.sound === 'drum')), JSON.stringify(drum));
 });
+
+test('at the first card of con trâu, a person near says that Nghé is a young buffalo, and the print of Nghé says it too', async () => {
+  const vi = load('i18n/vi.json');
+  assert.match(vi['note.creature.nghe'], /trâu con/);
+  assert.match(vi['note.buffalo.nghe'], /trâu con/);
+  const { runHeadless } = await import('./story-run.js');
+  const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
+  let session = null;
+  const said = [];
+  await runHeadless({ name: 'buffalo-113', profile, clock: 600, at: ['phu-dong', 20, 27], steps: [{ wait: 0.5 }] }, {
+    onSession: (s) => {
+      session = s;
+      s.listen((e) => { if (e.type === 'open' && e.textKey) said.push({ key: e.textKey, id: e.id }); });
+    },
+  });
+  const hero = session.state.entities.find((e) => e.id === 'hero');
+  // A buffalo of the fields (the big buffaloes graze in Xóm Ruộng), next to the hero.
+  const { addEntity } = await import('../src/core/world/state.js');
+  const buffalo = addEntity(session.state, { id: 'life:buffalo:test', kind: 'buffalo', position: { x: hero.position.x + 2, y: hero.position.y, z: hero.position.z + 2, facing: 0 }, look: 'buffalo' });
+  for (let i = 0; i < 60; i++) {
+    Object.assign(buffalo.position, { x: hero.position.x + 2, z: hero.position.z + 2 });
+    delete buffalo.route;
+    session.step();
+    session.events();
+  }
+  const line = said.find((l) => l.key === 'note.buffalo.nghe');
+  assert.ok(line && /^npc:/.test(line.id), JSON.stringify(said));
+});

@@ -579,10 +579,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The notebook (#8, src/core/notebook.js): the things that the child meets. A new print sends the
   // event notebook (the view shows the print for a moment).
   // from: the entity of the print (an animal), which pulses when its card shows (#113).
+  // A print with a line (say): the person nearest to the hero says it (#113: at the first card of
+  // con trâu, nobody said that Nghé is a young buffalo).
   function noteKey(key, from = null) {
     if (!data.notebook || !noteSeen(profile, key, state?.clock?.minutes ?? 0)) return;
-    for (const e of entriesOfKey(data.notebook, key)) emit({ type: 'notebook', id: e.id, titleKey: e.titleKey, look: e.look ?? null, kind: e.kind, ...(from ? { from } : {}) });
+    for (const e of entriesOfKey(data.notebook, key)) {
+      emit({ type: 'notebook', id: e.id, titleKey: e.titleKey, look: e.look ?? null, kind: e.kind, ...(from ? { from } : {}) });
+      if (e.say) {
+        const hp = hero()?.position;
+        const who = hp ? persons().filter((p) => p.kind === 'npc' && !getEntity(state, p.entity)?.hidden).map((p) => getEntity(state, p.entity)).filter((x) => x?.position && Math.hypot(x.position.x - hp.x, x.position.z - hp.z) <= NOTE_SAY).sort((a, b) => Math.hypot(a.position.x - hp.x, a.position.z - hp.z) - Math.hypot(b.position.x - hp.x, b.position.z - hp.z))[0] : null;
+        if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: e.say, params: {} });
+      }
+    }
   }
+  const NOTE_SAY = 30; // half blocks: the person who says the line of a print
   const NOTE_NEAR = 20; // half blocks: an animal this near the hero is met
   // An animal is met only while it is on the screen (#113: "Tranh mới: Con cú" came, and no owl was
   // in view): in the near view of a phone held upright, the narrowest screen.

@@ -76,8 +76,8 @@ test('the first cut of the woodcutter sends the card of a print with the name th
 
 test('the notebook uses the name that the child gave to the calf', () => {
   const i18n = createI18n(vi, 'vi');
-  assert.equal(i18n.plain(i18n.t('note.creature.nghe'), { nghecalf: 'Mít' }), 'Mít, bạn của em');
-  assert.equal(i18n.plain(i18n.t('note.creature.nghe')), 'Nghé, bạn của em');
+  assert.equal(i18n.plain(i18n.t('note.creature.nghe'), { nghecalf: 'Mít' }), 'Mít, bạn của em: một con trâu con');
+  assert.equal(i18n.plain(i18n.t('note.creature.nghe')), 'Nghé, bạn của em: một con trâu con');
 });
 
 test('a hint goes when the child does what it says: the line that waits goes at the put', () => {

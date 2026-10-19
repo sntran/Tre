@@ -119,7 +119,8 @@
    "kind": "creature",
    "titleKey": "note.creature.buffalo",
    "look": "buffalo",
-   "met": "creature:buffalo"
+   "say": "note.buffalo.nghe",
+      "met": "creature:buffalo"
   },
   {
    "id": "creature:duck",
