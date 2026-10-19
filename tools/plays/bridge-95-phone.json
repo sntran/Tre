@@ -1,0 +1,171 @@
+{
+ "about": "#95: bridge: the walk to the star, the talk, the first demonstration, then a tap on the heap at each of the four angles of the view: the hero walks there.",
+ "start": "?story=bridge",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 120
+  },
+  {
+   "read": 15
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 330",
+   "timeout": 300
+  },
+  {
+   "print": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z))"
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:0"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 300
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 20",
+   "timeout": 300
+  },
+  {
+   "print": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z))"
+  },
+  {
+   "check": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z)) <= 9"
+  },
+  {
+   "shot": "bridge-angle-1-a-tap-on-the-heap-walks"
+  },
+  {
+   "button": ".turn-btn:not(.wave-btn):not(.jump-btn):not(.act-btn)"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 30",
+   "timeout": 300
+  },
+  {
+   "print": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z))"
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:0"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 300
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 20",
+   "timeout": 300
+  },
+  {
+   "print": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z))"
+  },
+  {
+   "check": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z)) <= 9"
+  },
+  {
+   "button": ".turn-btn:not(.wave-btn):not(.jump-btn):not(.act-btn)"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 30",
+   "timeout": 300
+  },
+  {
+   "print": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z))"
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:0"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 300
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 20",
+   "timeout": 300
+  },
+  {
+   "print": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z))"
+  },
+  {
+   "check": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z)) <= 9"
+  },
+  {
+   "shot": "bridge-angle-3-a-tap-on-the-heap-walks"
+  },
+  {
+   "button": ".turn-btn:not(.wave-btn):not(.jump-btn):not(.act-btn)"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 30",
+   "timeout": 300
+  },
+  {
+   "print": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z))"
+  },
+  {
+   "tap": {
+    "thing": "plank:bridge-gap:0"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 300
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 20",
+   "timeout": 300
+  },
+  {
+   "print": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z))"
+  },
+  {
+   "check": "Math.round(Math.hypot(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.x, tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z - tre.activeVillage.state().entities.find((e) => e.id === 'plank:bridge-gap:0').position.z)) <= 9"
+  }
+ ]
+}
