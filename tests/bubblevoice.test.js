@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { bubbleLine, createVoiceQueue, kindOf, speakerOf, SAID_AGAIN } from '../src/core/bubblevoice.js';
 import { voiceOf } from '../src/core/voices.js';
 import { runHeadless, data } from './story-run.js';
-import { playPresses } from './restless.js';
+import { playPresses, STEP } from './restless.js';
 import { load } from './helpers.js';
 
 const voice = (speaker) => voiceOf(speaker, { npcs: data.npcs.npcs, friends: data.friends.friends, voices: data.game.voices });
@@ -77,4 +77,114 @@ test('the same words from two people are spoken one time; a count is never dropp
   assert.equal(q.offer(line('num.1'), false, 40), 'now');
   q.next(false, 40);
   assert.equal(q.offer(line('num.1'), false, 41), 'now', 'a new count says one again');
+});
+
+// #106: every line that a child needs is spoken.
+const lineOf = (key, id = 'npc:teacher', extra = {}) => ({ id, key, params: {}, voice: 'elderMan', kind: kindOf(key), ...extra });
+const drain = (q, now = null) => {
+  const out = [];
+  for (let l = q.next(false, now); l; l = q.next(false, now)) out.push(l.key);
+  return out;
+};
+
+test('the goal of a task and then the first help of the same person, in one step: both are spoken, in order', () => {
+  const q = createVoiceQueue();
+  q.offer(lineOf('teacher.need.2'), true, 0);
+  q.offer(lineOf('mentor.scholar.first'), true, 0);
+  assert.deepEqual(drain(q, 1), ['teacher.need.2', 'mentor.scholar.first']);
+  q.offer(lineOf('scholar.tied', 'npc:teacher', { kind: 'world' }), true, 2);
+  q.offer(lineOf('scholar.more'), true, 2);
+  q.offer(lineOf('mentor.show.scholar'), true, 2);
+  assert.deepEqual(drain(q, 3), ['scholar.tied', 'scholar.more', 'mentor.show.scholar'], 'what is left is never dropped for a hint');
+  for (const key of ['teacher.need.1', 'mentor.scholar.need', 'woodcutter.pieces', 'scholar.more', 'fisher.gaps', 'fisher.gaps.one', 'event.duck.start', 'puzzle.ferry.start']) assert.equal(kindOf(key), 'goal', key);
+});
+
+test('a line that the child asked for with a wave is spoken two times in twelve seconds', () => {
+  const q = createVoiceQueue();
+  q.offer(lineOf('mentor.show.scholar', 'npc:teacher', { asked: true }), false, 0);
+  assert.deepEqual(drain(q, 0), ['mentor.show.scholar']);
+  assert.notEqual(q.offer(lineOf('mentor.show.scholar', 'npc:teacher', { asked: true }), false, 5), 'drop');
+  assert.deepEqual(drain(q, 5), ['mentor.show.scholar']);
+  assert.equal(q.offer(lineOf('mentor.show.scholar'), false, 6), 'drop', 'the same line with no wave goes');
+  assert.ok(SAID_AGAIN >= 12);
+});
+
+test('a count of eleven and then its result: the eleven numbers, then the result', () => {
+  const q = createVoiceQueue();
+  for (let n = 1; n <= 11; n++) q.offer(lineOf(`num.${n}`, 'event:duck'), n > 1, 0);
+  q.offer({ id: 'talk', talk: true, key: 'event.duck.short', params: {}, voice: 'woman', kind: 'world' }, true, 0);
+  assert.deepEqual(drain(q, 1), [...Array.from({ length: 11 }, (_, i) => `num.${i + 1}`), 'event.duck.short']);
+});
+
+// The voice of a whole village, headless: the bubbles and the talk boxes go into one queue, and a
+// line takes the time of its words (about 12 letters each second).
+function voiceOfVillage(session, i18n) {
+  const q = createVoiceQueue();
+  const spoken = [];
+  let busyUntil = 0;
+  const now = () => session.state.tick * STEP;
+  session.listen((ev) => {
+    if (ev.type !== 'open' || !ev.textKey) return;
+    const line = ev.screen === 'callout' ? bubbleLine(ev, voice) : { id: 'talk', talk: true, key: ev.textKey, params: ev.params ?? {}, voice: 'narrator', kind: 'world' };
+    q.offer(line, now() < busyUntil, now());
+  });
+  return {
+    spoken,
+    tick() {
+      if (now() < busyUntil) return;
+      const l = q.next(false, now());
+      if (!l) return;
+      spoken.push(l.key);
+      busyUntil = now() + 0.6 + i18n.t(l.key, l.params).length / 12;
+    },
+  };
+}
+
+test('the whole village at the teacher, grades 1 and 2: the goal is spoken after the talk, and what is left after the first bundle', async () => {
+  const { createI18n } = await import('../src/core/i18n.js');
+  const i18n = createI18n(load('i18n/vi.json'), 'vi');
+  for (const grade of [1, 2]) {
+    const s = load('tests/stories/trial-scholar.json');
+    const first = s.steps.findIndex((x) => x.read === true);
+    let session = null;
+    let v = null;
+    const failures = await runHeadless({ ...s, profile: { ...s.profile, grade }, steps: s.steps.slice(0, first) }, { onSession: (x) => { session = x; v = voiceOfVillage(x, i18n); } });
+    assert.deepEqual(failures, []);
+    const run = (sec) => {
+      for (let i = 0; i < sec / STEP; i++) {
+        if (session.screen) session.command({ type: session.screen === 'dialogue' || session.screen === 'say' ? 'next' : 'close' });
+        session.step();
+        session.events();
+        v.tick();
+      }
+    };
+    run(40);
+    assert.ok(v.spoken.some((k) => /^teacher\.need\./.test(k)), `grade ${grade}: ${v.spoken.join(', ')}`);
+    // Ten rods on the mat, and the tie.
+    const { getEntity } = await import('../src/core/world/state.js');
+    const before = v.spoken.length;
+    const tapAt = (id) => {
+      const e = getEntity(session.state, id);
+      session.command({ type: 'tap', target: e.zone ? session.targetAt(e.zone.x / 2, e.zone.z / 2) : { thing: id } });
+      run(4);
+    };
+    const press = () => { session.command({ type: 'hands', id: session.action()?.id }); run(1.5); };
+    for (let i = 0; i < 10; i++) {
+      const rod = getEntity(session.state, 'zone:rods').zone.items.find((id) => getEntity(session.state, id)?.item.kind === 'rod');
+      tapAt(rod);
+      // With the mat in reach, one press puts the rod on the mat; else a tap on the mat and a press.
+      press();
+      if (getEntity(session.state, 'hero').hands?.holds) {
+        tapAt('zone:mat');
+        press();
+      }
+    }
+    assert.equal(getEntity(session.state, 'zone:mat').zone.items.length, 10, 'ten rods on the mat');
+    session.command({ type: 'tap', target: { person: 'npc:teacher' } });
+    run(3);
+    session.command({ type: 'hands', id: session.action()?.id });
+    run(40);
+    const after = v.spoken.slice(before);
+    assert.ok(after.includes('scholar.more'), `grade ${grade}: ${after.join(', ')}`);
+  }
 });

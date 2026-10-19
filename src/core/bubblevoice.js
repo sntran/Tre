@@ -3,18 +3,24 @@
 // no DOM: which key, which voice, and whether a line speaks now, waits for its turn, or goes.
 //
 // A line: { id (the entity that says it), key (the text key), params, voice (a voice profile),
-// kind }. kind: 'count' (a word of a count: num.1, num.2, ...), 'greet' (a greeting of a person who
-// walks by), 'world' (a line that says what happened: the iron bent, the piece is too short, the
-// extra rods go back; the event has happened, #73), or 'line' (a hint, a wait, and every other line
-// of a person).
+// kind, asked }. kind: 'count' (a word of a count: num.1, num.2, ...), 'greet' (a greeting of a
+// person who walks by), 'world' (a line that says what happened: the iron bent, the piece is too
+// short, the extra rods go back; the event has happened, #73), 'goal' (the goal of a task, or what
+// is left of it, #106), or 'line' (a hint, a wait, and every other line of a person). asked: the
+// line answers a wave of the child (#105).
 
 const COUNT = /^num\./;
 const GREET = /^world\.greet\./;
+// The lines of a goal and of what is left (#106: "Thầy cần hai bó." went for the first help, and
+// a child who cannot read never heard the goal), and the thing that a demonstration names ("Bó rau
+// má đây.").
+const GOAL = /^(teacher\.need\.|mentor\.scholar\.need$|woodcutter\.pieces$|mentor\.nghe\.pieces$|scholar\.more$|fisher\.gaps|event\.[a-z]+\.start|traps\.need|loco\.start$|rope\.goal$|puzzle\.[a-z]+\.start|healer\.herb\.)/;
 
 // The kind of a line by its key.
 export function kindOf(key) {
   if (COUNT.test(key)) return 'count';
   if (GREET.test(key)) return 'greet';
+  if (GOAL.test(key)) return 'goal';
   return 'line';
 }
 
@@ -31,7 +37,7 @@ export function speakerOf(id) {
 export function bubbleLine(ev, voice = () => 'narrator') {
   if (!ev || ev.screen !== 'callout' || !ev.textKey) return null;
   const kind = kindOf(ev.textKey);
-  return { id: ev.id ?? null, key: ev.textKey, params: ev.params ?? {}, voice: voice(speakerOf(ev.id)), kind: kind === 'line' && ev.happened ? 'world' : kind };
+  return { id: ev.id ?? null, key: ev.textKey, params: ev.params ?? {}, voice: voice(speakerOf(ev.id)), kind: kind === 'line' && ev.happened ? 'world' : kind, ...(ev.asked ? { asked: true } : {}) };
 }
 
 // A hint goes when the child does what it says (#77: "Cắm cái cọc này lên hàng nhé." stayed over the
@@ -55,9 +61,11 @@ export const SAID_AGAIN = 12;
 //          words of a count keep their order, so that one number never cuts the last one);
 //   'drop' a greeting while the voice is busy, or the same line that already waits.
 //   A line with the same words as a line that waits, or as a line that the voice said in the last
-//   SAID_AGAIN seconds, also goes. A word of a count and a line of what happened never go (#73: the
-//   "hai" of a row went because the "hai" of the row before still waited), and a later line of the
-//   person waits behind them.
+//   SAID_AGAIN seconds, also goes. A word of a count, a line of what happened, and a line of a goal
+//   never go (#73: the "hai" of a row went because the "hai" of the row before still waited; #106:
+//   the goal of the teacher went for the first help), and a later line of the person waits behind
+//   them. A line that the child asked for with a wave is said also when the voice said the same
+//   words a short time ago (#106).
 // next(speaking): the line to speak now, or null while the voice is busy or nothing waits.
 // now: the time in seconds (null: no memory of the lines that the voice said).
 export function createVoiceQueue() {
@@ -67,11 +75,11 @@ export function createVoiceQueue() {
     offer(line, speaking = false, now = null) {
       if (!line) return 'drop';
       if (line.kind === 'greet' && (speaking || queue.length)) return 'drop';
-      const keep = line.kind === 'count' || line.kind === 'world';
+      const keep = line.kind === 'count' || line.kind === 'world' || line.kind === 'goal';
       if (!keep && queue.some((q) => same(q, line))) return 'drop';
       if (!keep) {
         if (queue.some((q) => sameWords(q, line))) return 'drop';
-        if (now !== null && said.some((x) => sameWords(x.line, line) && now - x.at < SAID_AGAIN)) return 'drop';
+        if (now !== null && !line.asked && said.some((x) => sameWords(x.line, line) && now - x.at < SAID_AGAIN)) return 'drop';
       }
       // A newer hint of the same person takes the place of an older hint that still waits (never of
       // a line of what happened, nor of a word of a count).
