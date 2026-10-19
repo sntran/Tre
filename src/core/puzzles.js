@@ -235,7 +235,13 @@ export function createPuzzles(deps) {
   // The puzzle in short lines, one at a time (#110: three sentences in one bubble).
   function sayOffer() {
     lookBoth();
-    F.offer.forEach((key, i) => after(i * OFFER_LINE, () => { if (ferry) deps.say('pz:traveler', key, {}); }));
+    // A wave gets a hint only after the last line of the puzzle (#110: in a play, a wave between the
+    // lines gave the rule before the puzzle was said).
+    F.offer.forEach((key, i) => after(i * OFFER_LINE, () => {
+      if (!ferry) return;
+      deps.say('pz:traveler', key, {});
+      if (i === F.offer.length - 1) ferry.told = true;
+    }));
   }
   // The things on a bank, as a list of names ("con chó và bao gạo").
   const namesOn = (bank) => F.things.filter((t) => ferry.where[t] === bank).map((t) => ({ key: `puzzle.thing.${t}` }));
@@ -560,7 +566,7 @@ export function createPuzzles(deps) {
     state: () => ({ ferry, pots }),
   };
   function ferryHint() {
-    return Boolean(ferry && ferry.offered && st('ferry').solved !== deps.day() && heroNear('pz:traveler', OFFER_NEAR));
+    return Boolean(ferry && ferry.told && st('ferry').solved !== deps.day() && heroNear('pz:traveler', OFFER_NEAR));
   }
   function heroNear(id, r) {
     const e = getEntity(w(), id);

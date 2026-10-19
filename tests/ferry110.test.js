@@ -72,7 +72,12 @@ test('a wave near the traveler before the puzzle gives no hint; the first wave a
   // Near: the puzzle in short lines, one at a time.
   Object.assign(h.position, { x: tr.position.x - 3, z: tr.position.z - 1 });
   delete h.route;
-  p.run(12);
+  // A wave between the lines of the puzzle: no hint before the last line.
+  p.run(1);
+  p.session.command({ type: 'wave' });
+  p.run(1);
+  assert.ok(!p.said.some((k) => /^puzzle\.ferry\.hint/.test(k)), `no hint between the lines: ${p.said.join(', ')}`);
+  p.run(10);
   assert.deepEqual(p.said.filter((k) => /^puzzle\.ferry\.start/.test(k)), F.offer);
   for (let i = 0; i < 2; i++) {
     const n = p.said.length;
