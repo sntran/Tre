@@ -4932,7 +4932,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     startPlace,
     command,
     step,
-    // The folk game that goes on: { kind, phase, rounds, skill, call, count, court }, or null.
+    // The folk game that goes on: { kind, phase, rounds, skill, call, count, court, hops }, or null.
     folk: () => folk.stateOf(),
     // The events since the last call.
     events: () => out.splice(0),

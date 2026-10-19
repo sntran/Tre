@@ -697,6 +697,6 @@ export function createFolk(deps) {
   return {
     mapStart, tick, join, stop, candidates, jump, jumpUp, wave, answer,
     active: () => game?.kind ?? null,
-    stateOf: () => (game ? { kind: game.kind, phase: game.phase, rounds: game.rounds, skill: game.skill, call: game.call?.square ?? null, count: game.rope?.count ?? null, group: game.plan?.group ?? null, target: game.plan?.target ?? null, court: game.court?.map((s) => s.value) ?? null } : null),
+    stateOf: () => (game ? { kind: game.kind, phase: game.phase, rounds: game.rounds, skill: game.skill, call: game.call?.square ?? null, count: game.rope?.count ?? null, group: game.plan?.group ?? null, target: game.plan?.target ?? null, court: game.court?.map((s) => s.value) ?? null, hops: game.phase === 'hop' && game.hops ? { pos: game.hops.pos, shard: game.hops.shard } : null } : null),
   };
 }
