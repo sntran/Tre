@@ -62,6 +62,15 @@ test('a rod in the box comes back with a tap and a press, and goes onto a desk',
   assert.ok(h.zone('desk-0').items.includes(rod));
 });
 
+test('a tap on a desk: the teacher says what it has, in the count of grade 4', async () => {
+  const h = await atTeacher(4);
+  assert.ok(h.move('rods', 'rodbundle', 'desk-0'));
+  assert.ok(h.move('rods', 'rod', 'desk-0'));
+  const before = h.said.length;
+  h.tapAt('zone:desk-0');
+  assert.ok(h.said.slice(before).includes('scholar.on.desk'), h.said.slice(before).join(', '));
+});
+
 test('the desks stand at most 3 cells from the heap, each with a mat of its own color', async () => {
   for (const seed of [7, 11, 23]) {
     let session = null;
@@ -79,11 +88,37 @@ test('the desks stand at most 3 cells from the heap, each with a mat of its own 
   }
 });
 
-test('a tap on a desk: the teacher says what it has, in the count of grade 4', async () => {
-  const h = await atTeacher(4);
-  assert.ok(h.move('rods', 'rodbundle', 'desk-0'));
-  assert.ok(h.move('rods', 'rod', 'desk-0'));
-  const before = h.said.length;
-  h.tapAt('zone:desk-0');
-  assert.ok(h.said.slice(before).includes('scholar.on.desk'), h.said.slice(before).join(', '));
+// The lines that belong to the mat of grades 1 to 3 only, and the lines of each form.
+const MAT_ONLY = ['mentor.scholar.room', 'mentor.scholar.mark', 'mentor.scholar.demo', 'mentor.scholar.demoDone', 'mentor.scholar.smallerPut', 'mentor.scholar.sharePut', 'mentor.scholar.extra', 'mentor.scholar.tie'];
+const OF_FORM = (k) => (/\.(groups|share|decimal)$/.exec(k) ?? [])[1] ?? null;
+
+test('at each form of the teacher, each line of help belongs to that form or to all forms', async () => {
+  const forms = { 1: 'tens', 3: 'groups', 4: 'share', 5: 'decimal' };
+  for (const [grade, form] of Object.entries(forms)) {
+    const h = await atTeacher(Number(grade));
+    const from = h.said.length;
+    // A wave, a wrong try, and three waves after it.
+    h.session.command({ type: 'wave' });
+    h.run(6);
+    if (form === 'share') h.move('rods', 'rodbundle', 'desk-0');
+    else if (form === 'decimal') h.move('rods', 'rodbundle', 'table');
+    else if (form === 'groups') {
+      h.move('bands', 'band', 'bandrow');
+      h.move('rods', 'rod', 'mat');
+    } else h.move('rods', 'rod', 'mat');
+    h.tapAt('npc:teacher');
+    h.press();
+    h.run(25);
+    for (let i = 0; i < 3; i++) {
+      h.session.command({ type: 'wave' });
+      h.run(30);
+    }
+    const lines = h.said.slice(from).filter((k) => k.startsWith('mentor.scholar') || k.startsWith('mentor.show.scholar'));
+    assert.ok(lines.length >= 3, `${form}: ${lines.join(', ')}`);
+    for (const k of lines) {
+      const f = OF_FORM(k);
+      assert.ok(f === null || f === form, `${form}: a line of ${f}: ${k}`);
+      if (form === 'share' || form === 'decimal') assert.ok(!MAT_ONLY.includes(k), `${form}: a line of the mat: ${k} (${lines.join(', ')})`);
+    }
+  }
 });

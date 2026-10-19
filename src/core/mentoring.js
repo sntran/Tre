@@ -146,7 +146,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // Has the mat of the teacher a bundle of rods or more (#96)?
   function matFull(key, task) {
     const z = task?.place?.zone;
-    if (!defOf(key)?.lines?.tie || z?.rule !== 'bundle') return false;
+    if (!defOf(key)?.lines?.tie || z?.rule !== 'bundle' || task.tz?.zone.plan?.form === 'share') return false;
     return itemsOf(task.place).length >= (z.bundle ?? BUNDLE);
   }
   // Is the row of the fisher at the float, with no stake in the hands (#78)?
@@ -576,6 +576,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // child who waited for red heard "go to the river" after two misses).
     if (move === 'picture' && def.pictureAfterGlow && !trk?.sawGlow) move = 'show';
     if (move === 'picture') pictured = true;
+    // The moves of a form of a level (#107): at the share of grade 4 and the big bundle of grade 5,
+    // the help of the mat of grade 1 is no help. Each move has the line and the act of its form:
+    // the mark counts the desks (or the table), and a demonstration, a smaller task, or a share is
+    // a demonstration of the form on another instance.
+    const form = key === 'trial-scholar' ? task?.tz?.zone.plan?.form ?? null : null;
+    const formAct = form === 'share' || form === 'decimal' ? { mark: 'count', demo: 'show', smaller: 'show', share: 'show' }[move] ?? null : null;
+    if (formAct) info = { ...info, small: move !== 'demo' };
     let person = task?.person ?? getEntity(w, def.person);
     // The person of the task is not there (at home at night, #51): Nghé says the lines, in the
     // words of a friend, and shows the place. Nghé never carries the things of the task.
@@ -646,12 +653,32 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       point(t, p, 2);
       mark(t, p, 3);
       t += 3;
+    } else if (formAct === 'count') {
+      say(t, lineOf(key, 'mark'));
+      t = form === 'share' ? deskSteps(task, { say, point, mark, steps }, t + 1.6) : tableSteps(task, { say, point, mark, steps }, t + 1.6);
+    } else if (formAct === 'show') {
+      const out = formDemoSteps(task, form, info, { say, point, steps }, t);
+      t = out.t;
+      keyAt = out.keyAt;
+    } else if (move === 'show' && form === 'share') {
+      // The share: the heap, and then each desk (#107: not the mat).
+      say(t, lineOf(key, 'show'));
+      const pile = task.piles[0]?.position ?? task.at;
+      point(t, pile, 1.4);
+      mark(t, pile, 2.5);
+      let at = t + 1.6;
+      for (const d of query(w, 'zone').filter((z) => z.zone.rule === 'desk' && /^desk-/.test(z.zone.id))) {
+        point(at, { x: d.zone.x, z: d.zone.z }, 0.9);
+        mark(at, { x: d.zone.x, z: d.zone.z }, 1.2);
+        at += 1;
+      }
+      t = at + 0.5;
     } else if (move === 'show' && matFull(key, task)) {
       // A full mat: the step after the put is the count and the tie (#96: with 10 or 11 rods on the
       // mat, "Lấy một que ở đống kia …" made a child put one more). The rods glow one by one, and
       // then the teacher.
       const rods = itemsOf(task.place);
-      say(t, defOf(key).lines.tie);
+      say(t, lineOf(key, 'tie'));
       rods.forEach((e, i) => steps.push({ at: t + 0.6 + i * ROD_GLOW, glow: { ids: [e.id] } }));
       const after = t + 0.6 + rods.length * ROD_GLOW;
       if (task.person?.id) steps.push({ at: after, glow: { ids: [task.person.id] } });
@@ -1457,6 +1484,55 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const last = t + 0.8 + parts.length * 1.3;
     s.say(last, (!task.byNghe && def.lines?.demoDone) || 'mentor.demo.done', { n: { key: `num.${Math.min(150, other)}` } });
     return { t: last + 3.5, keyAt: t + 0.8 + Math.ceil(parts.length / 2) * 1.3 };
+  }
+
+  // A demonstration of a form of the teacher on another instance (#107), at a free place next to
+  // the child. The share: he deals a few rods onto small mats, one to each in turn, and puts the
+  // rest in a small box ("một, hai, ba … thừa một"); small (a smaller task): fewer rods and mats.
+  // The big bundle: ten bundles, counted, and then one big bundle.
+  function formDemoSteps(task, form, info, s, t) {
+    const spot = demoSpot(task, 4);
+    if (form === 'share') {
+      const n = info.small ? 5 : 7;
+      const k = info.small ? 2 : 3;
+      const each = Math.floor(n / k);
+      const rest = n - each * k;
+      s.say(t, lineOf(task.key, 'demo'), { n: { key: `num.${n}` }, k: { key: `num.${k}` } });
+      t += 1.4;
+      const mats = Array.from({ length: k }, (_, i) => ({ x: spot.x + (i - (k - 1) / 2) * 2.6, z: spot.z }));
+      mats.forEach((p, i) => s.steps.push({ at: t, spawn: { look: `share-mat-${['red', 'blue', 'yellow'][i]}`, x: p.x, z: p.z, facing: 0 } }));
+      const box = { x: spot.x, z: spot.z + 2.8 };
+      s.steps.push({ at: t, spawn: { look: 'rod-box', x: box.x, z: box.z, facing: 0 } });
+      t += 0.6;
+      for (let i = 0; i < each * k; i++) {
+        const p = mats[i % k];
+        const at = { x: p.x - 0.6 + Math.floor(i / k) * 0.4, z: p.z };
+        s.point(t, at, 0.9);
+        s.steps.push({ at: t, spawn: { look: 'rod', x: at.x, z: at.z, facing: 0 } });
+        s.say(t + 0.05, `num.${(i % k) + 1}`);
+        t += 0.9;
+      }
+      for (let i = 0; i < rest; i++) {
+        s.point(t, box, 0.9);
+        s.steps.push({ at: t, spawn: { look: 'rod', x: box.x - 0.3 + i * 0.3, z: box.z, facing: 0 } });
+        t += 0.9;
+      }
+      s.say(t, lineOf(task.key, 'demoDone'), { e: { key: `num.${each}` }, r: { key: `num.${rest}` } });
+      return { t: t + 3, keyAt: t };
+    }
+    s.say(t, lineOf(task.key, 'demo'));
+    t += 1.4;
+    for (let i = 0; i < 10; i++) {
+      const at = { x: spot.x - 1.8 + (i % 5) * 0.9, z: spot.z + Math.floor(i / 5) * 0.9 };
+      s.point(t, at, 0.8);
+      s.steps.push({ at: t, spawn: { look: 'rod-bundle', x: at.x, z: at.z, facing: 0 } });
+      s.say(t + 0.05, `num.${i + 1}`);
+      t += 0.8;
+    }
+    s.steps.push({ at: t + 0.4, spawn: { look: 'rod-bigbundle', x: spot.x, z: spot.z + 2.6, facing: 0 } });
+    s.point(t + 0.4, { x: spot.x, z: spot.z + 2.6 }, 1.4);
+    s.say(t + 0.5, lineOf(task.key, 'demoDone'));
+    return { t: t + 3.5, keyAt: t + 0.4 };
   }
 
   // A free place on the ground next to the child, away from the place of the task: a demonstration
