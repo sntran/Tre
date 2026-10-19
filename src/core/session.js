@@ -2942,7 +2942,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     });
   }
   // The places that the hands take a thing back from (the opposite of a put).
-  const TAKE_BACK = new Set(['bundle', 'basket', 'line', 'exact', 'share', 'spots', 'hearth', 'boat']);
+  // Each place of a task that takes a thing gives it back with a tap and a press (#107: a rod in the
+  // box of the teacher never came back, and the desks could never be equal).
+  const TAKE_BACK = new Set(['bundle', 'basket', 'line', 'exact', 'share', 'spots', 'hearth', 'boat', 'desk', 'leaf', 'bandrow']);
   // The point in front of the hero (half blocks), for the places on a line.
   const frontOf = (hp, d = 2) => ({ x: hp.x + Math.sin(hp.facing ?? 0) * d, z: hp.z + Math.cos(hp.facing ?? 0) * d });
 

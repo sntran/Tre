@@ -73,7 +73,9 @@ test('grade 3: the line says the recipe and the doses, one dose lies on a leaf, 
 });
 
 test('grade 4: a model of two doses, and its bunches go onto the leaves and never into the basket', async () => {
-  const { session, said } = await play(4, [{ press: { item: 'herb-ngai', model: true } }, { until: { event: 'pick', timeout: 15 } }, { press: { entity: 'zone:leaf-0' } }, { until: { event: 'put', with: { id: 'hero' }, timeout: 15 } }]);
+  // One press takes a bunch of the model and puts it onto a leaf in one move (a second press at the
+  // leaf takes it back, #107).
+  const { session, said } = await play(4, [{ press: { item: 'herb-ngai', model: true } }, { until: { event: 'put', with: { id: 'hero' }, timeout: 15 } }]);
   const leaves = [0, 1].map((j) => getEntity(session.state, `zone:leaf-${j}`).zone.items.length);
   assert.equal(leaves[0] + leaves[1], 1, 'one bunch on a leaf');
   assert.equal(getEntity(session.state, 'zone:basket').zone.items.length, 0);
