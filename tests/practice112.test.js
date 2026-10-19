@@ -1,7 +1,9 @@
 // The practice and the level by evidence (#112): answers in the practice alone never move the level
-// of a task, and a question of k answers counts with a guess of at least 1 / k.
+// of a task, a question of k answers counts with a guess of at least 1 / k, and the right answer is
+// not the longest one more often than the others.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readdirSync } from 'node:fs';
 import { createRng } from '../src/core/rng.js';
 import { createSkillGraph } from '../src/core/skills.js';
 import { createLearner } from '../src/core/learner.js';
@@ -40,4 +42,21 @@ test('the guess of a commit of the world is in the bounds of the design, and a q
   const pa = a.learning.skills['sci.matter.states'].p;
   const pb = b.learning.skills['sci.matter.states'].p;
   assert.ok(pa < pb, `a right answer of three counts less than a commit: ${pa.toFixed(3)} < ${pb.toFixed(3)}`);
+});
+
+test('in each bank of questions, the right answer is the longest one alone in at most 40 percent of the questions of text answers', () => {
+  const files = readdirSync(new URL('../data/questions/', import.meta.url)).filter((f) => f.endsWith('.json'));
+  for (const lang of ['vi', 'en']) {
+    const dict = load(`i18n/${lang}.json`);
+    for (const f of files) {
+      const qs = load(`data/questions/${f}`).questions.filter((q) => q.type === 'choice' && q.choices.every((c) => typeof c === 'string' && dict[c]));
+      if (!qs.length) continue;
+      const longest = qs.filter((q) => {
+        const len = q.choices.map((c) => dict[c].length);
+        const m = Math.max(...len);
+        return len[q.answer] === m && len.filter((x) => x === m).length === 1;
+      });
+      assert.ok(longest.length <= 0.4 * qs.length, `${f}, ${lang}: ${longest.length} of ${qs.length}: ${longest.map((q) => q.id).join(', ')}`);
+    }
+  }
 });
