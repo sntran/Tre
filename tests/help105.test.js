@@ -103,3 +103,27 @@ test('the fisher after an escape and a reload: a wave gives the hole, not the st
   for (const k of ['mentor.tryFirst', 'mentor.show.fisher', 'mentor.first.you']) assert.ok(!said.includes(k), `${k}: ${said.join(', ')}`);
   void session;
 });
+
+test('three presses that do nothing are a try: a wave after them shows where to stand and what to tap', async () => {
+  const s = load('tests/stories/trial-scholar.json');
+  const first = s.steps.findIndex((x) => x.read === true) + 1;
+  let session = null;
+  let said = [];
+  const failures = await runHeadless({ ...s, steps: [...s.steps.slice(0, first), { until: { event: 'call', with: { key: 'mentor.first.you' }, timeout: 60 } }, { wait: 2 }] }, {
+    onSession: (x) => { session = x; },
+  });
+  assert.deepEqual(failures, []);
+  // The hero walks away from the heap and the mat, so that a press does nothing.
+  const mat = getEntity(session.state, 'zone:mat');
+  session.command({ type: 'tap', target: session.targetAt(mat.zone.x / 2 + 3, mat.zone.z / 2 + 3) });
+  run(session, 4);
+  said = listen(session);
+  for (let i = 0; i < 3; i++) {
+    session.command({ type: 'hands', id: session.action()?.id ?? null });
+    run(session, 0.5);
+  }
+  session.command({ type: 'wave' });
+  run(session, 5);
+  assert.ok(!said.includes('mentor.tryFirst'), said.join(', '));
+  assert.ok(said.some((k) => k.startsWith('mentor.show.scholar')), said.join(', '));
+});

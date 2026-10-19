@@ -1571,10 +1571,24 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return t + 0.5;
   }
 
+  // A press or a tap at the work that does nothing is an act of the child (#105: a child pressed
+  // three times, and the wave said "Cháu thử trước đã"): a wave after it shows where to stand and
+  // what to tap. id: the thing or the place of the tap (else the task near the hero).
+  function touched(id = null) {
+    const e = id ? getEntity(world(), id) : null;
+    const key = e ? keyOf(e.item?.task ?? e.zone?.task ?? null) : activeKey();
+    const task = key && defOf(key) ? taskOf(key) : null;
+    if (!task) return;
+    stateOf(key, task);
+    const tr = tracks.get(key);
+    if (tr) tr.acted = true;
+  }
+
   return {
     start,
     skill,
     long,
+    touched,
     worldEvent,
     checkThing,
     wave,

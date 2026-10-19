@@ -1385,6 +1385,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // exact: the walk ends at the stand point itself (a free point beside a stem), not near it.
   function goTo(p, id, along = null, stand = p, { exact = false } = {}) {
     chosen = { id, along };
+    // A tap on a thing or a place of a task is an act of the child for its mentor (#105).
+    if (id) mentoring.touched(id);
     pendingPress = null;
     const face = () => worldCommand(state, { type: 'face', id: 'hero', x: p.x, z: p.z });
     // Near enough to act there: only a turn to it.
@@ -3537,6 +3539,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // A dim button does nothing; a press on an act that is gone pulses.
       if (button().a || id !== null) emit({ type: 'pulse', id: null });
       emit({ type: 'press', id: pid, act: null, done: false });
+      mentoring.touched();
       return;
     }
     if ((state.tick - markTick) * STEP < MARK_AGAIN && tapTick < markTick) {
@@ -3606,6 +3609,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       pendingPress = null;
       emit({ type: 'pulse', id: null });
       emit({ type: 'press', id: p.id, act: null, done: false });
+      mentoring.touched();
     }
   }
 
