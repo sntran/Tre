@@ -155,6 +155,15 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (!defOf(key)?.lines?.full || z?.rule !== 'line') return false;
     return itemsOf(task.place).some((e) => e.item.slot === z.length);
   }
+  // Has the row changed since the last tide? Only then a tide comes after the row is at the float,
+  // so only then "Đủ hàng rồi. Xem nước lên nào!" is true (#105, rule 34).
+  function rowChanged(task) {
+    const tide = task.tz?.zone.tide;
+    const z = task.place?.zone;
+    if (!tide || !z) return true;
+    const row = query(world(), 'item').filter((e) => e.item.zone === z.id && !e.item.held && e.item.slot != null);
+    return row.map((e) => e.item.slot).sort((a, b) => a - b).join(',') !== tide.last;
+  }
   // A stake of the child on the row that the row does not need (its two neighbors are at most the
   // space of the row apart), while the person has not shown the take back yet (#78); or null.
   // again: also after the first time (with an empty pile, #92).
@@ -212,20 +221,35 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     }
     const st = newMentor(key);
     st.round = round;
+    // A task that the child started before a load (#105: a saved game opened at the fisher, and
+    // the first wave gave the start demonstration with an empty pile): no start demonstration and
+    // no "try first" again; the help reads the work as it is.
+    const before = round === 0 ? taskOf(key) : null;
+    const underway = Boolean(before && underwayOf(before));
+    if (underway) {
+      st.tried = (before.tz?.zone.commits ?? 0) > 0;
+      st.toldTry = true;
+    }
     // The visits of the child to the task, over the games (#73: no picture of another station in
     // the first visit).
     if (round === 0) memoryOf(key).visits = (memoryOf(key).visits ?? 0) + 1;
     states.set(key, st);
-    tracks.set(key, { startT: now(), firstAct: null, lastAct: now(), lastCommit: null, acted: false, left: false });
+    tracks.set(key, { startT: now(), firstAct: null, lastAct: now(), lastCommit: null, acted: underway, left: false });
     delayed = delayed.filter((d) => d.key !== key);
     endScript(world(), getEntity(world(), `script:${key}`));
     // At the start of a task, the person shows the first step one time on the real things.
     // One time in a visit: the rounds of a practice after the first one start with no demonstration.
+    if (underway) firstShown.add(key);
     if (round === 0 && key.startsWith('trial-') && defOf(key).first !== false && !firstShown.has(key)) {
       firstShown.add(key);
       delayed.push({ at: now() + FIRST_DELAY, key, move: 'first', info: {} });
     }
     return st;
+  }
+  // Is the work of a task under way: a commit, a thing on its place, a mark, or a hole of an escape?
+  function underwayOf(task) {
+    const z = task.tz?.zone;
+    return (z?.commits ?? 0) > 0 || itemsOf(task.place).length > 0 || (z?.marks?.length ?? 0) > 0 || Boolean(z?.hole);
   }
   function stateOf(key, task = null) {
     const st = states.get(key);
@@ -587,18 +611,30 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       t = countSteps(task, famOf(key), info, { say, point, mark, steps }, t);
     } else if (move === 'first') {
       t = firstSteps(task, def, { say, point, mark, steps }, t);
-    } else if (move === 'show' && carrying(key, task)) {
+    } else if ((move === 'show' || move === 'mark') && carrying(key, task)) {
       // The thing of the task is in the hands (the sticks after the right cut): the line is the
-      // next step with it, toward its place (#57), not the first step.
+      // next step with it, toward its place (#57), not the first step. A stake in the hands with a
+      // hole in the row goes into the hole (#105: with the stake in the hands, a wave said to take
+      // a stake back).
+      const h = holeOf(key, task);
       const place = task.place?.position ?? task.at;
       // No place takes the thing now (the tide is in at the row of the fisher): the person says why
       // (#70: with a stake in the hands, the child heard "take a stake from the heap" four times).
       const tide = task.tz?.zone.tide;
       const waits = Boolean(defOf(key).lines.wait && tide && tide.phase !== 'low');
-      say(t, waits ? defOf(key).lines.wait : defOf(key).lines.carry);
-      point(t, place, 1.4);
-      mark(t, place, 2.5);
-      t += 2;
+      if (h && !waits) {
+        const z = task.place.zone;
+        const p = { x: z.x + h.from + h.size / 2, z: z.z };
+        say(t, defOf(key).lines.hole);
+        point(t, p, 2);
+        mark(t, p, HOLE_MARK);
+        t += 3;
+      } else {
+        say(t, waits ? defOf(key).lines.wait : defOf(key).lines.carry);
+        point(t, place, 1.4);
+        mark(t, place, 2.5);
+        t += 2;
+      }
     } else if (move === 'erase') {
       const z = task?.tz?.zone;
       const m = z?.marks?.at(-1);
@@ -620,9 +656,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       if (task.person?.id) steps.push({ at: after, glow: { ids: [task.person.id] } });
       if (task.person?.position) point(after, task.person.position, 1.6);
       t = after + 1.6;
-    } else if ((move === 'show' || move === 'mark') && holeOf(key, task) && !pileEmpty(task)) {
+    } else if ((move === 'show' || move === 'mark') && holeOf(key, task) && !(pileEmpty(task) && tightStake(key, task, true))) {
       // After an escape, the next step is the hole (#96, #97): the free point in the middle of the
-      // space glows, and the person points at it. Never "Đủ hàng rồi …" with the fish gone.
+      // space glows, and the person points at it. Never "Đủ hàng rồi …" with the fish gone. With an
+      // empty pile, the stake to take back comes first (below), and then the hole (#105).
       const h = holeOf(key, task);
       const z = task.place.zone;
       const p = { x: z.x + h.from + h.size / 2, z: z.z };
@@ -630,7 +667,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       point(t, p, 2);
       mark(t, p, HOLE_MARK);
       t += 3;
-    } else if (move === 'show' && rowFull(key, task)) {
+    } else if (move === 'show' && rowFull(key, task) && rowChanged(task)) {
       // The row is at the float and waits for the tide: the hint is to wait and look at the water,
       // never to take a stake (#78: the child heard "Lấy một cái cọc ở đống …" four times with a
       // full row, and with an empty pile).
