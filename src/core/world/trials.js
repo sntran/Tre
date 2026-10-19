@@ -25,11 +25,14 @@ export function levelFor(trials, grade) {
 // of the skill of that level is over up, and one step down when it is under down, as the events of
 // a day do. A skill with no evidence yet keeps the level of the grade. entryOf(skill): the entry of
 // the learner ({ p, n }), or null. The era of a skill never stops a level.
-export function trialLevel(def, base, entryOf, { up = 0.8, down = 0.3 } = {}) {
+export function trialLevel(def, base, entryOf, { up = 0.8, down = 0.3, evidence = 3 } = {}) {
   const max = def.levels.length - 1;
   let level = Math.max(0, Math.min(max, base));
   const e = entryOf(taskOf(def, level).skill);
-  if (e && e.n > 0) {
+  // Only evidence from the world moves a level: at least `evidence` commits of tasks of the world
+  // (#112: three answers in the practice moved the smith one grade up). Answers in the practice and
+  // the exams update P(L), but they alone never move the level of a task.
+  if (e && (e.world ?? 0) >= evidence) {
     if (e.p > up && level < max) level += 1;
     else if (e.p < down && level > 0) level -= 1;
   }

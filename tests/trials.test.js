@@ -161,14 +161,17 @@ test('the staffs from the bamboo clump: equal pieces are solved; the pieces that
   assert.deepEqual(staffResult([4, 4], 4), { solved: true, keep: 4, broken: [] });
 });
 
-test('the level of a task by mastery (#101): a child of grade 3 whose P(L) of the skill is over 0.8 gets level 4, under 0.3 level 2, and with no evidence the level of the grade', () => {
+test('the level of a task by mastery (#101, #112): a child of grade 3 whose P(L) of the skill is over 0.8 gets level 4, under 0.3 level 2, and with no evidence of the world the level of the grade', () => {
   const teacher = def('scholar');
   const base = levelFor(trials, 3);
   assert.equal(base, 2, 'grade 3 is level 3');
   const skill = taskOf(teacher, base).skill;
-  const entry = (p, n) => (id) => (id === skill ? { p, n } : null);
+  // n: the answers and commits; world: the commits of tasks of the world.
+  const entry = (p, n, world = n) => (id) => (id === skill ? { p, n, world } : null);
   assert.equal(trialLevel(teacher, base, entry(0.85, 6), trials), 3, 'level 4');
   assert.equal(trialLevel(teacher, base, entry(0.2, 6), trials), 1, 'level 2');
   assert.equal(trialLevel(teacher, base, entry(0.85, 0), trials), 2, 'no evidence: the level of the grade');
+  assert.equal(trialLevel(teacher, base, entry(0.96, 6, 0), trials), 2, 'answers of the practice only: the level of the grade');
+  assert.equal(trialLevel(teacher, base, entry(0.96, 6, 2), trials), 2, 'two commits of the world are not enough');
   assert.equal(trialLevel(teacher, base, () => null, trials), 2);
 });

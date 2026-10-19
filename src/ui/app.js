@@ -193,11 +193,11 @@ export async function startApp(root) {
       const learner = createLearner({ graph, config, learning: p.learning, grade: p.grade, rng: ctx.rng, bank, lang: p.settings.lang });
       // A review: an answer for a mastered skill that is due goes into the learning log too.
       const record = learner.record;
-      learner.record = (prob, correct) => {
+      learner.record = (prob, correct, opts) => {
         const e = learner.entry(prob.skill);
         const now = Date.now();
         const review = reviewOf(e, now, config.review);
-        const out = record(prob, correct);
+        const out = record(prob, correct, opts);
         if (review) ctx.log('review', { skill: prob.skill, due: review.due, gap: Math.round(review.gap * 10) / 10, result: Boolean(correct) });
         return out;
       };

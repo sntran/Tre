@@ -4273,7 +4273,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const pBefore = l?.entry(ev.skill).p ?? null;
     const met = (profile.learning?.skills?.[ev.skill]?.n ?? 0) > 0;
     const rec = learnerRecord(ev);
-    if (rec) l?.record({ skill: ev.skill, level: rec.level }, rec.correct);
+    if (rec) l?.record({ skill: ev.skill, level: rec.level }, rec.correct, { world: true });
     // The first skill event of a skill of the era: a new print in the notebook (#8).
     if (!met && (profile.learning?.skills?.[ev.skill]?.n ?? 0) > 0 && data.notebook) {
       const skill = data.skills?.skills?.find((s) => s.id === ev.skill);

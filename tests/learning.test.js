@@ -60,8 +60,11 @@ test('BKT: a correct answer raises p and a wrong answer lowers p', () => {
 
 test('BKT: some correct answers in a row give mastery', () => {
   const m = cfg.mastery;
+  // With the guess of a commit of the world (0.1, #112), two right commits give p over 0.95; an
+  // answer of three choices counts with a guess of one in three, and needs more.
   const n = answersToMaster(m.priorAtGrade, m);
-  assert.ok(n >= 3 && n <= 8, `needs ${n} answers`);
+  assert.ok(n >= 2 && n <= 8, `needs ${n} answers`);
+  assert.ok(answersToMaster(m.priorAtGrade, { ...m, pGuess: 1 / 3 }) > n, 'a question of three answers needs more right answers');
   assert.equal(masteryState(0.96, m), 'mastered');
   assert.equal(masteryState(0.8, m), 'almost');
   assert.equal(masteryState(0.2, m), 'learning');

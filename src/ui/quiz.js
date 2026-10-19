@@ -85,7 +85,7 @@ export function runQuiz(ctx, opts) {
     function record(ok) {
       if (recorded || opts.record === false) return;
       recorded = true;
-      const change = ctx.learner.record(problem, ok);
+      const change = ctx.learner.record(problem, ok, { choices: problem.kind === 'choice' ? problem.choices?.length ?? 0 : 0 });
       ctx.profile.stats[ok ? 'correct' : 'mistakes'] += 1;
       // The outside check of the facts of the table (#25, rule 26): the fact, and whether the child
       // knows it in the world (confident in the memory of the facts).

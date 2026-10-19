@@ -121,8 +121,10 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
     return id ? problem(id, opts) : null;
   }
 
-  // Record an answer. Return what changed.
-  function record(prob, correct) {
+  // Record an answer. Return what changed. opts.world: a commit of a task of the world (the
+  // evidence that moves the level of a task, #112). opts.choices: the number of answers of a
+  // question: the guess is at least one in that many.
+  function record(prob, correct, opts = {}) {
     const now = clock();
     const skill = graph.get(prob.skill);
     const e = entry(prob.skill);
@@ -136,7 +138,8 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
     e.streak = correct ? e.streak + 1 : 0;
     pushRecent(e, correct, m.recentAnswers ?? 10);
     e.last = now;
-    e.p = bktUpdate(e.p, correct, m);
+    if (opts.world) e.world = (e.world ?? 0) + 1;
+    e.p = bktUpdate(e.p, correct, opts.choices > 1 ? { ...m, pGuess: Math.max(m.pGuess, 1 / opts.choices) } : m);
     const k = e.n <= r.newAnswers ? r.kPlayerNew : r.kPlayer;
     const result = updateRatings(e.r, itemRating(skill, level), correct, { kPlayer: k, kItem: r.kItem, scale: r.scale });
     e.r = result.player;
