@@ -3129,6 +3129,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const plankSize = tappedSize ?? wantSize();
       const plankTask = tappedSize !== null ? tappedPlank.item.task : lastPick?.task;
       const sizeLeft = plankSize !== null && query(state, 'item', 'position').some((e) => e.item.task === plankTask && e.item.size === plankSize && !e.item.held && !e.hidden && zoneOf(e.item.zone)?.zone.rule === 'pile');
+      // The heap of the last tap (a thing on it, or the heap itself): a press takes only from it, never
+      // from another heap of the task near the hero (#108: after a tap on another bed, the press took
+      // rau má from the bed next to the hero again).
+      const tappedOn = chosen ? getEntity(state, chosen.id) : null;
+      const tappedHeap = tappedOn?.item ? zoneOf(tappedOn.item.zone) : tappedOn?.zone ? tappedOn : null;
+      const fromHeap = tappedHeap?.zone.rule === 'heap' && openTask(tappedHeap.zone.task) ? tappedHeap.zone : null;
       for (const e of query(state, 'item', 'position')) {
         if (e.hidden || e.item.held || e.item.set || e.item.fixed) continue;
         const zone = zoneOf(e.item.zone);
@@ -3148,6 +3154,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // A press never takes a thing from the heap of a done task (#81: after the task of the
         // teacher, a press took a rod, and then the button stayed grey).
         if (doneTask(e.item.task)) continue;
+        if (fromHeap && e.item.task === fromHeap.task && rule === 'heap' && zone?.zone.id !== fromHeap.id) continue;
         // Of the things of a task, the kind of the last pick first, while a heap has that kind. A
         // tap on a thing chooses it.
         if (want !== null && chosen?.id !== e.id && chosen?.id !== zone?.id && e.item.task === lastPick?.task && e.item.kind !== want && (wantLeft || SAME_KIND.has(lastPick.task))) continue;
@@ -3770,6 +3777,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (!holding()) mentoring.checkThing(target.thing);
       // A thing on a desk or in the box: the teacher says what is there (#107).
       if (thing?.item?.zone) deskSay(zoneOf(thing.item.zone));
+      // A bunch of another kind in the hands, and a tap on a bed (#108: the next press put the bunch
+      // in the hands into the basket, and the child heard the name of another herb): the hero puts
+      // the bunch back on its own bed on the way, and the healer says it.
+      const held = holding() ? getEntity(state, hero().hands.holds) : null;
+      const home = held?.item?.home ? zoneOf(held.item.home) : null;
+      if (thing?.item && held && home?.zone.rule === 'heap' && /^herb-/.test(held.item.kind) && held.item.kind !== thing.item.kind && zoneOf(thing.item.zone)?.zone.rule === 'heap') {
+        walkToThing({ x: home.zone.x / 2, y: home.zone.z / 2 }, () => {
+          worldCommand(state, { type: 'put', id: 'hero', zone: home.zone.id });
+          sayHerb('home', held.item.kind);
+          tapThing(thing, target.along ?? null);
+        });
+        return;
+      }
       // A tap on a bed of the healer: she says the name of its herb (#61).
       if (thing?.item?.kind?.startsWith('herb-') && zoneOf(thing.item.zone)?.zone.rule === 'heap') sayHerb('bed', thing.item.kind);
       if (thing?.item) tapThing(thing, target.along ?? null);
@@ -4832,6 +4852,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // #43), or null when the hands are empty.
     carried() {
       return hero()?.carry ?? null;
+    },
+    // The picture of a thing on the action button: the thing in the hands, or the thing that a press
+    // takes and puts in one move (#108: the child did not know which herb the press moved).
+    buttonThing() {
+      const a = hero()?.carry ? null : btn?.show ?? null;
+      return hero()?.carry ?? (a?.icon === 'hand-move' ? a.ghost?.look ?? null : null);
     },
     get state() { return state; },
     get map() { return map; },

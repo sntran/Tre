@@ -424,7 +424,7 @@ export async function mountVillage(ctx, params = {}) {
     actBtn.dataset.act = a ? `${a.act}|${a.target}` : '';
     actBtn.dataset.actId = a ? String(a.id) : '';
     actNow = a;
-    const carry = busy ? actCarry : session.carried();
+    const carry = busy ? actCarry : session.buttonThing();
     if (carry !== actCarry) {
       actCarry = carry;
       actThing.hidden = !carry;
