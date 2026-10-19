@@ -250,9 +250,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return st;
   }
   // Is the work of a task under way: a commit, a thing on its place, a mark, or a hole of an escape?
+  // A fixed thing of the place is not work of the child (the iron in the forge of the smith).
   function underwayOf(task) {
     const z = task.tz?.zone;
-    return (z?.commits ?? 0) > 0 || itemsOf(task.place).length > 0 || (z?.marks?.length ?? 0) > 0 || Boolean(z?.hole);
+    return (z?.commits ?? 0) > 0 || itemsOf(task.place).some((e) => !e.item.fixed) || (z?.marks?.length ?? 0) > 0 || Boolean(z?.hole);
   }
   function stateOf(key, task = null) {
     const st = states.get(key);
