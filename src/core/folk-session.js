@@ -32,7 +32,9 @@ const SHOW_SHARD = 3; // seconds of the line that shows the shard, before the fi
 const JOIN_TIME = 3.5; // seconds of the line of the start, before the next line
 // The lines that name the start line, and those that name the shard (#114).
 const START_WORDS = new Set(['loco.join']);
-const SHARD_WORDS = new Set(['loco.shard', 'loco.in', 'loco.pick', 'loco.fail.shard', 'loco.demo', 'loco.how.throw', 'loco.how.hop', 'loco.out']);
+// A line of a miss says where the shard fell: the shard glows with it too (#114: at night the
+// shard was dark on the court).
+const SHARD_WORDS = new Set(['loco.shard', 'loco.in', 'loco.pick', 'loco.fail.shard', 'loco.demo', 'loco.how.throw', 'loco.how.hop', 'loco.out', 'loco.other.far', 'loco.other.near', 'loco.line']);
 const num = (n) => ({ key: `num.${Math.max(1, Math.min(150, n))}` });
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
@@ -335,11 +337,12 @@ export function createFolk(deps) {
     const kid = getEntity(world(), 'npc:loco-child');
     const shard = getEntity(world(), 'folk:shard');
     const target = at(courtPoints(geo.loco, game.court).squares[game.call.square]);
-    if (kid && shard) kid.gesture = { act: 'point', x: shard.position.x, z: shard.position.z, t: 1.8, then: { act: 'point', x: target.x, z: target.z, t: 2.2 } };
     const m = num(called.value);
     if (r.result === 'other') say(r.square > game.call.square ? 'loco.other.near' : 'loco.other.far', { n: num(game.court[r.square].value), m });
     else if (r.result === 'out') say('loco.out', { m });
     else say('loco.line', {});
+    // After the line (its glow of the shard): the child points at the shard, then at the square.
+    if (kid && shard) kid.gesture = { act: 'point', x: shard.position.x, z: shard.position.z, t: 1.8, then: { act: 'point', x: target.x, z: target.z, t: 2.2 } };
     deps.emit({ type: 'missWhy', result: r.result, square: r.square, target: game.call.square, place });
     game.phase = 'other';
     if (game.throwMisses >= 2) {
