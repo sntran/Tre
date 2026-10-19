@@ -1,0 +1,436 @@
+{
+ "about": "#96 and #97: the fisher: after an escape the hole shows over the water, the wave names the hole, no line of a full row and no new tide; the child fills the hole and finishes the row.",
+ "start": "?story=trial-fisher",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "check": "(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "shot": "fisher-the-line-of-the-float-shows-the-float"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 90
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 60",
+   "timeout": 300
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:0"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "row": 16
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'fisher.escape')",
+   "timeout": 200
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:space'))"
+  },
+  {
+   "check": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:space'))"
+  },
+  {
+   "shot": "fisher-after-an-escape-the-hole-shows"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 240",
+   "timeout": 300
+  },
+  {
+   "print": "(window.__h = tre.activeVillage.heard().length)"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.fisher.hole')",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:space'))"
+  },
+  {
+   "check": "!tre.activeVillage.heard().slice(window.__h).some((x) => /^fisher\\.(full|tide\\.more)$/.test(x.key))"
+  },
+  {
+   "shot": "fisher-the-wave-names-the-hole"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 600",
+   "timeout": 300
+  },
+  {
+   "print": "tre.activeVillage.heard().filter((x) => x.key === 'fisher.tide.more').length"
+  },
+  {
+   "check": "!tre.activeVillage.heard().some((x) => x.key === 'fisher.tide.more')"
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:1"
+   },
+   "after": 1,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => String(e.id).startsWith('why:fisher')).map((e) => [e.id, Math.round(e.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)]))"
+  },
+  {
+   "tap": {
+    "row": 10
+   },
+   "after": 1,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds) && !tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === 10)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:2"
+   },
+   "after": 1,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => String(e.id).startsWith('why:fisher')).map((e) => [e.id, Math.round(e.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)]))"
+  },
+  {
+   "tap": {
+    "row": 7
+   },
+   "after": 1,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds) && !tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === 7)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:3"
+   },
+   "after": 1,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => String(e.id).startsWith('why:fisher')).map((e) => [e.id, Math.round(e.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)]))"
+  },
+  {
+   "tap": {
+    "row": 13
+   },
+   "after": 1,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds) && !tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === 13)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:4"
+   },
+   "after": 1,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => String(e.id).startsWith('why:fisher')).map((e) => [e.id, Math.round(e.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)]))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120
+  },
+  {
+   "tap": {
+    "thing": "stake:fisher:5"
+   },
+   "after": 1,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => String(e.id).startsWith('why:fisher')).map((e) => [e.id, Math.round(e.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.x)]))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)) && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120,
+   "if": "!(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "fisher-the-row-with-the-hole-filled-is-done"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}

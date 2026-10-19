@@ -1,0 +1,888 @@
+{
+ "about": "#97: the fisher, a child who presses at the pile again and again (grade 1 by day, grade K at night): the line of the float shows the float, at the empty pile one stake glows, after the take-back the next point glows and a press at once puts nothing, and the row can be finished.",
+ "start": "?story=trial-fisher",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "check": "(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('phao')"
+  },
+  {
+   "shot": "fisher-the-line-of-the-float-shows-the-float"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) === 0 && !(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low'"
+  },
+  {
+   "until": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.empties ?? 0) >= 1",
+   "timeout": 60
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.fisher.tight')",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => /^gap-frame-\\d+$/.test(e.look ?? '')).length"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => /^gap-frame-\\d+-dim$/.test(e.look ?? '')).length"
+  },
+  {
+   "shot": "fisher-at-the-empty-pile-one-stake-glows"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line' && !e.item.fixed && e.item.slot > 0).sort((a, b) => b.item.slot - a.item.slot)[0]?.id"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 0.6
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "print": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "check": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.fisher.back')",
+   "timeout": 30
+  },
+  {
+   "print": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next'))"
+  },
+  {
+   "check": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next'))"
+  },
+  {
+   "wait": 0.8
+  },
+  {
+   "shot": "fisher-after-the-take-back-the-next-point-glows"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "press": true,
+   "after": 2.2,
+   "if": "!(tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length)) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase === 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "wait": 3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' && !(Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').map((e) => e.item.slot).sort((a, b) => a - b))"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.item?.zone === 'line' && e.item.slot === tre.activeVillage.state().entities.find((e) => e.id === 'zone:line').zone.length) || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 120
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 200
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "fisher-the-row-is-done"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  }
+ ]
+}
