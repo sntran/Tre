@@ -279,7 +279,13 @@ export function personFine(look) {
   const hair = look.hair ?? 'short';
   const style = hairStyleOf(look);
   if (hair !== 'bald') parts.push(...hairParts(style, hair === 'grey' ? 'ashLight' : hairColor, onHead, look.hat));
-  if (look.beard) parts.push(P('beard', [3.5, 2.5, 1.5], look.beard === true ? 'ashLight' : look.beard, [0, -3.25, 3], onHead));
+  // A beard: under the chin, longer in front of the neck, and on the cheeks a little out of the
+  // sides of the head (one part through the head: only its ends show), so that it shows from the front, the side, and the back (#113: the elder
+  // looked like an old woman from the side).
+  if (look.beard) {
+    const c = look.beard === true ? 'ashLight' : look.beard;
+    parts.push(P('beard', [3.6, 3.6, 1.6], c, [0, -3.7, 2.9], onHead), P('beardSides', [8.2, 3, 3], c, [0, -1.9, 1.3], onHead));
+  }
   // The top of the head: the cap of the hair (with a knot or a tuft over it), or the bald skull.
   const hairTop = hair === 'bald' ? 3.6 : CAP_TOP;
   const capped = look.hat === 'non' || look.hat === 'helmet' || look.hat === 'plume' || look.hat === 'khan';

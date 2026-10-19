@@ -112,7 +112,10 @@ export function person(look) {
     if (style === 'bun') H('knot', [1.1, 1, 0.9], [0, -0.1, -headD / 2 - 0.5]);
     if (style === 'tufts' && !covered) H('tuft', [0.7, 0.7, 0.7], [0, capTop + 0.3, 0.5]);
   }
-  if (look.beard) parts.push(P('beard', [1.1, 0.9, 0.4], look.beard === true ? 'ashLight' : look.beard, [0, -headH / 2 - 0.2, headD / 2 - 0.1], onHead));
+  if (look.beard) {
+    const c = look.beard === true ? 'ashLight' : look.beard;
+    parts.push(P('beard', [1.1, 1.1, 0.45], c, [0, -headH / 2 - 0.3, headD / 2 - 0.1], onHead), P('beardSides', [headW + 0.16, 0.9, 0.9], c, [0, -headH / 2 + 0.3, 0.3], onHead));
+  }
   if (look.hat === 'non') parts.push(P('hat', [3.6, 0.4, 3.6], 'yellowPale', [0, capTop - 0.15, 0], onHead), P('hatTop', [1.4, 0.4, 1.4], 'yellowPale', [0, capTop + 0.2, 0], onHead));
   if (look.hat === 'band') parts.push(P('band', [headW + 0.2, 0.3, headD + 0.2], look.sash ?? 'vermilion', [0, 0.4, 0], onHead));
   if (look.hat === 'khan') parts.push(P('khan', [headW + 0.3, 0.8, headD + 0.3], look.khan ?? 'indigo', [0, capTop - 0.35, 0], onHead));
