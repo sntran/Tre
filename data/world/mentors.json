@@ -355,6 +355,7 @@
       }
     },
     "trial-scholar": {
+      "forms": { "groups": [{ "put": ["bands", "bandrow"] }], "share": [{ "put": ["rods", "desk-0", "rodbundle"] }, { "put": ["rods", "box", "rod"] }], "decimal": [{ "point": "zone:mat" }, { "point": "zone:table" }] },
       "family": "bundle",
       "person": "npc:teacher",
       "demo": {
@@ -382,6 +383,7 @@
       }
     },
     "trial-smith": {
+      "forms": { "water": [{ "point": "jar:smith" }], "fair": [{ "point": "rack:smith" }] },
       "gesture": "quench",
       "family": "plain",
       "person": "npc:smith",
@@ -395,6 +397,7 @@
       "picture": "mentor.picture.smith", "pictureUnless": "trial.fisher.done", "pictureAfterGlow": true
     },
     "trial-fisher": {
+      "forms": { "measure": { "only": true, "steps": [{ "put": ["stakes", "boat"] }, { "point": "pole:fisher" }] }, "trees": { "only": true, "steps": [{ "put": ["stakes", "boat"] }, { "point": "pole:fisher" }] }, "half": { "only": true, "steps": [{ "put": ["stakes", "boat"] }, { "point": "pole:fisher" }] } },
       "gestures": { "measure": "load", "trees": "load", "half": "load" },
       "family": "plain",
       "person": "npc:fisher",
@@ -413,6 +416,7 @@
       }
     },
     "trial-healer": {
+      "forms": { "doses": [{ "point": "leaf:healer:dose" }], "model": [{ "put": ["model", "leaf-0"] }] },
       "family": "basket",
       "person": "npc:healer",
       "demo": null,

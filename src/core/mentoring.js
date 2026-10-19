@@ -938,8 +938,18 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // first heap and the place of the task). A task with no heap (or def.first []: the smith, who
   // shows the quench on his own piece): the person points at the place and says what to do. A task
   // of exact rounds (def.first 'point'): the person only points, so that each round stays the child's.
+  // A new form of a level (def.forms.<form>) shows its new part after it, one time (#105).
   function firstSteps(task, def, s, t) {
     const w = world();
+    const form = formNew(task.key);
+    // A form that is a new gesture (the boat of the fisher: only) shows its own part in place of
+    // the first step of the lower levels.
+    if (form?.only) {
+      s.say(t, lineOf(task.key, 'show'));
+      t = formSteps(task, form, s, t + 0.6);
+      s.say(t, 'mentor.first.you');
+      return t + 1.5;
+    }
     // def.first 'point': the person only points at the heap and at the place (a task of exact rounds).
     // The demonstration fades (rule 31) only for a child who did the gesture of the task in Tre
     // before: that child gets only the point at the heap and at the place, the line of the task,
@@ -953,8 +963,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       s.point(t + 1.6, task.at, 1.4);
       s.mark(t + 1.6, task.at, 2.5);
       if (def.first === 'point') return t + 3;
-      s.say(t + 3, 'mentor.first.you');
-      return t + 4.5;
+      t = form ? formSteps(task, form, s, t + 3) : t + 3;
+      s.say(t, 'mentor.first.you');
+      return t + 1.5;
     }
     const pairs = (task.byNghe ? [] : Array.isArray(def.first) ? def.first : task.piles[0] && task.place ? [{ from: task.piles[0].zone.id, to: task.place.zone.id }] : [])
       .map((p) => ({ heap: getEntity(w, `zone:${p.from}`), place: getEntity(w, `zone:${p.to}`) }))
@@ -963,31 +974,69 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (!pairs.length) {
       s.point(t, task.at, 2);
       s.mark(t, task.at, 3);
-      return t + 2.5;
+      if (!form) return t + 2.5;
+      s.say(t + 2.5, lineOf(task.key, 'show'));
+      return formSteps(task, form, s, t + 3.1);
     }
     t += 0.6;
-    for (const { heap, place } of pairs) {
-      // Not the thing that the child tapped: the hero walks to it (#95: the teacher took the rod of
-      // the tap, and the hero stood).
-      const free = itemsOf(heap).filter((e) => !e.item.held && !e.item.set && !e.item.stray);
-      const thing = free.find((e) => e.id !== chosen()) ?? free[0];
-      if (!thing) continue;
-      const to = place.zone.rect ? { x: (place.zone.rect.x0 + place.zone.rect.x1) / 2, z: (place.zone.rect.z0 + place.zone.rect.z1) / 2 } : { x: place.zone.x, z: place.zone.z };
-      s.point(t, heap.position, 1);
-      s.mark(t, heap.position, 1.6);
-      s.point(t + 1, to, 1.2);
-      s.steps.push({ at: t + 1, put: { zone: place.id, item: thing.id, person: task.person?.id ?? 'hero' } });
-      s.mark(t + 1, to, 1.6);
-      t += 2.2;
-      // The thing goes back to its heap, so that the place is empty when the child starts: the
-      // first step never leaves a part of the answer (rule 25).
-      s.say(t, 'mentor.first.back');
-      s.point(t, heap.position, 1);
-      s.steps.push({ at: t + 0.6, back: { item: thing.id } });
-      t += 1.6;
+    for (const { heap, place } of pairs) t = putBackSteps(task, heap, place, null, s, t);
+    if (form) {
+      s.say(t, lineOf(task.key, 'show'));
+      t = formSteps(task, form, s, t + 0.6);
     }
     s.say(t, 'mentor.first.you');
     return t + 1.5;
+  }
+  // The new part of a form that the child has not seen in Tre (def.forms.<form>), or null. The flag
+  // form.<key>.<form> keeps it in the profile when it is shown.
+  function formNew(key) {
+    const form = getEntity(world(), `zone:${key}`)?.zone.plan?.form;
+    const spec = form ? defOf(key)?.forms?.[form] : null;
+    if (!spec || profile?.flags?.[`form.${key}.${form}`]) return null;
+    if (profile?.flags) profile.flags[`form.${key}.${form}`] = true;
+    return Array.isArray(spec) ? { steps: spec } : spec;
+  }
+  // The steps of a new form: a thing from a heap into a place and back ({ put: [heap, place, kind] }),
+  // or a point at a thing or a place ({ point: id }).
+  function formSteps(task, form, s, t) {
+    const w = world();
+    for (const step of form.steps ?? []) {
+      if (step.put) {
+        const [from, to, kind] = step.put;
+        const heap = getEntity(w, `zone:${from}`);
+        const place = getEntity(w, `zone:${to}`);
+        if (heap && place) t = putBackSteps(task, heap, place, kind ?? null, s, t);
+      } else if (step.point) {
+        const e = getEntity(w, step.point);
+        const p = e?.zone ? { x: e.zone.x, z: e.zone.z } : e?.position;
+        if (!p) continue;
+        s.point(t, p, 1.4);
+        s.mark(t, p, 2.5);
+        t += 1.8;
+      }
+    }
+    return t;
+  }
+  // The person takes one thing (of a kind) from a heap, puts it into a place, and takes it back.
+  function putBackSteps(task, heap, place, kind, s, t) {
+    // Not the thing that the child tapped: the hero walks to it (#95: the teacher took the rod of
+    // the tap, and the hero stood).
+    const free = itemsOf(heap).filter((e) => !e.item.held && !e.item.set && !e.item.stray && (!kind || e.item.kind === kind));
+    const thing = free.find((e) => e.id !== chosen()) ?? free[0];
+    if (!thing) return t;
+    const to = place.zone.rect ? { x: (place.zone.rect.x0 + place.zone.rect.x1) / 2, z: (place.zone.rect.z0 + place.zone.rect.z1) / 2 } : { x: place.zone.x, z: place.zone.z };
+    s.point(t, heap.position, 1);
+    s.mark(t, heap.position, 1.6);
+    s.point(t + 1, to, 1.2);
+    s.steps.push({ at: t + 1, put: { zone: place.id, item: thing.id, person: task.person?.id ?? 'hero' } });
+    s.mark(t + 1, to, 1.6);
+    t += 2.2;
+    // The thing goes back to its heap, so that the place is empty when the child starts: the
+    // first step never leaves a part of the answer (rule 25).
+    s.say(t, 'mentor.first.back');
+    s.point(t, heap.position, 1);
+    s.steps.push({ at: t + 0.6, back: { item: thing.id } });
+    return t + 1.6;
   }
 
   // The count of the desks of grade 4 (#101): the total of each desk ("mười một"), then the box
