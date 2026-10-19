@@ -41,7 +41,7 @@ function makeFolk({ level = 1, az = Math.PI / 4, profile = {} } = {}) {
 function atStart(opts) {
   const t = makeFolk(opts);
   assert.ok(t.folk.join('loco'));
-  t.run(4);
+  for (let i = 0; i < 12 / DT && t.folk.stateOf().phase !== 'throw'; i++) t.folk.tick(DT);
   assert.equal(t.folk.stateOf().phase, 'throw', t.said.map((l) => l.key).join(', '));
   return t;
 }
@@ -100,8 +100,10 @@ test('the first call comes with no press when the hero stands still by the start
   assert.equal(kid.gesture?.act, 'point');
   assert.ok(Math.hypot(kid.gesture.x - start.x, kid.gesture.z - start.z) < 1e-9, 'the child points at the start line');
   assert.ok(t.events.some((e) => e.type === 'names' && e.ids.includes('folk:start')), 'the start line glows with the line');
-  t.run(5);
+  t.run(9);
   assert.ok(t.events.some((e) => e.type === 'folkCall'), 'the call came with no press');
+  // The line of the start is said whole before the line of the shard.
+  assert.ok(t.said.findIndex((l) => l.key === 'loco.join') < t.said.findIndex((l) => l.key === 'loco.shard'));
 });
 
 test('the first time, a child shows the shard and says what it is, and it glows; a line that says the shard makes it glow', () => {

@@ -29,6 +29,7 @@ const DEMO_WAIT = 1.4; // seconds before the child of the demonstration holds
 const DEMO_LOOK = 2.4; // seconds to look at the shard of the demonstration
 const NAME_GLOW = 3; // seconds of the glow of a thing that a line names
 const SHOW_SHARD = 3; // seconds of the line that shows the shard, before the first call
+const JOIN_TIME = 3.5; // seconds of the line of the start, before the next line
 // The lines that name the start line, and those that name the shard (#114).
 const START_WORDS = new Set(['loco.join']);
 const SHARD_WORDS = new Set(['loco.shard', 'loco.in', 'loco.pick', 'loco.fail.shard', 'loco.demo', 'loco.how.throw', 'loco.how.hop', 'loco.out']);
@@ -148,6 +149,7 @@ export function createFolk(deps) {
         say('loco.start', { n: num(plan.start) });
         later(2.5, () => { if (game?.kind === 'loco' && game.phase === 'walk') say('loco.join', {}); });
       } else say('loco.join', {});
+      game.joinAt = now;
     } else {
       showRope(true);
       const skill = skillOf(def.rope.levels);
@@ -239,10 +241,16 @@ export function createFolk(deps) {
       Object.assign(shard.position, at(along(geo.loco, -0.3 * S, -0.5 * S)));
       shard.hidden = false;
     }
+    // The line of the start is said whole before the next line (#114: the hero came to the start
+    // at once, and the line of the shard took the place of the line of the start).
+    const wait = Math.max(0, (game.joinAt ?? -Infinity) + JOIN_TIME - now);
+    game.phase = 'show';
+    later(wait, () => { if (game?.phase === 'show') showShard(); });
+  }
+  function showShard() {
     const folk = (deps.profile.folk ??= {});
     if (!folk.shardShown) {
       folk.shardShown = true;
-      game.phase = 'show';
       say('loco.shard', {});
       later(SHOW_SHARD, () => { if (game?.phase === 'show') callNow(); });
       return;
