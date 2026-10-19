@@ -1,0 +1,239 @@
+{
+ "about": "#102: the woodcutter at grade 3: the task of the level, the common mistake and its line, and the right work.",
+ "start": "?story=trial-woodcutter",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "3",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 60",
+   "timeout": 300
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter')?.zone.plan)"
+  },
+  {
+   "shot": "wood-grade-3-the-stem-of-the-part"
+  },
+  {
+   "tap": {
+    "stemExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter')?.zone.plan.length / 2 - (tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter')?.zone.plan.b === 2 ? 1 : 0)"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'num.2')",
+   "timeout": 60
+  },
+  {
+   "wait": 0.6
+  },
+  {
+   "shot": "wood-grade-3-the-check-lays-a-piece"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'woodcutter.long') || tre.activeVillage.heard().some((x) => x.key === 'woodcutter.short')",
+   "timeout": 60
+  },
+  {
+   "wait": 0.4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "wood-grade-3-the-piece-that-is-not-its-length"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter')?.zone.cut && !tre.activeVillage.state().entities.find((e) => e.id === 'stem:woodcutter')?.hidden",
+   "timeout": 120
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 40",
+   "timeout": 300
+  },
+  {
+   "tap": {
+    "stemExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter')?.zone.plan.want.slice(0, 1).reduce((a, b) => a + b, 0)"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'woodcutter.part')",
+   "timeout": 90
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "wood-grade-3-the-part-in-words"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'sticks:woodcutter'))",
+   "timeout": 90
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "wood-grade-3-the-piece-for-the-bridge-and-the-rest"
+  },
+  {
+   "tap": {
+    "thing": "sticks:woodcutter"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "place": "woodpile"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-woodcutter')?.zone.done",
+   "timeout": 240
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "wood-grade-3-done"
+  }
+ ]
+}

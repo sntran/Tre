@@ -1,0 +1,317 @@
+{
+ "about": "#102: the fisher at grade 3: the task of the level, the common mistake and its line, and the right work.",
+ "start": "?story=trial-fisher",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "3",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 90
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 30",
+   "timeout": 300
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan)"
+  },
+  {
+   "shot": "fisher-grade-3-the-boat-the-pole-and-the-row"
+  },
+  {
+   "tap": {
+    "thing": "pole:fisher"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "tap": {
+    "thing": "pole:fisher"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "fisher-grade-3-the-pole-along-the-row-two-lengths"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:stakes')?.zone?.items.find((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'stake')"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.need - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.need - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.need - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.need - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.need - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.need - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.need - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.need - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.need - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.need - 1"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length"
+  },
+  {
+   "shot": "fisher-grade-3-the-boat-has-one-stake-too-few"
+  },
+  {
+   "tap": {
+    "thing": "boat:fisher"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'fisher.end') || tre.activeVillage.heard().some((x) => x.key === 'fisher.gaps.one') || tre.activeVillage.heard().some((x) => x.key === 'fisher.gaps')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "fisher-grade-3-the-row-stops-short-and-he-points"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 80",
+   "timeout": 300
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:stakes')?.zone?.items.find((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'stake')"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.length / tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.space + 1 - tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').length"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.length / tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.space + 1 - tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').length"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.length / tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.space + 1 - tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').length"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.length / tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.space + 1 - tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').length"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.length / tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.space + 1 - tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').length"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.length / tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.space + 1 - tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').length"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.length / tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.space + 1 - tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').length"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.length / tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.space + 1 - tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').length"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.length / tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.space + 1 - tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').length"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.length / tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan.space + 1 - tre.activeVillage.state().entities.filter((e) => e.item?.zone === 'line').length"
+  },
+  {
+   "tap": {
+    "thing": "boat:fisher"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.tide?.phase !== 'low' || tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done",
+   "timeout": 120
+  },
+  {
+   "wait": 4
+  },
+  {
+   "shot": "fisher-grade-3-the-row-is-full-and-the-tide-comes"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done",
+   "timeout": 120
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "fisher-grade-3-the-fish-stay-in"
+  }
+ ]
+}

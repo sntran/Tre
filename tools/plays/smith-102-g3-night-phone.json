@@ -1,0 +1,192 @@
+{
+ "about": "#102: the smith at grade 3 at night: the task of the level, the common mistake and its line, and the right work.",
+ "start": "?story=trial-smith&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "3",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'smith.quench.show.color')",
+   "timeout": 90
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "night-smith-grade-3-he-shows-cherry-red"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.form"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith'))",
+   "timeout": 30
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.look === 'iron-dark'",
+   "timeout": 60
+  },
+  {
+   "shot": "night-smith-grade-3-dark-red"
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.5,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.look === 'iron-orange' && !tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.bent && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.heat !== null",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'smith.color.orange')",
+   "timeout": 30
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "night-smith-grade-3-too-late-he-says-the-color"
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.5,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.look === 'iron-cherry' && !tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.bent && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.heat !== null",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.5,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.look === 'iron-cherry' && !tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.bent && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.heat !== null",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "tap": {
+    "thing": "iron:smith"
+   },
+   "after": 0.5,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.look === 'iron-cherry' && !tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.bent && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.heat !== null",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.done",
+   "timeout": 120
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-smith-grade-3-done"
+  }
+ ]
+}
