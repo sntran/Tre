@@ -36,6 +36,7 @@
   },
   {
    "id": "giong.speaks",
+   "scene": { "up": "giong-boy", "beside": "mother" },
    "start": "n1",
    "nodes": {
     "n1": {

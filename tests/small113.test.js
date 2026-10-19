@@ -132,3 +132,37 @@ test('no greeting has a word of praise, and an old person says hello', () => {
     }
   }
 });
+
+async function atGiong(flags, cell, steps) {
+  const { runHeadless } = await import('./story-run.js');
+  const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true, 'prologue.done': true, 'trial.scholar.done': true, 'trial.smith.done': true, 'trial.fisher.done': true, 'trial.healer.done': true, 'trial.woodcutter.done': true, ...flags } };
+  let session = null;
+  const seen = [];
+  const failures = await runHeadless({ name: 'giong-113', profile, clock: 600, at: ['phu-dong', ...cell], steps }, {
+    onSession: (s) => {
+      session = s;
+      s.listen((e) => {
+        const g = s.state.entities.find((x) => x.id === 'npc:giong-boy');
+        const m = s.state.entities.find((x) => x.id === 'npc:mother');
+        if (e.type === 'open' && e.textKey) seen.push({ key: e.textKey, lie: Boolean(g?.lie), near: g && m ? Math.hypot(g.position.x - m.position.x, g.position.z - m.position.z) : null });
+        if (e.type === 'workView') seen.push({ view: e.key });
+      });
+    },
+  });
+  assert.deepEqual(failures, [], seen.map((x) => x.key ?? x.view).join(', '));
+  return { session, seen };
+}
+
+test('Gióng lies on a mat while the line "nằm im" shows, and stands beside his mother, in view, when he speaks', async () => {
+  const silent = await atGiong({}, [19.2, 27], [{ wait: 3 }, { press: { entity: 'npc:giong-boy' } }, { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 20 } }]);
+  const s1 = silent.seen.find((x) => x.key === 'dlg.giong.silent.n1');
+  assert.ok(s1, silent.seen.map((x) => x.key).join(', '));
+  assert.ok(s1.lie, 'Gióng lies while the line says so');
+  assert.ok(silent.session.state.entities.some((e) => e.id === 'mat:lie:giong-boy'), 'a mat under him');
+  const speaks = await atGiong({ 'giong.messenger': true }, [23, 27], [{ wait: 3 }, { press: { entity: 'npc:mother' } }, { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 20 } }]);
+  const s2 = speaks.seen.find((x) => x.key === 'dlg.giong.speaks.n1');
+  assert.ok(s2, speaks.seen.map((x) => x.key).join(', '));
+  assert.equal(s2.lie, false, 'he stands up to speak');
+  assert.ok(s2.near <= 3, `beside his mother: ${s2.near}`);
+  assert.ok(speaks.seen.some((x) => x.view === 'scene-giong-boy'), 'the view shows them');
+});

@@ -139,6 +139,7 @@ export function figureMeshes(look, { detail = 'fine', facing = 0 } = {}) {
 // fish).
 const WANTS = { point: 'point', catch: 'lift', sit: 'rest', eat: 'eat', sleep: 'rest', rest: 'rest', stunned: 'rest', happy: 'happy', shake: 'shake', stretch: 'stretch', sword: 'lift', horns: 'horns', charge: 'horns', pole: 'pole', laugh: 'happy' };
 const PULSE = 0.4; // seconds: a figure pulses once when the action button acts on it
+const LIE_UP = 0.35; // blocks: a person who lies on the side is this high over the ground
 const GLOW_BEAT = 1.4; // seconds: one slow breath of the glow of the thing to touch next
 const MAX_GLOWS = 64;
 const HOP = 0.5; // seconds of the hop of a dancer (the hop of src/core/world/systems/hamlet.js)
@@ -348,6 +349,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         // The velocity in blocks a second, for the parts that hang.
         f.vel = { x: (e.motion?.vx ?? 0) / 2, z: (e.motion?.vz ?? 0) / 2 };
         f.control = Boolean(e.control);
+        f.lie = Boolean(e.lie);
         f.ghost = Boolean(e.ghost);
         f.bright = Boolean(e.bright);
         f.see = Boolean(e.see);
@@ -441,6 +443,10 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         L.root.position.set(f.at.x, f.at.y, f.at.z);
         if (bobbing.has(f.id)) L.root.position.y += 0.1 + 0.2 * breath;
         L.root.rotation.y = lerpAngle(a.facing, b.facing, t);
+        // A person who lies on a mat lies on the side, the face to the camera side of the facing
+        // (#113: Gióng lies as the legend tells, "đặt đâu thì nằm đấy").
+        L.root.rotation.z = f.lie ? Math.PI / 2 : 0;
+        if (f.lie) L.root.position.y += LIE_UP;
         // The thing that the action button acted on pulses once (a little bigger, then back).
         if (f.pulse > 0) f.pulse = Math.max(0, f.pulse - dt);
         const glow = glowing.has(f.id);

@@ -371,6 +371,7 @@
       "nameKey": "npc.mother.name"
     },
     "giong-boy": {
+      "lie": { "unless": "giong.spoke" },
       "greet": "none",
       "voice": "boy",
       "child": true,

@@ -989,9 +989,63 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     queue(() => {
       const def = data.dialogues.get(id);
       if (!def) return;
+      if (def.scene) sceneOf(def.scene);
       const d = { screen: 'dialogue', id, runner: createDialogue(def, cond()), opens: [] };
       showLine(d, d.runner.view());
     });
+  }
+  // The scene of a talk (scene: { up, beside }, #113: "Gióng talks!! … But Gióng is not here with
+  // us, only his picture in the box."): the person who speaks gets up and stands beside the other
+  // person, facing the hero, and the view shows them both with the hero.
+  function sceneOf(scene) {
+    const up = getEntity(state, `npc:${scene.up}`);
+    const by = getEntity(state, `npc:${scene.beside}`);
+    const h = hero();
+    if (!up || !by || !h) return;
+    const dx = h.position.x - by.position.x;
+    const dz = h.position.z - by.position.z;
+    const n = Math.hypot(dx, dz) || 1;
+    // A step to the side of the other person, across the way to the hero.
+    const x = by.position.x - (dz / n) * 2;
+    const z = by.position.z + (dx / n) * 2;
+    Object.assign(up.position, { x, y: env.groundY(x / 2, z / 2), z, facing: Math.atan2(h.position.x - x, h.position.z - z) });
+    delete up.route;
+    delete up.lie;
+    delete up.hidden;
+    if (up.schedule) {
+      up.schedule.spot = { x, z };
+      up.schedule.hold = true;
+    }
+    emit({ type: 'workView', key: `scene-${scene.up}`, points: [{ ...up.position }, { ...by.position }, { ...h.position }], sight: [{ ...up.position }] });
+  }
+  // The people who lie on a mat until a flag (lie: { unless }, #113: "Bé Gióng nằm im" came, and he
+  // stood): at the spot of the day, on a mat under them.
+  const LIE_LONG = 2.8; // half blocks: a child who lies
+  function stepLie() {
+    for (const p of persons()) {
+      if (p.kind !== 'npc') continue;
+      const def = data.npcs.npcs[p.ref]?.lie;
+      if (!def) continue;
+      const e = getEntity(state, p.entity);
+      const mat = `mat:lie:${p.ref}`;
+      const still = Math.hypot(e?.motion?.vx ?? 0, e?.motion?.vz ?? 0) < 0.05 && !e?.route;
+      const lie = Boolean(e && !e.hidden && still && !profile.flags?.[def.unless] && !e.schedule?.hold);
+      if (lie) {
+        e.lie = true;
+        // The person turns the eyes to the hero, and the mat lies under the body (the body lies to
+        // the left of the facing, LIE_LONG half blocks long).
+        const h = hero().position;
+        const f = Math.atan2(h.x - e.position.x, h.z - e.position.z);
+        e.position.facing = f;
+        const at = { x: e.position.x - (LIE_LONG / 2) * Math.cos(f), y: e.position.y, z: e.position.z + (LIE_LONG / 2) * Math.sin(f), facing: f };
+        const m = getEntity(state, mat);
+        if (m) m.position = at;
+        else addEntity(state, { id: mat, keep: true, position: at, look: 'sleep-mat' });
+      } else {
+        if (e?.lie) delete e.lie;
+        if (getEntity(state, mat)) removeEntity(state, mat);
+      }
+    }
   }
   function takeEffects(d) {
     const { commands, changes } = applyEffects(profile, d.runner.takeEffects(), { maxParty: data.game.party.max });
@@ -4557,8 +4611,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       stayKey = key;
       updateStays();
     }
-    // A step of the story with a gathering starts or ends (about each second).
-    if (state.tick % 30 === 0) gatherFor(currentGoal(data.quests.quests, cond())?.step.gather ?? null);
+    // A step of the story with a gathering starts or ends, and the people who lie (about each second).
+    if (state.tick % 30 === 0) {
+      gatherFor(currentGoal(data.quests.quests, cond())?.step.gather ?? null);
+      stepLie();
+    }
     worldStep(state, STEP, env);
     // The picture of the button, as the child sees it (about each 0.1 seconds).
     if (state.tick % 3 === 0 && !screen) button();
