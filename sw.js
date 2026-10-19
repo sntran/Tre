@@ -329,6 +329,7 @@ const FILES = [
   'src/world/terrain.js',
   'src/world/tilestore.js',
   'src/world/travel.js',
+  'src/world/turns.js',
   'src/world/view.js',
   'src/world/voxel.js',
   'styles/diary.css',

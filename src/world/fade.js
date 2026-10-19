@@ -174,3 +174,31 @@ export function workTurn(boxes, points, az, elevation, inSight = () => true) {
   };
   return pick((c) => !c.length) ?? pick((c) => !c.some((b) => b.building)) ?? 0;
 }
+
+// ---------------------------------------------------------------- The hero in sight (#111)
+// When the hero stands still (the end of a walk, a talk, the start of a task) and a building covers
+// most of the hero, the view turns one time, in its steps, to a side where nothing covers the hero
+// and the person of the talk. objects: [{ b (box), building, hits(x, y, z) }]. A building covers
+// most of the hero when it hides at least COVER_MOST of the heights of SIGHT (the feet, the body,
+// the head).
+const COVER_MOST = 2;
+function hidesAt(b, o, d, hits) {
+  const span = rayRange(b, o, d);
+  if (!span) return false;
+  for (let t = span[0]; t <= span[1]; t += 0.25) {
+    if (hits(o.x + d.x * t, o.y + d.y * t, o.z + d.z * t)) return true;
+  }
+  return false;
+}
+export function heroCovered(objects, hero, az, elevation) {
+  const d = toCamera(az, elevation);
+  const hidden = SIGHT.filter((h) => objects.some((x) => x.building && hidesAt(x.b, { x: hero.x, y: hero.y + h, z: hero.z }, d, x.hits))).length;
+  return hidden >= COVER_MOST;
+}
+// The turn (in steps of 90 degrees) that shows the hero and the person: 0 when the hero shows now,
+// then one step either way, then the back. 0 when no side shows them.
+export function stillTurn(objects, hero, person, az, elevation) {
+  if (!heroCovered(objects, hero, az, elevation)) return 0;
+  const clear = (a) => !heroCovered(objects, hero, a, elevation) && (!person || !heroCovered(objects, person, a, elevation));
+  return [1, -1, 2].find((s) => clear(az + (s * Math.PI) / 2)) ?? 0;
+}

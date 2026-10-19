@@ -23,7 +23,8 @@ import { placeStar, placeArrow, spreadArrow, placeBubble, starBox, STAR, AWAY_LI
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
-import { workBoxes, workTurn } from '../world/fade.js';
+import { workBoxes, workTurn, stillTurn, BUILDINGS } from '../world/fade.js';
+import { createTurns } from '../world/turns.js';
 import { taskPools } from '../world/light.js';
 import { VIEW, SAFE, TALK_SAFE, viewSize, inView, frameWork, mmOf } from '../world/view.js';
 import { createTapCount } from '../core/taps.js';
@@ -346,9 +347,9 @@ export async function mountVillage(ctx, params = {}) {
   // Buttons that turn the view in steps of 90°.
   const turnLeft = h('button', { class: 'turn-btn', type: 'button', 'aria-label': t('ui.turn.left'), title: t('ui.turn.left'), text: '⟲' });
   const turnRight = h('button', { class: 'turn-btn', type: 'button', 'aria-label': t('ui.turn.right'), title: t('ui.turn.right'), text: '⟳' });
-  // A turn of the child: the view that the child chose stays (handTurn, #75).
+  // A turn of the child: the view that the child chose stays (#75, src/world/turns.js).
   const handTurnTo = (n) => {
-    handTurn = performance.now();
+    viewTurns.hand(performance.now());
     view.turn(n);
   };
   turnLeft.addEventListener('click', () => handTurnTo(-1));
@@ -672,6 +673,11 @@ export async function mountVillage(ctx, params = {}) {
       talkOver(`npc:${ev.speaker}`);
       for (const b of bubbles.filter((x) => x.id === `npc:${ev.speaker}` && !x.icon)) b.el.remove();
       bubbles = bubbles.filter((x) => x.id !== `npc:${ev.speaker}` || x.icon);
+      // The hero and the person of the talk in sight (#111).
+      if (!box) {
+        const at = figures.placeOf('hero');
+        if (at) heroInSight(at, `npc:${ev.speaker}`);
+      }
       box ??= createDialogueBox(ctx, { next: () => send({ type: 'next' }), choose: (n) => send({ type: 'choose', n }), voice: talkVoice });
       box.show(ev);
       boxLine = ev;
@@ -1213,7 +1219,10 @@ export async function mountVillage(ctx, params = {}) {
       if (w?.points.length) {
         const mid = w.points.reduce((a, p) => ({ x: a.x + p.x / w.points.length, z: a.z + p.z / w.points.length }), { x: 0, z: 0 });
         if (Math.hypot(heroAt.x - mid.x, heroAt.z - mid.z) > WORK_AWAY) {
-          if (w === work) work = null;
+          if (w === work) {
+            work = null;
+            viewTurns.away();
+          }
         } else {
           pts = [...w.points];
           const p = w.person ? figures.placeOf(w.person) : null;
@@ -1240,9 +1249,11 @@ export async function mountVillage(ctx, params = {}) {
   }
   // The view that the child chose stays: for HAND_KEEP milliseconds after a turn of the child, no
   // work turns the view by itself (#75: the child turned the view to a good side of the stem, and
-  // at the next walk the view turned back). The view still leads to the work.
-  const HAND_KEEP = 5 * 60 * 1000;
-  function turnToWork(points, sight = [], person = null) {
+  // at the next walk the view turned back). The view still leads to the work. A work turns the view
+  // one time, at its start (key), and a line of a talk that names things never turns it (turn:
+  // false, #111: the view turned at each line, and a child lost the way; src/world/turns.js).
+  const viewTurns = createTurns();
+  function turnToWork(points, sight = [], person = null, key = null, { turn = true } = {}) {
     const wu = (p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 });
     const pts = (points ?? []).map(wu);
     if (!pts.length) return;
@@ -1251,12 +1262,44 @@ export async function mountVillage(ctx, params = {}) {
     const focus = wu(hero().position);
     const scr = viewSize(size.width, size.height, view.state.level);
     const inSight = (az) => sight.map(wu).every((p) => inView({ x0: p.x - 0.5, x1: p.x + 0.5, y0: p.y, y1: p.y + 1, z0: p.z - 0.5, z1: p.z + 0.5 }, focus, { az, size: scr }));
-    if (handTurn !== null && performance.now() - handTurn < HAND_KEEP) return;
+    if (!turn || !viewTurns.work(key, performance.now())) return;
     // The person of the task is a point of the work too (#87): no roof covers the person.
     const who = person ? figures.placeOf(person) : null;
     const all = who ? [...pts, { x: who.x, y: who.y, z: who.z }] : pts;
     const steps = workTurn(workBoxes(terrain, all), all, view.angle, VIEW.elevation, inSight);
     if (steps) view.turn(steps);
+  }
+
+  // The hero in sight (#111: at a talk the child saw only the outline of the hero behind a roof):
+  // when the hero stands still (STILL_WAIT after a walk), or a talk opens, and a building covers most
+  // of the hero, the view turns one time, in its steps, to a side where nothing covers the hero and
+  // the person of the talk (stillTurn in src/world/fade.js). While the hero walks, the outline stays.
+  const STILL_WAIT = 0.4; // seconds
+  const STILL_NEAR = 20; // cells: the buildings that can cover the hero
+  let stillFor = 0;
+  let stillDone = false;
+  function heroInSight(heroAt, personId = null) {
+    if (!viewTurns.still(performance.now())) return;
+    const r = getEntity(state, 'raid')?.raid;
+    if (r && !r.result) return;
+    const objects = terrain.objects
+      .filter((o) => !o.gone && BUILDINGS.has(o.kind) && Math.abs(o.x + o.w / 2 - heroAt.x) < STILL_NEAR && Math.abs(o.y + o.h / 2 - heroAt.z) < STILL_NEAR)
+      .map((o) => ({ b: terrain.boxOf(o), building: true, hits: (x, y, z) => terrain.hits(o.who, x, y, z) }));
+    const person = personId ? figures.placeOf(personId) : null;
+    const steps = stillTurn(objects, heroAt, person, view.angle, VIEW.elevation);
+    if (steps) view.turn(steps);
+  }
+  function watchStill(dt, heroAt) {
+    const hm = hero().motion;
+    if (Math.hypot(hm?.vx ?? 0, hm?.vz ?? 0) > 0.05 || hero().route) {
+      stillFor = 0;
+      stillDone = false;
+      return;
+    }
+    stillFor += dt;
+    if (stillDone || stillFor < STILL_WAIT) return;
+    stillDone = true;
+    heroInSight(heroAt);
   }
 
   const PUZZLE_AWAY = 6; // blocks (cells): a bubble of a puzzle goes when the hero is this far from its person
@@ -1322,7 +1365,6 @@ export async function mountVillage(ctx, params = {}) {
   // rồi, nên cong." went, because the next line of the smith took its bubble in the same step).
   let laterBubbles = [];
   let sentAngle = null;
-  let handTurn = null; // the time of the last turn of the view by the child
   let taskHereAt = 0; // the time when the view last asked the session for the task of the place
   let taskHereNow = null;
   const happenedHolds = (id) => bubbles.some((b) => b.id === id && !b.icon && b.line?.kind === 'world' && voiceHolds(b));
@@ -1612,7 +1654,7 @@ export async function mountVillage(ctx, params = {}) {
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
       case 'workView':
-        turnToWork(ev.points, ev.sight, ev.person);
+        turnToWork(ev.points, ev.sight, ev.person, ev.key);
         // The things of a puzzle fade nothing in front of them (#110: a bamboo covered the landing).
         if (work) work.fade = ev.key === 'puzzle';
         return;
@@ -1641,7 +1683,7 @@ export async function mountVillage(ctx, params = {}) {
         startSeq(ev.seq ?? []);
         namePoints = [...ev.ids.map((id) => ({ id })), ...ev.spots.map((spot) => ({ spot }))];
         if (ev.points.length) {
-          turnToWork(ev.points, ev.points);
+          turnToWork(ev.points, ev.points, null, null, { turn: false });
           work.talk = true;
         } else if (work) work.talk = false;
         return;
@@ -2289,6 +2331,7 @@ export async function mountVillage(ctx, params = {}) {
     if (!heroAt) return;
     // In a raid the frame shows the posts, the enemies, and the sources (#83); else the focus of
     // the raid view (the first trap) when the frame did not apply.
+    watchStill(dt, heroAt);
     const lead = workFrame(heroAt);
     if (!lead) view.setScale(1);
     view.render(dt, lead ?? raidView.focus(heroAt), time, { ...state.sky, puddles }, ambient, seenPoints(heroAt));
