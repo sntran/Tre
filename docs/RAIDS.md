@@ -108,7 +108,7 @@ Tests: `tests/raid86.test.js`, `tests/sounds.test.js`.
 
 **Each raid names its own things.** The lines that every raid says (`raid.tool.sling`, `raid.miss.short`, `raid.miss.long`, `raid.away`, `raid.tool.traps`) have the parameters `{who}`, `{ball}`, and `{wall}`. Each raid gives them in `words` (`data/raids.json`): lính, hòn đá, and cổng làng for the scouts; thuồng luồng, nắm cơm, and chỗ lội for the river; lính and ngã tư for the soldiers and the boss. A test translates each line of each raid and checks that it names no thing that the raid does not have (`tests/raid99.test.js`).
 
-**The coach of a raid.** The person at the wall is the elder, or the `coach` of the raid: the fisher at the ford of the river, where the elder does not come. The coach says where each stone fell, shows one throw (#93), and says the line of the slingshot.
+**The coach of a raid.** The person at the wall is the elder, or the `coach` of the raid: the fisher at the ford of the river, where the elder does not come. The coach says where each stone fell, shows one throw (#93), and says the line of the slingshot. The frame of the raid has the coach in it with the posts (`points` in `src/ui/raid.js`).
 
 **The wave in a raid.** The wave button shows in a raid (rule 41). A wave gives the next step: the first time, the coach shows one throw; then the coach points at the first enemy and the posts up to it, which glow one after another, and says the line of the presses. With no coach at the wall, Nghé says the line.
 

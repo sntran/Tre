@@ -160,7 +160,10 @@ export function createRaidView({ view, figures, session, layer, send }) {
       if (!r) return [];
       const at = (p) => ({ x: p.x / 2, y: (p.y ?? 0) / 2, z: p.z / 2 });
       const pile = r.hold?.tool === 'traps' ? query(state(), 'item', 'position').filter((e) => e.item.kind === 'trap' && !e.item.set && !e.item.held).map((e) => at(e.position)) : [];
-      return [at({ x: r.wall.x + r.dir.x * 14, z: r.wall.z + r.dir.z * 14 }), ...r.sources.map(at), ...pile];
+      // The person at the wall (the elder, or the fisher at the ford) shows a throw and points at the
+      // posts: the frame has the person too (#99: the fisher was over the top of the screen).
+      const coach = query(state(), 'person', 'position').find((e) => e.raidCoach && !e.hidden);
+      return [at({ x: r.wall.x + r.dir.x * 14, z: r.wall.z + r.dir.z * 14 }), ...r.sources.map(at), ...pile, ...(coach ? [at(coach.position)] : [])];
     },
     // The focus of the camera in a raid: between the hero and the middle of the road, so that the
     // child sees the enemies come.

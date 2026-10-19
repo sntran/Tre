@@ -9,6 +9,7 @@ import { STEP } from './restless.js';
 import { load } from './helpers.js';
 import { createI18n } from '../src/core/i18n.js';
 import { getEntity } from '../src/core/world/state.js';
+import { createRaidView } from '../src/ui/raid.js';
 
 const raids = load('data/raids.json');
 const vi = load('i18n/vi.json');
@@ -76,6 +77,19 @@ test('in the raid of the river, the lines name thuồng luồng, nắm cơm, and
   assert.match(last.text, /thuồng luồng/i);
   for (const l of said) assert.ok(!/\blính\b|hòn đá|cổng làng/i.test(l.text), `"${l.text}" (${l.key})`);
   assert.ok(said.some((l) => /nắm cơm/i.test(l.text)) || said.some((l) => l.key === 'raid.river.intro'), 'the rice ball');
+});
+
+test('the frame of the raid of the river has the fisher at the wall, who shows the throw', async () => {
+  const s = story('raid-river');
+  s.profile = { ...s.profile, grade: 1 };
+  let session = null;
+  const failures = await runHeadless({ ...s, steps: s.steps.slice(0, 5) }, { onSession: (x) => { session = x; } });
+  assert.deepEqual(failures, []);
+  const fisher = getEntity(session.state, 'npc:fisher');
+  assert.ok(fisher?.raidCoach && !fisher.hidden, 'the fisher is at the wall');
+  const raidView = createRaidView({ view: {}, figures: {}, session, layer: { getContext: () => ({}) }, send: () => {} });
+  const pts = raidView.points();
+  assert.ok(pts.some((p) => Math.hypot(p.x - fisher.position.x / 2, p.z - fisher.position.z / 2) < 0.01), JSON.stringify(pts));
 });
 
 test('in a raid no star shows on the screen: each star leads away from the wall', () => {
