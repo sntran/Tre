@@ -1,6 +1,7 @@
-// The place of a press at the fisher (#109): presses at the pile with no walk put no stake into a
-// space narrower than half of the gap, the talk names both sides of the rule, and after an escape a
-// take-back leads to the hole.
+// The place of a press at the fisher and the woodcutter (#109): presses at the pile with no walk put
+// no stake into a space narrower than half of the gap, the talk names both sides of the rule, after
+// an escape a take-back leads to the hole, the see-through stake and chalk say what they are, and
+// the see-through chalk follows the hero along the stem.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
@@ -29,6 +30,7 @@ async function at(place, steps) {
   return { session, said };
 }
 const atRow = () => at([27, 64.5], talk('fisher', 'mentor.first.you'));
+const atStem = () => at([51, 8.5], talk('woodcutter', 'mentor.woodcutter.first'));
 function run(session, seconds, until = () => false) {
   for (let i = 0; i < seconds / STEP && !until(); i++) {
     if (session.screen) session.command({ type: session.screen === 'dialogue' || session.screen === 'say' ? 'next' : 'close' });
@@ -61,6 +63,8 @@ test('presses at the pile with no walk put no stake into a space narrower than h
   const s = [...new Set([0, ...slots(session)])];
   for (let i = 1; i < s.length; i++) assert.ok(s[i] - s[i - 1] >= space / 2, `the row ${s.join(', ')} (gap ${space})`);
   assert.ok(said.includes('fisher.tight.here'), said.join(', '));
+  assert.ok(said.includes('fisher.ghost'), 'the see-through stake says what it is');
+  assert.equal(said.filter((k) => k === 'fisher.ghost').length, 1, 'once');
 });
 
 test('the talk of the fisher names both sides of the rule', () => {
@@ -94,4 +98,31 @@ test('after an escape, a take-back puts the ring at the hole and the line says t
   assert.ok(ring, 'a ring');
   assert.equal(ring.position.x, line.x + Math.round(2 * space + 1.5 * space));
   assert.ok(said.includes('mentor.fisher.back.hole'), said.join(', '));
+});
+
+test('the see-through chalk lies under the hero before the first mark, follows the hero along the stem, and the woodcutter says once what it is', async () => {
+  const { session, said } = await atStem();
+  const stem = getEntity(session.state, 'stem:woodcutter');
+  const hero = getEntity(session.state, 'hero');
+  const ghostAt = (x) => {
+    Object.assign(hero.position, { x: stem.position.x + x, z: stem.position.z - 2 });
+    delete hero.route;
+    run(session, 0.5);
+    return session.action();
+  };
+  for (const x of [3, 5]) {
+    const a = ghostAt(x);
+    assert.equal(a?.act, 'mark');
+    assert.equal(a.ghost.look, 'chalk-band');
+    assert.ok(a.ghost.see, 'see-through');
+    assert.equal(Math.round(a.ghost.x - stem.position.x), x);
+  }
+  press(session);
+  run(session, 1);
+  assert.ok(said.includes('woodcutter.ghost'), said.join(', '));
+  const b = ghostAt(2);
+  assert.ok(!b.ghost.see, 'after the first mark, the ghost is the chalk');
+  press(session);
+  run(session, 1);
+  assert.equal(said.filter((k) => k === 'woodcutter.ghost').length, 1, 'once');
 });

@@ -1308,6 +1308,12 @@ function act(world, e, want, env) {
       addEntity(world, { id, keep: true, position: { x: s.x + at, y: s.y, z: s.z, facing: 0 }, look: 'chalk-band' });
     }
     say(world, 'mark', stem.id, { at, off, sound: 'tap' });
+    // At the first mark of the child, the woodcutter says once what the see-through chalk is (#109).
+    if (!off && e.id === 'hero' && !tz.zone.ghostSaid) {
+      tz.zone.ghostSaid = true;
+      const person = query(world, 'person').find((p) => p.person.ref === 'woodcutter' && !p.hidden);
+      if (person) say(world, 'call', person.id, { key: 'woodcutter.ghost', params: {} });
+    }
   } else if (want.act === 'aim') {
     // While the button is down, the mark of the slash goes up the culm, one ring at a time.
     const culm = getEntity(world, `culm:staffs:${want.culm}`);
@@ -1637,6 +1643,7 @@ function tickTide(world, tz, dt, env) {
   const row = query(world, 'item').filter((s) => s.item.zone === 'line');
   // From grade 3 the boat brings the stakes (#102): the tide comes when the row is at the float.
   if (tide.phase === 'low' && tz.zone.plan && tz.zone.plan.form !== 'gaps') return tickBoat(world, tz, line, water, dt);
+  if (tide.phase === 'low') ghostLine(world, tz, line, query(world, 'item').some((s) => s.item.held === 'hero' && String(s.id).startsWith('stake:fisher:')));
   // The clock of the tide starts at the first stake of the child (#48): the wait is the time of the
   // child, not of the talk or of the first step that the fisher shows.
   if (!tide.started) {
@@ -1980,6 +1987,18 @@ function markNarrow(world, z, line, row) {
     if (fisher) fisher.gesture = { act: 'point', x: spare.position.x, z: spare.position.z, t: 2.5 };
   }
   z.narrowT = NARROW_MARKS;
+}
+// The first time that the hero comes to the row with a stake in the hands (the see-through stake
+// shows where a press puts it), the fisher says once what it is (#109).
+function ghostLine(world, tz, line, held) {
+  if (!held || tz.zone.ghostSaid) return;
+  const h = getEntity(world, 'hero');
+  const l = line.zone;
+  const x = Math.max(l.x, Math.min(l.x + l.length, h.position.x));
+  if (Math.hypot(h.position.x - x, h.position.z - l.z) > REACH + 2) return;
+  tz.zone.ghostSaid = true;
+  const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+  if (fisher) say(world, 'call', fisher.id, { key: 'fisher.ghost', params: {} });
 }
 // A put into a space that is too narrow (#109): the fisher points at the last stake of the row,
 // and it glows and bobs. At the second such press in a row, a ring shows his gap from the last

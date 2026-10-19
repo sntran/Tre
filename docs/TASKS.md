@@ -118,6 +118,18 @@ A help is the next step of the work as it is now. At the mat of the teacher, wit
 
 **Beds that a child can tell apart.** Ngải cứu is tall and grey-green, tía tô has indigo leaves with a red top (the palette has no purple), and rau má is low with bright round leaves. The sign of each bed has the picture of its leaf on four faces, so that a picture faces the camera at each turn of the view. A line of the talk that names a bed makes its sign glow too, and a roof in front of the things that a talk names fades, also before the task opens.
 
+### The place of a press at the fisher and the woodcutter (#109)
+
+**Both sides of the rule.** The talk of the fisher says both sides of his gap: "Mỗi khe bằng khe này nhé: rộng quá thì cá chui ra, hẹp quá thì không đủ cọc."
+
+**No stake into a space that is already too narrow.** A stake of the child does not go into a space narrower than half of the gap of the fisher (`tightSlot` in `src/core/world/trials.js`). The fisher points at the last stake of the row, it glows and bobs, and he says "Chỗ này chật rồi. Cắm tiếp từ cọc cuối nhé." At the second such press in a row, a ring shows his gap from the last stake ("Đi tới vòng tròn này, rồi cắm nhé."). A stake into a hole (a space wider than his gap) always goes in. The press never walks to the ring by itself: a press never reads a number that the child must find (#63), and a tap at the ring chooses the place. With all the stakes of the pile, the narrowest row that the rule lets a child make reaches the float, so the pile runs out only after a take-back or at another length of the row.
+
+**What the see-through things are.** The first time that the hero comes to the row with a stake, the fisher says once "Cái cọc mờ là chỗ cháu sẽ cắm." Before the first mark of the woodcutter, the ghost of the chalk is a see-through band on the stem at the feet of the hero, and it moves when the hero walks along the stem; at the first mark, the woodcutter says once "Phấn mờ là chỗ cháu sẽ vạch." After the first mark, the ghost is the bright chalk of #80.
+
+**After a take-back, the ring goes to the hole.** With a hole of an escape open, the ring and the line after a take-back go to the middle of the hole ("Cắm vào chỗ hở này nhé."). With no hole, they go toward the float (#97).
+
+**Only the stake to take back is bright.** The frames of the narrow gaps are thin and grey. The stake to take back glows and bobs, and the fisher points at it.
+
 ### Every line is heard (#73)
 
 A line that says what happened to the work of the child (the iron bent, the piece is too short, the fish swam out, the count of the work and its extras or empty places) has the mark `happened` in its event `call` and `open` (`src/core/world/systems/work.js`, the move `count` in `src/core/mentoring.js`). In the voice of the bubbles it is the kind `world` (`src/core/bubblevoice.js`): it never goes, and no later line of the same person takes its place; a later line of that person waits until the voice said it, and its bubble waits too (`src/ui/village.js`). A word of a count never goes either, also when the same number of the row before still waits. After a wrong row of the fisher, the fish swim out at the widest space, the space glows (`why:fisher:space`), and the fisher (or Nghé, while the fisher is away) says "Chỗ này hở quá, cá chui ra mất." (`fisher.escape`) at each level of help; the handover of the checking changes only the moves of the mentor. The move `picture` (another station) does not come in the first visit of the child to a task (`visits` in the memory of the mentor), and a wave never gives a break or a picture: it gives the next help of the ladder. After a late quench the smith says "Sắt nguội mất rồi, nên cong. Sắt vào lò, lát nữa lại đỏ."

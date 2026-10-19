@@ -3133,7 +3133,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           markTick = state.tick;
           if (!marked && tapped !== null && tapped !== feet) goTo(point, null, null, { x: point.x, z: hp.z }, { exact: true });
         };
-        if (!(marked && tapped === null)) add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, work: !marked, ghost: marked ? null : { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z, bright: true }, run }, REACH + 2);
+        // Before the first mark, the ghost is a see-through band of chalk on the stem (#109: the
+        // chalk went to the end of the stem, and the child did not know that the place was a choice).
+        const ghost = marked ? null : wood.zone.marks.length ? { look: 'chalk', x: point.x, y: s.y + 0.6, z: point.z, bright: true } : { look: 'chalk-band', x: point.x, y: s.y, z: point.z, bright: true, see: true };
+        if (!(marked && tapped === null)) add({ act: marked ? 'unmark' : 'mark', icon: marked ? 'clear' : 'chalk', target: stem.id, at: point, rank: 0, work: !marked, ghost, run }, REACH + 2);
       }
       // The hands: pick up a thing (on a span, only its last plank); take one back from a place.
       const want = wantKind();

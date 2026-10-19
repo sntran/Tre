@@ -310,7 +310,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
       flights = [...flights.filter((fl) => tick < fl.start + fl.steps), ...trackCarries(holding, world.entities, tick, synced, undefined, places)];
       synced = true;
       const flying = flights.map((fl) => ({ id: `flight:${fl.start}:${fl.by}:${fl.hide ?? ''}`, look: fl.look, position: flightAt(fl, tick) })).filter((x) => x.position);
-      const ghostEnt = ghost ? { id: 'ghost', ghost: true, bright: Boolean(ghost.bright), look: ghost.look, position: { x: ghost.x, y: ghost.y, z: ghost.z, facing: ghost.facing ?? 0 } } : null;
+      const ghostEnt = ghost ? { id: 'ghost', ghost: true, bright: Boolean(ghost.bright), see: Boolean(ghost.see), look: ghost.look, position: { x: ghost.x, y: ghost.y, z: ghost.z, facing: ghost.facing ?? 0 } } : null;
       for (const e of [...world.entities, ...flying, ...(ghostEnt ? [ghostEnt] : [])]) {
         if (!e.position || !e.look || e.hidden) continue;
         if (until(flights, 'hide', e.id) > tick) continue;
@@ -350,6 +350,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         f.control = Boolean(e.control);
         f.ghost = Boolean(e.ghost);
         f.bright = Boolean(e.bright);
+        f.see = Boolean(e.see);
         f.running = (e.motion?.speed ?? 0) > 11;
         // A rider sits on the back of Nghé (riding: true), or at a seat of its own (riding: the height
         // in world units, as Gióng on his iron horse); a swimmer at the ford is a little lower in the water;
@@ -424,7 +425,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         if (mist >= 0.78) continue;
         // A ghost is pale, as a thing far in the mist; a bright ghost (the chalk, #80) is as bright as
         // the thing. People and animals keep their colors: a covered hero shows as an outline (#87).
-        const pale = f.ghost && !f.bright ? 0.6 : smooth(0, 0.45, mist);
+        // A see-through ghost (the first chalk, #109) is pale also when it is bright.
+        const pale = f.ghost && (!f.bright || f.see) ? 0.6 : smooth(0, 0.45, mist);
         const tint = (rgb) => color.setRGB(rgb[0] + (PAPER_RGB[0] - rgb[0]) * pale, rgb[1] + (PAPER_RGB[1] - rgb[1]) * pale, rgb[2] + (PAPER_RGB[2] - rgb[2]) * pale);
         // The animation goes on for every figure, so that a figure that comes into the view is in
         // step.
