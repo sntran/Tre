@@ -94,6 +94,8 @@ export function createFolk(deps) {
       addEntity(world(), { id: 'folk:shard', keep: false, look: 'shard', hidden: true, position: at(along(f, -0.3 * S, -0.5 * S)) });
       // The see-through shard of the aim (#114): it steps along the court while the button is held.
       addEntity(world(), { id: 'folk:aim', keep: false, look: 'shard', ghost: true, bright: true, see: true, hidden: true, position: at(along(f, -0.3 * S, -0.5 * S)) });
+      // The square of the see-through shard glows, so that a child sees it on a phone.
+      addEntity(world(), { id: 'folk:aimglow', keep: false, look: 'place-glow', hidden: true, position: at(along(f, -0.3 * S, -0.5 * S)) });
     }
   }
   function setCourt(court) {
@@ -285,19 +287,24 @@ export function createFolk(deps) {
     const k = aimSquare(game.held, def.loCo, n);
     if (k === game.aimAt) return;
     game.aimAt = k;
-    const aim = getEntity(world(), 'folk:aim');
-    if (aim) {
-      Object.assign(aim.position, at(shardPoint(geo.loco, game.court, k + 0.5)));
-      aim.hidden = false;
-    }
+    showAim(shardPoint(geo.loco, game.court, k + 0.5));
     deps.emit({ type: 'folkAim', square: k < n ? k : null });
+  }
+  // The see-through shard and the glow of its square at a point, or hidden (null).
+  function showAim(p) {
+    const aim = getEntity(world(), 'folk:aim');
+    const glow = getEntity(world(), 'folk:aimglow');
+    for (const e of [aim, glow]) {
+      if (!e) continue;
+      e.hidden = !p;
+      if (p) Object.assign(e.position, at(p, Math.atan2(geo.loco.dir.x, geo.loco.dir.z)));
+    }
   }
   function throwEnd() {
     if (game?.phase !== 'aim') return;
     const place = throwPlace(game.held, def.loCo, game.court.length);
     const r = judgeThrow(game.court, game.call.square, place, def.loCo);
-    const aim = getEntity(world(), 'folk:aim');
-    if (aim) aim.hidden = true;
+    showAim(null);
     const shard = getEntity(world(), 'folk:shard');
     if (shard) {
       Object.assign(shard.position, at(shardPoint(geo.loco, game.court, place)));
@@ -354,19 +361,17 @@ export function createFolk(deps) {
     if (shard) shard.hidden = true;
     say('loco.throw.demo', {}, kid?.id);
     const k = game.call.square;
-    const aim = getEntity(world(), 'folk:aim');
     for (let i = 0; i <= k; i++) {
       later(DEMO_WAIT + i * def.loCo.rate, () => {
-        if (!aim || game?.phase !== 'demo') return;
-        Object.assign(aim.position, at(pts.squares[i]));
-        aim.hidden = false;
+        if (game?.phase !== 'demo') return;
+        showAim(pts.squares[i]);
         deps.emit({ type: 'folkAim', square: i, by: kid?.id ?? null });
       });
     }
     const drop = DEMO_WAIT + (k + 0.6) * def.loCo.rate;
     later(drop, () => {
       if (game?.phase !== 'demo') return;
-      if (aim) aim.hidden = true;
+      showAim(null);
       if (shard) {
         Object.assign(shard.position, at(pts.squares[k]));
         shard.hidden = false;
@@ -566,7 +571,7 @@ export function createFolk(deps) {
     deps.emit({ type: 'folk', game: kind, on: false, rounds: game.rounds });
     if (kind === 'loco') startGlow(false);
     game = null;
-    for (const id of ['folk:shard', 'folk:aim']) {
+    for (const id of ['folk:shard', 'folk:aim', 'folk:aimglow']) {
       const e = getEntity(world(), id);
       if (e) e.hidden = true;
     }
@@ -574,9 +579,10 @@ export function createFolk(deps) {
   }
   function stop() {
     if (!game) return;
-    if (game.kind === 'loco') startGlow(false);
-    const aim = getEntity(world(), 'folk:aim');
-    if (aim) aim.hidden = true;
+    if (game.kind === 'loco') {
+      startGlow(false);
+      showAim(null);
+    }
     inviteAt[game.kind] = now + AGAIN;
     deps.emit({ type: 'folk', game: game.kind, on: false, rounds: game.rounds });
     game = null;
