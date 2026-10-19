@@ -382,6 +382,7 @@
       }
     },
     "trial-smith": {
+      "gesture": "quench",
       "family": "plain",
       "person": "npc:smith",
       "demo": null,
@@ -394,6 +395,7 @@
       "picture": "mentor.picture.smith", "pictureUnless": "trial.fisher.done", "pictureAfterGlow": true
     },
     "trial-fisher": {
+      "gestures": { "measure": "load", "trees": "load", "half": "load" },
       "family": "plain",
       "person": "npc:fisher",
       "demo": { "thing": "stake", "prop": null },
@@ -429,6 +431,7 @@
       }
     },
     "trial-woodcutter": {
+      "gesture": "cut",
       "family": "plain",
       "person": "npc:woodcutter",
       "demo": { "thing": "stem", "length": 6 },

@@ -136,7 +136,7 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **Counts by groups.** From grade 3 the count after a try is by groups: by doses at the healer ("Một thang. Hai thang."), by g at the teacher. From grade 4 the person says the total of each group, and then the whole ("Cả giỏ hai mươi tám bó.", "Cả thảy bốn mươi tư que.").
 
-**The first step fades.** The demonstration of the first step ("Xem thầy làm …") comes only to a child of grade 1 or 2 who has not carried a thing to the place of a task before (the flag `gesture.carry`). Else the person points at the heap and at the place, says the line of the task, and the first try is the child's.
+**The first step fades.** The demonstration of the first step ("Xem thầy làm …") comes to each child who has not done the gesture of the task in Tre before, at each grade (#105). The gestures have one flag each in the profile: `gesture.carry` (a put of the child into the place of a task), `gesture.cut` (a commit at the woodcutter), `gesture.quench` (a commit at the smith), and `gesture.load` (a commit of the boat of the fisher, from grade 3). The gesture of a task is `gesture` in `data/world/mentors.json`, or `gestures.<form>` for a level, else carry. A child who did the gesture gets only the point at the heap and at the place, the line of the task, and the first try.
 
 ### The tasks grow with the grade: the fisher, the woodcutter, and the smith (#102)
 

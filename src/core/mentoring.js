@@ -65,6 +65,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const form = world()?.entities ? getEntity(world(), `zone:${key}`)?.zone.plan?.form : null;
     return (form && lines[`${move}.${form}`]) || lines[move] || cfg.lines[move];
   };
+  // The gesture of a task (#105): carry (a thing from a heap to a place), cut, quench, or load (the
+  // boat of the fisher from grade 3). A level with a form can have its own gesture (gestures.<form>).
+  const gestureOf = (key) => {
+    const def = defOf(key);
+    const form = world()?.entities ? getEntity(world(), `zone:${key}`)?.zone.plan?.form : null;
+    return (form && def?.gestures?.[form]) || def?.gesture || 'carry';
+  };
+  const knowsGesture = (key) => Boolean(profile?.flags?.[`gesture.${gestureOf(key)}`]);
   const memoryOf = (key) => {
     profile.mentors ??= {};
     return (profile.mentors[key] ??= newMemory());
@@ -298,6 +306,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const mark = `${ev.id}:${world()?.tick}`;
     if (mark === lastSkill) return;
     lastSkill = mark;
+    // A commit of the child is the gesture of the task done in Tre (#105): its first demonstration
+    // fades in the next task with the same gesture.
+    if (profile?.flags) profile.flags[`gesture.${gestureOf(key)}`] = true;
     commit(key, ev, taskOf(key));
   }
 
@@ -930,10 +941,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   function firstSteps(task, def, s, t) {
     const w = world();
     // def.first 'point': the person only points at the heap and at the place (a task of exact rounds).
-    // The demonstration fades (#101, rule 31): a child of grade 3 or more, or a child who did the
-    // gesture in a task before, gets only the point at the heap and at the place, the line of the
-    // task, and the first try.
-    const knows = (profile?.grade ?? 1) >= 3 || Boolean(profile?.flags?.['gesture.carry']);
+    // The demonstration fades (rule 31) only for a child who did the gesture of the task in Tre
+    // before: that child gets only the point at the heap and at the place, the line of the task,
+    // and the first try. The grade never fades it (#105: a girl of grade 4, new to the game, got no
+    // demonstration and did not know how to take a bunch).
+    const knows = knowsGesture(task.key);
     if ((def.first === 'point' || (knows && !Array.isArray(def.first))) && task.piles[0] && task.place) {
       s.say(t, lineOf(task.key, 'show'));
       s.point(t, task.piles[0].position, 1.4);

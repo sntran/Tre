@@ -35,8 +35,8 @@ test('a wave at each level of the healer never names a thing that is not there',
   }
 });
 
-test('the first step: a demonstration at grades 1 and 2 with no gesture before, only a point from grade 3 or after the gesture', async () => {
-  for (const [grade, flags, demo] of [[1, {}, true], [2, {}, true], [3, {}, false], [1, { 'gesture.carry': true }, false]]) {
+test('the first step: a demonstration at each grade with no gesture before in Tre, only a point after the gesture (#105)', async () => {
+  for (const [grade, flags, demo] of [[1, {}, true], [2, {}, true], [3, {}, true], [4, {}, true], [1, { 'gesture.carry': true }, false], [2, { 'gesture.cut': true }, true]]) {
     const s = load('tests/stories/trial-scholar.json');
     const first = s.steps.findIndex((x) => x.read === true) + 1;
     const said = [];
@@ -45,6 +45,14 @@ test('the first step: a demonstration at grades 1 and 2 with no gesture before, 
     });
     assert.equal(said.includes('mentor.first.back'), demo, `grade ${grade} ${JSON.stringify(flags)}: ${said.join(', ')}`);
   }
+});
+
+test('a commit at the woodcutter keeps the gesture cut, not carry (#105)', async () => {
+  const s = load('tests/stories/trial-woodcutter.json');
+  let end = null;
+  await runHeadless({ ...s, steps: s.steps.slice(0, 9) }, { onEnd: (x) => { end = x; } });
+  assert.equal(end.profile.flags['gesture.cut'], true);
+  assert.equal(end.profile.flags['gesture.carry'] ?? false, false);
 });
 
 test('a put of the child into the place of a task keeps the gesture in the profile', async () => {
