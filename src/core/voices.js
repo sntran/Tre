@@ -16,12 +16,18 @@ export function voiceOf(speaker, data, profile = null) {
   return data.voices?.speakers?.[speaker] ?? 'narrator';
 }
 
-// The lines that the voice says for a line of a talk, in order: { key, voice }. A talk with one
-// choice shows a line of the hero as a button: the voice says it too, in the voice of the hero,
-// after the line (#94: a child who cannot read tapped the bright button that nobody read).
-// line: { speaker, textKey, choices (text keys) }.
-export function spokenOf(line, data, profile = null) {
-  const out = [{ key: line.textKey, voice: voiceOf(line.speaker, data, profile) }];
+// The lines that the voice says for a line of a talk, in order: { key, voice }, or { text, voice }.
+// After the line come the card of a new word (#106: "Quặng sắt là đá có sắt bên trong." was text
+// only, and a child who cannot read never heard what the word means) and the gloss of a name or of
+// a word of a region (text). A talk with one choice shows a line of the hero as a button: the voice
+// says it too, in the voice of the hero, after the line (#94: a child who cannot read tapped the
+// bright button that nobody read).
+// line: { speaker, textKey, choices (text keys), word ({ nameKey, textKey }) }. gloss: a text, or null.
+export function spokenOf(line, data, profile = null, { gloss = null } = {}) {
+  const voice = voiceOf(line.speaker, data, profile);
+  const out = [{ key: line.textKey, voice }];
+  if (line.word?.textKey) out.push({ key: line.word.textKey, voice });
+  if (gloss) out.push({ text: gloss, voice });
   if (line.choices?.length === 1) out.push({ key: line.choices[0], voice: voiceOf('hero', data, profile) });
   return out;
 }

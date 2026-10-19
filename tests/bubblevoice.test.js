@@ -3,7 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { bubbleLine, createVoiceQueue, kindOf, speakerOf, SAID_AGAIN } from '../src/core/bubblevoice.js';
-import { voiceOf } from '../src/core/voices.js';
+import { voiceOf, spokenOf } from '../src/core/voices.js';
 import { runHeadless, data } from './story-run.js';
 import { playPresses, STEP } from './restless.js';
 import { load } from './helpers.js';
@@ -114,6 +114,13 @@ test('a count of eleven and then its result: the eleven numbers, then the result
   for (let n = 1; n <= 11; n++) q.offer(lineOf(`num.${n}`, 'event:duck'), n > 1, 0);
   q.offer({ id: 'talk', talk: true, key: 'event.duck.short', params: {}, voice: 'woman', kind: 'world' }, true, 0);
   assert.deepEqual(drain(q, 1), [...Array.from({ length: 11 }, (_, i) => `num.${i + 1}`), 'event.duck.short']);
+});
+
+test('the card of a new word and the gloss of a name are spoken after the line', () => {
+  const d = { npcs: data.npcs.npcs, friends: data.friends.friends, voices: data.game.voices };
+  const out = spokenOf({ speaker: 'smith', textKey: 'dlg.smith.need.iron.n1', word: { nameKey: 'word.ore', textKey: 'word.ore.what' } }, d, null, { gloss: 'Ông Dương: an old man.' });
+  assert.deepEqual(out.map((x) => x.key ?? x.text), ['dlg.smith.need.iron.n1', 'word.ore.what', 'Ông Dương: an old man.']);
+  assert.ok(out.every((x) => x.voice === out[0].voice), 'in the voice of the person');
 });
 
 // The voice of a whole village, headless: the bubbles and the talk boxes go into one queue, and a

@@ -32,7 +32,7 @@ import { tapTarget, thingUnder, askingChild } from '../world/hit.js';
 import { h, img, button } from './dom.js';
 import { t, tn, setSpeech, lang, otherLang } from './i18n.js';
 import { speechTable, speechWay } from '../core/speech.js';
-import { speak, speaking } from './speak.js';
+import { speak, speakText, speaking, stop as stopVoice } from './speak.js';
 import { bubbleLine, createVoiceQueue, doneBy } from '../core/bubblevoice.js';
 import { voiceOf } from '../core/voices.js';
 import { namesOf } from '../core/naming.js';
@@ -672,7 +672,7 @@ export async function mountVillage(ctx, params = {}) {
       talkOver(`npc:${ev.speaker}`);
       for (const b of bubbles.filter((x) => x.id === `npc:${ev.speaker}` && !x.icon)) b.el.remove();
       bubbles = bubbles.filter((x) => x.id !== `npc:${ev.speaker}` || x.icon);
-      box ??= createDialogueBox(ctx, { next: () => send({ type: 'next' }), choose: (n) => send({ type: 'choose', n }) });
+      box ??= createDialogueBox(ctx, { next: () => send({ type: 'next' }), choose: (n) => send({ type: 'choose', n }), voice: talkVoice });
       box.show(ev);
       boxLine = ev;
       return;
@@ -685,6 +685,8 @@ export async function mountVillage(ctx, params = {}) {
       const line = bubbleLine(ev, lineVoice);
       showBubble(ev.id, gloss ? `${t(ev.textKey, ev.params)}\n${gloss}` : t(ev.textKey, ev.params), null, line);
       voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
+      // The gloss is spoken after the line (#106).
+      if (gloss && line) voiceQueue.offer({ id: line.id, key: null, text: gloss, params: {}, voice: line.voice, kind: 'world' }, true, performance.now() / 1000);
       return;
     }
     // A story that plays in the storybook stays in the village: the other screens show as a
@@ -1273,11 +1275,25 @@ export async function mountVillage(ctx, params = {}) {
   let spoken = null;
   // The lines that the voice said, the last 40 (for the tests of the whole game on a device).
   const heard = [];
+  const textOf = (line) => line.text ?? t(line.key, line.params);
   const sayLine = (line, opts = {}) => {
-    heard.push({ key: line.key, text: t(line.key, line.params), voice: line.voice, again: Boolean(opts.force) });
+    heard.push({ key: line.key ?? null, text: textOf(line), voice: line.voice, again: Boolean(opts.force), ...(line.talk ? { talk: true } : {}) });
     if (heard.length > 40) heard.shift();
-    speak(line.key, line.params, { voice: line.voice, ...opts });
+    if (line.text) speakText(line.text, undefined, { voice: line.voice, queue: true, onEnd: opts.onEnd ?? null });
+    // A line of a talk box may have a recorded file: it speaks with no queue of the browser voice.
+    else speak(line.key, line.params, { voice: line.voice, ...opts, ...(line.talk ? { queue: false } : {}) });
   };
+  // The lines of a talk box go into the queue of the voice, after the lines that wait there (#106:
+  // the line of a result came before the last numbers of a count), in order (kind world: never
+  // dropped). A new line of a talk takes the place of the lines of an older line of a talk.
+  function talkVoice(items, params) {
+    voiceQueue.forget((l) => l.talk);
+    if (spoken?.line.talk) {
+      stopVoice();
+      spoken = null;
+    }
+    for (const x of items) voiceQueue.offer({ id: 'talk', talk: true, key: x.key ?? null, text: x.text ?? null, params, voice: x.voice, kind: 'world' }, speaking() || Boolean(spoken), performance.now() / 1000);
+  }
   function stepVoice() {
     // A voice that sends no end (no voice on the device): the turn ends after the time that the
     // line takes to say, about 12 letters each second.
@@ -1285,7 +1301,7 @@ export async function mountVillage(ctx, params = {}) {
     if (spoken) return;
     const line = voiceQueue.next(speaking(), performance.now() / 1000);
     if (!line) return;
-    const now = { line, t: performance.now(), end: performance.now() + 600 + t(line.key, line.params).length * 85 };
+    const now = { line, t: performance.now(), end: performance.now() + 600 + textOf(line).length * 85 };
     spoken = now;
     sayLine(line, { queue: true, onEnd: () => { if (spoken === now) spoken = null; } });
   }

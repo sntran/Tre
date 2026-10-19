@@ -4,7 +4,7 @@ import { createDialogue } from '../core/dialogue.js';
 import { applyEffects, conditionState } from '../core/game.js';
 import { h, img, button } from './dom.js';
 import { t, tg, lang, regionalWords, tOther, otherLang } from './i18n.js';
-import { speak, stop, speakOther } from './speak.js';
+import { speak, speakText, stop, speakOther } from './speak.js';
 import { voiceOf, spokenOf } from '../core/voices.js';
 import { namesOf, talkGloss } from '../core/naming.js';
 import { newGlosses } from '../core/speech.js';
@@ -143,7 +143,10 @@ export function otherOnce(ctx, el, key, params, voice) {
   });
 }
 
-export function createDialogueBox(ctx, { next, choose }) {
+// voice(items, params): the voice of the village says the lines of the box in its queue, after the
+// lines that wait there (#106: the line of a result came before the last numbers of a count). With
+// no voice, the box says its lines at once.
+export function createDialogueBox(ctx, { next, choose, voice: say = null }) {
   const layer = h('div', { class: 'dialogue-layer' });
   const box = h('div', { class: 'dialogue', role: 'dialog', 'aria-live': 'polite' });
   layer.append(box);
@@ -206,7 +209,9 @@ export function createDialogueBox(ctx, { next, choose }) {
         next();
       };
     }
-    spokenOf(line, voiceData(ctx), ctx.profile).forEach((x, i) => speak(x.key, params, { voice: x.voice, queue: i > 0 }));
+    const spoken = spokenOf(line, voiceData(ctx), ctx.profile, { gloss });
+    if (say) say(spoken, params);
+    else spoken.forEach((x, i) => (x.text ? speakText(x.text, undefined, { voice: x.voice, queue: true }) : speak(x.key, params, { voice: x.voice, queue: i > 0 })));
   }
 
   function close() {
