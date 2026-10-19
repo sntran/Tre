@@ -1,0 +1,80 @@
+{
+ "about": "#99: the hopscotch of a child of grade 1: the court from 1, the children say where to start and stand beside the court, a wave says how to throw, and a throw.",
+ "start": "?story=practice-nhay-lo-co",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'folk:court')) && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'npc:loco-child'))",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'folk:court').folkCourt.squares.length"
+  },
+  {
+   "print": "!document.querySelector('.wave-btn')?.hidden"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'loco.call') || tre.activeVillage.heard().some((x) => x.key === 'loco.call.near')",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "check": "tre.activeVillage.heard().some((x) => x.key === 'loco.call' && /^Ô (một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười)!/.test(x.text))"
+  },
+  {
+   "shot": "loco-the-court-from-1-in-view-the-children-beside-it"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'loco.how.throw')",
+   "timeout": 30
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "loco-a-wave-the-child-says-how-to-throw"
+  },
+  {
+   "hold": 0.6,
+   "after": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "loco-the-throw"
+  }
+ ]
+}

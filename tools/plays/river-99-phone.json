@@ -1,0 +1,147 @@
+{
+ "about": "#99: the raid of the river (grade 2, the first raid of the slingshot): every line names thuồng luồng, nắm cơm, and chỗ lội; the wave is there; no star shows; a wave: the fisher shows one throw, then the line of the presses.",
+ "start": "?story=raid-river",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "river"
+   },
+   "taps": 12
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "tap": {
+    "person": "river"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) || tre.activeVillage.heard().some((x) => x.key === 'raid.river.intro')",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r && !r.result && r.enemies.length >= 1); })()",
+   "timeout": 180
+  },
+  {
+   "read": 4
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "!document.querySelector('.wave-btn')?.hidden"
+  },
+  {
+   "print": "document.querySelectorAll('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])').length"
+  },
+  {
+   "check": "!document.querySelector('.wave-btn')?.hidden"
+  },
+  {
+   "check": "document.querySelectorAll('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])').length === 0"
+  },
+  {
+   "shot": "river-the-raid-the-wave-is-there-no-star"
+  },
+  {
+   "press": true,
+   "after": 0.3
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'raid.miss.short') || tre.activeVillage.heard().some((x) => x.key === 'raid.miss.long')",
+   "timeout": 240
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return Boolean(r) && (r.result || (r.pull === 0 && r.stones.length === 0 && !(r.reload > 0))); })()",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "river-a-short-throw-of-a-rice-ball"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'raid.demo.look.fisher')",
+   "timeout": 60
+  },
+  {
+   "wait": 2.2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "river-a-wave-the-fisher-shows-one-throw"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'raid.demo.back')",
+   "timeout": 120
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "river-a-wave-again-the-serpent-and-the-posts"
+  },
+  {
+   "print": "!tre.activeVillage.heard().some((x) => /\\blính\\b|hòn đá|cổng làng/i.test(x.text ?? ''))"
+  },
+  {
+   "check": "!tre.activeVillage.heard().some((x) => /\\blính\\b|hòn đá|cổng làng/i.test(x.text ?? ''))"
+  }
+ ]
+}
