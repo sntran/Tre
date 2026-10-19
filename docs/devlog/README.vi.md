@@ -10,6 +10,7 @@ Chúng tôi viết cho các bậc cha mẹ và cho bất kỳ ai muốn biết v
 
 | Ngày | Bài viết |
 | --- | --- |
+| 19/10/2026 | [Mới đến thì lớp nào cũng mới](2026-10-19-new-at-any-grade.vi.md) |
 | 18/10/2026 | [Câu đố buổi tối](2026-10-18-riddles-in-the-evening.vi.md) |
 | 18/10/2026 | [Nhiệm vụ lớn lên theo lớp](2026-10-18-the-tasks-grow-with-the-grade.vi.md) |
 | 18/10/2026 | [Lời giúp nhìn thấy việc](2026-10-18-a-help-that-sees-the-work.vi.md) |

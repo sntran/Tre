@@ -1,0 +1,2689 @@
+{
+ "id": "pmvd4hd8j",
+ "createdAt": 1792285451587,
+ "updatedAt": 1792418911217,
+ "hero": {
+  "name": "Tí",
+  "gender": "boy",
+  "skin": 1,
+  "face": 1,
+  "hair": 6,
+  "clothes": 4
+ },
+ "grade": 2,
+ "calling": null,
+ "titles": [],
+ "stele": [],
+ "flags": {
+  "friend.nghe": true,
+  "intro.seen": true,
+  "prologue.started": true,
+  "trial.scholar.done": true,
+  "trial.smith.done": true,
+  "trial.woodcutter.done": true,
+  "trial.healer.done": true,
+  "gesture.carry": true
+ },
+ "quests": {},
+ "inventory": {
+  "rice": 13,
+  "iron": 2,
+  "bamboo": 3,
+  "egg": 3
+ },
+ "friends": [
+  "nghe"
+ ],
+ "friendNames": {
+  "nghe": "Rocky"
+ },
+ "party": [
+  "nghe"
+ ],
+ "machines": [],
+ "world": {
+  "seed": 1216065786,
+  "map": "giong",
+  "clock": {
+   "minutes": 799.7733333331,
+   "hold": true
+  },
+  "entities": [
+   {
+    "id": "hero",
+    "keep": true,
+    "control": true,
+    "position": {
+     "x": 18762.350314345586,
+     "y": 4,
+     "z": 12623.099825689163,
+     "facing": -1.5217173193484564e-06
+    },
+    "motion": {
+     "vx": 0,
+     "vz": 0,
+     "speed": 0,
+     "shallow": false,
+     "wade": false,
+     "idle": 8.466666666666647,
+     "stride": 0.32519724095460023
+    },
+    "hands": {
+     "holds": null
+    },
+    "look": "hero"
+   }
+  ]
+ },
+ "maps": {
+  "giong": {
+   "first": 420,
+   "things": {
+    "event.cart.spot": "0:9367,6326"
+   },
+   "last": 795,
+   "chunks": {
+    "588,394": {
+     "entities": [
+      {
+       "id": "zone:bridge-pile",
+       "keep": true,
+       "zone": {
+        "id": "bridge-pile",
+        "task": "bridge-pile",
+        "rule": "pile",
+        "accepts": "plank",
+        "items": [
+         "plank:bridge-gap:0",
+         "plank:bridge-gap:1",
+         "plank:bridge-gap:2",
+         "plank:bridge-gap:3",
+         "plank:bridge-gap:4",
+         "plank:bridge-gap:5",
+         "plank:bridge-gap:6",
+         "plank:bridge-gap:7",
+         "plank:bridge-gap:8"
+        ],
+        "x": 18812,
+        "y": 4,
+        "z": 12617,
+        "sizes": [
+         3,
+         4,
+         5
+        ]
+       },
+       "position": {
+        "x": 18816,
+        "y": 4,
+        "z": 12621,
+        "facing": 0
+       }
+      },
+      {
+       "id": "plank:bridge-gap:1",
+       "keep": true,
+       "item": {
+        "kind": "plank",
+        "size": 3,
+        "task": "bridge-gap",
+        "zone": "bridge-pile",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18817,
+        "y": 4,
+        "z": 12617,
+        "facing": 1.5707963267948966
+       },
+       "look": "plank-3"
+      },
+      {
+       "id": "plank:bridge-gap:2",
+       "keep": true,
+       "item": {
+        "kind": "plank",
+        "size": 3,
+        "task": "bridge-gap",
+        "zone": "bridge-pile",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18822,
+        "y": 4,
+        "z": 12617,
+        "facing": 1.5707963267948966
+       },
+       "look": "plank-3"
+      },
+      {
+       "id": "plank:bridge-gap:4",
+       "keep": true,
+       "item": {
+        "kind": "plank",
+        "size": 4,
+        "task": "bridge-gap",
+        "zone": "bridge-pile",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18818,
+        "y": 4,
+        "z": 12621,
+        "facing": 1.5707963267948966
+       },
+       "look": "plank-4"
+      },
+      {
+       "id": "plank:bridge-gap:5",
+       "keep": true,
+       "item": {
+        "kind": "plank",
+        "size": 4,
+        "task": "bridge-gap",
+        "zone": "bridge-pile",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18824,
+        "y": 4,
+        "z": 12621,
+        "facing": 1.5707963267948966
+       },
+       "look": "plank-4"
+      },
+      {
+       "id": "plank:bridge-gap:7",
+       "keep": true,
+       "item": {
+        "kind": "plank",
+        "size": 5,
+        "task": "bridge-gap",
+        "zone": "bridge-pile",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18819,
+        "y": 4,
+        "z": 12625,
+        "facing": 1.5707963267948966
+       },
+       "look": "plank-5"
+      },
+      {
+       "id": "plank:bridge-gap:8",
+       "keep": true,
+       "item": {
+        "kind": "plank",
+        "size": 5,
+        "task": "bridge-gap",
+        "zone": "bridge-pile",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18826,
+        "y": 4,
+        "z": 12625,
+        "facing": 1.5707963267948966
+       },
+       "look": "plank-5"
+      }
+     ]
+    },
+    "587,394": {
+     "entities": [
+      {
+       "id": "zone:bridge-gap",
+       "keep": true,
+       "zone": {
+        "id": "bridge-gap",
+        "task": "bridge",
+        "rule": "span",
+        "accepts": "plank",
+        "items": [],
+        "x0": 9401,
+        "x1": 9404,
+        "start": 12624,
+        "end": 12644,
+        "lane": 18805,
+        "cx": 18806,
+        "deckY": 6,
+        "round": 0,
+        "repair": false,
+        "from": 12628,
+        "gap": 12,
+        "sizes": [
+         3,
+         3,
+         3,
+         4,
+         4,
+         4,
+         5,
+         5,
+         5
+        ],
+        "levels": {
+         "math.add.20": 1,
+         "math.mul.10": 1
+        },
+        "fails": 0,
+        "commits": 0,
+        "guess": "pending",
+        "attempt": null,
+        "set": false,
+        "done": false,
+        "day": -1,
+        "effect": null,
+        "hint": 0,
+        "made": 9,
+        "shut": true
+       },
+       "position": {
+        "x": 18805,
+        "y": 6,
+        "z": 12627,
+        "facing": 0
+       }
+      },
+      {
+       "id": "plank:bridge-gap:0",
+       "keep": true,
+       "item": {
+        "kind": "plank",
+        "size": 3,
+        "task": "bridge-gap",
+        "zone": "bridge-pile",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18812,
+        "y": 4,
+        "z": 12617,
+        "facing": 1.5707963267948966
+       },
+       "look": "plank-3"
+      },
+      {
+       "id": "plank:bridge-gap:3",
+       "keep": true,
+       "item": {
+        "kind": "plank",
+        "size": 4,
+        "task": "bridge-gap",
+        "zone": "bridge-pile",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18812,
+        "y": 4,
+        "z": 12621,
+        "facing": 1.5707963267948966
+       },
+       "look": "plank-4"
+      },
+      {
+       "id": "plank:bridge-gap:6",
+       "keep": true,
+       "item": {
+        "kind": "plank",
+        "size": 5,
+        "task": "bridge-gap",
+        "zone": "bridge-pile",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18812,
+        "y": 4,
+        "z": 12625,
+        "facing": 1.5707963267948966
+       },
+       "look": "plank-5"
+      }
+     ]
+    },
+    "588,392": {
+     "entities": [
+      {
+       "id": "zone:trial-scholar",
+       "keep": true,
+       "zone": {
+        "id": "trial-scholar",
+        "rule": "trial",
+        "trial": "scholar",
+        "task": "bundle",
+        "level": 1,
+        "commits": 3,
+        "fails": 1,
+        "resets": 0,
+        "done": true,
+        "made": 27
+       },
+       "position": {
+        "x": 18816.4,
+        "y": 6,
+        "z": 12544.2,
+        "facing": 0
+       }
+      },
+      {
+       "id": "rod:scholar:4",
+       "keep": true,
+       "item": {
+        "kind": "rod",
+        "size": 1,
+        "task": "trial-scholar",
+        "zone": "rods",
+        "home": "rods",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18816.199999999997,
+        "y": 6,
+        "z": 12544.2,
+        "facing": 0.3
+       },
+       "look": "rod"
+      },
+      {
+       "id": "rod:scholar:5",
+       "keep": true,
+       "item": {
+        "kind": "rod",
+        "size": 1,
+        "task": "trial-scholar",
+        "zone": "rods",
+        "home": "rods",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18816.899999999998,
+        "y": 6,
+        "z": 12544.2,
+        "facing": 0.8999999999999999
+       },
+       "look": "rod"
+      },
+      {
+       "id": "rod:scholar:8",
+       "keep": true,
+       "item": {
+        "kind": "rod",
+        "size": 1,
+        "task": "trial-scholar",
+        "zone": "rods",
+        "home": "rods",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18817.6,
+        "y": 6,
+        "z": 12544.2,
+        "facing": 0
+       },
+       "look": "rod"
+      },
+      {
+       "id": "rod:scholar:9",
+       "keep": true,
+       "item": {
+        "kind": "rod",
+        "size": 1,
+        "task": "trial-scholar",
+        "zone": "rods",
+        "home": "rods",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18818.3,
+        "y": 6,
+        "z": 12544.2,
+        "facing": 0.6
+       },
+       "look": "rod"
+      },
+      {
+       "id": "zone:mat",
+       "keep": true,
+       "zone": {
+        "id": "mat",
+        "task": "trial-scholar",
+        "rule": "bundle",
+        "accepts": "rod",
+        "items": [],
+        "x": 18822,
+        "y": 6,
+        "z": 12544.4,
+        "tied": 2,
+        "rect": {
+         "x0": 18821,
+         "x1": 18828.5,
+         "z0": 12543.4,
+         "z1": 12547.4
+        },
+        "stand": {
+         "x": 18820.5,
+         "z": 12545.4
+        }
+       },
+       "position": {
+        "x": 18824.75,
+        "y": 6,
+        "z": 12545.4,
+        "facing": 0
+       }
+      },
+      {
+       "id": "mat:scholar",
+       "keep": true,
+       "position": {
+        "x": 18822,
+        "y": 6,
+        "z": 12544.4,
+        "facing": 0
+       },
+       "look": "mat",
+       "solid": {
+        "rect": {
+         "x0": 18822.1,
+         "x1": 18825.9,
+         "z0": 12544.6,
+         "z1": 12546.6
+        }
+       }
+      },
+      {
+       "id": "band:scholar",
+       "keep": true,
+       "position": {
+        "x": 18826.6,
+        "y": 6,
+        "z": 12545.4,
+        "facing": 0
+       },
+       "look": "band"
+      },
+      {
+       "id": "bundle:scholar:0",
+       "keep": true,
+       "position": {
+        "x": 18822.4,
+        "y": 6,
+        "z": 12548.6,
+        "facing": 1.5707963267948966
+       },
+       "look": "rod-bundle"
+      },
+      {
+       "id": "bundle:scholar:1",
+       "keep": true,
+       "position": {
+        "x": 18823.7,
+        "y": 6,
+        "z": 12548.6,
+        "facing": 1.5707963267948966
+       },
+       "look": "rod-bundle"
+      }
+     ]
+    },
+    "587,391": {
+     "entities": [
+      {
+       "id": "lamp:scholar",
+       "keep": true,
+       "position": {
+        "x": 18813.9,
+        "y": 6,
+        "z": 12541.7,
+        "facing": 0
+       },
+       "look": "oil-lamp"
+      }
+     ]
+    },
+    "587,392": {
+     "entities": [
+      {
+       "id": "zone:rods",
+       "keep": true,
+       "zone": {
+        "id": "rods",
+        "task": "trial-scholar",
+        "rule": "heap",
+        "accepts": "rod",
+        "items": [
+         "rod:scholar:1",
+         "rod:scholar:2",
+         "rod:scholar:3",
+         "rod:scholar:4",
+         "rod:scholar:5",
+         "rod:scholar:8",
+         "rod:scholar:9"
+        ],
+        "x": 18814.1,
+        "y": 6,
+        "z": 12544.2,
+        "cols": 8,
+        "step": 0.7
+       },
+       "position": {
+        "x": 18815.1,
+        "y": 6,
+        "z": 12545.2,
+        "facing": 0
+       },
+       "solid": {
+        "rect": {
+         "x0": 18813.85,
+         "x1": 18819.25,
+         "z0": 12543.95,
+         "z1": 12546.550000000001
+        }
+       }
+      },
+      {
+       "id": "rod:scholar:1",
+       "keep": true,
+       "item": {
+        "kind": "rod",
+        "size": 1,
+        "task": "trial-scholar",
+        "zone": "rods",
+        "home": "rods",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18814.1,
+        "y": 6,
+        "z": 12544.2,
+        "facing": 0
+       },
+       "look": "rod"
+      },
+      {
+       "id": "rod:scholar:2",
+       "keep": true,
+       "item": {
+        "kind": "rod",
+        "size": 1,
+        "task": "trial-scholar",
+        "zone": "rods",
+        "home": "rods",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18814.8,
+        "y": 6,
+        "z": 12544.2,
+        "facing": 0.6
+       },
+       "look": "rod"
+      },
+      {
+       "id": "rod:scholar:3",
+       "keep": true,
+       "item": {
+        "kind": "rod",
+        "size": 1,
+        "task": "trial-scholar",
+        "zone": "rods",
+        "home": "rods",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18815.5,
+        "y": 6,
+        "z": 12544.2,
+        "facing": 1.2
+       },
+       "look": "rod"
+      },
+      {
+       "id": "zone:trial-smith",
+       "keep": true,
+       "zone": {
+        "id": "trial-smith",
+        "rule": "trial",
+        "trial": "smith",
+        "task": "forge",
+        "level": 1,
+        "commits": 1,
+        "fails": 0,
+        "resets": 0,
+        "done": true,
+        "made": 3,
+        "anvil": {
+         "x": 18822.4,
+         "y": 6,
+         "z": 12578
+        },
+        "heat": null
+       },
+       "position": {
+        "x": 18811.2,
+        "y": 6,
+        "z": 12572.4,
+        "facing": 0
+       }
+      },
+      {
+       "id": "zone:forge",
+       "keep": true,
+       "zone": {
+        "id": "forge",
+        "task": "trial-smith",
+        "rule": "forge",
+        "accepts": "ore",
+        "items": [
+         "ore:smith:0",
+         "ore:smith:1",
+         "ore:smith:2"
+        ],
+        "need": 3,
+        "x": 18811.2,
+        "y": 6,
+        "z": 12572.4,
+        "rect": {
+         "x0": 18810.2,
+         "x1": 18815.2,
+         "z0": 12571.4,
+         "z1": 12575.4
+        },
+        "stand": {
+         "x": 18812.2,
+         "z": 12574.4
+        }
+       },
+       "position": {
+        "x": 18812.7,
+        "y": 6,
+        "z": 12573.4,
+        "facing": 0
+       }
+      },
+      {
+       "id": "ore:smith:0",
+       "keep": true,
+       "item": {
+        "kind": "ore",
+        "size": 1,
+        "task": "trial-smith",
+        "zone": "forge",
+        "held": null,
+        "set": true,
+        "fixed": true
+       },
+       "position": {
+        "x": 18811.7,
+        "y": 7,
+        "z": 12573.199999999999,
+        "facing": 0
+       },
+       "look": "ore-hot"
+      },
+      {
+       "id": "ore:smith:1",
+       "keep": true,
+       "item": {
+        "kind": "ore",
+        "size": 1,
+        "task": "trial-smith",
+        "zone": "forge",
+        "held": null,
+        "set": true,
+        "fixed": true
+       },
+       "position": {
+        "x": 18812.5,
+        "y": 7,
+        "z": 12573.199999999999,
+        "facing": 0
+       },
+       "look": "ore-hot"
+      },
+      {
+       "id": "ore:smith:2",
+       "keep": true,
+       "item": {
+        "kind": "ore",
+        "size": 1,
+        "task": "trial-smith",
+        "zone": "forge",
+        "held": null,
+        "set": true,
+        "fixed": true
+       },
+       "position": {
+        "x": 18813.3,
+        "y": 7,
+        "z": 12573.199999999999,
+        "facing": 0
+       },
+       "look": "ore-hot"
+      }
+     ]
+    },
+    "588,393": {
+     "entities": [
+      {
+       "id": "zone:trough",
+       "keep": true,
+       "zone": {
+        "id": "trough",
+        "task": "trial-smith",
+        "rule": "trough",
+        "accepts": "bucket",
+        "items": [],
+        "full": true,
+        "x": 18820.4,
+        "y": 6,
+        "z": 12581.6,
+        "rect": {
+         "x0": 18819.4,
+         "x1": 18824.4,
+         "z0": 12580.6,
+         "z1": 12584.6
+        },
+        "stand": {
+         "x": 18821.9,
+         "z": 12583.6
+        }
+       },
+       "position": {
+        "x": 18821.9,
+        "y": 6,
+        "z": 12582.6,
+        "facing": 0
+       }
+      },
+      {
+       "id": "trough:smith",
+       "keep": true,
+       "position": {
+        "x": 18820.4,
+        "y": 6,
+        "z": 12581.6,
+        "facing": 0
+       },
+       "look": "trough-full",
+       "solid": {
+        "rect": {
+         "x0": 18820.2,
+         "x1": 18823.800000000003,
+         "z0": 12581.6,
+         "z1": 12583.6
+        }
+       }
+      },
+      {
+       "id": "iron:smith-demo",
+       "keep": true,
+       "item": {
+        "kind": "iron",
+        "size": 2,
+        "task": "trial-smith",
+        "zone": null,
+        "held": null,
+        "set": true,
+        "fixed": true
+       },
+       "position": {
+        "x": 18820,
+        "y": 6,
+        "z": 12578.6,
+        "facing": 1.5707963267948966
+       },
+       "look": "blade"
+      },
+      {
+       "id": "iron:smith",
+       "keep": true,
+       "item": {
+        "kind": "iron",
+        "size": 2,
+        "task": "trial-smith",
+        "zone": null,
+        "held": null,
+        "set": true,
+        "fixed": true
+       },
+       "position": {
+        "x": 18822.4,
+        "y": 7,
+        "z": 12578,
+        "facing": 1.5707963267948966
+       },
+       "look": "blade",
+       "solid": {
+        "rect": {
+         "x0": 18821.600000000002,
+         "x1": 18823.2,
+         "z0": 12577.2,
+         "z1": 12578.8
+        }
+       },
+       "glow": 0.65
+      }
+     ]
+    },
+    "586,394": {
+     "entities": [
+      {
+       "id": "zone:trial-fisher",
+       "keep": true,
+       "zone": {
+        "id": "trial-fisher",
+        "rule": "trial",
+        "trial": "fisher",
+        "task": "stakes",
+        "level": 1,
+        "commits": 5,
+        "fails": 5,
+        "resets": 1,
+        "done": false,
+        "made": 7,
+        "tide": {
+         "t": 67.36666666666541,
+         "every": 80,
+         "phase": "low",
+         "started": true,
+         "still": 74.43333333333167,
+         "last": "0,1,3,8,9,10,13,14,15",
+         "result": null
+        },
+        "emptyT": 0,
+        "hole": {
+         "from": 3,
+         "size": 5
+        }
+       },
+       "position": {
+        "x": 18758,
+        "y": 4,
+        "z": 12620.8,
+        "facing": 0
+       }
+      },
+      {
+       "id": "lamp:fisher",
+       "keep": true,
+       "position": {
+        "x": 18755.5,
+        "y": 4,
+        "z": 12618.3,
+        "facing": 0
+       },
+       "look": "work-torch"
+      },
+      {
+       "id": "zone:stakes",
+       "keep": true,
+       "zone": {
+        "id": "stakes",
+        "task": "trial-fisher",
+        "rule": "heap",
+        "accepts": "stake",
+        "items": [],
+        "x": 18758,
+        "y": 4,
+        "z": 12620.8,
+        "cols": 4,
+        "step": 1
+       },
+       "position": {
+        "x": 18759,
+        "y": 4,
+        "z": 12621.8,
+        "facing": 0
+       },
+       "solid": {
+        "rect": {
+         "x0": 18757.75,
+         "x1": 18761.25,
+         "z0": 12620.55,
+         "z1": 12622.05
+        }
+       }
+      },
+      {
+       "id": "stake:fisher:0",
+       "keep": true,
+       "item": {
+        "kind": "stake",
+        "size": 1,
+        "task": "trial-fisher",
+        "zone": "line",
+        "home": "stakes",
+        "held": null,
+        "set": false,
+        "since": 8065,
+        "slot": 15
+       },
+       "position": {
+        "x": 18777,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "stake",
+       "hidden": false
+      },
+      {
+       "id": "stake:fisher:1",
+       "keep": true,
+       "item": {
+        "kind": "stake",
+        "size": 1,
+        "task": "trial-fisher",
+        "zone": "line",
+        "home": "stakes",
+        "held": null,
+        "set": false,
+        "since": 10259,
+        "slot": 8
+       },
+       "position": {
+        "x": 18770,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "stake",
+       "hidden": false
+      },
+      {
+       "id": "stake:fisher:2",
+       "keep": true,
+       "item": {
+        "kind": "stake",
+        "size": 1,
+        "task": "trial-fisher",
+        "zone": "line",
+        "home": "stakes",
+        "held": null,
+        "set": false,
+        "since": 9817,
+        "slot": 1
+       },
+       "position": {
+        "x": 18763,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "stake",
+       "hidden": false
+      },
+      {
+       "id": "stake:fisher:3",
+       "keep": true,
+       "item": {
+        "kind": "stake",
+        "size": 1,
+        "task": "trial-fisher",
+        "zone": "line",
+        "home": "stakes",
+        "held": null,
+        "set": false,
+        "since": 8812,
+        "slot": 10
+       },
+       "position": {
+        "x": 18772,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "stake",
+       "hidden": false
+      },
+      {
+       "id": "stake:fisher:4",
+       "keep": true,
+       "item": {
+        "kind": "stake",
+        "size": 1,
+        "task": "trial-fisher",
+        "zone": "line",
+        "home": "stakes",
+        "held": null,
+        "set": false,
+        "since": 250,
+        "slot": 14
+       },
+       "position": {
+        "x": 18776,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "stake",
+       "hidden": false
+      },
+      {
+       "id": "stake:fisher:5",
+       "keep": true,
+       "item": {
+        "kind": "stake",
+        "size": 1,
+        "task": "trial-fisher",
+        "zone": "line",
+        "home": "stakes",
+        "held": null,
+        "set": false,
+        "since": 7469,
+        "slot": 9
+       },
+       "position": {
+        "x": 18771,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "stake",
+       "hidden": false
+      },
+      {
+       "id": "stake:fisher:6",
+       "keep": true,
+       "item": {
+        "kind": "stake",
+        "size": 1,
+        "task": "trial-fisher",
+        "zone": "line",
+        "home": "stakes",
+        "held": null,
+        "set": false,
+        "since": 7704,
+        "slot": 13
+       },
+       "position": {
+        "x": 18775,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "stake",
+       "hidden": false
+      },
+      {
+       "id": "zone:line",
+       "keep": true,
+       "zone": {
+        "id": "line",
+        "task": "trial-fisher",
+        "rule": "line",
+        "accepts": "stake",
+        "items": [
+         "stake:fisher:5",
+         "stake:fisher:6",
+         "stake:fisher:0",
+         "stake:fisher:3",
+         "stake:fisher:2",
+         "stake:fisher:1",
+         "stake:fisher:4"
+        ],
+        "x": 18762,
+        "y": 2,
+        "z": 12625,
+        "length": 15,
+        "space": 3,
+        "rect": {
+         "x0": 18761,
+         "x1": 18778,
+         "z0": 12623,
+         "z1": 12627
+        },
+        "stand": {
+         "x": 18769.5,
+         "z": 12622
+        }
+       },
+       "position": {
+        "x": 18769.5,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       }
+      },
+      {
+       "id": "stake:fisher:a",
+       "keep": true,
+       "item": {
+        "kind": "stake",
+        "size": 1,
+        "task": "trial-fisher",
+        "zone": "line",
+        "held": null,
+        "set": true,
+        "slot": 0
+       },
+       "position": {
+        "x": 18762,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "stake-set"
+      },
+      {
+       "id": "stake:fisher:b",
+       "keep": true,
+       "item": {
+        "kind": "stake",
+        "size": 1,
+        "task": "trial-fisher",
+        "zone": "line",
+        "held": null,
+        "set": true,
+        "slot": 3
+       },
+       "position": {
+        "x": 18765,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "stake-set"
+      },
+      {
+       "id": "mark:fisher:end",
+       "keep": true,
+       "position": {
+        "x": 18777,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "end-mark"
+      },
+      {
+       "id": "tide:fisher",
+       "keep": true,
+       "position": {
+        "x": 18762,
+        "y": 2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "tide-0",
+       "tide": {
+        "length": 15
+       }
+      },
+      {
+       "id": "why:fisher:space",
+       "keep": true,
+       "position": {
+        "x": 18765,
+        "y": 3.3,
+        "z": 12625,
+        "facing": 1.5707963267948966
+       },
+       "look": "gap-frame-5"
+      }
+     ]
+    },
+    "588,390": {
+     "entities": [
+      {
+       "id": "zone:trial-woodcutter",
+       "keep": true,
+       "zone": {
+        "id": "trial-woodcutter",
+        "rule": "trial",
+        "trial": "woodcutter",
+        "task": "cut",
+        "level": 1,
+        "commits": 4,
+        "fails": 3,
+        "resets": 0,
+        "done": true,
+        "made": 0,
+        "stem": {
+         "x": 18820.4,
+         "y": 6,
+         "z": 12506.4,
+         "length": 12
+        },
+        "marks": [],
+        "sticks": 3,
+        "short": null
+       },
+       "position": {
+        "x": 18820.4,
+        "y": 6,
+        "z": 12506.4,
+        "facing": 0
+       }
+      },
+      {
+       "id": "lamp:woodcutter",
+       "keep": true,
+       "position": {
+        "x": 18817.9,
+        "y": 6,
+        "z": 12503.9,
+        "facing": 0
+       },
+       "look": "work-lamp"
+      },
+      {
+       "id": "zone:woodpile",
+       "keep": true,
+       "zone": {
+        "id": "woodpile",
+        "task": "trial-woodcutter",
+        "rule": "woodpile",
+        "accepts": "sticks",
+        "items": [
+         "sticks:woodcutter"
+        ],
+        "x": 18824.4,
+        "y": 6,
+        "z": 12501.6,
+        "rect": {
+         "x0": 18823.4,
+         "x1": 18828.4,
+         "z0": 12500.6,
+         "z1": 12504.6
+        },
+        "stand": {
+         "x": 18825.4,
+         "z": 12503.6
+        }
+       },
+       "position": {
+        "x": 18825.9,
+        "y": 6,
+        "z": 12502.6,
+        "facing": 0
+       }
+      },
+      {
+       "id": "pile:woodcutter",
+       "keep": true,
+       "position": {
+        "x": 18824.4,
+        "y": 6,
+        "z": 12501.6,
+        "facing": 0
+       },
+       "look": "woodpile"
+      },
+      {
+       "id": "sticks:woodcutter",
+       "keep": true,
+       "item": {
+        "kind": "sticks",
+        "size": 2,
+        "task": "trial-woodcutter",
+        "zone": "woodpile",
+        "home": null,
+        "held": null,
+        "set": true,
+        "since": 8266
+       },
+       "position": {
+        "x": 18824.9,
+        "y": 6,
+        "z": 12502.1,
+        "facing": 1.5707963267948966
+       },
+       "look": "sticks-3",
+       "hidden": false
+      }
+     ]
+    },
+    "586,393": {
+     "entities": [
+      {
+       "id": "zone:trial-healer",
+       "keep": true,
+       "zone": {
+        "id": "trial-healer",
+        "rule": "trial",
+        "trial": "healer",
+        "task": "basket",
+        "level": 1,
+        "commits": 2,
+        "fails": 1,
+        "resets": 0,
+        "done": true,
+        "made": 21
+       },
+       "position": {
+        "x": 18766.8,
+        "y": 6,
+        "z": 12577.6,
+        "facing": 0
+       }
+      },
+      {
+       "id": "zone:bed-ngai",
+       "keep": true,
+       "zone": {
+        "id": "bed-ngai",
+        "task": "trial-healer",
+        "rule": "heap",
+        "accepts": "herb-ngai",
+        "items": [
+         "herb-ngai:healer:1",
+         "herb-ngai:healer:2",
+         "herb-ngai:healer:3"
+        ],
+        "x": 18766.8,
+        "y": 6,
+        "z": 12577.6,
+        "cols": 4,
+        "step": 1
+       },
+       "position": {
+        "x": 18767.8,
+        "y": 6,
+        "z": 12578.6,
+        "facing": 0
+       },
+       "solid": {
+        "rect": {
+         "x0": 18766.55,
+         "x1": 18770.05,
+         "z0": 12577.35,
+         "z1": 12578.85
+        }
+       }
+      },
+      {
+       "id": "herb-ngai:healer:1",
+       "keep": true,
+       "item": {
+        "kind": "herb-ngai",
+        "size": 1,
+        "task": "trial-healer",
+        "zone": "bed-ngai",
+        "home": "bed-ngai",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18766.8,
+        "y": 6,
+        "z": 12577.6,
+        "facing": 0
+       },
+       "look": "herb-ngai"
+      },
+      {
+       "id": "herb-ngai:healer:2",
+       "keep": true,
+       "item": {
+        "kind": "herb-ngai",
+        "size": 1,
+        "task": "trial-healer",
+        "zone": "bed-ngai",
+        "home": "bed-ngai",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18767.8,
+        "y": 6,
+        "z": 12577.6,
+        "facing": 0
+       },
+       "look": "herb-ngai"
+      },
+      {
+       "id": "herb-ngai:healer:3",
+       "keep": true,
+       "item": {
+        "kind": "herb-ngai",
+        "size": 1,
+        "task": "trial-healer",
+        "zone": "bed-ngai",
+        "home": "bed-ngai",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18768.8,
+        "y": 6,
+        "z": 12577.6,
+        "facing": 0
+       },
+       "look": "herb-ngai"
+      },
+      {
+       "id": "sign:healer:bed-ngai",
+       "keep": true,
+       "position": {
+        "x": 18765.8,
+        "y": 6,
+        "z": 12576.6,
+        "facing": 0
+       },
+       "look": "herb-sign-ngai"
+      },
+      {
+       "id": "zone:bed-tiato",
+       "keep": true,
+       "zone": {
+        "id": "bed-tiato",
+        "task": "trial-healer",
+        "rule": "heap",
+        "accepts": "herb-tiato",
+        "items": [
+         "herb-tiato:healer:8",
+         "herb-tiato:healer:9",
+         "herb-tiato:healer:10"
+        ],
+        "x": 18772.8,
+        "y": 6,
+        "z": 12577.6,
+        "cols": 4,
+        "step": 1
+       },
+       "position": {
+        "x": 18773.8,
+        "y": 6,
+        "z": 12578.6,
+        "facing": 0
+       },
+       "solid": {
+        "rect": {
+         "x0": 18772.55,
+         "x1": 18776.05,
+         "z0": 12577.35,
+         "z1": 12578.85
+        }
+       }
+      },
+      {
+       "id": "herb-tiato:healer:8",
+       "keep": true,
+       "item": {
+        "kind": "herb-tiato",
+        "size": 1,
+        "task": "trial-healer",
+        "zone": "bed-tiato",
+        "home": "bed-tiato",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18772.8,
+        "y": 6,
+        "z": 12577.6,
+        "facing": 0
+       },
+       "look": "herb-tiato"
+      },
+      {
+       "id": "herb-tiato:healer:9",
+       "keep": true,
+       "item": {
+        "kind": "herb-tiato",
+        "size": 1,
+        "task": "trial-healer",
+        "zone": "bed-tiato",
+        "home": "bed-tiato",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18773.8,
+        "y": 6,
+        "z": 12577.6,
+        "facing": 0
+       },
+       "look": "herb-tiato"
+      },
+      {
+       "id": "herb-tiato:healer:10",
+       "keep": true,
+       "item": {
+        "kind": "herb-tiato",
+        "size": 1,
+        "task": "trial-healer",
+        "zone": "bed-tiato",
+        "home": "bed-tiato",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18774.8,
+        "y": 6,
+        "z": 12577.6,
+        "facing": 0
+       },
+       "look": "herb-tiato"
+      },
+      {
+       "id": "sign:healer:bed-tiato",
+       "keep": true,
+       "position": {
+        "x": 18771.8,
+        "y": 6,
+        "z": 12576.6,
+        "facing": 0
+       },
+       "look": "herb-sign-tiato"
+      },
+      {
+       "id": "zone:bed-rauma",
+       "keep": true,
+       "zone": {
+        "id": "bed-rauma",
+        "task": "trial-healer",
+        "rule": "heap",
+        "accepts": "herb-rauma",
+        "items": [
+         "herb-rauma:healer:16",
+         "herb-rauma:healer:18",
+         "herb-rauma:healer:15"
+        ],
+        "x": 18778.8,
+        "y": 6,
+        "z": 12577.6,
+        "cols": 4,
+        "step": 1
+       },
+       "position": {
+        "x": 18779.8,
+        "y": 6,
+        "z": 12578.6,
+        "facing": 0
+       },
+       "solid": {
+        "rect": {
+         "x0": 18778.55,
+         "x1": 18782.05,
+         "z0": 12577.35,
+         "z1": 12578.85
+        }
+       }
+      },
+      {
+       "id": "herb-rauma:healer:15",
+       "keep": true,
+       "item": {
+        "kind": "herb-rauma",
+        "size": 1,
+        "task": "trial-healer",
+        "zone": "bed-rauma",
+        "home": "bed-rauma",
+        "held": null,
+        "set": false,
+        "since": 11496
+       },
+       "position": {
+        "x": 18780.8,
+        "y": 6,
+        "z": 12577.6,
+        "facing": 0
+       },
+       "look": "herb-rauma",
+       "hidden": false
+      },
+      {
+       "id": "herb-rauma:healer:16",
+       "keep": true,
+       "item": {
+        "kind": "herb-rauma",
+        "size": 1,
+        "task": "trial-healer",
+        "zone": "bed-rauma",
+        "home": "bed-rauma",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18778.8,
+        "y": 6,
+        "z": 12577.6,
+        "facing": 0
+       },
+       "look": "herb-rauma"
+      },
+      {
+       "id": "herb-rauma:healer:18",
+       "keep": true,
+       "item": {
+        "kind": "herb-rauma",
+        "size": 1,
+        "task": "trial-healer",
+        "zone": "bed-rauma",
+        "home": "bed-rauma",
+        "held": null,
+        "set": false
+       },
+       "position": {
+        "x": 18779.8,
+        "y": 6,
+        "z": 12577.6,
+        "facing": 0
+       },
+       "look": "herb-rauma"
+      },
+      {
+       "id": "sign:healer:bed-rauma",
+       "keep": true,
+       "position": {
+        "x": 18777.8,
+        "y": 6,
+        "z": 12576.6,
+        "facing": 0
+       },
+       "look": "herb-sign-rauma"
+      },
+      {
+       "id": "zone:basket",
+       "keep": true,
+       "zone": {
+        "id": "basket",
+        "task": "trial-healer",
+        "rule": "basket",
+        "accepts": [
+         "herb-ngai",
+         "herb-tiato",
+         "herb-rauma"
+        ],
+        "kinds": [
+         "ngai",
+         "tiato",
+         "rauma"
+        ],
+        "each": 4,
+        "items": [],
+        "x": 18772.8,
+        "y": 6,
+        "z": 12582.4,
+        "rect": {
+         "x0": 18771.8,
+         "x1": 18778.6,
+         "z0": 12581.4,
+         "z1": 12585
+        },
+        "stand": {
+         "x": 18775.2,
+         "z": 12580.9
+        }
+       },
+       "position": {
+        "x": 18775.199999999997,
+        "y": 6,
+        "z": 12583.2,
+        "facing": 0
+       }
+      },
+      {
+       "id": "basket:healer",
+       "keep": true,
+       "position": {
+        "x": 18772.8,
+        "y": 6,
+        "z": 12582.4,
+        "facing": 0
+       },
+       "look": "basket-full"
+      },
+      {
+       "id": "sign:healer:basket-ngai",
+       "keep": true,
+       "position": {
+        "x": 18773.6,
+        "y": 6,
+        "z": 12582.3,
+        "facing": 0
+       },
+       "look": "herb-tag-ngai"
+      },
+      {
+       "id": "sign:healer:basket-tiato",
+       "keep": true,
+       "position": {
+        "x": 18775.2,
+        "y": 6,
+        "z": 12582.3,
+        "facing": 0
+       },
+       "look": "herb-tag-tiato"
+      },
+      {
+       "id": "sign:healer:basket-rauma",
+       "keep": true,
+       "position": {
+        "x": 18776.8,
+        "y": 6,
+        "z": 12582.3,
+        "facing": 0
+       },
+       "look": "herb-tag-rauma"
+      }
+     ]
+    },
+    "585,394": {
+     "entities": [
+      {
+       "keep": true,
+       "id": "pz:traveler",
+       "person": {
+        "kind": "puzzle",
+        "ref": "ferry"
+       },
+       "position": {
+        "x": 18745,
+        "y": 4,
+        "z": 12620,
+        "facing": 3.141592653589793
+       },
+       "motion": {
+        "vx": 0,
+        "vz": 0,
+        "speed": 0
+       },
+       "solid": {
+        "r": 1.8
+       },
+       "look": "traveler"
+      },
+      {
+       "keep": true,
+       "id": "pz:mark:ferry",
+       "position": {
+        "x": 18745,
+        "y": 8.2,
+        "z": 12620,
+        "facing": 0
+       },
+       "look": "mark-side"
+      },
+      {
+       "keep": true,
+       "id": "ferry:pz",
+       "ferry": {
+        "a": {
+         "x": 18739,
+         "z": 12625
+        },
+        "b": {
+         "x": 18739,
+         "z": 12641
+        },
+        "landA": {
+         "x": 18739,
+         "y": 4,
+         "z": 12621.2
+        },
+        "landB": {
+         "x": 18739,
+         "y": 4,
+         "z": 12645.2
+        },
+        "side": "a",
+        "state": "wait",
+        "riders": [],
+        "from": [],
+        "t": 0,
+        "man": null
+       },
+       "position": {
+        "x": 18739,
+        "y": 3.2,
+        "z": 12625,
+        "facing": 0
+       },
+       "look": "skiff-mid"
+      },
+      {
+       "keep": true,
+       "id": "pz:dog",
+       "item": {
+        "kind": "pz",
+        "size": 1,
+        "task": null,
+        "zone": null,
+        "held": null,
+        "set": true,
+        "fixed": true
+       },
+       "position": {
+        "x": 18732,
+        "y": 4,
+        "z": 12618.8,
+        "facing": 0
+       },
+       "look": "dog"
+      },
+      {
+       "keep": true,
+       "id": "pz:chicken",
+       "item": {
+        "kind": "pz",
+        "size": 1,
+        "task": null,
+        "zone": null,
+        "held": null,
+        "set": true,
+        "fixed": true
+       },
+       "position": {
+        "x": 18735,
+        "y": 4,
+        "z": 12618,
+        "facing": 0
+       },
+       "look": "chicken"
+      },
+      {
+       "keep": true,
+       "id": "pz:rice",
+       "item": {
+        "kind": "pz",
+        "size": 1,
+        "task": null,
+        "zone": null,
+        "held": null,
+        "set": true,
+        "fixed": true
+       },
+       "position": {
+        "x": 18738,
+        "y": 4,
+        "z": 12618.8,
+        "facing": 0
+       },
+       "look": "sack"
+      }
+     ]
+    }
+   }
+  }
+ },
+ "learning": {
+  "skills": {
+   "math.place.1000": {
+    "p": 0.6052729857871149,
+    "r": 1221.090995643521,
+    "n": 3,
+    "c": 2,
+    "streak": 2,
+    "box": 0,
+    "due": 0,
+    "last": 1792288411314,
+    "top": 0,
+    "recent": "011",
+    "mastered": false
+   },
+   "sci.matter.states": {
+    "p": 0.5435294117647058,
+    "r": 1257.4828753742893,
+    "n": 1,
+    "c": 1,
+    "streak": 1,
+    "box": 0,
+    "due": 0,
+    "last": 1792288955927,
+    "top": 0,
+    "recent": "1",
+    "mastered": false
+   },
+   "math.add.20": {
+    "p": 0.06408633201496285,
+    "r": 1015.7526356307892,
+    "n": 11,
+    "c": 2,
+    "streak": 0,
+    "box": 0,
+    "due": 0,
+    "last": 1792418254739,
+    "top": 0,
+    "recent": "0000001010",
+    "mastered": false
+   }
+  },
+  "items": {
+   "math.place.1000#1": 1003.5454383168399,
+   "sci.matter.states#2": 1066.7219608673208,
+   "math.add.20#2": 1119.7912221729234,
+   "math.add.20#1": 994.51550364338
+  },
+  "exams": [],
+  "recent": []
+ },
+ "settings": {
+  "lang": "vi",
+  "timeLimit": 0,
+  "sound": true,
+  "music": true,
+  "voice": true,
+  "loss": "auto",
+  "questions": [],
+  "langSwitch": true,
+  "otherLine": true,
+  "view": "grade"
+ },
+ "time": {
+  "day": "2026-10-19",
+  "usedMs": 106509.33333332921,
+  "extraMs": 0
+ },
+ "seenGloss": [],
+ "stats": {
+  "battlesWon": 0,
+  "battlesLost": 0,
+  "mistakes": 0,
+  "correct": 0
+ },
+ "seed": 1284089155,
+ "log": {
+  "v": 1,
+  "tz": 300,
+  "first": 20743,
+  "day": 20745,
+  "events": [
+   {
+    "type": "session",
+    "t": 1792418911217,
+    "variant": "base",
+    "start": 1792417884287,
+    "end": 1792418911217,
+    "endedBy": "device",
+    "quests": 0,
+    "place": null,
+    "afterQuest": false,
+    "first": "talk",
+    "practice": null
+   },
+   {
+    "type": "ask",
+    "t": 1792418072508,
+    "variant": "base",
+    "task": "trial-fisher",
+    "when": "before",
+    "move": "tryFirst"
+   },
+   {
+    "type": "check",
+    "t": 1792418254736,
+    "variant": "base",
+    "task": "trial-fisher",
+    "changed": true
+   },
+   {
+    "type": "attempt",
+    "t": 1792418254739,
+    "variant": "base",
+    "play": 227.9,
+    "off": 0,
+    "task": "trial-fisher",
+    "skill": "math.add.20",
+    "phase": "commit",
+    "success": false,
+    "efficient": false,
+    "first": false,
+    "mashing": false,
+    "parts": [
+     1,
+     2,
+     5,
+     1,
+     1,
+     3,
+     1,
+     1
+    ],
+    "resets": 1,
+    "latencies": [],
+    "hint": 0,
+    "hintSeen": null,
+    "pBefore": 0.225624425364931,
+    "pAfter": 0.06408633201496285,
+    "retry": false,
+    "harder": false,
+    "map": "giong"
+   },
+   {
+    "type": "ask",
+    "t": 1792418365804,
+    "variant": "base",
+    "task": "trial-fisher",
+    "when": "after",
+    "move": "mark"
+   },
+   {
+    "type": "ask",
+    "t": 1792418503898,
+    "variant": "base",
+    "task": "trial-fisher",
+    "when": "after",
+    "move": "mark"
+   },
+   {
+    "type": "ask",
+    "t": 1792418652954,
+    "variant": "base",
+    "task": "trial-fisher",
+    "when": "after",
+    "move": "mark"
+   },
+   {
+    "type": "ask",
+    "t": 1792418691677,
+    "variant": "base",
+    "task": "trial-fisher",
+    "when": "after",
+    "move": "mark"
+   }
+  ],
+  "rollups": {
+   "base": {
+    "days": 1,
+    "skills": {
+     "math.place.1000": {
+      "commits": 3,
+      "successes": 2,
+      "efficient": 0,
+      "firsts": 1,
+      "firstSuccesses": 0,
+      "mashing": 0,
+      "afterMash": [
+       0,
+       0
+      ],
+      "hints": {
+       "0": [
+        3,
+        2
+       ]
+      },
+      "hintsShort": 0,
+      "explore": 0,
+      "recent": [
+       0,
+       1,
+       1
+      ],
+      "curve": [
+       [
+        0,
+        3,
+        2
+       ]
+      ],
+      "masteredAt": null,
+      "retries": 0,
+      "harder": 0,
+      "lastMash": false,
+      "firstOk": 0
+     },
+     "sci.matter.states": {
+      "commits": 1,
+      "successes": 1,
+      "efficient": 1,
+      "firsts": 1,
+      "firstSuccesses": 1,
+      "mashing": 0,
+      "afterMash": [
+       0,
+       0
+      ],
+      "hints": {
+       "0": [
+        1,
+        1
+       ]
+      },
+      "hintsShort": 0,
+      "explore": 0,
+      "recent": [
+       1
+      ],
+      "curve": [
+       [
+        0,
+        1,
+        1
+       ]
+      ],
+      "masteredAt": null,
+      "retries": 0,
+      "harder": 0,
+      "lastMash": false,
+      "firstOk": 1
+     },
+     "math.add.20": {
+      "commits": 10,
+      "successes": 2,
+      "efficient": 0,
+      "firsts": 3,
+      "firstSuccesses": 0,
+      "mashing": 0,
+      "afterMash": [
+       0,
+       0
+      ],
+      "hints": {
+       "0": [
+        10,
+        2
+       ]
+      },
+      "hintsShort": 0,
+      "explore": 0,
+      "recent": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       1,
+       0,
+       1
+      ],
+      "curve": [
+       [
+        0,
+        10,
+        2
+       ]
+      ],
+      "masteredAt": null,
+      "retries": 0,
+      "harder": 0,
+      "lastMash": false,
+      "firstOk": 0
+     }
+    },
+    "reviews": {
+     "7": [
+      0,
+      0
+     ],
+     "14": [
+      0,
+      0
+     ],
+     "30": [
+      0,
+      0
+     ]
+    },
+    "exams": {
+     "n": 0,
+     "sp": 0,
+     "sc": 0,
+     "spc": 0,
+     "spp": 0,
+     "scc": 0
+    },
+    "predictions": {
+     "n": 0,
+     "skipped": 0,
+     "err": 0,
+     "curve": []
+    },
+    "sessions": {
+     "n": 2,
+     "ms": 13306300,
+     "endedBy": {
+      "device": 2,
+      "parent": 0,
+      "child": 0
+     },
+     "weeks": {
+      "0": 2
+     },
+     "afterQuest": 1,
+     "stops": {},
+     "first": {
+      "walk": 1,
+      "talk": 1
+     },
+     "lengths": [
+      0,
+      0,
+      0,
+      0,
+      2
+     ]
+    },
+    "helps": {
+     "missing": {
+      "fix": [
+       1,
+       1,
+       0
+      ]
+     },
+     "ok": {
+      "wait": [
+       1,
+       1,
+       0
+      ]
+     },
+     "miss": {
+      "wait": [
+       2,
+       0,
+       0
+      ]
+     },
+     "stuck": {
+      "mark": [
+       4,
+       1,
+       0
+      ]
+     },
+     "slip": {
+      "fix": [
+       1,
+       1,
+       0
+      ]
+     }
+    },
+    "checks": [
+     0,
+     0
+    ],
+    "asks": {
+     "before": 3,
+     "after": 2
+    },
+    "weeks": {
+     "2963": {
+      "sessions": 2,
+      "self": 2,
+      "sent": 0,
+      "minutes": 221.77166666666665,
+      "hops": 0,
+      "day": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       221.77166666666665,
+       0
+      ],
+      "acts": {
+       "bo-que": {
+        "commits": 3,
+        "ok": 2,
+        "near": 1,
+        "far": 0,
+        "fast": 0,
+        "idle": 2,
+        "resets": 0,
+        "missRuns": 0,
+        "pairs": 0,
+        "asks": 0,
+        "stopRun": 0,
+        "again": 0,
+        "changed": 1,
+        "left": 0,
+        "sessions": 1,
+        "self": 1,
+        "sent": 0,
+        "first": 1,
+        "stops": 0,
+        "sets": 0,
+        "stay": 0,
+        "won": 0,
+        "lost": 0,
+        "minutes": 9.010950000000001
+       },
+       "ren-sat": {
+        "commits": 1,
+        "ok": 1,
+        "near": 0,
+        "far": 0,
+        "fast": 0,
+        "idle": 0,
+        "resets": 0,
+        "missRuns": 0,
+        "pairs": 0,
+        "asks": 0,
+        "stopRun": 0,
+        "again": 0,
+        "changed": 0,
+        "left": 0,
+        "sessions": 1,
+        "self": 1,
+        "sent": 0,
+        "first": 0,
+        "stops": 0,
+        "sets": 0,
+        "stay": 0,
+        "won": 0,
+        "lost": 0,
+        "minutes": 0
+       },
+       "cam-coc": {
+        "commits": 4,
+        "ok": 0,
+        "near": 4,
+        "far": 0,
+        "fast": 0,
+        "idle": 3,
+        "resets": 0,
+        "missRuns": 1,
+        "pairs": 1,
+        "asks": 5,
+        "stopRun": 0,
+        "again": 0,
+        "changed": 3,
+        "left": 0,
+        "sessions": 1,
+        "self": 1,
+        "sent": 0,
+        "first": 0,
+        "stops": 0,
+        "sets": 0,
+        "stay": 0,
+        "won": 0,
+        "lost": 0,
+        "minutes": 13.789616666666667
+       },
+       "chat-tre": {
+        "commits": 4,
+        "ok": 1,
+        "near": 3,
+        "far": 0,
+        "fast": 0,
+        "idle": 3,
+        "resets": 0,
+        "missRuns": 1,
+        "pairs": 1,
+        "asks": 0,
+        "stopRun": 0,
+        "again": 0,
+        "changed": 3,
+        "left": 0,
+        "sessions": 1,
+        "self": 1,
+        "sent": 0,
+        "first": 1,
+        "stops": 0,
+        "sets": 0,
+        "stay": 0,
+        "won": 0,
+        "lost": 0,
+        "minutes": 15
+       },
+       "hai-thuoc": {
+        "commits": 2,
+        "ok": 1,
+        "near": 1,
+        "far": 0,
+        "fast": 0,
+        "idle": 1,
+        "resets": 0,
+        "missRuns": 0,
+        "pairs": 0,
+        "asks": 0,
+        "stopRun": 0,
+        "again": 0,
+        "changed": 1,
+        "left": 0,
+        "sessions": 1,
+        "self": 1,
+        "sent": 0,
+        "first": 0,
+        "stops": 0,
+        "sets": 0,
+        "stay": 0,
+        "won": 0,
+        "lost": 0,
+        "minutes": 2.6643666666666665
+       }
+      },
+      "l2l": {
+       "checks": 0,
+       "selfFix": 0,
+       "before": 3,
+       "after": 2,
+       "predN": 0,
+       "predErr": 0,
+       "helps": 9,
+       "marks": 4
+      },
+      "moves": {
+       "bo-que": {
+        "fix": [
+         1,
+         1
+        ],
+        "wait": [
+         1,
+         1
+        ]
+       },
+       "cam-coc": {
+        "wait": [
+         1,
+         0
+        ],
+        "mark": [
+         2,
+         0
+        ]
+       },
+       "chat-tre": {
+        "wait": [
+         1,
+         0
+        ],
+        "mark": [
+         2,
+         1
+        ]
+       },
+       "hai-thuoc": {
+        "fix": [
+         1,
+         1
+        ]
+       }
+      },
+      "recall": [
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      "quiz": [
+       0,
+       0
+      ],
+      "quizKnown": [
+       0,
+       0
+      ],
+      "lang": [
+       2,
+       0
+      ],
+      "taps": [
+       0,
+       0
+      ]
+     }
+    }
+   }
+  },
+  "playMs": 14333230
+ },
+ "hamlet": {
+  "acts": {},
+  "table": {
+   "eggs": 0,
+   "fish": 0,
+   "sheaves": 0,
+   "laying": null,
+   "feast": null
+  }
+ },
+ "notebook": {
+  "seen": {
+   "talk:grandma.intro": 420,
+   "creature:chicken": 420,
+   "map:phu-dong": 420,
+   "creature:dog": 432,
+   "talk:elder.intro": 438,
+   "talk:teacher.trial": 457,
+   "talk:teacher.trial.done": 457,
+   "talk:smith.trial": 478,
+   "talk:smith.trial.done": 478,
+   "creature:duck": 510,
+   "talk:fisher.trial": 547,
+   "creature:fish": 547,
+   "creature:kingfisher": 547,
+   "talk:woodcutter.trial": 684,
+   "talk:woodcutter.trial.done": 684,
+   "creature:owl": 690,
+   "talk:mother.worry": 732,
+   "talk:healer.trial": 752,
+   "talk:healer.trial.done": 767
+  },
+  "told": true,
+  "from": {
+   "sci.matter.states": "trial-smith",
+   "math.add.20": "trial-fisher"
+  }
+ },
+ "growth": {
+  "xp": 45,
+  "steps": 1
+ },
+ "mentors": {
+  "trial-scholar": {
+   "worked": {
+    "missing": {
+     "fix": 1
+    },
+    "ok": {
+     "wait": 1
+    }
+   },
+   "tried": {
+    "missing": {
+     "fix": 1
+    },
+    "ok": {
+     "wait": 1
+    }
+   },
+   "errors": {
+    "missing": 1
+   },
+   "selfFix": 0,
+   "lift": 0,
+   "visits": 1
+  },
+  "trial-smith": {
+   "worked": {},
+   "tried": {},
+   "errors": {},
+   "selfFix": 0,
+   "lift": 0,
+   "visits": 1
+  },
+  "trial-fisher": {
+   "worked": {},
+   "tried": {
+    "miss": {
+     "wait": 1
+    },
+    "stuck": {
+     "mark": 2
+    }
+   },
+   "errors": {
+    "miss": 2,
+    "stuck": 3
+   },
+   "selfFix": 1,
+   "lift": 0,
+   "visits": 3
+  },
+  "trial-woodcutter": {
+   "worked": {
+    "stuck": {
+     "mark": 1
+    }
+   },
+   "tried": {
+    "miss": {
+     "wait": 1
+    },
+    "stuck": {
+     "mark": 2
+    }
+   },
+   "errors": {
+    "miss": 1,
+    "stuck": 2
+   },
+   "selfFix": 0,
+   "lift": 0,
+   "visits": 1
+  },
+  "trial-healer": {
+   "worked": {
+    "slip": {
+     "fix": 1
+    }
+   },
+   "tried": {
+    "slip": {
+     "fix": 1
+    }
+   },
+   "errors": {
+    "slip": 1
+   },
+   "selfFix": 0,
+   "lift": 0,
+   "visits": 1
+  }
+ },
+ "riddles": {
+  "open": null,
+  "found": [],
+  "last": null,
+  "fit": null,
+  "tricks": {}
+ },
+ "puzzles": {
+  "ferry": {
+   "tries": 0,
+   "solved": null,
+   "days": []
+  }
+ }
+}

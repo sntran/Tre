@@ -14,7 +14,7 @@ Trong lần thử chơi vừa rồi, một người thử đóng vai em gái l�
 
 - **Mỗi nhiệm vụ có một mức cho mỗi lớp từ lớp 1 đến lớp 5.** Thầy đồ cần các bó bằng nhau từ 3 đến 9 que ở lớp 3, chia que đều cho các bàn và trả lại phần dư ở lớp 4, và phần mười, phần trăm với bó 10 que và bó lớn 100 que ở lớp 5. Bà lang cần các thang của một bài thuốc, rồi một giỏ làm theo giỏ mẫu, rồi một giỏ chia theo phân số. Hàng cọc của chú đánh cá thành một phép đo, rồi bài toán trồng cây, rồi một khe dài một sào rưỡi. Anh tiều phu cần một phần tư, rồi ba phần tư, rồi một phần ba và một phần tư của cùng một cây tre. Việc của bác thợ rèn đi từ màu của sắt nóng đến hơi nóng truyền vào nước, rồi đến một thí nghiệm công bằng.
 - **Mức đi theo trẻ.** Mức bắt đầu ở lớp mà cha mẹ chọn, rồi lên hoặc xuống một bậc theo điều trẻ làm được, nên một em lớp 3 giỏi có thể nhận nhiệm vụ của lớp 4.
-- **Trẻ lớn đếm theo nhóm, và lần thử đầu là của trẻ.** Từ lớp 3, mọi người đếm theo bó hoặc theo thang, không đếm từng cái, và chỉ làm mẫu một thao tác cho em chưa làm thao tác đó bao giờ.
+- **Trẻ lớn đếm theo nhóm, và lần thử đầu là của trẻ.** Từ lớp 3, mọi người đếm theo bó hoặc theo thang, không đếm từng cái, và chỉ làm mẫu một thao tác cho em chưa làm thao tác đó bao giờ. *(Đính chính ngày 19 tháng 10 năm 2026: trong game, chúng tôi cũng đã bỏ lần làm mẫu với mọi em từ lớp 3 trở lên, và điều đó sai. Em mới đến với Tre thì ở lớp nào cũng là người mới với các thao tác của nó: xem [Mới đến thì lớp nào cũng mới](2026-10-19-new-at-any-grade.vi.md).)*
 
 ## Giới hạn của điều chúng tôi biết
 

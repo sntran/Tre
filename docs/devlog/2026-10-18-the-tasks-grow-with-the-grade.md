@@ -14,7 +14,7 @@ In the last play test, a tester who played as a girl of grade 4 put ten counting
 
 - **Each task has a level for each grade from 1 to 5.** The teacher asks for equal bundles of 3 to 9 rods in grade 3, a share of rods among desks with a rest in grade 4, and tenths and hundredths with bundles of 10 and 100 in grade 5. The healer asks for doses of a recipe, then for a basket made from a model, then for fractions of a basket. The fisher's row becomes a measure, then the problem of the trees, then a gap of one pole and a half. The woodcutter asks for one fourth, then three fourths, then one third and one fourth of the same stem. The smith's task moves from the color of hot iron to the heat that goes into the water, and then to a fair test.
 - **The level follows the child.** It starts at the grade that the parent gives, and goes up or down one step with what the child shows, so a strong child of grade 3 can get the task of grade 4.
-- **Older children count by groups, and the first try is theirs.** From grade 3, the people count by bundles or doses, not one by one, and they show a gesture only to a child who has not done it yet.
+- **Older children count by groups, and the first try is theirs.** From grade 3, the people count by bundles or doses, not one by one, and they show a gesture only to a child who has not done it yet. *(Correction of 19 October 2026: in the game we also removed the demonstration for each child of grade 3 or more, and that was wrong. A child who is new to Tre is new to its gestures at any grade: see [New at any grade](2026-10-19-new-at-any-grade.md).)*
 
 ## The limit of what we know
 
