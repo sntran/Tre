@@ -1,7 +1,7 @@
 // The healer after the play test (#108): the model basket is a thing of its own, the first step of
 // the model deals it onto its leaves, no help puts bunches at a level with a structure, the check of
-// a wrong basket is by doses, a bunch in the hands goes back to its bed, and a press takes from the
-// bed of the last tap.
+// a wrong basket is by doses, a bunch in the hands goes back to its bed, a press takes from the
+// bed of the last tap, and a line that names a bed makes its sign glow.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
@@ -16,11 +16,13 @@ async function atHealer(grade) {
   let session = null;
   const said = [];
   const puts = [];
+  const names = [];
   const failures = await runHeadless({ ...s0, profile: { ...s0.profile, grade }, steps: [...s0.steps.slice(0, first), { until: { event: 'call', with: { key: 'mentor.first.you' }, timeout: 90 } }, { wait: 2 }] }, {
     onSession: (x) => {
       session = x;
       x.listen((e) => {
         if (e.type === 'open' && e.textKey) said.push(e.textKey);
+        if (e.type === 'names') names.push(...e.ids);
         if ((e.type === 'put' || e.type === 'add') && e.id !== 'hero') puts.push({ by: e.by ?? e.id, zone: e.zone, item: e.item });
       });
     },
@@ -37,7 +39,7 @@ async function atHealer(grade) {
   const zone = (id) => getEntity(session.state, `zone:${id}`)?.zone;
   const tapThing = (id) => { session.command({ type: 'tap', target: { thing: id } }); run(4); };
   const bedThing = (k) => zone(`bed-${k}`).items.find((id) => !getEntity(session.state, id)?.item.held);
-  return { session, said, puts, run, press, zone, tapThing, bedThing };
+  return { session, said, puts, names, run, press, zone, tapThing, bedThing };
 }
 
 test('the model basket stands away from the basket of the healer and the beds, and its first step deals it onto both leaves', async () => {
@@ -122,4 +124,9 @@ test('a press at once after a tap on another bed takes from that bed', async () 
   h.session.command({ type: 'hands', id: h.session.action()?.id });
   h.run(6);
   assert.ok(picks.length && picks.every((id) => id.startsWith('herb-ngai')), picks.join(', '));
+});
+
+test('a line of the talk that names a bed makes the sign of the bed glow', async () => {
+  const h = await atHealer(1);
+  for (const k of ['ngai', 'tiato', 'rauma']) assert.ok(h.names.includes(`sign:healer:bed-${k}`), h.names.join(', '));
 });

@@ -1085,9 +1085,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return [[r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1]].map(([x, z]) => ({ x, y: e.zone.y, z }));
     };
     const places = things.filter((e) => e.zone);
+    // The sign of a named place glows too (#108: "She says 'đây là', but I don't see WHICH plant").
+    const signs = places.flatMap((z) => query(state, 'position').filter((x) => x.id.startsWith('sign:') && x.id.endsWith(`:${z.zone.id}`)).map((x) => x.id));
     emit({
       type: 'names',
-      ids: named.filter((n) => !n.e.zone && n.act !== 'seq').map((n) => n.e.id),
+      ids: [...named.filter((n) => !n.e.zone && n.act !== 'seq').map((n) => n.e.id), ...signs],
       spots: places.map((e) => spotOf(e.zone)),
       bobs: named.filter((n) => n.act === 'bob').map((n) => n.e.id),
       // The things with the act "seq" glow one after another (#85: the rows of the guess).

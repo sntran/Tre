@@ -626,7 +626,9 @@ export function unitGlow() {
 const still = (parts, height, shadow = 0) => ({ kind: 'still', parts, scale: 1, height, shadow });
 // The tones of the herbs: [below, top]. Perilla (tía tô) is purple below and green on top: the
 // palette of the prints has no purple, so its leaves are indigo below (#61).
-const HERBS = { ngai: ['greenPale', 'ashLight'], tiato: ['indigo', 'green'], rauma: ['green', 'greenPale'] };
+// The tones of the herbs (#108): ngải cứu grey-green, tía tô purple (indigo leaves with a red top:
+// the palette has no purple), rau má bright green.
+const HERBS = { ngai: ['greenPale', 'ashLight'], tiato: ['indigo', 'vermilionPale'], rauma: ['green', 'yellowPale'] };
 // The iron of the smith (#70): cold (grey), warm (dark red-brown), and hot (bright red). No yellow.
 const IRON = ['ash', 'wood', 'vermilion'];
 // The colors of the iron in the fire from grade 3 (#102): [the bar, the glow].
@@ -1007,10 +1009,18 @@ export function workThing(look) {
       // A tag on the back wall of a part of the basket: the board only, on the top of the wall
       // (#61, #64: the basket stands on a stand).
       const y = look.tag ? BASKET_FLOOR + BASKET_WALL - 1 : 0;
-      const parts = look.tag ? [P('board', [1.1, 0.9, 0.12], 'paper', [0, 1.45 + y, 0])] : [P('post', [0.2, 1.2, 0.2], 'wood', [0, 0.6, 0]), P('board', [1.1, 0.9, 0.12], 'paper', [0, 1.45, 0])];
-      if (look.herb === 'ngai') parts.push(P('pic', [0.16, 0.7, 0.04], a, [0, 1.45 + y, 0.08]), P('picTip', [0.3, 0.2, 0.04], b, [0, 1.75 + y, 0.08]));
-      else if (look.herb === 'tiato') parts.push(P('pic', [0.8, 0.22, 0.04], a, [0, 1.3 + y, 0.08]), P('picTop', [0.55, 0.2, 0.04], b, [0, 1.52 + y, 0.08]));
-      else parts.push(P('picA', [0.25, 0.25, 0.04], a, [-0.25, 1.25 + y, 0.08]), P('picB', [0.25, 0.25, 0.04], b, [0.05, 1.3 + y, 0.08]), P('picC', [0.25, 0.25, 0.04], a, [0.3, 1.24 + y, 0.08]));
+      const parts = look.tag ? [P('board', [1.1, 0.9, 0.12], 'paper', [0, 1.45 + y, 0])] : [P('post', [0.2, 1.2, 0.2], 'wood', [0, 0.6, 0]), P('board', [1.1, 0.9, 0.12], 'paper', [0, 1.45, 0]), P('boardX', [0.12, 0.9, 1.1], 'paper', [0, 1.45, 0])];
+      // The picture of the leaf: on both faces of the board, and on the cross board of a sign at a
+      // bed, so that the picture faces the camera at each turn of the view (#108).
+      const faces = look.tag ? [[0, 0.08]] : [[0, 0.08], [0, -0.08], [0.08, 0], [-0.08, 0]];
+      faces.forEach(([fx, fz], i) => {
+        const across = fx !== 0;
+        const box = (w, h) => (across ? [0.04, h, w] : [w, h, 0.04]);
+        const at = (u, v) => (across ? [fx, v, u] : [u, v, fz]);
+        if (look.herb === 'ngai') parts.push(P(`pic${i}`, box(0.16, 0.7), a, at(0, 1.45 + y)), P(`picTip${i}`, box(0.3, 0.2), b, at(0, 1.75 + y)));
+        else if (look.herb === 'tiato') parts.push(P(`pic${i}`, box(0.8, 0.22), a, at(0, 1.3 + y)), P(`picTop${i}`, box(0.55, 0.2), b, at(0, 1.52 + y)));
+        else parts.push(P(`picA${i}`, box(0.25, 0.25), a, at(-0.25, 1.25 + y)), P(`picB${i}`, box(0.25, 0.25), b, at(0.05, 1.3 + y)), P(`picC${i}`, box(0.25, 0.25), a, at(0.3, 1.24 + y)));
+      });
       return still(parts, 1.9 + y);
     }
     // The basket of the healer, with three parts; full when the healer takes it.

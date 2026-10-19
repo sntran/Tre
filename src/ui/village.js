@@ -1180,6 +1180,9 @@ export async function mountVillage(ctx, params = {}) {
       const pts = live ? live.points.map(wu).filter(near).map((p) => ({ ...p, y: groundY(p.x, p.z), work: true })) : [];
       const who = live?.person ? figures.placeOf(live.person) : null;
       if (who && near(who)) pts.push({ ...who, work: true });
+      // The things that a talk names fade nothing in front of them too, also before the task opens
+      // (#108: a roof covered the beds and the basket during the first talk of the healer).
+      if (work?.talk) pts.push(...work.points.filter(near).map((p) => ({ ...p, y: groundY(p.x, p.z), work: true })));
       const out = [heroAt, ...(person ? [person] : []), ...pts];
       return out.length > 1 ? out : heroAt;
     }

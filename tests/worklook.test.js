@@ -149,12 +149,12 @@ test('the three herbs of the healer have shapes that differ, not only colors: ta
   assert.ok(tiato.wide > ngai.wide + 0.4 && tiato.wide > rauma.wide + 0.4, 'perilla is the wide one');
 });
 
-test('perilla is indigo below and green on top, and each bed has a sign with a picture of its herb and no word (#61)', async () => {
+test('perilla is indigo below and red on top (purple, #108), and each bed has a sign with a picture of its herb and no word (#61)', async () => {
   const tiato = figureOf({ kind: 'herb', herb: 'tiato' }, 'coarse').parts;
   const low = tiato.filter((p) => p.color !== 'greenDeep').reduce((a, b) => (b.at[1] < a.at[1] ? b : a));
   const high = tiato.reduce((a, b) => (b.at[1] > a.at[1] ? b : a));
   assert.equal(low.color, 'indigo', 'the leaves below');
-  assert.equal(high.color, 'green', 'the leaves on top');
+  assert.equal(high.color, 'vermilionPale', 'the leaves on top');
   const seen = [];
   const session = await practice('hai-thuoc', [{ until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } }, { read: true }]);
   for (const k of ['ngai', 'tiato', 'rauma']) {
