@@ -573,8 +573,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (move === 'picture' && def.pictureUnless && profile.flags?.[def.pictureUnless] && task) move = nextHelp();
     if (move === 'demo' && trk?.demoed) move = shares ? 'smaller' : 'mark';
     if ((move === 'smaller' || move === 'share') && !shares) move = 'mark';
-    // After a count, a wave gets the next step, never the same count again (#80, #79).
+    // After a count, a wave gets the next step, never the same count again (#80, #79). With a lost
+    // thing and a short place (the ducks), the next step is the lost thing: the person points at it,
+    // and never counts the place again or brings one herself (#113).
     if (info.counted && COUNTS.has(move)) move = 'show';
+    const brought = task ? itemsOf(task.place).filter((e) => !e.item.fixed).length : 0;
+    if (info.asked && (COUNTS.has(move) || move === 'share' || move === 'smaller') && task && lostThing(task) && brought && itemsOf(task.place).length < (task.tz?.zone.need ?? 0)) move = 'show';
     if (move === 'demo' && trk) trk.demoed = true;
     // The picture of another station waits until the child has seen the iron hot one time (#70: the
     // child who waited for red heard "go to the river" after two misses).
@@ -744,7 +748,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // The lost ducks: no heap (#96: "Lấy một cái ở đống kia …" sent a child to look for a pile).
       // The nearest lost duck glows, and then the pen.
       const duck = lostThing(task);
-      say(t, lineOf(key, 'show'));
+      // With ducks in the pen, the line points at the nearest lost duck of her flock, and the view
+      // shows it (#113: "Kia, một con vịt trắng của cô.").
+      const some = itemsOf(task.place).some((e) => !e.item.fixed) && defOf(key).lines?.lost;
+      say(t, some ? defOf(key).lines.lost : lineOf(key, 'show'));
+      if (some) steps.push({ at: t, view: { key: `${key}-lost`, points: [{ ...duck.position }, { ...getEntity(w, 'hero').position }] } });
       steps.push({ at: t, glow: { ids: [duck.id] } });
       point(t, duck.position, 1.4);
       mark(t, duck.position, 2.5);
@@ -1328,7 +1336,34 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (task.place?.zone.rule === 'span' && parts.length) return unitSteps(task, parts, s, t);
     s.say(t, lineOf(task.key, 'mark'));
     let total = 0;
-    if (fam.reader === 'sum' && parts.length) {
+    // The things of one unit each (the ducks), counted by groups from grade 3 and with the total at
+    // once from grade 4, as the people of the tasks count (#113: the farmer counted ten ducks one by
+    // one at grade 4). The total says what is still lacking.
+    const unitLines = defOf(task.key)?.lines ?? {};
+    const grade = profile?.grade ?? 1;
+    const units = fam.reader === 'sum' && parts.length > 1 && unitLines.total && parts.every((e) => (e.item.size ?? 1) === 1);
+    if (units && grade >= 4) {
+      parts.forEach((e) => s.mark(t + 1, e.position, 2.6));
+      s.say(t + 1, unitLines.total, { n: { key: `num.${Math.min(150, parts.length)}` } });
+      const need = task.tz?.zone.need ?? 0;
+      if (unitLines.lack && need > parts.length) s.say(t + 2.8, unitLines.lack, { n: { key: `num.${Math.min(150, need - parts.length)}` } });
+      t += 4.4;
+    } else if (units && grade >= 3) {
+      // By twos ("hai, bốn, sáu"), or by fives for more than twelve, and the rest one by one.
+      const g = parts.length > 12 ? 5 : 2;
+      let at = t + 1;
+      let n = 0;
+      while (n < parts.length) {
+        const k = parts.length - n >= g ? g : 1;
+        const group = parts.slice(n, n + k);
+        n += k;
+        group.forEach((e) => s.mark(at, e.position, COUNT_PACE + 0.3));
+        s.point(at, group.at(-1).position, COUNT_PACE);
+        if (n <= 150) s.say(at + 0.1, `num.${n}`);
+        at += COUNT_PACE;
+      }
+      t = at;
+    } else if (fam.reader === 'sum' && parts.length) {
       parts.forEach((e, i) => {
         total += e.item.size ?? 1;
         const at = t + 1 + i * COUNT_PACE;

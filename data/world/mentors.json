@@ -351,7 +351,10 @@
       "picture": "mentor.picture.duck",
       "lines": {
         "putDone": "mentor.duck.putDone",
-        "show": "mentor.duck.show"
+        "show": "mentor.duck.show",
+        "lost": "mentor.duck.lost",
+        "total": "mentor.duck.total",
+        "lack": "mentor.duck.lack"
       }
     },
     "trial-scholar": {

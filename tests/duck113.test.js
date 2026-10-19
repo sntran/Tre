@@ -1,6 +1,7 @@
 // The lost ducks after the play test (#113): each lost duck can be picked at its own place and
 // carried to the pen, at each level and for many seeds (a lost duck far from the pen went back at
-// once from the hands, and the flock could never be whole).
+// once from the hands, and the flock could never be whole); the farmer counts by twos from grade 3
+// and says the total at once from grade 4; after a short count, a wave points at a lost duck.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
@@ -66,4 +67,58 @@ test('each lost duck can be picked and carried to the pen, at each level and for
     }
   }
   assert.ok(carried > 0, 'lost ducks were carried');
+});
+
+async function shortCount(grade) {
+  const at = story.steps.findIndex((x) => x.expect?.some((e) => e.text?.shown === 'event.duck.short'));
+  const said = [];
+  const views = [];
+  let session = null;
+  const failures = await runHeadless({ ...story, profile: { ...story.profile, grade }, steps: story.steps.slice(0, at) }, {
+    onSession: (x) => {
+      session = x;
+      x.listen((e) => {
+        if (e.type === 'open' && e.textKey) said.push({ key: e.textKey, params: e.params ?? {} });
+        if (e.type === 'workView') views.push(e.key);
+      });
+    },
+  });
+  assert.deepEqual(failures, [], said.map((l) => l.key).join(', '));
+  return { session, said, views };
+}
+
+test('from grade 3 the farmer counts the ducks of the pen by twos, and from grade 4 she says the total and what is lacking', async () => {
+  const three = await shortCount(3);
+  const nums = three.said.map((l) => l.key).filter((k) => /^num\.\d+$/.test(k)).map((k) => Number(k.slice(4)));
+  assert.ok(nums.length >= 2, three.said.map((l) => l.key).join(', '));
+  assert.ok(nums.slice(0, -1).every((n) => n % 2 === 0), `by twos: ${nums.join(', ')}`);
+  const four = await shortCount(4);
+  const keys = four.said.map((l) => l.key);
+  assert.ok(keys.includes('mentor.duck.total') && keys.includes('mentor.duck.lack'), keys.join(', '));
+  assert.ok(!keys.some((k) => /^num\.\d+$/.test(k)), `no count by ones: ${keys.join(', ')}`);
+});
+
+test('after a short count, a wave points at a lost duck of her flock and the view shows it, never the count again', async () => {
+  const { session, said, views } = await shortCount(1);
+  const run = (sec) => {
+    for (let k = 0; k < sec / STEP; k++) {
+      if (session.screen) session.command({ type: session.screen === 'dialogue' || session.screen === 'say' ? 'next' : 'close' });
+      session.step();
+      session.events();
+    }
+  };
+  run(4);
+  const from = said.length;
+  for (let i = 0; i < 2; i++) {
+    session.command({ type: 'wave' });
+    for (let k = 0; k < 6 / STEP; k++) {
+      if (session.screen) session.command({ type: 'close' });
+      session.step();
+      session.events();
+    }
+  }
+  const after = said.slice(from).map((l) => l.key);
+  assert.ok(after.includes('mentor.duck.lost'), after.join(', '));
+  assert.ok(!after.includes('mentor.mark'), 'not the count of the pen');
+  assert.ok(views.includes('event-duck-lost'), views.join(', '));
 });

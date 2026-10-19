@@ -22,6 +22,7 @@
 //     face: the point that they turn to; apart: a person this close to that entity moves a little away).
 //   gone { k }: the k-th thing of the demonstration goes (the rice ball that the hero ate).
 //   cue { zone }: Nghé shows the gap of the bridge (the hint of the place system).
+//   view { key, points }: the view shows these points (the event workView, #113).
 //   nudge { x, z, time, from }: Nghé goes next to a place (from: its offset, else 2.5 to the -x
 //     side) and stretches its neck toward it.
 //   end: the things of the demonstration go, and the script ends.
@@ -131,6 +132,7 @@ function play(world, ent, dt, env) {
     if (st.cue) cueHint(world, getEntity(world, st.cue.zone), env);
     // Things that glow until the child takes one of them (the shorter planks of the bridge, #85).
     if (st.glow) world.events.push({ type: 'glowThings', ids: st.glow.ids });
+    if (st.view) world.events.push({ type: 'workView', key: st.view.key, points: st.view.points, sight: st.view.points });
     if (st.nudge) {
       const friend = query(world, 'follow')[0];
       // from: where Nghé stands, from the point (the rice ball of a break: from the side, so that
