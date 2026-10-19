@@ -1,0 +1,155 @@
+{
+ "about": "#101: the teacher at grade 1: the work of the level, a try, the count, and a wave.",
+ "start": "?story=trial-scholar",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 90
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 40",
+   "timeout": 300
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.plan)"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-scholar')?.zone.level"
+  },
+  {
+   "shot": "teacher-grade-1-the-work-of-the-level"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat')?.zone.items.length < 10"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'scholar.tied')",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "teacher-grade-1-a-bundle-of-ten"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "teacher-grade-1-a-wave"
+  }
+ ]
+}

@@ -1,0 +1,414 @@
+{
+ "about": "#101: the healer at grade 3: the work of the level, a try, the count, and a wave.",
+ "start": "?story=trial-healer",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "3",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 90
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 40",
+   "timeout": 300
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan)"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.level"
+  },
+  {
+   "shot": "healer-grade-3-the-work-of-the-level"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-ngai"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.ngai - 1"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-tiato"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.tiato"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-rauma"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-healer')?.zone.plan.need.rauma"
+  },
+  {
+   "shot": "healer-grade-3-the-basket"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^count\\./.test(x.key) || /^num\\./.test(x.key))",
+   "timeout": 90
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "healer-grade-3-the-count-after-a-try"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  }
+ ]
+}
