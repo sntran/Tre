@@ -53,6 +53,13 @@ test('a parameter at the start of a sentence starts with a capital letter', () =
   assert.equal(i.t('dot', { grade: 'lớp 2' }), 'Mai · lớp 2', 'a dot in the middle is not the end of a sentence');
 });
 
+test('a text in a parameter is not a sentence: only the outer text gives it a capital (#101)', () => {
+  const i = createI18n({ value: 'Thành {x}.', start: '{x}.', 'decimal.words': '{a} phẩy {b}', 'num.0': 'không', 'num.11': 'mười một' }, 'vi');
+  const x = { key: 'decimal.words', params: { a: { key: 'num.0' }, b: { key: 'num.11' } } };
+  assert.equal(i.t('value', { x }), 'Thành không phẩy mười một.');
+  assert.equal(i.t('start', { x }), 'Không phẩy mười một.');
+});
+
 test('no word comes two times at a glossary mark (for example "quân [[an]]" with the name "quân Ân")', () => {
   for (const table of [vi, en]) {
     for (const [key, text] of Object.entries(table)) {

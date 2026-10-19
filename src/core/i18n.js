@@ -70,7 +70,7 @@ export function createI18n(dict, lang, fallback = null) {
       if (items.length < 2) return items.join('');
       return `${items.slice(0, -1).join(raw('ui.list.sep') ?? ', ')}${raw('ui.list.and') ?? ' & '}${items[items.length - 1]}`;
     }
-    if (typeof v === 'object' && typeof v.key === 'string') return t(v.key, v.params);
+    if (typeof v === 'object' && typeof v.key === 'string') return translate(v.key, v.params, true);
     return String(v);
   }
 
@@ -82,7 +82,11 @@ export function createI18n(dict, lang, fallback = null) {
   // two forms, Vietnamese has one), so that "1 times" never shows (#42). The form for one comes
   // only from the language of the text, never from the fallback: "1 time" in a Vietnamese line
   // came from the English text (#58).
-  function t(key, params) {
+  // A text in a parameter of another text (inner) is not a sentence: a parameter at its start
+  // gets no capital, and the outer text says if it starts a sentence ("Thành không phẩy mười một.",
+  // not "Thành Không phẩy mười một.", #101).
+  const t = (key, params) => translate(key, params, false);
+  function translate(key, params, inner) {
     params = params ?? {};
     const one = params.n === 1 && Object.prototype.hasOwnProperty.call(dict, `${key}.one`) ? dict[`${key}.one`] : null;
     const marked = one || raw(key);
@@ -91,7 +95,7 @@ export function createI18n(dict, lang, fallback = null) {
     return text.replace(PARAM, (all, name, offset) => {
       if (!Object.prototype.hasOwnProperty.call(params, name)) return all;
       const v = value(params[name]);
-      if (startsSentence(text, offset)) return capitalize(v);
+      if (startsSentence(text, offset) && !(inner && !text.slice(0, offset).trim())) return capitalize(v);
       // In the middle of an English sentence, a name with an article has a small article: "Nam
       // likes the drum dance most", not "The drum dance" (#42).
       return lang === 'en' ? v.replace(/^(The|A|An) /, (a) => a.toLowerCase()) : v;
