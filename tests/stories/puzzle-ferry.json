@@ -26,13 +26,13 @@
         "event": "open",
         "with": {
           "screen": "callout",
-          "textKey": "puzzle.ferry.start"
+          "textKey": "puzzle.ferry.start.1"
         },
         "timeout": 20
       }
     },
     {
-      "wait": 2
+      "wait": 9
     },
     {
       "do": {

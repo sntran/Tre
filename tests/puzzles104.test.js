@@ -25,7 +25,7 @@ test('each puzzle and tale has a source, its lines in both languages, and a tale
     assert.ok(src && (src.book || src.note), `${p.id}: a source`);
     assert.ok(Number.isInteger(p.era) && typeof p.tale === 'boolean', `${p.id}: era and tale`);
   }
-  for (const k of [...data.ferry.hints, ...data.pots.hints, 'puzzle.ferry.start', 'puzzle.ferry.chase', 'puzzle.ferry.peck', 'puzzle.ferry.done', 'puzzle.pots.start', 'puzzle.pots.over', 'puzzle.pots.short', 'puzzle.pots.done']) {
+  for (const k of [...data.ferry.hints, ...data.pots.hints, ...data.ferry.offer, 'puzzle.ferry.chase', 'puzzle.ferry.peck', 'puzzle.ferry.done', 'puzzle.pots.start', 'puzzle.pots.over', 'puzzle.pots.short', 'puzzle.pots.done']) {
     assert.ok(vi[k] && en[k], k);
     assert.ok(!/[0-9?]/.test(vi[k]), `a hint is never a question, and no digit: ${vi[k]}`);
   }
@@ -98,7 +98,7 @@ async function at(cell, grade, flags = {}) {
 test('the ferry: a wrong pair shows its scene and all come back; seven crossings bring all three over, and the traveler gives a gift', async () => {
   assert.ok(puzzleDay(data.ferry, 1040020559, DAY));
   const p = await at(FERRY, 1);
-  assert.ok(p.said.includes('puzzle.ferry.start'));
+  assert.ok(p.said.includes('puzzle.ferry.start.1'));
   const ferry = () => p.session.puzzles.state().ferry;
   const cross = (thing) => {
     if (thing) {
@@ -121,6 +121,10 @@ test('the ferry: a wrong pair shows its scene and all come back; seven crossings
     p.run(0.5);
     assert.ok(p.said.slice(n).includes(k), `${k}: ${p.said.slice(n).join(', ')} ${p.session.screen} ${p.session.busy} ${p.session.canWave}`);
   }
+  // The last hint is a demonstration (#110): the traveler takes the chicken across and back.
+  assert.ok(ferry().demo, 'a demonstration');
+  p.run(40, () => !ferry().demo);
+  assert.deepEqual(ferry().where, { dog: 'a', chicken: 'a', rice: 'a' }, 'all as before the demonstration');
   for (const t of ['chicken', null, 'dog', 'chicken', 'rice', null, 'chicken']) cross(t);
   assert.deepEqual(ferry().where, { dog: 'b', chicken: 'b', rice: 'b' });
   assert.ok(p.said.includes('puzzle.ferry.done'));

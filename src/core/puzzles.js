@@ -19,6 +19,11 @@ const CELL = 2; // half blocks in a map cell
 const SCENE = 3.5; // seconds: a wrong pair on a bank, before all come back
 const POUR = 1; // seconds of a pour
 const DEMO_STEP = 1.6; // seconds between the two steps that the healer shows
+// Half blocks: the person of a puzzle says it, and a wave gets its hint, only this near, and only
+// after the person said the puzzle (#110: a wave 40 half blocks away gave a hint before the puzzle).
+export const OFFER_NEAR = 12;
+const OFFER_LINE = 3.6; // seconds between the short lines of the offer of the ferry
+const WAIT_HINT = 60; // seconds with no crossing after the offer: the next hint of the ferry comes
 
 // Is today a day of the puzzle (one day in `every`, by the seed and the day)?
 export const puzzleDay = (def, seed, day) => hashSeed(`${seed}:puzzle:${def.id}:${day}`) % def.every === 0;
@@ -82,7 +87,7 @@ export function createPuzzles(deps) {
     addEntity(w(), { keep: true, id: 'pz:traveler', person: { kind: 'puzzle', ref: 'ferry' }, position: { ...at, facing: Math.PI }, motion: { vx: 0, vz: 0, speed: 0 }, solid: { r: 1.8 }, look: F.person });
     addEntity(w(), { keep: true, id: 'pz:mark:ferry', position: { x: at.x, y: at.y + 4.2, z: at.z, facing: 0 }, look: 'mark-side' });
     addEntity(w(), { keep: true, id: 'ferry:pz', ferry: { a: { x: a.x, z: a.z }, b: { x: b.x, z: b.z }, landA: q(F.landA), landB: q(F.landB), side: 'a', state: 'wait', riders: [], from: [], t: 0, man: null }, position: { x: a.x, y: a.y + 1.2, z: a.z, facing: Math.atan2(b.x - a.x, b.z - a.z) }, look: 'skiff-mid' });
-    ferry = { day, where: Object.fromEntries(F.things.map((t) => [t, 'a'])), snapshot: null, scene: null, back: false, hint: 0, offered: false, load: null };
+    ferry = { day, where: Object.fromEntries(F.things.map((t) => [t, 'a'])), snapshot: null, scene: null, back: false, hint: 0, offered: false, load: null, wrong: 0, idle: 0, demo: null };
     F.things.forEach((t) => addEntity(w(), { keep: true, id: thingId(t), item: { kind: 'pz', size: 1, task: null, zone: null, held: null, set: true, fixed: true }, position: { ...spotOf('a', t), facing: 0 }, look: LOOK[t] }));
     pack();
   }
@@ -145,6 +150,18 @@ export function createPuzzles(deps) {
   function ferried(ev) {
     if (!ferry || ev.id !== 'ferry:pz') return;
     const f = boat().ferry;
+    if (ferry.demo) {
+      if (ferry.demo.step === 'go') {
+        ferry.demo.step = 'back';
+        after(1, () => { if (ferry?.demo) rideDemo(); });
+        return;
+      }
+      ferry.demo = null;
+      pack();
+      lookBoth();
+      return;
+    }
+    ferry.idle = 0;
     if (ferry.back) {
       // All come back to where they were before that crossing (a thing that was in the boat goes
       // back onto its bank).
@@ -164,6 +181,7 @@ export function createPuzzles(deps) {
     const left = f.side === 'a' ? 'b' : 'a';
     const pair = wrongPair(F, ferry.where, left);
     if (pair) {
+      ferry.wrong += 1;
       ferry.scene = { pair, t: 0, bank: left };
       // The view shows the scene on the other bank with the hero (#104: the scene was out of the
       // frame).
@@ -190,6 +208,48 @@ export function createPuzzles(deps) {
   function lookAtBank(side) {
     const pts = F.things.filter((t) => ferry.where[t] === side).map((t) => ({ ...getEntity(w(), thingId(t)).position }));
     deps.look([...pts, { ...boat().position }]);
+  }
+  // The view shows both landings, the boat, the things on each bank, and the traveler (#110: the
+  // things on the far bank were out of the view, and a child could not tell who was on which side).
+  function lookBoth() {
+    const f = boat()?.ferry;
+    if (!f) return;
+    const pts = F.things.map((t) => ({ ...getEntity(w(), thingId(t)).position }));
+    const t = getEntity(w(), 'pz:traveler');
+    const y = boat().position.y;
+    deps.look([...pts, { ...boat().position }, { ...f.landA, y }, { ...f.landB, y }, ...(t ? [{ ...t.position }] : [])]);
+  }
+  // The puzzle in short lines, one at a time (#110: three sentences in one bubble).
+  function sayOffer() {
+    lookBoth();
+    F.offer.forEach((key, i) => after(i * OFFER_LINE, () => { if (ferry) deps.say('pz:traveler', key, {}); }));
+  }
+  // The traveler points at a point (half blocks) for a moment.
+  function point(at, t = 2) {
+    const e = getEntity(w(), 'pz:traveler');
+    if (e && at) e.gesture = { act: 'point', x: at.x, z: at.z, t };
+  }
+  // The last hint of the ferry is a demonstration, as at the well (#110): the traveler takes the
+  // chicken across and back in the boat, with no hero, and all is as it was.
+  function startDemo() {
+    const e = boat();
+    const f = e?.ferry;
+    const t = 'chicken';
+    if (!f || f.state !== 'wait' || ferry.load || ferry.scene || ferry.where[t] !== f.side) return false;
+    ferry.demo = { thing: t, step: 'go', side: f.side };
+    rideDemo();
+    return true;
+  }
+  function rideDemo() {
+    const f = boat().ferry;
+    const id = thingId(ferry.demo.thing);
+    f.riders = [id];
+    f.call = f.side;
+    f.t = 0;
+    f.from = [{ ...getEntity(w(), id).position }];
+    f.state = 'board';
+    lookBoth();
+    deps.sound('splash');
   }
   // The scene of a wrong pair: the dog runs around the chicken, or the chicken pecks and some rice
   // spills. No animal is hurt. Then the boat brings the hero back, and all come back.
@@ -322,12 +382,12 @@ export function createPuzzles(deps) {
       // The traveler says the puzzle when the hero comes near, one time each day.
       if (ferry && !ferry.offered && h && !deps.busy()) {
         const t = getEntity(w(), 'pz:traveler');
-        if (t && dist(t.position, h) <= 12) {
+        if (t && dist(t.position, h) <= OFFER_NEAR) {
           ferry.offered = true;
-          deps.look([...F.things.map((x) => ({ ...getEntity(w(), thingId(x)).position })), { ...boat().position }]);
-          deps.say(t.id, 'puzzle.ferry.start', {});
+          sayOffer();
         }
       }
+      if (ferry?.offered && !ferry.solved) ferry.idle += dt;
       if (pots && h) {
         // The grade changed (in the parent area) before the first move: the need of the new grade,
         // and the healer says it again.
@@ -344,7 +404,7 @@ export function createPuzzles(deps) {
         if (healerE && !mark) addEntity(w(), { keep: true, id: 'pz:mark:pots', position: { ...healerE.position, y: healerE.position.y + 4.2 }, look: 'mark-side' });
         else if (healerE && mark) mark.position = { ...healerE.position, y: healerE.position.y + 4.2 };
         else if (!healerE && mark) removeEntity(w(), 'pz:mark:pots');
-        if (!pots.offered && healerE && !deps.busy() && dist(healerE.position, h) <= 12) {
+        if (!pots.offered && healerE && !deps.busy() && dist(healerE.position, h) <= OFFER_NEAR) {
           pots.offered = true;
           // The view turns to a side where nothing covers the things of the puzzle.
           deps.look(['pz:pot:0', 'pz:pot:1', 'pz:well', 'pz:jar', 'pz:drain'].map((id) => ({ ...getEntity(w(), id).position })));
@@ -371,7 +431,7 @@ export function createPuzzles(deps) {
       const h = hero()?.position;
       if (!h || deps.busy()) return;
       const chosen = deps.chosen();
-      if (ferry && boat()?.ferry.state === 'wait' && !ferry.scene) {
+      if (ferry && boat()?.ferry.state === 'wait' && !ferry.scene && !ferry.demo) {
         const f = boat().ferry;
         const side = f.side;
         const land = side === 'a' ? f.landA : f.landB;
@@ -410,20 +470,37 @@ export function createPuzzles(deps) {
     },
     // A talk with the person of a puzzle: the puzzle again.
     talk(id) {
-      if (id === 'ferry' && ferry) deps.say('pz:traveler', 'puzzle.ferry.start', {});
+      if (id === 'ferry' && ferry) {
+        ferry.offered = true;
+        sayOffer();
+      }
     },
-    canWave: () => Boolean((ferry && st('ferry').solved !== deps.day() && heroNear('pz:traveler', 40)) || (pots && healerNear() && heroNear(healerNear().id, 20))),
-    // A wave: the next hint of the puzzle near the hero. The last hint of the pots shows the first
-    // two steps.
+    canWave: () => Boolean((ferryHint() && !ferry.demo) || (pots && pots.offered && healerNear() && heroNear(healerNear().id, OFFER_NEAR))),
+    // A wave: the next hint of the puzzle near the hero, only after the person said the puzzle. The
+    // first hint of the ferry is the rule again, with the traveler pointing at each pair; "the
+    // chicken first" comes only after a wrong crossing or a long wait; the last is a demonstration
+    // (#110). The last hint of the pots shows the first two steps.
     wave() {
-      if (ferry && heroNear('pz:traveler', 40) && st('ferry').solved !== deps.day()) {
-        const k = Math.min(F.hints.length - 1, ferry.hint);
-        ferry.hint += 1;
+      if (ferryHint()) {
+        if (ferry.demo) return true;
+        const stuck = ferry.wrong > 0 || ferry.idle >= WAIT_HINT;
+        const k = ferry.hint === 0 || !stuck ? 0 : Math.min(F.hints.length - 1, ferry.hint);
+        ferry.hint = Math.max(ferry.hint, k + 1);
         deps.say('pz:traveler', F.hints[k], {});
+        if (k === 0) {
+          // The two pairs, one at a time.
+          F.pairs.forEach(([a, b], i) => after(i * 2.4, () => {
+            const p = getEntity(w(), thingId(a))?.position;
+            const q = getEntity(w(), thingId(b))?.position;
+            if (p && q) point({ x: (p.x + q.x) / 2, z: (p.z + q.z) / 2 }, 2);
+          }));
+        }
+        if (k === F.hints.length - 1) startDemo();
+        ferry.idle = 0;
         return true;
       }
       const hz = pots ? healerNear() : null;
-      if (pots && hz && heroNear(hz.id, 20)) {
+      if (pots && pots.offered && hz && heroNear(hz.id, OFFER_NEAR)) {
         const k = Math.min(PZ.hints.length - 1, pots.hint);
         pots.hint += 1;
         deps.say(hz.id, PZ.hints[k], {});
@@ -450,6 +527,9 @@ export function createPuzzles(deps) {
     // For the tests and the debug panel.
     state: () => ({ ferry, pots }),
   };
+  function ferryHint() {
+    return Boolean(ferry && ferry.offered && st('ferry').solved !== deps.day() && heroNear('pz:traveler', OFFER_NEAR));
+  }
   function heroNear(id, r) {
     const e = getEntity(w(), id);
     const h = hero()?.position;

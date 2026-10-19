@@ -1259,6 +1259,7 @@ export async function mountVillage(ctx, params = {}) {
     if (steps) view.turn(steps);
   }
 
+  const PUZZLE_AWAY = 6; // blocks (cells): a bubble of a puzzle goes when the hero is this far from its person
   // Greetings over the heads of the people, and the coins of broken pots.
   let bubbles = [];
   // Take away the lines of the other people when a person near the hero says a new line: one person
@@ -2016,8 +2017,11 @@ export async function mountVillage(ctx, params = {}) {
       // kept each bubble longer than its line).
       b.age += dt;
       const f = figures.placeOf(b.id);
-      // A bubble stays at least as long as its line waits or is spoken (#60).
-      if (!f || (b.age > b.life && !voiceHolds(b))) {
+      // A bubble stays at least as long as its line waits or is spoken (#60). A line of a puzzle goes
+      // when the hero walks away from its person (#110: the bubble of the ferry stayed on top).
+      const hw = hero().position;
+      const left = f && String(b.line?.key ?? '').startsWith('puzzle.') && Math.hypot(f.x - hw.x / 2, f.z - hw.z / 2) > PUZZLE_AWAY;
+      if (!f || left || (b.age > b.life && !voiceHolds(b))) {
         b.el.remove();
         bubbles.splice(i, 1);
         continue;

@@ -96,7 +96,7 @@ test('the goal of a task and then the first help of the same person, in one step
   q.offer(lineOf('scholar.more'), true, 2);
   q.offer(lineOf('mentor.show.scholar'), true, 2);
   assert.deepEqual(drain(q, 3), ['scholar.tied', 'scholar.more', 'mentor.show.scholar'], 'what is left is never dropped for a hint');
-  for (const key of ['teacher.need.1', 'mentor.scholar.need', 'woodcutter.pieces', 'scholar.more', 'fisher.gaps', 'fisher.gaps.one', 'event.duck.start', 'puzzle.ferry.start']) assert.equal(kindOf(key), 'goal', key);
+  for (const key of ['teacher.need.1', 'mentor.scholar.need', 'woodcutter.pieces', 'scholar.more', 'fisher.gaps', 'fisher.gaps.one', 'event.duck.start', 'puzzle.ferry.start.1']) assert.equal(kindOf(key), 'goal', key);
 });
 
 test('a line that the child asked for with a wave is spoken two times in twelve seconds', () => {
