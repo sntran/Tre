@@ -937,6 +937,7 @@
   "practice.read": "What do you want to practice? Press the red button, and I choose for you.",
   "practice.note": "Here, after a mistake you try again. You lose nothing.",
   "practice.count": "{correct} right",
+  "practice.end": "That is one round: you did {total} questions. Come and practice with me again any time.",
   "raid.scouts.intro": "Ân scouts walk on the road to the gate. They carry torches. Stand at the gate with your slingshot.",
   "raid.scouts.intro.first": "Ân scouts walk on the road to the gate. Stand at the gate with your slingshot.",
   "raid.patrol.intro": "Ân scouts come back on the road to the gate.",

@@ -574,6 +574,12 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .choice-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; }
 .choice-grid .btn { min-height: calc(var(--touch) + 8px); background: var(--diep); max-width: 100%; white-space: normal; text-align: center; }
 .choice-grid .btn.shape { width: 110px; height: 110px; padding: 8px; }
+/* The answer that the voice says now glows (#112). */
+.choice-grid .btn.reading { box-shadow: 0 0 0 4px var(--yellow), 0 0 14px 4px var(--yellow); }
+/* The questions of a round of the practice: a pip for each, filled when it is done (#112). */
+.quiz-pips { display: flex; gap: 6px; justify-content: center; margin: 4px 0; }
+.quiz-pips span { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ochre); }
+.quiz-pips span.on { background: var(--ochre); }
 .choice-grid .btn.shape svg { width: 100%; height: 100%; }
 .choice-grid .btn.bamboo-choice { flex-direction: column; min-height: 200px; width: 96px; padding: 8px 4px; }
 .choice-grid .btn.bamboo-choice img { height: 140px; width: auto; }

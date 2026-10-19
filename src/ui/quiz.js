@@ -12,7 +12,9 @@ import { checkAnswer } from '../core/solver.js';
 import { feedbackFor } from '../core/learner.js';
 import { createSeen, otherLevels } from '../core/fresh.js';
 
-// opts: { title, speaker, count (null = no end), next(): problem, similar(problem): problem,
+// opts: { title, speaker, count (null = no end), pips (a pip for each question of the count),
+//         stoppable (a stop button also with a count),
+//         next(): problem, similar(problem): problem,
 //         alternatives(): [makers] (other ways to make a problem, for example other skills of a trial),
 //         record: true, header: element, onEach(result) }
 // A quiz never shows the same question twice. When the usual way gives no new question,
@@ -26,11 +28,13 @@ export function runQuiz(ctx, opts) {
     const counter = h('div', { class: 'muted' });
     const head = h('div', { class: 'panel-head' }, [
       h('h2', { text: opts.title }),
-      opts.count === null ? button(t('quiz.stop'), () => finish(true), { cls: 'btn small paper' }) : null,
+      opts.count === null || opts.stoppable ? button(t('quiz.stop'), () => finish(true), { cls: 'btn small paper' }) : null,
     ]);
+    // The questions that are left, as pips (#112: "It still says 9, and it never ends.").
+    const pips = opts.pips && opts.count ? h('div', { class: 'quiz-pips', 'aria-hidden': 'true' }, Array.from({ length: opts.count }, () => h('span'))) : null;
     const top = h('div', { class: 'quiz-top' }, [
       opts.speaker ? portrait(ctx, opts.speaker) : null,
-      h('div', { class: 'quiz-progress' }, [counter, opts.count ? h('div', { class: 'progress-bar' }, [progress]) : null, opts.header ?? null]),
+      h('div', { class: 'quiz-progress' }, [counter, pips ?? (opts.count ? h('div', { class: 'progress-bar' }, [progress]) : null), opts.header ?? null]),
     ]);
     const slot = h('div');
     const feedback = feedbackLine();
@@ -76,10 +80,11 @@ export function runQuiz(ctx, opts) {
       recorded = false;
       feedback.clear();
       current?.destroy();
-      current = renderQuestion(problem, { onAnswer });
+      current = renderQuestion(problem, { onAnswer, ctx });
       slot.replaceChildren(current.el);
       counter.textContent = opts.count ? t('quiz.of', { n: asked + 1, total: opts.count }) : t('practice.count', { correct });
       if (opts.count) progress.style.width = `${(asked / opts.count) * 100}%`;
+      pips?.querySelectorAll('span').forEach((x, i) => x.classList.toggle('on', i < asked));
     }
 
     function record(ok) {

@@ -1,7 +1,7 @@
 // The screens that open over the village: practice with the teacher, and more. (The Five Trials and the
 // rice for Gióng are work in the village: src/core/world/systems/work.js.)
 import { registerModal } from './registry.js';
-import { runQuiz } from './quiz.js';
+import { runQuiz, showMessage } from './quiz.js';
 import { h, button } from './dom.js';
 import { portraitCanvas } from './portraits.js';
 import { speak } from './speak.js';
@@ -13,17 +13,23 @@ function similar(ctx) {
   return (p) => ctx.learner.problem(p.skill, { level: p.level });
 }
 
-// Practice with the teacher: no health loss, no end.
+// Practice with the teacher: no health loss. A round has PRACTICE_ROUND questions, with a pip for
+// each, and the teacher says a line at the end (#112: the practice never ended).
+export const PRACTICE_ROUND = 8;
 registerModal('practice', async (ctx) => {
   const skillId = await chooseSkill(ctx);
   if (skillId === undefined) return;
-  await runQuiz(ctx, {
+  const out = await runQuiz(ctx, {
     title: t('practice.title'),
     speaker: 'teacher',
-    count: null,
+    count: PRACTICE_ROUND,
+    pips: true,
+    stoppable: true,
     next: () => (skillId ? ctx.learner.problem(skillId) : ctx.learner.next()),
     similar: similar(ctx),
   });
+  if (out.stopped || !out.total) return;
+  await showMessage(ctx, { title: t('practice.title'), textKey: 'practice.end', params: { total: { key: `num.${out.total}` } }, speaker: 'teacher' });
 });
 
 // Let the player pick a skill. Return null for the teacher's choice, or undefined to close.

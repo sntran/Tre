@@ -1,8 +1,9 @@
 // One question on the screen: the prompt, a picture, and the answer input
 // (a number pad or choice buttons).
 import { h, img, button } from './dom.js';
-import { t, tg, lang } from './i18n.js';
-import { speak, speakText } from './speak.js';
+import { t, tg, lang, otherLang } from './i18n.js';
+import { speak, speakText, stop } from './speak.js';
+import { otherOnce, otherLineOn } from './dialogue.js';
 import { renderVisual, shapeSvg } from './visuals.js';
 import { formatNumber } from '../core/i18n.js';
 
@@ -13,9 +14,11 @@ export function textOf(part, extra = {}) {
   return tg(part.key, { ...part.params, ...extra });
 }
 
-export function speakPart(part, force = false) {
-  if (!part) return;
-  if (part.key) speak(part.key, part.params, { force });
+export function speakPart(part, force = false, onEnd = null) {
+  if (!part) return onEnd?.();
+  if (part.key) speak(part.key, part.params, { force, onEnd });
+  else if (part.text) speakText(part.text, lang(), { force, onEnd });
+  else onEnd?.();
 }
 
 // The text of the correct answer.
@@ -33,21 +36,41 @@ export function choiceText(c) {
   return '';
 }
 
-// Show a problem. onAnswer(response) gets a number (as text) or a choice index.
-export function renderQuestion(problem, { onAnswer, autoSpeak = true } = {}) {
+// Show a problem. onAnswer(response) gets a number (as text) or a choice index. ctx: with it, the
+// button of the other language shows by the prompt, as in a talk (#112).
+export function renderQuestion(problem, { onAnswer, autoSpeak = true, ctx = null } = {}) {
   // A button under the question must not keep the keyboard focus.
   if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   const el = h('div', { class: 'question' });
   const promptText = textOf(problem.prompt);
+  const promptEl = h('p', { class: 'prompt', text: promptText });
+  const other = ctx && problem.prompt?.key && otherLineOn(ctx) ? button(otherLang().toUpperCase(), () => otherOnce(ctx, promptEl, problem.prompt.key, problem.prompt.params), { cls: 'icon-btn other-lang', aria: t('ui.otherLine') }) : null;
   const promptRow = h('div', { class: 'prompt-row' }, [
-    h('p', { class: 'prompt', text: promptText }),
-    button(null, () => speakPart(problem.prompt, true), { cls: 'icon-btn', icon: 'ui/speak', aria: t('ui.listen') }),
+    promptEl,
+    button(null, () => readAll(true), { cls: 'icon-btn', icon: 'ui/speak', aria: t('ui.listen') }),
+    other,
   ]);
   el.append(promptRow);
   const visual = renderVisual(problem.visual);
   if (visual) el.append(h('div', { class: 'visual' }, [visual]));
   let locked = false;
   let cleanup = () => {};
+
+  // The prompt, and then each answer in turn while its button glows (#112: the answers were said
+  // only after the choice, and a child who reads slowly chose by the shape of the text). A new
+  // reading, or a choice, stops the last one.
+  let reading = 0;
+  let buttons = [];
+  const glow = (i) => buttons.forEach((b, k) => b.classList.toggle('reading', k === i));
+  function readAll(force) {
+    const token = ++reading;
+    const sayChoice = (i) => {
+      if (token !== reading || locked || !el.isConnected || i >= buttons.length) return glow(-1);
+      glow(i);
+      speakText(choiceText(problem.choices[i]), lang(), { queue: true, force, onEnd: () => setTimeout(() => sayChoice(i + 1), 200) });
+    };
+    speakPart(problem.prompt, force, problem.kind === 'choice' ? () => sayChoice(0) : null);
+  }
 
   if (problem.kind === 'choice') {
     const grid = h('div', { class: 'choice-grid' });
@@ -59,10 +82,14 @@ export function renderQuestion(problem, { onAnswer, autoSpeak = true } = {}) {
       b.addEventListener('click', () => {
         if (locked) return;
         // Say the answer that the player chose. The feedback comes after it.
+        reading += 1;
+        glow(-1);
+        stop();
         speakText(choiceText(c));
         onAnswer(i, b);
       });
       grid.append(b);
+      buttons.push(b);
     });
     el.append(grid);
   } else {
@@ -113,13 +140,13 @@ export function renderQuestion(problem, { onAnswer, autoSpeak = true } = {}) {
     el.clearValue = () => { value = ''; update(); };
   }
 
-  if (autoSpeak) speakPart(problem.prompt);
+  if (autoSpeak) readAll(false);
 
   return {
     el,
     lock() { locked = true; },
     unlock() { locked = false; if (el.clearValue) el.clearValue(); },
-    destroy() { cleanup(); el.remove(); },
+    destroy() { reading += 1; cleanup(); el.remove(); },
   };
 }
 

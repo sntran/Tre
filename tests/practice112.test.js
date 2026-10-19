@@ -1,6 +1,6 @@
 // The practice and the level by evidence (#112): answers in the practice alone never move the level
-// of a task, a question of k answers counts with a guess of at least 1 / k, and the right answer is
-// not the longest one more often than the others.
+// of a task, a question of k answers counts with a guess of at least 1 / k, the right answer is not
+// the longest one more often than the others, and the answers are spoken before a choice.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
@@ -59,4 +59,54 @@ test('in each bank of questions, the right answer is the longest one alone in at
       assert.ok(longest.length <= 0.4 * qs.length, `${f}, ${lang}: ${longest.length} of ${qs.length}: ${longest.map((q) => q.id).join(', ')}`);
     }
   }
+});
+
+// A small stand-in for the DOM and the voice, for the question screen.
+class FakeEl {
+  constructor(tag) {
+    this.tag = tag;
+    this.children = [];
+    this.listeners = {};
+    this.dataset = {};
+    this.style = {};
+    this.attrs = {};
+    this.textContent = '';
+    this.className = '';
+    const cls = new Set();
+    this.classList = { add: (c) => cls.add(c), remove: (c) => cls.delete(c), toggle: (c, on) => (on ? cls.add(c) : cls.delete(c)), contains: (c) => cls.has(c) };
+  }
+  get isConnected() { return true; }
+  append(...c) { this.children.push(...c); }
+  addEventListener(k, f) { this.listeners[k] = f; }
+  setAttribute(k, v) { this.attrs[k] = v; }
+  remove() {}
+  click() { this.listeners.click?.({ preventDefault() {}, stopPropagation() {} }); }
+}
+const spoken = [];
+globalThis.Node = FakeEl;
+globalThis.HTMLElement = FakeEl;
+globalThis.document = { createElement: (t) => new FakeEl(t), createTextNode: (t) => ({ text: t }), createElementNS: (ns, t) => new FakeEl(t), activeElement: null };
+globalThis.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
+globalThis.window = { speechSynthesis: { getVoices: () => [], speak: (u) => { spoken.push(u.text); setTimeout(() => u.onend?.(), 0); }, cancel() {}, speaking: false, pending: false }, addEventListener() {}, removeEventListener() {} };
+
+test('the answers of a question are spoken in turn before a choice, and each button glows while it is said', async () => {
+  const { renderQuestion } = await import('../src/ui/question.js');
+  const problem = { kind: 'choice', prompt: { text: 'the question' }, choices: [{ label: { text: 'answer one' } }, { label: { text: 'answer two' } }, { label: { text: 'answer three' } }], answer: 0 };
+  const seen = [];
+  const q = renderQuestion(problem, { onAnswer: () => {} });
+  const grid = q.el.children.find((c) => c.className === 'choice-grid');
+  const buttons = grid.children;
+  for (let i = 0; i < 40 && spoken.length < 4; i++) {
+    seen.push(buttons.map((b) => b.classList.contains('reading')));
+    await new Promise((r) => setTimeout(r, 60));
+  }
+  seen.push(buttons.map((b) => b.classList.contains('reading')));
+  assert.deepEqual(spoken.slice(0, 4), ['the question', 'answer one', 'answer two', 'answer three']);
+  for (let k = 0; k < 3; k++) assert.ok(seen.some((s) => s[k]), `button ${k + 1} glows`);
+  // The speaker says all again.
+  const before = spoken.length;
+  q.el.children[0].children[1].click();
+  await new Promise((r) => setTimeout(r, 1500));
+  assert.deepEqual(spoken.slice(before, before + 4), ['the question', 'answer one', 'answer two', 'answer three']);
+  q.destroy();
 });

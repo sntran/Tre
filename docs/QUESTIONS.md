@@ -270,3 +270,9 @@ These questions need a person who knows Vietnamese history and geography. Until 
    - "Đò nhỏ quá, mỗi chuyến cháu chỉ chở được một thứ thôi. Mà để con chó với con gà một mình thì chó đuổi gà, để con gà với bao gạo thì gà mổ gạo."
    - "Bà cần đúng bốn bát nước để sắc thuốc, mà chỉ có cái nồi năm bát với cái nồi ba bát."
 115. **The days of the puzzles.** The ferry comes one day in three, and the pots one day in two after the task of the healer. Are these good, or should a parent see when a puzzle waits?
+
+## The answers of a question (#112)
+
+- The answers of a question of choices are about the same length: in each bank, the right answer is the longest one alone in at most 40 percent of the questions of text answers (`tests/practice112.test.js`; Haladyna, Downing & Rodriguez 2002, guidelines 24 and 28). A wrong answer can be longer and still clearly wrong.
+- The voice says the question, and then each answer in turn while its button glows; the speaker button says all again, and the button of the other language shows by the question, as in a talk (`src/ui/question.js`).
+- A round of the practice has eight questions, with a pip for each, and the teacher says a line at the end (`PRACTICE_ROUND` in `src/ui/modals.js`).
