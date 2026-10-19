@@ -423,6 +423,8 @@ export function setupTrial(world, def, level, env, opts = {}) {
     if (def.lost) {
       def.at.lost.forEach((p, k) => {
         const h = heap(`${def.id}-lost-${k}`, at(p), def.thing, { cols: 1 });
+        // A place of a lost thing: the area of the task holds it (#113).
+        h.zone.lost = true;
         add(h, def.pile[k] ?? 1);
         packHeap(world, h.zone);
       });

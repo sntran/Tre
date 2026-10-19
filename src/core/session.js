@@ -2915,6 +2915,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // of the task (src/world/light.js) with a margin; a task with no trial zone (the bridge) has the
   // places of the task with the same margin.
   const AREA_PAD = 6; // half blocks
+  // The distance from a point to a segment (half blocks).
+  function toSegment(p, a, b) {
+    const dx = b.x - a.x;
+    const dz = b.z - a.z;
+    const k = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.z - a.z) * dz) / (dx * dx + dz * dz || 1)));
+    return Math.hypot(p.x - (a.x + dx * k), p.z - (a.z + dz * k));
+  }
   function inTaskArea(task, p) {
     if (!task || !p) return false;
     // Next to the person who gives the task, also when the work is far from that person (#66: after
@@ -2922,9 +2929,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const npc = trialDef(String(task).replace(/^trial-/, ''))?.npc;
     const giver = npc ? getEntity(state, `npc:${npc}`) : null;
     if (giver?.position && !giver.hidden && Math.hypot(p.x - giver.position.x, p.z - giver.position.z) <= AREA_PAD * 3) return true;
+    const places = query(state, 'zone').filter((z) => (z.zone.task === task || z.zone.id === task) && z.position);
+    // A task with lost things (the ducks): the area holds each place where a lost thing lies, and
+    // the way from there to the place of the task, with a margin (#113: a lost duck far from the pen
+    // went back at once from the hands).
+    const target = places.find((z) => z.zone.rule !== 'heap' && z.zone.rule !== 'trial');
+    for (const z of places) {
+      if (!z.zone.lost) continue;
+      const a = { x: z.zone.x, z: z.zone.z };
+      const b = target ? { x: target.zone.x, z: target.zone.z } : a;
+      if (toSegment(p, a, b) <= AREA_PAD * 3) return true;
+    }
     const pool = taskPools(state.entities, p, { ...POOL, near: Infinity }).find((x) => x.task === task);
     if (pool) return Math.hypot(p.x - pool.x, p.z - pool.z) <= pool.r + AREA_PAD;
-    const places = query(state, 'zone').filter((z) => (z.zone.task === task || z.zone.id === task) && z.position);
     return places.some((z) => {
       const r = z.zone.rect;
       if (r) return p.x >= r.x0 - AREA_PAD * 2 && p.x <= r.x1 + AREA_PAD * 2 && p.z >= r.z0 - AREA_PAD * 2 && p.z <= r.z1 + AREA_PAD * 2;
