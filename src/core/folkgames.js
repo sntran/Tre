@@ -40,12 +40,19 @@ export function callSquare(court, rng, prev = null, near = false) {
   return { square, base: square - more, more };
 }
 
-// The place of the shard after a hold of so many seconds (in squares from the start line; the
-// longer the hold, the farther it goes).
-export const throwPlace = (seconds, data) => Math.max(0, seconds) * data.rate;
+// The square of the see-through shard after a hold of so many seconds (#114: the throw was a blind
+// guess of time). It shows on the first square at once and steps one square each `rate` seconds,
+// in the order of the squares (up one side and back down the other); after the last square it is
+// out (n, the number of squares).
+export const aimSquare = (seconds, data, n = Infinity) => Math.min(n, Math.floor(Math.max(0, seconds) / data.rate));
+
+// The place of the shard after a hold of so many seconds (in squares from the start line): the
+// middle of the square of the see-through shard, never on a line; or past the last square.
+export const throwPlace = (seconds, data, n = Infinity) => aimSquare(seconds, data, n) + 0.5;
 
 // Where the shard lands. Return { result: 'in' (the called square), 'other' (another square),
-// 'line', or 'out', square (the square, or null) }.
+// 'line', or 'out', square (the square, or null) }. A throw that the child aimed (throwPlace) lands
+// in the middle of a square, so that it is never on a line.
 export function judgeThrow(court, target, place, data) {
   const i = Math.floor(place);
   if (place <= 0 || i >= court.length) return { result: 'out', square: null };

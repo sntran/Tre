@@ -11,7 +11,7 @@
 
 import { addEntity, removeEntity, getEntity } from './world/state.js';
 import { createRng, hashSeed } from './rng.js';
-import { courtPlan, courtOf, callSquare, throwPlace, judgeThrow, createHops, hop, ropePlan, createRope, stepRope, jumpRope } from './folkgames.js';
+import { courtPlan, courtOf, callSquare, aimSquare, throwPlace, judgeThrow, createHops, hop, ropePlan, createRope, stepRope, jumpRope } from './folkgames.js';
 
 const S = 2; // half blocks: the side of a square of the court
 const INVITE = 14; // half blocks: the children ask a hero this near
@@ -76,6 +76,8 @@ export function createFolk(deps) {
         addEntity(world(), { id: k === 0 ? 'npc:loco-child' : `folk:child:${k}`, keep: false, folkChild: 'loco', look, position: at(p, facingOf(p, along(f, (1 + k * 1.5) * S))) });
       });
       addEntity(world(), { id: 'folk:shard', keep: false, look: 'shard', hidden: true, position: at(along(f, -0.3 * S, -0.5 * S)) });
+      // The see-through shard of the aim (#114): it steps along the court while the button is held.
+      addEntity(world(), { id: 'folk:aim', keep: false, look: 'shard', ghost: true, bright: true, see: true, hidden: true, position: at(along(f, -0.3 * S, -0.5 * S)) });
     }
   }
   function setCourt(court) {
@@ -124,8 +126,7 @@ export function createFolk(deps) {
       setCourt(game.court);
       standAside();
       // The view turns so that no house covers the court (the event workView, #38).
-      const pts = courtPoints(geo.loco, game.court);
-      deps.emit({ type: 'workView', key: 'folk-loco', points: [...pts.squares, pts.rest, pts.start].map((p) => at(p)), sight: [at(pts.start)] });
+      courtView();
       // The children always say where to start (#99), also on a court that does not start at 1.
       if (plan.start !== 1) {
         say('loco.start', { n: num(plan.start) });
@@ -173,6 +174,14 @@ export function createFolk(deps) {
       e.position = at(p, facingOf(p, along(f, (1 + k * 1.5) * S)));
     });
   }
+  // The view frames the whole court, the start line, and the shard where it lies (#114: the view
+  // showed only a part of the court, and the child never saw the shard where it landed).
+  function courtView() {
+    const pts = courtPoints(geo.loco, game.court);
+    const shard = getEntity(world(), 'folk:shard');
+    const extra = shard && !shard.hidden ? [shard.position] : [];
+    deps.emit({ type: 'workView', key: 'folk-loco', points: [...pts.squares, pts.rest, pts.start, pts.home, ...extra].map((p) => at(p)), sight: [at(pts.start)] });
+  }
   // The start line glows until the hero stands on it (#99).
   function startGlow(on) {
     const id = 'folk:start';
@@ -206,22 +215,40 @@ export function createFolk(deps) {
     game.phase = 'throw';
     deps.emit({ type: 'folkCall', square: c.square });
   }
-  // The throw: the hold of the action button. The longer the hold, the farther the shard.
+  // The throw: the hold of the action button. While it is held, the see-through shard steps along
+  // the court one square at a time (#114); when the button goes up, the shard lands there.
   function throwStart() {
     if (game?.phase !== 'throw') return;
     game.phase = 'aim';
     game.held = 0;
+    game.aimAt = -1;
+    aimStep();
+  }
+  function aimStep() {
+    const n = game.court.length;
+    const k = aimSquare(game.held, def.loCo, n);
+    if (k === game.aimAt) return;
+    game.aimAt = k;
+    const aim = getEntity(world(), 'folk:aim');
+    if (aim) {
+      Object.assign(aim.position, at(shardPoint(geo.loco, game.court, k + 0.5)));
+      aim.hidden = false;
+    }
+    deps.emit({ type: 'folkAim', square: k < n ? k : null });
   }
   function throwEnd() {
     if (game?.phase !== 'aim') return;
-    const place = throwPlace(game.held, def.loCo);
+    const place = throwPlace(game.held, def.loCo, game.court.length);
     const r = judgeThrow(game.court, game.call.square, place, def.loCo);
+    const aim = getEntity(world(), 'folk:aim');
+    if (aim) aim.hidden = true;
     const shard = getEntity(world(), 'folk:shard');
     if (shard) {
       Object.assign(shard.position, at(shardPoint(geo.loco, game.court, place)));
       shard.hidden = false;
       shard.thrown = { t: 0, from: { ...hero().position } };
     }
+    courtView();
     deps.emit({ type: 'throw', result: r.result, square: r.square, target: game.call.square, place });
     deps.skill({ type: 'skill', skill: game.skill, level: game.level, task: 'folk-loco', id: 'folk:shard', correct: r.result === 'in', solved: r.result === 'in', efficient: r.result === 'in', first: game.first, mashing: false, evidence: true, parts: [Math.round(place * 10) / 10], target: game.call.square + 0.5 });
     game.first = false;
@@ -318,7 +345,9 @@ export function createFolk(deps) {
       later(def.loCo.other - 0.4, () => Object.assign(kid.position, home));
     }
     later(def.loCo.other, () => { if (game?.kind === 'loco') walkToStart(); });
-    getEntity(world(), 'folk:shard').hidden = true;
+    // The shard of the hero lies where it landed while the child looks (#114); the other child
+    // takes it up for the turn.
+    later(0.5, () => { getEntity(world(), 'folk:shard').hidden = true; });
   }
   // An older child shows the skip once: a pebble on another square, and the hops over it.
   function demo() {
@@ -397,13 +426,17 @@ export function createFolk(deps) {
     deps.emit({ type: 'folk', game: kind, on: false, rounds: game.rounds });
     if (kind === 'loco') startGlow(false);
     game = null;
-    const shard = getEntity(world(), 'folk:shard');
-    if (shard) shard.hidden = true;
+    for (const id of ['folk:shard', 'folk:aim']) {
+      const e = getEntity(world(), id);
+      if (e) e.hidden = true;
+    }
     later(1.5, () => deps.setDone(kind));
   }
   function stop() {
     if (!game) return;
     if (game.kind === 'loco') startGlow(false);
+    const aim = getEntity(world(), 'folk:aim');
+    if (aim) aim.hidden = true;
     inviteAt[game.kind] = now + AGAIN;
     deps.emit({ type: 'folk', game: game.kind, on: false, rounds: game.rounds });
     game = null;
@@ -454,7 +487,10 @@ export function createFolk(deps) {
           game.phase = 'rope';
         }
       }
-    } else if (game.phase === 'aim') game.held += dt;
+    } else if (game.phase === 'aim') {
+      game.held += dt;
+      aimStep();
+    }
     else if (game.phase === 'rope') {
       for (const ev of stepRope(game.rope, dt, def.rope)) {
         if (ev.type === 'beat') deps.emit({ type: 'ropeBeat', k: ev.k });

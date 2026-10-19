@@ -35,7 +35,7 @@ test('the court: ten squares in the Vietnamese order, 1 to 5 up and 6 to 10 down
 
 test('the throw: the longer the hold, the farther the shard; in the called square, on a line, or out', () => {
   const court = courtOf({ start: 1, step: 1, squares: 10 });
-  const at = (sq) => (sq + 0.5) / L.rate;
+  const at = (sq) => (sq + 0.5) * L.rate;
   assert.deepEqual(judgeThrow(court, 6, throwPlace(at(6), L), L), { result: 'in', square: 6 });
   assert.deepEqual(judgeThrow(court, 6, throwPlace(at(4), L), L), { result: 'other', square: 4 });
   assert.equal(judgeThrow(court, 6, 6.02, L).result, 'line');
