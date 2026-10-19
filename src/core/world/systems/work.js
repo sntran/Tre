@@ -189,12 +189,15 @@ export function setupTrial(world, def, level, env, opts = {}) {
     // big bundle.
     const accepts = plan.form === 'share' ? ['rod', 'rodbundle'] : plan.form === 'decimal' ? 'rodbundle' : 'rod';
     addEntity(world, { id: 'zone:mat', keep: true, zone: { id: 'mat', task: owner, rule: 'bundle', accepts, items: [], x: m.x, y: m.y, z: m.z, tied: 0, bundle: size, untie: plan.form === 'share', oneMove: !tens, rect: rect(m, 7.5, 3) }, position: { x: m.x - 1.5, y: m.y, z: m.z + 1.6, facing: 0 } });
-    // The desks of the pupils in a column west of the heap, where the ground is open, and the box
-    // of the teacher by the heap (grade 4); the table of the teacher (grade 5).
+    // The desks of the pupils around the heap on open ground, each at most 3 cells from it, so that
+    // a trip is short (#107: 66 rods were 12 long trips), each with a mat of its own color, so that
+    // the child knows each desk after a turn of the view; and the box of the teacher by the heap
+    // (grade 4); the table of the teacher (grade 5).
     const west = rods.zone.x - 3.2;
     if (plan.form === 'share') {
-      for (let i = 0; i < plan.k; i++) addDesk(world, `desk-${i}`, { x: west, y: m.y, z: m.z - 0.4 + i * DESK_STEP }, ['rod', 'rodbundle'], owner, 'share-mat');
-      addDesk(world, 'box', { x: rods.zone.x + 2, y: m.y, z: m.z + 3.2 }, ['rod', 'rodbundle'], owner, 'rod-box');
+      const box = { x: rods.zone.x + 2, y: m.y, z: m.z + 3.2 };
+      deskSpots(rods.zone, plan.k, env, [rect(m, 7.5, 3), { x0: box.x - 1.4, x1: box.x + 1.4, z0: box.z - 1.4, z1: box.z + 1.4 }]).forEach((p, i) => addDesk(world, `desk-${i}`, { x: p.x, y: m.y, z: p.z }, ['rod', 'rodbundle'], owner, `share-mat-${DESK_COLORS[i % DESK_COLORS.length]}`));
+      addDesk(world, 'box', box, ['rod', 'rodbundle'], owner, 'rod-box');
     } else if (plan.form === 'decimal') {
       addDesk(world, 'table', { x: west, y: m.y, z: m.z + 1.2 }, ['rod', 'rodbundle', 'bigbundle'], owner, 'rod-table');
     }
@@ -597,6 +600,31 @@ function addRods(world, zone, kind, n, owner, tz) {
 }
 // A desk of a pupil, the box, or the table of the teacher (#101): a place for bundles and rods.
 export const DESK_STEP = 3.2;
+// The colors of the mats of the desks (#107), in order.
+export const DESK_COLORS = ['red', 'blue', 'yellow', 'green', 'white'];
+// The places of k desks around a heap (heap: its zone; x, z, and 8 columns 0.7 apart), each at most
+// 3 cells from it, with a lane of about two cells between a desk and the heap, so that a walk goes
+// between them: a column of three west of the heap, then a row south of it and a row north of it.
+// A place on a blocked cell, or on another place (avoid: rects), is not used.
+const DESK_OUT = 5; // half blocks from the edge of the heap to the middle of a desk
+export function deskSpots(heap, k, env, avoid = []) {
+  const x0 = heap.x;
+  const x1 = heap.x + 7 * 0.7;
+  const spots = [
+    { x: x0 - DESK_OUT, z: heap.z }, { x: x0 - DESK_OUT, z: heap.z - DESK_STEP }, { x: x0 - DESK_OUT, z: heap.z + DESK_STEP },
+    { x: x0 + 0.8, z: heap.z + DESK_OUT + 0.7 }, { x: x1 - 0.8, z: heap.z + DESK_OUT + 0.7 }, { x: x0 + 0.8, z: heap.z - DESK_OUT }, { x: x1 - 0.8, z: heap.z - DESK_OUT },
+  ];
+  const free = (p) => {
+    for (const [dx, dz] of [[-1.2, -1.2], [1.2, -1.2], [-1.2, 1.2], [1.2, 1.2], [0, 0]]) {
+      if (env?.isBlocked?.(Math.floor((p.x + dx) / 2), Math.floor((p.z + dz) / 2))) return false;
+    }
+    return !avoid.some((r) => p.x + 1.2 > r.x0 && p.x - 1.2 < r.x1 && p.z + 1.2 > r.z0 && p.z - 1.2 < r.z1);
+  };
+  const out = spots.filter(free);
+  // Too few free places: the places in order, so that each desk is there.
+  for (const p of spots) if (out.length < k && !out.includes(p)) out.push(p);
+  return out.slice(0, k);
+}
 function addDesk(world, id, at, accepts, owner, look) {
   addEntity(world, { id: `zone:${id}`, keep: true, zone: { id, task: owner, rule: 'desk', accepts, items: [], x: at.x, y: at.y, z: at.z, rect: { x0: at.x - 1.2, x1: at.x + 1.2, z0: at.z - 1.2, z1: at.z + 1.2 } }, position: { x: at.x, y: at.y, z: at.z + 1.8, facing: 0 } });
   addEntity(world, { id: `${look}:scholar:${id}`, keep: true, position: { x: at.x, y: at.y, z: at.z, facing: 0 }, look });

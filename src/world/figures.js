@@ -14,6 +14,9 @@ export { PLANK_TONES };
 
 // The look of the hero from the hero of the profile. options: the choices of hero creation
 // (hero in data/figures.json); the profile keeps the number of each choice (1 is the first).
+// The colors of a small mat: [the mat, its edges] (#107: the desks of the share).
+const MAT_COLORS = { red: ['vermilionPale', 'vermilion'], blue: ['indigoPale', 'indigo'], yellow: ['yellowPale', 'ochre'], green: ['greenPale', 'greenDeep'], white: ['paper', 'ash'] };
+
 export function heroLook(hero, options) {
   const pick = (list, n) => list[(n ?? 1) - 1] ?? list[0];
   const c = pick(options.clothes, hero.clothes);
@@ -649,6 +652,9 @@ export function thingLook(key) {
   // place for each bunch in rows of six.
   if (k === 'herb-leaf') return { kind: 'herb-leaf' };
   if (k === 'rod-bigbundle' || k === 'rod-box' || k === 'rod-table') return { kind: k };
+  // The mats of the desks of the share, each of its own color (#107).
+  m = /^share-mat-(red|blue|yellow|green|white)$/.exec(k);
+  if (m) return { kind: 'share-mat', color: m[1] };
   if (k === 'basket-small') return { kind: 'basket-small' };
   m = /^basket-grid-(\d+)$/.exec(k);
   if (m) return { kind: 'basket-grid', n: Number(m[1]) };
@@ -1102,7 +1108,10 @@ export function workThing(look) {
       return still(parts, 0.55);
     }
     // A small reed mat for a share of the loot.
-    case 'share-mat': return still([P('mat', [2.2, 0.08, 2.2], 'yellowPale', [0, 0.04, 0]), P('edgeN', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, -1.05]), P('edgeS', [2.2, 0.1, 0.2], 'ochre', [0, 0.05, 1.05])], 0.1);
+    case 'share-mat': {
+      const [mat, edge] = MAT_COLORS[look.color] ?? MAT_COLORS.yellow;
+      return still([P('mat', [2.2, 0.08, 2.2], mat, [0, 0.04, 0]), P('edgeN', [2.2, 0.1, 0.2], edge, [0, 0.05, -1.05]), P('edgeS', [2.2, 0.1, 0.2], edge, [0, 0.05, 1.05])], 0.1);
+    }
     // The things of the small events of the day: each shows its units, so that its size is seen
     // and never written. Stones in a net (one, two, or five), pails of water on a carrying pole,
     // and bowls of rice.

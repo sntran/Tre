@@ -61,3 +61,20 @@ test('a rod in the box comes back with a tap and a press, and goes onto a desk',
   h.press();
   assert.ok(h.zone('desk-0').items.includes(rod));
 });
+
+test('the desks stand at most 3 cells from the heap, each with a mat of its own color', async () => {
+  for (const seed of [7, 11, 23]) {
+    let session = null;
+    await runHeadless({ ...s0, profile: { ...s0.profile, grade: 4, seed }, steps: s0.steps.slice(0, first) }, { onSession: (x) => { session = x; } });
+    const heap = getEntity(session.state, 'zone:rods').zone;
+    const desks = query(session.state, 'zone').filter((z) => /^desk-\d+$/.test(z.zone.id));
+    assert.ok(desks.length >= 3);
+    for (const d of desks) {
+      const dx = Math.max(heap.x - d.zone.x, 0, d.zone.x - (heap.x + 7 * 0.7));
+      const dz = Math.abs(d.zone.z - heap.z);
+      assert.ok(Math.hypot(dx, dz) <= 6.2, `${d.zone.id} is ${Math.hypot(dx, dz).toFixed(1)} half blocks from the heap`);
+    }
+    const looks = desks.map((d) => query(session.state, 'position').find((e) => e.id.endsWith(`:scholar:${d.zone.id}`))?.look);
+    assert.equal(new Set(looks).size, desks.length, looks.join(', '));
+  }
+});
