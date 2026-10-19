@@ -1,0 +1,522 @@
+{
+ "about": "#98: the teacher: a child who presses at the heap: eleven rods, each alone, the eleventh outside the frame, and no animal on the mat; then the bundles to the end, with the line of a bigger task only at the end. At night.",
+ "start": "?story=trial-scholar&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 90
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 60",
+   "timeout": 300
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 11"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 30",
+   "timeout": 300
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length === 11"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => e.kind && e.position && !e.hidden && !e.person && !e.follow && e.position.x > tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.x - 0.5 && e.position.x < tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.x + 7.6 && e.position.z > tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.z - 0.5 && e.position.z < tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.z + 3.5).length"
+  },
+  {
+   "check": "tre.activeVillage.state().entities.filter((e) => e.kind && e.position && !e.hidden && !e.person && !e.follow && e.position.x > tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.x - 0.5 && e.position.x < tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.x + 7.6 && e.position.z > tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.z - 0.5 && e.position.z < tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.z + 3.5).length === 0"
+  },
+  {
+   "shot": "night-mat-eleven-rods-each-alone-the-eleventh-outside-the-frame"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'scholar.more') || tre.activeVillage.heard().some((x) => x.key === 'mentor.scholar.extra')",
+   "timeout": 120
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 200",
+   "timeout": 300
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => x.key))"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 30",
+   "timeout": 300
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length >= 10"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length >= 10"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 200",
+   "timeout": 300
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => x.key))"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => e.kind && e.position && !e.hidden && !e.person && !e.follow && e.position.x > tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.x - 0.5 && e.position.x < tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.x + 7.6 && e.position.z > tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.z - 0.5 && e.position.z < tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.z + 3.5).length"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 30",
+   "timeout": 300
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length >= 10"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length >= 10"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 200",
+   "timeout": 300
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => x.key))"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => e.kind && e.position && !e.hidden && !e.person && !e.follow && e.position.x > tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.x - 0.5 && e.position.x < tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.x + 7.6 && e.position.z > tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.z - 0.5 && e.position.z < tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.z + 3.5).length"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length < 10 && !document.querySelector('.dialogue-layer')"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 30",
+   "timeout": 300
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length"
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length >= 10"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.items.length >= 10"
+  },
+  {
+   "print": "(window.__t = tre.activeVillage.state().tick)"
+  },
+  {
+   "until": "tre.activeVillage.state().tick - window.__t > 200",
+   "timeout": 300
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => x.key))"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => e.kind && e.position && !e.hidden && !e.person && !e.follow && e.position.x > tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.x - 0.5 && e.position.x < tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.x + 7.6 && e.position.z > tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.z - 0.5 && e.position.z < tre.activeVillage.state().entities.find((e) => e.id === 'zone:mat').zone.z + 3.5).length"
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 200
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().map((x) => x.key))"
+  },
+  {
+   "print": "tre.activeVillage.heard().findIndex((x) => /raise$/.test(x.key))"
+  },
+  {
+   "shot": "night-mat-the-end-of-the-task"
+  }
+ ]
+}
