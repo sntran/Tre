@@ -29,11 +29,15 @@ export function courtOf(plan) {
   }));
 }
 
-// The square that the children call for a throw (never the first one twice in a row, and never
-// the last one: the hero must have a square after the shard). With near, the call is "two more
-// than five": { square, base, more } (the square of base, then more squares).
-export function callSquare(court, rng, prev = null, near = false) {
-  const options = court.map((s) => s.i).filter((i) => i < court.length - 1 && i !== prev);
+// The square that the children call for a throw (never the same one twice in a row, and never
+// the last one: the hero must have a square after the shard). reach: the farthest square of a call
+// (#114: a child who never played got calls far up the court and never got to hop); at the first
+// reach (FIRST_REACH) the call is the second or the third square. With near, the call is "two
+// more than five": { square, base, more } (the square of base, then more squares).
+export const FIRST_REACH = 2;
+export function callSquare(court, rng, prev = null, near = false, reach = Infinity) {
+  const top = Math.max(FIRST_REACH, reach);
+  const options = court.map((s) => s.i).filter((i) => i < court.length - 1 && i !== prev && i <= top && (top > FIRST_REACH || i >= 1));
   const square = rng.pick(options);
   if (!near || square < 2) return { square, base: null, more: null };
   const more = rng.int(1, Math.min(3, square));

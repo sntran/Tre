@@ -115,3 +115,25 @@ test('the first time, a child shows the shard and says what it is, and it glows;
   const again = atStart({ profile });
   assert.ok(!again.said.some((l) => l.key === 'loco.shard'));
 });
+
+test('the first call of a child who did not play before is a near square, and the calls go farther after a throw in the called square', async () => {
+  const { callSquare, FIRST_REACH } = await import('../src/core/folkgames.js');
+  const { createRng } = await import('../src/core/rng.js');
+  const court = courtOf({ start: 1, step: 1, squares: 10 });
+  for (let seed = 1; seed < 40; seed++) {
+    const c = callSquare(court, createRng(seed), null, false, FIRST_REACH);
+    assert.ok(c.square === 1 || c.square === 2, `seed ${seed}: ô ${c.square + 1}`);
+  }
+  for (const level of [1, 2]) {
+    const profile = {};
+    const t = atStart({ level, profile });
+    assert.ok([1, 2].includes(t.folk.stateOf().call), `level ${level}: the first call ${t.folk.stateOf().call}`);
+    // A throw in the called square.
+    const a = t.act();
+    a.run();
+    t.run((t.folk.stateOf().call + 0.5) * L.rate);
+    a.release();
+    assert.equal(t.events.find((e) => e.type === 'throw').result, 'in');
+    assert.ok(profile.folk.reach > FIRST_REACH, 'the calls can go farther');
+  }
+});

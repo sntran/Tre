@@ -352,244 +352,6 @@
       }
     },
     {
-      "wait": 5.1
-    },
-    {
-      "do": {
-        "type": "hold",
-        "on": false
-      }
-    },
-    {
-      "until": {
-        "event": "throw",
-        "timeout": 5
-      }
-    },
-    {
-      "expect": [
-        {
-          "event": "throw",
-          "with": {
-            "result": "in"
-          }
-        }
-      ]
-    },
-    {
-      "until": {
-        "event": "hops",
-        "timeout": 5
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.5
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.5
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "do": {
-        "type": "jumpUp",
-        "held": 0.1
-      }
-    },
-    {
-      "wait": 0.6
-    },
-    {
-      "until": {
-        "event": "round",
-        "with": {
-          "rounds": 2
-        },
-        "timeout": 5
-      }
-    },
-    {
-      "until": {
-        "event": "folkCall",
-        "timeout": 20
-      }
-    },
-    {
-      "wait": 1
-    },
-    {
-      "do": {
-        "type": "hold",
-        "on": true
-      }
-    },
-    {
       "wait": 2.1
     },
     {
@@ -798,6 +560,244 @@
       "do": {
         "type": "jumpUp",
         "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "until": {
+        "event": "round",
+        "with": {
+          "rounds": 2
+        },
+        "timeout": 5
+      }
+    },
+    {
+      "until": {
+        "event": "folkCall",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 1
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": true
+      }
+    },
+    {
+      "wait": 0.3
+    },
+    {
+      "do": {
+        "type": "hold",
+        "on": false
+      }
+    },
+    {
+      "until": {
+        "event": "throw",
+        "timeout": 5
+      }
+    },
+    {
+      "expect": [
+        {
+          "event": "throw",
+          "with": {
+            "result": "in"
+          }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "hops",
+        "timeout": 5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.5
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.1
+      }
+    },
+    {
+      "wait": 0.6
+    },
+    {
+      "do": {
+        "type": "jumpUp",
+        "held": 0.5
       }
     },
     {

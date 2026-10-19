@@ -11,7 +11,7 @@
 
 import { addEntity, removeEntity, getEntity } from './world/state.js';
 import { createRng, hashSeed } from './rng.js';
-import { courtPlan, courtOf, callSquare, aimSquare, throwPlace, judgeThrow, createHops, hop, ropePlan, createRope, stepRope, jumpRope } from './folkgames.js';
+import { courtPlan, courtOf, callSquare, FIRST_REACH, aimSquare, throwPlace, judgeThrow, createHops, hop, ropePlan, createRope, stepRope, jumpRope } from './folkgames.js';
 
 const S = 2; // half blocks: the side of a square of the court
 const INVITE = 14; // half blocks: the children ask a hero this near
@@ -20,6 +20,7 @@ const LEAVE = 26; // half blocks: a hero this far away leaves the game
 const NEAR_START = 4; // half blocks: a hero this near the start line stands at it
 const STILL_START = 8; // half blocks: a hero who stands still this near the start line for STILL_WAIT
 const STILL_WAIT = 1; // seconds
+const REACH_MORE = 2; // squares: after a throw in the called square, the calls go this much farther
 const NAME_GLOW = 3; // seconds of the glow of a thing that a line names
 const SHOW_SHARD = 3; // seconds of the line that shows the shard, before the first call
 // The lines that name the start line, and those that name the shard (#114).
@@ -244,7 +245,7 @@ export function createFolk(deps) {
   }
   function callNow() {
     if (!game.retry || game.call === null) {
-      const c = callSquare(game.court, rngOf(`call:${game.rounds}:${game.prev}`), game.prev, game.plan.near);
+      const c = callSquare(game.court, rngOf(`call:${game.rounds}:${game.prev}`), game.prev, game.plan.near, deps.profile.folk?.reach ?? FIRST_REACH);
       game.call = c;
       game.prev = c.square;
     }
@@ -294,6 +295,9 @@ export function createFolk(deps) {
     deps.skill({ type: 'skill', skill: game.skill, level: game.level, task: 'folk-loco', id: 'folk:shard', correct: r.result === 'in', solved: r.result === 'in', efficient: r.result === 'in', first: game.first, mashing: false, evidence: true, parts: [Math.round(place * 10) / 10], target: game.call.square + 0.5 });
     game.first = false;
     if (r.result === 'in') {
+      // A throw in the called square: the next calls can go farther (#114).
+      const folk = (deps.profile.folk ??= {});
+      folk.reach = Math.max(folk.reach ?? FIRST_REACH, game.call.square + REACH_MORE);
       say('loco.in', {});
       game.hops = createHops(game.court, r.square);
       game.phase = 'hop';
