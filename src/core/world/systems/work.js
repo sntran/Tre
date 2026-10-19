@@ -1074,8 +1074,9 @@ function act(world, e, want, env) {
     say(world, 'measure', tz.id, { n: m + 1, sound: 'tap' });
   } else if (want.act === 'exact') {
     // The person of a small event checks the work: the sum of the sizes on the place is the commit.
+    // The person of the event is event:<the id of the event> (event:duck), not of the trial (#100).
     const place = zoneEnt(world, `${task.id}-place`);
-    if (!place || !(near(place.position, REACH + 6) || near(getEntity(world, `event:${task.id}`)?.position, REACH + 3))) return;
+    if (!place || !(near(place.position, REACH + 6) || near(getEntity(world, `event:${tz.zone.event}`)?.position, REACH + 3))) return;
     const things = place.zone.items.map((id) => getEntity(world, id)).filter(Boolean);
     const brought = things.filter((t) => !t.item.fixed);
     if (!brought.length) return say(world, 'short', place.id, { sound: 'tap' });
