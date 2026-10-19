@@ -1,0 +1,103 @@
+{
+ "about": "#103: the riddle of the evening into the night: Bà says it, a wave gives the clue, the notebook keeps it, and a tap on a chicken finds it.",
+ "start": "?story=riddle-evening",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'riddle.ask.grandma')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-riddle-ba-says-the-riddle-of-the-evening"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'riddle.ga.clue')",
+   "timeout": 30
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "night-riddle-a-wave-gives-the-clue"
+  },
+  {
+   "print": "tre.activeVillage.state().clock.minutes"
+  },
+  {
+   "until": "tre.activeVillage.state().clock.minutes % 1440 > 1190",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "night-riddle-the-village-at-night"
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "click": "Sổ tay",
+   "after": 1.5
+  },
+  {
+   "shot": "night-riddle-the-notebook-keeps-the-riddle"
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.filter((e) => e.kind === 'chicken' && !e.hidden).sort((a, b) => Math.hypot(a.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, a.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) - Math.hypot(b.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, b.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z))[0]?.id"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.session.profile.riddles?.open || tre.activeVillage.heard().some((x) => x.key === 'riddle.later')",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-riddle-a-tap-on-a-chicken-finds-it"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'riddle.ga.fit')",
+   "timeout": 120,
+   "if": "tre.activeVillage.heard().some((x) => x.key === 'riddle.later')"
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "night-riddle-ba-says-how-the-words-fit"
+  }
+ ]
+}

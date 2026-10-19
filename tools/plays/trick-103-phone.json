@@ -1,0 +1,99 @@
+{
+ "about": "#103: a tap on the child of the hopscotch gives a trick question, and the answer after a short wait.",
+ "start": "?story=trick-hopscotch",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "thing": "npc:loco-child"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))"
+  },
+  {
+   "wait": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))"
+  },
+  {
+   "tap": {
+    "thing": "npc:loco-child"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))"
+  },
+  {
+   "wait": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))"
+  },
+  {
+   "tap": {
+    "thing": "npc:loco-child"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))"
+  },
+  {
+   "wait": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))"
+  },
+  {
+   "tap": {
+    "thing": "npc:loco-child"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))"
+  },
+  {
+   "wait": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))"
+  },
+  {
+   "tap": {
+    "thing": "npc:loco-child"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))"
+  },
+  {
+   "wait": 2.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^trick\\./.test(x.key))",
+   "timeout": 20
+  },
+  {
+   "wait": 0.8
+  },
+  {
+   "shot": "trick-a-child-asks-a-trick-question"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^trick\\..*\\.answer$/.test(x.key))",
+   "timeout": 20
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "trick-the-answer-after-a-short-wait"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  }
+ ]
+}
