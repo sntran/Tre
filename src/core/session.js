@@ -55,6 +55,7 @@ import { rainOf } from './world/systems/sky.js';
 import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
 import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
+import { viewSize, inView } from '../world/view.js';
 import { levelFor, taskOf, trialLevel } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring, decimalWords } from './mentoring.js';
@@ -576,11 +577,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // The notebook (#8, src/core/notebook.js): the things that the child meets. A new print sends the
   // event notebook (the view shows the print for a moment).
-  function noteKey(key) {
+  // from: the entity of the print (an animal), which pulses when its card shows (#113).
+  function noteKey(key, from = null) {
     if (!data.notebook || !noteSeen(profile, key, state?.clock?.minutes ?? 0)) return;
-    for (const e of entriesOfKey(data.notebook, key)) emit({ type: 'notebook', id: e.id, titleKey: e.titleKey, look: e.look ?? null, kind: e.kind });
+    for (const e of entriesOfKey(data.notebook, key)) emit({ type: 'notebook', id: e.id, titleKey: e.titleKey, look: e.look ?? null, kind: e.kind, ...(from ? { from } : {}) });
   }
   const NOTE_NEAR = 20; // half blocks: an animal this near the hero is met
+  // An animal is met only while it is on the screen (#113: "Tranh mới: Con cú" came, and no owl was
+  // in view): in the near view of a phone held upright, the narrowest screen.
+  const NOTE_SCREEN = viewSize(390, 844, 0);
+  const onScreen = (p, hp) => inView({ x0: p.x / 2 - 0.4, x1: p.x / 2 + 0.4, y0: (p.y ?? 0) / 2, y1: (p.y ?? 0) / 2 + 0.8, z0: p.z / 2 - 0.4, z1: p.z / 2 + 0.4 }, { x: hp.x / 2, y: (hp.y ?? 0) / 2, z: hp.z / 2 }, { az: viewAz, size: NOTE_SCREEN });
   const creatureKinds = () => new Set((data.notebook?.entries ?? []).filter((e) => e.met.startsWith('creature:')).map((e) => e.met.slice(9)));
   // About each second: the animals near the hero, the enemies of a raid, and the place of the map.
   function checkNotebook() {
@@ -590,7 +596,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!hp) return;
     for (const e of state.entities) {
       if (!e.kind || !kinds.has(e.kind) || !e.position) continue;
-      if (Math.hypot(e.position.x - hp.x, e.position.z - hp.z) <= NOTE_NEAR) noteKey(`creature:${e.kind}`);
+      if (!e.hidden && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) <= NOTE_NEAR && onScreen(e.position, hp)) noteKey(`creature:${e.kind}`, e.id);
     }
     for (const en of raidEnt()?.raid.enemies ?? []) if (kinds.has(en.kind)) noteKey(`creature:${en.kind}`);
     // A place: the hero is in the rect of its map on the plane.

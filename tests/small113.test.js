@@ -83,3 +83,42 @@ test('while the envoy waits at the đình, the people of the village walk there 
   });
   assert.ok(near.length >= 3, `people near the envoy: ${near.join(', ')}`);
 });
+
+test('the card of a new animal comes only while the animal is on the screen, and names the animal that pulses', async () => {
+  const { runHeadless } = await import('./story-run.js');
+  const { getEntity } = await import('../src/core/world/state.js');
+  const { inView, viewSize } = await import('../src/world/view.js');
+  const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true } };
+  let session = null;
+  const cards = [];
+  await runHeadless({ name: 'card-113', profile, clock: 600, at: ['phu-dong', 40, 60], steps: [{ wait: 0.5 }] }, {
+    onSession: (s) => {
+      session = s;
+      s.listen((e) => { if (e.type === 'notebook' && e.from) cards.push(e); });
+    },
+  });
+  const hero = getEntity(session.state, 'hero');
+  const dog = session.state.entities.find((e) => e.kind === 'dog' && e.position);
+  assert.ok(dog, 'a dog');
+  const hold = (p) => {
+    for (let i = 0; i < 60; i++) {
+      Object.assign(dog.position, p);
+      delete dog.route;
+      session.step();
+      session.events();
+    }
+  };
+  // Near, but off the screen of a phone held upright.
+  const scr = viewSize(390, 844, 0);
+  const hp = hero.position;
+  let off = null;
+  for (let a = 0; a < 16 && !off; a++) {
+    const p = { x: hp.x + Math.sin(a * Math.PI / 8) * 16, y: hp.y, z: hp.z + Math.cos(a * Math.PI / 8) * 16 };
+    if (!inView({ x0: p.x / 2 - 0.4, x1: p.x / 2 + 0.4, y0: p.y / 2, y1: p.y / 2 + 0.8, z0: p.z / 2 - 0.4, z1: p.z / 2 + 0.4 }, { x: hp.x / 2, y: hp.y / 2, z: hp.z / 2 }, { az: Math.PI / 4, size: scr })) off = p;
+  }
+  assert.ok(off, 'a point off the screen');
+  hold(off);
+  assert.equal(cards.filter((c) => c.from === dog.id).length, 0, 'no card while the dog is off the screen');
+  hold({ x: hp.x + 2, y: hp.y, z: hp.z + 2 });
+  assert.ok(cards.some((c) => c.from === dog.id), 'the card when the dog is on the screen');
+});

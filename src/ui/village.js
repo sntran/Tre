@@ -1522,6 +1522,8 @@ export async function mountVillage(ctx, params = {}) {
   function showPrint(ev) {
     // The name that the child gave to Nghé (#77: "Mít, bạn của em").
     const name = tn(ev.titleKey);
+    // The animal of the card pulses, so that the child sees which one it is (#113).
+    if (ev.from) figures.pulse(ev.from);
     // The card shows the picture of the notebook next to the new print, so that a child who
     // does not know the word "sổ tay" sees what it is (#72).
     const card = h('button', { class: 'print-card', type: 'button' }, [
