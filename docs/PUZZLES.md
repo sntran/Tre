@@ -15,12 +15,14 @@ A puzzle is a side quest that a person offers on some days ("Puzzles, riddles, a
 
 ## The ferry: a dog, a chicken, and a sack of rice
 
-A traveler waits on the bank by the boat of Phù Đổng with a dog, a chicken, and a sack of rice, and says the puzzle when the hero comes near (a tap on him says it again). The traveler says it as a puzzle of the travelers on the river, not as a Vietnamese tale.
+A traveler waits on the bank west of the boat of Phù Đổng with a dog, a chicken, and a sack of rice. He wears a khăn and carries a bundle on a pole (quang gánh), so that a child does not take him for the fisher. When the hero comes within `OFFER_NEAR` (12 half blocks, `src/core/puzzles.js`), he says the puzzle in three short lines, one at a time, each spoken (a tap on him says them again). The traveler says it as a puzzle of the travelers on the river, not as a Vietnamese tale. The ferry stands away from the ford, so that no stepping stones are in the view of the puzzle, and the boat is longer than the hero (#110).
 
-- A tap on a thing, and then a press, puts it into the boat (one thing; a tap on it in the boat and a press take it out). A press on the bank of the boat crosses: the boat takes the hero and the thing (the ferry system of `src/core/world/systems/ferry.js`), and the thing steps onto the other bank.
+- Next to a thing (nearer to it than to the landing), the big button takes it into the boat with no tap; a tap on a thing chooses it too. At the landing, a press crosses: the boat takes the hero and the thing (the ferry system of `src/core/world/systems/ferry.js`), and the thing steps onto the other bank. The picture of the button is the boat with what it carries. From the bank where all three things wait, an empty boat does not cross: the traveler says "Thuyền chưa chở gì." and points at the things.
+- During the puzzle the view frames both landings, the boat, the things on each bank, and the traveler, and what stands in front of them fades. After each crossing, the traveler says what is on the bank that the hero left ("Bên kia còn con chó và bao gạo.").
 - When a pair is left alone on the bank that the boat left, the world shows it at once and gently: the dog runs around the chicken, or the chicken pecks at the sack and a little rice spills. The traveler says it ("Ôi, chó đuổi gà rồi! Mình quay lại nhé."), and then the boat brings the hero and the thing back, and all are where they were before that crossing. No animal is hurt.
-- When all three are on the far bank, the traveler thanks the child and gives two eggs. The ford upstream leads back. The record keeps the crossings (`profile.puzzles.ferry.crossings`; seven is the least).
-- The hints of a wave: "Có một thứ không để một mình với thứ nào được, cháu nhìn kỹ nhé.", "Con gà đi trước.", "Cháu có thể chở một thứ quay lại."
+- When all three are on the far bank, the traveler thanks the child, turns to the hero, and gives two eggs with a line that names them ("Chú cho cháu hai quả trứng."). The ford leads back. The record keeps the crossings (`profile.puzzles.ferry.crossings`; seven is the least).
+- A wave gets a hint only after the traveler said the puzzle, and only near him. The first hint is the rule again, with the traveler pointing at each pair ("Chó ở một mình với gà thì đuổi gà. Gà ở một mình với gạo thì mổ gạo."), and it comes again until a wrong crossing or a long wait (`WAIT_HINT`, 60 seconds). Then "Con gà đi trước.". The last hint is a demonstration, as at the well: the traveler takes the chicken across and back in the boat, and says "Mình có thể chở một thứ quay lại."
+- A bubble of a puzzle goes when the hero walks more than 6 cells away from its person.
 
 ## The two pots at the well
 
@@ -30,6 +32,7 @@ After her task is done, on some days, the healer at the well (11:30 to 12:30) sa
 - Each pot shows its water through its side: a ring for each bowl, blue to the level (no numeral).
 - The check: just right, and the healer thanks the child and gives an egg; too much, the jar runs over; too little, the jar stays low; she says which, and pours it back into the well. Each check is a skill event: `math.sub.10` for grades 1 and 2 (the need is two bowls: one pour), `math.addsub.100` from grade 3 (four bowls: a plan of several steps).
 - The hints of a wave: "Đổ đầy cái nồi lớn trước.", "Đổ nồi lớn sang nồi nhỏ, rồi xem nồi lớn còn lại bao nhiêu nhé.", and then she shows the first two steps: the big pot fills, and then it pours into the small one.
+- As at the ferry, a wave at the well gets a hint only after the healer said the puzzle, and only within `OFFER_NEAR` of her (#110).
 
 ## The tales of later eras
 

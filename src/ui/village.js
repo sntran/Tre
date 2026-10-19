@@ -1182,7 +1182,7 @@ export async function mountVillage(ctx, params = {}) {
       if (who && near(who)) pts.push({ ...who, work: true });
       // The things that a talk names fade nothing in front of them too, also before the task opens
       // (#108: a roof covered the beds and the basket during the first talk of the healer).
-      if (work?.talk) pts.push(...work.points.filter(near).map((p) => ({ ...p, y: groundY(p.x, p.z), work: true })));
+      if (work?.talk || work?.fade) pts.push(...work.points.filter(near).map((p) => ({ ...p, y: groundY(p.x, p.z), work: true })));
       const out = [heroAt, ...(person ? [person] : []), ...pts];
       return out.length > 1 ? out : heroAt;
     }
@@ -1611,7 +1611,11 @@ export async function mountVillage(ctx, params = {}) {
         return;
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
-      case 'workView': turnToWork(ev.points, ev.sight, ev.person); return;
+      case 'workView':
+        turnToWork(ev.points, ev.sight, ev.person);
+        // The things of a puzzle fade nothing in front of them (#110: a bamboo covered the landing).
+        if (work) work.fade = ev.key === 'puzzle';
+        return;
       // A new print in the notebook (#8): a small card at the top for a moment; a tap opens the
       // notebook.
       case 'notebook': printQueue.push(ev); return;

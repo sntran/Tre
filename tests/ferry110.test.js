@@ -1,6 +1,7 @@
 // The ferry after the play test (#110): no hint before the puzzle, the puzzle in short lines, the
-// first hint is the rule, no ford in the frame of the puzzle, and a traveler who does not look like
-// the fisher.
+// things taken by nearness, an empty boat does not cross from the full bank, both banks in the view
+// with the line of the bank that the hero left, the first hint is the rule, no ford in the frame of
+// the puzzle, and a traveler who does not look like the fisher.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
@@ -81,6 +82,45 @@ test('a wave near the traveler before the puzzle gives no hint; the first wave a
   }
 });
 
+test('next to a thing, the button takes it with no tap; an empty boat does not cross from the full bank', async () => {
+  const p = await at([3, 62]);
+  p.run(10);
+  p.standAt('pz:dog');
+  const a = p.session.action();
+  assert.equal(a?.act, 'take');
+  assert.equal(a.target, 'pz:dog');
+  // At the landing with empty hands and all three things on the bank: no crossing.
+  const h = getEntity(p.session.state, 'hero');
+  Object.assign(h.position, { x: p.boat().landA.x, z: p.boat().landA.z - 1 });
+  delete h.route;
+  p.run(1.5);
+  assert.equal(p.press(), 'cross');
+  p.run(3);
+  assert.equal(p.boat().side, 'a');
+  assert.equal(p.boat().state, 'wait');
+  assert.ok(p.said.includes('puzzle.ferry.empty'), p.said.join(', '));
+});
+
+test('after a crossing, the view frames the things of both banks, and the traveler says what is on the bank that the hero left', async () => {
+  const p = await at([3, 62]);
+  p.run(10);
+  p.standAt('pz:chicken');
+  assert.equal(p.press(), 'take');
+  // The picture of the button is the boat with the chicken in it.
+  p.run(0.5);
+  assert.equal(p.session.buttonThing(), 'chicken');
+  assert.equal(p.press(), 'cross');
+  p.run(30, () => p.boat().state === 'wait' && p.boat().side === 'b');
+  p.run(0.5);
+  const pts = p.views.at(-1);
+  const near = (id) => {
+    const e = getEntity(p.session.state, id).position;
+    return pts.some((q) => Math.hypot(q.x - e.x, q.z - e.z) < 1);
+  };
+  assert.ok(near('pz:chicken') && near('pz:dog') && near('pz:rice'), 'the things of both banks are points of the view');
+  assert.ok(p.said.includes('puzzle.ferry.left'), p.said.join(', '));
+});
+
 test('no ford and no stepping stones within the frame of the puzzle', () => {
   const map = load('data/maps/phu-dong.json');
   const o = map.layers.objects.find((x) => x.id === F.anchor);
@@ -107,4 +147,29 @@ test('the traveler wears a khăn and carries a bundle on a pole, not the nón an
   assert.equal(t.carried?.kind, 'bundle-pole');
   assert.notEqual(t.top, figs.fisher.top);
   assert.notEqual(t.top, 'indigoPale');
+});
+
+test('the last hint is a demonstration: the traveler takes the chicken across and back, and all is as before', async () => {
+  const p = await at([3, 62]);
+  p.run(10);
+  // A wrong crossing first: the dog, and the chicken pecks at the rice.
+  p.standAt('pz:dog');
+  assert.equal(p.press(), 'take');
+  assert.equal(p.press(), 'cross');
+  p.run(40, () => p.boat().state === 'wait' && p.boat().side === 'a' && !p.ferry().scene && !p.ferry().back);
+  for (let i = 0; i < 3; i++) {
+    p.run(2);
+    p.session.command({ type: 'wave' });
+    p.run(1);
+  }
+  assert.ok(p.said.includes('puzzle.ferry.hint.3'));
+  assert.ok(p.ferry().demo, 'the demonstration');
+  let across = false;
+  p.run(40, () => {
+    if (p.boat().side === 'b') across = true;
+    return !p.ferry().demo;
+  });
+  assert.ok(across, 'the boat went across with the chicken');
+  assert.deepEqual(p.ferry().where, { dog: 'a', chicken: 'a', rice: 'a' });
+  assert.equal(p.boat().side, 'a');
 });

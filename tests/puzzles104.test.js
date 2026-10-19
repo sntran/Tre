@@ -103,7 +103,7 @@ test('the ferry: a wrong pair shows its scene and all come back; seven crossings
   const cross = (thing) => {
     if (thing) {
       p.tapThing(`pz:${thing}`);
-      assert.equal(p.press(), 'load', thing);
+      assert.equal(p.press(), 'take', thing);
     }
     assert.equal(p.press(), 'cross');
     p.run(25, () => getEntity(p.session.state, 'ferry:pz').ferry.state === 'wait');
@@ -127,7 +127,9 @@ test('the ferry: a wrong pair shows its scene and all come back; seven crossings
   assert.deepEqual(ferry().where, { dog: 'a', chicken: 'a', rice: 'a' }, 'all as before the demonstration');
   for (const t of ['chicken', null, 'dog', 'chicken', 'rice', null, 'chicken']) cross(t);
   assert.deepEqual(ferry().where, { dog: 'b', chicken: 'b', rice: 'b' });
+  p.run(5);
   assert.ok(p.said.includes('puzzle.ferry.done'));
+  assert.ok(p.said.includes('puzzle.ferry.gift'), 'a line names the gift');
   assert.ok(p.events.some((e) => e.type === 'gift'));
   assert.equal(p.session.profile.puzzles.ferry.crossings, 8, 'the record keeps the crossings (one back, and seven)');
 });
@@ -221,7 +223,7 @@ test('the scene of a wrong pair on the other bank is in the view with the hero',
   const views = [];
   p.session.listen((e) => { if (e.type === 'workView' && e.key === 'puzzle') views.push(e); });
   p.tapThing('pz:dog');
-  assert.equal(p.press(), 'load');
+  assert.equal(p.press(), 'take');
   assert.equal(p.press(), 'cross');
   p.run(25, () => views.length > 0);
   assert.ok(views.length >= 1, 'the view turns to the scene');
@@ -282,7 +284,7 @@ test('a grade changed before the first move of the pots gives the need of the ne
 test('a puzzle that the child started goes on past midnight', async () => {
   const p = await at(FERRY, 1);
   p.tapThing('pz:dog');
-  assert.equal(p.press(), 'load');
+  assert.equal(p.press(), 'take');
   p.session.state.clock.minutes += 1440;
   p.run(1);
   assert.ok(p.session.puzzles.state().ferry, 'the ferry stays');

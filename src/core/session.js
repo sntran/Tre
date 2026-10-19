@@ -4874,11 +4874,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     carried() {
       return hero()?.carry ?? null;
     },
-    // The picture of a thing on the action button: the thing in the hands, or the thing that a press
-    // takes and puts in one move (#108: the child did not know which herb the press moved).
+    // The picture of a thing on the action button: the thing in the hands, the thing that a press
+    // takes and puts in one move (#108: the child did not know which herb the press moved), or the
+    // thing of an act (the thing in the boat of the ferry, #110).
     buttonThing() {
-      const a = hero()?.carry ? null : btn?.show ?? null;
-      return hero()?.carry ?? (a?.icon === 'hand-move' ? a.ghost?.look ?? null : null);
+      const a = hero()?.carry ? null : button()?.show ?? null;
+      return hero()?.carry ?? (a?.icon === 'hand-move' ? a.ghost?.look ?? null : a?.thing ?? null);
     },
     get state() { return state; },
     get map() { return map; },

@@ -130,6 +130,13 @@ export function createPuzzles(deps) {
     ferry.where[t] = boat().ferry.side;
     pack();
   }
+  // An empty boat from the bank where all three things wait (#110): the traveler says it and points
+  // at the things.
+  function emptyBoat() {
+    deps.say('pz:traveler', 'puzzle.ferry.empty', {});
+    const pts = F.things.map((t) => getEntity(w(), thingId(t))?.position).filter(Boolean);
+    pts.forEach((p, i) => after(i * 0.8, () => point(p, 1.2)));
+  }
   function cross() {
     const e = boat();
     const f = e?.ferry;
@@ -170,7 +177,7 @@ export function createPuzzles(deps) {
       for (const t of F.things) if (ferry.where[t] === 'boat') ferry.where[t] = ferry.snapshot.side;
       ferry.load = null;
       pack();
-      lookAtBank(f.side);
+      lookBoth();
       return;
     }
     if (ferry.load) {
@@ -191,7 +198,7 @@ export function createPuzzles(deps) {
       deps.sound(pair[2] === 'chase' ? 'bark' : 'peck');
       return;
     }
-    lookAtBank(f.side);
+    lookBoth();
     if (F.things.every((t) => ferry.where[t] === 'b')) {
       const s = st('ferry');
       s.solved = deps.day();
@@ -200,14 +207,20 @@ export function createPuzzles(deps) {
       s.crossings = s.tries;
       deps.log('puzzle', { id: 'ferry', crossings: s.tries, least: F.least });
       deps.say('pz:traveler', 'puzzle.ferry.done', {});
-      deps.give(F.gift, 'pz:traveler');
+      // The traveler gives the eggs from his hand to the hero, in view, with a line that names them
+      // (#110: the gift came as a small egg under the count of rice).
+      const tr = getEntity(w(), 'pz:traveler');
+      if (tr) tr.gesture = { act: 'point', x: hero().position.x, z: hero().position.z, t: 2.5 };
+      after(OFFER_LINE, () => {
+        deps.say('pz:traveler', 'puzzle.ferry.gift', { n: { key: `num.${F.gift.egg ?? 1}` } });
+        deps.give(F.gift, 'pz:traveler');
+      });
       s.tries = 0;
+      return;
     }
-  }
-  // The view shows the bank of the hero: its things and the boat.
-  function lookAtBank(side) {
-    const pts = F.things.filter((t) => ferry.where[t] === side).map((t) => ({ ...getEntity(w(), thingId(t)).position }));
-    deps.look([...pts, { ...boat().position }]);
+    // After a crossing, the traveler says what is on the bank that the hero left (#110).
+    const names = namesOn(left);
+    if (names.length) deps.say('pz:traveler', 'puzzle.ferry.left', { list: names });
   }
   // The view shows both landings, the boat, the things on each bank, and the traveler (#110: the
   // things on the far bank were out of the view, and a child could not tell who was on which side).
@@ -224,6 +237,8 @@ export function createPuzzles(deps) {
     lookBoth();
     F.offer.forEach((key, i) => after(i * OFFER_LINE, () => { if (ferry) deps.say('pz:traveler', key, {}); }));
   }
+  // The things on a bank, as a list of names ("con chó và bao gạo").
+  const namesOn = (bank) => F.things.filter((t) => ferry.where[t] === bank).map((t) => ({ key: `puzzle.thing.${t}` }));
   // The traveler points at a point (half blocks) for a moment.
   function point(at, t = 2) {
     const e = getEntity(w(), 'pz:traveler');
@@ -436,11 +451,28 @@ export function createPuzzles(deps) {
         const side = f.side;
         const land = side === 'a' ? f.landA : f.landB;
         if (heroSide() === side && dist(h, land) <= reach + 8) {
-          const t = F.things.find((x) => thingId(x) === chosen);
-          if (t && ferry.where[t] === side && !ferry.load) add({ act: 'load', icon: 'boat', target: thingId(t), at: getEntity(w(), thingId(t)).position, rank: -1, work: true, run: () => load(t) }, reach + 2);
-          else if (t && ferry.load === t) add({ act: 'unload', icon: 'hand-pick', target: thingId(t), at: boat().position, rank: -1, run: () => unload() }, reach + 4);
-          // The bank of the boat is one place: a press anywhere on it near the landing crosses.
-          add({ act: 'cross', icon: 'boat', target: 'ferry:pz', at: { x: h.x, y: h.y, z: h.z }, rank: 1, run: () => cross() }, reach);
+          // A thing of the bank of the hero: the act "take" by nearness, as a pot at the well, or by
+          // a tap on it (#110: a thing was an act only after a tap on it, and the button stayed dim).
+          // At the landing (nearer to it than to the thing), the act is the crossing: so the boat
+          // can go back empty.
+          if (!ferry.load) {
+            for (const t of F.things) {
+              if (ferry.where[t] !== side) continue;
+              const e = getEntity(w(), thingId(t));
+              if (chosen !== e.id && dist(h, e.position) >= dist(h, land)) continue;
+              add({ act: 'take', icon: 'hand-pick', target: e.id, at: e.position, rank: chosen === e.id ? -1 : 0, work: chosen === e.id, run: () => load(t) }, reach + 2);
+            }
+          } else {
+            const t = ferry.load;
+            if (chosen === thingId(t)) add({ act: 'unload', icon: 'hand-pick', target: thingId(t), at: boat().position, rank: -1, run: () => unload() }, reach + 4);
+          }
+          // The bank of the boat is one place: a press anywhere on it near the landing crosses. The
+          // picture is the boat with what it carries (#110: a child pressed the boat to put the dog
+          // in). From the bank where all three things wait, an empty boat does not cross.
+          // With the boat empty, a thing nearer than the landing comes first (its "take"); with a
+          // thing in the boat, the crossing.
+          const full = !ferry.load && F.things.every((t) => ferry.where[t] === side);
+          add({ act: 'cross', icon: 'boat', thing: ferry.load ? LOOK[ferry.load] : null, target: 'ferry:pz', at: { x: land.x, y: h.y, z: land.z }, rank: ferry.load ? -1 : 8, run: () => (full ? emptyBoat() : cross()) }, reach + 8);
         }
       }
       if (pots && !pots.demo) {
