@@ -3025,6 +3025,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // itself (#47). The things of the heap are in reach, not only its point.
     const heapNear = (task) => query(state, 'zone').some((h) => (h.zone.rule === 'heap' || h.zone.rule === 'pile') && (task === null ? h.zone.task?.startsWith('trial-') && !trialZone(h.zone.task.slice(6))?.zone.done : h.zone.task === task)
       && h.zone.items.some((id) => { const t = getEntity(state, id); return t?.position && !t.item.held && distHb(hp, middleOf(t)) <= REACH + 2; }));
+    // The person of the next step of the story (the goal), near the hero: the talk is with that
+    // person, and the talks of the others, which send the child to find that person, wait for a
+    // tap (#113: with the envoy next to the hero, the button talked to the elder again).
+    const goalNow = currentGoal(data.quests.quests, cond());
+    const goalPeople = new Set((goalNow?.step.targets ?? (goalNow?.step.target ? [{ npc: goalNow.step.target }] : [])).map((tg) => tg.npc).filter(Boolean));
+    const goalNear = persons().some((q) => q.kind === 'npc' && goalPeople.has(q.ref) && !getEntity(state, q.entity)?.hidden && distHb(hp, getEntity(state, q.entity).position) <= REACH + 3);
     // People: the finish of the task of the person, or a talk (during the task: a call for help).
     for (const q of persons()) {
       const e = getEntity(state, q.entity);
@@ -3060,7 +3066,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // presses the button near the forge for other things does not open the same talk (#49).
       // In a practice, a person who is not of the practice greets only after a tap (#51).
       else if (practice && q.kind === 'npc' && !ofPractice(q.ref) && !tapped) continue;
-      else if (tapped || q.kind !== 'npc' || !heard.has(pickTalk(data.npcs.npcs[q.ref] ?? {}, profile))) add({ ...base, act: 'talk', icon: 'talk', rank: 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
+      else if (goalNear && q.kind === 'npc' && !goalPeople.has(q.ref) && !tapped) continue;
+      else if (tapped || q.kind !== 'npc' || !heard.has(pickTalk(data.npcs.npcs[q.ref] ?? {}, profile))) add({ ...base, act: 'talk', icon: 'talk', rank: goalPeople.has(q.ref) ? -1 : 3, run: () => interact({ kind: q.kind, id: q.ref }, q) }, REACH + 3);
     }
     if (!held) {
       // The folk games of the children: join them, and the throw of the shard (a hold).
@@ -4484,6 +4491,39 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The fisher of the bridge goes home at night as before: Nghé helps there (#24).
     const mentor = stayKey && stayKey !== 'bridge' ? mentoring.personOf(stayKey) : null;
     for (const p of persons()) if (p.kind === 'npc') worldCommand(state, { type: 'stay', id: p.entity, on: wanted.has(p.ref) || p.entity === mentor });
+    gatherFor(goal?.step.gather ?? null);
+  }
+  // The people of a gathering of the story (#113: "Dân làng kéo đến nghe.", and nobody came): while
+  // the step of the goal has `gather`, its people walk to spots around its person and stay there,
+  // in view while the person speaks; after the step they go back to their days.
+  const GATHER_R = 6; // half blocks from the person of the gathering
+  function gatherFor(gather) {
+    const center = gather ? getEntity(state, `npc:${gather.at}`)?.position : null;
+    const people = gather?.people ?? [];
+    for (const p of persons()) {
+      if (p.kind !== 'npc') continue;
+      const e = getEntity(state, p.entity);
+      if (!e?.schedule) continue;
+      const i = people.indexOf(p.ref);
+      if (center && i >= 0 && !e.gathered) {
+        // A free spot on an arc in front of the person.
+        const a0 = (center.facing ?? 0) - Math.PI / 2;
+        let spot = null;
+        for (let k = 0; k < 6 && !spot; k++) {
+          const a = a0 + ((i + 0.5 + k * 0.37) / people.length) * Math.PI;
+          const q = { x: center.x + Math.sin(a) * GATHER_R, z: center.z + Math.cos(a) * GATHER_R };
+          if (tileMap.walkable(Math.floor(q.x / 2), Math.floor(q.z / 2))) spot = q;
+        }
+        if (!spot) continue;
+        e.gathered = { spot: e.schedule.spot, hold: e.schedule.hold ?? false };
+        e.schedule.spot = spot;
+        e.schedule.hold = true;
+      } else if ((!center || i < 0) && e.gathered) {
+        e.schedule.spot = e.gathered.spot;
+        if (!e.gathered.hold) delete e.schedule.hold;
+        delete e.gathered;
+      }
+    }
   }
 
   // One step of the world, then the events of the step, the exits, and the trigger zones.
@@ -4510,6 +4550,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       stayKey = key;
       updateStays();
     }
+    // A step of the story with a gathering starts or ends (about each second).
+    if (state.tick % 30 === 0) gatherFor(currentGoal(data.quests.quests, cond())?.step.gather ?? null);
     worldStep(state, STEP, env);
     // The picture of the button, as the child sees it (about each 0.1 seconds).
     if (state.tick % 3 === 0 && !screen) button();

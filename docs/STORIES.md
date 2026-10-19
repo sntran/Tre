@@ -26,6 +26,8 @@ The screens are events, not calls. The world waits while a screen is open, and t
 
 The village scene (`src/ui/village.js`) is a thin view over the session. It finds the target of a tap under the finger, sends the commands, steps the session in its frames, draws the state, and reacts to the events.
 
+The person of the next step of the goal (the target of the step of `data/quests.json`), near the hero, takes the talk: the big button talks to that person, and the talks of the other people near, which send the child to find that person, wait for a tap (#113). A step can have a gathering (`gather: { at, people }`): while it is the step of the goal, those people walk to spots on an arc in front of its person and stay there, so that the line "Dân làng kéo đến nghe." is true in the view; after the step they go back to their days (`gatherFor` in `src/core/session.js`).
+
 ## The story files
 
 A story is a JSON file in `tests/stories/`. The name of the file is the name of the story.

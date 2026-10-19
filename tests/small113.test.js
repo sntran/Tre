@@ -46,3 +46,40 @@ test('the elder: a dark robe, a khăn, and a white beard that shows from the fro
     for (const side of ['front', 'back', 'x']) assert.ok(beardShows(fig.parts, side), `${fig.grid ? 'fine' : 'coarse'}: the beard shows from the ${side === 'x' ? 'side' : side}`);
   }
 });
+
+// The hero at the đình when the envoy has come (the step of the goal is the envoy).
+async function atEnvoy(cell = [34, 27], steps = [{ wait: 1 }]) {
+  const { runHeadless } = await import('./story-run.js');
+  const { getEntity } = await import('../src/core/world/state.js');
+  const profile = { name: 'An', grade: 1, lang: 'vi', seed: 7, flags: { 'intro.seen': true, 'prologue.started': true, 'prologue.done': true, 'trial.scholar.done': true, 'trial.smith.done': true, 'trial.fisher.done': true, 'trial.healer.done': true, 'trial.woodcutter.done': true } };
+  let session = null;
+  const failures = await runHeadless({ name: 'envoy-113', profile, clock: 600, at: ['phu-dong', ...cell], steps }, { onSession: (s) => { session = s; } });
+  assert.deepEqual(failures, []);
+  return { session, getEntity };
+}
+
+test('with the envoy near the hero, the big button talks to the envoy, not to the elder', async () => {
+  // Next to the elder, and the envoy a few steps away.
+  const { session } = await atEnvoy([32, 26.5]);
+  const a = session.action();
+  assert.equal(a?.act, 'talk');
+  assert.equal(a.target, 'npc:messenger', JSON.stringify(a));
+});
+
+test('while the envoy waits at the đình, the people of the village walk there and stand around him', async () => {
+  const { session, getEntity } = await atEnvoy();
+  const run = (sec) => {
+    for (let i = 0; i < sec * 30; i++) {
+      if (session.screen) session.command({ type: 'close' });
+      session.step();
+      session.events();
+    }
+  };
+  run(60);
+  const envoy = getEntity(session.state, 'npc:messenger').position;
+  const near = ['elder', 'grandma', 'teacher', 'healer', 'smith'].filter((id) => {
+    const e = getEntity(session.state, `npc:${id}`);
+    return e && !e.hidden && Math.hypot(e.position.x - envoy.x, e.position.z - envoy.z) <= 10;
+  });
+  assert.ok(near.length >= 3, `people near the envoy: ${near.join(', ')}`);
+});

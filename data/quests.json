@@ -127,7 +127,11 @@
        "giong.messenger"
       ]
      },
-     "target": "messenger"
+     "target": "messenger",
+     "gather": {
+      "at": "messenger",
+      "people": ["elder", "grandma", "teacher", "healer", "smith"]
+     }
     },
     {
      "id": "speak",
