@@ -1,0 +1,66 @@
+{
+  "name": "giong-mat",
+  "about": {
+    "vi": "Sau năm việc, An đến nhà Gióng. Gióng nằm trên chiếu và nhìn An. An bấm nút: câu Gióng nằm im hiện ra trong khi Gióng vẫn nằm (#113).",
+    "en": "After the five tasks, An goes to the house of Gióng. Gióng lies on a mat and looks at An. An presses the button: the line that Gióng lies still shows while he still lies (#113)."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true,
+      "prologue.done": true,
+      "trial.scholar.done": true,
+      "trial.smith.done": true,
+      "trial.fisher.done": true,
+      "trial.healer.done": true,
+      "trial.woodcutter.done": true
+    }
+  },
+  "clock": 600,
+  "at": [
+    "phu-dong",
+    19.2,
+    27
+  ],
+  "steps": [
+    {
+      "wait": 3
+    },
+    {
+      "expect": [
+        {
+          "entity": "mat:lie:giong-boy",
+          "near": "npc:giong-boy",
+          "within": 2
+        }
+      ]
+    },
+    {
+      "press": {
+        "entity": "npc:giong-boy"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.giong.silent.n1"
+          }
+        }
+      ]
+    }
+  ]
+}

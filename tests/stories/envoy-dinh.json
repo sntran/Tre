@@ -1,0 +1,66 @@
+{
+  "name": "envoy-dinh",
+  "about": {
+    "vi": "Sau năm việc, sứ giả của vua đến đình Phù Đổng. An đứng gần cụ trưởng làng; sứ giả ở gần đó. An bấm nút: An nói chuyện với sứ giả, không phải với cụ trưởng làng (#113).",
+    "en": "After the five tasks, the envoy of the king comes to the đình of Phù Đổng. An stands near the elder; the envoy is near. An presses the button: An talks with the envoy, not with the elder (#113)."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true,
+      "prologue.done": true,
+      "trial.scholar.done": true,
+      "trial.smith.done": true,
+      "trial.fisher.done": true,
+      "trial.healer.done": true,
+      "trial.woodcutter.done": true
+    }
+  },
+  "clock": 600,
+  "at": [
+    "phu-dong",
+    32,
+    26.5
+  ],
+  "steps": [
+    {
+      "wait": 1
+    },
+    {
+      "expect": [
+        {
+          "entity": "npc:messenger",
+          "near": "hero",
+          "within": 12
+        }
+      ]
+    },
+    {
+      "press": {
+        "entity": "npc:messenger"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.messenger.call.n1"
+          }
+        }
+      ]
+    }
+  ]
+}
