@@ -185,7 +185,12 @@
    "nodes": {
     "n1": {
      "speaker": "elder",
-     "textKey": "dlg.elder.drum.n1"
+     "textKey": "dlg.elder.drum.n1",
+     "effects": [
+      {
+       "sound": "drum"
+      }
+     ]
     }
    }
   },

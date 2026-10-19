@@ -166,3 +166,10 @@ test('Gióng lies on a mat while the line "nằm im" shows, and stands beside hi
   assert.ok(s2.near <= 3, `beside his mother: ${s2.near}`);
   assert.ok(speaks.seen.some((x) => x.view === 'scene-giong-boy'), 'the view shows them');
 });
+
+test('the line of the elder about the drum comes with the drum, also after a load', () => {
+  const dlg = load('data/dialogue/prologue.json');
+  const list = Array.isArray(dlg) ? dlg : dlg.dialogues;
+  const drum = list.find((d) => d.id === 'elder.drum');
+  assert.ok(Object.values(drum.nodes).some((n) => (n.effects ?? []).some((e) => e.sound === 'drum')), JSON.stringify(drum));
+});
