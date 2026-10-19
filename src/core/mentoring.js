@@ -979,7 +979,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   }
 
   // The count of the desks of grade 4 (#101): the total of each desk ("mười một"), then the box
-  // ("Hộp: thừa hai."), and then what the count shows: rods that are not shared yet, desks that are
+  // ("Hộp: thừa hai.", or "Hộp: không có que nào."), and then what the count shows: rods that are not shared yet, desks that are
   // not equal, or enough rods in the box for one more on each desk.
   function deskSteps(task, s, t) {
     const w = world();
@@ -1000,7 +1000,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const rest = total(box);
     if (box && lines.box) {
       s.point(t, box.position, 1.2);
-      s.say(t + 0.1, lines.box, { n: { key: `num.${Math.min(150, rest)}` } });
+      // An empty box has its own line: "Hộp: thừa không." is not how a person says it.
+      if (!rest && lines.boxNone) s.say(t + 0.1, lines.boxNone);
+      else s.say(t + 0.1, lines.box, { n: { key: `num.${Math.min(150, rest)}` } });
       t += 2;
     }
     // From grade 4, the whole after the groups (#101).

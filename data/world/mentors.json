@@ -378,7 +378,7 @@
         "raise": "mentor.scholar.raise",
         "tie": "mentor.scholar.tie",
         "loose": "mentor.scholar.loose", "bandLeft": "mentor.scholar.bandLeft", "bandMore": "mentor.scholar.bandMore",
-        "box": "mentor.scholar.box", "shareLeft": "mentor.scholar.shareLeft", "shareUnequal": "mentor.scholar.shareUnequal", "shareMore": "mentor.scholar.shareMore", "need": "mentor.scholar.need"
+        "box": "mentor.scholar.box", "boxNone": "mentor.scholar.boxNone", "shareLeft": "mentor.scholar.shareLeft", "shareUnequal": "mentor.scholar.shareUnequal", "shareMore": "mentor.scholar.shareMore", "need": "mentor.scholar.need"
       }
     },
     "trial-smith": {

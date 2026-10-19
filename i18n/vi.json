@@ -1415,6 +1415,7 @@
   "scholar.part.rod": "{n} que,",
   "scholar.part.value": "Thành {x}.",
   "mentor.scholar.box": "Hộp: thừa {n}.",
+  "mentor.scholar.boxNone": "Hộp: không có que nào.",
   "mentor.scholar.shareLeft": "Còn que chưa chia.",
   "mentor.scholar.shareUnequal": "Các bàn chưa bằng nhau.",
   "mentor.scholar.shareMore": "Còn đủ que cho mỗi bàn một que nữa.",

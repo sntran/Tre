@@ -157,7 +157,8 @@ test('grade 4: desks that are not equal: the teacher counts each desk and says s
   h.press();
   h.run(14);
   assert.ok(heard.includes('num.10') && heard.includes('num.0'), heard.join(' '));
-  assert.ok(heard.includes('mentor.scholar.box'), heard.join(' '));
+  // The box is empty: its own line, not "Hộp: thừa không.".
+  assert.ok(heard.includes('mentor.scholar.boxNone') && !heard.includes('mentor.scholar.box'), heard.join(' '));
   assert.ok(heard.includes('mentor.scholar.shareLeft'), heard.join(' '));
 });
 

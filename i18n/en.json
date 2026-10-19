@@ -1415,6 +1415,7 @@
   "scholar.part.rod": "rods: {n},",
   "scholar.part.value": "that makes {x}.",
   "mentor.scholar.box": "The box: {n} left over.",
+  "mentor.scholar.boxNone": "The box: no rods.",
   "mentor.scholar.shareLeft": "Some rods are not shared yet.",
   "mentor.scholar.shareUnequal": "The desks are not equal yet.",
   "mentor.scholar.shareMore": "There are enough rods for one more on each desk.",
