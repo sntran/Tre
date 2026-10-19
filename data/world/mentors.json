@@ -416,7 +416,7 @@
       }
     },
     "trial-healer": {
-      "forms": { "doses": [{ "point": "leaf:healer:dose" }], "model": [{ "put": ["model", "leaf-0"] }] },
+      "forms": { "doses": [{ "point": "leaf:healer:dose" }], "model": [{ "deal": true }] },
       "family": "basket",
       "person": "npc:healer",
       "demo": null,

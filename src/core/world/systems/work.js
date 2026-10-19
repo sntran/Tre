@@ -343,7 +343,16 @@ export function setupTrial(world, def, level, env, opts = {}) {
       addEntity(world, { id: `leaf:${def.id}:dose`, keep: true, position: { x: side.x, y: b.y, z: side.z, facing: 0 }, look: 'herb-leaf' });
       layDose(world, def, plan.recipe, side, b.y, 'dose');
     } else if (plan.form === 'model') {
-      const model = heap('model', { x: side.x - 1.2, y: b.y, z: side.z - 2.4 }, def.kinds.map((k) => `herb-${k}`), { cols: 6, step: 0.5 });
+      // The model basket is a thing of its own (#108: the child could not tell the model from the
+      // basket of the healer): on a mat of its own with its two leaves, in a row, on free ground
+      // away from the basket.
+      const avoid = world.entities.filter((e) => e.position && e !== tz && (e.item?.task === owner || e.zone?.task === owner || e.id.startsWith(`sign:${def.id}:`))).flatMap((e) => {
+        const r = e.zone?.rect;
+        return r ? [{ x: r.x0, z: r.z0 }, { x: r.x1, z: r.z0 }, { x: r.x0, z: r.z1 }, { x: r.x1, z: r.z1 }] : [{ x: e.position.x, z: e.position.z }];
+      });
+      const g = modelSpot(b, env, avoid);
+      addEntity(world, { id: `mat:${def.id}:model`, keep: true, position: { x: g.x + 0.4, y: b.y, z: g.z, facing: 0 }, look: 'model-mat' });
+      const model = heap('model', { x: g.x - 3.4, y: b.y, z: g.z - 0.6 }, def.kinds.map((k) => `herb-${k}`), { cols: 6, step: 0.5 });
       for (const k of def.kinds) {
         for (let i = 0; i < plan.recipe[k] * MODEL_DOSES; i++) {
           const id = `herb-${k}:model:${tz.zone.made++}`;
@@ -353,9 +362,9 @@ export function setupTrial(world, def, level, env, opts = {}) {
       }
       model.zone.model = true;
       packHeap(world, model.zone);
-      addEntity(world, { id: `basket:${def.id}:model`, keep: true, position: { x: side.x - 1.6, y: b.y, z: side.z - 2.8, facing: 0 }, look: 'basket-small' });
+      addEntity(world, { id: `basket:${def.id}:model`, keep: true, position: { x: g.x - 3.8, y: b.y, z: g.z - 1.0, facing: 0 }, look: 'basket-small' });
       for (let j = 0; j < MODEL_DOSES; j++) {
-        const at = { x: side.x - 1.4 + j * 2.6, y: b.y, z: side.z + 1.2 };
+        const at = { x: g.x + 0.6 + j * 2.6, y: b.y, z: g.z };
         addEntity(world, { id: `zone:leaf-${j}`, keep: true, zone: { id: `leaf-${j}`, task: owner, rule: 'leaf', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, items: [], x: at.x, y: at.y, z: at.z, rect: { x0: at.x - 1.1, x1: at.x + 1.1, z0: at.z - 0.7, z1: at.z + 0.7 } }, position: { x: at.x, y: at.y, z: at.z + 1, facing: 0 } });
         addEntity(world, { id: `leaf:${def.id}:${j}`, keep: true, position: { x: at.x, y: at.y, z: at.z, facing: 0 }, look: 'herb-leaf' });
       }
@@ -600,6 +609,25 @@ function addRods(world, zone, kind, n, owner, tz) {
 }
 // A desk of a pupil, the box, or the table of the teacher (#101): a place for bundles and rods.
 export const DESK_STEP = 3.2;
+// The middle of the group of the model basket of the healer and its two leaves (#108): on free
+// ground west, south, or east of the basket of the healer, away from the beds and the basket, with room for the hero to stand at each
+// of them (a group in front of a bed stopped the walk to the bed). The group is about 10 half
+// blocks long (the model, then the two leaves) and 3 deep. Avoid: the points of the things of the
+// task (the bunches of the beds, the corners of the basket).
+export const MODEL_ROOM = 2;
+export function modelSpot(basket, env, avoid = []) {
+  const free = (p) => {
+    const box = { x0: p.x - 5.6, x1: p.x + 4.4, z0: p.z - 1.6, z1: p.z + 1.6 };
+    for (let x = box.x0; x <= box.x1; x += 1) for (let z = box.z0; z <= box.z1; z += 1) if (env?.isBlocked?.(Math.floor(x / 2), Math.floor(z / 2))) return false;
+    return !avoid.some((a) => a.x > box.x0 - MODEL_ROOM && a.x < box.x1 + MODEL_ROOM && a.z > box.z0 - MODEL_ROOM && a.z < box.z1 + MODEL_ROOM);
+  };
+  const spots = [
+    ...[0, 3, 6, 9].map((d) => ({ x: basket.x - 9 - d, z: basket.z + 0.6 })),
+    ...[6, 8].map((d) => ({ x: basket.x + 1, z: basket.z + d })),
+    ...[7, 9, 11].map((d) => ({ x: basket.x + 3 * BASKET_PART + d, z: basket.z + 0.6 })),
+  ];
+  return spots.find(free) ?? { x: basket.x - 4.2, z: basket.z + 1.8 };
+}
 // The colors of the mats of the desks (#107), in order.
 export const DESK_COLORS = ['red', 'blue', 'yellow', 'green', 'white'];
 // The places of k desks around a heap (heap: its zone; x, z, and 8 columns 0.7 apart), each at most

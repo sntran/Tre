@@ -1,5 +1,7 @@
-// The healer after the play test (#108): a bunch in the hands goes back to its bed, and a press
-// takes from the bed of the last tap.
+// The healer after the play test (#108): the model basket is a thing of its own, the first step of
+// the model deals it onto its leaves, no help puts bunches at a level with a structure, the check of
+// a wrong basket is by doses, a bunch in the hands goes back to its bed, and a press takes from the
+// bed of the last tap.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
@@ -37,6 +39,62 @@ async function atHealer(grade) {
   const bedThing = (k) => zone(`bed-${k}`).items.find((id) => !getEntity(session.state, id)?.item.held);
   return { session, said, puts, run, press, zone, tapThing, bedThing };
 }
+
+test('the model basket stands away from the basket of the healer and the beds, and its first step deals it onto both leaves', async () => {
+  const h = await atHealer(4);
+  const r = h.zone('basket').rect;
+  // No leaf of the model in front of a bed (#108: the hero could not walk to the bed of ngải cứu).
+  for (const k of ['ngai', 'tiato', 'rauma']) {
+    const b = h.zone(`bed-${k}`);
+    for (const j of [0, 1]) assert.ok(Math.hypot(h.zone(`leaf-${j}`).x - b.x, h.zone(`leaf-${j}`).z - b.z) > 5, `leaf ${j} at the bed of ${k}`);
+  }
+  const m = h.zone('model');
+  const gap = Math.max(r.x0 - (m.x + 3), 0, m.x - r.x1);
+  assert.ok(gap >= 2, `the model is ${gap.toFixed(1)} half blocks from the basket`);
+  assert.equal(getEntity(h.session.state, 'basket:healer:model').look, 'basket-small');
+  assert.ok(getEntity(h.session.state, 'mat:healer:model'), 'the model has a mat of its own');
+  assert.ok(h.puts.some((p) => p.zone === 'leaf-0') && h.puts.some((p) => p.zone === 'leaf-1'), JSON.stringify(h.puts));
+  // No bunch into the basket of the child, also not for a moment: the deal shows the take and the put.
+  assert.ok(!h.puts.some((p) => p.zone === 'basket'), JSON.stringify(h.puts));
+  assert.ok(h.said.includes('healer.model.leaf'), h.said.join(', '));
+  // A tap on the model: the healer counts it by kinds.
+  h.tapThing(h.zone('model').items[0]);
+  assert.ok(h.said.includes('healer.model.count'), h.said.join(', '));
+});
+
+test('at the levels of doses, the model, and fractions, a wave never puts a bunch into the basket of the child', async () => {
+  for (const grade of [3, 4, 5]) {
+    const h = await atHealer(grade);
+    for (const k of ['ngai', 'rauma']) {
+      h.tapThing(h.bedThing(k));
+      h.press();
+    }
+    h.session.command({ type: 'tap', target: { person: 'npc:healer' } });
+    h.run(5);
+    h.press();
+    h.run(25);
+    const from = h.puts.length;
+    for (let i = 0; i < 3; i++) {
+      h.session.command({ type: 'wave' });
+      h.run(30);
+    }
+    assert.ok(!h.puts.slice(from).some((p) => p.zone === 'basket'), `grade ${grade}: ${JSON.stringify(h.puts.slice(from))}`);
+  }
+});
+
+test('the check of a wrong basket at grade 4 lays it in doses and says what the last dose lacks', async () => {
+  const h = await atHealer(4);
+  for (const k of ['ngai', 'tiato', 'rauma', 'rauma']) {
+    h.tapThing(h.bedThing(k));
+    h.press();
+  }
+  h.session.command({ type: 'tap', target: { person: 'npc:healer' } });
+  h.run(5);
+  h.press();
+  h.run(25);
+  assert.ok(h.said.includes('healer.dose.lay'), h.said.join(', '));
+  assert.ok(h.said.includes('healer.dose.lack'), h.said.join(', '));
+});
 
 test('a tap on another bed with a bunch in the hands puts the bunch back on its own bed', async () => {
   const h = await atHealer(4);

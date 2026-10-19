@@ -127,6 +127,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   function basketHasEach(key, task) {
     const z = task?.place?.zone;
     if (!defOf(key)?.lines?.give || z?.rule !== 'basket') return false;
+    // A need of its own for each kind (#101): the basket has at least that many of each kind (#108:
+    // after a wrong basket of doses, a wave said to give it again).
+    if (z.need && typeof z.need === 'object' && z.each == null) return (z.kinds ?? []).every((k) => itemsOf(task.place).filter((e) => e.item.kind === `herb-${k}`).length >= z.need[k]);
     const kinds = new Set(itemsOf(task.place).map((e) => e.item.kind));
     return (z.kinds ?? []).every((k) => kinds.has(`herb-${k}`));
   }
@@ -580,8 +583,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // the help of the mat of grade 1 is no help. Each move has the line and the act of its form:
     // the mark counts the desks (or the table), and a demonstration, a smaller task, or a share is
     // a demonstration of the form on another instance.
-    const form = key === 'trial-scholar' ? task?.tz?.zone.plan?.form ?? null : null;
-    const formAct = form === 'share' || form === 'decimal' ? { mark: 'count', demo: 'show', smaller: 'show', share: 'show' }[move] ?? null : null;
+    const form = key === 'trial-scholar' || key === 'trial-healer' ? task?.tz?.zone.plan?.form ?? null : null;
+    const formAct = key === 'trial-scholar' && (form === 'share' || form === 'decimal') ? { mark: 'count', demo: 'show', smaller: 'show', share: 'show' }[move] ?? null
+      : key === 'trial-healer' && ['doses', 'model', 'fraction'].includes(form) ? { demo: 'level', smaller: 'level', share: 'level' }[move] ?? null : null;
     if (formAct) info = { ...info, small: move !== 'demo' };
     let person = task?.person ?? getEntity(w, def.person);
     // The person of the task is not there (at home at night, #51): Nghé says the lines, in the
@@ -656,6 +660,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     } else if (formAct === 'count') {
       say(t, lineOf(key, 'mark'));
       t = form === 'share' ? deskSteps(task, { say, point, mark, steps }, t + 1.6) : tableSteps(task, { say, point, mark, steps }, t + 1.6);
+    } else if (formAct === 'level') {
+      t = healerFormSteps(task, form, { say, point, mark, steps }, t);
     } else if (formAct === 'show') {
       const out = formDemoSteps(task, form, info, { say, point, steps }, t);
       t = out.t;
@@ -839,6 +845,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const form = task.tz?.zone.plan?.form;
     if (form === 'share') return deskSteps(task, s, t);
     if (form === 'decimal' && !itemsOf(task.place).length) return tableSteps(task, s, t);
+    if ((form === 'doses' || form === 'model') && task.place?.zone.rule === 'basket' && itemsOf(task.place).length) return doseSteps(task, s, t);
     if (itemsOf(task.place).length && (fam.reader === 'sum' || fam.reader === 'each')) return markSteps(task, fam, info, s, t);
     if (task.place?.zone.rule === 'line') {
       const z = task.place.zone;
@@ -1012,8 +1019,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // before: that child gets only the point at the heap and at the place, the line of the task,
     // and the first try. The grade never fades it (#105: a girl of grade 4, new to the game, got no
     // demonstration and did not know how to take a bunch).
+    // A form that deals the things of a model (the model basket of the healer, #108) shows the take
+    // and the put with the model: she never puts a thing into the place of the child, also not for
+    // a moment.
     const knows = knowsGesture(task.key);
-    if ((def.first === 'point' || (knows && !Array.isArray(def.first))) && task.piles[0] && task.place) {
+    const deal = Boolean(form?.steps?.some((x) => x.deal));
+    if ((def.first === 'point' || deal || (knows && !Array.isArray(def.first))) && task.piles[0] && task.place) {
       s.say(t, lineOf(task.key, 'show'));
       s.point(t, task.piles[0].position, 1.4);
       s.mark(t, task.piles[0].position, 2.5);
@@ -1063,6 +1074,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         const heap = getEntity(w, `zone:${from}`);
         const place = getEntity(w, `zone:${to}`);
         if (heap && place) t = putBackSteps(task, heap, place, kind ?? null, s, t);
+      } else if (step.deal) {
+        t = dealSteps(task, s, t);
       } else if (step.point) {
         const e = getEntity(w, step.point);
         const p = e?.zone ? { x: e.zone.x, z: e.zone.z } : e?.position;
@@ -1073,6 +1086,118 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       }
     }
     return t;
+  }
+  // The model basket of the healer dealt onto its two leaves (#108): one dose on each leaf, one
+  // bunch at a time, "Một lá là một thang.", and then the bunches go back into the model. She never
+  // puts a bunch into the basket of the child.
+  function dealSteps(task, s, t) {
+    const w = world();
+    const recipe = task.tz?.zone.plan?.recipe;
+    const model = getEntity(w, 'zone:model');
+    if (!recipe || !model) return t;
+    const left = itemsOf(model).filter((e) => !e.item.held);
+    const put = [];
+    for (let j = 0; ; j++) {
+      const leaf = getEntity(w, `zone:leaf-${j}`);
+      if (!leaf) break;
+      s.point(t, { x: leaf.zone.x, z: leaf.zone.z }, 1);
+      for (const [k, n] of Object.entries(recipe)) {
+        for (let i = 0; i < n; i++) {
+          const k2 = left.findIndex((e) => e.item.kind === `herb-${k}`);
+          if (k2 < 0) break;
+          const thing = left.splice(k2, 1)[0];
+          s.steps.push({ at: t, put: { zone: leaf.id, item: thing.id, person: task.person?.id ?? 'hero' } });
+          put.push(thing.id);
+          t += 0.45;
+        }
+      }
+      t += 0.4;
+    }
+    s.say(t, 'healer.model.leaf');
+    t += 2.2;
+    put.forEach((id, i) => s.steps.push({ at: t + i * 0.15, back: { item: id } }));
+    return t + put.length * 0.15 + 0.6;
+  }
+  // The help of a level of the healer with a structure (#108): the moves that put bunches into the
+  // basket of the child (half of the shortfall, a smaller task) show the step of the level in their
+  // place. Doses: the leaf of one dose and the basket. Model: the model dealt onto its leaves, and
+  // the doses that she needs. Fractions: the rows of six of the basket.
+  function healerFormSteps(task, form, s, t) {
+    const w = world();
+    const basket = task.place;
+    if (form === 'doses') {
+      const leaf = getEntity(w, 'leaf:healer:dose');
+      s.say(t, 'healer.dose.like');
+      if (leaf) {
+        s.point(t, leaf.position, 1.6);
+        s.mark(t, leaf.position, 2.5);
+      }
+      if (basket) s.point(t + 1.8, basket.position, 1.4);
+      return t + 3.4;
+    }
+    if (form === 'model') {
+      t = dealSteps(task, s, t);
+      s.say(t, 'healer.need.doses', { k: { key: `num.${task.tz.zone.plan.doses}` } });
+      if (basket) s.point(t, basket.position, 1.4);
+      return t + 2.4;
+    }
+    // Fractions: each row of six places of the basket.
+    const r = basket?.zone.rect;
+    s.say(t, 'healer.rows');
+    if (r) {
+      const rows = Math.max(1, Math.ceil((basket.zone.grid ?? 6) / 6));
+      for (let i = 0; i < rows; i++) {
+        const p = { x: (r.x0 + r.x1) / 2, z: r.z0 + 1 + i * 0.8 };
+        s.point(t + 0.4 + i, p, 0.9);
+        s.mark(t + 0.4 + i, p, 1.2);
+      }
+      return t + 1.4 + rows;
+    }
+    return t + 2;
+  }
+  // The check of a wrong basket by doses (#108, grades 3 and 4): the healer lays the bunches of the
+  // child onto leaves beside the basket, one dose on each leaf, as far as they go, and says what the
+  // last dose lacks or what is left over. The leaves and the bunches on them go at the end of the
+  // count: the bunches are back in the basket.
+  function doseSteps(task, s, t) {
+    const plan = task.tz.zone.plan;
+    const z = task.place.zone;
+    const kinds = z.kinds;
+    const pool = Object.fromEntries(kinds.map((k) => [k, itemsOf(task.place).filter((e) => e.item.kind === `herb-${k}`).length]));
+    const r = z.rect;
+    s.say(t, 'healer.dose.lay');
+    t += 1.6;
+    for (let d = 0; d < plan.doses; d++) {
+      const at = { x: r.x0 + 1.2 + d * 2.6, z: r.z1 + 1.6 };
+      const full = kinds.every((k) => pool[k] >= plan.recipe[k]);
+      if (!full && kinds.every((k) => pool[k] === 0)) {
+        s.point(t, at, 1.2);
+        s.mark(t, at, 2);
+        s.say(t + 0.1, 'healer.dose.lack', { n: { key: `ord.${Math.min(6, d + 1)}` }, herb: { key: `herb.name.${kinds[0]}` } });
+        return t + 2.8;
+      }
+      s.steps.push({ at: t, spawn: { look: 'herb-leaf', x: at.x, z: at.z, facing: 0 } });
+      let i = 0;
+      for (const k of kinds) {
+        const n = Math.min(pool[k], plan.recipe[k]);
+        for (let j = 0; j < n; j++, i++) s.steps.push({ at: t + 0.2 + i * 0.12, spawn: { look: `herb-${k}`, x: at.x - 0.8 + (i % 5) * 0.4, z: at.z - 0.3 + Math.floor(i / 5) * 0.4, facing: 0 } });
+        pool[k] -= n;
+      }
+      s.point(t, at, 1.2);
+      if (!full) {
+        const lack = kinds.find((k) => itemsOf(task.place).filter((e) => e.item.kind === `herb-${k}`).length < plan.recipe[k] * (d + 1));
+        s.say(t + 0.6, 'healer.dose.lack', { n: { key: `ord.${Math.min(6, d + 1)}` }, herb: { key: `herb.name.${lack}` } });
+        return t + 3.4;
+      }
+      s.say(t + 0.5, d === 0 ? 'count.dose.one' : 'count.dose', { n: { key: `num.${d + 1}` } });
+      t += 1.6;
+    }
+    for (const k of kinds) {
+      if (pool[k] <= 0) continue;
+      s.say(t, 'healer.dose.left', { n: { key: `num.${Math.min(150, pool[k])}` }, herb: { key: `herb.name.${k}` } });
+      t += 2.2;
+    }
+    return t + 0.6;
   }
   // The person takes one thing (of a kind) from a heap, puts it into a place, and takes it back.
   function putBackSteps(task, heap, place, kind, s, t) {

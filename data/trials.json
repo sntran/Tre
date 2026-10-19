@@ -54,7 +54,7 @@
         { "each": 2, "skill": "math.count.120", "level": 1 },
         { "each": 4, "skill": "math.add.20", "level": 1 },
         { "form": "doses", "recipe": [1, 3], "doses": [2, 5], "skill": "math.mul.10", "level": 2, "talk": { "dlg.healer.trial.n4": "dlg.healer.trial.n4.doses", "dlg.healer.trial.done.n1": "dlg.healer.trial.done.doses" } },
-        { "form": "model", "recipe": [1, 3], "doses": [3, 5], "skill": "math.mul.multi", "level": 1, "talk": { "dlg.healer.trial.n4": "dlg.healer.trial.n4.model", "dlg.healer.trial.done.n1": "dlg.healer.trial.done.doses" } },
+        { "form": "model", "recipe": [1, 3], "doses": [3, 5], "skill": "math.mul.multi", "level": 1, "talk": { "dlg.healer.trial.n4": { "key": "dlg.healer.trial.n4.model", "names": ["zone:basket", "zone:model", "zone:leaf-0", "zone:leaf-1"] }, "dlg.healer.trial.done.n1": "dlg.healer.trial.done.doses" } },
         { "form": "fraction", "sizes": [12, 18, 24], "skill": "math.frac.unlike", "level": 1, "talk": { "dlg.healer.trial.n4": "dlg.healer.trial.n4.fraction", "dlg.healer.trial.done.n1": "dlg.healer.trial.done.fraction" } }
       ],
       "places": { "beds": ["healer-bed-1", "healer-bed-2", "healer-bed-3"], "basket": "healer-basket" }

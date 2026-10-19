@@ -1428,6 +1428,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!holding()) deskSay(wz);
     return true;
   }
+  // A tap on the model basket of the healer (#108): she counts the model by kinds ("Giỏ mẫu: bốn
+  // bó ngải cứu, hai bó tía tô và sáu bó rau má."). It is the model, not the need.
+  function modelSay() {
+    const model = zoneOf('model');
+    const healer = getEntity(state, 'npc:healer');
+    if (!model || !healer || !openTask(model.zone.task)) return;
+    const counts = {};
+    for (const id of model.zone.items) {
+      const k = getEntity(state, id)?.item.kind?.replace(/^herb-/, '');
+      if (k) counts[k] = (counts[k] ?? 0) + 1;
+    }
+    const list = Object.entries(counts).map(([k, n]) => (n === 1 ? { key: `healer.model.kind.${k}.one` } : { key: `healer.model.kind.${k}`, params: { n: { key: `num.${n}` } } }));
+    if (list.length) emit({ type: 'open', screen: 'callout', id: healer.id, textKey: 'healer.model.count', params: { list } });
+  }
   // A tap on a desk or on the box of the share (#107: "Tapping a desk doesn't tell me how many
   // sticks."): the teacher says what is on it, in the count of grade 4 ("Bàn này: hai bó, hai
   // que."). A check of the child, never a commit.
@@ -3777,6 +3791,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (!holding()) mentoring.checkThing(target.thing);
       // A thing on a desk or in the box: the teacher says what is there (#107).
       if (thing?.item?.zone) deskSay(zoneOf(thing.item.zone));
+      // A bunch of the model basket: the healer counts the model by kinds (#108).
+      if (thing?.item?.model && !holding()) modelSay();
       // A bunch of another kind in the hands, and a tap on a bed (#108: the next press put the bunch
       // in the hands into the basket, and the child heard the name of another herb): the hero puts
       // the bunch back on its own bed on the way, and the healer says it.

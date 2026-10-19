@@ -656,6 +656,7 @@ export function thingLook(key) {
   m = /^share-mat-(red|blue|yellow|green|white)$/.exec(k);
   if (m) return { kind: 'share-mat', color: m[1] };
   if (k === 'basket-small') return { kind: 'basket-small' };
+  if (k === 'model-mat') return { kind: 'model-mat' };
   m = /^basket-grid-(\d+)$/.exec(k);
   if (m) return { kind: 'basket-grid', n: Number(m[1]) };
   if (k === 'place-glow') return { kind: 'place-glow' };
@@ -1049,8 +1050,11 @@ export function workThing(look) {
     }
     // A banana leaf on the ground: one dose of the healer lies on it (#101).
     case 'herb-leaf': return still([P('leaf', [2.4, 0.06, 1.5], 'green', [0, 0.03, 0]), P('rib', [2.2, 0.08, 0.1], 'greenPale', [0, 0.05, 0], { mark: true })], 0.1);
-    // A small basket of the model of two doses (#101).
-    case 'basket-small': return still([P('floor', [3.2, 0.12, 1.4], 'ochre', [1.4, 0.06, 0.6]), P('wallN', [3.2, 0.5, 0.15], 'ochre', [1.4, 0.25, -0.1]), P('wallS', [3.2, 0.25, 0.15], 'ochre', [1.4, 0.12, 1.3]), P('wallW', [0.15, 0.5, 1.4], 'ochre', [-0.2, 0.25, 0.6]), P('wallE', [0.15, 0.5, 1.4], 'ochre', [3.0, 0.25, 0.6]), P('rim', [3.3, 0.08, 0.2], 'wood', [1.4, 0.5, -0.1])], 0.6);
+    // A small basket of the model of two doses (#101), with a red band so that it is never taken
+    // for the basket of the healer (#108).
+    case 'basket-small': return still([P('floor', [3.2, 0.12, 1.4], 'ochre', [1.4, 0.06, 0.6]), P('wallN', [3.2, 0.5, 0.15], 'ochre', [1.4, 0.25, -0.1]), P('wallS', [3.2, 0.25, 0.15], 'ochre', [1.4, 0.12, 1.3]), P('wallW', [0.15, 0.5, 1.4], 'ochre', [-0.2, 0.25, 0.6]), P('wallE', [0.15, 0.5, 1.4], 'ochre', [3.0, 0.25, 0.6]), P('band', [3.35, 0.14, 0.2], 'vermilion', [1.4, 0.32, -0.12]), P('bandS', [3.35, 0.1, 0.2], 'vermilion', [1.4, 0.2, 1.32]), P('rim', [3.3, 0.08, 0.2], 'wood', [1.4, 0.5, -0.1])], 0.6);
+    // The mat of the model basket and its two leaves (#108): pale, with red edges.
+    case 'model-mat': return still([P('mat', [9.4, 0.05, 3.6], 'paper', [0, 0.025, 0]), P('edgeN', [9.4, 0.08, 0.2], 'vermilion', [0, 0.04, -1.7]), P('edgeS', [9.4, 0.08, 0.2], 'vermilion', [0, 0.04, 1.7])], 0.08);
     // A basket with a place for each bunch, in rows of six (GRID_ROW in src/core/world/systems/work.js),
     // so that one half and one third of the bunches are rows (#101).
     case 'basket-grid': {
