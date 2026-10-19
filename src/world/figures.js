@@ -86,7 +86,7 @@ export function person(look) {
   parts.push(P('skull', [headW, headH, headD], skin, [0, 0, 0], onHead));
   const hair = look.hair ?? 'short';
   const style = hairStyleOf(look);
-  const covered = look.hat === 'non' || look.hat === 'helmet' || look.hat === 'plume';
+  const covered = look.hat === 'non' || look.hat === 'helmet' || look.hat === 'plume' || look.hat === 'khan';
   const capTop = headH / 2 + 0.3;
   if (hair !== 'bald') {
     const hc = hair === 'grey' ? 'ashLight' : hairColor;
@@ -115,6 +115,7 @@ export function person(look) {
   if (look.beard) parts.push(P('beard', [1.1, 0.9, 0.4], look.beard === true ? 'ashLight' : look.beard, [0, -headH / 2 - 0.2, headD / 2 - 0.1], onHead));
   if (look.hat === 'non') parts.push(P('hat', [3.6, 0.4, 3.6], 'yellowPale', [0, capTop - 0.15, 0], onHead), P('hatTop', [1.4, 0.4, 1.4], 'yellowPale', [0, capTop + 0.2, 0], onHead));
   if (look.hat === 'band') parts.push(P('band', [headW + 0.2, 0.3, headD + 0.2], look.sash ?? 'vermilion', [0, 0.4, 0], onHead));
+  if (look.hat === 'khan') parts.push(P('khan', [headW + 0.3, 0.8, headD + 0.3], look.khan ?? 'indigo', [0, capTop - 0.35, 0], onHead));
   if (look.hat === 'helmet' || look.hat === 'plume') {
     parts.push(P('helmet', [headW + 0.35, 1.1, headD + 0.35], 'ash', [0, headH / 2, 0], onHead));
     if (look.hat === 'plume') parts.push(P('plume', [0.4, 1.2, 1.2], 'vermilion', [0, headH / 2 + 1.15, -0.2], onHead));
@@ -135,7 +136,7 @@ export function person(look) {
   }, look.carryRules);
   parts.push(...(carried.hold ? carried.parts : heldItem(look.item, (dx, dy, dz) => [dx, -armH + dy, dz], 1)));
   const knot = hair === 'bald' || covered ? 0 : style === 'topknot' ? 0.9 : style === 'tufts' ? 0.65 : 0;
-  const top = headY + capTop + (look.hat === 'non' ? 0.4 : look.hat === 'plume' ? 1.45 : look.hat === 'helmet' ? 0.25 : knot);
+  const top = headY + capTop + (look.hat === 'non' ? 0.4 : look.hat === 'plume' ? 1.45 : look.hat === 'helmet' || look.hat === 'khan' ? 0.25 : knot);
   return { kind: 'biped', parts, scale, height: top, shadow: 1.3, hold: carried.hold };
 }
 
@@ -936,8 +937,9 @@ export function workThing(look) {
       ], STEED_SEAT + 1 * k);
     }
     // A stake of the fish trap, half in the water.
-    // The boat of the ferry puzzle (#104): the skiff with its middle at its point.
-    case 'skiff-mid': return still([P('hull', [1.8, 0.7, 4], 'wood', [0, -0.15, 0]), P('rimL', [0.25, 0.3, 3.8], 'ochre', [-0.85, 0.3, 0]), P('rimR', [0.25, 0.3, 3.8], 'ochre', [0.85, 0.3, 0]), P('bow', [1, 0.5, 0.4], 'ochre', [0, 0.35, 1.9]), P('stern', [1.2, 0.4, 0.4], 'wood', [0, 0.3, -1.9])], 0.7);
+    // The boat of the ferry puzzle (#104): the skiff with its middle at its point. It is longer than
+    // the hero, with room for the hero and one thing (#110: "a tiny boat").
+    case 'skiff-mid': return still([P('hull', [2.4, 0.8, 6.4], 'wood', [0, -0.15, 0]), P('rimL', [0.25, 0.35, 6.2], 'ochre', [-1.15, 0.35, 0]), P('rimR', [0.25, 0.35, 6.2], 'ochre', [1.15, 0.35, 0]), P('bow', [1.4, 0.6, 0.5], 'ochre', [0, 0.4, 3.1]), P('stern', [1.6, 0.5, 0.5], 'wood', [0, 0.35, -3.1]), P('seat', [2.1, 0.15, 0.6], 'ochre', [0, 0.3, -1.6])], 0.8);
     // The mark of a side quest: a small paper scroll with a red tie, over the person.
     case 'mark-side': return still([P('scroll', [0.9, 0.5, 0.25], 'paper', [0, 0.25, 0]), P('tie', [0.2, 0.55, 0.3], 'vermilion', [0, 0.25, 0]), P('endA', [0.15, 0.6, 0.3], 'ochre', [-0.48, 0.25, 0]), P('endB', [0.15, 0.6, 0.3], 'ochre', [0.48, 0.25, 0])], 0.6);
     // A clay pot of n bowls: a ring on its side for each bowl, and the water to its level, blue,
@@ -1141,6 +1143,9 @@ export function workThing(look) {
       // Stones in a net are heavy: two hands (src/world/carry.js).
       return { ...still(parts, 0.6 + Math.floor((n - 1) / 3) * 0.4), hold: 'front' };
     }
+    // A bundle of cloth at each end of a carrying pole (quang gánh, #110): the things of a man on the
+    // road, across the shoulder.
+    case 'bundle-pole': return { ...still([P('pole', [2.2, 0.12, 0.12], 'wood', [0, 1.1, 0]), P('bundleA', [0.7, 0.7, 0.7], 'indigoPale', [-0.9, 0.6, 0]), P('bundleB', [0.7, 0.7, 0.7], 'ochre', [0.9, 0.6, 0])], 1.2), hold: 'yoke' };
     case 'pails': {
       const n = look.n ?? 1;
       const parts = [P('pole', [Math.max(1, n) * 0.8 + 0.4, 0.12, 0.12], 'wood', [0, 1.1, 0])];

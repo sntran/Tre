@@ -142,7 +142,7 @@ function hairParts(style, hc, extra, hat) {
   const out = [];
   const crop = style === 'tufts';
   const t = crop ? 0.5 : 1; // the thickness of the cap
-  const covered = hat === 'non' || hat === 'helmet' || hat === 'plume';
+  const covered = hat === 'non' || hat === 'helmet' || hat === 'plume' || hat === 'khan';
   out.push(H('hairTop', [7.2, t, 7.6], [0, 3.1 + t / 2, -0.1]));
   out.push(H('hairCrown', [5.4, 0.6, 6], [0, 3.35 + t, -0.1]));
   out.push(H('hairline', [6.4, 0.5, 0.5], [0, 2.95, 3.5]));
@@ -203,7 +203,7 @@ export const hairStyleOf = (look) => (look.hair === 'grey' ? look.hairStyle ?? '
 
 // A person. The same look as the coarse person (src/world/figures.js): { child, skin, top, bottom,
 // sash, bottomKind (shorts, skirt, trousers, robe), topKind (shirt, yem, bare, robe), hair,
-// hairStyle, hairColor, beard, hat (non, band, helmet, plume), item, face, mood, scale }.
+// hairStyle, hairColor, beard, hat (non, band, helmet, plume, khan), item, face, mood, scale }.
 export function personFine(look) {
   const child = Boolean(look.child);
   const skin = look.skin ?? 'skin2';
@@ -282,7 +282,7 @@ export function personFine(look) {
   if (look.beard) parts.push(P('beard', [3.5, 2.5, 1.5], look.beard === true ? 'ashLight' : look.beard, [0, -3.25, 3], onHead));
   // The top of the head: the cap of the hair (with a knot or a tuft over it), or the bald skull.
   const hairTop = hair === 'bald' ? 3.6 : CAP_TOP;
-  const capped = look.hat === 'non' || look.hat === 'helmet' || look.hat === 'plume';
+  const capped = look.hat === 'non' || look.hat === 'helmet' || look.hat === 'plume' || look.hat === 'khan';
   let top = hairTop + (hair === 'bald' || capped ? 0 : style === 'topknot' ? 2.55 : style === 'tufts' ? 2.35 : 0);
   // The hats sit on the top of each hair style, with no hair through a hat.
   if (look.hat === 'non') {
@@ -295,6 +295,13 @@ export function personFine(look) {
     top = hairTop + 0.8;
   }
   if (look.hat === 'band') parts.push(P('band', [9, 1, 9], look.sash ?? 'vermilion', [0, 1.8, 0], onHead));
+  // A khăn: a cloth wound around the head in rings (the khăn đóng of an elder, the khăn of a man on
+  // the road, #110), in look.khan.
+  if (look.hat === 'khan') {
+    const c = look.khan ?? 'indigo';
+    parts.push(P('khan', [8.2, 2.6, 8.4], c, [0, hairTop - 0.8, 0], onHead), P('khanRing', [8.6, 0.6, 8.8], SHADE[c] ?? c, [0, hairTop - 1.6, 0], onHead));
+    top = hairTop + 0.9;
+  }
   if (look.hat === 'helmet' || look.hat === 'plume') {
     parts.push(P('helmet', [9, 3, 9], 'ash', [0, 3.2, 0], onHead), P('helmetTop', [6.4, 1, 6.4], 'ash', [0, 5, 0], onHead));
     top = 5.5;

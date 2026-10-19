@@ -914,13 +914,15 @@
     },
     "traveler": {
       "skin": "skin2",
-      "top": "indigoPale",
-      "bottom": "ochre",
-      "sash": "vermilion",
+      "top": "greenDeep",
+      "bottom": "paperDeep",
+      "sash": "ochre",
       "topKind": "shirt",
       "bottomKind": "trousers",
       "hair": "short",
-      "hat": "non",
+      "hat": "khan",
+      "khan": "wood",
+      "carried": { "kind": "bundle-pole" },
       "face": 1
     },
     "carter": {

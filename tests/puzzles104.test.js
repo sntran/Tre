@@ -16,6 +16,8 @@ const en = load('i18n/en.json');
 // A day of both puzzles for the world of the stories, at the hour when the healer is at the well.
 const DAY = 9;
 const CLOCK = DAY * 1440 + 700;
+// A cell next to the traveler at the ferry (#110: the ferry moved away from the ford).
+const FERRY = [3, 62];
 
 test('each puzzle and tale has a source, its lines in both languages, and a tale is told as a tale, for a later era', () => {
   for (const p of [data.ferry, data.pots, ...data.tales]) {
@@ -95,7 +97,7 @@ async function at(cell, grade, flags = {}) {
 
 test('the ferry: a wrong pair shows its scene and all come back; seven crossings bring all three over, and the traveler gives a gift', async () => {
   assert.ok(puzzleDay(data.ferry, 1040020559, DAY));
-  const p = await at([11, 63], 1);
+  const p = await at(FERRY, 1);
   assert.ok(p.said.includes('puzzle.ferry.start'));
   const ferry = () => p.session.puzzles.state().ferry;
   const cross = (thing) => {
@@ -164,7 +166,7 @@ test('the pots: grade 1 needs two bowls in one pour; from grade 3, four bowls, w
 });
 
 test('a puzzle never blocks a task or the story: no act of a puzzle while a task is open, and no flag of the story', async () => {
-  const p = await at([11, 63], 1);
+  const p = await at(FERRY, 1);
   p.session.startTrial('fisher');
   p.run(1);
   const acts = [];
@@ -174,7 +176,7 @@ test('a puzzle never blocks a task or the story: no act of a puzzle while a task
 });
 
 test('Nghé never stands on a thing of a puzzle, so that a tap on the thing is not a tap on Nghé', async () => {
-  const p = await at([11, 63], 1);
+  const p = await at(FERRY, 1);
   const nghe = p.session.state.entities.find((e) => e.follow?.target === 'hero');
   assert.ok(nghe, 'Nghé follows the hero');
   const dog = getEntity(p.session.state, 'pz:dog').position;
@@ -211,7 +213,7 @@ test('with a pot in the hands, a tap on the well is a tap on the well, not on th
 });
 
 test('the scene of a wrong pair on the other bank is in the view with the hero', async () => {
-  const p = await at([11, 63], 1);
+  const p = await at(FERRY, 1);
   const views = [];
   p.session.listen((e) => { if (e.type === 'workView' && e.key === 'puzzle') views.push(e); });
   p.tapThing('pz:dog');
@@ -274,7 +276,7 @@ test('a grade changed before the first move of the pots gives the need of the ne
 });
 
 test('a puzzle that the child started goes on past midnight', async () => {
-  const p = await at([11, 63], 1);
+  const p = await at(FERRY, 1);
   p.tapThing('pz:dog');
   assert.equal(p.press(), 'load');
   p.session.state.clock.minutes += 1440;
