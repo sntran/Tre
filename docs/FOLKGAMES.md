@@ -79,5 +79,6 @@ The children are peers, not tutors, but they read the errors as the mentors do (
 
 ## Tests
 
+- `tests/loco114.test.js` (#114): the see-through shard steps along the court one square at a time and the shard lands on its square, in the frame of the view; the call comes with no press at the start line, with the glow and the point of a child; the line of the shard the first time; the first call is a near square; a miss shows why, with no child on a square; the turn of another child in view; the demonstration of a throw after two misses; no line laughs at the hero; a tap on a child from the back of Nghé.
 - `tests/folkgames.test.js`: the court in the Vietnamese order and the courts of the levels; the throw; the numbers said are the squares where the hero lands (count on); a landing on the shard, a press too soon, or a long hop over a square with no shard ends the turn; the rope counts a group for a jump on the beat, and a miss keeps the count.
 - Stories: `practice-nhay-lo-co` (a throw, a press too soon on a line, the turn again, there and back over the shard three times) and `practice-nhay-day` (jumps on the beat by fives to fifty, one miss, two rounds). The laws of the stories check that no numeral shows in the world.
