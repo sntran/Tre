@@ -220,3 +220,38 @@ test('no line of the hopscotch laughs at the hero', () => {
     for (const [k, v] of Object.entries(dict)) if (k.startsWith('loco.')) assert.ok(!/ha ha/i.test(v), `${lang} ${k}: ${v}`);
   }
 });
+
+test('a tap on a child of the game from the back of Nghé: the hero gets off, the child answers, and the button joins the game', async () => {
+  const { runHeadless } = await import('./story-run.js');
+  const { STEP } = await import('./restless.js');
+  const s = load('tests/stories/trick-hopscotch.json');
+  let session = null;
+  const said = [];
+  const failures = await runHeadless({ ...s, steps: [{ wait: 1 }] }, {
+    onSession: (x) => {
+      session = x;
+      x.listen((e) => { if (e.type === 'open' && e.textKey) said.push({ key: e.textKey, id: e.id }); });
+    },
+  });
+  assert.deepEqual(failures, []);
+  const run = (sec) => {
+    for (let i = 0; i < sec / STEP; i++) {
+      if (session.screen) session.command({ type: session.screen === 'dialogue' || session.screen === 'say' ? 'next' : 'close' });
+      session.step();
+      session.events();
+    }
+  };
+  const hero = getEntity(session.state, 'hero');
+  const nghe = getEntity(session.state, 'friend:nghe');
+  assert.ok(nghe, 'Nghé');
+  Object.assign(nghe.position, { x: hero.position.x + 1, z: hero.position.z });
+  session.command({ type: 'ride', id: 'hero', mount: 'friend:nghe' });
+  run(0.5);
+  assert.equal(hero.riding, 'friend:nghe');
+  const from = said.length;
+  session.command({ type: 'tap', target: { person: 'npc:loco-child' } });
+  run(3);
+  assert.ok(!hero.riding, 'the hero got off');
+  assert.ok(said.slice(from).some((l) => l.id === 'npc:loco-child'), `the child answers: ${JSON.stringify(said.slice(from))}`);
+  assert.equal(session.action()?.act, 'play');
+});

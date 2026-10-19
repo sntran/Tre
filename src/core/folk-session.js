@@ -646,6 +646,15 @@ export function createFolk(deps) {
     }
   }
 
+  // A tap on a child of a game, out of the game: the child answers with the ask to play (#114).
+  function answer(id) {
+    const kind = getEntity(world(), id)?.folkChild;
+    if (!kind || game) return false;
+    inviteAt[kind] = now + AGAIN;
+    deps.callout(`${kind}.invite`, {}, id);
+    return true;
+  }
+
   // ---------------------------------------------------------------- The action button
   // The acts of the games for the action button: join (near the children), and the throw (a hold).
   function candidates(add, reach) {
@@ -686,7 +695,7 @@ export function createFolk(deps) {
   const jumpUp = (held) => hopPress(held);
 
   return {
-    mapStart, tick, join, stop, candidates, jump, jumpUp, wave,
+    mapStart, tick, join, stop, candidates, jump, jumpUp, wave, answer,
     active: () => game?.kind ?? null,
     stateOf: () => (game ? { kind: game.kind, phase: game.phase, rounds: game.rounds, skill: game.skill, call: game.call?.square ?? null, count: game.rope?.count ?? null, group: game.plan?.group ?? null, target: game.plan?.target ?? null, court: game.court?.map((s) => s.value) ?? null } : null),
   };

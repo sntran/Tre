@@ -3444,7 +3444,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // On Nghé, next to a person who can talk, or the enemies of an encounter (#66): the button
       // shows the talk, and one press gets the hero down and opens the talk (#60).
       const people = new Set(persons().filter((p) => p.kind === 'npc' || p.kind === 'encounter').map((p) => p.entity));
-      const talk = candidates().find((c) => c.act === 'talk' && people.has(c.target));
+      // The children of a folk game too: the button joins the game (#114).
+      const talk = candidates().find((c) => (c.act === 'talk' && people.has(c.target)) || (c.act === 'play' && getEntity(state, c.target)?.folkChild));
       // The hero gets down at once: the world waits while the talk is open, and a command of the
       // world comes only after it (#66: the hero stayed on the calf at the scouts).
       if (talk) return { ...talk, run: () => { delete hero().riding; talk.run(); } };
@@ -3930,7 +3931,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const kid = target.person ? getEntity(state, target.person) : null;
     if (kid?.folkChild && !folk.active()) {
       emit({ type: 'tapfx', x: kid.position.x / 2, y: kid.position.z / 2, h: groundY(kid.position.x / 2, kid.position.z / 2) });
-      riddles.child(kid.id.replace(/^npc:/, ''), kid.id);
+      // On Nghé, the hero gets off, and the child answers, as for a tap on a person (#114: a tap
+      // on a child from Nghé did nothing).
+      if (hero().riding) worldCommand(state, { type: 'ride', id: 'hero' });
+      if (!riddles.child(kid.id.replace(/^npc:/, ''), kid.id)) folk.answer(kid.id);
       goTo(kid.position, null);
       return;
     }
