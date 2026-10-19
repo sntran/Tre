@@ -139,6 +139,101 @@ export function layoutSeals(anchors, radius, { steps = 200, pull = 0.02 } = {}) 
   return seals;
 }
 
+// Is the point p inside the rings (the even-odd rule)? rings: lists of { x, y }.
+export function insideRings(rings, p) {
+  let inside = false;
+  for (const ring of rings) {
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const a = ring[i];
+      const b = ring[j];
+      if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// A point on the land of the rings near p: p itself when it is inside, or else a point a little
+// inside from the nearest corner of the rings (a place on the coast can be just in the sea).
+export function landPoint(rings, p) {
+  if (!rings?.length || insideRings(rings, p)) return { x: p.x, y: p.y };
+  let best = null;
+  for (const ring of rings) {
+    for (const q of ring) {
+      const d = Math.hypot(q.x - p.x, q.y - p.y);
+      if (!best || d < best.d) best = { d, q, ring };
+    }
+  }
+  const c = best.ring.reduce((m, q) => ({ x: m.x + q.x / best.ring.length, y: m.y + q.y / best.ring.length }), { x: 0, y: 0 });
+  for (let k = 1; k <= 50; k++) {
+    const t = k / 50;
+    const x = { x: best.q.x + (c.x - best.q.x) * t * t, y: best.q.y + (c.y - best.q.y) * t * t };
+    if (insideRings(rings, x)) return x;
+  }
+  return { x: best.q.x, y: best.q.y };
+}
+
+// The seals of the regions on the country map (#113: a lock stood away from its land, and a tap on
+// it lit a land at another place). The locked regions near each other share one seal (#45); that
+// seal stands at the place of the first of them, not between them. A place just off the coast has
+// its seal on the land near it. After the layout, a seal that went off the land of its region
+// comes back toward its place until it is on the land.
+// anchors: [{ id, x, y }] in map units; locked(id): the region is locked; areas: the map of the
+// areas of the regions (regionAreas); near: the distance of a shared seal. Return the seals of
+// layoutSeals, each with ids (the regions of the seal).
+export function placeSeals(anchors, radius, { locked = () => false, areas = new Map(), near = radius * 4 } = {}) {
+  const groups = [];
+  for (const place of anchors) {
+    const a = { id: place.id, ...landPoint(areas.get(place.id), place) };
+    const group = locked(a.id) ? groups.find((q) => q.locked && Math.hypot(q.x - a.x, q.y - a.y) < near) : null;
+    if (group) group.ids.push(a.id);
+    else groups.push({ id: a.id, ids: [a.id], x: a.x, y: a.y, locked: locked(a.id) });
+  }
+  const seals = layoutSeals(groups, radius);
+  seals.forEach((s, i) => {
+    s.ids = groups[i].ids;
+    const rings = areas.get(s.id);
+    if (!rings?.length || insideRings(rings, s)) return;
+    const from = { x: s.x, y: s.y };
+    for (let k = 1; k <= 20; k++) {
+      const t = 1 - k / 20;
+      s.x = s.ax + (from.x - s.ax) * t;
+      s.y = s.ay + (from.y - s.ay) * t;
+      if (insideRings(rings, s)) break;
+    }
+  });
+  return seals;
+}
+
+// The way on the country map from the hero to the place of the goal (#113: the map had no mark of
+// Văn Miếu): the road or the river way of data/world/routes.json between the place nearest to the
+// hero and the place nearest to the goal (of the places at the ends of the ways), from the hero to
+// the goal. from, to: [lon, lat]; places: the places of data/geo/vietnam.json. Return a line of
+// coordinates.
+export function goalWay(routes, places, from, to) {
+  const ends = new Set(routes.flatMap((r) => [r.from, r.to]));
+  const list = places.filter((p) => ends.has(p.id));
+  const nearest = (at) => list.reduce((best, p) => (distanceKm(p.at, at) < distanceKm(best.at, at) ? p : best), list[0])?.id;
+  const a = nearest(from);
+  const b = nearest(to);
+  const r = routes.find((x) => (x.from === a && x.to === b) || (x.from === b && x.to === a));
+  const via = r ? (r.from === a ? r.via ?? [] : [...(r.via ?? [])].reverse()) : [];
+  return [from, ...via, to];
+}
+
+// The mark of the goal of the story on the country map: the real place of the place of the step of
+// the goal, and the name of the nearest place of the map. world: src/world/regions.js; step: the
+// step of the current goal (src/core/quests.js). Return { at, name } or null.
+export function goalMark(world, places, step) {
+  const p = step?.place;
+  if (!p?.map) return null;
+  const [x, y] = world.at(p.map, p.x, p.y);
+  const at = world.geoAt(p.map, x, y);
+  if (!at) return null;
+  const named = places.filter((q) => q.name && q.kind !== 'islands');
+  const near = named.reduce((best, q) => (distanceKm(q.at, at) < distanceKm(best.at, at) ? q : best), named[0]);
+  return { at, name: near?.name ?? null };
+}
+
 // Flat bands of height from a grid, with smooth edges: each cell is cut into two triangles, and
 // each triangle is cut at the height `level` (the height changes in a straight line inside a
 // triangle). grid: rows of values, row 0 is the north. cellAt(row, col) gives the map point of the

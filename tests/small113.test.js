@@ -219,3 +219,40 @@ test('no print of the notebook has an empty picture: a thing shows whole, and a 
   }
   assert.equal(printFraming(figs.rod), 'full', 'the rods show whole');
 });
+
+test('each lock of the country map stands inside its land, at each size of the map', async () => {
+  const { createProjection, regionAreas, placeSeals, insideRings } = await import('../src/world/geo.js');
+  const geo = load('data/geo/vietnam.json');
+  const regions = load('data/world/regions.json').regions;
+  const proj = createProjection(geo.bbox);
+  const place = Object.fromEntries(geo.places.map((p) => [p.id, p]));
+  const vnm = geo.land.VNM.map((r) => r.map(proj.toMap));
+  // The areas and the anchors as src/ui/worldmap.js makes them.
+  const centers = regions.flatMap((r) => [place[r.place].at, ...(r.seeds ?? [])].map((at) => ({ id: r.id, ...proj.toMap(at) })));
+  const { areas } = regionAreas(centers, vnm);
+  const anchors = regions.map((r) => ({ id: r.id, ...proj.toMap(place[r.place].at) }));
+  for (const radius of [0.2, 0.5, 1, 2, 4, 8]) {
+    const seals = placeSeals(anchors, radius, { locked: (id) => id !== 'giong', areas });
+    for (const s of seals) {
+      assert.ok(insideRings(areas.get(s.id), s), `radius ${radius}: the seal of ${s.id} (${s.ids.join(', ')}) is on its land`);
+    }
+  }
+});
+
+test('the goal of the story has a mark on the country map, with the name of its place, and the way to it is the road of the walk', async () => {
+  const { goalMark, goalWay } = await import('../src/world/geo.js');
+  const { worldOf } = await import('./helpers.js');
+  const world = worldOf();
+  const geo = load('data/geo/vietnam.json');
+  const quests = load('data/quests.json').quests;
+  const step = quests.flatMap((q) => q.steps).find((st) => st.goalKey === 'quest.placement.exam');
+  // The places of the quests on the plane, as src/ui/data.js makes them.
+  const [x, y] = world.at(step.place.map, step.place.x, step.place.y);
+  const mark = goalMark(world, geo.places, { ...step, place: { ...step.place, map: world.regionOf(step.place.map), x, y } });
+  assert.ok(mark, 'a mark');
+  assert.equal(mark.name, 'Văn Miếu');
+  const hero = geo.places.find((p) => p.id === 'phu-dong').at;
+  const way = goalWay(load('data/world/routes.json').routes, geo.places, hero, mark.at);
+  const road = load('data/world/routes.json').routes.find((r) => r.from === 'phu-dong' && r.to === 'thang-long');
+  assert.deepEqual(way, [hero, ...road.via, mark.at]);
+});

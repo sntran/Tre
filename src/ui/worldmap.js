@@ -13,7 +13,8 @@ import { portraitImage, heroLookOf } from './portraits.js';
 import { C } from '../render/palette.js';
 import { planTravel, applyTravel } from '../world/travel.js';
 import { timeOfDay } from '../core/world/clock.js';
-import { createProjection, regionAreas, layoutSeals, heightBand } from '../world/geo.js';
+import { createProjection, regionAreas, placeSeals, goalWay, goalMark, heightBand } from '../world/geo.js';
+import { currentGoal } from '../core/quests.js';
 
 export const SVG_NS = 'http://www.w3.org/2000/svg';
 const NS = SVG_NS;
@@ -167,7 +168,7 @@ export function drawBase(svg, ctx, proj, eraSouth, opts = {}) {
   svg.append(el('rect', { ...sheet, fill: 'url(#paper-grain)', opacity: 0.6, style: 'mix-blend-mode: multiply' }));
   if (!opts.soft) svg.append(el('rect', { ...sheet, fill: 'url(#map-vignette)' }));
   if (!opts.soft) svg.append(el('rect', { x: 0, y: 0, width: proj.width, height: proj.height, fill: 'none', stroke: C.ink, 'stroke-width': 2.5, 'vector-effect': 'non-scaling-stroke', 'pointer-events': 'none' }));
-  return { regionPaths, eraY, place };
+  return { regionPaths, eraY, place, areas };
 }
 
 registerModal('worldmap', async (ctx, cmd = {}) => {
@@ -233,7 +234,9 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
     svg.append(wayLine);
     const labels = el('g', { class: 'country-labels', 'pointer-events': 'none' });
     const seals = el('g', { class: 'country-seals' });
-    svg.append(labels, seals);
+    // The goal over the seals, so that the face of the hero does not cover it.
+    const goalLayer = el('g', { class: 'country-goal', 'pointer-events': 'none' });
+    svg.append(labels, seals, goalLayer);
 
     // The view: the land of the era at the start. Pinch, the wheel, and the buttons zoom; a drag moves.
     const eraBox = { x: proj.toMap([101.8, 0]).x, y: proj.toMap([0, 23.7]).y, w: 0, h: 0 };
@@ -258,11 +261,13 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
     const unitsPerPx = () => Math.max(view.w / (svg.clientWidth || 1), view.h / (svg.clientHeight || 1));
 
     let chosen = null;
+    const goal = goalMark(world, geo.places, currentGoal(data.quests?.quests ?? [], state)?.step);
     // The names of the places of the open regions, and the seals of all regions.
     function drawTop() {
       const k = unitsPerPx();
       labels.replaceChildren();
       seals.replaceChildren();
+      goalLayer.replaceChildren();
       const label = (at, text, bold = false) => {
         const m = proj.toMap(at);
         labels.append(el('circle', { cx: m.x, cy: m.y, r: 2.2 * k, fill: C.ink }));
@@ -275,7 +280,7 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
         if (!world.isOpen(r.id, state) || k > 0.2) continue;
         for (const id of r.places ?? []) {
           const p = base.place[id];
-          if (p) label(p.at, p.name);
+          if (p && p.name !== goal?.name) label(p.at, p.name);
         }
       }
       for (const p of geo.places.filter((x) => x.kind === 'islands')) label(p.at, p.name, true);
@@ -287,22 +292,31 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
         const d = 5 * k;
         labels.append(el('path', { d: `M${m.x},${m.y - d}L${m.x + d},${m.y}L${m.x},${m.y + d}L${m.x - d},${m.y}Z`, fill: C.vermilion, stroke: C.ink, 'stroke-width': 1.2, 'vector-effect': 'non-scaling-stroke' }));
       }
+      // The goal of the story (#113): a mark with the name of its place, and the way to it from the
+      // hero, as the walk goes (the road of data/world/routes.json).
+      if (goal) {
+        const m = proj.toMap(goal.at);
+        if (heroGeo) {
+          const line = goalWay(data.routes.routes, geo.places, heroGeo, goal.at).map((c) => proj.toMap(c));
+          labels.append(el('path', { d: `M${line.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join('L')}`, fill: 'none', stroke: C.vermilion, 'stroke-width': 2, 'stroke-dasharray': '4 3', 'stroke-linecap': 'round', 'vector-effect': 'non-scaling-stroke', class: 'goal-way' }));
+        }
+        const r = 6 * k;
+        goalLayer.append(el('circle', { cx: m.x, cy: m.y, r, fill: C.diep, stroke: C.vermilion, 'stroke-width': 2.5, 'vector-effect': 'non-scaling-stroke', class: 'goal-mark' }));
+        goalLayer.append(el('circle', { cx: m.x, cy: m.y, r: r * 0.4, fill: C.vermilion }));
+        if (goal.name) {
+          // The name on the left of the mark: the roads of the story go east, to the hero.
+          const tx = el('text', { x: m.x - r - 3 * k, y: m.y + 5 * k, 'font-size': LABEL_PX * k, 'text-anchor': 'end', class: 'place-name big goal-name' });
+          tx.textContent = goal.name;
+          goalLayer.append(tx);
+        }
+      }
 
       const anchors = world.regions.map((r) => ({ id: r.id, ...proj.toMap(base.place[r.place].at) }));
       const sealPx = Math.max(12, Math.min(SEAL_PX, (svg.clientHeight || 600) / 28));
       // The locked chapters near each other share one lock (#45): fewer seals, so that no lock
       // covers another lock or the face of the hero.
       const locked = (id) => id !== here && !world.isOpen(id, state);
-      const groups = [];
-      for (const a of anchors) {
-        const near = locked(a.id) ? groups.find((q) => q.locked && Math.hypot(q.x - a.x, q.y - a.y) < sealPx * k * 4) : null;
-        if (near) {
-          near.ids.push(a.id);
-          near.x += (a.x - near.x) / near.ids.length;
-          near.y += (a.y - near.y) / near.ids.length;
-        } else groups.push({ id: a.id, ids: [a.id], x: a.x, y: a.y, locked: locked(a.id) });
-      }
-      const laid = layoutSeals(groups, sealPx * k);
+      const laid = placeSeals(anchors, sealPx * k, { locked, areas: base.areas });
       for (const s of laid) {
         const region = world.region(s.id);
         const open = world.isOpen(s.id, state);
