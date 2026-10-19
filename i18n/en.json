@@ -674,7 +674,7 @@
   "dlg.fisher.trial.n2": "This is the fish trap: a row of stakes in the river. I put the first two stakes.",
   "dlg.fisher.trial.n3": "Soon the tide comes in: the water of the river rises.",
   "dlg.fisher.trial.n4": "Put stakes up to this red float.",
-  "dlg.fisher.trial.n5": "This is the gap between my two stakes. Make no gap wider than this one.",
+  "dlg.fisher.trial.n5": "This is the gap between my two stakes. Make each gap the same as this one: too wide, and the fish swim out; too narrow, and the stakes are not enough.",
   "dlg.fisher.trial.n2.measure": "This is the fish fence: a row of stakes in the river. I put one stake at the start of the row.",
   "dlg.fisher.trial.n2.bank": "This is the fish fence: a row of stakes in the river, from the bank to the red float.",
   "dlg.fisher.trial.n4.measure": "Each gap is one pole long. From this stake to the float is {k} poles.",

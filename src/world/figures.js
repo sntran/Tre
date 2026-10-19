@@ -554,9 +554,10 @@ export function plankRow(n, on = false) {
 // the gap, n units long along +z, wider than a stake, so that it shows from the close view.
 // dim: a frame of a narrow gap next to a stake that is not the stake to take back (#97): thin and
 // pale, so that the bright frame stands out.
-export function gapFrame(n, dim = false) {
-  const c = dim ? 'yellowPale' : 'yellow';
-  const w = dim ? 0.15 : 0.3;
+export function gapFrame(n, dim = false, thin = false) {
+  // A thin frame is grey: a narrow gap, never like the glow of a thing (#109).
+  const c = thin ? 'ash' : dim ? 'yellowPale' : 'yellow';
+  const w = thin ? 0.1 : dim ? 0.15 : 0.3;
   return still([
     P('sideL', [w, 0.25, n + w], c, [-1.3, 0.12, n / 2]),
     P('sideR', [w, 0.25, n + w], c, [1.3, 0.12, n / 2]),
@@ -691,8 +692,8 @@ export function thingLook(key) {
   m = /^(ruler|over)-(\d+)$/.exec(k);
   if (m) return { kind: m[1], n: Number(m[2]) };
   // A row of n plank outlines for the guess at the bridge, or the same row filled (#90).
-  m = /^gap-frame-(\d+)(-dim)?$/.exec(k);
-  if (m) return { kind: 'gap-frame', n: Number(m[1]), dim: Boolean(m[2]) };
+  m = /^gap-frame-(\d+)(-dim|-thin)?$/.exec(k);
+  if (m) return { kind: 'gap-frame', n: Number(m[1]), dim: m[2] === '-dim', thin: m[2] === '-thin' };
   m = /^demo-gap-(\d+)$/.exec(k);
   if (m) return { kind: 'demo-gap', n: Number(m[1]) };
   m = /^plank-row-(\d+)(-on)?$/.exec(k);
@@ -1298,7 +1299,7 @@ export function figureOf(look, detail = 'fine') {
   if (look.kind === 'plank-ghost') return plankGhost(Boolean(look.on));
   if (look.kind === 'plank-row') return plankRow(look.n, Boolean(look.on));
   if (look.kind === 'demo-gap') return demoGap(look.n);
-  if (look.kind === 'gap-frame') return gapFrame(look.n, look.dim);
+  if (look.kind === 'gap-frame') return gapFrame(look.n, look.dim, look.thin);
   if (look.kind === 'gap') return gapMarks(look.n);
   if (look.kind === 'ruler') return rulerMarks(look.n);
   if (look.kind === 'over') return overGlow(look.n);

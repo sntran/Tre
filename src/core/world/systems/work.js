@@ -1950,24 +1950,27 @@ export function spareStake(line, row) {
   return null;
 }
 // The gaps of the row that are narrower than the gap of the fisher show as frames on the water (a
-// mark, rule 34). Only the stake to take back glows and bobs, and only the frames next to it are
-// bright; the others are dim until that stake is up (#97: with every gap narrow, every stake and
-// frame glowed, and "cái cọc này" marked nothing).
+// mark, rule 34), thin and grey. Only the stake to take back glows and bobs, and the fisher points
+// at it (#97: with every gap narrow, every stake and frame glowed, and "cái cọc này" marked
+// nothing; #109: the yellow frames looked like a glow).
 function markNarrow(world, z, line, row) {
   clearNarrow(world);
   const stakes = row.filter((s) => s.item.slot != null).sort((a, b) => a.item.slot - b.item.slot);
   const slots = [0, ...stakes.map((s) => s.item.slot)];
   const spare = spareStake(line, row);
-  const at = spare?.item.slot;
   slots.forEach((a, i) => {
     const b = slots[i + 1];
     if (b === undefined || b === a || b - a >= line.zone.space) return;
     // A frame on the surface of the water around the narrow gap, as clear as the ring of a cue
     // (#92: at the height of the bed, the river covered it).
-    const bright = a === at || b === at;
-    addEntity(world, { id: `why:fisher:narrow:${i}`, keep: true, position: { x: line.zone.x + a, y: line.zone.y + WATER_UP, z: line.zone.z, facing: Math.PI / 2 }, look: `gap-frame-${Math.max(1, Math.round(b - a))}${bright ? '' : '-dim'}` });
+    // Thin and grey (#109: the yellow frames looked like the glow of the stake to take back).
+    addEntity(world, { id: `why:fisher:narrow:${i}`, keep: true, position: { x: line.zone.x + a, y: line.zone.y + WATER_UP, z: line.zone.z, facing: Math.PI / 2 }, look: `gap-frame-${Math.max(1, Math.round(b - a))}-thin` });
   });
-  if (spare) world.events.push({ type: 'glowThings', ids: [spare.id] });
+  if (spare) {
+    world.events.push({ type: 'glowThings', ids: [spare.id] });
+    const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+    if (fisher) fisher.gesture = { act: 'point', x: spare.position.x, z: spare.position.z, t: 2.5 };
+  }
   z.narrowT = NARROW_MARKS;
 }
 // After a take-back from the row, the fisher says to walk toward the float, and the point at his
