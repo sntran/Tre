@@ -137,3 +137,86 @@ test('the first call of a child who did not play before is a near square, and th
     assert.ok(profile.folk.reach > FIRST_REACH, 'the calls can go farther');
   }
 });
+
+// A throw of the hero with a hold for the square k (k = the number of squares: out).
+function throwAt(t, k) {
+  const a = t.act();
+  assert.equal(a?.act, 'throw');
+  a.run();
+  t.run((k + 0.5) * L.rate);
+  a.release();
+}
+const KIDS = ['npc:loco-child', 'folk:child:1', 'folk:child:2'];
+
+test('after a miss, the shard lies in its square in the view, a child points at it and at the called square and says both, and no child stands on a square', () => {
+  const t = atStart();
+  const call = t.folk.stateOf().call;
+  const fell = call + 1;
+  throwAt(t, fell);
+  const line = t.said.at(-1);
+  assert.equal(line.key, 'loco.other.near', t.said.map((l) => l.key).join(', '));
+  assert.equal(line.params.n.key, `num.${fell + 1}`);
+  assert.equal(line.params.m.key, `num.${call + 1}`);
+  const kid = getEntity(t.world, line.id);
+  const shard = getEntity(t.world, 'folk:shard');
+  assert.ok(!shard.hidden);
+  assert.ok(Math.hypot(kid.gesture.x - shard.position.x, kid.gesture.z - shard.position.z) < 1e-9, 'the child points at the shard');
+  assert.ok(kid.gesture.then, 'and then at the called square');
+  const court = getEntity(t.world, 'folk:court').folkCourt;
+  const sq = court.squares[call];
+  assert.ok(Math.hypot(kid.gesture.then.x - sq.x, kid.gesture.then.z - sq.z) < 1e-9);
+  for (const id of KIDS) {
+    const p = getEntity(t.world, id).position;
+    for (const q of court.squares) assert.ok(Math.hypot(p.x - q.x, p.z - q.z) > court.size * 0.75, `${id} is not on a square`);
+  }
+  // Short of the called square: "còn xa hơn".
+  const u = atStart({ profile: { folk: { shardShown: true, reach: 6 } } });
+  const c2 = u.folk.stateOf().call;
+  throwAt(u, c2 - 1 >= 0 ? c2 - 1 : 10);
+  assert.ok(['loco.other.far', 'loco.out'].includes(u.said.at(-1).key), u.said.at(-1).key);
+});
+
+test('the turn of another child is in view: a throw at the start line and hops up the court over the shard, then the hero again', () => {
+  const t = atStart();
+  const call = t.folk.stateOf().call;
+  throwAt(t, call + 1);
+  const kid = getEntity(t.world, 'folk:child:1');
+  const court = getEntity(t.world, 'folk:court').folkCourt;
+  const on = new Set();
+  for (let i = 0; i < 10 / DT; i++) {
+    t.folk.tick(DT);
+    court.squares.forEach((q, k) => { if (Math.hypot(kid.position.x - q.x, kid.position.z - q.z) < 0.1) on.add(k); });
+    if (t.folk.stateOf().phase === 'throw') break;
+  }
+  const turn = t.events.find((e) => e.type === 'otherTurn');
+  assert.ok(turn, 'the turn of another child');
+  assert.deepEqual([...on].sort(), turn.hops, 'the child hops on these squares');
+  assert.ok(!turn.hops.includes(turn.shard), 'over the shard');
+  assert.equal(t.folk.stateOf().phase, 'throw', 'the hero throws again, in a few seconds');
+});
+
+test('after two misses in a row, a child says "Xem tớ ném nhé.", holds, and lets go as the see-through shard comes to the called square; then the same call', () => {
+  const t = atStart();
+  throwAt(t, t.folk.stateOf().call + 1);
+  t.run(12);
+  assert.equal(t.folk.stateOf().phase, 'throw');
+  const call = t.folk.stateOf().call;
+  throwAt(t, 10);
+  const from = t.events.length;
+  for (let i = 0; i < 14 / DT && t.folk.stateOf().phase !== 'throw'; i++) t.folk.tick(DT);
+  assert.ok(t.said.some((l) => l.key === 'loco.throw.demo'), t.said.map((l) => l.key).join(', '));
+  const ev = t.events.slice(from);
+  const aims = ev.filter((e) => e.type === 'folkAim' && e.by).map((e) => e.square);
+  assert.deepEqual(aims, Array.from({ length: call + 1 }, (_, i) => i), 'the see-through shard steps to the called square');
+  const thr = ev.find((e) => e.type === 'throw' && e.by);
+  assert.equal(thr.square, call);
+  assert.equal(t.folk.stateOf().phase, 'throw');
+  assert.equal(t.folk.stateOf().call, call, 'the same call again');
+});
+
+test('no line of the hopscotch laughs at the hero', () => {
+  for (const lang of ['vi', 'en']) {
+    const dict = load(`i18n/${lang}.json`);
+    for (const [k, v] of Object.entries(dict)) if (k.startsWith('loco.')) assert.ok(!/ha ha/i.test(v), `${lang} ${k}: ${v}`);
+  }
+});

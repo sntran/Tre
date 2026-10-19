@@ -21,11 +21,17 @@ const NEAR_START = 4; // half blocks: a hero this near the start line stands at 
 const STILL_START = 8; // half blocks: a hero who stands still this near the start line for STILL_WAIT
 const STILL_WAIT = 1; // seconds
 const REACH_MORE = 2; // squares: after a throw in the called square, the calls go this much farther
+const WHY_TIME = 3.2; // seconds of the line after a miss, before the next turn
+const OTHER_THROW = 0.8; // seconds from the start of the turn of another child to the throw
+const OTHER_HOPS = 4; // the squares of the hops of another child (over the shard)
+const OTHER_HOP = 0.45; // seconds of a hop of another child
+const DEMO_WAIT = 1.4; // seconds before the child of the demonstration holds
+const DEMO_LOOK = 2.4; // seconds to look at the shard of the demonstration
 const NAME_GLOW = 3; // seconds of the glow of a thing that a line names
 const SHOW_SHARD = 3; // seconds of the line that shows the shard, before the first call
 // The lines that name the start line, and those that name the shard (#114).
 const START_WORDS = new Set(['loco.join']);
-const SHARD_WORDS = new Set(['loco.shard', 'loco.in', 'loco.pick', 'loco.fail.shard', 'loco.demo', 'loco.how.throw', 'loco.how.hop']);
+const SHARD_WORDS = new Set(['loco.shard', 'loco.in', 'loco.pick', 'loco.fail.shard', 'loco.demo', 'loco.how.throw', 'loco.how.hop', 'loco.out']);
 const num = (n) => ({ key: `num.${Math.max(1, Math.min(150, n))}` });
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
@@ -294,6 +300,7 @@ export function createFolk(deps) {
     deps.emit({ type: 'throw', result: r.result, square: r.square, target: game.call.square, place });
     deps.skill({ type: 'skill', skill: game.skill, level: game.level, task: 'folk-loco', id: 'folk:shard', correct: r.result === 'in', solved: r.result === 'in', efficient: r.result === 'in', first: game.first, mashing: false, evidence: true, parts: [Math.round(place * 10) / 10], target: game.call.square + 0.5 });
     game.first = false;
+    game.throwMisses = r.result === 'in' ? 0 : (game.throwMisses ?? 0) + 1;
     if (r.result === 'in') {
       // A throw in the called square: the next calls can go farther (#114).
       const folk = (deps.profile.folk ??= {});
@@ -303,11 +310,71 @@ export function createFolk(deps) {
       game.phase = 'hop';
       game.hopAt = now;
       deps.emit({ type: 'hops', shard: r.square });
-    } else {
-      if (r.result === 'other') say('loco.other', { n: num(game.court[r.square].value) });
-      else say(r.result === 'line' ? 'loco.line' : 'loco.out', {});
-      otherTurn();
+    } else missWhy(r, place);
+  }
+  // A miss shows why (#114): the shard lies where it fell, and a child points at it and at the
+  // called square, and says both ("Rơi vào ô ba. Ô bảy còn xa hơn."). After the second miss in a
+  // row, a child shows a throw; else the turn of the other children.
+  function missWhy(r, place) {
+    const called = game.court[game.call.square];
+    const kid = getEntity(world(), 'npc:loco-child');
+    const shard = getEntity(world(), 'folk:shard');
+    const target = at(courtPoints(geo.loco, game.court).squares[game.call.square]);
+    if (kid && shard) kid.gesture = { act: 'point', x: shard.position.x, z: shard.position.z, t: 1.8, then: { act: 'point', x: target.x, z: target.z, t: 2.2 } };
+    const m = num(called.value);
+    if (r.result === 'other') say(r.square > game.call.square ? 'loco.other.near' : 'loco.other.far', { n: num(game.court[r.square].value), m });
+    else if (r.result === 'out') say('loco.out', { m });
+    else say('loco.line', {});
+    deps.emit({ type: 'missWhy', result: r.result, square: r.square, target: game.call.square, place });
+    game.phase = 'other';
+    if (game.throwMisses >= 2) {
+      game.throwMisses = 0;
+      later(WHY_TIME, throwDemo);
+    } else later(WHY_TIME, otherTurn);
+  }
+  // A child shows a throw once (#114, rule 34: show the action): beside the hero at the start line,
+  // the child holds, the see-through shard steps along the court, and the child lets go at the
+  // called square. Then the hero throws again at the same square.
+  function throwDemo() {
+    if (game?.kind !== 'loco') return;
+    game.phase = 'demo';
+    const kid = getEntity(world(), 'folk:child:2') ?? getEntity(world(), 'folk:child:1');
+    const pts = courtPoints(geo.loco, game.court);
+    const home = kid ? { ...kid.position } : null;
+    if (kid) Object.assign(kid.position, at(pts.home, Math.atan2(geo.loco.dir.x, geo.loco.dir.z)));
+    const shard = getEntity(world(), 'folk:shard');
+    if (shard) shard.hidden = true;
+    say('loco.throw.demo', {}, kid?.id);
+    const k = game.call.square;
+    const aim = getEntity(world(), 'folk:aim');
+    for (let i = 0; i <= k; i++) {
+      later(DEMO_WAIT + i * def.loCo.rate, () => {
+        if (!aim || game?.phase !== 'demo') return;
+        Object.assign(aim.position, at(pts.squares[i]));
+        aim.hidden = false;
+        deps.emit({ type: 'folkAim', square: i, by: kid?.id ?? null });
+      });
     }
+    const drop = DEMO_WAIT + (k + 0.6) * def.loCo.rate;
+    later(drop, () => {
+      if (game?.phase !== 'demo') return;
+      if (aim) aim.hidden = true;
+      if (shard) {
+        Object.assign(shard.position, at(pts.squares[k]));
+        shard.hidden = false;
+        shard.thrown = { t: 0, from: { ...(kid?.position ?? hero().position) } };
+      }
+      deps.emit({ type: 'throw', result: 'in', square: k, target: k, place: k + 0.5, by: kid?.id ?? null });
+      say('loco.call', { n: num(game.court[k].value) }, kid?.id);
+    });
+    later(drop + DEMO_LOOK, () => {
+      if (game?.phase !== 'demo') return;
+      if (kid && home) Object.assign(kid.position, home);
+      if (shard) shard.hidden = true;
+      game.retry = true;
+      walkToStart();
+    });
+    deps.emit({ type: 'demo', game: 'loco', throw: k });
   }
   // A press of the jump on the court: one square, or two over the shard with a long press.
   function hopPress(held) {
@@ -379,20 +446,40 @@ export function createFolk(deps) {
     later(1.5, walkToStart);
     game.phase = 'wait';
   }
-  // The turn of another child: a few hops on the court, then the hero again.
+  // The turn of another child, in view and short (#114: "I didn't see their turn"): the child
+  // throws the shard to a near square at the start line and hops up the court over it, then the
+  // hero again.
   function otherTurn() {
+    if (game?.kind !== 'loco') return;
     game.phase = 'other';
     const kid = getEntity(world(), 'folk:child:1');
     const pts = courtPoints(geo.loco, game.court);
+    const shard = getEntity(world(), 'folk:shard');
     const home = kid ? { ...kid.position } : null;
-    if (kid) {
-      [0, 1, 2].forEach((k) => later(0.6 + k * 0.55, () => { Object.assign(kid.position, at(pts.squares[k], kid.position.facing)); kid.hop = { t: 0 }; }));
-      later(def.loCo.other - 0.4, () => Object.assign(kid.position, home));
-    }
-    later(def.loCo.other, () => { if (game?.kind === 'loco') walkToStart(); });
-    // The shard of the hero lies where it landed while the child looks (#114); the other child
-    // takes it up for the turn.
-    later(0.5, () => { getEntity(world(), 'folk:shard').hidden = true; });
+    const s = 1 + (game.rounds + (game.prev ?? 0)) % 2;
+    const facing = Math.atan2(geo.loco.dir.x, geo.loco.dir.z);
+    if (kid) Object.assign(kid.position, at(pts.start, facing));
+    later(OTHER_THROW, () => {
+      if (shard) {
+        Object.assign(shard.position, at(pts.squares[s]));
+        shard.hidden = false;
+        shard.thrown = { t: 0, from: { ...(kid?.position ?? pts.start) } };
+      }
+    });
+    const squares = Array.from({ length: OTHER_HOPS + 1 }, (_, i) => i).filter((i) => i !== s);
+    squares.forEach((i, k) => later(OTHER_THROW + 0.8 + k * OTHER_HOP, () => {
+      if (!kid || game?.phase !== 'other') return;
+      Object.assign(kid.position, at(pts.squares[i], facing));
+      kid.hop = { t: 0 };
+    }));
+    const end = OTHER_THROW + 0.8 + squares.length * OTHER_HOP + 0.3;
+    later(end, () => {
+      if (kid && home) Object.assign(kid.position, home);
+      if (shard) shard.hidden = true;
+      if (game?.kind === 'loco' && game.phase === 'other') walkToStart();
+    });
+    say('loco.turn', {}, kid?.id);
+    deps.emit({ type: 'otherTurn', shard: s, hops: squares });
   }
   // An older child shows the skip once: a pebble on another square, and the hops over it.
   function demo() {
@@ -515,7 +602,7 @@ export function createFolk(deps) {
     if (!game) return invite(h);
     // The view turned (to the court, at the start of the game): the children go to the side away
     // from the camera again (#99: they stood in front of the court).
-    if (game.kind === 'loco' && game.phase !== 'hop' && deps.view && deps.view() !== game.standAz && !world().entities.some((e) => e.hop && e.folkChild)) standAside();
+    if (game.kind === 'loco' && !['hop', 'other', 'demo'].includes(game.phase) && deps.view && deps.view() !== game.standAz && !world().entities.some((e) => e.hop && e.folkChild)) standAside();
     const centre = game.kind === 'loco' ? along(geo.loco, 3 * S) : geo.rope.o;
     if (dist(h.position, centre) > LEAVE && game.phase !== 'walk') {
       say(`${game.kind === 'loco' ? 'loco' : 'rope'}.leave`, {});

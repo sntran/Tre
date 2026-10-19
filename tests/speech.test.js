@@ -81,7 +81,7 @@ test('the words of numbers are the words of the whole country: "linh", not "lẻ
 });
 
 test('the children of the north say "bọn mình", and the children of the south "tụi mình" (#45)', () => {
-  for (const key of ['loco.invite', 'loco.join', 'loco.other', 'loco.line', 'loco.out', 'loco.slow', 'rope.invite', 'rope.slow']) {
+  for (const key of ['loco.invite', 'loco.join', 'loco.turn', 'loco.how.throw', 'loco.slow', 'rope.invite', 'rope.slow']) {
     assert.ok(!/tụi/i.test(vi[key]), key);
     assert.deepEqual(markedWords(vi[key]).map((w) => w.toLocaleLowerCase('vi')), ['bọn'], key);
   }
