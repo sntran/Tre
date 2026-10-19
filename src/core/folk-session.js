@@ -17,6 +17,14 @@ const S = 2; // half blocks: the side of a square of the court
 const INVITE = 14; // half blocks: the children ask a hero this near
 const AGAIN = 90; // seconds before the children ask again
 const LEAVE = 26; // half blocks: a hero this far away leaves the game
+const NEAR_START = 4; // half blocks: a hero this near the start line stands at it
+const STILL_START = 8; // half blocks: a hero who stands still this near the start line for STILL_WAIT
+const STILL_WAIT = 1; // seconds
+const NAME_GLOW = 3; // seconds of the glow of a thing that a line names
+const SHOW_SHARD = 3; // seconds of the line that shows the shard, before the first call
+// The lines that name the start line, and those that name the shard (#114).
+const START_WORDS = new Set(['loco.join']);
+const SHARD_WORDS = new Set(['loco.shard', 'loco.in', 'loco.pick', 'loco.fail.shard', 'loco.demo', 'loco.how.throw', 'loco.how.hop']);
 const num = (n) => ({ key: `num.${Math.max(1, Math.min(150, n))}` });
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
@@ -128,11 +136,11 @@ export function createFolk(deps) {
       // The view turns so that no house covers the court (the event workView, #38).
       courtView();
       // The children always say where to start (#99), also on a court that does not start at 1.
+      walkToStart();
       if (plan.start !== 1) {
         say('loco.start', { n: num(plan.start) });
         later(2.5, () => { if (game?.kind === 'loco' && game.phase === 'walk') say('loco.join', {}); });
       } else say('loco.join', {});
-      walkToStart();
     } else {
       showRope(true);
       const skill = skillOf(def.rope.levels);
@@ -152,8 +160,23 @@ export function createFolk(deps) {
     p[kind] = deps.day();
   }
   const say = (key, params, who = null, extra = {}) => {
-    deps.callout(key, params, who ?? (game?.kind === 'rope' ? 'npc:rope-child' : 'npc:loco-child'), extra);
+    const id = who ?? (game?.kind === 'rope' ? 'npc:rope-child' : 'npc:loco-child');
+    deps.callout(key, params, id, extra);
+    if (game?.kind === 'loco') nameThing(key, id);
   };
+  // The words with the things (#114: "vạch đầu" and "mảnh sành" were words that a child of 5 did
+  // not know): when a child says the shard, the shard glows and the child points at it; when a
+  // child says the start line, the start line glows.
+  let nameToken = 0;
+  function nameThing(key, id) {
+    const thing = START_WORDS.has(key) ? getEntity(world(), 'folk:start') : SHARD_WORDS.has(key) ? getEntity(world(), 'folk:shard') : null;
+    if (!thing || thing.hidden) return;
+    const kid = getEntity(world(), id);
+    if (kid) kid.gesture = { act: 'point', x: thing.position.x, z: thing.position.z, t: 3 };
+    deps.emit({ type: 'names', ids: [thing.id], spots: [], bobs: [], seq: [], points: [] });
+    const token = ++nameToken;
+    later(NAME_GLOW, () => { if (token === nameToken) deps.emit({ type: 'names', ids: [], spots: [], bobs: [], seq: [], points: [] }); });
+  }
   // A wave is never silent (#105): the child asked, so a child says the next step again, also when
   // it was the last line.
   const waveSay = (key, params) => say(key, params, null, { asked: true });
@@ -193,15 +216,33 @@ export function createFolk(deps) {
     const pts = courtPoints(geo.loco, game.court);
     game.phase = 'walk';
     game.wait = 8;
+    game.still = 0;
     startGlow(true);
     deps.goTo(pts.start);
   }
-  // The hero at the start line, facing along the court: a child calls the square.
+  // The hero at the start line, facing along the court: a child calls the square. The shard lies at
+  // the feet of the hero; the first time, a child shows it and says what it is (#114).
   function standAtStart() {
     startGlow(false);
     const pts = courtPoints(geo.loco, game.court);
     deps.command({ type: 'place', id: 'hero', x: pts.start.x, z: pts.start.z });
     deps.command({ type: 'face', id: 'hero', x: pts.start.x + geo.loco.dir.x * 4, z: pts.start.z + geo.loco.dir.z * 4 });
+    const shard = getEntity(world(), 'folk:shard');
+    if (shard) {
+      Object.assign(shard.position, at(along(geo.loco, -0.3 * S, -0.5 * S)));
+      shard.hidden = false;
+    }
+    const folk = (deps.profile.folk ??= {});
+    if (!folk.shardShown) {
+      folk.shardShown = true;
+      game.phase = 'show';
+      say('loco.shard', {});
+      later(SHOW_SHARD, () => { if (game?.phase === 'show') callNow(); });
+      return;
+    }
+    callNow();
+  }
+  function callNow() {
     if (!game.retry || game.call === null) {
       const c = callSquare(game.court, rngOf(`call:${game.rounds}:${game.prev}`), game.prev, game.plan.near);
       game.call = c;
@@ -479,7 +520,11 @@ export function createFolk(deps) {
     if (game.phase === 'walk') {
       game.wait -= dt;
       const target = game.kind === 'loco' ? courtPoints(geo.loco, game.court).start : along(geo.rope, 0, 1.2);
-      if (dist(h.position, target) < 3 || game.wait <= 0) {
+      // A hero who stands still near the start line stands at it too (#114: the child stood by the
+      // court, and the call came only after a guess).
+      const d = dist(h.position, target);
+      game.still = !h.route && d < STILL_START ? (game.still ?? 0) + dt : 0;
+      if (d < (game.kind === 'loco' ? NEAR_START : 3) || (game.kind === 'loco' && game.still >= STILL_WAIT) || game.wait <= 0) {
         if (game.kind === 'loco') standAtStart();
         else {
           deps.command({ type: 'place', id: 'hero', x: geo.rope.o.x, z: geo.rope.o.z });
@@ -535,7 +580,8 @@ export function createFolk(deps) {
     else if (game.phase === 'walk') {
       startGlow(true);
       waveSay('loco.join', {});
-    } else if (game.phase === 'throw' || game.phase === 'aim') {
+    } else if (game.phase === 'show') waveSay('loco.shard', {});
+    else if (game.phase === 'throw' || game.phase === 'aim') {
       const c = game.call;
       if (c) waveSay(c.base !== null ? 'loco.call.near' : 'loco.call', c.base !== null ? { base: num(game.court[c.base].value), more: num(c.more) } : { n: num(game.court[c.square].value) });
       later(1.5, () => { if (game?.phase === 'throw') waveSay('loco.how.throw', {}); });

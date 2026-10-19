@@ -85,3 +85,33 @@ test('a hold shows the see-through shard on each square in order, and when the h
   const view = t.events.filter((e) => e.type === 'workView').at(-1);
   assert.ok(view.points.some((p) => Math.hypot(p.x - shard.position.x, p.z - shard.position.z) < 1e-9), 'the shard is a point of the view');
 });
+
+test('the first call comes with no press when the hero stands still by the start line; the line names the start line, which glows, and a child points at it', () => {
+  const t = makeFolk();
+  // The hero does not walk there: the child tapped beside the court.
+  const deps = t.folk;
+  assert.ok(deps.join('loco'));
+  const hero = getEntity(t.world, 'hero');
+  const start = getEntity(t.world, 'folk:start').position;
+  Object.assign(hero.position, { x: start.x - 5, z: start.z + 3 });
+  const join = t.said.find((l) => l.key === 'loco.join');
+  assert.ok(join, t.said.map((l) => l.key).join(', '));
+  const kid = getEntity(t.world, join.id);
+  assert.equal(kid.gesture?.act, 'point');
+  assert.ok(Math.hypot(kid.gesture.x - start.x, kid.gesture.z - start.z) < 1e-9, 'the child points at the start line');
+  assert.ok(t.events.some((e) => e.type === 'names' && e.ids.includes('folk:start')), 'the start line glows with the line');
+  t.run(5);
+  assert.ok(t.events.some((e) => e.type === 'folkCall'), 'the call came with no press');
+});
+
+test('the first time, a child shows the shard and says what it is, and it glows; a line that says the shard makes it glow', () => {
+  const profile = {};
+  const t = atStart({ profile });
+  const i = t.said.findIndex((l) => l.key === 'loco.shard');
+  assert.ok(i >= 0, t.said.map((l) => l.key).join(', '));
+  assert.ok(t.said.findIndex((l) => /^loco\.call/.test(l.key)) > i, 'the call after the shard');
+  assert.ok(t.events.some((e) => e.type === 'names' && e.ids.includes('folk:shard')));
+  // The second game: no line of the shard again.
+  const again = atStart({ profile });
+  assert.ok(!again.said.some((l) => l.key === 'loco.shard'));
+});
