@@ -201,3 +201,21 @@ test('at the first card of con trâu, a person near says that Nghé is a young b
   const line = said.find((l) => l.key === 'note.buffalo.nghe');
   assert.ok(line && /^npc:/.test(line.id), JSON.stringify(said));
 });
+
+test('no print of the notebook has an empty picture: a thing shows whole, and a figure with a head shows its bust', async () => {
+  const { printFraming, figureOf } = await import('../src/world/figures.js');
+  const figs = load('data/figures.json').figures;
+  const nb = load('data/notebook.json');
+  const looks = new Set([...nb.entries.map((e) => e.look), ...Object.values(nb.skills).flatMap((s) => [s.look, ...Object.values(s.from ?? {}).map((x) => x.look)])].filter(Boolean));
+  assert.ok(looks.has('rod'));
+  for (const k of looks) {
+    const look = figs[k];
+    assert.ok(look, `${k}: a look of data/figures.json`);
+    const f = figureOf(look, 'coarse');
+    const parts = (f.parts ?? []).filter((p) => p.size.every((v) => v > 0.02));
+    assert.ok(parts.length > 0, `${k}: parts to draw`);
+    const framing = printFraming(look);
+    if (framing === 'bust') assert.ok(f.parts.some((p) => p.name === 'head' || p.name === 'skull'), `${k}: a bust needs a head`);
+  }
+  assert.equal(printFraming(figs.rod), 'full', 'the rods show whole');
+});

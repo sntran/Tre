@@ -5,11 +5,13 @@ import { h, img, button } from './dom.js';
 import { t, tn } from './i18n.js';
 import { speak } from './speak.js';
 import { portraitCanvas } from './portraits.js';
+import { printFraming } from '../world/figures.js';
 import { notebookOf, notebookCount, printArt, sentSkills } from '../core/notebook.js';
 
 // The print of an entry: the figure of its look, the picture of a place, or of a subject.
 export function printOf(ctx, entry, size = 64) {
-  if (entry.look && ctx.data.figures.figures[entry.look]) return portraitCanvas(ctx, ctx.data.figures.figures[entry.look], { framing: 'bust', size });
+  const look = entry.look ? ctx.data.figures.figures[entry.look] : null;
+  if (look) return portraitCanvas(ctx, look, { framing: printFraming(look), size });
   return img(printArt(entry), 'note-art');
 }
 

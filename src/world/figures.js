@@ -1294,6 +1294,14 @@ export function raidThing(look) {
   }
 }
 
+// The framing of the picture of a print of the notebook (#113: the print of the rods showed an
+// empty white picture): a figure with a head shows its head and shoulders (bust), and a thing
+// shows whole (full).
+export function printFraming(look) {
+  const f = figureOf(look ?? {}, 'coarse');
+  return (f.parts ?? []).some((p) => p.name === 'head' || p.name === 'skull') ? 'bust' : 'full';
+}
+
 // The figure of a look from data/figures.json. detail: 'fine' (the people and animals on a grid of
 // quarter blocks, src/world/fine.js) or 'coarse' (the parts of this file, for far figures). Things
 // have one level.
