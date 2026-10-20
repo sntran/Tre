@@ -10,6 +10,7 @@ We write it for parents and for anyone who wants to know why the game is the way
 
 | Date | Entry |
 | --- | --- |
+| 20 Oct 2026 | [A row that cannot end](2026-10-20-a-row-that-cannot-end.md) |
 | 19 Oct 2026 | [New at any grade](2026-10-19-new-at-any-grade.md) |
 | 18 Oct 2026 | [Riddles in the evening](2026-10-18-riddles-in-the-evening.md) |
 | 18 Oct 2026 | [The tasks grow with the grade](2026-10-18-the-tasks-grow-with-the-grade.md) |
