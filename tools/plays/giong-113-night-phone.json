@@ -1,0 +1,54 @@
+{
+ "about": "#113: Gióng on his mat at night (19:30; at 21:00 the family sleeps in the house): he lies and looks at the hero, and the line that he lies still shows while he lies.",
+ "start": "?story=giong-mat&clock=1170",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-boy')?.lie)"
+  },
+  {
+   "shot": "night-giong-lies-on-a-mat"
+  },
+  {
+   "tap": {
+    "person": "giong-boy"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(document.querySelector('.dialogue-layer')?.textContent ?? '')"
+  },
+  {
+   "shot": "night-the-line-while-he-lies"
+  },
+  {
+   "read": 6
+  }
+ ]
+}

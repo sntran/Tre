@@ -1,0 +1,53 @@
+{
+ "about": "#113: the envoy at the đình: the button talks to the envoy, not to the elder, and the people walk to the đình and stand around him.",
+ "start": "?story=envoy-dinh",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.session.action())"
+  },
+  {
+   "shot": "the-envoy-near-the-button-shows-the-talk"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(document.querySelector('.dialogue-layer')?.textContent ?? '')"
+  },
+  {
+   "shot": "the-talk-is-with-the-envoy-and-the-people-stand-around-him"
+  },
+  {
+   "print": "JSON.stringify(['elder', 'grandma', 'teacher', 'healer', 'smith'].map((id) => { const e = tre.activeVillage.state().entities.find((x) => x.id === 'npc:' + id); const m = tre.activeVillage.state().entities.find((x) => x.id === 'npc:messenger'); return e && m ? [id, Math.round(Math.hypot(e.position.x - m.position.x, e.position.z - m.position.z))] : [id, null]; }))"
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 20
+  },
+  {
+   "shot": "after-the-talk-the-people-go-back-to-their-day"
+  }
+ ]
+}

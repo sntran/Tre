@@ -1,0 +1,234 @@
+{
+ "about": "#113: the lost ducks at grade 3: a duck of the flock and a lost duck carried to the pen with taps and presses (the lost duck stays in the hands on the long way), the count of the farmer by groups, and a wave after a short count.",
+ "start": "?story=event-duck",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "3",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "duck"
+   },
+   "after": 0.3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) || tre.activeVillage.heard().some((x) => x.key === 'event.duck.start')",
+   "timeout": 60
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'duck' && !e.item.stray && !e.item.held && e.item.zone !== 'event-duck-place' && !/-lost-/.test(e.item.zone ?? '')).sort((a, b) => Math.hypot(a.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, a.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) - Math.hypot(b.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, b.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z))[0]?.id"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "place": "event-duck-place"
+   },
+   "after": 3
+  },
+  {
+   "check": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "check": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "check": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "duck"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer'))",
+   "timeout": 120
+  },
+  {
+   "wait": 6
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-14).map((x) => x.key))"
+  },
+  {
+   "shot": "the-farmer-counts-the-pen-by-twos"
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "a-wave-points-at-a-lost-duck-of-her-flock"
+  },
+  {
+   "walk": {
+    "thingExpr": "tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'duck' && /-lost-\\d+$/.test(e.item.zone ?? '') && !e.item.held).sort((a, b) => Math.hypot(a.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, a.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) - Math.hypot(b.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, b.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z))[0]?.id"
+   },
+   "taps": 12
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'duck' && /-lost-\\d+$/.test(e.item.zone ?? '') && !e.item.held).sort((a, b) => Math.hypot(a.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, a.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) - Math.hypot(b.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, b.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z))[0]?.id"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "shot": "a-lost-duck-in-the-hands-at-its-place"
+  },
+  {
+   "tap": {
+    "place": "event-duck-place"
+   },
+   "after": 3
+  },
+  {
+   "check": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "check": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "shot": "on-the-way-to-the-pen-the-duck-stays-in-the-hands"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "check": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero').hands?.holds)"
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:event-duck-place').zone.items.length"
+  },
+  {
+   "shot": "the-lost-duck-in-the-pen"
+  }
+ ]
+}

@@ -1,0 +1,135 @@
+{
+ "about": "#113: small things at night: the elder (a dark robe, a khăn, a white beard) and his greeting, the notebook (each print has a picture), and the map (each lock on its land, and the goal Văn Miếu with its road).",
+ "start": "?story=trial-scholar&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "elder"
+   },
+   "taps": 14
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "elder"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "(document.querySelector('.dialogue-layer')?.textContent ?? '')"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-the-elder-dark-robe-khan-white-beard"
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "click": "Sổ tay",
+   "after": 2
+  },
+  {
+   "shot": "night-the-notebook-each-print-has-a-picture"
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "goto": "?story=exam-gate&clock=1260"
+  },
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".map-btn",
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.country-svg'))",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "document.querySelectorAll('.goal-mark').length + ' ' + document.querySelector('.goal-name')?.textContent"
+  },
+  {
+   "shot": "night-the-map-the-goal-van-mieu"
+  },
+  {
+   "button": ".map-seal.locked",
+   "after": 1.5
+  },
+  {
+   "shot": "night-a-tap-on-a-lock-lights-its-land"
+  },
+  {
+   "button": ".country-tools .icon-btn",
+   "after": 1
+  },
+  {
+   "button": ".country-tools .icon-btn",
+   "after": 1
+  },
+  {
+   "button": ".country-tools .icon-btn",
+   "after": 1
+  },
+  {
+   "button": ".country-tools .icon-btn",
+   "after": 1.5
+  },
+  {
+   "shot": "night-near-the-road-to-van-mieu"
+  }
+ ]
+}
