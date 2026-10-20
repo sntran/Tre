@@ -3,6 +3,7 @@
   {
    "id": "messenger.call",
    "start": "n1",
+   "scene": { "gather": { "at": "messenger", "people": ["elder", "grandma", "teacher", "healer", "smith"] } },
    "nodes": {
     "n1": {
      "speaker": "narrator",

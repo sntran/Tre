@@ -256,3 +256,24 @@ test('the goal of the story has a mark on the country map, with the name of its 
   const road = load('data/world/routes.json').routes.find((r) => r.from === 'phu-dong' && r.to === 'thang-long');
   assert.deepEqual(way, [hero, ...road.via, mark.at]);
 });
+
+test('when the talk of the envoy opens, the people stand around him, as its line says', async () => {
+  const { runHeadless } = await import('./story-run.js');
+  const { getEntity } = await import('../src/core/world/state.js');
+  const s = load('tests/stories/envoy-dinh.json');
+  let at = null;
+  await runHeadless(s, {
+    onSession: (x) => {
+      x.listen((e) => {
+        if (e.type === 'open' && e.textKey === 'dlg.messenger.call.n1' && !at) {
+          const m = getEntity(x.state, 'npc:messenger').position;
+          at = ['elder', 'grandma', 'teacher', 'healer', 'smith'].filter((id) => {
+            const p = getEntity(x.state, `npc:${id}`);
+            return p && !p.hidden && Math.hypot(p.position.x - m.x, p.position.z - m.z) <= 10;
+          });
+        }
+      });
+    },
+  });
+  assert.ok(at && at.length >= 4, `people around the envoy when the talk opens: ${at}`);
+});

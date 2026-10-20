@@ -1008,6 +1008,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // us, only his picture in the box."): the person who speaks gets up and stands beside the other
   // person, facing the hero, and the view shows them both with the hero.
   function sceneOf(scene) {
+    // A gathering (scene: { gather: { at, people } }, #113: "Dân làng kéo đến nghe." and the people
+    // stood far away in a play): the people stand around the person at once, and after the talk
+    // they walk back to their day.
+    if (scene.gather) {
+      gatherFor(scene.gather, { now: true });
+      const center = getEntity(state, `npc:${scene.gather.at}`);
+      const near = scene.gather.people.map((id) => getEntity(state, `npc:${id}`)).filter((e) => e?.gathered);
+      if (center && hero()) emit({ type: 'workView', key: `scene-${scene.gather.at}`, points: [center, ...near, hero()].map((e) => ({ ...e.position })), sight: [{ ...center.position }] });
+    }
+    if (!scene.up) return;
     const up = getEntity(state, `npc:${scene.up}`);
     const by = getEntity(state, `npc:${scene.beside}`);
     const h = hero();
@@ -4572,7 +4582,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // the step of the goal has `gather`, its people walk to spots around its person and stay there,
   // in view while the person speaks; after the step they go back to their days.
   const GATHER_R = 6; // half blocks from the person of the gathering
-  function gatherFor(gather) {
+  // now: the people stand at their spots at once (the scene of a talk).
+  function gatherFor(gather, { now = false } = {}) {
     const center = gather ? getEntity(state, `npc:${gather.at}`)?.position : null;
     const people = gather?.people ?? [];
     for (const p of persons()) {
@@ -4593,7 +4604,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         e.gathered = { spot: e.schedule.spot, hold: e.schedule.hold ?? false };
         e.schedule.spot = spot;
         e.schedule.hold = true;
-      } else if ((!center || i < 0) && e.gathered) {
+      }
+      if (now && center && i >= 0 && e.gathered && !e.hidden) {
+        const q = e.schedule.spot;
+        Object.assign(e.position, { x: q.x, y: env.groundY(q.x / 2, q.z / 2), z: q.z, facing: Math.atan2(center.x - q.x, center.z - q.z) });
+        delete e.route;
+      }
+      if ((!center || i < 0) && e.gathered) {
         e.schedule.spot = e.gathered.spot;
         if (!e.gathered.hold) delete e.schedule.hold;
         delete e.gathered;
