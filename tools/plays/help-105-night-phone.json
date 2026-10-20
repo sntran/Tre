@@ -1,0 +1,127 @@
+{
+ "about": "#105: the teacher at grade K at night: after the first demonstration, a tap on the heap walks there, three presses, and a wave that shows the action.",
+ "start": "?story=trial-scholar&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "night-teacher-grade-k-after-the-first-demonstration"
+  },
+  {
+   "tap": {
+    "thing": "zone:rods"
+   },
+   "after": 1
+  },
+  {
+   "print": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "shot": "night-a-tap-on-the-heap-walks"
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => [x.key, x.text]))"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-a-wave-after-three-presses"
+  }
+ ]
+}
