@@ -1,0 +1,488 @@
+{
+ "about": "#114: the hopscotch of a child of K at night: a tap on the child, a press, throws with a tap (the miss says why, the turn of another child in view, the demonstration of a throw after two misses), then a hold to the called square, and hops square by square with taps.",
+ "start": "?story=trick-hopscotch&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'loco.invite') || true",
+   "timeout": 5
+  },
+  {
+   "tap": {
+    "person": "loco-child"
+   },
+   "after": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.session.folk()?.phase === 'throw'",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-a-child-of-k-the-call"
+  },
+  {
+   "until": "tre.activeVillage.session.folk()?.phase === 'throw'",
+   "timeout": 40
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-tap-1-why-it-missed",
+   "if": "tre.activeVillage.session.folk()?.phase !== 'hop'"
+  },
+  {
+   "wait": 4.2,
+   "if": "tre.activeVillage.session.folk()?.phase === 'other' || tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "shot": "night-tap-1-the-turn-of-another-child",
+   "if": "tre.activeVillage.session.folk()?.phase === 'other'"
+  },
+  {
+   "shot": "night-tap-1-a-child-shows-a-throw",
+   "if": "tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "wait": 1.5,
+   "if": "tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-tap-1-the-shard-of-the-child-in-the-called-square",
+   "if": "tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "until": "tre.activeVillage.session.folk()?.phase === 'throw'",
+   "timeout": 40
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-tap-2-why-it-missed",
+   "if": "tre.activeVillage.session.folk()?.phase !== 'hop'"
+  },
+  {
+   "wait": 4.2,
+   "if": "tre.activeVillage.session.folk()?.phase === 'other' || tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "shot": "night-tap-2-the-turn-of-another-child",
+   "if": "tre.activeVillage.session.folk()?.phase === 'other'"
+  },
+  {
+   "shot": "night-tap-2-a-child-shows-a-throw",
+   "if": "tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "wait": 1.5,
+   "if": "tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-tap-2-the-shard-of-the-child-in-the-called-square",
+   "if": "tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "until": "tre.activeVillage.session.folk()?.phase === 'throw'",
+   "timeout": 40
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-tap-3-why-it-missed",
+   "if": "tre.activeVillage.session.folk()?.phase !== 'hop'"
+  },
+  {
+   "wait": 4.2,
+   "if": "tre.activeVillage.session.folk()?.phase === 'other' || tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "shot": "night-tap-3-the-turn-of-another-child",
+   "if": "tre.activeVillage.session.folk()?.phase === 'other'"
+  },
+  {
+   "shot": "night-tap-3-a-child-shows-a-throw",
+   "if": "tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "wait": 1.5,
+   "if": "tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-tap-3-the-shard-of-the-child-in-the-called-square",
+   "if": "tre.activeVillage.session.folk()?.phase === 'demo'"
+  },
+  {
+   "until": "tre.activeVillage.session.folk()?.phase === 'throw' || tre.activeVillage.session.folk()?.phase === 'hop'",
+   "timeout": 40
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "hold": {
+    "until": "(() => { const v = tre.activeVillage; const s = v.state(); const a = s.entities.find((e) => e.id === 'folk:aim'); const c = s.entities.find((e) => e.id === 'folk:court').folkCourt.squares[v.session.folk()?.call]; return Boolean(a && !a.hidden && c && Math.hypot(a.position.x - c.x, a.position.z - c.z) < 0.5); })()",
+    "timeout": 15,
+    "print": "tre.activeVillage.session.folk()?.call"
+   },
+   "shot": "night-a-hold-to-the-called-square",
+   "if": "tre.activeVillage.session.folk()?.phase === 'throw'"
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-the-shard-in-the-called-square"
+  },
+  {
+   "print": "(() => { const b = document.querySelector('.jump-btn'); if (!window.__taps) { window.__taps = []; b.addEventListener('pointerdown', (e) => { window.__down = e.timeStamp; }); b.addEventListener('pointerup', (e) => { window.__taps.push(Math.round(e.timeStamp - window.__down)); }); } return 'listening'; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "shot": "night-hops-over-the-shard",
+   "if": "tre.activeVillage.session.folk()?.phase === 'hop'"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 0.7,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify(window.__taps)"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.session.folk())"
+  },
+  {
+   "shot": "night-home"
+  }
+ ]
+}
