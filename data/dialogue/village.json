@@ -480,7 +480,8 @@
       "nodes": {
         "n1": {
           "speaker": "narrator",
-          "textKey": "dlg.giong.silent.n1"
+          "textKey": "dlg.giong.silent.n1",
+          "names": ["npc:giong-boy"]
         }
       }
     },

@@ -146,6 +146,7 @@ async function atGiong(flags, cell, steps) {
         const m = s.state.entities.find((x) => x.id === 'npc:mother');
         if (e.type === 'open' && e.textKey) seen.push({ key: e.textKey, lie: Boolean(g?.lie), near: g && m ? Math.hypot(g.position.x - m.position.x, g.position.z - m.position.z) : null });
         if (e.type === 'workView') seen.push({ view: e.key });
+        if (e.type === 'names') seen.push({ names: e.ids });
       });
     },
   });
@@ -159,6 +160,7 @@ test('Gióng lies on a mat while the line "nằm im" shows, and stands beside hi
   assert.ok(s1, silent.seen.map((x) => x.key).join(', '));
   assert.ok(s1.lie, 'Gióng lies while the line says so');
   assert.ok(silent.session.state.entities.some((e) => e.id === 'mat:lie:giong-boy'), 'a mat under him');
+  assert.ok(silent.seen.some((x) => x.names?.includes('npc:giong-boy')), 'the line names him: he glows, and the view leads to him');
   const speaks = await atGiong({ 'giong.messenger': true }, [23, 27], [{ wait: 3 }, { press: { entity: 'npc:mother' } }, { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 20 } }]);
   const s2 = speaks.seen.find((x) => x.key === 'dlg.giong.speaks.n1');
   assert.ok(s2, speaks.seen.map((x) => x.key).join(', '));
