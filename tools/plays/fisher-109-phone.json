@@ -1,0 +1,119 @@
+{
+ "about": "#109: the fisher, a child who only presses: a stake too near the last one does not go in; the fisher says why, then shows a ring at the next place, and a tap at the ring and a press put the stake there.",
+ "start": "?story=trial-fisher",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-fisher-the-first-stakes"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "only-presses-the-fisher-says-why-and-shows-the-ring"
+  },
+  {
+   "tap": {
+    "thing": "why:fisher:next"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "a-tap-at-the-ring-and-a-press-puts-the-stake-there"
+  }
+ ]
+}
