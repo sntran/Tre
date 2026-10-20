@@ -106,20 +106,27 @@ if (plan.lang) await page.evaluate((code) => window.tre.chooseLanguage?.(code), 
 
 // A finger on the screen: down, a move, and up (pointer events of the kind touch).
 const cdp = await ctx.newCDPSession(page);
-const touch = (type, x, y) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+// Each event of a finger has its own time (timestamp, seconds since the epoch), so that a tap is a
+// tap of TAP seconds for the page also when the page is slow (#114: in a slow headless page the
+// finger up came 0.25 to 0.8 s after the finger down, and each tap of the jump button was a long
+// hop).
+const TAP = 0.08;
+const touch = (type, x, y, timestamp = Date.now() / 1000) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }], timestamp });
 const sleep = (s) => page.waitForTimeout(s * 1000);
 async function finger(points, seconds = 0) {
   const [x0, y0] = points[0];
-  await touch('touchStart', x0, y0);
+  const t0 = Date.now() / 1000;
+  await touch('touchStart', x0, y0, t0);
   const n = Math.max(1, Math.round(seconds * 30));
   for (let k = 1; k <= n && points.length > 1; k++) {
     const t = k / n;
     const [x1, y1] = points[points.length - 1];
-    await touch('touchMove', x0 + (x1 - x0) * t, y0 + (y1 - y0) * t);
+    await touch('touchMove', x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, t0 + seconds * t);
     await sleep(seconds / n);
   }
-  if (points.length === 1 && seconds) await sleep(seconds);
-  await touch('touchEnd');
+  const held = Math.max(seconds, TAP);
+  if (points.length === 1) await sleep(held);
+  await touch('touchEnd', 0, 0, t0 + held);
 }
 const tapAt = (x, y) => finger([[x, y]]);
 // Two fingers on the middle of the screen that go apart (k over 1) or come together (k under 1):
