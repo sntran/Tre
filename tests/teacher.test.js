@@ -75,7 +75,7 @@ test('too few rods: the empty places glow and the teacher says the mat has room,
   const { lines, off } = listenLines(session);
   let glows = 0;
   run(session, 30, () => {
-    glows = Math.max(glows, session.state.entities.filter((e) => e.look === 'place-glow').length);
+    glows = Math.max(glows, session.state.entities.filter((e) => e.look === 'place-glow' && !e.hidden).length);
     return lines.length > 3 && quiet(session);
   });
   off();
