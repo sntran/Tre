@@ -180,10 +180,22 @@ test('the last hint is a demonstration: the traveler takes the chicken across an
 });
 
 test('while the puzzle goes on near the traveler, the faces of the people of the story do not show at the edges, as at a task', async () => {
-  const p = await at([3, 62]);
+  const p = await at([12, 62]);
   assert.equal(p.session.taskHere(), null, 'before the puzzle');
-  p.run(10);
+  const tr = getEntity(p.session.state, 'pz:traveler');
+  const hero = getEntity(p.session.state, 'hero');
+  Object.assign(hero.position, { x: tr.position.x - 3, z: tr.position.z - 1 });
+  delete hero.route;
+  p.run(1);
+  assert.equal(p.session.taskHere(), 'puzzle', 'from the first line of the puzzle');
+  p.run(9);
   assert.equal(p.session.taskHere(), 'puzzle');
+  // On the far bank, by the boat.
+  p.standAt('pz:chicken');
+  p.press();
+  p.press();
+  p.run(30, () => p.boat().state === 'wait' && p.boat().side === 'b');
+  assert.equal(p.session.taskHere(), 'puzzle', 'on the far bank, by the boat');
   // Far away, the faces come back.
   const h = getEntity(p.session.state, 'hero');
   Object.assign(h.position, { x: h.position.x + 80 });
