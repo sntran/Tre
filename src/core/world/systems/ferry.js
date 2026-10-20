@@ -18,9 +18,14 @@ const spotOf = (f, side) => (side === 'a' ? f.a : f.b);
 const landOf = (f, side) => (side === 'a' ? f.landA : f.landB);
 
 export function ferry(world, dt, rng, env) {
+  // In the rain the river rises (sky.flood, in blocks): the boat rides on the water (#110: in a
+  // play in the rain the boat was under the water, and the chicken floated with no boat).
+  const lift = (world.sky?.flood ?? 0) * 2;
+  const float = (p) => (env.groundY?.(p.x / 2, p.z / 2) ?? 2) + SURFACE + lift;
   for (const e of query(world, 'ferry', 'position')) {
     const f = e.ferry;
     const p = e.position;
+    if (env.groundY) p.y = float(p);
     // The ferryman stands at the stern and pushes his pole while the boat moves.
     const man = f.man ? getEntity(world, f.man) : null;
     if (man) {
@@ -59,7 +64,7 @@ export function ferry(world, dt, rng, env) {
       const k = Math.min(1, (SPEED * dt) / Math.max(d, 1e-6));
       p.x += dx * k;
       p.z += dz * k;
-      p.y = (env.groundY?.(p.x / 2, p.z / 2) ?? 2) + SURFACE;
+      p.y = float(p);
       if (d > 1e-3) p.facing = Math.atan2(dx, dz);
       return d <= SPEED * dt;
     };

@@ -203,3 +203,13 @@ test('while the puzzle goes on near the traveler, the faces of the people of the
   p.run(1);
   assert.equal(p.session.taskHere(), null);
 });
+
+test('in the rain the boat rides on the risen river', async () => {
+  const p = await at([3, 62]);
+  p.run(1);
+  const boat = getEntity(p.session.state, 'ferry:pz');
+  const dry = boat.position.y;
+  p.session.state.sky.flood = 1;
+  p.run(0.2);
+  assert.ok(Math.abs(boat.position.y - (dry + 2)) < 0.3, `${dry} -> ${boat.position.y}`);
+});
