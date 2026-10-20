@@ -23,6 +23,7 @@ A traveler waits on the bank west of the boat of Phù Đổng with a dog, a chic
 - When all three are on the far bank, the traveler thanks the child, turns to the hero, and gives two eggs with a line that names them ("Chú cho cháu hai quả trứng."). The ford leads back. The record keeps the crossings (`profile.puzzles.ferry.crossings`; seven is the least).
 - A wave gets a hint only after the traveler said the puzzle, and only near him. The first hint is the rule again, with the traveler pointing at each pair ("Chó ở một mình với gà thì đuổi gà. Gà ở một mình với gạo thì mổ gạo."), and it comes again until a wrong crossing or a long wait (`WAIT_HINT`, 60 seconds). Then "Con gà đi trước.". The last hint is a demonstration, as at the well: the traveler takes the chicken across and back in the boat, and says "Mình có thể chở một thứ quay lại."
 - A bubble of a puzzle goes when the hero walks more than 6 cells away from its person.
+- While a puzzle goes on near its person, the stars and the arrows of the people of the story do not show, as at a task (`here` in `src/core/puzzles.js`; #110: the rice lay under the arrows at the edge, and a tap on it walked the hero to the woodcutter).
 
 ## The two pots at the well
 

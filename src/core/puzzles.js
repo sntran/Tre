@@ -513,6 +513,10 @@ export function createPuzzles(deps) {
         sayOffer();
       }
     },
+    // A puzzle goes on near the hero: the faces of the people of the story do not show on the screen
+    // (#110: the rice of the ferry was under the arrows at the edge, and a tap on it walked the hero
+    // to the woodcutter), as at a task.
+    here: () => Boolean((ferry && ferry.told && !ferry.solved && heroNear('pz:traveler', OFFER_NEAR * 2)) || (pots && pots.offered && !pots.solved && healerNear() && heroNear(healerNear().id, OFFER_NEAR))),
     canWave: () => Boolean((ferryHint() && !ferry.demo) || (pots && pots.offered && healerNear() && heroNear(healerNear().id, OFFER_NEAR))),
     // A wave: the next hint of the puzzle near the hero, only after the person said the puzzle. The
     // first hint of the ferry is the rule again, with the traveler pointing at each pair; "the

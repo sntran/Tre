@@ -4968,8 +4968,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     },
     // A task or a folk game goes on now: a tap on Nghé is a tap on what is under or behind Nghé.
     // Any open task counts (a trial, a station, or a work task such as the rice for Gióng).
-    // The open task whose place the hero is at (#76).
-    taskHere,
+    // The open task whose place the hero is at (#76), or 'puzzle' while a puzzle goes on near the
+    // hero (#110).
+    taskHere: () => taskHere() ?? (puzzles.here() ? 'puzzle' : null),
     inTask: () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done)),
     // Is a map point (cells) on the gap of an open bridge (a tap there is work, not a pet of Nghé)?
     openSpanAt: (x, y) => bridgeOpen() && Boolean(spanAt(Math.floor(x), Math.floor(y))),

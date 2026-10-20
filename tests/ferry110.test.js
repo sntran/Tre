@@ -178,3 +178,16 @@ test('the last hint is a demonstration: the traveler takes the chicken across an
   assert.deepEqual(p.ferry().where, { dog: 'a', chicken: 'a', rice: 'a' });
   assert.equal(p.boat().side, 'a');
 });
+
+test('while the puzzle goes on near the traveler, the faces of the people of the story do not show at the edges, as at a task', async () => {
+  const p = await at([3, 62]);
+  assert.equal(p.session.taskHere(), null, 'before the puzzle');
+  p.run(10);
+  assert.equal(p.session.taskHere(), 'puzzle');
+  // Far away, the faces come back.
+  const h = getEntity(p.session.state, 'hero');
+  Object.assign(h.position, { x: h.position.x + 80 });
+  delete h.route;
+  p.run(1);
+  assert.equal(p.session.taskHere(), null);
+});
