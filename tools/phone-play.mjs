@@ -21,6 +21,7 @@
 //                                place of a task, where the screen shows it
 //   { "tap": { "stem": 4 } }     a tap on the stem of the woodcutter, 4 half blocks from its start
 //   { "tap": { "row": 8 } }      a tap on the row of the fisher, 8 half blocks from its start
+//   { "tap": { "thingExpr": "expr" } } a tap on the thing whose id the expression gives
 //   { "tap": { "person": "teacher", "dx": 60 } } a tap 60 points to the right of a target
 //   { "tap": {...}, "then": {...}, "gap": 0.4 } a second tap soon after the first
 //   { "tap": { "star": true } }  a tap on the goal star (or the arrow at the edge of the screen)
@@ -210,7 +211,11 @@ async function pointOf(spec) {
     let p = null;
     if (s.person) p = v.screenOfPerson(s.person);
     else if (s.thing) p = v.screenOfThing(s.thing);
-    else if (s.cell) p = v.screenOf(s.cell[0], s.cell[1]);
+    // A thing that an expression names (the nearest lost duck): the id of the thing.
+    else if (s.thingExpr) {
+      const id = new Function('tre', `return (${s.thingExpr});`)(window.tre);
+      p = id ? v.screenOfThing(id) : null;
+    } else if (s.cell) p = v.screenOf(s.cell[0], s.cell[1]);
     else if (s.row !== undefined) {
       // A point of the row of the fisher, this many half blocks from its start, at the height of
       // the row (where the stakes stand), as a child taps it (#63).
