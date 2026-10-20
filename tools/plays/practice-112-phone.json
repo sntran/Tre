@@ -1,0 +1,258 @@
+{
+ "about": "#112: the practice with the teacher: the voice reads the question and each answer (the answer glows), the pips of the round, a round of eight, and the end.",
+ "start": "?story=giong-speaks",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "teacher"
+   },
+   "taps": 25
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "click": "Con muốn luyện tập ạ.",
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .choice-grid'))",
+   "timeout": 30
+  },
+  {
+   "click": "Thầy chọn giúp con",
+   "after": 1.5
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "shot": "the-voice-reads-the-question-and-each-answer-glows"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "wrong",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "right",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "right",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "shot": "the-pips-of-the-round"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "wrong",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "right",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "right",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "wrong",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "right",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "right",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "wrong",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "right",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "right",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "wrong",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 4,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "print": "(document.querySelector('.modal-layer')?.innerText ?? '').slice(0, 200)",
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "answer": "right",
+   "after": 2,
+   "if": "Boolean(document.querySelector('.quiz-pips'))"
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "(document.querySelector('.modal-layer, .say-layer')?.innerText ?? '').slice(0, 200)"
+  },
+  {
+   "shot": "the-end-of-a-round-of-eight"
+  }
+ ]
+}
