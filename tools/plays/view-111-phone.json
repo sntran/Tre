@@ -1,0 +1,207 @@
+{
+ "about": "#111: the view: the hero walks to the elder, the healer, and the teacher; when the hero stands still by a house, the hero shows; a talk that names things turns the view at most one time.",
+ "start": "?story=trial-scholar",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "elder"
+   },
+   "taps": 20
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "elder"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "shot": "near-the-elder-the-hero-shows"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-talk-with-the-elder"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "read": 30
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .turn-btn",
+   "after": 1,
+   "if": "Boolean(document.querySelector('.hud .turn-btn'))"
+  },
+  {
+   "walk": {
+    "person": "healer"
+   },
+   "taps": 20
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "shot": "near-the-healer-the-hero-shows"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-talk-with-the-healer"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "read": 30
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .turn-btn",
+   "after": 1,
+   "if": "Boolean(document.querySelector('.hud .turn-btn'))"
+  },
+  {
+   "walk": {
+    "person": "teacher"
+   },
+   "taps": 20
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "shot": "near-the-teacher-the-hero-shows"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-talk-with-the-teacher"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "read": 30
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .turn-btn",
+   "after": 1,
+   "if": "Boolean(document.querySelector('.hud .turn-btn'))"
+  }
+ ]
+}
