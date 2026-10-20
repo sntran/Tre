@@ -1,0 +1,312 @@
+{
+ "about": "#110: the ferry: the puzzle in short lines, the things taken by nearness, both banks in the view, a hint by a wave, and the end.",
+ "start": "?story=puzzle-ferry",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "ferry-before-the-puzzle"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().sky)"
+  },
+  {
+   "print": "'the wave button shows: ' + Boolean(document.querySelector('.wave-btn') && !document.querySelector('.wave-btn').hidden && document.querySelector('.wave-btn').offsetParent)"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => [x.key, x.text]))"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^puzzle\\.ferry\\.start/.test(x.key))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "ferry-grade-1-the-traveler-and-his-three-things"
+  },
+  {
+   "tap": {
+    "thing": "pz:dog"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "shot": "ferry-grade-1-the-dog-in-the-boat"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.peck')",
+   "timeout": 30
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "shot": "ferry-grade-1-the-chicken-pecks-at-the-rice"
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.side === 'a' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.session.puzzles.state().ferry.where)"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-8).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "ferry-grade-1-a-wave-gives-a-hint"
+  },
+  {
+   "tap": {
+    "thing": "pz:chicken"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "shot": "ferry-grade-1-the-chicken-in-the-boat"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "pz:dog"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "pz:chicken"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "ferry-grade-1-the-chicken-goes-back"
+  },
+  {
+   "tap": {
+    "thing": "pz:rice"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "pz:chicken"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 180
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry.state === 'wait'",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.done')",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.session.puzzles.state().ferry.where)"
+  },
+  {
+   "shot": "ferry-grade-1-all-three-over-the-river"
+  }
+ ]
+}
