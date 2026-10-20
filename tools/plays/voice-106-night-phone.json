@@ -1,0 +1,75 @@
+{
+ "about": "#106: the line of Gióng at night with the card of the ore: the voice says the card after the line.",
+ "start": "?story=giong-speaks&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "giong-boy"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "read": 1,
+   "if": "!(document.querySelector('.dialogue-layer')?.textContent ?? '').includes('quặng sắt')"
+  },
+  {
+   "wait": 6
+  },
+  {
+   "print": "(document.querySelector('.dialogue-layer')?.textContent ?? '')"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-the-card-of-the-ore-is-spoken"
+  },
+  {
+   "read": 10
+  }
+ ]
+}

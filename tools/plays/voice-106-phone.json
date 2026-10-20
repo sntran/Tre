@@ -1,0 +1,127 @@
+{
+ "about": "#106: the teacher at grade 1: the goal of the task is spoken, and each wave is spoken.",
+ "start": "?story=trial-scholar",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "1",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "teacher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^teacher\\.need/.test(x.key))",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "teacher-the-goal-is-spoken"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "press": true,
+   "after": 1.4
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-12).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "two-waves-both-spoken"
+  }
+ ]
+}
