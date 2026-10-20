@@ -1291,9 +1291,23 @@ export async function mountVillage(ctx, params = {}) {
     const steps = stillTurn(objects, heroAt, person, view.angle, VIEW.elevation);
     if (steps) view.turn(steps);
   }
+  // The state of the sight of the hero, for the plays and the debug panel.
+  function sightState() {
+    const at = figures.placeOf('hero');
+    if (!at) return null;
+    const objects = terrain.objects
+      .filter((o) => !o.gone && BUILDINGS.has(o.kind) && Math.abs(o.x + o.w / 2 - at.x) < STILL_NEAR && Math.abs(o.y + o.h / 2 - at.z) < STILL_NEAR)
+      .map((o) => ({ b: terrain.boxOf(o), building: true, hits: (x, y, z) => terrain.hits(o.who, x, y, z) }));
+    return { az: view.angle, hero: at, buildings: objects.length, steps: stillTurn(objects, at, null, view.angle, VIEW.elevation), still: viewTurns.still(performance.now()), stillFor, stillDone };
+  }
+  // Still by the place of the hero, not by its motion: a hero who stands gets small pushes (Nghé,
+  // a person beside), and the time of a stop went back to zero again and again (#111, a play).
+  const STILL_MOVE = 0.15; // blocks a second: slower than this is standing
+  let stillAt = null;
   function watchStill(dt, heroAt) {
-    const hm = hero().motion;
-    if (Math.hypot(hm?.vx ?? 0, hm?.vz ?? 0) > 0.05 || hero().route) {
+    const moved = stillAt ? Math.hypot(heroAt.x - stillAt.x, heroAt.z - stillAt.z) : 0;
+    stillAt = { x: heroAt.x, z: heroAt.z };
+    if (moved > STILL_MOVE * dt || hero().route) {
       stillFor = 0;
       stillDone = false;
       return;
@@ -2364,6 +2378,7 @@ export async function mountVillage(ctx, params = {}) {
     pointOf: (x, y, h = null) => view.project(x, h ?? groundY(x, y) + 0.2, y),
     // The debug panel (with ?debug=1), where the storybook shows the step of a story.
     debugPanel,
+    sightState,
     // The motes of the world at rest that the last frame drew (for the tests on a device).
     motes: () => motes.count,
     // Open another map, for automatic tests of the whole game.
