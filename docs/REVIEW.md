@@ -739,3 +739,11 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The iron:** "bụi tre" in `dlg.giong.speaks.n3`, `dlg.smith.need.iron.n1`, and `dlg.woodcutter.ore.n1`; the card `word.ore` ("Quặng sắt") and `word.ore.what` ("Quặng sắt là đá có sắt bên trong.").
 - **The weekly note:** `parent.week.move.first`, `.fix`, `.count`, and `.erase`.
 - **Please check:** "bó" and "que" in the hint of the practice, and "đốt" for the rings of the bamboo.
+
+## The smith: the colors of the village (#120)
+
+- **The colors of the heat:** `dlg.smith.trial.n4.color` ("đỏ sẫm như hòn than, đỏ tươi như quả gấc, cam như quả quýt chín, rồi vàng như củ nghệ"), `smith.color.dark`, `smith.color.orange`, `smith.color.yellow`, `smith.quench.show.color`, `mentor.show.smith.color`, `mentor.show.smith.rest`.
+- **The gấc:** `smith.gac` ("Sắt đỏ như quả gấc này thì nhúng."). A gấc lies on the bench of the smith; "đỏ anh đào" (cherry red, the word of the smiths of Europe) is not a thing of the village, and two children did not know which red it is.
+- **A word after each bar:** `smith.good` ("Vừa đẹp!"), and the gift `smith.gift` ("Bác cho cháu hai thanh sắt.").
+- **The fair test:** `smith.fair.bar.water` ("Thanh nhúng nước: không cong."), `smith.fair.bar.rack` ("Thanh để trên giá: cong rồi."), `smith.fair.why` ("Nhúng nước lạnh thì sắt nguội thật nhanh; nguội nhanh thì sắt cứng lại.").
+- **Please check:** "đỏ tươi như quả gấc" for the red of hot iron to quench (the red of the aril of a ripe gấc), "cam như quả quýt chín", and "vàng như củ nghệ"; and whether a smith of the north says "nhúng" or "tôi" for the quench.

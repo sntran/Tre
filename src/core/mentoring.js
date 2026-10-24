@@ -66,7 +66,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // A level of a task with a form (#101) can have its own line of a move: <move>.<form>.
   const lineOf = (key, move) => {
     const lines = defOf(key)?.lines ?? {};
-    const form = world()?.entities ? getEntity(world(), `zone:${key}`)?.zone.plan?.form : null;
+    const zone = world()?.entities ? getEntity(world(), `zone:${key}`)?.zone : null;
+    const form = zone?.plan?.form ?? null;
+    // After the fair test of the smith, the help is the step of the rest (#120: the wave gave the
+    // fair test again, after "make the rest the hard way").
+    if (zone?.tested && lines[`${move}.rest`]) return lines[`${move}.rest`];
     return (form && lines[`${move}.${form}`]) || lines[move] || cfg.lines[move];
   };
   // The gesture of a task (#105): carry (a thing from a heap to a place), cut, quench, or load (the

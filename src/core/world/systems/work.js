@@ -249,6 +249,9 @@ export function setupTrial(world, def, level, env, opts = {}) {
       things(jar, 'bucket', 2);
       addEntity(world, { id: 'jar:smith', keep: true, position: { x: j.x + 0.5, y: j.y, z: j.z - 1.6, facing: 0 }, look: 'jar' });
     }
+    // A gấc lies on the bench of the smith (#120): the color to quench is the red of the gấc, a
+    // fruit of the village, not "đỏ anh đào" (cherries are not a thing of the village).
+    if (task.colors) addEntity(world, { id: 'gac:smith', keep: true, position: { ...gacBench(a), facing: 0 }, look: 'gac' });
     if (form === 'fair') {
       const r = { x: a.x + 3.4, y: a.y, z: a.z - 1.2 };
       tz.zone.rack = r;
@@ -1342,6 +1345,9 @@ function act(world, e, want, env) {
       iron.item.set = true;
       tz.zone.heat = null;
       say(world, 'hiss', iron.id, { sound: 'sizzle', at: iron.position });
+      // One word after each bar (#120: "no right/wrong per bar"): a right quench has its word too,
+      // information about the task, not praise.
+      if (task.colors) say(world, 'call', 'npc:smith', { key: 'smith.good', params: {}, happened: true });
       if (task.colors) hardPiece(world, tz, task, iron);
       else finish(world, tz, iron.position);
     } else {
@@ -1639,6 +1645,14 @@ function addIron(world, tz, id) {
 
 function tickForge(world, tz, dt, env) {
   const task = taskFor(env, tz.zone);
+  if (tz.zone.gacBack) {
+    tz.zone.gacBack -= dt;
+    const gac = getEntity(world, 'gac:smith');
+    if (tz.zone.gacBack <= 0) {
+      delete tz.zone.gacBack;
+      if (gac) gac.position = { ...gacBench(tz.zone.anvil), facing: 0 };
+    }
+  }
   // After the demo of the smith, the iron of the child comes on the anvil (at grade 5, the two
   // pieces of the fair test first).
   if (tz.zone.next) {
@@ -1677,6 +1691,16 @@ function tickForge(world, tz, dt, env) {
   }
   // The demo: a moment after the iron turns hot, the smith drops it into the water and says when.
   if (!tz.zone.demo || !hot) return;
+  // The first time, he holds the gấc up next to the hot iron (#120): "Sắt đỏ như quả gấc này thì
+  // nhúng."
+  const gac = task.colors && !tz.zone.gacShown ? getEntity(world, 'gac:smith') : null;
+  if (gac) {
+    tz.zone.gacShown = true;
+    tz.zone.gacBack = GAC_SHOW;
+    gac.position = { x: iron.position.x + 0.8, y: iron.position.y + 1.2, z: iron.position.z, facing: 0 };
+    say(world, 'call', 'npc:smith', { key: 'smith.gac', params: {} });
+    world.events.push({ type: 'glowThings', ids: [gac.id] });
+  }
   tz.zone.demoHot = (tz.zone.demoHot ?? 0) + dt;
   if (tz.zone.demoHot < DEMO_WAIT) return;
   const a = tz.zone.anvil;
@@ -1690,8 +1714,12 @@ function tickForge(world, tz, dt, env) {
   tz.zone.heat = null;
   tz.zone.next = DEMO_NEXT;
   say(world, 'hiss', iron.id, { sound: 'sizzle', at: iron.position });
-  say(world, 'call', 'npc:smith', { key: task.colors ? 'smith.quench.show.color' : 'smith.quench.show' });
+  if (!task.colors) say(world, 'call', 'npc:smith', { key: 'smith.quench.show' });
 }
+// The gấc of the smith (#120): its place on the bench by the anvil, and the seconds that he holds
+// it up next to the iron.
+const GAC_SHOW = 3;
+const gacBench = (a) => ({ x: a.x + 1.6, y: a.y + 0.5, z: a.z - 1.4 });
 
 // A hard piece of the smith (#102): it goes to the row of pieces beside the anvil, and the next
 // iron comes, until the pieces of the task are done.
@@ -1711,7 +1739,8 @@ function hardPiece(world, tz, task, iron) {
 // time, cherry red, and lays them on the anvil. A press puts one into the water, and a tap on the
 // rack puts the other in the air. Then he bends both.
 const TEST_CHECK = 1.6; // seconds after the second piece: the smith bends both
-const TEST_SHOW = 3.5; // seconds: the bent piece and the hard piece lie there, and he says why
+const TEST_SHOW = 4.5; // seconds: the bent piece and the hard piece lie there, and he says why
+const BEND_EACH = 2.6; // seconds: the smith bends one bar, and says what it did (#120)
 function startTest(world, tz) {
   const a = tz.zone.anvil;
   if (!getEntity(world, 'anvil:smith')) addEntity(world, { id: 'anvil:smith', keep: true, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'anvil' });
@@ -1748,26 +1777,45 @@ function tickTest(world, tz, task, dt) {
   const test = tz.zone.test;
   test.t += dt;
   // A piece on the rack cools in the air, slowly: it goes dark red.
-  for (const q of test.tries) if (q.how === 'rack' && test.t - q.t > 2) getEntity(world, q.id).look = 'bar-dark';
+  for (const q of test.tries) if (q.how === 'rack' && test.t - q.t > 2 && test.stage == null) getEntity(world, q.id).look = 'bar-dark';
   if (test.check == null) return;
   test.check -= dt;
   if (test.check > 0) return;
-  if (test.show == null) {
-    // The smith bends both: the piece from the water is hard, the piece from the air bends.
-    for (const q of test.tries) getEntity(world, q.id).look = q.how === 'water' ? 'bar-hard' : 'bar-bent';
-    const r = fairResult(test.tries);
+  const r = fairResult(test.tries);
+  if (test.stage == null) {
     tz.zone.commits += 1;
     if (!r.compare) tz.zone.fails += 1;
     say(world, 'skill', tz.id, { ...trialSkill(task, { solved: r.compare, first: tz.zone.commits === 1, parts: test.tries.map((q) => (q.how === 'water' ? 1 : 0)), target: 1 }), fair: r.fair, compare: r.compare });
+    // The view on the hands of the smith and the bars (#120: "I did not SEE the bending, he just
+    // said it."): he bends them one after the other, slowly, and says what each did.
+    const smith = getEntity(world, 'npc:smith');
+    world.events.push({ type: 'workView', key: 'smith-bend', points: [...test.tries.map((q) => ({ ...getEntity(world, q.id).position })), ...(smith ? [{ ...smith.position }] : [])], sight: test.tries.map((q) => ({ ...getEntity(world, q.id).position })) });
+    test.stage = 0;
+    test.stageT = 0;
+  }
+  test.stageT -= dt;
+  if (test.stageT > 0) return;
+  const smith = getEntity(world, 'npc:smith');
+  if (test.stage < test.tries.length) {
+    const q = test.tries[test.stage];
+    const bar = getEntity(world, q.id);
+    bar.look = q.how === 'water' ? 'bar-hard' : 'bar-bent';
+    if (smith) smith.gesture = { act: 'point', x: bar.position.x, z: bar.position.z, t: BEND_EACH };
+    world.events.push({ type: 'glowThings', ids: [bar.id] });
     say(world, 'bend', tz.id, { sound: 'plank-down', test: true });
-    const ways = new Set(test.tries.map((q) => q.how));
-    say(world, 'call', 'npc:smith', { key: r.compare ? 'smith.fair.right' : ways.has('water') ? 'smith.fair.water' : 'smith.fair.rack', happened: true });
-    test.show = TEST_SHOW;
+    say(world, 'call', 'npc:smith', { key: q.how === 'water' ? 'smith.fair.bar.water' : 'smith.fair.bar.rack', params: {}, happened: true });
+    test.stage += 1;
+    test.stageT = BEND_EACH;
     return;
   }
-  test.show -= dt;
-  if (test.show > 0) return;
-  const r = fairResult(test.tries);
+  if (test.stage === test.tries.length) {
+    // Then why, for a child (#120: "he did not say WHY"); or what to change in the test.
+    const ways = new Set(test.tries.map((q) => q.how));
+    say(world, 'call', 'npc:smith', { key: r.compare ? 'smith.fair.why' : ways.has('water') ? 'smith.fair.water' : 'smith.fair.rack', happened: true });
+    test.stage += 1;
+    test.stageT = TEST_SHOW;
+    return;
+  }
   for (const id of ['iron:smith', 'iron:smith-b']) removeEntity(world, id);
   delete tz.zone.test;
   if (r.compare) {

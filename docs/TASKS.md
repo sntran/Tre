@@ -216,6 +216,18 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **The result with its reason.** At the row, the stakes go in one at a time with the count ("một, hai, …"). After a right load, before the tide, the fisher says the reason in the words of the level (`whyLine`): grade 3 "Sáu sào, mỗi sào một cọc: sáu cọc."; grade 4 "Năm khe thì sáu cọc: cọc ở hai đầu."; grade 5 "Bảy sào rưỡi, mỗi khe một sào rưỡi: năm khe, sáu cọc." A wrong load says what is missing ("Còn một khe nữa.", "Đầu này cũng cần một cọc.") or what is left over ("Thừa hai cọc."), as since #102.
 
+### The smith: colors of the village, a word after each bar, and the fair test in view (#120)
+
+**Colors named by things of the village.** The colors of the heat are "đỏ sẫm như hòn than", "đỏ tươi như quả gấc" (the time to quench), "cam như quả quýt chín", and "vàng như củ nghệ"; no line says "đỏ anh đào" (cherries are not a thing of the village, and two children did not know which red it is). From grade 3 a gấc lies on the bench of the smith; at his first quench he holds it up next to the hot iron: "Sắt đỏ như quả gấc này thì nhúng." The words are in `docs/REVIEW.md`.
+
+**One word after each bar.** A right quench gets "Vừa đẹp!" (information about the task, not praise); a wrong one gets the color that it had. From grade 3 the bars that are done show as pips of the task (`pip-bar`), apart from the iron on the counter.
+
+**The gift after the count.** After the last bar, the iron of the gift flies to the counter with its line: "Bác cho cháu hai thanh sắt."
+
+**The fair test in view, with its reason.** At grade 5 the view frames the two bars and the smith (`smith-bend`); he bends them one after the other, points at each, and says what it did ("Thanh nhúng nước: không cong.", "Thanh để trên giá: cong rồi."), and then why: "Nhúng nước lạnh thì sắt nguội thật nhanh; nguội nhanh thì sắt cứng lại." Question 118 in `docs/QUESTIONS.md` asks if a line should say "thép".
+
+**The help after the fair test.** After "Giờ cháu làm các thanh còn lại theo cách làm sắt cứng nhé.", the help of a wave is the step of the rest ("Đợi sắt đỏ như quả gấc rồi nhúng nhé."), never the fair test again.
+
 ### The fisher after #92 (#97)
 
 **The hole of the escape shows.** After an escape, the frame of the widest space lies on the surface of the water (`why:fisher:space`, at `WATER_UP`), the fisher points at it while he says "Chỗ này hở quá, cá chui ra mất.", and it stays until a stake stands in the space. Then the hint is the hole ("Cắm một cọc vào chỗ hở này nhé."). With an empty pile, the hint is the take-back of the stake to take back; with no such stake, the fisher brings one stake (rule 12).

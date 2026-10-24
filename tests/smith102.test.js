@@ -102,7 +102,8 @@ test('each grade gets its forge: the colors from grade 3, with no glow sound and
   assert.deepEqual(events.filter((e) => e.type === 'skill').map((e) => [e.skill, e.solved]), Array(3).fill(['sci.matter.materials', true]));
   assert.ok(!events.some((e) => e.type === 'glow'), 'no sound says when');
   assert.ok(!events.some((e) => e.type === 'cue' && e.ids?.some((id) => id.startsWith('iron:'))), 'no cue says when');
-  assert.ok(said.some((l) => l.key === 'smith.quench.show.color'));
+  // The smith holds up the gấc next to the hot iron (#120).
+  assert.ok(said.some((l) => l.key === 'smith.gac'));
 });
 
 test('too early or too late: the piece bends, and the smith says the color that it had', async () => {
@@ -110,7 +111,7 @@ test('too early or too late: the piece bends, and the smith says the color that 
   assert.deepEqual(events.filter((e) => e.type === 'skill').map((e) => e.solved), [false, false, false]);
   const lines = said.map((l) => l.key).filter((k) => k.startsWith('smith.color.'));
   assert.deepEqual(lines, ['smith.color.orange', 'smith.color.yellow', 'smith.color.dark']);
-  assert.equal(said.find((l) => l.key === 'smith.color.dark').text, 'Lúc nãy sắt mới đỏ sẫm.');
+  assert.equal(said.find((l) => l.key === 'smith.color.dark').text, 'Lúc nãy sắt mới đỏ sẫm như hòn than.');
   assert.ok(!zone.done);
 });
 

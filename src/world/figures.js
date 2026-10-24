@@ -717,6 +717,7 @@ export function thingLook(key) {
   // stem (green), n half blocks long.
   if (k === 'chalk-band') return { kind: 'chalk-band' };
   if (k === 'chalk-old') return { kind: 'chalk-old' };
+  if (k === 'gac') return { kind: 'gac' };
   m = /^piece-(\d+)$/.exec(k);
   if (m) return { kind: 'stem', n: Number(m[1]), green: true };
   // The glow of a ring of a piece at its number, and the glow of the short piece (#75).
@@ -1218,6 +1219,8 @@ export function workThing(look) {
     // The outline of a laid piece: an ink frame over a piece of n rings, with a red post at each end.
     case 'lay': return still([P('w', [0.14, 0.14, look.n], 'vermilion', [-0.66, 1.5, look.n / 2]), P('e', [0.14, 0.14, look.n], 'vermilion', [0.66, 1.5, look.n / 2]), P('a', [1.46, 1.6, 0.16], 'vermilion', [0, 0.8, 0.08]), P('b', [1.46, 1.6, 0.16], 'vermilion', [0, 0.8, look.n - 0.08]), P('top', [1.46, 0.08, look.n], 'vermilionPale', [0, 1.62, look.n / 2])], 1.7);
     case 'piece-glow': return still([P('glow', [1.14, 1.14, look.n], 'yellow', [0, 0.5, look.n / 2])], 1.1);
+    // A gấc on the bench of the smith (#120): a round red fruit with a bumpy skin and a green stem.
+    case 'gac': return still([P('fruit', [0.8, 0.7, 0.8], 'vermilion', [0, 0.4, 0]), P('fruitB', [0.62, 0.9, 0.62], 'vermilion', [0, 0.4, 0]), P('bumpA', [0.16, 0.16, 0.16], 'vermilionPale', [0.38, 0.5, 0.1]), P('bumpB', [0.16, 0.16, 0.16], 'vermilionPale', [-0.2, 0.62, 0.36]), P('bumpC', [0.16, 0.16, 0.16], 'vermilionPale', [0.1, 0.3, -0.4]), P('stem', [0.14, 0.2, 0.14], 'greenDeep', [0, 0.92, 0])], 1);
     case 'chalk-band': return still([P('band', [0.4, CHALK_BAND, CHALK_BAND], 'vermilion', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
     // The chalk of the last try on a new stem (#118): thin and grey, so that the child sees where the
     // last mark was and which way to move it.

@@ -1392,6 +1392,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     save('trial');
     const from = `npc:${def.npc}`;
     if (Object.keys(def.reward ?? {}).length) emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: def.reward, delay: 0.3 });
+    // The iron of the smith flies to the counter after the last bar, with its line (#120), so that
+    // a child does not take it for the count of the bars.
+    if (id === 'smith' && def.reward?.iron) emit({ type: 'open', screen: 'callout', id: from, textKey: 'smith.gift', params: { n: { key: `num.${def.reward.iron}` } } });
     emit({ type: 'hud' });
     // A task of the story may end with its own talk (rice for Gióng: Gióng grows up).
     talk(def.doneTalk ?? `${def.npc}.trial.done`);
@@ -4184,6 +4187,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The count of the work for the goal bar, as things (#48): the bundles of the teacher (the ones
   // tied, of all that the rods make). Null for the other work.
   function workCount() {
+    // The bars of the smith from grade 3 (#120): the pips of the bars that are done, apart from the
+    // iron of the gift on the counter ("The iron counter showed 2 … That was confusing.").
+    if (mentoring.activeKey() === 'trial-smith') {
+      const tz = trialZone('smith');
+      const task = tz ? taskOf(trialDef('smith'), tz.zone.level ?? 0) : null;
+      if (!tz || tz.zone.done || !task?.colors || (task.pieces ?? 1) < 2) return null;
+      return { pip: 'bar', have: tz.zone.hard ?? 0, need: task.pieces };
+    }
     if (mentoring.activeKey() !== 'trial-scholar') return null;
     const mat = zoneOf('mat');
     if (!mat) return null;
