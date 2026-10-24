@@ -11,6 +11,7 @@ Trong lần chơi thử này, sáu người chơi thử chưa biết trò chơi 
 - **Bài mẫu nói "bấm".** Ở chiếc thuyền, chú đánh cá làm mẫu cách chất một cái cọc, và câu của chú là "Bấm nút ở đống cọc: một cọc lên thuyền." Hai bạn gái lớp 4 và lớp 5 bấm theo chú, rồi không phân biệt được cọc của mình với cọc của chú: "Hai cái đó là của cháu hay của chú?" Câu của bài mẫu phải nói việc người đó làm, không nói việc trẻ phải làm.
 - **Hai mục tiêu ở một chỗ.** Một cô nông dân bị lạc đàn vịt (một sự việc trong ngày) đứng cạnh nồi cơm của Gióng trong lúc bạn trai mang cơm. Một lần chạm vào cô mở cuộc nói chuyện của cô, và từ đó lời giúp của cái vẫy tay toàn nói về vịt: "Mà dòng trên cùng vẫn bảo mang cơm cho Gióng! Cái nào đây??" Khi bạn đang bế một con vịt, lời giúp lại bảo "đi tìm một con vịt". Bạn dừng chơi.
 - **Màu đúng chỉ được nói một lần.** Ở lớp 5, bác thợ rèn làm một phép thử công bằng trước: hai thanh nóng, một thanh nhúng nước, một thanh để trên giá, rồi bác uốn cả hai. Lời nói về phép thử thế chỗ lời nói về các màu, nên màu đúng chỉ được nói một lần, trước phép thử. Một bạn gái lớp 5 có ba thanh bị cong: "Sao bác không nói luôn bác muốn màu nào?" Bạn cũng nói rằng "màu đỏ sẫm và màu đỏ đúng trông gần như giống nhau trên điện thoại".
+- **Một vật không có hình.** Một bạn gái lớp 5 thích các phân số của anh tiều phu ("1/3 + 1/4 = 4/12 + 3/12 = 7/12, vậy bếp được 5/12") mà không nhìn thấy cây tre cần vạch. Cây tre có trong phần logic của trò chơi, nhưng thiếu hình: chúng tôi mới vẽ cây tre dài 6, 8 và 12 nửa khối, còn các mức của lớp 3 đến lớp 5 dùng cây tre dài 16 và 24. Các bài kiểm tra của chúng tôi kiểm tra phần logic, không kiểm tra hình của từng vật. Bạn chặt bốn lần với các vạch phấn trên bãi cỏ, rồi dừng chơi.
 - **Vài kết quả vẫn chưa có lời.** Một lần thổi ống bễ khi trong lò còn thiếu sắt, và một khay bát cơm bỏ vào nồi khi nồi chưa đủ mười bát, chỉ có một tiếng gõ nhỏ. "Nó vào nồi hay rơi xuống đất? Cháu không biết."
 
 ## Máy chơi thử của chúng tôi
@@ -23,6 +24,7 @@ Máy chơi thử vẽ được từ một hình mỗi ba giây đến khoảng m
 - **Trận kết thúc ở cú trúng cuối cùng;** kẻ địch rút đi sau câu kết.
 - **Người làm mẫu nói việc mình làm,** và một lần bấm của trẻ không làm gì với công việc cho tới khi đến lượt trẻ. Chúng tôi thêm điều này vào quy tắc 7.
 - **Cái vẫy tay cho sự giúp đỡ của nhiệm vụ đang mở.** Người của một nhiệm vụ khác ở gần chờ với một câu ngắn và đứng tránh đường. Chúng tôi thêm điều này vào quy tắc 41.
+- **Mọi vật mà một nhiệm vụ tạo ra phải có hình,** và một bài kiểm tra kiểm tra điều đó cho từng mức của từng nhiệm vụ.
 - **Bác thợ rèn nói lại màu đúng** sau phép thử và sau mỗi thanh bị cong, và hai màu đỏ phải trông khác nhau rõ trên điện thoại.
 
 ## Giới hạn của điều chúng tôi biết
