@@ -194,6 +194,20 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **Help sooner for the youngest.** For a child of grade K or 1 (grade 1 or below), after two cuts that are not equal, the woodcutter shows the halving when the new stem comes, before a third try: a short stem of 6 next to the child, a chalk mark in its middle, and he counts the rings of each half ("Mỗi khúc ba đốt: hai khúc dài bằng nhau."; the `demo` of `trial-woodcutter` in `data/world/mentors.json`, `woodCut` in the session).
 
+### The woodcutter: which way to move the chalk, and the marks of grade 5 (#118)
+
+**The two pieces side by side, and the difference glows.** After a wrong cut, the pieces lie side by side with their ends together (as before). At the levels of grades 1 and 2, when the cut has the right number of pieces, the part of the long piece that sticks out past the short one glows, and the woodcutter points at it: "Khúc này dài hơn." Then the stem comes back whole, the chalk of the last try stays on it, thin and grey (`chalk-old`), and with two pieces he points from it toward the long piece: "Vạch dịch về phía này một chút." The first time, he says "Chạm vào cây tre là chọn chỗ vạch."
+
+**A short count.** At the level of K and grade 1, the count of a piece is one number ("Khúc này bảy đốt."), while the piece glows (`cutCount` with quick in `src/core/world/zones.js`); the count ring by ring comes after a wave.
+
+**The demonstration beside the child.** The short stem of the halving lies toward the camera from the hero, across the view, on free ground (`stemBeside` in `src/core/mentoring.js`), and the view frames it until it ends (#85).
+
+**The knife when the marks are enough.** At a level of more than two pieces, the button stays the chalk until the stem has as many marks as the cuts that the level needs (`marksFor`); at the first mark the woodcutter says once "Anh cần ba khúc: vạch hai dấu rồi mới chặt." A tap on the woodcutter still cuts at any time.
+
+**The rest in words.** At grade 5 the end says the rest with its fraction and the whole: "Phần còn lại năm đốt: năm phần mười hai cây tre. Ba phần cộng lại là cả cây tre."
+
+**The stem in view.** A tap within a finger of the stem chooses the ring nearest to the tap (#80, #109), and the frame of the work holds the whole stem while the hero marks. The hero keeps its side of the stem (#80: a walk around an end to the far side took a long way, and the marks of a tap landed late); the chalk under the hero shows over the body of the hero (#80).
+
 ### The fisher after #92 (#97)
 
 **The hole of the escape shows.** After an escape, the frame of the widest space lies on the surface of the water (`why:fisher:space`, at `WATER_UP`), the fisher points at it while he says "Chỗ này hở quá, cá chui ra mất.", and it stays until a stake stands in the space. Then the hint is the hole ("Cắm một cọc vào chỗ hở này nhé."). With an empty pile, the hint is the take-back of the stake to take back; with no such stake, the fisher brings one stake (rule 12).

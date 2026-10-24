@@ -122,7 +122,8 @@ test('a right cut is counted: he counts the rings of each piece, says that the p
   send(session, { type: 'hands' });
   run(session, 40, () => lines.some((l) => l.key === 'chop'));
   const keys = lines.map((l) => l.key);
-  assert.equal(keys.filter((k) => k === 'woodcutter.piece').length, 2, keys.join(' '));
+  // One count for each piece: ring by ring, or one number for each piece for the youngest (#118).
+  assert.equal(keys.filter((k) => k === 'woodcutter.piece' || k === 'woodcutter.pieceN').length, 2, keys.join(' '));
   const equal = lines.find((l) => l.key === 'woodcutter.equal');
   assert.equal(equal?.params.n.key, 'num.2', keys.join(' '));
   assert.ok(keys.indexOf('woodcutter.equal') < keys.indexOf('chop'), 'the line before the sticks');

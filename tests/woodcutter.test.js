@@ -35,7 +35,7 @@ function heardOf(session) {
   return calls;
 }
 
-test('after a cut of 3 and 5 the pieces lie side by side, he counts the rings of each piece, and the short one glows and breaks after its line', async () => {
+test('after a cut of 3 and 5 the pieces lie side by side, ends together; at the level of grade 1 each piece is one number, the part of the long piece glows, and the short one breaks after the line (#118)', async () => {
   const session = await atStem([
     // The stem is 8 long, for 2 equal sticks: a mark at 3 gives 3 and 5.
     { press: { stem: 3 } },
@@ -44,25 +44,20 @@ test('after a cut of 3 and 5 the pieces lie side by side, he counts the rings of
     { until: { event: 'snap', timeout: 10 } },
   ]);
   const calls = heardOf(session);
-  const glows = [];
-  session.listen((ev) => { if (ev.type === 'snap' && String(ev.id).startsWith('piece:woodcutter:')) glows.push('break'); });
-  let rings = 0;
-  let pieceGlow = false;
-  for (let i = 0; i < 20 / STEP && !calls.some((c) => c.key === 'woodcutter.short'); i++) {
+  let diff = null;
+  for (let i = 0; i < 20 / STEP && !calls.some((c) => c.key === 'woodcutter.longer'); i++) {
     run(session, STEP);
-    rings = Math.max(rings, session.state.entities.filter((e) => e.look === 'ring-glow').length);
+    diff = diff ?? session.state.entities.find((e) => e.look === 'piece-glow-2') ?? null;
   }
-  pieceGlow = session.state.entities.some((e) => /^piece-glow-3$/.test(e.look ?? ''));
   const keys = calls.map((c) => c.key);
-  assert.deepEqual(keys.filter((k) => k === 'woodcutter.piece').length, 2, keys.join(' '));
-  const first = keys.indexOf('woodcutter.piece');
-  assert.deepEqual(keys.slice(first, first + 4), ['woodcutter.piece', 'num.1', 'num.2', 'num.3'], keys.join(' '));
-  const second = keys.indexOf('woodcutter.piece', first + 1);
-  assert.deepEqual(keys.slice(second + 1, second + 6), ['num.1', 'num.2', 'num.3', 'num.4', 'num.5'], keys.join(' '));
-  assert.equal(rings, 8, 'each ring lights up at its number');
-  assert.ok(pieceGlow, 'the short piece glows while he says it');
-  assert.equal(session.state.entities.filter((e) => String(e.id).startsWith('piece:woodcutter:')).length, 2, 'both pieces lie there at the line');
-  run(session, 2.5);
+  assert.deepEqual(calls.filter((c) => c.key === 'woodcutter.pieceN').map((c) => c.params.n.key), ['num.3', 'num.5'], keys.join(' '));
+  assert.ok(!keys.includes('woodcutter.piece') && !keys.includes('num.1'), `no count ring by ring: ${keys.join(' ')}`);
+  const pieces = session.state.entities.filter((e) => String(e.id).startsWith('piece:woodcutter:'));
+  assert.equal(pieces.length, 2, 'both pieces lie there at the line');
+  assert.equal(pieces[0].position.x, pieces[1].position.x, 'ends together');
+  assert.ok(diff, 'the part of the long piece that sticks out glows');
+  assert.equal(diff.position.x, pieces[1].position.x + 3, 'from the end of the short piece');
+  run(session, 3);
   assert.equal(session.state.entities.filter((e) => String(e.id).startsWith('piece:woodcutter:')).length, 1, 'then the short one breaks');
   assert.ok(!keys.includes('woodcutter.pieces'), 'two pieces are the number that he asked for');
 });

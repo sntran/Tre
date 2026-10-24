@@ -10,7 +10,7 @@ import { basketRowAt, matSlot, spareStake, inHands, DESK_COLORS } from './world/
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
 import { allowedSlots, takeBackSlot, stakeResult } from './world/trials.js';
-import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd, PIECE_NAME, PIECES_LINE, shortPiece, badPiece, layPlan, LAY_PACE, LAY_LINE } from './world/zones.js';
+import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd, PIECE_NAME, PIECES_LINE, shortPiece, badPiece, layPlan, LAY_PACE, LAY_LINE, QUICK_PIECE, DIFF_SHOW, REST_LINE } from './world/zones.js';
 
 // The zones where the parts of a try go, in the order of the search.
 const PLACES = ['exact', 'bundle', 'basket', 'line', 'forge', 'woodpile', 'spots'];
@@ -32,6 +32,7 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 // world(): the world state; env(): the facts of the map; raise(key): the task asks for a bigger
 // task (a move raise), returns nothing; nameOf(id): the name of a person (a text parameter).
 const HOLE_MARK = 8; // seconds that the mark of the hole of an escape stays
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
 // The moves that play the share of grade 4 on another instance (#116).
 const SHARE_SHOWS = new Set(['demo', 'smaller', 'share']);
 const ROD_GLOW = 0.35; // seconds between two rods that glow in the hint of a full mat (#96)
@@ -893,7 +894,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // no parts to count, the mark of what went wrong only: the widest gap of the row of the fisher.
   function countSteps(task, fam, info, s, t) {
     if (task.tz?.zone.cutPlan) return laySteps(task, s, t);
-    if (task.tz?.zone.cutPieces) return pieceSteps(task, s, t);
+    if (task.tz?.zone.cutPieces) return pieceSteps(task, s, t, info);
     // The teacher at grades 4 and 5 (#101): the desks and the box, or the table.
     const form = task.tz?.zone.plan?.form;
     if (form === 'share') return deskSteps(task, s, t);
@@ -946,15 +947,25 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // number that he asked for, he says it ("Hai khúc. Anh cần ba khúc."). Then the short piece glows,
   // he points at it, and it breaks ("Khúc này ngắn quá."). The times are those of the world
   // (cutCount in src/core/world/zones.js).
-  function pieceSteps(task, s, t) {
+  function pieceSteps(task, s, t, info = {}) {
     const z = task.tz.zone;
     const pieces = z.cutPieces;
     const parts = z.cutParts ?? pieces.length;
     const lines = defOf(task.key)?.lines ?? {};
     let at = t + COUNT_LEAD;
+    // The count of a child of K and grade 1 (#118): one number for each piece, with the glow of the
+    // piece; the count ring by ring comes after a wave.
+    const quick = z.cutQuick && !info.asked;
     pieces.forEach((len, i) => {
       const e = getEntity(world(), `piece:woodcutter:${i}`);
       if (!e) return;
+      if (quick) {
+        s.steps.push({ at, spawn: { look: `piece-glow-${len}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
+        s.point(at, { x: e.position.x + len / 2, z: e.position.z }, PIECE_NAME + QUICK_PIECE);
+        s.say(at + 0.05, 'woodcutter.pieceN', { n: { key: `num.${Math.min(30, len)}` } });
+        at += PIECE_NAME + QUICK_PIECE + 0.4;
+        return;
+      }
       s.say(at, lines.piece ?? 'woodcutter.piece');
       at += PIECE_NAME;
       for (let j = 1; j <= len; j++) {
@@ -970,6 +981,20 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // A right cut: he says what happened ("Hai khúc dài bằng nhau.", #80).
     else if (lines.equal && shortPiece(pieces) === null) s.say(at, lines.equal, { n: { key: `num.${Math.min(30, pieces.length)}` } });
     at += PIECES_LINE;
+    // The levels of grades 1 and 2 (#118): the pieces lie side by side, ends together, and the part
+    // of the long piece that sticks out glows: "Khúc này dài hơn."
+    if (z.cutDiff) {
+      const long = pieces.indexOf(Math.max(...pieces));
+      const short = Math.min(...pieces);
+      const e = getEntity(world(), `piece:woodcutter:${long}`);
+      if (e) {
+        const d = pieces[long] - short;
+        s.steps.push({ at, spawn: { look: `piece-glow-${d}`, x: e.position.x + short, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
+        s.point(at, { x: e.position.x + short + d / 2, z: e.position.z }, 1.8);
+        s.say(at + 0.1, 'woodcutter.longer');
+        return at + DIFF_SHOW;
+      }
+    }
     // The piece that he names (#98): the short one of a cut with the right number of pieces, or a
     // long one of a cut with a wrong number. A piece of the right length is never short.
     const bad = badPiece(pieces, parts);
@@ -1036,8 +1061,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       const i = pieces.indexOf(plan.want[2]);
       const e = pieceAt(i);
       if (e) s.steps.push({ at, spawn: { look: `piece-glow-${pieces[i]}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
-      s.say(at, 'woodcutter.rest');
-      at += LAY_LINE;
+      // The rest as a fraction, and the whole (#118: "He never said the kitchen part is 5/12 or that
+      // the parts add to the whole.").
+      const rest = plan.want[2];
+      const g = gcd(rest, plan.length);
+      s.say(at, 'woodcutter.rest', { n: { key: `num.${Math.min(30, rest)}` }, part: { key: `frac.${rest / g}.${plan.length / g}` } });
+      at += REST_LINE;
     }
     const e = bad ? pieceAt(bad.i) : null;
     if (e) {
@@ -1658,17 +1687,22 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (d.thing === 'stem') {
       const len = d.length ?? 6;
       const half = len / 2;
-      const spot = demoSpot(task, len);
+      // Beside the hero, toward the camera, across the view, so that the body of the hero never
+      // covers it (#118: the short stem lay at the feet of the hero).
+      const lay = stemBeside(task, len);
+      const { spot, u } = lay;
+      const f = Math.atan2(u.x, u.z);
+      const along = (k) => ({ x: spot.x + u.x * k, z: spot.z + u.z * k });
       s.say(t, lineOf(task.key, 'demo'));
-      s.steps.push({ at: t + 1, spawn: { look: `stem-${len}`, x: spot.x, z: spot.z, facing: 0 } });
-      s.point(t + 2, { x: spot.x, z: spot.z + half }, 1.2);
-      s.steps.push({ at: t + 2.2, spawn: { look: 'chalk-band', x: spot.x, z: spot.z + half, facing: Math.PI / 2 } });
+      s.steps.push({ at: t + 1, spawn: { look: `stem-${len}`, x: spot.x, z: spot.z, facing: f } });
+      s.point(t + 2, along(half), 1.2);
+      s.steps.push({ at: t + 2.2, spawn: { look: 'chalk-band', ...along(half), facing: f + Math.PI / 2 } });
       let at = t + 3.4;
       for (let k = 0; k < 2; k++) {
         for (let j = 1; j <= half; j++) {
-          const p = { x: spot.x, z: spot.z + k * half + j - 0.5 };
+          const p = along(k * half + j - 0.5);
           s.point(at, p, UNIT_PACE);
-          s.steps.push({ at, spawn: { look: 'ring-glow', x: p.x, z: p.z, facing: 0 } });
+          s.steps.push({ at, spawn: { look: 'ring-glow', x: p.x, z: p.z, facing: f } });
           s.say(at + 0.05, `num.${j}`);
           at += UNIT_PACE;
         }
@@ -1771,6 +1805,32 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // happens where the child sees it (#85: the fisher showed it 16 blocks from the gap, and the
   // child saw nothing). The view frames it until it ends (workFrame in src/ui/village.js).
   // len: the length of the demonstration along +z (half blocks): all of it must be free land.
+  // The place of the short stem of a demonstration (#118): toward the camera from the hero, lying
+  // across the view (u: the way along the stem), on free ground; else the place of demoSpot,
+  // along +z.
+  const STEM_OUT = 3; // half blocks from the hero toward the camera
+  function stemBeside(task, len) {
+    const e = env();
+    const h = getEntity(world(), 'hero')?.position;
+    const az = e?.view?.();
+    const free = (x, z) => {
+      const cx = Math.floor(x / 2);
+      const cz = Math.floor(z / 2);
+      return e?.near && !e.near(cx, cz).isBlocked(cx, cz) && e.groundAt?.(x, z) !== 'water' && e.groundAt?.(x, z) !== 'shallow';
+    };
+    if (h && Number.isFinite(az)) {
+      const c = { x: Math.sin(az), z: Math.cos(az) };
+      const u = { x: Math.cos(az), z: -Math.sin(az) };
+      for (const out of [STEM_OUT, STEM_OUT + 1.5, STEM_OUT + 3]) {
+        const mid = { x: h.x + c.x * out, z: h.z + c.z * out };
+        const spot = { x: mid.x - (u.x * len) / 2, z: mid.z - (u.z * len) / 2 };
+        let ok = true;
+        for (let k = 0; k <= len && ok; k += 1) ok = free(spot.x + u.x * k, spot.z + u.z * k);
+        if (ok) return { spot, u };
+      }
+    }
+    return { spot: demoSpot(task, len), u: { x: 0, z: 1 } };
+  }
   function demoSpot(task, len = 0) {
     const e = env();
     const free = (x, z) => {

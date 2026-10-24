@@ -713,6 +713,7 @@ export function thingLook(key) {
   // A chalk mark on the stem of the woodcutter: a band around the stem (#48); a cut piece of the
   // stem (green), n half blocks long.
   if (k === 'chalk-band') return { kind: 'chalk-band' };
+  if (k === 'chalk-old') return { kind: 'chalk-old' };
   m = /^piece-(\d+)$/.exec(k);
   if (m) return { kind: 'stem', n: Number(m[1]), green: true };
   // The glow of a ring of a piece at its number, and the glow of the short piece (#75).
@@ -1203,6 +1204,9 @@ export function workThing(look) {
     case 'lay': return still([P('w', [0.14, 0.14, look.n], 'vermilion', [-0.66, 1.5, look.n / 2]), P('e', [0.14, 0.14, look.n], 'vermilion', [0.66, 1.5, look.n / 2]), P('a', [1.46, 1.6, 0.16], 'vermilion', [0, 0.8, 0.08]), P('b', [1.46, 1.6, 0.16], 'vermilion', [0, 0.8, look.n - 0.08]), P('top', [1.46, 0.08, look.n], 'vermilionPale', [0, 1.62, look.n / 2])], 1.7);
     case 'piece-glow': return still([P('glow', [1.14, 1.14, look.n], 'yellow', [0, 0.5, look.n / 2])], 1.1);
     case 'chalk-band': return still([P('band', [0.4, CHALK_BAND, CHALK_BAND], 'vermilion', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
+    // The chalk of the last try on a new stem (#118): thin and grey, so that the child sees where the
+    // last mark was and which way to move it.
+    case 'chalk-old': return still([P('band', [0.16, CHALK_BAND, CHALK_BAND], 'ash', [0, CHALK_BAND / 2 - 0.1, 0])], CHALK_BAND);
     // A chalk mark across a culm (the height of a slash).
     case 'chalk': return still([P('mark', [1.3, 0.08, 0.25], 'vermilion', [0, 0.45, 0]), P('dotA', [0.25, 0.4, 0.25], 'vermilion', [-0.65, 0.25, 0]), P('dotB', [0.25, 0.4, 0.25], 'vermilion', [0.65, 0.25, 0])], 0.5);
     // Equal bamboo sticks (or staffs) tied into a bundle.

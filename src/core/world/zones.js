@@ -66,7 +66,11 @@ export const CUT_STAY = 3; // seconds: the pieces stay after the count (and afte
 export const CUT_STAY_RIGHT = 1.5; // seconds: after the count of a right cut, the pieces stay, and then the bundle comes (#80)
 // The time of the line of the number of pieces is in each count, said or not, so that the time of
 // the pieces does not depend on the number of the task (#63: the button is blind to it).
-export const cutCount = (pieces) => COUNT_LEAD + pieces.length * (PIECE_NAME + 0.4) + pieces.reduce((a, b) => a + b, 0) * UNIT_PACE + PIECES_LINE;
+// quick: the count of a child of K and grade 1 (#118: "Every time anh counts slow slow slow and then
+// says no."): one number for each piece ("Khúc này bảy đốt."), and the glow of the difference.
+export const QUICK_PIECE = 2 * UNIT_PACE; // seconds: the line of the count of one piece
+export const DIFF_SHOW = 2.4; // seconds: the part of the long piece that sticks out glows, and the line
+export const cutCount = (pieces, quick = false) => COUNT_LEAD + pieces.length * (PIECE_NAME + 0.4) + (quick ? pieces.length * QUICK_PIECE : pieces.reduce((a, b) => a + b, 0) * UNIT_PACE) + PIECES_LINE;
 // The check of a cut of parts of a stem (#102): the woodcutter lays a piece along another, one
 // time after another, and counts. unit: the short piece along the long one (the short piece itself
 // is "một"); equiv: the short piece along the long one; unlike: the piece of one third and the
@@ -76,6 +80,8 @@ export const cutCount = (pieces) => COUNT_LEAD + pieces.length * (PIECE_NAME + 0
 export const LAY_PACE = 0.8; // seconds for each lay (and for the "một" of the short piece)
 export const LAY_LINE = 1.8; // seconds: the line of the part ("Một phần tư cây tre.")
 export const BAD_LINE = 2; // seconds: the piece that is not its length glows, and he says it
+// seconds: the line of the rest at grade 5, with its fraction and the whole (#118)
+export const REST_LINE = 5;
 export function layPlan(pieces, plan) {
   if (pieces.length !== plan.want.length) return [];
   if (plan.form === 'unlike') {
@@ -95,7 +101,7 @@ export function layCount(pieces, plan, solved, bad) {
   if (pieces.length !== plan.want.length) return COUNT_LEAD + PIECES_LINE;
   let t = COUNT_LEAD;
   for (const op of layPlan(pieces, plan)) t += (op.from === 2 ? LAY_PACE : 0) + op.n * LAY_PACE + (op.part ? LAY_LINE : 0);
-  if (solved && plan.form === 'unlike') t += LAY_LINE;
+  if (solved && plan.form === 'unlike') t += REST_LINE;
   return t + (bad ? BAD_LINE : 0);
 }
 // The index of the short piece of a cut (shorter than the longest), or null when all are equal.

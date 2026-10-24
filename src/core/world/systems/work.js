@@ -24,7 +24,7 @@
 export const WRITES = ['work', 'zone', 'item', 'position', 'hidden', 'look', 'keep', 'glow', 'follow', 'solid', 'slide', 'events'];
 
 import { query, getEntity, addEntity, removeEntity, takeWork } from '../state.js';
-import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, badPiece, layCount, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT } from '../zones.js';
+import { REACH, BASKET_FLOOR, ROLL_STEP, ROLL_TIME, LAY_STEP, springTime, layTime, cutCount, badPiece, layCount, SHORT_SHOW, CUT_STAY, CUT_STAY_RIGHT, DIFF_SHOW } from '../zones.js';
 import { taskOf, basketPlan, rodsPlan, rowPlan, boatResult, stemPlan, fracCut, colorAt, colorRight, fairResult, MODEL_DOSES, tieResult, tightSlot, allowedSlots, takeBackSlot, glowAt, quenchResult, stakeResult, basketResult, cutResult, staffResult, trialSkill, feedResult, tenResult, hearthResult, shareResult } from '../trials.js';
 import { exactResult } from '../days.js';
 import { createRng, hashSeed } from '../../rng.js';
@@ -1411,6 +1411,11 @@ function act(world, e, want, env) {
       tz.zone.ghostSaid = true;
       const person = query(world, 'person').find((p) => p.person.ref === 'woodcutter' && !p.hidden);
       if (person) say(world, 'call', person.id, { key: 'woodcutter.ghost', params: {} });
+      // A level of more than two pieces (#118: after one mark the button was the knife, and a girl
+      // of grade 5 cut with one mark two times): the button stays the chalk until the marks are
+      // enough, and the woodcutter says it once.
+      const parts = marksFor(tz, task) + 1;
+      if (person && parts > 2) say(world, 'call', person.id, { key: 'woodcutter.needMarks', params: { m: { key: `num.${parts}` }, k: { key: `num.${parts - 1}` } } });
     }
   } else if (want.act === 'aim') {
     // While the button is down, the mark of the slash goes up the culm, one ring at a time.
@@ -1473,6 +1478,9 @@ function act(world, e, want, env) {
     const result = frac ? { solved: frac.solved, pieces: equal.pieces } : equal;
     commit(world, tz, task, { solved: result.solved, parts: result.pieces, target: s.length });
     for (const m of tz.zone.marks) removeEntity(world, `chalk:woodcutter:${m}`);
+    for (const e of query(world, 'position').filter((x) => String(x.id).startsWith('old:woodcutter:'))) removeEntity(world, e.id);
+    // The marks of this try, for the grey chalk on the new stem (#118).
+    tz.zone.lastMarks = plan ? null : [...tz.zone.marks];
     tz.zone.marks = [];
     const stem = getEntity(world, 'stem:woodcutter');
     // The pieces lie side by side, so that the child sees them, and the woodcutter counts the
@@ -1492,8 +1500,15 @@ function act(world, e, want, env) {
     });
     // The check of a cut of parts is the lays of the woodcutter (layCount), with the line of the
     // piece that is not its length in it.
-    const count = plan ? layCount(result.pieces, plan, result.solved, bad) : cutCount(result.pieces);
-    const show = plan ? 0 : SHORT_SHOW;
+    // The levels of K, grade 1, and grade 2 (#118): the count of a child of K and grade 1 is one
+    // number for each piece, and after a wrong cut with the right number of pieces, the part of the
+    // long piece that sticks out glows ("Khúc này dài hơn.").
+    const quick = !plan && (tz.zone.level ?? 0) === 0;
+    const diff = !plan && (tz.zone.level ?? 0) <= 1 && !result.solved && result.pieces.length === parts && Math.max(...result.pieces) > Math.min(...result.pieces);
+    const count = plan ? layCount(result.pieces, plan, result.solved, bad) : cutCount(result.pieces, quick);
+    const show = plan ? 0 : diff ? DIFF_SHOW : SHORT_SHOW;
+    tz.zone.cutQuick = quick;
+    tz.zone.cutDiff = diff;
     tz.zone.cutPieces = [...result.pieces];
     tz.zone.cutParts = parts;
     tz.zone.cutPlan = plan;
@@ -1509,6 +1524,35 @@ function act(world, e, want, env) {
     // A stem of parts gives one piece for the bridge; the other pieces stay by the stem.
     tz.zone.sticks = plan ? 1 : task.parts;
     if (!result.solved) say(world, 'snap', `zone:trial-woodcutter`, { pieces: result.pieces, short: short === null || bad.long ? null : result.pieces[short], long: bad?.long ? result.pieces[short] : null, sound: 'plank-down' });
+  }
+}
+
+// The marks that a cut of the woodcutter needs: one less than the pieces of the level (#118).
+export function marksFor(tz, task) {
+  const plan = tz.zone.plan?.form && tz.zone.plan.form !== 'equal' ? tz.zone.plan : null;
+  return (plan ? plan.want.length : task?.parts ?? 2) - 1;
+}
+// After a wrong cut of two pieces (#118: a boy of K cut five times and nobody told him which way to
+// move the chalk): the new stem keeps the chalk of the last try, thin and grey, and the woodcutter
+// points from it toward the long piece: "Vạch dịch về phía này một chút."
+function moveHint(world, tz, pieces) {
+  const marks = tz.zone.lastMarks;
+  delete tz.zone.lastMarks;
+  if (!marks || marks.length !== 1 || pieces.length !== 2 || pieces[0] === pieces[1]) return;
+  const s = tz.zone.stem;
+  const m = marks[0];
+  addEntity(world, { id: `old:woodcutter:${m}`, keep: true, position: { x: s.x + m, y: s.y, z: s.z, facing: 0 }, look: 'chalk-old' });
+  // The first piece lies from the start of the stem to the mark: when it is the long one, the mark
+  // moves toward the start.
+  const way = pieces[0] > pieces[1] ? -1 : 1;
+  const person = query(world, 'person').find((p) => p.person.ref === 'woodcutter' && !p.hidden);
+  if (!person) return;
+  say(world, 'call', person.id, { key: 'woodcutter.move', params: {}, happened: true });
+  person.gesture = { act: 'point', x: s.x + m + way * 1.5, z: s.z, t: 2.5 };
+  // The first time: a tap on the stem chooses the place of the mark.
+  if (!tz.zone.tapSaid) {
+    tz.zone.tapSaid = true;
+    say(world, 'call', person.id, { key: 'woodcutter.tap', params: {} });
   }
 }
 
@@ -2410,6 +2454,7 @@ function tickStem(world, tz, dt) {
     stem.hidden = false;
     say(world, 'stem', stem.id, { sound: 'plank-down' });
     const hero = getEntity(world, 'hero');
+    moveHint(world, tz, pieces);
     if (few && hero) {
       // The woodcutter says how to add a mark, and each ring where a mark can go glows.
       const s = tz.zone.stem;

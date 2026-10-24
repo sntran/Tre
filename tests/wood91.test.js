@@ -65,8 +65,11 @@ test('after a cut with too few pieces, the woodcutter says how to add a mark, an
   run(session, 0.3);
   send(session, { type: 'hands' });
   run(session, 1.5);
-  // One mark gives two pieces; the task of level 1 needs three.
+  // One mark gives two pieces; the task of level 1 needs three. With fewer marks than the level
+  // needs, the button stays the chalk; a tap on the woodcutter cuts (#118).
   getEntity(session.state, 'zone:trial-woodcutter').zone.level = 1;
+  send(session, { type: 'tap', target: { person: 'npc:woodcutter' } });
+  run(session, 3);
   send(session, { type: 'hands' });
   run(session, 40, () => keys.includes('woodcutter.addMark'));
   assert.ok(keys.includes('woodcutter.addMark'), `the line of how to add a mark: ${keys.join(', ')}`);
@@ -94,6 +97,8 @@ test('while the woodcutter is away, Nghé says how to add a mark (#91)', async (
   send(session, { type: 'hands' });
   run(session, 1.5);
   getEntity(session.state, 'zone:trial-woodcutter').zone.level = 1;
+  send(session, { type: 'tap', target: { person: 'npc:woodcutter' } });
+  run(session, 3);
   send(session, { type: 'hands' });
   // He goes away while he counts the pieces.
   const man = getEntity(session.state, 'npc:woodcutter');

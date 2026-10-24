@@ -53,7 +53,7 @@ import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
 import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
-import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady, DESK_COLORS } from './world/systems/work.js';
+import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady, DESK_COLORS, marksFor } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
 import { viewSize, inView } from '../world/view.js';
 import { levelFor, taskOf, trialLevel, tightSlot, allowedSlots } from './world/trials.js';
@@ -2935,7 +2935,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const SHOW_MOVES = new Set(['demo', 'smaller', 'share']);
   // The finish of the task of a person when there is work to check (the person checks it):
   // { act, icon, run }, or null. The work system checks the rest.
-  function finishOf(key) {
+  function finishOf(key, tapped = false) {
     const open = (id) => {
       const tz = trialZone(id);
       return tz && !tz.zone.done ? tz : null;
@@ -2956,8 +2956,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // the healer ended at the well, and the basket was given there; #79: the button and the world
     // had two rules, and a press did nothing). One rule: giveReady.
     if (key === 'trial-healer' && open('healer') && giveReady(state, hero().position)) return { act: 'give', icon: 'basket', run: () => work('healer', 'give') };
+    // The knife when the marks are enough for the pieces of the level (#118: after one mark the
+    // button was the knife, and a girl of grade 5 cut with one mark two times); a tap on the
+    // woodcutter cuts at any time (tapped), so that a child can still try a cut with fewer marks.
     const wood = key === 'trial-woodcutter' ? open('woodcutter') : null;
-    if (wood?.zone.marks?.length && !wood.zone.cut) return { act: 'cut', icon: 'knife', run: () => work('woodcutter', 'cut') };
+    if (wood?.zone.marks?.length && !wood.zone.cut && (tapped || wood.zone.marks.length >= marksFor(wood, taskOf(trialDef('woodcutter'), wood.zone.level ?? 0)))) return { act: 'cut', icon: 'knife', run: () => work('woodcutter', 'cut') };
     // From grade 3 the fisher sends the boat with the stakes that the child put in it (#102).
     if (key === 'trial-fisher' && boatReady()) return { act: 'send', icon: 'boat', run: () => work('fisher', 'send') };
     if (key === 'trial-plant' && planting.ready() === 'commit' && plotsOf(state)[0]?.plot.form !== 'choose') return { act: 'plant', icon: 'seedling', run: () => work('plant', 'plant') };
@@ -3215,7 +3218,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (held.item.kind === 'gift' && q.kind === 'npc' && trialDef('share')?.rest?.[q.ref]) add({ ...base, act: 'give', icon: 'hand-give', rank: 0, run: () => giveGift(q) }, REACH + 3);
         continue;
       }
-      const fin = finishOf(mentoring.taskOfPerson(q.entity));
+      const fin = finishOf(mentoring.taskOfPerson(q.entity), chosen?.id === q.entity);
       // The finish is a try (a commit): it comes after a tap on the person, or when no heap of the
       // work is in reach. A child who presses again after a put never ties by accident (#47).
       const tapped = chosen?.id === q.entity;
