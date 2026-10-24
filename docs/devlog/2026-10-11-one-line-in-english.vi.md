@@ -15,7 +15,7 @@ Vì vậy chúng tôi hỏi: trẻ có nên được đổi ngôn ngữ ngay tro
 ## Điều chúng tôi quyết định
 
 - **Một câu bằng ngôn ngữ kia, khi trẻ muốn.** Mỗi câu nói của một người có một nút nhỏ. Bấm vào thì câu đó được nói bằng ngôn ngữ kia, rồi được nói lại bằng ngôn ngữ của game. Trẻ hiểu, và game vẫn ở ngôn ngữ của gia đình.
-- **Một nút đổi ngôn ngữ trong menu.** Trẻ có thể đổi cả game trong menu, như người làm game muốn.
+- **Một nút đổi ngôn ngữ trong menu.** Trẻ có thể đổi cả game trong menu, như tôi muốn.
 - **Cha mẹ quyết định.** Cha mẹ có thể tắt nút đổi ngôn ngữ hoặc nút nghe từng câu, và trang của cha mẹ cho thấy trẻ dùng chúng bao nhiêu lần.
 
 ## Giới hạn của điều chúng tôi biết

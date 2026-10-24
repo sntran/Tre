@@ -7,7 +7,7 @@ Thank you for your help. This document tells you how to contribute to Tre.
 Before we can accept your contribution, you must sign a Contributor License Agreement (CLA). The CLA lets the project keep or change the licenses of Tre later. You keep the copyright of your work.
 
 1. Open a pull request.
-2. The project owner sends you the CLA.
+2. I send you the CLA.
 3. Sign the CLA. Then we can merge your pull request.
 
 We cannot merge a contribution without a signed CLA.
@@ -80,8 +80,8 @@ Work is planned in GitHub issues, grouped in milestones. To pick up work:
 3. Open the files in `docs/reference/` that the issue names. They show the target look and feel.
 4. Do the work in small commits. Each commit leaves the game playable and all tests passing.
 5. When the issue is done, comment on it with what changed, and add a screen recording or screenshots when the issue asks for them. Then close the issue.
-6. When the issue has the label `needs-review`, stop after it. Wait for the owner before you start the next issue.
-7. Before you start each issue, read the milestone description and the labels again. The owner can add an issue, change the order, or add `needs-review` while you work; the current state wins over what you read at the start of the run.
+6. When the issue has the label `needs-review`, stop after it. Wait for me before you start the next issue.
+7. Before you start each issue, read the milestone description and the labels again. I can add an issue, change the order, or add `needs-review` while you work; the current state wins over what you read at the start of the run.
 
 ## Pull requests
 

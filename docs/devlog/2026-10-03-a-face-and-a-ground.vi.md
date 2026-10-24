@@ -7,7 +7,7 @@ Ngày 3 tháng 10, chúng tôi xem trò chơi trên điện thoại, và thấy 
 ## Điều chúng tôi tìm thấy
 
 - **Khuôn mặt trẻ nhỏ có một dáng quen thuộc.** "Nét trẻ thơ" (baby schema) là một nhóm đặc điểm: đầu to, mặt tròn, mắt to. Người lớn thấy những khuôn mặt có nhiều đặc điểm này dễ thương hơn, và muốn chăm sóc hơn ([Glocker và cộng sự 2009](https://www.researchwithrutgers.org/en/publications/baby-schema-in-infant-faces-induces-cuteness-perception-and-motiv/)).
-- **Chỉ mô tả bằng lời thì không quyết được.** Chúng tôi làm vài phiên bản trên một bản sao của trò chơi, vẽ bằng chính mã của trò chơi, và chủ dự án chọn từ các hình ([khuôn mặt](https://github.com/sntran/Tre/blob/main/docs/media/issue-19/faces.jpg); [mặt đất](https://github.com/sntran/Tre/blob/main/docs/media/issue-20/ground.jpg)).
+- **Chỉ mô tả bằng lời thì không quyết được.** Chúng tôi làm vài phiên bản trên một bản sao của trò chơi, vẽ bằng chính mã của trò chơi, và tôi chọn từ các hình ([khuôn mặt](https://github.com/sntran/Tre/blob/main/docs/media/issue-19/faces.jpg); [mặt đất](https://github.com/sntran/Tre/blob/main/docs/media/issue-20/ground.jpg)).
 - **Chỉ một lớp vân đã thay đổi nhiều.** Một hoa văn trong shader của mặt đất, không thêm hình khối nào, đã làm ngôi làng bớt phẳng đi rất nhiều.
 
 ## Điều chúng tôi quyết định

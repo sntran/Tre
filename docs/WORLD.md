@@ -145,7 +145,7 @@ The world moves when the child does nothing, and it hides small joys for the chi
   - The ducklings by the paddies follow a hero who walks past (react `follow` with `when: walk`), and then go back.
   - A frog on a lily pad by the sand jumps into the river when the hero comes near (`hop`, `dive`) and comes back after a while.
   - Now and then the net of the fisher comes up with a fish, and he holds it up (`haul`; `joys.catch`).
-  - After the rain: puddles on the roads that splash (`splash`) while the ground is wet. (The footprints in the wet ground and the rainbow are gone: the owner took them for bugs, #32. A rainbow comes back only as a soft painted arc in the print style, after the owner sees a picture of it.)
+  - After the rain: puddles on the roads that splash (`splash`) while the ground is wet. (The footprints in the wet ground and the rainbow are gone: I took them for bugs, #32. A rainbow comes back only as a soft painted arc in the print style, after I see a picture of it.)
   - The earth roads keep flat puddles in their ruts from the start of a rain until a game day after its end (`puddlesAt` in `ambient.js`; the shader of the ground draws them).
   - At night: a shooting star on about one night in five.
   - Rare things from the seed, each on about one day in twenty: a kingfisher on a stake by the ford, a golden bamboo shoot in the low hedge, and a firefly on the horn of Nghé (in the renderer).

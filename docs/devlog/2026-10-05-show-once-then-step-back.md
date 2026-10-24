@@ -10,8 +10,8 @@ A child who never saw a task needs to see it done once. Our own play tests taugh
 - **Other things on the screen take the attention away.** Interesting details that the task does not use lower what children remember ([Sundararajan & Adesope 2020](https://link.springer.com/article/10.1007/s10648-020-09522-4)).
 - **Our mistakes:**
   - Our own plan said that the teacher "puts one rod on the mat" to show the act. A child who heard "ten rods" and brought ten then had eleven on the mat, and the band snapped for a reason that the child did not cause.
-  - When a child did well, the teacher made the task bigger in the middle of the round. The owner of the project tied three bundles, heard "one more time", tied three more, and nothing happened: twenty rods came onto the heap under his hands, and after four bundles 26 rods were still there.
-  - In a picture from the owner's phone, while the planter showed her example, a house in front of her faded into a large dotted frame over half of the screen. She also talked about the market of the next hamlet over her example, and the head of the hamlet greeted the child at the same time, so two long lines showed at once.
+  - When a child did well, the teacher made the task bigger in the middle of the round. I tied three bundles, heard "one more time", tied three more, and nothing happened: twenty rods came onto the heap under my hands, and after four bundles 26 rods were still there.
+  - In a picture from my phone, while the planter showed her example, a house in front of her faded into a large dotted frame over half of the screen. She also talked about the market of the next hamlet over her example, and the head of the hamlet greeted the child at the same time, so two long lines showed at once.
 
 ## What we decided
 

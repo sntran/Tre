@@ -15,7 +15,7 @@ So we asked: should a child be able to change the language in the game?
 ## What we decided
 
 - **One line in the other language, when the child asks.** Each line of a person has a small button. A tap says that one line in the other language, and then says it again in the language of the game. The child understands, and the game stays in the language of the family.
-- **A switch in the menu.** The child can change the whole game from the menu, as the owner of the game asked.
+- **A switch in the menu.** The child can change the whole game from the menu, as I asked.
 - **The parent decides.** The parent can turn off the switch or the line button, and the parent page shows how often the child used them.
 
 ## The limit of what we know

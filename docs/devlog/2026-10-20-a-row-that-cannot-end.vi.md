@@ -23,7 +23,7 @@ Trong lần chơi thử vừa rồi, bảy người chơi thử chưa biết tr�
 
 ## Giới hạn của điều chúng tôi biết
 
-Nghiên cứu về đích chạm đo trẻ 7 đến 10 tuổi trên máy tính bảng, không phải trẻ 5 tuổi trên điện thoại; trẻ nhỏ hơn có lẽ chạm trượt nhiều hơn. Các từ chỉ màu của làng là đề nghị của chúng tôi, và cần một người biết từ ngữ làng quê kiểm tra. Ngoài ra, bác thợ rèn nói sắt nóng gặp nước lạnh thì cứng lại. Điều này đúng với thép, tức là sắt có một ít các-bon; sắt gần như nguyên chất thì không cứng lên bao nhiêu. Chúng tôi đã hỏi chủ dự án trò chơi nên dùng từ nào.
+Nghiên cứu về đích chạm đo trẻ 7 đến 10 tuổi trên máy tính bảng, không phải trẻ 5 tuổi trên điện thoại; trẻ nhỏ hơn có lẽ chạm trượt nhiều hơn. Các từ chỉ màu của làng là đề nghị của chúng tôi, và cần một người biết từ ngữ làng quê kiểm tra. Ngoài ra, bác thợ rèn nói sắt nóng gặp nước lạnh thì cứng lại. Điều này đúng với thép, tức là sắt có một ít các-bon; sắt gần như nguyên chất thì không cứng lên bao nhiêu. Trò chơi nên dùng từ nào vẫn là câu hỏi còn mở (câu 118 trong `docs/QUESTIONS.md`).
 
 ## Nguồn
 

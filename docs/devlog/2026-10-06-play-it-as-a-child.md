@@ -2,7 +2,7 @@
 
 *6 October 2026 · [Tiếng Việt](2026-10-06-play-it-as-a-child.vi.md)*
 
-The game had 618 tests, and all of them passed. Then the owner of the project played it for a few minutes and saw at once that a thing that you pick up does not show in the hands. Why did so many tests not see it?
+The game had 618 tests, and all of them passed. Then I played it for a few minutes and saw at once that a thing that you pick up does not show in the hands. Why did so many tests not see it?
 
 ## What we found
 

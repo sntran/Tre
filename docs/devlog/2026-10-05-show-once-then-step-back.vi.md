@@ -10,8 +10,8 @@ Trẻ chưa từng thấy một việc cần được xem làm mẫu một lần
 - **Những thứ khác trên màn hình kéo sự chú ý đi.** Những chi tiết hay nhưng không dùng trong nhiệm vụ làm trẻ nhớ ít hơn ([Sundararajan & Adesope 2020](https://link.springer.com/article/10.1007/s10648-020-09522-4)).
 - **Những lỗi của chúng tôi:**
   - Chính bản kế hoạch của chúng tôi viết rằng thầy giáo "đặt một que lên chiếu" để làm mẫu. Trẻ nghe "mười que" và mang đủ mười que, thế là trên chiếu có mười một que, và sợi lạt đứt vì một lý do không phải do trẻ.
-  - Khi trẻ làm tốt, thầy giáo tăng nhiệm vụ ngay giữa lượt. Chủ dự án buộc ba bó, nghe "làm thêm một lần nữa nhé", buộc thêm ba bó, rồi không có gì xảy ra: hai mươi que được thêm vào đống ngay dưới tay anh, và sau bốn bó vẫn còn 26 que.
-  - Trong một hình chụp từ điện thoại của chủ dự án, lúc cô cấy lúa làm mẫu, một ngôi nhà trước mặt cô mờ thành một khung chấm lớn che nửa màn hình. Cô còn nói về phiên chợ của xóm bên ngay trên ví dụ mẫu, và ông trưởng xóm cũng chào trẻ cùng lúc, nên hai câu dài hiện ra một lúc.
+  - Khi trẻ làm tốt, thầy giáo tăng nhiệm vụ ngay giữa lượt. Tôi buộc ba bó, nghe "làm thêm một lần nữa nhé", buộc thêm ba bó, rồi không có gì xảy ra: hai mươi que được thêm vào đống ngay dưới tay tôi, và sau bốn bó vẫn còn 26 que.
+  - Trong một hình chụp từ điện thoại của tôi, lúc cô cấy lúa làm mẫu, một ngôi nhà trước mặt cô mờ thành một khung chấm lớn che nửa màn hình. Cô còn nói về phiên chợ của xóm bên ngay trên ví dụ mẫu, và ông trưởng xóm cũng chào trẻ cùng lúc, nên hai câu dài hiện ra một lúc.
 
 ## Điều chúng tôi quyết định
 

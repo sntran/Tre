@@ -1,6 +1,6 @@
 # The page of the diary
 
-The diary of the making of Tre (`docs/devlog/`) shows on the site for parents, in Vietnamese and English (#40). The owner's side writes the entries; the page shows them as they are.
+The diary of the making of Tre (`docs/devlog/`) shows on the site for parents, in Vietnamese and English (#40). We write the entries; the page shows them as they are.
 
 - **Address:** `diary.html` shows the index (the `README` of the language), and `diary.html?entry=<name>&lang=<vi|en>` shows one entry (`<name>` is the file name with no `.md` and no `.vi`). With no `lang`, the page uses the language of the game, then the language of the browser. A parent can share the address.
 - **Where it opens:** the link "Chuyện làm nên Tre" / "The making of Tre" under each tab of the parent page. It opens in a new tab, so that the game stays where it is.

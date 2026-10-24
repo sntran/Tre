@@ -2,7 +2,7 @@
 
 *11 October 2026 · [Tiếng Việt](2026-10-11-a-view-that-grows.vi.md)*
 
-On a phone, the hero of Tre was small: about 8 mm high on the glass. In the play tests, children of six and seven often said "I can't see me" and "the sticks are tiny". We made the view closer for everyone. Then the owner of the game asked: why one view for all? In the game Evoland, the camera and the look of the game change as you play. Can the view of Tre change with the age of the child, so that a child of five and a child of twelve each get the view that helps them?
+On a phone, the hero of Tre was small: about 8 mm high on the glass. In the play tests, children of six and seven often said "I can't see me" and "the sticks are tiny". We made the view closer for everyone. Then I asked: why one view for all? In the game Evoland, the camera and the look of the game change as you play. Can the view of Tre change with the age of the child, so that a child of five and a child of twelve each get the view that helps them?
 
 ## What we found
 

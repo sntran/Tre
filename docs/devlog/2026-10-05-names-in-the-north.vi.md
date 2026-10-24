@@ -2,7 +2,7 @@
 
 *5 tháng 10 năm 2026 · [English](2026-10-05-names-in-the-north.md)*
 
-Sáng nay chúng tôi đặt tên cho người ở Xóm Ruộng theo thứ trong gia đình: Cô Năm, Chị Ba, Chú Tư, Ông Cả (xem [Cô Năm, chứ không phải cô Cấy](2026-10-05-names-words-and-corn.vi.md)). Chủ dự án lớn lên ở miền Nam, nơi ai cũng được gọi như vậy. Anh đề nghị gọi theo thứ vì các nhân vật trong game chưa có tên, và nhờ chúng tôi tìm một cách tốt hơn cho miền Bắc nếu có. Gọi theo thứ có phải là cách của làng quê miền Bắc không?
+Sáng nay chúng tôi đặt tên cho người ở Xóm Ruộng theo thứ trong gia đình: Cô Năm, Chị Ba, Chú Tư, Ông Cả (xem [Cô Năm, chứ không phải cô Cấy](2026-10-05-names-words-and-corn.vi.md)). Tôi lớn lên ở miền Nam, nơi ai cũng được gọi như vậy. Tôi đề nghị gọi theo thứ vì các nhân vật trong game chưa có tên, và muốn tìm một cách tốt hơn cho miền Bắc nếu có. Gọi theo thứ có phải là cách của làng quê miền Bắc không?
 
 ## Điều chúng tôi tìm thấy
 

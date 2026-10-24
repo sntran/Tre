@@ -2,7 +2,7 @@
 
 *11 tháng 10 năm 2026 · [English](2026-10-11-a-view-that-grows.md)*
 
-Trên điện thoại, nhân vật của Tre từng rất nhỏ: cao khoảng 8 mm trên màn hình. Trong các lần thử chơi, trẻ sáu, bảy tuổi hay nói "Con không thấy con đâu" và "mấy cây cọc bé tí". Chúng tôi đã cho góc nhìn gần hơn cho mọi người. Rồi người làm game hỏi: sao chỉ có một góc nhìn cho tất cả? Trong game Evoland, camera và hình ảnh của game thay đổi khi người chơi đi tiếp. Góc nhìn của Tre có thể đổi theo tuổi của trẻ không, để một bé năm tuổi và một bé mười hai tuổi đều có góc nhìn giúp được mình?
+Trên điện thoại, nhân vật của Tre từng rất nhỏ: cao khoảng 8 mm trên màn hình. Trong các lần thử chơi, trẻ sáu, bảy tuổi hay nói "Con không thấy con đâu" và "mấy cây cọc bé tí". Chúng tôi đã cho góc nhìn gần hơn cho mọi người. Rồi tôi hỏi: sao chỉ có một góc nhìn cho tất cả? Trong game Evoland, camera và hình ảnh của game thay đổi khi người chơi đi tiếp. Góc nhìn của Tre có thể đổi theo tuổi của trẻ không, để một bé năm tuổi và một bé mười hai tuổi đều có góc nhìn giúp được mình?
 
 ## Điều chúng tôi tìm thấy
 

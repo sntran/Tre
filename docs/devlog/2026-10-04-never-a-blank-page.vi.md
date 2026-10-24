@@ -2,7 +2,7 @@
 
 *4 tháng 10 năm 2026 · [English](2026-10-04-never-a-blank-page.md)*
 
-Sau khi trẻ tạo nhân vật, trang web trắng trơn vài giây rồi thế giới mới hiện ra. Chủ dự án nói một trang trắng có thể làm trẻ nghĩ trò chơi bị hỏng. Một ngày sau, anh hỏi: "Mở một bài luyện tập mà lâu vậy sao?"
+Sau khi trẻ tạo nhân vật, trang web trắng trơn vài giây rồi thế giới mới hiện ra. Tôi nói một trang trắng có thể làm trẻ nghĩ trò chơi bị hỏng. Một ngày sau, tôi hỏi: "Mở một bài luyện tập mà lâu vậy sao?"
 
 ## Điều chúng tôi tìm thấy
 
@@ -20,4 +20,4 @@ Sau khi trẻ tạo nhân vật, trang web trắng trơn vài giây rồi thế 
 - **Đất được giữ trên thiết bị:** 200 ô dùng gần nhất, khoảng 12 MB. Khóa của mỗi ô có phiên bản của mã tạo đất, nên khi mã đó đổi, đất được tạo lại. Không có chỗ lưu thì trò chơi vẫn chạy.
 - **Ngôn ngữ trẻ chọn ngay trước khi chọn hồ sơ được ưu tiên,** và hồ sơ lưu lại lựa chọn đó. Nếu không chọn, mỗi hồ sơ giữ ngôn ngữ riêng, để hai anh em trong một nhà có thể chơi bằng hai ngôn ngữ.
 
-Trên máy chủ thử nghiệm của chúng tôi, vốn không có card đồ họa, bước tạo đất giảm từ 6,2 giây xuống 3,9 giây ở lần vào đầu, và còn không giây ở lần vào thứ hai. Ở lần đo đầu tiên trên điện thoại của chủ dự án, toàn bộ việc khởi động mất khoảng 3,9 giây. Mục tiêu của chúng tôi là dưới 3 giây cho lần vào thứ hai trên điện thoại.
+Trên máy chủ thử nghiệm của chúng tôi, vốn không có card đồ họa, bước tạo đất giảm từ 6,2 giây xuống 3,9 giây ở lần vào đầu, và còn không giây ở lần vào thứ hai. Ở lần đo đầu tiên trên điện thoại của tôi, toàn bộ việc khởi động mất khoảng 3,9 giây. Mục tiêu của chúng tôi là dưới 3 giây cho lần vào thứ hai trên điện thoại.

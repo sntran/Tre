@@ -7,7 +7,7 @@ On 3 October we looked at the game on a phone, and two things were wrong. The fa
 ## What we found
 
 - **The face of a small child has a known shape.** The "baby schema" is a set of features: a large head, a round face, and big eyes. Adults see faces with more of these features as more cute, and they want more to care for them ([Glocker et al. 2009](https://www.researchwithrutgers.org/en/publications/baby-schema-in-infant-faces-induces-cuteness-perception-and-motiv/)).
-- **Words were not enough to decide.** We made a few versions on a copy of the game, drawn by the game's own code, and the owner of the project chose from the pictures ([the faces](https://github.com/sntran/Tre/blob/main/docs/media/issue-19/faces.jpg); [the ground](https://github.com/sntran/Tre/blob/main/docs/media/issue-20/ground.jpg)).
+- **Words were not enough to decide.** We made a few versions on a copy of the game, drawn by the game's own code, and I chose from the pictures ([the faces](https://github.com/sntran/Tre/blob/main/docs/media/issue-19/faces.jpg); [the ground](https://github.com/sntran/Tre/blob/main/docs/media/issue-20/ground.jpg)).
 - **A texture alone did much.** A pattern in the shader of the ground, with no new shapes, made the village look much less flat.
 
 ## What we decided

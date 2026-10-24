@@ -7,7 +7,7 @@ Một trò chơi có nhiều hình ảnh của cùng một thứ: nhân vật tr
 ## Điều chúng tôi tìm thấy
 
 - **Hai dáng vẻ cho một người sẽ dần khác nhau.** Trong những bản dựng đầu, mọi hình vẽ đều là tranh vẽ (SVG), kể cả khuôn mặt khi nói chuyện và nhân vật ở màn hình tạo nhân vật. Rồi thế giới khối vuông mang thêm một dáng vẻ thứ hai cho mỗi người. Có hai dáng vẻ thì mỗi thay đổi phải làm hai lần, và rất dễ quên một lần.
-- **Trang tham khảo vẽ tay sẽ tụt lại sau mã.** Chủ dự án muốn các trang tham khảo hiện chính nhân vật trong trò chơi, luôn mới nhất, và mỗi nhân vật đứng riêng trên một đế, như một quân cờ, để có thể tự tay xoay.
+- **Trang tham khảo vẽ tay sẽ tụt lại sau mã.** Tôi muốn các trang tham khảo hiện chính nhân vật trong trò chơi, luôn mới nhất, và mỗi nhân vật đứng riêng trên một đế, như một quân cờ, để có thể tự tay xoay.
 
 Chúng tôi không tìm thấy nghiên cứu nào cho việc này. Đây là một lựa chọn thực tế, và chúng tôi nói rõ ở đây.
 

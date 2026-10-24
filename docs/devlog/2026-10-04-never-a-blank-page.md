@@ -2,7 +2,7 @@
 
 *4 October 2026 · [Tiếng Việt](2026-10-04-never-a-blank-page.vi.md)*
 
-After a child made a hero, the page was blank for some seconds before the world came. The owner of the project said that a blank page can make a child think that the game is broken. A day later he asked: "Does it take that long to load a practice?"
+After a child made a hero, the page was blank for some seconds before the world came. I said that a blank page can make a child think that the game is broken. A day later I asked: "Does it take that long to load a practice?"
 
 ## What we found
 
@@ -20,4 +20,4 @@ After a child made a hero, the page was blank for some seconds before the world 
 - **The land is kept on the device:** the 200 tiles that were used last, about 12 MB. The key of each tile has the version of the code of the land, so a change of that code makes the land again. With no storage, the game still starts.
 - **The language that the child chooses right before a profile wins,** and the profile saves it. With no choice, each profile keeps its own language, so that two children of one family can play in two languages.
 
-On our test server, which has no graphics card, the making of the land went from 6.2 seconds to 3.9 seconds on a first visit, and to nothing on a second visit. In the first measure on the owner's phone, the whole start took about 3.9 seconds. Our goal is less than 3 seconds for a second visit on a phone.
+On our test server, which has no graphics card, the making of the land went from 6.2 seconds to 3.9 seconds on a first visit, and to nothing on a second visit. In the first measure on my phone, the whole start took about 3.9 seconds. Our goal is less than 3 seconds for a second visit on a phone.

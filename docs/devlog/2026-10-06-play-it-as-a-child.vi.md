@@ -2,7 +2,7 @@
 
 *6 tháng 10 năm 2026 · [English](2026-10-06-play-it-as-a-child.md)*
 
-Trò chơi có 618 bài kiểm thử, và tất cả đều đạt. Rồi chủ dự án chơi thử vài phút và thấy ngay: một vật nhặt lên không hiện trên tay. Vì sao nhiều bài kiểm thử như vậy mà không thấy?
+Trò chơi có 618 bài kiểm thử, và tất cả đều đạt. Rồi tôi chơi thử vài phút và thấy ngay: một vật nhặt lên không hiện trên tay. Vì sao nhiều bài kiểm thử như vậy mà không thấy?
 
 ## Điều chúng tôi tìm thấy
 

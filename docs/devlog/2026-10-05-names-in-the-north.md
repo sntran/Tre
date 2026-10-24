@@ -2,7 +2,7 @@
 
 *5 October 2026 · [Tiếng Việt](2026-10-05-names-in-the-north.vi.md)*
 
-Earlier today we gave the people of Xóm Ruộng names by the order of birth: Cô Năm, Chị Ba, Chú Tư, Ông Cả (see [Cô Năm, not cô Cấy](2026-10-05-names-words-and-corn.md)). The owner of the project grew up in the south, where everyone is called that way. He asked for the order of birth because the people of the game had no names, and he asked us to find a better way for the north if there is one. Is the order of birth the way of a northern village?
+Earlier today we gave the people of Xóm Ruộng names by the order of birth: Cô Năm, Chị Ba, Chú Tư, Ông Cả (see [Cô Năm, not cô Cấy](2026-10-05-names-words-and-corn.md)). I grew up in the south, where everyone is called that way. I asked for the order of birth because the people of the game had no names, and I asked for a better way for the north if there is one. Is the order of birth the way of a northern village?
 
 ## What we found
 

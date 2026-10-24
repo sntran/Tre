@@ -7,7 +7,7 @@ A game has many pictures of the same thing: the figure in the world, the face in
 ## What we found
 
 - **Two looks for one person drift apart.** In the first builds, all the art was drawings (SVG), also the faces in a talk and the hero on the creation screen. The world of blocks then brought a second look for each person. With two looks, each change must be made two times, and one of them is easy to miss.
-- **A drawn reference falls behind the code.** The owner of the project asked that the reference pages show the figures of the game itself, always up to date, and that each figure stand alone on a base, like a piece of a board game, that he can turn by hand.
+- **A drawn reference falls behind the code.** I asked that the reference pages show the figures of the game itself, always up to date, and that each figure stand alone on a base, like a piece of a board game, that I can turn by hand.
 
 We found no study for this. It is a practical choice, and we say so here.
 

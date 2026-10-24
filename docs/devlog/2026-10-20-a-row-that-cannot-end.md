@@ -23,7 +23,7 @@ In the last play test, seven testers who did not know the game played as childre
 
 ## The limit of what we know
 
-The study of touch targets measured children of 7 to 10 on a tablet, not children of 5 on a phone; younger children likely miss more. The color words of the village are our proposal, and a person who knows the village words must check them. Also, the smith says that hot iron gets hard in cold water. This is true of steel, which is iron with a little carbon; nearly pure iron does not get much harder. We asked the owner which word the game must use.
+The study of touch targets measured children of 7 to 10 on a tablet, not children of 5 on a phone; younger children likely miss more. The color words of the village are our proposal, and a person who knows the village words must check them. Also, the smith says that hot iron gets hard in cold water. This is true of steel, which is iron with a little carbon; nearly pure iron does not get much harder. Which word the game uses is an open question (question 118 in `docs/QUESTIONS.md`).
 
 ## Sources
 
