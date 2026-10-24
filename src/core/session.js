@@ -1474,8 +1474,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (id) mentoring.touched(id);
     pendingPress = null;
     const face = () => worldCommand(state, { type: 'face', id: 'hero', x: p.x, z: p.z });
-    // Near enough to act there: only a turn to it.
-    if (distHb(hero().position, stand) <= (exact ? 1 : REACH - 1)) return face();
+    // Near enough to act there: only a turn to it. When the act of the target still needs a walk
+    // (#117: a tap on the glowing iron turned the hero, and the button showed a walk), the hero
+    // walks.
+    if (distHb(hero().position, stand) <= (exact ? 1 : REACH - 1)) {
+      if (!action()?.walk) return face();
+    }
     if (exact && walkTo([{ x: stand.x / 2, y: stand.z / 2 }], face)) return;
     walkToThing({ x: stand.x / 2, y: stand.z / 2 }, face);
   }
@@ -2680,16 +2684,24 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // culm, the mat) can always walk away from it (#44).
     const h = heroFrom();
     for (const [k, until] of stuckCells) if (until <= state.tick) stuckCells.delete(k);
-    const inThing = (x, y) => stuckCells.has(`${x},${y}`) || boxes.some((b) => (x + 0.5) * 2 > b.x0 - 0.5 && (x + 0.5) * 2 < b.x1 + 0.5 && (y + 0.5) * 2 > b.z0 - 0.5 && (y + 0.5) * 2 < b.z1 + 0.5);
+    const inBoxPad = (x, y, pad) => boxes.some((b) => (x + 0.5) * 2 > b.x0 - pad && (x + 0.5) * 2 < b.x1 + pad && (y + 0.5) * 2 > b.z0 - pad && (y + 0.5) * 2 < b.z1 + pad);
+    const inThing = (x, y) => stuckCells.has(`${x},${y}`) || inBoxPad(x, y, 0.5);
     const inPeople = (x, y) => rounds.some((c) => Math.hypot((x + 0.5) * 2 - c.x, (y + 0.5) * 2 - c.z) < c.r) || gap(x, y);
     // A tap always walks (#95: next to the teacher, a wall, a closed cell, and a narrow gap left the
     // cell of the hero with no way out, and no tap moved the hero): when no cell next to the hero is
     // open, the first steps (ESCAPE cells around the hero) go without the people and the narrow
     // gaps. The hero goes out the way that it came in.
     const open = (x, y) => tileMap.walkable(x, y) && !inThing(x, y) && !inPeople(x, y);
-    const shut = people && ![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => open(h.x + dx, h.y + dy));
+    // #117: next to the teacher, two open cells between a wall and the body of the teacher had no
+    // way out, and the cell of the hero had one open cell next to it, so no escape came. The open
+    // cells that the hero reaches with the people: a small pocket with no way out is shut too.
+    const shut = people && pocket(h, open);
     const nearHero = (x, y) => Math.abs(x - h.x) <= ESCAPE && Math.abs(y - h.y) <= ESCAPE;
-    const inBox = (x, y) => !(x === h.x && y === h.y) && (inThing(x, y) || (!(shut && nearHero(x, y)) && inPeople(x, y)));
+    // In a pocket, the cells near the hero count a solid box with no pad (#117: the hero stood in a
+    // cell between a wall and the edge of the mat of the teacher, and the pad of the mat closed the
+    // cells next to it).
+    const escape = (x, y) => shut && nearHero(x, y);
+    const inBox = (x, y) => !(x === h.x && y === h.y) && ((escape(x, y) ? stuckCells.has(`${x},${y}`) || inBoxPad(x, y, -0.2) : inThing(x, y)) || (!escape(x, y) && inPeople(x, y)));
     return Object.assign(Object.create(tileMap), {
       // The hero can always start from its own cell (in the water after a jump, at a thing).
       walkable: (x, y) => (x === h.x && y === h.y) || (tileMap.walkable(x, y) && !inBox(x, y)),
@@ -2699,6 +2711,26 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // Is a cell open, with the people and the narrow gaps (not the cell of the hero)?
       open,
     });
+  }
+  // Is the cell of the hero in a pocket: open cells (open(x, y)) that the hero reaches, fewer than
+  // POCKET, with no way out? A cell with no open cell next to it is a pocket of one (#95).
+  const POCKET = 12;
+  function pocket(h, open) {
+    const seen = new Set([`${h.x},${h.y}`]);
+    const todo = [h];
+    while (todo.length) {
+      const c = todo.pop();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const x = c.x + dx;
+        const y = c.y + dy;
+        const k = `${x},${y}`;
+        if (seen.has(k) || !open(x, y)) continue;
+        seen.add(k);
+        if (seen.size > POCKET) return false;
+        todo.push({ x, y });
+      }
+    }
+    return true;
   }
   // A path (map cells): around the people near the hero, or, when they close every way (#81: next
   // to the teacher, a buffalo, and the posts of a house, no tap moved the hero), with only the walls
@@ -2711,8 +2743,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   function walkToThing(target, onArrive) {
     const tile = { x: Math.floor(target.x), y: Math.floor(target.y) };
-    // A large solid thing (the mat, a clump): the free cell nearest to it on the way (#44).
-    walkPath(pathToward(pathMap(), heroFrom(), tile), null, onArrive, { x: target.x, y: target.y, d: 2.2 });
+    // A large solid thing (the mat, a clump): the free cell nearest to it on the way (#44). With no
+    // way around the people, a way through them; with no way at all, the hero walks straight
+    // toward the point as far as it can go (#117: a tap never ends with no move).
+    const from = heroFrom();
+    const paths = pathMap();
+    const way = pathToward(paths, from, tile) ?? pathToward(pathMap({ people: false }), from, tile);
+    if (way) return walkPath(way, null, onArrive, { x: target.x, y: target.y, d: 2.2 });
+    // The cell of the hero is already the open cell nearest to the point on the line to it.
+    if (nearestOnLine(paths, from, tile)) return;
+    const stop = edgeStop(from, tile);
+    if (stop && (stop.x !== from.x || stop.y !== from.y)) return walkPath([stop], null, onArrive, { x: target.x, y: target.y, d: 2.2 });
+    worldCommand(state, { type: 'face', id: 'hero', x: target.x * 2, z: target.y * 2 });
   }
   // A walk to a person goes on to where the person is now, up to PERSON_FOLLOW times, when the
   // person is more than PERSON_NEAR cells away at its end.
@@ -4368,6 +4410,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return null;
   }
 
+  // Is the cell of the hero (from) the first open cell on the line from a tile toward the hero?
+  function nearestOnLine(paths, from, tile) {
+    const n = Math.ceil(Math.hypot(tile.x - from.x, tile.y - from.y) * 2);
+    for (let i = 1; i <= n; i++) {
+      const x = Math.floor(tile.x + 0.5 + ((from.x - tile.x) * i) / n);
+      const y = Math.floor(tile.y + 0.5 + ((from.y - tile.y) * i) / n);
+      if (x === from.x && y === from.y) return true;
+      if (paths.walkable(x, y)) return false;
+    }
+    return true;
+  }
   // The last free cell before an edge on the line from the hero to a point (map cells), or null.
   function edgeStop(from, to) {
     const n = Math.ceil(Math.hypot(to.x - from.x - 0.5, to.y - from.y - 0.5) * 2);
