@@ -71,6 +71,9 @@ export function groundPick(cam, tileMap) {
 
 // The places of a task where a thing lies after a put (a tap must be on the body of the thing).
 const PLACED = new Set(['basket', 'mat', 'hearth', 'share']);
+// The places where a tap next to a thing chooses it while the hands are empty and the place is a
+// heap of the work (nearTake, #116).
+const NEAR_TAKE = new Set(['mat']);
 // The height of a stake of the row of the fisher over the water, for a tap (blocks).
 const STAKE_TALL = 1.2;
 const inBox = (p, b, pad, padY = pad) => p.x >= b.x0 - pad && p.x <= b.x1 + pad && p.y >= b.y0 - padY && p.y <= b.y1 + padY;
@@ -214,6 +217,8 @@ function heapThingNear(things, hit) {
 // - line(): the row of the open task of the fisher, { x, y, z, length, space } in half blocks, or null
 //   (optional);
 // - openThing(e): the thing is of a task that is open now (optional; else every thing is);
+//   nearTake(e): the place of the thing is a heap of the work, and a tap next to the thing chooses
+//   it with empty hands (optional);
 //   openSpanAt(x, y): the map point is on the gap of an open bridge (optional);
 //   carrying: a thing is in the hands of the hero; raidAt(p): the target of a raid (optional).
 // The order: a plank outline, a target of a raid, a thing of the hamlet; then a thing, but a place
@@ -258,8 +263,12 @@ export function tapTarget(p, w) {
   const taskPlace = inPlace || (hit && w.openSpanAt?.(hit.x, hit.y));
   if (pal && !taskThing && !taskPlace && !figureUnder(p, w.cam, w.persons ?? [], PERSON_PAD)) return { pet: pal.id };
   // A thing on a place of a task (a bunch in the basket, a rod on the mat) is chosen only by a tap on
-  // its body, never by a tap next to it (#79: a tap near the basket took a bunch out).
-  if (thing && (thing.inside || (!inPlace && !PLACED.has(thing.e.item.zone)))) {
+  // its body, never by a tap next to it (#79: a tap near the basket took a bunch out). With empty
+  // hands, a tap within a finger of a rod on the mat chooses it: the mat takes nothing from empty
+  // hands, and a rod that lies flat has almost no body on the screen (#116: a girl of grade 4 could
+  // not take the last rod of the mat for the box).
+  const nearRod = thing && !w.carrying && NEAR_TAKE.has(thing.e.item.zone) && (w.nearTake ? w.nearTake(thing.e) : false);
+  if (thing && (thing.inside || nearRod || (!inPlace && !PLACED.has(thing.e.item.zone)))) {
     // A person whose body is under the finger and who stands on the thing or in front of it: the
     // tap is for the person (#70: the healer stood on her bed of rau má, and each tap on her chose
     // the bed, so the child could not give the basket).
@@ -339,6 +348,7 @@ export function sessionScreen(session, cam) {
     placeAt: (x, y, pad) => session.taskPlaceAt(x, y, pad),
     line: () => session.line(),
     openThing: (e) => session.openThing(e.id),
+    nearTake: (e) => session.nearTake(e.id),
     openSpanAt: (x, y) => session.openSpanAt(x, y),
     carrying: Boolean(session.carried()),
   };

@@ -6,7 +6,7 @@
 import { newMentor, newMemory, onCommit, onIdle, onWave, onCheck, onChange, demoTarget, demoParts, shareParts } from './mentor.js';
 import { getEntity, query, addEntity } from './world/state.js';
 import { endScript } from './world/systems/mentor.js';
-import { basketRowAt, matSlot, spareStake } from './world/systems/work.js';
+import { basketRowAt, matSlot, spareStake, inHands, DESK_COLORS } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
 import { allowedSlots, takeBackSlot, stakeResult } from './world/trials.js';
@@ -32,6 +32,8 @@ const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 // world(): the world state; env(): the facts of the map; raise(key): the task asks for a bigger
 // task (a move raise), returns nothing; nameOf(id): the name of a person (a text parameter).
 const HOLE_MARK = 8; // seconds that the mark of the hole of an escape stays
+// The moves that play the share of grade 4 on another instance (#116).
+const SHARE_SHOWS = new Set(['demo', 'smaller', 'share']);
 const ROD_GLOW = 0.35; // seconds between two rods that glow in the hint of a full mat (#96)
 const BUNDLE = 10; // rods in a bundle of the teacher
 const REST_TIME = 4.4; // seconds that the person and the hero sit in a break
@@ -317,6 +319,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       return;
     }
     if (count > 0 && r.move === 'mark') return;
+    // The count of the desks of the share says the next step (#116): no move after it.
+    if (count > 0 && key === 'trial-scholar' && task?.tz?.zone.plan?.form === 'share' && SHARE_SHOWS.has(r.move)) return;
     if (r.move !== 'wait') schedule(key, r.move, { remembered: r.remembered, delay: (count > 0 ? count + COUNT_GAP : 0) + (r.delay ?? 0), target: input.target, solved: input.solved });
   }
 
@@ -550,6 +554,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // No hint after the end of a task (#96): only the count of what happened. A bigger task for
     // the next time is no hint: its line comes at the end (endRaise).
     if (task?.tz?.zone.done && move !== 'count' && move !== 'raise' && move !== 'bundles') return 0;
+    // The share of grade 4 (#116: after each check, the teacher played the share on five rods again,
+    // also with one rod left for the box): the demonstration comes at most one time in a task, and
+    // only after a wave; else the count of the desks with the next step.
+    if (key === 'trial-scholar' && task?.tz?.zone.plan?.form === 'share' && SHARE_SHOWS.has(move)) {
+      if (!info.asked || task.tz.zone.shareShown) move = 'count';
+      else task.tz.zone.shareShown = true;
+    }
     // A try is a commit (rule 33: the help goes one level up only after a try). The lines count
     // for each person, so that two tasks of one person count together.
     const whoNow = (task?.person ?? getEntity(w, def.person))?.id ?? key;
@@ -1295,11 +1306,38 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       s.say(t, lines.whole, { n: { key: `num.${Math.min(150, sums.reduce((a, b) => a + b, 0) + rest)}` } });
       t += 2;
     }
-    const left = total(getEntity(w, 'zone:rods')) + total(task.place);
-    const key = left ? lines.shareLeft : !sums.every((v) => v === sums[0]) ? lines.shareUnequal : rest >= plan.k ? lines.shareMore : null;
-    if (key) {
-      s.say(t, key);
-      t += 2.4;
+    // The next step from the work as it is (#116: after each check the teacher said "Còn que chưa
+    // chia." and played the share again, also with one rod left for the box): the desk with fewer
+    // rods and its count; the rods that are left over, and the box; the rods not shared yet; or the
+    // box with enough rods for one more on each desk.
+    const heap = getEntity(w, 'zone:rods');
+    const left = total(heap) + total(task.place) + inHands(w);
+    const equal = sums.every((v) => v === sums[0]);
+    const loose = [heap, task.place].flatMap((z) => (z?.zone.items ?? []).map((id) => getEntity(w, id))).filter((e) => e && !e.item.held);
+    if (!equal && lines.fewer) {
+      const i = sums.indexOf(Math.min(...sums));
+      const d = getEntity(w, `zone:desk-${i}`);
+      s.point(t, d.position, 1.6);
+      s.mark(t, { x: d.zone.x, z: d.zone.z }, 2.5);
+      s.say(t + 0.1, lines.fewer, { desk: { key: `scholar.desk.${DESK_COLORS[i % DESK_COLORS.length]}` }, n: { key: `num.${Math.min(150, sums[i])}` } });
+      t += 2.6;
+    } else if (left && left < plan.k && lines.toBox && loose.every((e) => e.item.kind === 'rod')) {
+      for (const e of loose) s.steps.push({ at: t, glow: { ids: [e.id] } });
+      if (loose[0]) s.point(t, loose[0].position, 1.2);
+      if (box) {
+        s.point(t + 1.3, box.position, 1.2);
+        s.mark(t + 1.3, { x: box.zone.x, z: box.zone.z }, 2.5);
+      }
+      s.say(t + 0.1, lines.toBox, { n: { key: `num.${left}` } });
+      t += 2.8;
+    } else {
+      const key = left ? lines.shareLeft : rest >= plan.k ? lines.shareMore : null;
+      if (key) {
+        const at = left ? (loose[0]?.position ?? heap?.position) : box?.position;
+        if (at) s.point(t, at, 1.2);
+        s.say(t, key);
+        t += 2.4;
+      }
     }
     return t;
   }

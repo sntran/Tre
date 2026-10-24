@@ -53,7 +53,7 @@ import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf } from './world/systems/sky.js';
 import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
-import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady } from './world/systems/work.js';
+import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady, DESK_COLORS } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
 import { viewSize, inView } from '../world/view.js';
 import { levelFor, taskOf, trialLevel, tightSlot, allowedSlots } from './world/trials.js';
@@ -774,7 +774,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const cz = Math.cos(viewAz);
     for (const z of query(state, 'zone')) {
       const r = z.zone.rect;
-      if (!r || z.zone.task !== key || z.zone.rule === 'line' || z.zone.rule === 'span' || !z.zone.stand) continue;
+      // The desks of the share stand close together near the heap: a step to a side of one desk
+      // goes in front of the next one (#116: the hero walked to a desk and then away from it).
+      if (!r || z.zone.task !== key || z.zone.rule === 'line' || z.zone.rule === 'span' || z.zone.rule === 'desk' || !z.zone.stand) continue;
       const st = z.zone.stand;
       if (st.x > r.x0 && st.x < r.x1 && st.z > r.z0 && st.z < r.z1) continue;
       // The distance from the edge of the place nearest to the camera, toward the camera.
@@ -1508,6 +1510,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const k = freeSlot(state, z, { x: hit.x * 2, z: hit.y * 2 });
       if (k >= 0) goTo(z.slots[k], wz.id, k);
       else goTo(wz.position, wz.id, null, standOf(wz));
+    } else if (z.rule === 'desk' && /^desk-/.test(z.id) && holding()) {
+      // A desk of the share with a thing in the hands: the hero walks next to the desk, one half
+      // block out of it, on the open side nearest to the hero, so that the put is at that desk
+      // (#116: a put from three cells away with no walk).
+      const r = z.rect;
+      const hp = hero().position;
+      const sides = [[r.x0 - 1, z.z], [r.x1 + 1, z.z], [z.x, r.z0 - 1], [z.x, r.z1 + 1], [r.x0 - 1, r.z0 - 1], [r.x1 + 1, r.z0 - 1], [r.x0 - 1, r.z1 + 1], [r.x1 + 1, r.z1 + 1]]
+        .map(([x, zz]) => ({ x, z: zz }))
+        .filter((p) => tileMap.walkable(Math.floor(p.x / 2), Math.floor(p.z / 2)) && !query(state, 'zone').some((o) => o.id !== wz.id && o.zone.rect && p.x > o.zone.rect.x0 && p.x < o.zone.rect.x1 && p.z > o.zone.rect.z0 && p.z < o.zone.rect.z1));
+      const stand = sides.length ? sides.reduce((a, b) => (distHb(hp, b) < distHb(hp, a) ? b : a)) : nearIn(wz, hp);
+      goTo({ x: z.x, z: z.z }, wz.id, null, stand, { exact: true });
     } else goTo(wz.position, wz.id, null, standOf(wz));
     // With a thing in the hands the tap is the place of a put, not a check.
     if (!holding()) deskSay(wz);
@@ -1530,7 +1543,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // A tap on a desk or on the box of the share (#107: "Tapping a desk doesn't tell me how many
   // sticks."): the teacher says what is on it, in the count of grade 4 ("Bàn này: hai bó, hai
   // que."). A check of the child, never a commit.
-  function deskSay(z) {
+  // A free rod on the mat of the share of grade 4 (#116): after the untie of a bundle, the mat is a
+  // heap of the work, and a press with empty hands takes a rod from it.
+  function shareMat(e) {
+    if (!e?.item || e.item.zone !== 'mat' || e.item.held || e.item.set || e.hidden) return false;
+    const tz = trialZone('scholar');
+    return Boolean(tz && !tz.zone.done && tz.zone.plan?.form === 'share');
+  }
+  // A pick of a rod of the teacher: at the share of grade 4, a handful of one loose rod for each
+  // desk (#116, gatherHand in src/core/world/systems/work.js).
+  function takeHand(e) {
+    worldCommand(state, { type: 'pick', id: 'hero', item: e.id, ...(e.item.task === 'trial-scholar' && e.item.kind === 'rod' ? { hand: true } : {}) });
+  }
+  // named: the line names the desk by its color ("Bàn vàng: một bó, năm que.", #116).
+  function deskSay(z, named = false) {
     if (z?.zone.rule !== 'desk' || z.zone.id === 'table' || !openTask(z.zone.task)) return;
     const things = z.zone.items.map((id) => getEntity(state, id)).filter(Boolean);
     const part = (n, one, many) => (n === 1 ? { key: one } : { key: many, params: { n: { key: `num.${Math.min(150, n)}` } } });
@@ -1539,7 +1565,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const parts = [...(tens ? [part(tens, 'scholar.what.ten', 'scholar.what.tens')] : []), ...(rods ? [part(rods, 'scholar.what.rod', 'scholar.what.rods')] : [])];
     const what = parts.length === 2 ? { key: 'scholar.what.two', params: { a: parts[0], b: parts[1] } } : parts[0] ?? { key: 'scholar.what.none' };
     const teacher = mentoring.personOf('trial-scholar');
-    if (teacher) emit({ type: 'open', screen: 'callout', id: teacher, textKey: z.zone.id === 'box' ? 'scholar.on.box' : 'scholar.on.desk', params: { what } });
+    const k = /^desk-(\d+)$/.exec(z.zone.id);
+    const color = k ? DESK_COLORS[Number(k[1]) % DESK_COLORS.length] : null;
+    if (!teacher) return;
+    if (named && color) emit({ type: 'open', screen: 'callout', id: teacher, textKey: 'scholar.on.named', params: { desk: { key: `scholar.desk.${color}` }, what } });
+    else emit({ type: 'open', screen: 'callout', id: teacher, textKey: z.zone.id === 'box' ? 'scholar.on.box' : 'scholar.on.desk', params: { what } });
+  }
+  // A put on a desk of the share (#116: a girl of grade 4 found the tap on a desk after about 110
+  // touches): the teacher says the count of that desk for the first three puts, and then one time
+  // that a tap on a desk says it. A deal says the count of each desk itself.
+  function deskPut(ev) {
+    const z = zoneOf(ev.zone);
+    const tz = trialZone('scholar');
+    if (ev.deal || z?.zone.rule !== 'desk' || !/^desk-/.test(z.zone.id) || tz?.zone.plan?.form !== 'share' || tz.zone.done) return;
+    tz.zone.deskPuts = (tz.zone.deskPuts ?? 0) + 1;
+    if (tz.zone.deskPuts <= DESK_SAYS) return deskSay(z, true);
+    if (tz.zone.deskTapSaid) return;
+    tz.zone.deskTapSaid = true;
+    const teacher = mentoring.personOf('trial-scholar');
+    if (teacher) emit({ type: 'open', screen: 'callout', id: teacher, textKey: 'scholar.desk.tap', params: {} });
   }
   // The hold of the action button (the jar of feed, the slash at a culm): the act goes on while the
   // button is down, and its end comes when the button goes up.
@@ -2948,6 +2992,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const SAME_KIND = new Set(['trial-healer']);
   // The tasks whose finish needs a tap on the person: the give of the basket is a try (#47, #63).
   const TAP_FINISH = new Set(['trial-healer']);
+  // Half blocks from the edge of a desk of the share: a put on a desk walks the hero to it (#116).
+  // The desks stand close together near the heap, with no open cell between two of them, so the
+  // walk ends as near as it can.
+  const DESK_REACH = 4;
+  // The puts on a desk that the teacher counts aloud (#116).
+  const DESK_SAYS = 3;
   // The healer says the name of a herb in a bubble (#61): 'bed' after a tap on a bed, 'herb' when
   // the child takes a bunch. A child who cannot read hears it (#60).
   // The same line comes at most HERB_RUN times in a row before a try (#63: a press takes the same
@@ -3135,11 +3185,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         add({ ...base, ...fin, rank: -20, work: true }, REACH + 3);
         continue;
       }
-      if (fin && (tapped || (!TAP_FINISH.has(task) && !heapNear(null) && childPut.has(task)))) add({ ...base, ...fin, rank: 0, work: true }, REACH + 3);
+      // The check of the share of grade 4 needs a tap on the teacher while rods lie on the mat
+      // (#116: the press near the teacher became the check when the child wanted a rod).
+      const matLeft = task === 'trial-scholar' && (zoneOf('mat')?.zone.items ?? []).some((id) => shareMat(getEntity(state, id)));
+      if (fin && (tapped || (!TAP_FINISH.has(task) && !heapNear(null) && !matLeft && childPut.has(task)))) add({ ...base, ...fin, rank: 0, work: true }, REACH + 3);
       // With a heap in reach, the finish waits: it comes only when the press has no other work
       // (#54: the basket of the healer has enough of each kind, and the healer stands at it).
       else if (fin && !tapped) {
-        if (childPut.has(task) && !TAP_FINISH.has(task)) laterFin.push({ ...base, ...fin, rank: 0, work: true });
+        if (childPut.has(task) && !TAP_FINISH.has(task) && !matLeft) laterFin.push({ ...base, ...fin, rank: 0, work: true });
         continue;
       }
       // While the task of the person is open, a talk is a call for help: it needs a tap on the
@@ -3312,7 +3365,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           } }, REACH);
           continue;
         }
-        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys, at: middleOf(e), size, rank: 1, work: openTask(e.item.task), run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH + (rule === 'pile' ? PILE_REACH : 0));
+        add({ act: 'pick', icon: 'hand-pick', target: e.id, keys, at: middleOf(e), size, rank: 1, work: openTask(e.item.task), run: () => takeHand(e) }, REACH + (rule === 'pile' ? PILE_REACH : 0));
       }
       // Take back: the thing that the child tapped on a place (the opposite of a put), from where
       // the hero stands to put. Only after a tap on the thing itself, with the heap in reach or
@@ -3320,8 +3373,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       for (const z of query(state, 'zone')) {
         if (!TAKE_BACK.has(z.zone.rule)) continue;
         const things = z.zone.items.map((id) => getEntity(state, id)).filter((e) => e && !e.hidden && !e.item.held && !e.item.set && !e.item.fixed && canTakeWork(state, e));
-        const e = things.find((x) => x.id === chosen?.id);
+        // The mat of the share of grade 4 is a heap of the work (#116): a press takes the loose rod
+        // nearest to the hero, also with no tap (a girl of grade 4 could not take the last rod).
+        const fromMat = things.filter(shareMat);
+        const nearest = fromMat.length ? fromMat.reduce((a, b) => ((a.item.kind === 'rod') !== (b.item.kind === 'rod') ? (a.item.kind === 'rod' ? a : b) : distHb(hp, b.position) < distHb(hp, a.position) ? b : a)) : null;
+        const e = things.find((x) => x.id === chosen?.id) ?? nearest;
         if (!e) continue;
+        if (shareMat(e)) {
+          add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [e.id, z.id], at: e.position, rank: 1, work: true, run: () => takeHand(e) }, REACH + 2);
+          continue;
+        }
         const spread = z.zone.rule === 'line' || z.zone.rule === 'spots';
         add({ act: 'pick', icon: 'hand-pick', target: e.id, keys: [e.id], at: spread ? e.position : nearIn(z, hp), rank: 1.5, run: () => worldCommand(state, { type: 'pick', id: 'hero', item: e.id }) }, REACH + 2);
       }
@@ -3447,8 +3508,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         continue;
       } else {
         if (zone.rule === 'hearth' && trialZone('horse')?.zone.heat !== null) continue;
+        // After a tap on a desk, the put goes to that desk only: out of reach, the press walks to it
+        // (#116: the desks stand close, and the put went to the desk next to the tapped one).
+        if (zone.rule === 'desk' && zoneOf(chosen?.id?.replace(/^zone:/, ''))?.zone.rule === 'desk' && chosen.id !== z.id) continue;
         // A tap on a thing on the place (the sticks on the wood pile) makes the place the target too.
-        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: nearIn(z, hp), work, rank: 0, run: () => put(null) }, REACH + 2);
+        // A put on a desk of the share walks the hero to the desk (#116: a put from three cells away
+        // with no walk, and the child did not know where the rod went).
+        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: nearIn(z, hp), work, rank: 0, run: () => put(null) }, zone.rule === 'desk' && /^desk-/.test(zone.id) ? DESK_REACH : REACH + 2);
       }
     }
     // Anywhere else: put it down on the ground in front of the hero. A thing of a task never goes
@@ -4742,6 +4808,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (ev.type === 'put' && ev.zone) {
         const task = zoneOf(ev.zone)?.zone.task;
         if (task) childPut.add(task);
+        deskPut(ev);
       }
       if (ev.type === 'arrived' || ev.type === 'stuck') {
         const fn = arrivals.get(ev.token);
@@ -5007,6 +5074,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     inTask: () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done)),
     // Is a map point (cells) on the gap of an open bridge (a tap there is work, not a pet of Nghé)?
     openSpanAt: (x, y) => bridgeOpen() && Boolean(spanAt(Math.floor(x), Math.floor(y))),
+    // Is a thing on a place that is a heap of the work now (the mat of the share of grade 4, #116)?
+    // A tap next to it chooses it while the hands are empty.
+    nearTake: (id) => shareMat(getEntity(state, id)),
     // Is a thing a thing of a task that is open now (a tap on it is work, not a pet of Nghé, #87)?
     openThing(id) {
       const item = getEntity(state, id)?.item;

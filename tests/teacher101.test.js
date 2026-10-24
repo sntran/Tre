@@ -100,45 +100,50 @@ function hands(session) {
     if (held() !== id) return getEntity(session.state, id)?.item.zone === to;
     tapAt(`zone:${to}`);
     press();
+    // A press far from the tapped desk walks there first (#116).
+    for (let i = 0; i < 4 && held() !== null; i++) run(1.5);
     return held() === null;
   };
   return { run, press, tapAt, move };
 }
 
-test('grade 4: the bundles and rods are shared among the desks, a bundle opens on the mat, the rest goes into the box, and the check counts each desk', async () => {
+test('grade 4: the bundles and rods are shared among the desks, a bundle opens on the mat, the rods are dealt, the rest goes into the box, and the check counts each desk', async () => {
   const { session, said, plan } = await play(4);
   assert.equal(plan.form, 'share');
   assert.ok(said.includes('dlg.teacher.trial.n3.share'));
   const h = hands(session);
   const heard = [];
   session.listen((e) => { if (e.type === 'open' && e.textKey) heard.push(e.textKey); });
-  // One desk with one rod less: the check says the desks are not equal.
+  const z = (id) => getEntity(session.state, `zone:${id}`).zone;
+  const kind = (id) => getEntity(session.state, id)?.item.kind;
+  const sum = (id) => z(id).items.reduce((a, i) => a + (getEntity(session.state, i)?.item.value ?? getEntity(session.state, i)?.item.size ?? 0), 0);
+  const looseIn = (id) => z(id).items.filter((i) => kind(i) === 'rod');
   const each = plan.each;
+  // The bundles: as many as each desk takes.
   let bundles = plan.tens;
   for (let i = 0; i < plan.k; i++) {
-    let need = each;
-    while (need >= 10 && bundles > 0) {
+    for (let need = each; need >= 10 && bundles > 0; need -= 10) {
       assert.ok(h.move('rods', 'rodbundle', `desk-${i}`), `a bundle to desk ${i}`);
       bundles -= 1;
-      need -= 10;
-    }
-    while (need > 0) {
-      const z = (id) => getEntity(session.state, `zone:${id}`).zone;
-      if (!z('mat').items.length && !z('rods').items.some((id) => getEntity(session.state, id)?.item.kind === 'rod')) {
-        assert.ok(h.move('rods', 'rodbundle', 'mat'), 'a bundle opens on the mat');
-        bundles -= 1;
-      }
-      const from = z('rods').items.some((id) => getEntity(session.state, id)?.item.kind === 'rod') ? 'rods' : 'mat';
-      assert.ok(h.move(from, 'rod', `desk-${i}`), `a rod to desk ${i}`);
-      need -= 1;
     }
   }
-  // The rest into the box, but the last rod stays on the heap or the mat: a first check.
-  const z = (id) => getEntity(session.state, `zone:${id}`).zone;
-  const loose = () => [...z('rods').items, ...z('mat').items].filter((id) => getEntity(session.state, id)?.item.kind === 'rod');
+  // The loose rods (#116): a press takes one rod for each desk, and a press at a desk deals them,
+  // one to each desk in turn.
+  for (let n = 0; sum('desk-0') < each && n < 40; n++) {
+    if (looseIn('rods').length < plan.k && looseIn('mat').length < plan.k) {
+      assert.ok(h.move('rods', 'rodbundle', 'mat'), 'a bundle opens on the mat');
+      bundles -= 1;
+    }
+    const from = looseIn('rods').length >= plan.k ? 'rods' : 'mat';
+    assert.ok(h.move(from, 'rod', 'desk-0'), 'a handful to the desks');
+  }
+  for (let i = 0; i < plan.k; i++) assert.equal(sum(`desk-${i}`), each, `desk ${i}`);
+  assert.ok(heard.filter((k) => k === `num.${Math.min(150, each)}`).length >= plan.k, `the count of each desk after the last deal: ${heard.join(' ')}`);
+  // The rest into the box.
+  const loose = () => [...z('rods').items, ...z('mat').items].filter((id) => kind(id) === 'rod');
   while (loose().length + z('rods').items.length > 0) {
     if (!loose().length) assert.ok(h.move('rods', 'rodbundle', 'mat'));
-    const from = z('rods').items.some((id) => getEntity(session.state, id)?.item.kind === 'rod') ? 'rods' : 'mat';
+    const from = z('rods').items.some((id) => kind(id) === 'rod') ? 'rods' : 'mat';
     assert.ok(h.move(from, 'rod', 'box'));
   }
   h.tapAt('npc:teacher');
@@ -159,7 +164,8 @@ test('grade 4: desks that are not equal: the teacher counts each desk and says s
   assert.ok(heard.includes('num.10') && heard.includes('num.0'), heard.join(' '));
   // The box is empty: its own line, not "Hộp: thừa không.".
   assert.ok(heard.includes('mentor.scholar.boxNone') && !heard.includes('mentor.scholar.box'), heard.join(' '));
-  assert.ok(heard.includes('mentor.scholar.shareLeft'), heard.join(' '));
+  // The next step from the desks as they are (#116): the desk with fewer rods, and its count.
+  assert.ok(heard.includes('mentor.scholar.fewer'), heard.join(' '));
 });
 
 test('grade 5: ten bundles tie into a big bundle; the table makes the number, and a wrong table is counted in parts and in words', async () => {

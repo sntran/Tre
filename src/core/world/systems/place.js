@@ -38,7 +38,7 @@ import {
   REACH, canPut, canTake, spanSlot, packPile, judge, skillEvents, sizesOf, sum, openRound, openGap, reachOf, oldDeck, nearestPoint, countTime, PILE_REACH,
 } from '../zones.js';
 import { isMashing } from '../../learnlog.js';
-import { putWork, canTakeWork, toHeap, freeSlot, takeOut, thingSound, walkFrom } from './work.js';
+import { putWork, canTakeWork, toHeap, freeSlot, takeOut, thingSound, walkFrom, gatherHand } from './work.js';
 import { putRaid } from './raid.js';
 
 // The zones of the tasks of the trials: the work system puts the things there.
@@ -131,13 +131,13 @@ function attemptOf(world, zone) {
 function act(world, e, want, env, dt) {
   if (e.fall) return;
   if (want.do === 'aim') e.hands.aim = world.tick;
-  else if (want.do === 'pick') pick(world, e, getEntity(world, want.item), env, dt);
+  else if (want.do === 'pick') pick(world, e, getEntity(world, want.item), env, dt, want.hand);
   else if (want.do === 'put') put(world, e, getEntity(world, `zone:${want.zone}`), env, dt, want.at);
   else if (want.do === 'drop') drop(world, e, env);
   else if (want.do === 'guess') guess(world, getEntity(world, `zone:${want.zone}`), want.n, env);
 }
 
-function pick(world, e, thing, env, dt) {
+function pick(world, e, thing, env, dt, hand = false) {
   if (!thing?.item || thing.item.held || thing.item.set || thing.item.fixed || e.hands.holds) return;
   const zoneEnt = thing.item.zone ? getEntity(world, `zone:${thing.item.zone}`) : null;
   const working = zoneEnt && WORK.has(zoneEnt.zone.rule);
@@ -189,6 +189,8 @@ function pick(world, e, thing, env, dt) {
   e.carry = thing.look;
   hintSeen(world, dt);
   stopHint(world);
+  // A handful of the share of grade 4 (#116): one loose rod for each desk.
+  if (hand) gatherHand(world, thing, zoneEnt?.zone.id ?? null);
   say(world, 'pick', e.id, { item: thing.id, from: zoneEnt?.zone.id ?? null, sound: 'plank-up' });
 }
 

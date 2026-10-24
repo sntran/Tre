@@ -78,7 +78,7 @@ export function input(world, dt, rng, env) {
       }
     } else if (['aim', 'pick', 'put', 'drop', 'guess'].includes(c.type)) {
       // The wishes of the hands of one step stay in their order (a quick tap: an aim and its put).
-      const want = { do: c.type, item: c.item ?? null, zone: c.zone ?? null, n: c.n ?? null, at: c.at ?? null };
+      const want = { do: c.type, item: c.item ?? null, zone: c.zone ?? null, n: c.n ?? null, at: c.at ?? null, ...(c.hand ? { hand: true } : {}) };
       e.hands = { ...(e.hands ?? { holds: null }), wants: [...(e.hands?.wants ?? []), want] };
     } else if (c.type === 'raid' && e.raid) {
       const { type, id, ...o } = c;

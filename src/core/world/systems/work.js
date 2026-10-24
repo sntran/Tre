@@ -864,6 +864,27 @@ export function hasRoom(zone) {
 export function putWork(world, e, zone, thing, at, env) {
   const tz = trialZone(world, thing.item.task.slice(6));
   if (!tz) return false;
+  // A handful of the share at a desk: one rod to each desk in turn (#116).
+  const hand = handRods(world, thing);
+  if (hand.length && zone.rule === 'desk' && /^desk-/.test(zone.id)) return dealHand(world, e, tz, thing, hand);
+  if (hand.length) {
+    // At another place (the mat, the box, the heap) the rods of the handful go with the first one.
+    const done = putWork(world, e, zone, dropHand(world, thing), at, env);
+    if (!done) {
+      gatherBack(world, thing, hand);
+      return false;
+    }
+    for (const r of hand) {
+      r.hidden = false;
+      delete r.item.inHand;
+      r.item.zone = zone.id;
+      zone.items.push(r.id);
+    }
+    if (zone.rule === 'desk') packDesk(world, zone);
+    else if (zone.rule === 'bundle') packMat(world, zone);
+    else if (zone.rule === 'heap') packHeap(world, zone);
+    return true;
+  }
   if (zone.rule === 'heap') {
     // The bunches of the model basket go back only to it, and the others only to their beds (#101).
     if (Boolean(zone.model) !== Boolean(thing.item.model)) return false;
@@ -983,6 +1004,81 @@ export function putWork(world, e, zone, thing, at, env) {
     finish(world, tz, thing.position);
   } else return false;
   say(world, 'put', e.id, { item: thing.id, zone: zone.id, sound: thingSound(thing) });
+  return true;
+}
+
+// The handful of the share of grade 4 (#116: each rod was one trip, 13 trips for one desk). With
+// empty hands, a press at the heap or at the mat takes one loose rod for each desk, when the place
+// has that many; a press at a desk deals them, one to each desk in turn, and the teacher says the
+// count of each desk. Young children share by dealing one to each in turn (Frydman and Bryant
+// 1988): the deal is the division, and a trip for each rod does not add to it. The other rods of
+// the handful are hidden, with no place, and item.inHand names the rod in the hands.
+export function gatherHand(world, thing, from) {
+  const tz = trialZone(world, 'scholar');
+  const plan = tz?.zone.plan;
+  if (!plan || plan.form !== 'share' || tz.zone.done || thing.item.kind !== 'rod' || thing.item.task !== 'trial-scholar' || !thing.item.held) return;
+  const zone = from ? zoneEnt(world, from)?.zone : null;
+  if (!zone || !['heap', 'bundle'].includes(zone.rule)) return;
+  const loose = zone.items.map((id) => getEntity(world, id)).filter((r) => r && r.item.kind === 'rod' && !r.item.held && !r.hidden && !r.item.set);
+  if (plan.k < 2 || loose.length < plan.k - 1) return;
+  const more = loose.slice(-(plan.k - 1));
+  for (const r of more) {
+    zone.items = zone.items.filter((id) => id !== r.id);
+    r.item.zone = null;
+    r.item.inHand = thing.id;
+    r.hidden = true;
+  }
+  thing.item.with = more.map((r) => r.id);
+  thing.look = `rod-hand-${plan.k}`;
+  const holder = getEntity(world, thing.item.held);
+  if (holder) holder.carry = thing.look;
+  if (zone.rule === 'heap') packHeap(world, zone);
+  else packMat(world, zone);
+}
+// The other rods of a handful (entities).
+function handRods(world, thing) {
+  return (thing.item.with ?? []).map((id) => getEntity(world, id)).filter(Boolean);
+}
+// The rod in the hands without its handful (a rod again).
+function dropHand(world, thing) {
+  delete thing.item.with;
+  thing.look = 'rod';
+  return thing;
+}
+// A put of a handful that did not go: the handful stays in the hands.
+function gatherBack(world, thing, hand) {
+  thing.item.with = hand.map((r) => r.id);
+  thing.look = `rod-hand-${hand.length + 1}`;
+}
+// The rods of the handful in the hands, for a count of the rods that are not shared yet.
+export function inHands(world) {
+  const h = getEntity(world, 'hero');
+  const held = h?.hands?.holds ? getEntity(world, h.hands.holds) : null;
+  if (!held?.item || held.item.task !== 'trial-scholar') return 0;
+  return (held.item.value ?? held.item.size ?? 1) + (held.item.with?.length ?? 0);
+}
+// The deal: one rod to each desk in turn, from the first desk; the teacher points at each desk and
+// says its count ("mười ba, mười ba, mười ba").
+function dealHand(world, e, tz, thing, hand) {
+  const desks = Array.from({ length: tz.zone.plan.k }, (_, i) => zoneEnt(world, `desk-${i}`)).filter(Boolean);
+  const rods = [dropHand(world, thing), ...hand];
+  const teacher = query(world, 'person').find((p) => p.person.ref === 'teacher' && !p.hidden);
+  rods.forEach((r, i) => {
+    const d = desks[i % desks.length];
+    r.hidden = false;
+    delete r.item.inHand;
+    r.item.held = null;
+    r.item.zone = d.zone.id;
+    d.zone.items.push(r.id);
+    packDesk(world, d.zone);
+  });
+  say(world, 'put', e.id, { item: thing.id, zone: desks[0].zone.id, sound: 'plank-down', deal: true });
+  desks.forEach((d, i) => {
+    if (i >= rods.length) return;
+    const n = sizeSum(world, d.zone);
+    if (teacher) say(world, 'call', teacher.id, { key: `num.${Math.min(150, n)}`, params: {}, happened: true });
+  });
+  world.events.push({ type: 'glowThings', ids: rods.map((r) => r.id) });
   return true;
 }
 
@@ -1422,7 +1518,7 @@ function checkDesks(world, tz, task, teacher) {
   const plan = tz.zone.plan;
   const sums = Array.from({ length: plan.k }, (_, i) => sizeSum(world, zoneEnt(world, `desk-${i}`)?.zone));
   const box = sizeSum(world, zoneEnt(world, 'box')?.zone);
-  const left = sizeSum(world, zoneEnt(world, 'rods')?.zone) + sizeSum(world, zoneEnt(world, 'mat')?.zone);
+  const left = sizeSum(world, zoneEnt(world, 'rods')?.zone) + sizeSum(world, zoneEnt(world, 'mat')?.zone) + inHands(world);
   const solved = left === 0 && sums.every((v) => v === sums[0]) && box < plan.k;
   commit(world, tz, task, { solved, parts: [...sums, box], target: plan.n });
   if (solved) finish(world, tz, zoneEnt(world, 'desk-0')?.position);

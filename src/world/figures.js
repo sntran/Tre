@@ -668,6 +668,9 @@ export function thingLook(key) {
   m = /^basket-grid-(\d+)$/.exec(k);
   if (m) return { kind: 'basket-grid', n: Number(m[1]) };
   if (k === 'place-glow') return { kind: 'place-glow' };
+  // A handful of loose rods for the deal of the share (#116): one rod for each desk.
+  const hand = /^rod-hand-(\d)$/.exec(k);
+  if (hand) return { kind: 'rod-hand', n: Number(hand[1]) };
   // The fisher from grade 3 (#102): the small boat of the stakes, a stake that lies in it, the pole
   // of the fisher (n half blocks, with a mark at its half at grade 5), and the knot at the end of a
   // length of the pole on the row.
@@ -849,6 +852,17 @@ export function workThing(look) {
     // (more than 4 pixels wide, #61).
     // Thin, as que tính are (#87: the thick rods looked like blocks, and a child could not count
     // them on the mat).
+    // A handful of n counting rods side by side, a finger apart, so that a child counts them in the
+    // hands (#116).
+    case 'rod-hand': {
+      const n = Math.max(1, Math.min(9, look.n ?? 1));
+      const parts = [];
+      for (let i = 0; i < n; i++) {
+        const x = (i - (n - 1) / 2) * 0.34;
+        parts.push(P(`stick${i}`, [0.22, 0.16, 0.9], 'yellow', [x, 0.08, 0]), P(`end${i}`, [0.22, 0.16, 0.08], 'ochre', [x, 0.08, 0.49]));
+      }
+      return still(parts, 0.18);
+    }
     case 'rod': return still([P('stick', [0.22, 0.16, 0.9], 'yellow', [0, 0.08, 0]), P('endA', [0.22, 0.16, 0.08], 'ochre', [0, 0.08, 0.49]), P('endB', [0.22, 0.16, 0.08], 'ochre', [0, 0.08, -0.49])], 0.18);
     // Ten rods tied with a red band.
     // A big bundle of ten bundles (grade 5, #101), a box for the rods that are left, and the low

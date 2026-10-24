@@ -47,9 +47,9 @@ async function atTeacher(grade) {
   return { session, said, run, press, tapAt, zone, held, move, plan: zone('trial-scholar').plan };
 }
 
-test('a rod in the box comes back with a tap and a press, and goes onto a desk', async () => {
+test('a bundle in the box comes back with a tap and a press, and goes onto a desk', async () => {
   const h = await atTeacher(4);
-  assert.ok(h.move('rods', 'rod', 'box'), 'a rod into the box');
+  assert.ok(h.move('rods', 'rodbundle', 'box'), 'a bundle into the box');
   const rod = h.zone('box').items[0];
   h.tapAt(rod);
   assert.equal(h.session.action()?.act, 'pick');

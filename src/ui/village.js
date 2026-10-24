@@ -909,6 +909,7 @@ export async function mountVillage(ctx, params = {}) {
       placeAt: (x, y, pad) => session.taskPlaceAt(x, y, pad),
       line: () => session.line(),
       openThing: (e) => session.openThing(e.id),
+      nearTake: (e) => session.nearTake(e.id),
       openSpanAt: (x, y) => session.openSpanAt(x, y),
       carrying: Boolean(session.carried()),
       raidAt: (p) => raidView.targetAt(p),
