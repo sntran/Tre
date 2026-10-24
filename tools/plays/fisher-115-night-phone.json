@@ -1,0 +1,329 @@
+{
+ "about": "#115: the fisher at grade 1, a child who only presses: the stakes go in, a press too near the last stake says where a stake may go, a wave says the next step, and the row goes on to the float.",
+ "start": "?story=trial-fisher&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "1",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "night-the-fisher-the-first-stakes"
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-presses-the-stakes-go-in"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next')"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thing": "why:fisher:next"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'why:fisher:next'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-a-tap-on-the-ring-and-a-press"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done && !Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "tap": {
+    "row": 12
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done && !Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "tap": {
+    "row": 16
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-the-row-goes-on-to-the-float"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-a-wave-the-next-step"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done"
+  },
+  {
+   "wait": 6
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)"
+  },
+  {
+   "shot": "night-the-end-of-the-row"
+  }
+ ]
+}
