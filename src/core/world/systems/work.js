@@ -2016,9 +2016,10 @@ function noRoomLine(world, tz, line, held) {
   takeBackHint(world, line);
 }
 // A put into a space that is too narrow (#109): the fisher points at the last stake of the row,
-// and it glows and bobs. At the second such press in a row, a ring shows the free point that the
-// rule allows nearest to the hero (#115: the ring went to the float, which the rule refused too),
-// and he says to walk to it. The press never walks there by itself: a press never reads a number
+// and it glows and bobs. At the second such press in a row, a ring shows the next point of the
+// fisher (one gap after the last stake) when the rule allows it, else the free point that the rule
+// allows nearest to the hero (#115: the ring went to the float, which the rule refused too), and
+// he says to walk to it. A refused press after that says the ring again. The press never walks there by itself: a press never reads a number
 // that the child must find (#63), and a tap at the ring chooses the place. When the rule allows no
 // free point, he points at the stake to take back.
 export const TIGHT_RING = 2;
@@ -2035,8 +2036,24 @@ function tightHint(world, tz, line) {
     takeBackHint(world, line, row);
     return;
   }
-  if (tz.zone.tights >= TIGHT_RING && last && !getEntity(world, 'why:fisher:next')) {
-    const slot = free.reduce((a, k) => (Math.abs(k - near) < Math.abs(a - near) ? k : a));
+  // The ring shows already: a refused press says the line of the ring again, the fisher points at
+  // it, and it glows (#115: in a play, a child who only pressed heard "Chỗ này chật quá." ten times,
+  // and nothing new came).
+  const ring = getEntity(world, 'why:fisher:next');
+  if (ring) {
+    if (fisher) {
+      say(world, 'call', fisher.id, { key: 'fisher.tight.ring', params: {}, happened: true });
+      fisher.gesture = { act: 'point', x: ring.position.x, z: ring.position.z, t: 2.5 };
+    }
+    world.events.push({ type: 'glowThings', ids: [ring.id] });
+    return;
+  }
+  if (tz.zone.tights >= TIGHT_RING && last) {
+    // The next point of the fisher (one gap after the last stake) when the rule allows it; else
+    // the allowed point nearest to the hero (#115: the nearest point was between the two first
+    // stakes of the fisher, half his gap).
+    const next = Math.min(line.length, last.item.slot + line.space);
+    const slot = free.includes(next) ? next : free.reduce((a, k) => (Math.abs(k - near) < Math.abs(a - near) ? k : a));
     addEntity(world, { id: 'why:fisher:next', keep: true, position: { x: line.x + slot, y: line.y + WATER_UP, z: line.z, facing: 0 }, look: 'pull-ring' });
     if (fisher) {
       say(world, 'call', fisher.id, { key: 'fisher.tight.ring', params: {}, happened: true });

@@ -672,6 +672,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         point(t, p, 2);
         mark(t, p, HOLE_MARK);
         t += 3;
+      } else if (getEntity(world(), 'why:fisher:next') && defOf(key).lines.ring && !waits) {
+        // No hole, and the ring of a refused press shows: the wave says to walk to it (#115).
+        const r = getEntity(world(), 'why:fisher:next').position;
+        say(t, defOf(key).lines.ring);
+        point(t, r, 2);
+        mark(t, r, HOLE_MARK);
+        t += 3;
       } else {
         say(t, waits ? defOf(key).lines.wait : defOf(key).lines.carry);
         point(t, place, 1.4);

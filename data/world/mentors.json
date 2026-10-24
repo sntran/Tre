@@ -417,6 +417,7 @@
         "fit": "mentor.fisher.fit",
         "hole": "mentor.fisher.hole",
         "takeback": "fisher.takeback",
+        "ring": "fisher.tight.ring",
         "pile": "fisher.pile"
       }
     },

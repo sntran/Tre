@@ -56,7 +56,7 @@ import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoi
 import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
 import { viewSize, inView } from '../world/view.js';
-import { levelFor, taskOf, trialLevel } from './world/trials.js';
+import { levelFor, taskOf, trialLevel, tightSlot, allowedSlots } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring, decimalWords } from './mentoring.js';
 import { playExample, stopExample } from './examples.js';
@@ -1499,8 +1499,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!wz) return false;
     const z = wz.zone;
     if (z.rule === 'line') {
+      // The hero walks along the bank to the point of the tap (#115: a tap on the ring turned the
+      // hero only, and the next stake went where the hero stood).
       const along = Math.max(1, Math.min(z.length, Math.round(hit.x * 2 - z.x)));
-      goTo({ x: z.x + along, z: z.z }, wz.id, along, { x: z.x + along, z: standOf(wz).z });
+      goTo({ x: z.x + along, z: z.z }, wz.id, along, { x: z.x + along, z: standOf(wz).z }, { exact: true });
     } else if (z.rule === 'spots') {
       // A spot in the stream: the free spot nearest to the tap is the target place.
       const k = freeSlot(state, z, { x: hit.x * 2, z: hit.y * 2 });
@@ -3361,7 +3363,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const front = frontOf(hp);
     // The places of a task that take the thing now (#68: a full mat takes no rod). When none of them
     // does, the button shows the way back to the heap of the thing, also with no tap on the heap.
-    const takes = (z) => canPut(z.zone, held) && hasRoom(z.zone) && !['heap', 'pile', 'road'].includes(z.zone.rule) && !doneTask(z.zone.task);
+    // A row of the fisher with no free point that the rule of narrow places allows takes no stake
+    // (#115): the press goes back to the pile.
+    const lineRoom = (zone) => {
+      const row = query(state, 'item').filter((e) => e.item.zone === zone.id && !e.item.held && e.item.slot != null).map((e) => e.item.slot);
+      return allowedSlots(row, zone.length, zone.space).length > 0;
+    };
+    const takes = (z) => canPut(z.zone, held) && hasRoom(z.zone) && !['heap', 'pile', 'road'].includes(z.zone.rule) && !doneTask(z.zone.task) && (z.zone.rule !== 'line' || lineRoom(z.zone));
     // A thing of a done task (taken before #81) goes back to its heap with a press too.
     const noPlace = Boolean(held.item.home) && (openTask(held.item.task) || doneTask(held.item.task)) && !query(state, 'zone').some(takes);
     for (const z of query(state, 'zone')) {
@@ -3385,22 +3393,30 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           add({ act: 'wait', icon: 'water', target: z.id, at: nearIn(z, hp), rank: 0, run: () => emit({ type: 'open', screen: 'callout', id: fisher?.id ?? 'npc:fisher', textKey: 'fisher.tide.wait', params: {} }) }, REACH + 3);
           continue;
         }
+        if (!lineRoom(zone)) continue;
         const tapped = chosen?.id === z.id && chosen.along !== null ? chosen.along : null;
         // With no tap, the point of the row nearest to the hero; when it has a stake, the free point
-        // nearest to it, after it first (one half block). The press never reads the space of the
-        // row (#63): the child chooses each space with a tap, and presses alone make a row that is
-        // too close. At the end of the row, the free point before it (#76: after a stake at the
-        // float, a stake in the hands had no place). A tap on a point with a stake chooses the free
-        // point nearest to the tap in the same way (#78: a tap at the float gave no act).
+        // next to it that the rule of narrow places allows, after it first (one half block), else
+        // the free point next to it. The press never reads the space of the row (#63): the child
+        // chooses each space with a tap, and presses alone make a row that is too close. At the end
+        // of the row, the free point before it (#76: after a stake at the float, a stake in the
+        // hands had no place). A tap on a point with a stake chooses the free point nearest to the
+        // tap in the same way (#78: a tap at the float gave no act). The search goes at most one
+        // gap of the fisher from that point (#115: past the end of the row, the see-through stake
+        // jumped back into the middle of the row, far from the hero).
         const row = query(state, 'item').filter((e) => e.item.zone === zone.id && !e.item.held && e.item.slot != null).map((e) => e.item.slot);
         let slot = Math.max(1, Math.min(zone.length, tapped ?? Math.round(hp.x - zone.x)));
         if (row.includes(slot)) {
           const near = slot;
-          slot = null;
-          for (let d = 1; d <= zone.length && slot === null; d++) {
-            if (near + d <= zone.length && !row.includes(near + d)) slot = near + d;
-            else if (near - d >= 1 && !row.includes(near - d)) slot = near - d;
-          }
+          const free = (k) => k >= 1 && k <= zone.length && !row.includes(k);
+          const pick = (ok) => {
+            for (let d = 1; d <= zone.space; d++) {
+              if (free(near + d) && ok(near + d)) return near + d;
+              if (free(near - d) && ok(near - d)) return near - d;
+            }
+            return null;
+          };
+          slot = pick((k) => !tightSlot(row, k, zone.space, zone.length)) ?? pick(() => true);
         }
         if (slot === null || slot > zone.length || row.includes(slot)) continue;
         const at = { x: zone.x + slot, z: zone.z };
@@ -4978,10 +4994,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // given): a tap there comes before a person. With no pad: a tap there comes before a thing that
     // only touches the finger with its pad (src/world/hit.js, #47).
     taskPlaceAt: (x, y, pad = ZONE_PAD) => Boolean(workZoneAt(x * 2, y * 2, pad)),
-    // The row of the open task of the fisher: { x, y, z, length } (half blocks), or null.
+    // The row of the open task of the fisher: { x, y, z, length, space } (half blocks), or null.
     line: () => {
       const z = trialZone('fisher') && !trialZone('fisher').zone.done ? zoneOf('line')?.zone : null;
-      return z ? { x: z.x, y: z.y, z: z.z, length: z.length } : null;
+      return z ? { x: z.x, y: z.y, z: z.z, length: z.length, space: z.space } : null;
     },
     // A task or a folk game goes on now: a tap on Nghé is a tap on what is under or behind Nghé.
     // Any open task counts (a trial, a station, or a work task such as the rice for Gióng).

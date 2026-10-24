@@ -156,16 +156,36 @@ export function guessUnder(p, cam, guesses) {
 
 // The point of the row of the fisher nearest to a screen point: { a (half blocks from its start),
 // d (pixels) }, or null when the finger is not on the row. A point takes a tap in a circle of
-// TAP_AREA points (#83).
+// TAP_AREA points (#83) around its upright line from the bed of the river to the surface of the
+// water, where the ring of the fisher floats, and up to the top of a stake that stands there (#115:
+// a finger on the ring met the bed of the river behind it, and the tap chose the point before the
+// ring). stood: the points of the row with a stake.
 const ROW_PAD = TAP_AREA / 2;
-function rowUnder(p, cam, row) {
+// Blocks over the bed of the river: the surface of the water, and the top of a stake.
+const ROW_WATER = 0.65;
+const ROW_TOP = ROW_WATER + STAKE_TALL;
+function rowUnder(p, cam, row, stood = new Set()) {
   let best = null;
   for (let a = 1; a <= row.length; a++) {
-    const c = cam.project((row.x + a) / 2, row.y / 2, row.z / 2);
-    const d = Math.hypot(p.x - c.x, p.y - c.y);
+    const lo = cam.project((row.x + a) / 2, row.y / 2, row.z / 2);
+    const hi = cam.project((row.x + a) / 2, row.y / 2 + (stood.has(a) ? ROW_TOP : ROW_WATER), row.z / 2);
+    const vx = hi.x - lo.x;
+    const vy = hi.y - lo.y;
+    const k = Math.max(0, Math.min(1, ((p.x - lo.x) * vx + (p.y - lo.y) * vy) / (vx * vx + vy * vy || 1)));
+    const d = Math.hypot(p.x - (lo.x + vx * k), p.y - (lo.y + vy * k));
     if (!best || d < best.d) best = { a, d };
   }
   return best && best.d <= ROW_PAD ? best : null;
+}
+// With a stake in the hands, a tap on the water within one gap of the row chooses the point of the
+// row at the tap (#115: taps on the water next to the row did not move the hero). hit: the ground
+// under the finger (cells).
+function rowWater(hit, row) {
+  if (!hit || !row.space || hit.h * 2 > row.y + 1.5) return null;
+  if (Math.abs(hit.y * 2 - row.z) > row.space) return null;
+  const a = Math.round(hit.x * 2 - row.x);
+  if (a < 1 - row.space || a > row.length + row.space) return null;
+  return { a: Math.max(1, Math.min(row.length, a)), d: 0 };
 }
 
 // The thing of a heap nearest to a point on the ground (cells), within one block: a thing of a heap
@@ -191,7 +211,7 @@ function heapThingNear(things, hit) {
 // - pick(px, py): the ground (or a prop: who) under the point, { x, y (map cells), h, who } or null;
 // - under(px, py): the ground under the point behind the props, { x, y } or null (optional);
 // - placeAt(x, y, pad): a place of a task at a map point (cells), with a pad in half blocks;
-// - line(): the row of the open task of the fisher, { x, y, z, length } in half blocks, or null
+// - line(): the row of the open task of the fisher, { x, y, z, length, space } in half blocks, or null
 //   (optional);
 // - openThing(e): the thing is of a task that is open now (optional; else every thing is);
 //   openSpanAt(x, y): the map point is on the gap of an open bridge (optional);
@@ -223,7 +243,8 @@ export function tapTarget(p, w) {
   // point of the row nearest to the finger on the screen is the point of the tap (#63: the stake
   // went two half blocks farther than the finger, or the tap missed the row).
   const row = w.line?.() ?? null;
-  const onRow = row ? rowUnder(p, w.cam, row) : null;
+  const stood = new Set(w.things.filter((e) => e.item?.zone === 'line' && e.item.slot != null && !e.item.held && !e.hidden).map((e) => e.item.slot));
+  const onRow = row ? rowUnder(p, w.cam, row, stood) ?? (w.carrying ? rowWater(hit, row) : null) : null;
   const inPlace = onRow || (hit && w.placeAt(hit.x, hit.y, 0));
   // With a stake in the hands, a tap on a stake of the row is a tap on its point of the row: the
   // put goes to the free point nearest to it (#78).
