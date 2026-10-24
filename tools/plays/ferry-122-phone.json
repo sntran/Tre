@@ -1,0 +1,142 @@
+{
+ "about": "#122: the ferry as Su played it: the chicken over, back with nothing, the dog over, back with nothing (the dog chases the chicken), and then two waves: the rule, and the next step from the banks as they are.",
+ "start": "?story=puzzle-ferry",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "traveler"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 14
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "tap": {
+    "thing": "pz:chicken"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.side === 'b' && !tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.side === 'a' && !tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "thing": "pz:dog"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.side === 'b' && !tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.chase')",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-dog-chases-the-chicken"
+  },
+  {
+   "until": "!tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait'",
+   "timeout": 90
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.session.puzzles.state().ferry?.where)"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "button": ".wave-btn",
+   "after": 1
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "a-wave-take-the-chicken-back"
+  }
+ ]
+}

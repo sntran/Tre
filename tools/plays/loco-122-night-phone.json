@@ -1,0 +1,647 @@
+{
+ "about": "#122: the hopscotch: the children stand off the squares, no star shows, holds to the called square, the hops up the court, the line at the half circle and the glow of the shard, and the numbers on the way back.",
+ "start": "?story=trick-hopscotch&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "loco-child"
+   },
+   "after": 2
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "until": "tre.activeVillage.session.folk()?.phase === 'throw'",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.session.taskHere())"
+  },
+  {
+   "shot": "night-the-children-stand-off-the-squares-no-star"
+  },
+  {
+   "until": "tre.activeVillage.session.folk()?.phase === 'throw' || tre.activeVillage.session.folk()?.phase === 'hop'",
+   "timeout": 60
+  },
+  {
+   "hold": {
+    "until": "(() => { const v = tre.activeVillage; const s = v.state(); const a = s.entities.find((e) => e.id === 'folk:aim'); const c = s.entities.find((e) => e.id === 'folk:court').folkCourt.squares[v.session.folk()?.call]; return Boolean(a && !a.hidden && c && Math.hypot(a.position.x - c.x, a.position.z - c.z) < 0.5); })()",
+    "timeout": 15,
+    "print": "tre.activeVillage.session.folk()?.call"
+   },
+   "if": "tre.activeVillage.session.folk()?.phase === 'throw'"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.session.folk()?.phase === 'throw' || tre.activeVillage.session.folk()?.phase === 'hop'",
+   "timeout": 60
+  },
+  {
+   "hold": {
+    "until": "(() => { const v = tre.activeVillage; const s = v.state(); const a = s.entities.find((e) => e.id === 'folk:aim'); const c = s.entities.find((e) => e.id === 'folk:court').folkCourt.squares[v.session.folk()?.call]; return Boolean(a && !a.hidden && c && Math.hypot(a.position.x - c.x, a.position.z - c.z) < 0.5); })()",
+    "timeout": 15,
+    "print": "tre.activeVillage.session.folk()?.call"
+   },
+   "if": "tre.activeVillage.session.folk()?.phase === 'throw'"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.session.folk()?.phase === 'throw' || tre.activeVillage.session.folk()?.phase === 'hop'",
+   "timeout": 60
+  },
+  {
+   "hold": {
+    "until": "(() => { const v = tre.activeVillage; const s = v.state(); const a = s.entities.find((e) => e.id === 'folk:aim'); const c = s.entities.find((e) => e.id === 'folk:court').folkCourt.squares[v.session.folk()?.call]; return Boolean(a && !a.hidden && c && Math.hypot(a.position.x - c.x, a.position.z - c.z) < 0.5); })()",
+    "timeout": 15,
+    "print": "tre.activeVillage.session.folk()?.call"
+   },
+   "if": "tre.activeVillage.session.folk()?.phase === 'throw'"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "hold": 0.5,
+   "at": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq === h.shard; })()"
+  },
+  {
+   "button": ".jump-btn",
+   "after": 1.4,
+   "if": "(() => { const f = tre.activeVillage.session.folk(); const h = f?.hops; if (f?.phase !== 'hop' || !h) return false; const n = f.court.length; const p = h.pos + 1; const sq = p >= 0 && p < n ? p : p > n && p <= 2 * n ? 2 * n - p : null; return sq !== h.shard; })()"
+  },
+  {
+   "wait": 1.6,
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })()"
+  },
+  {
+   "shot": "night-the-half-circle-the-way-back",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "print": "(window.__rest = true)",
+   "if": "(() => { const h = tre.activeVillage.session.folk()?.hops; return Boolean(h) && h.pos === tre.activeVillage.session.folk().court.length; })() && !window.__rest"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-home"
+  }
+ ]
+}

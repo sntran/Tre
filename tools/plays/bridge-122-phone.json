@@ -1,0 +1,274 @@
+{
+ "about": "#122: the bridge: the rows of the guess with the word of the pale planks, a guess of two, no face on the planks, the planks, the guess with its answer next to the row of the guess, and then the river after the bridge.",
+ "start": "?story=bridge",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 120
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-rows-of-the-guess-and-the-word-van-mo"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.session.taskHere())"
+  },
+  {
+   "tap": {
+    "thing": "guess:bridge-gap:2"
+   },
+   "after": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 200
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const g = tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone; const ps = tre.activeVillage.state().entities.filter((e) => e.item && g.items.includes(e.id)); const rest = g.gap - ps.reduce((a, e) => a + e.item.size, 0); const pile = tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-pile').zone.items.map((id) => tre.activeVillage.state().entities.find((e) => e.id === id)).filter(Boolean); const can = (r, list) => r === 0 || list.some((e, k) => e.item.size <= r && can(r - e.item.size, list.slice(k + 1))); const ok = pile.filter((e, k) => e.item.size <= rest && can(rest - e.item.size, pile.filter((x) => x !== e))).sort((a, b) => b.item.size - a.item.size); return ok[0]?.id ?? null; })()"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "document.querySelectorAll('.world-marks .world-star:not([hidden]), .world-marks .edge-arrow:not([hidden])').length"
+  },
+  {
+   "shot": "no-face-on-the-planks"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 200
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const g = tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone; const ps = tre.activeVillage.state().entities.filter((e) => e.item && g.items.includes(e.id)); const rest = g.gap - ps.reduce((a, e) => a + e.item.size, 0); const pile = tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-pile').zone.items.map((id) => tre.activeVillage.state().entities.find((e) => e.id === id)).filter(Boolean); const can = (r, list) => r === 0 || list.some((e, k) => e.item.size <= r && can(r - e.item.size, list.slice(k + 1))); const ok = pile.filter((e, k) => e.item.size <= rest && can(rest - e.item.size, pile.filter((x) => x !== e))).sort((a, b) => b.item.size - a.item.size); return ok[0]?.id ?? null; })()"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 200
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const g = tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone; const ps = tre.activeVillage.state().entities.filter((e) => e.item && g.items.includes(e.id)); const rest = g.gap - ps.reduce((a, e) => a + e.item.size, 0); const pile = tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-pile').zone.items.map((id) => tre.activeVillage.state().entities.find((e) => e.id === id)).filter(Boolean); const can = (r, list) => r === 0 || list.some((e, k) => e.item.size <= r && can(r - e.item.size, list.slice(k + 1))); const ok = pile.filter((e, k) => e.item.size <= rest && can(rest - e.item.size, pile.filter((x) => x !== e))).sort((a, b) => b.item.size - a.item.size); return ok[0]?.id ?? null; })()"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 200
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const g = tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone; const ps = tre.activeVillage.state().entities.filter((e) => e.item && g.items.includes(e.id)); const rest = g.gap - ps.reduce((a, e) => a + e.item.size, 0); const pile = tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-pile').zone.items.map((id) => tre.activeVillage.state().entities.find((e) => e.id === id)).filter(Boolean); const can = (r, list) => r === 0 || list.some((e, k) => e.item.size <= r && can(r - e.item.size, list.slice(k + 1))); const ok = pile.filter((e, k) => e.item.size <= rest && can(rest - e.item.size, pile.filter((x) => x !== e))).sort((a, b) => b.item.size - a.item.size); return ok[0]?.id ?? null; })()"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 200
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const g = tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap').zone; const ps = tre.activeVillage.state().entities.filter((e) => e.item && g.items.includes(e.id)); const rest = g.gap - ps.reduce((a, e) => a + e.item.size, 0); const pile = tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-pile').zone.items.map((id) => tre.activeVillage.state().entities.find((e) => e.id === id)).filter(Boolean); const can = (r, list) => r === 0 || list.some((e, k) => e.item.size <= r && can(r - e.item.size, list.slice(k + 1))); const ok = pile.filter((e, k) => e.item.size <= rest && can(rest - e.item.size, pile.filter((x) => x !== e))).sort((a, b) => b.item.size - a.item.size); return ok[0]?.id ?? null; })()"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set && Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:bridge-gap')?.zone.set)",
+   "timeout": 60
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-guess-with-its-answer-and-the-row-of-the-guess"
+  },
+  {
+   "wait": 8
+  },
+  {
+   "tap": {
+    "cell": [
+     30,
+     67
+    ]
+   },
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-river-after-the-bridge"
+  }
+ ]
+}
