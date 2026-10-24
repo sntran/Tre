@@ -71,7 +71,7 @@ import { createHamlet } from './hamlet-session.js';
 import { plotsOf } from './world/systems/plant.js';
 import { jumpLength, planJump } from './world/jump.js';
 import { MOVE, inputToward } from './world/move.js';
-import { createRaid, raidLevel, along, KEEP_SIDE } from './world/raids.js';
+import { createRaid, raidLevel, along, KEEP_SIDE, raidTally, raidClear } from './world/raids.js';
 import { setupRaid, roadPoint } from './world/systems/raid.js';
 import { lossLevel } from './profile.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from './world/save.js';
@@ -304,7 +304,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     map = startPlace(mapId, params).map;
     tileMap = createPlaneTileMap(map, data.tiles.types, { gone: (o) => Boolean(terrain?.isFelled?.(o)) });
     triggers = createTriggers(map.layers.triggers);
-    terrain = terrainOf(map, tileMap) ?? { homes: {} };
+    // Near the road of a raid, plants that stand tall grow low (#121, raidClear).
+    terrain = terrainOf({ ...map, clear: raidClear(data.raids, map.id) }, tileMap) ?? { homes: {} };
     // The state of this map in the save, and the changes of the player to its land.
     profile.maps ??= {};
     const onThisMap = profile.world.map === map.id;
@@ -2183,6 +2184,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (first < 0 || now < 0) now = lines.length;
     for (const l of lines) l.params = { ...raidWords(id), ...(l.params ?? {}) };
     for (const l of lines.slice(0, now)) say(l.textKey, l.params, null, l.speaker);
+    lastSaid = false;
+    gateTapped = false;
+    if (lines.slice(0, now).some((l) => l.tool === 'gate')) gateHint();
     toolLines = { list: lines.slice(now), t: TOOL_GAP };
     emit({ type: 'raid', on: true, id });
     emit({ type: 'hud' });
@@ -2245,6 +2249,34 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!e.raidCoach.hold) delete e.schedule.hold;
     delete e.raidCoach;
   }
+  // The person who speaks in a raid: the coach at the wall, or Nghé.
+  function raidSpeaker() {
+    const coach = getEntity(state, coachId());
+    const nghe = getEntity(state, 'friend:nghe');
+    return coach?.raidCoach && !coach.hidden ? coach : nghe && !nghe.hidden ? nghe : null;
+  }
+  // The enemies that are left (#121): the coach says the last one, one time in a raid.
+  let lastSaid = false;
+  function raidRetreat() {
+    const raid = raidEnt()?.raid;
+    if (!raid || raid.result || lastSaid) return;
+    const t = raidTally(raid);
+    if (t.total < 2 || t.total - t.done !== 1) return;
+    lastSaid = true;
+    const who = raidSpeaker();
+    const rice = data.raids?.raids[raid.id]?.words?.ball === 'raid.ball.rice';
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: rice ? 'raid.last.rice' : 'raid.last', params: raidWords() });
+  }
+  // The gate glows, and the coach points at it, at the line of the gate and at each torch, until
+  // the child taps the gate one time (#121: "I don't know where the gate is.").
+  let gateTapped = false;
+  function gateHint() {
+    const bar = getEntity(state, 'bar:raid');
+    if (!bar || gateTapped) return;
+    glowing = [bar.id];
+    const who = raidSpeaker();
+    if (who) who.gesture = { act: 'point', x: bar.position.x, z: bar.position.z, t: 2.5 };
+  }
   // The hero went far from the wall: the raid waits, and the elder calls one time in a raid.
   let awayTold = false;
   function raidAway() {
@@ -2265,6 +2297,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.hit) {
       raidMisses = 0;
       teach.singles = 0;
+      // A hit says it (#121: "I heard 'hit'! … But no one said 'trúng rồi'."), in the words of the
+      // raid: a stone at the gate, a rice ball at the river.
+      const hitter = raidSpeaker();
+      const rice = data.raids?.raids[raid.id]?.words?.ball === 'raid.ball.rice';
+      if (hitter) emit({ type: 'open', screen: 'callout', id: hitter.id, textKey: rice ? 'raid.hit.rice' : 'raid.hit', params: raidWords() });
       return;
     }
     // Two stones in a row that were short and came from one press each: the elder shows the
@@ -2394,6 +2431,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The end of a raid: a win gives its flags, its gifts, and its talks; a loss keeps the raid for
   // another time (the enemies took some rice, and nothing else).
   function raidEnd(ev) {
+    // The end of a raid that the child won says it (#121: "Nobody says I won."), before the coach
+    // goes back.
+    const ended = raidEnt()?.raid;
+    if (ev.won && ended) {
+      const who = raidSpeaker();
+      const rice = data.raids?.raids[ended.id]?.words?.ball === 'raid.ball.rice';
+      if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: rice ? 'raid.won.rice' : 'raid.won', params: raidWords(ended.id) });
+    }
     coachBack();
     const r = raidEnt();
     const def = data.raids.raids[r?.raid.id];
@@ -2586,7 +2631,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const now = toolLines.list[0]?.tool === 'gate' && state.events.some((ev) => ev.type === 'light');
     if (toolLines.t > 0 && !now) return;
     // In the raid the line is a bubble of the person: it does not stop the play.
-    const bubble = (l) => emit({ type: 'open', screen: 'callout', id: `npc:${l.speaker}`, textKey: l.textKey, params: l.params ?? {} });
+    const bubble = (l) => {
+      emit({ type: 'open', screen: 'callout', id: `npc:${l.speaker}`, textKey: l.textKey, params: l.params ?? {} });
+      if (l.tool === 'gate') gateHint();
+    };
     bubble(toolLines.list.shift());
     // The lines that go with it (the post of a trap) come at once.
     while (toolLines.list[0]?.with) bubble(toolLines.list.shift());
@@ -4027,7 +4075,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (target.raid) {
       const w = target.raid;
-      if (w.what === 'gate') order({ act: 'bar' });
+      if (w.what === 'gate') {
+        gateTapped = true;
+        order({ act: 'bar' });
+      }
       else if (w.what === 'spot') order({ act: 'call', spot: w.id });
       else if (w.what === 'bamboo') order({ act: 'bamboo' });
       else if (w.what === 'post') order({ act: 'predict', post: w.id });
@@ -4650,6 +4701,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'phase' && ev.dialogue) talk(ev.dialogue);
     if (ev.type === 'take') raidTake(ev);
     if (ev.type === 'end' && ev.id === 'raid') raidEnd(ev);
+    if (ev.type === 'retreat') raidRetreat();
+    if (ev.type === 'light') gateHint();
     if (ev.type === 'raidover') {
       raidOver();
       startShare();

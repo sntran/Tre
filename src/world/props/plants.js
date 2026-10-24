@@ -115,12 +115,12 @@ export function herbs(ctx, o) {
 }
 
 // A low bush of the hedge on the sides that face the camera: a smooth bush on a stem block, and
-// sometimes a young culm out of it.
+// sometimes a young culm out of it (never near the road of a raid: o.noCulm, #121).
 export function bush(ctx, o) {
   const r = ctx.rng;
   const { x, z } = center(o);
   const g = ctx.ground(x, z);
-  if (r.chance(0.5)) ctx.box(x, g, z, x, g + 6, z, 'green');
+  if (r.chance(0.5) && !o.noCulm) ctx.box(x, g, z, x, g + 6, z, 'green');
   ctx.set(x, g, z, 'greenDeep');
   ctx.smooth({ kind: 'bush', x: (x + 0.5) / 2, y: g / 2, z: (z + 0.5) / 2, r: 1 + r.next() * 0.25 }, [1.8, 0, 1.4]);
 }

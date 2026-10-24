@@ -31,6 +31,8 @@ const FINE_Y = 136; // fine blocks: the highest place of a prop
 const FINE_UP = 80; // fine blocks over the highest ground of a page
 const SEA = new Set(['sea', 'surf']);
 const DECKS = new Set(['bridge', 'bamboo']); // the ground types with a deck of planks over the water
+// The plants that stand tall like a post (#121).
+const TALL_PLANTS = new Set(['bamboo', 'tree', 'areca', 'banana']);
 // The kinds of the surface of the ground for the printed texture (src/render/voxel.js), and the
 // kind of each ground type. A grass cell of the hills is forest floor; a path of a stamp is paved.
 export const SURFACE = Object.freeze({ none: 0, grass: 1, packed: 2, paved: 3, sand: 4, dike: 5, forest: 6, rock: 7 });
@@ -157,6 +159,13 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
   };
   const local = (x, z) => (z - Math.floor(z / CHUNK) * CHUNK) * CHUNK + (x - Math.floor(x / CHUNK) * CHUNK);
   const dugAt = (x, z) => recordOf(x, z)?.dug[local(x, z)] ?? 0;
+  // Near the road of a raid (map.clear, raidClear in src/core/world/raids.js), a plant that stands
+  // tall grows low (#121): only the posts with their red bands look like posts there.
+  const clear = map.clear ?? [];
+  const inClear = (x, z, w, h) => clear.some((r) => x + w > r.x0 && x <= r.x1 && z + h > r.z0 && z <= r.z1);
+  const lowNear = (kind, x, z, w, h) => (TALL_PLANTS.has(kind) && inClear(x, z, w, h) ? 'bush' : kind);
+  // A bush there has no young culm (a thin green culm by the road was a post to a child).
+  const noCulm = (kind, x, z, w, h) => (kind === 'bush' && inClear(x, z, w, h) ? { noCulm: true } : {});
   const isFelled = (o) => {
     const x = Math.floor(o.x);
     const z = Math.floor(o.y);
@@ -316,7 +325,12 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
       const m = REACH[o.prop] ?? REACH.default;
       if (isFelled(o) || o.x - m >= x0 + CHUNK || o.y - m >= z0 + CHUNK || o.x + o.w + m <= x0 || o.y + o.h + m <= z0) continue;
       const mine = inChunk(Math.floor(o.x), Math.floor(o.y));
-      add({ ...o, kind: o.prop, fx: o.x * 2, fz: o.y * 2, fw: o.w * 2, fd: o.h * 2, seed: o.seed ?? hashSeed(o.id) }, `o:${o.id}`, mine ? { id: o.id, x: o.x, y: o.y, w: o.w, h: o.h, solid: o.solid !== false, gen: Boolean(o.gen) } : null);
+      // A tall plant that grows low near the road of a raid is a bush of one cell in the middle of
+      // its place (#121: a bush on the place of a tree was as tall as the tree).
+      const kind = lowNear(o.prop, o.x, o.y, o.w, o.h);
+      const low = kind !== o.prop;
+      const foot = low ? { fx: Math.floor(o.x + o.w / 2) * 2, fz: Math.floor(o.y + o.h / 2) * 2, fw: 2, fd: 2 } : { fx: o.x * 2, fz: o.y * 2, fw: o.w * 2, fd: o.h * 2 };
+      add({ ...o, kind, ...foot, ...noCulm(kind, o.x, o.y, o.w, o.h), seed: o.seed ?? hashSeed(o.id) }, `o:${o.id}`, mine ? { id: o.id, x: o.x, y: o.y, w: o.w, h: o.h, solid: o.solid !== false, gen: Boolean(o.gen) } : null);
     }
     // Plants that grow on the ground: bamboo on the hedge, low bushes on the low hedge. A clump
     // stands on every fourth cell of every third row (the rows move by two in turn), so that the
@@ -327,7 +341,8 @@ export function createTerrain(map, tileTypes, tileMap, blocks = null) {
         if (!grows || ((z % 3) + 3) % 3 || (((x + (((z % 6) + 6) % 6 ? 2 : 0)) % 4) + 4) % 4) continue;
         const o = { x, y: z };
         if (isFelled(o)) continue;
-        add({ kind: grows, fx: x * 2, fz: z * 2, fw: 2, fd: 2, seed: hashSeed(`${id}:${x}:${z}`) }, `g:${x}:${z}`, inChunk(x, z) ? { id: null, x, y: z, w: 1, h: 1, solid: true, grow: true } : null);
+        const kind = lowNear(grows, x, z, 1, 1);
+        add({ kind, fx: x * 2, fz: z * 2, fw: 2, fd: 2, ...noCulm(kind, x, z, 1, 1), seed: hashSeed(`${id}:${x}:${z}`) }, `g:${x}:${z}`, inChunk(x, z) ? { id: null, x, y: z, w: 1, h: 1, solid: true, grow: true } : null);
       }
     }
     // Flowers on open grass: small patches of three to seven of one color, where a noise lets them

@@ -11,6 +11,13 @@ export const WRITES = ['schedule', 'steer', 'position', 'hidden', 'act', 'carry'
 import { query } from '../state.js';
 import { DAY_MINUTES } from '../clock.js';
 
+// Half blocks from the wall of a raid that goes on: the area of the raid, where no sleeper snores.
+const RAID_QUIET = 80;
+const nearRaid = (world, p) => {
+  const raid = world.entities.find((x) => x.id === 'raid')?.raid;
+  return Boolean(raid && !raid.result && p && Math.hypot(p.x - raid.wall.x, p.z - raid.wall.z) < RAID_QUIET);
+};
+
 export const CLIMB_SECONDS = 2.5;
 
 // The step of a plan at an hour: the last step that started before the hour (the plan wraps
@@ -67,8 +74,9 @@ export function schedule(world, dt, rng, env) {
     if (e.carry === undefined) delete e.carry;
     e.act = plan.act && e.steer?.arrived ? plan.act : undefined;
     if (e.act === undefined) delete e.act;
-    // A sleeper snores now and then.
-    if (e.act === 'sleep' && rng.next() < dt / 4) world.events.push({ type: 'snore', id: e.id, sound: 'snore' });
+    // A sleeper snores now and then, but not near a raid that goes on (#121: a girl of grade 1
+    // heard the snore as a clue of the raid).
+    if (e.act === 'sleep' && rng.next() < dt / 4 && !nearRaid(world, e.position)) world.events.push({ type: 'snore', id: e.id, sound: 'snore' });
     // In and out of the house.
     if (at === 'home') {
       if (e.hidden) continue;

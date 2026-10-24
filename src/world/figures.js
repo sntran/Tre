@@ -1300,9 +1300,11 @@ export function raidThing(look) {
     }
     // The bar of the gate: up by the gate, or down across the way.
     case 'bar': {
-      const posts = [P('postA', [0.6, 3.4, 0.6], 'wood', [0, 1.7, -2.4]), P('postB', [0.6, 3.4, 0.6], 'wood', [0, 1.7, 2.4])];
-      if (look.down) return still([...posts, P('bar', [0.7, 0.7, 5.6], 'yellow', [0, 2, 0]), P('tie', [0.8, 0.8, 0.3], 'vermilion', [0, 2, 0])], 3.4);
-      return still([...posts, P('bar', [0.7, 5.6, 0.7], 'yellow', [0, 2.8, -1.8]), P('tie', [0.8, 0.3, 0.8], 'vermilion', [0, 2, -1.8])], 5.6);
+      // A frame: two posts and a beam over them. The bar down closes the gate; the bar up rests under
+      // the beam, so that the gate never looks like a tall post (#121: a girl counted it as a post).
+      const posts = [P('postA', [0.6, 3.4, 0.6], 'wood', [0, 1.7, -2.4]), P('postB', [0.6, 3.4, 0.6], 'wood', [0, 1.7, 2.4]), P('beam', [0.6, 0.5, 5.6], 'wood', [0, 3.6, 0])];
+      if (look.down) return still([...posts, P('bar', [0.7, 0.7, 5.6], 'yellow', [0, 2, 0]), P('tie', [0.8, 0.8, 0.3], 'vermilion', [0, 2, 0])], 3.9);
+      return still([...posts, P('bar', [0.7, 0.5, 4.6], 'yellow', [0, 3.05, 0]), P('tie', [0.8, 0.6, 0.3], 'vermilion', [0, 3.05, 0])], 3.9);
     }
     // A spot for a villager: a small straw flag.
     case 'spot': return still([P('pole', [0.2, 2.6, 0.2], 'wood', [0, 1.3, 0]), P('flag', [0.1, 0.8, 1.1], 'yellowPale', [0, 2.2, 0.55]), P('base', [0.8, 0.15, 0.8], 'ochre', [0, 0.07, 0])], 2.6);

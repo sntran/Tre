@@ -54,6 +54,37 @@ export const SLING = Object.freeze({ g: 20, h0: 2.2, angle: 0.7, max: 30, hit: 1
 
 // The level (0, 1, or 2) of the raids for a grade: grade 1 and lower is 0 (a lost raid takes
 // nothing).
+// The cells near the road of each raid of a map (#121: a girl of grade 1 counted the green bamboo
+// stems and the gate post as posts): from the wall to past the farthest post, and the width of the
+// posts and CLEAR_SIDE cells more on each side. Plants that stand tall there grow low
+// (src/world/terrain.js), so that the posts with their red bands are the only posts. A tall tree
+// some cells beside the road still stands over the posts in the view from above (in a play, the
+// see-through trunks of two trees stood between the posts), so the band is wide. Cells,
+// { x0, x1, z0, z1 }.
+export const CLEAR_SIDE = 6; // cells on each side of the road
+export function raidClear(raids, mapId) {
+  const far = Math.max(...(raids?.posts ?? [20])) / 2 + 1.5;
+  const out = [];
+  for (const def of Object.values(raids?.raids ?? {})) {
+    if (def.map !== mapId || !def.wall || !def.dir) continue;
+    const [wx, wy] = def.wall;
+    const [dx, dy] = def.dir;
+    const ex = wx + dx * far;
+    const ey = wy + dy * far;
+    out.push({ x0: Math.floor(Math.min(wx, ex) - (dx ? 0 : CLEAR_SIDE)), x1: Math.ceil(Math.max(wx, ex) + (dx ? 0 : CLEAR_SIDE)), z0: Math.floor(Math.min(wy, ey) - (dy ? 0 : CLEAR_SIDE)), z1: Math.ceil(Math.max(wy, ey) + (dy ? 0 : CLEAR_SIDE)) });
+  }
+  return out;
+}
+// The enemies of a raid (#121: "How many are there? There is no counter for soldiers."): all the
+// waves of all the phases, and the ones that are done: not the waves that did not come yet, and
+// not the enemies that are still in the raid (an enemy that is gone leaves the list).
+export function raidTally(raid) {
+  const waves = (raid?.phases ?? []).flatMap((p) => p.waves ?? []);
+  const waiting = waves.filter((w) => !w.in).length;
+  const inRaid = (raid?.enemies ?? []).filter((e) => e.state !== 'retreat' && e.state !== 'gone').length;
+  return { total: waves.length, done: Math.max(0, waves.length - waiting - inRaid) };
+}
+
 export function raidLevel(raids, grade) {
   const level = byGrade(raids.grades ?? {}, grade) ?? 1;
   return Math.max(0, Math.min(2, level - 1));

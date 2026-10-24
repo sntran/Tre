@@ -228,6 +228,18 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **The help after the fair test.** After "Giờ cháu làm các thanh còn lại theo cách làm sắt cứng nhé.", the help of a wave is the step of the rest ("Đợi sắt đỏ như quả gấc rồi nhúng nhé."), never the fair test again.
 
+### The raids: a word for a hit, only the posts look like posts, and how many are left (#121)
+
+**A hit says it.** A hit gets a short line of the coach (or Nghé), in the words of the raid: "Trúng rồi!" at the gate, "Nó ăn rồi!" at the river. In a play test, a girl of grade 1 hit five scouts with only a sound, and asked each time if she had hit.
+
+**The posts are the only posts.** Near the road of a raid, from the wall to past the farthest post, and six cells on each side of the road (a tall tree some cells beside the road still stands over the posts in the view from above) (`raidClear` in `src/core/world/raids.js`), a plant that stands tall (bamboo, a tree, an areca, a banana) grows as a low bush of one cell, and a bush there has no young culm (`src/world/terrain.js`; in a play, a bush on the place of a tree was as tall as the tree, and the thin green culm of a bush stood by the road like a post). The gate is a frame: two posts and a beam, with the bar down across the way or up under the beam, never a tall yellow post.
+
+**The count of what is left.** Over the wall, one pip for each enemy of the raid (all the waves), filled when it went back (`raidTally`); the coach says the last one ("Còn một người nữa.", at the river "Còn một con nữa."), and at the end "Xong rồi! Cổng làng an toàn." (at the river "Xong rồi! Hai con thuồng luồng no bụng rồi.").
+
+**The gate glows when it is named.** At the line of the gate, and at each torch of a scout, the gate glows and the coach points at it, until the child taps it one time in the raid.
+
+**No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
+
 ### The fisher after #92 (#97)
 
 **The hole of the escape shows.** After an escape, the frame of the widest space lies on the surface of the water (`why:fisher:space`, at `WATER_UP`), the fisher points at it while he says "Chỗ này hở quá, cá chui ra mất.", and it stays until a stake stands in the space. Then the hint is the hole ("Cắm một cọc vào chỗ hở này nhé."). With an empty pile, the hint is the take-back of the stake to take back; with no such stake, the fisher brings one stake (rule 12).

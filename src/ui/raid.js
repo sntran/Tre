@@ -12,6 +12,7 @@
 import { getEntity, query } from '../core/world/state.js';
 import { C } from '../render/palette.js';
 import { takesSling, isPull } from '../world/sling.js';
+import { raidTally } from '../core/world/raids.js';
 
 const FLOW = { water: C.indigo, fire: C.vermilion, lightning: C.yellow };
 
@@ -291,6 +292,24 @@ export function createRaidView({ view, figures, session, layer, send }) {
           draw2d.fillStyle = i < left ? C.vermilion : C.paper;
           draw2d.fill();
           draw2d.lineWidth = 2;
+          draw2d.strokeStyle = C.ink;
+          draw2d.stroke();
+        }
+      }
+      // The enemies of the raid over the wall (#121: "How many are there?"): one pip for each, filled
+      // when it is done (gone back), at the top of the screen over the wall.
+      if (r && !r.result) {
+        const t = raidTally(r);
+        const hero = figures.placeOf('hero');
+        const w = view.project(r.wall.x / 2, (hero?.y ?? 0) + 3.4, r.wall.z / 2);
+        const y = Math.max(70, Math.min(w.y, size.h * 0.3));
+        for (let i = 0; i < t.total; i++) {
+          const x = w.x + (i - (t.total - 1) / 2) * 24;
+          draw2d.beginPath();
+          draw2d.arc(x, y, 8, 0, Math.PI * 2);
+          draw2d.fillStyle = i < t.done ? C.indigo : C.paper;
+          draw2d.fill();
+          draw2d.lineWidth = 2.5;
           draw2d.strokeStyle = C.ink;
           draw2d.stroke();
         }
