@@ -9,6 +9,7 @@ import { endScript } from './world/systems/mentor.js';
 import { basketRowAt, matSlot, spareStake } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
+import { allowedSlots, takeBackSlot, stakeResult } from './world/trials.js';
 import { UNIT_PACE, COUNT_LEAD, ROW_NAME, EXTRA_LINE, springEnd, layEnd, PIECE_NAME, PIECES_LINE, shortPiece, badPiece, layPlan, LAY_PACE, LAY_LINE } from './world/zones.js';
 
 // The zones where the parts of a try go, in the order of the search.
@@ -177,6 +178,23 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const row = query(world(), 'item').filter((e) => e.item.zone === z.id && !e.item.held && e.item.slot != null);
     // The same stake that glows at the empty pile: the last one that the row does not need (#97).
     return spareStake(task.place, row);
+  }
+
+  // When the rule of narrow places allows no free point of the row (#115): the stake of the row to
+  // take back ({ at }), or the pile when the row holds the fish already ({ at, pile: true }); else
+  // null.
+  function noRoomStake(key, task) {
+    const z = task?.place?.zone;
+    if (!defOf(key)?.lines?.takeback || z?.rule !== 'line') return null;
+    const row = query(world(), 'item').filter((e) => e.item.zone === z.id && !e.item.held && e.item.slot != null);
+    const slots = row.map((e) => e.item.slot);
+    if (allowedSlots(slots, z.length, z.space).length) return null;
+    const pile = task.piles?.[0] ?? getEntity(world(), 'zone:stakes');
+    if (stakeResult(slots, z.length, z.space).solved) return pile ? { at: pile.position, pile: true } : null;
+    const h = getEntity(world(), 'hero');
+    const k = takeBackSlot(slots, z.length, z.space, h ? h.position.x - z.x : 0, row.filter((e) => e.item.set).map((e) => e.item.slot));
+    const stake = row.find((e) => e.item.slot === k);
+    return stake ? { at: stake.position } : null;
   }
 
   // The piles of a task have no thing that the hands can take.
@@ -635,11 +653,19 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // a stake back).
       const h = holeOf(key, task);
       const place = task.place?.position ?? task.at;
+      // No free point of the row that the rule of narrow places allows (#115: a row from before
+      // #109 had none, and the wave said to put the stake in the row): the stake to take back.
+      const back = noRoomStake(key, task);
       // No place takes the thing now (the tide is in at the row of the fisher): the person says why
       // (#70: with a stake in the hands, the child heard "take a stake from the heap" four times).
       const tide = task.tz?.zone.tide;
       const waits = Boolean(defOf(key).lines.wait && tide && tide.phase !== 'low');
-      if (h && !waits) {
+      if (back && !waits) {
+        say(t, back.pile ? defOf(key).lines.pile : defOf(key).lines.takeback);
+        point(t, back.at, 2);
+        mark(t, back.at, HOLE_MARK);
+        t += 3;
+      } else if (h && !waits) {
         const z = task.place.zone;
         const p = { x: z.x + h.from + h.size / 2, z: z.z };
         say(t, defOf(key).lines.hole);

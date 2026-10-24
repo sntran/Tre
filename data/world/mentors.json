@@ -415,7 +415,9 @@
         "full": "fisher.full",
         "tight": "mentor.fisher.tight",
         "fit": "mentor.fisher.fit",
-        "hole": "mentor.fisher.hole"
+        "hole": "mentor.fisher.hole",
+        "takeback": "fisher.takeback",
+        "pile": "fisher.pile"
       }
     },
     "trial-healer": {
