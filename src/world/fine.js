@@ -336,14 +336,17 @@ export function personFine(look) {
   return { kind: 'biped', parts, scale, grid: 0.25, height: headY + top, crown: headY + (capped ? top : hairTop + knot), shadow: 5, hold: carried.hold };
 }
 
-// Nghé, the buffalo calf: a stepped barrel, legs that bend at one joint, a head with a muzzle and
-// eyes, horns that curve in three steps, ears, and a tail with a tuft. The diagonal legs move
-// together. colors: { body, leg, horn, muzzle }.
-export function ngheFine(colors = {}) {
-  const body = colors.body ?? 'ashLight';
-  const leg = colors.leg ?? 'ash';
-  const horn = colors.horn ?? 'diep';
-  const muzzle = colors.muzzle ?? 'paperDeep';
+// Nghé, the buffalo calf: a stepped barrel, thick legs that bend at one joint, a head with a broad
+// flat muzzle and eyes, horns in three steps, ears, and a tail with a tuft. The diagonal legs move
+// together. colors: { body, leg, horn, muzzle }. horns: 'bud' (a calf: short buds that curve back)
+// or 'long' (a grown buffalo: out, up, and back). #122: a light grey calf with white horns was a
+// goat to the children; a calf of a water buffalo is dark slate.
+export function ngheFine(colors = {}, horns = 'bud') {
+  const body = colors.body ?? 'ash';
+  const leg = colors.leg ?? 'ink';
+  const horn = colors.horn ?? 'ashLight';
+  const muzzle = colors.muzzle ?? 'ashLight';
+  const calf = horns === 'bud';
   const parts = [];
   // The barrel: its corners cut by one unit, and a pale belly.
   parts.push(...bevel('trunk', [5, 4.5, 9], body, [0, 6.5, 0]));
@@ -351,21 +354,29 @@ export function ngheFine(colors = {}) {
   parts.push(P('belly', [3, 0.25, 6], muzzle, [0, 4.2, 0], { mark: true }));
   const legs = [['FL', -1.6, 3], ['FR', 1.6, 3], ['BL', -1.6, -3], ['BR', 1.6, -3]];
   for (const [n, x, z] of legs) {
-    parts.push(P(`leg${n}`, [1.75, 2.5, 1.75], body, [x, 5, z], { pivotTop: true }));
-    parts.push(P(`shin${n}`, [1.5, 2, 1.5], leg, [0, -2.5, 0], { parent: `leg${n}`, pivotTop: true }));
-    parts.push(P(`hoof${n}`, [1.75, 0.75, 1.75], 'ink', [0, -2.4, 0.1], { parent: `shin${n}` }));
+    const t = calf ? 0.25 : 0;
+    parts.push(P(`leg${n}`, [1.75 + t, 2.5, 1.75 + t], body, [x, 5, z], { pivotTop: true }));
+    parts.push(P(`shin${n}`, [1.5 + t, 2, 1.5 + t], leg, [0, -2.5, 0], { parent: `leg${n}`, pivotTop: true }));
+    parts.push(P(`hoof${n}`, [1.75 + t, 0.75, 1.75 + t], 'ink', [0, -2.4, 0.1], { parent: `shin${n}` }));
   }
   parts.push(P('head', [0.01, 0.01, 0.01], null, [0, 8, 4.5]));
   parts.push(...ball('skull', [4, 4, 4], body, [0, 0, 1.5], { parent: 'head' }).slice(0, 3));
-  parts.push(P('muzzle', [3, 2, 1.75], muzzle, [0, -1, 3.75], { parent: 'head' }));
+  parts.push(P('muzzle', calf ? [3.75, 1.75, 1.75] : [3, 2, 1.75], muzzle, [0, -1, 3.75], { parent: 'head' }));
   for (const s of [-0.7, 0.7]) parts.push(P(`nostril${s > 0 ? 'R' : 'L'}`, [0.4, 0.4, 0.05], 'ink', [s, -0.8, 4.65], { parent: 'head', mark: true }));
   parts.push(...creatureEyes(3.53, 0.9).map((p) => ({ ...p, at: [p.at[0] * 1.2, p.at[1] + 0.6, p.at[2]] })));
-  // The horns curve out, up, and back, in three steps.
+  // The horns: short buds of a calf that curve back, or the long horns of a buffalo that curve
+  // out, up, and back.
   for (const s of [-1, 1]) {
     const n = s > 0 ? 'R' : 'L';
-    parts.push(P(`horn${n}1`, [1.25, 1, 1], horn, [s * 2.4, 1.6, 1.4], { parent: 'head' }));
-    parts.push(P(`horn${n}2`, [1, 1, 1], horn, [s * 3.1, 2.3, 1.1], { parent: 'head' }));
-    parts.push(P(`horn${n}3`, [0.75, 1, 0.75], horn, [s * 3.3, 3.1, 0.6], { parent: 'head' }));
+    if (calf) {
+      parts.push(P(`horn${n}1`, [1, 0.75, 1], horn, [s * 1.5, 2.1, 1.3], { parent: 'head' }));
+      parts.push(P(`horn${n}2`, [0.75, 0.75, 0.75], horn, [s * 1.7, 2.5, 0.7], { parent: 'head' }));
+      parts.push(P(`horn${n}3`, [0.5, 0.5, 0.75], horn, [s * 1.8, 2.6, 0.1], { parent: 'head' }));
+    } else {
+      parts.push(P(`horn${n}1`, [1.25, 1, 1], horn, [s * 2.4, 1.6, 1.4], { parent: 'head' }));
+      parts.push(P(`horn${n}2`, [1, 1, 1], horn, [s * 3.1, 2.3, 1.1], { parent: 'head' }));
+      parts.push(P(`horn${n}3`, [0.75, 1, 0.75], horn, [s * 3.3, 3.1, 0.6], { parent: 'head' }));
+    }
     parts.push(P(`ear${n}`, [1.5, 0.75, 1], body, [s * 2.6, 0.5, 0.9], { parent: 'head', hang: 'ear' }));
   }
   parts.push(P('tail', [0.6, 3.5, 0.6], leg, [0, 8, -4.5], { pivotTop: true, hang: 'tail' }));
@@ -373,9 +384,9 @@ export function ngheFine(colors = {}) {
   return { kind: 'quadruped', parts, scale: 0.41, grid: 0.25, height: 12, shadow: 4.6 };
 }
 
-// A buffalo of another family: like Nghé, grown up and darker.
+// A buffalo of another family: like Nghé, grown up, with long horns.
 export function buffaloFine() {
-  return { ...ngheFine({ body: 'ash', leg: 'ink', horn: 'paperDeep', muzzle: 'ashLight' }), scale: 0.6 };
+  return { ...ngheFine({ body: 'ash', leg: 'ink', horn: 'paperDeep', muzzle: 'ashLight' }, 'long'), scale: 0.6 };
 }
 
 // A dog of the village: ochre, with a muzzle, ears that stand, and a tail up.

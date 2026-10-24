@@ -62,7 +62,9 @@ test('after a plank that is too long, the fisher says to take a shorter one, and
   assert.ok(shorter.length > 0);
   assert.ok(cues.some((ids) => ids.length && [...ids].sort().join() === shorter.join()), `the shorter planks glow: ${JSON.stringify(cues.at(-1))}`);
   assert.ok(!cues.some((ids) => ids.some((id) => getEntity(s.state, id)?.item?.size === 5)), 'no plank of five glows');
-  assert.deepEqual(cues.at(-1), [], 'the glow ends after the pick');
+  // The glow ends after the pick (later, at the solid gap, the row of the guess glows, #122).
+  const shown = cues.findIndex((ids) => ids.length && [...ids].sort().join() === shorter.join());
+  assert.deepEqual(cues[shown + 1], [], 'the glow ends after the pick');
   // Each shorter plank has a ring around all of its length.
   const glow = spots.find((x) => x.length === shorter.length);
   assert.ok(glow, 'a ring for each shorter plank');
@@ -116,6 +118,8 @@ test('the guess has clear words; the fisher points at the two ends of the gap, a
       { until: { event: 'open', with: { screen: 'dialogue' }, timeout: 5 } },
       { do: { type: 'next' } }, { wait: 0.3 },
       { do: { type: 'next' } }, { wait: 0.3 },
+      { do: { type: 'next' } }, { wait: 0.3 },
+      // The line of the new word "ván mờ" at grade 2 (#122).
       { do: { type: 'next' } }, { wait: 0.3 },
       { wait: 2 },
     ],
@@ -173,7 +177,7 @@ const guessRun = async (guess, sizes) => {
       { until: { event: 'solid', timeout: 20 } },
       { wait: 1 },
     ],
-  }, { onSession: (x) => { x.listen((e) => { if (e.type === 'open' && /guess(Right|Off)$/.test(e.textKey ?? '')) said.push({ key: e.textKey, n: e.params.n.key, m: e.params.m.key }); }); } });
+  }, { onSession: (x) => { x.listen((e) => { if (e.type === 'open' && /guess(Right|Off|Far)$/.test(e.textKey ?? '')) said.push({ key: e.textKey, n: e.params.n.key, m: e.params.m.key }); }); } });
   return { failures, said };
 };
 
@@ -185,9 +189,9 @@ test('when the gap is solid, the fisher says the guess against the planks, in wo
   assert.deepEqual(off.failures, []);
   assert.deepEqual(off.said, [{ key: 'mentor.bridge.guessOff', n: 'num.2', m: 'num.3' }]);
   const vi = load('i18n/vi.json');
-  assert.equal(vi['mentor.bridge.guessRight'], 'Cháu đoán {n} tấm. Cháu đặt {m} tấm: đoán đúng rồi!');
-  assert.equal(vi['mentor.bridge.guessOff'], 'Cháu đoán {n} tấm. Cháu đặt {m} tấm.');
-  for (const k of ['mentor.bridge.guessRight', 'mentor.bridge.guessOff', 'mentor.nghe.bridge.guessRight', 'mentor.nghe.bridge.guessOff']) assert.ok(!/\d/.test(vi[k]), `no digit in ${k}`);
+  assert.equal(vi['mentor.bridge.guessRight'], 'Chỗ gãy cần {m} tấm. Cháu đoán {n} tấm: đúng rồi!');
+  assert.equal(vi['mentor.bridge.guessOff'], 'Chỗ gãy cần {m} tấm. Cháu đoán {n} tấm: gần đúng rồi.');
+  for (const k of ['mentor.bridge.guessRight', 'mentor.bridge.guessOff', 'mentor.bridge.guessFar', 'mentor.nghe.bridge.guessRight', 'mentor.nghe.bridge.guessOff', 'mentor.nghe.bridge.guessFar']) assert.ok(!/\d/.test(vi[k]), `no digit in ${k}`);
 });
 
 test('at the bridge, the eye is never the act of the button, and the river line does not tell the child to wade while the bridge task is open', async () => {

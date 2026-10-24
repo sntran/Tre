@@ -334,8 +334,11 @@ test('a press at once after a tap on the scouts waits for the walk, and the raid
   session.command({ type: 'hands' });
   steps(session, 8);
   assert.equal(session.screen, 'say', 'the line of the scouts');
-  session.command({ type: 'next' });
-  steps(session, 1);
+  // The line of the scouts, and the first time at grade 2 or less the line of the word (#122).
+  for (let i = 0; i < 3 && session.screen === 'say'; i++) {
+    session.command({ type: 'next' });
+    steps(session, 1);
+  }
   assert.ok(getEntity(session.state, 'raid'), 'the raid of the scouts is on');
 });
 

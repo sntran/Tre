@@ -146,18 +146,25 @@ export function person(look) {
 // The next darker tone of a skin (the neck, in the shadow under the chin).
 const SHADE = { skin1: 'skin2', skin2: 'skin3', skin3: 'skin4', skin4: 'wood' };
 
-// Nghé, the buffalo calf. The diagonal legs move together.
-export function nghe() {
-  const body = 'ashLight';
-  const leg = 'ash';
+// Nghé, the buffalo calf: dark slate, thick legs, a broad flat muzzle, and short buds of horns that
+// curve back (#122: a light grey calf with white horns was a goat to the children). The diagonal
+// legs move together. horns: 'bud' (a calf) or 'long' (a grown buffalo).
+export function nghe(horns = 'bud') {
+  const body = 'ash';
+  const leg = 'ink';
   const parts = [P('trunk', [2.2, 1.9, 3.6], body, [0, 2.6, 0])];
   const legs = [['legFL', -0.7, 1.2], ['legFR', 0.7, 1.2], ['legBL', -0.7, -1.2], ['legBR', 0.7, -1.2]];
-  for (const [name, x, z] of legs) parts.push(P(name, [0.7, 1.7, 0.7], leg, [x, 1.8, z], { pivotTop: true }));
+  for (const [name, x, z] of legs) parts.push(P(name, [0.8, 1.7, 0.8], leg, [x, 1.8, z], { pivotTop: true }));
   parts.push(P('head', [0.01, 0.01, 0.01], null, [0, 3.1, 1.8]));
   parts.push(P('skull', [1.5, 1.4, 1.6], body, [0, 0, 0.8], { parent: 'head' }));
-  parts.push(P('muzzle', [1.2, 0.8, 0.6], 'paperDeep', [0, -0.35, 1.7], { parent: 'head' }));
-  parts.push(P('hornL', [0.9, 0.3, 0.3], 'diep', [-0.75, 0.75, 0.6], { parent: 'head' }));
-  parts.push(P('hornR', [0.9, 0.3, 0.3], 'diep', [0.75, 0.75, 0.6], { parent: 'head' }));
+  parts.push(P('muzzle', [1.5, 0.7, 0.6], 'ashLight', [0, -0.35, 1.7], { parent: 'head' }));
+  if (horns === 'bud') {
+    parts.push(P('hornL', [0.35, 0.3, 0.6], 'ashLight', [-0.55, 0.8, 0.4], { parent: 'head' }));
+    parts.push(P('hornR', [0.35, 0.3, 0.6], 'ashLight', [0.55, 0.8, 0.4], { parent: 'head' }));
+  } else {
+    parts.push(P('hornL', [0.9, 0.3, 0.3], 'paperDeep', [-0.75, 0.75, 0.6], { parent: 'head' }));
+    parts.push(P('hornR', [0.9, 0.3, 0.3], 'paperDeep', [0.75, 0.75, 0.6], { parent: 'head' }));
+  }
   parts.push(P('earL', [0.6, 0.25, 0.35], body, [-1, 0.35, 0.4], { parent: 'head' }));
   parts.push(P('earR', [0.6, 0.25, 0.35], body, [1, 0.35, 0.4], { parent: 'head' }));
   for (const ex of [-0.5, 0.5]) parts.push(P(`eye${ex > 0 ? 'R' : 'L'}`, [0.18, 0.22, 0.05], 'ink', [ex, 0.2, 1.63], { parent: 'head', mark: true }));
@@ -218,11 +225,10 @@ export function fish() {
   return { kind: 'fish', parts, scale: 0.8, height: 0.5, shadow: 0 };
 }
 
-// A buffalo of another family: like Nghé, but grown up and darker.
+// A buffalo of another family: like Nghé, but grown up, with long horns.
 export function buffalo() {
-  const calf = nghe();
-  const parts = calf.parts.map((p) => ({ ...p, color: p.color === 'ashLight' ? 'ash' : p.color === 'ash' ? 'ink' : p.color }));
-  return { ...calf, parts, scale: 0.85, height: 4.2 };
+  const calf = nghe('long');
+  return { ...calf, scale: 0.85, height: 4.2 };
 }
 
 // A dog of the village: like a small buffalo calf with no horns, ochre, with a tail up.

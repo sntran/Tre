@@ -747,3 +747,14 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **A word after each bar:** `smith.good` ("Vừa đẹp!"), and the gift `smith.gift` ("Bác cho cháu hai thanh sắt.").
 - **The fair test:** `smith.fair.bar.water` ("Thanh nhúng nước: không cong."), `smith.fair.bar.rack` ("Thanh để trên giá: cong rồi."), `smith.fair.why` ("Nhúng nước lạnh thì sắt nguội thật nhanh; nguội nhanh thì sắt cứng lại.").
 - **Please check:** "đỏ tươi như quả gấc" for the red of hot iron to quench (the red of the aril of a ripe gấc), "cam như quả quýt chín", and "vàng như củ nghệ"; and whether a smith of the north says "nhúng" or "tôi" for the quench.
+
+## Small things after the play test of #105 to #114 (#122)
+
+- **The river:** `map.river` ("Sông Đuống chảy về phía đông. Chỗ này nước sâu. Hãy lội qua chỗ cạn, nơi có đá kê chân.") and `map.river.fixed` ("Sông Đuống chảy về phía đông. Cây cầu tre cháu sửa đã vững rồi.").
+- **The guess of the bridge:** `mentor.bridge.guessRight` ("Chỗ gãy cần {m} tấm. Cháu đoán {n} tấm: đúng rồi!"), `mentor.bridge.guessOff` ("… gần đúng rồi."), `mentor.bridge.guessFar` ("… Lần sau cháu nhìn kỹ chỗ gãy rồi đoán nhé."), and the same lines of Nghé with "Bạn".
+- **The hopscotch:** `loco.rest` ("Nghỉ chân ở đây. Giờ nhảy về: đến ô trước mảnh sành thì nhặt nó lên.").
+- **The river end:** `dlg.river.friends.n1` ("Hai con [[thuongluong]] nhỏ đã hiền lại, rồi bơi về với dòng sông.").
+- **The ferry:** `puzzle.ferry.next.back` ("Mang {thing} quay lại."), `puzzle.ferry.next.over` ("Giờ chở {thing} sang bờ bên kia."), `puzzle.ferry.next.empty` ("Giờ cháu đi đò về, không chở gì.").
+- **The callings:** `calling.smith.who` ("Thợ rèn là người làm đồ bằng sắt."), `calling.fisher.who` ("Ngư dân là người đánh cá."), `calling.healer.who` ("Thầy thuốc là người chữa bệnh."), `calling.woodcutter.who` ("Tiều phu là người đốn củi."), and the same lines after the done line of each trial (`dlg.<calling>.trial.done.who`).
+- **The words of the tasks (K to grade 2, the first time):** `word.dang` ("Đăng là hàng cọc giữ cá."), `word.tide` ("Thủy triều lên là nước sông dâng cao."), `word.khe` ("Khe là chỗ hở giữa hai cọc."), `word.vanmo` ("Ván mờ là chỗ cháu sẽ đặt ván."), `word.scout` ("Lính trinh sát là lính đi xem đường.").
+- **Please check:** whether "cái đăng" is the word of the north for the row of stakes, "thủy triều lên" for the rise of the river, "chữa bệnh" for the work of a healer of long ago, and "đốn củi" for the work of a tiều phu. Other words that the children did not know and that have no line yet: "cọc", "thử thách", "do thám", and "quân Ân".

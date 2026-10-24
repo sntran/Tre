@@ -15,7 +15,7 @@ const GREET = /^world\.greet\./;
 // a child who cannot read never heard the goal), the thing that a demonstration names ("Bó rau
 // má đây."), and a line that comes one time only (#115: "Cái cọc mờ là chỗ cháu sẽ cắm." came in
 // the same step as a hint, and the hint took its place).
-const GOAL = /^(fisher\.ghost$|woodcutter\.ghost$|mentor\.first\.you$|teacher\.need\.|mentor\.scholar\.need$|woodcutter\.pieces$|mentor\.nghe\.pieces$|scholar\.more$|fisher\.gaps|event\.[a-z]+\.start|traps\.need|loco\.start$|rope\.goal$|puzzle\.[a-z]+\.start|healer\.herb\.)/;
+const GOAL = /^(fisher\.ghost$|woodcutter\.ghost$|mentor\.first\.you$|teacher\.need\.|mentor\.scholar\.need$|woodcutter\.pieces$|mentor\.nghe\.pieces$|scholar\.more$|fisher\.gaps|event\.[a-z]+\.start|traps\.need|loco\.start$|loco\.rest$|rope\.goal$|puzzle\.[a-z]+\.start|healer\.herb\.)/;
 
 // The kind of a line by its key.
 export function kindOf(key) {

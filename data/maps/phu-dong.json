@@ -253,7 +253,7 @@
    {"id": "sign", "x": 40, "y": 82, "on": "tap", "action": {"textKey": "map.sign.vanmieu"}, "w": 2, "h": 2},
    {"id": "field-home", "x": 6, "y": 38, "w": 16, "h": 12, "on": "tap", "action": {"textKey": "map.field"}},
    {"id": "field-south", "x": 52, "y": 78, "w": 24, "h": 6, "on": "tap", "action": {"textKey": "map.field"}},
-   {"id": "river", "x": 0, "y": 66, "w": 80, "h": 10, "on": "tap", "action": {"textKey": "map.river", "taskText": {"bridge": "map.river.bridge"}}}
+   {"id": "river", "x": 0, "y": 66, "w": 80, "h": 10, "on": "tap", "action": {"textKey": "map.river", "taskText": {"bridge": "map.river.bridge"}, "doneText": {"bridge": "map.river.fixed"}}}
   ],
   "ferries": [],
   "spots": {

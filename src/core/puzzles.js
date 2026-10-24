@@ -35,6 +35,37 @@ export function wrongPair(def, where, bank) {
   return def.pairs.find(([a, b]) => on.includes(a) && on.includes(b)) ?? null;
 }
 
+// The ferry: the next right crossing from the banks as they are (#122: "Con gà đi trước." came after
+// the child had taken the chicken over). where: { thing: 'a' | 'b' | 'boat' }; side: the bank of
+// the boat and the hero. Return { thing (or null: the boat goes with nothing), to }, or null when
+// all things are on the far bank or no way is left. The shortest way, by a search of the states.
+export function nextCrossing(def, where, side) {
+  const at = Object.fromEntries(def.things.map((t) => [t, where[t] === 'boat' ? side : where[t]]));
+  const keyOf = (w, s) => `${def.things.map((t) => w[t]).join('')}${s}`;
+  const goal = (w) => def.things.every((t) => w[t] === 'b');
+  if (goal(at)) return null;
+  const seen = new Set([keyOf(at, side)]);
+  let front = [{ w: at, s: side, first: null }];
+  while (front.length) {
+    const next = [];
+    for (const { w, s, first } of front) {
+      const to = s === 'a' ? 'b' : 'a';
+      for (const thing of [null, ...def.things.filter((t) => w[t] === s)]) {
+        const nw = { ...w, ...(thing ? { [thing]: to } : {}) };
+        if (wrongPair(def, nw, s)) continue;
+        const move = first ?? { thing, to };
+        if (goal(nw)) return move;
+        const k = keyOf(nw, to);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        next.push({ w: nw, s: to, first: move });
+      }
+    }
+    front = next;
+  }
+  return null;
+}
+
 // The pots: a pour from a pot into another (or into the jar) until the other is full or the first is
 // empty. Return the new levels [from, to].
 export function pourInto(from, to, cap) {
@@ -252,6 +283,17 @@ export function createPuzzles(deps) {
   }
   // The last hint of the ferry is a demonstration, as at the well (#110): the traveler takes the
   // chicken across and back in the boat, with no hero, and all is as it was.
+  // The line of the next right crossing, for the middle hint of a wave.
+  function stepHint() {
+    const f = boat()?.ferry;
+    const move = f ? nextCrossing(F, ferry.where, f.side) : null;
+    if (!move) return null;
+    const crossed = F.things.some((t) => ferry.where[t] === 'b');
+    if (move.thing === 'chicken' && move.to === 'b' && !crossed) return { key: F.hints[1], params: {}, thing: 'chicken' };
+    const params = move.thing ? { thing: { key: `puzzle.thing.${move.thing}` } } : {};
+    const key = !move.thing ? 'puzzle.ferry.next.empty' : move.to === 'a' ? 'puzzle.ferry.next.back' : 'puzzle.ferry.next.over';
+    return { key, params, thing: move.thing };
+  }
   function startDemo() {
     const e = boat();
     const f = e?.ferry;
@@ -528,7 +570,15 @@ export function createPuzzles(deps) {
         const stuck = ferry.wrong > 0 || ferry.idle >= WAIT_HINT;
         const k = ferry.hint === 0 || !stuck ? 0 : Math.min(F.hints.length - 1, ferry.hint);
         ferry.hint = Math.max(ferry.hint, k + 1);
-        deps.say('pz:traveler', F.hints[k], {});
+        // The middle hint is the next step from the banks as they are (#122): the traveler says
+        // it and points at the thing to take. "The chicken first" only when the chicken has not
+        // crossed.
+        const step = k > 0 && k < F.hints.length - 1 ? stepHint() : null;
+        if (step) {
+          deps.say('pz:traveler', step.key, step.params);
+          const p = step.thing ? getEntity(w(), thingId(step.thing))?.position : boat()?.position;
+          if (p) after(0.4, () => point(p, 2.4));
+        } else deps.say('pz:traveler', F.hints[k], {});
         if (k === 0) {
           // The two pairs, one at a time.
           F.pairs.forEach(([a, b], i) => after(i * 2.4, () => {
@@ -569,8 +619,10 @@ export function createPuzzles(deps) {
     // For the tests and the debug panel.
     state: () => ({ ferry, pots }),
   };
+  // A wave near the traveler, or near the boat on either bank (#122: on the far bank, after the
+  // dog chased the chicken, a wave gave no hint).
   function ferryHint() {
-    return Boolean(ferry && ferry.told && st('ferry').solved !== deps.day() && heroNear('pz:traveler', OFFER_NEAR));
+    return Boolean(ferry && ferry.told && st('ferry').solved !== deps.day() && (heroNear('pz:traveler', OFFER_NEAR) || heroNear('ferry:pz', OFFER_NEAR)));
   }
   function heroNear(id, r) {
     const e = getEntity(w(), id);

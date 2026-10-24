@@ -240,6 +240,24 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### Small things after the play test of #105 to #114 (#122)
+
+**The river after the bridge.** A tap area of the map has a third text for the time after a task (`doneText`): after the bridge, the river says "Sông Đuống chảy về phía đông. Cây cầu tre cháu sửa đã vững rồi." The text of the river before the task (`map.river`) does not say that the bridge is broken.
+
+**The guess of the bridge with its answer.** When the gap is solid, the line says the count that the gap needed, then the guess and its answer: "Chỗ gãy cần ba tấm. Cháu đoán hai tấm: gần đúng rồi." ("đúng rồi!" for a right guess; for a guess two or more off, "Lần sau cháu nhìn kỹ chỗ gãy rồi đoán nhé."). The row of the guess shows again next to the gap for 8 seconds and glows with the planks of the deck.
+
+**The half circle of the hopscotch.** At the half circle a child says "Nghỉ chân ở đây. Giờ nhảy về: đến ô trước mảnh sành thì nhặt nó lên." and the shard glows. The numbers on the way back are said as on the way up. The children stand where no body covers a square of the court in the view: a body covers the ground behind it (away from the camera) as far as its height over the slope of the view. Nghé stays off the court during a game, as out of the places of a task (in a play at night, Nghé lay down on the squares next to the shard).
+
+**No face or star over a work.** The faces and the stars of the story hide at every open work of the view, as at a task of the trials (#76): a task of the trials, a folk game, a puzzle, the open bridge, and the task of a person (`workHere` in `src/core/session.js`).
+
+**Nghé is a buffalo calf.** Dark slate (`ash`) with `ink` legs, thick legs, a broad flat muzzle, and short buds of horns that curve back. The grown buffalo keeps its long horns.
+
+**One name of the calf.** "Hai con [[thuongluong]] nhỏ đã hiền lại, rồi bơi về với dòng sông." The two thuồng luồng go from the world at the end of the raid, so the line does not tell of an act that is not in view.
+
+**The hint of the ferry from the banks.** The middle hint of a wave is the next right crossing from the banks as they are (`nextCrossing` in `src/core/puzzles.js`, the shortest way): "Con gà đi trước." only when no thing has crossed; with the chicken and the dog over, "Mang con gà quay lại."; and the traveler points at the thing to take. The demonstration stays the last hint.
+
+**A short line for a new word.** After the done line of each calling, a line says what it is ("Ngư dân là người đánh cá.", "Tiều phu là người đốn củi."). At grade K to 2, the first time a child hears a word of a task, a short line of the narrator says it, and its thing glows: "Đăng là hàng cọc giữ cá.", "Thủy triều lên là nước sông dâng cao.", "Khe là chỗ hở giữa hai cọc.", "Ván mờ là chỗ cháu sẽ đặt ván.", and at the first raid of the scouts "Lính trinh sát là lính đi xem đường." The flag `word.<id>` keeps it.
+
 ### The fisher after #92 (#97)
 
 **The hole of the escape shows.** After an escape, the frame of the widest space lies on the surface of the water (`why:fisher:space`, at `WATER_UP`), the fisher points at it while he says "Chỗ này hở quá, cá chui ra mất.", and it stays until a stake stands in the space. Then the hint is the hole ("Cắm một cọc vào chỗ hở này nhé."). With an empty pile, the hint is the take-back of the stake to take back; with no such stake, the fisher brings one stake (rule 12).

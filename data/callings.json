@@ -16,7 +16,8 @@
       "nameKey": "calling.smith.name",
       "mentorKey": "calling.smith.mentor",
       "subjectKey": "calling.smith.subject",
-      "lineKey": "calling.smith.line"
+      "lineKey": "calling.smith.line",
+      "whoKey": "calling.smith.who"
     },
     {
       "id": "fisher",
@@ -24,7 +25,8 @@
       "nameKey": "calling.fisher.name",
       "mentorKey": "calling.fisher.mentor",
       "subjectKey": "calling.fisher.subject",
-      "lineKey": "calling.fisher.line"
+      "lineKey": "calling.fisher.line",
+      "whoKey": "calling.fisher.who"
     },
     {
       "id": "healer",
@@ -32,7 +34,8 @@
       "nameKey": "calling.healer.name",
       "mentorKey": "calling.healer.mentor",
       "subjectKey": "calling.healer.subject",
-      "lineKey": "calling.healer.line"
+      "lineKey": "calling.healer.line",
+      "whoKey": "calling.healer.who"
     },
     {
       "id": "woodcutter",
@@ -40,7 +43,8 @@
       "nameKey": "calling.woodcutter.name",
       "mentorKey": "calling.woodcutter.mentor",
       "subjectKey": "calling.woodcutter.subject",
-      "lineKey": "calling.woodcutter.line"
+      "lineKey": "calling.woodcutter.line",
+      "whoKey": "calling.woodcutter.who"
     }
   ]
 }

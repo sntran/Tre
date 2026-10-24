@@ -69,6 +69,13 @@
           "speaker": "smith",
           "textKey": "dlg.smith.trial.done.n1",
           "calling": "smith",
+          "mood": "happy",
+          "next": "who"
+        },
+        "who": {
+          "speaker": "smith",
+          "textKey": "dlg.smith.trial.done.who",
+          "calling": "smith",
           "mood": "happy"
         }
       }
@@ -90,7 +97,9 @@
       "nodes": {
         "n1": { "speaker": "fisher", "textKey": "dlg.bridge.start.n1", "names": ["zone:bridge-gap"], "next": "n2" },
         "n2": { "speaker": "fisher", "textKey": "dlg.bridge.start.n2", "names": ["zone:bridge-pile"], "next": "n3" },
-        "n3": { "speaker": "fisher", "textKey": "dlg.bridge.start.n3", "names": ["guess:bridge-gap:1", "guess:bridge-gap:2", "guess:bridge-gap:3", "guess:bridge-gap:4", "guess:bridge-gap:5", "guess:bridge-gap:6"], "next": "n4" },
+        "n3": { "speaker": "fisher", "textKey": "dlg.bridge.start.n3", "names": ["guess:bridge-gap:1", "guess:bridge-gap:2", "guess:bridge-gap:3", "guess:bridge-gap:4", "guess:bridge-gap:5", "guess:bridge-gap:6"], "next": "qn3" },
+        "qn3": { "if": { "grade": { "max": 2 }, "notFlags": ["word.vanmo"] }, "then": "wn3", "else": "n4" },
+        "wn3": { "speaker": "narrator", "textKey": "word.vanmo", "names": ["guess:bridge-gap:1", "guess:bridge-gap:2", "guess:bridge-gap:3", "guess:bridge-gap:4", "guess:bridge-gap:5", "guess:bridge-gap:6"], "effects": [{ "set": "word.vanmo" }], "next": "n4" },
         "n4": { "speaker": "fisher", "textKey": "dlg.bridge.start.n4", "names": [{ "id": "zone:bridge-gap", "act": "ends" }, { "id": "guess:bridge-gap:1", "act": "seq" }, { "id": "guess:bridge-gap:2", "act": "seq" }, { "id": "guess:bridge-gap:3", "act": "seq" }, { "id": "guess:bridge-gap:4", "act": "seq" }, { "id": "guess:bridge-gap:5", "act": "seq" }, { "id": "guess:bridge-gap:6", "act": "seq" }] }
       }
     },
@@ -114,14 +123,18 @@
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.n2",
           "names": ["stake:fisher:a", "stake:fisher:b", "zone:line"],
-          "next": "n3"
+          "next": "qn2"
         },
+        "qn2": { "if": { "grade": { "max": 2 }, "notFlags": ["word.dang"] }, "then": "wn2", "else": "n3" },
+        "wn2": { "speaker": "narrator", "textKey": "word.dang", "names": ["stake:fisher:a", "stake:fisher:b", "zone:line"], "effects": [{ "set": "word.dang" }], "next": "n3" },
         "n3": {
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.n3",
           "names": [{ "id": "tide:fisher", "act": "rise" }],
-          "next": "n4"
+          "next": "qn3"
         },
+        "qn3": { "if": { "grade": { "max": 2 }, "notFlags": ["word.tide"] }, "then": "wn3", "else": "n4" },
+        "wn3": { "speaker": "narrator", "textKey": "word.tide", "names": [{ "id": "tide:fisher", "act": "rise" }], "effects": [{ "set": "word.tide" }], "next": "n4" },
         "n4": {
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.n4",
@@ -131,8 +144,11 @@
         "n5": {
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.n5",
-          "names": ["stake:fisher:a", "stake:fisher:b"]
-        }
+          "names": ["stake:fisher:a", "stake:fisher:b"],
+          "next": "qn5"
+        },
+        "qn5": { "if": { "grade": { "max": 2 }, "notFlags": ["word.khe"] }, "then": "wn5" },
+        "wn5": { "speaker": "narrator", "textKey": "word.khe", "names": ["stake:fisher:a", "stake:fisher:b"], "effects": [{ "set": "word.khe" }] }
       }
     },
     {
@@ -142,6 +158,13 @@
         "n1": {
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.done.n1",
+          "calling": "fisher",
+          "mood": "happy",
+          "next": "who"
+        },
+        "who": {
+          "speaker": "fisher",
+          "textKey": "dlg.fisher.trial.done.who",
           "calling": "fisher",
           "mood": "happy"
         }
@@ -177,6 +200,13 @@
         "n1": {
           "speaker": "healer",
           "textKey": "dlg.healer.trial.done.n1",
+          "calling": "healer",
+          "mood": "happy",
+          "next": "who"
+        },
+        "who": {
+          "speaker": "healer",
+          "textKey": "dlg.healer.trial.done.who",
           "calling": "healer",
           "mood": "happy"
         }
@@ -218,6 +248,13 @@
         "n1": {
           "speaker": "woodcutter",
           "textKey": "dlg.woodcutter.trial.done.n1",
+          "calling": "woodcutter",
+          "mood": "happy",
+          "next": "who"
+        },
+        "who": {
+          "speaker": "woodcutter",
+          "textKey": "dlg.woodcutter.trial.done.who",
           "calling": "woodcutter",
           "mood": "happy"
         }

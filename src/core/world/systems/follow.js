@@ -56,6 +56,14 @@ function workRects(world) {
       out.push({ x0: s.x - 0.5, x1: s.x + s.length + 0.5, z0: s.z - w, z1: s.z + w });
     }
   }
+  // The court of a folk game (#122: at night Nghé lay down on the squares of the hopscotch, next
+  // to the shard): the box of its squares and of its half circle.
+  for (const e of query(world, 'folkCourt')) {
+    const c = e.folkCourt;
+    const ps = [...c.squares, ...(c.rest ? [c.rest] : [])];
+    const h = (c.size ?? 2) / 2;
+    if (ps.length) out.push({ x0: Math.min(...ps.map((q) => q.x)) - h, x1: Math.max(...ps.map((q) => q.x)) + h, z0: Math.min(...ps.map((q) => q.z)) - h, z1: Math.max(...ps.map((q) => q.z)) + h });
+  }
   // The things of a puzzle (#104: Nghé stood on the dog of the ferry, and a tap on the dog was a tap
   // on Nghé).
   for (const e of query(world, 'item')) {

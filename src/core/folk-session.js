@@ -28,13 +28,19 @@ const OTHER_HOP = 0.45; // seconds of a hop of another child
 const DEMO_WAIT = 1.4; // seconds before the child of the demonstration holds
 const DEMO_LOOK = 2.4; // seconds to look at the shard of the demonstration
 const NAME_GLOW = 3; // seconds of the glow of a thing that a line names
+const BODY_TALL = 3.4; // half blocks: the height of a child with the head
+const BODY_HALF = 0.8; // half blocks: half the width of the body of a child on the screen
+const COVER_PAD = 0.9; // half blocks: half a square, and a little more
+const VIEW_SLOPE = 0.5; // the slope of the view over the ground (src/world/view.js: atan 0.5)
+const FEET_CLEAR = 1; // half blocks between the body of a child and the edge of a square
+const KID_APART = 2.6; // half blocks between two children who stand aside
 const SHOW_SHARD = 3; // seconds of the line that shows the shard, before the first call
 const JOIN_TIME = 3.5; // seconds of the line of the start, before the next line
 // The lines that name the start line, and those that name the shard (#114).
 const START_WORDS = new Set(['loco.join']);
 // A line of a miss says where the shard fell: the shard glows with it too (#114: at night the
 // shard was dark on the court).
-const SHARD_WORDS = new Set(['loco.shard', 'loco.in', 'loco.pick', 'loco.fail.shard', 'loco.demo', 'loco.how.throw', 'loco.how.hop', 'loco.out', 'loco.other.far', 'loco.other.near', 'loco.line']);
+const SHARD_WORDS = new Set(['loco.shard', 'loco.in', 'loco.pick', 'loco.rest', 'loco.fail.shard', 'loco.demo', 'loco.how.throw', 'loco.how.hop', 'loco.out', 'loco.other.far', 'loco.other.near', 'loco.line']);
 const num = (n) => ({ key: `num.${Math.max(1, Math.min(150, n))}` });
 const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
@@ -195,20 +201,57 @@ export function createFolk(deps) {
   const waveSay = (key, params) => say(key, params, null, { asked: true });
 
   // ---------------------------------------------------------------- Nhảy lò cò
-  // The children stand beside the court on the side away from the camera, so that they never cover
-  // the squares (#99: the court was behind the three children).
+  // The children stand beside the court where their bodies cover no square in the view (#99: the
+  // court was behind the three children; #122: on the side away from the camera, their bodies
+  // stood over the far squares). A body covers the ground behind it, away from the camera, as far
+  // as its height over the slope of the view.
   function standAside() {
     const f = geo.loco;
     const az = deps.view?.() ?? Math.PI / 4;
     if (game) game.standAz = az;
-    const toCam = f.side.x * Math.sin(az) + f.side.z * Math.cos(az);
-    const b = toCam > 0 ? -2.1 : 2.1;
+    const pts = courtPoints(f, game?.court ?? []);
+    const keep = [...pts.squares, pts.rest, pts.start, pts.home];
+    const spots = asideSpots(f, az, keep, pts.half, def.loCo.children.length);
     def.loCo.children.forEach((_, k) => {
       const e = getEntity(world(), k === 0 ? 'npc:loco-child' : `folk:child:${k}`);
       if (!e) return;
-      const p = along(f, (0.5 + k * 1.6) * S, b * S);
-      e.position = at(p, facingOf(p, along(f, (1 + k * 1.5) * S)));
+      const p = spots[k];
+      e.position = at(p, facingOf(p, along(f, (pts.half / 2) * S)));
     });
+  }
+  // The spots of n children near the court, at least a body apart, where no body covers a point of
+  // the court in the view from the azimuth az. The nearest spots to the court come first.
+  function asideSpots(f, az, keep, half, n) {
+    const cam = { x: Math.sin(az), z: Math.cos(az) };
+    const covers = (p, q) => {
+      const dx = q.x - p.x;
+      const dz = q.z - p.z;
+      const back = -(dx * cam.x + dz * cam.z);
+      const side = Math.abs(dx * cam.z - dz * cam.x);
+      return back > -COVER_PAD && back < BODY_TALL / VIEW_SLOPE + COVER_PAD && side < BODY_HALF + COVER_PAD;
+    };
+    const tries = [];
+    for (let b = 1.6; b <= 4; b += 0.6) for (const sb of [-1, 1]) for (let a = -1.5; a <= half + 1.5; a += 0.5) tries.push(along(f, a * S, sb * b * S));
+    for (let a = -3; a <= -1.6; a += 0.7) for (let b = -1.5; b <= 1.5; b += 0.75) tries.push(along(f, a * S, b * S));
+    for (let a = half + 1.6; a <= half + 3; a += 0.7) for (let b = -1.5; b <= 1.5; b += 0.75) tries.push(along(f, a * S, b * S));
+    const mid = along(f, (half / 2) * S);
+    const env = deps.env();
+    const free = (p) => !env.isBlocked || !env.isBlocked(Math.floor(p.x / 2), Math.floor(p.z / 2));
+    // The feet and the shadow of a child stay out of each square, with the width of the body and
+    // a little more (a child at the edge of the court stood on it in the view).
+    const clearOf = S / 2 + BODY_HALF + FEET_CLEAR;
+    const onIt = (p, q) => Math.abs((p.x - q.x) * f.dir.x + (p.z - q.z) * f.dir.z) < clearOf && Math.abs((p.x - q.x) * f.side.x + (p.z - q.z) * f.side.z) < clearOf;
+    const clear = tries.filter((p) => free(p) && keep.every((q) => !onIt(p, q) && !covers(p, q)))
+      .sort((p, q) => Math.hypot(p.x - mid.x, p.z - mid.z) - Math.hypot(q.x - mid.x, q.z - mid.z));
+    const out = [];
+    for (const p of clear) {
+      if (out.length >= n) break;
+      if (out.every((q) => Math.hypot(p.x - q.x, p.z - q.z) >= KID_APART)) out.push(p);
+    }
+    // No clear spot (a court in a small yard): beside the court, on the side away from the camera.
+    const toCam = f.side.x * cam.x + f.side.z * cam.z;
+    for (let k = out.length; k < n; k++) out.push(along(f, (0.5 + k * 1.6) * S, (toCam > 0 ? -2.1 : 2.1) * S));
+    return out;
   }
   // The view frames the whole court, the start line, and the shard where it lies (#114: the view
   // showed only a part of the court, and the child never saw the shard where it landed).
@@ -405,6 +448,10 @@ export function createFolk(deps) {
         say(`num.${ev.value}`, {}, childOf(ev.square));
       } else if (ev.type === 'rest') {
         jumpTo(pts.rest);
+        // At the half circle a child says the way back, and the shard glows (#122: "I counted một to
+        // mười! … But nothing happens now. Did I win?"). When the shard lies on the last square,
+        // the line of the pick says it.
+        if (!events.some((x) => x.type === 'pick')) later(def.loCo.hop + 0.1, () => say('loco.rest', {}));
         later(def.loCo.hop + 0.2, () => deps.command({ type: 'face', id: 'hero', x: geo.loco.o.x, z: geo.loco.o.z }));
       } else if (ev.type === 'pick') {
         later(def.loCo.hop + 0.15, () => {

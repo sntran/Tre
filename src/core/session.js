@@ -32,6 +32,7 @@
 // changed), halt (a trigger zone stopped the hero: the view drops the input), raid { on, id } (a
 // raid starts or its things went away), and lose { to, take } (the goods that an enemy took fly
 // from the counter to it).
+import { ROW_SIDE, ROW_STEP } from './world/systems/place.js';
 import { findPath, pathNextTo, createPlaneTileMap, footprint } from './tilemap.js';
 import { check } from './conditions.js';
 import { createTriggers } from './triggers.js';
@@ -900,9 +901,23 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const used = z.items.length;
     const { who, near } = bridgeSpeaker(zoneId);
     if (!who) return;
-    const key = `mentor.${near ? '' : 'nghe.'}bridge.guess${z.guess === used ? 'Right' : 'Off'}`;
+    // The line says the count that the gap needed first, then the guess and its answer (#122: "I
+    // guessed two but I put three. So was I wrong? It did not say.").
+    const off = Math.abs(z.guess - used);
+    const key = `mentor.${near ? '' : 'nghe.'}bridge.guess${off === 0 ? 'Right' : off === 1 ? 'Off' : 'Far'}`;
     emit({ type: 'open', screen: 'callout', id: who.id, textKey: key, params: { n: { key: `num.${Math.min(30, z.guess)}` }, m: { key: `num.${Math.min(30, used)}` } } });
+    // The row of the guess shows again next to the gap and glows with the planks of the deck, so
+    // that the child sees the two counts side by side.
+    const row = `guessback:${zoneId}`;
+    if (!getEntity(state, row)) {
+      // At the place where the row of the guess lay, beside the bridge (the rows of the guess,
+      // src/core/world/systems/place.js).
+      const n = Math.min(30, z.guess);
+      addEntity(state, { id: row, mentorMark: { ttl: GUESS_BACK }, position: { x: z.lane - ROW_SIDE - (n - 1) * ROW_STEP, y: z.deckY - 0.5, z: z.from, facing: 0 }, look: `plank-row-${n}` });
+    }
+    glowing = [row, ...z.items];
   }
+  const GUESS_BACK = 8; // seconds: the row of the guess shows again after the gap is solid
   // Who speaks at the bridge: the fisher when he is at work near the gap, or else Nghé.
   function bridgeSpeaker(zoneId) {
     const fisher = getEntity(state, 'npc:fisher');
@@ -2032,9 +2047,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // The text of a thing of the map while a task is open there (taskText: { task: key }): #85, the
   // line of the river told the child to wade across while the fisher asked for the bridge.
+  // After the task, a third text (doneText: { task: key }): #122, the river said that the bridge was
+  // broken while the child stood on the bridge that the child fixed.
   function textOfAction(a) {
     const open = (task) => (task === 'bridge' ? bridgeOpen() && !getEntity(state, 'zone:bridge-gap')?.zone.set : openTask(task));
-    return Object.entries(a.taskText ?? {}).find(([task]) => open(task))?.[1] ?? a.textKey;
+    const done = (task) => (task === 'bridge' ? Boolean(getEntity(state, 'zone:bridge-gap')?.zone.set) : false);
+    return Object.entries(a.taskText ?? {}).find(([task]) => open(task))?.[1] ?? Object.entries(a.doneText ?? {}).find(([task]) => done(task))?.[1] ?? a.textKey;
   }
   function doAction(zone) {
     const a = zone.action;
@@ -2102,9 +2120,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // One line, and then the raid starts on this map. The first raid of the slingshot has its
       // own line (firstKey): it has no gate, and so no torch (#67).
       say(def.firstKey && !profile.flags['raid.tool.sling'] ? def.firstKey : def.introKey);
+      // A word that a child of K to grade 2 hears for the first time: one short line, and the thing
+      // glows (#122: "trinh sát"). The flag word.<id> keeps it.
+      if (def.word && Number(profile.grade ?? 1) <= WORD_GRADE && !profile.flags[`word.${def.word}`]) {
+        profile.flags[`word.${def.word}`] = true;
+        const id = `encounter:${enc.id}`;
+        queue(() => {
+          openScreen({ screen: 'say' }, { speaker: 'narrator', textKey: `word.${def.word}`, params: {} });
+          const e = getEntity(state, id);
+          if (e?.position) emit({ type: 'names', ids: [id], spots: [], bobs: [], seq: [], points: [{ ...e.position }] });
+        });
+      }
       queue(() => startRaid(enc.raid, enc.id));
     }
   }
+
+  const WORD_GRADE = 2; // the highest grade that gets the short line of a new word (#122)
 
   // Raids (data/raids.json, src/core/world/raids.js, and src/core/world/systems/raid.js) -----
 
@@ -3186,6 +3217,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const h = hero()?.position;
     const z = h ? query(state, 'zone').find((x) => x.zone.rule === 'trial' && !x.zone.done && inTaskArea(x.id.slice(5), h)) : null;
     return z ? z.id.slice(5) : null;
+  }
+  // The open work of the view that the hero is at, or null: a task of the trials, a folk game, a
+  // puzzle, the bridge, or another task of a person (#122: the face of the next goal stood on the
+  // pile of planks of the bridge, and the stars showed during the hopscotch). The faces and the
+  // stars of the story do not show there.
+  function workHere() {
+    const task = taskHere();
+    if (task) return task;
+    if (folk.active()) return 'folk';
+    if (puzzles.here()) return 'puzzle';
+    const h = hero()?.position;
+    if (h && bridgeOpen() && getEntity(state, 'zone:bridge-gap') && !getEntity(state, 'zone:bridge-gap').zone.set && inTaskArea('bridge', h)) return 'bridge';
+    const key = mentoring.activeKey();
+    return key && inTaskArea(key, h) ? key : null;
   }
   // The task of a person of the trials here (data/trials.json), or null.
   function personTaskHere() {
@@ -5202,7 +5247,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // Any open task counts (a trial, a station, or a work task such as the rice for Gióng).
     // The open task whose place the hero is at (#76), or 'puzzle' while a puzzle goes on near the
     // hero (#110).
-    taskHere: () => taskHere() ?? (puzzles.here() ? 'puzzle' : null),
+    taskHere: () => workHere(),
     inTask: () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done)),
     // Is a map point (cells) on the gap of an open bridge (a tap there is work, not a pet of Nghé)?
     openSpanAt: (x, y) => bridgeOpen() && Boolean(spanAt(Math.floor(x), Math.floor(y))),
