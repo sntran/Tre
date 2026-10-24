@@ -58,7 +58,8 @@ test('a new form shows its new part one time, also to a child who knows the gest
 
 test('the boat of the fisher is a new gesture: the first step is a stake into the boat, not into the row', async () => {
   const r = await firstOf('trial-fisher', 3, { 'gesture.carry': true });
-  assert.ok(r.said.includes('mentor.first.back'), r.said.join(', '));
+  // From the boat he says that he puts his stake back (#119).
+  assert.ok(r.said.includes('fisher.boat.back'), r.said.join(', '));
   assert.ok(r.puts.includes('boat') && !r.puts.includes('line'), `the puts: ${r.puts.join(', ')}`);
 });
 

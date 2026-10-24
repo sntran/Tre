@@ -674,7 +674,10 @@ export function thingLook(key) {
   // The fisher from grade 3 (#102): the small boat of the stakes, a stake that lies in it, the pole
   // of the fisher (n half blocks, with a mark at its half at grade 5), and the knot at the end of a
   // length of the pole on the row.
-  if (k === 'skiff' || k === 'stake-lie' || k === 'pole-knot') return { kind: k };
+  if (k === 'skiff' || k === 'skiff-long' || k === 'stake-lie' || k === 'stake-rack' || k === 'pole-knot') return { kind: k };
+  // The boat of the fisher with its load, for the picture of the button (#119).
+  const load = /^boat-load-(\d+)$/.exec(k);
+  if (load) return { kind: 'boat-load', n: Number(load[1]) };
   // The puzzles of the day (#104): the boat of the ferry with its middle at its point, the mark of a
   // side quest over a person, a pot of n bowls with its water, the jar of the healer, the drain at
   // the well, and a little rice on the ground.
@@ -984,6 +987,18 @@ export function workThing(look) {
     case 'iron-rack': return still([P('postA', [0.25, 1.4, 0.25], 'wood', [0, 0.7, 0.2]), P('postB', [0.25, 1.4, 0.25], 'wood', [0, 0.7, 2.2]), P('bar', [0.3, 0.2, 2.4], 'ochre', [0, 1.3, 1.2]), P('foot', [1, 0.15, 2.6], 'wood', [0, 0.08, 1.2])], 1.5);
     // The boat of the stakes (#102): a small dugout along +z, low in the water.
     case 'skiff': return still([P('hull', [1.8, 0.7, 4], 'wood', [0, -0.15, 2]), P('rimL', [0.25, 0.3, 3.8], 'ochre', [-0.85, 0.3, 2]), P('rimR', [0.25, 0.3, 3.8], 'ochre', [0.85, 0.3, 2]), P('bow', [1, 0.5, 0.4], 'ochre', [0, 0.35, 3.9]), P('stern', [1.2, 0.4, 0.4], 'wood', [0, 0.3, 0.1])], 0.7);
+    // A stake that stands upright in the boat (#119): thin, so that a child counts the stakes.
+    case 'stake-rack': return still([P('pole', [0.32, 2.6, 0.32], 'ochre', [0, 1.3, 0]), P('top', [0.38, 0.2, 0.38], 'yellowPale', [0, 2.65, 0])], 2.75);
+    // The boat with one small upright stake for each stake on it (the picture of the button).
+    case 'boat-load': {
+      const n = Math.max(0, Math.min(12, look.n ?? 0));
+      const parts = [P('hull', [1.8, 0.7, 4], 'wood', [0, -0.15, 2]), P('rimL', [0.25, 0.3, 3.8], 'ochre', [-0.85, 0.3, 2]), P('rimR', [0.25, 0.3, 3.8], 'ochre', [0.85, 0.3, 2])];
+      const step = n > 1 ? Math.min(0.9, 3.4 / (n - 1)) : 0;
+      for (let i = 0; i < n; i++) parts.push(P(`s${i}`, [0.3, 2, 0.3], 'ochre', [0, 1.1, 2 - (step * (n - 1)) / 2 + i * step]));
+      return still(parts, 2.1);
+    }
+    // The boat of the fisher (#119): 6 half blocks long, so that a load of stakes stands apart.
+    case 'skiff-long': return still([P('hull', [1.8, 0.7, 6], 'wood', [0, -0.15, 3]), P('rimL', [0.25, 0.3, 5.8], 'ochre', [-0.85, 0.3, 3]), P('rimR', [0.25, 0.3, 5.8], 'ochre', [0.85, 0.3, 3]), P('bow', [1, 0.5, 0.4], 'ochre', [0, 0.35, 5.9]), P('stern', [1.2, 0.4, 0.4], 'wood', [0, 0.3, 0.1])], 0.7);
     // A stake that lies in the boat, along +x.
     case 'stake-lie': return still([P('pole', [3.2, 0.32, 0.32], 'ochre', [1.6, 0.16, 0]), P('tip', [0.3, 0.34, 0.34], 'yellowPale', [3.1, 0.17, 0])], 0.4);
     // The pole of the fisher (sào): a long thin bamboo along +z, with a dark band at each end, and a

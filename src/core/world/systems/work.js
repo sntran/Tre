@@ -61,7 +61,9 @@ const DEMO_NEXT = 1.6; // seconds: then the iron of the child comes on the anvil
 
 // The boat of the fisher from grade 3 (#102): its length (half blocks), the seconds of its way to
 // the row and back, and the seconds for each stake that it sets.
-const BOAT_LONG = 4;
+// 6 half blocks: a load of nine stakes stands apart in the boat (#119: four half blocks put eight
+// stakes 7 pixels apart on a phone).
+const BOAT_LONG = 6;
 const BOAT_GO = 2.5;
 const BOAT_STAKE = 0.8;
 const BOAT_SIDE = 1.8; // half blocks: the boat goes along the row on the side of the river
@@ -299,11 +301,12 @@ export function setupTrial(world, def, level, env, opts = {}) {
       // of the fisher (one gap long) lies on the bank at the start of the row: a press at the row lays
       // it along the row, one length at a time.
       const h = stakes.zone;
-      const at = { x: h.x - 1, y: l.y, z: l.z };
+      // The east end of the boat stays one half block west of the pile (the boat grew to the west).
+      const at = { x: h.x - 1 - (BOAT_LONG - 4), y: l.y, z: l.z };
       addEntity(world, { id: 'zone:boat', keep: true, zone: { id: 'boat', task: owner, rule: 'boat', accepts: 'stake', items: [], x: at.x, y: at.y, z: at.z, home: { x: at.x, z: at.z }, rect: { x0: at.x - 0.4, x1: at.x + BOAT_LONG + 0.4, z0: at.z - 1, z1: at.z + 1 } }, position: { x: at.x + BOAT_LONG / 2, y: at.y, z: at.z, facing: 0 } });
       // The boat and the pole are things that a tap chooses (fixed: the hands do not take them).
       const fixed = (kind, size) => ({ kind, size, task: owner, zone: null, held: null, set: true, fixed: true });
-      addEntity(world, { id: 'boat:fisher', keep: true, item: fixed('boat', BOAT_LONG), position: { x: at.x, y: at.y + WATER_UP, z: at.z, facing: Math.PI / 2 }, look: 'skiff' });
+      addEntity(world, { id: 'boat:fisher', keep: true, item: fixed('boat', BOAT_LONG), position: { x: at.x, y: at.y + WATER_UP, z: at.z, facing: Math.PI / 2 }, look: 'skiff-long' });
       const px = l.x - plan.pole - 0.6;
       addEntity(world, { id: 'pole:fisher', keep: true, item: fixed('pole', plan.pole), position: { x: px, y: env.groundY(px / 2, (l.z - 3) / 2), z: l.z - 3, facing: Math.PI / 2 }, look: plan.form === 'half' ? `pole-${plan.pole}-half` : `pole-${plan.pole}` });
       Object.assign(tz.zone, { measured: 0, trip: null, near: 0 });
@@ -679,15 +682,21 @@ const sizeSum = (world, zone) => (zone?.items ?? []).reduce((a, id) => a + (getE
 
 // The bands that the child took lie in a row beside the mat (#101).
 export const BAND_STEP = 0.9;
-// The stakes in the boat of the fisher lie across it, side by side (#102), and go with it.
+// The stakes in the boat of the fisher stand upright in a row along the boat, as far apart as the
+// boat lets them (#119: they lay flat in two layers, and on a phone they were one grey thing; a
+// girl of grade 5 counted the sounds), and go with it.
+export const RACK_STEP = 0.9; // half blocks between two stakes in the boat, at most
 function packBoat(world, zone) {
   const boat = getEntity(world, 'boat:fisher');
   const at = boat?.position ?? { x: zone.x, y: zone.y, z: zone.z };
+  const n = zone.items.length;
+  const step = n > 1 ? Math.min(RACK_STEP, (BOAT_LONG - 0.6) / (n - 1)) : 0;
+  const from = at.x + BOAT_LONG / 2 - (step * (n - 1)) / 2;
   zone.items.forEach((id, i) => {
     const e = getEntity(world, id);
     if (!e) return;
-    e.position = { x: at.x + 0.4, y: at.y + 0.2 + Math.floor(i / 4) * 0.32, z: at.z - 0.6 + (i % 4) * 0.4, facing: 0 };
-    e.look = 'stake-lie';
+    e.position = { x: from + i * step, y: at.y + 0.2, z: at.z, facing: 0 };
+    e.look = 'stake-rack';
   });
 }
 function packBandRow(world, zone) {
@@ -959,6 +968,10 @@ export function putWork(world, e, zone, thing, at, env) {
     thing.item.zone = zone.id;
     zone.items.push(thing.id);
     packBoat(world, zone);
+    // The fisher says the load at each put of the child (#119): "Thuyền có bốn cọc."
+    const fisher = e.id === 'hero' ? query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden) : null;
+    const n = zone.items.length;
+    if (fisher) say(world, 'call', fisher.id, { key: n === 1 ? 'fisher.load.one' : 'fisher.load', params: { n: { key: `num.${Math.min(30, n)}` } }, happened: true });
   } else if (zone.rule === 'basket') {
     // A bunch of the model basket stays out of the basket of the child (#101).
     if (thing.item.model) return false;
@@ -1944,6 +1957,9 @@ function tickBoat(world, tz, line, water, dt) {
       packBoat(world, boat.zone);
       trip.made += 1;
       say(world, 'drive', stake.id, { slot, sound: 'plank-down' });
+      // The stakes go in with the count (#119).
+      const counter = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+      if (counter) say(world, 'call', counter.id, { key: `num.${Math.min(30, trip.made)}`, params: {}, happened: true });
       Object.assign(trip, { t: 0, from: { x: look.position.x, z: look.position.z } });
       if (trip.made < trip.need && boat.zone.items.length) return;
     }
@@ -1963,7 +1979,13 @@ function tickBoat(world, tz, line, water, dt) {
     const last = Math.max(0, ...query(world, 'item').filter((t) => t.item.zone === 'line').map((t) => t.item.slot ?? 0));
     const full = query(world, 'item').some((t) => t.item.zone === 'line' && t.item.slot === l.length);
     if (full) {
-      // The row is at the float: the boat stays, and the tide comes in.
+      // The row is at the float: the reason of the number in the words of the level (#119: two
+      // children won and did not know why), and then the tide comes in.
+      if (fisher && trip.solved) {
+        const why = whyLine(plan, l);
+        if (why) say(world, 'call', fisher.id, { ...why, happened: true });
+      }
+      // The boat stays, and the tide comes in.
       tz.zone.trip = null;
       boat.zone.away = false;
       const tide = tz.zone.tide;
@@ -1993,6 +2015,18 @@ function tickBoat(world, tz, line, water, dt) {
     tz.zone.trip = null;
     boat.zone.away = false;
   }
+}
+
+// The line of the reason of a right load (#119): at grade 3 the poles and a stake for each pole; at
+// grade 4 the gaps and a stake at each end; at grade 5 the poles and a half, the gap of one pole and
+// a half, the gaps and the stakes. { key, params } or null.
+export function whyLine(plan, line) {
+  const num = (n) => ({ key: `num.${Math.min(30, n)}` });
+  const gaps = Math.round(line.length / line.space);
+  if (plan.form === 'measure') return { key: 'fisher.why.measure', params: { k: num(plan.k), n: num(plan.k) } };
+  if (plan.form === 'trees') return { key: 'fisher.why.trees', params: { g: num(plan.k), n: num(plan.k + 1) } };
+  if (plan.form === 'half') return { key: plan.halves % 2 ? 'fisher.why.half' : 'fisher.why.halfWhole', params: { x: num(Math.floor(plan.halves / 2)), g: num(gaps), n: num(gaps + 1) } };
+  return null;
 }
 
 // The pile keeps the stakes of the level (#88: since #78 the fisher brought more stakes each time

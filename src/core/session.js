@@ -2931,6 +2931,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     save('gift');
   }
 
+  // The look of the boat of the fisher with its load, for the picture of the button (#119).
+  const boatLoad = () => `boat-load-${zoneOf('boat')?.zone.items.length ?? 0}`;
   // The moves of a person that count on their own things (src/core/mentoring.js).
   const SHOW_MOVES = new Set(['demo', 'smaller', 'share']);
   // The finish of the task of a person when there is work to check (the person checks it):
@@ -2962,7 +2964,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const wood = key === 'trial-woodcutter' ? open('woodcutter') : null;
     if (wood?.zone.marks?.length && !wood.zone.cut && (tapped || wood.zone.marks.length >= marksFor(wood, taskOf(trialDef('woodcutter'), wood.zone.level ?? 0)))) return { act: 'cut', icon: 'knife', run: () => work('woodcutter', 'cut') };
     // From grade 3 the fisher sends the boat with the stakes that the child put in it (#102).
-    if (key === 'trial-fisher' && boatReady()) return { act: 'send', icon: 'boat', run: () => work('fisher', 'send') };
+    // The picture of the button is the boat with one small stake for each stake on it (#119).
+    if (key === 'trial-fisher' && boatReady()) return { act: 'send', icon: 'boat', thing: boatLoad(), run: () => work('fisher', 'send') };
     if (key === 'trial-plant' && planting.ready() === 'commit' && plotsOf(state)[0]?.plot.form !== 'choose') return { act: 'plant', icon: 'seedling', run: () => work('plant', 'plant') };
     if (key === 'trial-traps') {
       const r = hamlet.round('traps');
@@ -3297,7 +3300,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const boatZ = zoneOf('boat');
       if (fz?.zone.plan && boatZ && !fz.zone.trip && fz.zone.tide?.phase === 'low') {
         const boatE = getEntity(state, 'boat:fisher');
-        if (boatReady() && boatE && (chosen?.id === boatE.id || chosen?.id === boatZ.id)) add({ act: 'send', icon: 'boat', target: boatE.id, keys: [boatE.id, boatZ.id], at: boatZ.position, rank: -1, work: true, run: () => work('fisher', 'send') }, REACH + 3);
+        // A tap on a stake that stands on the boat is a tap on the boat (#119: the stakes stand
+        // upright over the boat, and a finger on the boat took a stake back; the stakes over the
+        // float go back to the pile after the boat goes).
+        const onBoat = chosen && boatZ?.zone.items.includes(chosen.id);
+        if (boatReady() && boatE && (chosen?.id === boatE.id || chosen?.id === boatZ.id || onBoat)) add({ act: 'send', icon: 'boat', thing: boatLoad(), target: boatE.id, keys: [boatE.id, boatZ.id, ...(onBoat ? [chosen.id] : [])], at: boatZ.position, rank: -1, work: true, run: () => work('fisher', 'send') }, REACH + 3);
         const lineZ = zoneOf('line');
         const pole = getEntity(state, 'pole:fisher');
         const tappedRow = chosen?.id === lineZ?.id || chosen?.id === pole?.id;
@@ -4024,6 +4031,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (target.thing) {
+      // A stake that stands on the boat, while the boat can go: the tap is a tap on the boat (#119:
+      // the stakes stand upright over the boat, and a finger on the boat took a stake back; the
+      // stakes over the float go back to the pile after the boat goes).
+      const onBoat = getEntity(state, target.thing)?.item?.zone === 'boat' && boatReady() && getEntity(state, 'boat:fisher');
+      if (onBoat) return tap({ ...target, thing: 'boat:fisher' });
       const thing = getEntity(state, target.thing);
       // With empty hands, a tap on a thing that lies on the place of a task is a check (#64).
       if (!holding()) mentoring.checkThing(target.thing);

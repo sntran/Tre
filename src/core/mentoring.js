@@ -1297,7 +1297,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     t += 2.2;
     // The thing goes back to its heap, so that the place is empty when the child starts: the
     // first step never leaves a part of the answer (rule 25).
-    s.say(t, 'mentor.first.back');
+    // From the boat of the fisher he says that he puts his stake back (#119: "I could not tell
+    // whether his stake counted.").
+    s.say(t, place.zone.rule === 'boat' ? 'fisher.boat.back' : 'mentor.first.back');
     s.point(t, heap.position, 1);
     s.steps.push({ at: t + 0.6, back: { item: thing.id } });
     return t + 1.6;

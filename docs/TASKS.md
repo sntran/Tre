@@ -208,6 +208,14 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **The stem in view.** A tap within a finger of the stem chooses the ring nearest to the tap (#80, #109), and the frame of the work holds the whole stem while the hero marks. The hero keeps its side of the stem (#80: a walk around an end to the far side took a long way, and the marks of a tap landed late); the chalk under the hero shows over the body of the hero (#80).
 
+### The boat of the fisher: a load that a child can count, and the reason (#119)
+
+**The load stands up and is counted.** The stakes in the boat stand upright in a row along the boat (`stake-rack`), at most 0.9 half blocks apart; the boat is 6 half blocks long, so that a load of nine stakes stands at least 9 pixels apart on a phone of 390 × 844 in the view of the task. In a play test the stakes lay flat in two layers, and on a phone they were one grey thing. At each load the fisher says the count ("Thuyền có bốn cọc."), and the picture of the button to send the boat is the boat with one small stake for each stake on it (`boat-load-N`).
+
+**The demonstration takes its stake back.** After his first load, the fisher takes his stake off the boat, back to the pile, and says so ("Chú cất cọc này lại.").
+
+**The result with its reason.** At the row, the stakes go in one at a time with the count ("một, hai, …"). After a right load, before the tide, the fisher says the reason in the words of the level (`whyLine`): grade 3 "Sáu sào, mỗi sào một cọc: sáu cọc."; grade 4 "Năm khe thì sáu cọc: cọc ở hai đầu."; grade 5 "Bảy sào rưỡi, mỗi khe một sào rưỡi: năm khe, sáu cọc." A wrong load says what is missing ("Còn một khe nữa.", "Đầu này cũng cần một cọc.") or what is left over ("Thừa hai cọc."), as since #102.
+
 ### The fisher after #92 (#97)
 
 **The hole of the escape shows.** After an escape, the frame of the widest space lies on the surface of the water (`why:fisher:space`, at `WATER_UP`), the fisher points at it while he says "Chỗ này hở quá, cá chui ra mất.", and it stays until a stake stands in the space. Then the hint is the hole ("Cắm một cọc vào chỗ hở này nhé."). With an empty pile, the hint is the take-back of the stake to take back; with no such stake, the fisher brings one stake (rule 12).
