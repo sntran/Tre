@@ -10,6 +10,7 @@ Chúng tôi viết cho các bậc cha mẹ và cho bất kỳ ai muốn biết v
 
 | Ngày | Bài viết |
 | --- | --- |
+| 24/10/2026 | [Đúng mà vẫn trượt](2026-10-24-right-and-still-a-miss.vi.md) |
 | 20/10/2026 | [Một hàng cọc không thể xong](2026-10-20-a-row-that-cannot-end.vi.md) |
 | 19/10/2026 | [Mới đến thì lớp nào cũng mới](2026-10-19-new-at-any-grade.vi.md) |
 | 18/10/2026 | [Câu đố buổi tối](2026-10-18-riddles-in-the-evening.vi.md) |
