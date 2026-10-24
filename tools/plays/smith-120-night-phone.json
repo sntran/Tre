@@ -1,0 +1,164 @@
+{
+ "about": "#120: the smith at grade 3: the colors named by things of the village with a gấc on the bench, a press when the iron is red, a word after each bar, the pips of the bars, and the fair test in view with its reason.",
+ "start": "?story=trial-smith&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "3",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-the-gac-on-the-bench"
+  },
+  {
+   "until": "((tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.glow ?? 0) >= 1) || tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.done",
+   "timeout": 60
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-a-word-after-the-bar"
+  },
+  {
+   "until": "((tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.glow ?? 0) >= 1) || tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.done",
+   "timeout": 60
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "shot": "night-the-pips-of-the-bars"
+  },
+  {
+   "until": "((tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.glow ?? 0) >= 1) || tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.done",
+   "timeout": 60
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "until": "((tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.glow ?? 0) >= 1) || tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.done",
+   "timeout": 60
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "until": "((tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.glow ?? 0) >= 1) || tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.done",
+   "timeout": 60
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-the-fair-test-in-view"
+  },
+  {
+   "wait": 6
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-the-reason-of-the-fair-test"
+  }
+ ]
+}
