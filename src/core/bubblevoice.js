@@ -12,9 +12,10 @@
 const COUNT = /^num\./;
 const GREET = /^world\.greet\./;
 // The lines of a goal and of what is left (#106: "Thầy cần hai bó." went for the first help, and
-// a child who cannot read never heard the goal), and the thing that a demonstration names ("Bó rau
-// má đây.").
-const GOAL = /^(teacher\.need\.|mentor\.scholar\.need$|woodcutter\.pieces$|mentor\.nghe\.pieces$|scholar\.more$|fisher\.gaps|event\.[a-z]+\.start|traps\.need|loco\.start$|rope\.goal$|puzzle\.[a-z]+\.start|healer\.herb\.)/;
+// a child who cannot read never heard the goal), the thing that a demonstration names ("Bó rau
+// má đây."), and a line that comes one time only (#115: "Cái cọc mờ là chỗ cháu sẽ cắm." came in
+// the same step as a hint, and the hint took its place).
+const GOAL = /^(fisher\.ghost$|woodcutter\.ghost$|mentor\.first\.you$|teacher\.need\.|mentor\.scholar\.need$|woodcutter\.pieces$|mentor\.nghe\.pieces$|scholar\.more$|fisher\.gaps|event\.[a-z]+\.start|traps\.need|loco\.start$|rope\.goal$|puzzle\.[a-z]+\.start|healer\.herb\.)/;
 
 // The kind of a line by its key.
 export function kindOf(key) {
