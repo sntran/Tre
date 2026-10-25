@@ -240,6 +240,18 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### The healer at grade 4 after the play test (#125)
+
+**The talk shows its things.** A talk that starts a trial far from the place of its work (more than 24 half blocks from the middle of its places) waits: the person says one line ("Cháu theo bà ra vườn thuốc nhé.", `dlg.<npc>.trial.come`) and walks to a free cell beside the place, the hero walks after, and the talk opens when both stand there (`comeFirst` and `stepComeTalk` in `src/core/session.js`). A child who walks away ends the wait after 60 seconds. In the play test the healer talked at the well, and her beds and baskets lay behind a house while she named them.
+
+**The model is not a thing of the child.** No press takes a bunch of the model, and the hands of the hero never pick one (`pick` in `src/core/world/systems/place.js`); only the healer moves it. A tap on a bunch of the model, on a leaf of it, or on the model basket makes her count it, and nothing else.
+
+**The count of the model is the whole model.** "Giỏ mẫu có hai thang. Mỗi thang: ba bó ngải cứu, hai bó tía tô và hai bó rau má." (`modelSay`): each kind of all the bunches of the model, wherever they lie, by doses, while the bunches of the first leaf glow.
+
+**The model dealt one time.** At the first step the healer deals the model onto its two leaves, and the leaves keep it, so that the child can look at one dose at any time. After a wrong basket the help is the check by doses and a point at the leaf of one dose ("Một thang như lá này.", then "Bà cần ba thang."); she never deals the model again (`dealSteps`, `leafSteps`, and `healerFormSteps` in `src/core/mentoring.js`).
+
+**Big enough to see.** A leaf of the model is 3.8 by 3 half blocks (`LEAF` in `src/core/world/systems/work.js`), about 55 by 45 pixels in the frame of the task on a phone, and its bunches lie one half block apart, so that a child can count one dose. The first bunch that the child takes makes the basket of the healer glow, and she points at it, one time in a task (`basketOnce`).
+
 ### A right count always hits (#124)
 
 **The enemy stands while the child aims.** From the first press of a pull until the stone lands, the enemy nearest to the count stands where it is (`raid.aim`, set by `aimAt` in `src/core/session.js`). While the child counts, all the enemies in reach of the longest pull stand, because the child can count any of them; while the stone flies, only the aimed one stands. An enemy past the longest pull walks on into reach. The aimed enemy is hit within half a post of the count (`POST_STEP / 2`), so a count of the post where it stands always hits. This is so at grades K to 3 at every raid, and from grade 4 in the first four raids of the slingshot. In a later raid from grade 4 the enemies walk on, and at the first pull the coach says "Lính đang đi: ném hòn đá vào cột phía trước nó."; the ring of the pull shows where the stone lands. In a play test the third raid had no stops, and in the time of the presses, the wait, and the flight, a serpent or a scout walked nearly one post: a boy who counted right missed again and again and lost.

@@ -72,12 +72,14 @@ test('grade 3: the line says the recipe and the doses, one dose lies on a leaf, 
   assert.ok(!keys.some((k) => k === `num.${plan.need.rauma}` && plan.need.rauma > 10), 'no count by ones over ten');
 });
 
-test('grade 4: a model of two doses, and its bunches go onto the leaves and never into the basket', async () => {
-  // One press takes a bunch of the model and puts it onto a leaf in one move (a second press at the
-  // leaf takes it back, #107).
-  const { session, said } = await play(4, [{ press: { item: 'herb-ngai', model: true } }, { until: { event: 'put', with: { id: 'hero' }, timeout: 15 } }]);
+test('grade 4: a model of two doses lies on its leaves, and its bunches never go into the basket', async () => {
+  // The first step deals the model onto its two leaves, and the leaves keep it (#125: the child
+  // does not move the model).
+  const { session, said } = await play(4, []);
+  const plan = getEntity(session.state, 'zone:trial-healer').zone.plan;
   const leaves = [0, 1].map((j) => getEntity(session.state, `zone:leaf-${j}`).zone.items.length);
-  assert.equal(leaves[0] + leaves[1], 1, 'one bunch on a leaf');
+  const dose = plan.recipe.ngai + plan.recipe.tiato + plan.recipe.rauma;
+  assert.deepEqual(leaves, [dose, dose], 'one dose on each leaf');
   assert.equal(getEntity(session.state, 'zone:basket').zone.items.length, 0);
   assert.ok(said.some((l) => l.key === 'dlg.healer.trial.n4.model'));
 });

@@ -357,7 +357,7 @@ export function setupTrial(world, def, level, env, opts = {}) {
         return r ? [{ x: r.x0, z: r.z0 }, { x: r.x1, z: r.z0 }, { x: r.x0, z: r.z1 }, { x: r.x1, z: r.z1 }] : [{ x: e.position.x, z: e.position.z }];
       });
       const g = modelSpot(b, env, avoid);
-      addEntity(world, { id: `mat:${def.id}:model`, keep: true, position: { x: g.x + 0.4, y: b.y, z: g.z, facing: 0 }, look: 'model-mat' });
+      addEntity(world, { id: `mat:${def.id}:model`, keep: true, position: { x: g.x + MODEL_MAT_X, y: b.y, z: g.z, facing: 0 }, look: 'model-mat' });
       const model = heap('model', { x: g.x - 3.4, y: b.y, z: g.z - 0.6 }, def.kinds.map((k) => `herb-${k}`), { cols: 6, step: 0.5 });
       for (const k of def.kinds) {
         for (let i = 0; i < plan.recipe[k] * MODEL_DOSES; i++) {
@@ -370,8 +370,10 @@ export function setupTrial(world, def, level, env, opts = {}) {
       packHeap(world, model.zone);
       addEntity(world, { id: `basket:${def.id}:model`, keep: true, position: { x: g.x - 3.8, y: b.y, z: g.z - 1.0, facing: 0 }, look: 'basket-small' });
       for (let j = 0; j < MODEL_DOSES; j++) {
-        const at = { x: g.x + 0.6 + j * 2.6, y: b.y, z: g.z };
-        addEntity(world, { id: `zone:leaf-${j}`, keep: true, zone: { id: `leaf-${j}`, task: owner, rule: 'leaf', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, items: [], x: at.x, y: at.y, z: at.z, rect: { x0: at.x - 1.1, x1: at.x + 1.1, z0: at.z - 0.7, z1: at.z + 0.7 } }, position: { x: at.x, y: at.y, z: at.z + 1, facing: 0 } });
+        // A leaf is one dose, big enough to see and to tap on a phone (#125: "it is tiny on the
+        // screen"): about 60 by 45 pixels in the frame of the task.
+        const at = { x: g.x + LEAF.first + j * LEAF.step, y: b.y, z: g.z };
+        addEntity(world, { id: `zone:leaf-${j}`, keep: true, zone: { id: `leaf-${j}`, task: owner, rule: 'leaf', accepts: def.kinds.map((k) => `herb-${k}`), kinds: def.kinds, items: [], x: at.x, y: at.y, z: at.z, rect: { x0: at.x - LEAF.w / 2, x1: at.x + LEAF.w / 2, z0: at.z - LEAF.d / 2, z1: at.z + LEAF.d / 2 } }, position: { x: at.x, y: at.y, z: at.z + LEAF.d / 2 + 0.3, facing: 0 } });
         addEntity(world, { id: `leaf:${def.id}:${j}`, keep: true, position: { x: at.x, y: at.y, z: at.z, facing: 0 }, look: 'herb-leaf' });
       }
     }
@@ -623,9 +625,13 @@ export const DESK_STEP = 3.2;
 // blocks long (the model, then the two leaves) and 3 deep. Avoid: the points of the things of the
 // task (the bunches of the beds, the corners of the basket).
 export const MODEL_ROOM = 2;
+// The leaves of the model (half blocks): the size of a leaf, the gap between two bunches on it, and
+// the place of the first leaf and of the next from the middle of the group.
+export const LEAF = Object.freeze({ w: 3.8, d: 3.0, gap: 1.0, first: 1.4, step: 4.4 });
+const MODEL_MAT_X = 1.7; // the middle of the mat of the model from the middle of the group
 export function modelSpot(basket, env, avoid = []) {
   const free = (p) => {
-    const box = { x0: p.x - 5.6, x1: p.x + 4.4, z0: p.z - 1.6, z1: p.z + 1.6 };
+    const box = { x0: p.x - 5.6, x1: p.x + LEAF.first + LEAF.step + LEAF.w / 2 + 0.6, z0: p.z - LEAF.d / 2 - 0.6, z1: p.z + LEAF.d / 2 + 0.6 };
     for (let x = box.x0; x <= box.x1; x += 1) for (let z = box.z0; z <= box.z1; z += 1) if (env?.isBlocked?.(Math.floor(x / 2), Math.floor(z / 2))) return false;
     return !avoid.some((a) => a.x > box.x0 - MODEL_ROOM && a.x < box.x1 + MODEL_ROOM && a.z > box.z0 - MODEL_ROOM && a.z < box.z1 + MODEL_ROOM);
   };
@@ -716,7 +722,8 @@ function packLeaf(world, zone) {
     if (!e) continue;
     const row = zone.kinds.indexOf(e.item.kind.slice(5));
     const i = (n[row] = (n[row] ?? -1) + 1);
-    e.position = { x: zone.x - 0.7 + i * 0.4, y: zone.y + 0.05, z: zone.z - 0.45 + row * 0.45, facing: 0 };
+    // Each bunch apart from the next, so that a child can count the bunches of a dose (#125).
+    e.position = { x: zone.x - LEAF.w / 2 + 0.7 + i * LEAF.gap, y: zone.y + 0.05, z: zone.z - LEAF.gap + row * LEAF.gap, facing: 0 };
   }
 }
 

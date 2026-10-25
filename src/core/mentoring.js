@@ -1174,15 +1174,16 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return t;
   }
   // The model basket of the healer dealt onto its two leaves (#108): one dose on each leaf, one
-  // bunch at a time, "Một lá là một thang.", and then the bunches go back into the model. She never
-  // puts a bunch into the basket of the child.
+  // bunch at a time, and "Một lá là một thang.". She deals it one time, at the first step, and the
+  // leaves keep it (#125: she dealt it again after each wrong basket, six times in a play), so that
+  // the child can look at one dose at any time. She never puts a bunch into the basket of the child.
   function dealSteps(task, s, t) {
     const w = world();
     const recipe = task.tz?.zone.plan?.recipe;
     const model = getEntity(w, 'zone:model');
     if (!recipe || !model) return t;
     const left = itemsOf(model).filter((e) => !e.item.held);
-    const put = [];
+    if (!left.length) return leafSteps(s, t);
     for (let j = 0; ; j++) {
       const leaf = getEntity(w, `zone:leaf-${j}`);
       if (!leaf) break;
@@ -1193,16 +1194,23 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
           if (k2 < 0) break;
           const thing = left.splice(k2, 1)[0];
           s.steps.push({ at: t, put: { zone: leaf.id, item: thing.id, person: task.person?.id ?? 'hero' } });
-          put.push(thing.id);
           t += 0.45;
         }
       }
       t += 0.4;
     }
     s.say(t, 'healer.model.leaf');
-    t += 2.2;
-    put.forEach((id, i) => s.steps.push({ at: t + i * 0.15, back: { item: id } }));
-    return t + put.length * 0.15 + 0.6;
+    return t + 2.2;
+  }
+  // The first leaf of the model: she points at it, and its bunches glow (#125).
+  function leafSteps(s, t, key = 'healer.model.leaf') {
+    const leaf = getEntity(world(), 'zone:leaf-0');
+    s.say(t, key);
+    if (leaf) {
+      s.point(t, { x: leaf.zone.x, z: leaf.zone.z }, 1.6);
+      s.mark(t, { x: leaf.zone.x, z: leaf.zone.z }, 2.5);
+    }
+    return t + 2.2;
   }
   // The help of a level of the healer with a structure (#108): the moves that put bunches into the
   // basket of the child (half of the shortfall, a smaller task) show the step of the level in their
@@ -1222,7 +1230,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       return t + 3.4;
     }
     if (form === 'model') {
-      t = dealSteps(task, s, t);
+      // The model lies on its leaves from the first step: she points at the leaf of one dose, and
+      // never deals it again (#125).
+      t = leafSteps(s, t, 'healer.dose.like');
       s.say(t, 'healer.need.doses', { k: { key: `num.${task.tz.zone.plan.doses}` } });
       if (basket) s.point(t, basket.position, 1.4);
       return t + 2.4;

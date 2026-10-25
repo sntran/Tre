@@ -57,7 +57,7 @@ import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoi
 import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady, DESK_COLORS, marksFor } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
 import { viewSize, inView } from '../world/view.js';
-import { levelFor, taskOf, trialLevel, tightSlot, allowedSlots } from './world/trials.js';
+import { levelFor, taskOf, trialLevel, tightSlot, allowedSlots, MODEL_DOSES } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring, decimalWords } from './mentoring.js';
 import { playExample, stopExample } from './examples.js';
@@ -651,7 +651,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (state.tick % 15 !== 0) return;
     const h = getEntity(state, 'hero')?.position;
     for (const p of query(state, 'person', 'schedule')) {
-      if (p.raidCoach) continue;
+      if (p.raidCoach || comeTalk?.npc === p.id) continue;
       const task = mentoring.taskOfPerson(p.id);
       const tz = task?.startsWith('trial-') ? trialZone(task.slice(6)) : null;
       const hold = Boolean(tz && !tz.zone.done && h && inTaskArea(task, h));
@@ -1547,21 +1547,31 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     } else goTo(wz.position, wz.id, null, standOf(wz));
     // With a thing in the hands the tap is the place of a put, not a check.
     if (!holding()) deskSay(wz);
+    // A tap anywhere on a leaf of the model, or on the model basket: the healer counts the model
+    // (#125: a bunch alone is small on the screen; the whole leaf is the target).
+    if (!holding() && (z.rule === 'leaf' || z.model)) modelSay();
     return true;
   }
-  // A tap on the model basket of the healer (#108): she counts the model by kinds ("Giỏ mẫu: bốn
-  // bó ngải cứu, hai bó tía tô và sáu bó rau má."). It is the model, not the need.
+  // A tap on the model basket of the healer, or on a leaf of it (#108): she counts the whole model,
+  // wherever its bunches lie, and then one dose, while the bunches of one leaf glow (#125: "Giỏ
+  // mẫu: ba bó rau má và một bó tía tô." counted only the bunches in the basket, not those on the
+  // leaves). It is the model, not the need.
   function modelSay() {
     const model = zoneOf('model');
     const healer = getEntity(state, 'npc:healer');
     if (!model || !healer || !openTask(model.zone.task)) return;
     const counts = {};
-    for (const id of model.zone.items) {
-      const k = getEntity(state, id)?.item.kind?.replace(/^herb-/, '');
+    for (const e of query(state, 'item')) {
+      if (!e.item.model || e.item.task !== model.zone.task) continue;
+      const k = e.item.kind?.replace(/^herb-/, '');
       if (k) counts[k] = (counts[k] ?? 0) + 1;
     }
-    const list = Object.entries(counts).map(([k, n]) => (n === 1 ? { key: `healer.model.kind.${k}.one` } : { key: `healer.model.kind.${k}`, params: { n: { key: `num.${n}` } } }));
-    if (list.length) emit({ type: 'open', screen: 'callout', id: healer.id, textKey: 'healer.model.count', params: { list } });
+    const doses = MODEL_DOSES;
+    const list = Object.entries(counts).map(([k, n]) => (n / doses === 1 ? { key: `healer.model.kind.${k}.one` } : { key: `healer.model.kind.${k}`, params: { n: { key: `num.${Math.round(n / doses)}` } } }));
+    if (!list.length) return;
+    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: 'healer.model.count', params: { k: { key: `num.${doses}` }, list } });
+    const leaf = zoneOf('leaf-0');
+    if (leaf?.zone.items.length) setCue([...leaf.zone.items]);
   }
   // A tap on a desk or on the box of the share (#107: "Tapping a desk doesn't tell me how many
   // sticks."): the teacher says what is on it, in the count of grade 4 ("Bàn này: hai bó, hai
@@ -2084,6 +2094,69 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (a.open) queue(() => openCommand({ open: a.open }));
   }
 
+  // A talk that starts a trial far from the place of its work (#125: the healer talked at the well,
+  // and her beds and baskets lay behind a house while she named them): the person says one line and
+  // walks to the place, the hero walks after, and the talk opens there, with its things in view.
+  const COME_AWAY = 24; // half blocks from the middle of the places of the trial
+  const COME_NEAR = 9; // half blocks: the hero and the person are at the place
+  const COME_WAIT = 60; // seconds: a child who walks away ends the wait
+  let comeTalk = null;
+  function trialOfTalk(id) {
+    for (const node of Object.values(data.dialogues.get(id)?.nodes ?? {})) {
+      const open = (node.effects ?? []).find((ef) => ef.open === 'trial');
+      if (open) return open.id;
+    }
+    return null;
+  }
+  function comeFirst(id, npc) {
+    const def = trialDef(trialOfTalk(id));
+    const person = getEntity(state, `npc:${npc}`);
+    const h = hero();
+    // Only a trial of a calling: the talk of a task of the story (the staffs, #66) is where the person
+    // stands, and a press walks to the work after it.
+    if (!def || def.kind || def.npc !== npc || practice || !person?.schedule || !h || h.riding) return false;
+    const spots = Object.values(def.places).flat().map((p) => env.places[p]).filter(Boolean);
+    if (!spots.length) return false;
+    const mid = { x: spots.reduce((a, p) => a + p.x, 0) / spots.length, z: spots.reduce((a, p) => a + p.z, 0) / spots.length };
+    if (Math.hypot(h.position.x - mid.x, h.position.z - mid.z) <= COME_AWAY) return false;
+    // A free cell beside the place, on the side of the hero, for the person; the hero walks there too.
+    const a0 = Math.atan2(h.position.x - mid.x, h.position.z - mid.z);
+    let spot = null;
+    for (let k = 0; k < 12 && !spot; k++) {
+      const a = a0 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 0.5;
+      const q = { x: mid.x + Math.sin(a) * 6, z: mid.z + Math.cos(a) * 6 };
+      if (tileMap.walkable(Math.floor(q.x / 2), Math.floor(q.z / 2))) spot = q;
+    }
+    if (!spot) return false;
+    comeTalk = { id, npc: person.id, mid, t: 0, saved: { spot: person.schedule.spot, hold: person.schedule.hold ?? false } };
+    person.schedule.spot = spot;
+    person.schedule.hold = true;
+    emit({ type: 'open', screen: 'callout', id: person.id, textKey: `dlg.${npc}.trial.come`, params: {} });
+    walkToThing({ x: spot.x / 2 + Math.sin(a0) * 1.5, y: spot.z / 2 + Math.cos(a0) * 1.5 });
+    return true;
+  }
+  // The talk opens when the hero and the person are both at the place.
+  function stepComeTalk() {
+    if (!comeTalk || screen) return;
+    const c = comeTalk;
+    c.t += STEP;
+    const person = getEntity(state, c.npc);
+    const h = hero();
+    const near = (e) => e && Math.hypot(e.position.x - c.mid.x, e.position.z - c.mid.z) <= COME_NEAR;
+    const there = near(h) && near(person) && !walking();
+    if (!there && c.t < COME_WAIT) return;
+    comeTalk = null;
+    if (person?.schedule) {
+      person.schedule.spot = c.saved.spot;
+      if (!c.saved.hold) delete person.schedule.hold;
+    }
+    // At the end of the wait, a hero next to the person still gets the talk; a hero who walked away
+    // does not.
+    if (!there && !(person && h && Math.hypot(h.position.x - person.position.x, h.position.z - person.position.z) <= COME_NEAR)) return;
+    worldCommand(state, { type: 'face', id: 'hero', x: person.position.x, z: person.position.z });
+    worldCommand(state, { type: 'face', id: person.id, x: h.position.x, z: h.position.z });
+    talk(c.id);
+  }
   function interact(who, at) {
     log('action', { kind: 'talk' });
     worldCommand(state, { type: 'face', id: 'hero', x: at.x * 2, z: at.y * 2 });
@@ -2107,7 +2180,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (words) emit({ type: 'open', screen: 'callout', id: at.entity ?? `npc:${who.id}`, textKey: words[state.tick % words.length], params: { name: profile.hero.name } });
         return;
       }
-      talk(pickTalk(data.npcs.npcs[who.id], profile));
+      const id = pickTalk(data.npcs.npcs[who.id], profile);
+      if (!comeFirst(id, who.id)) talk(id);
     }
     else if (who.kind === 'event') tapEvent(who.id);
     else if (who.kind === 'puzzle') puzzles.talk(who.id);
@@ -3187,6 +3261,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // kind again with no limit, and the healer said "Bó rau má đây." at each of many presses).
   const HERB_RUN = 3;
   let herbSaid = { key: null, n: 0 };
+  // The first bunch that the child takes: the basket of the healer glows and she points at it,
+  // one time in a task (#125: "I only found out late that the wooden box with signs was the basket").
+  function basketOnce() {
+    const tz = trialZone('healer');
+    const basket = getEntity(state, 'basket:healer');
+    const healer = getEntity(state, 'npc:healer');
+    if (!tz || tz.zone.done || tz.zone.basketNamed || !basket) return;
+    tz.zone.basketNamed = true;
+    setCue([basket.id]);
+    if (healer && !healer.hidden) healer.gesture = { act: 'point', x: basket.position.x, z: basket.position.z, t: 2.2 };
+  }
   function sayHerb(what, kind) {
     const healer = getEntity(state, 'npc:healer');
     if (!healer || !/^herb-(ngai|tiato|rauma)$/.test(kind)) return;
@@ -3517,6 +3602,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const fromHeap = tappedHeap?.zone.rule === 'heap' && openTask(tappedHeap.zone.task) ? tappedHeap.zone : null;
       for (const e of query(state, 'item', 'position')) {
         if (e.hidden || e.item.held || e.item.set || e.item.fixed) continue;
+        // A bunch of the model of the healer is not a thing of the child (#125): a tap counts it.
+        if (e.item.model) continue;
         const zone = zoneOf(e.item.zone);
         const rule = zone?.zone.rule;
         if (rule === 'span') {
@@ -3573,7 +3660,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // not: a press never undoes what the child just put (#47, #54).
       for (const z of query(state, 'zone')) {
         if (!TAKE_BACK.has(z.zone.rule)) continue;
-        const things = z.zone.items.map((id) => getEntity(state, id)).filter((e) => e && !e.hidden && !e.item.held && !e.item.set && !e.item.fixed && canTakeWork(state, e));
+        const things = z.zone.items.map((id) => getEntity(state, id)).filter((e) => e && !e.hidden && !e.item.held && !e.item.set && !e.item.fixed && !e.item.model && canTakeWork(state, e));
         // The mat of the share of grade 4 is a heap of the work (#116): a press takes the loose rod
         // nearest to the hero, also with no tap (a girl of grade 4 could not take the last rod).
         const fromMat = things.filter(shareMat);
@@ -4970,6 +5057,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     checkNotebook();
     stepBridgeOpen();
     stepHold();
+    stepComeTalk();
     stepNearHeap();
     stepOutOfPerson();
     stepFromBehind();
@@ -4995,7 +5083,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if ((ev.type === 'pick' || ev.type === 'put') && ev.item) {
         const it = getEntity(state, ev.item)?.item;
         if ((it?.task?.startsWith('trial-') || openSpan(it?.task)) && (ev.id === 'hero' || lastPick?.task !== it.task || !lastPick.child)) lastPick = { task: it.task, kind: it.kind, size: it.size, child: ev.id === 'hero' };
-        if (ev.type === 'pick' && ev.id === 'hero' && it?.task === 'trial-healer' && ev.item !== oneMove) sayHerb('herb', it.kind);
+        if (ev.type === 'pick' && ev.id === 'hero' && it?.task === 'trial-healer') {
+          if (ev.item !== oneMove) sayHerb('herb', it.kind);
+          basketOnce();
+        }
         if (ev.type === 'put' && ev.id === 'hero' && ev.item === oneMove) {
           oneMove = null;
           if (it?.task === 'trial-healer') sayHerb('put', it.kind);

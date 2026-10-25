@@ -139,6 +139,8 @@ function act(world, e, want, env, dt) {
 
 function pick(world, e, thing, env, dt, hand = false) {
   if (!thing?.item || thing.item.held || thing.item.set || thing.item.fixed || e.hands.holds) return;
+  // The hands of the hero never take a bunch of the model of the healer (#125); only she moves it.
+  if (thing.item.model && e.id === 'hero') return;
   const zoneEnt = thing.item.zone ? getEntity(world, `zone:${thing.item.zone}`) : null;
   const working = zoneEnt && WORK.has(zoneEnt.zone.rule);
   if (working ? !canTakeWork(world, thing) : zoneEnt && !canTake(zoneEnt.zone, thing.id)) return;

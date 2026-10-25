@@ -60,7 +60,7 @@ test('the model basket stands away from the basket of the healer and the beds, a
   assert.ok(!h.puts.some((p) => p.zone === 'basket'), JSON.stringify(h.puts));
   assert.ok(h.said.includes('healer.model.leaf'), h.said.join(', '));
   // A tap on the model: the healer counts it by kinds.
-  h.tapThing(h.zone('model').items[0]);
+  h.tapThing(h.zone('leaf-0').items[0]);
   assert.ok(h.said.includes('healer.model.count'), h.said.join(', '));
 });
 
