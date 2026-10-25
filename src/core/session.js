@@ -52,7 +52,7 @@ import { addHero, addFriend, syncPeople, addLifeGroups, addLanterns, addZones, a
 import { placeBySchedule, atWork } from './world/systems/schedule.js';
 import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
-import { rainOf } from './world/systems/sky.js';
+import { rainOf, sky as skyStep } from './world/systems/sky.js';
 import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
 import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady, DESK_COLORS, marksFor } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
@@ -318,6 +318,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // rest comes from the map and the seed.
     state = onThisMap ? loadWorld(profile.world) : createWorldState({ seed: profile.world.seed, map: map.id, clock: profile.world.clock });
     state.clock = profile.world.clock; // one clock: a travel on the country map moves it too
+    // The light of the hour at once, before the first step (#133: the first frame after a load at
+    // night drew the light of the day).
+    skyStep(state, 0, null, env);
     if (onThisMap) for (const rec of Object.values(visit.chunks ?? {})) for (const e of rec.entities ?? []) if (!getEntity(state, e.id)) addEntity(state, e);
     // The placement zones and their cells, before the hero finds a free place.
     addZones(state, map, env);
@@ -651,7 +654,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (state.tick % 15 !== 0) return;
     const h = getEntity(state, 'hero')?.position;
     for (const p of query(state, 'person', 'schedule')) {
-      if (p.raidCoach || comeTalk?.npc === p.id) continue;
+      if (p.raidCoach || p.potsWell || comeTalk?.npc === p.id) continue;
       const task = mentoring.taskOfPerson(p.id);
       const tz = task?.startsWith('trial-') ? trialZone(task.slice(6)) : null;
       const hold = Boolean(tz && !tz.zone.done && h && inTaskArea(task, h));

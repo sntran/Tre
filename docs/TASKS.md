@@ -240,6 +240,16 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### The view and the world after the play test of #115 to #122 (#133)
+
+**The ride buttons.** The buttons to ride and to get off show the slate calf of #122 with a child on its back, and with the child next to it, with no arrow (`art/ui/ride.svg`, `art/ui/ride-off.svg`). The old picture, a light grey animal with long horns and an up arrow, read as "pick up a goat".
+
+**The view turns by itself less.** The turn of a work comes one time for a task (the key of the open task), the turn for a hero under a roof does not come during a task, and no two turns by themselves come within 30 seconds (`TURN_GAP` in `src/world/turns.js`).
+
+**The light of the night from the first frame.** The light of the hour (`state.sky`) is set when the world loads (`sky` in `src/core/world/systems/sky.js`, called at the load in `src/core/session.js`), so that the first frames after a load have the light of the hour. Before, the world had no sky until its first step, and a frame drew the light of the day. I did not find another cause in the code; the plays at night check each frame.
+
+**The pots can be found.** On a day of the pots the healer stays at the well from 9:00 to 15:00, and while the hero is within 20 half blocks of the well (`keepHealer` in `src/core/puzzles.js`), with her mark over her. While no task is open, the mark of a side puzzle is a star on the screen too, with the face of its person (`markers` in `src/ui/village.js`).
+
 ### The hopscotch for the youngest children (#132)
 
 **A step between the courts.** The courts of `math.count.120` have three levels, one for each level of the skill: from 1, from 11 to 31 (starts 11, 15, 20, 25, and 31), and from 36 to 101 (`data/world/folkgames.json`). A child of K who counts to ten counts on from the teens before the forties.

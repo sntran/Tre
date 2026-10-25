@@ -377,6 +377,28 @@ export function createPuzzles(deps) {
     if (e) e.look = `pzpot-${pots.lv.sizes[i]}-${pots.levels[i]}`;
   };
   const healer = () => getEntity(w(), 'npc:healer');
+  // On a day of the pots the healer stays at the well from 9:00 to 15:00, and while the hero is
+  // near the well (#133: her plan put her there for about 43 seconds of play, and no child met the
+  // pots in four play tests).
+  const WELL_HOURS = [9, 15];
+  const WELL_NEAR = 20; // half blocks
+  function keepHealer() {
+    const h = healer();
+    if (!h?.schedule) return;
+    const well = pots && !pots.solved && PZ ? placeOf(PZ, PZ.at ?? PZ.well) : null;
+    const hour = (w().clock.minutes % 1440) / 60;
+    const near = hero() && well && dist(hero().position, well) <= WELL_NEAR;
+    const stay = Boolean(well && !h.hidden && ((hour >= WELL_HOURS[0] && hour < WELL_HOURS[1]) || near));
+    if (stay && !h.potsWell) {
+      h.potsWell = { spot: h.schedule.spot, hold: h.schedule.hold ?? false };
+      h.schedule.spot = { x: well.x, z: well.z };
+      h.schedule.hold = true;
+    } else if (!stay && h.potsWell) {
+      h.schedule.spot = h.potsWell.spot;
+      if (!h.potsWell.hold) delete h.schedule.hold;
+      delete h.potsWell;
+    }
+  }
   const healerNear = () => {
     const h = healer();
     const well = placeOf(PZ, PZ.well);
@@ -440,6 +462,7 @@ export function createPuzzles(deps) {
       }
       setFerry();
       setPots();
+      keepHealer();
       if (ferry?.scene) tickScene(dt);
       const h = hero()?.position;
       // The traveler says the puzzle when the hero comes near, one time each day.

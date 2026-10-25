@@ -317,3 +317,7 @@ A pick-up and a put-down show the move: the thing flies in a short arc (about 0.
 ## The country map on dó paper (#8)
 
 The country map (`src/ui/worldmap.js`, `drawBase`) is drawn in the three flat tones of the regions with ink lines for the coast, the borders, the rivers, and the roads. Over the whole sheet lies the grain of the dó paper (`art/paper.svg`, a tile of 48 map units, multiplied at 0.6), so that the flat tones look printed on paper, and a soft vignette in the tone of wood darkens the edges of the sheet. The seals, the names, and the way of a travel come over the grain, so that they stay sharp. The loading screen uses the same base with the grain and no vignette.
+
+## The ride buttons (#133)
+
+The button to ride shows the slate calf of #122 (`ash` body, `ink` legs, an `ashLight` muzzle, and two short buds of horns) with the child on its back (a `vermilion` shirt, `indigo` trousers); the button to get off shows the child standing next to the calf, on a line of ground. No arrow: an arrow up or down read as a pick or a put ("Can I pick up the goat??").

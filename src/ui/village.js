@@ -603,7 +603,17 @@ export async function mountVillage(ctx, params = {}) {
 
   // The quest markers: world points { x, y (map), h (height) }. In a practice of a whole place, the
   // star of a task is over the person of each station (#37).
+  // The stars: the steps of the story, and the side puzzle of a person (its mark over the person:
+  // the healer at the well on a day of the pots) while no task is open (#133: no child found the
+  // pots in four play tests).
   function markers() {
+    const story = storyMarkers();
+    if (session.stations().length || session.practice || session.mentorTask) return story;
+    const side = state.entities.filter((e) => e.look === 'mark-side' && e.position && !e.hidden)
+      .map((e) => ({ x: e.position.x / 2, y: e.position.z / 2, h: e.position.y / 2 + 0.6, id: e.id, who: e.id === 'pz:mark:pots' ? 'healer' : null, key: 'star.go.person', main: false }));
+    return [...story, ...side];
+  }
+  function storyMarkers() {
     const stationIds = session.stations();
     if (stationIds.length) {
       return persons().filter((p) => p.kind === 'npc' && stationIds.includes(p.ref)).map((p) => ({ p, top: figureTop(p.entity) }))
@@ -1281,12 +1291,17 @@ export async function mountVillage(ctx, params = {}) {
     const focus = wu(hero().position);
     const scr = viewSize(size.width, size.height, view.state.level);
     const inSight = (az) => sight.map(wu).every((p) => inView({ x0: p.x - 0.5, x1: p.x + 0.5, y0: p.y, y1: p.y + 1, z0: p.z - 0.5, z1: p.z + 0.5 }, focus, { az, size: scr }));
-    if (!turn || !viewTurns.work(key, performance.now())) return;
+    // One turn for a task (#133: the view turned at the teacher and again after the first bunch of
+    // the healer): the key of the task when one is open, else the key of the work.
+    if (!turn || !viewTurns.work(session.mentorTask ?? key, performance.now())) return;
     // The person of the task is a point of the work too (#87): no roof covers the person.
     const who = person ? figures.placeOf(person) : null;
     const all = who ? [...pts, { x: who.x, y: who.y, z: who.z }] : pts;
     const steps = workTurn(workBoxes(terrain, all), all, view.angle, VIEW.elevation, inSight);
-    if (steps) view.turn(steps);
+    if (steps) {
+      view.turn(steps);
+      viewTurns.did(performance.now());
+    }
   }
 
   // The hero in sight (#111: at a talk the child saw only the outline of the hero behind a roof):
@@ -1298,7 +1313,7 @@ export async function mountVillage(ctx, params = {}) {
   let stillFor = 0;
   let stillDone = false;
   function heroInSight(heroAt, personId = null) {
-    if (!viewTurns.still(performance.now())) return;
+    if (!viewTurns.still(performance.now(), Boolean(session.mentorTask))) return;
     const r = getEntity(state, 'raid')?.raid;
     if (r && !r.result) return;
     const objects = terrain.objects
@@ -1306,7 +1321,10 @@ export async function mountVillage(ctx, params = {}) {
       .map((o) => ({ b: terrain.boxOf(o), building: true, hits: (x, y, z) => terrain.hits(o.who, x, y, z) }));
     const person = personId ? figures.placeOf(personId) : null;
     const steps = stillTurn(objects, heroAt, person, view.angle, VIEW.elevation);
-    if (steps) view.turn(steps);
+    if (steps) {
+      view.turn(steps);
+      viewTurns.did(performance.now());
+    }
   }
   // The state of the sight of the hero, for the plays and the debug panel.
   function sightState() {
