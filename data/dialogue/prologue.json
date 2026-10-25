@@ -139,20 +139,7 @@
        "set": "prologue.done"
       }
      ],
-     "next": "n2"
-    },
-    "n2": {
-     "if": {
-      "grade": {
-       "min": 3
-      }
-     },
-     "then": "placement",
-     "else": "drum"
-    },
-    "placement": {
-     "speaker": "elder",
-     "textKey": "dlg.elder.trials.done.placement"
+     "next": "drum"
     },
     "drum": {
      "speaker": "narrator",
@@ -175,16 +162,6 @@
    }
   },
   {
-   "id": "elder.placement.wait",
-   "start": "n1",
-   "nodes": {
-    "n1": {
-     "speaker": "elder",
-     "textKey": "dlg.elder.placement.wait.n1"
-    }
-   }
-  },
-  {
    "id": "elder.drum",
    "start": "n1",
    "nodes": {
@@ -200,12 +177,12 @@
    }
   },
   {
-   "id": "elder.go.exam",
+   "id": "elder.messenger.back",
    "start": "n1",
    "nodes": {
     "n1": {
      "speaker": "elder",
-     "textKey": "dlg.elder.go.exam.n1"
+     "textKey": "dlg.elder.messenger.back.n1"
     }
    }
   },

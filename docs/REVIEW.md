@@ -118,11 +118,13 @@ All text is in `i18n/vi.json` and `i18n/en.json`. This list gives the key of eac
 | `calling.woodcutter.mentor` | Người thầy: Thạch Sanh | Mentor: Thạch Sanh |
 | `title.play` | Chơi tiếp: {name} | Play: {name} |
 | `title.new` | Tạo anh hùng mới | Make a new hero |
+| `title.nguoi-tai.name` | Người tài | Person of talent |
 | `title.tu-tai.name` | Tú tài | Tú tài |
 | `title.cu-nhan.name` | Cử nhân | Cử nhân |
 | `title.tien-si.name` | Tiến sĩ | Tiến sĩ |
 | `title.bang-nhan.name` | Bảng nhãn | Bảng nhãn |
 | `title.trang-nguyen.name` | Trạng nguyên | Trạng nguyên |
+| `title.nguoi-tai.about` | Người được sứ giả của nhà vua thử tài và gọi là người tài. | A person whom the messenger of the king tested and named a person of talent. |
 | `title.tu-tai.about` | Danh hiệu đầu tiên của người học. | The first title of a scholar. |
 | `title.cu-nhan.about` | Người đỗ kỳ thi Hương. | A person who passed the regional exam (thi Hương). |
 | `title.tien-si.about` | Người đỗ kỳ thi Hội và thi Đình. | A person who passed the national exams (thi Hội and thi Đình). |
@@ -775,3 +777,17 @@ The note of the week (`docs/LEARNLOG.md`, "The weekly note") is now a few senten
 - **The hopscotch (#132):** `loco.pick` ("Nhặt được mảnh sành rồi! Giờ nhảy qua ô đó."), `loco.good` ("Về đến nơi rồi!"), `loco.left` ("Còn {n} lượt nữa là xong."), and `loco.left.one` ("Còn một lượt nữa là xong.").
 - **The rice of Gióng (#129):** `rice.pot` ("Nồi có {n} bát."), `rice.grow` ("Đủ mười bát! Gióng cao thêm một đầu."), `rice.grow.rest` ("… Trong nồi còn {n} bát."), `rice.help.tray` ("Nồi có {n} bát. Cháu lấy một khay cơm ở bờ ruộng, mang đến nồi nhé."), `rice.help.pot` ("Nồi có {n} bát. Cháu mang khay này đến nồi nhé."), each with `.one` (and `.zero` for a help: "Nồi chưa có bát nào."), and `word.boruong` ("Bờ ruộng là đường đất nhỏ bên ruộng lúa."), K to grade 2, the first time.
 - **One goal at a place (#129):** `event.duck.wait` ("Lát nữa cháu giúp cô tìm vịt nhé."), `event.cart.wait` ("Lát nữa cháu giúp bác đẩy xe nhé."), `event.flood.wait` ("Lát nữa cháu giúp cô tháo nước nhé."), and `event.market.wait` ("Lát nữa cháu ghé đổi gạo với cô nhé."); the help of the ducks with a duck in the hands: `mentor.duck.carry` ("Bế vịt về chuồng này nhé.") and `mentor.duck.stray` ("Vịt này lông nâu, không phải vịt của cô.").
+- **Please check:** "Bờ ruộng là đường đất nhỏ bên ruộng lúa." for a child of six.
+
+## The tests of the messenger in Era 1 (#134)
+
+Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 the messenger of the Hùng King gives the tests at the village hall of Phù Đổng. The scholar titles, the stele, the board, and `vanmieu.*` wait for chapter 7.
+
+- **The drum and the elder:** the drum at every grade after `dlg.elder.trials.done.n1`; `dlg.elder.messenger.back.n1` ("Sứ giả của nhà vua về làng rồi. Ông ấy đợi cháu ở [[dinh]]."). Gone: `dlg.elder.trials.done.placement`, `dlg.elder.placement.wait.n1`, `dlg.elder.go.exam.n1`, `quest.placement.title`, and `quest.placement.exam`.
+- **The placement test (grade 3 and up):** `dlg.messenger.call.test` ("Nhà vua cần người tài. Ta thử tài cháu một chút nhé."), then the exam, then `dlg.messenger.call.tested` ("Ta sẽ tâu với nhà vua về cháu."), then `dlg.messenger.call.n4` (Gióng speaks).
+- **The exam of the era:** `dlg.giong.farewell.drum` ("Tùng! Tùng! Tùng! Từ xa vọng lại tiếng trống ở [[dinh]] làng Phù Đổng: sứ giả của nhà vua đã trở về làng."), `dlg.messenger.thanks.n1` ("Nhà vua cảm ơn làng Phù Đổng. Nhờ có Gióng và dân làng, giặc Ân đã chạy về nước."), and `dlg.messenger.thanks.n2` ("Nhà vua tìm người tài giỏi để giúp nước! Ta thử tài cháu nhé.").
+- **The lines of the messenger at the exam** (`exam.messenger.*`, "ta" and "cháu"): `exam.messenger.era1.title` ("Sứ giả thử tài: môn Toán"), `exam.messenger.placement.title`, `exam.messenger.rule` ("Bài thử có {min} đến {max} câu … Cháu làm đúng thì câu sau khó hơn …"), `exam.messenger.passed` ("Cháu là người tài của làng Phù Đổng. Ta sẽ tâu với nhà vua."), `exam.messenger.print` ("Tên của em và lời của sứ giả được in vào Sổ tay."), `exam.messenger.not.yet`, `exam.messenger.placement.done`, `exam.messenger.who`, `exam.messenger.calling`, and the place `exam.place.dinh` ("Đình làng Phù Đổng").
+- **The title and its print:** `title.nguoi-tai.name` ("Người tài"), `title.nguoi-tai.about`, and the print `note.legend.talent` ("Người tài của làng Phù Đổng").
+- **The road and its signs:** `place.roadthanglong` ("Đường qua sông Hồng"), `map.sign.west` (in Phù Đổng: "Tấm biển chỉ đường: về phía tây nam, lội qua sông Đuống ở chỗ cạn, là bến đò sông Hồng."), and `map.sign.road` (on the road: "… về phía đông, qua bến đò sông Hồng, là làng Phù Đổng.").
+- **Changed:** `quest.exam.title` ("Sứ giả thử tài"), `quest.exam.go` ("Ra [[dinh]] gặp sứ giả của nhà vua."), `chapter.end.exam` ("Sứ giả của nhà vua thử tài em và gọi em là {title}."), `dlg.teacher.home.n1` ("Thầy nghe tin rồi: sứ giả của nhà vua gọi con là người tài! Thầy mừng lắm."), and `home.calling.none` ("Em sẽ chọn [[nghe]] sau lần thử tài đầu tiên.").
+- **Please check:** "tâu" in the words of the messenger, and "người tài" as the first title of a child of six.

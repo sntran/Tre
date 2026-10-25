@@ -213,7 +213,7 @@
    "shot": "the-woodcutter-and-the-wood-pile"
   },
   {
-   "goto": "?story=vanmieu-board"
+   "goto": "?story=chapter-home"
   },
   {
    "until": "Boolean(tre.activeVillage)",

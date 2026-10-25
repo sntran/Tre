@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # Make the maps of the Era 1 region (Thánh Gióng) with the real layout:
 # Phù Đổng on the north bank of the Đuống, Sóc Sơn to the north, Núi Trâu to the east,
-# and Thăng Long with Văn Miếu to the south-west, across the Đuống and the Red River.
+# and the road to the south-west, across the Đuống and the Red River (no Văn Miếu and no Thăng
+# Long in Era 1: Văn Miếu was built in 1070 and Thăng Long has its name from 1010, #134).
 # On every map, north is map -y (the screen up and right), and east is map +x.
 import os, sys
 sys.path.insert(0, os.path.dirname(__file__))
@@ -48,7 +49,7 @@ A.fill(8, 31, 2, 2, '=')
 A.fill(22, 31, 2, 2, '=')
 A.fill(8, 38, 2, 1, '=')
 A.fill(22, 38, 2, 1, '=')
-# The south bank: the road south-west to Thăng Long, and fields.
+# The south bank: the road south-west to the Red River, and fields.
 A.fill(0, 39, 24, 2, '=')
 A.fill(26, 39, 12, 3, 'f')
 A.fill(31, 39, 1, 3, '=')
@@ -218,7 +219,7 @@ ore_triggers(A, 'ore2', 3, 31)
 A.triggers += [
     {'id': 'well', 'x': 20, 'y': 11, 'on': 'tap', 'action': {'textKey': 'map.well'}},
     {'id': 'banyan', **A.rect('banyan'), 'on': 'tap', 'action': {'textKey': 'map.banyan'}},
-    {'id': 'sign', 'x': 20, 'y': 41, 'on': 'tap', 'action': {'textKey': 'map.sign.vanmieu'}},
+    {'id': 'sign', 'x': 20, 'y': 41, 'on': 'tap', 'action': {'textKey': 'map.sign.west'}},
     {'id': 'field-home', 'x': 3, 'y': 19, 'w': 8, 'h': 6, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-east', 'x': 33, 'y': 2, 'w': 6, 'h': 25, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-south', 'x': 26, 'y': 39, 'w': 12, 'h': 3, 'on': 'tap', 'action': {'textKey': 'map.field'}},
@@ -298,8 +299,8 @@ C.paths = {
     'field-south': [[12.5, 27.5], [12.5, 16.0], [0.5, 14.8]],
 }
 
-# ---------------------------------------------------------------- The road south-west to Thăng Long
-D = M('road-thanglong', 'place.roadthanglong', 40, 24)
+# ---------------------------------------------------------------- The road south-west, over the Red River
+D = M('road-thanglong', 'place.roadthanglong', 40, 24)  # the id stays; its name is a name of the land
 D.geo = {'at': [105.87, 21.04], 'north': NORTH}
 # The Red River: wide water with sand banks. A ferry crosses it.
 D.fill(13, 0, 1, 24, '_')
@@ -320,9 +321,6 @@ D.ferries = [{'id': 'red', 'a': {'x': 25.2, 'y': 12.0}, 'b': {'x': 14.8, 'y': 12
 D.obj('house1', 'house', 2, 17, 3, 3)
 D.obj('house2', 'giong-house', 6, 18, 3, 3)
 D.obj('sign', 'signpost', 2, 9)
-# The way to Văn Miếu at the west end of the road: its gate across the road, and a stele on a turtle.
-D.obj('vanmieu-gate', 'vanmieu-gate', 0, 10, 1, 4, solid=[[0, 0], [0, 3]])
-D.obj('stele', 'stele', 2, 13, 2, 2)
 D.obj('hay1', 'haystack', 36, 13)
 D.many('tree', 'tree', [(11, 1), (1, 9), (11, 16), (29, 13), (38, 10), (38, 22), (29, 23), (12, 22), (0, 22)])
 D.many('bamboo', 'bamboo', [(28, 1), (39, 1), (10, 9), (28, 20)])
@@ -335,9 +333,7 @@ D.life = [
 D.triggers = [
     {'id': 'ferry-east', 'x': 27, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'ferry': 'red', 'textKey': 'map.ferry'}},
     {'id': 'ferry-west', 'x': 13, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'ferry': 'red', 'textKey': 'map.ferry.back'}},
-    {'id': 'vanmieu', 'x': 0, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'when': {'flags': ['prologue.done']}, 'action': {'open': 'vanmieu'}},
-    {'id': 'vanmieu-early', 'x': 0, 'y': 11, 'w': 1, 'h': 2, 'on': 'enter', 'action': {'textKey': 'map.road.early'}},
-    {'id': 'sign', 'x': 2, 'y': 9, 'on': 'tap', 'action': {'textKey': 'map.sign.vanmieu'}},
+    {'id': 'sign', 'x': 2, 'y': 9, 'on': 'tap', 'action': {'textKey': 'map.sign.road'}},
     {'id': 'river', 'x': 14, 'y': 0, 'w': 13, 'h': 24, 'on': 'tap', 'action': {'textKey': 'map.redriver'}},
     {'id': 'field', 'x': 30, 'y': 2, 'w': 8, 'h': 20, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-west', 'x': 2, 'y': 2, 'w': 8, 'h': 6, 'on': 'tap', 'action': {'textKey': 'map.field'}},
@@ -453,7 +449,7 @@ START_TILES = ['N20E105', 'N20E106', 'N21E105', 'N21E106']
 # of a place: its anchor is a cell of the frame and its real place. Phù Đổng: the đình. Sóc Sơn: the
 # top of núi Vệ Linh (the stamp rises with the hill). Núi Trâu: the highest top of the line of low hills
 # near Châu Cầu (#27), east of the fields of the stamp; Núi Dạm, the tall hill to the west, is land with no
-# name in Era 1. Văn Miếu: the gate. The pins are the ends of the rivers of the stamps: the
+# name in Era 1. The road over the Red River: its west end. The pins are the ends of the rivers of the stamps: the
 # real rivers bend to meet them. The roads join the roads of the stamps (points in the cells of the
 # frames).
 PLANE = {
@@ -482,7 +478,7 @@ PLANE = {
         {'id': 'phu-dong', 'cell': [32, 20], 'at': [105.953, 21.059], 'note': 'the đình'},
         {'id': 'soc-son', 'cell': [38, 20], 'at': [105.825, 21.29], 'lift': True, 'note': 'the top of núi Vệ Linh'},
         {'id': 'trau-son', 'cell': [176, 20], 'at': [106.23, 21.14], 'note': 'the highest top of the line of low hills of Trâu Sơn near Châu Cầu (#27), east of the fields'},
-        {'id': 'road-thanglong', 'cell': [0, 40], 'at': [105.836, 21.029], 'note': 'the gate of Văn Miếu'},
+        {'id': 'road-thanglong', 'cell': [0, 40], 'at': [105.836, 21.029], 'note': 'the west end of the road (where Văn Miếu stands from chapter 7)'},
         {'id': 'xom-ruong', 'cell': [34, 24], 'at': [105.97, 21.1], 'quiet': 16, 'note': 'the yard of Xóm Ruộng, north of Phù Đổng (quiet: no hamlet of the land within 16 cells)'},
     ],
     'pins': [

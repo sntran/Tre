@@ -372,13 +372,15 @@
    "id": "van-mieu",
    "name": "Văn Miếu",
    "at": [105.836,21.029],
-   "note": "Văn Miếu – Quốc Tử Giám, Hà Nội"
+   "note": "Văn Miếu – Quốc Tử Giám, Hà Nội",
+   "chapter": 7
   },
   {
    "id": "thang-long",
    "name": "Thăng Long",
    "at": [105.84,21.035],
-   "note": "Hoàng thành Thăng Long"
+   "note": "Hoàng thành Thăng Long",
+   "chapter": 7
   },
   {
    "id": "nghia-linh",

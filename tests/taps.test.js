@@ -84,20 +84,21 @@ test('a held finger behind a house walks the hero around the house, as a tap doe
   }
 });
 
-test('from the đình, taps on the star of Văn Miếu alone take the hero to the gate: along the roads, and on the ferry over the Red River (#53)', async () => {
+test('from the đình, taps on a star at the west end of the road over the Red River alone take the hero there: along the roads, and on the ferry over the Red River (#53)', async () => {
   const dinh = data.world.map('phu-dong').layers.objects.find((o) => o.id === 'dinh');
-  const [gx, gy] = data.world.at('road-thanglong', 0.6, 40);
+  // The west end of the road (no Văn Miếu there in Era 1, #134).
+  const [gx, gy] = data.world.at('road-thanglong', 1.5, 40);
   let session = null;
   const s = { name: 'far', profile: { name: 'An', grade: 2, seed: 7, flags: { 'intro.seen': true, 'prologue.done': true } }, clock: 540, at: [dinh.x + dinh.w / 2, dinh.y + dinh.h + 2], steps: [] };
   await runHeadless(s, { onSession: (x) => { session = x; } });
   const hero = () => getEntity(session.state, 'hero');
+  // The hero is at the end: within 3 cells of the star.
+  const there = () => Math.hypot(heroCell(session).x - gx, heroCell(session).y - gy) < 3;
   let gate = false;
-  session.listen((ev) => {
-    if (ev.type === 'open' && ev.screen === 'vanmieu') gate = true;
-  });
   let taps = 0;
   let idle = 0;
   for (let k = 0; k < 30 * 60 * 8 && !gate; k++) {
+    gate = there();
     const screen = session.screen;
     if (screen === 'dialogue' || screen === 'say') session.command({ type: 'next' });
     else if (screen) session.command({ type: 'close' });
@@ -111,7 +112,7 @@ test('from the đình, taps on the star of Văn Miếu alone take the hero to th
     session.step();
     session.events();
   }
-  assert.ok(gate, `the hero comes to the gate of Văn Miếu: ${JSON.stringify(heroCell(session))}, ${taps} taps`);
+  assert.ok(gate, `the hero comes to the west end of the road: ${JSON.stringify(heroCell(session))}, ${taps} taps`);
   assert.ok(taps <= 6, `a few taps on the star: ${taps}`);
 });
 
@@ -399,24 +400,26 @@ test('from the đình, taps on the star alone set trauson.found and take the her
   assert.ok(clues.length >= 1, `the people of the way say the clues: ${clues.join(' ')}`);
 });
 
-// From the top of Sóc Sơn, after the farewell, taps on the star alone take the hero to the gate of
-// Văn Miếu (#56): the walk goes to the ferry of the Red River, never onto a sandbar with no way out.
-test('from the top of Sóc Sơn, taps on the star alone take the hero to the gate of Văn Miếu (#56)', async () => {
-  const [gx, gy] = data.world.at('road-thanglong', 0.6, 40);
+// From the top of Sóc Sơn, after the farewell, taps on the star alone take the hero to the messenger
+// at the đình of Phù Đổng (#56; the test of the era is there, #134): each tap on the star walks, and
+// the walk never goes onto a place with no way out.
+test('from the top of Sóc Sơn, taps on the star alone take the hero to the đình of Phù Đổng (#56, #134)', async () => {
+  const dinh = data.world.map('phu-dong').layers.objects.find((o) => o.id === 'dinh');
+  // The map of a place is on the plane: the cell in front of the đình.
+  const [gx, gy] = [dinh.x + dinh.w / 2, dinh.y + dinh.h + 2];
   let session = null;
   const flags = { 'intro.seen': true, 'prologue.started': true, 'prologue.done': true, 'giong.spoke': true, 'giong.grown': true, 'soldier1.won': true, 'soldier2.won': true, 'era1.boss.won': true, 'giong.farewell': true };
   const s = { name: 'far', profile: { name: 'An', grade: 2, seed: 7, flags }, clock: 540, at: ['soc-son', 38, 20], steps: [] };
   await runHeadless(s, { onSession: (x) => { session = x; } });
   const hero = () => getEntity(session.state, 'hero');
+  const there = () => Math.hypot(heroCell(session).x - gx, heroCell(session).y - gy) < 4;
   let gate = false;
-  session.listen((ev) => {
-    if (ev.type === 'open' && ev.screen === 'vanmieu') gate = true;
-  });
   let taps = 0;
   let idle = 0;
   let stuck = 0;
   let last = null;
   for (let k = 0; k < 30 * 60 * 12 && !gate; k++) {
+    gate = there();
     const screen = session.screen;
     if (screen === 'dialogue' || screen === 'say') session.command({ type: 'next' });
     else if (screen) session.command({ type: 'close' });
@@ -432,7 +435,7 @@ test('from the top of Sóc Sơn, taps on the star alone take the hero to the gat
     session.step();
     session.events();
   }
-  assert.ok(gate, `the hero comes to the gate of Văn Miếu: ${JSON.stringify(heroCell(session))}, ${taps} taps, ${stuck} with no walk`);
+  assert.ok(gate, `the hero comes to the đình: ${JSON.stringify(heroCell(session))}, ${taps} taps, ${stuck} with no walk`);
   assert.ok(stuck <= 1, `a star tap always walks: ${stuck} taps with no walk`);
 });
 

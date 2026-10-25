@@ -20,7 +20,7 @@
 
 **Commands:** the world commands `move`, `stop`, `pet`, `ride`, `aim`, `pick`, `put`, `drop`, `guess`, and `face`; `tap { target }`; `hands` (the action button, or the E key); `talkTo { id }`; `talk { dialogue }`; `travel` (the country map); `refresh`; `next` and `choose { n }` (the open talk); `wave` (the child calls the person of the task); `jump` (the key J or the jump button; `docs/WORLD.md`, "The jump"); `closed` (the view closed a screen). In a raid: `shoot { count }` (the slingshot at the wall), `pour { source, x, y }` (an element to a map point), and `pet` (Nghé charges, when Nghé is a tool of the raid). See `docs/RAIDS.md`.
 
-**Events:** the events of the world, and `open { screen, ... }` (a talk line, a line of text, a callout over a head, the rest, or a screen of a story effect such as `worldmap`, `vanmieu`, or `nameFriend`), `close`, `map` (the hero went to another map), `gift` (things fly to their counter), `practice` (a set of a practice is done), `mentor` (a move of the mentor of a task: key, diagnosis, move, level; `docs/MENTOR.md`), `check` and `selfFix` (a check of the child, and a change after it), `plantRow` and `planted` (a row of the planting, and the end of a planting: result, empty, extra, full; `docs/PLANTING.md`), `jump { kind }`, `land`, and `splash` (a jump of the hero), `goBack` ("go back" at the end of a practice: the view opens the village at `to`, the place before the visit, or at the start of the game; the world event `back` is a rod back on the heap), `scoop`, `eat`, and `fed` (a scoop of the pour, a duck that eats, and the end of a feeding: result, hungry, extra, full; `docs/HAMLET.md`), `fill` and `caught` (a trap that fills, and the end of a catch), `dance`, `beat`, `jump`, `miss`, and `danced` (the drum dance), `eggs` (the eggs at dawn), `feast { on }` (the feast of the new rice starts or ends), `lose` (goods that leave the basket fly from the counter: the rice that an enemy took, or the rice of a barter), `raid` (a raid starts or ends), `clue` (a person says a clue to find a place: id, textKey) and `found` (the hero first stands at a place to find: id; `docs/WORLD.md`, "Finding Trâu Sơn"), `tapfx`, `sound`, `busy`, `hud`, and `halt`.
+**Events:** the events of the world, and `open { screen, ... }` (a talk line, a line of text, a callout over a head, the rest, or a screen of a story effect such as `worldmap`, `exam`, `vanmieu`, or `nameFriend`), `close`, `map` (the hero went to another map), `gift` (things fly to their counter), `practice` (a set of a practice is done), `mentor` (a move of the mentor of a task: key, diagnosis, move, level; `docs/MENTOR.md`), `check` and `selfFix` (a check of the child, and a change after it), `plantRow` and `planted` (a row of the planting, and the end of a planting: result, empty, extra, full; `docs/PLANTING.md`), `jump { kind }`, `land`, and `splash` (a jump of the hero), `goBack` ("go back" at the end of a practice: the view opens the village at `to`, the place before the visit, or at the start of the game; the world event `back` is a rod back on the heap), `scoop`, `eat`, and `fed` (a scoop of the pour, a duck that eats, and the end of a feeding: result, hungry, extra, full; `docs/HAMLET.md`), `fill` and `caught` (a trap that fills, and the end of a catch), `dance`, `beat`, `jump`, `miss`, and `danced` (the drum dance), `eggs` (the eggs at dawn), `feast { on }` (the feast of the new rice starts or ends), `lose` (goods that leave the basket fly from the counter: the rice that an enemy took, or the rice of a barter), `raid` (a raid starts or ends), `clue` (a person says a clue to find a place: id, textKey) and `found` (the hero first stands at a place to find: id; `docs/WORLD.md`, "Finding Trâu Sơn"), `tapfx`, `sound`, `busy`, `hud`, and `halt`.
 
 The screens are events, not calls. The world waits while a screen is open, and the view sends `closed` when the child closes it. A talk is one `open` event for each line; the view sends `next` or `choose`.
 
@@ -103,7 +103,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 ## The storybook in the browser
 
 - `?story=<name>` opens the game in the start state of a story. With `&play`, the story plays: a finger shows each tap, the bar at the bottom shows the step, and the game waits one second at each `expect` and shows the result. `&speed=4` plays the world faster (for the day). `&debug=1` also shows the step in the debug panel.
-- Screens that are not in the village (Văn Miếu, the country map) show as a card with their name until the story closes them. A raid plays in the village.
+- Screens that are not in the village (the exam of the messenger, Văn Miếu of chapter 7, the country map) show as a card with their name until the story closes them. A raid plays in the village.
 - Nothing of a story is saved, and a story run never feeds the learning log: its logger drops every event (headless and in the browser; `?harness` in the address does the same for a scripted play).
 - `docs/reference/stories.html` lists the stories with a link to each one. `tools/stories.py` makes it from the story files.
 
@@ -117,7 +117,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `day` | A whole day: the spots at 10:00, the well at noon, home at night, out in the morning; the chickens in the coop. |
 | `rain` | The river rises, the ford closes, Nghé shakes its head, the ford opens one game hour after the rain. |
 | `bridge-save` | Save in the middle of the bridge, load, and go on. |
-| `vanmieu-gate` | The ferry over the Red River, Văn Miếu, and back out next to its gate. |
+| `road-west` | The ferry over the Red River, to the west end of the road: no gate of Văn Miếu and no screen in Era 1 (#134). |
 | `time-limit` | The time is over, but the rest waits until the hero leaves the bridge. |
 | `reactions` | A chicken flees, a villager greets, a pot breaks and gives nothing, and the chickens near it come to peck the grains. |
 | `nghe` | Pet and ride Nghé; push the cart. |
@@ -126,7 +126,9 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `trial-fisher` | Stakes in a row; a space too wide and the fish swim out; the full row keeps them. |
 | `trial-healer` | Three kinds of herbs; one too many and the basket comes back; the right number of each. |
 | `trial-woodcutter` | Chalk marks off the middle break the short stick; equal sticks go to the wood pile. |
-| `calling` | After the five trials, the elder opens the way to Văn Miếu. |
+| `calling` | After the five trials, the elder hears the drum of the village hall: the messenger of the king has come (#134). |
+| `placement-messenger` | Grade 3: the messenger at the village hall tests the child with the placement exam there; after it, the mother of Gióng runs up (#134). |
+| `exam-messenger` | After the farewell of Gióng, the messenger is back at the village hall and tests the child with the exam of the era (#134). |
 | `raid-scouts` | The first raid: the lines of the slingshot and the gate, a tap on the post nearest the scout, a short pull and its correction by count, and the gate bar before a torch lands (no skill event). |
 | `raid-patrol` | The traps: the elder names the third post; a trap there is counting, a trap one post on is play. |
 | `raid-soldiers` | The first soldiers: a villager at a straw flag, a trap at the post that the smith names, and the charge of Nghé. Then the loot: three, one, and two sacks make Nghé sulk; a sack from the basket of the hero to Nghé makes it fair. |
@@ -143,7 +145,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `market-barter` | Market day is barter: three eggs for four bowls of rice, and the seller has nine eggs. Eleven bowls are not enough; twelve are. The rice leaves the basket only then, and the eggs go to it. |
 | `event-duck` | Lost ducks: one is not enough; with the second, the flock is whole. |
 | `walk-trau-son` | From the gate of Phù Đổng on the east road, through the generated land, to the fields at the foot of the low hills of Trâu Sơn, with no change of scene. |
-| `walk-vanmieu` | From Phù Đổng over the ford and the west road, through the generated land, over the Red River on the ferry (the story waits for `ferried`), to Văn Miếu. |
+| `walk-red-river` | From Phù Đổng over the ford and the west road, through the generated land, over the Red River on the ferry (the story waits for `ferried`), to the west end of the road. |
 | `climb-nui-trau` | From the yard at the foot of the low hills of Trâu Sơn up the path to the highest top (a real hill from the fine heights). |
 | `find-trau-son` | The hero walks east to find Trâu Sơn; the arrow shows only the way toward the sunrise. Two villagers on the way say the two clues; the old man on the top of Núi Dạm, the tall hill, says that the hills of Trâu are farther on. At the foot of the low hills the place is found, with the same rice in the basket, and the battle starts as before. |
 | `walk-soc-son` | From the đình of Phù Đổng on the north road to the top of the hill of Sóc Sơn, with no change of scene; Nghé comes along. The live chunks stay under the limit on the whole walk. |

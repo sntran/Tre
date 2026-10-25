@@ -79,7 +79,7 @@
    "after": 1
   },
   {
-   "goto": "?story=exam-gate"
+   "goto": "?story=exam-messenger"
   },
   {
    "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",

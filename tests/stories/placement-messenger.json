@@ -1,0 +1,23 @@
+{
+  "name": "placement-messenger",
+  "about": {
+    "vi": "Lớp 3, sau năm thử thách: sứ giả của nhà vua ở đình Phù Đổng nói rằng nhà vua cần người tài, và thử tài An bằng bài thi xếp lớp ngay ở đình (#134). Sau bài thi, sứ giả nói một câu, rồi mẹ Gióng chạy đến: Gióng vừa nói câu đầu tiên.",
+    "en": "Grade 3, after the Five Trials: the messenger of the king at the village hall of Phù Đổng says that the king needs people of talent, and tests An with the placement exam there, at the hall (#134). After the exam the messenger says one line, and then the mother of Gióng runs up: Gióng has just said his first words."
+  },
+  "profile": { "name": "An", "grade": 3, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "prologue.done": true, "trial.scholar.done": true, "trial.smith.done": true, "trial.fisher.done": true, "trial.healer.done": true, "trial.woodcutter.done": true } },
+  "clock": 600,
+  "at": ["phu-dong", 32, 26.5],
+  "steps": [
+    { "wait": 1 },
+    { "expect": [{ "entity": "npc:messenger", "near": "hero", "within": 12 }] },
+    { "press": { "entity": "npc:messenger" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "until": { "event": "open", "with": { "screen": "exam" }, "timeout": 30 } },
+    { "expect": [{ "text": { "shown": "dlg.messenger.call.test" } }, { "screen": "exam" }, { "event": "open", "with": { "screen": "vanmieu" }, "not": true }] },
+    { "do": { "type": "closed" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue", "textKey": "dlg.messenger.call.tested" }, "timeout": 10 } },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "dlg.messenger.call.n4" } }, { "flag": "giong.messenger" }] }
+  ]
+}

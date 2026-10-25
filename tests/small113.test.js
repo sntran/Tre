@@ -247,12 +247,16 @@ test('the goal of the story has a mark on the country map, with the name of its 
   const world = worldOf();
   const geo = load('data/geo/vietnam.json');
   const quests = load('data/quests.json').quests;
-  const step = quests.flatMap((q) => q.steps).find((st) => st.goalKey === 'quest.placement.exam');
+  // No step of Era 1 has a place far away now (#134: the tests are at the village hall); a step with
+  // a place at the west end of the road over the Red River, as a place of a later quest.
+  assert.ok(!quests.flatMap((q) => q.steps).some((st) => st.place?.map === 'road-thanglong'), 'no step of the story on the road');
+  const step = { goalKey: 'quest.test', place: { map: 'road-thanglong', x: 1, y: 40 } };
   // The places of the quests on the plane, as src/ui/data.js makes them.
   const [x, y] = world.at(step.place.map, step.place.x, step.place.y);
-  const mark = goalMark(world, geo.places, { ...step, place: { ...step.place, map: world.regionOf(step.place.map), x, y } });
+  // The names of the places of the time of the hero (src/ui/worldmap.js): no Văn Miếu in Era 1.
+  const mark = goalMark(world, geo.places.filter((p) => (p.chapter ?? 0) <= 3), { ...step, place: { ...step.place, map: world.regionOf(step.place.map), x, y } });
   assert.ok(mark, 'a mark');
-  assert.equal(mark.name, 'Văn Miếu');
+  assert.ok(mark.name && !['Văn Miếu', 'Thăng Long'].includes(mark.name), mark.name);
   const hero = geo.places.find((p) => p.id === 'phu-dong').at;
   const way = goalWay(load('data/world/routes.json').routes, geo.places, hero, mark.at);
   const road = load('data/world/routes.json').routes.find((r) => r.from === 'phu-dong' && r.to === 'thang-long');

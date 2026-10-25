@@ -404,7 +404,7 @@ test('the exam of a title uses the skills of the era of that title', () => {
   assert.ok(era1.length > 0);
   assert.ok(era1.every((s) => s.subject === 'math' && s.era === 1));
   // The era comes from the title, not from a fixed number.
-  const moved = titles.titles.map((x) => (x.id === 'tu-tai' ? { ...x, era: 2 } : x));
+  const moved = titles.titles.map((x) => (x.id === titles.exams.era1.title ? { ...x, era: 2 } : x));
   const era2 = examSkills(graph, titles.exams.era1, moved);
   assert.ok(era2.length > 0 && era2.every((s) => s.era === 2));
   // The placement exam has no title: all math skills.

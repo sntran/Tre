@@ -53,17 +53,6 @@
         },
         {
           "when": {
-            "grade": {
-              "min": 3
-            },
-            "notFlags": [
-              "placement.done"
-            ]
-          },
-          "dialogue": "elder.placement.wait"
-        },
-        {
-          "when": {
             "notFlags": [
               "giong.messenger"
             ]
@@ -79,7 +68,7 @@
               "exam.era1.passed"
             ]
           },
-          "dialogue": "elder.go.exam"
+          "dialogue": "elder.messenger.back"
         },
         {
           "when": {
@@ -446,26 +435,34 @@
       "greet": "grown",
       "voice": "man",
       "when": {
-        "flags": [
-          "prologue.done"
-        ],
-        "notFlags": [
-          "giong.spoke"
-        ],
         "any": [
           {
-            "grade": {
-              "max": 2
-            }
+            "flags": [
+              "prologue.done"
+            ],
+            "notFlags": [
+              "giong.spoke"
+            ]
           },
           {
             "flags": [
-              "placement.done"
+              "giong.farewell"
+            ],
+            "notFlags": [
+              "exam.era1.passed"
             ]
           }
         ]
       },
       "talk": [
+        {
+          "when": {
+            "flags": [
+              "giong.farewell"
+            ]
+          },
+          "dialogue": "messenger.thanks"
+        },
         {
           "dialogue": "messenger.call"
         }

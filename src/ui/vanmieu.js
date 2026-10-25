@@ -1,7 +1,11 @@
-// Văn Miếu, the Temple of Literature: the adaptive exams, the first title,
-// the stone stele of the doctors on the turtle, the board at the gate, and the choice of a calling.
+// The exams: the adaptive exams, the first title, and the choice of a calling, with the place and the
+// person of the exams of the chapter (data/titles.json, examiners, #134). In Era 1 the messenger of
+// the Hùng King gives the tests at the village hall of Phù Đổng (the screen "exam" over the village);
+// from chapter 7 (the Lý), Văn Miếu, the Temple of Literature, with the stone stele of the doctors on
+// the turtle and the board at the gate (the scene "vanmieu").
 import { doorOf } from '../core/session.js';
 import { buildLadder, createExam, skillsToPractice, examSkills } from '../core/exam.js';
+import { examinerOf, vanMieuOf, lineOf } from '../core/examiners.js';
 import { gradeBase } from '../core/rating.js';
 import { gradeIds, gradeName } from '../core/grades.js';
 import { createSeen } from '../core/fresh.js';
@@ -30,7 +34,7 @@ function ladderFor(ctx, kind) {
 }
 
 // Run an adaptive exam. Return the result with "passed".
-function runExam(ctx, kind) {
+function runExam(ctx, kind, ex) {
   const def = ctx.data.titles.exams[kind];
   const ladder = ladderFor(ctx, kind);
   const cfg = ctx.data.learning;
@@ -43,9 +47,12 @@ function runExam(ctx, kind) {
     const counter = h('div', { class: 'muted' });
     const slot = h('div');
     const feedback = feedbackLine();
+    // The title of the exam, the place, and the examiner (the messenger at the village hall in Era 1).
+    const titleKey = ex.lines === 'exam' ? def.titleKey : lineOf(ex, `${kind}.title`);
     panel.append(
-      h('div', { class: 'panel-head' }, [h('h2', { text: t(def.titleKey) })]),
-      h('div', { class: 'quiz-top' }, [portrait(ctx, 'examiner'), h('div', { class: 'quiz-progress' }, [counter, h('p', { text: t('exam.rule', { min: ctx.data.learning.exam.subject.min, max: ctx.data.learning.exam.subject.max }) })])]),
+      h('div', { class: 'panel-head' }, [h('h2', { text: t(titleKey) })]),
+      ...(ex.placeKey && ex.lines !== 'exam' ? [h('p', { class: 'muted center', text: t(ex.placeKey) })] : []),
+      h('div', { class: 'quiz-top' }, [portrait(ctx, ex.speaker), h('div', { class: 'quiz-progress' }, [counter, h('p', { text: t(ex.lines === 'exam' ? 'exam.rule' : lineOf(ex, 'rule'), { min: ctx.data.learning.exam.subject.min, max: ctx.data.learning.exam.subject.max }) })])]),
       slot,
       feedback.el,
     );
@@ -100,7 +107,7 @@ function gradeOf(ctx, ability) {
   return gradeName(g, ctx.data.game.grades);
 }
 
-async function afterExam(ctx, kind, result) {
+async function afterExam(ctx, kind, result, ex) {
   const { profile, data } = ctx;
   const def = data.titles.exams[kind];
   profile.learning.exams.push({ kind, at: Date.now(), ability: Math.round(result.ability), asked: result.asked, correct: result.correct, passed: result.passed });
@@ -109,27 +116,29 @@ async function afterExam(ctx, kind, result) {
     ctx.learner.applyPlacement(result.ability, ids, data.learning.exam.placement);
     setFlag(profile, def.flag);
     await ctx.save('exam');
-    await showMessage(ctx, { speaker: 'examiner', textKey: 'exam.placement.done', params: { grade: gradeOf(ctx, result.ability), correct: result.correct, total: result.asked } });
+    await showMessage(ctx, { speaker: ex.speaker, textKey: lineOf(ex, 'placement.done'), params: { grade: gradeOf(ctx, result.ability), correct: result.correct, total: result.asked } });
   } else if (result.passed) {
     const title = data.titles.titles.find((x) => x.id === def.title);
-    giveTitle(profile, title.id, title.era, Date.now());
+    // A title of a print (người tài in Era 1) goes into the notebook, not onto a stele (#134).
+    giveTitle(profile, title.id, title.era, Date.now(), { stele: !title.print });
     setFlag(profile, def.flag);
     if (eraComplete(profile, title.era, title.id)) setFlag(profile, `vvst.era${title.era}`);
     await ctx.save('exam');
     ctx.bus.emit('sound', 'win');
-    await showMessage(ctx, { speaker: 'examiner', title: t(title.nameKey), textKey: 'exam.passed', params: { title: { key: title.nameKey } } });
-    await showMessage(ctx, { textKey: 'exam.stele', look: ctx.data.figures.views.stele });
+    await showMessage(ctx, { speaker: ex.speaker, title: t(title.nameKey), textKey: lineOf(ex, 'passed'), params: { title: { key: title.nameKey } } });
+    if (title.print) await showMessage(ctx, { textKey: lineOf(ex, 'print'), look: data.figures.figures[ex.speaker] ?? null });
+    else await showMessage(ctx, { textKey: 'exam.stele', look: ctx.data.figures.views.stele });
     if (profile.flags[`vvst.era${title.era}`]) await showMessage(ctx, { textKey: 'exam.vanvo', art: 'title/bamboo-section' });
   } else {
     await ctx.save('exam');
     const names = result.practice.map((id) => t(`skill.${id}`)).join(t('ui.list.sep'));
-    await showMessage(ctx, { speaker: 'examiner', textKey: 'exam.not.yet', params: { skills: names } });
+    await showMessage(ctx, { speaker: ex.speaker, textKey: lineOf(ex, 'not.yet'), params: { skills: names } });
     return;
   }
   // After the first exam, the player chooses a calling.
   if (!profile.calling) {
-    await showMessage(ctx, { speaker: 'examiner', textKey: 'exam.who' });
-    await chooseCalling(ctx, false);
+    await showMessage(ctx, { speaker: ex.speaker, textKey: lineOf(ex, 'who') });
+    await chooseCalling(ctx, false, ex);
   }
   // The title of the era ends the chapter: a short page of what the child did, and the way home.
   if (kind === 'era1' && !profile.flags['chapter1.end']) {
@@ -169,7 +178,7 @@ function chapterEnd(ctx, title) {
   });
 }
 
-function chooseCalling(ctx, change) {
+function chooseCalling(ctx, change, ex = vanMieuOf(ctx.data)) {
   const { profile, data } = ctx;
   return new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
@@ -182,7 +191,7 @@ function chooseCalling(ctx, change) {
       await ctx.save('calling');
       layer.remove();
       const c = data.callings.callings.find((x) => x.id === picked);
-      await showMessage(ctx, { speaker: 'examiner', textKey: 'calling.chosen', params: { calling: { key: c.nameKey } }, look: data.figures.figures[c.look] });
+      await showMessage(ctx, { speaker: ex.speaker, textKey: ex.lines === 'exam' ? 'calling.chosen' : lineOf(ex, 'calling'), params: { calling: { key: c.nameKey } }, look: data.figures.figures[c.look] });
       resolve();
     }, { cls: 'btn big red', disabled: !picked });
     for (const c of data.callings.callings) {
@@ -211,10 +220,23 @@ function chooseCalling(ctx, change) {
   });
 }
 
-registerModal('calling', (ctx, cmd) => chooseCalling(ctx, Boolean(cmd.change)));
+registerModal('calling', (ctx, cmd) => chooseCalling(ctx, Boolean(cmd.change), examinerOf(ctx.data, ctx.profile)));
+
+// An exam over the village (#134): the messenger opens it in his talk at the village hall (the
+// placement exam after the Five Trials, the exam of the era after the farewell of Gióng). An exam
+// that is done does not come again.
+async function examScreen(ctx, kind) {
+  const def = ctx.data.titles.exams[kind];
+  if (!def || ctx.profile.flags[def.flag]) return;
+  const ex = examinerOf(ctx.data, ctx.profile);
+  const r = await runExam(ctx, kind, ex);
+  await afterExam(ctx, kind, r, ex);
+}
+registerModal('exam', (ctx, cmd) => examScreen(ctx, cmd.kind));
 
 async function mountVanMieu(ctx) {
   const { profile, data } = ctx;
+  const ex = vanMieuOf(data);
   const screen = h('div', { class: 'screen' });
   const content = h('div', { class: 'vanmieu' });
   screen.append(content);
@@ -234,15 +256,15 @@ async function mountVanMieu(ctx) {
     const needPlacement = profile.grade >= ctx.data.learning.exam.placement.fromGrade && !profile.flags['placement.done'];
     if (needPlacement) {
       actions.append(button(t('exam.placement.start'), async () => {
-        const r = await runExam(ctx, 'placement');
-        await afterExam(ctx, 'placement', r);
+        const r = await runExam(ctx, 'placement', ex);
+        await afterExam(ctx, 'placement', r, ex);
         draw();
       }, { cls: 'btn big red' }));
     }
     if (!profile.flags['exam.era1.passed']) {
       actions.append(button(t('exam.era1.start'), async () => {
-        const r = await runExam(ctx, 'era1');
-        await afterExam(ctx, 'era1', r);
+        const r = await runExam(ctx, 'era1', ex);
+        await afterExam(ctx, 'era1', r, ex);
         draw();
       }, { cls: `btn big ${needPlacement ? 'paper' : 'red'}` }));
     }

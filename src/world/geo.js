@@ -267,3 +267,20 @@ export function heightBand(grid, cellAt, level) {
   }
   return rings;
 }
+
+// The names on the country map for a hero in the region `here` (#134): the regions with a name (an
+// open region, or a locked region in the land of the era whose name is of the time: nameFrom in
+// data/world/regions.json), and the story places with a name (the places of the open regions, of
+// the time: chapter in data/geo/vietnam.json). In Era 1 neither Thăng Long (a name from 1010) nor
+// Văn Miếu (built in 1070) has a name. { regions: [id], places: [id] }.
+export function mapNames(world, geo, state, here) {
+  const chapter = world.region(here)?.chapter ?? 1;
+  const eraSouth = world.eraLand?.byChapter?.[chapter] ?? geo.bbox.lat0;
+  const place = Object.fromEntries(geo.places.map((p) => [p.id, p]));
+  const ofTime = (p) => (p?.chapter ?? 0) <= chapter;
+  const named = (r) => world.isOpen(r.id, state) || ((place[r.place]?.at[1] ?? -90) >= eraSouth && (r.nameFrom ?? 0) <= chapter);
+  return {
+    regions: world.regions.filter(named).map((r) => r.id),
+    places: world.regions.filter((r) => world.isOpen(r.id, state)).flatMap((r) => r.places ?? []).filter((id) => place[id] && ofTime(place[id])),
+  };
+}

@@ -26,8 +26,11 @@
      "speaker": "elder",
      "textKey": "dlg.messenger.call.n3",
      "mood": "worried",
-     "next": "n4"
+     "next": "qtest"
     },
+    "qtest": { "if": { "grade": { "min": 3 }, "notFlags": ["placement.done"] }, "then": "test", "else": "n4" },
+    "test": { "speaker": "messenger", "textKey": "dlg.messenger.call.test", "next": "tested" },
+    "tested": { "speaker": "messenger", "textKey": "dlg.messenger.call.tested", "effects": [{ "open": "exam", "kind": "placement", "now": true }], "next": "n4" },
     "n4": {
      "speaker": "mother",
      "textKey": "dlg.messenger.call.n4",
@@ -38,6 +41,16 @@
       }
      ]
     }
+   },
+   "mark": "legend"
+  },
+  {
+   "id": "messenger.thanks",
+   "start": "n1",
+   "scene": { "gather": { "at": "messenger", "people": ["elder", "teacher"] } },
+   "nodes": {
+    "n1": { "speaker": "messenger", "textKey": "dlg.messenger.thanks.n1", "mood": "happy", "next": "n2" },
+    "n2": { "speaker": "messenger", "textKey": "dlg.messenger.thanks.n2", "effects": [{ "open": "exam", "kind": "era1" }] }
    },
    "mark": "legend"
   },

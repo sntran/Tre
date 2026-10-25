@@ -220,14 +220,16 @@ test('Era 1 has the real layout: the Đuống south of Phù Đổng, and the way
   const o = (id) => at(id, 0, 0);
   assert.ok(o('soc-son')[1] < o('phu-dong')[1] - 400, 'Sóc Sơn is north');
   assert.ok(o('trau-son')[0] > o('phu-dong')[0] + 150, 'Núi Trâu is east');
-  assert.ok(o('road-thanglong')[0] < o('phu-dong')[0] && o('road-thanglong')[1] > o('phu-dong')[1], 'Thăng Long is south-west');
+  assert.ok(o('road-thanglong')[0] < o('phu-dong')[0] && o('road-thanglong')[1] > o('phu-dong')[1], 'the road over the Red River is south-west');
   // Each place has its real center and the direction of north; north is -y.
   for (const [id, mm] of maps) {
     assert.equal(mm.geo.at.length, 2, id);
     assert.deepEqual(mm.geo.north, [0, -1], id);
   }
-  const vanmieu = maps.get('road-thanglong').layers.triggers.find((z) => z.id === 'vanmieu');
-  assert.ok(vanmieu && vanmieu.x === 0, 'the road ends at Văn Miếu, to the west');
+  // No Văn Miếu in Era 1 (#134): no gate, no trigger, and no sign to it on the road.
+  const road = maps.get('road-thanglong');
+  assert.ok(!road.layers.triggers.some((z) => /vanmieu/.test(z.id) || /vanmieu/.test(z.action?.textKey ?? '') || z.action?.open === 'vanmieu'), 'no trigger of Văn Miếu');
+  assert.ok(!road.layers.objects.some((o) => o.prop === 'vanmieu-gate' || o.prop === 'stele'), 'no gate and no stele of Văn Miếu');
 });
 
 test('the hero steps up or down one step; a higher step is a cliff', () => {

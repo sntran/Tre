@@ -129,12 +129,13 @@ test('the hero can walk from Phù Đổng to Núi Trâu, to Văn Miếu, and to 
     // East, through the generated land to the fields of Núi Trâu.
     const wall = load('data/raids.json').raids.soldier1.wall;
     assert.ok(walk(start, [cell(w.at('trau-son', ...wall))]), `${seed}: to the fields of Núi Trâu`);
-    // South-west: through the land to the ferry; from the landing of the other bank to Văn Miếu.
+    // South-west: through the land to the ferry; from the landing of the other bank to the west end
+    // of the road (no Văn Miếu there in Era 1, #134).
     const ferry = m.layers.triggers.find((z) => z.id === 'ferry-east');
     assert.ok(walk(start, zoneCells(ferry)), `${seed}: through the land to the ferry`);
     const back = m.layers.triggers.find((z) => z.id === 'ferry-west');
-    const gate = m.layers.triggers.find((z) => z.id === 'vanmieu');
-    assert.ok(walk(cell([back.x, back.y]), zoneCells(gate)), `${seed}: from the ferry to Văn Miếu`);
+    const end = cell(w.at('road-thanglong', 1.5, 40));
+    assert.ok(walk(cell([back.x, back.y]), [end]), `${seed}: from the ferry to the west end of the road`);
     // North: to the hill of Sóc Sơn.
     const sky = m.npcs.find((n) => n.id === 'giong-sky');
     assert.ok(walk(start, [{ x: Math.floor(sky.x), y: Math.floor(sky.y) + 1 }]), `${seed}: through the land to the top of Sóc Sơn`);

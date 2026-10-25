@@ -13,7 +13,7 @@ import { portraitImage, heroLookOf } from './portraits.js';
 import { C } from '../render/palette.js';
 import { planTravel, applyTravel } from '../world/travel.js';
 import { timeOfDay } from '../core/world/clock.js';
-import { createProjection, regionAreas, placeSeals, goalWay, goalMark, heightBand } from '../world/geo.js';
+import { createProjection, regionAreas, placeSeals, goalWay, goalMark, heightBand, mapNames } from '../world/geo.js';
 import { currentGoal } from '../core/quests.js';
 
 export const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -184,7 +184,10 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
   const eraSouth = world.eraLand?.byChapter?.[chapter] ?? geo.bbox.lat0;
   const time = timeOfDay(profile.world?.clock ?? { minutes: 0 });
   const proj = createProjection(geo.bbox);
-  const inEra = (region) => geo.places.find((p) => p.id === region.place).at[1] >= eraSouth;
+  // The names of the regions and of the places of the time of the hero (#134: no Thăng Long and no
+  // Văn Miếu in Era 1).
+  const names = mapNames(world, geo, state, here);
+  const named = (region) => names.regions.includes(region.id);
 
   const plan = await new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
@@ -261,7 +264,7 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
     const unitsPerPx = () => Math.max(view.w / (svg.clientWidth || 1), view.h / (svg.clientHeight || 1));
 
     let chosen = null;
-    const goal = goalMark(world, geo.places, currentGoal(data.quests?.quests ?? [], state)?.step);
+    const goal = goalMark(world, geo.places.filter((p) => (p.chapter ?? 0) <= chapter), currentGoal(data.quests?.quests ?? [], state)?.step);
     // The names of the places of the open regions, and the seals of all regions.
     function drawTop() {
       const k = unitsPerPx();
@@ -276,9 +279,8 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
         labels.append(tx);
       };
       // The names of the places show only when the map is near, so that they have room.
-      for (const r of world.regions) {
-        if (!world.isOpen(r.id, state) || k > 0.2) continue;
-        for (const id of r.places ?? []) {
+      if (k <= 0.2) {
+        for (const id of names.places) {
           const p = base.place[id];
           if (p && p.name !== goal?.name) label(p.at, p.name);
         }
@@ -324,7 +326,7 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
         const r = sealPx * k;
         // No number of a chapter on the map of the child (#81: "Chương 3 – why 3, I just started").
         const g = el('g', { class: `map-seal ${kind}${chosen === s.id ? ' selected' : ''}`, tabindex: 0, role: 'button',
-          'aria-label': inEra(region) || open ? t(region.nameKey) : t('world.locked') });
+          'aria-label': named(region) ? t(region.nameKey) : t('world.locked') });
         if (Math.hypot(s.x - s.ax, s.y - s.ay) > r * 0.6) {
           g.append(el('line', { x1: s.ax, y1: s.ay, x2: s.x, y2: s.y, stroke: C.ink, 'stroke-width': 1, 'vector-effect': 'non-scaling-stroke' }));
           g.append(el('circle', { cx: s.ax, cy: s.ay, r: 2 * k, fill: C.ink }));
@@ -355,10 +357,10 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
       for (const [id, p] of base.regionPaths) p.classList.toggle('selected', id === region.id);
       drawTop();
       const open = world.isOpen(region.id, state);
-      const named = inEra(region) || open;
+      const hasName = named(region);
       // The name of the chapter (its era), with no number (#81).
       const lines = region.eraKey ? [h('div', { class: 'region-chapter', text: t(region.eraKey) })] : [];
-      if (named) lines.push(h('h3', { text: t(region.nameKey) }));
+      if (hasName) lines.push(h('h3', { text: t(region.nameKey) }));
       // The way from the region of the hero, drawn in red, with its length and days.
       const way = region.id === here ? null : world.travelWay(here, region.id);
       wayLine.setAttribute('d', way ? way.legs.map((l) => `M${l.line.map((c) => proj.toMap(c)).map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join('L')}`).join('') : '');
@@ -375,7 +377,7 @@ registerModal('worldmap', async (ctx, cmd = {}) => {
         }, { cls: 'btn big red' }));
       }
       info.replaceChildren(...lines);
-      speak(pauseKey ?? (named ? region.nameKey : 'world.locked'));
+      speak(pauseKey ?? (hasName ? region.nameKey : 'world.locked'));
     }
 
     for (const [id, p] of base.regionPaths) p.addEventListener('click', () => select(world.region(id)));

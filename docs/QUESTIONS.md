@@ -124,6 +124,7 @@ These questions need a person who knows Vietnamese history and geography. Until 
     - **Note (#4):** the trials needed it near the smith, so the walker now steps to the side of a person in the way and skips a point of the way under a person (`src/core/world/systems/route.js`). A walk still stops with `stuck` when it cannot go on.
 61. **Văn Miếu in the stories.** The issue asks for one story with "the exit north to Sóc Sơn and back; the hero next to the door of Văn Miếu on the way back". Văn Miếu is on the road to Thăng Long, across the Red River, not on the way from Sóc Sơn. There are two stories now: `exits` (north to Sóc Sơn and back) and `vanmieu-gate` (the ferry, Văn Miếu, and back out next to its gate). Is this what you meant?
     - **My answer:** Văn Miếu leaves Era 1 (#134). Keep the story `vanmieu-gate` for chapter 7, with a profile of that chapter; in Era 1 the exams are at the village hall of Phù Đổng.
+    - **Note (#134):** chapter 7 has no map yet, and in Era 1 the road over the Red River has no gate of Văn Miếu, so a profile of chapter 7 has no place to stand. I changed `vanmieu-gate` to `road-west` (the ferry and the west end of the road, with no screen) and `walk-vanmieu` to `walk-red-river`. The screen of Văn Miếu (`src/ui/vanmieu.js`, the scene `vanmieu`) stays for chapter 7; its story comes back with the map of that chapter.
 
 ## Questions about the Five Trials
 

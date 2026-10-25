@@ -71,51 +71,11 @@
    ]
   },
   {
-   "id": "placement",
-   "titleKey": "quest.placement.title",
-   "when": {
-    "flags": [
-     "prologue.done"
-    ],
-    "grade": {
-     "min": 3
-    }
-   },
-   "steps": [
-    {
-     "id": "exam",
-     "goalKey": "quest.placement.exam",
-     "done": {
-      "flags": [
-       "placement.done"
-      ]
-     },
-     "place": {
-      "map": "road-thanglong",
-      "x": 1,
-      "y": 40
-     }
-    }
-   ]
-  },
-  {
    "id": "giong",
    "titleKey": "quest.giong.title",
    "when": {
     "flags": [
      "prologue.done"
-    ],
-    "any": [
-     {
-      "grade": {
-       "max": 2
-      }
-     },
-     {
-      "flags": [
-       "placement.done"
-      ]
-     }
     ]
    },
    "steps": [
@@ -331,11 +291,7 @@
        "exam.era1.passed"
       ]
      },
-     "place": {
-      "map": "road-thanglong",
-      "x": 1,
-      "y": 40
-     }
+     "target": "messenger"
     }
    ]
   },

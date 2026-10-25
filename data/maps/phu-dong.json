@@ -250,7 +250,7 @@
    {"id": "ore2-early", "x": 6, "y": 62, "on": "tap", "when": {"notFlags": ["horse.ore2"]}, "action": {"textKey": "map.ore.look"}, "w": 2, "h": 2},
    {"id": "well", "x": 40, "y": 22, "on": "tap", "action": {"textKey": "map.well"}, "w": 2, "h": 2},
    {"id": "banyan", "x": 34, "y": 6, "w": 6, "h": 6, "on": "tap", "action": {"textKey": "map.banyan"}},
-   {"id": "sign", "x": 40, "y": 82, "on": "tap", "action": {"textKey": "map.sign.vanmieu"}, "w": 2, "h": 2},
+   {"id": "sign", "x": 40, "y": 82, "on": "tap", "action": {"textKey": "map.sign.west"}, "w": 2, "h": 2},
    {"id": "field-home", "x": 6, "y": 38, "w": 16, "h": 12, "on": "tap", "action": {"textKey": "map.field"}},
    {"id": "field-south", "x": 52, "y": 78, "w": 24, "h": 6, "on": "tap", "action": {"textKey": "map.field"}},
    {"id": "river", "x": 0, "y": 66, "w": 80, "h": 10, "on": "tap", "action": {"textKey": "map.river", "taskText": {"bridge": "map.river.bridge"}, "openText": {"bridge": "map.river.plain"}, "doneText": {"bridge": "map.river.fixed"}}}

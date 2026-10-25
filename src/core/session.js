@@ -554,6 +554,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const id of ['farewell:steed', 'farewell:giong', 'farewell:cloud']) removeEntity(state, id);
     farewell = null;
     emit({ type: 'farewell', on: false });
+    // The drum of the village hall: the messenger of the king is back, for the test of the era (#134).
+    emit({ type: 'sound', sound: 'drum' });
+    say('dlg.giong.farewell.drum');
   }
 
   // A success in a task (#62): the person of the task jumps (two jumps and a wave at the end of the
@@ -1134,11 +1137,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       d.opens = d.opens.filter((c) => !atOnce.includes(c));
       for (const c of atOnce) openCommand(c);
     }
-    // A screen that the child fills in (the name of Nghé) opens at once, and the talk goes on only
-    // when the child closes it (#37). The other screens of a talk open at its end.
-    const now = view ? d.opens.filter((c) => INPUT_SCREENS.has(c.open)) : [];
+    // A screen that the child fills in (the name of Nghé), or a screen with "now" (the test of the
+    // messenger in the middle of his talk, #134), opens at once, and the talk goes on only when the
+    // child closes it (#37). The other screens of a talk open at its end.
+    const atOnceScreen = (c) => INPUT_SCREENS.has(c.open) || (c.now && c.open !== 'trial');
+    const now = view ? d.opens.filter(atOnceScreen) : [];
     if (now.length) {
-      d.opens = d.opens.filter((c) => !INPUT_SCREENS.has(c.open));
+      d.opens = d.opens.filter((c) => !atOnceScreen(c));
       pending.unshift(...now.map((c) => () => openCommand(c)), () => showLine(d, view));
       if (screen === d) closeScreen();
       else runPending();

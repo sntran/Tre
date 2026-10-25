@@ -128,10 +128,11 @@ export function setParty(profile, ids, maxParty = 3) {
 
 // Titles and the stele.
 
-export function giveTitle(profile, titleId, era, now) {
+export function giveTitle(profile, titleId, era, now, { stele = true } = {}) {
   if (profile.titles.includes(titleId)) return false;
   profile.titles.push(titleId);
-  profile.stele.push({ era, title: titleId, name: profile.hero.name, at: now });
+  // A title of a print (người tài in Era 1, #134) has no row on the board of Văn Miếu.
+  if (stele) profile.stele.push({ era, title: titleId, name: profile.hero.name, at: now });
   return true;
 }
 

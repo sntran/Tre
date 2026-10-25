@@ -1,0 +1,20 @@
+{
+  "name": "road-west",
+  "about": {
+    "vi": "Trên đường qua sông Hồng: đi đò qua sông, đến đầu tây của con đường. Ở thời Hùng Vương ở đó chưa có Văn Miếu: không có cổng, và không có màn hình nào mở ra (#134).",
+    "en": "On the road over the Red River: over the river on the ferry, to the west end of the road. In the time of the Hùng Kings there is no Văn Miếu there: no gate, and no screen opens (#134)."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.done": true } },
+  "clock": 540,
+  "at": ["road-thanglong", 70, 40],
+  "steps": [
+    { "tap": { "cell": [55, 40] } },
+    { "until": { "event": "open", "with": { "screen": "say", "textKey": "map.ferry" }, "timeout": 40 } },
+    { "read": true },
+    { "until": { "event": "ferried", "timeout": 30 } },
+    { "expect": [{ "hero": { "cell": [24.8, 40], "within": 1 } }, { "entity": "friend:nghe", "near": "hero", "within": 3 }] },
+    { "tap": { "cell": [1.5, 40] } },
+    { "wait": 25 },
+    { "expect": [{ "hero": { "cell": ["road-thanglong", 1.5, 40], "within": 2 } }, { "screen": null }, { "event": "open", "with": { "screen": "vanmieu" }, "not": true }] }
+  ]
+}

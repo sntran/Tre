@@ -168,13 +168,13 @@ The data under every tier of the look is blocks and entities, so that a later er
 
 ## One continuous world
 
-The world of a region is one continuous land. The hero walks from Phù Đổng to Sóc Sơn, to Núi Trâu, and to Văn Miếu with no transition, no exit, and no load in between.
+The world of a region is one continuous land. The hero walks from Phù Đổng to Sóc Sơn, to Núi Trâu, and over the Red River with no transition, no exit, and no load in between.
 
 ### The scale
 
 - **One plane for the whole country** (`src/core/gen/plane.js`): Mercator (a conformal projection, so the shapes of the hills and the rivers stay), true scale at 16° N, and **45 m of real land for each cell**. The cell 0, 0 is at 102° E, 23.5° N; x goes to the east and y to the south. North of 16° N, one cell is a little less than 45 m of real land (about 43.7 m at 21° N), so a real distance there takes a few more cells; south of 16° N, one cell is a little more (`metersAt`).
-- A cell is one block of the voxel world (`docs/ART.md`), and the hero walks 4.6 cells in a second (`src/core/world/move.js`). The walks of Era 1 (straight lines, in cells): Phù Đổng to Văn Miếu about 290, to the highest top of the low hills of Trâu Sơn about 690 (#27; on the road to the fields at their foot, about 540), and to the top of Sóc Sơn about 660 (on the road, about 900). So a walk between two story places takes one to four minutes.
-- **The places are frames on the plane** (`frames` in `data/world/land-giong.json`): each place is at its real place (the đình of Phù Đổng, the top of núi Vệ Linh, the highest top of the low hills of Trâu Sơn, the gate of Văn Miếu). The cells of a place (`data/maps/<place>.json`) are cells of its frame; `world.at(place, x, y)` gives the cell on the plane. A story, a raid, a quest, a trigger, and a person name their place and their cell in it, and the game puts them on the plane.
+- A cell is one block of the voxel world (`docs/ART.md`), and the hero walks 4.6 cells in a second (`src/core/world/move.js`). The walks of Era 1 (straight lines, in cells): Phù Đổng to the west end of the road over the Red River (where Văn Miếu stands from chapter 7) about 290, to the highest top of the low hills of Trâu Sơn about 690 (#27; on the road to the fields at their foot, about 540), and to the top of Sóc Sơn about 660 (on the road, about 900). So a walk between two story places takes one to four minutes.
+- **The places are frames on the plane** (`frames` in `data/world/land-giong.json`): each place is at its real place (the đình of Phù Đổng, the top of núi Vệ Linh, the highest top of the low hills of Trâu Sơn, the west end of the road over the Red River). In Era 1 that road has no Văn Miếu (built in 1070) and no name of Thăng Long (from 1010): the exams of Era 1 are at the village hall of Phù Đổng (#134). The cells of a place (`data/maps/<place>.json`) are cells of its frame; `world.at(place, x, y)` gives the cell on the plane. A story, a raid, a quest, a trigger, and a person name their place and their cell in it, and the game puts them on the plane.
 
 ### The land, tile by tile
 
@@ -218,7 +218,7 @@ The camera never shows the end of the world. Where the hero cannot go, the world
 
 ### Tests
 
-`tests/gen.test.js` (noise, the plane, the tiles: one tile alone is the same as the same tile in a ring; stamps, rivers, rock faces, roads, the crossings of the roads, paddies, the sea, the south edge on Hoành Sơn, and the mist at the borders), `tests/relief.test.js` (the height tiles, the height curve, Núi Trâu and Sóc Sơn over Phù Đổng), `tests/regions.test.js` (the frames, the walks from Phù Đổng to Núi Trâu, Văn Miếu, and Sóc Sơn for many seeds, the real directions), `tests/chunks.test.js` (one page alone is the same as the same page in a ring; the frame and the ring budgets), `tests/terrain.test.js` (a page made before its land was ready is made again), and the stories `walk-soc-son`, `walk-trau-son`, `walk-vanmieu`, `climb-nui-trau`, `sea-edge`, `mist-edge`, `ferry`, `pot-far`, and `save-chunks`. The tests keep the land of a seed one time for all tests of a file (`tests/helpers.js`), and the stories run in three files at the same time.
+`tests/gen.test.js` (noise, the plane, the tiles: one tile alone is the same as the same tile in a ring; stamps, rivers, rock faces, roads, the crossings of the roads, paddies, the sea, the south edge on Hoành Sơn, and the mist at the borders), `tests/relief.test.js` (the height tiles, the height curve, Núi Trâu and Sóc Sơn over Phù Đổng), `tests/regions.test.js` (the frames, the walks from Phù Đổng to Núi Trâu, Văn Miếu, and Sóc Sơn for many seeds, the real directions), `tests/chunks.test.js` (one page alone is the same as the same page in a ring; the frame and the ring budgets), `tests/terrain.test.js` (a page made before its land was ready is made again), and the stories `walk-soc-son`, `walk-trau-son`, `walk-red-river`, `climb-nui-trau`, `sea-edge`, `mist-edge`, `ferry`, `pot-far`, and `save-chunks`. The tests keep the land of a seed one time for all tests of a file (`tests/helpers.js`), and the stories run in three files at the same time.
 
 ## The small events of each day
 

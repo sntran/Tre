@@ -1,8 +1,8 @@
 {
   "name": "calling",
   "about": {
-    "vi": "Sau năm thử thách, cụ già làng mở đường tới Văn Miếu, nơi em chọn nghề.",
-    "en": "After the five trials, the elder opens the way to Văn Miếu, where the child chooses a calling."
+    "vi": "Sau năm thử thách, cụ trưởng làng khen cháu; rồi trống ở đình làng vang lên: sứ giả của nhà vua đến (#134: ở mọi lớp, không đi Văn Miếu). Cháu chọn nghề sau lần thử tài đầu tiên của sứ giả.",
+    "en": "After the five trials, the elder praises the child; then the drum of the village hall sounds: the messenger of the king has come (#134: at every grade, no way to Văn Miếu). The child chooses a calling after the first test of the messenger."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "trial.scholar.done": true, "trial.smith.done": true, "trial.fisher.done": true, "trial.healer.done": true, "trial.woodcutter.done": true } },
   "clock": 540,
@@ -11,6 +11,6 @@
     { "press": { "entity": "npc:elder" } },
     { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
     { "read": true },
-    { "expect": [{ "text": { "shown": "dlg.elder.trials.done.n1" } }, { "flag": "prologue.done" }, { "screen": null }] }
+    { "expect": [{ "text": { "shown": "dlg.elder.trials.done.n1" } }, { "text": { "shown": "dlg.elder.trials.done.drum" } }, { "flag": "prologue.done" }, { "screen": null }] }
   ]
 }

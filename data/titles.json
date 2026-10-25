@@ -1,6 +1,7 @@
 {
-  "_about": "Scholar titles, based on the old exam system (thi Hương, thi Hội, thi Đình). A pass of the exam of an era gives the title of that era. Trạng nguyên needs a pass in all five eras. An exam with a title uses the skills of the era of that title.",
+  "_about": "The titles. A title is a word of its time (docs/DESIGN.md, Exams and titles): in Era 1 the messenger of the Hùng King names the child người tài (print: the title goes into the notebook as a print, with no stele). The scholar titles, based on the old exam system (thi Hương, thi Hội, thi Đình), come with the exams of Văn Miếu, from chapter 7 (the Lý). A pass of the exam of an era gives the title of that era. Trạng nguyên needs a pass in all five eras. An exam with a title uses the skills of the era of that title. examiners: the place and the person of the exams, by chapter (from: the first chapter; speaker: the portrait and the voice; placeKey: the name of the place; lines: the prefix of the lines of the person, as exam (Văn Miếu) or exam.messenger).",
   "titles": [
+    { "id": "nguoi-tai", "era": 1, "print": true, "nameKey": "title.nguoi-tai.name", "aboutKey": "title.nguoi-tai.about" },
     { "id": "tu-tai", "era": 1, "nameKey": "title.tu-tai.name", "aboutKey": "title.tu-tai.about" },
     { "id": "cu-nhan", "era": 2, "nameKey": "title.cu-nhan.name", "aboutKey": "title.cu-nhan.about" },
     { "id": "tien-si", "era": 3, "nameKey": "title.tien-si.name", "aboutKey": "title.tien-si.about" },
@@ -8,7 +9,11 @@
     { "id": "trang-nguyen", "era": 5, "needsAll": true, "nameKey": "title.trang-nguyen.name", "aboutKey": "title.trang-nguyen.about" }
   ],
   "exams": {
-    "era1": { "titleKey": "exam.era1.title", "subject": "math", "title": "tu-tai", "flag": "exam.era1.passed" },
+    "era1": { "titleKey": "exam.era1.title", "subject": "math", "title": "nguoi-tai", "flag": "exam.era1.passed" },
     "placement": { "titleKey": "exam.placement.title", "subject": "math", "flag": "placement.done" }
-  }
+  },
+  "examiners": [
+    { "from": 1, "speaker": "messenger", "placeKey": "exam.place.dinh", "lines": "exam.messenger" },
+    { "from": 7, "speaker": "examiner", "placeKey": "exam.place.vanmieu", "lines": "exam" }
+  ]
 }

@@ -59,6 +59,13 @@
    "met": "talk:messenger.call"
   },
   {
+   "id": "legend:talent",
+   "kind": "legend",
+   "titleKey": "note.legend.talent",
+   "look": "messenger",
+   "met": "flag:exam.era1.passed"
+  },
+  {
    "id": "legend:speaks",
    "kind": "legend",
    "titleKey": "note.legend.speaks",

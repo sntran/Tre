@@ -1,5 +1,6 @@
 // The star of a step of a quest leads to where the step ends (#51): the place of a step is inside
-// a zone of its map that the hero enters (the gate of Văn Miếu), not a wall in the fields.
+// a zone of its map that the hero enters, not a wall in the fields. In Era 1 each step goes to a
+// person (#134: the tests of the messenger are at the village hall, not at the gate of Văn Miếu).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
@@ -23,10 +24,11 @@ test('the place of each step of a quest is inside a zone of its map that the her
     const mark = placeMark(st.place);
     assert.ok(inside.some((z) => mark.x >= z.x && mark.x < z.x + (z.w ?? 1) && mark.y >= z.y && mark.y < z.y + (z.h ?? 1)), `${q.id}/${st.id}: the star of the place is out of its zone`);
   }
-  assert.ok(n >= 2);
+  // Each step has a place or a person (or persons) for its star.
+  for (const q of quests) for (const st of q.steps) assert.ok(st.place || st.target || st.targets, `${q.id}/${st.id}: no place and no person`);
 });
 
-test('after the exam of Văn Miếu, the goal is the teacher at home: the star leads on, until his talk (#51)', () => {
+test('after the test of the messenger, the goal is the teacher at home: the star leads on, until his talk (#51, #134)', () => {
   // All the steps of the story before are done (the flags of their ends).
   const flags = {};
   const add = (d) => {

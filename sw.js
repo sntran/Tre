@@ -167,6 +167,7 @@ const FILES = [
   'src/core/diary.js',
   'src/core/events.js',
   'src/core/exam.js',
+  'src/core/examiners.js',
   'src/core/experiments.js',
   'src/core/folk-session.js',
   'src/core/folkgames.js',

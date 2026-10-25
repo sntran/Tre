@@ -1,0 +1,21 @@
+{
+  "name": "walk-red-river",
+  "about": {
+    "vi": "Đi bộ từ Phù Đổng qua chỗ cạn của sông Đuống, về phía tây qua đất mới sinh, đi đò qua sông Hồng, đến đầu tây của con đường, không đổi cảnh (#134: ở đó không có Văn Miếu).",
+    "en": "A walk from Phù Đổng over the ford of the Đuống, west through the generated land, over the Red River on the ferry, to the west end of the road, with no change of scene (#134: there is no Văn Miếu there)."
+  },
+  "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.done": true } },
+  "clock": 540,
+  "at": ["phu-dong", 17.5, 60.5],
+  "steps": [
+    { "walk": { "to": ["road-thanglong", 58, 40] } },
+    { "expect": [{ "hero": { "cell": ["road-thanglong", 58, 40], "within": 2 } }, { "entity": "friend:nghe", "near": "hero", "within": 4 }] },
+    { "tap": { "cell": ["road-thanglong", 55, 40] } },
+    { "until": { "event": "open", "with": { "screen": "say", "textKey": "map.ferry" }, "timeout": 90 } },
+    { "read": true },
+    { "until": { "event": "ferried", "timeout": 30 } },
+    { "tap": { "cell": ["road-thanglong", 1.5, 40] } },
+    { "wait": 25 },
+    { "expect": [{ "hero": { "cell": ["road-thanglong", 1.5, 40], "within": 2 } }, { "event": "open", "with": { "screen": "vanmieu" }, "not": true }] }
+  ]
+}

@@ -240,6 +240,20 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### The tests of the messenger in Era 1 (#134)
+
+**The place of an exam belongs to its time** ("Exams and titles" in `docs/DESIGN.md`). Văn Miếu was built in 1070 and Thăng Long has its name from 1010, so in Era 1 the messenger of the Hùng King gives the tests at the village hall of Phù Đổng.
+
+**The placement test by the messenger.** After the Five Trials the drum of the village hall sounds at every grade, and the quest of Gióng starts from `prologue.done` at every grade (no quest `placement`, no step on the road over the Red River). At the village hall, after the line of the elder in the talk of the messenger, a child of grade 3 or more hears "Nhà vua cần người tài. Ta thử tài cháu một chút nhé." and takes the placement exam there: the screen `exam` opens over the village in the middle of the talk (an effect with `now`, `src/core/session.js`), with the same exam (`createExam`, the same ladder, the same start near the grade). Then the choice of a calling, with "Giờ cháu đã biết mình là ai." said by the messenger, then "Ta sẽ tâu với nhà vua về cháu.", then the mother of Gióng (`dlg.messenger.call.n4`). A child of grade 1 or 2 goes from the line of the elder to the mother, as before.
+
+**The exam of the era by the messenger.** At the end of the farewell of Gióng the drum sounds again, and a line says that the messenger is back in the village. He stands at the village hall until the exam of the era is passed; his talk thanks the village for the king and opens the exam (`exam.era1`) at its end. The step of the quest `exam` points at him, and the elder sends the child to him.
+
+**The title of Era 1 is a word of its time.** The exam of the era gives "Người tài" (`nguoi-tai` in `data/titles.json`, with `print`): the messenger says "Cháu là người tài của làng Phù Đổng.", the title has no row on the board of Văn Miếu, and the notebook has its print, with the messenger (`legend:talent`). The scholar titles come with the exams of Văn Miếu.
+
+**The exam screen takes its place from the chapter.** `src/ui/vanmieu.js` is the screen of the exams: the person, the place, and the lines come from the chapter of the hero (`examiners` in `data/titles.json`, `src/core/examiners.js`): from chapter 1 the messenger, the village hall, and the lines `exam.messenger.*`; from chapter 7 Văn Miếu, its teacher, and the lines `exam.*`. The scene `vanmieu`, with the gate, the board, the stele, and `vanmieu.note`, stays for chapter 7; Era 1 never opens it.
+
+**No Văn Miếu and no Thăng Long in Era 1.** The map of the road over the Red River has no gate of Văn Miếu, no stele, no trigger `vanmieu`, and no sign to it (`tools/maps/era1.py`; the land, the ferry, and the Red River stay); its name is "Đường qua sông Hồng"; the signs of Phù Đổng and of the road say the ferry and the village. On the country map, Văn Miếu is a place of the region of Thăng Long (chapter 7), and that region has no name before its chapter (`nameFrom` in `data/world/regions.json`, `chapter` of the places in `data/geo/vietnam.json`, `mapNames` in `src/world/geo.js`). The lines `map.sign.vanmieu`, `map.road.early`, and the gloss `[[vanmieu]]` are not used in Era 1. Chapter 7 has no map yet; the gate and its story come back with it.
+
 ### The rice of Gióng and the lost ducks (#129)
 
 **The pot says its count.** After each tray the mother at the pot says the bowls in it, while the pot glows: "Nồi có tám bát." At ten, Gióng eats and grows, as before, and the line says the ten: "Đủ mười bát! Gióng cao thêm một đầu.", with "Trong nồi còn {n} bát." when bowls are left over (`potCount` in `src/core/session.js`; the events `bowls` and `grow` of `feed` in `src/core/world/systems/work.js` give the bowls in the pot). With the mother away, Nghé says it, else the narrator.
