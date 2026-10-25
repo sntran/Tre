@@ -643,7 +643,9 @@ const HERBS = { ngai: ['greenPale', 'ashLight'], tiato: ['indigo', 'vermilionPal
 // The iron of the smith (#70): cold (grey), warm (dark red-brown), and hot (bright red). No yellow.
 const IRON = ['ash', 'wood', 'vermilion'];
 // The colors of the iron in the fire from grade 3 (#102): [the bar, the glow].
-const IRON_COLORS = { dark: ['wood', null], cherry: ['vermilion', 'vermilionPale'], orange: ['ochre', 'yellow'], yellow: ['yellow', 'yellowPale'] };
+// The colors of the bar in the fire: [bar, glow, ember]. Dark red is a coal (#127: "the dark red and
+// the right red look almost the same on the phone"): a dark bar with a thin red-brown ember on top.
+export const IRON_COLORS = Object.freeze({ dark: ['ink', null, 'wood'], cherry: ['vermilion', 'vermilionPale'], orange: ['ochre', 'yellow'], yellow: ['yellow', 'yellowPale'] });
 // The looks of the planting of Xóm Ruộng that come from their key (docs/PLANTING.md): a row of n
 // seedlings at a stage of growth (seedlings-<n>-<stage>), a bundle of n seedlings tied with straw
 // (bundle-<n>), a loose bunch (bunch-<n>), and a bamboo stake of a plot (plot-stake). Null for
@@ -945,8 +947,9 @@ export function workThing(look) {
       // The colors of the fire (#102): dark red, cherry red (with the glow and the sparks), orange,
       // and yellow, each brighter than the one before.
       if (look.color) {
-        const [bar, glow] = IRON_COLORS[look.color];
+        const [bar, glow, ember] = IRON_COLORS[look.color];
         const parts = [...anvil, P('bar', [0.4, 0.3, 2], bar, [0, 0.15, 0])];
+        if (ember) parts.push(P('ember', [0.24, 0.04, 1.6], ember, [0, 0.31, 0]));
         if (glow) parts.push(P('glow', [1, 0.04, 2.4], glow, [0, 0.01, 0]), ...[[0.3, 0.7, -0.5], [-0.25, 0.9, 0.2], [0.15, 1.1, 0.7]].map(([x, y, z], i) => P(`spark${i}`, [0.12, 0.12, 0.12], glow, [x, y, z])));
         return still(parts, glow ? 1.2 : 0.4);
       }

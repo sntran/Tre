@@ -1,8 +1,8 @@
 {
   "name": "trial-smith-cue",
   "about": {
-    "vi": "Gợi ý của bác thợ rèn: bác nhúng miếng sắt của bác trước (không có gợi ý trên miếng ấy); khi sắt của An đỏ rực mà An chờ, sắt phát sáng; An nhúng thì hết sáng.",
-    "en": "The cue of the smith: he quenches his own piece first (no glow on it); when the iron of An glows hot and An waits, the iron glows; when An quenches it, the glow stops."
+    "vi": "Gợi ý của bác thợ rèn: bác nhúng miếng sắt của bác trước (không có gợi ý trên miếng ấy); khi sắt của An đỏ rực mà An chờ, sắt phát sáng; An nhúng thì hết sáng. Ở lớp 1, An làm ba thanh sắt.",
+    "en": "The cue of the smith: he quenches his own piece first (no glow on it); when the iron of An glows hot and An waits, the iron glows; when An quenches it, the glow stops. At grade 1, An makes three bars."
   },
   "profile": {
     "name": "An",
@@ -137,7 +137,63 @@
           "with": {
             "ids": []
           }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "fire",
+        "timeout": 20
+      }
+    },
+    {
+      "until": {
+        "event": "cue",
+        "with": {
+          "ids": [
+            "iron:smith"
+          ]
         },
+        "timeout": 30
+      }
+    },
+    {
+      "press": true
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "fire",
+        "timeout": 20
+      }
+    },
+    {
+      "until": {
+        "event": "cue",
+        "with": {
+          "ids": [
+            "iron:smith"
+          ]
+        },
+        "timeout": 30
+      }
+    },
+    {
+      "press": true
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
         {
           "flag": "trial.smith.done"
         }

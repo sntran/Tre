@@ -662,6 +662,36 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
     }
   }
+  // The hero never stands between the camera and the iron of the anvil (#127: at the smith the hero
+  // covered the iron while it changed color, also during the demonstration, and after the view
+  // turned by itself): a hero who stands still on the side of the camera steps to the side of the
+  // anvil away from it (anvilStand), with the angle of the view of now.
+  const ANVIL_NEAR = 7; // half blocks from the anvil: the hero is at the work of the anvil
+  const ANVIL_CALM = 3; // seconds with no tap and no press of the child before the hero steps aside
+  let anvilStill = 0;
+  function stepAnvilSide() {
+    const h = hero();
+    const tz = ['smith', 'horse'].map((id) => trialZone(id)).find((z) => z && !z.zone.done && z.zone.anvil);
+    // Not while the child acts: a tap or a press of the last seconds keeps the hero where it is.
+    if (!tz || !h || h.riding || walking() || screen || busy || holding() || (state.tick - lastChild) * STEP < ANVIL_CALM) {
+      anvilStill = 0;
+      return;
+    }
+    const a = tz.zone.anvil;
+    const dx = h.position.x - a.x;
+    const dz = h.position.z - a.z;
+    // The part of the way from the anvil to the hero that goes toward the camera.
+    const toward = dx * Math.sin(viewAz) + dz * Math.cos(viewAz);
+    if (Math.hypot(dx, dz) > ANVIL_NEAR || toward <= 0.5) {
+      anvilStill = 0;
+      return;
+    }
+    anvilStill += STEP;
+    if (anvilStill < 0.4) return;
+    anvilStill = 0;
+    const p = anvilStand(a);
+    walkTo([{ x: p.x / 2, y: p.z / 2 }], null);
+  }
   // The hero never stands in the body of a person (#76: after a talk the hero stood in the fisher,
   // and the teacher walked into the hero at his mat): a hero who stands still there steps out to a
   // free side of the person, the side of the hero first.
@@ -2215,6 +2245,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
 
   const WORD_GRADE = 2; // the highest grade that gets the short line of a new word (#122)
+  // The lines of the smith in the world that say "thép" (#127); the first one has the word line.
+  const THEP_LINES = new Set(['smith.fair.why']);
 
   // Raids (data/raids.json, src/core/world/raids.js, and src/core/world/systems/raid.js) -----
 
@@ -3549,6 +3581,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           add({ act: 'quench', icon: 'water', target: piece, at: tz.zone.anvil, rank: 0, work: true, run: () => work(id, 'quench') }, REACH + 3);
           if (chosen?.id === 'rack:smith') add({ act: 'rack', icon: 'rack', target: 'rack:smith', at: tz.zone.rack, rank: -1, work: true, run: () => work(id, 'rack') }, REACH + 3);
         }
+        // The guess of the fair test (#127): after a tap on a bar, a press puts a pebble by it.
+        const guessed = test?.guessWait ? test.tries.find((q) => q.id === chosen?.id) : null;
+        if (guessed) add({ act: 'pebble', icon: 'hand-put', target: guessed.id, at: getEntity(state, guessed.id).position, rank: -1, work: true, run: () => work(id, 'pebble', { item: guessed.id }) }, REACH + 4);
       }
       const hearth = zoneOf('hearth');
       const bellows = query(state, 'item', 'position').find((e) => e.item.kind === 'bellows' && !e.hidden);
@@ -4477,12 +4512,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // The count of the work for the goal bar, as things (#48): the bundles of the teacher (the ones
   // tied, of all that the rods make). Null for the other work.
   function workCount() {
-    // The bars of the smith from grade 3 (#120): the pips of the bars that are done, apart from the
+    // The bars of the smith (#120; at grade 1 too, #127): the pips of the bars that are done, apart from the
     // iron of the gift on the counter ("The iron counter showed 2 … That was confusing.").
     if (mentoring.activeKey() === 'trial-smith') {
       const tz = trialZone('smith');
       const task = tz ? taskOf(trialDef('smith'), tz.zone.level ?? 0) : null;
-      if (!tz || tz.zone.done || !task?.colors || (task.pieces ?? 1) < 2) return null;
+      if (!tz || tz.zone.done || (task?.pieces ?? 1) < 2) return null;
       return { pip: 'bar', have: tz.zone.hard ?? 0, need: task.pieces };
     }
     if (mentoring.activeKey() !== 'trial-scholar') return null;
@@ -4895,6 +4930,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The big button glows with the finish (#89).
       emit({ type: 'actGlow' });
     }
+    // The first line that says "thép" has the line of the word with it, while the bars glow (#127).
+    if (ev.type === 'call' && !busy && THEP_LINES.has(ev.key) && !profile.flags['word.thep']) {
+      profile.flags['word.thep'] = true;
+      ev = { ...ev, key: `${ev.key}.word` };
+      setCue(['iron:smith', 'iron:smith-b'].filter((id) => getEntity(state, id)));
+    }
     if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {}, ...(ev.happened ? { happened: true } : {}), ...(ev.asked ? { asked: true } : {}) });
     // The mentors read the commits (before the learner takes them), the plank too long, and the
     // actions of the hands.
@@ -5112,6 +5153,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepBridgeOpen();
     stepHold();
     stepComeTalk();
+    stepAnvilSide();
     stepNearHeap();
     stepOutOfPerson();
     stepFromBehind();
@@ -5152,6 +5194,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           if (it?.task === 'trial-healer') sayHerb('put', it.kind);
         }
       }
+      // A bar that is done lights its pip at once (#127: the pips lit only at the next update).
+      if (ev.type === 'hiss') emit({ type: 'hud' });
       // The fire of the iron horse: the step of the anvil (#126).
       if (ev.type === 'fire' && ev.id === 'zone:trial-horse') horseStep('anvil');
       // A wrong bundle: a hero who stands on the mat steps off to the place of the mat, so that the

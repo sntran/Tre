@@ -1,8 +1,8 @@
 {
   "name": "trial-smith-button",
   "about": {
-    "vi": "Thử thách của bác thợ rèn chỉ với nút hành động: bác nhúng miếng sắt của bác trước; An đi đến đe và quay mặt vào đe; khi sắt đỏ rực, nút hiện giọt nước, An bấm nút để nhúng sắt.",
-    "en": "The trial of the smith with the action button only: the smith quenches his own piece first; An walks to the anvil and turns to it; when the iron glows, the button shows the drop of water, and An presses it to quench."
+    "vi": "Thử thách của bác thợ rèn chỉ với nút hành động: bác nhúng miếng sắt của bác trước; An đi đến đe và quay mặt vào đe; khi sắt đỏ rực, nút hiện giọt nước, An bấm nút để nhúng sắt. Ở lớp 1, An làm ba thanh sắt.",
+    "en": "The trial of the smith with the action button only: the smith quenches his own piece first; An walks to the anvil and turns to it; when the iron glows, the button shows the drop of water, and An presses it to quench. At grade 1, An makes three bars."
   },
   "profile": {
     "name": "An",
@@ -133,7 +133,76 @@
           "with": {
             "id": "iron:smith"
           }
+        }
+      ]
+    },
+    {
+      "until": {
+        "event": "fire",
+        "timeout": 20
+      }
+    },
+    {
+      "until": {
+        "event": "glow",
+        "timeout": 15
+      }
+    },
+    {
+      "press": true
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "fire",
+        "timeout": 20
+      }
+    },
+    {
+      "until": {
+        "event": "glow",
+        "timeout": 15
+      }
+    },
+    {
+      "press": true
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "textKey": "word.thep"
         },
+        "timeout": 10
+      }
+    },
+    {
+      "do": {
+        "type": "next"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "textKey": "dlg.smith.trial.done.n1"
+        },
+        "timeout": 10
+      }
+    },
+    {
+      "expect": [
         {
           "entity": "iron:smith",
           "look": "blade"

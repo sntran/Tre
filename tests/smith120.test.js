@@ -45,13 +45,23 @@ async function play(grade, moves) {
     session.command({ type: 'tap', target: { thing: e.id } });
     still();
   };
-  for (const m of moves) {
+  for (const [i, m] of moves.entries()) {
     if (m === 'water' || m === 'rack') {
       run(15, () => tz().test && tz().test.check == null && !tz().test.show);
       run(1.2);
       if (m === 'rack') tapOn('rack:smith');
       session.command({ type: 'hands' });
       run(1);
+      // The guess before the bend (#127): a pebble by the bar in the water, or by the bar on the
+      // rack when the next move is 'guess-rack'.
+      if (tz().test?.guessWait) {
+        const how = moves[i + 1] === 'guess-rack' ? 'rack' : 'water';
+        tapOn(tz().test.tries.find((q) => q.how === how).id);
+        session.command({ type: 'hands' });
+        run(1);
+      }
+    } else if (m === 'guess-rack') {
+      continue;
     } else if (m === 'pour') {
       tapOn(getEntity(session.state, 'zone:jar').zone.items[0]);
       session.command({ type: 'hands' });
@@ -89,7 +99,7 @@ test('grade 3: the first quench shows the gấc next to the hot iron; each bar g
   const k = said.map((l) => l.key);
   assert.ok(k.includes('smith.gac'), k.join(', '));
   assert.equal(k.filter((x) => x === 'smith.good').length, 2, k.join(', '));
-  assert.ok(k.includes('smith.color.dark'));
+  assert.ok(k.includes('smith.color.dark.gac'));
   assert.deepEqual(session.workCount(), { pip: 'bar', have: 2, need: 3 });
   assert.ok(!zone.done);
 });
@@ -111,7 +121,7 @@ test('grade 5: the smith bends the two bars one after the other in view, says wh
   assert.ok(view && view.points.length >= 2, 'the view frames the bars');
   const a = k.indexOf('smith.fair.bar.water');
   const b = k.indexOf('smith.fair.bar.rack');
-  const why = k.indexOf('smith.fair.why');
+  const why = k.findIndex((x) => x.startsWith('smith.fair.why'));
   assert.ok(a >= 0 && b >= 0 && why > Math.max(a, b), k.join(', '));
   assert.ok(k.includes('smith.fair.rest'), k.join(', '));
   session.command({ type: 'wave' });

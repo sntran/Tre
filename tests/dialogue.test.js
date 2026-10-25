@@ -27,7 +27,9 @@ test('the done talk of each trial names its calling, with the card of the callin
     const text = load(`i18n/${lang}.json`);
     for (const trial of trials) {
       const def = talks.find((d) => d.id === `${trial.npc}.trial.done`);
-      const view = createDialogue(def, { flags: {} }).view();
+      // A child who heard the word "thép" before (the first time, its word line comes first, #127).
+      const view = createDialogue(def, { flags: { 'word.thep': true } }).view();
+      if (trial.id === 'smith') assert.equal(createDialogue(def, { flags: {} }).view().textKey, 'word.thep');
       assert.equal(view.calling, trial.calling, `${trial.id}: the card of its calling`);
       const name = text[callings.find((c) => c.id === trial.calling).nameKey];
       const line = text[view.textKey];

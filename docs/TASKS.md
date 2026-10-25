@@ -240,6 +240,20 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### The smith after the play test (#127)
+
+**The pips at once.** A right quench sends `hud`, so that the pip of each bar lights in the step of the hiss.
+
+**Three bars at grade 1.** The level of grade 1 has four lumps and three bars for the child after the bar of the smith (`ore: 4`, `pieces: 3`), each with its "Vừa đẹp!" and its pip, and the talk says "Bác cần ba thanh, từng thanh một." A level of more than one bar works as the levels of the colors (`hardPiece`).
+
+**The hero beside the anvil.** At the anvil of the smith and of the iron horse, a hero who stands still on the side of the camera for some seconds, with no tap and no press of the child, walks to the side of the anvil away from the camera (`stepAnvilSide` in `src/core/session.js`), with the angle of the view of now, also after the view turns by itself and during the demonstration. In the play test the hero stood between the camera and the fire and covered the iron while it changed color.
+
+**A guess before the fair test.** At grade 5, with one bar in the water and one on the rack, the smith says "Cháu đoán thử: chạm vào thanh sẽ không cong, rồi bấm nút lớn để đặt một viên sỏi bên nó." and waits. A tap on a bar and a press put a pebble by it; then he bends both bars, and the pebble shows the guess: "Viên sỏi nằm bên thanh không cong: cháu đoán đúng rồi!" or "… lần này cháu đoán chưa đúng.", before the line of why. The record of the test keeps the guess (`guess` in the event `skill`). No question shows: the guess is a thing that the child puts.
+
+**The right color is said.** The line of the rest names the gấc ("Giờ cháu làm các thanh thép còn lại: đỏ như quả gấc thì nhúng nhé."), and after a wrong color the smith says the color that the bar had and the right one, and holds the gấc up next to the iron again ("Lúc nãy sắt mới đỏ sẫm như hòn than. Đỏ như quả gấc này thì nhúng."). Dark red is now a coal: a dark bar with a thin red-brown ember (`IRON_COLORS` in `src/world/figures.js`), clearly different from the gấc red by day and at night.
+
+**"Thép" for what gets hard.** The lines of what gets hard in cold water say "thép"; "sắt" stays for the things of the legend and the talk of the village. The first line that says "thép" comes with its word line, "Thép là sắt nung lâu trong lửa than.", at each grade (a node of the talk before the line, or the same bubble for a line in the world, while the bars glow).
+
 ### The forge of the iron horse after the play test (#126)
 
 **One step at a time.** The talk says the goal and the first step: "Lò cần sáu miếng sắt. Cháu mang từng miếng sắt vào lò nhé.", while the hearth and the heap glow. After the first lump in the hearth, the smith says the step of the bellows and points at them ("Đủ sắt thì cháu đứng bên ống bễ và bấm nút lớn."); with the fire, the step of the anvil ("Sắt lên đe rồi! Đỏ rực thì nhúng ngay nhé.") while he points at the iron and at the trough (`horseStep` in `src/core/session.js`). At grades K to 2 a new word has its short line the first time, in the same bubble: "Ống bễ thổi gió cho lửa to lên.", "Đe là một cục sắt to và nặng, để đặt sắt nóng lên." A tap on the smith during the task says the step of now (the lumps until the hearth has the lumps of the level), never the talk again.

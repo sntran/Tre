@@ -1345,6 +1345,8 @@ function act(world, e, want, env) {
       packHearth(world, hearth.zone);
       say(world, 'roll', hearth.id, { sound: 'plank-down' });
     }
+  } else if (want.act === 'pebble') {
+    if (tz.zone.test && near(tz.zone.anvil, REACH + 6)) guessPebble(world, tz, want.item);
   } else if (want.act === 'quench' || want.act === 'rack') {
     // The fair test of grade 5 (#102): a piece into the water, or onto the rack.
     if (tz.zone.test) {
@@ -1376,8 +1378,11 @@ function act(world, e, want, env) {
       say(world, 'hiss', iron.id, { sound: 'sizzle', at: iron.position });
       // One word after each bar (#120: "no right/wrong per bar"): a right quench has its word too,
       // information about the task, not praise.
-      if (task.colors) say(world, 'call', 'npc:smith', { key: 'smith.good', params: {}, happened: true });
-      if (task.colors) hardPiece(world, tz, task, iron);
+      // A level of more than one bar (grade 1 too, #127: "I pressed only one time and it was
+      // finished."): each bar has its word and its pip.
+      const bars = task.colors || (task.pieces ?? 1) > 1;
+      if (bars) say(world, 'call', 'npc:smith', { key: 'smith.good', params: {}, happened: true });
+      if (bars) hardPiece(world, tz, task, iron);
       else finish(world, tz, iron.position);
     } else {
       iron.look = 'iron-bent';
@@ -1387,8 +1392,16 @@ function act(world, e, want, env) {
       // The smith says what happened first, in words that a child knows (#70): not hot enough yet,
       // or cold again. From grade 3, the color that it had (#102); in warm water, the water, and he
       // points at the jar.
-      const key = warm && right ? 'smith.warm' : color ? `smith.color.${color}` : early ? 'smith.bend.early' : 'smith.bend.late';
+      const key = warm && right ? 'smith.warm' : color ? `smith.color.${color}.gac` : early ? 'smith.bend.early' : 'smith.bend.late';
       say(world, 'call', 'npc:smith', { key, happened: true });
+      // After a wrong color the smith names the right one and holds the gấc up next to the iron
+      // again (#127: "Why doesn't he just tell me what color he wants?").
+      const gac = color && key !== 'smith.warm' ? getEntity(world, 'gac:smith') : null;
+      if (gac) {
+        tz.zone.gacBack = GAC_SHOW;
+        gac.position = { x: iron.position.x + 0.8, y: iron.position.y + 1.2, z: iron.position.z, facing: 0 };
+        world.events.push({ type: 'glowThings', ids: [gac.id] });
+      }
       if (key === 'smith.warm') {
         const smith = getEntity(world, 'npc:smith');
         const jar = zoneEnt(world, 'jar');
@@ -1805,7 +1818,26 @@ function testMove(world, tz, how) {
     iron.position = { x: r.x, y: r.y + 1.45, z: r.z + 0.4 + k * 1.2, facing: 0 };
     say(world, 'rack', iron.id, { sound: 'plank-down' });
   }
-  if (test.tries.length === 2) test.check = TEST_CHECK;
+  if (test.tries.length < 2) return;
+  // A guess before the bend (#127: "it didn't ask me to guess first, it just showed me"): with one
+  // bar in the water and one on the rack, the child puts a pebble by the bar that will stay
+  // straight (a tap on a bar and a press). Two bars the same way are no test: the bend comes.
+  if (new Set(test.tries.map((q) => q.how)).size === 2) {
+    test.guessWait = true;
+    world.events.push({ type: 'glowThings', ids: test.tries.map((q) => q.id) });
+    say(world, 'call', 'npc:smith', { key: 'smith.guess.ask', params: {}, happened: true });
+  } else test.check = TEST_CHECK;
+}
+// The pebble of the guess by a bar of the fair test; then the bend.
+function guessPebble(world, tz, piece) {
+  const test = tz.zone.test;
+  const bar = test?.guessWait ? getEntity(world, piece) : null;
+  if (!bar || !test.tries.some((q) => q.id === piece)) return;
+  delete test.guessWait;
+  test.guess = piece;
+  addEntity(world, { id: 'pebble:smith', keep: true, position: { x: bar.position.x + 0.9, y: bar.position.y, z: bar.position.z, facing: 0 }, look: 'stone' });
+  say(world, 'pebble', tz.id, { item: piece, sound: 'plank-down' });
+  test.check = TEST_CHECK;
 }
 function tickTest(world, tz, task, dt) {
   const test = tz.zone.test;
@@ -1819,7 +1851,7 @@ function tickTest(world, tz, task, dt) {
   if (test.stage == null) {
     tz.zone.commits += 1;
     if (!r.compare) tz.zone.fails += 1;
-    say(world, 'skill', tz.id, { ...trialSkill(task, { solved: r.compare, first: tz.zone.commits === 1, parts: test.tries.map((q) => (q.how === 'water' ? 1 : 0)), target: 1 }), fair: r.fair, compare: r.compare });
+    say(world, 'skill', tz.id, { ...trialSkill(task, { solved: r.compare, first: tz.zone.commits === 1, parts: test.tries.map((q) => (q.how === 'water' ? 1 : 0)), target: 1 }), fair: r.fair, compare: r.compare, ...(test.guess ? { guess: test.tries.find((q) => q.id === test.guess)?.how === 'water' } : {}) });
     // The view on the hands of the smith and the bars (#120: "I did not SEE the bending, he just
     // said it."): he bends them one after the other, slowly, and says what each did.
     const smith = getEntity(world, 'npc:smith');
@@ -1842,6 +1874,16 @@ function tickTest(world, tz, task, dt) {
     test.stageT = BEND_EACH;
     return;
   }
+  if (test.stage === test.tries.length && test.guess && !test.guessSaid) {
+    // The pebble shows the guess: by the bar that stayed straight, or by the bent one (#127).
+    test.guessSaid = true;
+    const right = test.tries.find((q) => q.id === test.guess)?.how === 'water';
+    const pebble = getEntity(world, 'pebble:smith');
+    if (pebble) world.events.push({ type: 'glowThings', ids: [pebble.id] });
+    say(world, 'call', 'npc:smith', { key: right ? 'smith.guess.right' : 'smith.guess.wrong', params: {}, happened: true });
+    test.stageT = BEND_EACH;
+    return;
+  }
   if (test.stage === test.tries.length) {
     // Then why, for a child (#120: "he did not say WHY"); or what to change in the test.
     const ways = new Set(test.tries.map((q) => q.how));
@@ -1850,7 +1892,7 @@ function tickTest(world, tz, task, dt) {
     test.stageT = TEST_SHOW;
     return;
   }
-  for (const id of ['iron:smith', 'iron:smith-b']) removeEntity(world, id);
+  for (const id of ['iron:smith', 'iron:smith-b', 'pebble:smith']) removeEntity(world, id);
   delete tz.zone.test;
   if (r.compare) {
     // The test showed the way: then the rest of the pieces, one at a time, in the fire.

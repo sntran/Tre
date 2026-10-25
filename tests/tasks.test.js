@@ -64,7 +64,10 @@ test('the smith: the fire is ready at the start; the smith quenches his own piec
     { expect: [{ action: { act: 'quench', icon: 'water' } }] },
     { press: true },
     { until: { event: 'hiss', timeout: 5 } },
-    { expect: [{ event: 'pulse', with: { id: 'iron:smith' } }, { flag: 'trial.smith.done' }] },
+    { expect: [{ event: 'pulse', with: { id: 'iron:smith' } }, { flag: 'trial.smith.done', is: false }] },
+    // Three bars at the level of grade 1 (#127): two more.
+    { repeat: 2, steps: [{ until: { event: 'fire', timeout: 10 } }, { tap: { thing: 'iron:smith' } }, { until: { event: 'glow', timeout: 15 } }, { press: true }, { until: { event: 'hiss', timeout: 5 } }] },
+    { expect: [{ flag: 'trial.smith.done' }] },
   ]);
 });
 

@@ -1,8 +1,8 @@
 {
   "name": "practice-ren-sat",
   "about": {
-    "vi": "Luyện tập ở lò rèn vào ban đêm: đêm qua đi, buổi luyện bắt đầu lúc sáng sớm ở lò rèn; hai lượt (lượt đầu bác nhúng miếng sắt của bác trước, lượt sau thì không); bác cảm ơn, rồi An trở về.",
-    "en": "Practice at the forge at night: the night goes by, and the visit starts in the early morning at the forge; two rounds (in the first round the smith quenches his own piece first, in the second he does not); the smith says thank you, and An goes back."
+    "vi": "Luyện tập ở lò rèn vào ban đêm: đêm qua đi, buổi luyện bắt đầu lúc sáng sớm ở lò rèn; hai lượt (lượt đầu bác nhúng miếng sắt của bác trước, lượt sau thì không); bác cảm ơn, rồi An trở về. Ở lớp 1, lượt đầu có ba thanh sắt; sau ba lần nhúng đúng, An đã nắm được kỹ năng, nên lượt sau lên một mức (một thanh).",
+    "en": "Practice at the forge at night: the night goes by, and the visit starts in the early morning at the forge; two rounds (in the first round the smith quenches his own piece first, in the second he does not); the smith says thank you, and An goes back. At grade 1, the first round has three bars; after three right quenches An has the skill, so the next round is one level up (one bar)."
   },
   "practice": "ren-sat",
   "profile": {
@@ -123,6 +123,42 @@
     },
     {
       "until": {
+        "event": "fire",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 4.5
+    },
+    {
+      "press": true
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
+        "event": "fire",
+        "timeout": 20
+      }
+    },
+    {
+      "wait": 4.5
+    },
+    {
+      "press": true
+    },
+    {
+      "until": {
+        "event": "hiss",
+        "timeout": 10
+      }
+    },
+    {
+      "until": {
         "event": "open",
         "with": {
           "screen": "say",
@@ -207,7 +243,7 @@
           "practice": {
             "id": "ren-sat",
             "sets": 1,
-            "level": 0
+            "level": 2
           }
         }
       ]

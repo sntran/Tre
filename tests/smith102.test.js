@@ -65,6 +65,12 @@ async function play(grade, moves) {
       if (m === 'rack') tapOn('rack:smith');
       session.command({ type: 'hands' });
       run(1);
+      // The guess before the bend (#127): a pebble by the bar in the water.
+      if (tz().test?.guessWait) {
+        tapOn(tz().test.tries.find((q) => q.how === 'water').id);
+        session.command({ type: 'hands' });
+        run(1);
+      }
     } else if (m === 'pour') {
       tapOn(getEntity(session.state, 'zone:jar').zone.items[0]);
       session.command({ type: 'hands' });
@@ -110,8 +116,9 @@ test('too early or too late: the piece bends, and the smith says the color that 
   const { said, events, zone } = await play(3, ['orange', 'yellow', 'dark']);
   assert.deepEqual(events.filter((e) => e.type === 'skill').map((e) => e.solved), [false, false, false]);
   const lines = said.map((l) => l.key).filter((k) => k.startsWith('smith.color.'));
-  assert.deepEqual(lines, ['smith.color.orange', 'smith.color.yellow', 'smith.color.dark']);
-  assert.equal(said.find((l) => l.key === 'smith.color.dark').text, 'Lúc nãy sắt mới đỏ sẫm như hòn than.');
+  // Each with the right color, while the gấc comes up next to the iron (#127).
+  assert.deepEqual(lines, ['smith.color.orange.gac', 'smith.color.yellow.gac', 'smith.color.dark.gac']);
+  assert.equal(said.find((l) => l.key === 'smith.color.dark.gac').text, 'Lúc nãy sắt mới đỏ sẫm như hòn than. Đỏ như quả gấc này thì nhúng.');
   assert.ok(!zone.done);
 });
 

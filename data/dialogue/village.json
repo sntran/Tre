@@ -63,8 +63,10 @@
     },
     {
       "id": "smith.trial.done",
-      "start": "n1",
+      "start": "qthep",
       "nodes": {
+        "qthep": { "if": { "notFlags": ["word.thep"] }, "then": "wthep", "else": "n1" },
+        "wthep": { "speaker": "narrator", "textKey": "word.thep", "names": ["iron:smith"], "effects": [{ "set": "word.thep" }], "next": "n1" },
         "n1": {
           "speaker": "smith",
           "textKey": "dlg.smith.trial.done.n1",
@@ -347,8 +349,10 @@
         "iron": {
           "speaker": "smith",
           "textKey": "dlg.smith.forge.iron",
-          "next": "water"
+          "next": "qthep"
         },
+        "qthep": { "if": { "notFlags": ["word.thep"] }, "then": "wthep", "else": "water" },
+        "wthep": { "speaker": "narrator", "textKey": "word.thep", "effects": [{ "set": "word.thep" }], "next": "water" },
         "water": {
           "speaker": "smith",
           "textKey": "dlg.smith.forge.water",
