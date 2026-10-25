@@ -233,7 +233,7 @@ def place_def(m, region, size, offset, stamps):
 def ore_triggers(m, id, x, y):
     m.triggers.append({'id': id, 'x': x, 'y': y, 'on': 'tap', 'when': {'flags': ['giong.spoke'], 'notFlags': [f'horse.{id}']},
                        'action': {'pickup': {'iron': 2}, 'set': f'horse.{id}', 'textKey': 'map.ore.found'}})
-    m.triggers.append({'id': f'{id}-early', 'x': x, 'y': y, 'on': 'tap', 'action': {'textKey': 'map.ore.look'}})
+    m.triggers.append({'id': f'{id}-early', 'x': x, 'y': y, 'on': 'tap', 'when': {'notFlags': [f'horse.{id}']}, 'action': {'textKey': 'map.ore.look'}})
 
 
 

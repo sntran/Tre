@@ -51,7 +51,7 @@ const pileLeft = (session) => getEntity(session.state, 'zone:stakes').zone.items
 // A stake from the pile, and then the row at this point (half blocks from its start).
 const stakeTo = (n, at) => [{ press: { thing: `stake:fisher:${n}` } }, { until: { event: 'pick', timeout: 15 } }, { tap: { line: at } }, { wait: 2 }, { press: true }, { until: { event: 'put', timeout: 15 } }];
 
-test('a child who only presses gets the line of the narrow place, then the ring of the fisher, and a tap at the ring puts the stake (#109)', async () => {
+test('a child who only presses gets the ring of the fisher at the first refused press, a tap at the ring puts the stake, and then the rule comes once (#109, #130)', async () => {
   const session = await atRow();
   const lines = heard(session);
   const z = line(session);
@@ -61,7 +61,8 @@ test('a child who only presses gets the line of the narrow place, then the ring 
   }
   const s = [...new Set([0, ...slots(session)])];
   for (let i = 1; i < s.length; i++) assert.ok(s[i] - s[i - 1] >= z.space / 2, `no squeeze: ${s.join(',')}`);
-  assert.ok(lines.some((l) => l.key === 'fisher.tight.here'), 'the place is narrow');
+  // The ring at the first refused press, with its short line, and no "chật quá" before it.
+  assert.ok(!lines.some((l) => l.key === 'fisher.tight.here'), 'no line of the narrow place first');
   assert.ok(lines.some((l) => l.key === 'fisher.tight.ring'), 'the ring');
   const ring = getEntity(session.state, 'why:fisher:next');
   assert.ok(ring && session.carried(), 'a ring, and the stake in the hands');
@@ -72,6 +73,7 @@ test('a child who only presses gets the line of the narrow place, then the ring 
   run(session, 3);
   assert.ok(slots(session).includes(at), `the stake at the ring: ${slots(session).join(',')}`);
   assert.ok(!getEntity(session.state, 'why:fisher:next'), 'the ring goes');
+  assert.equal(lines.filter((l) => l.key === 'fisher.tight.rule').length, 1, 'the two sides of the rule, once, after the stake at the ring');
 });
 
 test('a tap on a stake of the row chooses it on the screen, and a press takes it back', async () => {

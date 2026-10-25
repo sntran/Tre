@@ -53,7 +53,7 @@ test('a stake goes into no space narrower than half of the gap, and always into 
   assert.ok(!tightSlot([4, 12], 5, 4), 'into a hole');
 });
 
-test('presses at the pile with no walk put no stake into a space narrower than half of the gap, and the fisher says to go on from the last stake', async () => {
+test('presses at the pile with no walk put no stake into a space narrower than half of the gap, and the fisher shows where to go on (the ring, #130)', async () => {
   const { session, said } = await atRow();
   const space = getEntity(session.state, 'zone:line').zone.space;
   for (let i = 0; i < 16; i++) {
@@ -62,7 +62,7 @@ test('presses at the pile with no walk put no stake into a space narrower than h
   }
   const s = [...new Set([0, ...slots(session)])];
   for (let i = 1; i < s.length; i++) assert.ok(s[i] - s[i - 1] >= space / 2, `the row ${s.join(', ')} (gap ${space})`);
-  assert.ok(said.includes('fisher.tight.here'), said.join(', '));
+  assert.ok(said.includes('fisher.tight.ring'), said.join(', '));
   assert.ok(said.includes('fisher.ghost'), 'the see-through stake says what it is');
   assert.equal(said.filter((k) => k === 'fisher.ghost').length, 1, 'once');
 });

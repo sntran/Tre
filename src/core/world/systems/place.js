@@ -381,6 +381,11 @@ function tip(world, zoneEnt, def, h) {
   if (getEntity(world, whyId)) removeEntity(world, whyId);
   addEntity(world, { id: whyId, why: { zone: zone.id }, position: { x: zone.lane, y: zone.deckY - 0.2, z: zone.from + covered, facing: 0 }, look: `gap-${missing}` });
   say(world, 'tip', zoneEnt.id, { item: lastId, sound: def.outcomes.short.sound });
+  // A short plank says it, as a long one does, while the empty part glows (#130: "Why did my board
+  // fall? It never says why.").
+  const call = def.outcomes.short.call;
+  if (call) say(world, 'call', `npc:${call.who}`, { key: call.key });
+  world.events.push({ type: 'glowThings', ids: [whyId] });
 }
 
 // Is an entity on the span (between the ends of the zone)?

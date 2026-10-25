@@ -288,3 +288,7 @@ These questions need a person who knows Vietnamese history and geography. Until 
 
 118. **Sắt or thép.** Quick cooling in water makes steel hard (iron with a little carbon); pure iron does not get much harder. The game says "sắt" for all the metal of the smith, and the line of why says "nguội nhanh thì sắt cứng lại." Should a line say "thép" somewhere (for example at grade 5, after the fair test), or does "sắt" stay, as the people of a village say it?
     - **My answer:** Both. "Sắt" stays for the things of the legend (ngựa sắt, roi sắt) and for the talk of the village. The lines that say what gets hard in cold water say "thép", at every grade, and the first of them comes with a short line of the word: "Thép là sắt nung lâu trong lửa than." (#127).
+
+## The map script and the map of Phù Đổng (#130)
+
+`tools/maps/era1.py` and `data/maps/phu-dong.json` did not agree in five places: the river trigger (the texts after and before the bridge), the "-early" ore triggers (the flag that hides them), and the places of the smith and the healer in the plan of the day. I brought the script up to the map in these places. One place is left: two rows of the stamp of the river bank (stamp 2, rows 22 and 23, the last two cells), where the script writes packed earth (`yy`) and the map has grass (`..`). Which one is right? I did not change the map there.

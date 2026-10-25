@@ -214,7 +214,9 @@ test('at the bridge, the eye is never the act of the button, and the river line 
     // The traveler of the ferry puzzle (#104) may offer his puzzle there on its days.
     return said.filter((k) => !k.startsWith('puzzle.'));
   };
-  assert.deepEqual(await river(open), ['map.river.bridge']);
+  // Away from the bridge, before a try, the bridge is not the work of the child: the river says
+  // only where it flows (#130).
+  assert.deepEqual(await river(open), ['map.river.plain']);
   assert.deepEqual(await river({}), ['map.river']);
   const vi = load('i18n/vi.json');
   assert.ok(!/lội/.test(vi['map.river.bridge']), 'no wade in the line of the river while the bridge task is open');

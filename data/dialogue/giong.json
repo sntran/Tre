@@ -8,14 +8,20 @@
     "n1": {
      "speaker": "narrator",
      "textKey": "dlg.messenger.call.n1",
-     "next": "n2"
+     "next": "qsugia"
     },
+    "qsugia": { "if": { "grade": { "max": 2 }, "notFlags": ["word.sugia"] }, "then": "wsugia", "else": "n2" },
+    "wsugia": { "speaker": "narrator", "textKey": "word.sugia", "effects": [{ "set": "word.sugia" }], "next": "n2" },
     "n2": {
      "speaker": "messenger",
      "textKey": "dlg.messenger.call.n2",
      "mood": "worried",
-     "next": "n3"
+     "next": "qbocoi"
     },
+    "qbocoi": { "if": { "grade": { "max": 2 }, "notFlags": ["word.bocoi"] }, "then": "wbocoi", "else": "qquanan" },
+    "wbocoi": { "speaker": "narrator", "textKey": "word.bocoi", "effects": [{ "set": "word.bocoi" }], "next": "qquanan" },
+    "qquanan": { "if": { "grade": { "max": 2 }, "notFlags": ["word.quanan"] }, "then": "wquanan", "else": "n3" },
+    "wquanan": { "speaker": "narrator", "textKey": "word.quanan", "effects": [{ "set": "word.quanan" }], "next": "n3" },
     "n3": {
      "speaker": "elder",
      "textKey": "dlg.messenger.call.n3",

@@ -76,7 +76,7 @@
       ],
       "allow": 1, "take": {},
       "words": { "who": "raid.who.serpent", "ball": "raid.ball.rice", "wall": "raid.wall.ford" },
-      "lookKey": "raid.demo.look.fisher", "pauseKey": "raid.river.pause", "takeKey": "raid.take.river", "introKey": "raid.river.intro", "lostKey": "raid.river.lost", "mark": "legend", "noteKey": "raid.river.note",
+      "lookKey": "raid.demo.look.fisher", "pauseKey": "raid.river.pause", "takeKey": "raid.take.river", "word": "choloi", "introKey": "raid.river.intro", "lostKey": "raid.river.lost", "mark": "legend", "noteKey": "raid.river.note",
       "win": { "set": ["river.calmed"], "give": { "fish": 2 }, "after": ["river.song", "river.song.after"] }
     },
     "soldier1": {

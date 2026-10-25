@@ -1965,6 +1965,13 @@ function tickTide(world, tz, dt, env) {
     }
     // The water rises in the last part of the wait, so that the child sees it come.
     const k = Math.max(0, (tide.t - (tide.every - 10)) / 10);
+    // The first time, the fisher says it while it rises (#130: the line of the tide left the start
+    // talk; the word comes when the thing comes).
+    if (k > 0 && !tz.zone.tideTold) {
+      tz.zone.tideTold = true;
+      const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+      if (fisher) say(world, 'call', fisher.id, { key: 'fisher.tide.up', params: {}, happened: true });
+    }
     if (water) water.look = `tide-${Math.min(2, Math.floor(k * 3))}`;
     if (tide.t < tide.every) return;
     const offsets = row.map((s) => s.item.slot);
@@ -2320,7 +2327,9 @@ function noRoomLine(world, tz, line, held) {
 // he says to walk to it. A refused press after that says the ring again. The press never walks there by itself: a press never reads a number
 // that the child must find (#63), and a tap at the ring chooses the place. When the rule allows no
 // free point, he points at the stake to take back.
-export const TIGHT_RING = 2;
+// The refused press that shows the ring: the first one (#130: "chật quá" twice before the ring felt
+// like a "wrong" before the child knew there was a choice).
+export const TIGHT_RING = 1;
 function tightHint(world, tz, line) {
   const row = query(world, 'item').filter((s) => s.item.zone === line.id && s.item.slot != null && !s.item.held);
   const last = row.reduce((a, s) => (!a || s.item.slot > a.item.slot ? s : a), null);
@@ -2353,6 +2362,7 @@ function tightHint(world, tz, line) {
     const next = Math.min(line.length, last.item.slot + line.space);
     const slot = free.includes(next) ? next : free.reduce((a, k) => (Math.abs(k - near) < Math.abs(a - near) ? k : a));
     addEntity(world, { id: 'why:fisher:next', keep: true, position: { x: line.x + slot, y: line.y + WATER_UP, z: line.z, facing: 0 }, look: 'pull-ring' });
+    tz.zone.tightRing = true;
     if (fisher) {
       say(world, 'call', fisher.id, { key: 'fisher.tight.ring', params: {}, happened: true });
       fisher.gesture = { act: 'point', x: line.x + slot, z: line.z, t: 2.5 };
@@ -2406,6 +2416,7 @@ function backHint(world, tz, line, row) {
     const slot = hole ? Math.round(hole.from + hole.size / 2) : Math.min(line.zone.length, last + line.zone.space);
     removeEntity(world, 'why:fisher:next');
     addEntity(world, { id: 'why:fisher:next', keep: true, position: { x: line.zone.x + slot, y: line.zone.y + WATER_UP, z: line.zone.z, facing: 0 }, look: 'pull-ring' });
+    tz.zone.tightRing = false;
     const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
     const nghe = getEntity(world, 'friend:nghe');
     const who = fisher ?? (nghe && !nghe.hidden ? nghe : null);
@@ -2414,7 +2425,16 @@ function backHint(world, tz, line, row) {
       who.gesture = { act: 'point', x: line.zone.x + slot, z: line.zone.z, t: 2.5 };
     }
   }
-  if (world.events.some((ev) => ev.type === 'put' && ev.id === 'hero' && ev.zone === line.zone.id)) removeEntity(world, 'why:fisher:next');
+  if (world.events.some((ev) => ev.type === 'put' && ev.id === 'hero' && ev.zone === line.zone.id)) {
+    // The two sides of the rule, once, after the first stake at the ring of a refused press (#130).
+    const ring = getEntity(world, 'why:fisher:next');
+    const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+    if (ring && tz.zone.tightRing && !tz.zone.ruleSaid && fisher) {
+      tz.zone.ruleSaid = true;
+      say(world, 'call', fisher.id, { key: 'fisher.tight.rule', params: {}, happened: true });
+    }
+    removeEntity(world, 'why:fisher:next');
+  }
 }
 function clearNarrow(world) {
   for (const e of query(world, 'position').filter((x) => String(x.id).startsWith('why:fisher:narrow:'))) removeEntity(world, e.id);

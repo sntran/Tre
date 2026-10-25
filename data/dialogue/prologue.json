@@ -79,8 +79,10 @@
      "speaker": "elder",
      "textKey": "dlg.elder.intro.five",
      "faces": ["teacher", "smith", "fisher", "healer", "woodcutter"],
-     "next": "n2"
+     "next": "qtieuphu"
     },
+    "qtieuphu": { "if": { "grade": { "max": 2 }, "notFlags": ["word.tieuphu"] }, "then": "wtieuphu", "else": "n2" },
+    "wtieuphu": { "speaker": "narrator", "textKey": "word.tieuphu", "effects": [{ "set": "word.tieuphu" }], "next": "n2" },
     "n2": {
      "speaker": "elder",
      "textKey": "dlg.elder.intro.n2",
@@ -165,8 +167,11 @@
     "n5": {
      "speaker": "elder",
      "textKey": "dlg.elder.trials.done.n5",
-     "mood": "surprised"
-    }
+     "mood": "surprised",
+     "next": "qkinhthanh"
+    },
+    "qkinhthanh": { "if": { "grade": { "max": 2 }, "notFlags": ["word.kinhthanh"] }, "then": "wkinhthanh" },
+    "wkinhthanh": { "speaker": "narrator", "textKey": "word.kinhthanh", "effects": [{ "set": "word.kinhthanh" }] }
    }
   },
   {

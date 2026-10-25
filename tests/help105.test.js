@@ -73,7 +73,8 @@ test('the save of Tí: the fisher goes on from the row as it is, the stake to ta
   const press = () => { session.command({ type: 'hands', id: session.action()?.id }); run(session, 1.5); };
   session.command({ type: 'wave' });
   run(session, 6);
-  assert.deepEqual(said.filter((k) => !k.startsWith('note.')), ['mentor.fisher.tight'], 'the stake to take back, with no start again');
+  // (The line of the tide that rises the first time comes too, #130.)
+  assert.deepEqual(said.filter((k) => !k.startsWith('note.') && k !== 'fisher.tide.up'), ['mentor.fisher.tight'], 'the stake to take back, with no start again');
   const line = getEntity(session.state, 'zone:line');
   const spare = spareStake(line, query(session.state, 'item').filter((e) => e.item.zone === 'line' && e.item.slot != null));
   tap({ thing: spare.id });

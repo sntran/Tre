@@ -326,32 +326,35 @@ test('each name of a calling has a line of what it is, after the done line', () 
   assert.equal(vi['calling.woodcutter.who'], 'Tiều phu là người đốn củi.');
 });
 
-test('at grade 1 the first "khe" of the fisher comes with its line and the stakes glow; at grade 3 it does not', async () => {
+test('at grade 1 the words of the fisher come when they are used (#130): "khe" at the first stake while the stakes glow, "đăng" at the second, and the tide while it rises; at grade 3 no word line', async () => {
   const s0 = load('tests/stories/trial-fisher.json');
-  const first = s0.steps.findIndex((x) => x.read === true) + 1;
-  const play = async (grade) => {
+  // Up to the first tide.
+  const upTo = s0.steps.findIndex((x) => x.until?.event === 'tide') + 1;
+  const play = async (grade, n = upTo) => {
     const said = [];
-    const names = [];
+    const cues = [];
     let s = null;
-    const failures = await runHeadless({ ...s0, profile: { ...s0.profile, grade }, steps: s0.steps.slice(0, first) }, {
+    const failures = await runHeadless({ ...s0, profile: { ...s0.profile, grade }, steps: s0.steps.slice(0, n) }, {
       onSession: (x) => {
         s = x;
         x.listen((e) => {
-          if (e.type === 'open' && e.textKey) said.push(e.textKey);
-          if (e.type === 'names' && said.at(-1)?.startsWith('word.')) names.push(...e.ids);
+          if (e.type === 'open' && e.textKey) said.push({ key: e.textKey, screen: e.screen });
+          if (e.type === 'cue' && said.at(-1)?.key.startsWith('word.')) cues.push(...e.ids);
         });
       },
     });
     assert.deepEqual(failures, []);
-    return { said, names, s };
+    return { said, cues, s };
   };
   const g1 = await play(1);
-  const at = g1.said.indexOf('dlg.fisher.trial.n5');
-  assert.ok(at >= 0, g1.said.join(', '));
-  assert.equal(g1.said[at + 1], 'word.khe', g1.said.join(', '));
-  assert.ok(g1.said.includes('word.dang') && g1.said.includes('word.tide'), g1.said.join(', '));
-  assert.ok(g1.names.includes('stake:fisher:a'), `the stakes glow: ${g1.names.join(', ')}`);
+  const keys = g1.said.map((l) => l.key);
+  // The start talk of the fisher is four lines, with no line of a word.
+  assert.deepEqual(g1.said.filter((l) => l.screen === 'dialogue').map((l) => l.key), ['dlg.fisher.trial.n1', 'dlg.fisher.trial.n2', 'dlg.fisher.trial.n4', 'dlg.fisher.trial.n5']);
+  assert.ok(keys.indexOf('word.khe') > keys.indexOf('dlg.fisher.trial.n5') && keys.indexOf('word.dang') > keys.indexOf('word.khe'), keys.join(', '));
+  assert.ok(keys.includes('fisher.tide.up'), keys.join(', '));
+  assert.ok(g1.cues.includes('stake:fisher:a'), `the stakes glow: ${g1.cues.join(', ')}`);
   assert.ok(g1.s.profile.flags['word.khe'], 'the flag keeps it');
-  const g3 = await play(3);
-  assert.ok(!g3.said.some((k) => k.startsWith('word.')), g3.said.join(', '));
+  // Grade 3 (the boat): the talk only.
+  const g3 = await play(3, s0.steps.findIndex((x) => x.read === true) + 1);
+  assert.ok(!g3.said.some((l) => l.key.startsWith('word.')), g3.said.map((l) => l.key).join(', '));
 });

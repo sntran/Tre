@@ -1407,10 +1407,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const p = anvilStand(anvil);
         walkTo([{ x: p.x / 2, y: p.z / 2 }], null);
       }
-      const need = workCount()?.need ?? 0;
+      // The line of the need is the line of the teacher and his bundles only (#130: at the smith
+      // the child heard "Thầy cần hai bó."); the talk of the smith says his bars.
+      const count = workCount();
+      const need = count?.need ?? 0;
       if (need >= 1 && need <= 4) {
         emit({ type: 'goalShow', n: need });
-        emit({ type: 'open', screen: 'callout', id: `npc:${def.npc}`, textKey: `teacher.need.${need}`, params: {} });
+        if (count.pip === 'bundle') emit({ type: 'open', screen: 'callout', id: `npc:${def.npc}`, textKey: `teacher.need.${need}`, params: {} });
       }
     }));
   }
@@ -2089,10 +2092,23 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // line of the river told the child to wade across while the fisher asked for the bridge.
   // After the task, a third text (doneText: { task: key }): #122, the river said that the bridge was
   // broken while the child stood on the bridge that the child fixed.
+  // The bridge is the work of the child when the child began it (a try on the gap) or stands at it
+  // (#130: after the fisher, the eye at the river asked for the bridge while the goal was the healer).
+  const BRIDGE_NEAR = 24; // half blocks from the gap
+  function bridgeWork() {
+    const gap = getEntity(state, 'zone:bridge-gap');
+    if (!gap || gap.zone.set || !bridgeOpen()) return false;
+    const h = hero()?.position;
+    const near = h && Math.hypot(h.x - gap.position.x, h.z - gap.position.z) <= BRIDGE_NEAR;
+    return Boolean(near || gap.zone.attempt || gap.zone.items.length);
+  }
   function textOfAction(a) {
-    const open = (task) => (task === 'bridge' ? bridgeOpen() && !getEntity(state, 'zone:bridge-gap')?.zone.set : openTask(task));
+    const open = (task) => (task === 'bridge' ? bridgeWork() : openTask(task));
     const done = (task) => (task === 'bridge' ? Boolean(getEntity(state, 'zone:bridge-gap')?.zone.set) : false);
-    return Object.entries(a.taskText ?? {}).find(([task]) => open(task))?.[1] ?? Object.entries(a.doneText ?? {}).find(([task]) => done(task))?.[1] ?? a.textKey;
+    // A task that is open but is not the work of the child now: the text that says neither the old
+    // way nor the task (openText: { task: key }, #130).
+    const waits = (task) => (task === 'bridge' ? bridgeOpen() && !getEntity(state, 'zone:bridge-gap')?.zone.set : false);
+    return Object.entries(a.taskText ?? {}).find(([task]) => open(task))?.[1] ?? Object.entries(a.openText ?? {}).find(([task]) => waits(task))?.[1] ?? Object.entries(a.doneText ?? {}).find(([task]) => done(task))?.[1] ?? a.textKey;
   }
   function doAction(zone) {
     const a = zone.action;
@@ -5179,6 +5195,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if ((ev.type === 'pick' || ev.type === 'put') && ev.item) {
         const it = getEntity(state, ev.item)?.item;
         if ((it?.task?.startsWith('trial-') || openSpan(it?.task)) && (ev.id === 'hero' || lastPick?.task !== it.task || !lastPick.child)) lastPick = { task: it.task, kind: it.kind, size: it.size, child: ev.id === 'hero' };
+        // The words of the row of the fisher when they are used (#130: seven lines of the start talk):
+        // "khe" at the first stake of the child, "đăng" at the second, at the grades of WORD_GRADE.
+        if (ev.type === 'put' && ev.id === 'hero' && ev.zone === 'line') {
+          const word = !profile.flags['word.khe'] ? 'khe' : !profile.flags['word.dang'] ? 'dang' : null;
+          const fisher = getEntity(state, 'npc:fisher');
+          if (word && Number(profile.grade ?? 1) <= WORD_GRADE && fisher && !fisher.hidden) {
+            profile.flags[`word.${word}`] = true;
+            emit({ type: 'open', screen: 'callout', id: fisher.id, textKey: `word.${word}`, params: {} });
+            setCue(word === 'khe' ? ['stake:fisher:a', 'stake:fisher:b'] : query(state, 'item').filter((x) => x.item.zone === 'line').map((x) => x.id));
+          }
+        }
         if (ev.type === 'put' && ev.id === 'hero' && ev.zone === 'hearth' && horseOpen() && !trialZone('horse').zone.toldBellows) {
           trialZone('horse').zone.toldBellows = true;
           horseStep('bellows');

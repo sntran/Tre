@@ -662,7 +662,23 @@ export async function mountVillage(ctx, params = {}) {
   let box = null;
   const book = ctx.storybook ?? null; // a story of the storybook (src/ui/storybook.js)
   let bookScreen = null;
-  function openScreen(ev) {
+  // A talk box waits while the voice still says a count or a line of what happened (#130: the end
+  // talk of the fisher cut "sáu, bảy" and the line of the reason): it opens when they are said.
+  // The wait has a limit (HELD_MAX ms): the world waits while a box is open, so a voice that does
+  // not end (a device with no voice, a queue that does not move) never holds the game (#124: a raid
+  // stood still for four minutes with no box on the screen).
+  let heldScreen = null;
+  let heldAt = 0;
+  const HELD_MAX = 6000;
+  const countSays = (l) => !l.talk && (l.kind === 'count' || l.kind === 'world');
+  const voiceBusy = () => voiceQueue.has(countSays) || Boolean(spoken && countSays(spoken.line));
+  function openScreen(ev, force = false) {
+    if (!force && (ev.screen === 'dialogue' || ev.screen === 'say') && !box && (heldScreen || voiceBusy())) {
+      if (!heldScreen) heldAt = performance.now();
+      heldScreen = ev;
+      return;
+    }
+    heldScreen = null;
     if (ev.screen === 'dialogue' || ev.screen === 'say') marksLine = Boolean(ev.marks);
     // A line that names people with their faces: the star of each person (also at the edge of the
     // screen) pulses at its name (#89: the children did not know "bà lang" and "tiều phu").
@@ -1362,6 +1378,8 @@ export async function mountVillage(ctx, params = {}) {
     // A voice that sends no end (no voice on the device): the turn ends after the time that the
     // line takes to say, about 12 letters each second.
     if (spoken && performance.now() > spoken.end) spoken = null;
+    // A talk box that waited for the count opens when the voice said it.
+    if (heldScreen && (!voiceBusy() || performance.now() - heldAt > HELD_MAX)) openScreen(heldScreen, true);
     if (spoken) return;
     const line = voiceQueue.next(speaking(), performance.now() / 1000);
     if (!line) return;
@@ -1636,6 +1654,7 @@ export async function mountVillage(ctx, params = {}) {
         if (ev.screen === 'dialogue' || ev.screen === 'say') {
           marksLine = false;
           facePulse = null;
+          heldScreen = null;
           box?.close();
           box = null;
         } else {

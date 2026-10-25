@@ -240,6 +240,20 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### What the people and the voice say after the play test of #115 to #122 (#130)
+
+**A short plank says it.** A plank that is too short tips, the empty part glows, and the fisher says "Tấm này ngắn quá: chưa tới bờ bên kia." (`outcomes.short.call` in `data/world/zones.json`), as a long plank says "Tấm này dài quá.". The count of the deck after it ends with what is missing, at the empty part: "Còn thiếu bốn ô nữa." (`unitSteps` in `src/core/mentoring.js`).
+
+**The river and the bridge.** While the bridge is open and the child neither stands at it nor tried it, the river says only "Sông Đuống chảy về phía đông." (`openText`); at the bridge, or after a try, it says the bridge; after the bridge, its third text. The line of the river is in `tools/maps/era1.py` too.
+
+**The words when they are used.** The start talk of the fisher is four lines; at grades K to 2, "khe" has its line at the first stake of the child and "đăng" at the second, and the tide says itself while it rises the first time ("Thủy triều lên rồi: nước sông dâng cao."). The talks of the elder and of the messenger have the lines of "tiều phu", "kinh thành", "sứ giả", "bờ cõi", and "quân Ân" after the line that first says each, and the first raid at the river the line of "chỗ lội".
+
+**A count is said whole.** In the browser, a talk box waits while the voice still says the words of a count or a line of what happened (`heldScreen` in `src/ui/village.js`), so that the end talk never cuts "sáu, bảy" and the line of the reason. The wait has a limit of six seconds, so that a voice that does not end never holds the game.
+
+**The ring at the first refused press.** At the row of the fisher the first refused press shows the ring with "Đi tới vòng tròn này, rồi cắm nhé." (`TIGHT_RING`); the two sides of the rule come once, after the first stake at that ring.
+
+**The need in the words of the task.** "Thầy cần … bó." is said only at the task of the teacher; the talk of the smith says his bars. The woodcutter says "em" in all his lines.
+
 ### The smith after the play test (#127)
 
 **The pips at once.** A right quench sends `hud`, so that the pip of each bar lights in the step of the hiss.

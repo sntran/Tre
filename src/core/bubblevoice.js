@@ -99,6 +99,8 @@ export function createVoiceQueue() {
       return line;
     },
     waiting: (id, key) => queue.some((q) => q.id === id && (key === undefined || q.key === key)),
+    // Is a line that test(line) is true for waiting?
+    has: (test) => queue.some(test),
     // Take away the lines that wait and that test(line) is true for.
     forget(test) {
       for (let i = queue.length - 1; i >= 0; i--) if (test(queue[i])) queue.splice(i, 1);

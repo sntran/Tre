@@ -125,18 +125,8 @@
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.n2",
           "names": ["stake:fisher:a", "stake:fisher:b", "zone:line"],
-          "next": "qn2"
+          "next": "n4"
         },
-        "qn2": { "if": { "grade": { "max": 2 }, "notFlags": ["word.dang"] }, "then": "wn2", "else": "n3" },
-        "wn2": { "speaker": "narrator", "textKey": "word.dang", "names": ["stake:fisher:a", "stake:fisher:b", "zone:line"], "effects": [{ "set": "word.dang" }], "next": "n3" },
-        "n3": {
-          "speaker": "fisher",
-          "textKey": "dlg.fisher.trial.n3",
-          "names": [{ "id": "tide:fisher", "act": "rise" }],
-          "next": "qn3"
-        },
-        "qn3": { "if": { "grade": { "max": 2 }, "notFlags": ["word.tide"] }, "then": "wn3", "else": "n4" },
-        "wn3": { "speaker": "narrator", "textKey": "word.tide", "names": [{ "id": "tide:fisher", "act": "rise" }], "effects": [{ "set": "word.tide" }], "next": "n4" },
         "n4": {
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.n4",
@@ -146,11 +136,8 @@
         "n5": {
           "speaker": "fisher",
           "textKey": "dlg.fisher.trial.n5",
-          "names": ["stake:fisher:a", "stake:fisher:b"],
-          "next": "qn5"
-        },
-        "qn5": { "if": { "grade": { "max": 2 }, "notFlags": ["word.khe"] }, "then": "wn5" },
-        "wn5": { "speaker": "narrator", "textKey": "word.khe", "names": ["stake:fisher:a", "stake:fisher:b"], "effects": [{ "set": "word.khe" }] }
+          "names": ["stake:fisher:a", "stake:fisher:b"]
+        }
       }
     },
     {

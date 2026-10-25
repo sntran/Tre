@@ -1667,6 +1667,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const end = long ? { x: z.lane, z: z.from + z.gap + 1 } : { x: z.lane, z: z.from + u + 0.5 };
     s.point(t, end, 2);
     s.mark(t, end, 4);
+    // A short try: the count ends with what is missing, at the empty part (#130: the count of the
+    // deck did not say how much more the next plank must cover).
+    if (!long && u < z.gap) {
+      const miss = z.gap - u;
+      s.say(t + 0.2, miss === 1 ? 'mentor.bridge.missing.one' : 'mentor.bridge.missing', { n: { key: `num.${Math.min(30, miss)}` } });
+      t += 1.8;
+    }
     if (long) {
       // After the count of a plank that is too long: the next step, and the planks of the pile that
       // fit the rest of the gap glow until the next pick (#85: the child took the same long plank

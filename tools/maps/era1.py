@@ -157,8 +157,8 @@ A.npcs = [
     {'id': 'teacher', 'x': 28.1, 'y': 12.6},
     {'id': 'elder', 'x': 15.5, 'y': 12.8},
     {'id': 'messenger', 'x': 17.7, 'y': 12.9},
-    {'id': 'smith', 'x': 26.5, 'y': 20.7},
-    {'id': 'healer', 'x': 15.5, 'y': 20.7},
+    {'id': 'smith', 'x': 25.7, 'y': 20.0},
+    {'id': 'healer', 'x': 17.7, 'y': 21.8},
     {'id': 'woodcutter', 'x': 25.8, 'y': 4.2},
     {'id': 'giong-hero', 'x': 30.0, 'y': 17.6},
     {'id': 'fisher', 'x': 14.6, 'y': 31.6},
@@ -222,7 +222,7 @@ A.triggers += [
     {'id': 'field-home', 'x': 3, 'y': 19, 'w': 8, 'h': 6, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-east', 'x': 33, 'y': 2, 'w': 6, 'h': 25, 'on': 'tap', 'action': {'textKey': 'map.field'}},
     {'id': 'field-south', 'x': 26, 'y': 39, 'w': 12, 'h': 3, 'on': 'tap', 'action': {'textKey': 'map.field'}},
-    {'id': 'river', 'x': 0, 'y': 33, 'w': 40, 'h': 5, 'on': 'tap', 'action': {'textKey': 'map.river', 'taskText': {'bridge': 'map.river.bridge'}}},
+    {'id': 'river', 'x': 0, 'y': 33, 'w': 40, 'h': 5, 'on': 'tap', 'action': {'textKey': 'map.river', 'taskText': {'bridge': 'map.river.bridge'}, 'openText': {'bridge': 'map.river.plain'}, 'doneText': {'bridge': 'map.river.fixed'}}},
 ]
 A.paths = {'east-road': [[39.5, 14.8], [32.5, 14.8]]}
 
