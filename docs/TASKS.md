@@ -240,6 +240,16 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### The hopscotch for the youngest children (#132)
+
+**A step between the courts.** The courts of `math.count.120` have three levels, one for each level of the skill: from 1, from 11 to 31 (starts 11, 15, 20, 25, and 31), and from 36 to 101 (`data/world/folkgames.json`). A child of K who counts to ten counts on from the teens before the forties.
+
+**Walking away ends the game.** A child who walks more than 16 half blocks from the middle of the court leaves the game, in each phase, with "Thôi, lúc khác chơi tiếp nhé." (a child who joins from farther away leaves only after being near). The phase of the walk puts the hero at the start line only when the hero is near it, and the big button throws only near the start line (`src/core/folk-session.js`). In the play test the shard flew from the buffaloes, and the game put the child back at the start line.
+
+**Quick presses wait.** At grades K to 2, a press of the jump that comes before the hop before it ends waits, and acts when the hop ends (rule 22: mashing is no evidence, not an error); from grade 3 it is a press on the line, as before.
+
+**The rounds that are left, and the shard.** After each round a child says how many rounds are left ("Còn một lượt nữa là xong."). At the square before the shard the hero picks it up, and the line says what happened: "Nhặt được mảnh sành rồi! Giờ nhảy qua ô đó."
+
 ### The help and the taps after the play test of #115 to #122 (#131)
 
 **No take-back help when the row holds.** A row at the float with no space wider than the gap of the fisher needs no take-back: a wave says that the water comes ("Đủ hàng rồi. Xem nước lên nào!"), also with narrow places in the row (`tightStake` in `src/core/mentoring.js`).

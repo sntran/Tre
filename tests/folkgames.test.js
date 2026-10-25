@@ -30,7 +30,12 @@ test('the court: ten squares in the Vietnamese order, 1 to 5 up and 6 to 10 down
   assert.deepEqual([...steps].sort((a, b) => a - b), [1, 2, 3, 4, 5, 10]);
   // The level chooses the court (#99): the court from 1 at the first level of counting.
   for (let seed = 1; seed < 20; seed++) assert.equal(courtPlan(L.levels, 'math.count.120', createRng(seed), 1).start, 1);
-  for (let seed = 1; seed < 20; seed++) assert.ok(courtPlan(L.levels, 'math.count.120', createRng(seed), 2).start >= 36);
+  // A step between (#132): the courts of the second level start at 11 to 31; of the third, at 36.
+  for (let seed = 1; seed < 20; seed++) {
+    const s2 = courtPlan(L.levels, 'math.count.120', createRng(seed), 2).start;
+    assert.ok(s2 >= 11 && s2 <= 31, `level 2 starts at ${s2}`);
+    assert.ok(courtPlan(L.levels, 'math.count.120', createRng(seed), 3).start >= 36);
+  }
 });
 
 test('the throw: the longer the hold, the farther the shard; in the called square, on a line, or out', () => {

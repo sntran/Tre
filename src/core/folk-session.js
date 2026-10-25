@@ -16,7 +16,9 @@ import { courtPlan, courtOf, callSquare, FIRST_REACH, aimSquare, throwPlace, jud
 const S = 2; // half blocks: the side of a square of the court
 const INVITE = 14; // half blocks: the children ask a hero this near
 const AGAIN = 90; // seconds before the children ask again
-const LEAVE = 26; // half blocks: a hero this far away leaves the game
+const LEAVE = 16; // half blocks from the middle of the court: a hero this far away leaves the game
+const THROW_NEAR = 6; // half blocks from the start line: the big button throws only this near (#132)
+const HOLD_GRADE = 2; // the highest grade where a quick press of the jump waits for the hop (#132)
 const NEAR_START = 4; // half blocks: a hero this near the start line stands at it
 const STILL_START = 8; // half blocks: a hero who stands still this near the start line for STILL_WAIT
 const STILL_WAIT = 1; // seconds
@@ -438,6 +440,20 @@ export function createFolk(deps) {
   // A press of the jump on the court: one square, or two over the shard with a long press.
   function hopPress(held) {
     if (game?.phase !== 'hop') return false;
+    // At grades K to 2, a press during a hop waits and acts when the hop ends (#132: three quick
+    // presses ended the turn near its end; rule 22: mashing is no evidence, not an error).
+    const early = def.loCo.settle - (now - game.hops.last);
+    if (early > 0 && Number(deps.profile.grade ?? 1) <= HOLD_GRADE) {
+      if (!game.hopWait) {
+        game.hopWait = true;
+        later(early + 0.01, () => {
+          if (!game) return;
+          game.hopWait = false;
+          if (game.phase === 'hop') hopPress(held);
+        });
+      }
+      return true;
+    }
     const long = held >= def.loCo.long;
     const pts = courtPoints(geo.loco, game.court);
     const events = hop(game.hops, { long, time: now }, def.loCo);
@@ -505,8 +521,11 @@ export function createFolk(deps) {
     deps.emit({ type: 'round', game: 'loco', rounds: game.rounds });
     if (game.rounds >= def.loCo.rounds) return endSet('loco.done');
     say('loco.good', {});
+    // How many rounds are left (#132: "How many turns are there?").
+    const left = def.loCo.rounds - game.rounds;
+    later(1.2, () => { if (game?.kind === 'loco') say(left === 1 ? 'loco.left.one' : 'loco.left', { n: num(left) }); });
     game.retry = false;
-    later(1.5, walkToStart);
+    later(3, walkToStart);
     game.phase = 'wait';
   }
   // The turn of another child, in view and short (#114: "I didn't see their turn"): the child
@@ -668,7 +687,12 @@ export function createFolk(deps) {
     // from the camera again (#99: they stood in front of the court).
     if (game.kind === 'loco' && !['hop', 'other', 'demo'].includes(game.phase) && deps.view && deps.view() !== game.standAz && !world().entities.some((e) => e.hop && e.folkChild)) standAside();
     const centre = game.kind === 'loco' ? along(geo.loco, 3 * S) : geo.rope.o;
-    if (dist(h.position, centre) > LEAVE && game.phase !== 'walk') {
+    // A child who walks away leaves the game, in each phase (#132: "I walked and walked and now I'm
+    // back at the lò cò squares").
+    // (A hero who joins from farther away, on the walk to the start, leaves only after being near.)
+    const far = dist(h.position, centre) > LEAVE;
+    if (!far) game.wasNear = true;
+    if (far && (game.wasNear || game.phase !== 'walk')) {
       say(`${game.kind === 'loco' ? 'loco' : 'rope'}.leave`, {});
       return stop();
     }
@@ -679,7 +703,9 @@ export function createFolk(deps) {
       // court, and the call came only after a guess).
       const d = dist(h.position, target);
       game.still = !h.route && d < STILL_START ? (game.still ?? 0) + dt : 0;
-      if (d < (game.kind === 'loco' ? NEAR_START : 3) || (game.kind === 'loco' && game.still >= STILL_WAIT) || game.wait <= 0) {
+      // The end of the wait puts the hero at the start only when the hero is near it: the phase of
+      // the walk never moves a hero who walks away.
+      if (d < (game.kind === 'loco' ? NEAR_START : 3) || (game.kind === 'loco' && game.still >= STILL_WAIT) || (game.wait <= 0 && d < STILL_START)) {
         if (game.kind === 'loco') standAtStart();
         else {
           deps.command({ type: 'place', id: 'hero', x: geo.rope.o.x, z: geo.rope.o.z });
@@ -732,7 +758,9 @@ export function createFolk(deps) {
       }
       return;
     }
-    if (game.kind === 'loco' && (game.phase === 'throw' || game.phase === 'aim')) {
+    // The throw only near the start line (#132: far away by the buffaloes, the shard still flew).
+    const start = game.kind === 'loco' ? courtPoints(geo.loco, game.court).start : null;
+    if (game.kind === 'loco' && (game.phase === 'throw' || game.phase === 'aim') && dist(h.position, start) <= THROW_NEAR) {
       add({ act: 'throw', icon: 'shard', target: 'hero', at: h.position, rank: 0, hold: true, run: throwStart, release: throwEnd }, reach + 1);
     }
   }

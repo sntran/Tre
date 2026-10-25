@@ -10,7 +10,7 @@
     "long": 0.35,
     "rounds": 3,
     "levels": {
-      "math.count.120": [{ "start": 1, "step": 1, "squares": 10 }, { "starts": [36, 47, 58, 69, 76, 85, 94, 101], "step": 1, "squares": 10 }],
+      "math.count.120": [{ "start": 1, "step": 1, "squares": 10 }, { "starts": [11, 15, 20, 25, 31], "step": 1, "squares": 10 }, { "starts": [36, 47, 58, 69, 76, 85, 94, 101], "step": 1, "squares": 10 }],
       "math.add.10": [{ "start": 1, "step": 1, "squares": 10, "near": true }],
       "math.add.20": [{ "starts": [1, 6, 11], "step": 1, "squares": 10, "near": true }],
       "math.addsub.100": [{ "starts": [10, 20, 30, 40], "step": 10, "squares": 10 }, { "starts": [5, 10, 15, 20, 25], "step": 5, "squares": 10 }, { "starts": [2, 10, 20, 30, 40], "step": 2, "squares": 10 }],
