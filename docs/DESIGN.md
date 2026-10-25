@@ -20,7 +20,7 @@ Tre is a web RPG from Pre-K to grade 12. The first release covers grades 1 to 5.
 
 The game is for all children from Pre-K to grade 12 (about age 3 to 18). Pre-K and K play the Măng non stage. The first release covers grades 1 to 5 (about age 6 to 11). The first player is a 7-year-old boy in grade 1 or 2.
 
-- A player can start at grade 1 and move up. A player can also take a Văn Miếu placement exam after the prologue to go directly to the correct level.
+- A player can start at grade 1 and move up. A player can also take a placement exam after the prologue (in Era 1, the test of the messenger of the Hùng King) to go directly to the correct level.
 - Several children can have profiles on one device.
 - Two players can play together on one device. They take turns in the same battle. Each player gets problems at their own level.
 - Players can choose Vietnamese or English for the full game.
@@ -52,9 +52,9 @@ The skill map follows the US Common Core for math and NGSS for science. Each cha
 
 ## Core loop and session
 
-In each era, the player goes around the same loop many times. When the player is ready, a Văn Miếu exam opens the next era.
+In each era, the player goes around the same loop many times. When the player is ready, the exam of the era opens the next era (see "Exams and titles").
 
-Core loop of one era: Village (practice and crafting) → Quest and travel (puzzles and legends) → Battle (math and science skills) → Rewards (friends and materials) → back to the Village. When the player is ready: Văn Miếu exam → Next era (the bamboo grows).
+Core loop of one era: Village (practice and crafting) → Quest and travel (puzzles and legends) → Battle (math and science skills) → Rewards (friends and materials) → back to the Village. When the player is ready: the exam of the era → Next era (the bamboo grows).
 
 A lost battle also goes back to the village, with a small loss of items. One play session is one quest or one battle. The parent sets the time limit.
 
@@ -63,7 +63,7 @@ A lost battle also goes back to the village, with a small loss of items. One pla
 These four parts give the child a reason to look forward and a way to find their place. They add no questions.
 
 - **The world map:** one map of all 13 chapters, drawn as an old Vietnamese map on dó paper, with a red seal on each chapter. Locked chapters are visible. The child sees Phù Đổng, then the mist over Cổ Loa and the river of Bạch Đằng, and wants to get there. A minimap in the corner shows the near places.
-- **A thing to build near the start:** the bridge in Phù Đổng starts broken. Each of the Five Trials gives one part of it (planks from the woodcutter, rope from the fisher, and so on). The child sees the bridge grow, and crosses it to reach Văn Miếu. A concrete goal beats "meet the elder."
+- **A thing to build near the start:** the bridge in Phù Đổng starts broken. Each of the Five Trials gives one part of it (planks from the woodcutter, rope from the fisher, and so on). The child sees the bridge grow, and over the finished bridge the messenger of the Hùng King comes into the village to look for people of talent. A concrete goal beats "meet the elder."
 - **Growth on the hero:** a bamboo in the HUD grows one section for each hero level. Experience comes from battles, quests, and projects, not from questions.
 - **The notebook (Sổ tay):** a collection of prints that fills in as the child plays. Each skill, legend, creature, and place gets a small Đông Hồ print when the child meets it. Skills that are mastered get a red seal. The child sees the gaps and wants to fill them. Parents can read the same notebook to see progress.
 
@@ -93,7 +93,7 @@ Tre is one living isometric world. The child walks, builds, and defends in the s
 
 **The five rules**
 
-1. **No question mark in the world.** A screen with a question and an answer field is a quiz. Questions live only with the teacher (practice) and at Văn Miếu (exams), where a test is part of the story. Two folk forms are not quizzes, because nothing is chosen from a list: a riddle whose answer is a thing that the child finds and taps in the world, and a trick question of a child, which the child only hears ("Puzzles, riddles, and the games of children").
+1. **No question mark in the world.** A screen with a question and an answer field is a quiz. Questions live only with the teacher (practice) and in the exams (the test of the king's messenger in Era 1, Văn Miếu from the Lý era), where a test is part of the story. Two folk forms are not quizzes, because nothing is chosen from a list: a riddle whose answer is a thing that the child finds and taps in the world, and a trick question of a child, which the child only hears ("Puzzles, riddles, and the games of children").
 2. **Failure is physical.** A plank is too short, a stone falls short, the ice does not melt. The world shows what happened, and the child tries again. There is no red X.
 3. **The game watches, the child does not know.** Each action is a skill event for the mastery model. Three planks of 4 across a gap of 12 is a correct "multiply as groups." The model is the same; only the input changes.
 4. **The hint is a helper with a body.** Nghé walks to the place, points, or stamps the ground. Villagers call out. Worked examples stay in practice with the teacher.
@@ -162,7 +162,7 @@ The world is Vietnam with its real geography: real coast, rivers, mountains, and
 
 **The hills are real, and the child can feel them.** The height of the land comes from the SRTM data at about 550 m between samples, not from the coarse grid of the country map, and the downsample keeps the tops, so that a small hill does not disappear into the plain around it. The height in blocks follows a curve, not a straight line: low hills get more blocks than their true height (Núi Trâu and Sóc Sơn are hills that the child climbs), and high mountains get fewer (Ba Vì and Tam Đảo are tall but stay in the view). The slopes show their shape: rock faces with ink lines, forest on the hills, terraced fields on gentle slopes, and paths that turn back and forth up a hill.
 
-**Era 1 is real.** Phù Đổng stands on the bank of the Đuống River. Núi Trâu (Trâu Sơn), where the legend puts the battle, is to the east in Bắc Ninh. Sóc Sơn, where Gióng rode to the sky, is to the north. Thăng Long and Văn Miếu are to the southwest, across the Đuống and the Red River. **Things belong to their time:** the people of Era 1 trade by barter (rice, fish, eggs, pots), with no coins; the first coins of Vietnam came with the Đinh (968–981), and barter stayed common for two centuries after. Carts are in the world. The children of the villages play folk games, such as nhảy lò cò and nhảy dây, in every era; the narrator says nothing about their age (#30). **Trâu Sơn** is the line of low hills near the village of Châu Cầu (Châu Phong, Quế Võ), where the temple of Cô Tiên keeps the story of the Ân king. No source says which hill top it is, and the game says so ("When nobody knows, the game says so", #27). The tall hill south-east of Bắc Ninh is probably Núi Dạm (Đại Lãm), not Trâu Sơn.
+**Era 1 is real.** Phù Đổng stands on the bank of the Đuống River. Núi Trâu (Trâu Sơn), where the legend puts the battle, is to the east in Bắc Ninh. Sóc Sơn, where Gióng rode to the sky, is to the north. The place of Thăng Long (named in 1010) and Văn Miếu (built in 1070) is to the southwest, across the Đuống and the Red River; in Era 1 neither stands there yet, and the game does not name them. **Things belong to their time:** the people of Era 1 trade by barter (rice, fish, eggs, pots), with no coins; the first coins of Vietnam came with the Đinh (968–981), and barter stayed common for two centuries after. Carts are in the world. The children of the villages play folk games, such as nhảy lò cò and nhảy dây, in every era; the narrator says nothing about their age (#30). **Trâu Sơn** is the line of low hills near the village of Châu Cầu (Châu Phong, Quế Võ), where the temple of Cô Tiên keeps the story of the Ân king. No source says which hill top it is, and the game says so ("When nobody knows, the game says so", #27). The tall hill south-east of Bắc Ninh is probably Núi Dạm (Đại Lãm), not Trâu Sơn.
 
 **Later regions follow the real land:** Cổ Loa north of the Red River, the Bạch Đằng estuary and its tides near Hạ Long, the limestone karst of Ninh Bình, the mountains of Lam Sơn in Thanh Hóa, the central coast and Phú Xuân (Huế), the Tây Sơn highlands, and the Mekong delta.
 
@@ -174,7 +174,7 @@ The world is Vietnam with its real geography: real coast, rivers, mountains, and
 | --- | --- | --- | --- |
 | 1 | Mountains and sea | The high mountains of the north (Tây Bắc, Việt Bắc) | Locked |
 | 2 | Văn Lang | The midlands west of the delta, Phong Châu (Phú Thọ) | Locked |
-| 3 | The land of Thánh Gióng | Phù Đổng and Sóc Sơn, north-east of Hà Nội | The village of Phù Đổng; the fields and the river; the road to Văn Miếu; the foot of Trâu Sơn |
+| 3 | The land of Thánh Gióng | Phù Đổng and Sóc Sơn, north-east of Hà Nội | The village of Phù Đổng; the fields and the river; the road to the Red River; the foot of Trâu Sơn |
 | 4 | Cổ Loa | North of Hà Nội | Locked |
 | 5 | Mê Linh | North-west of Hà Nội | Locked |
 | 6 | Bạch Đằng | The north-east coast: Hải Phòng and Quảng Ninh | Locked |
@@ -281,7 +281,7 @@ The research report in `docs/research/learning-by-doing.md` collects the evidenc
 
 **Questions, parents, and sessions**
 
-26. **Questions stay with the teacher and the Văn Miếu, cued and spaced.** Ask only about skills with P(L) above 0.5. Give a partial cue for grades 1 to 3. Follow every answer with the correct answer and a one-line reason. Interleave skills (Karpicke; Rohrer; Agarwal). The voice says each answer before the choice, for a child who reads slowly. The choices of a question have about the same length, and the right one does not stand out, so that the shape of the text does not give the answer (Haladyna, Downing & Rodriguez 2002, guidelines 24 and 28). A practice has a fixed number of questions, and the child sees how many are left.
+26. **Questions stay with the teacher and the exams, cued and spaced.** Ask only about skills with P(L) above 0.5. Give a partial cue for grades 1 to 3. Follow every answer with the correct answer and a one-line reason. Interleave skills (Karpicke; Rohrer; Agarwal). The voice says each answer before the choice, for a child who reads slowly. The choices of a question have about the same length, and the right one does not stand out, so that the shape of the text does not give the answer (Haladyna, Downing & Rodriguez 2002, guidelines 24 and 28). A practice has a fixed number of questions, and the child sees how many are left.
 27. **Report to parents by skill, in words, with an artifact.** Three states: exploring, getting there, confident. Show what the child built. Give the parent a way to nudge the level. No composite score.
 28. **A session ends in the fiction, at a natural stop, by the device.** One quest, one chapter, one raid; the sun sets. Tell the child the plan up front. No countdown (Hiniker; evidence from under-6s, so treat as plausible).
 29. **Many short sessions with an adult nearby.** Ten minutes three times a week was enough for measured gains (Wuzzit Trouble); gains in the meta-analyses appear with several sessions and some instruction (Wouters).
@@ -339,14 +339,14 @@ Folk wit is part of the culture, and the game keeps three of its forms as option
 - **Folk riddles (câu đố).** In the evening, Bà or an elder says a riddle in verse. Its answer is a thing of the village of that era (con trâu, cái chổi tre, cây cau), and the child answers by finding the thing in the world and tapping it, never by choosing from a list. The riddle waits in the notebook until the child finds its thing, also on a later day. A wave gives a clue (the person says which words of the riddle point to the thing); a long wait gives the answer and the place, with a laugh together. When the thing is found, the person says the riddle again and shows how its words fit, and the riddle goes into the notebook. Riddles and word play with words of two meanings helped children of seven and eight to understand what they read (Yuill 1998; Zipke et al. 2008), and they give a child who grows up outside Vietnam the words of the village.
 - **Trick questions (câu đố mẹo).** The children of the village ask the hero trick questions, as they ask each other, as light fun. Sometimes a tap on a child gives "Đố bạn: …"; the child waits a short time, then tells the answer and why it tricks people, and they laugh together, never at the hero. The hero only listens: nothing is asked back, and nothing is recorded as right or wrong. Children of 5 to 12 fall for such questions often, and no study shows that practice with them makes children think more carefully (Young et al. 2018), so they stay fun, not a lesson. They are kind: no question laughs at a body, a family, or a people.
 
-## Văn Miếu exams and titles
+## Exams and titles
 
-The player takes exams at Văn Miếu, the Temple of Literature, as scholars did in old Vietnam. There are two types of exam.
+The player takes exams as part of the story. **The place of an exam belongs to its time.** Văn Miếu, the Temple of Literature, was built in 1070 under Lý Thánh Tông, and the first exam was held in 1075 under Lý Nhân Tông; the stone steles of the doctors began in 1484. So the exams are at Văn Miếu from chapter 7 (the Lý), where the child sees it open and sits its first exam. Before that, a person of the time gives the test. In the chapter of Thánh Gióng it is the messenger of the Hùng King: the legend opens with his call for talent ("Vua Hùng bèn sai người đi khắp nước rao cầu hiền tài giết giặc"), and the same sixth Hùng King tests his sons in the legend of bánh chưng. After the Five Trials the messenger comes to Phù Đổng and gives the placement test at the village hall; after the victory he comes back with the thanks of the king and gives the exam of the era. In play tests, two testers who knew Văn Miếu said that it did not belong to the time of the Hùng Kings (#134). There are two types of exam.
 
 - **Subject exam:** moves one subject up. A new player can take it at the start to find the correct level. It is adaptive: it starts easy and gets harder until the player makes a few mistakes. It has 10 to 15 questions.
-- **Era exam:** mixes all subjects of an era. A pass gives a scholar title and puts the player's name on a stone stele on a turtle in the game.
+- **Era exam:** mixes all subjects of an era. A pass gives a title. From the Lê era, when the steles began, it puts the player's name on a stone stele on a turtle at Văn Miếu; before that, the title goes into the notebook as a print.
 
-**Titles**, based on the old exam system (thi Hương, thi Hội, thi Đình): Tú tài, Cử nhân, Tiến sĩ, Bảng nhãn, Trạng nguyên. The final title, Trạng nguyên, needs a pass in all story chapters.
+**Titles** are words of their time. Before the exams, the title is a word of the story: in the chapter of Thánh Gióng, the messenger names the child "người tài", a person of talent, from his call. With the exams of Văn Miếu, the titles come from the old exam system (thi Hương, thi Hội, thi Đình): Tú tài, Cử nhân, Tiến sĩ, Bảng nhãn, Trạng nguyên. The final title, Trạng nguyên, needs a pass in all story chapters.
 
 **No shame:** a player who does not pass keeps their level. The game shows the skills to practice, and the player can try again later.
 
@@ -354,7 +354,7 @@ The player takes exams at Văn Miếu, the Temple of Literature, as scholars did
 
 ## Hero, legends, creature friends, and crafting
 
-**Hero:** the player makes their own hero: name, boy or girl, face, hair, and clothes of the era. The hero starts as an ordinary village child with no special power and no calling. The player chooses a calling after the first Văn Miếu exam (see Prologue and callings). The hero can jump, as far as a real child of the player's age (the median standing long jump for that age, the same for girls and boys), over logs, puddles, and ditches. A jump never crosses a gap that a task asks the child to fill: the math stays the way to the goal (#29).
+**Hero:** the player makes their own hero: name, boy or girl, face, hair, and clothes of the era. The hero starts as an ordinary village child with no special power and no calling. The player chooses a calling after the first exam (see Prologue and callings). The hero can jump, as far as a real child of the player's age (the median standing long jump for that age, the same for girls and boys), over logs, puddles, and ditches. A jump never crosses a gap that a task asks the child to fill: the math stays the way to the goal (#29).
 
 **Legends:** in each era, the player meets the legends of that time.
 
@@ -404,7 +404,7 @@ Children from 3 to 5 years old play Tre as *Măng non*, "young shoot." The sayin
 
 ## Prologue and callings
 
-All players start with the same village prologue, the Five Trials. After their first Văn Miếu exam, each player chooses a calling (*nghề*). A new player and a 4th grader go through the same moment at a different time.
+All players start with the same village prologue, the Five Trials. After their first exam, each player chooses a calling (*nghề*). A new player and a 4th grader go through the same moment at a different time.
 
 **The Five Trials:** in the village of Phù Đổng, the hero helps five villagers, one for each calling. Each trial is short, and the full prologue takes about 20 minutes. The problems match the grade that the player gives at the start, so a 4th grader gets grade 4 problems.
 
@@ -412,7 +412,7 @@ All players start with the same village prologue, the Five Trials. After their f
 
 - A new player plays Era 1 and takes the Era 1 exam.
 - A player who is in a higher grade takes the placement exam right after the prologue.
-- After the first exam, the Văn Miếu teacher says "Now you know who you are," and the player chooses a calling.
+- After the first exam, the examiner (in Era 1, the messenger of the Hùng King) says "Now you know who you are," and the player chooses a calling.
 
 **Callings:**
 
@@ -509,7 +509,7 @@ Battles stay open at all stages. An older player can fight, build, or do both.
 - Names of people, places, and titles stay in Vietnamese with marks in both languages, for example Thánh Gióng and Văn Miếu. English mode shows a short meaning the first time.
 - Voice uses the Web Speech API first. Recorded voice files can replace it later, key by key.
 - **People are named as their place and time name them,** never by a nickname made from the work. **In the south** (the center and the south from the 18th century on), a person is called by a word of kinship and the order of birth, and the first child is Hai ("cô Sáu", "ông Hai"; Nguyễn Nhạc, the eldest Tây Sơn brother, was "anh Hai Trầu" before 1771; [Biên khảo](https://sites.google.com/site/bienkhao/t%E1%BA%A1i-sao-ng%C6%B0%E1%BB%9Di-mi%E1%BB%81n-nam-g%E1%BB%8Di-anh-c%E1%BA%A3-l%C3%A0-anh-hai)). **In the north** (and in all regions before the 18th century), a grown-up is called by the order of birth, and the first child is Cả ("cô Năm"); an old person is called by the name of the first child ("ông Dương"), because a village does not say the own name of an old person; and a child or a young person by the own small name ("chị Hến") ([Mien Cao 2018](https://dothogiadinh.vn/cach-xung-ho-ten-cua-nguoi-viet.html); [Toan Ánh, *Nếp cũ*](https://znews.vn/tuc-kieng-goi-ten-to-tien-cua-nguoi-viet-post1648087.html)). These sources are popular writings, and nobody knows how villagers spoke in the time of the Hùng Kings. A title of the work is a real name too ("bác thợ rèn", "bà lang"). A person in the data has a word of kinship, an age, an order of birth, and the name of a child or an own name; the name comes from the way of naming of the region (#38, #41).
-- **People speak as their place speaks; the narrator and the math speak for the whole country.** The lines of people use the words of their region: in the center "mô" for "đâu", "chi" for "gì", "răng" for "sao", "mạ" for "mẹ"; in the south "má", "ba", "heo", "trái", "bông" ([VietJack](https://vietjack.com/tai-lieu-tieng-viet/phan-biet-tu-ngu-toan-dan-va-tu-ngu-dia-phuong-pbtv.jsp)). A small gloss shows a regional word the first time ("mô = đâu"). In the same way, a word that a young child may not know (the name of a calling, a word of a task such as "khe", "đăng", "thủy triều") gets one short line of what it is the first time, said by the voice, with the thing glowing ("Ngư dân là người đánh cá."): in a play test, children of K to grade 2 asked what "tiều phu", "khe", and "Ngư dân" are. The narrator, the screens, the hero, and the words of the math (the numbers in a task, shapes, units) keep the words of the whole country and the school books ("một trăm linh một", "nghìn"), so that the child learns one word for one idea. All eras speak today's Vietnamese; nobody knows how people spoke in the time of the Hùng Kings. **Things belong to their place and time** in the same way: a crop or a tool that came at a known time has its first year in the data, with a source (maize came in 1597 by a legend, or 1662–1723 by Lê Quý Đôn, so no corn hangs under the eaves in Era 1) (#39).
+- **People speak as their place speaks; the narrator and the math speak for the whole country.** The lines of people use the words of their region: in the center "mô" for "đâu", "chi" for "gì", "răng" for "sao", "mạ" for "mẹ"; in the south "má", "ba", "heo", "trái", "bông" ([VietJack](https://vietjack.com/tai-lieu-tieng-viet/phan-biet-tu-ngu-toan-dan-va-tu-ngu-dia-phuong-pbtv.jsp)). A small gloss shows a regional word the first time ("mô = đâu"). In the same way, a word that a young child may not know (the name of a calling, a word of a task such as "khe", "đăng", "thủy triều") gets one short line of what it is the first time, said by the voice, with the thing glowing ("Ngư dân là người đánh cá."): in a play test, children of K to grade 2 asked what "tiều phu", "khe", and "Ngư dân" are. The narrator, the screens, the hero, and the words of the math (the numbers in a task, shapes, units) keep the words of the whole country and the school books ("một trăm linh một", "nghìn"), so that the child learns one word for one idea. All eras speak today's Vietnamese; nobody knows how people spoke in the time of the Hùng Kings. **Things belong to their place and time** in the same way: a crop or a tool that came at a known time has its first year in the data, with a source (maize came in 1597 by a legend, or 1662–1723 by Lê Quý Đôn, so no corn hangs under the eaves in Era 1) (#39). A person speaks the words of the village, but a line that says the science of a task says it truly: what gets hard in cold water is "thép" (steel, iron with a little carbon), not "sắt"; the things of the legend keep their names (ngựa sắt, roi sắt) (#127).
 
 ## History and sensitivity rules
 
@@ -563,7 +563,7 @@ The log holds counts, times, and numbers only. No name, no free text, no picture
 | --- | --- |
 | Does the child learn? | Time of play to mastery for each skill; first-try success rate over the last ten commits; the shape of the learning curve |
 | Does it stay? | Success on a review task after 7, 14, and 30 days |
-| Does it transfer? | The correlation of P(L) with the Văn Miếu exam items of the same skill (rule 30) |
+| Does it transfer? | The correlation of P(L) with the exam items of the same skill (rule 30) |
 | Is the difficulty right? | First-try success rate on skill tasks against the 80 to 90 percent band (rule 15); how often the child chose the harder version |
 | Do predictions help? | Prediction error over trials; mastery speed with and without the prediction gesture (rule 4) |
 | Do hints help or replace? | Success after each hint level; hints viewed under one second; mastery speed at each hint gating (rule 25) |
@@ -671,7 +671,7 @@ The first version is one small, complete part of Era 1. It tests the fun and the
 6. One crafting quest: help the smiths make the iron horse from iron and fire.
 7. One boss battle, with Thánh Gióng as companion. When the iron staff breaks, the player finds bamboo.
 8. One creature friend.
-9. One subject exam for math at Văn Miếu, the first title, and the choice of a calling.
+9. One subject exam for math, given by the messenger of the Hùng King at the village hall of Phù Đổng, the first title ("người tài"), and the choice of a calling.
 10. Save, parent gate, and time limit.
 
 The slice is ready when the first player plays it three times in one week without help.

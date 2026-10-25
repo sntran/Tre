@@ -35,6 +35,7 @@ This list has the questions that the design does not answer, and the choice that
 11. **Which players take the placement exam?** Choice: players who give grade 3 or higher, right after the Five Trials. It is a math exam over grades 1 to 5. It starts near the grade of the player (the base rating of the grade, minus 100). Its result sets the level of each math skill, but it never lowers a skill that is mastered. Players of grades 1 and 2 play Era 1 and take the Era 1 exam.
 12. **What is the pass mark of the Era 1 exam?** Choice: the pass ability is 1000. That is about "add within 20" at the first level, half of the time. The exam gives the maximum likelihood ability of all answers. A simulation of 4000 exams at the pass ability sets the pass mark (998, the median result). So a player at the pass ability passes about half of the time. A test runs the simulation again.
 13. **Văn Miếu and the time of the story.** The legend of Thánh Gióng is from the time of the Hùng Kings. The real Văn Miếu was built in 1070. The game says this in a History note. Is this acceptable?
+    - **My answer:** No. Two testers who knew Văn Miếu saw that it does not belong to the time of the Hùng Kings, and the design keeps things in their time. In Era 1 the messenger of the Hùng King gives the tests at the village hall of Phù Đổng (the legend opens with his call for talent), and the title is "người tài". Văn Miếu comes with chapter 7 (the Lý), where the child sees it open and sits its first exam (#134; "Exams and titles" in `docs/DESIGN.md`).
 14. **Is Thánh Gióng a companion in the soldier battles too?** Choice: only in the boss battle, as the slice says.
 15. **Subtraction with number cards.** Choice: the player taps cards in order and taps the sign between two cards to change it from + to −. The running total can go below zero during the choice. Is this acceptable for grade 1?
 16. **The adult question of the parent gate.** Choice: multiply two numbers from 12 to 19 (for example 14 × 17). A strong grade 5 child can solve it with time. Is another kind of question better?
@@ -122,6 +123,7 @@ These questions need a person who knows Vietnamese history and geography. Until 
 60. **A walk that stops at a person.** A long tap walk stops when a person stands on the way (the event `stuck`). Should the hero look for a new way once, or is a stop and a new tap better for the child?
     - **Note (#4):** the trials needed it near the smith, so the walker now steps to the side of a person in the way and skips a point of the way under a person (`src/core/world/systems/route.js`). A walk still stops with `stuck` when it cannot go on.
 61. **Văn Miếu in the stories.** The issue asks for one story with "the exit north to Sóc Sơn and back; the hero next to the door of Văn Miếu on the way back". Văn Miếu is on the road to Thăng Long, across the Red River, not on the way from Sóc Sơn. There are two stories now: `exits` (north to Sóc Sơn and back) and `vanmieu-gate` (the ferry, Văn Miếu, and back out next to its gate). Is this what you meant?
+    - **My answer:** Văn Miếu leaves Era 1 (#134). Keep the story `vanmieu-gate` for chapter 7, with a profile of that chapter; in Era 1 the exams are at the village hall of Phù Đổng.
 
 ## Questions about the Five Trials
 
@@ -285,3 +287,4 @@ These questions need a person who knows Vietnamese history and geography. Until 
 ## Questions about the smith (#120)
 
 118. **Sắt or thép.** Quick cooling in water makes steel hard (iron with a little carbon); pure iron does not get much harder. The game says "sắt" for all the metal of the smith, and the line of why says "nguội nhanh thì sắt cứng lại." Should a line say "thép" somewhere (for example at grade 5, after the fair test), or does "sắt" stay, as the people of a village say it?
+    - **My answer:** Both. "Sắt" stays for the things of the legend (ngựa sắt, roi sắt) and for the talk of the village. The lines that say what gets hard in cold water say "thép", at every grade, and the first of them comes with a short line of the word: "Thép là sắt nung lâu trong lửa than." (#127).

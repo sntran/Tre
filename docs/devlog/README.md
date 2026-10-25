@@ -10,6 +10,7 @@ We write it for parents and for anyone who wants to know why the game is the way
 
 | Date | Entry |
 | --- | --- |
+| 24 Oct 2026 | [A test from its own time](2026-10-24-a-test-from-its-own-time.md) |
 | 24 Oct 2026 | [Right, and still a miss](2026-10-24-right-and-still-a-miss.md) |
 | 20 Oct 2026 | [A row that cannot end](2026-10-20-a-row-that-cannot-end.md) |
 | 19 Oct 2026 | [New at any grade](2026-10-19-new-at-any-grade.md) |

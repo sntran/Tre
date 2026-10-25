@@ -20,7 +20,7 @@ Tre là một game RPG trên web dành cho trẻ từ Pre-K đến lớp 12. B�
 
 Game dành cho mọi trẻ em từ Pre-K đến lớp 12 (khoảng 3 đến 18 tuổi). Trẻ Pre-K và K (mẫu giáo lớn) chơi giai đoạn Măng non. Bản phát hành đầu tiên bao gồm lớp 1 đến lớp 5 (khoảng 6 đến 11 tuổi). Người chơi đầu tiên là một bé trai 7 tuổi học lớp 1 hoặc lớp 2.
 
-- Người chơi có thể bắt đầu từ lớp 1 rồi lên dần. Người chơi cũng có thể thi xếp lớp ở Văn Miếu sau phần mở đầu để vào thẳng đúng trình độ.
+- Người chơi có thể bắt đầu từ lớp 1 rồi lên dần. Người chơi cũng có thể thi xếp lớp sau phần mở đầu (ở Thời kỳ 1 là cuộc thử tài của sứ giả vua Hùng) để vào thẳng đúng trình độ.
 - Nhiều trẻ có thể có hồ sơ riêng trên cùng một thiết bị.
 - Hai người chơi có thể chơi cùng nhau trên một thiết bị. Các em thay phiên nhau trong cùng một trận đấu. Mỗi người chơi nhận bài ở trình độ của riêng mình.
 - Người chơi có thể chọn tiếng Việt hoặc tiếng Anh cho toàn bộ game.
@@ -52,9 +52,9 @@ Bản đồ kỹ năng theo chuẩn Common Core của Mỹ cho toán và NGSS ch
 
 ## Vòng lặp chính và phiên chơi
 
-Trong mỗi thời kỳ, người chơi đi qua cùng một vòng lặp nhiều lần. Khi người chơi sẵn sàng, kỳ thi ở Văn Miếu mở ra thời kỳ tiếp theo.
+Trong mỗi thời kỳ, người chơi đi qua cùng một vòng lặp nhiều lần. Khi người chơi sẵn sàng, kỳ thi của thời kỳ mở ra thời kỳ tiếp theo (xem "Thi cử và học vị").
 
-Vòng lặp chính của một thời kỳ: Làng (luyện tập và chế tạo) → Nhiệm vụ và hành trình (câu đố và truyền thuyết) → Trận đấu (kỹ năng toán và khoa học) → Phần thưởng (bạn bè và vật liệu) → trở về Làng. Khi người chơi sẵn sàng: Thi ở Văn Miếu → Thời kỳ tiếp theo (cây tre lớn lên).
+Vòng lặp chính của một thời kỳ: Làng (luyện tập và chế tạo) → Nhiệm vụ và hành trình (câu đố và truyền thuyết) → Trận đấu (kỹ năng toán và khoa học) → Phần thưởng (bạn bè và vật liệu) → trở về Làng. Khi người chơi sẵn sàng: Kỳ thi của thời kỳ → Thời kỳ tiếp theo (cây tre lớn lên).
 
 Thua trận cũng đưa về làng, với một chút mất mát vật phẩm. Một phiên chơi là một nhiệm vụ hoặc một trận đấu. Phụ huynh đặt giới hạn thời gian.
 
@@ -63,7 +63,7 @@ Thua trận cũng đưa về làng, với một chút mất mát vật phẩm. M
 Bốn phần này cho trẻ một lý do để mong chờ và một cách để biết mình đang ở đâu. Chúng không thêm câu hỏi nào.
 
 - **Bản đồ thế giới:** một bản đồ của cả 13 chương, vẽ như bản đồ Việt Nam cổ trên giấy dó, với một con dấu đỏ ở mỗi chương. Các chương còn khóa vẫn nhìn thấy được. Trẻ thấy Phù Đổng, rồi sương mù trên Cổ Loa và dòng sông Bạch Đằng, và muốn đến đó. Một bản đồ nhỏ ở góc màn hình cho thấy những nơi gần đó.
-- **Một thứ để xây dựng ngay từ đầu:** cây cầu ở Phù Đổng ban đầu bị gãy. Mỗi thử thách trong Năm Thử Thách cho một phần của cây cầu (ván từ người tiều phu, dây thừng từ người đánh cá, v.v.). Trẻ thấy cây cầu lớn dần, và đi qua cầu để đến Văn Miếu. Một mục tiêu cụ thể hơn hẳn "gặp cụ già làng."
+- **Một thứ để xây dựng ngay từ đầu:** cây cầu ở Phù Đổng ban đầu bị gãy. Mỗi thử thách trong Năm Thử Thách cho một phần của cây cầu (ván từ người tiều phu, dây thừng từ người đánh cá, v.v.). Trẻ thấy cây cầu lớn dần, và qua cây cầu đã xong, sứ giả của vua Hùng vào làng tìm người tài. Một mục tiêu cụ thể hơn hẳn "gặp cụ già làng."
 - **Sự trưởng thành của nhân vật:** một cây tre trong HUD (bảng hiển thị) mọc thêm một đốt cho mỗi cấp anh hùng. Kinh nghiệm đến từ trận đấu, nhiệm vụ và dự án, không phải từ câu hỏi.
 - **Sổ tay:** một bộ sưu tập tranh in được lấp đầy dần khi trẻ chơi. Mỗi kỹ năng, truyền thuyết, sinh vật và địa danh nhận một bức tranh Đông Hồ nhỏ khi trẻ gặp nó. Kỹ năng đã thành thạo được đóng dấu đỏ. Trẻ thấy những chỗ trống và muốn lấp đầy. Phụ huynh có thể đọc cùng cuốn sổ tay đó để theo dõi tiến bộ.
 
@@ -93,7 +93,7 @@ Tre là một thế giới isometric sống động duy nhất. Trẻ đi lại,
 
 **Năm quy tắc**
 
-1. **Không có dấu chấm hỏi trong thế giới.** Một màn hình có câu hỏi và ô trả lời là một bài kiểm tra. Câu hỏi chỉ có ở chỗ thầy giáo (luyện tập) và ở Văn Miếu (kỳ thi), nơi việc thi cử là một phần của câu chuyện. Có hai lối chơi dân gian không phải là bài kiểm tra, vì không có gì phải chọn trong một danh sách: câu đố mà lời giải là một vật trẻ tìm thấy và chạm vào trong thế giới, và câu đố mẹo của một đứa trẻ, mà trẻ chỉ nghe ("Câu đố, đố mẹo, và trò chơi của trẻ em").
+1. **Không có dấu chấm hỏi trong thế giới.** Một màn hình có câu hỏi và ô trả lời là một bài kiểm tra. Câu hỏi chỉ có ở chỗ thầy giáo (luyện tập) và trong các kỳ thi (cuộc thử tài của sứ giả nhà vua ở Thời kỳ 1, Văn Miếu từ thời Lý), nơi việc thi cử là một phần của câu chuyện. Có hai lối chơi dân gian không phải là bài kiểm tra, vì không có gì phải chọn trong một danh sách: câu đố mà lời giải là một vật trẻ tìm thấy và chạm vào trong thế giới, và câu đố mẹo của một đứa trẻ, mà trẻ chỉ nghe ("Câu đố, đố mẹo, và trò chơi của trẻ em").
 2. **Thất bại là vật lý.** Tấm ván quá ngắn, hòn đá rơi hụt, tảng băng không tan. Thế giới cho thấy điều gì đã xảy ra, và trẻ thử lại. Không có dấu X đỏ.
 3. **Game quan sát, trẻ không biết.** Mỗi hành động là một sự kiện kỹ năng cho mô hình thành thạo. Ba tấm ván dài 4 bắc qua khoảng trống 12 là một phép "nhân theo nhóm" đúng. Mô hình vẫn vậy; chỉ đầu vào thay đổi.
 4. **Gợi ý là một người giúp đỡ có thân hình.** Nghé đi đến chỗ đó, chỉ, hoặc giậm chân xuống đất. Dân làng gọi với ra. Các ví dụ mẫu chỉ có trong phần luyện tập với thầy giáo.
@@ -162,7 +162,7 @@ Thế giới là Việt Nam với địa lý thật: bờ biển, sông, núi v�
 
 **Đồi núi là thật, và trẻ cảm nhận được.** Độ cao của đất lấy từ dữ liệu SRTM với các điểm cách nhau khoảng 550 m, không lấy từ lưới thô của bản đồ đất nước, và khi gộp điểm thì giữ lại các đỉnh, để một ngọn đồi nhỏ không chìm vào đồng bằng xung quanh. Độ cao tính bằng khối theo một đường cong, không theo đường thẳng: đồi thấp được nhiều khối hơn độ cao thật (Núi Trâu và Sóc Sơn là những ngọn đồi mà trẻ leo lên), còn núi cao được ít khối hơn (Ba Vì và Tam Đảo vẫn cao nhưng vẫn nằm trong khung nhìn). Sườn dốc cho thấy hình dáng của nó: vách đá có nét mực, rừng trên đồi, ruộng bậc thang trên sườn thoải, và đường mòn uốn qua lại lên đồi.
 
-**Thời kỳ 1 là thật.** Phù Đổng nằm bên bờ sông Đuống. Núi Trâu (Trâu Sơn), nơi truyền thuyết đặt trận đánh, ở phía đông thuộc Bắc Ninh. Sóc Sơn, nơi Gióng bay về trời, ở phía bắc. Thăng Long và Văn Miếu ở phía tây nam, bên kia sông Đuống và sông Hồng. **Mọi thứ thuộc về thời của nó:** người thời kỳ 1 trao đổi bằng cách đổi hàng lấy hàng (gạo, cá, trứng, nồi đất), không có tiền xu; những đồng tiền đầu tiên của Việt Nam ra đời dưới thời nhà Đinh (968–981), và việc đổi hàng vẫn phổ biến thêm hai thế kỷ nữa. Thế giới có xe bò. Trẻ con trong làng chơi các trò chơi dân gian như nhảy lò cò và nhảy dây, ở mọi thời kỳ; người dẫn chuyện không nói gì về tuổi của các trò chơi ấy (#30). **Trâu Sơn** là dải đồi thấp gần làng Châu Cầu (Châu Phong, Quế Võ), nơi chùa Cô Tiên còn giữ chuyện vua Ân. Không nguồn nào nói đó là đỉnh đồi nào, và trò chơi nói rõ điều đó ("Khi không ai biết, trò chơi nói rõ", #27). Ngọn đồi cao ở đông nam Bắc Ninh nhiều khả năng là núi Dạm (Đại Lãm), không phải Trâu Sơn.
+**Thời kỳ 1 là thật.** Phù Đổng nằm bên bờ sông Đuống. Núi Trâu (Trâu Sơn), nơi truyền thuyết đặt trận đánh, ở phía đông thuộc Bắc Ninh. Sóc Sơn, nơi Gióng bay về trời, ở phía bắc. Nơi sau này là Thăng Long (có tên năm 1010) và Văn Miếu (xây năm 1070) ở phía tây nam, bên kia sông Đuống và sông Hồng; ở Thời kỳ 1 chưa có gì ở đó, và trò chơi không gọi tên hai nơi này. **Mọi thứ thuộc về thời của nó:** người thời kỳ 1 trao đổi bằng cách đổi hàng lấy hàng (gạo, cá, trứng, nồi đất), không có tiền xu; những đồng tiền đầu tiên của Việt Nam ra đời dưới thời nhà Đinh (968–981), và việc đổi hàng vẫn phổ biến thêm hai thế kỷ nữa. Thế giới có xe bò. Trẻ con trong làng chơi các trò chơi dân gian như nhảy lò cò và nhảy dây, ở mọi thời kỳ; người dẫn chuyện không nói gì về tuổi của các trò chơi ấy (#30). **Trâu Sơn** là dải đồi thấp gần làng Châu Cầu (Châu Phong, Quế Võ), nơi chùa Cô Tiên còn giữ chuyện vua Ân. Không nguồn nào nói đó là đỉnh đồi nào, và trò chơi nói rõ điều đó ("Khi không ai biết, trò chơi nói rõ", #27). Ngọn đồi cao ở đông nam Bắc Ninh nhiều khả năng là núi Dạm (Đại Lãm), không phải Trâu Sơn.
 
 **Các vùng sau đi theo địa thế thật:** Cổ Loa ở phía bắc sông Hồng, cửa sông Bạch Đằng và thủy triều của nó gần Hạ Long, núi đá vôi Ninh Bình, núi rừng Lam Sơn ở Thanh Hóa, duyên hải miền Trung và Phú Xuân (Huế), cao nguyên Tây Sơn, và đồng bằng sông Cửu Long.
 
@@ -174,7 +174,7 @@ Thế giới là Việt Nam với địa lý thật: bờ biển, sông, núi v�
 | --- | --- | --- | --- |
 | 1 | Núi và biển | Vùng núi cao phía bắc (Tây Bắc, Việt Bắc) | Còn khóa |
 | 2 | Văn Lang | Trung du phía tây đồng bằng, Phong Châu (Phú Thọ) | Còn khóa |
-| 3 | Đất Thánh Gióng | Phù Đổng và Sóc Sơn, đông bắc Hà Nội | Làng Phù Đổng; đồng ruộng và dòng sông; đường đến Văn Miếu; chân núi Trâu Sơn |
+| 3 | Đất Thánh Gióng | Phù Đổng và Sóc Sơn, đông bắc Hà Nội | Làng Phù Đổng; đồng ruộng và dòng sông; đường ra sông Hồng; chân núi Trâu Sơn |
 | 4 | Cổ Loa | Phía bắc Hà Nội | Còn khóa |
 | 5 | Mê Linh | Phía tây bắc Hà Nội | Còn khóa |
 | 6 | Bạch Đằng | Bờ biển đông bắc: Hải Phòng và Quảng Ninh | Còn khóa |
@@ -280,7 +280,7 @@ Báo cáo nghiên cứu trong `docs/research/learning-by-doing.md` tập hợp c
 
 **Câu hỏi, phụ huynh, và phiên chơi**
 
-26. **Câu hỏi ở lại với thầy giáo và Văn Miếu, có gợi ý và giãn cách.** Chỉ hỏi về các kỹ năng có P(L) trên 0.5. Cho gợi ý một phần với lớp 1 đến lớp 3. Sau mỗi câu trả lời đều đưa ra đáp án đúng và một dòng lý do. Xen kẽ các kỹ năng (Karpicke; Rohrer; Agarwal). Giọng đọc nói từng đáp án trước khi trẻ chọn, cho trẻ đọc còn chậm. Các lựa chọn của một câu hỏi dài gần bằng nhau, và đáp án đúng không nổi bật, để hình dáng của chữ không để lộ đáp án (Haladyna, Downing & Rodriguez 2002, hướng dẫn 24 và 28). Một lần luyện tập có số câu cố định, và trẻ thấy còn bao nhiêu câu.
+26. **Câu hỏi ở lại với thầy giáo và các kỳ thi, có gợi ý và giãn cách.** Chỉ hỏi về các kỹ năng có P(L) trên 0.5. Cho gợi ý một phần với lớp 1 đến lớp 3. Sau mỗi câu trả lời đều đưa ra đáp án đúng và một dòng lý do. Xen kẽ các kỹ năng (Karpicke; Rohrer; Agarwal). Giọng đọc nói từng đáp án trước khi trẻ chọn, cho trẻ đọc còn chậm. Các lựa chọn của một câu hỏi dài gần bằng nhau, và đáp án đúng không nổi bật, để hình dáng của chữ không để lộ đáp án (Haladyna, Downing & Rodriguez 2002, hướng dẫn 24 và 28). Một lần luyện tập có số câu cố định, và trẻ thấy còn bao nhiêu câu.
 27. **Báo cáo cho phụ huynh theo kỹ năng, bằng lời, kèm một sản phẩm.** Ba trạng thái: đang khám phá, sắp đạt, tự tin. Cho xem thứ trẻ đã xây. Cho phụ huynh cách điều chỉnh nhẹ mức độ. Không có điểm tổng hợp.
 28. **Một phiên chơi kết thúc trong câu chuyện, ở một điểm dừng tự nhiên, theo thiết bị.** Một nhiệm vụ, một chương, một trận đánh; mặt trời lặn. Nói cho trẻ biết kế hoạch ngay từ đầu. Không đếm ngược (Hiniker; bằng chứng từ trẻ dưới 6 tuổi, nên xem là hợp lý chứ chưa chắc chắn).
 29. **Nhiều phiên ngắn với người lớn ở gần.** Mười phút ba lần một tuần là đủ để có tiến bộ đo được (Wuzzit Trouble); tiến bộ trong các phân tích tổng hợp xuất hiện với nhiều phiên và có một phần giảng dạy (Wouters).
@@ -338,14 +338,14 @@ Cái trí khôn dân gian là một phần của văn hóa, và trò chơi giữ
 - **Câu đố dân gian.** Buổi tối, bà hoặc một cụ già đọc một câu đố có vần. Lời giải là một vật của làng ở thời đó (con trâu, cái chổi tre, cây cau), và trẻ trả lời bằng cách tìm vật ấy trong thế giới rồi chạm vào, không bao giờ chọn trong một danh sách. Câu đố chờ trong sổ tay cho đến khi trẻ tìm ra vật, kể cả vào một ngày sau. Vẫy tay thì được một lời gợi ý (người đố nói những chữ nào trong câu đố chỉ vào vật); chờ lâu thì được nghe lời giải và chỗ của vật, cùng cười với nhau. Khi trẻ tìm ra vật, người đố đọc lại câu đố và chỉ cho thấy các chữ khớp với vật thế nào, và câu đố vào sổ tay. Câu đố và trò chơi chữ với những từ có hai nghĩa đã giúp trẻ bảy, tám tuổi hiểu điều mình đọc (Yuill 1998; Zipke và cộng sự 2008), và chúng cho trẻ lớn lên ở nước ngoài những từ ngữ của làng quê.
 - **Câu đố mẹo.** Trẻ con trong làng đố nhân vật những câu đố mẹo, như chúng đố nhau, để vui. Thỉnh thoảng chạm vào một đứa trẻ thì nghe "Đố bạn: …"; đứa trẻ chờ một chút, rồi nói lời giải và vì sao câu đố lừa được người ta, và cả hai cùng cười, không bao giờ cười nhân vật. Nhân vật chỉ nghe: không có gì phải trả lời, và không có gì được ghi là đúng hay sai. Trẻ 5 đến 12 tuổi rất hay mắc những câu như thế, và chưa có nghiên cứu nào cho thấy luyện chúng làm trẻ suy nghĩ cẩn thận hơn (Young và cộng sự 2018), nên chúng chỉ để vui, không phải bài học. Chúng hiền: không câu nào cười cơ thể, gia đình, hay một dân tộc nào.
 
-## Thi Văn Miếu và học vị
+## Thi cử và học vị
 
-Người chơi dự thi ở Văn Miếu, như các sĩ tử ngày xưa ở Việt Nam. Có hai loại kỳ thi.
+Người chơi dự thi như một phần của câu chuyện. **Nơi thi thuộc về thời của nó.** Văn Miếu được xây năm 1070 dưới thời Lý Thánh Tông, khoa thi đầu tiên mở năm 1075 dưới thời Lý Nhân Tông; bia tiến sĩ bắt đầu được dựng từ năm 1484. Vì vậy các kỳ thi diễn ra ở Văn Miếu từ chương 7 (nhà Lý), nơi trẻ thấy Văn Miếu mở cửa và dự khoa thi đầu tiên. Trước đó, một người của thời ấy thử tài trẻ. Trong chương Thánh Gióng, đó là sứ giả của vua Hùng: truyền thuyết mở đầu bằng lời rao cầu hiền tài ("Vua Hùng bèn sai người đi khắp nước rao cầu hiền tài giết giặc"), và cũng vua Hùng thứ sáu thử tài các con trong truyền thuyết bánh chưng. Sau Năm Thử Thách, sứ giả đến Phù Đổng và thử tài xếp lớp ở nhà làng; sau chiến thắng, sứ giả quay lại mang lời cảm ơn của nhà vua và tổ chức kỳ thi của thời kỳ. Trong các lần chơi thử, hai người chơi thử biết Văn Miếu đã nói rằng Văn Miếu không thuộc về thời các vua Hùng (#134). Có hai loại kỳ thi.
 
 - **Thi môn:** nâng một môn lên một bậc. Người chơi mới có thể thi ngay lúc đầu để tìm đúng trình độ. Kỳ thi thích ứng: bắt đầu dễ và khó dần cho đến khi người chơi sai vài câu. Có 10 đến 15 câu hỏi.
-- **Thi kỷ nguyên:** trộn tất cả các môn của một kỷ nguyên. Đỗ thì được một học vị và tên người chơi được khắc lên bia đá trên lưng rùa trong trò chơi.
+- **Thi kỷ nguyên:** trộn tất cả các môn của một kỷ nguyên. Đỗ thì được một danh hiệu. Từ thời Lê, khi bia đá bắt đầu được dựng, tên người chơi được khắc lên bia đá trên lưng rùa ở Văn Miếu; trước đó, danh hiệu được đưa vào sổ tay như một bức tranh.
 
-**Học vị**, dựa trên hệ thống khoa cử xưa (thi Hương, thi Hội, thi Đình): Tú tài, Cử nhân, Tiến sĩ, Bảng nhãn, Trạng nguyên. Học vị cuối cùng, Trạng nguyên, cần đỗ tất cả các chương truyện.
+**Danh hiệu** là từ của thời đó. Trước khi có khoa cử, danh hiệu là một từ của câu chuyện: trong chương Thánh Gióng, sứ giả gọi trẻ là "người tài", theo lời rao của mình. Từ các kỳ thi ở Văn Miếu, học vị theo hệ thống khoa cử xưa (thi Hương, thi Hội, thi Đình): Tú tài, Cử nhân, Tiến sĩ, Bảng nhãn, Trạng nguyên. Học vị cuối cùng, Trạng nguyên, cần đỗ tất cả các chương truyện.
 
 **Không xấu hổ:** người chơi không đỗ vẫn giữ nguyên trình độ. Trò chơi chỉ ra các kỹ năng cần luyện, và người chơi có thể thi lại sau.
 
@@ -353,7 +353,7 @@ Người chơi dự thi ở Văn Miếu, như các sĩ tử ngày xưa ở Việ
 
 ## Nhân vật, truyền thuyết, bạn linh thú, và chế tạo
 
-**Nhân vật:** người chơi tự tạo nhân vật của mình: tên, trai hay gái, khuôn mặt, tóc, và trang phục của kỷ nguyên. Nhân vật bắt đầu là một đứa trẻ làng bình thường, không có sức mạnh đặc biệt và chưa có nghề. Người chơi chọn nghề sau kỳ thi Văn Miếu đầu tiên (xem Mở đầu và các nghề). Nhân vật nhảy được, xa bằng một đứa trẻ thật ở tuổi của người chơi (mức nhảy xa tại chỗ trung bình ở tuổi đó, trai và gái như nhau), qua khúc gỗ, vũng nước và rãnh nhỏ. Cú nhảy không bao giờ vượt qua một khoảng trống mà một nhiệm vụ yêu cầu trẻ lấp đầy: toán vẫn là đường đi tới đích (#29).
+**Nhân vật:** người chơi tự tạo nhân vật của mình: tên, trai hay gái, khuôn mặt, tóc, và trang phục của kỷ nguyên. Nhân vật bắt đầu là một đứa trẻ làng bình thường, không có sức mạnh đặc biệt và chưa có nghề. Người chơi chọn nghề sau kỳ thi đầu tiên (xem Mở đầu và các nghề). Nhân vật nhảy được, xa bằng một đứa trẻ thật ở tuổi của người chơi (mức nhảy xa tại chỗ trung bình ở tuổi đó, trai và gái như nhau), qua khúc gỗ, vũng nước và rãnh nhỏ. Cú nhảy không bao giờ vượt qua một khoảng trống mà một nhiệm vụ yêu cầu trẻ lấp đầy: toán vẫn là đường đi tới đích (#29).
 
 **Truyền thuyết:** trong mỗi kỷ nguyên, người chơi gặp các nhân vật truyền thuyết của thời đó.
 
@@ -403,7 +403,7 @@ Trẻ từ 3 đến 5 tuổi chơi Tre ở giai đoạn *Măng non*. Câu tục 
 
 ## Mở đầu và các nghề
 
-Mọi người chơi đều bắt đầu với cùng một phần mở đầu ở làng, Năm Thử Thách. Sau kỳ thi Văn Miếu đầu tiên, mỗi người chơi chọn một nghề (*nghề*). Người chơi mới và học sinh lớp 4 đều trải qua khoảnh khắc đó, chỉ khác thời điểm.
+Mọi người chơi đều bắt đầu với cùng một phần mở đầu ở làng, Năm Thử Thách. Sau kỳ thi đầu tiên, mỗi người chơi chọn một nghề (*nghề*). Người chơi mới và học sinh lớp 4 đều trải qua khoảnh khắc đó, chỉ khác thời điểm.
 
 **Năm Thử Thách:** ở làng Phù Đổng, nhân vật giúp năm người dân làng, mỗi người ứng với một nghề. Mỗi thử thách đều ngắn, và toàn bộ phần mở đầu mất khoảng 20 phút. Bài toán khớp với lớp mà người chơi khai lúc đầu, nên học sinh lớp 4 nhận bài toán lớp 4.
 
@@ -411,7 +411,7 @@ Mọi người chơi đều bắt đầu với cùng một phần mở đầu �
 
 - Người chơi mới chơi Kỷ nguyên 1 và dự kỳ thi Kỷ nguyên 1.
 - Người chơi ở lớp cao hơn dự kỳ thi xếp lớp ngay sau phần mở đầu.
-- Sau kỳ thi đầu tiên, thầy giáo ở Văn Miếu nói "Giờ con đã biết mình là ai," và người chơi chọn nghề.
+- Sau kỳ thi đầu tiên, người ra đề (ở Thời kỳ 1 là sứ giả của vua Hùng) nói "Giờ cháu đã biết mình là ai," và người chơi chọn nghề.
 
 **Các nghề:**
 
@@ -507,7 +507,7 @@ Trận đánh vẫn mở ở mọi giai đoạn. Người chơi lớn hơn có t
 - Tên người, tên địa danh và tên gọi giữ nguyên tiếng Việt có dấu ở cả hai ngôn ngữ, ví dụ Thánh Gióng và Văn Miếu. Chế độ tiếng Anh hiện nghĩa ngắn gọn ở lần đầu xuất hiện.
 - Giọng nói dùng Web Speech API trước. Về sau có thể thay bằng tệp giọng thu sẵn, từng khóa một.
 - **Người ta được gọi tên theo cách của nơi chốn và thời đại,** không bao giờ bằng biệt danh đặt theo nghề. **Ở miền Nam** (miền Trung và miền Nam từ thế kỷ 18 trở đi), một người được gọi bằng từ chỉ quan hệ họ hàng và thứ trong gia đình, con đầu là Hai ("cô Sáu", "ông Hai"; Nguyễn Nhạc, anh cả trong ba anh em Tây Sơn, đã được gọi là "anh Hai Trầu" trước năm 1771; [Biên khảo](https://sites.google.com/site/bienkhao/t%E1%BA%A1i-sao-ng%C6%B0%E1%BB%9Di-mi%E1%BB%81n-nam-g%E1%BB%8Di-anh-c%E1%BA%A3-l%C3%A0-anh-hai)). **Ở miền Bắc** (và ở mọi vùng trước thế kỷ 18), người lớn được gọi theo thứ, con đầu là Cả ("cô Năm"); người già được gọi theo tên con đầu lòng ("ông Dương"), vì ở làng người ta kiêng gọi tên riêng của người già; còn trẻ con và người trẻ được gọi bằng tên tục của mình ("chị Hến") ([Mien Cao 2018](https://dothogiadinh.vn/cach-xung-ho-ten-cua-nguoi-viet.html); [Toan Ánh, *Nếp cũ*](https://znews.vn/tuc-kieng-goi-ten-to-tien-cua-nguoi-viet-post1648087.html)). Các nguồn này là bài viết phổ thông, và không ai biết dân làng thời Hùng Vương gọi nhau thế nào. Gọi theo nghề cũng là một cách gọi có thật ("bác thợ rèn", "bà lang"). Trong dữ liệu, mỗi người có từ chỉ quan hệ, lứa tuổi, thứ trong gia đình, và tên con đầu lòng hoặc tên riêng; tên được ghép theo cách gọi của vùng (#38, #41).
-- **Người ta nói theo cách nói của quê mình; người dẫn chuyện và toán nói bằng từ toàn dân.** Lời của các nhân vật dùng từ ngữ của vùng: miền Trung "mô" thay "đâu", "chi" thay "gì", "răng" thay "sao", "mạ" thay "mẹ"; miền Nam "má", "ba", "heo", "trái", "bông" ([VietJack](https://vietjack.com/tai-lieu-tieng-viet/phan-biet-tu-ngu-toan-dan-va-tu-ngu-dia-phuong-pbtv.jsp)). Lần đầu gặp một từ địa phương, một chú thích nhỏ hiện ra ("mô = đâu"). Cũng vậy, một từ mà trẻ nhỏ có thể chưa biết (tên một nghề, một từ của nhiệm vụ như "khe", "đăng", "thủy triều") có một câu ngắn nói nó là gì ở lần đầu, do giọng đọc nói, và vật đó sáng lên ("Ngư dân là người đánh cá."): trong một lần chơi thử, các bạn từ mẫu giáo đến lớp 2 hỏi "tiều phu", "khe", và "Ngư dân" là gì. Người dẫn chuyện, các màn hình, nhân vật chính, và từ ngữ của toán (số trong nhiệm vụ, hình, đơn vị) giữ từ toàn dân như trong sách giáo khoa ("một trăm linh một", "nghìn"), để trẻ học một từ cho một khái niệm. Mọi thời kỳ đều nói tiếng Việt ngày nay; không ai biết người thời Hùng Vương nói thế nào. **Đồ vật thuộc về nơi chốn và thời của nó** theo cùng cách: một loại cây trồng hay dụng cụ đến vào một thời điểm đã biết có năm đầu tiên trong dữ liệu, kèm nguồn (cây ngô đến năm 1597 theo truyền thuyết, hoặc khoảng 1662–1723 theo Lê Quý Đôn, nên không có bắp ngô treo dưới mái nhà ở Thời kỳ 1) (#39).
+- **Người ta nói theo cách nói của quê mình; người dẫn chuyện và toán nói bằng từ toàn dân.** Lời của các nhân vật dùng từ ngữ của vùng: miền Trung "mô" thay "đâu", "chi" thay "gì", "răng" thay "sao", "mạ" thay "mẹ"; miền Nam "má", "ba", "heo", "trái", "bông" ([VietJack](https://vietjack.com/tai-lieu-tieng-viet/phan-biet-tu-ngu-toan-dan-va-tu-ngu-dia-phuong-pbtv.jsp)). Lần đầu gặp một từ địa phương, một chú thích nhỏ hiện ra ("mô = đâu"). Cũng vậy, một từ mà trẻ nhỏ có thể chưa biết (tên một nghề, một từ của nhiệm vụ như "khe", "đăng", "thủy triều") có một câu ngắn nói nó là gì ở lần đầu, do giọng đọc nói, và vật đó sáng lên ("Ngư dân là người đánh cá."): trong một lần chơi thử, các bạn từ mẫu giáo đến lớp 2 hỏi "tiều phu", "khe", và "Ngư dân" là gì. Người dẫn chuyện, các màn hình, nhân vật chính, và từ ngữ của toán (số trong nhiệm vụ, hình, đơn vị) giữ từ toàn dân như trong sách giáo khoa ("một trăm linh một", "nghìn"), để trẻ học một từ cho một khái niệm. Mọi thời kỳ đều nói tiếng Việt ngày nay; không ai biết người thời Hùng Vương nói thế nào. **Đồ vật thuộc về nơi chốn và thời của nó** theo cùng cách: một loại cây trồng hay dụng cụ đến vào một thời điểm đã biết có năm đầu tiên trong dữ liệu, kèm nguồn (cây ngô đến năm 1597 theo truyền thuyết, hoặc khoảng 1662–1723 theo Lê Quý Đôn, nên không có bắp ngô treo dưới mái nhà ở Thời kỳ 1) (#39). Người trong làng nói từ của làng, nhưng một câu nói về khoa học của nhiệm vụ thì phải nói đúng: thứ cứng lại trong nước lạnh là "thép" (sắt có một ít các-bon), không phải "sắt"; những vật của truyền thuyết giữ tên của chúng (ngựa sắt, roi sắt) (#127).
 
 ## Quy tắc về lịch sử và sự nhạy cảm
 
@@ -561,7 +561,7 @@ Nhật ký chỉ chứa số đếm, thời gian và con số. Không tên, khô
 | --- | --- |
 | Trẻ có học được không? | Thời gian chơi cho đến khi thành thạo từng kỹ năng; tỷ lệ thành công ngay lần đầu trong mười lần chốt gần nhất; hình dạng đường cong học tập |
 | Có nhớ lâu không? | Thành công ở nhiệm vụ ôn tập sau 7, 14 và 30 ngày |
-| Có chuyển giao được không? | Tương quan giữa P(L) và các câu hỏi thi Văn Miếu cùng kỹ năng (quy tắc 30) |
+| Có chuyển giao được không? | Tương quan giữa P(L) và các câu hỏi thi cùng kỹ năng (quy tắc 30) |
 | Độ khó có vừa không? | Tỷ lệ thành công ngay lần đầu ở các nhiệm vụ kỹ năng so với dải 80 đến 90 phần trăm (quy tắc 15); trẻ chọn phiên bản khó hơn thường xuyên đến đâu |
 | Dự đoán có giúp ích không? | Sai số dự đoán qua các lượt thử; tốc độ thành thạo khi có và không có thao tác dự đoán (quy tắc 4) |
 | Gợi ý giúp ích hay làm thay? | Thành công sau từng mức gợi ý; gợi ý được xem dưới một giây; tốc độ thành thạo ở từng cách khóa gợi ý (quy tắc 25) |
@@ -669,7 +669,7 @@ Phiên bản đầu tiên là một phần nhỏ, hoàn chỉnh của Thời k�
 6. Một nhiệm vụ chế tác: giúp các thợ rèn làm ngựa sắt từ sắt và lửa.
 7. Một trận đánh trùm, với Thánh Gióng làm đồng đội. Khi gậy sắt gãy, người chơi tìm thấy tre.
 8. Một bạn thú.
-9. Một kỳ thi môn toán ở Văn Miếu, danh hiệu đầu tiên, và việc chọn một thiên hướng.
+9. Một kỳ thi môn toán do sứ giả của vua Hùng ra đề ở nhà làng Phù Đổng, danh hiệu đầu tiên ("người tài"), và việc chọn một thiên hướng.
 10. Lưu, cổng phụ huynh và giới hạn thời gian.
 
 Lát cắt hoàn thành khi người chơi đầu tiên chơi nó ba lần trong một tuần mà không cần trợ giúp.
