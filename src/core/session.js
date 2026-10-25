@@ -1392,6 +1392,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // In a later round of a practice, the smith does not show his quench again.
     setupTrial(state, def, practicing ? practice.level : trialLevelOf(def), env, { demo: !(practicing && practice.round > 0), practice: practicing });
     mentoring.start(`trial-${id}`);
+    if (def.kind === 'task') clearWay();
     if (id === 'woodcutter') {
       woodFails = 0;
       woodDemo = false;
@@ -1758,6 +1759,50 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         addEntity(state, { id: `event:${ev.id}:cart`, chunk: chunkOf(ev.at[0], ev.at[1]), dayEvent: { id: ev.id, day, at: ev.at }, position: { x: ev.at[0] * 2 + 1, y: env.groundY(ev.at[0], ev.at[1]) - 0.5, z: ev.at[1] * 2 + 1, facing: 0.3 }, solid: { r: 2.2 }, look: 'cart' });
       }
     }
+    clearWay();
+  }
+  // One goal at a place (#129). The open task of the story (the rice for Gióng) near a point (in
+  // half blocks), or null.
+  const STORY_NEAR = 40; // half blocks: a person of an event this near to a task of the story waits
+  function storyTaskAt(p) {
+    for (const def of data.trials?.trials ?? []) {
+      if (def.kind !== 'task' || !p) continue;
+      const tz = trialZone(def.id);
+      if (!tz || tz.zone.done) continue;
+      const spots = Object.values(def.places).flat().map((k) => env.places[k]).filter(Boolean);
+      if (spots.some((q) => Math.hypot(q.x - p.x, q.z - p.z) <= STORY_NEAR)) return { def, tz, spots };
+    }
+    return null;
+  }
+  // The people of the events stand away from the way between the places of an open task of the
+  // story (#129: "The farmer lady is standing right in my way!" between the trays and the pot).
+  const WAY_CLEAR = 8; // half blocks from the way
+  function clearWay() {
+    for (const e of query(state, 'person')) {
+      if (e.person.kind !== 'event' || !e.position) continue;
+      const story = storyTaskAt(e.position);
+      if (!story || story.spots.length < 2) continue;
+      const [a, b] = story.spots;
+      const off = (q) => {
+        const dx = b.x - a.x;
+        const dz = b.z - a.z;
+        const t = Math.max(0, Math.min(1, ((q.x - a.x) * dx + (q.z - a.z) * dz) / (dx * dx + dz * dz || 1)));
+        return Math.hypot(q.x - a.x - t * dx, q.z - a.z - t * dz);
+      };
+      if (off(e.position) >= WAY_CLEAR) continue;
+      const others = peopleCells(e.id);
+      const c = { x: e.position.x / 2, y: e.position.z / 2 };
+      let best = null;
+      for (let dy = -8; dy <= 8; dy++) for (let dx = -8; dx <= 8; dx++) {
+        const q = { x: Math.floor(c.x) + dx + 0.5, y: Math.floor(c.y) + dy + 0.5 };
+        const d = Math.hypot(dx, dy);
+        if (best && d >= best.d) continue;
+        if (!tileMap.walkable(Math.floor(q.x), Math.floor(q.y)) || tileMap.type(Math.floor(q.x), Math.floor(q.y)) === 'shallow') continue;
+        if (off({ x: q.x * 2, z: q.y * 2 }) < WAY_CLEAR || others.some((o) => Math.hypot(o.x - q.x, o.y - q.y) < 2.5)) continue;
+        best = { q, d };
+      }
+      if (best) e.position = { ...e.position, x: best.q.x * 2, y: env.groundY(best.q.x, best.q.y), z: best.q.y * 2 };
+    }
   }
   // The people of the way of a find (#56): while the find is open, they stand on its road (in the
   // live chunks) and greet the hero, with the clues of the way. They go when the find is found.
@@ -1934,6 +1979,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const def = eventDef(id);
     const ent = getEntity(state, `event:${id}`);
     if (!def || !ent) return;
+    // One goal at a place (#129): during a task of the story here, she says a short line and waits.
+    if (def.lines.wait && storyTaskAt(ent.position)) {
+      say(def.lines.wait, {}, null, def.person);
+      return;
+    }
     const day = ent.dayEvent.day;
     const rng = createRng(hashSeed(`${state.seed}:event-task:${id}:${ent.dayEvent.area ?? map.id}:${day}`));
     // The level: the grade, and P(L) of the skill of the event in the skill model.
@@ -3353,6 +3403,66 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const [a, b] = things.map((e) => e.position);
     if (a) smith.gesture = { act: 'point', x: a.x, z: a.z, t: 1.8, ...(b ? { then: { act: 'point', x: b.x, z: b.z, t: 1.8 } } : {}) };
     setCue(things.map((e) => e.id));
+  }
+  // The rice for Gióng (#129): the person who says the lines of the pot, the mother at the pot, else
+  // Nghé (null: the narrator).
+  const RICE_NEAR = 30; // half blocks: a wave this near to the pot or the trays is about the rice
+  function riceVoice() {
+    const def = trialDef('rice');
+    const pot = getEntity(state, 'pot:rice');
+    const near = (e) => e && !e.hidden && pot && Math.hypot(e.position.x - pot.position.x, e.position.z - pot.position.z) <= RICE_NEAR;
+    const mother = getEntity(state, `npc:${def?.npc ?? 'mother'}`);
+    if (near(mother)) return mother;
+    const nghe = getEntity(state, 'friend:nghe');
+    return near(nghe) ? nghe : null;
+  }
+  // A line of the rice with the count of the pot as a word: n (the key), n.one, and n.zero.
+  function riceLine(key, n, glow, at) {
+    const who = riceVoice();
+    const k = n === 0 && /^rice\.help/.test(key) ? `${key}.zero` : n === 1 ? `${key}.one` : key;
+    const params = { n: { key: `num.${n}` } };
+    if (who) {
+      emit({ type: 'open', screen: 'callout', id: who.id, textKey: k, params, happened: true });
+      if (at) who.gesture = { act: 'point', x: at.x, z: at.z, t: 2 };
+    } else say(k, params);
+    setCue(glow);
+  }
+  // After each tray, the pot says its count while it glows (#129: "Only a tap sound. No count").
+  function potCount(ev) {
+    const tz = trialZone('rice');
+    const pot = getEntity(state, 'pot:rice');
+    if (!tz || !pot) return;
+    glowing = [];
+    const n = ev.ones ?? tz.zone.ones;
+    if (ev.type === 'grow') riceLine(n ? 'rice.grow.rest' : 'rice.grow', n, [pot.id], pot.position);
+    else riceLine('rice.pot', n, [pot.id], pot.position);
+  }
+  // A wave near the open rice: the count of the pot and the next step, with the place of the step
+  // glowing (a tray in the hands: the pot; else the trays).
+  // Is the hero near the open rice (the pot or the trays)? Then the wave button shows (#129).
+  function riceNear() {
+    const tz = trialZone('rice');
+    const pot = getEntity(state, 'pot:rice');
+    const trays = zoneOf('trays');
+    if (!tz || tz.zone.done || !pot || !trays) return false;
+    const hp = hero().position;
+    return Math.min(Math.hypot(hp.x - pot.position.x, hp.z - pot.position.z), Math.hypot(hp.x - trays.zone.x, hp.z - trays.zone.z)) <= RICE_NEAR;
+  }
+  function riceWave() {
+    if (!riceNear()) return false;
+    const tz = trialZone('rice');
+    const pot = getEntity(state, 'pot:rice');
+    const trays = zoneOf('trays');
+    const held = getEntity(state, holding() ?? '');
+    if (held?.item?.kind === 'bowls') {
+      riceLine('rice.help.pot', tz.zone.ones, [pot.id], pot.position);
+      glowing = [pot.id];
+    } else {
+      riceLine('rice.help.tray', tz.zone.ones, [trays.id], trays.zone);
+      glowing = [trays.id];
+    }
+    log('ask', { task: 'trial-rice', when: tz.zone.heads || tz.zone.group.length ? 'after' : 'before', move: 'show' });
+    return true;
   }
   // The first bunch that the child takes: the basket of the healer glows and she points at it,
   // one time in a task (#125: "I only found out late that the wooden box with signs was the basket").
@@ -5028,6 +5138,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       startShare();
     }
     // A load that the child chose and carried (a tray of rice): its size and the time of the walk.
+    if ((ev.type === 'bowls' || ev.type === 'grow') && ev.id === trialZone('rice')?.id) potCount(ev);
     if (ev.type === 'carry') log('carry', { task: ev.task, size: ev.size, seconds: Math.round(ev.ticks * STEP * 10) / 10 });
     // The prediction before the first commit on a gap, and the result.
     if (ev.type === 'land' && String(ev.id).startsWith('stone:')) raidLand(ev);
@@ -5236,6 +5347,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         }
         // A lump in the hands: the hearth glows (#126: no glow showed the place).
         if (ev.type === 'pick' && ev.id === 'hero' && it?.kind === 'ore' && horseOpen() && trialZone('horse').zone.heat === null) setCue(['hearth:horse']);
+        if (ev.type === 'pick' && ev.id === 'hero' && it?.kind === 'bowls' && glowing.includes('zone:trays')) glowing = ['pot:rice'];
         if (ev.type === 'pick' && ev.id === 'hero' && it?.task === 'trial-healer') {
           if (ev.item !== oneMove) sayHerb('herb', it.kind);
           basketOnce();
@@ -5466,6 +5578,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       else if (!mentoring.activeKey() && riddles.wave()) return;
       // Near the person of a puzzle: the next hint (#104).
       else if (!mentoring.activeKey() && puzzles.wave()) return;
+      // Near the open rice for Gióng: the help of the rice, also with an event of the day near (#129).
+      else if (riceWave()) return;
       else mentoring.wave();
     }
     else if (type === 'jump') { if (!folk.jump()) jump(); }
@@ -5614,7 +5728,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The task with a mentor that the hero works on now (the view shows the wave), or null.
     get mentorTask() { return mentoring.activeKey(); },
     // A wave has an answer now: a task, a raid, or a folk game (#99).
-    get canWave() { return Boolean(mentoring.activeKey() || (raidOn() && !raidEnt().raid.result) || folk.active() || riddles.canWave() || puzzles.canWave()); },
+    get canWave() { return Boolean(mentoring.activeKey() || (raidOn() && !raidEnt().raid.result) || folk.active() || riddles.canWave() || puzzles.canWave() || riceNear()); },
     // The puzzles of the day (#104).
     puzzles,
     // The riddles and the trick questions (#103).

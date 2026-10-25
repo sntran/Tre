@@ -354,7 +354,9 @@
         "show": "mentor.duck.show",
         "lost": "mentor.duck.lost",
         "total": "mentor.duck.total",
-        "lack": "mentor.duck.lack"
+        "lack": "mentor.duck.lack",
+        "carry": "mentor.duck.carry",
+        "stray": "mentor.duck.stray"
       }
     },
     "trial-scholar": {

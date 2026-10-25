@@ -240,6 +240,16 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### The rice of Gióng and the lost ducks (#129)
+
+**The pot says its count.** After each tray the mother at the pot says the bowls in it, while the pot glows: "Nồi có tám bát." At ten, Gióng eats and grows, as before, and the line says the ten: "Đủ mười bát! Gióng cao thêm một đầu.", with "Trong nồi còn {n} bát." when bowls are left over (`potCount` in `src/core/session.js`; the events `bowls` and `grow` of `feed` in `src/core/world/systems/work.js` give the bowls in the pot). With the mother away, Nghé says it, else the narrator.
+
+**One goal at a place.** While a task of the story is open (a trial of the kind `task`: the rice), a person of an event of the day within 40 half blocks of its places does not start her talk: she says one short line ("Lát nữa cháu giúp cô tìm vịt nhé.", `lines.wait` in `data/world/events.json`) and waits. A wave within 30 half blocks of the pot or the trays gives the help of the rice: the count of the pot and the next step, with the trays (empty hands) or the pot (a tray in the hands) glowing (`riceWave`); the wave button shows there (`riceNear`). The people of the events stand at least 8 half blocks from the way between the trays and the pot (`clearWay`, when the events come and when the task opens).
+
+**The help of the ducks reads the hands.** With a duck of her flock in the hands, a wave says "Bế vịt về chuồng này nhé." while she points at the pen and the pen glows; with a brown duck of another farm, "Vịt này lông nâu, không phải vịt của cô." (`lines.carry` and `lines.stray` of `event-duck` in `data/world/mentors.json`).
+
+**The place of the trays.** The line of the trays names the trays and the pot (they glow, and the view of the talk shows both), and the task opens at that line. At grades K to 2, the first time, the narrator says "Bờ ruộng là đường đất nhỏ bên ruộng lúa." after it, while the trays glow.
+
 ### The view and the world after the play test of #115 to #122 (#133)
 
 **The ride buttons.** The buttons to ride and to get off show the slate calf of #122 with a child on its back, and with the child next to it, with no arrow (`art/ui/ride.svg`, `art/ui/ride-off.svg`). The old picture, a light grey animal with long horns and an up arrow, read as "pick up a goat".

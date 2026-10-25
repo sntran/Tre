@@ -11,7 +11,7 @@
     { "need": [12, 20], "sizes": [2, 5], "skill": "math.add.20", "level": 2 }
    ],
    "extra": 3, "reward": { "rice": 2 },
-   "lines": { "start": "event.cart.start", "short": "event.cart.short", "over": "event.cart.over", "done": "event.cart.done" }
+   "lines": { "start": "event.cart.start", "short": "event.cart.short", "over": "event.cart.over", "done": "event.cart.done", "wait": "event.cart.wait" }
   },
   {
    "id": "flood", "where": "wetfield", "after": "rain", "chance": 0.6, "person": "farmer", "thing": "pails", "target": "ditch", "levelBy": "math.add.20",
@@ -21,7 +21,7 @@
     { "need": [12, 18], "sizes": [3, 5], "skill": "math.add.20", "level": 2 }
    ],
    "extra": 3, "reward": { "rice": 2 },
-   "lines": { "start": "event.flood.start", "short": "event.flood.short", "over": "event.flood.over", "done": "event.flood.done" }
+   "lines": { "start": "event.flood.start", "short": "event.flood.short", "over": "event.flood.over", "done": "event.flood.done", "wait": "event.flood.wait" }
   },
   {
    "id": "market", "where": "yard", "every": 5, "person": "seller", "thing": "rice", "target": "seller-mat", "levelBy": "math.add.20", "barter": true,
@@ -32,7 +32,7 @@
     { "rates": { "egg": [[4, 3]], "fish": [[3, 2]], "pot": [[5, 2]] }, "lots": [2, 4], "skill": "math.mul.10", "level": 1 }
    ],
    "extra": 4, "most": 20,
-   "lines": { "start": "event.market.start", "short": "event.market.short", "over": "event.market.over", "done": "event.market.done", "poor": "event.market.poor" }
+   "lines": { "start": "event.market.start", "short": "event.market.short", "over": "event.market.over", "done": "event.market.done", "wait": "event.market.wait", "poor": "event.market.poor" }
   },
   {
    "id": "duck", "where": "yard", "chance": 0.35, "person": "farmer", "thing": "duck", "target": "pen", "levelBy": "math.count.120", "lost": true, "strays": [2, 3], "strayLook": "duck-brown",
@@ -42,7 +42,7 @@
     { "need": [10, 14], "lost": 4, "sizes": [1], "skill": "math.count.120", "level": 2 }
    ],
    "extra": 0, "reward": { "egg": 1 },
-   "lines": { "start": "event.duck.start", "short": "event.duck.short", "over": "event.duck.over", "done": "event.duck.done" }
+   "lines": { "start": "event.duck.start", "short": "event.duck.short", "over": "event.duck.over", "done": "event.duck.done", "wait": "event.duck.wait" }
   }
  ]
 }

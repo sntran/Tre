@@ -128,7 +128,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   function carrying(key, task) {
     if (!defOf(key)?.lines?.carry) return false;
     const held = getEntity(world(), getEntity(world(), 'hero')?.hands?.holds);
-    return Boolean(held?.item && (held.item.task === key || held.item.task === task.tz?.zone.task));
+    return Boolean(held?.item && (held.item.task === key || keyOf(held.item.task) === key || held.item.task === task.tz?.zone.task));
   }
 
   // Has the basket of the healer bunches of each kind (#79)?
@@ -620,6 +620,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (info.counted && COUNTS.has(move)) move = 'show';
     const brought = task ? itemsOf(task.place).filter((e) => !e.item.fixed).length : 0;
     if (info.asked && (COUNTS.has(move) || move === 'share' || move === 'smaller') && task && lostThing(task) && brought && itemsOf(task.place).length < (task.tz?.zone.need ?? 0)) move = 'show';
+    // A thing of the task in the hands of a task with things of another owner (the ducks): a wave
+    // gets the next step with it, whatever the move (#129: with a duck in the hands, the wave said to
+    // find a duck).
+    if (info.asked && task && def.lines?.stray && carrying(key, task)) move = 'show';
     if (move === 'demo' && trk) trk.demoed = true;
     // The picture of another station waits until the child has seen the iron hot one time (#70: the
     // child who waited for red heard "go to the river" after two misses).
@@ -702,10 +706,16 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         point(t, r, 2);
         mark(t, r, HOLE_MARK);
         t += 3;
+      } else if (defOf(key).lines.stray && getEntity(w, getEntity(w, 'hero')?.hands?.holds)?.item?.stray) {
+        // A duck of another farm in the hands: it is not of her flock (#129).
+        say(t, defOf(key).lines.stray);
+        t += 2;
       } else {
         say(t, waits ? defOf(key).lines.wait : defOf(key).lines.carry);
         point(t, place, 1.4);
         mark(t, place, 2.5);
+        // The place glows: the pen of the ducks (#129: "Nothing showed the pen").
+        if (defOf(key).lines.stray && task.place) steps.push({ at: t, glow: { ids: [task.place.id] } });
         t += 2;
       }
     } else if (move === 'erase') {

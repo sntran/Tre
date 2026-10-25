@@ -1670,8 +1670,8 @@ function feed(world, tz, thing, env) {
     tz.zone.start = r.ones;
     const giong = getEntity(world, `npc:${def.grows ?? 'giong-boy'}`);
     if (giong) giong.look = `giong-boy-${Math.min(5, tz.zone.heads)}`;
-    say(world, 'grow', tz.id, { heads: tz.zone.heads, sound: 'drum' });
-  } else say(world, 'bowls', tz.id, { sound: 'tap' });
+    say(world, 'grow', tz.id, { heads: tz.zone.heads, ones: r.ones, sound: 'drum' });
+  } else say(world, 'bowls', tz.id, { ones: r.ones, sound: 'tap' });
   tz.zone.ones = r.ones;
   const pot = getEntity(world, 'pot:rice');
   if (pot) pot.look = `rice-pot-${r.ones}`;
