@@ -13,11 +13,13 @@ const run = (raid, seconds) => {
   return out;
 };
 
-test('in an easy raid, each enemy stops at each post for some seconds', () => {
-  const raid = createRaid(raids, 'scouts', 0, null, [], { stop: 4 });
+test('in an easy raid, each enemy stops at all the posts but one, from far to near, for some seconds', () => {
+  const raid = createRaid(raids, 'scouts', 0, null, [], { stop: 4, seed: 7 });
   const out = run(raid, 60);
   const pauses = out.filter((ev) => ev.type === 'pause' && ev.id === 'raider:1').map((ev) => ev.post);
-  assert.deepEqual(pauses, [20, 15, 10, 5], 'the first scout stops at the fourth post, then the third, the second, and the first');
+  assert.equal(pauses.length, 3, pauses.join(', '));
+  assert.deepEqual(pauses, [...pauses].sort((a, b) => b - a), 'from the far posts to the near ones');
+  assert.deepEqual([...raid.enemies.find((e) => e.id === 'raider:1').stops].sort((a, b) => b - a), pauses);
   // Without stops, no enemy stops at a post.
   const plain = createRaid(raids, 'scouts', 0, null, [], {});
   assert.equal(run(plain, 60).filter((ev) => ev.type === 'pause').length, 0);

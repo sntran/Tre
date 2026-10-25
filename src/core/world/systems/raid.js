@@ -9,10 +9,10 @@
 export const WRITES = ['raid', 'orders', 'over', 'horns', 'position', 'look', 'act', 'carry', 'item', 'zone', 'follow', 'raider', 'hot', 'source', 'raidTap', 'raidThing', 'fixedThing', 'raidAway', 'hidden', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
-import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, driveAway, setTraps, trapPut, stoneAt, torchAt, along, releaseHold, offRoad, KEEP_SIDE } from '../raids.js';
+import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, driveAway, setTraps, trapPut, stoneAt, torchAt, along, releaseHold, offRoad, KEEP_SIDE, walkAway } from '../raids.js';
 import { packHeap } from './work.js';
 
-const OVER = 2.5; // seconds: the things of the raid stay after the end
+const OVER = 4; // seconds: the things of the raid stay after the end (the enemies walk away, #124)
 const HORNS = 1.6; // seconds: Nghé lowers her horns when the hero is hurt
 const LANE = 2; // half blocks: a trap snaps to the middle of the road within this distance
 const AWAY = KEEP_SIDE + 6; // half blocks: the children of the court this near the road go home in a raid (#55)
@@ -32,6 +32,7 @@ export function raid(world, dt, rng, env) {
   const raid = r.raid;
   if (raid.result) {
     r.over = (r.over ?? 0) + dt;
+    walkAway(raid, dt);
     if (r.over >= OVER) endRaid(world, friend);
     else mirror(world, raid, env);
     return;
@@ -115,7 +116,7 @@ function mirror(world, raid, env) {
       look: e.look,
       act: e.state === 'walk' || e.state === 'back' ? 'walk' : e.state,
       // The lit torch before the throw, and the wet shield after fire.
-      carry: e.state === 'torch' ? 'torch' : e.shield > 0 ? 'shield' : null,
+      carry: e.state === 'torch' ? 'torch' : e.shield > 0 ? 'shield' : e.took ? 'sack' : null,
       raider: { kind: e.kind, hits: e.hits, max: e.max, shield: e.shield > 0, torch: e.state === 'torch' },
     });
   }

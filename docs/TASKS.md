@@ -240,6 +240,18 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### A right count always hits (#124)
+
+**The enemy stands while the child aims.** From the first press of a pull until the stone lands, the enemy nearest to the count stands where it is (`raid.aim`, set by `aimAt` in `src/core/session.js`). While the child counts, all the enemies in reach of the longest pull stand, because the child can count any of them; while the stone flies, only the aimed one stands. An enemy past the longest pull walks on into reach. The aimed enemy is hit within half a post of the count (`POST_STEP / 2`), so a count of the post where it stands always hits. This is so at grades K to 3 at every raid, and from grade 4 in the first four raids of the slingshot. In a later raid from grade 4 the enemies walk on, and at the first pull the coach says "Lính đang đi: ném hòn đá vào cột phía trước nó."; the ring of the pull shows where the stone lands. In a play test the third raid had no stops, and in the time of the presses, the wait, and the flight, a serpent or a scout walked nearly one post: a boy who counted right missed again and again and lost.
+
+**The end at the last hit.** The end line comes when the last enemy retreats, at once (`nextPhase` in `src/core/world/raids.js`); the enemies walk back to their start after the line, in view (`walkAway`). Before, the line came when the last enemy was back at its start: 20 seconds after the last hit in the play, with all the pips dark and no word.
+
+**A take has its line.** "Ôi, lính lấy một ít gạo rồi." (at the river "Thuồng luồng tới chỗ lội rồi.", `takeKey` in `data/raids.json`), also at a level with no loss; the enemy carries a sack back.
+
+**Posts that change.** In a raid where the enemies stop, each enemy stops at all the posts but one. The post that it skips comes from the seed of the raid and is not the post that the enemy before it skipped, so that each throw is a new count.
+
+A story step `count` presses the button as many times as the bands of the post nearest to the enemy (`tests/stories/raid-first-sling.json`), because the posts where an enemy stops change with the seed.
+
 ### The stem of each length has a look (#123)
 
 The figure of the stem of the woodcutter comes from its key (`stem-N` in `thingLook`, `src/world/figures.js`), as the figure of a cut piece does, so that each length that a level gives has a look; `data/figures.json` has no fixed stem. In a play test, the stems of 16 and 24 (grades 3 to 5) had no figure: a girl of grade 5 marked the grass and cut four times in the dark. A test plays each task at each grade with two seeds and checks that each thing that the task makes has a look with a figure (`lookOfKey`), and that a stem of 16 or 24 is whole in the frame of the task on a phone.

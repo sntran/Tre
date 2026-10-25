@@ -26,6 +26,7 @@
 // strike of lightning is one skill event for the learner (the child never sees it).
 // Units: half blocks (one map cell is 2) and seconds. The data gives places in map cells.
 import { byGrade } from '../grades.js';
+import { hashSeed } from '../rng.js';
 
 const WET = 3; // half blocks: the radius of a wet zone from the water
 const DRIP = 2.5; // half blocks: the radius of the wet zone under a wet shield
@@ -212,6 +213,12 @@ export function createRaid(raids, id, level = 0, loss = null, teach = [], easy =
     aims: {},
     bamboo: null,
     stop: easy.stop ?? 0,
+    // The enemy that the child aims at stands while the stone flies (#124: at grades K to 3, at
+    // every raid); { id } while the child pulls and the stone flies, set by the session.
+    aimHold: Boolean(easy.aimHold),
+    aim: null,
+    // The seed of the stops at the posts: each enemy stops at its own posts (#124).
+    seed: easy.seed ?? 0,
     help: Boolean(easy.help),
     helper: easy.help ? easy.helper ?? null : null,
     sling,
@@ -289,6 +296,16 @@ function spawn(raid, out) {
       id: `raider:${++raid.count}`, kind: w.kind, look: kind.look, x: from.x, z: from.z, from, to,
       hits: 0, max: kind.hits, state: 'walk', t: 0, cool: kind.torch?.first ?? kind.sword?.first ?? 0, waited: [], shield: 0, phase: raid.phase,
     };
+    // The posts where it stops (an easy raid): all the posts but one, and the post that it skips
+    // changes from one enemy to the next (#124: each enemy stopped at the fourth post and then at
+    // the third, each time).
+    if (raid.stop > 0 && raid.posts.length > 1) {
+      const n = raid.posts.length;
+      let skip = hashSeed(`${raid.seed}:${raid.id}:${raid.count}`) % n;
+      if (skip === raid.lastSkip) skip = (skip + 1) % n;
+      raid.lastSkip = skip;
+      e.stops = raid.posts.filter((_, i) => i !== skip).map((q) => q.d);
+    }
     // After two lost raids, a helper at the wall gives each enemy one hit (#55).
     if (raid.help && e.max > 1) {
       e.hits = 1;
@@ -366,6 +383,8 @@ function tickEnemy(raid, e, dt, ctx, out) {
     const give = {};
     if (raid.loss !== 'none') for (const [k, n] of Object.entries(raid.take)) give[k] = n * (raid.loss === 'normal' ? 2 : 1);
     for (const [k, n] of Object.entries(give)) raid.taken[k] = (raid.taken[k] ?? 0) + n;
+    // The enemy shows what it took (#124): a small sack in the hands.
+    if (Object.keys(raid.take).length) e.took = true;
     out.push({ type: 'take', id: e.id, take: give, sound: 'pickup' });
     if (kind.boss) {
       // The general does not leave: he steps back and comes again.
@@ -377,6 +396,12 @@ function tickEnemy(raid, e, dt, ctx, out) {
   }
   // Walk. The tells come first: the torch of a scout, the sword of the general.
   const d = along(raid, e);
+  // The enemy that the child aims at stands while the child pulls and while the stone flies
+  // (#124: a right count missed an enemy that walked on).
+  if (raid.aim && (raid.aim.all ? d <= raid.sling.max + raid.sling.hit : raid.aim.id === e.id)) {
+    e.facing = faceTo(e, raid.wall);
+    return;
+  }
   // A new slingshot: the enemy stops on the road and waits for the first shot of the child.
   if (raid.hold?.tool === 'sling' && d <= HOLD_AT) {
     e.facing = faceTo(e, raid.wall);
@@ -401,7 +426,7 @@ function tickEnemy(raid, e, dt, ctx, out) {
   // In an easy raid, the enemy stops at each post for some seconds (#55): the child has time to
   // count the post and to press.
   if (raid.stop > 0) {
-    const post = raid.posts.find((q) => !e.waited.includes(`post:${q.d}`) && d <= q.d + 0.2 && d > q.d - 2);
+    const post = raid.posts.find((q) => (!e.stops || e.stops.includes(q.d)) && !e.waited.includes(`post:${q.d}`) && d <= q.d + 0.2 && d > q.d - 2);
     if (post) {
       e.waited.push(`post:${post.d}`);
       e.state = 'wait';
@@ -528,7 +553,10 @@ function tickStones(raid, dt, out) {
       raid.marks.push({ id: `mark:${s.id}`, ...at, t: MARK, look: 'stone' });
       continue;
     }
-    const onLane = (e) => Math.abs(along(raid, e) - s.count) <= raid.sling.hit && Math.abs(across(raid, e)) <= LANE;
+    // The enemy that the child aimed at (it stood still) is hit by a count of the post nearest to
+    // it: the count of the post where it stands always hits (#124).
+    const reach = (e) => (raid.aimHold && raid.aim?.id === e.id && s.unit > 1 ? Math.max(raid.sling.hit, s.unit / 2) : raid.sling.hit);
+    const onLane = (e) => Math.abs(along(raid, e) - s.count) <= reach(e) && Math.abs(across(raid, e)) <= LANE;
     const target = raid.enemies.filter((e) => alive(e) && e.state !== 'stunned' && onLane(e)).sort((a, b) => dist(a, at) - dist(b, at))[0] ?? null;
     let solved = false;
     if (target && target.shield > 0) out.push({ type: 'block', id: target.id, sound: 'plank-down' });
@@ -609,8 +637,17 @@ function nextPhase(raid, out) {
     if (next.bamboo) raid.bamboo = { ...hb(next.bamboo), pulled: false };
     return;
   }
-  if (raid.enemies.length) return; // the last ones walk away first
+  // The end at the last hit (#124: the end line waited until the last enemy walked back to its
+  // start, 20 seconds in a play); the enemies walk away after it (walkAway).
   end(raid, raid.losses <= raid.allow, out);
+}
+
+// After the end, the enemies that go back walk on to their start, in view (#124).
+export function walkAway(raid, dt) {
+  for (const e of raid.enemies) {
+    if (e.state !== 'retreat') continue;
+    if (walkTo(e, e.from, raid.kinds[e.kind].speed, dt)) e.state = 'gone';
+  }
 }
 
 function end(raid, won, out) {

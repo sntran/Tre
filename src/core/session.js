@@ -2141,6 +2141,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
 
   // Seconds that an enemy stops at each post: in the first two raids of a tool, and after a loss.
   const RAID_STOP = Object.freeze({ first: 4, lost: 6 });
+  const AIM_HOLD_GRADE = 3; // the highest grade where the aimed enemy stands at every raid
+  const AIM_HOLD_RAIDS = 4; // from grade 4, the raids of the slingshot where it stands too
   const raidEnt = () => getEntity(state, 'raid');
   const raidOn = () => Boolean(raidEnt());
   // The words of the lines that every raid says (#99): who comes (lính, thuồng luồng), what the
@@ -2172,6 +2174,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       help: lost >= 2,
       helper: def.helper ?? 'smith',
       without: teach.includes('sling') ? ['gate'] : [],
+      // At grades K to 3 the enemy that the child aims at stands until the stone lands (#124); from
+      // grade 4 too, in the first raids of the slingshot. After them the enemies walk on.
+      aimHold: Number(profile.grade ?? 1) <= AIM_HOLD_GRADE || Number(profile.flags['raid.used.sling'] ?? 0) < AIM_HOLD_RAIDS,
+      seed: hashSeed(`${state.seed}:${id}:${profile.flags['raid.used.sling'] ?? 0}`),
     };
     for (const t of def.tools ?? ['sling']) profile.flags[`raid.used.${t}`] = Number(profile.flags[`raid.used.${t}`] ?? 0) + 1;
     const raid = createRaid(data.raids, id, raidLevel(data.raids, profile.grade), lossLevel(profile), teach, easy);
@@ -2512,6 +2518,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // An enemy at the gate took some goods: they leave the basket (never below nothing).
   function raidTake(ev) {
+    // A take has its line (#124: a take was a sound only, and a boy asked if he won), also at a
+    // level with no loss.
+    const r = raidEnt()?.raid;
+    const coach = getEntity(state, coachId());
+    const nghe = getEntity(state, 'friend:nghe');
+    const who = coach && !coach.hidden ? coach : nghe && !nghe.hidden ? nghe : null;
+    const key = data.raids?.raids[r?.id]?.takeKey ?? 'raid.take';
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: key, params: raidWords() });
     const took = {};
     for (const [item, n] of Object.entries(ev.take ?? {})) {
       const have = profile.inventory[item] ?? 0;
@@ -2634,6 +2648,44 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       });
     } };
   }
+  // The enemy that the child aims at (#124): while the child pulls, the enemy nearest to the count
+  // (or nearest to the wall, before the count reaches it); while the stone flies, the same one. At
+  // grades K to 3, and in the first raids of the slingshot from grade 4, it stands, and the other
+  // enemies in reach stand while the child counts (raid.aim in src/core/world/raids.js). In a later
+  // raid from grade 4 the enemies walk on, and the coach says it once, at the first pull.
+  function aimAt(r) {
+    const flying = r.stones.some((st) => !st.done && !st.demo);
+    const pulling = Boolean(slingPull) || dragPull > 0;
+    if (r.result || (!pulling && !flying)) {
+      r.aim = null;
+      return;
+    }
+    if (!r.aimHold) {
+      if (pulling && r.stop === 0 && !raidTeach.walkSaid && r.enemies.some((e) => e.state === 'walk')) {
+        raidTeach.walkSaid = true;
+        const coach = getEntity(state, coachId());
+        if (coach && !coach.hidden) emit({ type: 'open', screen: 'callout', id: coach.id, textKey: 'raid.walking', params: raidWords() });
+      }
+      return;
+    }
+    // While the stone flies, only the enemy of the pull stands; a shot with no pull (a drag that
+    // ended at once) holds no one.
+    if (!pulling) {
+      if (r.aim) r.aim.all = false;
+      return;
+    }
+    // An enemy past the longest pull walks on into reach: it does not stand.
+    const reach = r.sling.max + r.sling.hit;
+    const live = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && along(r, e) <= reach);
+    if (!live.length) {
+      r.aim = null;
+      return;
+    }
+    const to = r.pull > 0 ? r.pull : 0;
+    const near = live.reduce((a, e) => (Math.abs(along(r, e) - to) < Math.abs(along(r, a) - to) ? e : a));
+    // While the child counts, all the enemies stand: the child may count any of them.
+    r.aim = { id: near.id, all: true };
+  }
   // The stone of the pull of the button flies now.
   function fireSling() {
     const count = pullCount();
@@ -2645,6 +2697,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const r = raidEnt()?.raid;
     // The posts up to the pull light up, and a ring lies on the road at the count.
     if (r) r.pull = raidTeach.demo ? raidTeach.demo.posts * POST_STEP : slingPull ? pullCount() : dragPull;
+    if (r) aimAt(r);
     if (!slingPull) return;
     slingPull.t += STEP;
     if (slingPull.t >= FIRE_WAIT) fireSling();

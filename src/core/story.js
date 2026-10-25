@@ -30,6 +30,9 @@
 //     (the slingshot at the wall: a pull of n half blocks, or the count for an enemy of the raid
 //     (of this kind): off is how much farther (or nearer, below 0); lead: where the enemy will be
 //     after so many seconds; wait: when no enemy is there, the world goes on for a second)
+//   { count: { at: 'first' | <enemy id>, pace: <seconds> } }  (the big button pressed as many times
+//     as the post nearest to the enemy, one press each pace seconds (0.5): a child who counts the
+//     post where the enemy stands, #124; wait: when no enemy is there, the world goes on for a second)
 //   { pour: { from: <source id>, at: 'first' | <enemy id> | [x, y] } }  (the drag of an element)
 //   { press: <a target of a tap step> | true }  (the hero walks to the target as a tap does, and then the
 //                                             action button; with true, only the button. culm with
@@ -616,7 +619,7 @@ export async function playStory(story, io) {
       const session = io.session();
       // A shoot step marks only when it shoots: a shot with no enemy (the raid is over) keeps the
       // mark, so that the end of the raid during the shots still counts for the next steps.
-      if (s.do || s.tap || s.press || s.read || s.pour || (s.shoot && shootCommand(session, s.shoot))) mark = events.length;
+      if (s.do || s.tap || s.press || s.read || s.pour || (s.shoot && shootCommand(session, s.shoot)) || (s.count && raidEnemy(session, s.count.at ?? 'first', s.count.kind ?? null))) mark = events.length;
       if (s.do) await io.send(s.do, null);
       else if (s.wait !== undefined) await io.advance(s.wait, null);
       else if (s.until) {
@@ -645,6 +648,20 @@ export async function playStory(story, io) {
         else {
           const h = getEntity(session.state, 'hero').position;
           await io.send(cmd, { x: h.x / 2, y: h.z / 2 });
+        }
+      } else if (s.count) {
+        const raid = getEntity(session.state, 'raid')?.raid;
+        const e = raid ? raidEnemy(session, s.count.at ?? 'first', s.count.kind ?? null) : null;
+        if (!e && s.count.wait) await io.advance(1, null);
+        else if (!e) fail(i, `no enemy to count for ${JSON.stringify(s.count)}`);
+        else {
+          // The post nearest to the enemy, from the wall (1 is the first post).
+          const d = along(raid, e);
+          const k = raid.posts.reduce((best, q, j) => (Math.abs(q.d - d) < Math.abs(raid.posts[best].d - d) ? j : best), 0);
+          for (let n = 0; n <= k; n++) {
+            await io.send({ type: 'hands' }, null);
+            await io.advance(s.count.pace ?? 0.5, null);
+          }
         }
       } else if (s.pour) {
         const e = Array.isArray(s.pour.at) ? null : raidEnemy(session, s.pour.at ?? 'first');
