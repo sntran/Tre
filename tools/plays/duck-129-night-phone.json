@@ -1,0 +1,82 @@
+{
+ "about": "#129: the lost ducks: with a duck of her flock in the hands, a wave points at the pen and the pen glows. At 21:00.",
+ "start": "?story=event-duck&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'event:duck'))",
+   "timeout": 60
+  },
+  {
+   "tap": {
+    "person": "duck"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const h = s.entities.find((e) => e.id === 'hero').position; const d = s.entities.filter((e) => e.item?.kind === 'duck' && !e.item.stray && /-lost-/.test(e.item.zone ?? '') && !e.item.held).sort((a, b) => Math.hypot(a.position.x - h.x, a.position.z - h.z) - Math.hypot(b.position.x - h.x, b.position.z - h.z)); return d[0]?.id ?? null; })()"
+   },
+   "taps": 14
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const h = s.entities.find((e) => e.id === 'hero').position; const d = s.entities.filter((e) => e.item?.kind === 'duck' && !e.item.stray && /-lost-/.test(e.item.zone ?? '') && !e.item.held).sort((a, b) => Math.hypot(a.position.x - h.x, a.position.z - h.z) - Math.hypot(b.position.x - h.x, b.position.z - h.z)); return d[0]?.id ?? null; })()"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "button": ".wave-btn",
+   "after": 3
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "a-duck-in-the-hands-a-wave-shows-the-pen"
+  }
+ ]
+}
