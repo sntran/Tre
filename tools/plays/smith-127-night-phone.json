@@ -1,0 +1,105 @@
+{
+ "about": "#127: the smith at grade 1: the hero beside the anvil, three bars, a pip lights at once after each bar, and the done line with thép. At 21:00.",
+ "start": "?story=trial-smith&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-hero-beside-the-anvil"
+  },
+  {
+   "until": "((tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.glow ?? 0) >= 1) || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.done)",
+   "timeout": 120
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "bar-1-and-its-pip"
+  },
+  {
+   "until": "((tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.glow ?? 0) >= 1) || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.done)",
+   "timeout": 120
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "bar-2-and-its-pip"
+  },
+  {
+   "until": "((tre.activeVillage.state().entities.find((e) => e.id === 'iron:smith')?.glow ?? 0) >= 1) || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.done)",
+   "timeout": 120
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-three-bars-and-the-done-line"
+  }
+ ]
+}
