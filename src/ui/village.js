@@ -28,7 +28,7 @@ import { createTurns } from '../world/turns.js';
 import { taskPools } from '../world/light.js';
 import { VIEW, SAFE, TALK_SAFE, viewSize, inView, frameWork, mmOf } from '../world/view.js';
 import { createTapCount } from '../core/taps.js';
-import { heroLook, thingLook } from '../world/figures.js';
+import { heroLook, lookOfKey as lookFor } from '../world/figures.js';
 import { tapTarget, thingUnder, askingChild } from '../world/hit.js';
 import { h, img, button } from './dom.js';
 import { t, tn, setSpeech, lang, otherLang } from './i18n.js';
@@ -283,7 +283,7 @@ export async function mountVillage(ctx, params = {}) {
   });
   // A villager of a generated hamlet has a look from parts in the map (by its id).
   // A thing in the hands has the look of the thing itself (src/world/carry.js).
-  const lookOfKey = (key) => looks[key] ?? thingLook(key) ?? mapData.looks?.[key] ?? {};
+  const lookOfKey = (key) => lookFor(key, looks, mapData.looks);
   const figures = D.createFigureLayer(view.scene, (key, carry) => ({ ...(key === 'hero' ? heroLook(profile.hero, data.figures.hero) : lookOfKey(key)), ...(carry ? { item: carry, carried: lookOfKey(carry), carryRules: data.figures.carry } : {}) }), { camera: view.camera, zoom: () => view.state.level, mistAt: (x, z) => Math.min(1, (session.tileMap.mistAt?.(Math.floor(x), Math.floor(z)) ?? 0) / fadeCells) });
 
   // The height of the ground under a map point (world units).

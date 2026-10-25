@@ -240,6 +240,10 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### The stem of each length has a look (#123)
+
+The figure of the stem of the woodcutter comes from its key (`stem-N` in `thingLook`, `src/world/figures.js`), as the figure of a cut piece does, so that each length that a level gives has a look; `data/figures.json` has no fixed stem. In a play test, the stems of 16 and 24 (grades 3 to 5) had no figure: a girl of grade 5 marked the grass and cut four times in the dark. A test plays each task at each grade with two seeds and checks that each thing that the task makes has a look with a figure (`lookOfKey`), and that a stem of 16 or 24 is whole in the frame of the task on a phone.
+
 ### Small things after the play test of #105 to #114 (#122)
 
 **The river after the bridge.** A tap area of the map has a third text for the time after a task (`doneText`): after the bridge, the river says "Sông Đuống chảy về phía đông. Cây cầu tre cháu sửa đã vững rồi." The text of the river before the task (`map.river`) does not say that the bridge is broken.

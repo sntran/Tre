@@ -648,6 +648,12 @@ const IRON_COLORS = { dark: ['wood', null], cherry: ['vermilion', 'vermilionPale
 // seedlings at a stage of growth (seedlings-<n>-<stage>), a bundle of n seedlings tied with straw
 // (bundle-<n>), a loose bunch (bunch-<n>), and a bamboo stake of a plot (plot-stake). Null for
 // another key.
+// The look of a key of the world: a look of data/figures.json, a look made from the key
+// (thingLook), or a look of the map (the villagers of a generated hamlet). {} when none.
+export function lookOfKey(key, looks = {}, mapLooks = {}) {
+  return looks[key] ?? thingLook(key) ?? mapLooks?.[key] ?? {};
+}
+
 export function thingLook(key) {
   const k = String(key);
   let m = /^seedlings-(\d+)-([a-z]+)$/.exec(k);
@@ -726,6 +732,10 @@ export function thingLook(key) {
   if (k === 'gac') return { kind: 'gac' };
   m = /^piece-(\d+)$/.exec(k);
   if (m) return { kind: 'stem', n: Number(m[1]), green: true };
+  // The stem of the woodcutter, n half blocks long: each length that a level gives has a look
+  // (#123: the stems of 16 and 24 had no figure, and the stem of grade 5 was not drawn).
+  m = /^stem-(\d+)$/.exec(k);
+  if (m) return { kind: 'stem', n: Number(m[1]) };
   // The glow of a ring of a piece at its number, and the glow of the short piece (#75).
   if (k === 'ring-glow') return { kind: 'ring-glow' };
   // A place on the stem where a chalk mark can go: a thin yellow band (#91).

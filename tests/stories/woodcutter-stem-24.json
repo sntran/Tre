@@ -1,0 +1,17 @@
+{
+  "name": "woodcutter-stem-24",
+  "about": {
+    "vi": "Tiều phu ở lớp 5: cây tre dài 24 có hình của nó, và cả cây nằm trong khung của việc trên điện thoại (#123: cây tre 16 và 24 không có hình).",
+    "en": "The woodcutter at grade 5: the stem of 24 has its figure, and the whole stem is in the frame of the task on a phone (#123: the stems of 16 and 24 had no figure)."
+  },
+  "profile": { "name": "An", "grade": 5, "lang": "vi", "seed": 1, "flags": { "intro.seen": true, "prologue.started": true } },
+  "clock": 540,
+  "at": ["phu-dong", 51, 8.5],
+  "steps": [
+    { "press": { "entity": "npc:woodcutter" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "until": { "event": "call", "with": { "key": "mentor.woodcutter.first" }, "timeout": 15 } },
+    { "expect": [{ "entity": "stem:woodcutter", "look": "stem-24" }] }
+  ]
+}
