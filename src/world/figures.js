@@ -670,6 +670,7 @@ export function thingLook(key) {
   // The healer from grade 3 (#101): a leaf for a dose, a small model basket, and a basket with a
   // place for each bunch in rows of six.
   if (k === 'herb-leaf') return { kind: 'herb-leaf' };
+  if (k === 'hearth') return { kind: 'hearth' };
   if (k === 'rod-bigbundle' || k === 'rod-box' || k === 'rod-table') return { kind: k };
   // The mats of the desks of the share, each of its own color (#107).
   m = /^share-mat-(red|blue|yellow|green|white)$/.exec(k);
@@ -921,6 +922,9 @@ export function workThing(look) {
     case 'band': return still([P('coil', [0.9, 0.3, 0.9], 'ochre', [0, 0.15, 0]), P('hole', [0.4, 0.32, 0.4], 'wood', [0, 0.16, 0]), P('end', [0.2, 0.2, 0.6], 'ochre', [0.5, 0.1, 0.4])], 0.35);
     // A lump of iron ore; red hot in the forge.
     case 'ore': return still([P('lump', [0.8, 0.55, 0.7], look.hot ? 'vermilion' : 'ash', [0, 0.28, 0]), P('grain', [0.4, 0.3, 0.4], look.hot ? 'yellow' : 'ink', [0.15, 0.5, 0.1]), P('chip', [0.3, 0.25, 0.3], look.hot ? 'vermilionPale' : 'ashLight', [-0.3, 0.15, -0.2])], 0.7);
+    // The hearth of the iron horse (#126): a low clay hearth with a grate on top for the lumps, and a
+    // fire mouth on each long side, so that the fire shows from each turn of the view.
+    case 'hearth': return still([P('base', [3.4, 0.9, 2.4], 'vermilionPale', [0, 0.45, 0]), P('grate', [3.2, 0.1, 2.2], 'ink', [0, 0.92, 0]), P('mouthS', [1.4, 0.5, 0.1], 'vermilion', [0, 0.4, 1.22]), P('fireS', [0.7, 0.3, 0.1], 'yellow', [0, 0.32, 1.24]), P('mouthN', [1.4, 0.5, 0.1], 'vermilion', [0, 0.4, -1.22]), P('fireN', [0.7, 0.3, 0.1], 'yellow', [0, 0.32, -1.24])], 1);
     // The bellows of the forge: a box of wood with a pole to push.
     case 'bellows': return still([P('box', [1, 0.8, 1.4], 'wood', [0, 0.4, 0]), P('lid', [1.05, 0.12, 1.45], 'ochre', [0, 0.84, 0]), P('pole', [0.15, 0.15, 1.2], 'ink', [0, 0.95, -0.9]), P('grip', [0.5, 0.15, 0.15], 'wood', [0, 0.95, -1.5]), P('nozzle', [0.25, 0.25, 0.5], 'ink', [0, 0.3, 0.9])], 1);
     // A wooden bucket of water.

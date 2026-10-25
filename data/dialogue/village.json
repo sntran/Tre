@@ -334,6 +334,14 @@
         "n1": {
           "speaker": "smith",
           "textKey": "dlg.smith.forge.n1",
+          "names": ["zone:horse-ore"],
+          "effects": [
+            {
+              "open": "trial",
+              "id": "horse",
+              "now": true
+            }
+          ],
           "next": "iron"
         },
         "iron": {
@@ -349,12 +357,7 @@
         "n2": {
           "speaker": "smith",
           "textKey": "dlg.smith.forge.n2",
-          "effects": [
-            {
-              "open": "trial",
-              "id": "horse"
-            }
-          ]
+          "names": ["hearth:horse", "zone:horse-ore"]
         }
       }
     },

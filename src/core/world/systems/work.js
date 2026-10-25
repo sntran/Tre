@@ -273,6 +273,9 @@ export function setupTrial(world, def, level, env, opts = {}) {
     things(ore, 'ore', task.ore + (def.extra ?? 3));
     const f = P(def.places.forge);
     addEntity(world, { id: 'zone:hearth', keep: true, zone: { id: 'hearth', task: owner, rule: 'hearth', accepts: 'ore', items: [], x: f.x, y: f.y, z: f.z, rect: rect(f, 3, 2) }, position: { x: f.x + 1, y: f.y, z: f.z + 2, facing: 0 } });
+    // The hearth is a thing that a child sees (#126: the lumps lay on nothing, and the children took
+    // the big oven of the forge for the place): a low clay hearth with a fire mouth.
+    addEntity(world, { id: 'hearth:horse', keep: true, position: { x: f.x + 1.5, y: f.y, z: f.z + 1, facing: 0 }, look: 'hearth' });
     // The bellows by the hearth: a tap on them blows on the fire (the commit of the count).
     addEntity(world, { id: 'bellows:horse', keep: true, item: { kind: 'bellows', size: 1, task: owner, zone: null, held: null, set: true, fixed: true }, position: { x: f.x - 1.2, y: f.y, z: f.z + 1, facing: 0 }, look: 'bellows' });
     const a = P(def.places.anvil);
@@ -800,12 +803,25 @@ function packShare(world, zone) {
   });
 }
 
-// The lumps in the hearth lie in rows of four.
+// The lumps on the hearth lie in rows of three, each apart from the next, so that a child counts
+// them (#126: in rows of four, close, they stacked up in the view).
+export const HEARTH_ROW = 3;
+const HEARTH_GAP = 1.0;
 function packHearth(world, zone) {
   zone.items.forEach((id, i) => {
     const e = getEntity(world, id);
-    if (e) e.position = { x: zone.x + 0.5 + (i % 4) * 0.8, y: zone.y + 1, z: zone.z + 0.6 + Math.floor(i / 4) * 0.8, facing: 0 };
+    if (e) e.position = { x: zone.x + 0.5 + (i % HEARTH_ROW) * HEARTH_GAP, y: zone.y + 1, z: zone.z + 0.5 + Math.floor(i / HEARTH_ROW) * HEARTH_GAP, facing: 0 };
   });
+}
+
+// The count of the hearth after a blow that does not light the fire (#126: a blow with too few was
+// only a tap, and the children pressed again and again): the lumps glow, and the smith says the
+// count and the need.
+function hearthCount(world, hearth, n, need) {
+  world.events.push({ type: 'glowThings', ids: [...hearth.zone.items] });
+  const smith = getEntity(world, 'npc:smith');
+  if (smith && !smith.hidden) smith.gesture = { act: 'point', x: hearth.zone.x + 1.5, z: hearth.zone.z + 1, t: 2.5 };
+  say(world, 'call', 'npc:smith', { key: 'horse.count', params: { n: { key: `num.${Math.min(30, n)}` }, need: { key: `num.${need}` } }, happened: true });
 }
 
 // The things on the place of a small event lie in rows of four (a duck in a pen: in rows of three).
@@ -1311,11 +1327,17 @@ function act(world, e, want, env) {
       const a = tz.zone.anvil;
       addEntity(world, { id: tz.zone.iron, keep: true, item: { kind: 'iron', size: 2, task: `trial-${tz.zone.trial}`, zone: null, held: null, set: true, fixed: true }, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'iron-0', solid: { rect: { x0: a.x - 0.8, x1: a.x + 0.8, z0: a.z - 0.8, z1: a.z + 0.8 } } });
       tz.zone.heat = 0;
+      // The first iron waits for the child at the anvil before it starts to cool (#126: a boy walked
+      // over to look, and the iron was cold).
+      if (!tz.zone.fired) tz.zone.waitHero = true;
+      tz.zone.fired = true;
       say(world, 'fire', tz.id, { sound: 'lantern' });
     } else if (r.short) {
       say(world, 'puff', hearth.id, { sound: 'tap' });
+      hearthCount(world, hearth, count, task.ore);
     } else {
-      // The fire chokes: the extra lumps roll back to the heap.
+      // The fire chokes: the smith says the count, and the extra lumps roll back to the heap.
+      hearthCount(world, hearth, count, task.ore);
       for (let i = 0; i < r.over; i++) {
         const lump = getEntity(world, hearth.zone.items.pop());
         if (lump) toHeap(world, lump);
@@ -1678,6 +1700,11 @@ function tickForge(world, tz, dt, env) {
     if (tz.zone.bent > 0) return;
     delete tz.zone.bent;
     tz.zone.heat = 0;
+  }
+  if (tz.zone.waitHero) {
+    const h = getEntity(world, 'hero');
+    if (!h || Math.hypot(h.position.x - tz.zone.anvil.x, h.position.z - tz.zone.anvil.z) > REACH + 3) return;
+    delete tz.zone.waitHero;
   }
   tz.zone.heat += dt;
   let hot;

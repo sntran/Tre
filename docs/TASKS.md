@@ -240,9 +240,21 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### The forge of the iron horse after the play test (#126)
+
+**One step at a time.** The talk says the goal and the first step: "Lò cần sáu miếng sắt. Cháu mang từng miếng sắt vào lò nhé.", while the hearth and the heap glow. After the first lump in the hearth, the smith says the step of the bellows and points at them ("Đủ sắt thì cháu đứng bên ống bễ và bấm nút lớn."); with the fire, the step of the anvil ("Sắt lên đe rồi! Đỏ rực thì nhúng ngay nhé.") while he points at the iron and at the trough (`horseStep` in `src/core/session.js`). At grades K to 2 a new word has its short line the first time, in the same bubble: "Ống bễ thổi gió cho lửa to lên.", "Đe là một cục sắt to và nặng, để đặt sắt nóng lên." A tap on the smith during the task says the step of now (the lumps until the hearth has the lumps of the level), never the talk again.
+
+**The hearth is a thing that a child sees.** The lumps lay on nothing, next to the bellows, and the children took the big oven of the forge for the place. Now a low clay hearth with a fire mouth stands at the place (`hearth` in `src/world/figures.js`), it glows while the child holds a lump, and a tap on the oven of the forge is a tap on the hearth: the hero walks to the hearth, not behind the posts of the oven.
+
+**A wrong blow says the count.** A blow with too few lumps puffs, the lumps glow, and the smith says the count and the need: "Trong lò có một miếng. Lò cần sáu miếng." With too many he says the same, and the extra lumps roll back to the heap (`hearthCount` in `src/core/world/systems/work.js`).
+
+**The lumps lie apart.** On the hearth the lumps lie in rows of three, one half block apart (`HEARTH_ROW`), so that each lump is a thing of its own on the screen.
+
+**The first iron waits for the child.** After the first fire the iron starts to glow only when the hero stands at the anvil (`waitHero`). While the iron is on the anvil, a press at the hearth with a lump in the hands makes the smith point at the iron: "Sắt ở trên đe kia rồi."
+
 ### The healer at grade 4 after the play test (#125)
 
-**The talk shows its things.** A talk that starts a trial far from the place of its work (more than 24 half blocks from the middle of its places) waits: the person says one line ("Cháu theo bà ra vườn thuốc nhé.", `dlg.<npc>.trial.come`) and walks to a free cell beside the place, the hero walks after, and the talk opens when both stand there (`comeFirst` and `stepComeTalk` in `src/core/session.js`). A child who walks away ends the wait after 60 seconds. In the play test the healer talked at the well, and her beds and baskets lay behind a house while she named them.
+**The talk shows its things.** A talk that starts a trial of a calling far from the place of its work (more than 24 half blocks from the middle of its places) waits: the person says one line ("Cháu theo bà ra vườn thuốc nhé.", `dlg.<npc>.trial.come`) and walks to a free cell beside the place, the hero walks after, and the talk opens when both stand there (`comeFirst` and `stepComeTalk` in `src/core/session.js`). A child who walks away ends the wait after 60 seconds. A task of the story (the staffs, the iron horse) keeps its talk where the person stands. In the play test the healer talked at the well, and her beds and baskets lay behind a house while she named them.
 
 **The model is not a thing of the child.** No press takes a bunch of the model, and the hands of the hero never pick one (`pick` in `src/core/world/systems/place.js`); only the healer moves it. A tap on a bunch of the model, on a leaf of it, or on the model basket makes her count it, and nothing else.
 

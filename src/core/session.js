@@ -2164,6 +2164,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The child starts a station while the greeting of the place goes on: the greeting ends at
       // once, with its marks, and only the person of the station talks (#38).
       if (who.id !== practice?.greeter) endScript(state, getEntity(state, 'script:greet'), { early: true });
+      // During the iron horse, a tap on the smith says the step of now, never the talk again (#126).
+      if (who.id === 'smith' && horseOpen()) {
+        horseStep(horseNow());
+        return;
+      }
       // During the task of the person, a tap asks for help: the mentor answers with one move. It
       // never opens the start talk again (docs/TASKS.md).
       const key = mentoring.taskOfPerson(`npc:${who.id}`);
@@ -3261,6 +3266,43 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // kind again with no limit, and the healer said "Bó rau má đây." at each of many presses).
   const HERB_RUN = 3;
   let herbSaid = { key: null, n: 0 };
+  // The iron horse, one step at a time (#126: one line of the talk had four steps and two new
+  // words). The talk says the goal and the first step; the line of the bellows comes after the first
+  // lump in the hearth, and the line of the anvil with the fire. Each step points at its thing, and
+  // a tap on the smith says the step of now. A new word has its short line the first time, at the
+  // grades of WORD_GRADE (#122).
+  const horseOpen = () => {
+    const tz = trialZone('horse');
+    return Boolean(tz && !tz.zone.done);
+  };
+  function horseNow() {
+    const tz = trialZone('horse');
+    if (tz?.zone.heat !== null && tz?.zone.heat !== undefined) return 'anvil';
+    // The bellows only when the hearth has the lumps of the level (a play of #126: with one lump of
+    // six, a tap on the smith said the step of the bellows).
+    const def = trialDef('horse');
+    const need = def ? taskOf(def, trialLevelOf(def))?.ore ?? 1 : 1;
+    return (zoneOf('hearth')?.zone.items.length ?? 0) >= need ? 'bellows' : 'lumps';
+  }
+  function horseStep(step) {
+    const smith = getEntity(state, 'npc:smith');
+    const tz = trialZone('horse');
+    if (!smith || smith.hidden || !tz) return;
+    const things = {
+      lumps: [zoneOf('horse-ore'), getEntity(state, 'hearth:horse')],
+      bellows: [getEntity(state, 'bellows:horse')],
+      anvil: [getEntity(state, tz.zone.iron), zoneOf('trough')],
+      there: [getEntity(state, tz.zone.iron)],
+    }[step].filter(Boolean);
+    // The first time, the line of the new word comes after the step, in the same bubble.
+    const word = { bellows: 'ongbe', anvil: 'de' }[step];
+    const fresh = word && Number(profile.grade ?? 1) <= WORD_GRADE && !profile.flags[`word.${word}`];
+    if (fresh) profile.flags[`word.${word}`] = true;
+    emit({ type: 'open', screen: 'callout', id: smith.id, textKey: `horse.step.${step}${fresh ? '.word' : ''}`, params: {} });
+    const [a, b] = things.map((e) => e.position);
+    if (a) smith.gesture = { act: 'point', x: a.x, z: a.z, t: 1.8, ...(b ? { then: { act: 'point', x: b.x, z: b.z, t: 1.8 } } : {}) };
+    setCue(things.map((e) => e.id));
+  }
   // The first bunch that the child takes: the basket of the healer glows and she points at it,
   // one time in a task (#125: "I only found out late that the wooden box with signs was the basket").
   function basketOnce() {
@@ -3510,6 +3552,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       const hearth = zoneOf('hearth');
       const bellows = query(state, 'item', 'position').find((e) => e.item.kind === 'bellows' && !e.hidden);
+      // A lump in the hands at the hearth while the iron is on the anvil: the button is never dim
+      // with no word (#126); a press makes the smith point at the iron.
+      const horseIron = open('horse')?.zone.heat !== null && open('horse')?.zone.heat !== undefined ? getEntity(state, open('horse').zone.iron) : null;
+      if (horseIron && hearth && getEntity(state, holding() ?? '')?.item?.kind === 'ore') add({ act: 'look', icon: 'look', target: horseIron.id, keys: [hearth.id, horseIron.id], at: hearth.position, rank: 1, work: true, run: () => horseStep('there') }, REACH + 3);
       if (open('horse')?.zone.heat === null && hearth?.zone.items.length) add({ act: 'blow', icon: 'fire', target: bellows?.id ?? hearth.id, keys: [bellows?.id, hearth.id], at: bellows?.position ?? hearth.position, rank: 0, work: true, run: () => work('horse', 'blow') }, REACH + 3);
       const drum = hamlet.round('drum');
       if (drum && !drum.done) {
@@ -4356,6 +4402,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         return;
       }
     }
+    // A tap on the oven of the forge during the iron horse is a tap on the hearth (#126: the children
+    // took the big oven for the place, and the hero walked behind its posts).
+    const hearthZ = zoneOf('hearth');
+    if (hit.object === 'forge' && hearthZ && openTask(hearthZ.zone.task)) {
+      emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.h });
+      goTo(hearthZ.position, hearthZ.id, null, standOf(hearthZ));
+      return;
+    }
     if (tapTaskPlace(hit) || (raidOn() && tapRaidRoad(hit))) {
       emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.h });
       return;
@@ -5083,6 +5137,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if ((ev.type === 'pick' || ev.type === 'put') && ev.item) {
         const it = getEntity(state, ev.item)?.item;
         if ((it?.task?.startsWith('trial-') || openSpan(it?.task)) && (ev.id === 'hero' || lastPick?.task !== it.task || !lastPick.child)) lastPick = { task: it.task, kind: it.kind, size: it.size, child: ev.id === 'hero' };
+        if (ev.type === 'put' && ev.id === 'hero' && ev.zone === 'hearth' && horseOpen() && !trialZone('horse').zone.toldBellows) {
+          trialZone('horse').zone.toldBellows = true;
+          horseStep('bellows');
+        }
+        // A lump in the hands: the hearth glows (#126: no glow showed the place).
+        if (ev.type === 'pick' && ev.id === 'hero' && it?.kind === 'ore' && horseOpen() && trialZone('horse').zone.heat === null) setCue(['hearth:horse']);
         if (ev.type === 'pick' && ev.id === 'hero' && it?.task === 'trial-healer') {
           if (ev.item !== oneMove) sayHerb('herb', it.kind);
           basketOnce();
@@ -5092,6 +5152,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           if (it?.task === 'trial-healer') sayHerb('put', it.kind);
         }
       }
+      // The fire of the iron horse: the step of the anvil (#126).
+      if (ev.type === 'fire' && ev.id === 'zone:trial-horse') horseStep('anvil');
       // A wrong bundle: a hero who stands on the mat steps off to the place of the mat, so that the
       // rods show while the teacher counts them (#61: the walk to the teacher crossed the mat).
       if (ev.type === 'snap' && ev.id === 'zone:mat') {
