@@ -150,7 +150,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   let practice = null;
   // The mentors of the tasks: the person who gives a task watches the child and answers (docs/MENTOR.md).
   const mentoring = createMentoring({
-    data, profile, learner, log, emit, world: () => state, env: () => env, nameOf: (id) => nameOf(id), chosen: () => chosen?.id ?? null,
+    data, profile, learner, log, emit, world: () => state, env: () => env, nameOf: (id) => nameOf(id), chosen: () => chosen?.id ?? null, choose: (id) => { chosen = { id, along: null, help: true }; },
     // A bigger task: the next round of a practice is one level higher. A move never makes the task in
     // progress bigger (its line says "next time"); the memory of the mentor (lift) raises the next
     // small event one level.
@@ -3934,6 +3934,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // or a ride never comes in place of the work.
     const tapped = (c) => Boolean(chosen && c.keys.includes(chosen.id));
     const tappedNear = list.some(tapped);
+    // The help of the give made the person the place of the next press (#131): out of reach of
+    // the give, the press walks to the person, and gives at the end of the walk.
+    if (chosen?.help && !tappedNear && getEntity(state, chosen.id)?.person) {
+      const e = getEntity(state, chosen.id);
+      const c = { act: 'give', icon: 'basket', target: e.id, at: e.position, keys: [e.id], rank: 0, d: 0, work: true };
+      return { ...c, go: true, hold: false, release: null, run: () => goWork(c) };
+    }
     // Only to the work of the task whose area the hero is in: never to another task, or back
     // across the village (#66: a press walked the child from the fisher to the bridge, and from the
     // smith back to the healer).
@@ -4139,6 +4146,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function press(id) {
     // The id of the act of the press (a press with no id names the act of the button now).
     const pid = id ?? button().id;
+    // A press during the first step that a person shows (#131: presses during the demonstration of
+    // the boat loaded stakes before "Giờ đến lượt cháu.", and the child took the stakes of the fisher
+    // for her own): the demonstration ends at once, its things go back, the person says "Giờ đến
+    // lượt cháu.", and the press is the first act of the child. The deal of the model of the healer
+    // goes on: its bunches stay on the leaves.
+    const demoKey = mentoring.activeKey();
+    const demo = getEntity(state, `script:${demoKey}`);
+    if (demo?.script?.move === 'first' && button().a?.work && !demo.script.steps.some((st) => String(st.put?.zone ?? '').startsWith('zone:leaf-'))) {
+      // The line only when the demonstration did not say it yet (a play of #131 heard it two times).
+      const said = demo.script.steps.slice(0, demo.script.i).some((st) => /first\.you$/.test(st.say?.key ?? ''));
+      endScript(state, demo, { early: true });
+      const who = data.mentors?.mentors?.[demoKey]?.person;
+      if (!said && who && getEntity(state, who) && !getEntity(state, who).hidden) emit({ type: 'open', screen: 'callout', id: who, textKey: 'mentor.first.you', params: {} });
+    }
     const a = pressed(id);
     // Each press during the walk counts: a child who counts the presses (one bunch for each) gets
     // that many acts at the end of the walk.

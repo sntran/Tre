@@ -240,6 +240,16 @@ After a cut that is not right, the pieces lie side by side, and the woodcutter c
 
 **No snore at a raid.** A sleeper within 80 half blocks of the wall of a raid that goes on does not snore.
 
+### The help and the taps after the play test of #115 to #122 (#131)
+
+**No take-back help when the row holds.** A row at the float with no space wider than the gap of the fisher needs no take-back: a wave says that the water comes ("Đủ hàng rồi. Xem nước lên nào!"), also with narrow places in the row (`tightStake` in `src/core/mentoring.js`).
+
+**A press ends the demonstration.** The fisher says what he does: "Chú bấm nút ở đống cọc: một cọc lên thuyền." A press of a work during the first step that a person shows ends it at once: its things go back to their heap, the person says "Giờ đến lượt cháu.", and the press is the first act of the child (`press` in `src/core/session.js`). So the boat is empty when the child starts, and the load counts from the first stake of the child. The deal of the model of the healer goes on (its bunches stay on the leaves).
+
+**The help reads the hands and the desks.** At the share of grade 4, with the desks equal and fewer rods left than desks (in the hands, on the mat, or on the heap), each help is the count of the desks with the box ("Còn một que thừa: bỏ vào hộp nhé."), and the rods glow, also a rod in the hands (`boxOnly`). No share on another instance then.
+
+**A tap on a person.** A tap on the body of a person who stands in front of a heap chooses the person (`tapTarget` in `src/world/hit.js`). The help of the give ("Cháu đến chỗ bà và bấm nút lớn: bà nhận giỏ.") makes the healer the place of the next press: she glows, and a press out of reach walks to her and gives the basket.
+
 ### What the people and the voice say after the play test of #115 to #122 (#130)
 
 **A short plank says it.** A plank that is too short tips, the empty part glows, and the fisher says "Tấm này ngắn quá: chưa tới bờ bên kia." (`outcomes.short.call` in `data/world/zones.json`), as a long plank says "Tấm này dài quá.". The count of the deck after it ends with what is missing, at the empty part: "Còn thiếu bốn ô nữa." (`unitSteps` in `src/core/mentoring.js`).

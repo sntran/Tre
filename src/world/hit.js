@@ -279,8 +279,15 @@ export function tapTarget(p, w) {
     return thing.e.item.fixed ? { thing: thing.e.id, along: thing.along } : { thing: thing.e.id };
   }
   // The ground between the things of a heap: the nearest thing of the heap (a heap has no rect).
+  // A person whose body is under the finger and who stands in front of the heap keeps the tap
+  // (#131: a tap on the healer chose the bed of rau má behind her).
   const heaped = hit && !inPlace ? heapThingNear(w.things, hit) : null;
-  if (heaped) return { thing: heaped.id };
+  if (heaped) {
+    const body = figureUnder(p, w.cam, (w.persons ?? []).filter((q) => !String(q.id).startsWith('encounter:')), PERSON_PAD_AT_PLACE);
+    const q = heaped.position;
+    if (body && w.cam.nearness(body.x, body.y, body.z) >= w.cam.nearness(q.x / 2, q.y / 2, q.z / 2) - BODY_DEPTH) return { person: body.id };
+    return { thing: heaped.id };
+  }
   // An enemy of an encounter under the finger comes before Nghé: a tap on the enemy never pets
   // Nghé (#55).
   const foe = figureUnder(p, w.cam, (w.persons ?? []).filter((q) => String(q.id).startsWith('encounter:')), PERSON_PAD);

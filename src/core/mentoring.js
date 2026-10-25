@@ -51,7 +51,7 @@ export function decimalWords(h) {
   return { key: b < 10 ? 'decimal.small' : 'decimal.words', params: { a, b: { key: `num.${b}` } } };
 }
 
-export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {}, nameOf = () => '', chosen = () => null }) {
+export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {}, nameOf = () => '', chosen = () => null, choose = () => {} }) {
   const cfg = data.mentors;
   const states = new Map(); // key -> the mentor of the task
   const tracks = new Map(); // key -> { startT, firstAct, lastAct, lastCommit, acted, left, round }
@@ -183,6 +183,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (!defOf(key)?.lines?.tight || z?.rule !== 'line' || (task.tz?.zone.tightShown && !again)) return null;
     // All the stakes of the row (the two of the fisher are not in the items of the place).
     const row = query(world(), 'item').filter((e) => e.item.zone === z.id && !e.item.held && e.item.slot != null);
+    // A row at the float that holds the fish needs no take-back: the water comes (#131: "Chạm vào
+    // cái cọc này … nhổ lên." came with "Đủ hàng rồi. Xem nước lên nào!").
+    const slots = row.map((e) => e.item.slot);
+    if (slots.includes(z.length) && stakeResult(slots, z.length, z.space).solved) return null;
     // The same stake that glows at the empty pile: the last one that the row does not need (#97).
     return spareStake(task.place, row);
   }
@@ -562,6 +566,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     // The share of grade 4 (#116: after each check, the teacher played the share on five rods again,
     // also with one rod left for the box): the demonstration comes at most one time in a task, and
     // only after a wave; else the count of the desks with the next step.
+    // With the desks equal and only the rods for the box left (in the hands, on the mat, or on the
+    // heap), each help is the count with the box, never the share again (#131).
+    if (key === 'trial-scholar' && task?.tz?.zone.plan?.form === 'share' && ['show', 'mark', ...SHARE_SHOWS].includes(move) && boxOnly(task)) move = 'count';
     if (key === 'trial-scholar' && task?.tz?.zone.plan?.form === 'share' && SHARE_SHOWS.has(move)) {
       if (!info.asked || task.tz.zone.shareShown) move = 'count';
       else task.tz.zone.shareShown = true;
@@ -755,7 +762,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       point(t, p, 2);
       mark(t, p, HOLE_MARK);
       t += 3;
-    } else if (move === 'show' && rowFull(key, task) && rowChanged(task)) {
+    } else if ((move === 'show' || move === 'mark') && rowFull(key, task) && rowChanged(task)) {
       // The row is at the float and waits for the tide: the hint is to wait and look at the water,
       // never to take a stake (#78: the child heard "Lấy một cái cọc ở đống …" four times with a
       // full row, and with an empty pile).
@@ -792,6 +799,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       point(t, task.place.position, 1.4);
       mark(t, task.place.position, 2.5);
       if (task.person?.position) point(t + 1.6, task.person.position, 1.4);
+      // The person is the place of the next press, and glows (#131: a tap on the healer chose the
+      // bed behind her, and the help said to come to her while the child stood next to her).
+      if (task.person?.id) {
+        choose(task.person.id);
+        steps.push({ at: t + 1.6, glow: { ids: [task.person.id] } });
+      }
       t += 3;
     } else if (move === 'show' && lostThing(task)) {
       // The lost ducks: no heap (#96: "Lấy một cái ở đống kia …" sent a child to look for a pile).
@@ -1319,6 +1332,17 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return t + 1.6;
   }
 
+  // The desks of the share are equal, and fewer rods than desks are left, in the heap, on the mat,
+  // or in the hands: what is left goes into the box (#131).
+  function boxOnly(task) {
+    const w = world();
+    const plan = task?.tz?.zone.plan;
+    if (!plan?.k) return false;
+    const total = (z) => (z?.zone.items ?? []).reduce((a, id) => a + (getEntity(w, id)?.item.value ?? getEntity(w, id)?.item.size ?? 0), 0);
+    const sums = Array.from({ length: plan.k }, (_, i) => total(getEntity(w, `zone:desk-${i}`)));
+    const left = total(getEntity(w, 'zone:rods')) + total(task.place) + inHands(w);
+    return sums.every((v) => v === sums[0]) && left > 0 && left < plan.k;
+  }
   // The count of the desks of grade 4 (#101): the total of each desk ("mười một"), then the box
   // ("Hộp: thừa hai.", or "Hộp: không có que nào."), and then what the count shows: rods that are not shared yet, desks that are
   // not equal, or enough rods in the box for one more on each desk.
@@ -1367,7 +1391,9 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       s.say(t + 0.1, lines.fewer, { desk: { key: `scholar.desk.${DESK_COLORS[i % DESK_COLORS.length]}` }, n: { key: `num.${Math.min(150, sums[i])}` } });
       t += 2.6;
     } else if (left && left < plan.k && lines.toBox && loose.every((e) => e.item.kind === 'rod')) {
-      for (const e of loose) s.steps.push({ at: t, glow: { ids: [e.id] } });
+      // The rods that are left glow, also a rod in the hands (#131: "I don't really know what I did").
+      const held = query(w, 'item').filter((e) => e.item.held === 'hero' && e.item.task === task.key);
+      for (const e of [...loose, ...held]) s.steps.push({ at: t, glow: { ids: [e.id] } });
       if (loose[0]) s.point(t, loose[0].position, 1.2);
       if (box) {
         s.point(t + 1.3, box.position, 1.2);
