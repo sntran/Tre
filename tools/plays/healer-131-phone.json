@@ -1,0 +1,184 @@
+{
+ "about": "#131: the healer at K: a bunch of each kind in the basket, a tap on the healer chooses her, and one press gives her the basket.",
+ "start": "?story=trial-healer",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-ngai"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "(() => { const s = tre.activeVillage.state(); const b = s.entities.find((e) => e.id === 'zone:basket').zone.items.map((id) => s.entities.find((e) => e.id === id)).filter(Boolean); return !b.some((e) => e.item.kind === 'herb-ngai'); })()"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "(() => { const s = tre.activeVillage.state(); const b = s.entities.find((e) => e.id === 'zone:basket').zone.items.map((id) => s.entities.find((e) => e.id === id)).filter(Boolean); return !b.some((e) => e.item.kind === 'herb-ngai'); })()"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-tiato"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "(() => { const s = tre.activeVillage.state(); const b = s.entities.find((e) => e.id === 'zone:basket').zone.items.map((id) => s.entities.find((e) => e.id === id)).filter(Boolean); return !b.some((e) => e.item.kind === 'herb-tiato'); })()"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "(() => { const s = tre.activeVillage.state(); const b = s.entities.find((e) => e.id === 'zone:basket').zone.items.map((id) => s.entities.find((e) => e.id === id)).filter(Boolean); return !b.some((e) => e.item.kind === 'herb-tiato'); })()"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-rauma"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "(() => { const s = tre.activeVillage.state(); const b = s.entities.find((e) => e.id === 'zone:basket').zone.items.map((id) => s.entities.find((e) => e.id === id)).filter(Boolean); return !b.some((e) => e.item.kind === 'herb-rauma'); })()"
+  },
+  {
+   "press": true,
+   "after": 1.4,
+   "if": "(() => { const s = tre.activeVillage.state(); const b = s.entities.find((e) => e.id === 'zone:basket').zone.items.map((id) => s.entities.find((e) => e.id === id)).filter(Boolean); return !b.some((e) => e.item.kind === 'herb-rauma'); })()"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-basket-with-a-bunch-of-each"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.session.action())"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "a-tap-on-the-healer-the-button-gives"
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "one-press-gives-the-basket"
+  }
+ ]
+}
