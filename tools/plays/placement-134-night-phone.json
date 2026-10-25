@@ -1,0 +1,194 @@
+{
+ "about": "#134: grade 3, after the Five Trials: the messenger at the village hall says that the king needs people of talent and tests the child there; the placement exam with the messenger and the hall; the calling; then the mother of Gióng. At 21:00.",
+ "start": "?story=placement-messenger&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "messenger"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 12
+  },
+  {
+   "until": "Boolean(document.querySelector('.quiz'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-exam-of-the-messenger-at-the-hall"
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "until": "!document.querySelector('.quiz')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-placement-said-by-the-messenger"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "shot": "now-you-know-who-you-are"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.calling-grid'))",
+   "timeout": 30
+  },
+  {
+   "click": "Thợ rèn",
+   "after": 1
+  },
+  {
+   "click": "Chọn nghề này",
+   "after": 1.5
+  },
+  {
+   "shot": "the-calling-said-by-the-messenger"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-messenger-after-the-exam"
+  },
+  {
+   "read": 3
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "then-the-mother-of-giong"
+  }
+ ]
+}

@@ -1,0 +1,265 @@
+{
+ "about": "#134: grade 1, after the farewell of Gióng: the messenger is back at the village hall, thanks the village, and tests the child with the exam of the era; the title Người tài; its print in the notebook. At 21:00.",
+ "start": "?story=exam-messenger&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "1",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "messenger"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-thanks-of-the-king"
+  },
+  {
+   "read": 6
+  },
+  {
+   "until": "Boolean(document.querySelector('.quiz'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-exam-of-the-era-at-the-hall"
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 1.5
+  },
+  {
+   "until": "!document.querySelector('.quiz')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-title-nguoi-tai"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-print-of-the-messenger"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-next-message"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 2,
+   "if": "!document.querySelector('.calling-grid') && Boolean(document.querySelector('.modal-layer .main-btn'))"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "now-you-know-who-you-are",
+   "if": "!document.querySelector('.calling-grid')"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 2,
+   "if": "!document.querySelector('.calling-grid') && Boolean(document.querySelector('.modal-layer .main-btn'))"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "click": "Đồng ý",
+   "after": 2,
+   "if": "!document.querySelector('.calling-grid') && Boolean(document.querySelector('.modal-layer .main-btn'))"
+  },
+  {
+   "until": "Boolean(document.querySelector('.calling-grid'))",
+   "timeout": 30
+  },
+  {
+   "click": "Nho sinh",
+   "after": 1
+  },
+  {
+   "click": "Chọn nghề này",
+   "after": 1.5
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.chapter-end'))",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-end-of-the-chapter"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "click": "Sổ tay",
+   "after": 2
+  },
+  {
+   "shot": "the-notebook"
+  }
+ ]
+}
