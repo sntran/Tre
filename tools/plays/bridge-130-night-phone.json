@@ -1,0 +1,76 @@
+{
+ "about": "#130: the bridge: a plank that is too short for the gap says that it is short. At 21:00.",
+ "start": "?story=bridge&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 120
+  },
+  {
+   "read": 14
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "guess:bridge-gap:2"
+   },
+   "after": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => String(e.id).startsWith('script:'))",
+   "timeout": 200
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const pile = s.entities.find((e) => e.id === 'zone:bridge-pile').zone.items.map((id) => s.entities.find((e) => e.id === id)).filter(Boolean); return pile.sort((a, b) => a.item.size - b.item.size)[0]?.id ?? null; })()"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "a-short-plank-says-that-it-is-short"
+  }
+ ]
+}

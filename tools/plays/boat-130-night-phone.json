@@ -1,0 +1,182 @@
+{
+ "about": "#130: the boat of the fisher at grade 5: the count of the load, the reason of the number, and the tide before the end talk. At 21:00.",
+ "start": "?story=trial-fisher&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "5",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-the-stake-of-the-demonstration-goes-back"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan?.need ?? 0"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan?.need ?? 0"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan?.need ?? 0"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-three-stakes-upright-on-the-boat-with-a-count"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan?.need ?? 0"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan?.need ?? 0"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan?.need ?? 0"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan?.need ?? 0"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan?.need ?? 0"
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:boat')?.zone.items.length < tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.plan?.need ?? 0"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-the-load"
+  },
+  {
+   "tap": {
+    "thing": "boat:fisher"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^fisher\\.why/.test(x.key)) || tre.activeVillage.heard().some((x) => x.key === 'trial.done')",
+   "timeout": 90
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "night-the-end-says-the-reason"
+  },
+  {
+   "wait": 6
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-tide-before-the-end-talk"
+  }
+ ]
+}
