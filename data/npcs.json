@@ -407,6 +407,7 @@
       "greet": "none",
       "voice": "man",
       "scale": 0.5,
+      "mount": { "look": "iron-steed", "seat": 2 },
       "when": {
         "flags": [
           "giong.grown"

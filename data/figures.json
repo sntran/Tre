@@ -312,7 +312,7 @@
     },
     "giong-hero": {
       "skin": "skin3",
-      "top": "ash",
+      "top": "indigo",
       "bottom": "ash",
       "sash": "vermilion",
       "topKind": "shirt",
@@ -320,8 +320,8 @@
       "hair": "topknot",
       "hat": "band",
       "item": "staff",
-      "face": 1,
-      "scale": 0.86
+      "face": 1, "armor": "ash",
+      "scale": 1.0
     },
     "giong-sky": {
       "skin": "skin3",
@@ -1236,6 +1236,28 @@
       "hair": "tufts",
       "face": 1,
       "scale": 0.95
+    },
+    "giong-grow-1": {
+      "skin": "skin3",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "bare",
+      "bottomKind": "shorts",
+      "hair": "tufts",
+      "face": 1,
+      "scale": 0.88
+    },
+    "giong-grow-2": {
+      "skin": "skin3",
+      "top": "ochre",
+      "bottom": "wood",
+      "sash": "vermilion",
+      "topKind": "bare",
+      "bottomKind": "shorts",
+      "hair": "topknot",
+      "face": 1,
+      "scale": 0.94
     },
     "planter": {
       "skin": "skin3",

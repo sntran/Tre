@@ -124,13 +124,15 @@
      "mood": "happy",
      "choices": [
       {
-       "textKey": "dlg.giong.grown.n2.c1"
+       "textKey": "dlg.giong.grown.n2.c1",
+       "next": "n3"
       }
      ]
     },
     "n3": {
      "speaker": "giong",
-     "textKey": "dlg.giong.grown.n3"
+     "textKey": "dlg.giong.grown.n3",
+     "effects": [{ "set": "giong.follow" }]
     }
    },
    "mark": "legend"

@@ -321,3 +321,9 @@ The country map (`src/ui/worldmap.js`, `drawBase`) is drawn in the three flat to
 ## The ride buttons (#133)
 
 The button to ride shows the slate calf of #122 (`ash` body, `ink` legs, an `ashLight` muzzle, and two short buds of horns) with the child on its back (a `vermilion` shirt, `indigo` trousers); the button to get off shows the child standing next to the calf, on a line of ground. No arrow: an arrow up or down read as a pick or a put ("Can I pick up the goat??").
+
+## The legend in front of the child (#137)
+
+- **The grown Gióng** (`giong-hero` in `data/figures.json`) wears armor of iron over an indigo shirt: plates over the chest and the back in the color of iron (`ash`) with two dark bands, and a plate on each shoulder (`armor` in `person`, `src/world/figures.js`). He holds the iron staff, and he is on the iron horse (`iron-steed`) whenever he is out of the house (`mount` in `data/npcs.json`). He is about two times as tall as the hero (scale 1.0), clearly bigger than the boy of the last step of the rice.
+- **The growth** has two steps between the boy and the grown Gióng: `giong-grow-1` and `giong-grow-2`, a young man with bare arms and shorts, each one a little taller.
+- **The iron horse** is the big horse at the forge and in the yard; the small model of the horse (`iron-horse`) stays only as the print of the notebook.

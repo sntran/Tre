@@ -70,6 +70,11 @@ export function person(look) {
   parts.push(P('torso', [bodyW, bodyH, bodyD], topColor, [0, hip + bodyH / 2, 0]));
   if (look.topKind === 'yem') parts.push(P('yem', [1.4, 1.4, 0.2], look.sash ?? 'vermilion', [0, hip + bodyH * 0.55, bodyD / 2 + 0.07]));
   if (look.sash) parts.push(P('sash', [bodyW + 0.1, 0.45, bodyD + 0.1], look.sash, [0, hip + 0.2, 0]));
+  // Armor of iron (#137: the grown Gióng): plates over the chest and the back, with two dark bands.
+  if (look.armor) {
+    parts.push(P('armor', [bodyW + 0.2, bodyH * 0.72, bodyD + 0.2], look.armor, [0, hip + bodyH * 0.6, 0]));
+    for (const k of [0, 1]) parts.push(P(`armorBand${k}`, [bodyW + 0.25, 0.16, bodyD + 0.25], 'ink', [0, hip + bodyH * (0.42 + k * 0.3), 0]));
+  }
   parts.push(P('neck', [0.8, 0.5, 0.8], SHADE[skin] ?? skin, [0, shoulder + 0.2, -0.1]));
   // Arms hang from the shoulders.
   const armH = child ? 1.9 : 2.3;
@@ -79,6 +84,10 @@ export function person(look) {
   if (look.topKind === 'shirt') {
     parts.push(P('sleeveL', [0.85, 0.8, 0.85], look.top, [0, 0, 0], { parent: 'armL', pivotTop: true }));
     parts.push(P('sleeveR', [0.85, 0.8, 0.85], look.top, [0, 0, 0], { parent: 'armR', pivotTop: true }));
+  }
+  if (look.armor) {
+    parts.push(P('padL', [1, 0.55, 1], look.armor, [0, 0, 0], { parent: 'armL', pivotTop: true }));
+    parts.push(P('padR', [1, 0.55, 1], look.armor, [0, 0, 0], { parent: 'armR', pivotTop: true }));
   }
   // The head, with hair, a hat, and a face.
   const onHead = { parent: 'head' };
@@ -778,7 +787,7 @@ export const CHALK_BAND = 1.8;
 export const FISH_JUMP = 1.3;
 // The seat of the iron horse of Gióng over the ground (half blocks): the height of the hips of
 // grown Gióng (#50), so that his feet hang at the sides of the horse.
-export const STEED_SEAT = 3.6;
+export const STEED_SEAT = 4;
 const RINGS = { 2: 1.6, 5: 2.4, 10: 3.4 }; // the length of a fish trap (half blocks) for its rings
 const STAGES = { planted: ['greenPale', 0.8], green: ['green', 1.2], tall: ['greenDeep', 1.7], gold: ['yellow', 1.9] };
 // The water of a paddy stands over the ground (WATER.paddy in src/world/terrain.js): a seedling

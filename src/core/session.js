@@ -522,6 +522,162 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     visit.last = Math.round(state.clock.minutes);
   }
 
+  // The legend in front of the child (#137: "And Gióng went away and I never saw him on his iron
+  // horse."). The iron horse comes out of the forge at full size and stands by it; while the child is
+  // away the smith leads it to the yard of the house of Gióng. At the end of the rice Gióng grows in
+  // front of the child (the boy stands up, grows in a few steps, takes the armor and the staff, and
+  // gets on the horse in the yard), and then he speaks from the horse. After "Có!" he rides behind
+  // the child on the map of the village. A person with a mount (data/npcs.json) is on it whenever
+  // the person is out of the house, and not in a raid (the raid has its own companion).
+  const LEGEND = { away: 40, looks: ['giong-boy-5', 'giong-grow-1', 'giong-grow-2', 'giong-hero'], step: 1.1, walk: 1.8, ride: 0.8, behind: 5, far: 9 };
+  let growing = null;
+  const personOf = (ref) => query(state, 'person').find((e) => e.person.ref === ref) ?? null;
+  const pointAt = (p, facing = 0) => ({ x: p.x, y: env.groundY(p.x / 2, p.z / 2), z: p.z, facing });
+  // The horse before Gióng grows: by the forge, then in the yard.
+  function stepSteed() {
+    const want = profile.flags['horse.forged'] && !profile.flags['giong.grown'];
+    let steed = getEntity(state, 'steed:giong');
+    if (!want && !growing) {
+      if (steed) removeEntity(state, 'steed:giong');
+      return;
+    }
+    const forge = env.places['forge-steed'];
+    const yard = env.places['giong-yard'];
+    if (!forge || !yard || !want) return;
+    const h = hero()?.position;
+    if (!profile.flags['horse.yard'] && h && Math.hypot(h.x - forge.x, h.z - forge.z) > LEGEND.away && Math.hypot(h.x - yard.x, h.z - yard.z) > LEGEND.away) {
+      profile.flags['horse.yard'] = true;
+      if (steed) Object.assign(steed.position, pointAt(yard, Math.PI / 2));
+    }
+    if (!steed) steed = addEntity(state, { id: 'steed:giong', position: pointAt(profile.flags['horse.yard'] ? yard : forge, Math.PI / 2), look: 'iron-steed' });
+  }
+  // The horse comes out of the forge, with a sound of iron, and the view shows it with the smith.
+  function steedOut() {
+    stepSteed();
+    const steed = getEntity(state, 'steed:giong');
+    const smith = personOf('smith');
+    if (!steed) return;
+    emit({ type: 'sound', sound: 'clatter' });
+    emit({ type: 'workView', key: 'steed', points: [{ ...steed.position }, ...(smith ? [{ ...smith.position }] : []), ...(hero() ? [{ ...hero().position }] : [])], sight: [{ ...steed.position }] });
+  }
+  // Gióng grows in front of the child at the end of the rice; then the talk of the legend.
+  function startGrow(then) {
+    const boy = personOf('giong-boy');
+    const yard = env.places['giong-yard'];
+    if (!boy || !yard) {
+      then();
+      return;
+    }
+    // The horse waits in the yard (the smith led it there).
+    profile.flags['horse.yard'] = true;
+    const steed = getEntity(state, 'steed:giong') ?? addEntity(state, { id: 'steed:giong', position: pointAt(yard, Math.PI / 2), look: 'iron-steed' });
+    Object.assign(steed.position, pointAt(yard, Math.PI / 2));
+    const from = { ...boy.position };
+    growing = { t: 0, from, to: { ...steed.position }, then, k: 0 };
+    // The boy of the story goes (the flag giong.grown is set), and the grown Gióng waits out of
+    // sight until the scene ends: one Gióng at a time.
+    refreshPeople();
+    addEntity(state, { id: 'grow:giong', position: { ...from }, look: LEGEND.looks[0] });
+    emit({ type: 'workView', key: 'grow', points: [{ ...from }, { ...steed.position }, ...(hero() ? [{ ...hero().position }] : [])], sight: [{ ...from }] });
+  }
+  function stepGrow() {
+    if (!growing) return;
+    const g = growing;
+    g.t += STEP;
+    const e = getEntity(state, 'grow:giong');
+    if (!e) return;
+    const n = LEGEND.looks.length - 1;
+    const k = Math.min(n, Math.floor(g.t / LEGEND.step));
+    if (k !== g.k) {
+      g.k = k;
+      e.look = LEGEND.looks[k];
+      emit({ type: 'success', id: e.id, x: e.position.x, z: e.position.z, sound: k === n ? 'clatter' : 'whoosh' });
+    }
+    // Then he walks to the horse in the yard, and gets on it.
+    const walked = g.t - n * LEGEND.step;
+    if (walked > 0) {
+      const a = Math.min(1, walked / LEGEND.walk);
+      const x = g.from.x + (g.to.x - g.from.x) * a;
+      const z = g.from.z + (g.to.z - g.from.z) * a;
+      Object.assign(e.position, pointAt({ x, z }, Math.atan2(g.to.x - g.from.x, g.to.z - g.from.z)));
+      if (a >= 1) {
+        e.riding = data.raids?.raids?.boss?.steed ?? 1.8;
+        e.position.facing = g.to.facing ?? Math.PI / 2;
+      }
+    }
+    if (walked < LEGEND.walk + LEGEND.ride) return;
+    // The scene ends: the grown Gióng on his horse in the yard is the person of the story now.
+    removeEntity(state, 'grow:giong');
+    removeEntity(state, 'steed:giong');
+    growing = null;
+    profile.flags['giong.place'] = 'yard';
+    refreshPeople();
+    stepMounts();
+    g.then();
+  }
+  // The place of the grown Gióng: in the yard after he grows, and behind the hero after "Có!".
+  function placeGiong() {
+    const g = personOf('giong-hero');
+    const yard = env.places['giong-yard'];
+    if (!g || !g.schedule) return;
+    // While he grows, the grown Gióng of the story is not on the map yet (one Gióng at a time).
+    if (growing) {
+      g.hidden = true;
+      return;
+    }
+    if (profile.flags['giong.place'] === 'yard' && yard) {
+      Object.assign(g.position, pointAt(yard, Math.PI / 2));
+      g.schedule.spot = { x: yard.x, z: yard.z };
+      g.schedule.stay = true;
+      delete g.route;
+    }
+    if (profile.flags['giong.place']) delete g.hidden;
+  }
+  // After "Có!" (the flag giong.follow), Gióng rides behind the hero on the map of the village: his
+  // spot is a point behind the hero, and he jumps there when he is far (after a ferry or a ride).
+  function stepRider() {
+    const g = personOf('giong-hero');
+    const h = hero();
+    if (!g?.schedule || !h || !profile.flags['giong.follow'] || growing) return;
+    if (profile.flags['giong.place'] !== 'follow') profile.flags['giong.place'] = 'follow';
+    const f = h.position.facing ?? 0;
+    const spot = { x: h.position.x - Math.sin(f) * LEGEND.behind, z: h.position.z - Math.cos(f) * LEGEND.behind };
+    const d = Math.hypot(g.position.x - h.position.x, g.position.z - h.position.z);
+    if (d > LEGEND.far * 4) Object.assign(g.position, pointAt(spot, f));
+    if (d > LEGEND.behind + 1 && state.tick % 15 === 0) {
+      g.schedule.spot = spot;
+      g.schedule.stay = true;
+      g.schedule.hold = true;
+    }
+  }
+  // A person with a mount rides it whenever the person is out of the house (and the mount stands
+  // under the person); in a raid the raid has its own companion, so the person waits out of sight.
+  function stepMounts() {
+    for (const e of query(state, 'person')) {
+      const def = data.npcs.npcs[e.person.ref];
+      if (!def?.mount) continue;
+      const id = `mount:${e.person.ref}`;
+      let m = getEntity(state, id);
+      if (growing) e.hidden = true;
+      const out = !e.hidden && !raidOn() && !e.raidAway;
+      if (raidOn() && !e.hidden) {
+        e.hidden = true;
+        e.raidAway = true;
+      } else if (!raidOn() && e.raidAway) {
+        delete e.hidden;
+        delete e.raidAway;
+      }
+      if (!out) {
+        if (m) m.hidden = true;
+        continue;
+      }
+      if (!m) m = addEntity(state, { id, position: { ...e.position }, look: def.mount.look });
+      delete m.hidden;
+      Object.assign(m.position, e.position);
+      e.riding = def.mount.seat;
+    }
+  }
+
   // The farewell of Gióng (#51): Gióng gets on his iron horse and rides up the hill, a cloud comes
   // down over him, and then the horse, Gióng, and the cloud are gone. By day and at night.
   const FAREWELL = { end: 8, cloud: 6, up: 8, away: 4, high: 16 }; // seconds, and half blocks
@@ -991,6 +1147,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     woken = new Set();
     tileMap.clearOccupied();
     for (const p of persons()) tileMap.occupy(Math.floor(p.x), Math.floor(p.y), { kind: p.kind, id: p.ref });
+    placeGiong();
     updateStays();
     // The friend walks behind the hero.
     const friendId = profile.party[0];
@@ -1454,8 +1611,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // a child does not take it for the count of the bars.
     if (id === 'smith' && def.reward?.iron) emit({ type: 'open', screen: 'callout', id: from, textKey: 'smith.gift', params: { n: { key: `num.${def.reward.iron}` } } });
     emit({ type: 'hud' });
-    // A task of the story may end with its own talk (rice for Gióng: Gióng grows up).
-    talk(def.doneTalk ?? `${def.npc}.trial.done`);
+    // The iron horse comes out of the forge at full size (#137).
+    if (id === 'horse') steedOut();
+    // A task of the story may end with its own talk (rice for Gióng: Gióng grows up), after its scene
+    // in the world (#137: Gióng grows in front of the child, and then the box of the legend comes).
+    const done = () => talk(def.doneTalk ?? `${def.npc}.trial.done`);
+    if (def.doneScene === 'grow') startGrow(done);
+    else done();
   }
   // A round of the practice is done. The level of the next round comes from the commits of this
   // one. After the rounds of a set, the person thanks the child (the reward flies to the counters),
@@ -4089,7 +4251,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // the way down. null: the button is dim.
   function action() {
     const h = hero();
-    if (screen || busy || h.fall) return null;
+    if (screen || busy || h.fall || growing) return null;
     if (raidOn()) return raidAction();
     const getOff = () => worldCommand(state, { type: 'ride', id: 'hero' });
     if (h.riding) {
@@ -5365,6 +5527,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepSling();
     stepRaidDemo();
     stepFarewell();
+    stepGrow();
+    stepSteed();
+    stepRider();
+    stepMounts();
     stepCheer();
     checkSteps();
     checkNotebook();

@@ -38,6 +38,7 @@
     { "until": { "event": "pick", "timeout": 30 } },
     { "press": { "screenOf": "pot" } },
     { "until": { "event": "grow", "timeout": 30 } },
+    { "wait": 10 },
     { "expect": [{ "event": "skill", "with": { "solved": false, "parts": [3, 3, 3, 3] } }, { "entity": "pot:rice", "look": "rice-pot-2" }, { "flag": "giong.grown" }, { "text": { "shown": "dlg.giong.grown.n1" } }] },
     { "read": true }
   ]
