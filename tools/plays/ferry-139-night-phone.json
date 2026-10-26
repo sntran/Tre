@@ -1,0 +1,249 @@
+{
+ "about": "#139: the ferry at grade 2: the offer ends with how to load; next to a thing, the button shows it; the dog, the chicken, and the rice go over the river in seven crossings. From 18:00 into the night.",
+ "start": "?story=puzzle-ferry&clock=1080",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "2",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "traveler"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'puzzle.ferry.how')",
+   "timeout": 90
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-offer-says-how-to-load"
+  },
+  {
+   "tap": {
+    "thing": "pz:chicken"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "next-to-the-chicken-the-button-shows-it"
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.side === 'b' && !tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.side === 'a' && !tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "thing": "pz:dog"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.side === 'b' && !tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "thing": "pz:chicken"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.side === 'a' && !tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "thing": "pz:rice"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.side === 'b' && !tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.side === 'a' && !tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "thing": "pz:chicken"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.state === 'wait' && tre.activeVillage.state().entities.find((e) => e.id === 'ferry:pz')?.ferry?.side === 'b' && !tre.activeVillage.session.puzzles.state().ferry?.scene && !tre.activeVillage.session.puzzles.state().ferry?.back",
+   "timeout": 90
+  },
+  {
+   "wait": 3
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "all-three-over-the-river"
+  }
+ ]
+}
