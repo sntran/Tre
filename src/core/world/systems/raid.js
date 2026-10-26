@@ -72,6 +72,9 @@ function order(world, r, o, hero, friend) {
   else if (o.act === 'charge' && friend) evs = charge(raid, friend.position);
   else if (o.act === 'pour') evs = pour(raid, o.source, { x: o.x, z: o.z });
   else if (o.act === 'bamboo') evs = pullBamboo(raid);
+  // The first use of a new tool: the raid that waited for it goes on (#135).
+  const used = { call: 'helpers', charge: 'nghe', pour: raid.sources.find((x) => x.id === o.source)?.kind ?? 'fire' }[o.act];
+  if (used && evs.length) evs.push(...releaseHold(raid, used));
   for (const ev of evs) {
     world.events.push(ev);
     react(world, r, ev, hero, friend, null);
@@ -285,6 +288,9 @@ export function putRaid(world, e, zone, thing, at, env) {
   thing.position = { x, y: env.groundY(x / 2, z / 2), z, facing: Math.atan2(raid.dir.x, raid.dir.z) };
   const ev = trapPut(raid, d);
   if (ev) world.events.push(ev);
+  // The place of the trap, for the line of the villager (#135: a girl never learned whether she put
+  // it at the right post).
+  world.events.push({ type: 'trapput', id: thing.id, d, right: Boolean(ev) });
   return true;
 }
 

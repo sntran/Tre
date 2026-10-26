@@ -27,7 +27,8 @@ test('after a stone that falls short or flies past, the elder at the wall says w
       s = x;
       x.listen((e) => {
         if (e.type === 'open' && e.textKey) lines.push(e.textKey);
-        if (e.type === 'glowSeq') {
+        // The help after two misses (the line of the side at the start glows the first post only, #135).
+        if (e.type === 'glowSeq' && String(e.ids[0]).startsWith('raider:')) {
           seqs.push(e.ids);
           elderAt = { ...getEntity(x.state, 'npc:elder').position };
           gesture = structuredClone(getEntity(x.state, 'npc:elder').gesture);

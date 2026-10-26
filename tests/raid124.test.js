@@ -22,7 +22,8 @@ async function thirdRaid(id, grade, seed = 3, used = 2) {
 
 // A child who counts the post where the enemy stands and presses that many times, 0.5 s a press,
 // with no lead. `lead` is the posts in front of the enemy (grade 4: "bắn vào cột phía trước nó").
-function play(session, encounter, { lead = 0, seconds = 240 } = {}) {
+function play(session, encounter, { lead = 0, seconds = 240, gate = true } = {}) {
+  let torch = false;
   const got = { shots: 0, hits: 0, lines: [], end: null, won: null, retreat: null, time: 0, takes: 0 };
   let flying = 0;
   const off = session.listen((ev) => {
@@ -31,6 +32,8 @@ function play(session, encounter, { lead = 0, seconds = 240 } = {}) {
     if (ev.type === 'hit') got.hits += 1;
     if (ev.type === 'retreat') got.retreat = got.time;
     if (ev.type === 'take') got.takes += 1;
+    // A scout lifts a torch near the gate: the child taps the gate (#135: the enemies come nearer, to the posts).
+    if (ev.type === 'light' && gate) torch = true;
     if (ev.type === 'end' && ev.id === 'raid' && got.end === null) got.end = got.time;
     if (ev.type === 'open' && ev.textKey) {
       got.lines.push(ev.textKey);
@@ -61,12 +64,17 @@ function play(session, encounter, { lead = 0, seconds = 240 } = {}) {
   }
   while (got.time < seconds && got.end === null) {
     read();
+    if (torch) {
+      torch = false;
+      session.command({ type: 'tap', target: { raid: { what: 'gate' } } });
+      session.events();
+    }
     const raid = getEntity(session.state, 'raid')?.raid;
     if (!raid) break;
     const foes = raid.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && e.hits < e.max);
-    const near = foes.map((e) => ({ e, d: along(raid, e) })).filter((f) => f.d > 3 && f.d <= raid.sling.max).sort((a, b) => a.d - b.d)[0];
-    // The child counts when the enemy is at a post.
-    if (flying || raid.reload > 0 || !near || Math.abs(near.d - Math.round(near.d / 5) * 5) > 0.5) {
+    const near = foes.map((e) => ({ e, d: along(raid, e) })).filter((f) => f.d > 3).sort((a, b) => a.d - b.d)[0];
+    // The child counts when the enemy is at a post that the child sees (#135: not behind the last post).
+    if (flying || raid.reload > 0 || !near || !raid.posts.some((q) => Math.abs(near.d - q.d) <= 0.5)) {
       run(STEP);
       continue;
     }
@@ -85,7 +93,7 @@ function play(session, encounter, { lead = 0, seconds = 240 } = {}) {
   return got;
 }
 
-for (const grade of [1, 2]) {
+for (const grade of [0, 1, 2]) {
   for (const id of ['scouts', 'river']) {
     test(`grade ${grade}, the third raid of the slingshot (${id}): each count of the post where the enemy stands hits, and the end comes at the last hit`, async () => {
       const session = await thirdRaid(id, grade);

@@ -44,11 +44,14 @@ const MARK = 4; // seconds: a stone lies where it landed, so that short or long 
 const AIM = 8; // half blocks: the shot is for the enemy nearest to the count, within this distance
 const LANE = 2.5; // half blocks: a stone hits an enemy this far to the side of the line of the road
 const AWAY = 24; // half blocks from the road at the wall: a hero farther away makes the raid wait (#86)
-// The first raid of a tool waits for the child (#50): with a new slingshot, the first enemy stops
-// this far from the wall (half blocks) until the first hit, and no other wave comes; with new
-// traps, no enemy comes until the child has a trap in the hands.
+// The first raid of a tool waits for the child (#50, #135: each new tool): with a tool that acts on
+// an enemy (the slingshot, Nghé, the fire, the lightning), the first enemy stops this far from the
+// wall (half blocks) until the child uses the tool, and no other wave comes; with a tool that the
+// child sets before the enemies come (the traps, the villagers, the water), no enemy comes until
+// the child uses it (a trap in the hands).
 export const HOLD_AT = 20;
-export const HOLD_TOOLS = Object.freeze(['sling', 'traps']);
+export const HOLD_TOOLS = Object.freeze(['sling', 'traps', 'helpers', 'nghe', 'water', 'fire', 'lightning']);
+const HOLD_STAND = Object.freeze(['sling', 'nghe', 'fire', 'lightning']);
 
 // The slingshot (world units are half blocks). max: the longest count of a pull.
 export const SLING = Object.freeze({ g: 20, h0: 2.2, angle: 0.7, max: 30, hit: 1.5, reload: 0.6 });
@@ -84,6 +87,20 @@ export function raidTally(raid) {
   const waiting = waves.filter((w) => !w.in).length;
   const inRaid = (raid?.enemies ?? []).filter((e) => e.state !== 'retreat' && e.state !== 'gone').length;
   return { total: waves.length, done: Math.max(0, waves.length - waiting - inRaid) };
+}
+
+// The tools of a raid for a child (#135: a girl of grade 1 met the traps, the straw flag, Nghé, and
+// the slingshot in one raid): the tools that the child has (the flag raid.tool.<tool>), and at most
+// one new tool, the first new one in the order of the story; the other new tools stay out of the
+// raid. A raid with usedOnly (the boss) brings no new tool at grades up to it. A tool with no line
+// (the bamboo of the boss) is a part of the story, not a tool. Return { tools, teach (the new
+// tool, or none), unused (the new tools that stay out) }.
+export function raidTools(raids, id, flags = {}, grade = 1) {
+  const all = raids.raids[id]?.tools ?? ['sling'];
+  const fresh = all.filter((tool) => !flags[`raid.tool.${tool}`] && raids.toolLines?.[tool]);
+  const teach = Number(grade ?? 1) <= (raids.raids[id]?.usedOnly ?? -Infinity) ? [] : fresh.slice(0, 1);
+  const unused = fresh.filter((tool) => !teach.includes(tool));
+  return { tools: all.filter((tool) => !unused.includes(tool)), teach, unused };
 }
 
 export function raidLevel(raids, grade) {
@@ -236,6 +253,9 @@ export function awayFrom(raid, p) {
 }
 
 // The distance of a point along the road from the wall, and to the side of the line of the road.
+// The post where an enemy stands (#135): the post within AT_POST half blocks of its distance, or null.
+export const AT_POST = 1;
+export const postAt = (raid, d) => raid.posts.find((q) => Math.abs(q.d - d) <= AT_POST) ?? null;
 export const along = (raid, p) => (p.x - raid.wall.x) * raid.dir.x + (p.z - raid.wall.z) * raid.dir.z;
 export const across = (raid, p) => (p.x - raid.wall.x) * -raid.dir.z + (p.z - raid.wall.z) * raid.dir.x;
 
@@ -284,8 +304,8 @@ function spawn(raid, out) {
   const phase = raid.phases[raid.phase];
   for (const w of phase.waves) {
     if (w.in || raid.phaseT < (w.at ?? 0)) continue;
-    // New traps: no enemy until the child has a trap in the hands.
-    if (raid.hold?.tool === 'traps') continue;
+    // A new tool that the child sets first (a trap in the hands): no enemy until the child uses it.
+    if (raid.hold && !HOLD_STAND.includes(raid.hold.tool)) continue;
     // In an easy raid, the next wave comes only when no enemy walks to the gate (#55).
     if (raid.stop > 0 && active(raid).length) continue;
     w.in = true;
@@ -397,13 +417,15 @@ function tickEnemy(raid, e, dt, ctx, out) {
   // Walk. The tells come first: the torch of a scout, the sword of the general.
   const d = along(raid, e);
   // The enemy that the child aims at stands while the child pulls and while the stone flies
-  // (#124: a right count missed an enemy that walked on).
-  if (raid.aim && (raid.aim.all ? d <= raid.sling.max + raid.sling.hit : raid.aim.id === e.id)) {
+  // (#124: a right count missed an enemy that walked on). It stands only at a post that the child
+  // sees (#135: a soldier behind the last post needed a count of five): an enemy between two posts,
+  // or behind the last post, walks on to the next post, and stands there.
+  if (raid.aim && (raid.aim.all || raid.aim.id === e.id) && postAt(raid, d)) {
     e.facing = faceTo(e, raid.wall);
     return;
   }
   // A new slingshot: the enemy stops on the road and waits for the first shot of the child.
-  if (raid.hold?.tool === 'sling' && d <= HOLD_AT) {
+  if (raid.hold && HOLD_STAND.includes(raid.hold.tool) && d <= HOLD_AT) {
     e.facing = faceTo(e, raid.wall);
     return;
   }
@@ -496,6 +518,13 @@ function tickGate(raid, dt, out) {
   bar.cool = Math.max(0, bar.cool - dt);
   if (bar.down <= 0) return;
   bar.down -= dt;
+  // A torch that a scout lifts or throws while the bar is down keeps the bar down until it falls
+  // (#135: a bar that came down when the scout lifted the torch lifted 0.1 s before the torch came).
+  const coming = raid.torches.some((t) => !t.done) || raid.enemies.some((e) => e.state === 'torch');
+  if (bar.down <= 0 && coming) {
+    bar.down = dt;
+    bar.cool = Math.max(bar.cool, bar.rest + dt);
+  }
   if (bar.down <= 0) {
     bar.down = 0;
     out.push({ type: 'unbar', id: 'raid', sound: 'plank-up' });

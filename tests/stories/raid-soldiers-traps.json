@@ -1,0 +1,30 @@
+{
+  "name": "raid-soldiers-traps",
+  "about": {
+    "vi": "Lớp một, trận lính Ân đầu tiên: cháu chưa dùng bẫy, nên trận này chỉ có một thứ mới, là bẫy, với câu của nó. Không có lá cờ rơm, không có Nghé lao vào. Cầm bẫy lên thì bác thợ rèn nói chỗ đặt và các cột tới đó sáng lên; đặt bẫy ở cột thứ ba thì bác nói đúng chỗ rồi. Giặc chỉ đến khi cháu cầm bẫy.",
+    "en": "Grade 1, the first raid of the Ân soldiers: the child has not used the traps, so this raid has one new thing, the traps, with their line. No straw flag, and no charge of Nghé. With a trap in the hands, the smith says the place and the posts up to it glow; a trap at the third post is at the right place. The enemies come only when the child holds a trap."
+  },
+  "profile": { "name": "Su", "grade": 1, "lang": "vi", "seed": 5, "flags": { "intro.seen": true, "giong.grown": true, "raid.tool.sling": true, "raid.tool.gate": true, "raid.used.sling": 2 }, "items": { "rice": 5 } },
+  "clock": 420,
+  "at": ["trau-son", 89, 30],
+  "steps": [
+    { "press": { "entity": "encounter:soldier1" } },
+    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 20 } },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "raid.soldier.intro" } }, { "text": { "shown": "raid.tool.traps" } }, { "text": { "shown": "raid.trap.ask" } }, { "event": "open", "with": { "textKey": "raid.tool.helpers" }, "not": true }, { "event": "open", "with": { "textKey": "raid.tool.nghe" }, "not": true }] },
+    { "wait": 0.5 },
+    { "expect": [{ "raid": { "on": true } }, { "count": { "entities": "spot-mark", "max": 0 } }, { "count": { "entities": "source", "max": 0 } }, { "count": { "entities": "raider", "max": 0 } }] },
+    { "press": { "item": "trap" } },
+    { "until": { "event": "pick", "timeout": 15 } },
+    { "expect": [{ "text": { "shown": "raid.trap.where" } }, { "event": "glowSeq", "with": { "ids": ["post:1", "post:2", "post:3"] } }] },
+    { "press": { "cell": [89, 26.5] } },
+    { "until": { "event": "put", "with": { "zone": "raid-road" }, "timeout": 15 } },
+    { "wait": 0.5 },
+    { "expect": [{ "text": { "shown": "raid.trap.right" } }, { "event": "skill", "with": { "skill": "math.count.120", "task": "raid-soldier1", "parts": [15] } }] },
+    { "tap": { "cell": [89, 34] } },
+    { "until": { "event": "snap", "timeout": 60 } },
+    { "repeat": 12, "steps": [{ "shoot": { "at": "first", "lead": 1.2, "wait": true } }, { "wait": 1.4 }] },
+    { "until": { "event": "open", "with": { "screen": "say" }, "timeout": 60 } },
+    { "expect": [{ "event": "end", "with": { "won": true } }, { "flag": "soldier1.won" }, { "flag": "raid.tool.traps" }, { "flag": "raid.tool.helpers", "is": false }] }
+  ]
+}

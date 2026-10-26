@@ -791,3 +791,11 @@ Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 
 - **The road and its signs:** `place.roadthanglong` ("Đường qua sông Hồng"), `map.sign.west` (in Phù Đổng: "Tấm biển chỉ đường: về phía tây nam, lội qua sông Đuống ở chỗ cạn, là bến đò sông Hồng."), and `map.sign.road` (on the road: "… về phía đông, qua bến đò sông Hồng, là làng Phù Đổng.").
 - **Changed:** `quest.exam.title` ("Sứ giả thử tài"), `quest.exam.go` ("Ra [[dinh]] gặp sứ giả của nhà vua."), `chapter.end.exam` ("Sứ giả của nhà vua thử tài em và gọi em là {title}."), `dlg.teacher.home.n1` ("Thầy nghe tin rồi: sứ giả của nhà vua gọi con là người tài! Thầy mừng lắm."), and `home.calling.none` ("Em sẽ chọn [[nghe]] sau lần thử tài đầu tiên.").
 - **Please check:** "tâu" in the words of the messenger, and "người tài" as the first title of a child of six.
+
+## The raids after the play test of #123 to #134 (#135)
+
+- **The side to count from:** `raid.rule` ("Đếm cột từ chỗ cháu đứng: cột này là một."), after `raid.tool.sling`.
+- **A take after a hit:** `raid.take.more` ("Ôi, lính lấy một ít gạo rồi: lính này cần trúng {n} lần.") and `raid.take.river.more` ("Thuồng luồng tới chỗ lội rồi: con này cần ăn {n} nắm cơm.").
+- **A lost raid:** `raid.lost.why` ("{n} {who} tới {wall}.", for example "Hai lính tới cổng làng.") and `raid.lost.torch` ("Đuốc rơi vào trong {wall} {n} lần.").
+- **The trap:** `raid.trap.where` ("Bẫy đặt ở cột {post} nhé.") and `raid.trap.right` ("Bẫy đặt đúng chỗ rồi!").
+- **Please check:** "cần trúng hai lần" for a child of six, and the English of `raid.lost.why` ("{who}: {n} came to the {wall}."), which keeps the parameters of the Vietnamese line.
