@@ -115,8 +115,10 @@ test('the line of the trays makes the trays and the pot glow, the view of the ta
   const pot = getEntity(session.state, 'zone:pot').zone;
   assert.equal(seen.spots.length, 2, 'the trays and the pot');
   for (const z of [trays, pot]) assert.ok(seen.points.some((p) => Math.hypot(p.x - z.x, p.z - z.z) <= 4), `${z.id} in the points of the view`);
+  // The line names the true place of the trays, next to the pot (#138: "bờ ruộng" sent a child into
+  // the paddies), and no line of the rice says "bờ ruộng".
   h.run(10);
-  assert.equal(h.said.filter((x) => x.key === 'word.boruong').length, 1);
+  assert.ok(!h.said.some((x) => x.key === 'word.boruong'));
 });
 
 // The ducks, with a duck of her flock or a brown duck in the hands.

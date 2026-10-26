@@ -51,6 +51,14 @@ export function decimalWords(h) {
   return { key: b < 10 ? 'decimal.small' : 'decimal.words', params: { a, b: { key: `num.${b}` } } };
 }
 
+// The ring of the tie of the teacher (#138: "I am standing next to him already?"): beside the
+// teacher, on his side away from the heap and away from the mat, so that no rod of the heap is in
+// reach. A tap on the ring is a tap on the teacher (src/core/session.js).
+export function tieRingAt(teacher, heap, mat) {
+  const side = heap && heap.x > teacher.x ? -1 : 1;
+  const away = mat?.rect && teacher.z < (mat.rect.z0 + mat.rect.z1) / 2 ? -1 : 1;
+  return { x: teacher.x + side * 1.8, z: teacher.z + away * 0.7 };
+}
 export function createMentoring({ data, profile, learner = () => null, log = () => null, emit = () => {}, world, env, raise = () => {}, nameOf = () => '', chosen = () => null, choose = () => {} }) {
   const cfg = data.mentors;
   const states = new Map(); // key -> the mentor of the task
@@ -155,16 +163,23 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return lost.sort((a, b) => Math.hypot(a.position.x - hp.x, a.position.z - hp.z) - Math.hypot(b.position.x - hp.x, b.position.z - hp.z))[0];
   }
   // Has the mat of the teacher a bundle of rods or more (#96)?
+  // The ring of the tie (#138): beside the teacher (tieRingAt); null with no teacher.
+  const TIE_NEAR = 2.2; // half blocks: the hero at the ring
+  function tieRing(task) {
+    const p = task.person?.position;
+    return p ? tieRingAt(p, task.piles?.[0]?.zone ?? null, task.place?.zone ?? null) : null;
+  }
   function matFull(key, task) {
     const z = task?.place?.zone;
     if (!defOf(key)?.lines?.tie || z?.rule !== 'bundle' || task.tz?.zone.plan?.form === 'share') return false;
     return itemsOf(task.place).length >= (z.bundle ?? BUNDLE);
   }
-  // Is the row of the fisher at the float, with no stake in the hands (#78)?
+  // Is the row of the fisher at the float, with no stake in the hands (#78), and with no space that
+  // is too wide (#138: then the space is the hint)?
   function rowFull(key, task) {
     const z = task?.place?.zone;
     if (!defOf(key)?.lines?.full || z?.rule !== 'line') return false;
-    return itemsOf(task.place).some((e) => e.item.slot === z.length);
+    return itemsOf(task.place).some((e) => e.item.slot === z.length) && !rowMiss(key, task);
   }
   // Has the row changed since the last tide? Only then a tide comes after the row is at the float,
   // so only then "Đủ hàng rồi. Xem nước lên nào!" is true (#105, rule 34).
@@ -174,6 +189,22 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (!tide || !z) return true;
     const row = query(world(), 'item').filter((e) => e.item.zone === z.id && !e.item.held && e.item.slot != null);
     return row.map((e) => e.item.slot).sort((a, b) => a - b).join(',') !== tide.last;
+  }
+  // What the row of the fisher still misses (#138: "Again? I thought I was done at the red phao."):
+  // with a stake at the float, the widest space that is wider than the space of the row
+  // ({ from, size }); with no stake at the float, { float: true } once the child has put a stake; or
+  // null.
+  function rowMiss(key, task) {
+    const z = task?.place?.zone;
+    if (!defOf(key)?.lines?.wide || z?.rule !== 'line') return null;
+    const slots = query(world(), 'item').filter((e) => e.item.zone === z.id && !e.item.held && e.item.slot != null).map((e) => e.item.slot).sort((a, b) => a - b);
+    if (!slots.includes(z.length)) return itemsOf(task.place).length ? { float: true } : null;
+    let best = null;
+    for (let i = 1; i < slots.length; i++) {
+      const size = slots[i] - slots[i - 1];
+      if (size > z.space && (!best || size > best.size)) best = { from: slots[i - 1], size };
+    }
+    return best;
   }
   // A stake of the child on the row that the row does not need (its two neighbors are at most the
   // space of the row apart), while the person has not shown the take back yet (#78); or null.
@@ -755,6 +786,16 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // mat, "Lấy một que ở đống kia …" made a child put one more). The rods glow one by one, and
       // then the teacher.
       const rods = itemsOf(task.place);
+      // By the heap, the line says where to stand for the tie, and the ring beside the teacher glows
+      // (#138: "I am standing next to him already?"): the press at the heap takes a rod.
+      const tie = tieRing(task);
+      const h = getEntity(w, 'hero')?.position;
+      if (tie && h && Math.hypot(h.x - tie.x, h.z - tie.z) > TIE_NEAR) {
+        say(t, lineOf(key, 'tieRing'));
+        mark(t, tie, 3);
+        if (task.person?.position) point(t + 0.4, tie, 1.6);
+        t += 2.2;
+      }
       say(t, lineOf(key, 'tie'));
       rods.forEach((e, i) => steps.push({ at: t + 0.6 + i * ROD_GLOW, glow: { ids: [e.id] } }));
       const after = t + 0.6 + rods.length * ROD_GLOW;
@@ -792,6 +833,16 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // The stake glows with a ring of its own and bobs until the child takes a stake (the play of
       // #92: the frame showed no stake that stood out).
       steps.push({ at: t, glow: { ids: [stake.id] } });
+      t += 3;
+    } else if ((move === 'show' || move === 'mark') && rowMiss(key, task)) {
+      // The row misses a part: the wide space glows and the fisher says it, or he points at the
+      // float (#138: the child heard only "take a stake", with no reason).
+      const miss = rowMiss(key, task);
+      const z = task.place.zone;
+      const p = miss.float ? { x: z.x + z.length, z: z.z } : { x: z.x + miss.from + miss.size / 2, z: z.z };
+      say(t, lineOf(key, miss.float ? 'toFloat' : 'wide'));
+      point(t, p, 2);
+      mark(t, p, HOLE_MARK);
       t += 3;
     } else if (move === 'show' && defOf(key).lines?.cut && task?.tz?.zone.marks?.length && !task.tz.zone.cut) {
       // A stem with a mark and no cut: the hint is the next step, the count and the cut (#89: a wave
@@ -1079,8 +1130,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
         at += LAY_PACE;
       }
       if (op.part) {
-        s.say(at, 'woodcutter.part', { part: { key: `frac.${op.part.a}.${op.part.b}` } });
-        at += LAY_LINE;
+        // Along the whole stem, the line says what was counted (#138: "Isn't 3 sections 1/4?"): the
+        // lays of the piece, and the part of the stem that each piece is.
+        if (op.onto === 'stem') s.say(at, 'woodcutter.part.lays', { n: { key: `num.${op.n}` }, part: { key: `frac.${op.part.a}.${op.part.b}` } });
+        else s.say(at, 'woodcutter.part', { part: { key: `frac.${op.part.a}.${op.part.b}` } });
+        at += op.onto === 'stem' ? LAY_LINE + 1.4 : LAY_LINE;
       }
     }
     const bad = z.cutBad;

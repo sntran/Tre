@@ -101,11 +101,8 @@
        "id": "rice",
        "now": true
       }
-     ],
-     "next": "qboruong"
-    },
-    "qboruong": { "if": { "grade": { "max": 2 }, "notFlags": ["word.boruong"] }, "then": "wboruong" },
-    "wboruong": { "speaker": "narrator", "textKey": "word.boruong", "names": ["zone:trays"], "effects": [{ "set": "word.boruong" }] }
+     ]
+    }
    },
    "mark": "legend"
   },

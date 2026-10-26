@@ -59,7 +59,7 @@ import { taskPools, POOL } from '../world/light.js';
 import { viewSize, inView } from '../world/view.js';
 import { levelFor, taskOf, trialLevel, tightSlot, allowedSlots, MODEL_DOSES } from './world/trials.js';
 import { nextLevel } from './practice.js';
-import { createMentoring, decimalWords } from './mentoring.js';
+import { createMentoring, decimalWords, tieRingAt } from './mentoring.js';
 import { playExample, stopExample } from './examples.js';
 import { endScript } from './world/systems/mentor.js';
 import { namesOf } from './naming.js';
@@ -938,9 +938,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (along < BEHIND.near || along > BEHIND.far || Math.abs(side) > BEHIND.side) return;
     // To the side where the person already is, then the other side.
     const k = side >= 0 ? 1 : -1;
+    // Never onto a place of a task (#138: "thầy is standing on some, I can't see them all!").
+    const onWork = (p) => query(state, 'zone').some((z) => z.zone.rect && p.x > z.zone.rect.x0 - 1.5 && p.x < z.zone.rect.x1 + 1.5 && p.z > z.zone.rect.z0 - 1.5 && p.z < z.zone.rect.z1 + 1.5);
     for (const s of [k, -k]) {
       const to = { x: q.position.x + s * cz * BEHIND.step, z: q.position.z - s * cx * BEHIND.step };
-      if (!tileMap.walkable(Math.floor(to.x / 2), Math.floor(to.z / 2))) continue;
+      if (!tileMap.walkable(Math.floor(to.x / 2), Math.floor(to.z / 2)) || onWork(to)) continue;
       q.schedule.aside = to;
       Object.assign(q.position, { x: to.x, z: to.z });
       return;
@@ -1613,6 +1615,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'hud' });
     // The iron horse comes out of the forge at full size (#137).
     if (id === 'horse') steedOut();
+    // A row of the fisher with more stakes than it needs passes; the line says it as information
+    // (#138, rule 16: "But my squished poles were OK? Nobody said they were wrong.").
+    if (id === 'fisher') {
+      const z = zoneOf('line')?.zone;
+      const n = z ? query(state, 'item').filter((e) => e.item.zone === z.id && e.item.slot != null).length : 0;
+      const k = z ? Math.ceil(z.length / z.space) + 1 : 0;
+      if (z && n > k) say('fisher.extra', { n: { key: `num.${n}` }, k: { key: `num.${k}` } }, null, 'fisher');
+    }
     // A task of the story may end with its own talk (rice for Gióng: Gióng grows up), after its scene
     // in the world (#137: Gióng grows in front of the child, and then the box of the legend comes).
     const done = () => talk(def.doneTalk ?? `${def.npc}.trial.done`);
@@ -1727,6 +1737,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const wz = workZoneAt(hit.x * 2, hit.y * 2);
     if (!wz) return false;
     const z = wz.zone;
+    // A tap on the place of a mat of the share says its count, as a tap on the mat does (#138).
+    if (/^zone:share-/.test(wz.id) && !holding()) shareCount(wz.id);
     if (z.rule === 'line') {
       // The hero walks along the bank to the point of the tap (#115: a tap on the ring turned the
       // hero only, and the next stake went where the hero stood).
@@ -2925,7 +2937,38 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     shareAfter = p.after;
     setupTrial(state, { ...def, at: p.wall, dir: p.dir, loot: p.loot }, levelFor(data.trials, profile.grade), env);
     say('share.start');
+    // Whose each mat is (#138: "Nobody says how many or whose tray."): the mats glow one after the
+    // other with the line, and the view shows the mats and the friends.
+    queue(() => {
+      const mats = def.who.map((w) => getEntity(state, `mat:share-${w}`)).filter(Boolean);
+      const by = ['by:share-hero', 'friend:nghe', 'by:share-giong'].map((id) => getEntity(state, id)).filter(Boolean);
+      emit({ type: 'open', screen: 'callout', id: shareVoice(), textKey: 'share.mats', params: {} });
+      emit({ type: 'glowSeq', ids: mats.map((m) => m.id) });
+      if (mats.length) emit({ type: 'workView', key: 'share', points: [...mats, ...by].map((e) => ({ ...e.position })), sight: mats.map((m) => ({ ...m.position })) });
+    });
     emit({ type: 'hud' });
+  }
+  // The voice of the share: Nghé, by the mats (else the narrator in a callout of the hero).
+  const shareVoice = () => (getEntity(state, 'friend:nghe') ? 'friend:nghe' : 'hero');
+  const SHARE_WHO = { hero: 'share.who.hero', nghe: 'share.who.nghe', giong: 'share.who.giong' };
+  // A tap on a mat of the share says its count (#138: "I cannot see who has how many bags.").
+  function shareCount(id) {
+    const who = String(id).replace(/^(mat|zone):share-/, '');
+    const z = getEntity(state, `zone:share-${who}`)?.zone;
+    if (!z || !SHARE_WHO[who]) return;
+    const n = z.items.length;
+    emit({ type: 'open', screen: 'callout', id: shareVoice(), textKey: n ? 'share.count' : 'share.count.none', params: { who: { key: SHARE_WHO[who] }, n: { key: `num.${n}` } } });
+    emit({ type: 'glowSeq', ids: [`mat:share-${who}`] });
+  }
+  // A share that is not equal: which mat has more (#138), while that mat glows.
+  function shareMore(counts) {
+    const def = trialDef('share');
+    if (!def || !counts?.length) return;
+    const most = Math.max(...counts);
+    const i = counts.indexOf(most);
+    const who = def.who[i];
+    emit({ type: 'open', screen: 'callout', id: shareVoice(), textKey: 'share.more', params: { who: { key: SHARE_WHO[who] } } });
+    emit({ type: 'glowSeq', ids: [`mat:share-${who}`] });
   }
   let shareAfter = [];
   // The share is fair: the sacks of the hero go to the basket as bowls of rice, the rest stays
@@ -2933,6 +2976,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function shareDone() {
     const sacks = getEntity(state, 'zone:share-hero')?.zone.items.length ?? 0;
     const rest = zoneOf('loot')?.zone.items.length ?? 0;
+    // The line of the result (#138: "I shared the rice bags but nobody told me if I did it right.").
+    say(rest ? 'share.result' : 'share.result.none', { n: { key: `num.${sacks}` }, rest: { key: `num.${rest}` } });
     if (sacks) {
       applyEffects(profile, [{ give: { rice: sacks } }]);
       emit({ type: 'gift', from: 'hero', give: { rice: sacks }, delay: 0.3 });
@@ -3935,7 +3980,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           if (chosen?.id === 'rack:smith') add({ act: 'rack', icon: 'rack', target: 'rack:smith', at: tz.zone.rack, rank: -1, work: true, run: () => work(id, 'rack') }, REACH + 3);
         }
         // The guess of the fair test (#127): after a tap on a bar, a press puts a pebble by it.
-        const guessed = test?.guessWait ? test.tries.find((q) => q.id === chosen?.id) : null;
+        // A tap on the trough, on its water, or on the bar in it chooses the bar in the water; a tap
+        // on the rack, or on the bar on it, chooses the bar in the air (#138: a girl tapped the bar in
+        // the trough six times, and only a tap on another part of the trough chose it).
+        const near = (q) => q.id === chosen?.id || (q.how === 'water' && /^(trough|zone:trough|water)/.test(chosen?.id ?? '')) || (q.how !== 'water' && /^rack/.test(chosen?.id ?? ''));
+        const guessed = test?.guessWait ? test.tries.find(near) : null;
         if (guessed) add({ act: 'pebble', icon: 'hand-put', target: guessed.id, at: getEntity(state, guessed.id).position, rank: -1, work: true, run: () => work(id, 'pebble', { item: guessed.id }) }, REACH + 4);
       }
       const hearth = zoneOf('hearth');
@@ -4702,6 +4751,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // does: a tap on another thing is only a tap on that thing.
     const tapped = target.thing ?? target.pet ?? target.sleeper ?? target.person;
     riddles.tap(target.ground ? { x: target.ground.x * 2, z: target.ground.y * 2 } : tapped ? getEntity(state, tapped)?.position : null, target.ground?.object ?? null);
+    if (/^(mat|zone):share-/.test(String(tapped ?? target.zone ?? ''))) shareCount(tapped ?? target.zone);
     // A row of the guess at the bridge: the hero walks to its foot on the bank, and it is the target
     // (the action button chooses it).
     if (target.guess) {
@@ -4728,6 +4778,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // child tapped the third post with the trap, and nothing happened).
     if (raidOn() && /^post:\d+$/.test(String(target.thing ?? '')) && tapPost(Number(target.thing.slice(5)))) return;
     if (target.thing) {
+      // The guess of the fair test (#138): a tap on the trough or its water is a tap on the bar in
+      // the water, and a tap on the rack is a tap on the bar in the air.
+      const test = trialZone('smith')?.zone.test;
+      if (test?.guessWait) {
+        const water = /^(trough|zone:trough|water)/.test(target.thing);
+        const rack = /^rack/.test(target.thing);
+        const q = water ? test.tries.find((x) => x.how === 'water') : rack ? test.tries.find((x) => x.how !== 'water') : null;
+        if (q && q.id !== target.thing) return tap({ ...target, thing: q.id });
+      }
       // A stake that stands on the boat, while the boat can go: the tap is a tap on the boat (#119:
       // the stakes stand upright over the boat, and a finger on the boat took a stake back; the
       // stakes over the float go back to the pile after the boat goes).
@@ -4821,6 +4880,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.h });
       goTo(hearthZ.position, hearthZ.id, null, standOf(hearthZ));
       return;
+    }
+    // A tap on the ring of the tie beside the teacher, with rods on the mat, is a tap on the teacher:
+    // the hero walks next to him, and the big button ties (#138).
+    const teacher = getEntity(state, 'npc:teacher');
+    const mat = zoneOf('mat');
+    if (teacher && mat?.zone.items.length && openTask('trial-scholar')) {
+      const ring = tieRingAt(teacher.position, zoneOf('rods')?.zone ?? null, mat.zone);
+      if (Math.hypot(hit.x * 2 - ring.x, hit.y * 2 - ring.z) <= 1.6) return tap({ person: teacher.id });
     }
     if (tapTaskPlace(hit) || (raidOn() && tapRaidRoad(hit))) {
       emit({ type: 'tapfx', x: hit.x, y: hit.y, h: hit.h });
@@ -5361,6 +5428,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'retreat') raidRetreat();
     if (ev.type === 'light') gateHint();
     if (ev.type === 'trapput') trapPlaced(ev);
+    if (ev.type === 'sulk') shareMore(ev.counts);
     if (ev.type === 'hit' && (ev.by === 'stone' || ev.by === 'riceball')) raidHits += 1;
     if (ev.type === 'raidover') {
       raidOver();

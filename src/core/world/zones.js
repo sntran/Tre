@@ -100,7 +100,7 @@ export function layPlan(pieces, plan) {
 export function layCount(pieces, plan, solved, bad) {
   if (pieces.length !== plan.want.length) return COUNT_LEAD + PIECES_LINE;
   let t = COUNT_LEAD;
-  for (const op of layPlan(pieces, plan)) t += (op.from === 2 ? LAY_PACE : 0) + op.n * LAY_PACE + (op.part ? LAY_LINE : 0);
+  for (const op of layPlan(pieces, plan)) t += (op.from === 2 ? LAY_PACE : 0) + op.n * LAY_PACE + (op.part ? LAY_LINE + (op.onto === 'stem' ? 1.4 : 0) : 0);
   if (solved && plan.form === 'unlike') t += REST_LINE;
   return t + (bad ? BAD_LINE : 0);
 }

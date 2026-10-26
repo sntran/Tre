@@ -809,3 +809,12 @@ Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 
 - **The parent page:** `parent.exam.placed` ("Xếp lớp: {grade} ({correct}/{total})") and `parent.grade.above` ("{grade} trở lên").
 - **The calling:** `exam.messenger.who` ("Cháu đã giúp năm người tài trong làng. Cháu muốn học với ai?"), `exam.who`, `exam.messenger.calling.note`, the mentors of the village `calling.*.guide` ("Người thầy: bác thợ rèn"), and the lines of the levels `calling.*.line.2` to `calling.*.line.5`.
 - **Please check:** the lines of the levels of the callings, for a child of each grade (for example `calling.woodcutter.line.4`, "các phần bằng nhau trên cây tre", for equal fractions).
+
+## Counts and places in the small tasks (#138)
+
+- **The teacher:** `mentor.scholar.tieRing` ("Đứng ở vòng tròn bên thầy, rồi bấm nút lớn để buộc.").
+- **The fisher:** `mentor.fisher.wide` ("Chỗ này còn rộng, cá chui qua được."), `mentor.fisher.toFloat` ("Hàng phải tới cái phao đỏ."), and `fisher.extra` ("Hàng có {n} cọc. Các khe đều nhau thì {k} cọc cũng đủ.").
+- **The rice:** `rice.help.tray` ("Nồi có {n} bát. Khay cơm ở cạnh nồi, trong vòng tròn: cháu mang một khay vào nồi nhé.") and `dlg.giong.rice.n2`.
+- **The share:** `share.mats`, `share.count` ("{who} có {n} bao."), `share.count.none`, `share.more` ("Chiếu của {who} nhiều hơn."), `share.result` ("Mỗi người {n} bao. Còn {rest} bao lẻ cho làng."), and `share.result.none`.
+- **The woodcutter:** `woodcutter.part.lays` ("Khúc này đặt vừa {n} lần dọc cây tre: mỗi khúc là {part} cây tre.").
+- **Please check:** "bao lẻ" for the sacks that are left over, and "đặt vừa {n} lần dọc cây tre" for a child of grade 5.

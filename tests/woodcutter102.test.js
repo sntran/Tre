@@ -90,8 +90,9 @@ test('each grade gets its stem: the talk names the part in words, and a right cu
     assert.deepEqual(failures.map((f) => `${f.step}: ${f.message}`), [], `grade ${grade}: ${JSON.stringify(plan)}`);
     const skill = events.find((e) => e.type === 'skill');
     assert.deepEqual([skill.skill, skill.solved], [wood.levels[grade - 1].skill, true]);
-    const parts = said.filter((l) => l.key === 'woodcutter.part').map((l) => l.text);
-    const want = form === 'unlike' ? ['Một phần ba cây tre.', 'Một phần tư cây tre.'] : [`${vi.t(`frac.${plan.a}.${plan.b}`)[0].toUpperCase()}${vi.t(`frac.${plan.a}.${plan.b}`).slice(1)} cây tre.`];
+    // Along the whole stem (grade 5), the line says what was counted (#138).
+    const parts = said.filter((l) => l.key === 'woodcutter.part' || l.key === 'woodcutter.part.lays').map((l) => l.text);
+    const want = form === 'unlike' ? ['Khúc này đặt vừa ba lần dọc cây tre: mỗi khúc là một phần ba cây tre.', 'Khúc này đặt vừa bốn lần dọc cây tre: mỗi khúc là một phần tư cây tre.'] : [`${vi.t(`frac.${plan.a}.${plan.b}`)[0].toUpperCase()}${vi.t(`frac.${plan.a}.${plan.b}`).slice(1)} cây tre.`];
     assert.deepEqual(parts, want, `grade ${grade}`);
     // The count of the lays: one fourth is "một, hai, ba, bốn".
     if (form === 'unit') assert.deepEqual(said.filter((l) => /^num\./.test(l.key)).map((l) => l.key), Array.from({ length: plan.b }, (_, i) => `num.${i + 1}`));

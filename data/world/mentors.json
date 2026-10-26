@@ -382,7 +382,7 @@
         "demoDone": "mentor.scholar.demoDone",
         "now": "mentor.scholar.now",
         "raise": "mentor.scholar.raise",
-        "tie": "mentor.scholar.tie",
+        "tie": "mentor.scholar.tie", "tieRing": "mentor.scholar.tieRing",
         "loose": "mentor.scholar.loose", "bandLeft": "mentor.scholar.bandLeft", "bandMore": "mentor.scholar.bandMore",
         "box": "mentor.scholar.box", "boxNone": "mentor.scholar.boxNone", "mark.share": "mentor.scholar.mark.share", "mark.decimal": "mentor.scholar.mark.decimal", "demo.share": "mentor.scholar.demo.share", "demoDone.share": "mentor.scholar.demoDone.share", "demo.decimal": "mentor.scholar.demo.decimal", "demoDone.decimal": "mentor.scholar.demoDone.decimal", "tie.decimal": "mentor.scholar.tie.decimal", "shareLeft": "mentor.scholar.shareLeft", "shareUnequal": "mentor.scholar.shareUnequal", "shareMore": "mentor.scholar.shareMore", "toBox": "mentor.scholar.toBox", "fewer": "mentor.scholar.fewer", "need": "mentor.scholar.need"
       }
@@ -410,6 +410,7 @@
       "picture": "mentor.picture.fisher", "pictureUnless": "trial.smith.done",
       "lines": { "show.measure": "mentor.show.fisher.boat", "show.trees": "mentor.show.fisher.boat", "show.half": "mentor.show.fisher.boat", "carry.measure": "mentor.carry.fisher.boat", "carry.trees": "mentor.carry.fisher.boat", "carry.half": "mentor.carry.fisher.boat",
         "show": "mentor.show.fisher",
+        "wide": "mentor.fisher.wide", "toFloat": "mentor.fisher.toFloat",
         "first": "mentor.fisher.first",
         "mark": "mentor.fisher.mark",
         "carry": "mentor.carry.fisher",

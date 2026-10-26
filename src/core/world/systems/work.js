@@ -56,6 +56,8 @@ const PIECE_ROW = 2;
 const CULM_STEP = 2.5; // half blocks between two culms of the bamboo clump (a row along -z)
 const AIM_RISE = 0.45; // seconds: the mark of a slash goes up one half block of the culm in this time
 const MAT_MAX = 14; // the most rods on the mat of the teacher
+const SHARE_GAP = 4.6; // half blocks from a mat of the share to the next one
+const SHARE_BACK = 2.8; // half blocks from the middle of a mat of the share to its friend
 const DEMO_WAIT = 0.8; // seconds: the smith quenches his demo piece this long after it turns hot
 const DEMO_NEXT = 1.6; // seconds: then the iron of the child comes on the anvil
 
@@ -398,14 +400,16 @@ export function setupTrial(world, def, level, env, opts = {}) {
     const pt = (b, s) => { const x = def.at.x + back.x * b + side.x * s; const z = def.at.z + back.z * b + side.z * s; return { x, y: gy(x, z), z }; };
     const pile = heap('loot', pt(3, 0), 'sack', { cols: 4, step: 0.9 });
     things(pile, 'sack', def.loot);
+    // The mats lie 4.6 half blocks apart, and each friend stands behind the mat, 2.8 from its middle:
+    // no figure stands on a mat (#138: "Gióng is so big, he blocks the trays.").
     def.who.forEach((who, i) => {
-      const m = pt(7, (i - 1) * 3.5);
+      const m = pt(7, (i - 1) * SHARE_GAP);
       addEntity(world, { id: `zone:share-${who}`, keep: true, zone: { id: `share-${who}`, task: owner, rule: 'share', accepts: 'sack', who, items: [], x: m.x, y: m.y, z: m.z, rect: { x0: m.x - 1.4, x1: m.x + 1.4, z0: m.z - 1.4, z1: m.z + 1.4 } }, position: { x: m.x - back.x * 2, y: m.y, z: m.z - back.z * 2, facing: 0 } });
       addEntity(world, { id: `mat:share-${who}`, keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: 'share-mat' });
       // A friend stands behind the mat; where the ground there is not level with the mat (a paddy),
       // in front of it.
-      const behind = pt(9, (i - 1) * 3.5);
-      const by = Math.abs(behind.y - m.y) < 0.6 ? behind : pt(4.8, (i - 1) * 3.5);
+      const behind = pt(7 + SHARE_BACK, (i - 1) * SHARE_GAP);
+      const by = Math.abs(behind.y - m.y) < 0.6 ? behind : pt(7 - SHARE_BACK, (i - 1) * SHARE_GAP);
       const face = Math.atan2(-back.x, -back.z) + (by === behind ? 0 : Math.PI);
       if (who === 'hero') addEntity(world, { id: 'by:share-hero', keep: true, position: { ...by, facing: face }, look: 'basket-low' });
       if (who === 'giong') addEntity(world, { id: 'by:share-giong', keep: true, position: { ...by, facing: face }, look: 'giong-hero' });
@@ -1958,7 +1962,27 @@ function tickTide(world, tz, dt, env) {
     const now = [...row.map((s) => s.item.slot)].sort((a, b) => a - b).join(',');
     if (world.events.some((ev) => (ev.type === 'put' || ev.type === 'pick') && ev.id === 'hero')) tide.still = 0;
     else tide.still = (tide.still ?? 0) + dt;
-    if (atFloat && !held && now !== tide.last && tide.still >= FLOAT_WAIT && tide.t < tide.every - FLOAT_RISE) {
+    // A row at the float with a space wider than the space of the fisher: he points at the space,
+    // the space glows, and he says it; the water waits for the child (#138: "Again? I thought I was
+    // done at the red phao."). The glow goes when a stake stands in the space. After an escape, the
+    // hole has its own help (#96).
+    const wide = tz.zone.wide;
+    if (wide && (now !== wide.row || !atFloat)) {
+      delete tz.zone.wide;
+      removeEntity(world, 'why:fisher:wide');
+    }
+    const slots = [...new Set([0, ...row.map((s) => s.item.slot)])].sort((a, b) => a - b);
+    let gap = null;
+    for (let i = 1; i < slots.length; i++) if (slots[i] - slots[i - 1] > line.zone.space && (!gap || slots[i] - slots[i - 1] > gap.size)) gap = { from: slots[i - 1], size: slots[i] - slots[i - 1] };
+    if (atFloat && gap && !held && !tz.zone.wide && !tz.zone.hole && tide.still >= FLOAT_WAIT && tide.t < tide.every - FLOAT_RISE) {
+      tz.zone.wide = { row: now, ...gap };
+      addEntity(world, { id: 'why:fisher:wide', keep: true, position: { x: line.zone.x + gap.from, y: line.zone.y + WATER_UP, z: line.zone.z, facing: Math.PI / 2 }, look: `gap-frame-${Math.max(1, Math.round(gap.size))}` });
+      const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
+      if (fisher) {
+        fisher.gesture = { act: 'point', x: line.zone.x + gap.from + gap.size / 2, z: line.zone.z, t: 3 };
+        say(world, 'call', fisher.id, { key: 'mentor.fisher.wide', params: {}, happened: true });
+      }
+    } else if (atFloat && (!gap || tz.zone.hole) && !held && now !== tide.last && tide.still >= FLOAT_WAIT && tide.t < tide.every - FLOAT_RISE) {
       tide.t = tide.every - FLOAT_RISE;
       const fisher = query(world, 'person').find((p) => p.person.ref === 'fisher' && !p.hidden);
       if (fisher) say(world, 'call', fisher.id, { key: 'fisher.full', params: {}, happened: true });

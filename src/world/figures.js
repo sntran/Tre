@@ -896,7 +896,8 @@ export function workThing(look) {
       }
       return still(parts, 0.18);
     }
-    case 'rod': return still([P('stick', [0.22, 0.16, 0.9], 'yellow', [0, 0.08, 0]), P('endA', [0.22, 0.16, 0.08], 'ochre', [0, 0.08, 0.49]), P('endB', [0.22, 0.16, 0.08], 'ochre', [0, 0.08, -0.49])], 0.18);
+    // A counting rod: thin as a que tính, and long enough to count on a phone (#138).
+    case 'rod': return still([P('stick', [0.25, 0.2, 1.0], 'yellow', [0, 0.1, 0]), P('endA', [0.25, 0.2, 0.1], 'ochre', [0, 0.1, 0.55]), P('endB', [0.25, 0.2, 0.1], 'ochre', [0, 0.1, -0.55])], 0.22);
     // Ten rods tied with a red band.
     // A big bundle of ten bundles (grade 5, #101), a box for the rods that are left, and the low
     // table of the teacher.
@@ -1178,8 +1179,10 @@ export function workThing(look) {
       // A fallen stem dries yellow, so that it stands out on the grass; a cut stem is green, with
       // a dark ring at each half block.
       const [a, b, ring] = look.green ? ['green', 'greenPale', 'greenDeep'] : ['yellow', 'yellowPale', 'ochre'];
-      // The nodes are thin and close to the stem, so that they do not look like chalk marks (#48).
-      for (let i = 0; i < look.n; i++) parts.push(P(`seg${i}`, [1, 1, 1], i % 2 ? a : b, [0, 0.5, i + 0.5]), P(`node${i}`, [1.04, 1.04, 0.08], ring, [0, 0.5, i + 1]));
+      // The nodes are close to the stem and dark, so that they do not look like chalk marks (#48),
+      // and thick enough to count on a phone on a long stem (#138: "the little sections were really
+      // hard to count").
+      for (let i = 0; i < look.n; i++) parts.push(P(`seg${i}`, [1, 1, 1], i % 2 ? a : b, [0, 0.5, i + 0.5]), P(`node${i}`, [1.08, 1.08, 0.16], ring, [0, 0.5, i + 1]));
       parts.push(P('end', [0.8, 0.8, 0.1], 'yellowPale', [0, 0.5, 0]));
       return still(parts, 0.8);
     }
