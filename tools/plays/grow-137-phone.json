@@ -1,0 +1,465 @@
+{
+ "about": "#137: the rice of Gióng to the end at grade 1: Gióng grows in front of the child in a few steps, walks to his iron horse in the yard and gets on it; the box of the legend with Gióng on his horse; after \"Có!\" he rides behind the child.",
+ "start": "?story=rice-giong",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "1",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "walk": {
+    "person": "mother"
+   },
+   "taps": 10
+  },
+  {
+   "tap": {
+    "person": "mother"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!(tre.activeVillage.heard().some((x) => x.key === 'dlg.giong.grown.n1') || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong')))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'grow:giong'))",
+   "timeout": 120
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "gióng-grows"
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "he-grows-more"
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "on-his-horse-in-the-yard"
+  },
+  {
+   "read": 6
+  },
+  {
+   "click": "Có! Mình đi cùng bạn.",
+   "after": 1.5
+  },
+  {
+   "read": 4
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": [
+    195,
+    180
+   ],
+   "after": 3
+  },
+  {
+   "tap": [
+    195,
+    180
+   ],
+   "after": 3
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "he-rides-behind-the-child"
+  }
+ ]
+}

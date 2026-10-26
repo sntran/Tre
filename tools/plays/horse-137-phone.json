@@ -1,0 +1,472 @@
+{
+ "about": "#137: the forge of the iron horse to the end: six lumps, the blow, the iron into the water, and the iron horse at full size by the forge with the smith.",
+ "start": "?story=forge-horse",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone !== 'hearth' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone !== 'hearth' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone !== 'hearth' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone !== 'hearth' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone !== 'hearth' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone !== 'hearth' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone !== 'hearth' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone !== 'hearth' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone !== 'hearth' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thing": "bellows:horse"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "wait": 3
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'iron:horse'))",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "iron:horse"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "until": "(tre.activeVillage.state().entities.find((e) => e.id === 'iron:horse')?.glow ?? 1) >= 1",
+   "timeout": 60
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'steed:giong'))",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-iron-horse-at-full-size"
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "after-the-talk"
+  }
+ ]
+}
