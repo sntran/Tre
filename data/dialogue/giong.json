@@ -176,6 +176,7 @@
      "choices": [
       {
        "textKey": "dlg.river.friends.n5.c1",
+       "icon": "heart",
        "effects": [
         {
          "friend": "song"
@@ -191,6 +192,7 @@
       },
       {
        "textKey": "dlg.river.friends.n5.c2",
+       "icon": "water",
        "next": "n7"
       }
      ]

@@ -48,6 +48,25 @@ export function placeArrow(p, { controls = [] } = {}) {
 // under the arrow of the smith, and the child did not find her face): the arrow slides along its
 // edge, one arrow wide at a time, to a place where no other arrow is. edge: { x, y, angle } on the
 // edge of the box { left, right, top, bottom }; placed: the arrows before it. Return the edge point.
+// The stars of the side puzzles (the marks 'mark-side' of the world): a side star says its own line,
+// and has no face of a person of the story (#139: "But I already helped the healer! I want someone
+// NEW."). by: the person of the puzzle, for the line. Map cells, as the stars of the story.
+export function sideMarks(entities) {
+  return entities.filter((e) => e.look === 'mark-side' && e.position && !e.hidden).map((e) => {
+    const pots = e.id === 'pz:mark:pots';
+    return { x: e.position.x / 2, y: e.position.z / 2, h: e.position.y / 2 + 0.6, id: e.id, who: null, by: pots ? 'healer' : null, key: pots ? 'star.side.pots' : 'star.side', main: false, side: true };
+  });
+}
+
+// The markers on the edge of the screen (#139: six faces on the left edge, and the chickens under
+// them): at most max, the step of the story first, then the nearest to the hero (map cells). The
+// others are on the map of the village. items: [{ m: { x, y, main }, ... }].
+export const EDGE_MAX = 3;
+export function edgeFew(items, hero, max = EDGE_MAX) {
+  const far = (m) => Math.hypot(m.x - hero.x, m.y - hero.y);
+  return [...items].sort((a, b) => Number(Boolean(b.m.main)) - Number(Boolean(a.m.main)) || far(a.m) - far(b.m)).slice(0, max);
+}
+
 export const ARROW_GAP = 48; // pixels between the middles of two arrows
 export function spreadArrow(edge, placed, box) {
   const free = (q) => placed.every((o) => Math.hypot(o.x - q.x, o.y - q.y) >= ARROW_GAP);

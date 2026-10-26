@@ -11,7 +11,7 @@ import { keysToScreenDir, stickToScreenDir, screenToMap } from '../core/world/mo
 import { getEntity, query } from '../core/world/state.js';
 import { basketOf, counterLine } from '../core/items.js';
 import { levelOf } from '../core/growth.js';
-import { MINI, toMini, miniKind, onMini } from '../world/minimap.js';
+import { MINI, VILLAGE, toMini, miniKind, onMini, villageMapItems } from '../world/minimap.js';
 import { C } from '../render/palette.js';
 import { STEP } from '../core/world/step.js';
 import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, starOn, puddlesAt } from '../core/world/ambient.js';
@@ -19,7 +19,7 @@ import { rainOf } from '../core/world/systems/sky.js';
 import { createSession, middleOf } from '../core/session.js';
 import { createHearing } from '../core/hearing.js';
 import { LINE_LIFE, lineLife, linesAfter, nearHero as talksNear } from '../core/lines.js';
-import { placeStar, placeArrow, spreadArrow, placeBubble, starBox, STAR, AWAY_LIFE } from '../world/marks.js';
+import { placeStar, placeArrow, spreadArrow, placeBubble, starBox, edgeFew, sideMarks, STAR, AWAY_LIFE } from '../world/marks.js';
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
@@ -37,7 +37,7 @@ import { speak, speakText, speaking, stop as stopVoice } from './speak.js';
 import { bubbleLine, createVoiceQueue, doneBy } from '../core/bubblevoice.js';
 import { voiceOf } from '../core/voices.js';
 import { namesOf } from '../core/naming.js';
-import { createDialogueBox, glossLine, otherOnce, otherLineOn, FACE_FIRST, FACE_PACE } from './dialogue.js';
+import { createDialogueBox, glossLine, wordGloss, otherOnce, otherLineOn, FACE_FIRST, FACE_PACE } from './dialogue.js';
 import { printOf } from './notebook.js';
 import { modals } from './registry.js';
 import { createRaidView } from './raid.js';
@@ -465,14 +465,14 @@ export async function mountVillage(ctx, params = {}) {
   // A dark layer for the change of map, and the name of the new map.
   const fade = h('div', { class: params.arrive ? 'map-fade on' : 'map-fade' });
   const banner = params.arrive ? h('div', { class: 'map-name', text: t(mapData.nameKey) }) : null;
-  // The minimap in the corner (#8): the near places, the hero, and the stars. A tap opens the
-  // country map, as the map button does.
+  // The minimap in the corner (#8): the near places, the hero, and the stars. A tap opens the map
+  // of the village with its people (#139); the map button keeps the map of the country.
   const DPR = Math.min(2, window.devicePixelRatio || 1);
   const miniCanvas = h('canvas', { class: 'minimap-canvas', width: MINI.size * DPR, height: MINI.size * DPR });
-  const miniBtn = h('button', { class: 'minimap', type: 'button', 'aria-label': t('ui.worldmap') }, [miniCanvas]);
+  const miniBtn = h('button', { class: 'minimap', type: 'button', 'aria-label': t('ui.villageMap') }, [miniCanvas]);
   miniBtn.addEventListener('click', () => {
-    ctx.log('action', { kind: 'travel' });
-    if (!busy) send({ type: 'travel' });
+    ctx.log('action', { kind: 'villagemap' });
+    if (!busy) openVillageMap();
   });
   ctx.ui.append(duskTint, duskLayer, glowLayer, paper, raidLayer, marks, hud, miniBtn, turns, fade, ...(banner ? [banner] : []));
   if (params.arrive) {
@@ -609,9 +609,7 @@ export async function mountVillage(ctx, params = {}) {
   function markers() {
     const story = storyMarkers();
     if (session.stations().length || session.practice || session.mentorTask) return story;
-    const side = state.entities.filter((e) => e.look === 'mark-side' && e.position && !e.hidden)
-      .map((e) => ({ x: e.position.x / 2, y: e.position.z / 2, h: e.position.y / 2 + 0.6, id: e.id, who: e.id === 'pz:mark:pots' ? 'healer' : null, key: 'star.go.person', main: false }));
-    return [...story, ...side];
+    return [...story, ...sideMarks(state.entities)];
   }
   function storyMarkers() {
     const stationIds = session.stations();
@@ -1390,7 +1388,7 @@ export async function mountVillage(ctx, params = {}) {
       stopVoice();
       spoken = null;
     }
-    for (const x of items) voiceQueue.offer({ id: 'talk', talk: true, key: x.key ?? null, text: x.text ?? null, params, voice: x.voice, kind: 'world' }, speaking() || Boolean(spoken), performance.now() / 1000);
+    for (const x of items) voiceQueue.offer({ id: 'talk', talk: true, key: x.key ?? null, text: x.text ?? null, params, voice: x.voice, kind: 'world', choice: x.choice ?? null }, speaking() || Boolean(spoken), performance.now() / 1000);
   }
   function stepVoice() {
     // A voice that sends no end (no voice on the device): the turn ends after the time that the
@@ -1403,7 +1401,16 @@ export async function mountVillage(ctx, params = {}) {
     if (!line) return;
     const now = { line, t: performance.now(), end: performance.now() + 600 + textOf(line).length * 85 };
     spoken = now;
-    sayLine(line, { queue: true, onEnd: () => { if (spoken === now) spoken = null; } });
+    // A choice of the talk lights up while the voice says it (#139).
+    if (line.talk) box?.light(line.choice ?? null);
+    sayLine(line, {
+      queue: true,
+      onEnd: () => {
+        if (spoken !== now) return;
+        spoken = null;
+        if (line.choice != null) box?.light(null);
+      },
+    });
   }
   const voiceHolds = (b) => Boolean(b.line) && (voiceQueue.waiting(b.id, b.line.key) || (spoken?.line.id === b.id && spoken.line.key === b.line.key));
   // A tap on a bubble, or on its person while the bubble shows, says the line again (#60).
@@ -1897,16 +1904,21 @@ export async function mountVillage(ctx, params = {}) {
   // A tap on a star says where it goes, before the walk (#62): "Đi tìm bà lang." The hero says it,
   // in the voice of the hero, as a line of a bubble (#60).
   function sayStar(m) {
-    const name = m.who ? namesOf(data, mapData.region)[m.who] ?? { key: `npc.${m.who}.name` } : null;
+    const by = m.who ?? m.by ?? null;
+    const name = by ? namesOf(data, mapData.region)[by] ?? { key: `npc.${by}.name` } : null;
     const who = name ? t(name.key, name.params) : '';
     const params = { who: who.charAt(0).toLocaleLowerCase(lang()) + who.slice(1) };
     // A person with the name of a role (the smith) gets an article in English (#67: "Go and find the
     // smith."); a person with a name of the region does not.
-    const role = name?.key === `npc.${m.who}.name`;
-    const key = m.key === 'star.go.person' && role ? 'star.go.role' : m.key ?? 'star.go.place';
+    const role = name?.key === `npc.${by}.name`;
+    const key = m.key === 'star.go.person' && role ? 'star.go.role' : m.side && m.by && role ? `${m.key}.role` : m.key ?? 'star.go.place';
     const line = { id: 'hero', key, params, voice: lineVoice('hero'), kind: 'line' };
-    showBubble('hero', tn(line.key, params), null, line);
+    // A word of the line that the child hears the first time: its line right after it (#139: "Đi
+    // tìm anh tiều phu." came before "Tiều phu là người đốn củi.").
+    const words = wordGloss(ctx, tn(line.key, params), line.key);
+    showBubble('hero', [tn(line.key, params), ...words].join('\n'), null, line);
     voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
+    for (const text of words) voiceQueue.offer({ id: 'hero', key: null, text, params: {}, voice: line.voice, kind: 'world' }, true, performance.now() / 1000);
   }
   // The pulse of the star of a station (seconds left), when the head of the hamlet points at it.
   // The pointers over the things that a line of a talk names (#62).
@@ -2031,6 +2043,60 @@ export async function mountVillage(ctx, params = {}) {
     mini.strokeStyle = C.ink;
     mini.stroke();
   }
+  // The map of the village (#139): the ground around the hero with north up, the faces of the
+  // people, the stars, and the hero (src/world/minimap.js). A tap on a face or a star walks there.
+  function openVillageMap() {
+    const hp = hero().position;
+    const hc = { x: hp.x / 2, y: hp.z / 2 };
+    const R = VILLAGE.radius;
+    const px = 3; // canvas pixels for each cell
+    const cv = h('canvas', { class: 'village-map-canvas', width: 2 * R * px, height: 2 * R * px });
+    const g = cv.getContext('2d');
+    g.fillStyle = C.paperDeep;
+    g.fillRect(0, 0, cv.width, cv.height);
+    const x0 = Math.floor(hc.x) - R;
+    const z0 = Math.floor(hc.y) - R;
+    for (let z = z0; z < z0 + 2 * R; z++) {
+      for (let x = x0; x < x0 + 2 * R; x++) {
+        const type = tileMap.type(x, z);
+        if (!type) continue;
+        g.fillStyle = C[miniKind(type, tileMap.solidAt(x, z))] ?? C.paperDeep;
+        g.fillRect((x - x0) * px, (z - z0) * px, px, px);
+      }
+    }
+    const layer = h('div', { class: 'modal-layer' });
+    const close = () => layer.remove();
+    const pins = h('div', { class: 'village-map-pins' });
+    const go = (fn) => () => {
+      close();
+      fn();
+    };
+    const center = { x: x0 + R, y: z0 + R };
+    // The people out of their houses.
+    const out = persons().filter((q) => !getEntity(state, q.entity)?.hidden);
+    for (const it of villageMapItems(center, out, markers(), R)) {
+      const at = { left: `${(it.u * 100).toFixed(2)}%`, top: `${(it.v * 100).toFixed(2)}%` };
+      let el;
+      if (it.kind === 'person') {
+        const look = speakerLookOf(ctx, it.who);
+        el = button(null, go(() => send({ type: 'tap', target: { person: it.id } })), { cls: 'village-map-face', aria: it.who });
+        if (look) el.append(portraitCanvas(ctx, look, { framing: 'bust', size: 26 }));
+      } else if (it.kind === 'star') {
+        el = button(null, go(() => {
+          sayStar(it.mark);
+          send({ type: 'tap', target: { ground: { x: it.mark.x, y: it.mark.y, h: it.mark.h, thing: false, object: null, goal: true } } });
+        }), { cls: 'village-map-star', icon: 'ui/star', aria: t('ui.star') });
+      } else el = h('span', { class: 'village-map-hero' });
+      Object.assign(el.style, at);
+      pins.append(el);
+    }
+    layer.append(h('div', { class: 'panel village-map' }, [
+      h('div', { class: 'panel-head' }, [h('h2', { text: t('ui.villageMap') }), button(null, close, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') })]),
+      h('div', { class: 'village-map-box' }, [cv, pins]),
+    ]));
+    layer.addEventListener('click', (e) => { if (e.target === layer) close(); });
+    ctx.ui.append(layer);
+  }
   function drawMarks(dt) {
     if (starPulse && (starPulse.t -= dt) <= 0) starPulse = null;
     const hudRect = hud.getBoundingClientRect();
@@ -2053,23 +2119,28 @@ export async function mountVillage(ctx, params = {}) {
     // In a raid the hero stays at the wall (#86), so no star shows: each star leads away from it
     // (#99: "Đi tới chỗ ngôi sao." came, and the hero did not move).
     const raidNow = Boolean(getEntity(state, 'raid')?.raid && !getEntity(state, 'raid').raid.result);
+    const onEdge = [];
     for (const m of (busy && !marksLine && !facePulse) || taskHereNow || raidNow ? [] : markers()) {
       const p = view.project(m.x, m.h, m.y);
       const edge = edgeMarker(screen, p, inset);
-      if (!edge) {
-        const el = starAt(stars++);
-        el.mark = m;
-        // Off the stick, the buttons, and the hero (#53).
-        const at = placeStar(p, { controls, hero: heroAt });
-        // The box of the star with its bob, so that a bubble does not jump from side to side.
-        const box = starBox(at);
-        marks.push({ ...box, y0: box.y0 - 4, y1: box.y1 + 4 });
-        setFace(el, m.who);
-        // The star of the next step of the story is bigger than the others (#62).
-        el.classList.toggle('main', Boolean(m.main));
-        el.style.transform = `translate(${at.x - STAR / 2}px, ${at.y - STAR + bob}px) scale(${pulseOf(m) * (m.main ? MAIN_STAR : 1)})`;
+      if (edge) {
+        onEdge.push({ m, edge });
         continue;
       }
+      const el = starAt(stars++);
+      el.mark = m;
+      // Off the stick, the buttons, and the hero (#53).
+      const at = placeStar(p, { controls, hero: heroAt });
+      // The box of the star with its bob, so that a bubble does not jump from side to side.
+      const box = starBox(at);
+      marks.push({ ...box, y0: box.y0 - 4, y1: box.y1 + 4 });
+      setFace(el, m.who);
+      // The star of the next step of the story is bigger than the others (#62).
+      el.classList.toggle('main', Boolean(m.main));
+      el.style.transform = `translate(${at.x - STAR / 2}px, ${at.y - STAR + bob}px) scale(${pulseOf(m) * (m.main ? MAIN_STAR : 1)})`;
+    }
+    // At most three markers on the edge, the step of the story first (#139).
+    for (const { m, edge } of edgeFew(onEdge, heroCell())) {
       // Targets in about the same direction: each has its own arrow with its face, side by side
       // along the edge (#72).
       const spot = spreadArrow(edge, edges, { left: inset.left, right: screen.w - inset.right, top: inset.top, bottom: screen.h - inset.bottom });
@@ -2376,7 +2447,7 @@ export async function mountVillage(ctx, params = {}) {
       horn: ngheAt ? { x: ngheAt.x, y: ngheAt.y + ngheAt.height, z: ngheAt.z } : null,
     });
     const rope = getEntity(state, 'folk:rope');
-    folkLayer.draw({ court: getEntity(state, 'folk:court')?.folkCourt ?? null, rope: rope?.folkRope ?? null, ropeY: rope?.position.y ?? 0 });
+    folkLayer.draw({ court: getEntity(state, 'folk:court')?.folkCourt ?? null, rope: rope?.folkRope ?? null, ropeY: rope?.position.y ?? 0, az: view.angle });
     const hp = hero().position;
     const hm = hero().motion;
     const speed = Math.hypot(hm?.vx ?? 0, hm?.vz ?? 0) || 1;

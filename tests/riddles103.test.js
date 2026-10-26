@@ -81,7 +81,8 @@ test('a riddle opens only in the evening near Bà, one each day, and never while
   const ok = rig();
   ok.r.tick(STEP);
   assert.equal(ok.profile.riddles.open.id, 'ga');
-  assert.deepEqual(ok.said, ['npc:grandma riddle.ask.grandma']);
+  // The first riddle says how to answer (#139).
+  assert.deepEqual(ok.said, ['npc:grandma riddle.ask.grandma', 'npc:grandma riddle.how.animal']);
   // Found the same evening: no second riddle until the next day.
   ok.r.tap({ x: 60.5, z: 40 });
   ok.r.tick(STEP);

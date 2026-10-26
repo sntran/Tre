@@ -108,11 +108,13 @@ export function createFolk(deps) {
       addEntity(world(), { id: 'folk:aimglow', keep: false, look: 'place-glow', hidden: true, position: at(along(f, -0.3 * S, -0.5 * S)) });
     }
   }
+  // first: the number of the first square of a court that does not start at one, or null (#139: "I
+  // don't see numbers on the squares").
   function setCourt(court) {
     const f = geo.loco;
     const pts = courtPoints(f, court);
     const e = getEntity(world(), 'folk:court') ?? addEntity(world(), { id: 'folk:court', keep: false, position: at(f.o) });
-    e.folkCourt = { squares: pts.squares.map((p, i) => ({ x: p.x, z: p.z, y: ground(p), side: court[i].side, row: court[i].row })), rest: pts.rest, dir: f.dir, size: S };
+    e.folkCourt = { squares: pts.squares.map((p, i) => ({ x: p.x, z: p.z, y: ground(p), side: court[i].side, row: court[i].row })), rest: pts.rest, dir: f.dir, size: S, first: court[0] && court[0].value !== 1 ? court[0].value : null };
   }
 
   // The rope and its two children: at the feast, and in a practice of the rope.
@@ -159,7 +161,17 @@ export function createFolk(deps) {
       walkToStart();
       if (plan.start !== 1) {
         say('loco.start', { n: num(plan.start) });
-        later(2.5, () => { if (game?.kind === 'loco' && game.phase === 'walk') say('loco.join', {}); });
+        // The first square has its number in chalk, and the child points at it (#139: "Eleven what?"),
+        // also when the hero is at the start already.
+        const g = game;
+        later(2.5, () => {
+          if (game !== g) return;
+          const sq = getEntity(world(), 'folk:court')?.folkCourt.squares[0];
+          const kid = getEntity(world(), 'npc:loco-child');
+          if (kid && sq) kid.gesture = { act: 'point', x: sq.x, z: sq.z, t: 3 };
+          say('loco.first', { n: num(plan.start) });
+        });
+        later(5.5, () => { if (game?.kind === 'loco' && game.phase === 'walk') say('loco.join', {}); });
       } else say('loco.join', {});
       game.joinAt = now;
     } else {

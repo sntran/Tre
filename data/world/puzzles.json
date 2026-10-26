@@ -11,7 +11,7 @@
     "pairs": [["dog", "chicken", "chase"], ["chicken", "rice", "peck"]],
     "least": 7,
     "gift": { "egg": 2 },
-    "offer": ["puzzle.ferry.start.1", "puzzle.ferry.start.2", "puzzle.ferry.start.3"],
+    "offer": ["puzzle.ferry.start.1", "puzzle.ferry.start.2", "puzzle.ferry.start.3", "puzzle.ferry.how"],
     "hints": ["puzzle.ferry.hint.1", "puzzle.ferry.hint.2", "puzzle.ferry.hint.3"]
   },
   "pots": {

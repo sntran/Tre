@@ -161,11 +161,12 @@ test('the children say where to start, also on a court that does not start at 1,
     });
     folk.mapStart();
     assert.ok(folk.join('loco'));
-    folk.tick(3);
+    for (let k = 0; k < 60; k++) folk.tick(0.1);
     const start = folk.stateOf().court[0];
     assert.equal(start === 1, level === 1, `level ${level}: the court of the level (${start})`);
     assert.ok(said.includes('loco.join'), `level ${level}: where to start: ${said.join(', ')}`);
-    if (start !== 1) assert.ok(said.indexOf('loco.start') < said.indexOf('loco.join'));
+    // Then the first square and its number (#139), and then where to start.
+    if (start !== 1) assert.ok(said.indexOf('loco.start') < said.indexOf('loco.first') && said.indexOf('loco.first') < said.indexOf('loco.join'), said.join(', '));
     assert.ok(getEntity(world, 'folk:start'), 'the start line glows');
     // The children stand on the side of the court away from the camera.
     const toCam = { x: Math.sin(az), z: Math.cos(az) };

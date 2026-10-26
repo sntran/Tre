@@ -426,6 +426,8 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .dialogue-tools { position: absolute; top: calc(var(--touch) * -0.8); right: 14px; display: flex; flex-direction: row; gap: 8px; }
 .choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .choice { min-height: var(--touch-small); }
+.choice .btn-icon { width: 26px; height: 26px; flex: none; }
+.choice.speaking { box-shadow: 0 0 0 4px var(--yellow), 0 0 14px 4px var(--yellow); }
 
 @keyframes rise { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes pop { 0% { transform: scale(0.8); } 70% { transform: scale(1.06); } 100% { transform: scale(1); } }
@@ -938,12 +940,23 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 /* The bubbles of the lines over the stars, and the stick over both (#53). */
 .world-marks > .world-bubble { z-index: 2; }
 .world-marks > .stick { z-index: 3; }
+/* The map of the village (issue 139): the faces of the people, the stars, and the hero on the ground. */
+.village-map { width: min(360px, calc(100vw - 24px)); }
+.village-map-box { position: relative; width: 100%; aspect-ratio: 1; border: 2px solid var(--ink); border-radius: 8px; overflow: hidden; }
+.village-map-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.village-map-pins > * { position: absolute; transform: translate(-50%, -50%); }
+.village-map-face { width: 32px; height: 32px; padding: 0; overflow: hidden; border: 2px solid var(--ink); border-radius: 50%; background: var(--paper); }
+.village-map-face canvas { display: block; width: 28px !important; height: 28px !important; }
+.village-map-star { width: 30px; height: 30px; padding: 0; border: 0; background: none; }
+.village-map-star .btn-icon { width: 100%; height: 100%; }
+.village-map-hero { width: 14px; height: 14px; border: 2px solid var(--ink); border-radius: 50%; background: var(--vermilion); }
+/* A small arrow: only its face takes a tap, and a tap beside it goes to the world (issue 139). */
 .edge-arrow {
   z-index: 1;
-  width: 44px;
-  height: 34px;
-  margin: -17px 0 0 -22px;
-  pointer-events: auto;
+  width: 40px;
+  height: 30px;
+  margin: -15px 0 0 -20px;
+  pointer-events: none;
   cursor: pointer;
 }
 .edge-arrow::before {
@@ -951,18 +964,19 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
   position: absolute;
   right: 0;
   top: 6px;
-  border: 11px solid transparent;
-  border-left: 18px solid var(--vermilion);
+  border: 9px solid transparent;
+  border-left: 15px solid var(--vermilion);
   border-right: 0;
   filter: drop-shadow(1px 0 0 var(--ink));
 }
 .edge-star {
   position: absolute;
-  left: -6px;
+  left: -5px;
   top: -1px;
-  width: 36px;
-  height: 36px;
-  padding: 6px;
+  width: 30px;
+  height: 30px;
+  padding: 4px;
+  pointer-events: auto;
   border: 2px solid var(--ink);
   border-radius: 50%;
   background: var(--paper);

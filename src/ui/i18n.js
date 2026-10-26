@@ -1,6 +1,7 @@
 // Load the language files and put text into the DOM.
 import { createI18n, otherLine } from '../core/i18n.js';
 import { glossesOf } from '../core/speech.js';
+import { wordList } from '../core/words.js';
 
 const dicts = {};
 let active = createI18n({}, 'vi');
@@ -39,6 +40,7 @@ export async function setLanguage(lang) {
   // The other language is ready too: the child can hear one line in it (#82).
   await loadDict(other).catch(() => null);
   active = createI18n(dict, lang, dicts[other] ?? null);
+  words = null;
   active.setSpeech(speech);
   document.documentElement.lang = lang;
   applyText(document.body);
@@ -47,6 +49,12 @@ export async function setLanguage(lang) {
 
 export function lang() {
   return active.lang;
+}
+
+// The words with a line of their own in the active language (src/core/words.js, #139).
+let words = null;
+export function wordsNow() {
+  return (words ??= wordList(dicts[active.lang]));
 }
 
 export function t(key, params) {

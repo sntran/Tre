@@ -3,12 +3,13 @@
 import { createDialogue } from '../core/dialogue.js';
 import { applyEffects, conditionState } from '../core/game.js';
 import { h, img, button } from './dom.js';
-import { t, tg, lang, regionalWords, tOther, otherLang } from './i18n.js';
+import { t, tg, lang, regionalWords, tOther, otherLang, wordsNow } from './i18n.js';
 import { speak, speakText, stop, speakOther } from './speak.js';
 import { voiceOf, spokenOf } from '../core/voices.js';
 import { namesOf, talkGloss } from '../core/naming.js';
 import { newGlosses } from '../core/speech.js';
 import { capitalize } from '../core/i18n.js';
+import { freshWords } from '../core/words.js';
 
 // The data for the voice of a speaker.
 function voiceData(ctx) {
@@ -39,8 +40,17 @@ export function glossLine(ctx, textKey, { params = {}, speaker = null, region = 
   const seen = (ctx.profile.seenGloss ??= []);
   const words = region ? newGlosses(regionalWords(textKey), seen).map((g) => t('speech.gloss', { local: g.local, word: g.word })) : [];
   const name = talkGloss({ speaker, params }, personOf(ctx, speaker), seen, { lang: lang(), t });
-  const all = [...(name ? [name] : []), ...words];
+  const all = [...(name ? [name] : []), ...words, ...wordGloss(ctx, t(textKey, params), textKey)];
   return all.length ? all.join('\n') : null;
+}
+
+// The lines of the words of a text that the child hears the first time (#139): [text]. The words
+// are then heard (the flags word.<id>).
+export function wordGloss(ctx, text, key = null) {
+  const flags = (ctx.profile.flags ??= {});
+  const { say, seen } = freshWords(text, wordsNow(), flags, key);
+  for (const id of seen) flags[`word.${id}`] = true;
+  return say.map((w) => t(w.line));
 }
 
 export function speakerName(ctx, speaker) {
@@ -200,7 +210,9 @@ export function createDialogueBox(ctx, { next, choose, voice: say = null }) {
     if (choices.length) {
       box.onclick = null;
       const list = h('div', { class: 'choices' });
-      choices.forEach((key, i) => list.append(button(tg(key, params), () => choose(i), { cls: 'btn choice' })));
+      // Each choice has a small picture of what it does, so that two choices never look the same
+      // (#139).
+      choices.forEach((key, i) => list.append(button(tg(key, params), () => choose(i), { cls: 'btn choice', icon: line.choiceIcons?.[i] ? `ui/${line.choiceIcons[i]}` : null })));
       body.append(list);
     } else {
       tools.append(button(null, () => { if (!early()) next(); }, { cls: 'icon-btn next', icon: 'ui/back', aria: t('ui.next') }));
@@ -211,7 +223,20 @@ export function createDialogueBox(ctx, { next, choose, voice: say = null }) {
     }
     const spoken = spokenOf(line, voiceData(ctx), ctx.profile, { gloss });
     if (say) say(spoken, params);
-    else spoken.forEach((x, i) => (x.text ? speakText(x.text, undefined, { voice: x.voice, queue: true }) : speak(x.key, params, { voice: x.voice, queue: i > 0 })));
+    else {
+      // The choice that the voice says lights up: at the end of the item before it (#139).
+      spoken.forEach((x, i) => {
+        const nextChoice = spoken[i + 1]?.choice;
+        const onEnd = () => light(nextChoice ?? null);
+        if (x.text) speakText(x.text, undefined, { voice: x.voice, queue: true, onEnd });
+        else speak(x.key, params, { voice: x.voice, queue: i > 0, onEnd });
+      });
+    }
+  }
+
+  // The choice that the voice says now has a light (null: none).
+  function light(i) {
+    box.querySelectorAll('.choice').forEach((el, k) => el.classList.toggle('speaking', k === i));
   }
 
   function close() {
@@ -219,7 +244,7 @@ export function createDialogueBox(ctx, { next, choose, voice: say = null }) {
     layer.remove();
   }
 
-  return { show, close };
+  return { show, close, light };
 }
 
 // Show a dialogue. Return the list of commands ("open ...") from its effects.
@@ -250,7 +275,7 @@ export function runDialogue(ctx, id) {
         return;
       }
       box ??= createDialogueBox(ctx, { next: () => show(runner.next()), choose: (i) => show(runner.next(i)) });
-      box.show({ speaker: view.speaker, textKey: view.textKey, choices: view.choices.map((c) => c.textKey), mark: runner.mark });
+      box.show({ speaker: view.speaker, textKey: view.textKey, choices: view.choices.map((c) => c.textKey), choiceIcons: view.choices.map((c) => c.icon ?? null), mark: runner.mark });
     };
     show(runner.view());
   });

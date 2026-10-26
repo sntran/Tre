@@ -78,7 +78,7 @@ test('a wave near the traveler before the puzzle gives no hint; the first wave a
   p.run(1);
   assert.ok(!p.said.some((k) => /^puzzle\.ferry\.hint/.test(k)), `no hint between the lines: ${p.said.join(', ')}`);
   p.run(10);
-  assert.deepEqual(p.said.filter((k) => /^puzzle\.ferry\.start/.test(k)), F.offer);
+  assert.deepEqual(p.said.filter((k) => /^puzzle\.ferry\.(start|how)/.test(k)), F.offer);
   for (let i = 0; i < 2; i++) {
     const n = p.said.length;
     p.session.command({ type: 'wave' });

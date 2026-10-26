@@ -1316,7 +1316,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     const line = levelLine(view.speaker, view.textKey);
-    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: line.key, params: { ...trialWords(view.speaker), ...view.params }, choices: view.choices.map((c) => c.textKey), calling: view.calling, word: view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
+    openScreen(d, { id: d.id, mark: view.mark, speaker: view.speaker, mood: view.mood ?? 'calm', textKey: line.key, params: { ...trialWords(view.speaker), ...view.params }, choices: view.choices.map((c) => c.textKey), choiceIcons: view.choices.map((c) => c.icon ?? null), calling: view.calling, word: view.word, faces: view.faces, ...(view.marks ? { marks: true } : {}) });
     showNames(d, view.speaker, line.names ?? view.names);
   }
   // The two ends of a place: the ends of a gap of the bridge, or the middles of the short sides of

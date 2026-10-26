@@ -1,5 +1,5 @@
 {
-  "_about": "The folk riddles of the evening and the trick questions of the children (#103; docs/RIDDLES.md, src/core/riddles.js). evening: the minutes of the day when Bà or the elder (tellers) says a new riddle to a hero who comes near (near: map cells), one new riddle each day at most, and none while a task or a raid is open. A riddle: its answer is a thing of the world that the child finds and taps (kinds: the kinds of the animals of the world, ids: entities such as Nghé, props: the props of the map objects); any thing of that kind counts, at most `find` half blocks from the tap. Its lines: riddle.<id> (the riddle), riddle.<id>.fit (how its words fit the thing), riddle.<id>.clue (which words point to the thing), riddle.<id>.answer. A trick question: trick.<id> and trick.<id>.answer; a child of the village asks it on a tap (at most one each day from each child, with the chance `chance`, and none in a folk game or a task), and says the answer after `wait` seconds. children: the people who ask. Each riddle and trick question has a source (sources): the published collection to check it against; page null and checked false: a person who knows Vietnamese folklore has not checked it yet (docs/QUESTIONS.md).",
+  "_about": "The folk riddles of the evening and the trick questions of the children (#103; docs/RIDDLES.md, src/core/riddles.js). evening: the minutes of the day when Bà or the elder (tellers) says a new riddle to a hero who comes near (near: map cells), one new riddle each day at most, and none while a task or a raid is open. A riddle: its answer is a thing of the world that the child finds and taps (kinds: the kinds of the animals of the world, ids: entities such as Nghé, props: the props of the map objects); any thing of that kind counts, at most `find` half blocks from the tap. how: the words of the line of how to answer (riddle.how.<how>; an animal when none is given, #139). Its lines: riddle.<id> (the riddle), riddle.<id>.fit (how its words fit the thing), riddle.<id>.clue (which words point to the thing), riddle.<id>.answer. A trick question: trick.<id> and trick.<id>.answer; a child of the village asks it on a tap (at most one each day from each child, with the chance `chance`, and none in a folk game or a task), and says the answer after `wait` seconds. children: the people who ask. Each riddle and trick question has a source (sources): the published collection to check it against; page null and checked false: a person who knows Vietnamese folklore has not checked it yet (docs/QUESTIONS.md).",
   "evening": [1020, 1110],
   "tellers": ["grandma", "elder"],
   "near": 6,
@@ -15,10 +15,10 @@
     { "id": "ga", "answer": { "kinds": ["chicken"] }, "source": "trung1985" },
     { "id": "vit", "answer": { "kinds": ["duck", "duckling"] }, "source": "trung1985" },
     { "id": "cho", "answer": { "kinds": ["dog"] }, "source": "trung1985" },
-    { "id": "tre", "answer": { "props": ["bamboo"] }, "source": "be2015" },
-    { "id": "chuoi", "answer": { "props": ["banana"] }, "source": "be2015" },
-    { "id": "da", "answer": { "props": ["banyan"] }, "source": "trung1985" },
-    { "id": "rom", "answer": { "props": ["haystack", "rice-stack"] }, "source": "trung1985" },
+    { "id": "tre", "answer": { "props": ["bamboo"] }, "how": "tree", "source": "be2015" },
+    { "id": "chuoi", "answer": { "props": ["banana"] }, "how": "tree", "source": "be2015" },
+    { "id": "da", "answer": { "props": ["banyan"] }, "how": "tree", "source": "trung1985" },
+    { "id": "rom", "answer": { "props": ["haystack", "rice-stack"] }, "how": "thing", "source": "trung1985" },
     { "id": "trau", "answer": { "kinds": ["buffalo"], "ids": ["friend:nghe"] }, "source": "trung1985" },
     { "id": "vit2", "answer": { "kinds": ["duck", "duckling"] }, "source": "be2015" },
     { "id": "trau2", "answer": { "kinds": ["buffalo"], "ids": ["friend:nghe"] }, "source": "trung1985" }

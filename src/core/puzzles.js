@@ -525,13 +525,13 @@ export function createPuzzles(deps) {
           // A thing of the bank of the hero: the act "take" by nearness, as a pot at the well, or by
           // a tap on it (#110: a thing was an act only after a tap on it, and the button stayed dim).
           // At the landing (nearer to it than to the thing), the act is the crossing: so the boat
-          // can go back empty.
+          // can go back empty. The button shows the thing that the press takes (#139).
           if (!ferry.load) {
             for (const t of F.things) {
               if (ferry.where[t] !== side) continue;
               const e = getEntity(w(), thingId(t));
               if (chosen !== e.id && dist(h, e.position) >= dist(h, land)) continue;
-              add({ act: 'take', icon: 'hand-pick', target: e.id, at: e.position, rank: chosen === e.id ? -1 : 0, work: chosen === e.id, run: () => load(t) }, reach + 2);
+              add({ act: 'take', icon: 'hand-pick', thing: LOOK[t], target: e.id, at: e.position, rank: chosen === e.id ? -1 : 0, work: chosen === e.id, run: () => load(t) }, reach + 2);
             }
           } else {
             const t = ferry.load;

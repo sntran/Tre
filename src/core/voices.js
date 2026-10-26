@@ -21,14 +21,15 @@ export function voiceOf(speaker, data, profile = null) {
 // only, and a child who cannot read never heard what the word means) and the gloss of a name or of
 // a word of a region (text). A talk with one choice shows a line of the hero as a button: the voice
 // says it too, in the voice of the hero, after the line (#94: a child who cannot read tapped the
-// bright button that nobody read).
+// bright button that nobody read). With more choices, the voice says each of them (#139, rule 26: a
+// child of K saw two buttons that nobody read); choice: the index of the choice that it says.
 // line: { speaker, textKey, choices (text keys), word ({ nameKey, textKey }) }. gloss: a text, or null.
 export function spokenOf(line, data, profile = null, { gloss = null } = {}) {
   const voice = voiceOf(line.speaker, data, profile);
   const out = [{ key: line.textKey, voice }];
   if (line.word?.textKey) out.push({ key: line.word.textKey, voice });
   if (gloss) out.push({ text: gloss, voice });
-  if (line.choices?.length === 1) out.push({ key: line.choices[0], voice: voiceOf('hero', data, profile) });
+  (line.choices ?? []).forEach((key, i) => out.push({ key, voice: voiceOf('hero', data, profile), choice: i }));
   return out;
 }
 

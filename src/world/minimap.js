@@ -30,3 +30,27 @@ export function miniKind(type, solid = false) {
 
 // Is a point (dx, dz in cells) on the round minimap?
 export const onMini = (dx, dz, radius = MINI.radius) => dx * dx + dz * dz <= radius * radius;
+
+// The map of the village (#139: "it doesn't show me where the people in the village are"): a tap on
+// the minimap opens it. North is up, as on the map of the country. It shows the ground around the
+// hero, the faces of the people, the stars, and the hero; a tap on a face walks there, as a marker
+// does. The items in the square of the map: [{ kind: 'person' | 'star' | 'hero', id, who, u, v }]
+// with u, v from 0 to 1 (left to right, top to bottom). persons: [{ kind, ref, entity, x, y }] in
+// cells; stars: [{ x, y, id, who }].
+export const VILLAGE = Object.freeze({ radius: 34 }); // cells from the hero to the edge of the map
+export function villageMapItems(hero, persons, stars, radius = VILLAGE.radius) {
+  const at = (x, y) => ({ u: (x - hero.x + radius) / (2 * radius), v: (y - hero.y + radius) / (2 * radius) });
+  const inside = (q) => q.u >= 0 && q.u <= 1 && q.v >= 0 && q.v <= 1;
+  const out = [];
+  for (const p of persons) {
+    if (p.kind !== 'npc') continue;
+    const q = at(p.x, p.y);
+    if (inside(q)) out.push({ kind: 'person', id: p.entity, who: p.ref, ...q });
+  }
+  for (const m of stars) {
+    const q = at(m.x, m.y);
+    if (inside(q)) out.push({ kind: 'star', id: m.id ?? null, who: m.who ?? null, mark: m, ...q });
+  }
+  out.push({ kind: 'hero', id: 'hero', who: null, ...at(hero.x, hero.y) });
+  return out;
+}

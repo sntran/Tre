@@ -96,8 +96,9 @@ test('the line of the hero in a talk with one choice is said in the voice of the
   const data = { npcs: {}, friends: {}, voices: { speakers: {} } };
   const girl = { hero: { gender: 'girl' } };
   assert.deepEqual(spokenOf({ speaker: 'nghe', textKey: 'dlg.grandma.intro.nghe2', choices: ['dlg.grandma.intro.nghe2.c1'] }, data, girl).map((x) => [x.key, x.voice]), [['dlg.grandma.intro.nghe2', 'narrator'], ['dlg.grandma.intro.nghe2.c1', 'girl']]);
-  // Two choices are a choice of the child: the voice says only the line.
-  assert.equal(spokenOf({ speaker: 'narrator', textKey: 'a', choices: ['b', 'c'] }, data, girl).length, 1);
+  // Two choices: the voice says each of them in the voice of the hero, with its index, so that the
+  // box lights the choice that it says (#139).
+  assert.deepEqual(spokenOf({ speaker: 'narrator', textKey: 'a', choices: ['b', 'c'] }, data, girl).map((x) => [x.key, x.voice, x.choice]), [['a', 'narrator', undefined], ['b', 'girl', 0], ['c', 'girl', 1]]);
   assert.equal(spokenOf({ speaker: 'narrator', textKey: 'a' }, data, girl).length, 1);
 });
 

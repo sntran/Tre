@@ -18,6 +18,8 @@ const ALLOWED = {
   'hint.cards.mul': 'the number cards of a practice with the teacher',
   'ex.cards': 'the number cards of a practice with the teacher',
   'raid.tool.fire': 'the soldiers of Ân raise a wet shield when fire comes (src/core/world/raids.js)',
+  'word.khien': 'the line of the word of the wet shield of the soldiers of Ân (#139)',
+  'word.khien.forms': 'the forms of the word of the wet shield of the soldiers of Ân (#139)',
   'parent.week.research': 'a tab (thẻ) of the parent page',
 };
 

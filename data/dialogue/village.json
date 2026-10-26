@@ -270,6 +270,7 @@
           "choices": [
             {
               "textKey": "dlg.teacher.practice.n1.c1",
+              "icon": "rods",
               "effects": [
                 {
                   "open": "practice"
@@ -277,7 +278,8 @@
               ]
             },
             {
-              "textKey": "dlg.teacher.practice.n1.c2"
+              "textKey": "dlg.teacher.practice.n1.c2",
+              "icon": "back"
             }
           ]
         }
@@ -293,6 +295,7 @@
           "choices": [
             {
               "textKey": "dlg.teacher.practice.n1.c1",
+              "icon": "rods",
               "effects": [
                 {
                   "open": "practice"
@@ -300,7 +303,8 @@
               ]
             },
             {
-              "textKey": "dlg.teacher.practice.n1.c2"
+              "textKey": "dlg.teacher.practice.n1.c2",
+              "icon": "back"
             }
           ]
         }
@@ -537,6 +541,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -545,6 +550,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"
@@ -566,6 +572,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -574,6 +581,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"
@@ -595,6 +603,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -603,6 +612,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"
@@ -624,6 +634,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -632,6 +643,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"
@@ -653,6 +665,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -661,6 +674,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"
@@ -730,6 +744,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -738,6 +753,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"
@@ -796,6 +812,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -804,6 +821,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"
@@ -862,6 +880,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -870,6 +889,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"
@@ -939,6 +959,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -947,6 +968,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"
@@ -968,6 +990,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -976,6 +999,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"
@@ -997,6 +1021,7 @@
           "choices": [
             {
               "textKey": "dlg.practice.end.stay",
+              "icon": "star",
               "effects": [
                 {
                   "open": "practice-stay"
@@ -1005,6 +1030,7 @@
             },
             {
               "textKey": "dlg.practice.end.back",
+              "icon": "back",
               "effects": [
                 {
                   "open": "practice-back"

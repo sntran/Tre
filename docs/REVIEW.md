@@ -818,3 +818,13 @@ Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 
 - **The share:** `share.mats`, `share.count` ("{who} có {n} bao."), `share.count.none`, `share.more` ("Chiếu của {who} nhiều hơn."), `share.result` ("Mỗi người {n} bao. Còn {rest} bao lẻ cho làng."), and `share.result.none`.
 - **The woodcutter:** `woodcutter.part.lays` ("Khúc này đặt vừa {n} lần dọc cây tre: mỗi khúc là {part} cây tre.").
 - **Please check:** "bao lẻ" for the sacks that are left over, and "đặt vừa {n} lần dọc cây tre" for a child of grade 5.
+
+## Words and markers (#139)
+
+- **The riddle:** `riddle.how.animal` ("Cháu đoán ra thì đi tìm con vật đó, rồi chạm vào nó nhé."), `riddle.how.tree`, and `riddle.how.thing`.
+- **The ferry:** `puzzle.ferry.how` ("Cháu đứng cạnh một thứ, rồi bấm nút lớn để đưa nó lên đò. Bấm nút có hình con đò để qua sông.").
+- **The words:** `word.de` ("Đe là một cục sắt to và nặng: bác thợ rèn đặt sắt lên đó để rèn."), `word.khien` ("Khiên là tấm chắn mà lính cầm để đỡ đòn."), the forms `word.<id>.forms` of each language, and `dlg.smith.trial.n3.color` with the anvil.
+- **The side star:** `star.side.pots` ("{who} ở giếng có một câu đố.") and `star.side`.
+- **The court:** `loco.first` ("Ô đầu tiên này là ô {n}.").
+- **The map of the village:** `ui.villageMap` ("Bản đồ làng").
+- **Please check:** the English forms of the words (`word.khe.forms` is "gap|gaps", a common word in English), and whether "khe" and "đăng" in Vietnamese should get a line at any first use.
