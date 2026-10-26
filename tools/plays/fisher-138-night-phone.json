@@ -1,0 +1,246 @@
+{
+ "about": "#138: the fisher at grade 1: a stake at the red float with a wide space in the row: the fisher points at the space, it glows, and he says it; the row with one stake more than it needs keeps the fish, and the end line says the count. At 21:00.",
+ "start": "?story=trial-fisher&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "1",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "fisher"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 40
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "row": 16
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "wait": 5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "a-stake-at-the-float-the-wide-space"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 40
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "row": 8
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 40
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "row": 12
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 40
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "row": 10
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds",
+   "timeout": 30
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-fisher')?.zone.done)",
+   "timeout": 240
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-end-line-says-the-count"
+  }
+ ]
+}

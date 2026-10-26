@@ -1,0 +1,153 @@
+{
+ "about": "#138: the smith at grade 5: at the guess, a tap on the trough chooses the bar in the water, and the big button puts the pebble beside it.",
+ "start": "?story=trial-smith",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "5",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => x.key === 'mentor.first.you')",
+   "timeout": 240
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.test) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.test.check == null",
+   "timeout": 120
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.test?.guessWait"
+  },
+  {
+   "tap": {
+    "thing": "rack:smith"
+   },
+   "after": 1,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.test?.guessWait"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.test?.guessWait"
+  },
+  {
+   "wait": 4
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.test?.guessWait)",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-guess"
+  },
+  {
+   "tap": {
+    "thing": "trough:smith"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "a-tap-on-the-trough-the-pebble-button"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-10).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-pebble-beside-the-bar-in-the-water"
+  }
+ ]
+}
