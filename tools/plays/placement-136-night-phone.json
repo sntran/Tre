@@ -1,0 +1,219 @@
+{
+ "about": "#136: grade 3, the placement of the messenger: the dots of the questions, the rule and the button on the first question only, the answer after each question (right, wrong with the right answer, and not learned yet), at most ten questions, a result with no grade; the calling with the hero and the line of the grade. At 21:00.",
+ "start": "?story=placement-messenger&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "messenger"
+   },
+   "taps": 8
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "messenger"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 12
+  },
+  {
+   "until": "Boolean(document.querySelector('.quiz'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-first-question-the-rule-and-the-button"
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.4
+  },
+  {
+   "shot": "a-right-answer-says-it"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "wrong",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.4
+  },
+  {
+   "shot": "a-wrong-answer-says-the-right-one"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "after": 1
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.4
+  },
+  {
+   "shot": "not-learned-yet-is-fine"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "after": 1
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "!document.querySelector('.quiz')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-result-with-no-grade"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "shot": "the-line-before-the-choice"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.calling-grid'))",
+   "timeout": 30
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-calling-cards"
+  },
+  {
+   "click": "Thợ rèn",
+   "after": 1
+  },
+  {
+   "click": "Chọn nghề này",
+   "after": 2
+  },
+  {
+   "shot": "the-hero-with-the-tool"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  }
+ ]
+}

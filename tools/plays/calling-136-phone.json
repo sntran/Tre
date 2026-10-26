@@ -1,0 +1,182 @@
+{
+ "about": "#136: a girl of grade 4 with long hair: the placement, the result with no grade, then the cards of the callings with her own hero next to each mentor and the lines of grade 4; after the choice, her own hero with the hammer of the smith.",
+ "start": "?story=placement-girl",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "messenger"
+   },
+   "taps": 8
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "messenger"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 12
+  },
+  {
+   "until": "Boolean(document.querySelector('.quiz'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-test-of-the-messenger"
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "answer": "right",
+   "if": "Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "!document.querySelector('.quiz')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "shot": "the-result-with-no-grade"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  },
+  {
+   "until": "Boolean(document.querySelector('.calling-grid'))",
+   "timeout": 30
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "her-hero-on-each-card"
+  },
+  {
+   "click": "Thợ rèn",
+   "after": 1
+  },
+  {
+   "click": "Chọn nghề này",
+   "after": 2
+  },
+  {
+   "shot": "her-hero-with-the-hammer"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5
+  }
+ ]
+}
