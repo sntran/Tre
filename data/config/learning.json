@@ -66,10 +66,11 @@
   },
   "exam": {
     "subject": {
-      "_about": "The adaptive subject exam. It starts easy and gets harder until the player makes a few mistakes.",
-      "min": 10,
-      "max": 15,
+      "_about": "The adaptive subject exam. It starts easy and gets harder until the player makes a few mistakes. It has at most 10 questions (#136), and target is the chance of a right answer that the next question aims at: about seven in ten, not half (Ortner, Weißkopf and Koch 2014; Eggen and Verschoor 2004).",
+      "min": 6,
+      "max": 10,
       "maxMistakes": 3,
+      "target": 0.7,
       "kStart": 200,
       "kAfterMistake": 100,
       "kMin": 60,
@@ -79,13 +80,14 @@
     "era1": {
       "_about": "The pass mark comes from a simulation: at passAbility, about half of the players pass. Run the test \"the Era 1 pass mark comes from the simulation\" after a change, and copy the new value to pass.",
       "passAbility": 1000,
-      "pass": 998,
+      "pass": 994,
       "simulationRuns": 4000,
       "simulationSeed": "passmark"
     },
     "placement": {
-      "_about": "The placement exam starts near the grade of the player: the base rating of the grade plus startOffset. It never lowers a mastered skill.",
+      "_about": "The placement exam starts near the grade of the player: the base rating of the grade plus startOffset. It never lowers a mastered skill. topGrade: the top grade that has tasks in the game; the parent page never shows a placed grade above it (#136: \"lớp 5 trở lên\").",
       "fromGrade": 3,
+      "topGrade": 5,
       "startOffset": -100,
       "masteredAt": 0.85,
       "almostAt": 0.6,

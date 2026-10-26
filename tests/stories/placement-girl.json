@@ -1,0 +1,23 @@
+{
+  "name": "placement-girl",
+  "about": {
+    "vi": "Lớp bốn, một bạn gái tóc dài: sau năm thử thách, sứ giả thử tài ở đình làng (bài xếp lớp), rồi cháu chọn nghề. Thẻ của mỗi nghề có người của cháu bên người thầy, và câu của việc ở lớp bốn.",
+    "en": "Grade 4, a girl with long hair: after the Five Trials, the messenger tests her at the village hall (the placement), and then she chooses a calling. The card of each calling has her own hero next to the mentor, and the line of the task at grade 4."
+  },
+  "profile": { "name": "Vy", "grade": 4, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "prologue.done": true, "trial.scholar.done": true, "trial.smith.done": true, "trial.fisher.done": true, "trial.healer.done": true, "trial.woodcutter.done": true }, "gender": "girl", "hair": 3 },
+  "clock": 600,
+  "at": ["phu-dong", 32, 26.5],
+  "steps": [
+    { "wait": 1 },
+    { "expect": [{ "entity": "npc:messenger", "near": "hero", "within": 12 }] },
+    { "press": { "entity": "npc:messenger" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "until": { "event": "open", "with": { "screen": "exam" }, "timeout": 30 } },
+    { "expect": [{ "text": { "shown": "dlg.messenger.call.test" } }, { "screen": "exam" }, { "event": "open", "with": { "screen": "vanmieu" }, "not": true }] },
+    { "do": { "type": "closed" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue", "textKey": "dlg.messenger.call.tested" }, "timeout": 10 } },
+    { "read": true },
+    { "expect": [{ "text": { "shown": "dlg.messenger.call.n4" } }, { "flag": "giong.messenger" }] }
+  ]
+}

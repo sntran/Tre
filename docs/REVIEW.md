@@ -799,3 +799,13 @@ Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 
 - **A lost raid:** `raid.lost.why` ("{n} {who} tới {wall}.", for example "Hai lính tới cổng làng.") and `raid.lost.torch` ("Đuốc rơi vào trong {wall} {n} lần.").
 - **The trap:** `raid.trap.where` ("Bẫy đặt ở cột {post} nhé.") and `raid.trap.right` ("Bẫy đặt đúng chỗ rồi!").
 - **Please check:** "cần trúng hai lần" for a child of six, and the English of `raid.lost.why` ("{who}: {n} came to the {wall}."), which keeps the parameters of the Vietnamese line.
+
+## The test of the messenger and the calling (#136)
+
+- **The answer after each question:** `exam.messenger.right` ("Đúng rồi!"), `exam.messenger.wrong` ("Chưa đúng. Đáp án là {answer}."), and the same for Văn Miếu (`exam.right`, `exam.wrong`).
+- **Not learned yet:** `exam.messenger.skip.button` ("Cháu chưa học bài này."), `exam.messenger.skip.tell` ("Bài nào cháu chưa học thì cháu bấm nút này, không sao cả."), `exam.messenger.skip.done` ("Không sao cả. Đáp án là {answer}."), and `exam.skip.*` with "em".
+- **The rule:** `exam.messenger.rule` ("Bài thử có nhiều nhất {max} câu. Sau mỗi câu, ta nói cho cháu biết đúng hay chưa.") and `exam.rule`.
+- **The result, with no grade:** `exam.messenger.placement.good` ("Cháu làm rất tốt bài {skill}."), `exam.messenger.placement.next` ("Bài {skill} thì mình sẽ học thêm."), `exam.messenger.placement.done` ("Từ nay các bài sẽ hợp với cháu."), and `exam.placement.*` with "em". The name of the skill comes from `skill.*` with a small first letter.
+- **The parent page:** `parent.exam.placed` ("Xếp lớp: {grade} ({correct}/{total})") and `parent.grade.above` ("{grade} trở lên").
+- **The calling:** `exam.messenger.who` ("Cháu đã giúp năm người tài trong làng. Cháu muốn học với ai?"), `exam.who`, `exam.messenger.calling.note`, the mentors of the village `calling.*.guide` ("Người thầy: bác thợ rèn"), and the lines of the levels `calling.*.line.2` to `calling.*.line.5`.
+- **Please check:** the lines of the levels of the callings, for a child of each grade (for example `calling.woodcutter.line.4`, "các phần bằng nhau trên cây tre", for equal fractions).

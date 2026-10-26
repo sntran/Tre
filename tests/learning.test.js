@@ -7,7 +7,7 @@ import { expected, updateRatings, chooseLevel, itemStartRating, gradeBase } from
 import { startReview, recordReview, isDue, DAY_MS } from '../src/core/review.js';
 import { createLearner, feedbackFor, battleSkills } from '../src/core/learner.js';
 import { gradeIds, byGrade, gradeName } from '../src/core/grades.js';
-import { createExam, buildLadder, skillsToPractice, maxLikelihood, simulateExams, examSkills, kindOf, MAX_RUN } from '../src/core/exam.js';
+import { createExam, buildLadder, examLadder, skillsToPractice, maxLikelihood, simulateExams, examSkills, kindOf, MAX_RUN } from '../src/core/exam.js';
 import { skillsData, learningConfig as cfg, bank, load } from './helpers.js';
 import { createSeen, problemKey, otherLevels } from '../src/core/fresh.js';
 
@@ -307,8 +307,11 @@ test('placement sets the level of each skill from the ability', () => {
 // Adaptive exam
 
 const titlesData = load('data/titles.json');
-const era1Ladder = buildLadder(examSkills(graph, titlesData.exams.era1, titlesData.titles), cfg.rating);
-const allLadder = buildLadder(graph.filter((s) => s.subject === 'math'), cfg.rating);
+// The ladders of the game: the first level of each skill (#136).
+const era1Ladder = examLadder(examSkills(graph, titlesData.exams.era1, titlesData.titles), cfg.rating);
+const allLadder = examLadder(graph.filter((s) => s.subject === 'math'), cfg.rating);
+// The distance under the ability of the question that the player gets right with the chance of the target.
+const below = settings => 400 * Math.log10(settings.target / (1 - settings.target));
 const settings = cfg.exam.subject;
 
 function runExam(ladder, answerFn, seed = 'exam') {
@@ -326,10 +329,11 @@ test('the exam starts easy and gets harder after correct answers', () => {
   const { items, result } = runExam(allLadder, () => true);
   assert.equal(result.asked, settings.max);
   assert.equal(items[0].rating, allLadder[0].rating);
-  assert.ok(items[items.length - 1].rating > items[0].rating + 500);
+  // The first level of each skill only (#136): the ratings rise by grade.
+  assert.ok(items[items.length - 1].rating > items[0].rating + 300);
 });
 
-test('the exam ends after a few mistakes, with 10 to 15 questions', () => {
+test('the exam ends after a few mistakes, with 6 to 10 questions', () => {
   const { result } = runExam(allLadder, () => false);
   assert.equal(result.asked, settings.min);
   const rng = createRng('mixed');
@@ -348,7 +352,8 @@ test('the exam finds the ability of a simulated player', () => {
       const { result } = runExam(allLadder, (item) => rng.chance(expected(truth, item.rating)), `e${truth}:${i}`);
       error += Math.abs(result.ability - truth);
     }
-    assert.ok(error / runs < 170, `mean error ${Math.round(error / runs)} at ${truth}`);
+    // At most 10 questions, at the first level of each skill (#136): a little less sure than 15.
+    assert.ok(error / runs < 190, `mean error ${Math.round(error / runs)} at ${truth}`);
   }
 });
 
@@ -417,7 +422,8 @@ test('the placement exam starts near the grade of the player', () => {
     const start = gradeBase(grade, cfg.rating) + cfg.exam.placement.startOffset;
     const exam = createExam({ ladder: allLadder, settings, rng: createRng(`p${grade}`), start });
     const first = exam.next();
-    assert.ok(Math.abs(first.rating - start) <= settings.window, `grade ${grade}: first item ${first.rating}, start ${start}`);
+    // The first question is one that the player gets right about seven times in ten (#136).
+    assert.ok(Math.abs(first.rating - (start - below(settings))) <= settings.window, `grade ${grade}: first item ${first.rating}, start ${start}`);
   }
   // Simulation: grade 4 players find their ability.
   for (const truth of [1250, 1450, 1650]) {

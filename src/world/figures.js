@@ -967,6 +967,18 @@ export function workThing(look) {
       const sparks = [[0.3, 0.7, -0.5], [-0.25, 0.9, 0.2], [0.15, 1.1, 0.7]].map(([x, y, z], i) => P(`spark${i}`, [0.12, 0.12, 0.12], 'vermilionPale', [x, y, z]));
       return still([...anvil, glow, bar, ...sparks], 1.2);
     }
+    // The tool of a calling, standing by itself and big enough to see next to the hero (#136: the
+    // child's own hero with the tool of the calling): a hammer, an axe, a net, a scroll, a basket.
+    case 'tool': {
+      const t = {
+        hammer: [P('handle', [0.4, 3.2, 0.4], 'wood', [0, 1.6, 0]), P('head', [1.7, 1, 1], 'ash', [0, 3.4, 0])],
+        axe: [P('handle', [0.4, 3.6, 0.4], 'wood', [0, 1.8, 0]), P('blade', [0.3, 1.2, 1.4], 'ashLight', [0, 3.2, 0.6])],
+        net: [P('frame', [2.6, 2.6, 0.3], 'paperDeep', [0, 1.6, 0]), P('rim', [2.8, 0.3, 0.35], 'wood', [0, 2.9, 0]), P('handle', [0.3, 1.4, 0.3], 'wood', [0, 3.6, 0])],
+        scroll: [P('paper', [0.9, 2.8, 0.9], 'paper', [0, 1.4, 0]), P('tie', [1, 0.3, 1], 'vermilion', [0, 1.4, 0]), P('endA', [1.1, 0.3, 1.1], 'ochre', [0, 0.1, 0]), P('endB', [1.1, 0.3, 1.1], 'ochre', [0, 2.8, 0])],
+        basket: [P('body', [2.2, 1.5, 2.2], 'ochre', [0, 0.75, 0]), P('rim', [2.4, 0.25, 2.4], 'wood', [0, 1.45, 0])],
+      }[look.item] ?? [];
+      return still(t, 4);
+    }
     // The iron horse that Gióng rides (#50): a horse of iron as big as grown Gióng, with a red
     // mane. The seat (the top of the back) is at STEED_SEAT over the ground; k: the size of the
     // horse against a horse with its seat at 1.65.

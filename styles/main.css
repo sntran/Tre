@@ -583,6 +583,25 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .quiz-pips { display: flex; gap: 6px; justify-content: center; margin: 4px 0; }
 .quiz-pips span { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ochre); }
 .quiz-pips span.on { background: var(--ochre); }
+/* The exam of the messenger on a phone (issue 136): the question, the keypad, and the button "not
+   learned yet" fit at 390 x 844 with the tallest picture, with no scroll. A dot for each question. */
+.panel.quiz.exam { gap: 8px; padding: 10px; }
+.quiz.exam .panel-head h2 { font-size: 20px; }
+.quiz.exam > .muted { margin: -4px 0 0; font-size: 14px; }
+.quiz.exam .quiz-top .portrait { width: 56px; height: 56px; }
+.exam-dots { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 4px; }
+.exam-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ochre); }
+.exam-dot.done { background: var(--ochre); }
+.exam-rule p { margin: 0 0 4px; font-size: 15px; line-height: 1.3; }
+.quiz.exam .question { gap: 6px; padding: 8px; }
+.quiz.exam .prompt { font-size: 22px; }
+.quiz.exam .visual svg { max-height: min(17vh, 150px); width: auto; }
+.quiz.exam .answer-box { min-height: 46px; line-height: 38px; }
+.quiz.exam .numpad { gap: 6px; grid-template-columns: repeat(4, minmax(48px, 70px)); }
+.quiz.exam .numpad .btn { min-height: 46px; }
+.quiz.exam .numpad .exam-skip { grid-column: 3 / span 2; grid-row: 4; font-size: 14px; white-space: normal; line-height: 1.1; padding: 0 4px; }
+.quiz.exam > .exam-skip { align-self: center; }
+.quiz.exam .feedback { min-height: 2.4em; padding: 6px 10px; }
 .choice-grid .btn.shape svg { width: 100%; height: 100%; }
 .choice-grid .btn.bamboo-choice { flex-direction: column; min-height: 200px; width: 96px; padding: 8px 4px; }
 .choice-grid .btn.bamboo-choice img { height: 140px; width: auto; }

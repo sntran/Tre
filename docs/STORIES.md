@@ -128,6 +128,7 @@ The runner checks the laws on every step of every story (`createLaws` in `src/co
 | `trial-woodcutter` | Chalk marks off the middle break the short stick; equal sticks go to the wood pile. |
 | `calling` | After the five trials, the elder hears the drum of the village hall: the messenger of the king has come (#134). |
 | `placement-messenger` | Grade 3: the messenger at the village hall tests the child with the placement exam there; after it, the mother of Gióng runs up (#134). |
+| `placement-girl` | The placement of the messenger for a girl of grade 4 with long hair (#136): in the browser, the cards of the callings show her own hero next to each mentor, with the lines of grade 4. |
 | `exam-messenger` | After the farewell of Gióng, the messenger is back at the village hall and tests the child with the exam of the era (#134). |
 | `raid-scouts` | The first raid: the lines of the slingshot and the gate, a tap on the post nearest the scout, a short pull and its correction by count, and the gate bar before a torch lands (no skill event). |
 | `raid-patrol` | The traps: the elder names the third post; a trap there is counting, a trap one post on is play. |

@@ -177,7 +177,9 @@ export function runQuiz(ctx, opts) {
 
 // A short panel that shows a message, an optional picture (art: an SVG of the UI; look: a rendered
 // figure or view of data/figures.json, src/ui/portraits.js), and rewards.
-export function showMessage(ctx, { title, textKey, params: own = {}, art = null, look = null, rewards = null, speaker = null, rewardsKey = 'trial.reward', noteKey = null }) {
+// lines: several lines in one message ([{ key, params }]), spoken one after the other (#136: the
+// result of a placement).
+export function showMessage(ctx, { title, textKey, params: own = {}, lines = null, art = null, look = null, rewards = null, speaker = null, rewardsKey = 'trial.reward', noteKey = null, looks = null }) {
   const params = { ...ctx.textParams(), ...own };
   return new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
@@ -186,7 +188,8 @@ export function showMessage(ctx, { title, textKey, params: own = {}, art = null,
       speaker ? portrait(ctx, speaker) : null,
       art ? img(art, '', '') : null,
       look ? portraitCanvas(ctx, look, { framing: 'full', size: 160 }) : null,
-      h('p', { class: 'prompt', text: tg(textKey, params) }),
+      looks ? h('div', { class: 'row', style: { justifyContent: 'center' } }, looks.map((l) => portraitCanvas(ctx, l, { framing: 'full', size: 140 }))) : null,
+      h('p', { class: 'prompt', text: lines ? lines.map((l) => tg(l.key, { ...params, ...l.params })).join(' ') : tg(textKey, params) }),
       rewards && Object.keys(rewards).length ? h('div', { class: 'col', style: { alignItems: 'center' } }, [
         h('p', { text: t(rewardsKey) }),
         h('div', { class: 'reward' }, Object.entries(rewards).map(([item, n]) => h('span', { class: 'count' }, [
@@ -203,6 +206,7 @@ export function showMessage(ctx, { title, textKey, params: own = {}, art = null,
     ]);
     layer.append(panel);
     ctx.ui.append(layer);
-    speak(textKey, params);
+    if (lines) lines.forEach((l, i) => speak(l.key, { ...params, ...l.params }, { queue: i > 0 }));
+    else speak(textKey, params);
   });
 }

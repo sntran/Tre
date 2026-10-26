@@ -354,11 +354,11 @@ const GENERATORS = {
   },
 
   area(p, rng) {
-    const w = rng.int(2, p.max);
-    const h = rng.int(2, p.max);
+    // The length is never shorter than the width (#136: "dài 2, rộng 5").
+    const [w, h] = [rng.int(2, p.max), rng.int(2, p.max)].sort((a, b) => b - a);
     const ask = p.ask === 'mixed' ? rng.pick(['area', 'perimeter']) : p.ask;
     const value = (u, v) => (ask === 'area' ? u * v : 2 * (u + v));
-    const [x, y] = retry(() => [rng.int(2, 6), rng.int(2, 6)], ([u, v]) => value(u, v) !== value(w, h) && ![w, h].every((n) => [u, v, value(u, v)].includes(n)));
+    const [x, y] = retry(() => [rng.int(2, 6), rng.int(2, 6)].sort((a, b) => b - a), ([u, v]) => value(u, v) !== value(w, h) && ![w, h].every((n) => [u, v, value(u, v)].includes(n)));
     return {
       kind: 'numeric',
       prompt: k(ask === 'area' ? 'prob.area' : 'prob.perimeter', { w, h }),

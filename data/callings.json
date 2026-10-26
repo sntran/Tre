@@ -1,5 +1,5 @@
 {
-  "_about": "The five callings (nghề). A calling never blocks a subject. look: the look of the mentor in data/figures.json, drawn at full length with the tool of the calling. lineKey: one short line of what the child learns with the mentor in the world (the card of the choice, #51). whoKey: who they were, under the name on the card next to the talk box, for a name that a child does not know (#81: Nho sinh).",
+  "_about": "The five callings (nghề). A calling never blocks a subject. look: the look of the mentor in data/figures.json, drawn at full length with the tool of the calling. lineKey: one short line of what the child learns with the mentor in the world (the card of the choice, #51). whoKey: who they were, under the name on the card next to the talk box, for a name that a child does not know (#81: Nho sinh). guideKey: the mentor of the village under the name on the card (#136: \"Người thầy: bác thợ rèn\"). lines: the line of the card at each level of the tasks (levelFor in src/core/world/trials.js), the task of the mentor at the grade of the child (#136).",
   "callings": [
     {
       "id": "scholar",
@@ -8,7 +8,15 @@
       "mentorKey": "calling.scholar.mentor",
       "subjectKey": "calling.scholar.subject",
       "lineKey": "calling.scholar.line",
-      "whoKey": "calling.scholar.who"
+      "whoKey": "calling.scholar.who",
+      "guideKey": "calling.scholar.guide",
+      "lines": [
+        "calling.scholar.line",
+        "calling.scholar.line.2",
+        "calling.scholar.line.3",
+        "calling.scholar.line.4",
+        "calling.scholar.line.5"
+      ]
     },
     {
       "id": "smith",
@@ -17,7 +25,15 @@
       "mentorKey": "calling.smith.mentor",
       "subjectKey": "calling.smith.subject",
       "lineKey": "calling.smith.line",
-      "whoKey": "calling.smith.who"
+      "whoKey": "calling.smith.who",
+      "guideKey": "calling.smith.guide",
+      "lines": [
+        "calling.smith.line",
+        "calling.smith.line.2",
+        "calling.smith.line.3",
+        "calling.smith.line.4",
+        "calling.smith.line.5"
+      ]
     },
     {
       "id": "fisher",
@@ -26,7 +42,15 @@
       "mentorKey": "calling.fisher.mentor",
       "subjectKey": "calling.fisher.subject",
       "lineKey": "calling.fisher.line",
-      "whoKey": "calling.fisher.who"
+      "whoKey": "calling.fisher.who",
+      "guideKey": "calling.fisher.guide",
+      "lines": [
+        "calling.fisher.line",
+        "calling.fisher.line.2",
+        "calling.fisher.line.3",
+        "calling.fisher.line.4",
+        "calling.fisher.line.5"
+      ]
     },
     {
       "id": "healer",
@@ -35,7 +59,15 @@
       "mentorKey": "calling.healer.mentor",
       "subjectKey": "calling.healer.subject",
       "lineKey": "calling.healer.line",
-      "whoKey": "calling.healer.who"
+      "whoKey": "calling.healer.who",
+      "guideKey": "calling.healer.guide",
+      "lines": [
+        "calling.healer.line",
+        "calling.healer.line.2",
+        "calling.healer.line.3",
+        "calling.healer.line.4",
+        "calling.healer.line.5"
+      ]
     },
     {
       "id": "woodcutter",
@@ -44,7 +76,15 @@
       "mentorKey": "calling.woodcutter.mentor",
       "subjectKey": "calling.woodcutter.subject",
       "lineKey": "calling.woodcutter.line",
-      "whoKey": "calling.woodcutter.who"
+      "whoKey": "calling.woodcutter.who",
+      "guideKey": "calling.woodcutter.guide",
+      "lines": [
+        "calling.woodcutter.line",
+        "calling.woodcutter.line.2",
+        "calling.woodcutter.line.3",
+        "calling.woodcutter.line.4",
+        "calling.woodcutter.line.5"
+      ]
     }
   ]
 }

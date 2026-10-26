@@ -7,6 +7,7 @@ import { makeGateQuestion, checkGateAnswer, holdProgress } from '../core/parentg
 import { drawLearning } from './research.js';
 import { exportCode, importCode, SaveError } from '../core/save.js';
 import { gradeIds, gradeName } from '../core/grades.js';
+import { placedGrade } from '../core/exam.js';
 import { extendTime, remainingMs } from '../core/timelimit.js';
 import { registerModal } from './registry.js';
 import { saveProfile, deleteProfile, listProfiles, loadProfile, listRestorePoints, restoreProfile } from './storage.js';
@@ -351,6 +352,12 @@ async function parentArea(ctx, opts = {}) {
       const practice = learner.toPractice();
       body.append(h('h3', { text: t('parent.practice') }), h('p', { text: practice.length ? practice.map((id) => t(`skill.${id}`)).join(t('ui.list.sep')) : t('parent.practice.none') }));
       drawFacts(p);
+      // The grade of a placement shows here only, never above the top grade that has tasks (#136).
+      const placedName = (e) => {
+        const g = e.grade !== undefined ? { grade: e.grade, above: e.above } : placedGrade(e.ability, gradeIds(data.game.grades), data.learning.rating, data.learning.exam.placement.topGrade);
+        const name = gradeName(g.grade, data.game.grades);
+        return g.above ? { key: 'parent.grade.above', params: { grade: name } } : name;
+      };
       body.append(h('h3', { text: t('parent.exams') }));
       if (!p.learning.exams.length) body.append(h('p', { class: 'muted', text: t('parent.exams.none') }));
       else {
@@ -360,7 +367,7 @@ async function parentArea(ctx, opts = {}) {
           table.append(h('tr', {}, [
             h('td', { text: formatDate(e.at) }),
             h('td', { text: t(data.titles.exams[e.kind].titleKey) }),
-            h('td', { text: t(e.kind === 'placement' ? 'parent.exam.placed' : e.passed ? 'parent.exam.passed' : 'parent.exam.notyet', { correct: e.correct, total: e.asked }) }),
+            h('td', { text: t(e.kind === 'placement' ? 'parent.exam.placed' : e.passed ? 'parent.exam.passed' : 'parent.exam.notyet', { correct: e.correct, total: e.asked, ...(e.kind === 'placement' ? { grade: placedName(e) } : {}) }) }),
           ]));
         }
         body.append(table);

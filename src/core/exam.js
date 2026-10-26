@@ -1,10 +1,12 @@
-// The adaptive Văn Miếu exam. It starts easy (or near the grade of the player): after a right
-// answer the next question is harder, after a wrong answer it is easier, until the player makes a
-// few mistakes. It has "min" to "max" questions, and it mixes the kinds of questions.
+// The adaptive exam (the messenger in Era 1, Văn Miếu from chapter 7). It starts easy (or near the
+// grade of the player): after a right answer the next question is harder, after a wrong answer it is
+// easier, until the player makes a few mistakes. It has "min" to "max" questions (at most 10, #136),
+// it aims at a question that the player gets right about seven times in ten ("target"), not half,
+// and two questions of one kind never come one after the other.
 // The ability estimate is a rating on the same scale as the problem items.
 // Until the player has both a correct and a wrong answer, the estimate moves in steps.
 // After that, and for the result, the estimate is the maximum likelihood value of all answers.
-import { expected, itemStartRating } from './rating.js';
+import { expected, itemStartRating, gradeBase } from './rating.js';
 
 // The kind of a question: the family of its skill (math.add.10 and math.add.20 are both
 // math.add). An exam mixes the kinds (#51).
@@ -23,6 +25,12 @@ export function buildLadder(skills, ratingCfg, ratingOf = null) {
     });
   }
   return items.sort((a, b) => a.rating - b.rating || a.skill.localeCompare(b.skill));
+}
+
+// The ladder of an exam (#136): the first level of each skill, so that each question uses the
+// smallest numbers that still test its skill (23 × 14, not 826 × 74), and no question needs paper.
+export function examLadder(skills, ratingCfg, ratingOf = null) {
+  return buildLadder(skills.map((s) => ({ ...s, levels: s.levels.slice(0, 1) })), ratingCfg, ratingOf);
 }
 
 // The skills of an exam. examDef: an exam of titles.json ({ subject, title }).
@@ -56,7 +64,7 @@ export function maxLikelihood(answers, lo, hi, scale = 400) {
   return Math.round((a + b) / 2);
 }
 
-// settings: { min, max, maxMistakes, kStart, kAfterMistake, kMin, window, startOffset }
+// settings: { min, max, maxMistakes, kStart, kAfterMistake, kMin, window, startOffset, target }
 // start: the first ability estimate (for example near the grade of the player).
 export function createExam({ ladder, settings, rng, scale = 400, start = null }) {
   if (ladder.length === 0) throw new Error('The exam has no items');
@@ -77,10 +85,13 @@ export function createExam({ ladder, settings, rng, scale = 400, start = null })
     return Math.max(settings.kMin, settings.kAfterMistake / Math.sqrt(state.mistakes));
   }
 
-  // The next item: an item near the ability. Prefer a skill that was not asked recently.
+  // The rating of an item that the player gets right with the chance "target" (#136: about seven
+  // in ten; a study found more fear of failure at half right, Ortner, Weißkopf and Koch 2014).
+  const below = settings.target ? scale * Math.log10(settings.target / (1 - settings.target)) : 0;
+  // The next item: an item near the target. Prefer a skill that was not asked recently.
   function next() {
     if (state.done) return null;
-    const target = state.ability;
+    const target = state.ability - below;
     const near = ladder.filter((it) => Math.abs(it.rating - target) <= settings.window);
     let pool = near.length ? near : [ladder.reduce((a, b) => (Math.abs(b.rating - target) < Math.abs(a.rating - target) ? b : a))];
     // Mix the kinds (#51): a kind that is not one of the last two questions, near the ability when
@@ -91,12 +102,12 @@ export function createExam({ ladder, settings, rng, scale = 400, start = null })
       const d = Math.min(...list.map((it) => Math.abs(it.rating - target)));
       return list.filter((it) => Math.abs(it.rating - target) <= d + 1e-9);
     };
+    const notLast = (list) => list.filter((it) => (it.kind ?? kindOf(it.skill)) !== kinds.at(-1));
     if (kinds.length && freshKind(pool).length) pool = freshKind(pool);
     else if (kinds.length && freshKind(ladder).length) pool = nearest(freshKind(ladder));
-    else if (kinds.length) {
-      const other = pool.filter((it) => (it.kind ?? kindOf(it.skill)) !== kinds.at(-1));
-      if (other.length) pool = other;
-    }
+    // Never two of one kind in a row (#136): another kind than the last one, near or not.
+    else if (kinds.length && notLast(pool).length) pool = notLast(pool);
+    else if (kinds.length && notLast(ladder).length) pool = nearest(notLast(ladder));
     const recent = state.asked.slice(-2).map((a) => a.skill);
     const fresh = pool.filter((it) => !recent.includes(it.skill));
     if (fresh.length) pool = fresh;
@@ -109,12 +120,14 @@ export function createExam({ ladder, settings, rng, scale = 400, start = null })
 
   const mixed = () => state.asked.some((a) => a.correct) && state.asked.some((a) => !a.correct);
 
-  function answer(correct) {
+  // skipped: the player said "I have not learned this yet" (#136): not known, with no guess.
+  function answer(correct, { skipped = false } = {}) {
     const item = state.current;
     if (!item || state.done) throw new Error('No open question');
+    if (skipped) correct = false;
     const e = expected(state.ability, item.rating, scale);
     if (!correct) state.mistakes += 1;
-    state.asked.push({ ...item, correct });
+    state.asked.push({ ...item, correct, ...(skipped ? { skipped } : {}) });
     state.ability = mixed()
       ? maxLikelihood(state.asked, lo, hi, scale)
       : Math.max(lo, Math.min(hi, state.ability + k() * ((correct ? 1 : 0) - e)));
@@ -135,8 +148,10 @@ export function createExam({ ladder, settings, rng, scale = 400, start = null })
       ability: maxLikelihood(state.asked, lo, hi, scale),
       asked: state.asked.length,
       correct: state.asked.filter((a) => a.correct).length,
+      skipped: state.asked.filter((a) => a.skipped).length,
       mistakes: state.mistakes,
       perSkill,
+      items: state.asked.map((a) => ({ skill: a.skill, level: a.level, rating: a.rating, correct: a.correct, skipped: Boolean(a.skipped) })),
     };
   }
 
@@ -173,4 +188,24 @@ export function simulateExams({ ladder, settings, ability, runs, seed = 'sim', s
     out.push(exam.result().ability);
   }
   return out.sort((a, b) => a - b);
+}
+
+// What the player does well and what comes next, for the line of the result (#136: the result names
+// no grade): the hardest skill that the player answered right, and the easiest skill that the player
+// did not (or, with all right, the easiest skill of the ladder above the hardest right one). Each is
+// a skill id, or null.
+export function strengths(result, ladder) {
+  const right = result.items.filter((a) => a.correct).sort((a, b) => b.rating - a.rating)[0] ?? null;
+  const wrong = result.items.filter((a) => !a.correct && a.skill !== right?.skill).sort((a, b) => a.rating - b.rating)[0] ?? null;
+  const above = right ? ladder.find((it) => it.rating > right.rating && it.skill !== right.skill && !result.items.some((a) => a.skill === it.skill)) : null;
+  return { good: right?.skill ?? null, next: wrong?.skill ?? above?.skill ?? null };
+}
+
+// The grade of a placement, for the parent page only (#136: the child hears no grade): the highest
+// grade whose base rating is at or under the ability, never above "top" (the top grade that has
+// tasks in the game). Return { grade, above } (above: the ability is past the top grade).
+export function placedGrade(ability, gradeIds, ratingCfg, top) {
+  let g = gradeIds[0];
+  for (const grade of gradeIds) if (ability >= gradeBase(grade, ratingCfg)) g = grade;
+  return g > top ? { grade: top, above: true } : { grade: g, above: false };
 }

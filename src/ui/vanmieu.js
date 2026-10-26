@@ -4,10 +4,11 @@
 // from chapter 7 (the Lý), Văn Miếu, the Temple of Literature, with the stone stele of the doctors on
 // the turtle and the board at the gate (the scene "vanmieu").
 import { doorOf } from '../core/session.js';
-import { buildLadder, createExam, skillsToPractice, examSkills } from '../core/exam.js';
+import { examLadder, createExam, skillsToPractice, examSkills, strengths, placedGrade } from '../core/exam.js';
 import { examinerOf, vanMieuOf, lineOf } from '../core/examiners.js';
 import { gradeBase } from '../core/rating.js';
-import { gradeIds, gradeName } from '../core/grades.js';
+import { gradeIds } from '../core/grades.js';
+import { levelFor } from '../core/world/trials.js';
 import { createSeen } from '../core/fresh.js';
 import { checkAnswer } from '../core/solver.js';
 import { giveTitle, eraComplete, setFlag } from '../core/profile.js';
@@ -16,8 +17,8 @@ import { h, button, wait } from './dom.js';
 import { t, tg } from './i18n.js';
 import { speak } from './speak.js';
 import { portrait } from './dialogue.js';
-import { portraitCanvas } from './portraits.js';
-import { renderQuestion, feedbackLine } from './question.js';
+import { portraitCanvas, heroLookOf } from './portraits.js';
+import { renderQuestion, feedbackLine, answerText, textOf } from './question.js';
 import { showMessage } from './quiz.js';
 
 // Back to the world: the hero stands on the road just east of the door of Văn Miếu (the trigger
@@ -26,11 +27,12 @@ function villageDoor(ctx) {
   return doorOf(ctx.data, 'vanmieu') ?? {};
 }
 
-// The ladder of an exam: the skills of the era of its title, or all skills for placement.
+// The ladder of an exam: the skills of the era of its title, or all skills for placement, at the
+// first level of each skill (#136: the smallest numbers that still test the skill).
 function ladderFor(ctx, kind) {
   const { titles } = ctx.data;
   const skills = examSkills(ctx.graph, titles.exams[kind], titles.titles);
-  return buildLadder(skills, ctx.data.learning.rating);
+  return examLadder(skills, ctx.data.learning.rating);
 }
 
 // Run an adaptive exam. Return the result with "passed".
@@ -41,23 +43,31 @@ function runExam(ctx, kind, ex) {
   // The placement exam starts near the grade of the player. The Era 1 exam starts easy.
   const start = kind === 'placement' ? gradeBase(ctx.profile.grade, cfg.rating) + cfg.exam.placement.startOffset : null;
   const exam = createExam({ ladder, settings: cfg.exam.subject, rng: ctx.rng, scale: cfg.rating.scale, start });
+  const max = cfg.exam.subject.max;
   return new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
-    const panel = h('div', { class: 'panel quiz' });
-    const counter = h('div', { class: 'muted' });
+    const panel = h('div', { class: 'panel quiz exam' });
+    // How many questions are left: one dot for each question, at most "max" (#136).
+    const dots = h('div', { class: 'exam-dots', 'aria-label': t('exam.question', { n: 1 }) }, Array.from({ length: max }, () => h('span', { class: 'exam-dot' })));
     const slot = h('div');
     const feedback = feedbackLine();
+    // The rule and the line of the button "not learned yet" show on the first question only (#136).
+    const rule = h('div', { class: 'exam-rule' }, [
+      h('p', { text: t(lineOf(ex, 'rule'), { max }) }),
+      h('p', { text: t(lineOf(ex, 'skip.tell')) }),
+    ]);
     // The title of the exam, the place, and the examiner (the messenger at the village hall in Era 1).
     const titleKey = ex.lines === 'exam' ? def.titleKey : lineOf(ex, `${kind}.title`);
     panel.append(
       h('div', { class: 'panel-head' }, [h('h2', { text: t(titleKey) })]),
       ...(ex.placeKey && ex.lines !== 'exam' ? [h('p', { class: 'muted center', text: t(ex.placeKey) })] : []),
-      h('div', { class: 'quiz-top' }, [portrait(ctx, ex.speaker), h('div', { class: 'quiz-progress' }, [counter, h('p', { text: t(ex.lines === 'exam' ? 'exam.rule' : lineOf(ex, 'rule'), { min: ctx.data.learning.exam.subject.min, max: ctx.data.learning.exam.subject.max }) })])]),
+      h('div', { class: 'quiz-top' }, [portrait(ctx, ex.speaker), h('div', { class: 'quiz-progress' }, [dots, rule])]),
       slot,
       feedback.el,
     );
     layer.append(panel);
     ctx.ui.append(layer);
+    speak(lineOf(ex, 'skip.tell'), {}, { queue: true });
     let q = null;
     const seen = createSeen(ctx.seen);
 
@@ -67,56 +77,89 @@ function runExam(ctx, kind, ex) {
       const make = () => ctx.learner.problem(item.skill, { level: item.level });
       const problem = seen.fresh([make], 40) ?? make();
       ctx.activeProblem = problem;
-      counter.textContent = t('exam.question', { n: exam.count + 1 });
+      [...dots.children].forEach((d, i) => d.classList.toggle('done', i < exam.count));
+      dots.setAttribute('aria-label', t('exam.question', { n: exam.count + 1 }));
+      if (exam.count > 0) rule.remove();
       feedback.clear();
       q?.destroy();
-      q = renderQuestion(problem, {
-        onAnswer: async (response) => {
-          q.lock();
-          const ok = checkAnswer(problem, response);
-          // The exam item and P(L) before the answer: the check of transfer (rule 30).
-          ctx.log('exam', { skill: problem.skill, correct: ok, p: ctx.learner.entry(problem.skill).p });
-          ctx.learner.record(problem, ok, { choices: problem.kind === 'choice' ? problem.choices?.length ?? 0 : 0 });
-          ctx.bus.emit('sound', ok ? 'correct' : 'tap');
-          feedback.show(ok ? 'good' : 'hint', t(ok ? 'exam.right' : 'exam.next'));
-          exam.answer(ok);
-          await wait(900);
-          if (exam.done) {
-            q.destroy();
-            layer.remove();
-            const result = exam.result();
-            result.practice = skillsToPractice(result, ladder);
-            result.passed = kind === 'era1' ? result.ability >= ctx.data.learning.exam.era1.pass : true;
-            resolve(result);
-          } else {
-            ask();
-          }
-        },
-      });
+      let answered = false;
+      // The answer: right, or the right answer with one short line (#136, rule 26); "not learned
+      // yet" is fine, and it counts as not known, with no guess.
+      const done = async (ok, skipped = false) => {
+        if (answered) return;
+        answered = true;
+        q.lock();
+        skip.disabled = true;
+        // The exam item and P(L) before the answer: the check of transfer (rule 30).
+        ctx.log('exam', { skill: problem.skill, correct: ok, p: ctx.learner.entry(problem.skill).p, ...(skipped ? { skipped } : {}) });
+        ctx.learner.record(problem, ok, { choices: !skipped && problem.kind === 'choice' ? problem.choices?.length ?? 0 : 0 });
+        ctx.bus.emit('sound', ok ? 'correct' : 'tap');
+        const answer = answerText(problem);
+        const explain = !ok && problem.explain ? ` ${textOf(problem.explain)}` : '';
+        const key = ok ? lineOf(ex, 'right') : skipped ? lineOf(ex, 'skip.done') : lineOf(ex, 'wrong');
+        feedback.show(ok ? 'good' : 'example', t(key, { answer }) + explain, { key, params: { answer } });
+        exam.answer(ok, { skipped });
+        // A right answer goes on by itself; after the right answer of a wrong one (or of "not learned
+        // yet"), the child reads it, and taps "Câu tiếp theo" when ready (#136: the answer after each
+        // question, at the pace of the child).
+        if (ok) await wait(1500);
+        else {
+          await new Promise((go) => {
+            const next = button(t(lineOf(ex, 'go')), go, { cls: 'btn red exam-skip exam-next' });
+            skip.replaceWith(next);
+          });
+        }
+        if (exam.done) {
+          q.destroy();
+          layer.remove();
+          const result = exam.result();
+          result.practice = skillsToPractice(result, ladder);
+          result.passed = kind === 'era1' ? result.ability >= ctx.data.learning.exam.era1.pass : true;
+          result.ladder = ladder;
+          resolve(result);
+        } else {
+          ask();
+        }
+      };
+      q = renderQuestion(problem, { onAnswer: (response) => done(checkAnswer(problem, response)) });
+      const skip = button(t(lineOf(ex, 'skip.button')), () => done(false, true), { cls: 'btn paper exam-skip' });
       slot.replaceChildren(q.el);
+      // The button goes in the free row of the keypad, next to the zero; under the choices else.
+      const pad = q.el.querySelector('.numpad');
+      if (pad) pad.append(skip);
+      else slot.append(skip);
     };
     ask();
   });
 }
 
-// The grade level of an ability: the highest grade whose base rating is at or below it.
-function gradeOf(ctx, ability) {
-  const ids = gradeIds(ctx.data.game.grades);
-  let g = ids[0];
-  for (const grade of ids) if (ability >= gradeBase(grade, ctx.data.learning.rating)) g = grade;
-  return gradeName(g, ctx.data.game.grades);
+// The name of a skill in a line, with a small first letter ("bài bảng nhân").
+function skillWords(id) {
+  const name = t(`skill.${id}`);
+  return name.charAt(0).toLocaleLowerCase() + name.slice(1);
 }
 
 async function afterExam(ctx, kind, result, ex) {
   const { profile, data } = ctx;
   const def = data.titles.exams[kind];
-  profile.learning.exams.push({ kind, at: Date.now(), ability: Math.round(result.ability), asked: result.asked, correct: result.correct, passed: result.passed });
+  // The grade of a placement goes to the parent page only, and never above the top grade that has
+  // tasks (#136).
+  const placed = kind === 'placement' ? placedGrade(result.ability, gradeIds(data.game.grades), data.learning.rating, data.learning.exam.placement.topGrade) : null;
+  profile.learning.exams.push({ kind, at: Date.now(), ability: Math.round(result.ability), asked: result.asked, correct: result.correct, passed: result.passed, ...(placed ? { grade: placed.grade, above: placed.above } : {}) });
   if (kind === 'placement') {
     const ids = ctx.graph.filter((s) => s.subject === 'math').map((s) => s.id);
     ctx.learner.applyPlacement(result.ability, ids, data.learning.exam.placement);
     setFlag(profile, def.flag);
     await ctx.save('exam');
-    await showMessage(ctx, { speaker: ex.speaker, textKey: lineOf(ex, 'placement.done'), params: { grade: gradeOf(ctx, result.ability), correct: result.correct, total: result.asked } });
+    // The result says what the child does well and what comes next, in words of the task, and no
+    // grade (#136: "now will everything be lớp 6 hard?").
+    const { good, next } = strengths(result, result.ladder ?? ladderFor(ctx, kind));
+    const lines = [
+      ...(good ? [{ key: lineOf(ex, 'placement.good'), params: { skill: skillWords(good) } }] : []),
+      ...(next ? [{ key: lineOf(ex, 'placement.next'), params: { skill: skillWords(next) } }] : []),
+      { key: lineOf(ex, 'placement.done'), params: {} },
+    ];
+    await showMessage(ctx, { speaker: ex.speaker, lines });
   } else if (result.passed) {
     const title = data.titles.titles.find((x) => x.id === def.title);
     // A title of a print (người tài in Era 1) goes into the notebook, not onto a stele (#134).
@@ -180,6 +223,8 @@ function chapterEnd(ctx, title) {
 
 function chooseCalling(ctx, change, ex = vanMieuOf(ctx.data)) {
   const { profile, data } = ctx;
+  // The note says "cháu" after the messenger, and "em" at Văn Miếu (#136).
+  const noteKey = change ? 'calling.change.note' : ex.lines === 'exam' ? 'calling.note' : lineOf(ex, 'calling.note');
   return new Promise((resolve) => {
     const layer = h('div', { class: 'modal-layer' });
     let picked = profile.calling;
@@ -191,18 +236,29 @@ function chooseCalling(ctx, change, ex = vanMieuOf(ctx.data)) {
       await ctx.save('calling');
       layer.remove();
       const c = data.callings.callings.find((x) => x.id === picked);
-      await showMessage(ctx, { speaker: ex.speaker, textKey: ex.lines === 'exam' ? 'calling.chosen' : lineOf(ex, 'calling'), params: { calling: { key: c.nameKey } }, look: data.figures.figures[c.look] });
+      // The child's own hero with the tool of the calling, not the mentor (#136: "Is that supposed
+      // to be me? I'm a girl with long hair.").
+      const tool = data.figures.figures[c.look]?.item;
+      await showMessage(ctx, { speaker: ex.speaker, textKey: ex.lines === 'exam' ? 'calling.chosen' : lineOf(ex, 'calling'), params: { calling: { key: c.nameKey } }, looks: [withTool(c), ...(tool ? [{ kind: 'tool', item: tool }] : [])] });
       resolve();
     }, { cls: 'btn big red', disabled: !picked });
+    const hero = heroLookOf(ctx);
+    const withTool = (c) => (hero ? { ...hero, item: data.figures.figures[c.look]?.item } : data.figures.figures[c.look]);
+    // The line of each card is the task of the mentor at the level of the child (#136: at grade 4 the
+    // scholar shares rods among the desks, not the counting of grade 1).
+    const level = levelFor(data.trials, profile.grade);
+    const lineKey = (c) => c.lines?.[Math.min(level, c.lines.length - 1)] ?? c.lineKey;
     for (const c of data.callings.callings) {
+      // The hero of the child next to the mentor, and who the mentor is.
       const card = h('button', { class: 'calling-card', type: 'button', 'aria-pressed': String(c.id === picked) }, [
-        portraitCanvas(ctx, data.figures.figures[c.look], { framing: 'full', size: 64 }), h('span', { class: 'calling-words' }, [h('strong', { text: t(c.nameKey) }), h('small', { text: t(c.lineKey) })]),
+        h('span', { class: 'calling-pics' }, [hero ? portraitCanvas(ctx, hero, { framing: 'full', size: 52 }) : null, portraitCanvas(ctx, data.figures.figures[c.look], { framing: 'full', size: 64 })]),
+        h('span', { class: 'calling-words' }, [h('strong', { text: t(c.nameKey) }), h('small', { text: t(c.guideKey) }), h('small', { text: t(lineKey(c)) })]),
       ]);
       card.addEventListener('click', () => {
         picked = c.id;
         for (const x of grid.children) x.setAttribute('aria-pressed', String(x === card));
         confirm.disabled = false;
-        speak(c.lineKey);
+        speak(lineKey(c));
       });
       grid.append(card);
     }
@@ -211,12 +267,12 @@ function chooseCalling(ctx, change, ex = vanMieuOf(ctx.data)) {
         h('h2', { text: tg('calling.title') }),
         change ? button(null, () => { layer.remove(); resolve(); }, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') }) : null,
       ]),
-      h('p', { class: 'center', text: tg(change ? 'calling.change.note' : 'calling.note') }),
+      h('p', { class: 'center', text: tg(noteKey) }),
       grid,
       h('div', { class: 'row main-actions', style: { marginTop: '12px' } }, [confirm]),
     ]));
     ctx.ui.append(layer);
-    speak(change ? 'calling.change.note' : 'calling.note');
+    speak(noteKey);
   });
 }
 
