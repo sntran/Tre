@@ -2675,6 +2675,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     else if (who.kind === 'event') tapEvent(who.id);
     else if (who.kind === 'puzzle') puzzles.talk(who.id);
+    // The farmer of the hamlet by the mats asks for the rest of the share (#151).
+    else if (who.kind === 'rest') emit({ type: 'open', screen: 'callout', id: at.entity ?? `npc:${who.id}`, textKey: 'share.rest.ask', params: {} });
     // A person of the way says the clue again, and points along the road; after the place is
     // found, a short line of the way (#150: "The talk bubble does not work! Bác does not talk.").
     else if (who.kind === 'way') {
@@ -2988,17 +2990,29 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // time (seconds in the raid), help (the tick when Nghé and the child drive the enemy away) }.
   let raidTeach = { sling: false, singles: 0, demo: null, shown: false, misses: 0, time: 0, help: null };
   const DEMO_PRESS = 0.6; // seconds between two presses of the elder
+  const DEMO_LOOK = 1.2; // seconds of "Xem ông này." before the elder looks for an enemy at a post
   const RAID_HELP_MISSES = 4;
   const RAID_HELP_TIME = 180; // seconds in the raid
   // The elder takes the slingshot for one shot at a post with no enemy, and presses fast while he
   // says the count: the ring goes to the third post, and the stone flies there. No numeral shows.
+  // The throw of the elder is a whole example on the real enemy (#151: "So the soldier is at post 3."
+  // A boy pressed three times at a scout on post 4, because the elder counted to three at an empty
+  // post; children copy what an adult shows, Lyons, Young, and Keil 2007): he waits until an enemy
+  // stands at a post, says that post, counts the posts up to it while they glow, and the stone hits
+  // that enemy. The enemies stand, and no scout lifts a torch, while he throws. Then the next enemy
+  // is for the child.
   function raidDemo(raid, coach) {
-    const free = (k) => k * POST_STEP <= raid.sling.max && !raid.enemies.some((e) => e.state !== 'gone' && e.state !== 'retreat' && Math.abs(along(raid, e) - k * POST_STEP) <= 4);
-    const k = [3, 2, 4].find(free) ?? 3;
     slingPull = null;
-    raidTeach.demo = { t: 0, k, posts: 0, coach: coach.id };
+    raidTeach.demo = { t: 0, k: null, posts: 0, coach: coach.id, target: null };
+    raid.demo = true;
     // The coach says it as the person that it is (#99: the fisher said "Xem ông này.").
     emit({ type: 'open', screen: 'callout', id: coach.id, textKey: data.raids?.raids[raid.id]?.lookKey ?? 'raid.demo.look', params: {} });
+  }
+  // The enemy that stands at a post now (the nearest to the wall), with the number of its post.
+  function standing(raid) {
+    const live = raid.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone' && e.state !== 'stunned' && !e.aside);
+    const at = live.map((e) => ({ e, q: postAt(raid, along(raid, e)) })).filter((x) => x.q && x.q.d <= raid.sling.max).sort((a, b) => a.q.d - b.q.d)[0];
+    return at ? { e: at.e, k: raid.posts.indexOf(at.q) + 1 } : null;
   }
   function stepRaidDemo() {
     const teach = raidTeach;
@@ -3013,12 +3027,24 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const d = teach.demo;
     if (!d) return;
     d.t += STEP;
+    // He waits until an enemy stands at a post; he never counts while the enemy stands elsewhere.
+    if (d.k === null) {
+      const at = d.t >= DEMO_LOOK ? standing(raid) : null;
+      if (!at) return;
+      d.k = at.k;
+      d.target = at.e.id;
+      d.t = 0;
+      raid.aim = { id: at.e.id, all: true };
+      emit({ type: 'open', screen: 'callout', id: d.coach, textKey: 'raid.demo.at', params: { ...raidWords(), post: { key: `ord.${d.k}` } } });
+      return;
+    }
     const due = Math.min(d.k, Math.floor((d.t - 1.2) / DEMO_PRESS) + 1);
     while (d.posts < due) {
       d.posts += 1;
       emit({ type: 'open', screen: 'callout', id: d.coach, textKey: `num.${d.posts}`, params: {} });
       emit({ type: 'pulse', id: 'ring:pull' });
       emit({ type: 'pulse', id: `post:${d.posts}` });
+      emit({ type: 'glowSeq', ids: [`post:${d.posts}`] });
     }
     const fire = 1.2 + (d.k - 1) * DEMO_PRESS + 1;
     if (!d.fired && d.t >= fire) {
@@ -3026,10 +3052,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       order({ act: 'shoot', count: d.k * POST_STEP, unit: POST_STEP, demo: true });
     }
     if (d.t >= fire + 2.5) {
-      emit({ type: 'open', screen: 'callout', id: d.coach, textKey: 'raid.demo.back', params: {} });
+      emit({ type: 'open', screen: 'callout', id: d.coach, textKey: addressed(d.coach, 'mentor.first.you'), params: {} });
       teach.demo = null;
       teach.shown = true;
       teach.singles = 0;
+      raid.demo = false;
+      raid.aim = null;
     }
   }
   // A wave in a raid (#99): the next step of the raid. With the slingshot, the elder shows one throw
@@ -3216,18 +3244,60 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       emit({ type: 'gift', from: 'hero', give: { rice: sacks }, delay: 0.3 });
     }
     save('share');
+    const matsAt = ['hero', 'nghe', 'giong'].map((w) => getEntity(state, `mat:share-${w}`)?.position).filter(Boolean).map((p) => ({ ...p }));
     for (const e of [...state.entities]) {
       if (e.item?.task === 'trial-share' || e.zone?.task === 'trial-share' || e.id === 'zone:trial-share' || String(e.id).startsWith('mat:share-') || String(e.id).startsWith('by:share-')) removeEntity(state, e.id);
     }
     const friend = query(state, 'follow').find((f) => f.follow.target === 'hero');
     if (friend) delete friend.follow.goal;
-    if (rest) giveRest(rest);
+    // The person of the rest waits by the mats (#151: "This walk is the longest part, I'm getting
+    // bored."): one tap and one press, and the next raid does not wait for a far walk.
+    if (rest) {
+      restNear(matsAt);
+      giveRest(rest);
+    }
     emit({ type: 'hud' });
     for (const id of shareAfter) talk(id);
     shareAfter = [];
   }
   // The rest of the loot: a red cloth with the sacks goes into the hands of the hero. The child
   // carries it to one of the people of the rest in the village (giveGift).
+  // The rest of the share goes to a person by the mats (#151: "This walk is the longest part, I'm
+  // getting bored."): a farmer of the hamlet by the hills comes to the mats, REST_NEAR half blocks
+  // from their middle on the side away from the camera, and takes the rest for the hamlet with one
+  // tap and one press; then the farmer goes home.
+  const REST_NEAR = 8;
+  const REST_REF = 'hamlet';
+  function restNear(mats) {
+    if (!mats.length || !trialDef('share')?.rest?.[REST_REF]) return;
+    const mid = { x: mats.reduce((a, p) => a + p.x, 0) / mats.length, z: mats.reduce((a, p) => a + p.z, 0) / mats.length };
+    const cx = Math.sin(viewAz);
+    const cz = Math.cos(viewAz);
+    let at = null;
+    for (const r of [REST_NEAR, REST_NEAR - 3, REST_NEAR + 4, REST_NEAR + 8]) {
+      for (const k of [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6]) {
+        const a = Math.atan2(-cx, -cz) + k * 0.5;
+        const q = { x: mid.x + Math.sin(a) * r, z: mid.z + Math.cos(a) * r };
+        if (tileMap.walkable(Math.floor(q.x / 2), Math.floor(q.z / 2))) {
+          at = q;
+          break;
+        }
+      }
+      if (at) break;
+    }
+    if (!at) return;
+    removeEntity(state, `npc:${REST_REF}`);
+    const hc = heroCell();
+    addEntity(state, {
+      id: `npc:${REST_REF}`,
+      chunk: chunkOf(Math.floor(hc.x), Math.floor(hc.y)),
+      person: { kind: 'rest', ref: REST_REF },
+      position: pointAt(at, Math.atan2(mid.x - at.x, mid.z - at.z)),
+      motion: { vx: 0, vz: 0, speed: 0 },
+      solid: { r: 1.8 },
+      look: data.raids?.restLook ?? 'mother',
+    });
+  }
   function giveRest(n) {
     const h = hero();
     const id = `gift:${state.tick}`;
@@ -3236,7 +3306,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     h.hands.holds = id;
     h.carry = look;
     // One number and one person (#141: "Before it said ONE extra bag, now it says some bags?").
-    say('share.rest', { n: { key: `num.${n}` } });
+    say(getEntity(state, `npc:${REST_REF}`) ? 'share.rest.hamlet' : 'share.rest', { n: { key: `num.${n}` } });
   }
   function raidOver() {
     coachBack();
@@ -3283,6 +3353,36 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.trap.where', params: { post: { key: `ord.${n}` } } });
     emit({ type: 'glowSeq', ids: raid.posts.slice(0, n).map((_, i) => `post:${i + 1}`) });
   }
+  // A word after the gate (#151: "Did I do it right or wrong? Nobody told me."): the bar stopped a
+  // torch, the first WORD_TIMES times in a raid; a torch went over the open gate: what happened and
+  // what to do, and the gate glows. A snap of a trap: the trap holds the enemy, and the child
+  // counts and shoots, the first WORD_TIMES times.
+  const WORD_TIMES = 2;
+  function gateWord(type) {
+    const raid = raidEnt()?.raid;
+    const who = raidSpeaker();
+    if (!raid || !who) return;
+    raid.words ??= {};
+    if (type === 'stop') {
+      raid.words.stop = (raid.words.stop ?? 0) + 1;
+      if (raid.words.stop <= WORD_TIMES) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.gate.stopped', params: {} });
+      return;
+    }
+    emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.gate.burn', params: raidWords() });
+    const bar = getEntity(state, 'bar:raid');
+    if (bar) {
+      glowing = [bar.id];
+      who.gesture = { act: 'point', x: bar.position.x, z: bar.position.z, t: 2.5 };
+    }
+  }
+  function snapWord() {
+    const raid = raidEnt()?.raid;
+    const who = raidSpeaker();
+    if (!raid || !who) return;
+    raid.words ??= {};
+    raid.words.snap = (raid.words.snap ?? 0) + 1;
+    if (raid.words.snap <= WORD_TIMES) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.trap.snap', params: raidWords() });
+  }
   // A trap on the road: at the post of the villager it is right; at another post, the villager says
   // the place again.
   function trapPlaced(ev) {
@@ -3291,7 +3391,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.right) {
       const who = raidSpeaker();
       if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.trap.right', params: {} });
-    } else trapWhere();
+      return;
+    }
+    // A trap at another post: where it is, and where it goes (#151: "The voice said again Bẫy đặt ở
+    // cột ba nhé - did I do it wrong? I dont know."). Away from every post: the place only.
+    const at = Number.isFinite(ev.d) ? postAt(raid, ev.d) : null;
+    const who = raidSpeaker();
+    if (at && who && raid.trapPost !== null && !raid.trapDone) {
+      const n = raid.posts.findIndex((q) => q.d === raid.trapPost) + 1;
+      const k = raid.posts.indexOf(at) + 1;
+      emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.trap.wrong', params: { at: { key: `ord.${k}` }, post: { key: `ord.${n}` } } });
+      emit({ type: 'glowSeq', ids: raid.posts.slice(0, n).map((_, i) => `post:${i + 1}`) });
+      return;
+    }
+    trapWhere();
   }
   // The button in a raid: pick up a trap at the heap of traps; put the trap in the hands on the road
   // (at the place of the tap, or in front of the hero), where a ghost shows it.
@@ -3314,6 +3427,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // chooses this pick: the walk to a far trap stops at the nearest one (#60).
     const free = query(state, 'item').filter((e) => e.item.kind === 'trap' && !e.item.set && e.item.zone !== 'raid-road').map((e) => e.id);
     if (trap) return { act: 'pick', icon: 'hand-pick', target: trap.id, keys: free, run: () => { worldCommand(state, { type: 'pick', id: 'hero', item: trap.id }); order({ act: 'release', tool: 'traps' }); trapWhere(); } };
+    // While a villager waits for the first trap, the button is the pick with a walk to the pile,
+    // not the slingshot (#151: a press threw a stone at an empty road).
+    const rr = raidEnt()?.raid;
+    const pile = free.map((id) => getEntity(state, id)).filter((e) => e?.position && !e.item.held && !e.hidden).sort((a, b) => distHb(hp, a.position) - distHb(hp, b.position))[0];
+    if (rr && !rr.result && rr.trapPost !== null && !rr.trapDone && !rr.usedTools?.includes('traps') && pile) {
+      return { act: 'pick', icon: 'hand-pick', target: pile.id, keys: free, go: true, run: () => goTo({ x: pile.position.x, z: pile.position.z }, pile.id) };
+    }
     // Nothing else in reach: the big button is the slingshot (#50, #55). Each press adds one post
     // to the pull (a red band on the band); the stone flies one second after the last press, or at
     // once after a tap on the hero. A child counts the presses, not the time.
@@ -3761,7 +3881,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // the view shows the star of that person in place of the stars of the story.
   function giftTo() {
     const held = getEntity(state, holding());
-    return held?.item.kind === 'gift' ? Object.keys(trialDef('share')?.rest ?? {})[0] ?? null : null;
+    if (held?.item.kind !== 'gift') return null;
+    const rest = Object.keys(trialDef('share')?.rest ?? {});
+    // The person here comes first (the farmer of the hamlet by the mats), then the elder.
+    return rest.find((ref) => getEntity(state, `npc:${ref}`) && !getEntity(state, `npc:${ref}`).hidden) ?? rest.find((ref) => ref !== REST_REF) ?? null;
   }
   // The rest of the loot (a small red cloth in the hands) goes to a person who takes it.
   function giveGift(q) {
@@ -3775,6 +3898,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'sound', sound: 'pickup' });
     emit({ type: 'gave', id: q.entity, to: q.ref });
     emit({ type: 'open', screen: 'callout', id: q.entity, textKey: key, params: { name: profile.hero.name } });
+    // The farmer of the hamlet goes home after the thanks.
+    if (q.ref === REST_REF) later.push(() => queue(() => removeEntity(state, q.entity)));
     save('gift');
   }
 
@@ -3929,6 +4054,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // The goal of the part of the forge now (#140: the goal follows the work), or null.
   function workGoal() {
+    // The share after a raid comes first (#151: "Too many things at once again!"): until it ends,
+    // the goal bar says the share; the next goal of the story comes after it.
+    const share = trialZone('share');
+    if (share && !share.zone.done) return 'quest.share';
     return trialDef('horse')?.goals?.[horsePart()] ?? null;
   }
   // A line of the smith at the forge of the iron horse.
@@ -4229,7 +4358,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         continue;
       }
       if (held) {
-        if (held.item.kind === 'gift' && q.kind === 'npc' && trialDef('share')?.rest?.[q.ref]) add({ ...base, act: 'give', icon: 'hand-give', rank: 0, run: () => giveGift(q) }, REACH + 3);
+        if (held.item.kind === 'gift' && (q.kind === 'npc' || q.kind === 'rest') && trialDef('share')?.rest?.[q.ref]) add({ ...base, act: 'give', icon: 'hand-give', rank: 0, run: () => giveGift(q) }, REACH + 3);
         continue;
       }
       const fin = finishOf(mentoring.taskOfPerson(q.entity), chosen?.id === q.entity);
@@ -5790,6 +5919,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'retreat') raidRetreat();
     if (ev.type === 'light') gateHint();
     if (ev.type === 'trapput') trapPlaced(ev);
+    if ((ev.type === 'stop' || ev.type === 'burn') && String(ev.id).startsWith('torch:')) gateWord(ev.type);
+    if (ev.type === 'snap' && raidOn() && ev.trap) snapWord();
     if (ev.type === 'sulk') shareMore(ev.counts);
     if (ev.type === 'hit' && (ev.by === 'stone' || ev.by === 'riceball')) raidHits += 1;
     if (ev.type === 'raidover') {

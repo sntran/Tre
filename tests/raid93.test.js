@@ -15,6 +15,9 @@ const start = [
 ];
 // One press, and a wait for the stone and the line after it.
 const one = [{ do: { type: 'hands' } }, { wait: 6 }];
+// A stone past every post (six presses): a miss, also when a scout stands at the first post (the
+// stone of the elder hits his scout, #151, and the next scout may come to post 1).
+const far = [...Array.from({ length: 6 }, () => [{ do: { type: 'hands' } }, { wait: 0.3 }]).flat(), { wait: 6 }];
 
 function listen(x, out) {
   x.listen((e) => {
@@ -24,20 +27,23 @@ function listen(x, out) {
   });
 }
 
-test('after two short stones of one press each, the elder shows three quick presses at a post with no enemy, and the stone flies there', async () => {
+test('after two short stones of one press each, the elder shows a whole throw on the real enemy: he says its post, counts to it, and the stone flies there (#151)', async () => {
   let s = null;
   const seen = [];
-  const failures = await runHeadless({ name: 'raid-demo', profile, clock: 540, at: ['phu-dong', 61, 29], steps: [...start, ...one, ...one, { wait: 8 }] }, { onSession: (x) => { s = x; listen(x, seen); } });
+  const failures = await runHeadless({ name: 'raid-demo', profile, clock: 540, at: ['phu-dong', 61, 29], steps: [...start, ...one, ...one, { wait: 10 }] }, { onSession: (x) => { s = x; listen(x, seen); } });
   assert.deepEqual(failures, []);
   const at = seen.indexOf('npc:elder:raid.demo.look');
   assert.ok(at > 0, `the elder says "Xem ông này.": ${seen.join(', ')}`);
   const after = seen.slice(at);
-  const nums = after.filter((x) => /^npc:elder:num\.\d$/.test(x)).map((x) => x.split('.').at(-1));
-  assert.deepEqual(nums, ['1', '2', '3'], 'he counts while he presses');
-  assert.ok(after.includes('shoot:demo:15'), `the stone flies to the third post: ${after.join(', ')}`);
+  assert.ok(after.includes('npc:elder:raid.demo.at'), `he says the post of the enemy: ${after.join(', ')}`);
+  const nums = after.filter((x) => /^npc:elder:num\.\d$/.test(x)).map((x) => Number(x.split('.').at(-1)));
+  assert.ok(nums.length >= 1, 'he counts while he presses');
+  assert.deepEqual(nums, nums.map((_, i) => i + 1));
+  const shot = after.find((x) => x.startsWith('shoot:demo:'));
+  assert.equal(shot, `shoot:demo:${nums.length * 5}`, 'the stone flies to the post that he said');
   assert.ok(after.includes('land:demo'));
-  assert.ok(after.includes('npc:elder:raid.demo.back'), 'he gives the slingshot back');
-  const demo = after.slice(after.indexOf('shoot:demo:15'), after.indexOf('land:demo') + 1);
+  assert.ok(after.includes('npc:elder:mentor.first.you'), 'he gives the slingshot back: "Giờ đến lượt cháu."');
+  const demo = after.slice(after.indexOf(shot), after.indexOf('land:demo') + 1);
   assert.ok(!demo.includes('skill'), 'the stone of the elder is no try of the child');
   assert.ok(!getEntity(s.state, 'raid').raid.result, 'the raid goes on');
 });
@@ -45,7 +51,7 @@ test('after two short stones of one press each, the elder shows three quick pres
 test('after the demonstration and four more misses, Nghé comes, and the raid ends as won with help; the raid can come again from the elder', async () => {
   let s = null;
   const seen = [];
-  const failures = await runHeadless({ name: 'raid-help', profile, clock: 540, at: ['phu-dong', 61, 29], steps: [...start, ...one, ...one, { wait: 8 }, ...one, ...one, ...one, ...one, { wait: 6 }] }, { onSession: (x) => { s = x; listen(x, seen); } });
+  const failures = await runHeadless({ name: 'raid-help', profile, clock: 540, at: ['phu-dong', 61, 29], steps: [...start, ...one, ...one, { wait: 10 }, ...far, ...far, ...far, ...far, { wait: 6 }] }, { onSession: (x) => { s = x; listen(x, seen); } });
   assert.deepEqual(failures, []);
   assert.ok(seen.includes('friend:nghe:raid.help.nghe'), `Nghé comes: ${seen.join(', ')}`);
   assert.ok(seen.includes('end:helped'), 'the raid ends as won with help');

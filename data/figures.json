@@ -1114,6 +1114,9 @@
     "spot": {
       "kind": "spot"
     },
+    "post-line": {
+      "kind": "post-line"
+    },
     "jar": {
       "kind": "jar"
     },

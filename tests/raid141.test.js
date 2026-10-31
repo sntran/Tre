@@ -214,7 +214,7 @@ test('a new tool that the child does not use stays new: after a lost try the sam
   assert.equal(again.session.profile.flags['raid.tool.traps'], true);
 });
 
-test('the lines of the soldiers and of the shares say true numbers, and the sack that is left goes to the elder', () => {
+test('the lines of the soldiers and of the shares say true numbers, and the sack that is left goes to the farmer of the hamlet by the mats (#151), or else to the elder', () => {
   const vi = createI18n(load('i18n/vi.json'), 'vi');
   const grown = vi.t('dlg.giong.grown.n3');
   assert.ok(!/\bHai\b|\bhai\b/.test(grown), grown);
@@ -224,6 +224,7 @@ test('the lines of the soldiers and of the shares say true numbers, and the sack
   assert.equal(raids.raids.soldier2.shareKey, 'share.start.again');
   assert.equal(vi.t('share.start.again', { n: { key: `num.${raids.raids.soldier2.loot}` } }), 'Toán lính thứ hai cũng bỏ lại gạo: mười bao. Lại chia đều nhé.');
   assert.equal(vi.t('share.rest', { n: { key: 'num.1' } }), 'Còn một bao gạo lẻ. Cháu mang về cho cụ già làng ở đình nhé.');
+  assert.equal(vi.t('share.rest.hamlet', { n: { key: 'num.1' } }), 'Còn một bao gạo lẻ. Cháu đưa cho bác nông dân của xóm này nhé.');
   const share = load('data/trials.json').trials.find((t) => t.id === 'share');
-  assert.deepEqual(Object.keys(share.rest), ['elder']);
+  assert.deepEqual(Object.keys(share.rest), ['hamlet', 'elder']);
 });

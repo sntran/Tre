@@ -265,6 +265,17 @@ export const AT_POST = 1;
 export const postAt = (raid, d) => raid.posts.find((q) => Math.abs(q.d - d) <= AT_POST) ?? null;
 // The distance of the last post from the wall, or null with no posts.
 export const lastPost = (raid) => (raid.posts.length ? Math.max(...raid.posts.map((q) => q.d)) : null);
+// An enemy who stands at a post stands on the line of the post across the road (#151: "is he at
+// post 3 or post 4? He's kind of in between."), with a stamp of the feet and a puff of dust, one
+// time at each post.
+function onLine(raid, e, post, out) {
+  const d = along(raid, e);
+  e.x += raid.dir.x * (post.d - d);
+  e.z += raid.dir.z * (post.d - d);
+  if (e.on === post.d) return;
+  e.on = post.d;
+  out.push({ type: 'stamp', id: e.id, at: { x: e.x, z: e.z }, post: post.d, sound: 'thud' });
+}
 // The points of the road that the frame of the view of a raid shows (half blocks): the wall, the
 // posts, and the place where the enemies come in. No enemy is a point of the frame (#141: "The screen
 // moves every time I throw."), so the view stands still while the enemies walk.
@@ -451,6 +462,7 @@ function tickEnemy(raid, e, dt, ctx, out) {
   // or behind the last post, walks on to the next post, and stands there.
   if (raid.aim && (raid.aim.all || raid.aim.id === e.id) && postAt(raid, d)) {
     e.facing = faceTo(e, raid.wall);
+    onLine(raid, e, postAt(raid, d), out);
     return;
   }
   // One enemy at a post (#141): while an enemy stands at the post in front, the next one stands at
@@ -477,7 +489,9 @@ function tickEnemy(raid, e, dt, ctx, out) {
   const gateD = along(raid, raid.gate);
   // A torch only where the child has the gate to stop it (#55: the first raid of the slingshot has
   // no gate, and so no torch).
-  if (kind.torch && raid.tools.includes('gate') && e.cool <= 0 && d - gateD <= kind.torch.range && d - gateD > 1) {
+  // No torch while the elder shows a throw (#151: the first torch came while a line of help was on
+  // the screen).
+  if (kind.torch && raid.tools.includes('gate') && !raid.demo && e.cool <= 0 && d - gateD <= kind.torch.range && d - gateD > 1) {
     e.state = 'torch';
     e.t = kind.torch.tell;
     e.lit = raid.t;
@@ -499,6 +513,7 @@ function tickEnemy(raid, e, dt, ctx, out) {
       e.state = 'wait';
       e.t = raid.stop;
       e.facing = faceTo(e, raid.wall);
+      onLine(raid, e, post, out);
       out.push({ type: 'pause', id: e.id, post: post.d });
       return;
     }
@@ -622,9 +637,14 @@ function tickStones(raid, dt, out) {
     const at = { x: raid.wall.x + raid.dir.x * s.count, z: raid.wall.z + raid.dir.z * s.count };
     // The enemy where the stone lands, at that moment: the count along the road, and anywhere in
     // the lane of the road (an enemy that walks a little to the side is on the road too, #50).
+    // The stone of the elder hits the real enemy at its post (#151), and it is no try of the child:
+    // no skill event.
     if (s.demo) {
-      out.push({ type: 'land', id: s.id, at, count: s.count, hit: false, demo: true, sound: 'thud' });
-      raid.marks.push({ id: `mark:${s.id}`, ...at, t: MARK, look: 'stone' });
+      const on = (e) => Math.abs(along(raid, e) - s.count) <= Math.max(raid.sling.hit, (s.unit ?? 1) / 2) && Math.abs(across(raid, e)) <= LANE;
+      const foe = raid.enemies.filter((e) => alive(e) && e.state !== 'stunned' && on(e)).sort((a, b) => dist(a, at) - dist(b, at))[0] ?? null;
+      const struck = foe && !(foe.shield > 0) ? hit(raid, foe, 1, 'stone', out) : false;
+      out.push({ type: 'land', id: s.id, at, count: s.count, hit: struck, demo: true, sound: struck ? null : 'thud' });
+      if (!struck) raid.marks.push({ id: `mark:${s.id}`, ...at, t: MARK, look: 'stone' });
       continue;
     }
     // The enemy that the child aimed at (it stood still) is hit by a count of the post nearest to
@@ -750,7 +770,7 @@ function skill(raid, what, r) {
 // and the stone lands exactly there. Return the events (none when the slingshot is not ready).
 // ball: what flies (a rice ball for the creatures of the river), from the data of the raid.
 // unit: half blocks of one step of the pull (5: a press of the big button is one post, #55).
-// demo: a stone of a person who shows the quick presses (#93): it never hits, and it sends no skill
+// demo: a stone of a person who shows the quick presses (#93): it hits the enemy at the count (#151), and it sends no skill
 // event and no prediction.
 export function shoot(raid, count, unit = 1, demo = false) {
   if (raid.result || (raid.reload > 0 && !demo) || !(count >= 1)) return [];

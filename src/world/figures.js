@@ -1358,6 +1358,10 @@ export function raidThing(look) {
       return still([...posts, P('bar', [0.7, 0.5, 4.6], 'yellow', [0, 3.05, 0]), P('tie', [0.8, 0.6, 0.3], 'vermilion', [0, 3.05, 0])], 3.9);
     }
     // A spot for a villager: a small straw flag.
+    // The line of a post across the road (#151: "he walks between them, hard to tell when he is AT
+    // a post"): a row of flat stones; an enemy who stands at the post stands on it. The same at
+    // each post, with no number.
+    case 'post-line': return still([-1.6, -0.8, 0, 0.8, 1.6].map((x, i) => P(`stone${i}`, [0.55, 0.14, 0.4], i % 2 ? 'ash' : 'paperDeep', [x, 0.07, 0])), 0.14);
     case 'spot': return still([P('pole', [0.2, 2.6, 0.2], 'wood', [0, 1.3, 0]), P('flag', [0.1, 0.8, 1.1], 'yellowPale', [0, 2.2, 0.55]), P('base', [0.8, 0.15, 0.8], 'ochre', [0, 0.07, 0])], 2.6);
     // The cloud that comes down over Gióng at his farewell (#51): round puffs of light paper.
     case 'cloud': return still([

@@ -419,7 +419,10 @@ export async function mountVillage(ctx, params = {}) {
     if (actWait > 0) return;
     actWait = 0.15;
     const a = busy ? null : session.action();
-    const icon = a?.icon ?? 'hand-pick';
+    // In a raid of the slingshot a button with no act keeps the picture of the slingshot, dim
+    // (#151: after the throw of the elder the button showed another picture).
+    const sling = getEntity(state, 'raid')?.raid?.tools?.includes('sling');
+    const icon = a?.icon ?? (sling ? 'sling' : 'hand-pick');
     if (icon !== actNow?.icon) actIcon.src = actIcon.src.replace(/ui\/[a-z-]+\.svg/, `ui/${icon}.svg`);
     actBtn.classList.toggle('dim', !a);
     // The act of the picture, for the play of a phone that checks each press (#68).
@@ -637,6 +640,9 @@ export async function mountVillage(ctx, params = {}) {
     const raidOf = (id) => mapData.encounters.find((e) => e.id === id)?.raid ?? null;
     // With the sacks of the rest in the hands, the star is on the person who takes them, and the
     // next raid has no star until the child gives them (#141).
+    // While the share after a raid goes on, no star of the story (#151: three things at once).
+    const share = getEntity(state, 'zone:trial-share');
+    if (share && !share.zone.done) return [];
     const gift = session.giftTo();
     const list = gift ? [{ npc: gift }] : liveTargets(stepGoal, flags, { raidOf, raids: data.raids?.raids ?? {}, minutes: state.clock.minutes });
     const here = persons();
@@ -650,6 +656,13 @@ export async function mountVillage(ctx, params = {}) {
       // The face and the line of the star, and the bigger star of the next step (#62).
       const face = starOf(tg, i, data.trials?.trials ?? []);
       const from = out.length;
+      // The farmer of the hamlet who takes the rest of the share, by the mats (#151).
+      const taker = tg.npc ? here.find((x) => x.kind === 'rest' && x.ref === tg.npc) : null;
+      if (taker) {
+        const top = figureTop(taker.entity);
+        if (top !== null) out.push({ x: taker.x, y: taker.y, h: top });
+        continue;
+      }
       for (const kind of ['npc', 'encounter']) {
         if (!tg[kind]) continue;
         // The star of a raid is on the place where the child stands (the wall, the crossroads), and
@@ -1294,7 +1307,13 @@ export async function mountVillage(ctx, params = {}) {
     const r = getEntity(state, 'raid')?.raid;
     // A hero away from the wall: the raid waits, and the view follows the hero (#86).
     if (r && !r.result && r.away) return null;
-    if (r && !r.result) pts = [...framePoints(r).map((p) => ({ x: p.x / 2, y: groundY(p.x / 2, p.z / 2), z: p.z / 2 })), ...raidView.points().map((p) => ({ ...p, y: groundY(p.x, p.z) }))];
+    if (r && !r.result) {
+      pts = [...framePoints(r).map((p) => ({ x: p.x / 2, y: groundY(p.x / 2, p.z / 2), z: p.z / 2 })), ...raidView.points().map((p) => ({ ...p, y: groundY(p.x, p.z) }))];
+      // The pile of traps is in the view while a villager waits for the first trap (#151: "the pile
+      // was not on the screen").
+      const pile = r.trapPost !== null && !r.trapDone ? getEntity(state, 'zone:raid-traps')?.zone : null;
+      if (pile) pts.push({ x: pile.x / 2, y: groundY(pile.x / 2, pile.z / 2), z: pile.z / 2 });
+    }
     else {
       // The work of the open task (also after a walk away and back), or the last work of the view
       // (a walk to a face, an example, the bridge); the things that a talk names come first.
@@ -1863,9 +1882,10 @@ export async function mountVillage(ctx, params = {}) {
     if (ev.type === 'shows') showBubble(ev.id, null, ev.icon);
     raidView.event(ev);
     // A raid: dust where a stone lands, a trap snaps, or Gióng strikes; water and lightning splash.
-    if (ev.type === 'land' || ev.type === 'water' || ev.type === 'shock' || ev.type === 'spark' || ev.type === 'flame') {
+    // An enemy who stops on the line of a post stamps: a small puff at the feet (#151).
+    if (ev.type === 'land' || ev.type === 'water' || ev.type === 'shock' || ev.type === 'spark' || ev.type === 'flame' || ev.type === 'stamp') {
       const q = ev.at;
-      if (q) figures.burst(q.x / 2, session.env.groundY(q.x / 2, q.z / 2) / 2 + 0.2, q.z / 2, ev.type === 'water' || ev.type === 'shock' ? 'splash' : 'dust', ev.type === 'land' ? 5 : 12);
+      if (q) figures.burst(q.x / 2, session.env.groundY(q.x / 2, q.z / 2) / 2 + 0.2, q.z / 2, ev.type === 'water' || ev.type === 'shock' ? 'splash' : 'dust', ev.type === 'land' || ev.type === 'stamp' ? 5 : 12);
     }
     // A change of the terrain: its chunks build again, with a puff of dust.
     if (ev.type === 'felled' || ev.type === 'dug') {

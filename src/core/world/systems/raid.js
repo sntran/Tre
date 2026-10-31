@@ -271,6 +271,8 @@ export function setupRaid(world, raid, def, env, looks = {}) {
   const side = { x: -raid.dir.z, z: raid.dir.x };
   const has = (t) => raid.tools.includes(t);
   if (has('sling')) raid.posts.forEach((p, i) => fixed(`post:${i + 1}`, { x: p.x + side.x * 2.6, z: p.z + side.z * 2.6 }, `post-${i + 1}`));
+  // The line of each post across the road: an enemy who stands at the post stands on it (#151).
+  if (has('sling')) raid.posts.forEach((p, i) => fixed(`postline:${i + 1}`, { x: p.x, z: p.z }, 'post-line', { facing: Math.atan2(raid.dir.x, raid.dir.z) }));
   if (raid.bar) fixed('bar:raid', { x: raid.gate.x - raid.dir.x * 1.5, z: raid.gate.z - raid.dir.z * 1.5 }, 'bar-up', { facing: Math.atan2(side.x, side.z), raidTap: { what: 'gate' } });
   for (const s of raid.spots) {
     s.look = looks.helpers?.[raid.spots.indexOf(s) % looks.helpers.length];
