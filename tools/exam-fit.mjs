@@ -1,7 +1,8 @@
 // A headless browser check of the exam screen (#136): at the size of a phone (390 x 844),
 // with each kind of picture of the problems at its largest (dots, an array, a shape, a rectangle,
 // fractions), the question, the keys of the keypad, the button "not learned yet", and the line of
-// the answer are fully on the screen, with no scroll.
+// the answer are fully on the screen, with no scroll. The keypad is at the same place for each
+// question, with a picture or with none, and with a short or a long prompt (#143).
 // Run it from the root of the repository with a local server (python3 -m http.server 8123), and
 // Playwright (npm install playwright, or a global one):
 //   node tools/exam-fit.mjs [base URL] [--three <a local copy of three.module.min.js>]
@@ -23,6 +24,9 @@ try {
 
 // The largest picture of each kind that the generators make.
 const VISUALS = [
+  null,
+  // A prompt as long as the longest prompt of the generators (64 letters), with no picture.
+  { type: 'long' },
   { type: 'dots', groups: [10], crossed: 4 },
   { type: 'array', rows: 5, cols: 5 },
   { type: 'shape', shape: 'hexagon' },
@@ -34,6 +38,7 @@ const VISUALS = [
 const SIZES = [[390, 844]];
 const browser = await playwright.chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 let failed = 0;
+const keys = []; // the screen place of the first key of the keypad, for each question
 for (const [width, height] of SIZES) {
   const ctx = await browser.newContext({ viewport: { width, height }, hasTouch: true, isMobile: true });
   const page = await ctx.newPage();
@@ -45,7 +50,8 @@ for (const [width, height] of SIZES) {
       const ctx = window.tre;
       // Each question of this exam has the picture.
       const make = ctx.learner.problem.bind(ctx.learner);
-      ctx.learner.problem = (skill, opts) => ({ ...make('math.area', { level: 1 }), visual: v });
+      const long = { text: 'Chia đều 12 quả cho 3 bạn. Mỗi bạn được mấy quả? Hình chữ nhật dài 9.' };
+      ctx.learner.problem = (skill, opts) => ({ ...make('math.area', { level: 1 }), visual: v?.type === 'long' ? null : v, ...(v?.type === 'long' ? { prompt: long } : {}) });
       delete ctx.profile.flags['placement.done'];
       ctx.open({ open: 'exam', kind: 'placement' });
       await new Promise((r) => setTimeout(r, 1500));
@@ -55,18 +61,26 @@ for (const [width, height] of SIZES) {
         return { name: el.className || el.tagName, x: r.x, y: r.y, w: r.width, h: r.height };
       });
       const scroll = panel ? panel.scrollHeight - panel.clientHeight : -1;
+      const key = document.querySelector('.panel.quiz.exam .numpad .btn')?.getBoundingClientRect();
       ctx.learner.problem = make;
-      return { rects, scroll, vw: innerWidth, vh: innerHeight };
+      return { rects, scroll, vw: innerWidth, vh: innerHeight, key: key ? { x: key.x, y: key.y } : null };
     }, visual);
-    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/exam-${width}-${visual.type}-${visual.w ?? ''}${visual.h ?? ''}.png` });
+    keys.push({ type: visual?.type ?? 'none', key: out.key });
+    if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/exam-${width}-${visual?.type ?? 'none'}-${visual?.w ?? ''}${visual?.h ?? ''}.png` });
     await page.evaluate(() => document.querySelector('.panel.quiz.exam')?.closest('.modal-layer')?.remove());
     const bad = out.rects.filter((r) => r.x < 0 || r.y < 0 || r.x + r.w > out.vw + 0.5 || r.y + r.h > out.vh + 0.5);
     if (!out.rects.length || bad.length || out.scroll > 1) {
       failed += 1;
-      console.log(`${width}x${height} ${visual.type}: ${out.rects.length} parts, off the screen: ${bad.map((r) => `${r.name} at ${Math.round(r.y)}+${Math.round(r.h)}`).join(', ') || 'none'}, scroll ${out.scroll}`);
-    } else console.log(`${width}x${height} ${visual.type}: all ${out.rects.length} parts on the screen`);
+      console.log(`${width}x${height} ${visual?.type ?? 'none'}: ${out.rects.length} parts, off the screen: ${bad.map((r) => `${r.name} at ${Math.round(r.y)}+${Math.round(r.h)}`).join(', ') || 'none'}, scroll ${out.scroll}`);
+    } else console.log(`${width}x${height} ${visual?.type ?? 'none'}: all ${out.rects.length} parts on the screen`);
   }
   await ctx.close();
+  // The keypad at one place (#143: the taps on the same key were about 35 pixels apart).
+  const ys = keys.filter((k) => k.key).map((k) => k.key.y);
+  if (ys.length !== keys.length || Math.max(...ys) - Math.min(...ys) > 1) {
+    failed += 1;
+    console.log(`${width}x${height}: the keypad moves: ${keys.map((k) => `${k.type} ${k.key ? Math.round(k.key.y) : 'none'}`).join(', ')}`);
+  } else console.log(`${width}x${height}: the keypad is at ${Math.round(ys[0])} for each question`);
 }
 await browser.close();
 if (failed) {

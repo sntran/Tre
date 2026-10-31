@@ -121,13 +121,14 @@ export function createExam({ ladder, settings, rng, scale = 400, start = null })
   const mixed = () => state.asked.some((a) => a.correct) && state.asked.some((a) => !a.correct);
 
   // skipped: the player said "I have not learned this yet" (#136): not known, with no guess.
-  function answer(correct, { skipped = false } = {}) {
+  // what: the part of the skill that the question asked (add or sub of a skill of both), or null.
+  function answer(correct, { skipped = false, what = null } = {}) {
     const item = state.current;
     if (!item || state.done) throw new Error('No open question');
     if (skipped) correct = false;
     const e = expected(state.ability, item.rating, scale);
     if (!correct) state.mistakes += 1;
-    state.asked.push({ ...item, correct, ...(skipped ? { skipped } : {}) });
+    state.asked.push({ ...item, correct, ...(skipped ? { skipped } : {}), ...(what ? { what } : {}) });
     state.ability = mixed()
       ? maxLikelihood(state.asked, lo, hi, scale)
       : Math.max(lo, Math.min(hi, state.ability + k() * ((correct ? 1 : 0) - e)));
@@ -151,7 +152,7 @@ export function createExam({ ladder, settings, rng, scale = 400, start = null })
       skipped: state.asked.filter((a) => a.skipped).length,
       mistakes: state.mistakes,
       perSkill,
-      items: state.asked.map((a) => ({ skill: a.skill, level: a.level, rating: a.rating, correct: a.correct, skipped: Boolean(a.skipped) })),
+      items: state.asked.map((a) => ({ skill: a.skill, level: a.level, rating: a.rating, correct: a.correct, skipped: Boolean(a.skipped), what: a.what ?? null })),
     };
   }
 
@@ -191,14 +192,30 @@ export function simulateExams({ ladder, settings, ability, runs, seed = 'sim', s
 }
 
 // What the player does well and what comes next, for the line of the result (#136: the result names
-// no grade): the hardest skill that the player answered right, and the easiest skill that the player
-// did not (or, with all right, the easiest skill of the ladder above the hardest right one). Each is
-// a skill id, or null.
+// no grade). Done well (#143: "But I got the 3,7 one WRONG"): the hardest skill with all its answers
+// right, and at least two of them. With no such skill, the skill with the most right answers (one
+// with no wrong answer first), with its count. Next: the easiest skill that the player did not
+// answer right (or, with all right, the easiest skill of the ladder above the hardest right one).
+// Return { good (a skill id or null), count (the right answers of good when it is not done well, or
+// null), what (the parts of good that the test asked, for example ['add']), next (a skill id or null) }.
 export function strengths(result, ladder) {
+  const skills = new Map();
+  for (const a of result.items) {
+    const s = skills.get(a.skill) ?? { skill: a.skill, right: 0, wrong: 0, rating: -Infinity, what: new Set() };
+    if (a.correct) s.right += 1;
+    else s.wrong += 1;
+    s.rating = Math.max(s.rating, a.rating);
+    if (a.what) s.what.add(a.what);
+    skills.set(a.skill, s);
+  }
+  const list = [...skills.values()];
+  const well = list.filter((s) => s.wrong === 0 && s.right >= 2).sort((a, b) => b.rating - a.rating)[0] ?? null;
+  const most = well ? null : list.filter((s) => s.right > 0).sort((a, b) => (a.wrong === 0) - (b.wrong === 0) || a.right - b.right || a.rating - b.rating).at(-1) ?? null;
+  const good = well ?? most;
   const right = result.items.filter((a) => a.correct).sort((a, b) => b.rating - a.rating)[0] ?? null;
-  const wrong = result.items.filter((a) => !a.correct && a.skill !== right?.skill).sort((a, b) => a.rating - b.rating)[0] ?? null;
+  const wrong = result.items.filter((a) => !a.correct && a.skill !== good?.skill).sort((a, b) => a.rating - b.rating)[0] ?? null;
   const above = right ? ladder.find((it) => it.rating > right.rating && it.skill !== right.skill && !result.items.some((a) => a.skill === it.skill)) : null;
-  return { good: right?.skill ?? null, next: wrong?.skill ?? above?.skill ?? null };
+  return { good: good?.skill ?? null, count: most ? most.right : null, what: good ? [...good.what] : [], next: wrong?.skill ?? above?.skill ?? null };
 }
 
 // The grade of a placement, for the parent page only (#136: the child hears no grade): the highest

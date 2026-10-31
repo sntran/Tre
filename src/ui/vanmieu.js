@@ -14,7 +14,7 @@ import { checkAnswer } from '../core/solver.js';
 import { giveTitle, eraComplete, setFlag } from '../core/profile.js';
 import { registerScene, registerModal } from './registry.js';
 import { h, button, wait } from './dom.js';
-import { t, tg } from './i18n.js';
+import { t, tg, has } from './i18n.js';
 import { speak } from './speak.js';
 import { portrait } from './dialogue.js';
 import { portraitCanvas, heroLookOf } from './portraits.js';
@@ -74,12 +74,14 @@ function runExam(ctx, kind, ex) {
     const ask = () => {
       const item = exam.next();
       // The exam item sets the skill and the level. Do not show the same question twice.
-      const make = () => ctx.learner.problem(item.skill, { level: item.level });
+      const make = () => ctx.learner.problem(item.skill, { level: item.level, exam: true });
       const problem = seen.fresh([make], 40) ?? make();
       ctx.activeProblem = problem;
       [...dots.children].forEach((d, i) => d.classList.toggle('done', i < exam.count));
       dots.setAttribute('aria-label', t('exam.question', { n: exam.count + 1 }));
-      if (exam.count > 0) rule.remove();
+      // The rule goes after the first question, but its place stays, so that the keypad does not
+      // move (#143).
+      if (exam.count > 0) rule.style.visibility = 'hidden';
       feedback.clear();
       q?.destroy();
       let answered = false;
@@ -98,7 +100,7 @@ function runExam(ctx, kind, ex) {
         const explain = !ok && problem.explain ? ` ${textOf(problem.explain)}` : '';
         const key = ok ? lineOf(ex, 'right') : skipped ? lineOf(ex, 'skip.done') : lineOf(ex, 'wrong');
         feedback.show(ok ? 'good' : 'example', t(key, { answer }) + explain, { key, params: { answer } });
-        exam.answer(ok, { skipped });
+        exam.answer(ok, { skipped, what: problem.what ?? null });
         // A right answer goes on by itself; after the right answer of a wrong one (or of "not learned
         // yet"), the child reads it, and taps "Câu tiếp theo" when ready (#136: the answer after each
         // question, at the pace of the child).
@@ -121,7 +123,7 @@ function runExam(ctx, kind, ex) {
           ask();
         }
       };
-      q = renderQuestion(problem, { onAnswer: (response) => done(checkAnswer(problem, response)) });
+      q = renderQuestion(problem, { onAnswer: (response) => done(checkAnswer(problem, response)), fixedVisual: true });
       const skip = button(t(lineOf(ex, 'skip.button')), () => done(false, true), { cls: 'btn paper exam-skip' });
       slot.replaceChildren(q.el);
       // The button goes in the free row of the keypad, next to the zero; under the choices else.
@@ -133,9 +135,12 @@ function runExam(ctx, kind, ex) {
   });
 }
 
-// The name of a skill in a line, with a small first letter ("bài bảng nhân").
-function skillWords(id) {
-  const name = t(`skill.${id}`);
+// The name of a skill in a line, with a small first letter ("bài bảng nhân"). what: the parts of the
+// skill that the test asked; with one part, the name of that part only (#143: "there were no
+// subtraction questions").
+function skillWords(id, what = []) {
+  const part = what.length === 1 && has(`skill.${id}.${what[0]}`) ? `skill.${id}.${what[0]}` : `skill.${id}`;
+  const name = t(part);
   return name.charAt(0).toLocaleLowerCase() + name.slice(1);
 }
 
@@ -153,9 +158,10 @@ async function afterExam(ctx, kind, result, ex) {
     await ctx.save('exam');
     // The result says what the child does well and what comes next, in words of the task, and no
     // grade (#136: "now will everything be lớp 6 hard?").
-    const { good, next } = strengths(result, result.ladder ?? ladderFor(ctx, kind));
+    const { good, count, what, next } = strengths(result, result.ladder ?? ladderFor(ctx, kind));
     const lines = [
-      ...(good ? [{ key: lineOf(ex, 'placement.good'), params: { skill: skillWords(good) } }] : []),
+      ...(good && count === null ? [{ key: lineOf(ex, 'placement.good'), params: { skill: skillWords(good, what) } }] : []),
+      ...(good && count !== null ? [{ key: lineOf(ex, 'placement.count'), params: { skill: skillWords(good, what), n: { key: `num.${count}` } } }] : []),
       ...(next ? [{ key: lineOf(ex, 'placement.next'), params: { skill: skillWords(next) } }] : []),
       { key: lineOf(ex, 'placement.done'), params: {} },
     ];
@@ -179,10 +185,9 @@ async function afterExam(ctx, kind, result, ex) {
     return;
   }
   // After the first exam, the player chooses a calling.
-  if (!profile.calling) {
-    await showMessage(ctx, { speaker: ex.speaker, textKey: lineOf(ex, 'who') });
-    await chooseCalling(ctx, false, ex);
-  }
+  // The question is the title of the screen of the cards (#143: "Cháu muốn học với ai?" came with
+  // only "Đồng ý").
+  if (!profile.calling) await chooseCalling(ctx, false, ex, lineOf(ex, 'who'));
   // The title of the era ends the chapter: a short page of what the child did, and the way home.
   if (kind === 'era1' && !profile.flags['chapter1.end']) {
     await chapterEnd(ctx, data.titles.titles.find((x) => x.id === def.title));
@@ -221,7 +226,7 @@ function chapterEnd(ctx, title) {
   });
 }
 
-function chooseCalling(ctx, change, ex = vanMieuOf(ctx.data)) {
+function chooseCalling(ctx, change, ex = vanMieuOf(ctx.data), askKey = null) {
   const { profile, data } = ctx;
   // The note says "cháu" after the messenger, and "em" at Văn Miếu (#136).
   const noteKey = change ? 'calling.change.note' : ex.lines === 'exam' ? 'calling.note' : lineOf(ex, 'calling.note');
@@ -251,7 +256,8 @@ function chooseCalling(ctx, change, ex = vanMieuOf(ctx.data)) {
     for (const c of data.callings.callings) {
       // The hero of the child next to the mentor, and who the mentor is.
       const card = h('button', { class: 'calling-card', type: 'button', 'aria-pressed': String(c.id === picked) }, [
-        h('span', { class: 'calling-pics' }, [hero ? portraitCanvas(ctx, hero, { framing: 'full', size: 52 }) : null, portraitCanvas(ctx, data.figures.figures[c.look], { framing: 'full', size: 64 })]),
+        // The person of the village that the child met (#143: the card of bà lang showed a bald man).
+        h('span', { class: 'calling-pics' }, [hero ? portraitCanvas(ctx, hero, { framing: 'full', size: 52 }) : null, portraitCanvas(ctx, data.figures.figures[c.person] ?? data.figures.figures[c.look], { framing: 'full', size: 64 })]),
         h('span', { class: 'calling-words' }, [h('strong', { text: t(c.nameKey) }), h('small', { text: t(c.guideKey) }), h('small', { text: t(lineKey(c)) })]),
       ]);
       card.addEventListener('click', () => {
@@ -264,7 +270,7 @@ function chooseCalling(ctx, change, ex = vanMieuOf(ctx.data)) {
     }
     layer.append(h('div', { class: 'panel' }, [
       h('div', { class: 'panel-head' }, [
-        h('h2', { text: tg('calling.title') }),
+        h('h2', { text: tg(askKey ?? 'calling.title') }),
         change ? button(null, () => { layer.remove(); resolve(); }, { cls: 'icon-btn', icon: 'ui/close', aria: t('ui.close') }) : null,
       ]),
       h('p', { class: 'center', text: tg(noteKey) }),
@@ -272,7 +278,8 @@ function chooseCalling(ctx, change, ex = vanMieuOf(ctx.data)) {
       h('div', { class: 'row main-actions', style: { marginTop: '12px' } }, [confirm]),
     ]));
     ctx.ui.append(layer);
-    speak(noteKey);
+    if (askKey) speak(askKey, {}, { queue: true });
+    speak(noteKey, {}, askKey ? { queue: true } : {});
   });
 }
 

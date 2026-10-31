@@ -1,5 +1,5 @@
 {
-  "_about": "The skill graph. Each skill has an id, a subject, a grade, an era, and the skills that come before it (pre). The standard is Common Core (math) or NGSS (science).",
+  "_about": "The skill graph. Each skill has an id, a subject, a grade, an era, and the skills that come before it (pre). exam: the numbers of a question of an exam, when they are not the numbers of the first level (#143: no question of an exam needs paper; a product has at most one factor of two digits that is not round). The standard is Common Core (math) or NGSS (science).",
   "subjects": ["math", "physical", "lifeEarth", "historyGeo"],
   "skills": [
     { "id": "math.count.120", "subject": "math", "area": "number", "grade": 1, "era": 1, "pre": [], "std": "1.NBT.A.1", "generator": "count",
@@ -80,7 +80,8 @@
       "levels": [
         { "minA": 20, "maxA": 99, "minB": 11, "maxB": 99 },
         { "minA": 100, "maxA": 999, "minB": 11, "maxB": 50 },
-        { "minA": 100, "maxA": 999, "minB": 51, "maxB": 99 }] },
+        { "minA": 100, "maxA": 999, "minB": 51, "maxB": 99 }],
+      "exam": { "minA": 11, "maxA": 60, "minB": 1, "maxB": 9, "round": true } },
 
     { "id": "sci.matter.states", "subject": "physical", "area": "matter", "grade": 2, "era": 1, "pre": [], "std": "2-PS1-4", "generator": "bank", "levels": [{}, {}, {}] },
     { "id": "sci.matter.materials", "subject": "physical", "area": "matter", "grade": 2, "era": 1, "pre": [], "std": "2-PS1-1", "generator": "bank", "levels": [{}, {}, {}] },

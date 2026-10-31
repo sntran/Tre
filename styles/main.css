@@ -598,12 +598,19 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .quiz.exam .question { gap: 6px; padding: 8px; }
 .quiz.exam .prompt { font-size: 22px; }
 .quiz.exam .visual svg { max-height: min(17vh, 150px); width: auto; }
+/* One height for the question area of each question (issue 143: "The buttons jumped down again."): the
+   prompt has room for two lines, and the picture has its place also when there is no picture. */
+.quiz.exam .prompt-row { height: 62px; align-items: center; }
+.quiz.exam .prompt.long { font-size: 17px; }
+.quiz.exam .visual { height: min(17vh, 150px); display: flex; align-items: center; justify-content: center; }
 .quiz.exam .answer-box { min-height: 46px; line-height: 38px; }
 .quiz.exam .numpad { gap: 6px; grid-template-columns: repeat(4, minmax(48px, 70px)); }
 .quiz.exam .numpad .btn { min-height: 46px; }
 .quiz.exam .numpad .exam-skip { grid-column: 3 / span 2; grid-row: 4; font-size: 14px; white-space: normal; line-height: 1.1; padding: 0 4px; }
 .quiz.exam > .exam-skip { align-self: center; }
-.quiz.exam .feedback { min-height: 2.4em; padding: 6px 10px; }
+/* The line of the answer has room for three lines, so that the panel does not grow and move after an
+   answer (issue 143). */
+.quiz.exam .feedback { min-height: 4.6em; padding: 6px 10px; }
 .choice-grid .btn.shape svg { width: 100%; height: 100%; }
 .choice-grid .btn.bamboo-choice { flex-direction: column; min-height: 200px; width: 96px; padding: 8px 4px; }
 .choice-grid .btn.bamboo-choice img { height: 140px; width: auto; }

@@ -371,7 +371,9 @@ const GENERATORS = {
 
   mulMulti(p, rng) {
     const a = rng.int(p.minA, p.maxA);
-    const b = rng.int(p.minB, p.maxB);
+    // A round factor (p.round, #143): 30, 40, ... so that a product of two numbers of two digits
+    // needs no paper.
+    const b = p.round ? rng.int(p.minB, p.maxB) * 10 : rng.int(p.minB, p.maxB);
     const [x, y] = retry(() => [rng.int(12, 48), rng.int(3, 9)], ([u, v]) => {
       const [ub, ur] = split(u);
       return u * v !== a * b && ![a, b].every((n) => [u, v, ub, ur, ub * v, ur * v, u * v].includes(n));
@@ -473,10 +475,80 @@ function bankProblem(skill, level, rng, ctx) {
 
 export const GENERATOR_NAMES = [...Object.keys(GENERATORS), 'bank'];
 
-// Make a problem. skill is a skill object from the graph. level starts at 1.
+// The reason of the answer, in one line in the words of the child (#143, rule 26: a reason after
+// every answer of an exam). It shows only with the answer, after the question.
+function explainOf(problem) {
+  const e = problem.expr;
+  const z = problem.answer;
+  switch (e.op) {
+    case 'next': case 'prev': case 'plus10': return k(`why.count.${e.op}`, { n: e.n, z });
+    case 'max': case 'min': return k(`why.compare.${e.op}`, { big: Math.max(...e.values), small: Math.min(...e.values) });
+    case 'add': case 'sub': {
+      const add = e.op === 'add';
+      if (e.b < 10) return k(add ? 'why.add.count' : 'why.sub.count', { a: e.a, b: e.b, z });
+      return k(add ? 'why.add.place' : 'why.sub.place', { a: e.a, b: e.b, z });
+    }
+    case 'mul': {
+      const [a, b] = e.a >= e.b ? [e.a, e.b] : [e.b, e.a];
+      if (a <= 10 && b <= 5) return k('why.mul.add', { a: e.a, b: e.b, seq: range(e.b).map(() => e.a).join(' + '), z });
+      if (b % 10 === 0 || a % 10 === 0) {
+        const [r, o] = b % 10 === 0 ? [b, a] : [a, b];
+        return k('why.mul.round', { a: e.a, b: e.b, o, r1: r / 10, p: o * (r / 10), z });
+      }
+      const [big, rest] = split(a);
+      return k('why.mul.split', { a: e.a, b: e.b, big, rest, o: b, p1: big * b, p2: rest * b, z });
+    }
+    case 'div': return k('why.div', { a: e.a, b: e.b, z });
+    case 'share': return e.ask === 'left'
+      ? k('why.share.left', { n: e.n, k: e.k, e: Math.floor(e.n / e.k), z })
+      : k('why.share.each', { n: e.n, k: e.k, z });
+    case 'digit': return k('why.digit', { n: e.n, place: k(['place.ones', 'place.tens', 'place.hundreds'][e.place]), z });
+    case 'sum': return k('why.sum', { h: e.values[0], t: e.values[1], o: e.values[2], z });
+    case 'fracMax': case 'fracMin': {
+      const [[n, d1], [, d2]] = e.values;
+      return k('why.frac.unit', { n, small: Math.min(d1, d2), large: Math.max(d1, d2) });
+    }
+    case 'fracEquiv': return k('why.frac.equiv', { n: e.n, d: e.d, D: e.D, f: e.D / e.d, z });
+    case 'fracAdd': return k('why.frac.add', { a: e.a, b: e.b, d: e.d, z });
+    case 'fracUnlike': {
+      const a2 = e.a * (e.D / e.d1);
+      const b2 = e.b * (e.D / e.d2);
+      const which = e.d1 !== e.D && e.d2 !== e.D ? 'both' : e.d1 !== e.D ? 'first' : 'second';
+      return k(`why.frac.unlike.${which}`, { a: e.a, d1: e.d1, b: e.b, d2: e.d2, D: e.D, a2, b2, z });
+    }
+    case 'area': case 'perimeter': return k(`why.${e.op}`, { w: e.w, h: e.h, z });
+    case 'decimal': {
+      const unit = 10 ** e.places;
+      const x = e.a / unit;
+      const y = e.b / unit;
+      if (e.places !== 1) return k(e.sub ? 'why.decimal.sub.plain' : 'why.decimal.add.plain', { x, y, z });
+      const [ta, tb] = [e.a % 10, e.b % 10];
+      const [wa, wb] = [Math.floor(e.a / 10), Math.floor(e.b / 10)];
+      if (!e.sub) return ta + tb >= 10 ? k('why.decimal.carry', { x, y, ta, tb, ts: ta + tb, tr: ta + tb - 10, wa, wb, ws: wa + wb + 1, z }) : k('why.decimal.add', { x, y, ta, tb, ts: ta + tb, wa, wb, ws: wa + wb, z });
+      return ta < tb ? k('why.decimal.borrow', { x, y, ta, tb, t10: ta + 10, td: ta + 10 - tb, wa, wb, wd: wa - 1 - wb, z }) : k('why.decimal.sub', { x, y, ta, tb, td: ta - tb, wa, wb, wd: wa - wb, z });
+    }
+    case 'sides': return k('why.sides', { shape: k(`shape.${e.shape}`), z });
+    case 'shapeIs': return k('why.shape', { shape: k(`shape.${e.shape}`) });
+    default: return null;
+  }
+}
+
+// The part of a skill that a question asks, for a skill of two parts (add or sub, area or
+// perimeter), or null (#143: the result names only what the test asked).
+function whatOf(problem) {
+  const e = problem.expr;
+  if (problem.skill.startsWith('math.addsub') && (e.op === 'add' || e.op === 'sub')) return e.op;
+  if (e.op === 'decimal') return e.sub ? 'sub' : 'add';
+  if (e.op === 'area' || e.op === 'perimeter') return e.op;
+  return null;
+}
+
+// Make a problem. skill is a skill object from the graph. level starts at 1. ctx.exam: a question of
+// an exam, with the numbers of the exam of the skill when it has them (skill.exam, #143: no question
+// of an exam needs paper).
 export function generate(skill, level, rng, ctx = {}) {
   const lv = Math.max(1, Math.min(level, skill.levels.length));
-  const params = skill.levels[lv - 1];
+  const params = ctx.exam && skill.exam ? skill.exam : skill.levels[lv - 1];
   const body = skill.generator === 'bank'
     ? bankProblem(skill, lv, rng, ctx)
     : GENERATORS[skill.generator](params, rng, ctx);
@@ -484,6 +556,8 @@ export function generate(skill, level, rng, ctx = {}) {
   problem.answer = problem.kind === 'choice' && problem.expr.op !== 'bank'
     ? answerIndex(problem)
     : problem.expr.op === 'bank' ? problem.expr.answer : evaluate(problem.expr);
+  if (!problem.explain && problem.expr.op !== 'bank') problem.explain = explainOf(problem);
+  problem.what = whatOf(problem);
   return problem;
 }
 

@@ -1,9 +1,10 @@
 {
-  "_about": "The five callings (nghề). A calling never blocks a subject. look: the look of the mentor in data/figures.json, drawn at full length with the tool of the calling. lineKey: one short line of what the child learns with the mentor in the world (the card of the choice, #51). whoKey: who they were, under the name on the card next to the talk box, for a name that a child does not know (#81: Nho sinh). guideKey: the mentor of the village under the name on the card (#136: \"Người thầy: bác thợ rèn\"). lines: the line of the card at each level of the tasks (levelFor in src/core/world/trials.js), the task of the mentor at the grade of the child (#136).",
+  "_about": "The five callings (nghề). A calling never blocks a subject. look: the look of the mentor in data/figures.json, drawn at full length with the tool of the calling. person: the person of the village who is the mentor (her or his look is on the card, #143: the card of bà lang showed a bald man). lineKey: one short line of what the child learns with the mentor in the world (the card of the choice, #51). whoKey: who they were, under the name on the card next to the talk box, for a name that a child does not know (#81: Nho sinh). guideKey: the mentor of the village under the name on the card (#136: \"Người thầy: bác thợ rèn\"). lines: the line of the card at each level of the tasks (levelFor in src/core/world/trials.js), the task of the mentor at the grade of the child (#136).",
   "callings": [
     {
       "id": "scholar",
       "look": "mentor-scholar",
+      "person": "teacher",
       "nameKey": "calling.scholar.name",
       "mentorKey": "calling.scholar.mentor",
       "subjectKey": "calling.scholar.subject",
@@ -21,6 +22,7 @@
     {
       "id": "smith",
       "look": "mentor-smith",
+      "person": "smith",
       "nameKey": "calling.smith.name",
       "mentorKey": "calling.smith.mentor",
       "subjectKey": "calling.smith.subject",
@@ -38,6 +40,7 @@
     {
       "id": "fisher",
       "look": "mentor-fisher",
+      "person": "fisher",
       "nameKey": "calling.fisher.name",
       "mentorKey": "calling.fisher.mentor",
       "subjectKey": "calling.fisher.subject",
@@ -55,6 +58,7 @@
     {
       "id": "healer",
       "look": "mentor-healer",
+      "person": "healer",
       "nameKey": "calling.healer.name",
       "mentorKey": "calling.healer.mentor",
       "subjectKey": "calling.healer.subject",
@@ -72,6 +76,7 @@
     {
       "id": "woodcutter",
       "look": "mentor-woodcutter",
+      "person": "woodcutter",
       "nameKey": "calling.woodcutter.name",
       "mentorKey": "calling.woodcutter.mentor",
       "subjectKey": "calling.woodcutter.subject",

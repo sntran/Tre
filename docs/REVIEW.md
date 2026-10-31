@@ -849,3 +849,10 @@ Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 
 - **The clue at night:** `clue.trau.sunrise.night` ("Cứ theo con đường này, về phía mặt trời mọc. Núi Trâu ở đó.").
 - **The word:** `word.phiadong` ("Phía đông là phía mặt trời mọc buổi sáng.") with the forms "phía đông" (English: "to the east").
 - **Please check:** the English form "to the east" of the word line.
+
+## The test of the messenger (#143)
+
+- **The count of right answers:** `exam.messenger.placement.count` ("Cháu làm đúng {n} bài {skill}.") and `exam.placement.count` (with "em").
+- **The parts of a skill:** `skill.math.addsub.100.add` ("Cộng trong phạm vi 100"), `.sub`, the same for 1000, `skill.math.area.area` ("Diện tích"), `skill.math.area.perimeter` ("Chu vi"), `skill.math.decimal.add` ("Cộng số thập phân"), and `skill.math.decimal.sub`.
+- **The reasons:** the keys `why.*`, for example `why.decimal.carry` ("{x} + {y}: {ta} + {tb} = {ts} phần mười, viết {tr}, nhớ 1. {wa} + {wb} + 1 = {ws}."), `why.frac.unlike.first` ("{a}/{d1} là {a2}/{D}. {a2}/{D} + {b}/{D} = {z}/{D}."), and `why.mul.round` ("{o} × {r1} = {p}, thêm một chữ số 0: {a} × {b} = {z}.").
+- **Please check:** the words of the reasons for a child of grades 3 to 5, and `why.decimal.borrow` ("… không trừ được …, mượn 1 …").

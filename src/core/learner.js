@@ -72,7 +72,7 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
     return chooseLevel(e.r, ratings, r);
   }
 
-  // Make a problem for a skill. opts: { level, cards, extraCards }
+  // Make a problem for a skill. opts: { level, cards, extraCards, exam (a question of an exam) }
   function problem(id, opts = {}) {
     const skill = graph.get(id);
     const level = opts.level ?? levelFor(id);
@@ -83,7 +83,7 @@ export function createLearner({ graph, config, learning, grade, rng, bank = [], 
       const p = generate({ ...skill, generator: 'bank' }, 1, rng, { bank: parent, lang, recent: learning.recent });
       return { ...p, level };
     }
-    const p = generate(skill, level, rng, { bank, lang, recent: learning.recent });
+    const p = generate(skill, level, rng, { bank, lang, recent: learning.recent, exam: Boolean(opts.exam) });
     if (p.source) {
       learning.recent.push(p.source);
       if (learning.recent.length > RECENT) learning.recent.shift();

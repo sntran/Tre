@@ -38,12 +38,16 @@ export function choiceText(c) {
 
 // Show a problem. onAnswer(response) gets a number (as text) or a choice index. ctx: with it, the
 // button of the other language shows by the prompt, as in a talk (#112).
-export function renderQuestion(problem, { onAnswer, autoSpeak = true, ctx = null } = {}) {
+const LONG_PROMPT = 56; // letters
+// fixedVisual: the place of the picture is there also with no picture (#143: in an exam the keypad
+// moved from one question to the next).
+export function renderQuestion(problem, { onAnswer, autoSpeak = true, ctx = null, fixedVisual = false } = {}) {
   // A button under the question must not keep the keyboard focus.
   if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   const el = h('div', { class: 'question' });
   const promptText = textOf(problem.prompt);
-  const promptEl = h('p', { class: 'prompt', text: promptText });
+  // A long prompt in a fixed place is a little smaller, so that it keeps to two lines (#143).
+  const promptEl = h('p', { class: fixedVisual && promptText.length > LONG_PROMPT ? 'prompt long' : 'prompt', text: promptText });
   const other = ctx && problem.prompt?.key && otherLineOn(ctx) ? button(otherLang().toUpperCase(), () => otherOnce(ctx, promptEl, problem.prompt.key, problem.prompt.params), { cls: 'icon-btn other-lang', aria: t('ui.otherLine') }) : null;
   const promptRow = h('div', { class: 'prompt-row' }, [
     promptEl,
@@ -52,7 +56,7 @@ export function renderQuestion(problem, { onAnswer, autoSpeak = true, ctx = null
   ]);
   el.append(promptRow);
   const visual = renderVisual(problem.visual);
-  if (visual) el.append(h('div', { class: 'visual' }, [visual]));
+  if (visual || fixedVisual) el.append(h('div', { class: visual ? 'visual' : 'visual empty' }, visual ? [visual] : []));
   let locked = false;
   let cleanup = () => {};
 
