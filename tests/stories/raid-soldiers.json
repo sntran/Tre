@@ -1,8 +1,8 @@
 {
   "name": "raid-soldiers",
   "about": {
-    "vi": "Lính Ân từ cánh đồng tới ngã tư. Cháu đã biết bẫy và lá cờ rơm từ trước, nên trận này chỉ có một thứ mới: Nghé. Người làng ra đứng ở lá cờ rơm, một cái bẫy ở cột thứ ba bác thợ rèn nói; tên lính đầu tiên đứng chờ tới khi Nghé lao vào nó, rồi bắn ná cho tới khi chúng lui. Rồi chia những bao gạo, và bao gạo lẻ về tay bác thợ rèn trong làng.",
-    "en": "Ân soldiers come from the field to the crossroads. The child knows the traps and the straw flag from before, so this raid has one new thing: Nghé. A villager at a straw flag, a trap at the third post that the smith names; the first soldier waits until Nghé charges at him, and then the slingshot turns them back. Then the share of the loot (sacks of rice), and the sack that is left goes back to the smith in the village."
+    "vi": "Lính Ân từ cánh đồng tới ngã tư. Cháu đã biết bẫy và lá cờ rơm từ trước, nên trận này chỉ có một thứ mới: Nghé. Người làng ra đứng ở lá cờ rơm, một cái bẫy ở cột thứ ba bác thợ rèn nói; tên lính đầu tiên đứng chờ tới khi Nghé lao vào nó, rồi bắn ná cho tới khi chúng lui. Rồi chia những bao gạo, và bao gạo lẻ về tay cụ già làng ở đình.",
+    "en": "Ân soldiers come from the field to the crossroads. The child knows the traps and the straw flag from before, so this raid has one new thing: Nghé. A villager at a straw flag, a trap at the third post that the smith names; the first soldier waits until Nghé charges at him, and then the slingshot turns them back. Then the share of the loot (sacks of rice), and the sack that is left goes back to the elder at the village hall."
   },
   "profile": { "name": "An", "grade": 2, "lang": "vi", "seed": 5, "flags": { "intro.seen": true, "raid.used.sling": 2, "raid.used.traps": 2, "raid.used.helpers": 2, "raid.used.nghe": 2, "raid.used.water": 2, "raid.used.fire": 2, "giong.grown": true, "raid.tool.sling": true, "raid.tool.gate": true, "raid.tool.traps": true, "raid.tool.helpers": true }, "items": { "rice": 5 } },
   "clock": 420,
@@ -47,10 +47,10 @@
     { "read": true },
     { "expect": [{ "text": { "shown": "share.rest" } }] },
     { "read": true },
-    { "walk": { "to": ["phu-dong", 52, 40] } },
+    { "walk": { "to": ["phu-dong", 33, 27] } },
     { "expect": [{ "hero": { "holding": true } }] },
-    { "press": { "entity": "npc:smith" } },
+    { "press": { "entity": "npc:elder" } },
     { "until": { "event": "gave", "timeout": 40 } },
-    { "expect": [{ "event": "gave", "with": { "to": "smith" } }, { "text": { "shown": "gift.thanks.smith" } }, { "hero": { "holding": false } }] }
+    { "expect": [{ "event": "gave", "with": { "to": "elder" } }, { "text": { "shown": "gift.thanks.elder" } }, { "hero": { "holding": false } }] }
   ]
 }

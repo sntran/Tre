@@ -834,3 +834,11 @@ Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 
 - **The lump back on the pile:** `horse.back` ("Đủ sắt rồi. Cháu để cục này lại đống nhé.").
 - **The goals of the forge:** `quest.horse.forge` ("Mang sắt đến lò rèn."), `quest.horse.blow` ("Thổi lửa cho sắt đỏ."), and `quest.horse.quench` ("Nhúng sắt đỏ vào nước.").
 - **Gone:** `horse.step.there` ("Sắt ở trên đe kia rồi.").
+
+## The raids (#141)
+
+- **No enemy at a post:** `raid.nopost` ("{who} chưa tới cột nào. Chờ {who} đứng ở cột, rồi đếm nhé.").
+- **Gióng:** `dlg.giong.grown.n3` ("Lính [[an]] đang ở chân núi Trâu, xa làng mình. Mình cùng đi nhé!").
+- **The second share:** `share.start.again` ("Toán lính thứ hai cũng bỏ lại gạo: {n} bao. Lại chia đều nhé.").
+- **The sack that is left:** `share.rest` ("Còn {n} bao gạo lẻ. Cháu mang về cho cụ già làng ở đình nhé.").
+- **Gone:** `gift.thanks.smith` and `gift.thanks.mother` (the sack goes only to the elder now).

@@ -72,7 +72,7 @@ import { createHamlet } from './hamlet-session.js';
 import { plotsOf } from './world/systems/plant.js';
 import { jumpLength, planJump } from './world/jump.js';
 import { MOVE, inputToward } from './world/move.js';
-import { createRaid, raidLevel, raidTools, along, AT_POST, KEEP_SIDE, raidTally, raidClear } from './world/raids.js';
+import { createRaid, raidLevel, raidTools, along, AT_POST, KEEP_SIDE, raidTally, raidClear, postAt } from './world/raids.js';
 import { setupRaid, roadPoint } from './world/systems/raid.js';
 import { lossLevel } from './profile.js';
 import { loadWorld, saveWorld, heroPlace, setHeroPlace } from './world/save.js';
@@ -2537,7 +2537,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       aimHold: Number(profile.grade ?? 1) <= AIM_HOLD_GRADE || Number(profile.flags['raid.used.sling'] ?? 0) < AIM_HOLD_RAIDS,
       seed: hashSeed(`${state.seed}:${id}:${profile.flags['raid.used.sling'] ?? 0}`),
     };
-    for (const t of tools) profile.flags[`raid.used.${t}`] = Number(profile.flags[`raid.used.${t}`] ?? 0) + 1;
     const raid = createRaid(data.raids, id, raidLevel(data.raids, profile.grade), lossLevel(profile), teach, easy);
     slingPull = null;
     raidTeach = { sling: teach.includes('sling') || Boolean(profile.flags[`raid.${id}.again`]), singles: 0, demo: null, shown: false, misses: 0, time: 0, help: null };
@@ -2557,8 +2556,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const drag = raid.tools.includes('sling') && !teach.includes('sling') && !profile.flags['raid.tool.drag'] && data.raids.toolLines?.drag;
     for (const tool of raid.tools) {
       const line = data.raids.toolLines?.[tool];
+      // The flag of the tool comes when the child uses it, or with a win (#141: each lost try brought
+      // a new tool): a lost try says the same line again at the next try.
       if (!line || profile.flags[`raid.tool.${tool}`]) continue;
-      profile.flags[`raid.tool.${tool}`] = true;
       lines.push({ tool, textKey: line.textKey, speaker: tool === 'sling' && def.coach ? def.coach : line.speaker });
     }
     if (drag) {
@@ -2602,6 +2602,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'raid', on: true, id });
     emit({ type: 'hud' });
     return true;
+  }
+  // A tool of the raid that the child used (#141): the flag raid.tool.<tool> (the tool is known)
+  // and the count raid.used.<tool> (one for each raid where the child used it).
+  function toolUsed(tool) {
+    const raid = raidEnt()?.raid;
+    if (!raid || !raid.tools.includes(tool) || raid.usedTools?.includes(tool)) return;
+    raid.usedTools = [...(raid.usedTools ?? []), tool];
+    profile.flags[`raid.tool.${tool}`] = true;
+    profile.flags[`raid.used.${tool}`] = Number(profile.flags[`raid.used.${tool}`] ?? 0) + 1;
   }
   const order = (o) => worldCommand(state, { type: 'raid', id: 'raid', ...o });
   // The elder stands near the wall in a raid with the slingshot (#86): he says where each stone
@@ -2880,7 +2889,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (def.historyKey) say(def.historyKey, {}, 'history');
       // A raid with loot: the share comes when the things of the raid are gone, and the talks
       // after it.
-      if (def.loot) pendingShare = { loot: def.loot, wall: r.raid.wall, dir: r.raid.dir, after: win.after ?? [] };
+      if (def.loot) pendingShare = { loot: def.loot, wall: r.raid.wall, dir: r.raid.dir, after: win.after ?? [], key: def.shareKey ?? 'share.start' };
       else for (const id of win.after ?? []) talk(id);
     } else {
       profile.stats.battlesLost = (profile.stats.battlesLost ?? 0) + 1;
@@ -2936,7 +2945,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     pendingShare = null;
     shareAfter = p.after;
     setupTrial(state, { ...def, at: p.wall, dir: p.dir, loot: p.loot }, levelFor(data.trials, profile.grade), env);
-    say('share.start');
+    say(p.key ?? 'share.start', { n: { key: `num.${p.loot}` } });
     // Whose each mat is (#138: "Nobody says how many or whose tray."): the mats glow one after the
     // other with the line, and the view shows the mats and the friends.
     queue(() => {
@@ -3002,7 +3011,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     addEntity(state, { id, keep: true, item: { kind: 'gift', size: 1, task: 'gift', zone: null, held: 'hero', set: false, travels: true }, hidden: true, position: { ...h.position }, look });
     h.hands.holds = id;
     h.carry = look;
-    say('share.rest');
+    // One number and one person (#141: "Before it said ONE extra bag, now it says some bags?").
+    say('share.rest', { n: { key: `num.${n}` } });
   }
   function raidOver() {
     coachBack();
@@ -3139,7 +3149,30 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function fireSling() {
     const count = pullCount();
     slingPull = null;
-    if (count >= 1) shootFromWall(count, POST_STEP);
+    if (count >= 1 && !noPost()) shootFromWall(count, POST_STEP);
+  }
+  // At grades K to 3, a count that ends while no enemy stands at a post throws no stone (#141: a
+  // right count must always hit): the coach says to wait (one time in a raid), and the post where
+  // the next enemy will stand glows. Return true when the stone stays.
+  function noPost() {
+    const r = raidEnt()?.raid;
+    if (!r?.aimHold || raidTeach.demo) return false;
+    const live = r.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone');
+    if (!live.length || live.some((e) => !e.aside && postAt(r, along(r, e)))) return false;
+    // The next post of the enemy nearest to the wall: the post in front of it.
+    const near = live.reduce((a, e) => (along(r, e) < along(r, a) ? e : a));
+    const d = along(r, near);
+    const ahead = r.posts.filter((q) => q.d < d).map((q) => q.d);
+    const post = ahead.length ? Math.max(...ahead) : r.posts[0]?.d;
+    const k = r.posts.findIndex((q) => q.d === post);
+    if (k >= 0) emit({ type: 'glowSeq', ids: [`post:${k + 1}`] });
+    if (!raidTeach.noPostSaid) {
+      raidTeach.noPostSaid = true;
+      const coach = getEntity(state, coachId());
+      emit({ type: 'open', screen: 'callout', id: coach && !coach.hidden ? coach.id : 'hero', textKey: 'raid.nopost', params: raidWords() });
+    }
+    emit({ type: 'nopost', id: 'raid', post: post ?? null });
+    return true;
   }
   // One step of the pull of the button: the stone flies FIRE_WAIT seconds after the last press.
   function stepSling() {
@@ -3500,6 +3533,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     });
   }
 
+  // The person who takes the rest of the loot (#141: the elder), while the hero holds it, or null:
+  // the view shows the star of that person in place of the stars of the story.
+  function giftTo() {
+    const held = getEntity(state, holding());
+    return held?.item.kind === 'gift' ? Object.keys(trialDef('share')?.rest ?? {})[0] ?? null : null;
+  }
   // The rest of the loot (a small red cloth in the hands) goes to a person who takes it.
   function giveGift(q) {
     const held = getEntity(state, holding());
@@ -5450,6 +5489,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The raid: the talks of the phases of the boss, the rice at the gate, and the end.
     if (ev.type === 'phase' && ev.dialogue) talk(ev.dialogue);
     if (ev.type === 'take') raidTake(ev);
+    const tool = { shoot: ev.demo ? null : 'sling', bar: 'gate', trapput: 'traps', summon: 'helpers', charge: 'nghe', water: 'water', flame: 'fire', shock: 'lightning', spark: 'lightning' }[ev.type];
+    if (tool) toolUsed(tool);
+    if (ev.type === 'end' && ev.id === 'raid' && ev.won) for (const t of raidEnt()?.raid.tools ?? []) toolUsed(t);
     if (ev.type === 'end' && ev.id === 'raid') raidEnd(ev);
     if (ev.type === 'retreat') raidRetreat();
     if (ev.type === 'light') gateHint();
@@ -6070,6 +6112,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The persons of the stations of a practice of a whole place (#37): the view puts a star over each.
     stations: () => [...stations()],
     workCount,
+    // The person who takes the sacks that the hero holds (the rest of a share), or null (#141).
+    giftTo: () => giftTo(),
     // The goal of the part of a work now (the forge of the iron horse, #140), or null: the goal bar
     // shows it in place of the goal of the step.
     workGoal: () => workGoal(),

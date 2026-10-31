@@ -16,6 +16,7 @@ import { C } from '../render/palette.js';
 import { STEP } from '../core/world/step.js';
 import { gustsAt, windyOn, dayIndex, mealAt, isTet, rareOn, starOn, puddlesAt } from '../core/world/ambient.js';
 import { rainOf } from '../core/world/systems/sky.js';
+import { framePoints } from '../core/world/raids.js';
 import { createSession, middleOf } from '../core/session.js';
 import { createHearing } from '../core/hearing.js';
 import { LINE_LIFE, lineLife, linesAfter, nearHero as talksNear } from '../core/lines.js';
@@ -634,7 +635,10 @@ export async function mountVillage(ctx, params = {}) {
     // The targets that are there now (#50): not a done one, and not the enemies of a won or a
     // lost raid (they come back at the next dawn).
     const raidOf = (id) => mapData.encounters.find((e) => e.id === id)?.raid ?? null;
-    const list = liveTargets(stepGoal, flags, { raidOf, raids: data.raids?.raids ?? {}, minutes: state.clock.minutes });
+    // With the sacks of the rest in the hands, the star is on the person who takes them, and the
+    // next raid has no star until the child gives them (#141).
+    const gift = session.giftTo();
+    const list = gift ? [{ npc: gift }] : liveTargets(stepGoal, flags, { raidOf, raids: data.raids?.raids ?? {}, minutes: state.clock.minutes });
     const here = persons();
     // A person of the quest away from the live chunks: the marker is at the place of the person on
     // the map (the arrow at the edge of the screen shows the way).
@@ -666,7 +670,7 @@ export async function mountVillage(ctx, params = {}) {
       }
       for (let k = from; k < out.length; k++) Object.assign(out[k], face);
     }
-    if (stepGoal.place && (stepGoal.place.map ?? mapData.id) === mapData.id) out.push({ ...placeMark(stepGoal.place), h: groundY(stepGoal.place.x, stepGoal.place.y) + 3 });
+    if (!gift && stepGoal.place && (stepGoal.place.map ?? mapData.id) === mapData.id) out.push({ ...placeMark(stepGoal.place), h: groundY(stepGoal.place.x, stepGoal.place.y) + 3 });
     // A place that the hero did not find yet (Trâu Sơn, #27): the mark shows only the way.
     if (!data.clues || !data.world?.at) return out;
     const h = hero().position;
@@ -1226,7 +1230,9 @@ export async function mountVillage(ctx, params = {}) {
       const out = [heroAt, ...(person ? [person] : []), ...pts];
       return out.length > 1 ? out : heroAt;
     }
-    const at = (p) => ({ x: p.x / 2, y: groundY(p.x / 2, p.z / 2), z: p.z / 2 });
+    // A thing in front of a post or an enemy fades fully, by day and at night (#141: "the posts hide
+    // behind bamboo").
+    const at = (p) => ({ x: p.x / 2, y: groundY(p.x / 2, p.z / 2), z: p.z / 2, work: true });
     return [heroAt, ...r.posts.map(at), ...r.enemies.filter((e) => e.state !== 'retreat').map(at)];
   }
   // The frame of the work (#83): at a task, the view shows the whole work (the mat and the heap, the
@@ -1244,7 +1250,7 @@ export async function mountVillage(ctx, params = {}) {
     const r = getEntity(state, 'raid')?.raid;
     // A hero away from the wall: the raid waits, and the view follows the hero (#86).
     if (r && !r.result && r.away) return null;
-    if (r && !r.result) pts = [...seenPoints(heroAt).slice(1), ...raidView.points().map((p) => ({ ...p, y: groundY(p.x, p.z) }))];
+    if (r && !r.result) pts = [...framePoints(r).map((p) => ({ x: p.x / 2, y: groundY(p.x / 2, p.z / 2), z: p.z / 2 })), ...raidView.points().map((p) => ({ ...p, y: groundY(p.x, p.z) }))];
     else {
       // The work of the open task (also after a walk away and back), or the last work of the view
       // (a walk to a face, an example, the bridge); the things that a talk names come first.
@@ -2284,6 +2290,11 @@ export async function mountVillage(ctx, params = {}) {
       } else if (e.id === 'basket:healer' && open('trial-healer')) {
         grow(e.id, p.x, p.y, p.z, 3.4);
         grow(e.id, p.x + 5.6, p.y, p.z + 1.8, 3.4);
+      } else if (/^(post:\d|raider:)/.test(e.id)) {
+        // In a raid, the posts and the enemies with their dots (#141: "the words bubble covers a
+        // post"): a line stands above the road, never over them.
+        grow(e.id, p.x - 0.8, p.y, p.z - 0.8, 5);
+        grow(e.id, p.x + 0.8, p.y, p.z + 0.8, 5);
       }
     }
     return [...groups.values()].map((b) => ({ x0: b.x0 - 4, y0: b.y0 - 4, x1: b.x1 + 4, y1: b.y1 + 4 }));

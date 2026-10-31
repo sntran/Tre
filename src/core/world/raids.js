@@ -52,6 +52,13 @@ const AWAY = 24; // half blocks from the road at the wall: a hero farther away m
 export const HOLD_AT = 20;
 export const HOLD_TOOLS = Object.freeze(['sling', 'traps', 'helpers', 'nghe', 'water', 'fire', 'lightning']);
 const HOLD_STAND = Object.freeze(['sling', 'nghe', 'fire', 'lightning']);
+// No enemy stands past the last post (#141: a soldier walked past the fourth post for about twenty
+// seconds, and no count hit him): at grades K to 3 (aimHold) an enemy comes in this far past the
+// last post (half blocks), and the next wave waits while an enemy is near the last post.
+export const ENTER = 2;
+// Half blocks to the side of the road where an enemy waits while the post in front of it has an
+// enemy (#141: two soldiers stood at one post, and their dots were one red group).
+export const ASIDE = 3;
 
 // The slingshot (world units are half blocks). max: the longest count of a pull.
 export const SLING = Object.freeze({ g: 20, h0: 2.2, angle: 0.7, max: 30, hit: 1.5, reload: 0.6 });
@@ -256,11 +263,28 @@ export function awayFrom(raid, p) {
 // The post where an enemy stands (#135): the post within AT_POST half blocks of its distance, or null.
 export const AT_POST = 1;
 export const postAt = (raid, d) => raid.posts.find((q) => Math.abs(q.d - d) <= AT_POST) ?? null;
+// The distance of the last post from the wall, or null with no posts.
+export const lastPost = (raid) => (raid.posts.length ? Math.max(...raid.posts.map((q) => q.d)) : null);
+// The points of the road that the frame of the view of a raid shows (half blocks): the wall, the
+// posts, and the place where the enemies come in. No enemy is a point of the frame (#141: "The screen
+// moves every time I throw."), so the view stands still while the enemies walk.
+export function framePoints(raid) {
+  const end = (lastPost(raid) ?? 0) + ENTER + 1;
+  const at = (d) => ({ x: raid.wall.x + raid.dir.x * d, z: raid.wall.z + raid.dir.z * d });
+  return [...raid.posts.map((q) => ({ x: q.x, z: q.z })), at(end)];
+}
 export const along = (raid, p) => (p.x - raid.wall.x) * raid.dir.x + (p.z - raid.wall.z) * raid.dir.z;
 export const across = (raid, p) => (p.x - raid.wall.x) * -raid.dir.z + (p.z - raid.wall.z) * raid.dir.x;
 
 const alive = (e) => e.state !== 'retreat' && e.state !== 'gone';
 const active = (raid) => raid.enemies.filter(alive);
+// An enemy that stands at a post now: it waits, sits in a trap, takes rice, or the child aims at it.
+const STANDS = new Set(['wait', 'sit', 'stunned', 'steal', 'torch', 'sword', 'back']);
+const held = (raid, e) => Boolean(raid.aim && (raid.aim.all || raid.aim.id === e.id) && postAt(raid, along(raid, e)));
+// The post with an enemy that stands at it, other than e, or null.
+function standsAt(raid, q, e) {
+  return raid.enemies.some((o) => o !== e && alive(o) && postAt(raid, along(raid, o)) === q && (STANDS.has(o.state) || held(raid, o)));
+}
 
 // One step of the raid. ctx: { hero, nghe } (where they are, in half blocks). Return the events
 // of the step.
@@ -308,12 +332,17 @@ function spawn(raid, out) {
     if (raid.hold && !HOLD_STAND.includes(raid.hold.tool)) continue;
     // In an easy raid, the next wave comes only when no enemy walks to the gate (#55).
     if (raid.stop > 0 && active(raid).length) continue;
+    // At grades K to 3, the next wave waits off the road while an enemy is near the last post (#141).
+    const last = lastPost(raid);
+    if (raid.aimHold && last !== null && active(raid).some((o) => along(raid, o) > last - AT_POST - 0.5)) continue;
     w.in = true;
     const kind = raid.kinds[w.kind];
     const from = hb(w.from);
     const to = w.to ? hb(w.to) : { x: raid.gate.x + (w.side ?? 0) * -raid.dir.z, z: raid.gate.z + (w.side ?? 0) * raid.dir.x };
+    // It comes in at most ENTER half blocks past the last post, and goes back to where it came from.
+    const past = raid.aimHold && last !== null ? Math.max(0, along(raid, from) - last - ENTER) : 0;
     const e = {
-      id: `raider:${++raid.count}`, kind: w.kind, look: kind.look, x: from.x, z: from.z, from, to,
+      id: `raider:${++raid.count}`, kind: w.kind, look: kind.look, x: from.x - raid.dir.x * past, z: from.z - raid.dir.z * past, from, to,
       hits: 0, max: kind.hits, state: 'walk', t: 0, cool: kind.torch?.first ?? kind.sword?.first ?? 0, waited: [], shield: 0, phase: raid.phase,
     };
     // The posts where it stops (an easy raid): all the posts but one, and the post that it skips
@@ -424,6 +453,22 @@ function tickEnemy(raid, e, dt, ctx, out) {
     e.facing = faceTo(e, raid.wall);
     return;
   }
+  // One enemy at a post (#141): while an enemy stands at the post in front, the next one stands at
+  // the post behind, or waits at the side of the road between two posts.
+  const front = raid.posts.filter((q) => q.d < d - AT_POST).reduce((a, q) => (!a || q.d > a.d ? q : a), null);
+  if (front && standsAt(raid, front, e)) {
+    e.facing = faceTo(e, raid.wall);
+    if (!postAt(raid, d)) {
+      const side = across(raid, e) >= across(raid, e.to) ? 1 : -1;
+      const off = across(raid, e.to) + side * ASIDE;
+      const at = { x: raid.wall.x + raid.dir.x * d - raid.dir.z * off, z: raid.wall.z + raid.dir.z * d + raid.dir.x * off };
+      walkTo(e, at, kind.speed, dt);
+      e.facing = faceTo(e, raid.wall);
+      e.aside = true;
+    }
+    return;
+  }
+  e.aside = false;
   // A new slingshot: the enemy stops on the road and waits for the first shot of the child.
   if (raid.hold && HOLD_STAND.includes(raid.hold.tool) && d <= HOLD_AT) {
     e.facing = faceTo(e, raid.wall);

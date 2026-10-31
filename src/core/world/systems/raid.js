@@ -249,12 +249,14 @@ export function setupRaid(world, raid, def, env, looks = {}) {
       zone.items.push(`trap:${i + 1}`);
     }
     packHeap(world, zone);
+    // At grades K to 3 a trap goes only up to the last post: no enemy sits in a trap past it (#141).
+    const to = raid.aimHold && raid.posts.length ? Math.min(def.road.to, Math.max(...raid.posts.map((q) => q.d))) : def.road.to;
     const a = { x: raid.wall.x + raid.dir.x * def.road.from, z: raid.wall.z + raid.dir.z * def.road.from };
-    const b = { x: raid.wall.x + raid.dir.x * def.road.to, z: raid.wall.z + raid.dir.z * def.road.to };
+    const b = { x: raid.wall.x + raid.dir.x * to, z: raid.wall.z + raid.dir.z * to };
     addEntity(world, {
       id: 'zone:raid-road',
       zone: {
-        id: 'raid-road', task: 'raid', rule: 'road', accepts: 'trap', items: [], from: def.road.from, to: def.road.to,
+        id: 'raid-road', task: 'raid', rule: 'road', accepts: 'trap', items: [], from: def.road.from, to,
         rect: { x0: Math.min(a.x, b.x) - LANE, x1: Math.max(a.x, b.x) + LANE, z0: Math.min(a.z, b.z) - LANE, z1: Math.max(a.z, b.z) + LANE },
       },
       position: { ...a, y: gy(a.x, a.z), facing: 0 },

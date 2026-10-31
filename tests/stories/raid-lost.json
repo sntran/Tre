@@ -13,7 +13,7 @@
     { "read": true },
     { "wait": 4 },
     { "do": { "type": "travel" } },
-    { "expect": [{ "screen": "worldmap" }, { "event": "open", "with": { "screen": "worldmap", "cmd": { "open": "worldmap", "pauseKey": "raid.soldier.pause" } } }, { "raid": { "on": true, "enemies": 2 } }] },
+    { "expect": [{ "screen": "worldmap" }, { "event": "open", "with": { "screen": "worldmap", "cmd": { "open": "worldmap", "pauseKey": "raid.soldier.pause" } } }, { "raid": { "on": true, "enemies": 1 } }] },
     { "wait": 30 },
     { "expect": [{ "event": "come", "not": true }, { "event": "gate", "not": true }] },
     { "do": { "type": "closed" } },
