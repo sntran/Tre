@@ -1,0 +1,235 @@
+{
+ "about": "#142: grade 0, from the east gate to the first soldiers at night: the star at each person of the way, Gióng in front, the star on the edge of the map of the village, and Gióng rides away at the raid.",
+ "start": "?story=way-trau-son&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify({ hero: [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], giong: tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero') ? [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)] : null, found: Boolean(tre.profile.flags['trauson.found']) })"
+  },
+  {
+   "shot": "1-at-the-east-gate"
+  },
+  {
+   "button": ".minimap",
+   "after": 1.5
+  },
+  {
+   "shot": "2-the-map-of-the-village"
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')"
+  },
+  {
+   "wait": 7
+  },
+  {
+   "print": "JSON.stringify({ hero: [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], giong: tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero') ? [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)] : null, found: Boolean(tre.profile.flags['trauson.found']) })"
+  },
+  {
+   "shot": "3-walk-1"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 400
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify({ hero: [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], giong: tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero') ? [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)] : null, found: Boolean(tre.profile.flags['trauson.found']) })"
+  },
+  {
+   "shot": "4-stop-1"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')"
+  },
+  {
+   "wait": 7
+  },
+  {
+   "print": "JSON.stringify({ hero: [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], giong: tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero') ? [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)] : null, found: Boolean(tre.profile.flags['trauson.found']) })"
+  },
+  {
+   "shot": "3-walk-2"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 400
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify({ hero: [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], giong: tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero') ? [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)] : null, found: Boolean(tre.profile.flags['trauson.found']) })"
+  },
+  {
+   "shot": "4-stop-2"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')"
+  },
+  {
+   "wait": 7
+  },
+  {
+   "print": "JSON.stringify({ hero: [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], giong: tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero') ? [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)] : null, found: Boolean(tre.profile.flags['trauson.found']) })"
+  },
+  {
+   "shot": "3-walk-3"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 400
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify({ hero: [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], giong: tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero') ? [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)] : null, found: Boolean(tre.profile.flags['trauson.found']) })"
+  },
+  {
+   "shot": "4-stop-3"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')"
+  },
+  {
+   "wait": 7
+  },
+  {
+   "print": "JSON.stringify({ hero: [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], giong: tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero') ? [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)] : null, found: Boolean(tre.profile.flags['trauson.found']) })"
+  },
+  {
+   "shot": "3-walk-4"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 400
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify({ hero: [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], giong: tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero') ? [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)] : null, found: Boolean(tre.profile.flags['trauson.found']) })"
+  },
+  {
+   "shot": "4-stop-4"
+  },
+  {
+   "tap": {
+    "person": "soldier1"
+   },
+   "after": 0.3,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2,
+   "if": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid'))",
+   "timeout": 120
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "5-gioong-goes-ahead"
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "shot": "6-gioong-rides-away"
+  }
+ ]
+}
