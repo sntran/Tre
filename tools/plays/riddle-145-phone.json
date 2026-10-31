@@ -1,0 +1,96 @@
+{
+ "about": "#145: grade K at dusk: the riddle of the grandma comes with its how in one line, the child finds the chicken, and Nghé is a buffalo calf.",
+ "start": "?story=riddle-evening",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^riddle\\.ask/.test(x.key ?? ''))",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-the-riddle-and-its-how"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return tre.activeVillage.state().entities.filter((e) => e.kind === 'chicken' && e.position && !e.hidden).sort((a, b) => Math.hypot(a.position.x - h.x, a.position.z - h.z) - Math.hypot(b.position.x - h.x, b.position.z - h.z))[0]?.id ?? null; })()"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return tre.activeVillage.state().entities.filter((e) => e.kind === 'chicken' && e.position && !e.hidden).sort((a, b) => Math.hypot(a.position.x - h.x, a.position.z - h.z) - Math.hypot(b.position.x - h.x, b.position.z - h.z))[0]?.id ?? null; })()"
+   },
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-chicken-found"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "3-nghe"
+  }
+ ]
+}
