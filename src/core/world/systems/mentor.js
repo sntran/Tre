@@ -6,7 +6,8 @@
 //   point { id, x, z, time }: the person turns and points (the gesture of the person).
 //   say { id, key, params }: a line in a bubble over the person (the event call).
 //   mark { x, z, ttl }: a mark on the ground (a red ring and a flag).
-//   spawn { look, x, z, facing, dy }: a thing of a demonstration (it goes at the end of the script;
+//   spawn { look, x, z, facing, dy, stay }: a thing of a demonstration (it goes at the end of the script,
+//     or with stay at the next press of the child;
 //     dy: half blocks over the ground, as a trap on the water; y: the height itself, as the glow of a
 //     unit of a plank on the bridge).
 //   look { k, look }: the k-th thing of the demonstration takes another look (a bundle that becomes
@@ -92,8 +93,10 @@ function play(world, ent, dt, env) {
     if (st.spawn) {
       const id = `demo:${sc.key}:${made++}`;
       const y = env.groundY(st.spawn.x / 2, st.spawn.z / 2);
-      addEntity(world, { id, demo: { key: sc.key }, position: { x: st.spawn.x, y: st.spawn.y ?? y + (st.spawn.dy ?? 0), z: st.spawn.z, facing: st.spawn.facing ?? 0 }, look: st.spawn.look });
-      sc.spawned.push(id);
+      // A thing that stays (stay: the glow of the piece that a line names, #145) does not go at the
+      // end of the script: it goes at the next press of the child (the session).
+      addEntity(world, { id, ...(st.spawn.stay ? { untilPress: true } : { demo: { key: sc.key } }), position: { x: st.spawn.x, y: st.spawn.y ?? y + (st.spawn.dy ?? 0), z: st.spawn.z, facing: st.spawn.facing ?? 0 }, look: st.spawn.look });
+      sc.spawned.push(st.spawn.stay ? null : id);
     }
     const spawned = (k) => getEntity(world, sc.spawned[k]);
     if (st.look && spawned(st.look.k)) spawned(st.look.k).look = st.look.look;

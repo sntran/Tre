@@ -546,6 +546,8 @@
     "share": "mentor.again.share",
     "show": "mentor.again.show"
   },
+  "_addressLines": "The lines of all the mentors that call the child: a person with an address of its own (address in data/npcs.json: em for the woodcutter, who calls himself anh) says <key>.<address> in their place (#145).",
+  "addressLines": { "em": ["mentor.first.you", "mentor.raise", "mentor.tryFirst", "mentor.again.mark", "mentor.again.cue", "mentor.again.demo", "mentor.again.smaller", "mentor.again.share", "mentor.again.show"] },
   "ngheLines": {
     "woodcutter.pieces": "mentor.nghe.pieces",
     "mentor.healer.putKind.ngai": "mentor.nghe.putKind.ngai",

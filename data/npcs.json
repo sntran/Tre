@@ -1,5 +1,5 @@
 {
-  "_about": "People of the village. talk: the first rule whose condition is true gives the dialogue. when: the person is on the map only when the condition is true. nameKey: the name of the person (the people of Phù Đổng keep a name of work and kinship, as Bác thợ rèn). kin, order, age, child, and name: the person is called by a word of kinship to the child and a word after it, by the way of naming of the region and the age of the person (data/world/naming.json, src/core/naming.js): the order of birth in the family (cô Năm, #38), the name of the first child (ông Dương, #41), or the own small name (chị Hến, #41). age: elder, grown, or young; child: the name of the first child; name: the own small name. folk: a child of a folk game (loco or rope, docs/FOLKGAMES.md): the game puts the child near its court or rope, not the map. greet: the words of the greeting of the person when the child comes near (#49): elder, grown, young, child, or none (the person does not greet).",
+  "_about": "People of the village. address: how the person calls the child when it is not cháu (em: the woodcutter calls himself anh; the shared lines of the mentors follow it, addressLines in data/world/mentors.json, #145). talk: the first rule whose condition is true gives the dialogue. when: the person is on the map only when the condition is true. nameKey: the name of the person (the people of Phù Đổng keep a name of work and kinship, as Bác thợ rèn). kin, order, age, child, and name: the person is called by a word of kinship to the child and a word after it, by the way of naming of the region and the age of the person (data/world/naming.json, src/core/naming.js): the order of birth in the family (cô Năm, #38), the name of the first child (ông Dương, #41), or the own small name (chị Hến, #41). age: elder, grown, or young; child: the name of the first child; name: the own small name. folk: a child of a folk game (loco or rope, docs/FOLKGAMES.md): the game puts the child near its court or rope, not the map. greet: the words of the greeting of the person when the child comes near (#49): elder, grown, young, child, or none (the person does not greet).",
   "npcs": {
     "elder": {
       "greet": "elder",
@@ -255,6 +255,7 @@
     "woodcutter": {
       "greet": "grown",
       "voice": "man",
+      "address": "em",
       "talk": [
         {
           "when": {

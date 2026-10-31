@@ -82,7 +82,8 @@ test('a riddle opens only in the evening near Bà, one each day, and never while
   ok.r.tick(STEP);
   assert.equal(ok.profile.riddles.open.id, 'ga');
   // The first riddle says how to answer (#139).
-  assert.deepEqual(ok.said, ['npc:grandma riddle.ask.grandma', 'npc:grandma riddle.how.animal']);
+  // The riddle and its "how" are one line (#145).
+  assert.deepEqual(ok.said, ['npc:grandma riddle.ask.grandma.how']);
   // Found the same evening: no second riddle until the next day.
   ok.r.tap({ x: 60.5, z: 40 });
   ok.r.tick(STEP);
@@ -170,7 +171,7 @@ test('in the village at dusk, Bà says the riddle of the evening, and a tap on a
     },
   });
   assert.deepEqual(failures, []);
-  assert.ok(said.includes('riddle.ask.grandma'), said.join(', '));
+  assert.ok(said.some((k) => k.startsWith('riddle.ask.grandma')), said.join(', '));
   assert.equal(session.profile.riddles.open.id, 'ga');
   assert.ok(session.canWave, 'the wave button shows near Bà');
   const ch = session.state.entities.find((e) => e.kind === 'chicken' && !e.hidden);

@@ -862,3 +862,9 @@ Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 
 - **The word:** `word.thang` ("Một thang thuốc là một gói lá thuốc, đủ cho một lần sắc.") with the form "thang" (English: "dose|doses").
 - **The packet:** `dlg.healer.trial.n4.model` ("… Giỏ mẫu có hai gói. Mỗi gói là một thang. Bà cần {k} thang."), `dlg.healer.trial.n4.doses` ("… như gói này. …"), `healer.model.leaf` ("Một gói là một thang."), and `healer.dose.like` ("Một thang như gói này.").
 - **Please check:** "gói" for the packet of herbs on its leaf, and the English forms "dose|doses" of the word line.
+
+## What the child hears and sees (#145)
+
+- **The riddle with its "how":** `riddle.ask.grandma.how` ("Bà đố cháu nhé: {riddle} {how}") and `riddle.ask.elder.how`.
+- **The woodcutter:** `woodcutter.longer` ("Khúc này dài hơn khúc kia."), `woodcutter.longer.many` ("Khúc này dài hơn {n} khúc kia."), `woodcutter.long` ("Khúc này dài quá, dài hơn các khúc kia."), and the lines with "em": `mentor.first.you.em` ("Giờ đến lượt em."), `mentor.raise.em`, `mentor.tryFirst.em`, and `mentor.again.*.em`.
+- **Please check:** "Em thử trước đã, để xem nào." from the woodcutter, who calls himself "anh".

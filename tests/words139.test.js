@@ -44,14 +44,14 @@ function riddleRig() {
 test('the first riddle says how to answer; after a riddle found alone, the next one does not; a tree has its own line', () => {
   const { r, said, clock, world } = riddleRig();
   r.tick(0.1);
-  assert.deepEqual(said, ['riddle.ask.grandma', 'riddle.how.animal']);
+  assert.deepEqual(said, ['riddle.ask.grandma.how']);
   assert.equal(vi.t('riddle.how.animal'), 'Cháu đoán ra thì đi tìm con vật đó, rồi chạm vào nó nhé.');
   // The child finds the chicken alone.
   assert.ok(r.tap(world.entities[2].position));
   said.length = 0;
   clock.day = 1;
   r.tick(0.1);
-  assert.ok(said.includes('riddle.ask.grandma') && !said.some((k) => k.startsWith('riddle.how')), said.join(', '));
+  assert.ok(said.includes('riddle.ask.grandma') && !said.some((k) => k.startsWith('riddle.how') || k.endsWith('.how')), said.join(', '));
   const riddles = load('data/world/riddles.json').riddles;
   for (const id of ['tre', 'chuoi', 'da']) assert.equal(riddles.find((x) => x.id === id).how, 'tree');
   assert.match(vi.t('riddle.how.tree'), /cây đó/);

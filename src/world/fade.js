@@ -195,6 +195,16 @@ export function heroCovered(objects, hero, az, elevation) {
   const hidden = SIGHT.filter((h) => objects.some((x) => x.building && hidesAt(x.b, { x: hero.x, y: hero.y + h, z: hero.z }, d, x.hits))).length;
   return hidden >= COVER_MOST;
 }
+// The window around the hero (#145: "A big roof is covering me."): when a building covers most of
+// the hero for more than WINDOW_WAIT seconds and the view does not turn, the hero is a point of the
+// work for the fade, so that the building opens a small see-through window around the hero and the
+// ground at the feet (the local fade of #94); the rest of the roof stays whole. The window closes
+// when the hero comes out. w: { t (seconds covered), open }; covered: a building covers the hero now.
+export const WINDOW_WAIT = 1;
+export function heroWindow(w, covered, dt) {
+  const t = covered ? (w?.t ?? 0) + dt : 0;
+  return { t, open: covered && t >= WINDOW_WAIT };
+}
 // The turn (in steps of 90 degrees) that shows the hero and the person: 0 when the hero shows now,
 // then one step either way, then the back. 0 when no side shows them.
 export function stillTurn(objects, hero, person, az, elevation) {

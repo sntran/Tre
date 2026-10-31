@@ -94,7 +94,8 @@ test('after a cut into 4 and 8 for three pieces, he says the number, the 8 glows
   assert.ok(!calls.includes('woodcutter.short'), calls.join(' '));
   const order = ['woodcutter.pieces', 'woodcutter.long', 'woodcutter.addMark'].map((k) => calls.indexOf(k));
   assert.ok(order.every((i) => i >= 0) && order[0] < order[1] && order[1] < order[2], calls.join(' '));
-  assert.equal(glow, 'piece-glow-8', 'the long piece glows');
+  // The part of the long piece that is too long glows (#145): 8 against the right 4.
+  assert.equal(glow, 'piece-glow-4', 'the part that is too long glows');
 });
 
 test('a bigger task for the next time is said at the end of the task, not after the first bundle', async () => {

@@ -1094,9 +1094,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       const e = getEntity(world(), `piece:woodcutter:${long}`);
       if (e) {
         const d = pieces[long] - short;
-        s.steps.push({ at, spawn: { look: `piece-glow-${d}`, x: e.position.x + short, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
+        s.steps.push({ at, spawn: { look: `piece-glow-${d}`, x: e.position.x + short, y: e.position.y, z: e.position.z, facing: Math.PI / 2, stay: true } });
         s.point(at, { x: e.position.x + short + d / 2, z: e.position.z }, 1.8);
-        s.say(at + 0.1, 'woodcutter.longer');
+        // The line says what is compared (#145: "Longer than what?").
+        s.say(at + 0.1, pieces.length > 2 ? 'woodcutter.longer.many' : 'woodcutter.longer', { n: { key: `num.${Math.min(30, pieces.length - 1)}` } });
         return at + DIFF_SHOW;
       }
     }
@@ -1106,9 +1107,13 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const e = bad === null ? null : getEntity(world(), `piece:woodcutter:${bad.i}`);
     if (e) {
       const len = pieces[bad.i];
-      s.steps.push({ at, spawn: { look: `piece-glow-${len}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
+      // A long piece: the part that is too long glows; a short piece: the whole piece. The glow stays
+      // until the next press of the child (#145: "Which piece?? … Then the bamboo came back whole").
+      const right = Math.round(pieces.reduce((a, b) => a + b, 0) / parts);
+      const over = bad.long && len > right ? len - right : 0;
+      s.steps.push({ at, spawn: { look: `piece-glow-${over || len}`, x: e.position.x + (over ? right : 0), y: e.position.y, z: e.position.z, facing: Math.PI / 2, stay: true } });
       s.point(at, { x: e.position.x + len / 2, z: e.position.z }, 1.6);
-      s.say(at + 0.1, bad.long ? lines.long ?? 'woodcutter.long' : lines.short ?? 'woodcutter.short');
+      s.say(at + 0.1, bad.long ? lines.long ?? 'woodcutter.long' : lines.short ?? 'woodcutter.short', { n: { key: `num.${Math.min(30, pieces.length - 1)}` } });
       at += 2;
     }
     return at;
@@ -1179,7 +1184,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const e = bad ? pieceAt(bad.i) : null;
     if (e) {
       const len = pieces[bad.i];
-      s.steps.push({ at, spawn: { look: `piece-glow-${len}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2 } });
+      // The glow stays until the next press of the child (#145).
+      s.steps.push({ at, spawn: { look: `piece-glow-${len}`, x: e.position.x, y: e.position.y, z: e.position.z, facing: Math.PI / 2, stay: true } });
       s.point(at, { x: e.position.x + len / 2, z: e.position.z }, 1.6);
       s.say(at + 0.1, bad.long ? lines.long ?? 'woodcutter.long' : lines.short ?? 'woodcutter.short');
       at += 2;

@@ -733,3 +733,15 @@ In the play test of #135 to #139, a girl of grade 4 did the trial of the healer 
 - **No "come to me" next to her.** `mentor.healer.give` comes only when the hero is farther than 8 half blocks from her; next to her, she glows.
 - **No rest one step before the end.** The break does not come within 8 seconds of a press, or when the basket is short by one dose or less (`nearlyDone`).
 - **Tests:** `tests/healer144.test.js`; `tests/healer.test.js` follows the line of the give.
+
+## What the child hears and sees (#145)
+
+In the play test of #135 to #139, the children of all grades met the same small problems: a line that they did not hear, a hero that they did not see, a new picture of an animal that was not there, a friend that looked like another animal, and a line with no pointer. We changed them so:
+
+- **The riddle comes first.** The riddle and its "how" are one line (`riddle.ask.<who>.how`, `src/core/riddles.js`), and a line that asks is never put out by a newer line of the person (`asks` in `src/core/bubblevoice.js`).
+- **The child always sees the hero.** When a building covers most of the hero for more than one second (`heroWindow`, `WINDOW_WAIT` in `src/world/fade.js`), the hero is a point of the work for the fade: the roof opens a small see-through window around the hero and the ground at the feet (the local fade of #94), and the rest of the roof stays whole. The window closes when the hero comes out.
+- **A new picture of an animal only when the child sees it.** The picture comes when the animal is on the screen, with no talk panel open, and with no house or roof between it and the camera (`covered` in `checkNotebook`, with `workCovers` of `src/world/fade.js`). As the picture comes, the animal hops, and a red ring shows under it for 4 seconds.
+- **Nghé is a buffalo calf, and an old woman wears the khăn vấn.** See docs/ART.md, "Nghé, the dog, and the old women".
+- **The piece that the line names stays in view.** At the check of a cut, the glow of the named piece stays until the next press of the child (`stay` of a spawn step, `untilPress`); for a long piece, the part that is too long glows. The line says what is compared: "Khúc này dài hơn hai khúc kia." (`woodcutter.longer.many`), "Khúc này dài hơn khúc kia.", "Khúc này dài quá, dài hơn các khúc kia.".
+- **One person, one way to call the child.** A line that all the mentors use takes the address of its person: the woodcutter (`address: em` in `data/npcs.json`) says "Giờ đến lượt em." (`addressLines` in `data/world/mentors.json`, `addressed` in the session).
+- **Tests:** `tests/see145.test.js`; `tests/count98.test.js` and `tests/wood118.test.js` follow the new glow and line.

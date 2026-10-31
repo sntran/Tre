@@ -155,8 +155,9 @@ export function person(look) {
 // The next darker tone of a skin (the neck, in the shadow under the chin).
 const SHADE = { skin1: 'skin2', skin2: 'skin3', skin3: 'skin4', skin4: 'wood' };
 
-// Nghé, the buffalo calf: dark slate, thick legs, a broad flat muzzle, and short buds of horns that
-// curve back (#122: a light grey calf with white horns was a goat to the children). The diagonal
+// Nghé, the buffalo calf: dark slate, thick legs, a broad flat muzzle, and wide horns that curve
+// back (#122: a light grey calf with white horns was a goat to the children; #145: a calf with buds
+// of horns was a dog). The diagonal
 // legs move together. horns: 'bud' (a calf) or 'long' (a grown buffalo).
 export function nghe(horns = 'bud') {
   const body = 'ash';
@@ -168,8 +169,11 @@ export function nghe(horns = 'bud') {
   parts.push(P('skull', [1.5, 1.4, 1.6], body, [0, 0, 0.8], { parent: 'head' }));
   parts.push(P('muzzle', [1.5, 0.7, 0.6], 'ashLight', [0, -0.35, 1.7], { parent: 'head' }));
   if (horns === 'bud') {
-    parts.push(P('hornL', [0.35, 0.3, 0.6], 'ashLight', [-0.55, 0.8, 0.4], { parent: 'head' }));
-    parts.push(P('hornR', [0.35, 0.3, 0.6], 'ashLight', [0.55, 0.8, 0.4], { parent: 'head' }));
+    // Wide horns that curve back (#145: the calf was a dog to some children).
+    parts.push(P('hornL', [0.7, 0.3, 0.35], 'ashLight', [-0.95, 0.75, 0.4], { parent: 'head' }));
+    parts.push(P('hornR', [0.7, 0.3, 0.35], 'ashLight', [0.95, 0.75, 0.4], { parent: 'head' }));
+    parts.push(P('hornLb', [0.3, 0.3, 0.5], 'ashLight', [-1.2, 0.8, -0.05], { parent: 'head' }));
+    parts.push(P('hornRb', [0.3, 0.3, 0.5], 'ashLight', [1.2, 0.8, -0.05], { parent: 'head' }));
   } else {
     parts.push(P('hornL', [0.9, 0.3, 0.3], 'paperDeep', [-0.75, 0.75, 0.6], { parent: 'head' }));
     parts.push(P('hornR', [0.9, 0.3, 0.3], 'paperDeep', [0.75, 0.75, 0.6], { parent: 'head' }));

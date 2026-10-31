@@ -135,10 +135,11 @@ export function createRiddles(deps) {
       if (!t || !r) return;
       s.open = { id: r.id, day: deps.day(), clue: null, told: null };
       s.last = deps.day();
-      deps.say(t.e.id, `riddle.ask.${t.who}`, { riddle: { key: `riddle.${r.id}` } });
       // How to answer (#139: a child knew the rooster and could not give it): with the first riddle,
-      // and later until the child finds one alone.
-      if (!s.found.some((f) => f.how === 'alone')) deps.say(t.e.id, `riddle.how.${r.how ?? 'animal'}`, {});
+      // and later until the child finds one alone. The riddle and its "how" are one line (#145: a
+      // newer line of the person took the place of the riddle, and only the "how" came).
+      const how = !s.found.some((f) => f.how === 'alone');
+      deps.say(t.e.id, `riddle.ask.${t.who}${how ? '.how' : ''}`, { riddle: { key: `riddle.${r.id}` }, ...(how ? { how: { key: `riddle.how.${r.how ?? 'animal'}` } } : {}) });
     },
     // A tap of the child at a point (half blocks): the thing of the open riddle there closes it.
     // A tap on another thing is only a tap on that thing.

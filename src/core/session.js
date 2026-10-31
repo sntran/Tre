@@ -56,7 +56,8 @@ import { rainOf, sky as skyStep } from './world/systems/sky.js';
 import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
 import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady, DESK_COLORS, marksFor } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
-import { viewSize, inView } from '../world/view.js';
+import { viewSize, inView, VIEW } from '../world/view.js';
+import { workBoxes, workCovers } from '../world/fade.js';
 import { levelFor, taskOf, trialLevel, tightSlot, allowedSlots, MODEL_DOSES } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring, decimalWords, tieRingAt } from './mentoring.js';
@@ -764,6 +765,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // con trâu, nobody said that Nghé is a young buffalo).
   function noteKey(key, from = null) {
     if (!data.notebook || !noteSeen(profile, key, state?.clock?.minutes ?? 0)) return;
+    // The animal of a new picture does its act, and a ring shows under it for some seconds (#145:
+    // a child took Nghé for the dog of the picture).
+    const animal = from ? getEntity(state, from) : null;
+    if (animal?.position && key.startsWith('creature:')) {
+      animal.hop = { t: 0 };
+      const ring = `mark:note:${animal.id}`;
+      if (getEntity(state, ring)) removeEntity(state, ring);
+      addEntity(state, { id: ring, noteRing: { until: state.tick + NOTE_RING / STEP }, position: { ...animal.position }, look: 'mentor-mark' });
+    }
     for (const e of entriesOfKey(data.notebook, key)) {
       emit({ type: 'notebook', id: e.id, titleKey: e.titleKey, look: e.look ?? null, kind: e.kind, ...(from ? { from } : {}) });
       if (e.say) {
@@ -774,21 +784,32 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
   }
   const NOTE_SAY = 30; // half blocks: the person who says the line of a print
+  const NOTE_RING = 4; // seconds: the ring under an animal of a new picture
   const NOTE_NEAR = 20; // half blocks: an animal this near the hero is met
   // An animal is met only while it is on the screen (#113: "Tranh mới: Con cú" came, and no owl was
   // in view): in the near view of a phone held upright, the narrowest screen.
   const NOTE_SCREEN = viewSize(390, 844, 0);
   const onScreen = (p, hp) => inView({ x0: p.x / 2 - 0.4, x1: p.x / 2 + 0.4, y0: (p.y ?? 0) / 2, y1: (p.y ?? 0) / 2 + 0.8, z0: p.z / 2 - 0.4, z1: p.z / 2 + 0.4 }, { x: hp.x / 2, y: (hp.y ?? 0) / 2, z: hp.z / 2 }, { az: viewAz, size: NOTE_SCREEN });
+  // Is a point (half blocks) behind a house or a roof from the angle of the view?
+  const covered = (p) => {
+    if (!terrain?.objects || !terrain.boxOf) return false;
+    const pt = { x: p.x / 2, y: (p.y ?? 0) / 2, z: p.z / 2 };
+    return workCovers(workBoxes(terrain, [pt]).filter((b) => b.building), [pt], viewAz, VIEW.elevation).length > 0;
+  };
   const creatureKinds = () => new Set((data.notebook?.entries ?? []).filter((e) => e.met.startsWith('creature:')).map((e) => e.met.slice(9)));
   // About each second: the animals near the hero, the enemies of a raid, and the place of the map.
   function checkNotebook() {
     if (state.tick % 30 !== 15 || !data.notebook) return;
+    // The rings under the animals of new pictures go after their time.
+    for (const e of query(state, 'noteRing')) if (state.tick >= e.noteRing.until) removeEntity(state, e.id);
     const kinds = creatureKinds();
     const hp = hero()?.position;
     if (!hp) return;
     for (const e of state.entities) {
       if (!e.kind || !kinds.has(e.kind) || !e.position) continue;
-      if (!e.hidden && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) <= NOTE_NEAR && onScreen(e.position, hp)) noteKey(`creature:${e.kind}`, e.id);
+      // Only when the child sees it (#145: "Tranh mới: Con chó." came while a roof hid the dog): on the
+      // screen, with no talk panel over it, and with no house or roof between it and the camera.
+      if (!e.hidden && !screen && Math.hypot(e.position.x - hp.x, e.position.z - hp.z) <= NOTE_NEAR && onScreen(e.position, hp) && !covered(e.position)) noteKey(`creature:${e.kind}`, e.id);
     }
     for (const en of raidEnt()?.raid.enemies ?? []) if (kinds.has(en.kind)) noteKey(`creature:${en.kind}`);
     // A place: the hero is in the rect of its map on the plane.
@@ -4680,7 +4701,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const said = demo.script.steps.slice(0, demo.script.i).some((st) => /first\.you$/.test(st.say?.key ?? ''));
       endScript(state, demo, { early: true });
       const who = data.mentors?.mentors?.[demoKey]?.person;
-      if (!said && who && getEntity(state, who) && !getEntity(state, who).hidden) emit({ type: 'open', screen: 'callout', id: who, textKey: 'mentor.first.you', params: {} });
+      if (!said && who && getEntity(state, who) && !getEntity(state, who).hidden) emit({ type: 'open', screen: 'callout', id: who, textKey: addressed(who, 'mentor.first.you'), params: {} });
     }
     const a = pressed(id);
     // Each press during the walk counts: a child who counts the presses (one bunch for each) gets
@@ -5510,6 +5531,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const market = group === 'elder' || group === 'grown' ? marketLine() : null;
     emit({ type: 'open', screen: 'callout', id: ev.id, textKey: clue ?? market ?? words[n % words.length], params: { name: profile.hero.name } });
   }
+  // A line that all the mentors use, in the address of its person (#145: the woodcutter says "em",
+  // and "Giờ đến lượt cháu." came from him): the line <key>.<address> when the person has an
+  // address (data/npcs.json) and the line is one of its lines (addressLines of data/world/mentors.json).
+  function addressed(id, key) {
+    const ref = getEntity(state, id)?.person?.ref;
+    const address = ref ? data.npcs?.npcs?.[ref]?.address : null;
+    return address && data.mentors?.addressLines?.[address]?.includes(key) ? `${key}.${address}` : key;
+  }
   function worldEvent(ev) {
     // Over the river: the far walk has no ferry to keep any more.
     if (ev.type === 'ferried' && (ev.riders ?? []).includes('hero')) farPlan = null;
@@ -5527,7 +5556,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       ev = { ...ev, key: `${ev.key}.word` };
       setCue(['iron:smith', 'iron:smith-b'].filter((id) => getEntity(state, id)));
     }
-    if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: ev.key, params: ev.params ?? {}, ...(ev.happened ? { happened: true } : {}), ...(ev.asked ? { asked: true } : {}) });
+    if (ev.type === 'call' && !busy) emit({ type: 'open', screen: 'callout', id: ev.id, textKey: addressed(ev.id, ev.key), params: ev.params ?? {}, ...(ev.happened ? { happened: true } : {}), ...(ev.asked ? { asked: true } : {}) });
     // The mentors read the commits (before the learner takes them), the plank too long, and the
     // actions of the hands.
     if (ev.type === 'skill') mentoring.skill(ev);
@@ -6000,6 +6029,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (busy) return;
     if (type === 'hold' || type === 'hands') {
       lastPress = state.tick;
+      // The glow of a piece that a line named goes at the next press (#145).
+      for (const e of query(state, 'untilPress')) removeEntity(state, e.id);
       // The scripts of the help wait while the child presses (#144: a help line took the place of
       // the line of a put).
       state.pressAt = state.tick;

@@ -28,5 +28,7 @@ export function villagerLook(rng, parts) {
   }
   if (look.hair === 'grey' && body.grey) look.hairStyle = body.grey;
   if (age.age === 'old' && bodyName === 'man' && rng.chance(0.5)) look.beard = true;
+  // An old woman wears the khăn vấn when she has no hat (#145: an old woman looked like a grandpa).
+  if (age.age === 'old' && bodyName === 'woman' && !look.hat && body.oldHat) look.hat = body.oldHat;
   return look;
 }

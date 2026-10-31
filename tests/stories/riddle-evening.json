@@ -26,7 +26,7 @@
         "event": "open",
         "with": {
           "screen": "callout",
-          "textKey": "riddle.ask.grandma"
+          "textKey": "riddle.ask.grandma.how"
         },
         "timeout": 30
       }

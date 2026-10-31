@@ -73,7 +73,7 @@ test('grade 1, a mark one ring off the end: one number for each piece, the part 
   run(session, 2, () => { seen(); return false; });
   assert.equal(keys.filter((k) => k === 'woodcutter.pieceN').length, 2, `two numbers: ${keys.join(', ')}`);
   assert.ok(!keys.includes('woodcutter.piece'), 'no count ring by ring');
-  assert.ok(keys.includes('woodcutter.longer'), keys.join(', '));
+  assert.ok(keys.some((k) => k.startsWith('woodcutter.longer')), keys.join(', '));
   assert.ok(looks.has(`piece-glow-${s.length - 2}`), `the part that sticks out glows: ${[...looks].join(', ')}`);
   assert.ok(keys.includes('woodcutter.move'), keys.join(', '));
   const old = getEntity(session.state, 'old:woodcutter:1');
@@ -90,7 +90,7 @@ test('grade 2: after a wrong cut, the long piece is named, and the count is ring
   mark(session, len - 2);
   cut(session);
   run(session, 40, () => !getEntity(session.state, 'stem:woodcutter').hidden && !wood(session).cut);
-  assert.ok(keys.includes('woodcutter.longer'), keys.join(', '));
+  assert.ok(keys.some((k) => k.startsWith('woodcutter.longer')), keys.join(', '));
   assert.ok(keys.includes('woodcutter.piece') && !keys.includes('woodcutter.pieceN'), keys.join(', '));
 });
 

@@ -54,6 +54,8 @@ const sameWords = (a, b) => a.key === b.key && JSON.stringify(a.params) === JSON
 // Seconds: a line with the same words as a line that the voice said this short time ago goes (#67:
 // each line of a bubble is spoken one time). The words of a count are never dropped.
 export const SAID_AGAIN = 12;
+// A line that asks the child (a riddle, a question of a person): it never goes for a newer line.
+export const asks = (line) => Boolean(line.asks) || /^riddle\.ask\./.test(line.key ?? '');
 
 // The queue of the lines of the bubbles. offer(line, speaking): speaking is true while the voice
 // says something (a line of the talk box or of a bubble). Returns:
@@ -65,8 +67,8 @@ export const SAID_AGAIN = 12;
 //   SAID_AGAIN seconds, also goes. A word of a count, a line of what happened, and a line of a goal
 //   never go (#73: the "hai" of a row went because the "hai" of the row before still waited; #106:
 //   the goal of the teacher went for the first help), and a later line of the person waits behind
-//   them. A line that the child asked for with a wave is said also when the voice said the same
-//   words a short time ago (#106).
+//   them, and so does a line that asks (asks). A line that the child asked for with a wave is said
+//   also when the voice said the same words a short time ago (#106).
 // next(speaking): the line to speak now, or null while the voice is busy or nothing waits.
 // now: the time in seconds (null: no memory of the lines that the voice said).
 export function createVoiceQueue() {
@@ -83,9 +85,10 @@ export function createVoiceQueue() {
         if (now !== null && !line.asked && said.some((x) => sameWords(x.line, line) && now - x.at < SAID_AGAIN)) return 'drop';
       }
       // A newer hint of the same person takes the place of an older hint that still waits (never of
-      // a line of what happened, nor of a word of a count).
+      // a line of what happened, nor of a word of a count, nor of a line that asks: #145, a riddle
+      // went, and only its "how" came).
       if (line.kind === 'line') {
-        for (let i = queue.length - 1; i >= 0; i--) if (queue[i].id === line.id && queue[i].kind === 'line') queue.splice(i, 1);
+        for (let i = queue.length - 1; i >= 0; i--) if (queue[i].id === line.id && queue[i].kind === 'line' && !asks(queue[i])) queue.splice(i, 1);
       }
       queue.push(line);
       return !speaking && queue.length === 1 ? 'now' : 'wait';

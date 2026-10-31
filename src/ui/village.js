@@ -24,7 +24,7 @@ import { placeStar, placeArrow, spreadArrow, placeBubble, starBox, edgeFew, side
 import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
-import { workBoxes, workTurn, stillTurn, BUILDINGS } from '../world/fade.js';
+import { workBoxes, workTurn, stillTurn, BUILDINGS, heroCovered, heroWindow } from '../world/fade.js';
 import { createTurns } from '../world/turns.js';
 import { taskPools } from '../world/light.js';
 import { VIEW, SAFE, TALK_SAFE, viewSize, inView, frameWork, mmOf } from '../world/view.js';
@@ -1218,9 +1218,23 @@ export async function mountVillage(ctx, params = {}) {
     const f = figures.placeOf(seenPerson.id);
     return f && Math.hypot(f.x - heroAt.x, f.z - heroAt.z) < SEEN_NEAR ? f : null;
   }
+  // The window in a roof around the hero (heroWindow in src/world/fade.js, #145).
+  let heroWin = { t: 0, open: false };
+  let winTick = 0;
+  function stepHeroWindow(heroAt, dt) {
+    winTick += dt;
+    if (winTick < 0.2) return;
+    const objects = terrain.objects
+      .filter((o) => !o.gone && BUILDINGS.has(o.kind) && Math.abs(o.x + o.w / 2 - heroAt.x) < STILL_NEAR && Math.abs(o.y + o.h / 2 - heroAt.z) < STILL_NEAR)
+      .map((o) => ({ b: terrain.boxOf(o), building: true, hits: (x, y, z) => terrain.hits(o.who, x, y, z) }));
+    heroWin = heroWindow(heroWin, heroCovered(objects, heroAt, view.angle, VIEW.elevation), winTick);
+    winTick = 0;
+  }
   function seenPoints(heroAt) {
     const r = getEntity(state, 'raid')?.raid;
     const person = personSeen(heroAt);
+    // A hero under a roof for more than a moment is a point of the work: the roof opens a window.
+    if (heroWin.open) heroAt = { ...heroAt, work: true };
     if (!r || r.result) {
       // At a task, the points of the work and its person: what is in front of them fades fully
       // (#87: the roof of the small house covered the mat of the teacher as dots).
@@ -1233,7 +1247,7 @@ export async function mountVillage(ctx, params = {}) {
       // (#108: a roof covered the beds and the basket during the first talk of the healer).
       if (work?.talk || work?.fade) pts.push(...work.points.filter(near).map((p) => ({ ...p, y: groundY(p.x, p.z), work: true })));
       const out = [heroAt, ...(person ? [person] : []), ...pts];
-      return out.length > 1 ? out : heroAt;
+      return out.length > 1 || heroAt.work ? out : heroAt;
     }
     // A thing in front of a post or an enemy fades fully, by day and at night (#141: "the posts hide
     // behind bamboo").
@@ -2489,6 +2503,7 @@ export async function mountVillage(ctx, params = {}) {
     watchStill(dt, heroAt);
     const lead = workFrame(heroAt);
     if (!lead) view.setScale(1);
+    stepHeroWindow(heroAt, dt);
     view.render(dt, lead ?? raidView.focus(heroAt), time, { ...state.sky, puddles }, ambient, seenPoints(heroAt));
     drawSky();
     raidView.draw(dt, w, hh);
