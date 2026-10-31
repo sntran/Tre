@@ -1,0 +1,328 @@
+{
+ "about": "#144: grade 4, the model basket of bà lang: the word thang, the two packets, a line for each put, the give next to her, and her count.",
+ "start": "?story=trial-healer",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "4",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-thang-and-its-line"
+  },
+  {
+   "read": 15
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /first\\.you/.test(x.key ?? ''))",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-two-packets"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-ngai"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.ngai ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.ngai ?? 0)"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-a-put-and-its-line"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.ngai ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.ngai ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.ngai ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.ngai ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.ngai ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.ngai ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.ngai ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-ngai').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.ngai ?? 0)"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-tiato"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.tiato ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.tiato ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.tiato ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.tiato ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.tiato ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.tiato ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.tiato ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.tiato ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.tiato ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-tiato').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.tiato ?? 0)"
+  },
+  {
+   "tap": {
+    "thing": "zone:bed-rauma"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.rauma ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.rauma ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.rauma ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.rauma ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.rauma ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.rauma ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.rauma ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.rauma ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.rauma ?? 0)"
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.items.filter((id) => tre.activeVillage.state().entities.find((e) => e.id === id)?.item.kind === 'herb-rauma').length ?? 0) < (tre.activeVillage.state().entities.find((e) => e.id === 'zone:basket')?.zone?.need?.rauma ?? 0)"
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.className"
+  },
+  {
+   "shot": "4-next-to-her-the-button-gives"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 8
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "5-her-count"
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "6-the-end"
+  }
+ ]
+}

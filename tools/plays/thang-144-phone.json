@@ -1,0 +1,171 @@
+{
+ "about": "#144: grade 4, the talk of bà lang at the model basket: the first line with thang and its word line.",
+ "start": "?story=trial-healer",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "4",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "line-0",
+   "if": "tre.activeVillage.heard().slice(-3).some((x) => /thang/.test(x.text ?? ''))"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "line-1",
+   "if": "tre.activeVillage.heard().slice(-3).some((x) => /thang/.test(x.text ?? ''))"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "line-2",
+   "if": "tre.activeVillage.heard().slice(-3).some((x) => /thang/.test(x.text ?? ''))"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "line-3",
+   "if": "tre.activeVillage.heard().slice(-3).some((x) => /thang/.test(x.text ?? ''))"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "line-4",
+   "if": "tre.activeVillage.heard().slice(-3).some((x) => /thang/.test(x.text ?? ''))"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "line-5",
+   "if": "tre.activeVillage.heard().slice(-3).some((x) => /thang/.test(x.text ?? ''))"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "line-6",
+   "if": "tre.activeVillage.heard().slice(-3).some((x) => /thang/.test(x.text ?? ''))"
+  },
+  {
+   "read": 1
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "line-7",
+   "if": "tre.activeVillage.heard().slice(-3).some((x) => /thang/.test(x.text ?? ''))"
+  }
+ ]
+}
