@@ -1,0 +1,539 @@
+{
+ "about": "#143: grade 4, the test of the messenger: one wrong decimal and one wrong fraction with the reason after each, the keypad at one place, no question that needs paper, and the card of bà lang with her picture.",
+ "start": "?story=placement-messenger",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "4",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "messenger"
+   },
+   "taps": 8
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "messenger"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 12
+  },
+  {
+   "until": "Boolean(document.querySelector('.quiz'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify({ skill: tre.activeProblem?.skill, key: Math.round(document.querySelector('.numpad .btn')?.getBoundingClientRect().y ?? -1) })"
+  },
+  {
+   "print": "window.__wrong = (() => { const s = tre.activeProblem?.skill ?? ''; const k = s === 'math.decimal' ? 'd' : s.startsWith('math.frac') ? 'f' : null; window.__w ??= {}; if (!k || window.__w[k]) return false; window.__w[k] = true; return true; })()"
+  },
+  {
+   "shot": "q1",
+   "if": "Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "answer": "wrong",
+   "if": "window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.5,
+   "if": "window.__wrong"
+  },
+  {
+   "shot": "q1-the-reason",
+   "if": "window.__wrong && Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__wrong && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify({ skill: tre.activeProblem?.skill, key: Math.round(document.querySelector('.numpad .btn')?.getBoundingClientRect().y ?? -1) })"
+  },
+  {
+   "print": "window.__wrong = (() => { const s = tre.activeProblem?.skill ?? ''; const k = s === 'math.decimal' ? 'd' : s.startsWith('math.frac') ? 'f' : null; window.__w ??= {}; if (!k || window.__w[k]) return false; window.__w[k] = true; return true; })()"
+  },
+  {
+   "shot": "q2",
+   "if": "Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "answer": "wrong",
+   "if": "window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.5,
+   "if": "window.__wrong"
+  },
+  {
+   "shot": "q2-the-reason",
+   "if": "window.__wrong && Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__wrong && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify({ skill: tre.activeProblem?.skill, key: Math.round(document.querySelector('.numpad .btn')?.getBoundingClientRect().y ?? -1) })"
+  },
+  {
+   "print": "window.__wrong = (() => { const s = tre.activeProblem?.skill ?? ''; const k = s === 'math.decimal' ? 'd' : s.startsWith('math.frac') ? 'f' : null; window.__w ??= {}; if (!k || window.__w[k]) return false; window.__w[k] = true; return true; })()"
+  },
+  {
+   "shot": "q3",
+   "if": "Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "answer": "wrong",
+   "if": "window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.5,
+   "if": "window.__wrong"
+  },
+  {
+   "shot": "q3-the-reason",
+   "if": "window.__wrong && Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__wrong && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify({ skill: tre.activeProblem?.skill, key: Math.round(document.querySelector('.numpad .btn')?.getBoundingClientRect().y ?? -1) })"
+  },
+  {
+   "print": "window.__wrong = (() => { const s = tre.activeProblem?.skill ?? ''; const k = s === 'math.decimal' ? 'd' : s.startsWith('math.frac') ? 'f' : null; window.__w ??= {}; if (!k || window.__w[k]) return false; window.__w[k] = true; return true; })()"
+  },
+  {
+   "shot": "q4",
+   "if": "Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "answer": "wrong",
+   "if": "window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.5,
+   "if": "window.__wrong"
+  },
+  {
+   "shot": "q4-the-reason",
+   "if": "window.__wrong && Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__wrong && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify({ skill: tre.activeProblem?.skill, key: Math.round(document.querySelector('.numpad .btn')?.getBoundingClientRect().y ?? -1) })"
+  },
+  {
+   "print": "window.__wrong = (() => { const s = tre.activeProblem?.skill ?? ''; const k = s === 'math.decimal' ? 'd' : s.startsWith('math.frac') ? 'f' : null; window.__w ??= {}; if (!k || window.__w[k]) return false; window.__w[k] = true; return true; })()"
+  },
+  {
+   "shot": "q5",
+   "if": "Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "answer": "wrong",
+   "if": "window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.5,
+   "if": "window.__wrong"
+  },
+  {
+   "shot": "q5-the-reason",
+   "if": "window.__wrong && Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__wrong && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify({ skill: tre.activeProblem?.skill, key: Math.round(document.querySelector('.numpad .btn')?.getBoundingClientRect().y ?? -1) })"
+  },
+  {
+   "print": "window.__wrong = (() => { const s = tre.activeProblem?.skill ?? ''; const k = s === 'math.decimal' ? 'd' : s.startsWith('math.frac') ? 'f' : null; window.__w ??= {}; if (!k || window.__w[k]) return false; window.__w[k] = true; return true; })()"
+  },
+  {
+   "shot": "q6",
+   "if": "Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "answer": "wrong",
+   "if": "window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.5,
+   "if": "window.__wrong"
+  },
+  {
+   "shot": "q6-the-reason",
+   "if": "window.__wrong && Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__wrong && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify({ skill: tre.activeProblem?.skill, key: Math.round(document.querySelector('.numpad .btn')?.getBoundingClientRect().y ?? -1) })"
+  },
+  {
+   "print": "window.__wrong = (() => { const s = tre.activeProblem?.skill ?? ''; const k = s === 'math.decimal' ? 'd' : s.startsWith('math.frac') ? 'f' : null; window.__w ??= {}; if (!k || window.__w[k]) return false; window.__w[k] = true; return true; })()"
+  },
+  {
+   "shot": "q7",
+   "if": "Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "answer": "wrong",
+   "if": "window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.5,
+   "if": "window.__wrong"
+  },
+  {
+   "shot": "q7-the-reason",
+   "if": "window.__wrong && Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__wrong && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify({ skill: tre.activeProblem?.skill, key: Math.round(document.querySelector('.numpad .btn')?.getBoundingClientRect().y ?? -1) })"
+  },
+  {
+   "print": "window.__wrong = (() => { const s = tre.activeProblem?.skill ?? ''; const k = s === 'math.decimal' ? 'd' : s.startsWith('math.frac') ? 'f' : null; window.__w ??= {}; if (!k || window.__w[k]) return false; window.__w[k] = true; return true; })()"
+  },
+  {
+   "shot": "q8",
+   "if": "Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "answer": "wrong",
+   "if": "window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.5,
+   "if": "window.__wrong"
+  },
+  {
+   "shot": "q8-the-reason",
+   "if": "window.__wrong && Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__wrong && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify({ skill: tre.activeProblem?.skill, key: Math.round(document.querySelector('.numpad .btn')?.getBoundingClientRect().y ?? -1) })"
+  },
+  {
+   "print": "window.__wrong = (() => { const s = tre.activeProblem?.skill ?? ''; const k = s === 'math.decimal' ? 'd' : s.startsWith('math.frac') ? 'f' : null; window.__w ??= {}; if (!k || window.__w[k]) return false; window.__w[k] = true; return true; })()"
+  },
+  {
+   "shot": "q9",
+   "if": "Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "answer": "wrong",
+   "if": "window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.5,
+   "if": "window.__wrong"
+  },
+  {
+   "shot": "q9-the-reason",
+   "if": "window.__wrong && Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__wrong && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify({ skill: tre.activeProblem?.skill, key: Math.round(document.querySelector('.numpad .btn')?.getBoundingClientRect().y ?? -1) })"
+  },
+  {
+   "print": "window.__wrong = (() => { const s = tre.activeProblem?.skill ?? ''; const k = s === 'math.decimal' ? 'd' : s.startsWith('math.frac') ? 'f' : null; window.__w ??= {}; if (!k || window.__w[k]) return false; window.__w[k] = true; return true; })()"
+  },
+  {
+   "shot": "q10",
+   "if": "Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "answer": "wrong",
+   "if": "window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 0.5,
+   "if": "window.__wrong"
+  },
+  {
+   "shot": "q10-the-reason",
+   "if": "window.__wrong && Boolean(document.querySelector('.quiz'))"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__wrong && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__wrong && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz')",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "the-result"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5,
+   "if": "!document.querySelector('.calling-grid')"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5,
+   "if": "!document.querySelector('.calling-grid')"
+  },
+  {
+   "click": "Đồng ý",
+   "after": 1.5,
+   "if": "!document.querySelector('.calling-grid')"
+  },
+  {
+   "until": "Boolean(document.querySelector('.calling-grid'))",
+   "timeout": 30
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "the-cards-with-the-question"
+  },
+  {
+   "click": "Thầy thuốc",
+   "after": 1
+  },
+  {
+   "shot": "ba-lang-on-her-card"
+  },
+  {
+   "click": "Chọn nghề này",
+   "after": 2
+  },
+  {
+   "shot": "the-calling"
+  }
+ ]
+}
