@@ -1,0 +1,40 @@
+{
+  "name": "elder-dinh",
+  "about": {
+    "vi": "Lan đã giúp đủ năm người tài, và đứng ở chỗ mái nhà che: cụ già làng nói chuyện với Lan ở đình; mái nhà mở một ô cửa quanh Lan và quanh cụ.",
+    "en": "Lan has helped all five able people and stands where a roof covers her: the elder talks with Lan at the village hall; the roof opens a window around Lan and around the elder."
+  },
+  "profile": {
+    "name": "Lan",
+    "grade": 5,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true,
+      "trial.scholar.done": true,
+      "trial.smith.done": true,
+      "trial.fisher.done": true,
+      "trial.healer.done": true,
+      "trial.woodcutter.done": true
+    }
+  },
+  "clock": 600,
+  "at": [
+    "phu-dong",
+    31.5,
+    24.5
+  ],
+  "steps": [
+    {
+      "wait": 2
+    },
+    {
+      "expect": [
+        {
+          "entity": "npc:elder"
+        }
+      ]
+    }
+  ]
+}

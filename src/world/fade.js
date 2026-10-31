@@ -177,23 +177,38 @@ export function workTurn(boxes, points, az, elevation, inSight = () => true) {
 
 // ---------------------------------------------------------------- The hero in sight (#111)
 // When the hero stands still (the end of a walk, a talk, the start of a task) and a building covers
-// most of the hero, the view turns one time, in its steps, to a side where nothing covers the hero
-// and the person of the talk. objects: [{ b (box), building, hits(x, y, z) }]. A building covers
-// most of the hero when it hides at least COVER_MOST of the heights of SIGHT (the feet, the body,
-// the head).
-const COVER_MOST = 2;
+// the hero, the view turns one time, in its steps, to a side where nothing covers the hero and the
+// person of the talk. objects: [{ b (box), building, hits(x, y, z) }]. One test for "hidden", the
+// same as the outline that the child sees (#148: the outline showed for seconds, and no window
+// came): rays from a grid on the body (ACROSS points across the view, HIGH heights), and the hero
+// is hidden when COVER_PART of them go through a block of a building.
+export const ACROSS = [-0.42, -0.21, 0, 0.21, 0.42];
+export const HIGH = [0.15, 0.5, 0.85, 1.2, 1.55, 1.9, 2.25];
+export const COVER_PART = 1 / 3;
+export function bodyRays(p, az) {
+  const rx = Math.cos(az);
+  const rz = -Math.sin(az);
+  return ACROSS.flatMap((a) => HIGH.map((h) => ({ x: p.x + rx * a, y: p.y + h, z: p.z + rz * a })));
+}
+// The march goes in steps of MARCH units: a thin eave is a part of a block (#148).
+const MARCH = 0.1;
 function hidesAt(b, o, d, hits) {
   const span = rayRange(b, o, d);
   if (!span) return false;
-  for (let t = span[0]; t <= span[1]; t += 0.25) {
+  for (let t = span[0]; t <= span[1]; t += MARCH) {
     if (hits(o.x + d.x * t, o.y + d.y * t, o.z + d.z * t)) return true;
   }
   return false;
 }
-export function heroCovered(objects, hero, az, elevation) {
+export function coveredPart(objects, p, az, elevation) {
   const d = toCamera(az, elevation);
-  const hidden = SIGHT.filter((h) => objects.some((x) => x.building && hidesAt(x.b, { x: hero.x, y: hero.y + h, z: hero.z }, d, x.hits))).length;
-  return hidden >= COVER_MOST;
+  const rays = bodyRays(p, az);
+  const near = objects.filter((x) => x.building && rays.some((o) => rayHits(x.b, o, d)));
+  if (!near.length) return 0;
+  return rays.filter((o) => near.some((x) => hidesAt(x.b, o, d, x.hits))).length / rays.length;
+}
+export function heroCovered(objects, hero, az, elevation) {
+  return coveredPart(objects, hero, az, elevation) >= COVER_PART - 1e-9;
 }
 // The window around the hero (#145: "A big roof is covering me."): when a building covers most of
 // the hero for more than WINDOW_WAIT seconds and the view does not turn, the hero is a point of the
