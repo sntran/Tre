@@ -21,7 +21,9 @@ test('on the calf next to the scouts, one press gets the hero down and opens the
   // The child sees the new picture for a moment before the press (#60).
   for (let i = 0; i < 24; i++) s.step();
   const a = s.action();
-  assert.equal(a?.act, 'talk', 'the button shows the talk');
+  // The start of the raid with the slingshot, not a talk with the enemy (#150).
+  assert.equal(a?.act, 'raid', 'the button shows the start of the raid');
+  assert.equal(a.icon, 'sling');
   assert.equal(a.target, 'encounter:scouts');
   s.command({ type: 'hands' });
   for (let i = 0; i < 30 && !s.screen; i++) s.step();

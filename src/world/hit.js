@@ -15,6 +15,10 @@ export const TAP_AREA = 60;
 export const PERSON_PAD = 10; // screen pixels around the box of a person
 export const PERSON_PAD_AT_PLACE = -6; // next to a place of a task: only the body of the person
 export const FRIEND_PAD = 8; // screen pixels around Nghé
+export const ANIMAL_PAD = 8; // screen pixels around an animal of the land
+// The animals of the land that answer a tap (#150): the kind, and the sound of its answer.
+export const ANIMAL_SOUNDS = Object.freeze({ dog: 'bark', chicken: 'cluck', duck: 'quack', buffalo: 'moo' });
+const ANIMALS = new Set(Object.keys(ANIMAL_SOUNDS));
 export const PERSON_HEIGHT = 1.8; // blocks: a person when the renderer does not give the height
 export const BODY_DEPTH = 0.4; // blocks: a person this far behind a thing still stands on it
 
@@ -208,6 +212,7 @@ function heapThingNear(things, hit) {
 // - cam: the camera (viewCamera, or the view of the renderer, with the same project, screenBox,
 //   and nearness);
 // - things: the entities with an item; persons: [{ id (the entity), x, y, z, height }];
+// - animals: the animals of the land that answer a tap (ANIMALS), as the friends;
 // - friends: the figures of Nghé (and of the hero on the back of Nghé), [{ id (Nghé), x, y, z,
 //   height }]; a tap there pets Nghé; guesses: the plank outlines; hamlet: the things
 //   of the hamlet with a tap ([{ id, hamletTap, x, y, z, height }]);
@@ -261,6 +266,10 @@ export function tapTarget(p, w) {
   const pal = figureUnder(p, w.cam, w.friends ?? [], FRIEND_PAD, 0.8);
   const taskThing = thing && (w.openThing ? w.openThing(thing.e) : true);
   const taskPlace = inPlace || (hit && w.openSpanAt?.(hit.x, hit.y));
+  // An animal of the land under the finger answers (#150: "I tapped the dog but nothing happened."),
+  // before Nghé: a tap on the dog next to the hero on Nghé never pets her.
+  const beast = figureUnder(p, w.cam, w.animals ?? [], ANIMAL_PAD, 0.5);
+  if (beast && !taskThing && !taskPlace && !figureUnder(p, w.cam, w.persons ?? [], PERSON_PAD)) return { animal: beast.id };
   if (pal && !taskThing && !taskPlace && !figureUnder(p, w.cam, w.persons ?? [], PERSON_PAD)) return { pet: pal.id };
   // A thing on a place of a task (a bunch in the basket, a rod on the mat) is chosen only by a tap on
   // its body, never by a tap next to it (#79: a tap near the basket took a bunch out). With empty
@@ -349,6 +358,7 @@ export function sessionScreen(session, cam) {
     things: list.filter((e) => e.item && e.position),
     persons: list.filter((e) => (e.person || askingChild(e, session)) && e.position && !e.hidden).map((e) => fig(e)),
     friends: friend ? [fig(friend, { height: 1.1 }), ...(hero.riding ? [{ ...fig(hero), id: friend.id }] : [])] : [],
+    animals: list.filter((e) => ANIMALS.has(e.kind) && e.position && !e.hidden).map((e) => fig(e, { height: 0.8 })),
     guesses: list.filter((e) => e.guess && e.position),
     hamlet: list.filter((e) => e.hamletTap && e.position).map((e) => fig(e, { hamletTap: e.hamletTap, height: 0.8 })),
     pick: groundPick(cam, session.tileMap),

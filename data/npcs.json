@@ -291,7 +291,8 @@
               "giong.spoke"
             ],
             "notFlags": [
-              "horse.ore1"
+              "horse.ore1",
+              "horse.forged"
             ]
           },
           "dialogue": "woodcutter.ore"

@@ -146,6 +146,17 @@
    "mark": "legend"
   },
   {
+   "id": "giong.here",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "giong",
+     "textKey": "dlg.giong.here.n1"
+    }
+   },
+   "mark": "legend"
+  },
+  {
    "id": "giong.boss",
    "start": "n1",
    "nodes": {

@@ -83,7 +83,9 @@ test('at Trâu Sơn, with the soldiers in reach, a press starts the raid, not a 
   session.events();
   assert.equal(session.chosen(), null, 'no tap counts now');
   assert.ok(session.targets().some((t) => t.act === 'look'), 'the field is in reach too');
-  assert.equal(session.action().act, 'talk');
+  // The start of the raid with the slingshot, not a talk with the enemy (#150).
+  assert.equal(session.action().act, 'raid');
+  assert.equal(session.action().icon, 'sling');
   assert.equal(session.action().target, enc.id);
 });
 

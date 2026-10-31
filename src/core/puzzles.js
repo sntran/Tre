@@ -588,6 +588,22 @@ export function createPuzzles(deps) {
         ferry.offered = true;
         sayOffer();
       }
+      // The pots (#150: bà lang said her line of the day): the puzzle and its first step again, she
+      // points at the well, and the view shows the well, the two pots, and the jar.
+      const healerE = id === 'pots' && pots ? healerNear() : null;
+      if (healerE) {
+        pots.offered = true;
+        lookPots(true);
+        const well = placeOf(PZ, PZ.well);
+        if (well) healerE.gesture = { act: 'point', x: well.x, z: well.z, t: 3 };
+        deps.say(healerE.id, pots.lv.need === 4 ? 'puzzle.pots.start' : 'puzzle.pots.start.two', {});
+      }
+    },
+    // The puzzle that a person offered and the child has not solved (a talk with that person says
+    // the puzzle again), or null.
+    offerOf(entity) {
+      const healerE = pots && pots.offered && !pots.solved ? healerNear() : null;
+      return healerE && healerE.id === entity ? 'pots' : null;
     },
     // A puzzle goes on near the hero: the faces of the people of the story do not show on the screen
     // (#110: the rice of the ferry was under the arrows at the edge, and a tap on it walked the hero

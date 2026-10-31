@@ -63,13 +63,15 @@ export function ringSpots(c, radii, n = 16) {
 // pale and see-through while the point is a point of the work. A point in the body of the figure
 // is the figure itself (the person of the task, the hero), not a thing behind it. figs: [{ id,
 // position, size }]; points: [{ x, y, z }] (half blocks). Return the ids.
-export function seeThrough(figs, points, az, elevation) {
+// near(f): the distance in half blocks under which a point is in the body of the figure (the hero
+// next to a rider is not in the body of the horse: a smaller distance).
+export function seeThrough(figs, points, az, elevation, near = (f) => f.size.r * 2 + 0.6) {
   const out = new Set();
   for (const f of figs) {
     const box = figureBox(f.position, f.size);
-    const r = f.size.r * 2 + 0.6;
+    const r = near(f);
     const behind = points.filter((p) => Math.hypot(p.x - f.position.x, p.z - f.position.z) > r);
-    if (behind.some((p) => hides(box, p, az, elevation))) out.add(f.id);
+    if (behind.some((p) => hides(box, p, az, elevation, p.heights ?? THING_HEIGHTS))) out.add(f.id);
   }
   return out;
 }

@@ -58,6 +58,7 @@ import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveRea
 import { taskPools, POOL } from '../world/light.js';
 import { viewSize, inView, VIEW } from '../world/view.js';
 import { workBoxes, workCovers } from '../world/fade.js';
+import { ANIMAL_SOUNDS } from '../world/hit.js';
 import { FIGURES, THING_HEIGHTS, HERO_HEIGHTS, clearOf, clearSpot, ringSpots, seeThrough, sizeOf } from './world/sight.js';
 import { workRects } from './world/systems/follow.js';
 import { levelFor, taskOf, trialLevel, tightSlot, allowedSlots, MODEL_DOSES } from './world/trials.js';
@@ -766,13 +767,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const things = query(state, 'item', 'position').filter((e) => !e.item.held && ((key && (e.item.task === key || e.item.task === `trial-${key}`)) || (puzzles.here() && String(e.item.kind).startsWith('pz')))).map((e) => e.position);
     const lit = cue.map((id) => getEntity(state, id)?.position).filter(Boolean);
     const pts = h ? [...(work?.points ?? []), ...(work?.sight ?? []), ...posts, ...things, ...lit].filter((p) => Math.hypot(p.x - h.x, p.z - h.z) <= SIGHT_NEAR) : [];
-    if (!pts.length) {
+    // A rider in front of the hero who stands still (a talk with a person of the way, #150: Gióng on
+    // his horse hid the hero and the person) also draws pale.
+    const still = h && !hero().route;
+    if (!pts.length && !still) {
       seeIds = new Set();
       return;
     }
     const figs = state.entities.filter((e) => e.position && Math.hypot(e.position.x - h.x, e.position.z - h.z) <= SIGHT_NEAR)
-      .map((e) => ({ id: e.id, position: e.position, size: sizeOf(e) })).filter((f) => f.size);
-    seeIds = seeThrough(figs, pts, viewAz, VIEW.elevation);
+      .map((e) => ({ id: e.id, position: e.position, size: sizeOf(e), rides: Boolean(e.riding) && e.id !== 'hero' })).filter((f) => f.size);
+    seeIds = pts.length ? seeThrough(figs, pts, viewAz, VIEW.elevation) : new Set();
+    if (still) {
+      const riders = figs.filter((f) => f.size === FIGURES.rider || f.rides).map((f) => (f.rides ? { ...f, size: FIGURES.rider } : f));
+      for (const id of seeThrough(riders, [{ ...h, heights: HERO_HEIGHTS }], viewAz, VIEW.elevation, (f) => f.size.r)) seeIds.add(id);
+    }
   }
   // A person with a mount rides it whenever the person is out of the house (and the mount stands
   // under the person); in a raid the raid has its own companion, so the person waits out of sight.
@@ -2653,11 +2661,26 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (words) emit({ type: 'open', screen: 'callout', id: at.entity ?? `npc:${who.id}`, textKey: words[state.tick % words.length], params: { name: profile.hero.name } });
         return;
       }
-      const id = pickTalk(data.npcs.npcs[who.id], profile);
+      // A person who offered a side puzzle says the puzzle again (#150).
+      const offer = puzzles.offerOf(at.entity ?? `npc:${who.id}`);
+      if (offer) {
+        puzzles.talk(offer);
+        return;
+      }
+      let id = pickTalk(data.npcs.npcs[who.id], profile);
+      // At the place of the soldiers, Gióng says that they are here (#150: the line of "far away"
+      // came at the place); "far away" is for the village and the road.
+      if (id === 'giong.ready' && soldiersNear()) id = 'giong.here';
       if (!comeFirst(id, who.id)) talk(id);
     }
     else if (who.kind === 'event') tapEvent(who.id);
     else if (who.kind === 'puzzle') puzzles.talk(who.id);
+    // A person of the way says the clue again, and points along the road; after the place is
+    // found, a short line of the way (#150: "The talk bubble does not work! Bác does not talk.").
+    else if (who.kind === 'way') {
+      const id = at.entity ?? `way:${who.id}`;
+      emit({ type: 'open', screen: 'callout', id, textKey: clueLine(id) ?? 'way.again', params: {} });
+    }
     else if (who.kind === 'encounter') {
       // No raid of the story starts in a practice (#51).
       if (practice) return;
@@ -2683,6 +2706,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
 
   const WORD_GRADE = 2; // the highest grade that gets the short line of a new word (#122)
+  const RAID_PLACE = 10; // half blocks: the button starts a raid this near to the place of its wall
+  // Are the enemies of an encounter near the hero (the place of the soldiers)?
+  const SOLDIERS_NEAR = 60; // half blocks
+  const soldiersNear = () => {
+    const h = hero()?.position;
+    return Boolean(h) && persons().some((p) => p.kind === 'encounter' && !getEntity(state, p.entity)?.hidden && Math.hypot(p.x * 2 - h.x, p.y * 2 - h.z) <= SOLDIERS_NEAR);
+  };
   // The lines of the smith in the world that say "thép" (#127); the first one has the word line.
   const THEP_LINES = new Set(['smith.fair.why']);
 
@@ -4186,6 +4216,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const e = getEntity(state, q.entity);
       if (!e || e.hidden || (q.kind === 'encounter' && (raidOn() || practice))) continue;
       const base = { target: q.entity, at: e.position };
+      // The start of a raid is a place, not a talk with an enemy (#150: "Is he a bad soldier? The
+      // big button says talk."): at the place where the child stands (the wall of the raid, the
+      // crossroads) and at the enemies, the button shows the slingshot of the raid.
+      if (q.kind === 'encounter') {
+        if (held) continue;
+        const enc = map.encounters.find((x) => x.id === q.ref);
+        const wall = data.raids?.raids[enc?.raid]?.wall;
+        const start = { ...base, act: 'raid', icon: 'sling', rank: -1, run: () => interact({ kind: q.kind, id: q.ref }, q) };
+        add(start, REACH + 3);
+        if (wall) add({ ...start, at: { x: wall[0] * 2, y: hp.y, z: wall[1] * 2 } }, RAID_PLACE);
+        continue;
+      }
       if (held) {
         if (held.item.kind === 'gift' && q.kind === 'npc' && trialDef('share')?.rest?.[q.ref]) add({ ...base, act: 'give', icon: 'hand-give', rank: 0, run: () => giveGift(q) }, REACH + 3);
         continue;
@@ -4585,7 +4627,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // shows the talk, and one press gets the hero down and opens the talk (#60).
       const people = new Set(persons().filter((p) => p.kind === 'npc' || p.kind === 'encounter').map((p) => p.entity));
       // The children of a folk game too: the button joins the game (#114).
-      const talk = candidates().find((c) => (c.act === 'talk' && people.has(c.target)) || (c.act === 'play' && getEntity(state, c.target)?.folkChild));
+      const talk = candidates().find((c) => ((c.act === 'talk' || c.act === 'raid') && people.has(c.target)) || (c.act === 'play' && getEntity(state, c.target)?.folkChild));
       // The hero gets down at once: the world waits while the talk is open, and a command of the
       // world comes only after it (#66: the hero stayed on the calf at the scouts).
       if (talk) return { ...talk, run: () => { delete hero().riding; talk.run(); } };
@@ -4630,7 +4672,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const places = list.filter((c) => !(c.act === 'put' && c.rank >= 10));
     if (holdsThing && places.length) list = places;
     // With an enemy of an encounter in reach, a look at a field or a sign is never the act (#55).
-    if (list.some((c) => c.act === 'talk' && String(c.target).startsWith('encounter:'))) list = list.filter((c) => c.act !== 'look');
+    if (list.some((c) => (c.act === 'talk' || c.act === 'raid') && String(c.target).startsWith('encounter:'))) list = list.filter((c) => c.act !== 'look');
     // The ride on Nghé comes only when nothing else is in reach, or after a tap on Nghé (#60).
     const others = list.filter((c) => c.act !== 'ride' || tapped(c));
     if (others.length) list = others;
@@ -4822,6 +4864,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       endScript(state, demo, { early: true });
       const who = data.mentors?.mentors?.[demoKey]?.person;
       if (!said && who && getEntity(state, who) && !getEntity(state, who).hidden) emit({ type: 'open', screen: 'callout', id: who, textKey: addressed(who, 'mentor.first.you'), params: {} });
+    }
+    // The ride is at once, also during a walk (#150: "I pressed the ride button two times but I'm
+    // still walking, not riding."): with Nghé in reach, the hero gets on Nghé in this step, and the
+    // walk goes on, on the back of Nghé.
+    const shown = id === null || id === undefined ? button() : btnAll.find((x) => x.id === id);
+    const mount = shown?.a?.act === 'ride' && walking() ? getEntity(state, shown.a.target) : null;
+    if (mount && !hero().riding && distHb(hero().position, mount.position) <= REACH + 4) {
+      runAct(shown.a, pid);
+      return;
     }
     const a = pressed(id);
     // Each press during the walk counts: a child who counts the presses (one bunch for each) gets
@@ -5026,8 +5077,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (hero().fall) return;
     // The thing of an open riddle, anywhere: the tap finds it (#103). The tap still does what a tap
     // does: a tap on another thing is only a tap on that thing.
-    const tapped = target.thing ?? target.pet ?? target.sleeper ?? target.person;
+    const tapped = target.thing ?? target.pet ?? target.sleeper ?? target.person ?? target.animal;
     riddles.tap(target.ground ? { x: target.ground.x * 2, z: target.ground.y * 2 } : tapped ? getEntity(state, tapped)?.position : null, target.ground?.object ?? null);
+    // An animal of the land answers a tap (#150: "The doggy didn't do anything when I tapped, my
+    // buffalo said moo instead."): the dog barks and wags its tail, a chicken clucks, a duck quacks;
+    // it hops, and turns to the hero.
+    if (target.animal) {
+      const a = getEntity(state, target.animal);
+      if (a?.position) {
+        a.hop = { t: 0 };
+        a.position.facing = Math.atan2(hero().position.x - a.position.x, hero().position.z - a.position.z);
+        emit({ type: 'answer', id: a.id, kind: a.kind, sound: ANIMAL_SOUNDS[a.kind] ?? 'tap' });
+      }
+      return;
+    }
     if (/^(mat|zone):share-/.test(String(tapped ?? target.zone ?? ''))) shareCount(tapped ?? target.zone);
     // A row of the guess at the bridge: the hero walks to its foot on the bank, and it is the target
     // (the action button chooses it).

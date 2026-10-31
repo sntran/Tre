@@ -30,7 +30,7 @@ import { taskPools } from '../world/light.js';
 import { VIEW, SAFE, TALK_SAFE, viewSize, inView, frameWork, mmOf } from '../world/view.js';
 import { createTapCount } from '../core/taps.js';
 import { heroLook, lookOfKey as lookFor } from '../world/figures.js';
-import { tapTarget, thingUnder, askingChild } from '../world/hit.js';
+import { tapTarget, thingUnder, askingChild, ANIMAL_SOUNDS } from '../world/hit.js';
 import { h, img, button } from './dom.js';
 import { t, tn, setSpeech, lang, otherLang } from './i18n.js';
 import { speechTable, speechWay } from '../core/speech.js';
@@ -652,6 +652,13 @@ export async function mountVillage(ctx, params = {}) {
       const from = out.length;
       for (const kind of ['npc', 'encounter']) {
         if (!tg[kind]) continue;
+        // The star of a raid is on the place where the child stands (the wall, the crossroads), and
+        // the enemies are in the field (#150: "a man in a black helmet with a gold star!").
+        const wall = kind === 'encounter' ? data.raids?.raids?.[raidOf(tg[kind])]?.wall : null;
+        if (wall) {
+          out.push({ x: wall[0], y: wall[1], h: groundY(wall[0], wall[1]) + 3 });
+          continue;
+        }
         const p = here.find((x) => x.kind === kind && x.ref === tg[kind]);
         const top = p ? figureTop(p.entity) : null;
         if (top !== null) out.push({ x: p.x, y: p.y, h: top });
@@ -937,6 +944,7 @@ export async function mountVillage(ctx, params = {}) {
       things: query(state, 'item', 'position'),
       persons: [...persons().map((q) => figureAt(q.entity)), ...query(state, 'folkChild', 'position').filter((e) => askingChild(e, session)).map((e) => figureAt(e.id))].filter(Boolean),
       friends,
+      animals: state.entities.filter((e) => ANIMAL_SOUNDS[e.kind] && e.position && !e.hidden).map((e) => figureAt(e.id, { height: 0.8 })).filter(Boolean),
       guesses: query(state, 'guess', 'position'),
       hamlet: query(state, 'hamletTap', 'position').map((e) => figureAt(e.id, { hamletTap: e.hamletTap })).filter(Boolean),
       pick: (px, py) => {
