@@ -1,0 +1,66 @@
+{
+  "name": "raid-soldiers-again",
+  "about": {
+    "vi": "Lần trước em thua: lính lấy gạo, và em chưa đặt cái bẫy nào. Sáng nay lính quay lại, và bác thợ rèn lại nói về cái bẫy: cái bẫy vẫn là đồ mới.",
+    "en": "Last time the child lost: the soldiers took rice, and the child put no trap. This morning the soldiers come back, and the smith tells about the trap again: the trap is still new."
+  },
+  "profile": {
+    "name": "Su",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 5,
+    "flags": {
+      "intro.seen": true,
+      "giong.grown": true,
+      "raid.tool.sling": true,
+      "raid.tool.gate": true,
+      "raid.used.sling": 2,
+      "raid.soldier1.lost": 1
+    },
+    "items": {
+      "rice": 5
+    }
+  },
+  "clock": 600,
+  "at": [
+    "trau-son",
+    89,
+    30
+  ],
+  "steps": [
+    {
+      "press": {
+        "entity": "encounter:soldier1"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "expect": [
+        {
+          "raid": {
+            "on": true
+          }
+        },
+        {
+          "text": {
+            "shown": "raid.tool.traps"
+          }
+        }
+      ]
+    }
+  ]
+}

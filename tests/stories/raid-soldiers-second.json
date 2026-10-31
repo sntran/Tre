@@ -1,0 +1,76 @@
+{
+  "name": "raid-soldiers-second",
+  "about": {
+    "vi": "Em lớp hai đã thắng toán lính thứ nhất. Toán lính thứ hai đến từ phía nam. Gióng nói đi trước đánh tướng giặc rồi cưỡi ngựa đi.",
+    "en": "A child of grade 2 won against the first group of soldiers. The second group comes from the south. Gióng says that he goes ahead to fight the general, and rides away."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 2,
+    "flags": {
+      "intro.seen": true,
+      "giong.grown": true,
+      "raid.tool.sling": true,
+      "raid.tool.gate": true,
+      "raid.tool.traps": true,
+      "raid.tool.helpers": true,
+      "raid.tool.nghe": true,
+      "raid.tool.water": true,
+      "raid.tool.fire": true,
+      "raid.used.sling": 2,
+      "raid.used.traps": 2,
+      "raid.used.helpers": 2,
+      "raid.used.nghe": 2,
+      "raid.used.water": 2,
+      "raid.used.fire": 2,
+      "soldier1.won": true
+    },
+    "items": {
+      "rice": 5
+    }
+  },
+  "clock": 600,
+  "at": [
+    "trau-son",
+    89,
+    41
+  ],
+  "steps": [
+    {
+      "press": {
+        "entity": "encounter:soldier2"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "expect": [
+        {
+          "raid": {
+            "on": true
+          }
+        },
+        {
+          "text": {
+            "shown": "giong.raid.ahead"
+          }
+        }
+      ]
+    }
+  ]
+}
