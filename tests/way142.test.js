@@ -102,7 +102,7 @@ test('the lines of the way: Gióng says the true place, the clue at night says t
   assert.ok(MET > 0);
 });
 
-test('at the start of the raid of the first soldiers, Gióng says where he goes and rides away along the road in the view', async () => {
+test('at the start of the raid of the first soldiers, Gióng says where he goes and rides away to his side of the road, never over the posts (#146)', async () => {
   const s = load('tests/stories/raid-soldiers-traps.json');
   let session = null;
   const said = [];
@@ -115,13 +115,16 @@ test('at the start of the raid of the first soldiers, Gióng says where he goes 
   const c = getEntity(session.state, 'companion:raid');
   assert.ok(c && getEntity(session.state, 'steed:raid'), 'Gióng on his horse');
   const along = (p) => (p.x - raid.wall.x) * raid.dir.x + (p.z - raid.wall.z) * raid.dir.z;
-  const from = along(c.position);
+  const across = (p) => Math.abs((p.x - raid.wall.x) * -raid.dir.z + (p.z - raid.wall.z) * raid.dir.x);
+  const from = { along: along(c.position), across: across(c.position) };
   for (let i = 0; i < 30 * 4; i++) {
     session.step();
     session.events();
+    const e = getEntity(session.state, 'companion:raid');
+    if (e) assert.ok(along(e.position) <= from.along + 0.5, 'he never rides toward the posts');
   }
   const now = getEntity(session.state, 'companion:raid');
-  assert.ok(now && along(now.position) > from + 3, 'he rides along the road');
+  assert.ok(!now || across(now.position) > from.across + 3, 'he rides off to his side of the road');
   for (let i = 0; i < 30 * 12; i++) {
     session.step();
     session.events();

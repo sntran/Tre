@@ -9,8 +9,9 @@
 export const WRITES = ['raid', 'orders', 'over', 'horns', 'position', 'look', 'act', 'carry', 'item', 'zone', 'follow', 'raider', 'hot', 'source', 'raidTap', 'raidThing', 'fixedThing', 'raidAway', 'hidden', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
-import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, driveAway, setTraps, trapPut, stoneAt, torchAt, along, releaseHold, offRoad, KEEP_SIDE, walkAway } from '../raids.js';
+import { stepRaid, shoot, predict, barGate, callHelper, charge, pour, pullBamboo, driveAway, setTraps, trapPut, stoneAt, torchAt, along, releaseHold, offRoad, KEEP_SIDE, walkAway, framePoints, across } from '../raids.js';
 import { packHeap } from './work.js';
+import { FIGURES, HERO_HEIGHTS, ELEVATION, clearOf } from '../sight.js';
 
 const OVER = 4; // seconds: the things of the raid stay after the end (the enemies walk away, #124)
 const HORNS = 1.6; // seconds: Nghé lowers her horns when the hero is hurt
@@ -28,9 +29,10 @@ export function raid(world, dt, rng, env) {
   const friend = friendOf(world);
   for (const o of r.orders ?? []) order(world, r, o, hero, friend);
   delete r.orders;
+  // The ride of the companion goes on while a line of the elder is open (#146).
+  rideAway(world, r.raid, dt);
   if (world.paused) return;
   const raid = r.raid;
-  rideAway(world, raid, dt);
   if (raid.result) {
     r.over = (r.over ?? 0) + dt;
     walkAway(raid, dt);
@@ -189,36 +191,61 @@ function endRaid(world, friend) {
   say(world, 'raidover', 'raid');
 }
 
-// Gióng rides away at the start of a raid of the soldiers (#142: "I didn't see him leave."): after
-// his line he rides along the road past the enemies (LEAVE half blocks a second), and is gone.
-const LEAVE = { wait: 2.5, speed: 6, far: 50 };
+// Gióng rides away at the start of a raid of the soldiers (#142: "I didn't see him leave."): with
+// his line he rides off to his side of the road and a little back, out of the view on a short way,
+// and is gone. He never rides over the posts (#146: "Gióng came on his horse right to the bad
+// soldier!"), and his ride goes on while the first lines of the elder are open, so that the posts
+// are clear when the child counts.
+const LEAVE = { speed: 8, far: 20 };
 const STEED = 2; // blocks: the height of the seat of the iron horse (STEED_SEAT in src/world/figures.js)
 function rideAway(world, raid, dt) {
   const c = getEntity(world, 'companion:raid');
   if (!c?.leave) return;
   c.leave.t += dt;
-  if (c.leave.t < LEAVE.wait) return;
   const steed = getEntity(world, 'steed:raid');
-  for (const e of [c, steed].filter(Boolean)) {
-    e.position.x += raid.dir.x * LEAVE.speed * dt;
-    e.position.z += raid.dir.z * LEAVE.speed * dt;
-    e.position.facing = Math.atan2(raid.dir.x, raid.dir.z);
+  if (!c.leave.dir) {
+    const s = Math.sign(across(raid, c.position)) || 1;
+    const x = -raid.dir.z * s - raid.dir.x * 0.4;
+    const z = raid.dir.x * s - raid.dir.z * 0.4;
+    const n = Math.hypot(x, z);
+    c.leave.dir = { x: x / n, z: z / n };
+    c.leave.from = { x: c.position.x, z: c.position.z };
   }
-  if (along(raid, c.position) > LEAVE.far) for (const e of [c, steed].filter(Boolean)) removeEntity(world, e.id);
+  const d = c.leave.dir;
+  for (const e of [c, steed].filter(Boolean)) {
+    e.position.x += d.x * LEAVE.speed * dt;
+    e.position.z += d.z * LEAVE.speed * dt;
+    e.position.facing = Math.atan2(d.x, d.z);
+  }
+  if (Math.hypot(c.position.x - c.leave.from.x, c.position.z - c.leave.from.z) > LEAVE.far) for (const e of [c, steed].filter(Boolean)) removeEntity(world, e.id);
+}
+// The points of a raid that the companion must not hide (#146: "Gióng's horse was hiding the first
+// post before!"): the posts, the road from the wall to the place where the enemies come in, and the
+// hero. Half blocks.
+export function raidSight(world, raid) {
+  const posts = query(world, 'position').filter((e) => String(e.id).startsWith('post:')).map((e) => e.position);
+  const hero = getEntity(world, 'hero')?.position;
+  return [
+    ...posts,
+    ...framePoints(raid).map((p) => ({ ...p, y: posts[0]?.y ?? hero?.y ?? 0 })),
+    raid.wall && { ...raid.wall, y: hero?.y ?? 0 },
+    hero && { ...hero, heights: HERO_HEIGHTS },
+  ].filter(Boolean);
 }
 
 // The place of the companion of a raid (#50): beside the road near the wall, as far as it can be
 // from the sources (the jar, the brazier, the forge), the flags of the villagers, the pile of traps,
-// and the gate, so that the companion never stands over a thing that the child must touch.
-// Half blocks.
-export function companionSpot(raid, pile = null) {
+// and the gate, so that the companion never stands over a thing that the child must touch. A place
+// where he hides no post, no part of the road, and not the hero comes first (#146). clear(p): he
+// hides nothing there. Half blocks.
+export function companionSpot(raid, pile = null, clear = () => true) {
   const side = { x: -raid.dir.z, z: raid.dir.x };
   const avoid = [...raid.sources, ...raid.spots, raid.gate, pile].filter(Boolean);
   let best = null;
   for (const s of [-9, -6, 6, 9]) {
     for (const b of [0, 3, 6]) {
       const p = { x: raid.wall.x + side.x * s - raid.dir.x * b, z: raid.wall.z + side.z * s - raid.dir.z * b };
-      const score = Math.min(99, ...avoid.map((a) => Math.hypot(a.x - p.x, a.z - p.z))) - b * 0.2;
+      const score = Math.min(99, ...avoid.map((a) => Math.hypot(a.x - p.x, a.z - p.z))) - b * 0.2 + (clear(p) ? 100 : 0);
       if (!best || score > best.score) best = { p, score };
     }
   }
@@ -251,7 +278,12 @@ export function setupRaid(world, raid, def, env, looks = {}) {
   }
   for (const s of raid.sources) fixed(`source:${s.id}`, s, s.kind === 'water' ? 'jar' : s.kind === 'fire' ? 'brazier' : 'forge', { source: { id: s.id, kind: s.kind } });
   if (def.companion) {
-    const at = companionSpot(raid, def.pile ? hb(def.pile) : null);
+    // The posts are set: he hides none of them, nor the road or the hero at the wall.
+    const az = env.view?.();
+    const sight = raidSight(world, raid);
+    const wallHero = { x: raid.wall.x, y: gy(raid.wall.x, raid.wall.z), z: raid.wall.z, heights: HERO_HEIGHTS };
+    const clear = (p) => !Number.isFinite(az) || clearOf({ ...p, y: gy(p.x, p.z) }, FIGURES.rider, [...sight, wallHero], az, ELEVATION);
+    const at = companionSpot(raid, def.pile ? hb(def.pile) : null, clear);
     const facing = Math.atan2(raid.dir.x, raid.dir.z);
     // Gióng grown rides his iron horse (#50): the horse, and Gióng on its back (steed: the height
     // of the seat in blocks, the same as STEED_SEAT of the figure in src/world/figures.js).

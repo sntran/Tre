@@ -37,7 +37,7 @@ function frontBand(q, r, az, b) {
 // The rects of the places of the tasks that go on (half blocks): the places with a rect, the stem
 // of the woodcutter with its pieces (#80: Nghé stood on the stem and covered the marks), and the
 // things of a puzzle.
-function workRects(world) {
+export function workRects(world) {
   const out = [];
   for (const z of query(world, 'zone')) {
     const r = z.zone.rect;

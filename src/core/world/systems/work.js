@@ -412,7 +412,10 @@ export function setupTrial(world, def, level, env, opts = {}) {
       const by = Math.abs(behind.y - m.y) < 0.6 ? behind : pt(7 - SHARE_BACK, (i - 1) * SHARE_GAP);
       const face = Math.atan2(-back.x, -back.z) + (by === behind ? 0 : Math.PI);
       if (who === 'hero') addEntity(world, { id: 'by:share-hero', keep: true, position: { ...by, facing: face }, look: 'basket-low' });
-      if (who === 'giong') addEntity(world, { id: 'by:share-giong', keep: true, position: { ...by, facing: face }, look: 'giong-hero' });
+      // The Gióng who rides with the hero goes to his mat (#146: "there are two big guys with red
+      // headbands now"): the zone keeps the place, and the work adds no second figure.
+      getEntity(world, `zone:share-${who}`).zone.by = { x: by.x, y: by.y, z: by.z, facing: face };
+      if (who === 'giong' && !env.rider?.()) addEntity(world, { id: 'by:share-giong', keep: true, position: { ...by, facing: face }, look: 'giong-hero' });
       const friend = friendOf(world);
       if (who === 'nghe' && friend) friend.follow.goal = { x: by.x, z: by.z, face };
     });

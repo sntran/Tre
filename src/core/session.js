@@ -58,6 +58,8 @@ import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveRea
 import { taskPools, POOL } from '../world/light.js';
 import { viewSize, inView, VIEW } from '../world/view.js';
 import { workBoxes, workCovers } from '../world/fade.js';
+import { FIGURES, THING_HEIGHTS, HERO_HEIGHTS, clearOf, clearSpot, ringSpots } from './world/sight.js';
+import { workRects } from './world/systems/follow.js';
 import { levelFor, taskOf, trialLevel, tightSlot, allowedSlots, MODEL_DOSES } from './world/trials.js';
 import { nextLevel } from './practice.js';
 import { createMentoring, decimalWords, tieRingAt } from './mentoring.js';
@@ -131,6 +133,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (starting) opening.push(ev);
     for (const fn of listeners) fn(ev);
   };
+  // The work in view now (the last workView while a task, a folk game, or an example goes on).
+  const workNow = () => (lastWork && (mentoring.activeKey() || folk.active() || String(lastWork.key).startsWith('example-')) ? lastWork : null);
   const arrivals = new Map(); // the token of a walk -> what to do at its end
   let nextToken = 1;
   let map = null;
@@ -313,7 +317,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const onThisMap = profile.world.map === map.id;
     visit = (profile.maps[map.id] ??= { first: Math.round(profile.world.clock.minutes), things: {} });
     terrain.loadEdits?.(visit.chunks ?? {});
-    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, fords: fordsOf(map), day: data.day, zones: data.zones, trials: data.trials, switches, joys: data.life?.joys ?? null, here: (task) => inTaskArea(task, hero()?.position), view: () => viewAz });
+    env = envFor(tileMap, { places: placesOf(map, tileMap), homes: terrain.homes ?? {}, fords: fordsOf(map), day: data.day, zones: data.zones, trials: data.trials, switches, joys: data.life?.joys ?? null, here: (task) => inTaskArea(task, hero()?.position), view: () => viewAz, rider: () => Boolean(profile.flags['giong.follow'] && personOf('giong-hero')) });
 
     // The world state of this map. The save keeps the hero, and the kept entities of each chunk; the
     // rest comes from the map and the seed.
@@ -530,7 +534,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // gets on the horse in the yard), and then he speaks from the horse. After "Có!" he rides behind
   // the child on the map of the village. A person with a mount (data/npcs.json) is on it whenever
   // the person is out of the house, and not in a raid (the raid has its own companion).
-  const LEGEND = { away: 40, looks: ['giong-boy-5', 'giong-grow-1', 'giong-grow-2', 'giong-hero'], step: 1.1, walk: 1.8, ride: 0.8, behind: 5, ahead: 7, pace: 8, far: 9 };
+  const LEGEND = { away: 40, looks: ['giong-boy-5', 'giong-grow-1', 'giong-grow-2', 'giong-hero'], step: 1.1, walk: 1.8, ride: 0.8, behind: 5, ahead: 7, pace: 8 };
   let growing = null;
   const personOf = (ref) => query(state, 'person').find((e) => e.person.ref === ref) ?? null;
   const pointAt = (p, facing = 0) => ({ x: p.x, y: env.groundY(p.x / 2, p.z / 2), z: p.z, facing });
@@ -634,8 +638,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     if (profile.flags['giong.place']) delete g.hidden;
   }
-  // After "Có!" (the flag giong.follow), Gióng rides behind the hero on the map of the village: his
-  // spot is a point behind the hero, and he jumps there when he is far (after a ferry or a ride).
+  // After "Có!" (the flag giong.follow), Gióng rides with the hero on the map of the village: he
+  // keeps the pace of the hero, and he jumps near the hero when he is far (after a ferry or a ride).
+  // He is the biggest figure of the game, so he keeps out of the work as Nghé does (#146: "Gióng's
+  // big horse is standing on top of the duck pen"): no part of him and his horse is on a place of a
+  // task or between the camera and a point of the work or the hero. When no spot near the hero is
+  // free, he waits farther away. At the share he gets off his horse at his mat.
+  // back: half blocks from the hero to the middle of the horse (the horse is about three blocks
+  // long: nearer, it stood over the back of the hero).
+  const RIDER = { radii: [5, 7, 9, 12, 15, 19], hold: 9, jump: 24, body: 3.2, back: 7 };
+  const RIDER_VIEW = viewSize(390, 844);
   function stepRider() {
     const g = personOf('giong-hero');
     const h = hero();
@@ -646,27 +658,97 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const hc = heroCell();
     g.chunk = chunkOf(Math.floor(hc.x), Math.floor(hc.y));
     const f = h.position.facing ?? 0;
+    const d = Math.hypot(g.position.x - h.position.x, g.position.z - h.position.z);
+    if (state.tick % 15 !== 0 && d <= RIDER.jump) return;
+    // At the share: his place behind his mat, on foot.
+    const by = getEntity(state, 'zone:share-giong')?.zone.by ?? null;
+    const afoot = Boolean(by);
+    if (afoot !== Boolean(g.afoot)) {
+      if (afoot) g.afoot = true;
+      else delete g.afoot;
+      stepMounts();
+    }
     // On the way to a place to find, Gióng leads (#142: "But where did big Gióng go?"): he rides in
     // front of the hero toward the next person of the way, in the view, and waits when the hero
     // stops. Else he rides behind the hero.
-    const d = Math.hypot(g.position.x - h.position.x, g.position.z - h.position.z);
-    if (state.tick % 15 !== 0 && d <= LEGEND.far * 4) return;
-    const lead = leadPoint();
+    const lead = by ? null : leadPoint();
     const ahead = lead ? Math.hypot(lead.x * 2 - h.position.x, lead.y * 2 - h.position.z) : 0;
     // Ahead of the hero by the walk of half a second more (the spot changes each half second).
     const hs = h.motion?.speed ?? 0;
     const k = lead ? Math.min(LEGEND.ahead + hs * 0.5, Math.max(0, ahead - 2)) / (ahead || 1) : 0;
-    const spot = lead
+    // Behind the hero is up the screen (away from the camera): there he never hides the hero, and
+    // the screen of a phone held upright is tall, not wide. When the hero walks up the screen, he
+    // rides at the side of the hero, on the side where he is.
+    const cx = Math.sin(viewAz);
+    const cz = Math.cos(viewAz);
+    const up = hs > 1 && -(Math.sin(f) * cx + Math.cos(f) * cz) > 0.5;
+    const side = Math.sign((g.position.x - h.position.x) * cz - (g.position.z - h.position.z) * cx) || 1;
+    const want = by ?? (lead
       ? { x: h.position.x + (lead.x * 2 - h.position.x) * k, z: h.position.z + (lead.y * 2 - h.position.z) * k }
-      : { x: h.position.x - Math.sin(f) * LEGEND.behind, z: h.position.z - Math.cos(f) * LEGEND.behind };
-    // On his horse he keeps the pace of the hero.
-    if (g.steer) g.steer.speed = lead ? Math.max(LEGEND.pace, hs * 1.3) : data.life.people.steer.speed;
-    if (d > LEGEND.far * 4) Object.assign(g.position, pointAt(spot, f));
-    if (lead ? Math.hypot(g.position.x - spot.x, g.position.z - spot.z) > 1.5 : d > LEGEND.behind + 1) {
-      g.schedule.spot = spot;
+      : up
+        ? { x: h.position.x + cz * side * RIDER.back, z: h.position.z - cx * side * RIDER.back }
+        : { x: h.position.x - cx * RIDER.back, z: h.position.z - cz * RIDER.back });
+    // On his horse he keeps the pace of the hero. Behind the hero he rides faster until he is near
+    // (#146: "Gióng is not with me, where did he go?").
+    if (g.steer) g.steer.speed = lead ? Math.max(LEGEND.pace, hs * 1.3) : Math.max(LEGEND.pace, hs * 1.3, hs + Math.max(0, d - LEGEND.behind) * 2);
+    const size = afoot ? FIGURES.person : FIGURES.rider;
+    const rects = workRects(state);
+    const body = afoot ? 1 : RIDER.body;
+    // While he leads on the road, he rides ahead of the hero, and only the work counts: a spot to
+    // the side of the road stood in the walk of the hero.
+    const pts = sightPoints().filter((p) => !lead || p.heights !== HERO_HEIGHTS);
+    const gy = (q) => env.groundY(q.x / 2, q.z / 2);
+    const open = (q) => tileMap.walkable(Math.floor(q.x / 2), Math.floor(q.z / 2))
+      && Math.hypot(q.x - h.position.x, q.z - h.position.z) >= 3
+      && !rects.some((r) => q.x > r.x0 - body && q.x < r.x1 + body && q.z > r.z0 - body && q.z < r.z1 + body);
+    const clear = (q) => clearOf({ ...q, y: gy(q) }, size, pts, viewAz, VIEW.elevation);
+    // He stays where he is while the hero stands and his place is near and clear (no small steps
+    // after each step of the hero).
+    if (!lead && !by && hs < 1 && d <= RIDER.hold && open(g.position) && clear(g.position)) return;
+    // While he leads, the spots are ahead of the hero on the way (a spot at the side stood in the
+    // walk of the hero).
+    const onWay = (q) => !lead || ((q.x - h.position.x) * (lead.x * 2 - h.position.x) + (q.z - h.position.z) * (lead.y * 2 - h.position.z)) / ((Math.hypot(q.x - h.position.x, q.z - h.position.z) * ahead) || 1) > 0.8;
+    const spot = ((lead || open(want)) && clear(want) ? want : null)
+      ?? clearSpot(ringSpots(by ?? h.position, lead ? RIDER.radii.filter((r) => r >= LEGEND.ahead + hs * 0.5) : RIDER.radii).map((q) => ({ ...q, y: gy(q) })), size, pts, viewAz, VIEW.elevation, (q) => open(q) && onWay(q), want)
+      ?? want;
+    // Out of the view of a phone (a narrow lane, a sharp turn), or far: he comes to the spot at
+    // once, as Nghé does. Not while he leads: a jump ahead stood in the walk of the hero.
+    const hp = h.position;
+    const mid = { x: g.position.x / 2, y: g.position.y / 2 + 1, z: g.position.z / 2 };
+    const seen = inView({ x0: mid.x, x1: mid.x, y0: mid.y, y1: mid.y, z0: mid.z, z1: mid.z }, { x: hp.x / 2, y: hp.y / 2, z: hp.z / 2 }, { az: viewAz, size: RIDER_VIEW });
+    g.unseen = seen ? 0 : (g.unseen ?? 0) + 0.5;
+    if (d > RIDER.jump || (g.unseen > 0 && !by && !lead)) {
+      Object.assign(g.position, pointAt(spot, f));
+      g.unseen = 0;
+    }
+    if (Math.hypot(g.position.x - spot.x, g.position.z - spot.z) > 1.5) {
+      g.schedule.spot = { x: spot.x, z: spot.z };
       g.schedule.stay = true;
       g.schedule.hold = true;
     }
+  }
+  // The points that a big figure must not hide (#146): the places of the open tasks (the middle
+  // and the corners of each place), the places of a zone with no rect, the person and the prop of a
+  // small event, the points of the work in view, and the hero. Near the hero only. Half blocks.
+  const SIGHT_NEAR = 30;
+  function sightPoints() {
+    const h = hero()?.position;
+    if (!h) return [];
+    const out = [];
+    const add = (p, heights = THING_HEIGHTS) => {
+      if (p && Math.hypot(p.x - h.x, p.z - h.z) <= SIGHT_NEAR) out.push({ x: p.x, z: p.z, y: p.y ?? env.groundY(p.x / 2, p.z / 2), heights });
+    };
+    for (const r of workRects(state)) {
+      for (const [x, z] of [[(r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2], [r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1]]) add({ x, z });
+    }
+    for (const z of query(state, 'zone')) {
+      const task = String(z.zone.task ?? '');
+      if (task.startsWith('trial-') && !z.zone.rect && Number.isFinite(z.zone.x) && !getEntity(state, `zone:${task}`)?.zone.done) add({ x: z.zone.x, z: z.zone.z, y: z.zone.y });
+    }
+    for (const e of state.entities) if (e.dayEvent && e.position && !e.hidden) add(e.position);
+    for (const p of workNow()?.points ?? []) add(p);
+    add(h, HERO_HEIGHTS);
+    return out;
   }
   // A person with a mount rides it whenever the person is out of the house (and the mount stands
   // under the person); in a raid the raid has its own companion, so the person waits out of sight.
@@ -677,7 +759,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const id = `mount:${e.person.ref}`;
       let m = getEntity(state, id);
       if (growing) e.hidden = true;
-      const out = !e.hidden && !raidOn() && !e.raidAway;
+      const out = !e.hidden && !raidOn() && !e.raidAway && !e.afoot;
       if (raidOn() && !e.hidden) {
         e.hidden = true;
         e.raidAway = true;
@@ -687,6 +769,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       if (!out) {
         if (m) m.hidden = true;
+        if (e.afoot) delete e.riding;
         continue;
       }
       if (!m) m = addEntity(state, { id, position: { ...e.position }, look: def.mount.look });
@@ -2673,6 +2756,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     let now = lines.findIndex((l, i) => i > first && l.tool && !l.with);
     if (first < 0 || now < 0) now = lines.length;
     for (const l of lines) l.params = { ...raidWords(id), ...(l.params ?? {}) };
+    // Gióng says where he goes first, and rides away at once (#142, #146: "The elder said 'cột này
+    // là một.' while post 1 was behind the horse."): his ride goes on while the lines of the elder
+    // are open, and he is gone in about three seconds.
+    if (def.leaveKey && getEntity(state, 'companion:raid')) emit({ type: 'open', screen: 'callout', id: 'companion:raid', textKey: def.leaveKey, params: {} });
     for (const l of lines.slice(0, now)) {
       say(l.textKey, l.params, null, l.speaker);
       // The first post glows with the line of the side.
@@ -2682,8 +2769,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     gateTapped = false;
     if (lines.slice(0, now).some((l) => l.tool === 'gate')) gateHint();
     toolLines = { list: lines.slice(now), t: TOOL_GAP };
-    // Gióng says where he goes, and rides away in the view (#142).
-    if (def.leaveKey && getEntity(state, 'companion:raid')) emit({ type: 'open', screen: 'callout', id: 'companion:raid', textKey: def.leaveKey, params: {} });
     emit({ type: 'raid', on: true, id });
     emit({ type: 'hud' });
     return true;
@@ -3035,7 +3120,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // other with the line, and the view shows the mats and the friends.
     queue(() => {
       const mats = def.who.map((w) => getEntity(state, `mat:share-${w}`)).filter(Boolean);
-      const by = ['by:share-hero', 'friend:nghe', 'by:share-giong'].map((id) => getEntity(state, id)).filter(Boolean);
+      const by = ['by:share-hero', 'friend:nghe', 'by:share-giong', personOf('giong-hero')?.id].map((id) => id && getEntity(state, id)).filter((e) => e && !e.hidden);
       emit({ type: 'open', screen: 'callout', id: shareVoice(), textKey: 'share.mats', params: {} });
       emit({ type: 'glowSeq', ids: mats.map((m) => m.id) });
       if (mats.length) emit({ type: 'workView', key: 'share', points: [...mats, ...by].map((e) => ({ ...e.position })), sight: mats.map((m) => ({ ...m.position })) });
@@ -6176,7 +6261,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return true;
     },
     // The work in view now (the last event workView while its task goes on), or null.
-    work: () => (lastWork && (mentoring.activeKey() || folk.active() || String(lastWork.key).startsWith('example-')) ? lastWork : null),
+    work: () => workNow(),
     // The last tap: the id of its target (an entity), or null (#47).
     chosen: () => chosen?.id ?? null,
     // The place of a task that a tap at a map point (cells) chooses: its id, or null.

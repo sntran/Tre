@@ -1,0 +1,67 @@
+{
+  "name": "raid-soldiers-giong",
+  "about": {
+    "vi": "Gióng cưỡi ngựa sắt đi cùng em tới lính: Gióng nói trước rồi phi sang bên đường, không che cột nào; sau trận, chỉ có một Gióng đứng sau chiếu của mình khi chia gạo.",
+    "en": "Gióng on his iron horse rides with the child to the soldiers: he speaks first and rides off to the side of the road, and hides no post; after the raid there is one Gióng, behind his own mat at the share."
+  },
+  "profile": {
+    "name": "Su",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 5,
+    "flags": {
+      "intro.seen": true,
+      "giong.grown": true,
+      "raid.tool.sling": true,
+      "raid.tool.gate": true,
+      "raid.used.sling": 2,
+      "raid.soldier1.lost": 1,
+      "giong.follow": true
+    },
+    "items": {
+      "rice": 5
+    }
+  },
+  "clock": 600,
+  "at": [
+    "trau-son",
+    89,
+    30
+  ],
+  "steps": [
+    {
+      "press": {
+        "entity": "encounter:soldier1"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "wait": 0.5
+    },
+    {
+      "expect": [
+        {
+          "raid": {
+            "on": true
+          }
+        },
+        {
+          "text": {
+            "shown": "giong.raid.ahead"
+          }
+        }
+      ]
+    }
+  ]
+}

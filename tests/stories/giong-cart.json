@@ -1,0 +1,42 @@
+{
+  "name": "giong-cart",
+  "about": {
+    "vi": "Gióng cưỡi ngựa sắt đi cùng cháu tới xe bò sa lầy: Gióng đứng bên, không đứng lên xe, lên hố, hay trước mặt cháu.",
+    "en": "Gióng on his iron horse rides with the child to the cart in the mud: he stands to the side, never on the cart, on the hole, or in front of the child."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "giong.grown": true,
+      "giong.follow": true
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    14.5,
+    80.5
+  ],
+  "steps": [
+    {
+      "do": {
+        "type": "event",
+        "id": "cart"
+      }
+    },
+    {
+      "wait": 3
+    },
+    {
+      "expect": [
+        {
+          "entity": "npc:giong-hero"
+        }
+      ]
+    }
+  ]
+}

@@ -103,6 +103,8 @@ export function envFor(tileMap, extra = {}) {
     // view(): the angle of the view on the screen (radians; the camera is toward (sin, cos) of it),
     // so that Nghé keeps out of the line between the camera and the work (#94). Null: no view.
     view: extra.view ?? (() => null),
+    // rider(): the grown Gióng rides with the hero (#146): the share has no second Gióng.
+    rider: extra.rider ?? (() => false),
     // The switches of the experiments (src/core/experiments.js), for example predict.
     switches: extra.switches ?? {},
     // The small joys (the joys of data/world/life.json): the catch of the fisher, and the notice of Nghé.
