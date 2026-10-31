@@ -129,6 +129,7 @@ function creatureEyes(z, ex) {
 export const HAIR_CAP = Object.freeze(['hairTop', 'hairCrown', 'hairline', 'hairBack', 'hairSideL', 'hairSideR']);
 // The top of the cap of the hair over the middle of the head.
 const CAP_TOP = 4.65;
+const VAN_Y = 2.7; // the middle of the roll of a khăn vấn over the middle of the head (#152)
 
 // The hair: a cap over the top, the back, and the sides down to the ears, with its front edge in
 // front of the skull (no strip of scalp shows), and the parts of a style, so that the styles differ
@@ -302,11 +303,20 @@ export function personFine(look) {
     top = hairTop + 0.8;
   }
   if (look.hat === 'band') parts.push(P('band', [9, 1, 9], look.sash ?? 'vermilion', [0, 1.8, 0], onHead));
-  // A khăn vấn: the dark band that an old woman of the north winds around her head over the hair,
-  // two rings that cross over the brow (#145: bà lang with short grey hair looked like a grandpa).
+  // A khăn vấn: the dark cloth that an old woman of the north winds around her head over the hair
+  // (#145: bà lang with short grey hair looked like a grandpa). It is a round roll, a ring with no
+  // top, so that the grey hair shows inside it and the bun shows under it at the back; one side is
+  // in the second tone of the cloth, where it winds over (#152: a grey band with a flat top looked
+  // like a flat cap, "A man said Chao chau").
   if (look.hat === 'van') {
     const c = look.khan ?? 'ink';
-    parts.push(P('van', [8.4, 1.4, 8.8], c, [0, 2.5, -0.1], onHead), P('van2', [8, 1.2, 8.4], c === 'ink' ? 'wood' : c, [0, 3.4, -0.4], onHead));
+    const d = c === 'ink' ? 'wood' : c;
+    parts.push(
+      P('vanFront', [8.8, 1.8, 1.8], c, [0, VAN_Y, 3.7], onHead),
+      P('vanBack', [8.8, 1.8, 1.8], c, [0, VAN_Y + 0.3, -3.9], onHead),
+      P('vanL', [1.8, 1.8, 7.8], c, [-3.8, VAN_Y + 0.15, -0.1], onHead),
+      P('vanR', [1.8, 1.8, 7.8], d, [3.8, VAN_Y + 0.15, -0.1], onHead),
+    );
   }
   // A khăn: a cloth wound around the head in rings (the khăn đóng of an elder, the khăn of a man on
   // the road, #110), in look.khan.

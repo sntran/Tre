@@ -104,7 +104,7 @@ test('a tap and a press on a bunch of the model never move it, and the healer co
   }
 });
 
-test('after a wrong basket the model is not dealt again, and the presses of the child at a bed while she lays the doses all act', async () => {
+test('after a wrong basket the model is not dealt again; the presses of the child at a bed while she lays the doses do not pick (#152), and a press after it picks', async () => {
   const h = await atHealer(4);
   for (const k of ['ngai', 'tiato', 'rauma']) {
     h.tapThing(h.bedThing(k));
@@ -125,9 +125,17 @@ test('after a wrong basket the model is not dealt again, and the presses of the 
     h.session.command({ type: 'hands', id: h.session.action()?.id });
     h.run(0.5, false);
   }
-  h.run(20);
   const picks = h.puts.filter((p) => p.by === 'hero' && p.type === 'pick').length - n0;
-  assert.equal(picks, 2, `two presses, ${picks} picks (${inBasket()} in the basket)`);
+  assert.equal(picks, 0, `two presses while she lays the doses, ${picks} picks (${inBasket()} in the basket)`);
+  h.run(20);
+  // After she lays the doses, a press at the bed picks.
+  h.session.command({ type: 'tap', target: { thing: h.bedThing('rauma') } });
+  h.run(2, false);
+  const n1 = h.puts.filter((p) => p.by === 'hero' && p.type === 'pick').length;
+  h.session.command({ type: 'hands', id: h.session.action()?.id });
+  h.run(0.5, false);
+  assert.equal(h.puts.filter((p) => p.by === 'hero' && p.type === 'pick').length - n1, 1, 'a press after the lay-out picks');
+  h.run(2);
   for (let i = 0; i < 3; i++) {
     h.session.command({ type: 'wave' });
     h.run(20);

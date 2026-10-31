@@ -4763,6 +4763,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return { act: 'ride-off', icon: 'ride-off', target: h.riding, run: getOff };
     }
     let list = candidates();
+    // While bà lang lays out or counts the basket, the button shows no put and no take of her work
+    // (#152: a press put a bunch into the basket between "hai" and "ba", and she counted again): it
+    // shows nothing, and the wave stays. A tap walks, and takes nothing until she ends.
+    if (getEntity(state, 'script:trial-healer')?.script.move === 'count' || trialZone('healer')?.zone.lay) {
+      const free = (c) => taskOfCandidate(c) !== 'trial-healer' || !['put', 'pick', 'take', 'move'].includes(c.act);
+      const far = list.far.filter(free);
+      list = list.filter(free);
+      list.far = far;
+    }
     // In a task, with no work in reach, the press walks the hero to the nearest work of the task:
     // the heap, the place for the thing in the hands, the anvil, the culms (#54). A talk, a look,
     // or a ride never comes in place of the work.
