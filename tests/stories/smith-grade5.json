@@ -1,0 +1,17 @@
+{
+  "name": "smith-grade5",
+  "about": {
+    "vi": "Lan học lớp 5 đến lò rèn. Bác thợ rèn uốn từng thanh thép trên đe cho Lan xem: thanh lấy ở giá uốn cong, thanh nhúng nước vẫn thẳng.",
+    "en": "Lan, at grade 5, comes to the forge. The smith bends each bar on the anvil for Lan to see: the bar from the rack bends, and the bar from the water stays straight."
+  },
+  "profile": { "name": "Lan", "grade": 5, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true } },
+  "clock": 540,
+  "at": ["phu-dong", 53, 43],
+  "steps": [
+    { "press": { "entity": "npc:smith" } },
+    { "until": { "event": "open", "with": { "screen": "dialogue" }, "timeout": 20 } },
+    { "read": true },
+    { "wait": 40 },
+    { "expect": [{ "flag": "intro.seen" }] }
+  ]
+}

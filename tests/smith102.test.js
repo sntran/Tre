@@ -88,7 +88,8 @@ async function play(grade, moves) {
       run(2);
     }
   }
-  run(6);
+  // The bends of the test are slow, in a close view (#153): time for both, and the line after them.
+  run(12);
   return { session, said, events, failures, zone: tz() };
 }
 

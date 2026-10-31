@@ -118,7 +118,8 @@ test('grade 5: the smith bends the two bars one after the other in view, says wh
   run(16);
   const k = said.map((l) => l.key);
   const view = events.find((e) => e.type === 'workView' && e.key === 'smith-bend');
-  assert.ok(view && view.points.length >= 2, 'the view frames the bars');
+  // The view comes close to the anvil where he bends each bar (#153).
+  assert.ok(view && view.points.length >= 1 && view.close < 1, 'the view comes close to the bend');
   const a = k.indexOf('smith.fair.bar.water');
   const b = k.indexOf('smith.fair.bar.rack');
   const why = k.findIndex((x) => x.startsWith('smith.fair.why'));

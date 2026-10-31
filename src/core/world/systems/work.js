@@ -1816,6 +1816,9 @@ function hardPiece(world, tz, task, iron) {
 const TEST_CHECK = 1.6; // seconds after the second piece: the smith bends both
 const TEST_SHOW = 4.5; // seconds: the bent piece and the hard piece lie there, and he says why
 const BEND_EACH = 2.6; // seconds: the smith bends one bar, and says what it did (#120)
+const BEND_SLOW = 1.4; // seconds: the bend itself, slowly, in the hands of the smith (#153)
+const BEND_CLOSE = 0.36; // the close view of the anvil while he bends (#153: the bar at least 15 mm long)
+const BAR_SIDE = 0.7; // half blocks: the two bars lie side by side on the anvil for the compare
 function startTest(world, tz) {
   const a = tz.zone.anvil;
   if (!getEntity(world, 'anvil:smith')) addEntity(world, { id: 'anvil:smith', keep: true, position: { x: a.x, y: a.y + 1, z: a.z, facing: Math.PI / 2 }, look: 'anvil' });
@@ -1880,26 +1883,47 @@ function tickTest(world, tz, task, dt) {
     tz.zone.commits += 1;
     if (!r.compare) tz.zone.fails += 1;
     say(world, 'skill', tz.id, { ...trialSkill(task, { solved: r.compare, first: tz.zone.commits === 1, parts: test.tries.map((q) => (q.how === 'water' ? 1 : 0)), target: 1 }), fair: r.fair, compare: r.compare, ...(test.guess ? { guess: test.tries.find((q) => q.id === test.guess)?.how === 'water' } : {}) });
-    // The view on the hands of the smith and the bars (#120: "I did not SEE the bending, he just
-    // said it."): he bends them one after the other, slowly, and says what each did.
-    const smith = getEntity(world, 'npc:smith');
-    world.events.push({ type: 'workView', key: 'smith-bend', points: [...test.tries.map((q) => ({ ...getEntity(world, q.id).position })), ...(smith ? [{ ...smith.position }] : [])], sight: test.tries.map((q) => ({ ...getEntity(world, q.id).position })) });
     test.stage = 0;
     test.stageT = 0;
+    test.sub = 'take';
   }
   test.stageT -= dt;
   if (test.stageT > 0) return;
   const smith = getEntity(world, 'npc:smith');
+  const anvil = getEntity(world, 'anvil:smith')?.position ?? tz.zone.anvil;
+  // The smith bends each bar in his hands at the anvil, one after the other, in a close view (#120,
+  // #153: "But I could not really SEE the bar bend, I only heard him say cong roi."): he takes the
+  // bar to the anvil, bends it slowly (the bar from the rack goes to a V of about 60 degrees and
+  // stays; the bar from the water bends a little under his push and springs back), says what it
+  // did, and lays it on the anvil beside the other one.
   if (test.stage < test.tries.length) {
     const q = test.tries[test.stage];
     const bar = getEntity(world, q.id);
-    bar.look = q.how === 'water' ? 'bar-hard' : 'bar-bent';
-    if (smith) smith.gesture = { act: 'point', x: bar.position.x, z: bar.position.z, t: BEND_EACH };
-    world.events.push({ type: 'glowThings', ids: [bar.id] });
-    say(world, 'bend', tz.id, { sound: 'plank-down', test: true });
-    say(world, 'call', 'npc:smith', { key: q.how === 'water' ? 'smith.fair.bar.water' : 'smith.fair.bar.rack', params: {}, happened: true });
+    const slot = (k) => ({ x: anvil.x, y: anvil.y, z: anvil.z + (k ? BAR_SIDE : -BAR_SIDE), facing: Math.PI / 2 });
+    if (test.sub === 'take') {
+      Object.assign(bar.position, { x: anvil.x, y: anvil.y, z: anvil.z, facing: Math.PI / 2 });
+      bar.look = q.how === 'water' ? 'bar-spring' : 'bar-bend30';
+      // The other bar waits at its side of the anvil.
+      for (const [k, o] of test.tries.entries()) if (k !== test.stage) Object.assign(getEntity(world, o.id).position, slot(k));
+      if (smith) smith.gesture = { act: 'point', x: anvil.x, z: anvil.z, t: BEND_SLOW };
+      world.events.push({ type: 'workView', key: 'smith-bend', points: [{ ...anvil }], sight: [{ ...anvil }], close: BEND_CLOSE });
+      world.events.push({ type: 'glowThings', ids: [bar.id] });
+      say(world, 'bend', tz.id, { sound: 'plank-down', test: true });
+      test.sub = 'bend';
+      test.stageT = BEND_SLOW;
+      return;
+    }
+    if (test.sub === 'bend') {
+      bar.look = q.how === 'water' ? 'bar-hard' : 'bar-bent';
+      say(world, 'call', 'npc:smith', { key: q.how === 'water' ? 'smith.fair.bar.water' : 'smith.fair.bar.rack', params: {}, happened: true });
+      test.sub = 'lay';
+      test.stageT = BEND_EACH;
+      return;
+    }
+    Object.assign(bar.position, slot(test.stage));
     test.stage += 1;
-    test.stageT = BEND_EACH;
+    test.sub = 'take';
+    test.stageT = 0.4;
     return;
   }
   if (test.stage === test.tries.length && test.guess && !test.guessSaid) {
@@ -1907,6 +1931,9 @@ function tickTest(world, tz, task, dt) {
     test.guessSaid = true;
     const right = test.tries.find((q) => q.id === test.guess)?.how === 'water';
     const pebble = getEntity(world, 'pebble:smith');
+    // The pebble lies on the anvil by the bar of the guess, beside the two bars (#153).
+    const g = getEntity(world, test.guess);
+    if (pebble && g) Object.assign(pebble.position, { x: g.position.x + 1.2, y: g.position.y, z: g.position.z });
     if (pebble) world.events.push({ type: 'glowThings', ids: [pebble.id] });
     say(world, 'call', 'npc:smith', { key: right ? 'smith.guess.right' : 'smith.guess.wrong', params: {}, happened: true });
     test.stageT = BEND_EACH;

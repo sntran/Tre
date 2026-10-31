@@ -4,6 +4,9 @@
 // figures (a grid of half blocks), which the renderer also draws for the people and animals far
 // from the hero; the fine people and animals (a grid of quarter blocks) are in src/world/fine.js.
 import { P, PLANK_TONES, heldItem, TOOLS } from './parts.js';
+// The arm of a bent bar of the smith that rises (#153): BENT_STEPS steps of BENT_STEP units.
+const BENT_STEPS = 5;
+const BENT_STEP = 0.22;
 import { carriedParts } from './carry.js';
 import { BASKET_FLOOR } from '../core/world/zones.js';
 
@@ -718,8 +721,8 @@ export function thingLook(key) {
   // water or on the rack), the anvil alone, the steam of a warm trough, and the rack in the air.
   m = /^iron-(dark|cherry|orange|yellow)$/.exec(k);
   if (m) return { kind: 'iron', color: m[1] };
-  m = /^bar-(0|dark|cherry|bent|hard)$/.exec(k);
-  if (m) return { kind: 'iron', bare: true, ...(m[1] === 'bent' ? { bent: true } : m[1] === 'hard' ? { blade: true } : m[1] === '0' ? { glow: 0 } : { color: m[1] }) };
+  m = /^bar-(0|dark|cherry|bent|bend30|spring|hard)$/.exec(k);
+  if (m) return { kind: 'iron', bare: true, ...({ bent: { bent: 60 }, bend30: { bent: 30 }, spring: { bent: 12 }, hard: { blade: true }, 0: { glow: 0 } }[m[1]] ?? { color: m[1] }) };
   if (k === 'anvil') return { kind: 'iron', anvilOnly: true };
   m = /^trough-steam-(\d)$/.exec(k);
   if (m) return { kind: 'trough', full: true, steam: Number(m[1]) };
@@ -967,7 +970,17 @@ export function workThing(look) {
         if (glow) parts.push(P('glow', [1, 0.04, 2.4], glow, [0, 0.01, 0]), ...[[0.3, 0.7, -0.5], [-0.25, 0.9, 0.2], [0.15, 1.1, 0.7]].map(([x, y, z], i) => P(`spark${i}`, [0.12, 0.12, 0.12], glow, [x, y, z])));
         return still(parts, glow ? 1.2 : 0.4);
       }
-      if (look.bent) return still([...anvil, P('barA', [0.4, 0.3, 1.1], 'ash', [0, 0.15, -0.3]), P('barB', [0.4, 0.3, 1.1], 'ash', [0.35, 0.35, 0.6])], 0.6);
+      // A bent bar (#153: "I could not really SEE the bar bend"): one arm flat on the anvil, and the
+      // other arm up at the angle of the bend (degrees), as a row of short steps; 60 is a clear V.
+      if (look.bent) {
+        const deg = look.bent === true ? 60 : look.bent;
+        const a = (deg * Math.PI) / 180;
+        const steps = Array.from({ length: BENT_STEPS }, (_, i) => {
+          const d = (i + 0.5) * BENT_STEP;
+          return P(`barB${i}`, [0.4, 0.3, BENT_STEP + 0.06], 'ash', [0, 0.15 + Math.sin(a) * d, Math.cos(a) * d]);
+        });
+        return still([...anvil, P('barA', [0.4, 0.3, 1.1], 'ash', [0, 0.15, -0.55]), ...steps], 0.3 + Math.sin(a) * BENT_STEPS * BENT_STEP);
+      }
       if (look.blade) return still([...anvil, P('blade', [0.5, 0.2, 2.2], 'ashLight', [0, 0.1, 0]), P('grip', [0.35, 0.3, 0.6], 'wood', [0, 0.15, -1.3])], 0.4);
       if (look.horse) {
         // The iron horse for Gióng: a body, a neck and a head, four legs, and a tail.
