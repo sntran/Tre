@@ -676,3 +676,12 @@ In the play test of #123 to #134, the children met lines that say what to do but
 - **The map of the village.** A tap on the minimap opens the map of the village: the ground around the hero with north up, the faces of the people out of their houses, the stars, and the hero (`villageMapItems` in `src/world/minimap.js`, `openVillageMap` in `src/ui/village.js`). A tap on a face walks to that person, and a tap on a star walks to it, as a marker does. The map button keeps the map of the country.
 - **The court shows where it starts.** On a court that does not start at one, the first square has red lines and its number in dark chalk (on the pale earth a light chalk did not show) (`first` of the entity `folk:court`, the numeral of seven parts in `src/render/folk3d.js`); the other squares have no number. After "Hôm nay sân bắt đầu từ mười một nhé.", the child points at it and says "Ô đầu tiên này là ô mười một." (`loco.first`), also when the hero is at the start already.
 - **Tests:** `tests/words139.test.js`.
+
+## The forge of the horse: the lump and the goal (#140)
+
+In the play test of #135 to #139, a boy of grade K took one more lump from the pile after the iron went onto the anvil. For about 35 touches he could not put it down and could not quench the iron, and nobody said a word. We changed the forge so:
+
+- **While the iron glows on the anvil, a press takes no lump from the pile** (`horsePart` in `src/core/session.js`). A press near the pile shows the water and walks the hero to the anvil for the quench. Only a tap on a lump or on the pile takes one.
+- **A lump in the hands always has a way out.** While the iron glows, no place takes a lump: at each place of the forge (the hearth, the anvil, the trough, the pile, and next to the smith), the big button shows the lump that goes down. A press walks the hero to the pile and puts the lump back, and the smith says "Đủ sắt rồi. Cháu để cục này lại đống nhé." (`horse.back`). Then the button shows the water. The act `look` of #126 at the hearth is gone.
+- **The goal follows the work** (`goals` of the task `horse` in `data/trials.json`, `workGoal` in the session): "Mang sắt đến lò rèn." until the hearth has all the lumps, "Thổi lửa cho sắt đỏ." for the bellows, and "Nhúng sắt đỏ vào nước." while the iron glows. The goal bar changes when the part changes, and a tap on the goal reads the goal of now.
+- **Tests:** `tests/forge140.test.js`.

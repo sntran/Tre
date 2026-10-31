@@ -3654,6 +3654,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const need = def ? taskOf(def, trialLevelOf(def))?.ore ?? 1 : 1;
     return (zoneOf('hearth')?.zone.items.length ?? 0) >= need ? 'bellows' : 'lumps';
   }
+  // The part of the forge of the iron horse now (#140): 'lumps' (the lumps go into the hearth),
+  // 'blow' (the hearth has all of them), 'quench' (the iron glows on the anvil); null with no open
+  // forge.
+  function horsePart() {
+    const tz = trialZone('horse');
+    if (!tz || tz.zone.done) return null;
+    if (tz.zone.heat !== null && tz.zone.heat !== undefined) return 'quench';
+    const need = taskOf(trialDef('horse'), tz.zone.level)?.ore ?? Infinity;
+    return (zoneOf('hearth')?.zone.items.length ?? 0) >= need ? 'blow' : 'lumps';
+  }
+  // The goal of the part of the forge now (#140: the goal follows the work), or null.
+  function workGoal() {
+    return trialDef('horse')?.goals?.[horsePart()] ?? null;
+  }
+  // A line of the smith at the forge of the iron horse.
+  function horseSay(key) {
+    const smith = getEntity(state, 'npc:smith');
+    if (smith && !smith.hidden) emit({ type: 'open', screen: 'callout', id: smith.id, textKey: key, params: {} });
+  }
   function horseStep(step) {
     const smith = getEntity(state, 'npc:smith');
     const tz = trialZone('horse');
@@ -3989,10 +4008,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       const hearth = zoneOf('hearth');
       const bellows = query(state, 'item', 'position').find((e) => e.item.kind === 'bellows' && !e.hidden);
-      // A lump in the hands at the hearth while the iron is on the anvil: the button is never dim
-      // with no word (#126); a press makes the smith point at the iron.
-      const horseIron = open('horse')?.zone.heat !== null && open('horse')?.zone.heat !== undefined ? getEntity(state, open('horse').zone.iron) : null;
-      if (horseIron && hearth && getEntity(state, holding() ?? '')?.item?.kind === 'ore') add({ act: 'look', icon: 'look', target: horseIron.id, keys: [hearth.id, horseIron.id], at: hearth.position, rank: 1, work: true, run: () => horseStep('there') }, REACH + 3);
       if (open('horse')?.zone.heat === null && hearth?.zone.items.length) add({ act: 'blow', icon: 'fire', target: bellows?.id ?? hearth.id, keys: [bellows?.id, hearth.id], at: bellows?.position ?? hearth.position, rank: 0, work: true, run: () => work('horse', 'blow') }, REACH + 3);
       const drum = hamlet.round('drum');
       if (drum && !drum.done) {
@@ -4104,6 +4119,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // A press never takes a thing from the heap of a done task (#81: after the task of the
         // teacher, a press took a rod, and then the button stayed grey).
         if (doneTask(e.item.task)) continue;
+        // While the iron glows on the anvil, a press gives nothing from the pile of the forge (#140: a
+        // boy took a grey lump in place of the red iron): the press near the pile is the quench. Only a
+        // tap on a lump or on the pile takes one, and then the press puts it back.
+        if (e.item.kind === 'ore' && horsePart() === 'quench' && chosen?.id !== e.id && chosen?.id !== zone?.id) continue;
         if (fromHeap && e.item.task === fromHeap.task && rule === 'heap' && zone?.zone.id !== fromHeap.id) continue;
         // Of the things of a task, the kind of the last pick first, while a heap has that kind. A
         // tap on a thing chooses it.
@@ -4203,9 +4222,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     };
     const takes = (z) => canPut(z.zone, held) && hasRoom(z.zone) && !['heap', 'pile', 'road'].includes(z.zone.rule) && !doneTask(z.zone.task) && (z.zone.rule !== 'line' || lineRoom(z.zone));
     // A thing of a done task (taken before #81) goes back to its heap with a press too.
-    const noPlace = Boolean(held.item.home) && (openTask(held.item.task) || doneTask(held.item.task)) && !query(state, 'zone').some(takes);
+    // A lump in the hands while the iron glows on the anvil (#140: "The big button is gray everywhere
+    // I go."): no place takes it, and the press puts it back on the pile, at each place of the forge.
+    const oreBack = held.item.kind === 'ore' && horsePart() === 'quench';
+    const noPlace = oreBack || (Boolean(held.item.home) && (openTask(held.item.task) || doneTask(held.item.task)) && !query(state, 'zone').some(takes));
     for (const z of query(state, 'zone')) {
       const zone = z.zone;
+      if (oreBack && zone.rule !== 'heap') continue;
       if (!canPut(zone, held) || !hasRoom(zone)) continue;
       // A place of a done task is never a target (#54: the forge of the smith and the hearth of the
       // iron horse are at the same place), but a thing of the task goes back to its own heap.
@@ -4274,7 +4297,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         // Back on its own heap: only after a tap on the heap, or when no place takes the thing. A
         // press after a pick never puts the thing back (#44, #54: pick, put back, pick, put back).
         if (!noPlace && (!chosen || ![z.id, ...zone.items].includes(chosen.id))) continue;
-        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: z.position, rank: 4, work: noPlace, run: () => put(null) }, REACH + 2);
+        add({ act: 'put', icon: 'hand-put', target: z.id, keys: [z.id, ...zone.items], at: z.position, rank: 4, work: noPlace, run: () => {
+          put(null);
+          if (oreBack) horseSay('horse.back');
+        } }, REACH + 2);
       } else if (zone.rule === 'road') {
         continue;
       } else {
@@ -5561,6 +5587,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
 
   // One step of the world, then the events of the step, the exits, and the trigger zones.
+  let lastGoal = null;
   function step() {
     // The time of play in the village counts here, one step at a time (the app counts it in the
     // other scenes).
@@ -5570,6 +5597,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // and in the story, and the person of the task does not go home while the child works. Between
     // the tasks, and while the child only waits, the days go on (the rice grows, the feast comes at
     // dusk).
+    // The goal bar follows the part of the forge (#140).
+    const goalNow = workGoal();
+    if (goalNow !== lastGoal) {
+      lastGoal = goalNow;
+      emit({ type: 'hud' });
+    }
     const key = workKey();
     // The evening waits for the end of a task (#76: night came in the middle of a task three times,
     // and the children could not see their work): at the late afternoon, the clock waits while the
@@ -6037,6 +6070,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The persons of the stations of a practice of a whole place (#37): the view puts a star over each.
     stations: () => [...stations()],
     workCount,
+    // The goal of the part of a work now (the forge of the iron horse, #140), or null: the goal bar
+    // shows it in place of the goal of the step.
+    workGoal: () => workGoal(),
     // The pull of the slingshot with the big button now (steps), or 0 (#50).
     raidPull: () => pullCount(),
     // The mentor of a task (for the tests and the debug panel).

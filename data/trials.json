@@ -82,7 +82,9 @@
         { "ore": 6, "hold": 2, "skill": "sci.matter.states", "level": 2, "count": { "skill": "math.count.120", "level": 1 } },
         { "ore": 6, "hold": 1.4, "skill": "sci.matter.states", "level": 2, "count": { "skill": "math.count.120", "level": 2 } }
       ],
-      "places": { "ore": "horse-ore", "forge": "smith-forge", "anvil": "smith-anvil" }
+      "places": { "ore": "horse-ore", "forge": "smith-forge", "anvil": "smith-anvil" },
+      "_goals": "The goal bar at each part of the forge (#140): the lumps go into the hearth, the fire, the quench.",
+      "goals": { "lumps": "quest.horse.forge", "blow": "quest.horse.blow", "quench": "quest.horse.quench" }
     },
     {
       "id": "staffs", "npc": "woodcutter", "kind": "task", "flag": "boss.staffs", "reward": {}, "doneTalk": "woodcutter.staffs.done", "task": "slash",

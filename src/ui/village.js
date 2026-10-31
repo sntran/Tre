@@ -500,6 +500,13 @@ export async function mountVillage(ctx, params = {}) {
       goalKey = 'quest.free';
       goalParams = {};
     }
+    // The goal follows the part of the work (#140: "Mang sắt đến lò rèn." stayed while the iron
+    // glowed on the anvil).
+    const part = session.workGoal();
+    if (part) {
+      goalKey = part;
+      goalParams = {};
+    }
     // The quest bar has short text only. The dialogues give the long explanations.
     // A count shows as things, not numerals (docs/QUESTIONS.md, 76): a small thing for each one that
     // the step needs, filled for each one that the child has.

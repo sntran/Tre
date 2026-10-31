@@ -828,3 +828,9 @@ Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 
 - **The court:** `loco.first` ("Ô đầu tiên này là ô {n}.").
 - **The map of the village:** `ui.villageMap` ("Bản đồ làng").
 - **Please check:** the English forms of the words (`word.khe.forms` is "gap|gaps", a common word in English), and whether "khe" and "đăng" in Vietnamese should get a line at any first use.
+
+## The forge of the horse (#140)
+
+- **The lump back on the pile:** `horse.back` ("Đủ sắt rồi. Cháu để cục này lại đống nhé.").
+- **The goals of the forge:** `quest.horse.forge` ("Mang sắt đến lò rèn."), `quest.horse.blow` ("Thổi lửa cho sắt đỏ."), and `quest.horse.quench` ("Nhúng sắt đỏ vào nước.").
+- **Gone:** `horse.step.there` ("Sắt ở trên đe kia rồi.").
