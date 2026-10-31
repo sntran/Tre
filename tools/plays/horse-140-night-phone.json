@@ -1,0 +1,468 @@
+{
+ "about": "#140: grade K at the forge of the iron horse: the goal of each part, one more lump after the iron is on the anvil, the press puts it back, and the quench.",
+ "start": "?story=forge-horse&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "document.querySelector('.goal-text')?.textContent + ' | button: ' + document.querySelector('.act-btn')?.className"
+  },
+  {
+   "shot": "1-goal-at-the-forge"
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 20
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone === 'horse-ore' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone === 'horse-ore' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone === 'horse-ore' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone === 'horse-ore' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone === 'horse-ore' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone === 'horse-ore' && !e.hidden)?.id ?? null"
+   },
+   "after": 1,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) && (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) < 6"
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds) || (tre.activeVillage.state().entities.find((e) => e.id === 'zone:hearth')?.zone.items.length ?? 0) >= 6",
+   "timeout": 40
+  },
+  {
+   "tap": {
+    "thing": "hearth:horse"
+   },
+   "after": 1,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "document.querySelector('.goal-text')?.textContent + ' | button: ' + document.querySelector('.act-btn')?.className"
+  },
+  {
+   "shot": "2-goal-blow"
+  },
+  {
+   "tap": {
+    "thing": "bellows:horse"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'iron:horse'))",
+   "timeout": 60
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "document.querySelector('.goal-text')?.textContent + ' | button: ' + document.querySelector('.act-btn')?.className"
+  },
+  {
+   "shot": "3-goal-quench-button-water"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => /^ore:horse:/.test(e.id) && e.item && !e.item.held && e.item.zone === 'horse-ore' && !e.hidden)?.id ?? null"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.6
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 30
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "document.querySelector('.goal-text')?.textContent + ' | button: ' + document.querySelector('.act-btn')?.className"
+  },
+  {
+   "shot": "4-lump-in-the-hands"
+  },
+  {
+   "tap": {
+    "thing": "iron:horse"
+   },
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "document.querySelector('.goal-text')?.textContent + ' | button: ' + document.querySelector('.act-btn')?.className"
+  },
+  {
+   "shot": "5-at-the-anvil-with-a-lump"
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "until": "!Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 40
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "document.querySelector('.goal-text')?.textContent + ' | button: ' + document.querySelector('.act-btn')?.className"
+  },
+  {
+   "shot": "6-lump-back-on-the-pile"
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "until": "(tre.activeVillage.state().entities.find((e) => e.id === 'iron:horse')?.glow ?? 1) >= 1",
+   "timeout": 60
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'steed:giong'))",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "document.querySelector('.goal-text')?.textContent + ' | button: ' + document.querySelector('.act-btn')?.className"
+  },
+  {
+   "shot": "7-the-iron-horse"
+  }
+ ]
+}
