@@ -3,7 +3,8 @@
 // the sunrise) until the hero stands in the area of the place, people on the way say what they
 // know, and a person at a wrong place says why it is not the place. Pure: no DOM.
 
-// The cells ahead of the hero where the arrow of the quest points before the place is found.
+// The cells ahead of the hero where the arrow of the quest points before the place is found, when
+// the find has no road.
 export const AHEAD = 40;
 
 // The area of a find on the plane: { x0, y0, x1, y1 } (cells). at(frame, x, y): the plane cell of a
@@ -38,11 +39,14 @@ export function wayPoint(way, t) {
 }
 
 // A mark of the quest ({ x, y, h }, plane cells) as the hero sees it: a mark in the area of a place
-// that the hero did not find yet points only the way, ahead of the hero (hero: { x, y }). With a
-// road (#56), the mark is on the road, AHEAD cells past the point of the road nearest to the
-// hero, and the road ends in the area: a child who follows the star walks the road, meets the
-// people of the way, and comes into the area. A hero who went past the area turns back to it.
-export function questMark(clues, at, flags, mark, hero) {
+// that the hero did not find yet points only the way (hero: { x, y }). With a road (#56), the mark is
+// on the road at the next thing of the way (#142: a mark AHEAD cells ahead stopped the hero on an
+// empty road at each tap): the next person of the way, who says the clue, and then the end of the
+// road in the area. So a tap on the star walks all the way to a person or into the area. spotOf(id):
+// where the person of the way stands now ({ x, y }), or null (then the point of the person on the
+// road). A hero who went past the area turns back to it.
+export const MET = 6; // cells along the road: a person this near (or behind) the hero is met
+export function questMark(clues, at, flags, mark, hero, spotOf = () => null) {
   const f = hiddenAt(clues, at, flags, mark.x, mark.y);
   if (!f) return mark;
   const way = wayOf(f, at);
@@ -53,7 +57,12 @@ export function questMark(clues, at, flags, mark, hero) {
   const t = Math.max(0, Math.min(1, ((hero.x - way.a.x) * dx + (hero.y - way.a.y) * dy) / (len * len)));
   const a = areaOf(f, at);
   const past = (hero.x - a.x1) * f.toward[0] + (hero.y - a.y1) * f.toward[1] > 0;
-  const p = wayPoint(way, past ? 1 : Math.min(1, t + AHEAD / len));
+  const next = past ? null : [...(f.people ?? [])].sort((p, q) => p.at - q.at).find((p) => p.at > t + MET / len);
+  if (next) {
+    const spot = spotOf(next.id) ?? wayPoint(way, next.at);
+    return { ...mark, x: spot.x, y: spot.y, way: next.id };
+  }
+  const p = wayPoint(way, 1);
   return { ...mark, x: p.x, y: p.y };
 }
 
@@ -67,7 +76,7 @@ export function onWay(find, at, x, y) {
 // The line of a person who greets the hero (who: the id of the person), or null. A person at a
 // wrong place says why it is not the place. On the way, when the quest leads to the place (leads(find)),
 // the next clue that nobody said yet: each clue from another person. The flag clue.<find>.<n>
-// keeps the person who said it. Return { textKey, set: { flag: who } | null }.
+// keeps the person who said it. Return { textKey, nightKey (the line at night, or null), set: { flag: who } | null }.
 export function clueLine(clues, at, flags, who, hero, leads = () => true) {
   for (const f of openFinds(clues, flags)) {
     const wrong = (f.wrong ?? []).find((w) => `npc:${w.npc}` === who);
@@ -76,7 +85,7 @@ export function clueLine(clues, at, flags, who, hero, leads = () => true) {
     const n = f.clues.findIndex((_, k) => !flags[`clue.${f.id}.${k}`]);
     if (n < 0) continue;
     if (Object.keys(flags).some((k) => k.startsWith(`clue.${f.id}.`) && flags[k] === who)) continue;
-    return { textKey: f.clues[n].textKey, set: { [`clue.${f.id}.${n}`]: who } };
+    return { textKey: f.clues[n].textKey, nightKey: f.clues[n].nightKey ?? null, set: { [`clue.${f.id}.${n}`]: who } };
   }
   return null;
 }

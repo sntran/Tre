@@ -949,6 +949,7 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 .village-map-face canvas { display: block; width: 28px !important; height: 28px !important; }
 .village-map-star { width: 30px; height: 30px; padding: 0; border: 0; background: none; }
 .village-map-star .btn-icon { width: 100%; height: 100%; }
+.village-map-star.edge::after { content: ''; position: absolute; left: 50%; top: 50%; width: 0; height: 0; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 11px solid var(--vermilion); transform: rotate(var(--angle, 0rad)) translate(16px, -7px); transform-origin: 0 0; }
 .village-map-hero { width: 14px; height: 14px; border: 2px solid var(--ink); border-radius: 50%; background: var(--vermilion); }
 /* A small arrow: only its face takes a tap, and a tap beside it goes to the world (issue 139). */
 .edge-arrow {

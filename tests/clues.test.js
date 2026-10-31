@@ -43,7 +43,16 @@ test('before the hero stands on the low hills, the arrow of the quest leads alon
   const off = (p) => Math.abs((p.x - way.a.x) * (way.b.y - way.a.y) - (p.y - way.a.y) * (way.b.x - way.a.x)) / Math.hypot(way.b.x - way.a.x, way.b.y - way.a.y);
   assert.ok(off(shown) < 1e-6, 'on the road');
   assert.ok(shown.x > hero.x, 'toward the sunrise');
-  assert.ok(Math.hypot(shown.x - hero.x, shown.y - hero.y) <= AHEAD + 2, 'a little ahead of the hero');
+  // At the next person of the way, who says the clue (#142: a star AHEAD cells ahead stopped the
+  // hero on an empty road).
+  const first = [...find.people].sort((p, q) => p.at - q.at)[0];
+  assert.equal(shown.way, first.id);
+  // After the people of the way, at the end of the road in the area.
+  const last = [...find.people].sort((p, q) => q.at - p.at)[0];
+  const beyond = { x: way.a.x + (way.b.x - way.a.x) * (last.at + 0.05), y: way.a.y + (way.b.y - way.a.y) * (last.at + 0.05) };
+  const end = questMark(clues, at, {}, mark, beyond);
+  assert.deepEqual([end.x, end.y], [way.b.x, way.b.y]);
+  assert.ok(AHEAD > 0);
   assert.ok(Math.hypot(shown.x - mark.x, shown.y - mark.y) > 100, 'not at the place of the battle');
   // The road ends in the area: a child who follows the star comes into it.
   const area = areaOf(find, at);

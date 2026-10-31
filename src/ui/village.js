@@ -674,7 +674,12 @@ export async function mountVillage(ctx, params = {}) {
     // A place that the hero did not find yet (Trâu Sơn, #27): the mark shows only the way.
     if (!data.clues || !data.world?.at) return out;
     const h = hero().position;
-    return out.map((m) => questMark(data.clues, data.world.at, flags, m, { x: h.x / 2, y: h.z / 2 }));
+    // Before the find, the star is at the next person of the way, then at the end of the road (#142).
+    const spotOf = (id) => {
+      const e = getEntity(state, `way:${id}`);
+      return e ? { x: e.position.x / 2, y: e.position.z / 2 } : null;
+    };
+    return out.map((m) => questMark(data.clues, data.world.at, flags, m, { x: h.x / 2, y: h.z / 2 }, spotOf));
   }
 
   // Screens: the session opens them, the view shows them and tells the session when they close.
@@ -2098,7 +2103,9 @@ export async function mountVillage(ctx, params = {}) {
         el = button(null, go(() => {
           sayStar(it.mark);
           send({ type: 'tap', target: { ground: { x: it.mark.x, y: it.mark.y, h: it.mark.h, thing: false, object: null, goal: true } } });
-        }), { cls: 'village-map-star', icon: 'ui/star', aria: t('ui.star') });
+        }), { cls: it.edge ? 'village-map-star edge' : 'village-map-star', icon: 'ui/star', aria: t('ui.star') });
+        // A star out of the map: on the edge, with an arrow to it (#142).
+        if (it.edge) el.style.setProperty('--angle', `${it.angle}rad`);
       } else el = h('span', { class: 'village-map-hero' });
       Object.assign(el.style, at);
       pins.append(el);

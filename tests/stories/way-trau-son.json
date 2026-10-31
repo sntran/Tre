@@ -1,0 +1,52 @@
+{
+  "name": "way-trau-son",
+  "about": {
+    "vi": "Sau khi Gióng đồng ý đi cùng, em đứng ở cổng phía đông của làng Phù Đổng. Gióng cưỡi ngựa sắt đi cùng em, và ngôi sao ở người đầu tiên trên đường.",
+    "en": "After Gióng says yes to the road, the child stands at the east gate of Phù Đổng. Gióng rides his iron horse with the child, and the star is at the first person of the way."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 2,
+    "lang": "vi",
+    "seed": 5,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true,
+      "trial.scholar.done": true,
+      "trial.smith.done": true,
+      "trial.fisher.done": true,
+      "trial.healer.done": true,
+      "trial.woodcutter.done": true,
+      "prologue.done": true,
+      "giong.messenger": true,
+      "giong.spoke": true,
+      "horse.forged": true,
+      "giong.grown": true,
+      "raid.tool.sling": true,
+      "raid.tool.gate": true,
+      "giong.follow": true
+    },
+    "items": {
+      "rice": 5
+    }
+  },
+  "clock": 420,
+  "at": [
+    "phu-dong",
+    82.5,
+    30.5
+  ],
+  "steps": [
+    {
+      "wait": 2
+    },
+    {
+      "expect": [
+        {
+          "entity": "npc:giong-hero",
+          "look": "giong-hero"
+        }
+      ]
+    }
+  ]
+}

@@ -41,7 +41,7 @@ import { addXp, questSteps } from './growth.js';
 import { noteSeen, entriesOfKey, skillPrint } from './notebook.js';
 import { offOf, weekOf } from './learnlog.js';
 import { snapFacts } from './planting.js';
-import { clueLine as clueOf, hiddenAt, areaOf, inArea, openFinds, wayOf, wayPoint } from './clues.js';
+import { clueLine as clueOf, hiddenAt, areaOf, inArea, openFinds, wayOf, wayPoint, questMark, onWay } from './clues.js';
 import { pickTalk, isPresent, applyEffects, conditionState } from './game.js';
 import { createDialogue } from './dialogue.js';
 import { timeStatus, addPlayTime, remainingMs } from './timelimit.js';
@@ -529,7 +529,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // gets on the horse in the yard), and then he speaks from the horse. After "Có!" he rides behind
   // the child on the map of the village. A person with a mount (data/npcs.json) is on it whenever
   // the person is out of the house, and not in a raid (the raid has its own companion).
-  const LEGEND = { away: 40, looks: ['giong-boy-5', 'giong-grow-1', 'giong-grow-2', 'giong-hero'], step: 1.1, walk: 1.8, ride: 0.8, behind: 5, far: 9 };
+  const LEGEND = { away: 40, looks: ['giong-boy-5', 'giong-grow-1', 'giong-grow-2', 'giong-hero'], step: 1.1, walk: 1.8, ride: 0.8, behind: 5, ahead: 7, pace: 8, far: 9 };
   let growing = null;
   const personOf = (ref) => query(state, 'person').find((e) => e.person.ref === ref) ?? null;
   const pointAt = (p, facing = 0) => ({ x: p.x, y: env.groundY(p.x / 2, p.z / 2), z: p.z, facing });
@@ -640,11 +640,28 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const h = hero();
     if (!g?.schedule || !h || !profile.flags['giong.follow'] || growing) return;
     if (profile.flags['giong.place'] !== 'follow') profile.flags['giong.place'] = 'follow';
+    // He goes with the hero: his chunk is the chunk of the hero, so that he never sleeps with the
+    // land behind (#142: on the long road he was gone).
+    const hc = heroCell();
+    g.chunk = chunkOf(Math.floor(hc.x), Math.floor(hc.y));
     const f = h.position.facing ?? 0;
-    const spot = { x: h.position.x - Math.sin(f) * LEGEND.behind, z: h.position.z - Math.cos(f) * LEGEND.behind };
+    // On the way to a place to find, Gióng leads (#142: "But where did big Gióng go?"): he rides in
+    // front of the hero toward the next person of the way, in the view, and waits when the hero
+    // stops. Else he rides behind the hero.
     const d = Math.hypot(g.position.x - h.position.x, g.position.z - h.position.z);
+    if (state.tick % 15 !== 0 && d <= LEGEND.far * 4) return;
+    const lead = leadPoint();
+    const ahead = lead ? Math.hypot(lead.x * 2 - h.position.x, lead.y * 2 - h.position.z) : 0;
+    // Ahead of the hero by the walk of half a second more (the spot changes each half second).
+    const hs = h.motion?.speed ?? 0;
+    const k = lead ? Math.min(LEGEND.ahead + hs * 0.5, Math.max(0, ahead - 2)) / (ahead || 1) : 0;
+    const spot = lead
+      ? { x: h.position.x + (lead.x * 2 - h.position.x) * k, z: h.position.z + (lead.y * 2 - h.position.z) * k }
+      : { x: h.position.x - Math.sin(f) * LEGEND.behind, z: h.position.z - Math.cos(f) * LEGEND.behind };
+    // On his horse he keeps the pace of the hero.
+    if (g.steer) g.steer.speed = lead ? Math.max(LEGEND.pace, hs * 1.3) : data.life.people.steer.speed;
     if (d > LEGEND.far * 4) Object.assign(g.position, pointAt(spot, f));
-    if (d > LEGEND.behind + 1 && state.tick % 15 === 0) {
+    if (lead ? Math.hypot(g.position.x - spot.x, g.position.z - spot.z) > 1.5 : d > LEGEND.behind + 1) {
       g.schedule.spot = spot;
       g.schedule.stay = true;
       g.schedule.hold = true;
@@ -1137,7 +1154,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const back = (item) => profile.flags[`raid.${item.raid}.back`];
     for (const e of map.encounters) if (back(e) !== undefined && back(e) <= state.clock.minutes) delete profile.flags[`raid.${e.raid}.back`];
     // Only the people of the live chunks are in the world.
-    const present = (kind, item) => inLive(item.x, item.y) && (kind === 'npc' ? Boolean(npcs[item.id]) && isPresent(npcs[item.id], profile) : isPresent(item, profile) && !(back(item) > state.clock.minutes));
+    // Gióng rides with the hero after "Có!" (#142: on the long road he was gone): he is there
+    // wherever the hero is.
+    const rides = (kind, item) => kind === 'npc' && item.id === 'giong-hero' && Boolean(profile.flags['giong.follow']);
+    const present = (kind, item) => (inLive(item.x, item.y) || rides(kind, item)) && (kind === 'npc' ? Boolean(npcs[item.id]) && isPresent(npcs[item.id], profile) : isPresent(item, profile) && !(back(item) > state.clock.minutes));
     const before = new Set(state.entities.map((e) => e.id));
     syncPeople(state, map, env, present, data.life.people, data.people);
     wayPeople();
@@ -1985,7 +2005,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // The people of the way of a find (#56): while the find is open, they stand on its road (in the
   // live chunks) and greet the hero, with the clues of the way. They go when the find is found.
-  const WAY_CALL = 24; // half blocks: a person of the way greets the hero this far away
+  // Half blocks: a person of the way greets the hero this far away (#142: a clue came from a person
+  // that the child did not see; this near, the person is on the screen of a phone).
+  const WAY_CALL = 6;
   function wayPeople() {
     if (!data.clues || !data.world?.at) return;
     const want = new Set();
@@ -1996,7 +2018,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         if (!inLive(p.x, p.y)) continue;
         const id = `way:${w.id}`;
         want.add(id);
-        if (getEntity(state, id)) continue;
+        const had = getEntity(state, id);
+        if (had) {
+          // At night the person of the way holds a lantern (#142).
+          if ((state.sky?.night ?? 0) > 0.3) had.carry = 'lantern';
+          else delete had.carry;
+          continue;
+        }
         // A free cell of the road near the point.
         let spot = null;
         for (let r = 0; r <= 4 && !spot; r++) {
@@ -2014,6 +2042,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           ...(data.life.people?.react ? { react: { ...structuredClone(data.life.people.react), radius: WAY_CALL } } : {}),
           look: w.look,
         });
+        // A walk to the star of this person that started before the person came with the land
+        // ends next to the person, not on her place (#142: the hero walked around her for minutes).
+        const last = hero()?.route?.points?.at(-1);
+        if (last && Math.hypot(last.x / 2 - spot.x, last.z / 2 - spot.y) < STAR_PERSON) {
+          const who = persons().find((q) => q.entity === id);
+          if (who) meetPerson(who, PERSON_FOLLOW, true);
+        }
       }
     }
     for (const e of query(state, 'person')) if (e.person.kind === 'way' && !want.has(e.id)) removeEntity(state, e.id);
@@ -2021,17 +2056,44 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // Find a place by real clues (#27; src/core/clues.js): a person who greets the hero on the way
   // says the next clue, when the quest leads to the place (a target of the step of the quest is in
   // its area); a person at a wrong place says why it is not the place. Return the text key, or null.
-  function clueLine(who) {
-    if (!data.clues || !data.world?.at) return null;
+  // Does the quest lead to the place of a find now (a target of the step of the quest is in its area)?
+  function leadsTo(find) {
     const goal = currentGoal(data.quests.quests, cond());
     const targets = goal?.step?.targets ?? [];
-    const leads = (find) => {
-      const a = areaOf(find, data.world.at);
-      return targets.some((tg) => map.encounters.some((e) => e.id === tg.encounter && inArea(a, e.x, e.y)));
+    const a = areaOf(find, data.world.at);
+    return targets.some((tg) => map.encounters.some((e) => e.id === tg.encounter && inArea(a, e.x, e.y)));
+  }
+  // On the way to a place to find that the quest leads to: the point of the star now (the next
+  // person of the way, or the end of the road; map cells), or null.
+  function leadPoint() {
+    if (!data.clues || !data.world?.at) return null;
+    const c = heroCell();
+    const find = openFinds(data.clues, profile.flags).find((f) => leadsTo(f) && onWay(f, data.world.at, c.x, c.y));
+    if (!find) return null;
+    const a = areaOf(find, data.world.at);
+    const mark = { x: (a.x0 + a.x1) / 2, y: (a.y0 + a.y1) / 2, h: 0 };
+    const spotOf = (id) => {
+      const e = getEntity(state, `way:${id}`);
+      return e ? { x: e.position.x / 2, y: e.position.z / 2 } : null;
     };
-    const line = clueOf(data.clues, data.world.at, profile.flags, who, heroCell(), leads);
+    return questMark(data.clues, data.world.at, profile.flags, mark, { x: c.x + 0.5, y: c.y + 0.5 }, spotOf);
+  }
+  function clueLine(who) {
+    if (!data.clues || !data.world?.at) return null;
+    const line = clueOf(data.clues, data.world.at, profile.flags, who, heroCell(), leadsTo);
     if (!line) return null;
     Object.assign(profile.flags, line.set ?? {});
+    // While the clue comes, the person points along the road, toward the place (#142).
+    const e = getEntity(state, who);
+    const find = openFinds(data.clues, profile.flags).find((f) => leadsTo(f));
+    const way = find ? wayOf(find, data.world.at) : null;
+    if (e?.person?.kind === 'way' && way) e.gesture = { act: 'point', x: way.b.x * 2, z: way.b.y * 2, t: 3 };
+    // At night the clue of the sunrise says the road too (#142: "But it's night, where's the sun?").
+    const night = (state.sky?.night ?? 0) > 0.3;
+    if (night && line.nightKey) {
+      emit({ type: 'clue', id: who, textKey: line.nightKey });
+      return line.nightKey;
+    }
     emit({ type: 'clue', id: who, textKey: line.textKey });
     return line.textKey;
   }
@@ -2599,6 +2661,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     gateTapped = false;
     if (lines.slice(0, now).some((l) => l.tool === 'gate')) gateHint();
     toolLines = { list: lines.slice(now), t: TOOL_GAP };
+    // Gióng says where he goes, and rides away in the view (#142).
+    if (def.leaveKey && getEntity(state, 'companion:raid')) emit({ type: 'open', screen: 'callout', id: 'companion:raid', textKey: def.leaveKey, params: {} });
     emit({ type: 'raid', on: true, id });
     emit({ type: 'hud' });
     return true;
@@ -4998,7 +5062,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       // The star of a person: the walk follows the person and ends next to the person (#72: the
       // walk to the star of the teacher ended at the pile of planks, where he stood before).
-      const who = persons().find((q) => q.kind === 'npc' && Math.hypot(q.x - hit.x, q.y - hit.y) < STAR_PERSON);
+      // A person of the way is a person of a star too (#142: the walk to the star ends next to her).
+      const who = persons().find((q) => (q.kind === 'npc' || q.kind === 'way') && Math.hypot(q.x - hit.x, q.y - hit.y) < STAR_PERSON);
       if (walkFar(who ? { ...hit, person: who } : hit)) return;
     }
     // A tap past an edge of the world (the deep sea, the mist): the walk stops at the edge.
@@ -5061,6 +5126,15 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function walkFar(goal, final = goal, waits = 0) {
     const from = heroFrom();
     const here = { x: from.x + 0.5, y: from.y + 0.5 };
+    // A star on a person who was not there at the tap (the person of the way comes with the land,
+    // #142): the star is of that person now.
+    if (!final.person) {
+      const who = persons().find((q) => (q.kind === 'npc' || q.kind === 'way') && Math.hypot(q.x - final.x, q.y - final.y) < STAR_PERSON);
+      if (who) {
+        final = { ...final, person: who };
+        if (goal.x === final.x && goal.y === final.y) goal = final;
+      }
+    }
     // A walk to the star of a person: the goal is where the person is now, and near the person the
     // walk to the person takes over (it ends next to the person, turned to the person).
     if (final.person) {

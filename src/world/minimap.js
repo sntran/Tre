@@ -35,9 +35,12 @@ export const onMini = (dx, dz, radius = MINI.radius) => dx * dx + dz * dz <= rad
 // the minimap opens it. North is up, as on the map of the country. It shows the ground around the
 // hero, the faces of the people, the stars, and the hero; a tap on a face walks there, as a marker
 // does. The items in the square of the map: [{ kind: 'person' | 'star' | 'hero', id, who, u, v }]
-// with u, v from 0 to 1 (left to right, top to bottom). persons: [{ kind, ref, entity, x, y }] in
-// cells; stars: [{ x, y, id, who }].
+// with u, v from 0 to 1 (left to right, top to bottom); a star on the edge has edge and angle.
+// persons: [{ kind, ref, entity, x, y }] in cells; stars: [{ x, y, id, who }].
 export const VILLAGE = Object.freeze({ radius: 34 }); // cells from the hero to the edge of the map
+// The place of a star on the edge of the map of the village: this far from the middle (a part of
+// the side), so that the whole star shows.
+const EDGE = 0.44;
 export function villageMapItems(hero, persons, stars, radius = VILLAGE.radius) {
   const at = (x, y) => ({ u: (x - hero.x + radius) / (2 * radius), v: (y - hero.y + radius) / (2 * radius) });
   const inside = (q) => q.u >= 0 && q.u <= 1 && q.v >= 0 && q.v <= 1;
@@ -47,9 +50,18 @@ export function villageMapItems(hero, persons, stars, radius = VILLAGE.radius) {
     const q = at(p.x, p.y);
     if (inside(q)) out.push({ kind: 'person', id: p.entity, who: p.ref, ...q });
   }
+  // A star out of the map stands on its edge, with an arrow to it (#142: "The map has a red dot (me)
+  // on a road but NO star this time."). A tap on it walks there, as a tap on the star of the screen.
   for (const m of stars) {
     const q = at(m.x, m.y);
-    if (inside(q)) out.push({ kind: 'star', id: m.id ?? null, who: m.who ?? null, mark: m, ...q });
+    if (inside(q)) {
+      out.push({ kind: 'star', id: m.id ?? null, who: m.who ?? null, mark: m, ...q });
+      continue;
+    }
+    const du = q.u - 0.5;
+    const dv = q.v - 0.5;
+    const k = EDGE / Math.max(Math.abs(du), Math.abs(dv));
+    out.push({ kind: 'star', id: m.id ?? null, who: m.who ?? null, mark: m, u: 0.5 + du * k, v: 0.5 + dv * k, edge: true, angle: Math.atan2(dv, du) });
   }
   out.push({ kind: 'hero', id: 'hero', who: null, ...at(hero.x, hero.y) });
   return out;

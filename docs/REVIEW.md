@@ -842,3 +842,10 @@ Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 
 - **The second share:** `share.start.again` ("Toán lính thứ hai cũng bỏ lại gạo: {n} bao. Lại chia đều nhé.").
 - **The sack that is left:** `share.rest` ("Còn {n} bao gạo lẻ. Cháu mang về cho cụ già làng ở đình nhé.").
 - **Gone:** `gift.thanks.smith` and `gift.thanks.mother` (the sack goes only to the elder now).
+
+## The way to Trâu Sơn (#142)
+
+- **Gióng before the raid:** `dlg.giong.ready.n1` ("Lính [[an]] ở chân núi Trâu, xa làng mình, về phía đông. …") and `giong.raid.ahead` ("Gióng đi trước đánh tướng giặc. Cháu giữ ngã tư này nhé.").
+- **The clue at night:** `clue.trau.sunrise.night` ("Cứ theo con đường này, về phía mặt trời mọc. Núi Trâu ở đó.").
+- **The word:** `word.phiadong` ("Phía đông là phía mặt trời mọc buổi sáng.") with the forms "phía đông" (English: "to the east").
+- **Please check:** the English form "to the east" of the word line.

@@ -30,6 +30,7 @@ export function raid(world, dt, rng, env) {
   delete r.orders;
   if (world.paused) return;
   const raid = r.raid;
+  rideAway(world, raid, dt);
   if (raid.result) {
     r.over = (r.over ?? 0) + dt;
     walkAway(raid, dt);
@@ -188,6 +189,24 @@ function endRaid(world, friend) {
   say(world, 'raidover', 'raid');
 }
 
+// Gióng rides away at the start of a raid of the soldiers (#142: "I didn't see him leave."): after
+// his line he rides along the road past the enemies (LEAVE half blocks a second), and is gone.
+const LEAVE = { wait: 2.5, speed: 6, far: 50 };
+const STEED = 2; // blocks: the height of the seat of the iron horse (STEED_SEAT in src/world/figures.js)
+function rideAway(world, raid, dt) {
+  const c = getEntity(world, 'companion:raid');
+  if (!c?.leave) return;
+  c.leave.t += dt;
+  if (c.leave.t < LEAVE.wait) return;
+  const steed = getEntity(world, 'steed:raid');
+  for (const e of [c, steed].filter(Boolean)) {
+    e.position.x += raid.dir.x * LEAVE.speed * dt;
+    e.position.z += raid.dir.z * LEAVE.speed * dt;
+    e.position.facing = Math.atan2(raid.dir.x, raid.dir.z);
+  }
+  if (along(raid, c.position) > LEAVE.far) for (const e of [c, steed].filter(Boolean)) removeEntity(world, e.id);
+}
+
 // The place of the companion of a raid (#50): beside the road near the wall, as far as it can be
 // from the sources (the jar, the brazier, the forge), the flags of the villagers, the pile of traps,
 // and the gate, so that the companion never stands over a thing that the child must touch.
@@ -236,8 +255,10 @@ export function setupRaid(world, raid, def, env, looks = {}) {
     const facing = Math.atan2(raid.dir.x, raid.dir.z);
     // Gióng grown rides his iron horse (#50): the horse, and Gióng on its back (steed: the height
     // of the seat in blocks, the same as STEED_SEAT of the figure in src/world/figures.js).
-    if (def.steed) fixed('steed:raid', at, 'iron-steed', { facing });
-    fixed('companion:raid', at, looks.companion ?? def.companion, { facing, ...(def.steed ? { riding: def.steed } : {}) });
+    // A companion that leaves (#142) rides his horse too.
+    const steed = def.steed ?? (def.leaveKey ? STEED : null);
+    if (steed) fixed('steed:raid', at, 'iron-steed', { facing });
+    fixed('companion:raid', at, looks.companion ?? def.companion, { facing, ...(steed ? { riding: steed } : {}), ...(def.leaveKey ? { leave: { t: 0 } } : {}) });
   }
   // The pile of traps by the gate, and the part of the road for traps.
   if (has('traps') && def.pile && def.traps) {
