@@ -10,6 +10,7 @@ Chúng tôi viết cho các bậc cha mẹ và cho bất kỳ ai muốn biết v
 
 | Ngày | Bài viết |
 | --- | --- |
+| 30/10/2026 | [Con đường về phía đông](2026-10-30-the-road-east.vi.md) |
 | 25/10/2026 | [Bảy câu đúng trên mười](2026-10-25-seven-right-in-ten.vi.md) |
 | 24/10/2026 | [Kỳ thi của đúng thời đó](2026-10-24-a-test-from-its-own-time.vi.md) |
 | 24/10/2026 | [Đúng mà vẫn trượt](2026-10-24-right-and-still-a-miss.vi.md) |

@@ -10,6 +10,7 @@ We write it for parents and for anyone who wants to know why the game is the way
 
 | Date | Entry |
 | --- | --- |
+| 30 Oct 2026 | [The road east](2026-10-30-the-road-east.md) |
 | 25 Oct 2026 | [Seven right in ten](2026-10-25-seven-right-in-ten.md) |
 | 24 Oct 2026 | [A test from its own time](2026-10-24-a-test-from-its-own-time.md) |
 | 24 Oct 2026 | [Right, and still a miss](2026-10-24-right-and-still-a-miss.md) |
