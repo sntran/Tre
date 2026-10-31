@@ -1145,6 +1145,7 @@ export async function mountVillage(ctx, params = {}) {
       acc -= STEP;
       session.step();
       figures.sync(state);
+      figures.see(session.seeThrough?.() ?? []);
       flush();
     }
     // A step can open another scene (the rest screen, Văn Miếu): the village is gone then.

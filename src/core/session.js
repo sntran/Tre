@@ -58,7 +58,7 @@ import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveRea
 import { taskPools, POOL } from '../world/light.js';
 import { viewSize, inView, VIEW } from '../world/view.js';
 import { workBoxes, workCovers } from '../world/fade.js';
-import { FIGURES, THING_HEIGHTS, HERO_HEIGHTS, clearOf, clearSpot, ringSpots } from './world/sight.js';
+import { FIGURES, THING_HEIGHTS, HERO_HEIGHTS, clearOf, clearSpot, ringSpots, seeThrough, sizeOf } from './world/sight.js';
 import { workRects } from './world/systems/follow.js';
 import { levelFor, taskOf, trialLevel, tightSlot, allowedSlots, MODEL_DOSES } from './world/trials.js';
 import { nextLevel } from './practice.js';
@@ -134,7 +134,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const fn of listeners) fn(ev);
   };
   // The work in view now (the last workView while a task, a folk game, or an example goes on).
-  const workNow = () => (lastWork && (mentoring.activeKey() || folk.active() || String(lastWork.key).startsWith('example-')) ? lastWork : null);
+  const workNow = () => (lastWork && (mentoring.activeKey() || folk.active() || String(lastWork.key).startsWith('example-') || (lastWork.key === 'puzzle' && puzzles.here())) ? lastWork : null);
   const arrivals = new Map(); // the token of a walk -> what to do at its end
   let nextToken = 1;
   let map = null;
@@ -749,6 +749,30 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     for (const p of workNow()?.points ?? []) add(p);
     add(h, HERO_HEIGHTS);
     return out;
+  }
+  // The figures in front of a point of the work draw pale and see-through (#147). The points of
+  // the work in view, near the hero. Each few steps.
+  let seeIds = new Set();
+  function stepSeeThrough() {
+    if (state.tick % 5 !== 0) return;
+    const h = hero()?.position;
+    const work = workNow();
+    // In a raid the posts are the work (#147: "The posts are hard to count, the village man is
+    // hiding one.").
+    const posts = raidOn() ? query(state, 'position').filter((e) => String(e.id).startsWith('post:')).map((e) => e.position) : [];
+    // The things of the open task (the iron, the pieces, the stones, the packets), the things that
+    // glow with a line, and the things of a puzzle.
+    const key = work ? mentoring.activeKey() : null;
+    const things = query(state, 'item', 'position').filter((e) => !e.item.held && ((key && (e.item.task === key || e.item.task === `trial-${key}`)) || (puzzles.here() && String(e.item.kind).startsWith('pz')))).map((e) => e.position);
+    const lit = cue.map((id) => getEntity(state, id)?.position).filter(Boolean);
+    const pts = h ? [...(work?.points ?? []), ...(work?.sight ?? []), ...posts, ...things, ...lit].filter((p) => Math.hypot(p.x - h.x, p.z - h.z) <= SIGHT_NEAR) : [];
+    if (!pts.length) {
+      seeIds = new Set();
+      return;
+    }
+    const figs = state.entities.filter((e) => e.position && Math.hypot(e.position.x - h.x, e.position.z - h.z) <= SIGHT_NEAR)
+      .map((e) => ({ id: e.id, position: e.position, size: sizeOf(e) })).filter((f) => f.size);
+    seeIds = seeThrough(figs, pts, viewAz, VIEW.elevation);
   }
   // A person with a mount rides it whenever the person is out of the house (and the mount stands
   // under the person); in a raid the raid has its own companion, so the person waits out of sight.
@@ -3931,8 +3955,19 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!tz || !pot) return;
     glowing = [];
     const n = ev.ones ?? tz.zone.ones;
-    if (ev.type === 'grow') riceLine(n ? 'rice.grow.rest' : 'rice.grow', n, [pot.id], pot.position);
-    else riceLine('rice.pot', n, [pot.id], pot.position);
+    if (ev.type === 'grow') {
+      riceLine(n ? 'rice.grow.rest' : 'rice.grow', n, [pot.id], pot.position);
+      // Gióng grows in sight (#147: "But WHERE is Gióng? I didn't see him get bigger!"): he is the
+      // point of the line, he glows, and he stretches up one head (the renderer shows the stretch
+      // slowly, with a small pause); a figure in front of him fades.
+      const boy = personOf('giong-boy');
+      if (boy?.position && !boy.hidden) {
+        boy.stretch = Number(ev.heads ?? tz.zone.heads ?? 0);
+        setCue([pot.id, boy.id]);
+        emit({ type: 'workView', key: 'grow-boy', points: [{ ...boy.position }, { ...pot.position }], sight: [{ ...boy.position }] });
+        emit({ type: 'success', id: boy.id, x: boy.position.x, z: boy.position.z, sound: 'whoosh' });
+      }
+    } else riceLine('rice.pot', n, [pot.id], pot.position);
   }
   // A wave near the open rice: the count of the pot and the next step, with the place of the step
   // glowing (a tray in the hands: the pot; else the trays).
@@ -5887,6 +5922,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     stepLeaveTask();
     stepPending();
     stepToolLines();
+    stepSeeThrough();
     stepCoach();
     stepVerdicts();
     stepFarWait();
@@ -6262,6 +6298,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     },
     // The work in view now (the last event workView while its task goes on), or null.
     work: () => workNow(),
+    // The figures that draw pale and see-through: they stand in front of the work (#147).
+    seeThrough: () => seeIds,
     // The last tap: the id of its target (an entity), or null (#47).
     chosen: () => chosen?.id ?? null,
     // The place of a task that a tap at a map point (cells) chooses: its id, or null.

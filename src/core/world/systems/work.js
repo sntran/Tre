@@ -453,8 +453,13 @@ export function setupTrial(world, def, level, env, opts = {}) {
       for (const size of def.pile) add(pile, size);
       packHeap(world, pile.zone);
     }
-    const t = at(def.at.target);
-    const place = addEntity(world, { id: `zone:${def.id}-place`, keep: true, zone: { id: `${def.id}-place`, task: owner, rule: 'exact', accepts: def.thing, items: [], x: t.x, y: t.y, z: t.z, rect: { x0: t.x - 2.5, x1: t.x + 2.5, z0: t.z - 2.5, z1: t.z + 2.5 } }, position: { x: t.x, y: t.y, z: t.z + 2.5, facing: 0 } });
+    // The hole of a cart in the mud is in front of the wheel, toward the camera, and its stones lie
+    // in one row across the view, a space between two stones (#147: "I dont see the stone. Did it
+    // go in the hole?"): a child counts them on the screen. Under the cart they were hidden.
+    const az = env.view?.();
+    const row = def.target === 'mud' && Number.isFinite(az) ? { x: Math.cos(az), z: -Math.sin(az) } : null;
+    const t = row ? at({ x: def.at.target.x + Math.sin(az) * HOLE_OUT, z: def.at.target.z + Math.cos(az) * HOLE_OUT }) : at(def.at.target);
+    const place = addEntity(world, { id: `zone:${def.id}-place`, keep: true, zone: { id: `${def.id}-place`, task: owner, rule: 'exact', accepts: def.thing, items: [], x: t.x, y: t.y, z: t.z, rect: { x0: t.x - (row ? ROW_HALF : 2.5), x1: t.x + (row ? ROW_HALF : 2.5), z0: t.z - (row ? ROW_HALF : 2.5), z1: t.z + (row ? ROW_HALF : 2.5) }, ...(row ? { row } : {}) }, position: { x: t.x, y: t.y, z: t.z + 2.5, facing: 0 } });
     addEntity(world, { id: `mark:${def.id}`, keep: true, position: { ...t, facing: 0 }, look: def.target });
     for (let i = 0; i < (def.keep ?? 0); i++) add(place, 1, { set: true, fixed: true });
     packExact(world, place.zone);
@@ -832,7 +837,23 @@ function hearthCount(world, hearth, n, need) {
 }
 
 // The things on the place of a small event lie in rows of four (a duck in a pen: in rows of three).
+const HOLE_OUT = 3.5; // half blocks: the hole of the cart from the middle of the cart, toward the camera
+const ROW_STEP = 1.6; // half blocks between two stones in the row of the hole
+const ROW_LONG = 6; // stones in one row
+const ROW_HALF = 5; // half blocks: the place of a row of stones reaches this far from its middle
 function packExact(world, zone) {
+  if (zone.row) {
+    // Rows of six across the view, from the left: the first stone at the left end; a seventh stone
+    // starts the row behind (a row of ten is wider than the screen of a phone).
+    zone.items.forEach((id, i) => {
+      const e = getEntity(world, id);
+      const k = (i % ROW_LONG) * ROW_STEP - ROW_STEP * (ROW_LONG - 1) / 2;
+      const back = Math.floor(i / ROW_LONG) * ROW_STEP;
+      // The row is across the view (row: the right of the screen); behind is away from the camera.
+      if (e) e.position = { x: zone.x + zone.row.x * k + zone.row.z * back, y: zone.y + 0.2, z: zone.z + zone.row.z * k - zone.row.x * back, facing: 0 };
+    });
+    return;
+  }
   const cols = zone.accepts === 'duck' ? 3 : 4;
   const step = zone.accepts === 'duck' ? 1.4 : 1;
   zone.items.forEach((id, i) => {

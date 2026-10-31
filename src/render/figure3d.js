@@ -33,6 +33,7 @@ const XRAY_NEAR = 0.5;
 const XRAY_HULL = 2.4; // the outline is this many times the ink of a part
 const WADE = 0.4; // blocks: how deep the feet go in the surf (the sea is 0.5 over the sand)
 const RIDER = 0.35; // world units: the seat of a rider over the ground
+const STRETCH = 0.12; // the part of its height that a growing figure adds for each step (one head)
 // The night (0 to 1): the ink is softer at night. The color of the dusk is one multiply layer over
 // the frame (see the village scene), not a tint in the shaders.
 export const night = { value: 0 };
@@ -56,14 +57,53 @@ function partsMaterial() {
       attribute float faceTone; attribute float plain;
       uniform vec3 uInk;
       varying vec3 vColor;
+      varying float vSee;
       void main() {
-        float tone = plain > 0.5 ? 1.0 : faceTone;
+        float mark = mod(plain, 2.0);
+        vSee = plain > 1.5 ? 1.0 : 0.0;
+        float tone = mark > 0.5 ? 1.0 : faceTone;
         vColor = instanceColor * tone + uInk * (1.0 - tone);
         gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
       }`,
     fragmentShader: `
       varying vec3 vColor;
-      void main() { gl_FragColor = vec4(vColor, 1.0); }`,
+      varying float vSee;
+      ${SEE_STIPPLE}
+      void main() {
+        if (seeHole(vSee)) discard;
+        gl_FragColor = vec4(vColor, 1.0);
+      }`,
+  });
+}
+
+// A figure in front of the work (#147) is see-through: every other pixel of it does not draw (a
+// stipple on the screen, as the fade of a house, #53), so that the thing behind it shows. The
+// attribute plain is 1 for a mark (no face tone) plus 2 for a see-through figure.
+const SEE_STIPPLE = `
+  bool seeHole(float see) {
+    return see > 0.5 && mod(floor(gl_FragCoord.x) + floor(gl_FragCoord.y), 2.0) < 1.0;
+  }`;
+// The ink outline of the parts, with the same stipple: the line of a see-through figure is dotted.
+function hullsMaterial() {
+  return new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    vertexShader: `
+      attribute float plain;
+      varying vec3 vColor;
+      varying float vSee;
+      void main() {
+        vColor = instanceColor;
+        vSee = plain > 1.5 ? 1.0 : 0.0;
+        gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: `
+      varying vec3 vColor;
+      varying float vSee;
+      ${SEE_STIPPLE}
+      void main() {
+        if (seeHole(vSee)) discard;
+        gl_FragColor = vec4(vColor, 1.0);
+      }`,
   });
 }
 
@@ -164,7 +204,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   const parts = new THREE.InstancedMesh(box, partsMaterial(), MAX_PARTS);
   parts.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PARTS * 3), 3);
   // The ink outlines have a color for each part: ink, or the light edge of the hero at night (#65).
-  const hulls = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.BackSide }), MAX_PARTS);
+  const hulls = new THREE.InstancedMesh(box, hullsMaterial(), MAX_PARTS);
   hulls.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAX_PARTS * 3), 3);
   const INK = new THREE.Color(C.ink);
   const EDGE = { yellowPale: new THREE.Color(C.yellowPale) };
@@ -228,6 +268,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
   let targetId = null;
   let targetSpot = null;
   let ghost = null; // { look, x, y, z, facing } in half blocks
+  let seeing = new Set(); // the figures in front of the work: pale and see-through (#147)
   // Dust puffs: small pale boxes behind a running hero.
   const dust = new THREE.InstancedMesh(box, new THREE.MeshBasicMaterial({ color: new THREE.Color(C.paperDeep), transparent: true, opacity: 0.7, depthWrite: false }), MAX_PUFFS);
   dust.frustumCulled = false;
@@ -350,6 +391,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         f.vel = { x: (e.motion?.vx ?? 0) / 2, z: (e.motion?.vz ?? 0) / 2 };
         f.control = Boolean(e.control);
         f.lie = Boolean(e.lie);
+        f.stretch = Number(e.stretch ?? 0);
         f.ghost = Boolean(e.ghost);
         f.bright = Boolean(e.bright);
         f.see = Boolean(e.see);
@@ -428,7 +470,8 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         // A ghost is pale, as a thing far in the mist; a bright ghost (the chalk, #80) is as bright as
         // the thing. People and animals keep their colors: a covered hero shows as an outline (#87).
         // A see-through ghost (the first chalk, #109) is pale also when it is bright.
-        const pale = f.ghost && (!f.bright || f.see) ? 0.6 : smooth(0, 0.45, mist);
+        const see = seeing.has(f.id);
+        const pale = (f.ghost && (!f.bright || f.see)) || see ? 0.6 : smooth(0, 0.45, mist);
         const tint = (rgb) => color.setRGB(rgb[0] + (PAPER_RGB[0] - rgb[0]) * pale, rgb[1] + (PAPER_RGB[1] - rgb[1]) * pale, rgb[2] + (PAPER_RGB[2] - rgb[2]) * pale);
         // The animation goes on for every figure, so that a figure that comes into the view is in
         // step.
@@ -451,6 +494,10 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
         if (f.pulse > 0) f.pulse = Math.max(0, f.pulse - dt);
         const glow = glowing.has(f.id);
         L.root.scale.setScalar((f.pulse > 0 ? 1 + 0.18 * Math.sin(Math.PI * (1 - f.pulse / PULSE)) : 1) * (glow ? 1 + 0.08 * breath : 1));
+        // A figure that grows (Gióng at each ten bowls, #147) stretches up slowly to its new height,
+        // so that the child sees the change: STRETCH of the height for each step.
+        f.shownStretch = (f.shownStretch ?? f.stretch) + (f.stretch - (f.shownStretch ?? f.stretch)) * Math.min(1, dt * 1.5);
+        if (f.shownStretch) L.root.scale.y *= 1 + STRETCH * f.shownStretch;
         const r = Math.max(1, Math.min(1.8, L.height * 0.7)) * (0.9 + 0.2 * breath);
         const heroIn = heroFig?.at && Math.hypot(heroFig.at.x - f.at.x, heroFig.at.z - f.at.z) < r + 0.4;
         if (glow && ringed.has(f.id) && g < MAX_GLOWS && !heroIn) glows.setMatrixAt(g++, tmp.makeScale(r, 1, r).setPosition(f.at.x, b.y / 2 + 0.06, f.at.z));
@@ -498,7 +545,7 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
           hulls.setMatrixAt(n, p.mark || p.noInk || f.ghost ? tmp.makeScale(0, 0, 0) : tmp.multiplyMatrices(m4, local.makeScale(w + hull, h + hull, d + hull)));
           parts.setColorAt(n, tint(p.rgb));
           hulls.setColorAt(n, hullColor);
-          plain.array[n] = p.mark ? 1 : 0;
+          plain.array[n] = (p.mark ? 1 : 0) + (see ? 2 : 0);
           n += 1;
           if (f.control && xn < MAX_HERO_PARTS && camera) {
             xSelf.setMatrixAt(xn, tmp.multiplyMatrices(m4, local.makeScale(w, h, d)));
@@ -625,6 +672,10 @@ export function createFigureLayer(scene, lookOf, { camera = null, detail = null,
     },
     // The target of the action button (an entity id, or null), the place of a target with no
     // figure (spot in half blocks: { x, y, z, r }), and the ghost of a thing on a line.
+    // The figures in front of the work (entity ids): they draw pale and see-through (#147).
+    see(ids = []) {
+      seeing = new Set(ids);
+    },
     mark(id = null, spot = null, ghostOf = null) {
       targetId = id;
       targetSpot = spot;

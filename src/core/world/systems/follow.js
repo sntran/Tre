@@ -64,6 +64,13 @@ export function workRects(world) {
     const h = (c.size ?? 2) / 2;
     if (ps.length) out.push({ x0: Math.min(...ps.map((q) => q.x)) - h, x1: Math.max(...ps.map((q) => q.x)) + h, z0: Math.min(...ps.map((q) => q.z)) - h, z1: Math.max(...ps.map((q) => q.z)) + h });
   }
+  // The person and the prop of a small event while its work is open (#147: Nghé stood in front of
+  // the cart, and a child could not count the stones).
+  for (const e of query(world, 'dayEvent', 'position')) {
+    if (e.hidden || !getEntity(world, `zone:trial-event-${e.dayEvent.id}`) || getEntity(world, `zone:trial-event-${e.dayEvent.id}`).zone.done) continue;
+    const r = Math.max(1, e.solid?.r ?? 1);
+    out.push({ x0: e.position.x - r, x1: e.position.x + r, z0: e.position.z - r, z1: e.position.z + r });
+  }
   // The things of a puzzle (#104: Nghé stood on the dog of the ferry, and a tap on the dog was a tap
   // on Nghé).
   for (const e of query(world, 'item')) {

@@ -57,3 +57,29 @@ export function ringSpots(c, radii, n = 16) {
   for (const r of radii) for (let i = 0; i < n; i++) out.push({ x: c.x + Math.sin((i / n) * Math.PI * 2) * r, z: c.z + Math.cos((i / n) * Math.PI * 2) * r });
   return out;
 }
+
+// The figures in front of the work (#147: "I am standing on the iron, I can not see if it is red!
+// My body is in the way."): each figure whose box hides a point of the work from the camera draws
+// pale and see-through while the point is a point of the work. A point in the body of the figure
+// is the figure itself (the person of the task, the hero), not a thing behind it. figs: [{ id,
+// position, size }]; points: [{ x, y, z }] (half blocks). Return the ids.
+export function seeThrough(figs, points, az, elevation) {
+  const out = new Set();
+  for (const f of figs) {
+    const box = figureBox(f.position, f.size);
+    const r = f.size.r * 2 + 0.6;
+    const behind = points.filter((p) => Math.hypot(p.x - f.position.x, p.z - f.position.z) > r);
+    if (behind.some((p) => hides(box, p, az, elevation))) out.add(f.id);
+  }
+  return out;
+}
+// The size of the figure of an entity: Gióng on his horse (and a horse), Nghé, or a person or an
+// animal. Null for a thing that is not a figure (the things of a task, the marks).
+export function sizeOf(e) {
+  if (!e.position || !e.look || e.hidden || e.item || e.zone) return null;
+  if (e.riding && typeof e.riding === 'number') return FIGURES.rider;
+  if (String(e.id).startsWith('mount:') || String(e.id).startsWith('steed:')) return FIGURES.rider;
+  if (e.follow) return FIGURES.nghe;
+  if (e.person || e.id === 'hero' || e.motion || String(e.id).startsWith('companion:')) return FIGURES.person;
+  return null;
+}
