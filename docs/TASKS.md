@@ -721,3 +721,15 @@ In the play test of #135 to #139, three children did the test of the messenger a
 - **The cards come with the question.** "Cháu muốn học với ai?" is the title of the screen of the cards, with no line of its own before it.
 - **The card shows the person that the child met.** Each card shows the figure of the person of the village (`person` in `data/callings.json`: the teacher, the smith, the fisher, bà lang, the woodcutter) next to the hero of the child.
 - **Tests:** `tests/exam143.test.js`.
+
+## Bà lang at grade 4: the model and the packets (#144)
+
+In the play test of #135 to #139, a girl of grade 4 did the trial of the healer at the level of the model basket. She finished it, but she did not learn the doubling. We changed the trial so:
+
+- **The word comes with its line.** "Thang" has its word line the first time: "Một thang thuốc là một gói lá thuốc, đủ cho một lần sắc." (`word.thang`). The dose of the model is a packet ("gói"), never "lá": "Giỏ mẫu có hai gói. Mỗi gói là một thang.", "Một thang như gói này.", "Một gói là một thang.".
+- **The packet that a line names is big enough to count.** At the levels of doses and of the model, the view of the work frames the model and the basket (not the beds). While a line names a packet, the packet glows, and the view comes close to it for 3 seconds (`PACKET_CLOSE` 0.6 of the near view, `close` of a workView): one bunch is at least 4 mm on a phone of 390 × 844.
+- **A put line is never lost.** The help of the healer is a quiet script: it waits while the child presses (`QUIET`, 2.5 seconds after the last press, in `src/core/world/systems/mentor.js`), so that no help line comes between two puts and takes the place of "… vào giỏ rồi". Her count always comes.
+- **Next to her, the button gives.** While her trial is open, a press next to her never talks (the wave is the help), and with the basket the press gives it, also with a bed in reach (`HEALER_NEAR`); a tap on a bed takes from it. So no press takes back the doses that she laid out.
+- **No "come to me" next to her.** `mentor.healer.give` comes only when the hero is farther than 8 half blocks from her; next to her, she glows.
+- **No rest one step before the end.** The break does not come within 8 seconds of a press, or when the basket is short by one dose or less (`nearlyDone`).
+- **Tests:** `tests/healer144.test.js`; `tests/healer.test.js` follows the line of the give.

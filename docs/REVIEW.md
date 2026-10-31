@@ -856,3 +856,9 @@ Văn Miếu was built in 1070, and Thăng Long has its name from 1010: in Era 1 
 - **The parts of a skill:** `skill.math.addsub.100.add` ("Cộng trong phạm vi 100"), `.sub`, the same for 1000, `skill.math.area.area` ("Diện tích"), `skill.math.area.perimeter` ("Chu vi"), `skill.math.decimal.add` ("Cộng số thập phân"), and `skill.math.decimal.sub`.
 - **The reasons:** the keys `why.*`, for example `why.decimal.carry` ("{x} + {y}: {ta} + {tb} = {ts} phần mười, viết {tr}, nhớ 1. {wa} + {wb} + 1 = {ws}."), `why.frac.unlike.first` ("{a}/{d1} là {a2}/{D}. {a2}/{D} + {b}/{D} = {z}/{D}."), and `why.mul.round` ("{o} × {r1} = {p}, thêm một chữ số 0: {a} × {b} = {z}.").
 - **Please check:** the words of the reasons for a child of grades 3 to 5, and `why.decimal.borrow` ("… không trừ được …, mượn 1 …").
+
+## Bà lang at grade 4 (#144)
+
+- **The word:** `word.thang` ("Một thang thuốc là một gói lá thuốc, đủ cho một lần sắc.") with the form "thang" (English: "dose|doses").
+- **The packet:** `dlg.healer.trial.n4.model` ("… Giỏ mẫu có hai gói. Mỗi gói là một thang. Bà cần {k} thang."), `dlg.healer.trial.n4.doses` ("… như gói này. …"), `healer.model.leaf` ("Một gói là một thang."), and `healer.dose.like` ("Một thang như gói này.").
+- **Please check:** "gói" for the packet of herbs on its leaf, and the English forms "dose|doses" of the word line.

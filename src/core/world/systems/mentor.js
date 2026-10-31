@@ -22,10 +22,13 @@
 //     face: the point that they turn to; apart: a person this close to that entity moves a little away).
 //   gone { k }: the k-th thing of the demonstration goes (the rice ball that the hero ate).
 //   cue { zone }: Nghé shows the gap of the bridge (the hint of the place system).
-//   view { key, points }: the view shows these points (the event workView, #113).
+//   view { key, points, close }: the view shows these points (the event workView, #113); close: the
+//     frame may come this close (a part of the near view, #144).
 //   nudge { x, z, time, from }: Nghé goes next to a place (from: its offset, else 2.5 to the -x
 //     side) and stretches its neck toward it.
 //   end: the things of the demonstration go, and the script ends.
+//   seq { ids }: things that glow for a moment (the event glowSeq).
+// A script with quiet waits while the child presses (QUIET).
 export const WRITES = ['script', 'gesture', 'position', 'mentorMark', 'follow', 'item', 'zone', 'hidden', 'hands', 'carry', 'look', 'hop', 'events'];
 
 import { query, getEntity, addEntity, removeEntity } from '../state.js';
@@ -59,8 +62,13 @@ export function mentor(world, dt, rng, env) {
   for (const s of query(world, 'script')) play(world, s, dt, env);
 }
 
+// Seconds after a press: a quiet script (the help of the healer, #144) waits this long after the last
+// press of the child, so that no help line comes between two puts.
+export const QUIET = 2.5;
+
 function play(world, ent, dt, env) {
   const sc = ent.script;
+  if (sc.quiet && world.pressAt !== undefined && (world.tick - world.pressAt) * dt < QUIET) return;
   sc.t += dt;
   while (sc.i < sc.steps.length && sc.steps[sc.i].at <= sc.t) {
     const st = sc.steps[sc.i];
@@ -132,7 +140,9 @@ function play(world, ent, dt, env) {
     if (st.cue) cueHint(world, getEntity(world, st.cue.zone), env);
     // Things that glow until the child takes one of them (the shorter planks of the bridge, #85).
     if (st.glow) world.events.push({ type: 'glowThings', ids: st.glow.ids });
-    if (st.view) world.events.push({ type: 'workView', key: st.view.key, points: st.view.points, sight: st.view.points });
+    // Things that glow for a moment, with the line that names them (#144).
+    if (st.seq) world.events.push({ type: 'glowSeq', ids: st.seq.ids });
+    if (st.view) world.events.push({ type: 'workView', key: st.view.key, points: st.view.points, sight: st.view.points, ...(st.view.close ? { close: st.view.close } : {}) });
     if (st.nudge) {
       const friend = query(world, 'follow')[0];
       // from: where Nghé stands, from the point (the rice ball of a break: from the side, so that

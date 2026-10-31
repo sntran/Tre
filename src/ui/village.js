@@ -1252,6 +1252,7 @@ export async function mountVillage(ctx, params = {}) {
     if (view.state.level !== 0 || hero().riding) return null;
     let pts = null;
     let safe = SAFE;
+    let close = FRAME_CLOSE;
     const r = getEntity(state, 'raid')?.raid;
     // A hero away from the wall: the raid waits, and the view follows the hero (#86).
     if (r && !r.result && r.away) return null;
@@ -1260,7 +1261,7 @@ export async function mountVillage(ctx, params = {}) {
       // The work of the open task (also after a walk away and back), or the last work of the view
       // (a walk to a face, an example, the bridge); the things that a talk names come first.
       const live = session.work();
-      const w = work?.talk ? work : live ? { points: live.points.map(wu), person: live.person } : work;
+      const w = work?.talk ? work : live ? { points: live.points.map(wu), person: live.person, close: live.close } : work;
       if (w?.points.length) {
         const mid = w.points.reduce((a, p) => ({ x: a.x + p.x / w.points.length, z: a.z + p.z / w.points.length }), { x: 0, z: 0 });
         if (Math.hypot(heroAt.x - mid.x, heroAt.z - mid.z) > WORK_AWAY) {
@@ -1273,6 +1274,8 @@ export async function mountVillage(ctx, params = {}) {
           const p = w.person ? figures.placeOf(w.person) : null;
           if (p && Math.hypot(p.x - mid.x, p.z - mid.z) < WORK_AWAY) pts.push(p);
           if (w.talk) safe = TALK_SAFE;
+          // A packet that a line names comes closer (#144).
+          if (w.close) close = w.close;
         }
       }
     }
@@ -1281,7 +1284,7 @@ export async function mountVillage(ctx, params = {}) {
     if (demo.length) pts = [...(pts ?? []), ...demo];
     if (!pts?.length) return null;
     const nearH = viewSize(size.width, size.height, 0).h;
-    const f = frameWork([heroAt, ...pts], { az: view.angle, width: size.width, height: size.height, safe, min: nearH * FRAME_CLOSE, max: viewSize(size.width, size.height, VIEW.zooms.length - 1).h, lift: 1.5 });
+    const f = frameWork([heroAt, ...pts], { az: view.angle, width: size.width, height: size.height, safe, min: nearH * close, max: viewSize(size.width, size.height, VIEW.zooms.length - 1).h, lift: 1.5 });
     view.setScale(f.h / nearH);
     return { ...heroAt, x: f.focus.x, z: f.focus.z };
   }

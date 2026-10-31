@@ -71,9 +71,13 @@ test('at grade 2, a wave after a right count keeps each row at four, and the hea
   run(session, 60);
   assert.deepEqual(['ngai', 'tiato', 'rauma'].map((k) => inBasket(session, k)), [4, 4, 4], `the rows stay at four: ${lines.map((l) => l.key).join(' ')}`);
   assert.ok(!lines.some((l) => /^mentor\.healer\.extra/.test(l.key)), `no extra: ${lines.map((l) => l.key).join(' ')}`);
-  // The wave after the right count gets the next step (the give), not the same count again.
+  // The wave after the right count gets the next step (the give), not the same count again. Next
+  // to her it is no line to come to her, and she glows (#144).
   assert.ok(!lines.some((l) => l.key === 'mentor.healer.mark'), `no count again: ${lines.map((l) => l.key).join(' ')}`);
-  assert.ok(lines.some((l) => l.key === 'mentor.healer.give'), `the give: ${lines.map((l) => l.key).join(' ')}`);
+  const hp = getEntity(session.state, 'hero').position;
+  const np = getEntity(session.state, 'npc:healer').position;
+  const near = Math.hypot(hp.x - np.x, hp.z - np.z) <= 8;
+  assert.equal(lines.some((l) => l.key === 'mentor.healer.give'), !near, `the give (near ${near}): ${lines.map((l) => l.key).join(' ')}`);
 });
 
 test('the picture of the give and the press agree: after a tap on the healer at her beds, the button shows the give and a press gives', async () => {

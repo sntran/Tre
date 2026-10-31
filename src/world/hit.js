@@ -333,7 +333,7 @@ export function sessionCamera(session, { az = Math.PI / 4, width = 390, height =
   pts.push(...demo);
   if (person?.position && mid) pts.push(half(person.position));
   const nearH = viewSize(width, height, 0).h;
-  const f = frameWork([at, ...pts], { az, width, height, min: nearH * FRAME_CLOSE, max: viewSize(width, height, VIEW.zooms.length - 1).h, lift: LIFT });
+  const f = frameWork([at, ...pts], { az, width, height, min: nearH * (work?.close ?? FRAME_CLOSE), max: viewSize(width, height, VIEW.zooms.length - 1).h, lift: LIFT });
   return viewCamera({ focus: { ...f.focus, y: at.y + LIFT }, az, width, height, scale: f.h / nearH });
 }
 

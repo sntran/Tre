@@ -4064,7 +4064,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // The check of the share of grade 4 needs a tap on the teacher while rods lie on the mat
       // (#116: the press near the teacher became the check when the child wanted a rod).
       const matLeft = task === 'trial-scholar' && (zoneOf('mat')?.zone.items ?? []).some((id) => shareMat(getEntity(state, id)));
-      if (fin && (tapped || (!TAP_FINISH.has(task) && !heapNear(null) && !matLeft && childPut.has(task)))) add({ ...base, ...fin, rank: 0, work: true }, REACH + 3);
+      // Next to bà lang with the basket, the press gives it, also with a bed in reach (#144: "Sometimes
+      // the big button is a basket and sometimes it's a talk bubble"); a tap on a bed takes from it.
+      const byHealer = task === 'trial-healer' && distHb(hp, getEntity(state, q.entity).position) <= HEALER_NEAR && !(chosen && /^(herb-|zone:bed-)/.test(chosen.id));
+      if (fin && (tapped || byHealer || (!TAP_FINISH.has(task) && !heapNear(null) && !matLeft && childPut.has(task)))) add({ ...base, ...fin, rank: byHealer ? -5 : 0, work: true }, REACH + 3);
       // With a heap in reach, the finish waits: it comes only when the press has no other work
       // (#54: the basket of the healer has enough of each kind, and the healer stands at it).
       else if (fin && !tapped) {
@@ -4074,6 +4077,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // While the task of the person is open, a talk is a call for help: it needs a tap on the
       // person. A press with no tap does the work (#54).
       else if (task && !tapped) continue;
+      // Next to bà lang while her trial is open, the button gives the basket, never the talk (#144:
+      // a press of the talk put back the doses that she laid out); the wave is the help. Only a tap of
+      // the child on her with an empty basket, while she lays out nothing, still asks her.
+      else if (task === 'trial-healer' && open('healer') && (chosen?.help || open('healer').zone.lay || zoneOf('basket')?.zone.items.length)) continue;
       // A talk that the child heard comes again only after a tap on the person: a child who
       // presses the button near the forge for other things does not open the same talk (#49).
       // In a practice, a person who is not of the practice greets only after a tap (#51).
@@ -5109,6 +5116,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // leg). True when the hero walks or stands at the goal.
   const LEG = 2500; // the most cells of the search of one leg
   const STAR_PERSON = 2.5; // cells: a star this near a person is the star of the person
+  const HEALER_NEAR = 6; // half blocks: next to bà lang, the press gives the basket (#144)
   const STAR_MEET = 10; // cells: this near the person of a star, the walk to the person takes over
   const RAID_NEAR = 24; // half blocks: in a raid, a tap on a person farther from the wall does nothing
   // The tick of the last tap on a star: the children of a folk game do not ask during the walk to it.
@@ -5990,7 +5998,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     if (busy) return;
-    if (type === 'hold' || type === 'hands') lastPress = state.tick;
+    if (type === 'hold' || type === 'hands') {
+      lastPress = state.tick;
+      // The scripts of the help wait while the child presses (#144: a help line took the place of
+      // the line of a put).
+      state.pressAt = state.tick;
+    }
     if (type === 'hold') {
       hold(true, cmd.id ?? null);
       return;

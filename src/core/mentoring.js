@@ -38,6 +38,10 @@ const SHARE_SHOWS = new Set(['demo', 'smaller', 'share']);
 const ROD_GLOW = 0.35; // seconds between two rods that glow in the hint of a full mat (#96)
 const BUNDLE = 10; // rods in a bundle of the teacher
 const REST_TIME = 4.4; // seconds that the person and the hero sit in a break
+const PACKET_CLOSE = 0.6; // the frame of a packet that a line names: this part of the near view (#144)
+const PACKET_LOOK = 3; // seconds of that frame
+const BREAK_QUIET = 8; // seconds after a press: no break while the child works (#144)
+const GIVE_NEAR = 8; // half blocks: a hero this near the healer hears no "come to me" (#144)
 const BALL_UP = 0.1; // half blocks over the ground: the rice ball on its leaf
 const BALL_OUT = 1.6; // half blocks from the hero toward the camera
 const NGHE_SIDE = 2.2; // half blocks from the rice ball to Nghé, to the side of the view
@@ -139,6 +143,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return Boolean(held?.item && (held.item.task === key || keyOf(held.item.task) === key || held.item.task === task.tz?.zone.task));
   }
 
+  // Is the basket of the healer short by one dose or less (#144)? Its bunches against the need.
+  function nearlyDone(task) {
+    const z = task?.place?.zone;
+    if (z?.rule !== 'basket' || !z.need || typeof z.need !== 'object') return false;
+    const need = Object.values(z.need).reduce((a, b) => a + b, 0);
+    const doses = task.tz?.zone.plan?.doses ?? 1;
+    return need - itemsOf(task.place).length <= need / doses;
+  }
   // Has the basket of the healer bunches of each kind (#79)?
   function basketHasEach(key, task) {
     const z = task?.place?.zone;
@@ -265,7 +277,12 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const task = taskOf(key);
     if (!task) return [];
     const owner = key.startsWith('event-') ? `trial-${key}` : key;
-    const pts = [task.at, ...query(world(), 'zone').filter((z) => z.zone.task === owner && z.position).flatMap(zonePoints)];
+    // At the levels of the healer with a model (doses, the model basket), the view frames the model
+    // and the basket, not the beds, so that a child counts the bunches of one packet (#144); the hero
+    // at a bed is in the frame too.
+    const form = key === 'trial-healer' ? task.tz?.zone.plan?.form : null;
+    const skip = (z) => (form === 'model' || form === 'doses') && /^bed-/.test(z.zone.id);
+    const pts = [task.at, ...query(world(), 'zone').filter((z) => z.zone.task === owner && z.position && !skip(z)).flatMap(zonePoints)];
     // The stem of the woodcutter is on the zone of the trial.
     const trial = getEntity(world(), `zone:${owner}`);
     if (trial?.zone.stem && trial.position) pts.push(...zonePoints(trial));
@@ -638,8 +655,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const nextHelp = () => (def.demo && !trk?.demoed ? 'demo' : shares ? 'smaller' : 'mark');
     // A break is a real break (#94: "Nghỉ tay một chút, ăn nắm cơm đã." and no rice ball came): the
     // person and the hero sit, the hero eats a rice ball, Nghé gets a bite, and the next help comes.
-    const rest = move === 'break' && Boolean(task);
-    if (rest) move = nextHelp();
+    // No break while the child puts, and none one step before the end (#144: "Is it break time now?
+    // But I'm almost done!!").
+    const busyNow = w.pressAt !== undefined && (w.tick - w.pressAt) * STEP < BREAK_QUIET;
+    const rest = move === 'break' && Boolean(task) && !busyNow && !nearlyDone(task);
+    if (move === 'break') move = nextHelp();
     // The picture of a station where the child has nothing more to do (pictureUnless): the next
     // help, never a line of a break with no break (#57, #94).
     if (move === 'picture' && def.pictureUnless && profile.flags?.[def.pictureUnless] && task) move = nextHelp();
@@ -856,7 +876,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     } else if (move === 'show' && basketHasEach(key, task)) {
       // The basket has bunches of each kind: the hint is the give, never another bunch (#79: "Lấy
       // một bó lá ở luống …" came with two of each in the basket).
-      say(t, defOf(key).lines.give);
+      // Next to her the line says nothing of a walk to her: the person glows (#144: "But I AM right
+      // next to her and I pressed the big button!").
+      const hp = getEntity(w, 'hero')?.position;
+      const near = Boolean(hp && task.person?.position && dist(hp, task.person.position) <= GIVE_NEAR);
+      if (!near) say(t, defOf(key).lines.give);
       point(t, task.place.position, 1.4);
       mark(t, task.place.position, 2.5);
       if (task.person?.position) point(t + 1.6, task.person.position, 1.4);
@@ -933,7 +957,10 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     endScript(w, getEntity(w, `script:${key}`));
     steps.push({ at: t + 0.5, end: true });
     steps.sort((a, b) => a.at - b.at);
-    addEntity(w, { id: `script:${key}`, script: { key, move, t: 0, i: 0, steps, spawned: [], ...(keyAt !== undefined ? { keyAt } : {}) } });
+    // The help of the healer waits while the child presses (#144); her count and her first example
+    // always come.
+    const quiet = key === 'trial-healer' && move !== 'count' && move !== 'first';
+    addEntity(w, { id: `script:${key}`, script: { key, move, t: 0, i: 0, steps, spawned: [], ...(keyAt !== undefined ? { keyAt } : {}), ...(quiet ? { quiet } : {}) } });
     if (info.asked) asked.set(whoNow, { move, line, n: run && (run.move === move || (line && run.line === line)) ? run.n + 1 : 1 });
     else asked.delete(whoNow);
     return t + 0.5;
@@ -1286,6 +1313,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     if (leaf) {
       s.point(t, { x: leaf.zone.x, z: leaf.zone.z }, 1.6);
       s.mark(t, { x: leaf.zone.x, z: leaf.zone.z }, 2.5);
+      // The packet that the line names glows (#144: "Which leaf?? Nothing moved or lit up."), and the
+      // view comes close to it while the line goes on, so that a child counts its bunches; then the
+      // view of the work again.
+      s.steps.push({ at: t, seq: { ids: [...leaf.zone.items] } });
+      const r = leaf.zone.rect;
+      const y = leaf.zone.y;
+      s.steps.push({ at: t, view: { key: 'packet', points: [{ x: r.x0, y, z: r.z0 }, { x: r.x1, y, z: r.z1 }], close: PACKET_CLOSE } });
+      s.steps.push({ at: t + PACKET_LOOK, view: { key: 'trial-healer', points: workPoints('trial-healer') } });
     }
     return t + 2.2;
   }
@@ -1302,6 +1337,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       if (leaf) {
         s.point(t, leaf.position, 1.6);
         s.mark(t, leaf.position, 2.5);
+        s.steps.push({ at: t, seq: { ids: [leaf.id] } });
       }
       if (basket) s.point(t + 1.8, basket.position, 1.4);
       return t + 3.4;
