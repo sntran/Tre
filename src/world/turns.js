@@ -49,3 +49,45 @@ export function createTurns() {
     },
   };
 }
+
+// A stop of the hero (#149: the view turned between two pushes of the stick, and the next push to
+// the right took a girl back the way she came). A pause between two pushes is not a stop: the turn
+// for a still hero comes only after a stop that the child makes: the end of a walk from a tap
+// (STILL_WAIT), or no touch on the stick for STICK_REST. Never while a finger is on the stick.
+// step(dt, { moving, route, stick }): moving: the hero moves now; route: a walk from a tap goes on;
+// stick: a finger is on the stick (or a key is down). Return true one time at a stop.
+export const STILL_WAIT = 0.4; // seconds after the end of a walk from a tap
+export const STICK_REST = 2; // seconds with no touch on the stick
+export function createStill() {
+  let still = 0;
+  let done = false;
+  let by = null; // what made the last move: 'walk' (a tap) or 'stick'
+  return {
+    step(dt, { moving, route, stick }) {
+      if (stick) by = 'stick';
+      else if (route) by = 'walk';
+      if (moving || route || stick) {
+        still = 0;
+        done = false;
+        return false;
+      }
+      still += dt;
+      if (done || still < (by === 'stick' ? STICK_REST : STILL_WAIT)) return false;
+      done = true;
+      return true;
+    },
+    get still() {
+      return still;
+    },
+    get done() {
+      return done;
+    },
+  };
+}
+
+// The directions of the stick over a turn of the view (#149): while the finger is down, the stick
+// keeps the angle of the view at the touch; the next touch takes the new angle. stick: { active,
+// az }; Return the angle for the directions of the stick now.
+export function stickAngle(stick, viewAz) {
+  return stick.active && Number.isFinite(stick.az) ? stick.az : viewAz;
+}

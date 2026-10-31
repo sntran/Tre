@@ -25,7 +25,7 @@ import { practiceStart, activityOf } from '../core/practice.js';
 import { createTerrain, columnTop, CHUNK } from '../world/terrain.js';
 import { WATER_KINDS } from '../world/chunks.js';
 import { workBoxes, workTurn, stillTurn, BUILDINGS, heroCovered, heroWindow } from '../world/fade.js';
-import { createTurns } from '../world/turns.js';
+import { createTurns, createStill, stickAngle } from '../world/turns.js';
 import { taskPools } from '../world/light.js';
 import { VIEW, SAFE, TALK_SAFE, viewSize, inView, frameWork, mmOf } from '../world/view.js';
 import { createTapCount } from '../core/taps.js';
@@ -810,7 +810,7 @@ export async function mountVillage(ctx, params = {}) {
     // In a raid: a finger on the hero pulls the slingshot; a finger on a source drags an element.
     if (raidView.down(p, e.pointerId)) return;
     if (e.pointerType !== 'mouse' && inStickZone(p)) {
-      Object.assign(stick, { active: true, id: e.pointerId, x: p.x, y: p.y, kx: 0, ky: 0, since: performance.now(), far: 0 });
+      Object.assign(stick, { active: true, id: e.pointerId, x: p.x, y: p.y, kx: 0, ky: 0, since: performance.now(), far: 0, az: view.angle });
       return;
     }
     hold = { id: e.pointerId, vx: p.x, vy: p.y, sx: p.x, sy: p.y, since: performance.now(), held: false };
@@ -1025,9 +1025,11 @@ export async function mountVillage(ctx, params = {}) {
   let moving = false;
   function sendInput() {
     if (busy) return;
+    // While the finger is on the stick, the stick keeps the directions of the view at the touch
+    // (stickAngle, #149): a turn of the view does not turn the push.
     const toMap = (s) => {
       if (!s.dx && !s.dy) return null;
-      const m = screenToMap(s.dx, s.dy, view.angle);
+      const m = screenToMap(s.dx, s.dy, stickAngle(stick, view.angle));
       return { dx: m.x, dz: m.y, strength: s.strength ?? 1, run: Boolean(s.run) };
     };
     let dir = null;
@@ -1355,10 +1357,10 @@ export async function mountVillage(ctx, params = {}) {
   // when the hero stands still (STILL_WAIT after a walk), or a talk opens, and a building covers most
   // of the hero, the view turns one time, in its steps, to a side where nothing covers the hero and
   // the person of the talk (stillTurn in src/world/fade.js). While the hero walks, the outline stays.
-  const STILL_WAIT = 0.4; // seconds
   const STILL_NEAR = 20; // cells: the buildings that can cover the hero
-  let stillFor = 0;
-  let stillDone = false;
+  // The stop of the hero (createStill in src/world/turns.js, #149): after the end of a walk from a
+  // tap, or two seconds with no touch on the stick; never while a finger is on the stick.
+  const stillWatch = createStill();
   function heroInSight(heroAt, personId = null) {
     if (!viewTurns.still(performance.now(), Boolean(session.mentorTask))) return;
     const r = getEntity(state, 'raid')?.raid;
@@ -1380,7 +1382,7 @@ export async function mountVillage(ctx, params = {}) {
     const objects = terrain.objects
       .filter((o) => !o.gone && BUILDINGS.has(o.kind) && Math.abs(o.x + o.w / 2 - at.x) < STILL_NEAR && Math.abs(o.y + o.h / 2 - at.z) < STILL_NEAR)
       .map((o) => ({ b: terrain.boxOf(o), building: true, hits: (x, y, z) => terrain.hits(o.who, x, y, z) }));
-    return { az: view.angle, hero: at, buildings: objects.length, steps: stillTurn(objects, at, null, view.angle, VIEW.elevation), still: viewTurns.still(performance.now()), stillFor, stillDone };
+    return { az: view.angle, hero: at, buildings: objects.length, steps: stillTurn(objects, at, null, view.angle, VIEW.elevation), still: viewTurns.still(performance.now()), stillFor: stillWatch.still, stillDone: stillWatch.done };
   }
   // Still by the place of the hero, not by its motion: a hero who stands gets small pushes (Nghé,
   // a person beside), and the time of a stop went back to zero again and again (#111, a play).
@@ -1389,16 +1391,9 @@ export async function mountVillage(ctx, params = {}) {
   function watchStill(dt, heroAt) {
     const moved = stillAt ? Math.hypot(heroAt.x - stillAt.x, heroAt.z - stillAt.z) : 0;
     stillAt = { x: heroAt.x, z: heroAt.z };
-    if (moved > STILL_MOVE * dt || hero().route) {
-      stillFor = 0;
-      stillDone = false;
-      return;
-    }
-    stillFor += dt;
-    if (stillDone || stillFor < STILL_WAIT) return;
-    stillDone = true;
-    heroInSight(heroAt);
+    if (stillWatch.step(dt, { moving: moved > STILL_MOVE * dt, route: Boolean(hero().route), stick: stick.active || keys.size > 0 })) heroInSight(heroAt);
   }
+
 
   const PUZZLE_AWAY = 6; // blocks (cells): a bubble of a puzzle goes when the hero is this far from its person
   // Greetings over the heads of the people, and the coins of broken pots.
@@ -1766,7 +1761,8 @@ export async function mountVillage(ctx, params = {}) {
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
       case 'starPulse': starPulse = { id: ev.id, t: STAR_PULSE }; return;
       case 'workView':
-        turnToWork(ev.points, ev.sight, ev.person, ev.key);
+        // An offer shows its things and does not turn the view (turn: false, #149).
+        turnToWork(ev.points, ev.sight, ev.person, ev.key, { turn: ev.turn !== false });
         // The things of a puzzle fade nothing in front of them (#110: a bamboo covered the landing).
         if (work) work.fade = ev.key === 'puzzle';
         return;

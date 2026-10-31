@@ -149,6 +149,7 @@ export function createPuzzles(deps) {
   function load(t) {
     if (!ferry || ferry.load || ferry.scene || boat().ferry.state !== 'wait') return;
     ferry.load = t;
+    if (!ferry.started) lookBoth(true);
     ferry.started = true;
     ferry.where[t] = 'boat';
     const p = boat().position;
@@ -255,17 +256,24 @@ export function createPuzzles(deps) {
   }
   // The view shows both landings, the boat, the things on each bank, and the traveler (#110: the
   // things on the far bank were out of the view, and a child could not tell who was on which side).
-  function lookBoth() {
+  // turn: the view may turn to a side where nothing covers them (when the child starts or asks for
+  // the puzzle, not at the offer, #149).
+  function lookBoth(turn = true) {
     const f = boat()?.ferry;
     if (!f) return;
     const pts = F.things.map((t) => ({ ...getEntity(w(), thingId(t)).position }));
     const t = getEntity(w(), 'pz:traveler');
     const y = boat().position.y;
-    deps.look([...pts, { ...boat().position }, { ...f.landA, y }, { ...f.landB, y }, ...(t ? [{ ...t.position }] : [])]);
+    deps.look([...pts, { ...boat().position }, { ...f.landA, y }, { ...f.landB, y }, ...(t ? [{ ...t.position }] : [])], turn);
+  }
+  // The well, the two pots, the jar, and the drain.
+  function lookPots(turn) {
+    const ids = ['pz:pot:0', 'pz:pot:1', 'pz:well', 'pz:jar', 'pz:drain'].filter((id) => getEntity(w(), id));
+    deps.look(ids.map((id) => ({ ...getEntity(w(), id).position })), turn);
   }
   // The puzzle in short lines, one at a time (#110: three sentences in one bubble).
-  function sayOffer() {
-    lookBoth();
+  function sayOffer(turn = true) {
+    lookBoth(turn);
     // A wave gets a hint only after the last line of the puzzle (#110: in a play, a wave between the
     // lines gave the rule before the puzzle was said).
     F.offer.forEach((key, i) => after(i * OFFER_LINE, () => {
@@ -408,6 +416,9 @@ export function createPuzzles(deps) {
     const p = pots;
     if (!p || p.demo) return;
     const caps = p.lv.sizes;
+    // The first move of the child starts the puzzle: the view turns to its things now, not at the
+    // offer (#149: the offer turned the view while the child steered past).
+    if (!p.started) lookPots(true);
     p.started = true;
     if (act === 'take') p.held = i;
     else if (act === 'set') {
@@ -470,7 +481,7 @@ export function createPuzzles(deps) {
         const t = getEntity(w(), 'pz:traveler');
         if (t && dist(t.position, h) <= OFFER_NEAR) {
           ferry.offered = true;
-          sayOffer();
+          sayOffer(false);
         }
       }
       if (ferry?.offered && !ferry.solved) ferry.idle += dt;
@@ -492,8 +503,8 @@ export function createPuzzles(deps) {
         else if (!healerE && mark) removeEntity(w(), 'pz:mark:pots');
         if (!pots.offered && healerE && !deps.busy() && dist(healerE.position, h) <= OFFER_NEAR) {
           pots.offered = true;
-          // The view turns to a side where nothing covers the things of the puzzle.
-          deps.look(['pz:pot:0', 'pz:pot:1', 'pz:well', 'pz:jar', 'pz:drain'].map((id) => ({ ...getEntity(w(), id).position })));
+          // The view shows the things of the puzzle, with no turn: the child may only pass by.
+          lookPots(false);
           deps.say(healerE.id, pots.lv.need === 4 ? 'puzzle.pots.start' : 'puzzle.pots.start.two', {});
         }
         // The pot in the hands goes with the hero, in front. It takes a tap only on its body

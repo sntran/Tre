@@ -252,7 +252,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     chosen: () => chosen?.id ?? null,
     say: (id, textKey, params) => emit({ type: 'open', screen: 'callout', id, textKey, params }),
     sound: (name) => emit({ sound: name, type: 'sound' }),
-    look: (points) => emit({ type: 'workView', key: 'puzzle', points, sight: points }),
+    look: (points, turn = true) => emit({ type: 'workView', key: 'puzzle', points, sight: points, ...(turn ? {} : { turn: false }) }),
     give: (gift, from) => {
       applyEffects(profile, [{ give: gift }]);
       emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: gift, delay: 0.3 });
