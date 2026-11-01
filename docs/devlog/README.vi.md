@@ -10,6 +10,7 @@ Chúng tôi viết cho các bậc cha mẹ và cho bất kỳ ai muốn biết v
 
 | Ngày | Bài viết |
 | --- | --- |
+| 1/11/2026 | [Bóng ma và ngõ cụt](2026-11-01-ghosts-and-dead-ends.vi.md) |
 | 31/10/2026 | [Thứ chắn đường](2026-10-31-in-the-way.vi.md) |
 | 30/10/2026 | [Con đường về phía đông](2026-10-30-the-road-east.vi.md) |
 | 25/10/2026 | [Bảy câu đúng trên mười](2026-10-25-seven-right-in-ten.vi.md) |

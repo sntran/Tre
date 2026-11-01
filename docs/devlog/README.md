@@ -10,6 +10,7 @@ We write it for parents and for anyone who wants to know why the game is the way
 
 | Date | Entry |
 | --- | --- |
+| 1 Nov 2026 | [Ghosts and dead ends](2026-11-01-ghosts-and-dead-ends.md) |
 | 31 Oct 2026 | [In the way](2026-10-31-in-the-way.md) |
 | 30 Oct 2026 | [The road east](2026-10-30-the-road-east.md) |
 | 25 Oct 2026 | [Seven right in ten](2026-10-25-seven-right-in-ten.md) |
