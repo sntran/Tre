@@ -1,0 +1,14 @@
+{
+  "name": "stars-iron",
+  "about": {
+    "vi": "Gióng xin sắt để rèn ngựa. Mỗi ngôi sao ở mép màn hình có tranh của nơi nó dẫn tới: quặng sắt, lính trinh sát, con sông.",
+    "en": "Gióng asks for iron for the horse. Each star on the edge of the screen has the picture of the place where it goes: the iron ore, the scouts, the river."
+  },
+  "profile": { "name": "Minh", "grade": 3, "lang": "vi", "seed": 7, "flags": { "intro.seen": true, "prologue.started": true, "prologue.done": true, "trial.scholar.done": true, "trial.smith.done": true, "trial.fisher.done": true, "trial.healer.done": true, "trial.woodcutter.done": true, "giong.messenger": true, "giong.spoke": true } },
+  "clock": 540,
+  "at": ["phu-dong", 53, 45],
+  "steps": [
+    { "wait": 2 },
+    { "expect": [{ "flag": "giong.spoke" }, { "flag": "horse.iron", "is": false }] }
+  ]
+}

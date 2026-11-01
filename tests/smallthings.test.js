@@ -89,7 +89,8 @@ test('the print of a skill fits the task where the child earned it first', () =>
   const skill = load('data/skills.json').skills.find((s) => s.id === 'math.add.20');
   const figures = load('data/figures.json').figures;
   assert.equal(vi[skillPrint(notebook, skill).titleKey], 'Cái đăng');
-  assert.equal(vi[skillPrint(notebook, skill, 'trial-fisher').titleKey], 'Cái đăng');
+  // #154: each place has its own print; at the fisher, the row of stakes.
+  assert.equal(vi[skillPrint(notebook, skill, 'trial-fisher').titleKey], 'Hàng cọc');
   for (const [from, name] of [['trial-woodcutter', 'Bó tre'], ['folk-loco', 'Lò cò']]) {
     const p = skillPrint(notebook, skill, from);
     assert.equal(vi[p.titleKey], name);

@@ -54,7 +54,7 @@ export function placeArrow(p, { controls = [] } = {}) {
 export function sideMarks(entities) {
   return entities.filter((e) => e.look === 'mark-side' && e.position && !e.hidden).map((e) => {
     const pots = e.id === 'pz:mark:pots';
-    return { x: e.position.x / 2, y: e.position.z / 2, h: e.position.y / 2 + 0.6, id: e.id, who: null, by: pots ? 'healer' : null, key: pots ? 'star.side.pots' : 'star.side', main: false, side: true };
+    return { x: e.position.x / 2, y: e.position.z / 2, h: e.position.y / 2 + 0.6, id: e.id, who: null, thing: pots ? 'pot' : null, by: pots ? 'healer' : null, key: pots ? 'star.side.pots' : 'star.side', main: false, side: true };
   });
 }
 

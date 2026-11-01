@@ -533,6 +533,95 @@ function explainOf(problem) {
   }
 }
 
+// The reason after "not learned yet" (#154: "I don't know what tu so and mau so are. The picture
+// still has only 4 boxes."): the words of a child, with no term of the lesson (TERMS), and a new
+// picture that shows the reason: { explain, visual }. The reason of a skill that the child learned
+// stays explainOf.
+const fw = (n, d) => k('frac.say', { n: k(`num.${n}`), d: d === 4 ? k('num.4.part') : k(`num.${d}`) });
+const groupsOf = (n, size) => Array.from({ length: n }, () => size);
+export function explainNewOf(problem) {
+  const e = problem.expr;
+  const z = problem.answer;
+  const row = (items, mark = items.length - 1) => ({ type: 'row', items: items.map(String), mark });
+  switch (e.op) {
+    case 'next': return { explain: k('why.count.next', { n: e.n, z }), visual: row([e.n, z]) };
+    case 'prev': return { explain: k('why.count.prev', { n: e.n, z }), visual: row([z, e.n], 0) };
+    case 'plus10': return { explain: k('why.count.plus10.new', { n: e.n, z }), visual: row([e.n, '+10', z]) };
+    case 'max': case 'min': {
+      const big = Math.max(...e.values);
+      const small = Math.min(...e.values);
+      return { explain: k(`why.compare.${e.op}`, { big, small }), visual: row([small, '<', big], e.op === 'max' ? 2 : 0) };
+    }
+    case 'add': case 'sub': {
+      const add = e.op === 'add';
+      if (e.b < 10) {
+        const steps = Array.from({ length: e.b + 1 }, (_, i) => (add ? e.a + i : e.a - i));
+        return { explain: k(add ? 'why.add.count' : 'why.sub.count', { a: e.a, b: e.b, z }), visual: steps.length <= 10 ? row(steps) : row([e.a, z]) };
+      }
+      const b1 = e.b % 10;
+      const b10 = e.b - b1;
+      const m = add ? e.a + b10 : e.a - b10;
+      if (!b1) return { explain: k(add ? 'why.add.tens.new' : 'why.sub.tens.new', { a: e.a, b10, z }), visual: row([e.a, add ? '+' : '−', b10, '=', z]) };
+      return { explain: k(add ? 'why.add.new' : 'why.sub.new', { a: e.a, b10, b1, m, z }), visual: row([e.a, m, z]) };
+    }
+    case 'mul': {
+      const [a, b] = e.a >= e.b ? [e.a, e.b] : [e.b, e.a];
+      if (a <= 10 && b <= 10) return { explain: k('why.mul.new', { a, b, seq: range(b).map(() => a).join(' + '), z }), visual: { type: 'dots', groups: groupsOf(b, a) } };
+      const [big, rest] = split(a);
+      if (!rest) return { explain: k('why.mul.new', { a, b, seq: range(b).map(() => a).join(' + '), z }), visual: row([a, '×', b, '=', z]) };
+      return { explain: k('why.mul.split.new', { a, b, big, rest, p1: big * b, p2: rest * b, z }), visual: row([big * b, rest * b, z]) };
+    }
+    case 'div': return { explain: k('why.div.new', { a: e.a, b: e.b, z }), visual: e.a <= 50 ? { type: 'dots', groups: groupsOf(e.b, z) } : row([e.a, z]) };
+    case 'share': {
+      const each = Math.floor(e.n / e.k);
+      const left = e.n % e.k;
+      const visual = { type: 'dots', groups: [...groupsOf(e.k, each), ...(left ? [left] : [])] };
+      return e.ask === 'left'
+        ? { explain: k('why.share.left', { n: e.n, k: e.k, e: each, z }), visual }
+        : { explain: k('why.share.each.new', { n: e.n, k: e.k, z }), visual };
+    }
+    case 'digit': {
+      const h = Math.floor(e.n / 100) * 100;
+      const t = Math.floor((e.n % 100) / 10) * 10;
+      const o = e.n % 10;
+      const parts = h ? [h, t, o] : [t, o];
+      return { explain: k(h ? 'why.digit.new3' : 'why.digit.new2', { n: e.n, h, t, o, z }), visual: row(parts, parts.length - 1 - e.place) };
+    }
+    case 'sum': return { explain: k('why.sum.new', { h: e.values[0], t: e.values[1], o: e.values[2], z }), visual: row([...e.values, z]) };
+    case 'fracMax': case 'fracMin': {
+      const [[, d1], [, d2]] = e.values;
+      const want = e.op === 'fracMax' ? Math.min(d1, d2) : Math.max(d1, d2);
+      return { explain: k('why.frac.unit.new', { small: Math.min(d1, d2), large: Math.max(d1, d2) }), visual: { type: 'fractions', values: e.values, mark: e.values.findIndex(([, d]) => d === want) } };
+    }
+    case 'fracEquiv': {
+      const f = e.D / e.d;
+      return { explain: k('why.frac.equiv.new', { fw: k(`num.${f}`), a: fw(e.n, e.d), b: fw(z, e.D) }), visual: { type: 'fractions', values: [[e.n, e.d, f]] } };
+    }
+    case 'fracAdd': return { explain: k('why.frac.add.new', { a: fw(e.a, e.d), b: fw(e.b, e.d), c: fw(z, e.d) }), visual: { type: 'fractions', values: [[e.a, e.d], [e.b, e.d], [z, e.d]] } };
+    case 'fracUnlike': {
+      const a2 = e.a * (e.D / e.d1);
+      const b2 = e.b * (e.D / e.d2);
+      const which = e.d1 !== e.D && e.d2 !== e.D ? 'both' : e.d1 !== e.D ? 'first' : 'second';
+      return {
+        explain: k(`why.frac.unlike.new.${which}`, { a: fw(e.a, e.d1), a2: fw(a2, e.D), b: fw(e.b, e.d2), b2: fw(b2, e.D), c: fw(z, e.D) }),
+        visual: { type: 'fractions', values: [[e.a, e.d1, e.D / e.d1], [e.b, e.d2, e.D / e.d2], [z, e.D]] },
+      };
+    }
+    case 'area': return { explain: k('why.area.new', { w: e.w, h: e.h, z }), visual: { type: 'rect', w: e.w, h: e.h, grid: true, mark: 'row' } };
+    case 'perimeter': return { explain: k('why.perimeter.new', { w: e.w, h: e.h, z }), visual: { type: 'rect', w: e.w, h: e.h, grid: false, mark: 'edge' } };
+    case 'decimal': {
+      const unit = 10 ** e.places;
+      const s = e.sub ? e.a - e.b : e.a + e.b;
+      return { explain: k(e.sub ? 'why.decimal.sub.new' : 'why.decimal.add.new', { x: e.a / unit, y: e.b / unit, a: e.a, b: e.b, s, unit, z }), visual: row([e.a, e.sub ? '−' : '+', e.b, '=', s]) };
+    }
+    case 'sides': return { explain: k('why.sides.new', { z }), visual: { type: 'shape', shape: e.shape, marks: true } };
+    case 'shapeIs': return e.shape === 'circle'
+      ? { explain: k('why.shape.round.new'), visual: { type: 'shape', shape: e.shape, marks: true } }
+      : { explain: k('why.shape.new', { shape: k(`shape.${e.shape}`), n: SHAPE_SIDES[e.shape] }), visual: { type: 'shape', shape: e.shape, marks: true } };
+    default: return { explain: problem.explain ?? null, visual: null };
+  }
+}
+
 // The part of a skill that a question asks, for a skill of two parts (add or sub, area or
 // perimeter), or null (#143: the result names only what the test asked).
 function whatOf(problem) {
@@ -557,6 +646,11 @@ export function generate(skill, level, rng, ctx = {}) {
     ? answerIndex(problem)
     : problem.expr.op === 'bank' ? problem.expr.answer : evaluate(problem.expr);
   if (!problem.explain && problem.expr.op !== 'bank') problem.explain = explainOf(problem);
+  if (problem.expr.op !== 'bank') {
+    const fresh = explainNewOf(problem);
+    problem.explainNew = fresh.explain;
+    problem.visualNew = fresh.visual;
+  }
   problem.what = whatOf(problem);
   return problem;
 }

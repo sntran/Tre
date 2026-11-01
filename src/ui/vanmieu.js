@@ -97,7 +97,11 @@ function runExam(ctx, kind, ex) {
         ctx.learner.record(problem, ok, { choices: !skipped && problem.kind === 'choice' ? problem.choices?.length ?? 0 : 0 });
         ctx.bus.emit('sound', ok ? 'correct' : 'tap');
         const answer = answerText(problem);
-        const explain = !ok && problem.explain ? ` ${textOf(problem.explain)}` : '';
+        // After "not learned yet", the reason in the words of a child and its picture, with no term
+        // of the lesson (#154: "I don't know what tu so and mau so are").
+        const why = skipped && problem.explainNew ? problem.explainNew : problem.explain;
+        const explain = !ok && why ? ` ${textOf(why)}` : '';
+        if (skipped && problem.visualNew) q.showVisual(problem.visualNew);
         const key = ok ? lineOf(ex, 'right') : skipped ? lineOf(ex, 'skip.done') : lineOf(ex, 'wrong');
         feedback.show(ok ? 'good' : 'example', t(key, { answer }) + explain, { key, params: { answer } });
         exam.answer(ok, { skipped, what: problem.what ?? null });

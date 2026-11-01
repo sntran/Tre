@@ -52,9 +52,27 @@ export function liveTargets(step, flags, { raidOf = () => null, raids = {}, minu
 // target of a step is the next step of the story: its star is bigger than the others. tg: a live
 // target; index: its place in the list of live targets; trials: data.trials.trials. Return
 // { who (an id of a person, or null), key (the text key of the line), main }.
-export function starOf(tg, index = 0, trials = []) {
+// thing: the look of the small picture of a target that is not a person (#154: "There are 3 star
+// arrows now ... I don't know which one has iron."): the ore for a place of iron, the enemy of a
+// raid. raids: data.raids ({ raids, enemies }); raidOf(encounter id): the id of its raid.
+export function starOf(tg, index = 0, trials = [], { raids = null, raidOf = () => null } = {}) {
   const who = tg.npc ?? (tg.trial ? trials.find((t) => t.id === tg.trial)?.npc ?? null : null);
-  return { who, key: who ? 'star.go.person' : 'star.go.place', main: index === 0 };
+  return { who, thing: who ? null : thingOf(tg, raids, raidOf), key: who ? 'star.go.person' : 'star.go.place', main: index === 0 };
+}
+
+// The look of the picture of a target that is a thing (an object of the map, the enemies of a raid),
+// or null.
+export const OBJECT_LOOKS = { ore: 'ore' };
+export function thingOf(tg, raids = null, raidOf = () => null) {
+  if (tg.object) return OBJECT_LOOKS[String(tg.object).replace(/\d+$/, '')] ?? null;
+  if (tg.encounter && raids) {
+    const def = raids.raids?.[raidOf(tg.encounter)];
+    // The enemy that the child stops at the end (the general of the phase of the boss).
+    const waves = def?.waves ?? (def?.phases?.find((ph) => ph.boss) ?? def?.phases?.[0])?.waves ?? [];
+    const kind = waves[0]?.kind;
+    return kind ? raids.enemies?.[kind]?.look ?? null : null;
+  }
+  return null;
 }
 
 // The point of the star of a place of a step (map cells): the middle of the cell of the place, so

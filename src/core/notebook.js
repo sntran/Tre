@@ -76,10 +76,12 @@ export function notebookOf(def, skills, profile, sent = new Set()) {
 // of its subject.
 // from: the task where the child earned the skill first (a skill event task: trial-woodcutter,
 // folk-loco, bridge): the print of that task when the skill has one (#81: the print of the stakes
-// of the fisher came at the first cut of the woodcutter and at the hopscotch).
+// of the fisher came at the first cut of the woodcutter and at the hopscotch). A place with no
+// print of the skill has the print of the place (def.sources, #154: "Tranh mới: Que tính." at the
+// cart in the mud, where the child saw no stick).
 export function skillPrint(def, skill, from = null) {
   const p = def.skills?.[skill.id];
-  const v = from ? p?.from?.[from] : null;
+  const v = from ? (p?.from?.[from] ?? def.sources?.[from]) : null;
   return { id: `skill:${skill.id}`, kind: 'skill', skill: skill.id, subject: skill.subject, titleKey: v?.titleKey ?? p?.titleKey ?? `skill.${skill.id}`, skillKey: `skill.${skill.id}`, look: v?.look ?? p?.look ?? null };
 }
 

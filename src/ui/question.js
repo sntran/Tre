@@ -148,6 +148,19 @@ export function renderQuestion(problem, { onAnswer, autoSpeak = true, ctx = null
 
   return {
     el,
+    // A new picture in the place of the picture (#154: the reason of "not learned yet" shows the
+    // bar of 1/4 cut into twelfths).
+    showVisual(v) {
+      const pic = renderVisual(v);
+      if (!pic) return;
+      let slot = el.querySelector('.visual');
+      if (!slot) {
+        slot = h('div', { class: 'visual' });
+        promptRow.after(slot);
+      }
+      slot.className = 'visual';
+      slot.replaceChildren(pic);
+    },
     lock() { locked = true; },
     unlock() { locked = false; if (el.clearValue) el.clearValue(); },
     destroy() { reading += 1; cleanup(); el.remove(); },

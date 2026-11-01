@@ -29,7 +29,7 @@ import { createTurns, createStill, stickAngle } from '../world/turns.js';
 import { taskPools } from '../world/light.js';
 import { VIEW, SAFE, TALK_SAFE, viewSize, inView, frameWork, mmOf } from '../world/view.js';
 import { createTapCount } from '../core/taps.js';
-import { heroLook, lookOfKey as lookFor } from '../world/figures.js';
+import { heroLook, lookOfKey as lookFor, printFraming } from '../world/figures.js';
 import { tapTarget, thingUnder, askingChild, ANIMAL_SOUNDS } from '../world/hit.js';
 import { h, img, button } from './dom.js';
 import { t, tn, setSpeech, lang, otherLang } from './i18n.js';
@@ -654,7 +654,7 @@ export async function mountVillage(ctx, params = {}) {
     };
     for (const [i, tg] of list.entries()) {
       // The face and the line of the star, and the bigger star of the next step (#62).
-      const face = starOf(tg, i, data.trials?.trials ?? []);
+      const face = starOf(tg, i, data.trials?.trials ?? [], { raids: data.raids, raidOf });
       const from = out.length;
       // The farmer of the hamlet who takes the rest of the share, by the mats (#151).
       const taker = tg.npc ? here.find((x) => x.kind === 'rest' && x.ref === tg.npc) : null;
@@ -1657,11 +1657,14 @@ export async function mountVillage(ctx, params = {}) {
     if (ev.from) figures.pulse(ev.from);
     // The card shows the picture of the notebook next to the new print, so that a child who
     // does not know the word "sổ tay" sees what it is (#72).
+    // A word of the name that the child did not hear yet comes with its line (#154: "Tranh mới:
+    // Cái đăng." "what is a 'đăng'?").
+    const words = wordGloss(ctx, name, ev.titleKey);
     const card = h('button', { class: 'print-card', type: 'button' }, [
       img('ui/notebook', 'print-book'),
       h('span', { class: 'note-print' }, [printOf(ctx, ev, 40)]),
       // The card says what the voice says (#89).
-      h('span', { text: t('note.newName', { name }) }),
+      h('span', {}, [h('span', { text: t('note.newName', { name }) }), ...words.map((w) => h('small', { class: 'print-word', text: w }))]),
     ]);
     card.addEventListener('click', () => { dropPrint(); modals.notebook?.(ctx); });
     ctx.ui.append(card);
@@ -1682,7 +1685,8 @@ export async function mountVillage(ctx, params = {}) {
     }
     const line = { id: 'print', key: 'note.newName', params: { name }, voice: lineVoice(null), kind: 'line' };
     voiceQueue.offer(line, speaking() || Boolean(spoken), performance.now() / 1000);
-    setTimeout(() => { if (printCard === card) dropPrint(); }, first ? 10000 : 5000);
+    words.forEach((w, i) => voiceQueue.offer({ id: `print-word-${i}`, key: null, text: w, params: {}, voice: lineVoice('grandma'), kind: 'line' }, true, performance.now() / 1000));
+    setTimeout(() => { if (printCard === card) dropPrint(); }, (first ? 10000 : 5000) + words.length * 4000);
   }
   // The lights of the bursts of a success (#62): a warm light for a moment, also at night.
   let cheerLights = [];
@@ -1966,12 +1970,17 @@ export async function mountVillage(ctx, params = {}) {
   const face = () => h('span', { class: 'star-face' });
   const starAt = pooled(starPool, () => tappable(h('div', { class: 'world-star' }, [img('ui/star', 'star-pic'), face()])));
   const arrowAt = pooled(arrowPool, () => tappable(h('div', { class: 'edge-arrow' }, [h('div', { class: 'edge-star' }, [img('ui/star', 'star-pic'), face()])])));
-  function setFace(el, who) {
+  // The face of a person in the disc of a star, or the picture of a thing (#154: the ore, a soldier,
+  // the pots of bà lang), so that the child sees what is there.
+  function setFace(el, who, thing = null) {
     const slot = el.querySelector('.star-face');
-    if (slot.dataset.who === (who ?? '')) return;
-    slot.dataset.who = who ?? '';
-    const look = who ? speakerLookOf(ctx, who) : null;
-    slot.replaceChildren(...(look ? [portraitCanvas(ctx, look, { framing: 'bust', size: 20 })] : []));
+    const key = who ?? (thing ? `thing:${thing}` : '');
+    if (slot.dataset.who === key) return;
+    slot.dataset.who = key;
+    const person = who ? speakerLookOf(ctx, who) : null;
+    const look = person ?? (thing ? data.figures.figures[thing] ?? null : null);
+    slot.replaceChildren(...(look ? [portraitCanvas(ctx, look, { framing: person ? 'bust' : printFraming(look), size: 20 })] : []));
+    slot.classList.toggle('star-thing', !person && Boolean(look));
     slot.hidden = !look;
   }
   // A tap on a star says where it goes, before the walk (#62): "Đi tìm bà lang." The hero says it,
@@ -2209,7 +2218,7 @@ export async function mountVillage(ctx, params = {}) {
       // The box of the star with its bob, so that a bubble does not jump from side to side.
       const box = starBox(at);
       marks.push({ ...box, y0: box.y0 - 4, y1: box.y1 + 4 });
-      setFace(el, m.who);
+      setFace(el, m.who, m.thing);
       // The star of the next step of the story is bigger than the others (#62).
       el.classList.toggle('main', Boolean(m.main));
       el.style.transform = `translate(${at.x - STAR / 2}px, ${at.y - STAR + bob}px) scale(${pulseOf(m) * (m.main ? MAIN_STAR : 1)})`;
@@ -2225,7 +2234,7 @@ export async function mountVillage(ctx, params = {}) {
       const pulse = Math.sin(time * 5) * 3;
       const at = placeArrow(spot, { controls });
       marks.push({ x0: at.x - 22, y0: at.y - 22, x1: at.x + 22, y1: at.y + 22 });
-      setFace(el, m.who);
+      setFace(el, m.who, m.thing);
       el.classList.toggle('main', Boolean(m.main));
       el.style.transform = `translate(${at.x}px, ${at.y}px) rotate(${edge.angle}rad) translate(${-22 + pulse}px, 0) scale(${pulseOf(m) * (m.main ? MAIN_STAR : 1)})`;
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
