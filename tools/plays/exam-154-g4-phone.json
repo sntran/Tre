@@ -1,0 +1,603 @@
+{
+ "about": "#154: grade 4, the test of the messenger: at the first question of fractions, the child presses \"Cháu chưa học bài này.\"; the reason has the words of a child and the picture changes.",
+ "start": "?story=placement-messenger",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "4",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "messenger"
+   },
+   "taps": 8
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "messenger"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 12
+  },
+  {
+   "until": "Boolean(document.querySelector('.quiz'))",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q1-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q1-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q2-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q2-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q3-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q3-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q4-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q4-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q5-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q5-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q6-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q6-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q7-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q7-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q8-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q8-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q9-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q9-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q10-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q10-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q11-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q11-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  },
+  {
+   "until": "!document.querySelector('.quiz') || Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "timeout": 20
+  },
+  {
+   "print": "JSON.stringify([tre.activeProblem?.skill, tre.activeProblem?.expr])"
+  },
+  {
+   "print": "window.__frac = /^math\\.frac/.test(tre.activeProblem?.skill ?? '') && !window.__done"
+  },
+  {
+   "shot": "q12-the-question",
+   "if": "window.__frac"
+  },
+  {
+   "click": "Cháu chưa học bài này.",
+   "if": "window.__frac",
+   "after": 0.8
+  },
+  {
+   "print": "document.querySelector('.feedback')?.textContent",
+   "if": "window.__frac"
+  },
+  {
+   "shot": "q12-not-learned-yet",
+   "if": "window.__frac"
+  },
+  {
+   "print": "window.__done = window.__done || window.__frac"
+  },
+  {
+   "click": "Câu tiếp theo",
+   "if": "window.__frac && Boolean(document.querySelector('.exam-next'))",
+   "after": 1
+  },
+  {
+   "answer": "right",
+   "if": "!window.__frac && Boolean(document.querySelector('.numpad, .choice-grid'))",
+   "after": 0.6
+  },
+  {
+   "wait": 2.4
+  }
+ ]
+}

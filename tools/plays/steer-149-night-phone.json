@@ -1,0 +1,129 @@
+{
+ "about": "#149: grade 4 steers with the stick past the house of bà lang (push, lift, push, five times): the view does not turn, and the offer of the pots does not turn it.",
+ "start": "?story=puzzle-pots&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "4",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.sightState?.()?.az, (() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return [Math.round(h.x / 2), Math.round(h.z / 2)]; })()])"
+  },
+  {
+   "shot": "1-before-the-pushes"
+  },
+  {
+   "stick": [
+    70,
+    0,
+    1.0
+   ]
+  },
+  {
+   "wait": 1.0
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.sightState?.()?.az, (() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return [Math.round(h.x / 2), Math.round(h.z / 2)]; })()])"
+  },
+  {
+   "stick": [
+    70,
+    0,
+    1.0
+   ]
+  },
+  {
+   "wait": 1.0
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.sightState?.()?.az, (() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return [Math.round(h.x / 2), Math.round(h.z / 2)]; })()])"
+  },
+  {
+   "shot": "2-push-2"
+  },
+  {
+   "stick": [
+    70,
+    0,
+    1.0
+   ]
+  },
+  {
+   "wait": 1.0
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.sightState?.()?.az, (() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return [Math.round(h.x / 2), Math.round(h.z / 2)]; })()])"
+  },
+  {
+   "stick": [
+    70,
+    0,
+    1.0
+   ]
+  },
+  {
+   "wait": 1.0
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.sightState?.()?.az, (() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return [Math.round(h.x / 2), Math.round(h.z / 2)]; })()])"
+  },
+  {
+   "stick": [
+    70,
+    0,
+    1.0
+   ]
+  },
+  {
+   "wait": 1.0
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.sightState?.()?.az, (() => { const h = tre.activeVillage.state().entities.find((e) => e.id === 'hero').position; return [Math.round(h.x / 2), Math.round(h.z / 2)]; })()])"
+  },
+  {
+   "shot": "3-push-5"
+  }
+ ]
+}

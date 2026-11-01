@@ -1,0 +1,121 @@
+{
+ "about": "#150: grade 1 on the way to Trâu Sơn: a press of the talk at a person of the way says a line, each time.",
+ "start": "?story=way-trau-son",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "1",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.state().entities.find((e) => e.person?.kind === 'way' && Math.hypot(e.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, e.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) < 14)?.id ?? null)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.state().entities.find((e) => e.person?.kind === 'way' && Math.hypot(e.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, e.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) < 14)?.id ?? null)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 1,
+   "if": "!(tre.activeVillage.state().entities.find((e) => e.person?.kind === 'way' && Math.hypot(e.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, e.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) < 14)?.id ?? null)"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.person?.kind === 'way' && Math.hypot(e.position.x - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x, e.position.z - tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z) < 14)?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-the-talk-at-a-person-of-the-way"
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-again"
+  }
+ ]
+}

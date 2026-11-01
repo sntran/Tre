@@ -1,0 +1,248 @@
+{
+ "about": "#146: grade 1 at the cart in the mud with Gióng on his horse: he stands to the side, never on the cart or the hole, and rides next to the child in the village.",
+ "start": "?story=giong-cart",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "1",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.position && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'hero') && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.afoot ?? false])"
+  },
+  {
+   "shot": "1-giong-by-the-cart"
+  },
+  {
+   "walk": {
+    "person": "cart"
+   },
+   "taps": 12
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "cart"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) || tre.activeVillage.heard().some((x) => x.key === 'event.cart.start')",
+   "timeout": 60
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'stones' && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "place": "event-cart-place"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'stones' && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "place": "event-cart-place"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'stones' && !e.item.held && !/place/.test(e.item.zone ?? ''))?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)",
+   "timeout": 20
+  },
+  {
+   "tap": {
+    "place": "event-cart-place"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.position && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'hero') && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.afoot ?? false])"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-stones-in-the-hole"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 3
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.position && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'hero') && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.afoot ?? false])"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 3
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.position && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'hero') && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.afoot ?? false])"
+  },
+  {
+   "shot": "3-walk-1"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 3
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.position && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'hero') && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.afoot ?? false])"
+  },
+  {
+   "tap": {
+    "star": true
+   },
+   "after": 3
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.position && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'hero') && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.afoot ?? false])"
+  },
+  {
+   "shot": "3-walk-3"
+  }
+ ]
+}

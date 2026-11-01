@@ -1,0 +1,88 @@
+{
+ "about": "#147: grade 3, the ferry: the dog, the chicken, and the rice in view; a person in front of them fades.",
+ "start": "?story=puzzle-ferry",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "3",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /puzzle\\.ferry/.test(x.key ?? ''))",
+   "timeout": 120
+  },
+  {
+   "wait": 4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify([...tre.activeVillage.seeThrough()])"
+  },
+  {
+   "shot": "5-the-ferry-things-in-view"
+  },
+  {
+   "tap": {
+    "thing": "pz:chicken"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify([...tre.activeVillage.seeThrough()])"
+  },
+  {
+   "shot": "6-the-chicken-in-the-boat"
+  }
+ ]
+}

@@ -1,0 +1,63 @@
+{
+ "about": "#148: grade 5 at the đình: the hero and the elder under the roofs; the window opens around them in the talk.",
+ "start": "?story=elder-dinh",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.sightState?.() ?? null)"
+  },
+  {
+   "shot": "1-under-the-roofs"
+  },
+  {
+   "tap": {
+    "person": "elder"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.sightState?.() ?? null)"
+  },
+  {
+   "shot": "2-the-talk-in-the-window"
+  },
+  {
+   "read": 3
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "shot": "3-the-talk-goes-on"
+  }
+ ]
+}

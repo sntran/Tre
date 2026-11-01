@@ -1,0 +1,612 @@
+{
+ "about": "#146: grade 2, the first soldiers with Gióng: he speaks first and rides off to the side, the posts are in view, and at the share there is one Gióng, at his mat.",
+ "start": "?story=raid-soldiers-giong&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "2",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "soldier1"
+   },
+   "taps": 12
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "tap": {
+    "person": "soldier1"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid'))",
+   "timeout": 120
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-giong-speaks-first"
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "shot": "2-he-rides-off"
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-6).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-the-posts-in-view"
+  },
+  {
+   "tap": {
+    "thing": "trap:1"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thing": "post:3"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "cell": [
+     89,
+     34
+    ]
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; return !r || Boolean(r.result) || ((() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && !(r.reload > 0) && r.stones.length === 0); })()",
+   "timeout": 90
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "press": true,
+   "after": 0.45,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid) && !tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result && (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null && (tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.pull ?? 0) < (() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })()"
+  },
+  {
+   "wait": 2.6
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid || Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.result)",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "read": 10
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:share-hero'))",
+   "timeout": 60
+  },
+  {
+   "read": 8
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.position && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'hero') && [Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.x / 2), Math.round(tre.activeVillage.state().entities.find((e) => e.id === 'hero').position.z / 2)], tre.activeVillage.state().entities.find((e) => e.id === 'npc:giong-hero')?.afoot ?? false])"
+  },
+  {
+   "print": "tre.activeVillage.state().entities.filter((e) => e.look === 'giong-hero' && !e.hidden).map((e) => e.id).join(',')"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "4-one-giong-at-the-share"
+  }
+ ]
+}

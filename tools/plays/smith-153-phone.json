@@ -1,0 +1,132 @@
+{
+ "about": "#153: grade 5, the smith bends each bar at the anvil in a close view: the bar from the rack to a clear V, the bar from the water stays straight, and the two bars lie side by side for the compare.",
+ "start": "?story=smith-grade5",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 14
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone?.test) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.test.check == null",
+   "timeout": 90
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "tap": {
+    "thing": "rack:smith"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "wait": 4
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone?.test?.tries?.find((q) => q.how === 'water')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "(() => { const a = tre.activeVillage.state().entities.find((e) => e.id === 'anvil:smith')?.position; return Boolean(a) && tre.activeVillage.state().entities.some((e) => /^bar-(bend30|bent)$/.test(e.look ?? '') && Math.hypot(e.position.x - a.x, e.position.z - a.z) < 0.2); })()",
+   "timeout": 40
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone?.test?.stage, tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone?.test?.tries?.map((q) => [q.how, tre.activeVillage.state().entities.find((e) => e.id === q.id)?.look])])"
+  },
+  {
+   "shot": "1-the-bar-from-the-rack-bends"
+  },
+  {
+   "until": "(() => { const a = tre.activeVillage.state().entities.find((e) => e.id === 'anvil:smith')?.position; return Boolean(a) && tre.activeVillage.state().entities.some((e) => /^bar-(spring|hard)$/.test(e.look ?? '') && Math.hypot(e.position.x - a.x, e.position.z - a.z) < 1.2); })()",
+   "timeout": 90
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone?.test?.stage, tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone?.test?.tries?.map((q) => [q.how, tre.activeVillage.state().entities.find((e) => e.id === q.id)?.look])])"
+  },
+  {
+   "shot": "2-the-bar-from-the-water-stays-straight"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^smith\\.(guess\\.(right|wrong)|fair\\.why)/.test(x.key ?? ''))",
+   "timeout": 40
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify([tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone?.test?.stage, tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone?.test?.tries?.map((q) => [q.how, tre.activeVillage.state().entities.find((e) => e.id === q.id)?.look])])"
+  },
+  {
+   "shot": "3-side-by-side"
+  }
+ ]
+}

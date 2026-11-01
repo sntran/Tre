@@ -1,0 +1,293 @@
+{
+ "about": "#147: K, the rice for Gióng: at ten bowls Gióng is the point of the line, he glows and stretches up one head, and a figure in front of him fades.",
+ "start": "?story=rice-giong",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "0",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "mother"
+   },
+   "taps": 10
+  },
+  {
+   "tap": {
+    "person": "mother"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^rice\\.grow/.test(x.key ?? ''))",
+   "timeout": 30
+  },
+  {
+   "wait": 0.4
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify([...tre.activeVillage.seeThrough()])"
+  },
+  {
+   "shot": "1-giong-grows-in-sight"
+  },
+  {
+   "wait": 1.6
+  },
+  {
+   "shot": "2-a-head-taller"
+  }
+ ]
+}

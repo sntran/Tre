@@ -1,0 +1,1021 @@
+{
+ "about": "#154: grade 2 at the rice for Gióng: the new picture of the notebook is the bowls of rice.",
+ "start": "?story=rice-giong",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.modal-layer .menu-list'))",
+   "timeout": 30
+  },
+  {
+   "click": "Dành cho bố mẹ",
+   "after": 1
+  },
+  {
+   "gate": true
+  },
+  {
+   "click": "Cài đặt",
+   "after": 1
+  },
+  {
+   "select": "Lớp của con",
+   "value": "2",
+   "after": 1
+  },
+  {
+   "button": ".modal-layer .panel-head .icon-btn",
+   "after": 1
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "window.__want = /Bát cơm/"
+  },
+  {
+   "print": "(() => { window.__cards = []; new MutationObserver(() => { const c = document.querySelector('.print-card'); if (c && !c.__held) { c.__held = true; window.__cards.push(c.textContent); if (!window.__heldCard && (!window.__want || window.__want.test(c.textContent))) { window.__heldCard = c; c.remove = () => {}; } } }).observe(document.body, { childList: true, subtree: true }); return 'watch'; })()"
+  },
+  {
+   "walk": {
+    "person": "mother"
+   },
+   "taps": 10
+  },
+  {
+   "tap": {
+    "person": "mother"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "thingExpr": "(() => { const s = tre.activeVillage.state(); const z = s.entities.find((e) => e.id === 'zone:trays').zone; return z.items.find((id) => s.entities.find((e) => e.id === id)?.item.size === 5) ?? z.items[0]; })()"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "tap": {
+    "place": "pot"
+   },
+   "after": 0.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5,
+   "if": "!Boolean(document.querySelector('.print-card'))"
+  },
+  {
+   "shot": "1-the-word-lines-of-giap-and-roi",
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "click": "Có! Mình đi cùng bạn.",
+   "after": 1.5,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "2-a-picture-of-bowls",
+   "if": "Boolean(window.__heldCard)"
+  },
+  {
+   "print": "(() => { const c = window.__heldCard; if (c) Element.prototype.remove.call(c); return 'free'; })()"
+  },
+  {
+   "click": "Có! Mình đi cùng bạn.",
+   "after": 1.5,
+   "if": "Boolean(document.querySelector('.dialogue-layer'))"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "read": 2,
+   "if": "Boolean(document.querySelector('.dialogue-layer, .say-layer')) && !window.__heldCard"
+  },
+  {
+   "wait": 1,
+   "if": "!window.__heldCard"
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "shot": "2-a-picture-of-bowls",
+   "if": "Boolean(window.__heldCard)"
+  },
+  {
+   "print": "(() => { const c = window.__heldCard; if (c) Element.prototype.remove.call(c); return 'free'; })()"
+  },
+  {
+   "print": "document.querySelector('.print-card')?.textContent + ' | from: ' + JSON.stringify(tre.profile.notebook?.from) + ' | told: ' + tre.profile.notebook?.told"
+  },
+  {
+   "print": "JSON.stringify(window.__cards)"
+  }
+ ]
+}
