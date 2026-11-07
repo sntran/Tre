@@ -59,8 +59,10 @@ export function restOf(step, flags, { raidOf = () => null, raids = {}, minutes =
   const waiting = list.map((tg) => (tg.encounter ? raidOf(tg.encounter) : null))
     .find((raid) => raid && flags[`raid.${raid}.back`] !== undefined && flags[`raid.${raid}.back`] > minutes) ?? null;
   if (!live.length) return waiting || night ? { rest: true, raid: waiting, night } : null;
-  // At night a raid and a task of the day (the staffs, #161) wait for the dawn.
-  if (night && live.every((tg) => tg.encounter || dayOnly(tg))) return { rest: true, raid: null, night: true };
+  // At night the rest is the next step, for every step, also a step with a person (#164: the star
+  // of rest did not show while the step had a person, and a girl of grade 1 used about 60 touches to
+  // find the sleep).
+  if (night) return { rest: true, raid: null, night: true };
   return null;
 }
 

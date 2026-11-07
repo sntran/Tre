@@ -2938,6 +2938,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // step is a raid, the star is on a place of rest: the house of the hero in Phù Đổng, or beside
   // Nghé. There a press of the button with the picture of a mat lets the hero sleep until the dawn.
   const REST_REACH = 6; // half blocks from the place of rest
+  const SLEEP_RANK = -30; // at night the sleep comes before every other act of the button
+  // At night, out of a raid, a task, and a practice, the hero can sleep where the hero is (#164).
+  const sleepNow = () => darkNow() && !raidOn() && !taskOn() && !practice && !growing;
+  // A tap on a person (the talk) or on Nghé (the ride) chooses that act, also at night.
+  const tappedPerson = () => Boolean(chosen && (persons().some((p) => p.entity === chosen.id) || (getEntity(state, chosen.id)?.follow && !hero()?.riding)));
   const HOME_NEAR = 80; // map cells: in Phù Đổng, the hero rests at home
   const darkNow = () => ['dusk', 'night'].includes(timeOfDay(state.clock).part);
   const encRaid = (id) => map.encounters.find((e) => e.id === id)?.raid ?? null;
@@ -5092,7 +5097,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       }
       // The rest until the morning at the place of rest (#155): at night, or while the enemies of a
       // lost raid wait for the dawn.
-      if (!raidOn() && !taskOn() && !practice && (darkNow() || restNow())) {
+      // At night the sleep is the first act of the button, where the hero is (#164: near Gióng the
+      // mat and the talk changed places at each of his steps); a tap on a person still talks.
+      if (sleepNow() && !tappedPerson()) add({ act: 'sleep', icon: 'mat', target: 'hero', at: { ...hp }, rank: SLEEP_RANK, run: () => sleep() }, REACH);
+      else if (!raidOn() && !taskOn() && !practice && restNow()) {
         const spot = restSpot();
         add({ act: 'sleep', icon: 'mat', target: 'hero', at: { x: spot.x * 2, y: hp.y, z: spot.y * 2 }, rank: 4, run: () => sleep() }, REST_REACH);
       }
@@ -5223,6 +5231,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (raidOn()) return raidAction();
     const getOff = () => worldCommand(state, { type: 'ride', id: 'hero' });
     if (h.riding) {
+      // At night the sleep comes first, also on Nghé (#164: the button was the get off): the hero
+      // gets down and sleeps beside Nghé.
+      if (sleepNow() && !tappedPerson()) return { act: 'sleep', icon: 'mat', target: 'hero', run: () => { getOff(); delete hero().riding; sleep(); } };
       // On Nghé, next to a person who can talk, or the enemies of an encounter (#66): the button
       // shows the talk, and one press gets the hero down and opens the talk (#60).
       const people = new Set(persons().filter((p) => p.kind === 'npc' || p.kind === 'encounter').map((p) => p.entity));
