@@ -735,7 +735,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     let keyAt;
     const needsPlace = ['first', 'show', 'mark', 'count', 'cue', 'demo', 'smaller', 'share'].includes(move);
     if (needsPlace && !task) return 0;
-    if (move === 'count') {
+    // A place that has all the things of the task (all the ducks in the pen, #173: "Tìm một con
+    // vịt…" came after "Đủ mười con"): the help is the call of the person, never a find.
+    const full = def.lines?.full ?? null;
+    const own = task ? itemsOf(task.place).filter((e) => !e.item.stray).length : 0;
+    if (full && task && !carrying(key, task) && (task.tz?.zone.need ?? 0) > 0 && own >= task.tz.zone.need) {
+      say(t, full, { n: { key: `num.${task.tz.zone.need}` } });
+      t += 2.4;
+    } else if (move === 'count') {
       t = countSteps(task, famOf(key), info, { say, point, mark, steps }, t);
     } else if (move === 'first') {
       t = firstSteps(task, def, { say, point, mark, steps }, t);

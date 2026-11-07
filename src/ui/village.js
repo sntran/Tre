@@ -2084,7 +2084,9 @@ export async function mountVillage(ctx, params = {}) {
     if (starSaid.has(once)) return;
     starSaid.add(once);
     const by = m.who ?? m.by ?? null;
-    const name = by ? namesOf(data, mapData.region)[by] ?? { key: `npc.${by}.name` } : null;
+    // A person with the name of another person (Gióng in the sky, #173: the voice said "Đi tìm
+    // npc.giong-sky.name."): its name key.
+    const name = by ? namesOf(data, mapData.region)[by] ?? { key: data.npcs?.npcs?.[by]?.nameKey ?? `npc.${by}.name` } : null;
     const who = name ? t(name.key, name.params) : '';
     const params = { who: who.charAt(0).toLocaleLowerCase(lang()) + who.slice(1), ...(m.name ? { thing: { key: m.name } } : {}) };
     // A person with the name of a role (the smith) gets an article in English (#67: "Go and find the

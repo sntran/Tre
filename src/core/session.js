@@ -3499,7 +3499,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (win.give) emit({ type: 'gift', from: 'hero', give: win.give, delay: 0.6 });
       // A short, fair note with its seal (Legend or History), and a fact of history.
       if (def.noteKey) say(def.noteKey, {}, def.mark ?? null);
-      if (def.historyKey) say(def.historyKey, {}, 'history');
+      // Up to grade 2 a fact of history is one short sentence in words that a child knows (#173: "I
+      // don't know these grown-up words."; Beck, McKeown, and Kucan 2013); the long line comes from
+      // grade 3.
+      if (def.historyKey) say(Number(profile.grade ?? 1) <= WORD_GRADE && def.historyShortKey ? def.historyShortKey : def.historyKey, {}, 'history');
       // A raid with loot: the share comes when the things of the raid are gone, and the talks
       // after it.
       if (def.loot) pendingShare = { loot: def.loot, wall: r.raid.wall, dir: r.raid.dir, after: win.after ?? [], key: def.shareKey ?? 'share.start' };

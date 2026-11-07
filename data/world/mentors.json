@@ -351,6 +351,7 @@
       "picture": "mentor.picture.duck",
       "lines": {
         "putDone": "mentor.duck.putDone",
+        "full": "event.duck.all",
         "show": "mentor.duck.show",
         "lost": "mentor.duck.lost",
         "total": "mentor.duck.total",
