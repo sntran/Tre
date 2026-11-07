@@ -183,7 +183,7 @@ test('the healer says the name of the herb when a press puts a bunch in the bask
   ] }, { onSession: (s) => s.listen((ev) => ev.type === 'open' && ev.screen === 'callout' && lines.push(ev.textKey)) });
   assert.deepEqual(failures, []);
   // The one move of a press says the put, not only the pick (#64).
-  assert.ok(lines.includes('healer.put.tiato'), `the name of the bunch: ${lines.join(', ')}`);
+  assert.ok(lines.includes('healer.count.kind.one'), `the count of the bunch: ${lines.join(', ')}`);
   assert.ok(!lines.includes('healer.herb.tiato'), `no line of a pick: ${lines.join(', ')}`);
   assert.ok(lines.includes('healer.bed.rauma'), `the name of the bed: ${lines.join(', ')}`);
 });

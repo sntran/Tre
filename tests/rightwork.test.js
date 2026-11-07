@@ -87,7 +87,7 @@ function putFrom(session, kind, n) {
   assert.equal(basket(), before + n, `${n} bunches of ${kind}`);
 }
 
-test('the healer: after a give of 3, 2, and 2 she names each row and counts it, says the extra bunch, says each kind has two, no help comes, and the next press gives the basket', async () => {
+test('the healer: after a give of 3, 2, and 2 she names each row and counts it, says the extra bunch and to take it out, the child takes it out, no help comes, and the next press gives the basket', async () => {
   const session = await afterTalk('trial-healer');
   putFrom(session, 'ngai', 3);
   putFrom(session, 'tiato', 2);
@@ -95,7 +95,7 @@ test('the healer: after a give of 3, 2, and 2 she names each row and counts it, 
   const lines = linesOf(session, 'npc:healer');
   send(session, { type: 'tap', target: { person: 'npc:healer' } });
   send(session, { type: 'hands' });
-  run(session, 60, () => lines.some((l) => l.key === 'mentor.healer.now'));
+  run(session, 60, () => lines.some((l) => l.key === 'healer.take.ask.one'));
   const keys = lines.map((l) => l.key);
   // Each row starts with its name.
   for (const k of ['ngai', 'tiato', 'rauma']) {
@@ -104,8 +104,13 @@ test('the healer: after a give of 3, 2, and 2 she names each row and counts it, 
   }
   const extra = lines.find((l) => l.key === 'mentor.healer.extra.ngai');
   assert.equal(extra?.params.n.key, 'num.1', keys.join(' '));
-  const now = lines.find((l) => l.key === 'mentor.healer.now');
-  assert.equal(now?.params.n.key, 'num.2', keys.join(' '));
+  // The child takes the extra bunch out (#160), and she says the next step.
+  run(session, 10, () => session.action()?.act === 'take');
+  run(session, 1.2);
+  assert.equal(session.action()?.act, 'take');
+  send(session, { type: 'hands', id: session.action().id });
+  run(session, 2);
+  assert.ok(lines.some((l) => l.key === 'mentor.healer.next'), lines.map((l) => l.key).join(' '));
   run(session, 25);
   assert.ok(!lines.some((l) => HELPS.test(l.key)), `no help: ${lines.map((l) => l.key).join(' ')}`);
   // A help with nothing to put says nothing (#74): the count of the work comes in its place.
@@ -130,10 +135,9 @@ test('the healer: after a give of 3, 2, and 2 she names each row and counts it, 
 
 test('a line of a put never sounds like an order (#74: "Thêm một bó … nữa" made a child put one more)', () => {
   const vi = load('i18n/vi.json');
-  for (const k of ['ngai', 'tiato', 'rauma']) {
-    assert.ok(!/^Thêm/.test(vi[`healer.more.${k}`]), vi[`healer.more.${k}`]);
-    assert.match(vi[`healer.more.${k}`], /vào giỏ rồi\.$/);
-  }
+  // A put says the count of its kind in the basket (#160): "Bảy bó ngải cứu.".
+  for (const key of ['healer.count.kind', 'healer.count.kind.one']) assert.ok(!/^Thêm/.test(vi[key]), vi[key]);
+  assert.equal(vi['healer.count.kind'], '{n} bó {herb}.');
   // No help line has "nốt" or "một nửa".
   for (const [key, text] of Object.entries(vi)) if (/^mentor\./.test(key)) assert.ok(!/nốt|một nửa/.test(text), `${key}: ${text}`);
 });

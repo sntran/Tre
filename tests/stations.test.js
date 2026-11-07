@@ -47,11 +47,13 @@ test('the healer: each put has its line, also the fourth of a kind', async () =>
     send(session, { type: 'hands' });
     run(session, 1.5);
   }
-  // The fourth put of the same herb in a row says it in another form (healer.more).
-  const puts = lines.filter((l) => l.key === 'healer.put.ngai' || l.key === 'healer.more.ngai').length;
+  // Each put says the count of its kind in the basket (#160), also the fourth.
+  const counts = lines.filter((l) => /^healer\.count\.kind/.test(l.key));
+  const puts = counts.length;
   const inBasket = getEntity(session.state, 'zone:basket').zone.items.filter((id) => getEntity(session.state, id).item.kind === 'herb-ngai').length;
   assert.ok(inBasket >= 4, `bunches in the basket: ${inBasket}`);
   assert.equal(puts, inBasket, lines.map((l) => l.key).join(' '));
+  assert.equal(counts.at(-1).params.n.key, `num.${inBasket}`, 'the last line has the number of the basket');
 });
 
 test('the healer: after a wrong give, an empty row has a word', async () => {

@@ -407,7 +407,7 @@ test('the healer: the child never takes the bunch of the example, and the exampl
 // A basket where the child sees the count (#61): after a wrong give, the healer lays each kind in a
 // row in front of the basket and counts each row aloud from one; then only the extra bunch goes
 // back to its bed, and the rest go back into the basket.
-test('the healer: after a wrong give, each kind lies in a row and she counts each row; then only the extra bunch goes back', async () => {
+test('the healer: after a wrong give, each kind lies in a row and she counts each row; then every bunch is in the basket again, for the child to take the extra out (#160)', async () => {
   const counts = [];
   let session = null;
   const story = load('tests/stories/trial-healer.json');
@@ -425,7 +425,7 @@ test('the healer: after a wrong give, each kind lies in a row and she counts eac
   run(session, 24);
   assert.deepEqual(counts, [1, 2, 3, 1, 2, 1, 2], 'one count for each row');
   const after = kinds(session, 'basket');
-  assert.deepEqual(after, { 'herb-ngai': 2, 'herb-tiato': 2, 'herb-rauma': 2 }, 'only the extra bunch went back');
+  assert.deepEqual(after, { 'herb-ngai': 3, 'herb-tiato': 2, 'herb-rauma': 2 }, 'no bunch went back with no act of the child');
   assert.ok(basket.zone.items.every((id) => !getEntity(session.state, id).item.set), 'the bunches are in the basket again');
 });
 

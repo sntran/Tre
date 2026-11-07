@@ -53,7 +53,7 @@ const commits = (session) => {
   return out;
 };
 
-test('at grade 2, a wave after a right count keeps each row at four, and the healer says no extra', async () => {
+test('at grade 2, the child takes the three extra bunches out; a wave after that keeps each row at four, and the healer says no extra', async () => {
   const session = await afterTalk(2);
   assert.equal(getEntity(session.state, 'zone:basket').zone.each, 4, 'four of each at grade 2');
   putFrom(session, 'ngai', 7);
@@ -62,9 +62,17 @@ test('at grade 2, a wave after a right count keeps each row at four, and the hea
   const lines = linesOf(session, 'npc:healer');
   send(session, { type: 'tap', target: { person: 'npc:healer' } });
   send(session, { type: 'hands' });
-  run(session, 80, () => lines.some((l) => l.key === 'mentor.healer.now'));
-  assert.equal(lines.find((l) => l.key === 'mentor.healer.now')?.params.n.key, 'num.4', lines.map((l) => l.key).join(' '));
-  run(session, 3);
+  run(session, 80, () => lines.some((l) => l.key === 'healer.take.ask'));
+  assert.equal(lines.find((l) => l.key === 'healer.take.ask')?.params.n.key, 'num.3', lines.map((l) => l.key).join(' '));
+  // Her count leaves the bunches of the child in the basket (#160).
+  run(session, 10, () => session.action()?.act === 'take');
+  run(session, 1.2);
+  assert.deepEqual(['ngai', 'tiato', 'rauma'].map((k) => inBasket(session, k)), [7, 4, 4]);
+  for (let i = 0; i < 3; i++) {
+    assert.equal(session.action()?.act, 'take', `the take ${i + 1}`);
+    send(session, { type: 'hands', id: session.action().id });
+    run(session, 1.2);
+  }
   assert.deepEqual(['ngai', 'tiato', 'rauma'].map((k) => inBasket(session, k)), [4, 4, 4]);
   lines.length = 0;
   send(session, { type: 'wave' });
@@ -159,7 +167,7 @@ test('the first lines show the tap on a bed, with the beds glowing', () => {
   assert.deepEqual(tap.names, ['zone:bed-ngai', 'zone:bed-tiato', 'zone:bed-rauma']);
 });
 
-test('after a count that made the basket right, the healer says the next step, and the big button glows with the give (#89)', async () => {
+test('after the child takes the extra bunch out and the basket is right, the healer says the next step, and the big button glows with the give (#89, #160)', async () => {
   const session = await afterTalk(2);
   putFrom(session, 'ngai', 5);
   putFrom(session, 'tiato', 4);
@@ -169,9 +177,14 @@ test('after a count that made the basket right, the healer says the next step, a
   session.listen((ev) => { if (ev.type === 'actGlow') glows += 1; });
   send(session, { type: 'tap', target: { person: 'npc:healer' } });
   send(session, { type: 'hands' });
-  run(session, 90, () => lines.some((l) => l.key === 'mentor.healer.next'));
+  run(session, 90, () => lines.some((l) => l.key === 'healer.take.ask.one'));
+  run(session, 10, () => session.action()?.act === 'take');
+  run(session, 1.2);
+  assert.equal(session.action()?.act, 'take');
+  send(session, { type: 'hands', id: session.action().id });
+  run(session, 2);
   const keys = lines.map((l) => l.key);
-  assert.ok(keys.indexOf('mentor.healer.next') > keys.indexOf('mentor.healer.now'), keys.join(' '));
+  assert.ok(keys.indexOf('mentor.healer.next') > keys.indexOf('healer.take.out'), keys.join(' '));
   assert.ok(glows > 0, 'the button glows');
   assert.equal(load('i18n/vi.json')['mentor.healer.next'], 'Cháu đưa giỏ cho bà nhé.');
   assert.equal(session.action()?.act, 'give');

@@ -93,7 +93,7 @@ test('each put has its put line, also while a help plays; no break while the chi
     if (h.zone('basket').items.length > n) {
       puts += 1;
       const lines = h.said.slice(before).map((l) => l.key);
-      assert.ok(lines.some((x) => /^healer\.(put|more)\./.test(x)), `a put with no put line: ${lines.join(', ')}`);
+      assert.ok(lines.some((x) => /^healer\.count\.kind/.test(x)), `a put with no put line: ${lines.join(', ')}`);
     }
   }
   assert.ok(puts >= 6, `${puts} puts`);

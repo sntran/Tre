@@ -115,11 +115,13 @@ test('after a wrong basket the model is not dealt again; the presses of the chil
   h.session.command({ type: 'tap', target: { person: 'npc:healer' } });
   h.run(3);
   h.press();
-  // While she lays the doses, the child taps a bed and presses two times.
-  h.run(2);
+  // While she lays the doses, the child taps a bed and presses two times (her rows end with her
+  // count, #160).
+  h.run(0.5);
   const inBasket = () => h.zone('basket').items.length;
   h.session.command({ type: 'tap', target: { thing: h.bedThing('rauma') } });
-  h.run(2, false);
+  h.run(1.5, false);
+  assert.ok(h.zone('trial-healer').lay, 'she lays the doses');
   const n0 = h.puts.filter((p) => p.by === 'hero' && p.type === 'pick').length;
   for (let i = 0; i < 2; i++) {
     h.session.command({ type: 'hands', id: h.session.action()?.id });

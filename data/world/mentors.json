@@ -437,10 +437,9 @@
         "putKind": "mentor.healer.putKind",
         "give": "mentor.healer.give",
         "none": "mentor.healer.none",
-        "putEach": "healer.put",
         "row": "mentor.healer.row",
         "extra": "mentor.healer.extra",
-        "now": "mentor.healer.now", "nowEach": "mentor.healer.nowEach", "next": "mentor.healer.next"
+        "next": "mentor.healer.next"
       }
     },
     "trial-woodcutter": {

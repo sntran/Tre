@@ -1339,14 +1339,17 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     const basket = task.place;
     if (form === 'doses') {
       const leaf = getEntity(w, 'leaf:healer:dose');
+      // The help says the need in words (#160: "I didn't change anything!"): a help never changes
+      // the task with no word.
       s.say(t, 'healer.dose.like');
+      s.say(t + 3.4, 'healer.need.doses', { k: { key: `num.${task.tz.zone.plan.doses}` } });
       if (leaf) {
         s.point(t, leaf.position, 1.6);
         s.mark(t, leaf.position, 2.5);
         s.steps.push({ at: t, seq: { ids: [leaf.id] } });
       }
-      if (basket) s.point(t + 1.8, basket.position, 1.4);
-      return t + 3.4;
+      if (basket) s.point(t + 3.4, basket.position, 1.4);
+      return t + 5.8;
     }
     if (form === 'model') {
       // The model lies on its leaves from the first step: she points at the leaf of one dose, and
@@ -1412,7 +1415,25 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       s.say(t, 'healer.dose.left', { n: { key: `num.${Math.min(150, pool[k])}` }, herb: { key: `herb.name.${k}` } });
       t += 2.2;
     }
+    t = takeAsk(task, kinds.map((k) => [k, pool[k]]), s, t);
     return t + 0.6;
+  }
+  // After a count with extra bunches (#160: "Maybe I have to take the extra leaves out. How?"): the
+  // person says what to take out of the first kind with extra bunches, and from now the press at the
+  // basket takes one extra bunch out. extra: [kind, number over the need].
+  function takeAsk(task, extra, s, t) {
+    const first = extra.find(([, n]) => n > 0);
+    if (!first) return t;
+    task.tz.zone.extraTold = true;
+    delete task.tz.zone.putSince;
+    s.say(t, first[1] === 1 ? 'healer.take.ask.one' : 'healer.take.ask', { n: { key: `num.${Math.min(150, first[1])}` }, herb: { key: `herb.name.${first[0]}` } });
+    // She points at the basket, and it glows until the child takes (the take is at the basket).
+    const basket = getEntity(world(), 'basket:healer');
+    if (basket) {
+      s.point(t, basket.position, 1.6);
+      s.steps.push({ at: t, glow: { ids: [basket.id] } });
+    }
+    return t + 2.6;
   }
   // The person takes one thing (of a kind) from a heap, puts it into a place, and takes it back.
   function putBackSteps(task, heap, place, kind, s, t) {
@@ -1682,7 +1703,8 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
           s.mark(at, end, COUNT_PACE + 1);
           at += COUNT_PACE;
         }
-        // The extra bunches of the row go back to their bed, and the person says it (#74).
+        // The extra bunches of the row: the person says how many (#74). They stay in the basket, and
+        // the child takes them out (#160).
         if (bunches.length > needOf(k)) {
           if (!task.byNghe && lines.extra) s.say(at + 0.1, `${lines.extra}.${k}`, { n: { key: `num.${bunches.length - needOf(k)}` } });
           at += EXTRA_LINE;
@@ -1696,7 +1718,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       // The work is right when the extra bunches are back: the person says the count of the work
       // now, and the next press gives the basket (#74).
       const over = (c, i) => c > needOf(kinds[i]);
-      if (counts.every((c, i) => c >= needOf(kinds[i])) && counts.some(over) && lines.now) {
+      if (task.place?.zone.rule === 'basket' && counts.some(over) && !task.byNghe) {
+        // The basket with extra bunches (#160): bà lang says what to take out, and the button
+        // shows the take (the session, extraKind).
+        at = takeAsk(task, kinds.map((k, i) => [k, counts[i] - needOf(k)]), s, at);
+      } else if (counts.every((c, i) => c >= needOf(kinds[i])) && counts.some(over) && lines.now) {
         const extras = counts.reduce((a, c, i) => a + Math.max(0, c - needOf(kinds[i])), 0);
         const end = layEnd(parts.length, kinds.length, counts.filter(over).length, extras) + 0.6;
         at = Math.max(at, end);

@@ -82,13 +82,13 @@ for (const grade of [1, 4]) {
     assert.ok(counting > 0, 'she counts');
     assert.ok(most <= total + 1, `a bunch went into the basket during her count: ${most}`);
     h.run(4);
-    // Grade 1: she took the extra bunch back, and the next give is right. Grade 4: her count of the
-    // doses leaves the basket as it was, with no bunch more.
-    if (grade === 4) {
-      assert.equal(basket(), total + 1, 'no bunch more after her count');
-      return;
-    }
-    assert.equal(basket(), total, 'she took the extra bunch back');
+    // Her count leaves the basket as it was, with no bunch more (#160: the child takes the extra
+    // out). The press at the basket takes the extra bunch out, and the next give is right.
+    assert.equal(basket(), total + 1, 'no bunch more and no bunch less after her count');
+    h.run(4);
+    assert.equal(h.session.action()?.act, 'take', 'the take of the extra bunch');
+    h.press(1);
+    assert.equal(basket(), total, 'the child took the extra bunch out');
     // The next give is right.
     h.give();
     h.run(20);

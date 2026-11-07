@@ -55,7 +55,7 @@ import { CHUNK, chunkOf, chunkKey } from '../world/terrain.js';
 import { ground } from './world/systems/ground.js';
 import { rainOf, sky as skyStep } from './world/systems/sky.js';
 import { REACH, PILE_REACH, learnerRecord, canPut, canTake, spanSlot, nearestPoint } from './world/zones.js';
-import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady, DESK_COLORS, marksFor } from './world/systems/work.js';
+import { setupTrial, clearTrial, freeSlot, canTakeWork, toHeap, hasRoom, giveReady, DESK_COLORS, marksFor, backHome } from './world/systems/work.js';
 import { taskPools, POOL } from '../world/light.js';
 import { viewSize, inView, VIEW } from '../world/view.js';
 import { workBoxes, workCovers } from '../world/fade.js';
@@ -4212,6 +4212,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The basket is given at the basket, or to the healer at her beds (#74: a walk to the face of
     // the healer ended at the well, and the basket was given there; #79: the button and the world
     // had two rules, and a press did nothing). One rule: giveReady.
+    // After a count with extra bunches, the press takes one extra bunch out (#160), not the give.
+    // Until the extra is out (or the child puts a bunch again), no give (#160).
+    if (key === 'trial-healer' && open('healer') && extraLeft() && !open('healer').zone.putSince) return takeNow() && basketNear() ? { act: 'take', icon: 'hand-pick', run: takeExtra } : null;
     if (key === 'trial-healer' && open('healer') && giveReady(state, hero().position)) return { act: 'give', icon: 'basket', run: () => work('healer', 'give') };
     // The knife when the marks are enough for the pieces of the level (#118: after one mark the
     // button was the knife, and a girl of grade 5 cut with one mark two times); a tap on the
@@ -4459,10 +4462,104 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const run = herbSaid.key === key ? herbSaid.n + 1 : 1;
     herbSaid = { key, n: run };
     if (what !== 'put' && run > HERB_RUN) return;
-    // The same put again and again: each fourth one has another form ("Thêm một bó rau má nữa."),
-    // so that no line comes more than three times in a row (#45).
-    const line = what === 'put' && run % (HERB_RUN + 1) === 0 ? `healer.more.${kind.slice(5)}` : key;
-    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: line, params: {} });
+    // A put says the count of that kind in the basket now (#160: the voice dropped lines when the
+    // presses came fast, and a girl counted the lines: "Bảy bó ngải cứu." — a line that the voice
+    // drops costs nothing, the next line has the right number).
+    if (what === 'put') {
+      const n = basketCount(kind.slice(5));
+      emit({ type: 'open', screen: 'callout', id: healer.id, textKey: oneKey('healer.count.kind', n), params: { n: { key: `num.${Math.min(150, n)}` }, herb: { key: `herb.name.${kind.slice(5)}` } } });
+      return;
+    }
+    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: key, params: {} });
+  }
+  // The key of a line for one thing (".one": "1 bunches" never shows in English, #42), when the
+  // number is a word of a key and not a number.
+  const oneKey = (key, n) => (n === 1 ? `${key}.one` : key);
+  // The bunches of a kind in the basket of the healer now.
+  const basketCount = (k) => (zoneOf('basket')?.zone.items ?? []).filter((id) => getEntity(state, id)?.item.kind === `herb-${k}`).length;
+  // A tap on the basket says the count of each kind (#160).
+  function basketSay() {
+    const z = zoneOf('basket')?.zone;
+    const healer = getEntity(state, 'npc:healer');
+    if (!z || !healer || healer.hidden) return;
+    const list = z.kinds.map((k) => ({ key: oneKey('healer.count.one', basketCount(k)), params: { n: { key: `num.${Math.min(150, basketCount(k))}` }, herb: { key: `herb.name.${k}` } } }));
+    emit({ type: 'open', screen: 'callout', id: healer.id, textKey: 'healer.count.all', params: { list } });
+  }
+  // The child takes the extra out (#160: "Maybe I have to take the extra leaves out. How?"): with
+  // empty hands at the basket, after a count with extra bunches, a press takes one bunch of an extra
+  // kind out and puts it back on its bed.
+  // Extra bunches that bà lang told the child to take out (no give until they are out).
+  function extraLeft() {
+    const tz = trialZone('healer');
+    const z = zoneOf('basket')?.zone;
+    return Boolean(tz && !tz.zone.done && tz.zone.extraTold && z?.need && z.kinds.some((k) => basketCount(k) > (z.need[k] ?? 0)));
+  }
+  function extraKind() {
+    const tz = trialZone('healer');
+    const z = zoneOf('basket')?.zone;
+    if (!extraLeft() || tz.zone.lay) return null;
+    // Not while she counts (#152).
+    if (getEntity(state, 'script:trial-healer')?.script.move === 'count') return null;
+    return z.kinds.find((k) => basketCount(k) > (z.need[k] ?? 0)) ?? null;
+  }
+  // The ground of the count of bà lang (#108, #160): the rows of the kinds in front of the basket
+  // (basketRowAt) and the leaves of the doses (doseSteps in src/core/mentoring.js).
+  function countGround() {
+    const b = zoneOf('basket');
+    const r = b?.zone.rect;
+    if (!r) return null;
+    const doses = trialZone('healer')?.zone.plan?.doses ?? 0;
+    const most = Math.max(0, ...b.zone.kinds.map((k) => basketCount(k)));
+    const x1 = Math.max(r.x0 + 1 + most * 0.7, doses ? r.x0 + 1.2 + (doses - 1) * 2.6 + 1.2 : 0) + 0.4;
+    return { x0: r.x0 - 0.6, x1, z0: r.z1 - 0.2, z1: r.z1 + 2.9 };
+  }
+  const COUNT_SIDE = 1.4; // half blocks past the end of the ground of the count
+  function countSide() {
+    const g = countGround();
+    if (!g) return;
+    const inside = (p) => p && p.x >= g.x0 && p.x <= g.x1 && p.z >= g.z0 && p.z <= g.z1;
+    const free = (q) => tileMap.walkable(Math.floor(q.x / 2), Math.floor(q.z / 2));
+    const mid = (g.z0 + g.z1) / 2;
+    // The end of the rows away from the basket first, then the start of the rows.
+    const spots = [g.x1 + COUNT_SIDE, g.x0 - COUNT_SIDE].flatMap((x) => [{ x, z: mid - 0.8 }, { x, z: mid + 1 }]).filter(free);
+    if (spots.length < 2) return;
+    const healer = getEntity(state, 'npc:healer');
+    if (healer && !healer.hidden && inside(healer.position)) {
+      if (healer.schedule) healer.schedule.aside = { ...spots[0] };
+      Object.assign(healer.position, spots[0]);
+    }
+    const h = hero();
+    if (inside(h.position) && !h.riding) {
+      const to = spots[1];
+      walkTo([{ x: to.x / 2, y: to.z / 2 }], () => worldCommand(state, { type: 'face', id: 'hero', x: (g.x0 + g.x1) / 2, z: mid }));
+    }
+  }
+  // The take is the act of the button: an extra bunch to take out, empty hands at the basket, and
+  // no tap on a bed since (a tap on a bed takes from the bed).
+  // After a put of the child since her count, the child tries again: the take waits for the next
+  // count.
+  const takeNow = () => Boolean(!holding() && extraKind() && !trialZone('healer')?.zone.putSince && !(chosen && /^(herb-|zone:bed-)/.test(chosen.id ?? '') && getEntity(state, chosen.id)?.item?.zone !== 'basket'));
+  // The hero is at the basket, or next to bà lang at her beds (the rule of the give, giveReady).
+  function basketNear() {
+    const b = getEntity(state, 'basket:healer');
+    return Boolean(b && distHb(hero().position, b.position) <= REACH + 4) || giveReady(state, hero().position);
+  }
+  function takeExtra() {
+    const k = extraKind();
+    const z = zoneOf('basket')?.zone;
+    if (!k || !z) return;
+    const id = [...z.items].reverse().find((x) => getEntity(state, x)?.item.kind === `herb-${k}`);
+    if (!id || !backHome(state, getEntity(state, id))) return;
+    const healer = getEntity(state, 'npc:healer');
+    if (healer && !healer.hidden) emit({ type: 'open', screen: 'callout', id: healer.id, textKey: oneKey('healer.take.out', basketCount(k)), params: { herb: { key: `herb.name.${k}` }, n: { key: `num.${Math.min(150, basketCount(k))}` } } });
+    // The last extra bunch is out, and the basket is right: the next step in words, and the big
+    // button glows with the give (#89).
+    if (healer && !healer.hidden && z.kinds.every((x) => basketCount(x) === (z.need[x] ?? 0))) {
+      emit({ type: 'open', screen: 'callout', id: healer.id, textKey: 'mentor.healer.next', params: {} });
+      readyFinish.add('trial-healer');
+      emit({ type: 'actGlow' });
+    }
+    emit({ type: 'hud' });
   }
   // A task or a folk game goes on now.
   const taskOn = () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done));
@@ -4711,6 +4808,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const guessed = test?.guessWait ? test.tries.find(near) : null;
         if (guessed) add({ act: 'pebble', icon: 'hand-put', target: guessed.id, at: getEntity(state, guessed.id).position, rank: -1, work: true, run: () => work(id, 'pebble', { item: guessed.id }) }, REACH + 4);
       }
+      // The take of an extra bunch at the basket of bà lang (#160).
+      const basket = open('healer') && takeNow() ? getEntity(state, 'basket:healer') : null;
+      // At the basket, or next to bà lang at her beds, as the give.
+      if (basket && basketNear()) add({ act: 'take', icon: 'hand-pick', target: basket.id, keys: [basket.id, 'zone:basket'], at: hero().position, rank: -6, work: true, run: takeExtra }, REACH);
       const hearth = zoneOf('hearth');
       const bellows = query(state, 'item', 'position').find((e) => e.item.kind === 'bellows' && !e.hidden);
       if (open('horse')?.zone.heat === null && hearth?.zone.items.length) add({ act: 'blow', icon: 'fire', target: bellows?.id ?? hearth.id, keys: [bellows?.id, hearth.id], at: bellows?.position ?? hearth.position, rank: 0, work: true, run: () => work('horse', 'blow') }, REACH + 3);
@@ -4867,6 +4968,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // not: a press never undoes what the child just put (#47, #54).
       for (const z of query(state, 'zone')) {
         if (!TAKE_BACK.has(z.zone.rule)) continue;
+        // The extra bunches of the basket go out with the take (#160), not into the hands.
+        if (z.zone.rule === 'basket' && extraLeft()) continue;
         const things = z.zone.items.map((id) => getEntity(state, id)).filter((e) => e && !e.hidden && !e.item.held && !e.item.set && !e.item.fixed && !e.item.model && canTakeWork(state, e));
         // The mat of the share of grade 4 is a heap of the work (#116): a press takes the loose rod
         // nearest to the hero, also with no tap (a girl of grade 4 could not take the last rod).
@@ -5562,6 +5665,18 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const onBoat = getEntity(state, target.thing)?.item?.zone === 'boat' && boatReady() && getEntity(state, 'boat:fisher');
       if (onBoat) return tap({ ...target, thing: 'boat:fisher' });
       const thing = getEntity(state, target.thing);
+      // A tap on the basket of bà lang says the count of each kind in it (#160: "How many are in
+      // the box now? I can't count them, it's too small."), and the hero walks to it.
+      // With extra bunches to take out, a tap on a bunch in the basket is a tap on the basket: the
+      // press takes an extra bunch out (the take), never the tapped bunch into the hands.
+      const inBasket = getEntity(state, target.thing)?.item?.zone === 'basket' && extraLeft();
+      if ((target.thing === 'basket:healer' || target.thing === 'zone:basket' || inBasket) && trialZone('healer') && !trialZone('healer').zone.done) {
+        basketSay();
+        const b = getEntity(state, 'basket:healer');
+        const z = zoneOf('basket');
+        if (b && z && !holding()) goTo(b.position, b.id, null, standOf(z));
+        return;
+      }
       // With empty hands, a tap on a thing that lies on the place of a task is a check (#64).
       if (!holding()) mentoring.checkThing(target.thing);
       // A thing on a desk or in the box: the teacher says what is there (#107).
@@ -6474,6 +6589,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
           walkTo([{ x: stand.x / 2, y: stand.z / 2 }], () => worldCommand(state, { type: 'face', id: 'hero', x: mat.zone.x + 2, z: mat.zone.z + 1 }));
         }
       }
+      // A wrong basket: bà lang and the hero stand beside the rows and the leaves of her count, not
+      // on them (#160: they stood on the leaves, and the child did not see the doses).
+      if (ev.type === 'nope' && trialZone('healer')?.zone.lay) countSide();
       if (ev.id === 'sky') {
         // At dawn the enemies of a lost raid come again, and the game saves the start of the day
         // (a restore point for the parent).
@@ -6500,6 +6618,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (ev.type === 'put' && ev.zone) {
         const task = zoneOf(ev.zone)?.zone.task;
         if (task) childPut.add(task);
+        // A put after her count of the extra: the child tries again, and the give is free (#160).
+        if (ev.zone === 'basket' && trialZone('healer')?.zone.extraTold) trialZone('healer').zone.putSince = true;
         deskPut(ev);
       }
       if (ev.type === 'arrived' || ev.type === 'stuck') {

@@ -120,6 +120,8 @@
         "timeout": 30
       }
     },
+    { "press": { "entity": "basket:healer" } },
+    { "until": { "event": "open", "with": { "textKey": "healer.take.out" }, "timeout": 15 } },
     { "press": { "entity": "npc:healer" } },
     {
       "until": {
@@ -215,6 +217,8 @@
         "timeout": 30
       }
     },
+    { "press": { "entity": "basket:healer" } },
+    { "until": { "event": "open", "with": { "textKey": "healer.take.out" }, "timeout": 15 } },
     { "press": { "entity": "npc:healer" } },
     {
       "until": {

@@ -606,9 +606,10 @@ function packBasket(world, zone) {
     if (!e || e.item.set) continue;
     const k = zone.kinds.indexOf(e.item.kind.slice(5));
     const i = (n[k] = (n[k] ?? -1) + 1);
-    // More than eight bunches of a kind: rows of five, closer (doses of a recipe, #101).
-    const cols = (zone.need?.[zone.kinds[k]] ?? 0) > 8 ? 5 : 4;
-    const step = cols === 5 ? 0.27 : 0.34;
+    // Rows of five, so that a child counts the bunches by fives on the screen (#160: "I can't count
+    // them, it's too small"; #101 had rows of five only for more than eight).
+    const cols = 5;
+    const step = 0.27;
     e.position = { x: zone.x + 0.3 + k * BASKET_PART + (i % cols) * step, y: zone.y + BASKET_FLOOR, z: zone.z + 0.45 + Math.floor(i / cols) * (cols === 5 ? 0.42 : 0.6), facing: 0 };
   }
 }
@@ -1460,8 +1461,9 @@ function act(world, e, want, env) {
     } else {
       // The healer takes the bunches out and lays each kind in a row in front of the basket, so
       // that she counts each row aloud with the child (#61: before, the extra herbs flew back at
-      // once, and the count counted nothing). After the count, only the bunches over the number go
-      // back to their beds, one at a time, and the rest go back into the basket. While they lie in
+      // once, and the count counted nothing). After the count, all the bunches go back into the
+      // basket: the child takes the extra out (#160: the extra went back to the beds with no act of
+      // the child, and then bà lang praised a basket that the child did not fix). While they lie in
       // the rows, a tap does not take them.
       const extra = [];
       basket.zone.kinds.forEach((k, row) => {
@@ -1475,7 +1477,7 @@ function act(world, e, want, env) {
       const n = basket.zone.items.length;
       // The count of the healer: each bunch, and the empty end of each short row (src/core/mentoring.js).
       const extraKinds = new Set(extra.map((id) => getEntity(world, id)?.item.kind)).size;
-      tz.zone.lay = { t: layTime(n, basket.zone.kinds.length, extraKinds), ids: extra.reverse() };
+      tz.zone.lay = { t: layTime(n, basket.zone.kinds.length, extraKinds), ids: [] };
       say(world, 'nope', healer?.id ?? basket.id, { sound: 'tap' });
     }
   } else if (want.act === 'mark') {
@@ -2617,11 +2619,19 @@ function tickSlide(e, dt) {
   if (e.item) e.item.set = sl.set ?? false;
 }
 
-// The rows of a wrong give: after the count, the extra bunches go back to their beds one at a time,
-// and then the rest go back into the basket.
+// The rows of a wrong give: after the count, the bunches go back into the basket (the bunches of
+// lay.ids, when there are some, go back to their beds first, one at a time).
 function tickLay(world, tz, dt) {
   const lay = tz.zone.lay;
-  if (!lay || (lay.t -= dt) > 0) return;
+  if (!lay) return;
+  // With no bunch to send back, the rows end with her count (#160: the count of the doses is
+  // shorter than the count of each bunch, and the rows stayed for 26 seconds after it).
+  // With no bunch to send back, the rows also wait for the end of her count: the end of the rows
+  // (the event counted) is the end of her count.
+  const count = getEntity(world, 'script:trial-healer')?.script.move === 'count';
+  if (count) lay.seen = true;
+  else if (lay.seen && !lay.ids.length) lay.t = 0;
+  if ((lay.t -= dt) > 0 || (count && !lay.ids.length)) return;
   const basket = zoneEnt(world, 'basket');
   const id = lay.ids.shift();
   const h = id ? getEntity(world, id) : null;
