@@ -940,6 +940,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (person) person.cheer = { t: 0, hops: ev.end ? 2 : 1, wave: Boolean(ev.end), hop: CHEER.hop };
     emit({ type: 'cheer', by: person?.id ?? null, at: fullPoint(ev.at, env.groundY), end: Boolean(ev.end), trial: id });
   }
+  // The hero jumps up onto the back of Nghé (#171: the ride did not show).
+  function mountHop(ev) {
+    if (ev.id !== 'hero') return;
+    const h = hero();
+    if (h) h.cheer = { t: 0, hops: 1, wave: false, hop: CHEER.hop };
+  }
   function stepCheer() {
     for (const e of state.entities) {
       if (!e.cheer) continue;
@@ -6851,6 +6857,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         continue;
       }
       mentoring.worldEvent(ev);
+      if (ev.type === 'mount') mountHop(ev);
       if (['put', 'pick', 'take', 'drop'].includes(ev.type)) readyFinish.clear();
       // The tasks where the child put a thing (#54).
       if (ev.type === 'put' && ev.zone) {

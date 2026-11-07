@@ -32,7 +32,7 @@ const MAX_HERO_PARTS = 256;
 const XRAY_NEAR = 0.5;
 const XRAY_HULL = 2.4; // the outline is this many times the ink of a part
 const WADE = 0.4; // blocks: how deep the feet go in the surf (the sea is 0.5 over the sand)
-const RIDER = 0.35; // world units: the seat of a rider over the ground
+const RIDER = 0.75; // world units: the seat of a rider over the ground, on the back of Nghé (#171: the hero sat low, and an outline showed behind Gióng)
 const STRETCH = 0.12; // the part of its height that a growing figure adds for each step (one head)
 // The night (0 to 1): the ink is softer at night. The color of the dusk is one multiply layer over
 // the frame (see the village scene), not a tint in the shaders.

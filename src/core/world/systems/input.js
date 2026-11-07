@@ -14,6 +14,7 @@ export const WRITES = ['commands', 'paused', 'intent', 'route', 'position', 'mot
 
 export const INSIDE_SOUNDS = Object.freeze(['cough', 'baby', 'clatter']);
 const CROUCH = 0.1; // seconds: the short crouch before a jump
+const DOWN_SIDE = 2.2; // half blocks: the rider gets down this far to the side of the mount (#171)
 
 import { getEntity, query } from '../state.js';
 import { faceOf } from '../move.js';
@@ -69,7 +70,20 @@ export function input(world, dt, rng, env) {
     } else if (c.type === 'ride') {
       const mount = getEntity(world, c.mount);
       if (e.riding || !mount) {
+        // The rider gets down beside the mount, never inside it (#171: after the get off, the hero
+        // stood in Nghé and did not show): the first free side, else the place of the mount.
+        const m = getEntity(world, e.riding);
         delete e.riding;
+        if (m?.position) {
+          const f = m.position.facing ?? 0;
+          const sides = [[Math.cos(f), -Math.sin(f)], [-Math.cos(f), Math.sin(f)], [-Math.sin(f), -Math.cos(f)]];
+          for (const [sx, sz] of sides) {
+            const q = { x: m.position.x + sx * DOWN_SIDE, z: m.position.z + sz * DOWN_SIDE };
+            if (env.near(q.x / 2, q.z / 2).isBlocked(Math.floor(q.x / 2), Math.floor(q.z / 2))) continue;
+            Object.assign(e.position, { x: q.x, z: q.z, y: env.groundY(q.x / 2, q.z / 2) });
+            break;
+          }
+        }
         world.events.push({ type: 'dismount', id: e.id });
       } else {
         e.riding = mount.id;
