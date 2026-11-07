@@ -32,7 +32,10 @@ export function route(world, dt) {
       end('arrived');
       continue;
     }
-    while (r.points.length && Math.hypot(r.points[0].x - p.x, r.points[0].z - p.z) < ROUTE.reach) r.points.shift();
+    // A fast walker (Nghé on a long ride, #155) passes more than the reach of a point in one step:
+    // the reach grows with the step, so that the walker does not turn back to a point behind it.
+    const reach = Math.max(ROUTE.reach, (e.motion?.speed ?? 0) * dt * 1.5);
+    while (r.points.length && Math.hypot(r.points[0].x - p.x, r.points[0].z - p.z) < reach) r.points.shift();
     if (!r.points.length) {
       end('arrived');
       continue;

@@ -1258,3 +1258,7 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 /* The line under the classes stays over the button "Bắt đầu!", also when the screen scrolls (#72). */
 .grade-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .grade-actions p { margin: 0; }
+/* The sleep until the dawn (issue 155): the screen goes dark for a short time, then the morning. */
+.sleep-veil { position: absolute; inset: 0; background: var(--ink); opacity: 0.95; z-index: 40; pointer-events: none; animation: sleep-in 0.5s ease-out; transition: opacity 0.9s ease-in; }
+.sleep-veil.gone { opacity: 0; }
+@keyframes sleep-in { from { opacity: 0; } to { opacity: 0.95; } }

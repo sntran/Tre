@@ -1,8 +1,8 @@
 {
   "name": "raid-river-night",
   "about": {
-    "vi": "Rắn ở bến sông, vào ban đêm, chỉ bằng nút lớn: các cột đến số lần bấm sáng lên, và một vòng nhỏ nằm trên đường ở chỗ viên cơm sẽ rơi. Mỗi con rắn dừng ở các cột, trừ một cột; An bấm đúng số cột của chỗ nó dừng và thắng.",
-    "en": "The serpents at the river, at night, with the big button only: the posts up to the count of the presses light up, and a small ring lies on the road where the rice ball will land. Each serpent stops at all the posts but one; An presses the count of the post where it stops and wins."
+    "vi": "Thuồng luồng ở bến sông, vào ban đêm: cụ già làng bảo An nghỉ đến sáng, vì trời tối thì không giữ làng được. An về nhà ngủ một giấc, sáng ra quay lại bến sông, chỉ dùng nút lớn: các cột đến số lần bấm sáng lên. An bấm đúng số cột của chỗ thuồng luồng dừng và thắng.",
+    "en": "The thuồng luồng at the river, at night: the elder tells An to rest until the morning, because nobody can keep the village in the dark. An sleeps at home, comes back to the river in the morning, and plays with the big button only: the posts up to the count of the presses light up. An presses the count of the post where each thuồng luồng stops and wins."
   },
   "profile": {
     "name": "An",
@@ -27,6 +27,53 @@
     61
   ],
   "steps": [
+    {
+      "press": {
+        "entity": "encounter:river"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "raid.night"
+          }
+        },
+        {
+          "entity": "raid",
+          "gone": true
+        }
+      ]
+    },
+    {
+      "read": true
+    },
+    {
+      "press": {
+        "cell": [
+          11,
+          27
+        ]
+      }
+    },
+    {
+      "until": {
+        "event": "sleep",
+        "timeout": 60
+      }
+    },
+    {
+      "wait": 2
+    },
     {
       "press": {
         "entity": "encounter:river"

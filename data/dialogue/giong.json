@@ -157,6 +157,28 @@
    "mark": "legend"
   },
   {
+   "id": "giong.rest",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "giong",
+     "textKey": "dlg.giong.rest.n1"
+    }
+   },
+   "mark": "legend"
+  },
+  {
+   "id": "giong.night",
+   "start": "n1",
+   "nodes": {
+    "n1": {
+     "speaker": "giong",
+     "textKey": "dlg.giong.night.n1"
+    }
+   },
+   "mark": "legend"
+  },
+  {
    "id": "giong.boss",
    "start": "n1",
    "nodes": {

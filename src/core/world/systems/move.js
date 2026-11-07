@@ -15,8 +15,26 @@ import { stepBody, moveCircle, MOVE } from '../move.js';
 import { arcAt } from '../jump.js';
 
 export const RIDE_SPEED = 1.35; // the speed factor on the back of Nghé
+// On a long ride on the back of Nghé, she runs (#155: the ride to Trâu Sơn took more than a minute,
+// and the night came on the way): while the rest of the route is longer than GALLOP_FROM.
+export const GALLOP = 4.4; // the speed factor of a long ride
+const GALLOP_FROM = 80; // half blocks of the route that is left (a long ride, not a walk in the village)
 const STRIDE = 2.4; // half blocks between two steps
 const MIST_SLOW = 0.6; // the most that the mist takes from the speed
+
+// Is the rest of the route of the entity longer than GALLOP_FROM (half blocks)?
+function longRoute(e) {
+  const pts = e.route?.points;
+  if (!pts?.length) return false;
+  let d = 0;
+  let a = e.position;
+  for (const q of pts) {
+    d += Math.hypot(q.x - a.x, q.z - a.z);
+    if (d > GALLOP_FROM) return true;
+    a = q;
+  }
+  return false;
+}
 
 // The speed factor of the thing in the hands (1 for a light thing or empty hands).
 function paceOf(world, e) {
@@ -38,7 +56,8 @@ export function move(world, dt, rng, env) {
     // The helpers work in map cells: one cell is 2 half blocks.
     // In the mist of the land of a later era the walk is slow, slower the deeper it goes.
     const mist = Math.min(MIST_SLOW, (env.mistAt?.(p.x / 2, p.z / 2) ?? 0) * 0.15);
-    const body = { x: p.x / 2, y: p.z / 2, vx: m.vx / 2, vy: m.vz / 2, facing: p.facing, speedFactor: (e.riding ? RIDE_SPEED : 1) * paceOf(world, e) * (1 - mist) };
+    const ride = e.riding ? (longRoute(e) ? GALLOP : RIDE_SPEED) : 1;
+    const body = { x: p.x / 2, y: p.z / 2, vx: m.vx / 2, vy: m.vz / 2, facing: p.facing, speedFactor: ride * paceOf(world, e) * (1 - mist) };
     stepBody(body, i ? { dx: i.dx, dy: i.dz, strength: i.strength, run: i.run } : { dx: 0, dy: 0, strength: 0 }, dt, env.near(body.x, body.y));
     for (const s of solids) {
       // A hidden thing (the rice cakes of Tết on another day) is not there: it does not block (#54).

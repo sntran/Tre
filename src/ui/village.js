@@ -644,6 +644,13 @@ export async function mountVillage(ctx, params = {}) {
     const share = getEntity(state, 'zone:trial-share');
     if (share && !share.zone.done) return [];
     const gift = session.giftTo();
+    // When every target waits for the dawn (a lost raid), or at night before a raid, the star is on
+    // the place of rest, with the picture of a mat (#155: "I looked everywhere, there is none!").
+    const rest = gift ? null : session.restNow();
+    if (rest) {
+      const spot = session.restSpot();
+      return [{ x: spot.x, y: spot.y, h: groundY(spot.x, spot.y) + 3, who: null, thing: 'mat', key: session.restLine(), main: true, rest: true }];
+    }
     const list = gift ? [{ npc: gift }] : liveTargets(stepGoal, flags, { raidOf, raids: data.raids?.raids ?? {}, minutes: state.clock.minutes });
     const here = persons();
     // A person of the quest away from the live chunks: the marker is at the place of the person on
@@ -1625,6 +1632,7 @@ export async function mountVillage(ctx, params = {}) {
   // The card of a new print of the notebook (#8), under the goal bar for a few seconds. The new
   // prints wait while a talk or a screen is open (the child reads), and show one at a time.
   let printCard = null;
+  const SLEEP_DARK = 1400; // milliseconds of the dark screen of a sleep (#155)
   const printQueue = [];
   // The cards come one at a time, at least PRINT_GAP apart, and never while a person speaks (#89:
   // the market line, the first card, and two more cards came in one moment).
@@ -1800,6 +1808,14 @@ export async function mountVillage(ctx, params = {}) {
       // A new print in the notebook (#8): a small card at the top for a moment; a tap opens the
       // notebook.
       case 'notebook': printQueue.push(ev); return;
+      // A sleep until the dawn (#155): the screen goes dark for a short time, then the morning.
+      case 'sleep': {
+        const veil = h('div', { class: 'sleep-veil', 'aria-hidden': 'true' });
+        ctx.ui.append(veil);
+        setTimeout(() => veil.classList.add('gone'), SLEEP_DARK);
+        setTimeout(() => veil.remove(), SLEEP_DARK + 900);
+        return;
+      }
       // Experience (#8): the shoot of the bamboo grows; at a new level a new section grows and shines.
       case 'growth':
         drawBamboo(ev.up, true);

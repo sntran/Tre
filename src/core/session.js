@@ -36,7 +36,8 @@ import { ROW_SIDE, ROW_STEP } from './world/systems/place.js';
 import { findPath, pathNextTo, createPlaneTileMap, footprint } from './tilemap.js';
 import { check } from './conditions.js';
 import { createTriggers } from './triggers.js';
-import { currentGoal, doneSteps } from './quests.js';
+import { currentGoal, doneSteps, restOf } from './quests.js';
+import { timeOfDay } from './world/clock.js';
 import { addXp, questSteps } from './growth.js';
 import { noteSeen, entriesOfKey, skillPrint } from './notebook.js';
 import { offOf, weekOf } from './learnlog.js';
@@ -2670,7 +2671,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       let id = pickTalk(data.npcs.npcs[who.id], profile);
       // At the place of the soldiers, Gióng says that they are here (#150: the line of "far away"
       // came at the place); "far away" is for the village and the road.
-      if (id === 'giong.ready' && soldiersNear()) id = 'giong.here';
+      if (id === 'giong.ready') id = giongLine();
       if (!comeFirst(id, who.id)) talk(id);
     }
     else if (who.kind === 'event') tapEvent(who.id);
@@ -2689,6 +2690,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const enc = map.encounters.find((e) => e.id === who.id);
       const def = data.raids?.raids[enc.raid];
       if (!def) return;
+      // A raid never starts in the dark (#155): at dusk and at night the elder asks the child to rest
+      // first, and the star goes to the place of rest.
+      if (darkNow()) {
+        openScreen({ screen: 'say' }, { speaker: 'elder', textKey: 'raid.night', params: {} });
+        return;
+      }
       // One line, and then the raid starts on this map. The first raid of the slingshot has its
       // own line (firstKey): it has no gate, and so no torch (#67).
       say(def.firstKey && !profile.flags['raid.tool.sling'] ? def.firstKey : def.introKey);
@@ -2711,10 +2718,72 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   const RAID_PLACE = 10; // half blocks: the button starts a raid this near to the place of its wall
   // Are the enemies of an encounter near the hero (the place of the soldiers)?
   const SOLDIERS_NEAR = 60; // half blocks
+  // The raids of the soldiers of Ân (#163: the thuồng luồng of the river and the scouts at the gate
+  // counted as the soldiers): a raid whose enemies are soldiers or their general.
+  const SOLDIER_KINDS = new Set(['soldier', 'general']);
+  const soldierRaid = (id) => {
+    const def = data.raids?.raids?.[id];
+    const waves = [...(def?.waves ?? []), ...(def?.phases ?? []).flatMap((ph) => ph.waves ?? [])];
+    return waves.some((w) => SOLDIER_KINDS.has(w.kind));
+  };
+  // Is the hero at the place of the soldiers (their encounter, or the wall of their raid, also after
+  // a loss while they are away)?
   const soldiersNear = () => {
     const h = hero()?.position;
-    return Boolean(h) && persons().some((p) => p.kind === 'encounter' && !getEntity(state, p.entity)?.hidden && Math.hypot(p.x * 2 - h.x, p.y * 2 - h.z) <= SOLDIERS_NEAR);
+    if (!h) return false;
+    return map.encounters.some((e) => {
+      if (!soldierRaid(e.raid)) return false;
+      const wall = data.raids.raids[e.raid].wall;
+      const near = (x, y) => Math.hypot(x * 2 - h.x, y * 2 - h.z) <= SOLDIERS_NEAR;
+      return near(e.x, e.y) || (wall && near(wall[0], wall[1]));
+    });
   };
+  // The soldiers of a lost raid are away until the dawn.
+  const soldiersAway = () => map.encounters.some((e) => soldierRaid(e.raid) && profile.flags[`raid.${e.raid}.back`] > state.clock.minutes);
+  // The line of Gióng before the raids of the soldiers (#155, #163): true at the place and at the
+  // time. After a loss, they left and come back in the morning; in the dark, the trip waits for the
+  // morning; at their place, they are here; far from them, the way with things that the child sees.
+  function giongLine() {
+    if (soldiersAway()) return 'giong.rest';
+    if (darkNow()) return 'giong.night';
+    return soldiersNear() ? 'giong.here' : 'giong.ready';
+  }
+  // The rest until the morning (#155: after a lost raid no star showed, and "I looked everywhere,
+  // there is none!"). When every target of the goal waits for the dawn, or at night when the next
+  // step is a raid, the star is on a place of rest: the house of the hero in Phù Đổng, or beside
+  // Nghé. There a press of the button with the picture of a mat lets the hero sleep until the dawn.
+  const REST_REACH = 6; // half blocks from the place of rest
+  const HOME_NEAR = 80; // map cells: in Phù Đổng, the hero rests at home
+  const darkNow = () => ['dusk', 'night'].includes(timeOfDay(state.clock).part);
+  const encRaid = (id) => map.encounters.find((e) => e.id === id)?.raid ?? null;
+  function restNow() {
+    if (raidOn() || practice) return null;
+    const goal = currentGoal(data.quests.quests, cond());
+    return goal ? restOf(goal.step, profile.flags, { raidOf: encRaid, raids: data.raids?.raids ?? {}, minutes: state.clock.minutes, night: darkNow() }) : null;
+  }
+  // The place of rest in map cells: the door of the house of the hero (the spawn of Phù Đổng), or
+  // beside Nghé, or the hero.
+  function restSpot() {
+    const h = heroCell();
+    const home = map.layers.objects.find((o) => o.id === 'home');
+    if (home && map.spawn && Math.hypot(map.spawn.x - h.x, map.spawn.y - h.y) <= HOME_NEAR) return { x: map.spawn.x, y: map.spawn.y, home: true };
+    const nghe = query(state, 'follow').find((f) => f.follow.target === 'hero');
+    if (nghe?.position) return { x: nghe.position.x / 2, y: nghe.position.z / 2, home: false };
+    return { ...h, home: false };
+  }
+  // The line of the star of rest: why the child rests ("Lính quân Ân rút rồi. Sáng mai chúng quay
+  // lại."), or the line of the night.
+  const restLine = (rest) => (rest?.raid ? `star.rest.${rest.raid}` : 'star.rest.night');
+  function sleep() {
+    const from = state.clock.minutes;
+    state.clock.minutes = nextDawn(from);
+    emit({ type: 'sleep', from, to: state.clock.minutes });
+    // The enemies of a lost raid are back, and their star shows.
+    refreshPeople();
+    emit({ type: 'open', screen: 'callout', id: 'hero', textKey: 'rest.morning', params: {} });
+    log('sleep', { from, to: state.clock.minutes });
+  }
+
   // The lines of the smith in the world that say "thép" (#127); the first one has the word line.
   const THEP_LINES = new Set(['smith.fair.why']);
 
@@ -4184,7 +4253,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // A task or a folk game goes on now.
   const taskOn = () => Boolean(mentoring.activeKey() || folk.active() || query(state, 'zone').some((z) => z.zone.rule === 'trial' && !z.zone.done));
   // The acts of the button that are not work: in a task, they never keep a press from the work.
-  const WORKLESS = new Set(['talk', 'look', 'ride']);
+  const WORKLESS = new Set(['talk', 'look', 'ride', 'sleep']);
   // Half blocks: a press walks the hero to the work of the task this far away at most (#54).
   const FAR_WORK = 80;
   // The press walks the hero to a work of the task out of reach, and does its act at the end of
@@ -4624,6 +4693,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         const ny = Math.max(z.y, Math.min(z.y + z.h - 1, ht.y));
         if (Math.max(Math.abs(nx - ht.x), Math.abs(ny - ht.y)) > 2) continue;
         add({ act: 'look', icon: 'look', target: `look:${z.id}`, at: { x: (nx + 0.5) * 2, z: (ny + 0.5) * 2 }, rank: z.action?.pickup ? 1 : 5, run: () => doAction(z) }, REACH + 3);
+      }
+      // The rest until the morning at the place of rest (#155): at night, or while the enemies of a
+      // lost raid wait for the dawn.
+      if (!raidOn() && !taskOn() && !practice && (darkNow() || restNow())) {
+        const spot = restSpot();
+        add({ act: 'sleep', icon: 'mat', target: 'hero', at: { x: spot.x * 2, y: hp.y, z: spot.y * 2 }, rank: 4, run: () => sleep() }, REST_REACH);
       }
       // Nghé: get on its back (only when nothing else is in reach), never in a task or a folk game
       // (a press in the middle of the rope must not put the hero on Nghé, #44).
@@ -6561,6 +6636,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The goal of the part of a work now (the forge of the iron horse, #140), or null: the goal bar
     // shows it in place of the goal of the step.
     workGoal: () => workGoal(),
+    // The rest until the morning (#155): { rest, raid, night } when the star is on a place of rest,
+    // else null; the place of rest (map cells), and the line of its star.
+    restNow: () => restNow(),
+    restSpot: () => restSpot(),
+    restLine: () => restLine(restNow()),
     // The pull of the slingshot with the big button now (steps), or 0 (#50).
     raidPull: () => pullCount(),
     // The mentor of a task (for the tests and the debug panel).

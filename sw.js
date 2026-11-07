@@ -64,6 +64,7 @@ const FILES = [
   'art/ui/heart.svg',
   'art/ui/hint.svg',
   'art/ui/look.svg',
+  'art/ui/mat.svg',
   'art/ui/home.svg',
   'art/ui/jar.svg',
   'art/ui/jump.svg',

@@ -47,6 +47,22 @@ export function liveTargets(step, flags, { raidOf = () => null, raids = {}, minu
   });
 }
 
+// The rest of a step (#155: "I looked everywhere, there is none!"): when every target of the step
+// waits (the enemies of a lost raid come back at the next dawn, a target waits for the flag of such
+// a raid), the next step is a rest until the morning, and the star goes to a place of rest. At night
+// a raid does not start, so a step whose live targets are all raids rests too. Return null when a
+// target has a star, else { rest: true, raid: the id of the raid that waits (or null), night }.
+export function restOf(step, flags, { raidOf = () => null, raids = {}, minutes = 0, night = false } = {}) {
+  const list = step?.targets ?? (step?.target ? [{ npc: step.target }] : []);
+  if (!list.length) return null;
+  const live = liveTargets(step, flags, { raidOf, raids, minutes });
+  const waiting = list.map((tg) => (tg.encounter ? raidOf(tg.encounter) : null))
+    .find((raid) => raid && flags[`raid.${raid}.back`] !== undefined && flags[`raid.${raid}.back`] > minutes) ?? null;
+  if (!live.length) return waiting || night ? { rest: true, raid: waiting, night } : null;
+  if (night && live.every((tg) => tg.encounter)) return { rest: true, raid: null, night: true };
+  return null;
+}
+
 // Whose star a live target is (#62): the person whose small face shows in the disc of the star,
 // and the line that a tap on the star says before the walk ("Đi tìm bà lang."). The first live
 // target of a step is the next step of the story: its star is bigger than the others. tg: a live
