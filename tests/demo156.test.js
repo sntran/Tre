@@ -91,7 +91,7 @@ test('the coach shows on the enemy at the post that is farthest from the wall', 
   assert.ok(told);
   const r = h.raid();
   const k = r.posts.findIndex((q) => q.d === Math.max(...pick)) + 1;
-  assert.ok(h.events.some((e) => e.type === 'open' && e.textKey === 'raid.demo.at' && e.params?.post?.key === `ord.${k}`), `the post ${k}`);
+  assert.ok(h.events.some((e) => e.type === 'open' && e.textKey === 'raid.demo.at' && e.params?.post?.key === `num.${k}`), `the post ${k}`);
 });
 
 test('an enemy past the last post when the child taps the hand gets one stone of the coach first', async () => {

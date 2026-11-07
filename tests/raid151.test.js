@@ -114,8 +114,8 @@ test('a trap at post 2 when the villager asks for post 3: the line says both pos
   h.run(1.5);
   const l = h.said.slice(from).find((x) => x.key === 'raid.trap.wrong');
   assert.ok(l, h.said.slice(from).map((x) => x.key).join(', '));
-  assert.equal(l.params.at.key, 'ord.2');
-  assert.equal(l.params.post.key, 'ord.3');
+  assert.equal(l.params.at.key, 'num.2');
+  assert.equal(l.params.post.key, 'num.3');
   const glows = h.events.slice(evFrom).filter((e) => e.type === 'glowSeq').flatMap((e) => e.ids);
   assert.deepEqual(glows, ['post:1', 'post:2', 'post:3']);
 });

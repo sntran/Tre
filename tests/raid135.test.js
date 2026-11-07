@@ -98,7 +98,7 @@ test('the rule of the count with the side comes at the start of a raid after a r
   assert.ok(!hits.got.lines.some((l) => l.key === 'raid.rule'), 'no rule line after a raid with hits on the same day');
 });
 
-test('with a trap in the hands, a press away from the road walks to the road and puts the trap at the post nearest to the hero (#157); the line says where it lies and where it goes, and the posts up to the asked post glow; a trap at that post is right', async () => {
+test('with a trap in the hands, a press away from the road walks to the road and puts the trap at the post of the count of the presses (#157, #165); the line says where it lies and where it goes, and the posts up to the asked post glow; a trap at that post is right', async () => {
   const r = await atRaid('patrol', 2, { 'giong.farewell': true, 'scouts.won': true, 'raid.tool.traps': true });
   const { session, got, run, read } = r;
   const raid = getEntity(session.state, 'raid')?.raid;
@@ -114,7 +114,7 @@ test('with a trap in the hands, a press away from the road walks to the road and
   read();
   assert.ok(['trap:1', 'trap:2'].some((id) => getEntity(session.state, id)?.item.held), 'a trap in the hands');
   const n = raid.posts.findIndex((q) => q.d === raid.trapPost) + 1;
-  // A press away from the road: the trap goes on the road at the post nearest to the hero.
+  // One press away from the road: the trap goes on the road at post 1.
   got.lines.length = 0;
   got.glows.length = 0;
   const a = session.action();
@@ -129,7 +129,7 @@ test('with a trap in the hands, a press away from the road walks to the road and
   assert.ok(keys.includes('raid.trap.wrong') || keys.includes('raid.trap.right'), `the lines: ${keys.join(', ')}`);
   const wrong = got.lines.find((l) => l.key === 'raid.trap.wrong');
   if (wrong) {
-    assert.equal(wrong.params.post.key, `ord.${n}`);
+    assert.equal(wrong.params.post.key, `num.${n}`);
     assert.ok(got.glows.some((g) => g.length === n && g.at(-1) === `post:${n}`), 'the posts up to it glow');
     // The next trap at the asked post (a tap on that post, as a child does) is right.
     const next = query(session.state, 'item').find((e) => e.item.kind === 'trap' && !e.item.held && e.item.zone !== 'raid-road');

@@ -3021,6 +3021,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const raid = createRaid(data.raids, id, raidLevel(data.raids, profile.grade), lossLevel(profile), teach, easy);
     raid.slingAfter = slingAfter;
     slingPull = null;
+    trapPull = null;
     raidTeach = { sling: teach.includes('sling') || Boolean(profile.flags[`raid.${id}.again`]), singles: 0, demo: null, shown: false, misses: 0, time: 0, help: null };
     setupRaid(state, raid, def, env, { helpers: data.raids.helperLooks, companion: data.raids.companions?.[def.companion] });
     placeHero(def.wall[0], def.wall[1]);
@@ -3071,15 +3072,32 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // A villager names the post for a trap (an ordinal word, no numeral), after the line of the traps.
     if (raid.trapPost !== null) {
       const n = raid.posts.findIndex((q) => q.d === raid.trapPost) + 1;
-      const ask = { textKey: 'raid.trap.ask', params: { post: { key: `ord.${n}` } }, speaker: def.trapAsk ?? 'elder' };
+      const ask = { textKey: 'raid.trap.ask', params: { post: { key: `num.${n}` } }, speaker: def.trapAsk ?? 'elder' };
       const k = lines.findIndex((l) => l.tool === 'traps');
       if (k >= 0) lines.splice(k + 1, 0, { ...ask, with: true });
       else lines.unshift(ask);
     }
-    // Now: the lines up to the first new tool, that line, and the lines that go with it.
-    const first = lines.findIndex((l) => l.tool);
+    // The trap comes first (#165: at K the coach taught the count of the slingshot, and then the
+    // villager asked for a trap at post 2, so two children of K pressed two times for the slingshot
+    // rule): in a raid that asks for a trap, the count of the posts comes before the ask, and the
+    // lines of the slingshot wait until the first trap is down.
+    if (raid.trapPost !== null && raid.tools.includes('traps') && raid.tools.includes('sling')) {
+      const slingLine = (l) => l.tool === 'sling' || l.textKey === 'raid.rule' || l.textKey === 'raid.tool.sling';
+      const slingLines = lines.filter(slingLine);
+      const rest = lines.filter((l) => !slingLine(l));
+      const c = rest.findIndex((l) => l.textKey === 'raid.posts.count');
+      const a = rest.findIndex((l) => l.textKey === 'raid.trap.ask');
+      if (c > a && a >= 0) rest.splice(a, 0, ...rest.splice(c, 1));
+      slingLines.forEach((l, i) => Object.assign(l, { with: i > 0, after: 'traps' }));
+      lines.splice(0, lines.length, ...rest, ...slingLines);
+    }
+    // Now: the lines up to the first new tool, that line, and the lines that go with it; never a
+    // line that waits for a tool.
+    const first = lines.findIndex((l) => l.tool && !l.after);
     let now = lines.findIndex((l, i) => i > first && l.tool && !l.with);
     if (first < 0 || now < 0) now = lines.length;
+    const wait = lines.findIndex((l) => l.after);
+    if (wait >= 0) now = Math.min(now, wait);
     for (const l of lines) l.params = { ...raidWords(id), ...(l.params ?? {}) };
     // The person who says a rule stands where the child sees him (#157: "Then the old man talked, but
     // where is he? I don't see him."): a speaker who is not at the wall gives the line to the coach
@@ -3330,7 +3348,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       d.t = 0;
       raid.aim = { id: at.e.id, all: true };
       raid.still = true;
-      emit({ type: 'open', screen: 'callout', id: d.coach, textKey: 'raid.demo.at', params: { ...raidWords(), post: { key: `ord.${d.k}` } } });
+      emit({ type: 'open', screen: 'callout', id: d.coach, textKey: 'raid.demo.at', params: { ...raidWords(), post: { key: `num.${d.k}` } } });
       return;
     }
     const due = Math.min(d.k, Math.floor((d.t - 1.2) / DEMO_PRESS) + 1);
@@ -3466,7 +3484,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (r.raid.trapPost !== null && !r.raid.trapDone) {
         const n = r.raid.posts.findIndex((q) => q.d === r.raid.trapPost) + 1;
         if (!r.raid.usedTools?.includes('traps')) say('raid.lost.notrap', words);
-        else say('raid.lost.trappost', { ...words, post: { key: `ord.${n}` } });
+        else say('raid.lost.trappost', { ...words, post: { key: `num.${n}` } });
       }
       else if (r.raid.tools.includes('sling')) say('raid.lost.count', words);
       say(def.lostKey ?? 'raid.lost');
@@ -3659,6 +3677,37 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const q = raid.posts.reduce((a, b) => (Math.abs(b.d - d) < Math.abs(a.d - d) ? b : a));
     return { x: raid.wall.x + raid.dir.x * q.d, z: raid.wall.z + raid.dir.z * q.d, d: q.d };
   }
+  // The point of the road at post k (from 1).
+  function postPoint(raid, k) {
+    const q = raid.posts[Math.max(0, Math.min(raid.posts.length, k) - 1)];
+    return { x: raid.wall.x + raid.dir.x * q.d, z: raid.wall.z + raid.dir.z * q.d, d: q.d };
+  }
+  // The count of the presses with a trap in the hands (#165): { posts, t (seconds since the last
+  // press) }, or null. At TRAP_WAIT seconds the hero walks to that post and puts the trap there.
+  let trapPull = null;
+  function stepTrap() {
+    if (!trapPull) return;
+    const r = raidEnt()?.raid;
+    const held = getEntity(state, holding());
+    if (!r || r.result || held?.item.kind !== 'trap') {
+      trapPull = null;
+      return;
+    }
+    trapPull.t += STEP;
+    if (trapPull.t < FIRE_WAIT) return;
+    const q = postPoint(r, trapPull.posts);
+    trapPull = null;
+    chosen = { id: 'zone:raid-road', along: q };
+    const put = () => {
+      // A new count while the hero walked: that count puts the trap.
+      if (trapPull || getEntity(state, holding())?.item.kind !== 'trap') return;
+      worldCommand(state, { type: 'put', id: 'hero', zone: 'raid-road', at: { x: q.x, z: q.z } });
+    };
+    if (distHb(hero().position, q) <= REACH + 1) {
+      worldCommand(state, { type: 'face', id: 'hero', x: q.x, z: q.z });
+      put();
+    } else walkToThing({ x: q.x / 2, y: q.z / 2 }, put);
+  }
   // A tap with a trap in the hands on a person, an enemy, or Nghé who stands at a post is a tap on
   // that post (#157: the soldier, the villager of the flag, and Nghé stood at post 2, and the tap
   // went to the people). Return the number of the post, or 0.
@@ -3686,7 +3735,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (!raid || raid.trapPost === null || raid.trapDone) return;
     const n = raid.posts.findIndex((q) => q.d === raid.trapPost) + 1;
     const who = raidSpeaker();
-    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.trap.where', params: { post: { key: `ord.${n}` } } });
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: n === 1 ? 'raid.trap.where.one' : 'raid.trap.where', params: { post: { key: `num.${n}` } } });
     emit({ type: 'glowSeq', ids: raid.posts.slice(0, n).map((_, i) => `post:${i + 1}`) });
   }
   // A word after the gate (#151: "Did I do it right or wrong? Nobody told me."): the bar stopped a
@@ -3736,35 +3785,44 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (at && who && raid.trapPost !== null && !raid.trapDone) {
       const n = raid.posts.findIndex((q) => q.d === raid.trapPost) + 1;
       const k = raid.posts.indexOf(at) + 1;
-      emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.trap.wrong', params: { at: { key: `ord.${k}` }, post: { key: `ord.${n}` } } });
+      emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'raid.trap.wrong', params: { at: { key: `num.${k}` }, post: { key: `num.${n}` } } });
       emit({ type: 'glowSeq', ids: raid.posts.slice(0, n).map((_, i) => `post:${i + 1}`) });
       return;
     }
     trapWhere();
   }
   // The button in a raid: pick up a trap at the heap of traps; put the trap in the hands on the road
-  // (at the place of the tap, or in front of the hero), where a ghost shows it.
+  // (at the place of the tap, or at the post of the count of the presses), where a ghost shows it.
   function raidAction() {
     const hp = hero().position;
     const held = getEntity(state, holding());
     if (held?.item.kind === 'trap') {
-      const at = chosen?.id === 'zone:raid-road' && chosen.along ? chosen.along : roadPoint(state, frontOf(hp, 3));
-      // Away from the road, while the villager waits for the trap at a post, a press says the
-      // place, and the posts up to it glow (#135: the button stayed grey).
       const r = raidEnt()?.raid;
-      // Away from the road, a press walks the hero to the road at the post nearest to the hero and
-      // puts the trap there (#157: a boy of K pressed 14 times at the wall, and each press only said
-      // the line again); then the line says where it lies and where it goes.
-      if (!at || distHb(hp, at) > REACH + 2) {
-        const near = r ? nearPost(r, hp) : null;
-        if (!near) return null;
-        return { act: 'put', icon: 'hand-put', target: 'zone:raid-road', keys: ['zone:raid-road'], run: () => {
-          chosen = { id: 'zone:raid-road', along: near };
-          walkToThing({ x: near.x / 2, y: near.z / 2 }, () => worldCommand(state, { type: 'put', id: 'hero', zone: 'raid-road', at: { x: near.x, z: near.z } }));
-        } };
+      // A tap on the road chose the place: the press puts the trap there (a tap goes there, the
+      // button does it).
+      const tapped = chosen?.id === 'zone:raid-road' && chosen.along ? chosen.along : null;
+      if (tapped && !trapPull && distHb(hp, tapped) <= REACH + 2) {
+        const point = { x: tapped.x, z: tapped.z };
+        return { act: 'put', icon: 'hand-put', target: 'zone:raid-road', ghost: { look: held.look, x: point.x, y: hp.y, z: point.z, facing: 0 }, run: () => worldCommand(state, { type: 'put', id: 'hero', zone: 'raid-road', at: point }) };
       }
-      const point = { x: at.x, z: at.z };
-      return { act: 'put', icon: 'hand-put', target: 'zone:raid-road', ghost: { look: held.look, x: at.x, y: hp.y, z: at.z, facing: 0 }, run: () => worldCommand(state, { type: 'put', id: 'hero', zone: 'raid-road', at: point }) };
+      // Else one press is one post, as for the slingshot (#165: four children of K to grade 2
+      // pressed two times for "cột hai", and the trap went to the nearest post; a young child counts
+      // one word for each thing, and the last word is the number, Gelman and Gallistel 1978). Each
+      // press moves the ghost of the trap one post from the wall and says the count; TRAP_WAIT
+      // seconds after the last press the hero puts the trap at that post (also from away from the
+      // road, #157).
+      if (!r?.posts.length) return null;
+      const k = Math.max(1, trapPull?.posts ?? 1);
+      const q = postPoint(r, k);
+      return { act: 'put', icon: 'hand-put', target: 'zone:raid-road', keys: ['zone:raid-road'], ghost: { look: held.look, x: q.x, y: hp.y, z: q.z, facing: 0 }, run: () => {
+        const n = Math.min(r.posts.length, (trapPull?.posts ?? 0) + 1);
+        trapPull = { posts: n, t: 0 };
+        emit({ type: 'open', screen: 'callout', id: 'hero', textKey: `num.${n}`, params: {} });
+        later.push(() => {
+          emit({ type: 'pulse', id: `post:${n}` });
+          emit({ type: 'glowSeq', ids: [`post:${n}`] });
+        });
+      } };
     }
     if (held) return null;
     const traps = query(state, 'item', 'position').filter((e) => e.item.kind === 'trap' && !e.item.set && !e.item.held && !e.hidden && e.item.zone !== 'raid-road' && distHb(hp, e.position) <= REACH);
@@ -3884,6 +3942,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const r = raidEnt()?.raid;
     if (!r || r.result || !toolLines.list.length) return;
     if (r.hold || busy || screen) return;
+    // A line that waits for a tool (the slingshot after the first trap, #165) comes after it.
+    const after = toolLines.list[0]?.after;
+    if (after && !r.usedTools?.includes(after)) return;
     toolLines.t -= STEP;
     // A tool that the raid needs now comes at once: the gate when a scout lights a torch.
     const now = toolLines.list[0]?.tool === 'gate' && state.events.some((ev) => ev.type === 'light');
@@ -3892,6 +3953,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const bubble = (l) => {
       emit({ type: 'open', screen: 'callout', id: `npc:${l.speaker}`, textKey: l.textKey, params: l.params ?? {} });
       if (l.tool === 'gate') gateHint();
+      if (l.glow) emit({ type: 'glowSeq', ids: ['post:1'] });
     };
     bubble(toolLines.list.shift());
     // The lines that go with it (the post of a trap) come at once.
@@ -6617,6 +6679,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // The picture of the button, as the child sees it (about each 0.1 seconds).
     if (state.tick % 3 === 0 && !screen) button();
     stepSling();
+    stepTrap();
     stepRaidDemo();
     stepFarewell();
     stepGrow();
