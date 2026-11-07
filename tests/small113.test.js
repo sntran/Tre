@@ -219,7 +219,7 @@ test('no print of the notebook has an empty picture: a thing shows whole, and a 
     const framing = printFraming(look);
     if (framing === 'bust') assert.ok(f.parts.some((p) => p.name === 'head' || p.name === 'skull'), `${k}: a bust needs a head`);
   }
-  assert.equal(printFraming(figs.rod), 'full', 'the rods show whole');
+  assert.equal(printFraming(figs.rod), 'print', 'the rods show whole (#162: the framing of a print)');
 });
 
 test('each lock of the country map stands inside its land, at each size of the map', async () => {

@@ -12,7 +12,8 @@
 import * as THREE from 'three';
 import { rendererFor } from './gl.js';
 import { figureMeshes } from './figure3d.js';
-import { portraitKey, createLru, propMesh, faceFrame, FACE_FRAMES, CACHE_SIZE } from '../world/portraits.js';
+import { portraitKey, createLru, propMesh, faceFrame, FACE_FRAMES, CACHE_SIZE, printView, isAnimal } from '../world/portraits.js';
+import { figureOf } from '../world/figures.js';
 import { C } from './palette.js';
 
 const SUPER = 2; // render at twice the size, and draw it smaller: soft edges with no multisampling
@@ -81,14 +82,26 @@ export function createPortraits(canvas) {
     const px = Math.max(8, Math.round(size * ratio));
     const big = px * SUPER;
     const face = FACE_FRAMES[framing];
-    const turn = facing ?? face?.turn ?? TURN;
+    const print = framing === 'print' && !look.prop;
+    const turn = print ? 0 : facing ?? face?.turn ?? TURN;
     const fig = look.prop ? propMeshes(look, turn) : figureMeshes({ ...look, mood }, { facing: turn });
     scene.add(fig.group);
     // The frame: the whole figure, or the head and the shoulders around the head.
     const box = new THREE.Box3().setFromObject(fig.group);
     const center = new THREE.Vector3();
     let half;
-    if (look.prop) {
+    let view = null;
+    if (print) {
+      // A print (#162): the whole thing from its usual side, at the turn and the height of the
+      // camera of printView.
+      const s = box.getSize(new THREE.Vector3());
+      view = printView({ x: s.x, y: s.y, z: s.z }, isAnimal(look, figureOf(look, 'coarse').kind));
+      fig.group.rotation.y += view.turn;
+      fig.group.updateMatrixWorld(true);
+      box.setFromObject(fig.group);
+      box.getCenter(center);
+      half = view.half;
+    } else if (look.prop) {
       // A prop: all of it, with its footprint.
       box.getCenter(center);
       const s = box.getSize(new THREE.Vector3());
@@ -108,7 +121,7 @@ export function createPortraits(canvas) {
     camera.right = half;
     camera.top = half;
     camera.bottom = -half;
-    const elevation = face && fig.head ? face.elevation : ELEVATION;
+    const elevation = view ? view.elevation : face && fig.head ? face.elevation : ELEVATION;
     camera.position.set(center.x, center.y + Math.sin(elevation) * 50, center.z + Math.cos(elevation) * 50);
     camera.lookAt(center);
     camera.updateProjectionMatrix();

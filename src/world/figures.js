@@ -1412,9 +1412,11 @@ export function raidThing(look) {
 // The framing of the picture of a print of the notebook (#113: the print of the rods showed an
 // empty white picture): a figure with a head shows its head and shoulders (bust), and a thing
 // shows whole (full).
+// A person has the head and the shoulders; an animal or a thing is whole, from its usual side
+// (#162: the dog and the frog were the close part of a head, src/world/portraits.js printView).
 export function printFraming(look) {
   const f = figureOf(look ?? {}, 'coarse');
-  return (f.parts ?? []).some((p) => p.name === 'head' || p.name === 'skull') ? 'bust' : 'full';
+  return f.kind === 'biped' && (f.parts ?? []).some((p) => p.name === 'head' || p.name === 'skull') ? 'bust' : 'print';
 }
 
 // The figure of a look from data/figures.json. detail: 'fine' (the people and animals on a grid of

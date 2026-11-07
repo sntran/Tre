@@ -57,7 +57,7 @@ export function notebookOf(def, skills, profile, sent = new Set()) {
   for (const s of notebookSkills(def, skills, profile.grade ?? 1, learned, sent)) {
     const e = learned[s.id];
     const met = Boolean(e && e.n > 0);
-    out.push({ ...skillPrint(def, s, profile.notebook?.from?.[s.id] ?? null), met, sealed: met && Boolean(e.mastered) });
+    out.push({ ...skillPrint(def, s, profile.notebook?.from?.[s.id] ?? null, profile.notebook?.from ?? null), met, sealed: met && Boolean(e.mastered) });
   }
   for (const e of def.entries) out.push({ id: e.id, kind: e.kind, titleKey: e.titleKey, look: e.look ?? null, met: isMet(e.met, profile), sealed: false });
   // The pages with the most met prints first, then in their order; on a page, the met prints come
@@ -79,9 +79,20 @@ export function notebookOf(def, skills, profile, sent = new Set()) {
 // of the fisher came at the first cut of the woodcutter and at the hopscotch). A place with no
 // print of the skill has the print of the place (def.sources, #154: "Tranh mới: Que tính." at the
 // cart in the mud, where the child saw no stick).
-export function skillPrint(def, skill, from = null) {
+// fromMap: the task where the child earned each skill first, in the order of the skills
+// (profile.notebook.from). The print of a place is the print of one skill only (#162: "Quặng nung"
+// showed two times for two skills of the forge): a later skill of the same place, with no print of
+// its own there, has its own print.
+export function skillPrint(def, skill, from = null, fromMap = null) {
   const p = def.skills?.[skill.id];
-  const v = from ? (p?.from?.[from] ?? def.sources?.[from]) : null;
+  const own = from ? p?.from?.[from] : null;
+  let v = own ?? (from ? def.sources?.[from] : null);
+  if (v && !own && fromMap) {
+    const order = Object.keys(fromMap);
+    const at = order.indexOf(skill.id);
+    const before = at < 0 ? order : order.slice(0, at);
+    if (before.some((id) => id !== skill.id && fromMap[id] === from && !def.skills?.[id]?.from?.[from])) v = null;
+  }
   return { id: `skill:${skill.id}`, kind: 'skill', skill: skill.id, subject: skill.subject, titleKey: v?.titleKey ?? p?.titleKey ?? `skill.${skill.id}`, skillKey: `skill.${skill.id}`, look: v?.look ?? p?.look ?? null };
 }
 

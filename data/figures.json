@@ -1025,6 +1025,11 @@
     "stone": {
       "kind": "stone"
     },
+    "stakes-4": {
+      "kind": "sticks",
+      "n": 4,
+      "long": true
+    },
     "riceball": {
       "kind": "riceball"
     },

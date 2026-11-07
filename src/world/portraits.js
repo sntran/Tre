@@ -11,7 +11,8 @@ import { roofMesh } from './roofs.js';
 export const MOODS = Object.freeze(['calm', 'happy', 'worried', 'surprised']);
 // The framings: head (the head and the neck, for the small choice buttons of hero creation), bust
 // (the head and the shoulders, for the dialogue box and the cards), and full (the whole figure).
-export const FRAMINGS = Object.freeze(['head', 'bust', 'full']);
+// print: the whole animal or thing of a print of the notebook, from its usual side (printView).
+export const FRAMINGS = Object.freeze(['head', 'bust', 'full', 'print']);
 // For each framing that has a face: the share of the height of the image that the head fills (from
 // the chin to the top of the hair), the turn of the figure from the front (radians), and the
 // height of the camera over the eyes (radians, small: the face, not the top of the hair). A head of
@@ -36,6 +37,43 @@ export function faceFrame(framing, { headY, top }) {
   return { y: frameTop - height / 2, half: height / 2, chin: headY - CHIN * r };
 }
 export const CACHE_SIZE = 64;
+
+// The frame of a print of the notebook (#162: the prints were a close part of the thing, as "Con
+// ếch", a green block with two dark squares): the whole thing from its usual side. An animal stands
+// side on, with the camera a little over it; a thing turns the side that fills the box most, with
+// the camera over it as over a thing on the ground. fill: the share of the box that the larger side
+// of the thing fills.
+export const PRINT = Object.freeze({ fill: 0.82, enough: 0.35, animal: { turns: [Math.PI / 2, Math.PI / 3, Math.PI / 4], elevation: 0.22 }, thing: { turns: [0, Math.PI / 4, Math.PI / 2], elevation: 0.5 } });
+const ANIMAL_KINDS = new Set(['quadruped', 'float', 'fowl', 'flyer', 'fish', 'serpent']);
+const ANIMAL_LOOKS = new Set(['frog', 'owl', 'kingfisher', 'dog', 'buffalo', 'nghe', 'duck', 'chicken', 'fish', 'bird']);
+export const isAnimal = (look, figureKind) => ANIMAL_KINDS.has(figureKind) || ANIMAL_LOOKS.has(look?.kind);
+
+// The sizes on the screen of a box of sizes {x, y, z} (at a turn of 0) after a turn about the
+// upright axis, seen with the camera at an elevation: { w, h }.
+export function shownSize(size, turn, elevation) {
+  const c = Math.abs(Math.cos(turn));
+  const s = Math.abs(Math.sin(turn));
+  const w = size.x * c + size.z * s;
+  const d = size.x * s + size.z * c;
+  return { w, h: size.y * Math.cos(elevation) + d * Math.sin(elevation) };
+}
+
+// The view of a print: { turn, elevation, half (the half size of the frame), cover (the share of
+// the box that the box of the thing covers) }. size: the box of the thing at a turn of 0.
+export function printView(size, animal = false) {
+  // An animal: the first turn from its side that fills enough of the box (a long serpent turns a
+  // little toward the camera). A thing: the turn that fills the box most.
+  const spec = animal ? PRINT.animal : PRINT.thing;
+  let best = null;
+  for (const turn of spec.turns) {
+    const { w, h } = shownSize(size, turn, spec.elevation);
+    const half = Math.max(w, h, 0.01) / 2 / PRINT.fill;
+    const v = { turn, elevation: spec.elevation, half, cover: (w * h) / (4 * half * half) };
+    if (animal && v.cover >= PRINT.enough) return v;
+    if (!best || v.cover > best.cover) best = v;
+  }
+  return best;
+}
 
 // A text for a value with the keys of each object in order, so that the same look gives the same
 // key whatever the order of its keys.

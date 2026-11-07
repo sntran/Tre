@@ -42,7 +42,7 @@ test('each skill has its own picture and a name that a child knows, with no digi
   // The page "Việc em làm được" shows the same names and pictures.
   const profile = { grade: 2, learning: { skills: { 'math.add.20': { n: 1 }, 'math.place.1000': { n: 1 } } }, notebook: { seen: {} }, flags: {} };
   const list = notebookOf(notebook, skills, profile).filter((e) => e.kind === 'skill' && e.met);
-  assert.deepEqual(list.map((e) => [vi[e.titleKey], e.look]).sort(), [['Bó que tính', 'rod-bundle'], ['Cái đăng', 'stake-set']]);
+  assert.deepEqual(list.map((e) => [vi[e.titleKey], e.look]).sort(), [['Bó que tính', 'rod-bundle'], ['Cái đăng', 'stakes-4']]);
 });
 
 test('the law of the stories checks the card of a new print', () => {

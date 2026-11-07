@@ -290,6 +290,7 @@ const FILES = [
   'src/ui/parent.js',
   'src/ui/notebook.js',
   'src/ui/portraits.js',
+  'src/ui/retry.js',
   'src/ui/question.js',
   'src/ui/quiz.js',
   'src/ui/raid.js',

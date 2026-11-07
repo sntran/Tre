@@ -1673,16 +1673,27 @@ export async function mountVillage(ctx, params = {}) {
   // together): the cards wait while the voice speaks, PRINT_GAP after its last line, and while a
   // person does a move (a script of a mentor or of an example).
   let voiceAt = -Infinity;
+  // The lines of a card of a print in the voice queue.
+  const isPrintLine = (l) => l.id === 'print' || l.id === 'print-first' || String(l.id).startsWith('print-word-');
+  let printEv = null; // the event of the card on the screen
   const dropPrint = () => {
     printCard?.remove();
     printCard = null;
+    printEv = null;
     printGone = performance.now();
   };
   function pumpPrints() {
     const modal = ctx.ui.querySelector('.modal-layer');
     // A screen opens over the card: the card goes (the print stays in the notebook), so that it is
-    // not a target next to the buttons of the screen.
-    if (printCard && modal) dropPrint();
+    // not a target next to the buttons of the screen. Its line leaves the voice queue with it, and
+    // a card whose line did not play yet comes back after the screen (#162: "Tranh mới: …" played
+    // during a talk, with no card on the screen).
+    if (printCard && modal) {
+      const unsaid = voiceQueue.has(isPrintLine);
+      voiceQueue.forget(isPrintLine);
+      if (unsaid && printEv) printQueue.unshift(printEv);
+      dropPrint();
+    }
     if (speaking() || spoken || voiceQueue.size()) voiceAt = performance.now();
     if (printCard || !printQueue.length || box || busy || modal) return;
     if (performance.now() - Math.max(printGone, voiceAt) < PRINT_GAP || query(state, 'script').length) return;
@@ -1707,6 +1718,7 @@ export async function mountVillage(ctx, params = {}) {
     card.addEventListener('click', () => { dropPrint(); modals.notebook?.(ctx); });
     ctx.ui.append(card);
     printCard = card;
+    printEv = ev;
     // The voice says the card in its turn, as a line of a bubble (#72: a child who cannot read
     // yet did not know the card). A print of a skill has the name that a child knows (#77). The
     // word "sổ tay" is said one time (#81: the voice said "Sổ tay có tranh mới" eight times, and a

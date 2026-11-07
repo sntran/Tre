@@ -6258,7 +6258,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
         profile.notebook ??= { seen: {} };
         profile.notebook.from ??= {};
         profile.notebook.from[skill.id] ??= from;
-        const print = skillPrint(data.notebook, skill, profile.notebook.from[skill.id]);
+        const print = skillPrint(data.notebook, skill, profile.notebook.from[skill.id], profile.notebook.from);
         emit({ type: 'notebook', id: print.id, titleKey: print.titleKey, look: print.look, kind: 'skill', subject: skill.subject });
       }
     }
