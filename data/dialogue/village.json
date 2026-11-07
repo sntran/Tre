@@ -347,6 +347,7 @@
         "water": {
           "speaker": "smith",
           "textKey": "dlg.smith.forge.water",
+          "names": [{ "id": "hearth:horse", "act": "steam" }],
           "next": "n2"
         },
         "n2": {
@@ -363,6 +364,7 @@
         "n1": {
           "speaker": "smith",
           "textKey": "dlg.smith.horse.n1",
+          "names": ["steed:giong"],
           "mood": "happy"
         }
       },

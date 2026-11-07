@@ -751,6 +751,9 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     if (ev.screen === 'callout') {
+      // A person talks only when the person is on the screen (#170: the voice of bà lang came while
+      // she was not on the screen): a line of the day of a person out of the screen is not said.
+      if (/^(npc|way|event):/.test(String(ev.id ?? '')) && /^world\./.test(String(ev.textKey ?? '')) && !onScreen(ev.id)) return;
       // The person of a bubble is the person of the talk for a moment (#158: "Somebody said 'Chào
       // cháu!' but I can't see who - the roof is covering everything.").
       if (/^(npc|way|event|pz|encounter):/.test(String(ev.id ?? ''))) bubbleTalker = { id: ev.id, t: performance.now() };
@@ -1695,11 +1698,35 @@ export async function mountVillage(ctx, params = {}) {
       dropPrint();
     }
     if (speaking() || spoken || voiceQueue.size()) voiceAt = performance.now();
-    if (printCard || !printQueue.length || box || busy || modal) return;
+    if (printCard || printWait || !printQueue.length || box || busy || modal) return;
     if (performance.now() - Math.max(printGone, voiceAt) < PRINT_GAP || query(state, 'script').length) return;
     showPrint(printQueue.shift());
   }
-  function showPrint(ev) {
+  // Is a figure on the screen now (its head, inside the canvas)?
+  function onScreen(id) {
+    const f = figures.placeOf(id);
+    if (!f) return false;
+    const q = view.project(f.x, f.y + (f.height ?? 1), f.z);
+    return q.x >= 0 && q.y >= 0 && q.x <= size.width && q.y <= size.height;
+  }
+  // The card waits for its print, up to PRINT_WAIT ms (#170: on a slow phone some cards showed with
+  // no picture).
+  const PRINT_WAIT = 3000;
+  let printWait = false; // a card waits for its print: no other card starts
+  function showPrint(ev, waited = 0) {
+    const pic = printOf(ctx, ev, 40);
+    printWait = false;
+    if (pic.classList?.contains('portrait-wait') && waited < PRINT_WAIT) {
+      printWait = true;
+      pic.style.position = 'absolute';
+      pic.style.left = '-9999px';
+      ctx.ui.append(pic);
+      setTimeout(() => {
+        pic.remove();
+        if (alive) showPrint(ev, pic.classList.contains('portrait-wait') ? waited + 150 : PRINT_WAIT);
+      }, 150);
+      return;
+    }
     // The name that the child gave to Nghé (#77: "Mít, bạn của em").
     const name = tn(ev.titleKey);
     // The animal of the card pulses, so that the child sees which one it is (#113).
@@ -1711,7 +1738,7 @@ export async function mountVillage(ctx, params = {}) {
     const words = wordGloss(ctx, name, ev.titleKey);
     const card = h('button', { class: 'print-card', type: 'button' }, [
       img('ui/notebook', 'print-book'),
-      h('span', { class: 'note-print' }, [printOf(ctx, ev, 40)]),
+      h('span', { class: 'note-print' }, [waited ? printOf(ctx, ev, 40) : pic]),
       // The card says what the voice says (#89).
       h('span', {}, [h('span', { text: t('note.newName', { name }) }), ...words.map((w) => h('small', { class: 'print-word', text: w }))]),
     ]);

@@ -1658,12 +1658,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // A line with no names after a line with names ends the glow, and so does the end of the talk.
   const NAME_PAD = 2.5; // half blocks around a thing that a line names, in the frame
   function showNames(d, speaker, list = []) {
-    // The water of the last line goes back down.
+    // The water of the last line goes back down, and its steam goes.
     if (d.risen) {
       const water = getEntity(state, d.risen);
       if (water?.look === 'tide-1') water.look = 'tide-0';
       d.risen = null;
     }
+    if (getEntity(state, 'steam:talk')) removeEntity(state, 'steam:talk');
     const named = list.map((n) => ({ ...n, e: getEntity(state, n.id) })).filter((n) => n.e?.position);
     const things = named.map((n) => n.e);
     if (!things.length && !d.named) return;
@@ -1674,6 +1675,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (rise) {
       rise.e.look = 'tide-1';
       d.risen = rise.e.id;
+    }
+    // The act "steam": steam rises over the thing while the line says it (#170: "Xèo! Hơi nước bay
+    // lên", and no steam; words and the pictures that they name belong together, Mayer 2009).
+    const steam = named.find((n) => n.act === 'steam');
+    if (steam) {
+      addEntity(state, { id: 'steam:talk', position: { ...steam.e.position }, look: 'steam-puff' });
+      emit({ type: 'sound', sound: 'sizzle' });
     }
     const person = speaker ? getEntity(state, `npc:${speaker}`) : null;
     // A place with the act "ends": the person points at one end of it, and then at the other end
@@ -4545,6 +4553,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const nghe = getEntity(state, 'friend:nghe');
     return near(nghe) ? nghe : null;
   }
+  const GROW_CLOSE = 0.6; // the frame of the growth of Gióng: this part of the near view (#170)
   // A line of the rice with the count of the pot as a word: n (the key), n.one, and n.zero.
   function riceLine(key, n, glow, at) {
     const who = riceVoice();
@@ -4572,7 +4581,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (boy?.position && !boy.hidden) {
         boy.stretch = Number(ev.heads ?? tz.zone.heads ?? 0);
         setCue([pot.id, boy.id]);
-        emit({ type: 'workView', key: 'grow-boy', points: [{ ...boy.position }, { ...pot.position }], sight: [{ ...boy.position }] });
+        // The view comes close, so that the growth shows (#170: "Gióng cao thêm một đầu" in a far
+        // view).
+        emit({ type: 'workView', key: 'grow-boy', points: [{ ...boy.position }, { ...pot.position }], sight: [{ ...boy.position }], close: GROW_CLOSE });
         emit({ type: 'success', id: boy.id, x: boy.position.x, z: boy.position.z, sound: 'whoosh' });
       }
     } else riceLine('rice.pot', n, [pot.id], pot.position);

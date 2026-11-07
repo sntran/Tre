@@ -726,6 +726,8 @@ export function thingLook(key) {
   if (k === 'anvil') return { kind: 'iron', anvilOnly: true };
   m = /^trough-steam-(\d)$/.exec(k);
   if (m) return { kind: 'trough', full: true, steam: Number(m[1]) };
+  // The steam of a line of the smith (#170): puffs that rise over the thing.
+  if (k === 'steam-puff') return { kind: 'steam-puff' };
   if (k === 'iron-rack') return { kind: 'iron-rack' };
   m = /^pole-(\d+)(-half)?$/.exec(k);
   if (m) return { kind: 'fisher-pole', n: Number(m[1]), half: Boolean(m[2]) };
@@ -1236,6 +1238,7 @@ export function workThing(look) {
       for (let i = 0; i < look.n; i++) parts.push(P(`sack${i}`, [0.45, 0.45, 0.4], 'yellowPale', [(i - (look.n - 1) / 2) * 0.55, 0.3, 0]));
       return still(parts, 0.55);
     }
+    case 'steam-puff': return still([0, 1, 2, 3].map((i) => P(`puff${i}`, [0.8 + i * 0.2, 0.6, 0.8 + i * 0.2], 'paper', [(i % 2 ? 0.35 : -0.35), 1.2 + i * 0.7, (i % 2 ? -0.2 : 0.2)])), 3.5);
     // A small reed mat for a share of the loot.
     case 'share-mat': {
       const [mat, edge] = MAT_COLORS[look.color] ?? MAT_COLORS.yellow;
