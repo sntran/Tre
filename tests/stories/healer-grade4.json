@@ -1,0 +1,51 @@
+{
+  "name": "healer-grade4",
+  "about": {
+    "vi": "Bà lang ở lớp bốn: bà cần các thang thuốc.",
+    "en": "The healer at grade 4: she needs doses of medicine."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 4,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    33,
+    44
+  ],
+  "steps": [
+    {
+      "press": {
+        "entity": "npc:healer"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.healer.trial.n1"
+          }
+        }
+      ]
+    }
+  ]
+}

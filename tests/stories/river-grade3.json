@@ -1,0 +1,54 @@
+{
+  "name": "river-grade3",
+  "about": {
+    "vi": "Cái ná ở chỗ lội, lớp ba: người thầy ném mẫu.",
+    "en": "The slingshot at the ford, grade 3: the coach shows the throw."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 3,
+    "lang": "vi",
+    "seed": 4,
+    "flags": {
+      "intro.seen": true,
+      "giong.spoke": true
+    },
+    "items": {
+      "rice": 5
+    }
+  },
+  "clock": 600,
+  "at": [
+    "phu-dong",
+    14,
+    61
+  ],
+  "steps": [
+    {
+      "press": {
+        "entity": "encounter:river"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "raid.river.intro"
+          }
+        }
+      ]
+    },
+    {
+      "read": true
+    }
+  ]
+}

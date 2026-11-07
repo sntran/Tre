@@ -1,0 +1,48 @@
+{
+  "name": "traps-k",
+  "about": {
+    "vi": "Bẫy ở lớp mẫu giáo: một công cụ, cái bẫy.",
+    "en": "The traps at K: one tool, the traps."
+  },
+  "profile": {
+    "name": "Su",
+    "grade": 0,
+    "lang": "vi",
+    "seed": 5,
+    "flags": {
+      "intro.seen": true,
+      "giong.grown": true,
+      "raid.tool.sling": true,
+      "raid.tool.gate": true,
+      "raid.used.sling": 2
+    },
+    "items": {
+      "rice": 5
+    }
+  },
+  "clock": 420,
+  "at": [
+    "trau-son",
+    89,
+    30
+  ],
+  "steps": [
+    {
+      "press": {
+        "entity": "encounter:soldier1"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "say"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    }
+  ]
+}

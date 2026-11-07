@@ -1,0 +1,59 @@
+{
+  "name": "staffs-grade1",
+  "about": {
+    "vi": "Gậy tre ở lớp một: bác tiều phu nói chuyện, rồi chặt cho em xem một cây tre bằng cách giữ nút.",
+    "en": "The bamboo staffs at grade 1: the woodcutter talks, and then cuts a culm of his own with a hold."
+  },
+  "profile": {
+    "name": "An",
+    "grade": 1,
+    "lang": "vi",
+    "seed": 7,
+    "flags": {
+      "intro.seen": true,
+      "prologue.started": true,
+      "trial.woodcutter.done": true,
+      "giong.grown": true,
+      "soldier1.won": true,
+      "soldier2.won": true
+    }
+  },
+  "clock": 540,
+  "at": [
+    "phu-dong",
+    48,
+    8
+  ],
+  "steps": [
+    {
+      "press": {
+        "entity": "npc:woodcutter"
+      }
+    },
+    {
+      "until": {
+        "event": "open",
+        "with": {
+          "screen": "dialogue"
+        },
+        "timeout": 20
+      }
+    },
+    {
+      "read": true
+    },
+    {
+      "expect": [
+        {
+          "text": {
+            "shown": "dlg.woodcutter.staffs.n2"
+          }
+        },
+        {
+          "entity": "culm:staffs:1",
+          "look": "culm-12"
+        }
+      ]
+    }
+  ]
+}
