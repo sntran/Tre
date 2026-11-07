@@ -5015,7 +5015,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (basket && basketNear()) add({ act: 'take', icon: 'hand-pick', target: basket.id, keys: [basket.id, 'zone:basket'], at: hero().position, rank: -6, work: true, run: takeExtra }, REACH);
       const hearth = zoneOf('hearth');
       const bellows = query(state, 'item', 'position').find((e) => e.item.kind === 'bellows' && !e.hidden);
-      if (open('horse')?.zone.heat === null && hearth?.zone.items.length) add({ act: 'blow', icon: 'fire', target: bellows?.id ?? hearth.id, keys: [bellows?.id, hearth.id], at: bellows?.position ?? hearth.position, rank: 0, work: true, run: () => work('horse', 'blow') }, REACH + 3);
+      // The blow comes after a tap on the bellows or the hearth (#172: after one lump the button was
+      // the bellows, and a girl of grade 5 blew with one lump): each carry has its next carry on the
+      // button, and the try is a tap and a press.
+      const blowTapped = Boolean(chosen && [bellows?.id, hearth?.id, 'hearth:horse'].includes(chosen.id));
+      if (open('horse')?.zone.heat === null && hearth?.zone.items.length && blowTapped) add({ act: 'blow', icon: 'fire', target: bellows?.id ?? hearth.id, keys: [bellows?.id, hearth.id], at: bellows?.position ?? hearth.position, rank: 0, work: true, run: () => work('horse', 'blow') }, REACH + 3);
       const drum = hamlet.round('drum');
       if (drum && !drum.done) {
         for (const e of query(state, 'hamletTap', 'position')) if (e.hamletTap.act === 'drum') add({ act: 'drum', icon: 'drum', target: e.id, at: e.position, rank: 0, run: () => work('drum', 'tap', { which: e.hamletTap.which ?? 0 }) }, REACH + 1);
@@ -6037,6 +6041,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // walk to the star of the teacher ended at the pile of planks, where he stood before).
       // A person of the way is a person of a star too (#142: the walk to the star ends next to her).
       const who = persons().find((q) => (q.kind === 'npc' || q.kind === 'way') && Math.hypot(q.x - hit.x, q.y - hit.y) < STAR_PERSON);
+      // A star at the hero (#172: a tap on the star of the ore beside the hero did nothing): the big
+      // button glows, because the next step is a press.
+      if (!who && Math.hypot(hero().position.x - hit.x * 2, hero().position.z - hit.y * 2) <= STAR_HERE) {
+        emit({ type: 'actGlow' });
+        return;
+      }
       if (walkFar(who ? { ...hit, person: who } : hit)) return;
     }
     // A tap past an edge of the world (the deep sea, the mist): the walk stops at the edge.
@@ -6082,6 +6092,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // leg). True when the hero walks or stands at the goal.
   const LEG = 2500; // the most cells of the search of one leg
   const STAR_PERSON = 2.5; // cells: a star this near a person is the star of the person
+  const STAR_HERE = 6; // half blocks: a star this near the hero is the star of the place of the hero (#172)
   const STAR_MEET = 10; // cells: this near the person of a star, the walk to the person takes over
   const RAID_NEAR = 24; // half blocks: in a raid, a tap on a person farther from the wall does nothing
   // The tick of the last tap on a star: the children of a folk game do not ask during the walk to it.
