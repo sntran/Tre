@@ -1,6 +1,6 @@
-// The test of the smith at grade 5 after the play test of #140–#145 (#153): the smith bends each
-// bar at the anvil in a close view, the bar from the rack goes to a clear V, the bar from the water
-// stays straight, and the two bars lie side by side for the compare.
+// The test of the smith at grade 5 after the play test of #140–#145 (#153), with the L and the wide
+// view of #159: the smith bends each bar at the anvil, the bar from the rack goes to an L, the bar
+// from the water stays straight, and the two bars lie side by side for the compare.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runHeadless } from './story-run.js';
@@ -45,7 +45,7 @@ async function bendTest() {
   return { session, said, run, tz };
 }
 
-test('grade 5: during each bend the bar is at least 15 mm long on the screen and no figure hides it; the bar from the rack bends to at least 45 degrees, the bar from the water stays straight; the two bars lie side by side when he says the result', async () => {
+test('grade 5: during each bend the bar is at least 40 points long on the screen and no figure hides it; the bar from the rack bends to an L, the bar from the water stays straight; the two bars lie side by side when he says the result', async () => {
   const h = await bendTest();
   const tries = h.tz().test.tries.map((q) => ({ ...q }));
   const bends = [];
@@ -55,14 +55,14 @@ test('grade 5: during each bend the bar is at least 15 mm long on the screen and
     if (!t || t.stage == null) return false;
     for (const q of tries) {
       const bar = getEntity(h.session.state, q.id);
-      if (!bar || !/^bar-(bend30|spring|bent|hard)$/.test(bar.look)) continue;
+      if (!bar || !/^bar-(bend30|spring|bent|straight)$/.test(bar.look)) continue;
       const a = h.session.state.entities.find((e) => e.id === 'anvil:smith')?.position;
       if (!a || Math.hypot(bar.position.x - a.x, bar.position.z - a.z) > 0.1) continue;
       // On the anvil, in the hands of the smith: its length on the screen (the bar lies along x).
       const cam = sessionCamera(h.session);
       const p0 = cam.project(bar.position.x / 2 - 0.5, bar.position.y / 2, bar.position.z / 2);
       const p1 = cam.project(bar.position.x / 2 + 0.5, bar.position.y / 2, bar.position.z / 2);
-      const mm = Math.hypot(p1.x - p0.x, p1.y - p0.y) / MM;
+      const mm = Math.hypot(p1.x - p0.x, p1.y - p0.y) * 1.6 / MM;
       const cover = h.session.state.entities.filter((e) => {
         const size = sizeOf(e);
         if (!size || Math.hypot(e.position.x - bar.position.x, e.position.z - bar.position.z) <= size.r * 2 + 0.6) return false;
@@ -74,21 +74,17 @@ test('grade 5: during each bend the bar is at least 15 mm long on the screen and
   });
   assert.ok(bends.length > 0, 'the bends');
   for (const b of bends) {
-    assert.ok(b.mm >= 15, `${b.id} is ${b.mm.toFixed(1)} mm long while he bends it`);
+    assert.ok(b.mm * MM >= 40, `${b.id} is ${(b.mm * MM).toFixed(0)} points long while he bends it`);
     assert.deepEqual(b.cover, [], `${b.id} behind a figure`);
   }
-  // The looks: the bar from the rack bends to a V of at least 45 degrees; the bar from the water stays
-  // straight (a hard bar, after a small spring).
+  // The looks: the bar from the rack bends to an L; the bar from the water stays straight.
   const rack = tries.find((q) => q.how === 'rack');
   const water = tries.find((q) => q.how === 'water');
   assert.ok(bends.some((b) => b.id === rack.id && b.look === 'bar-bent'));
-  assert.ok(lookOfKey('bar-bent').bent >= 45, `the angle ${lookOfKey('bar-bent').bent}`);
-  assert.ok(bends.some((b) => b.id === water.id && b.look === 'bar-hard'));
-  assert.ok(!lookOfKey('bar-hard').bent);
-  // The arm of the V rises: the top of the bent bar is high over the flat arm.
+  assert.ok(bends.some((b) => b.id === water.id && b.look === 'bar-straight'));
   const parts = figureOf(lookOfKey('bar-bent'), 'coarse').parts;
   const top = Math.max(...parts.map((p) => p.at[1] + p.size[1] / 2));
-  assert.ok(top >= 0.8, `the arm rises to ${top.toFixed(2)}`);
+  assert.ok(top >= 1.6, `the arm rises to ${top.toFixed(2)}`);
   // Side by side when he says the result.
   const said = h.said.find((l) => /^smith\.(guess\.(right|wrong)|fair\.why)/.test(l.key));
   assert.ok(said, h.said.map((l) => l.key).join(', '));

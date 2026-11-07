@@ -1817,7 +1817,6 @@ const TEST_CHECK = 1.6; // seconds after the second piece: the smith bends both
 const TEST_SHOW = 4.5; // seconds: the bent piece and the hard piece lie there, and he says why
 const BEND_EACH = 2.6; // seconds: the smith bends one bar, and says what it did (#120)
 const BEND_SLOW = 1.4; // seconds: the bend itself, slowly, in the hands of the smith (#153)
-const BEND_CLOSE = 0.36; // the close view of the anvil while he bends (#153: the bar at least 15 mm long)
 const BAR_SIDE = 0.7; // half blocks: the two bars lie side by side on the anvil for the compare
 function startTest(world, tz) {
   const a = tz.zone.anvil;
@@ -1906,7 +1905,10 @@ function tickTest(world, tz, task, dt) {
       // The other bar waits at its side of the anvil.
       for (const [k, o] of test.tries.entries()) if (k !== test.stage) Object.assign(getEntity(world, o.id).position, slot(k));
       if (smith) smith.gesture = { act: 'point', x: anvil.x, z: anvil.z, t: BEND_SLOW };
-      world.events.push({ type: 'workView', key: 'smith-bend', points: [{ ...anvil }], sight: [{ ...anvil }], close: BEND_CLOSE });
+      // The view of the task, wide (#159: "the camera is so close and my see-through body is in the
+      // way"): the whole smith, the two bars, and the pebble.
+      const wide = [{ ...anvil }, ...(smith?.position ? [{ ...smith.position }] : []), ...test.tries.map((o) => ({ ...slot(test.tries.indexOf(o)) }))];
+      world.events.push({ type: 'workView', key: 'smith-bend', points: wide, sight: wide });
       world.events.push({ type: 'glowThings', ids: [bar.id] });
       say(world, 'bend', tz.id, { sound: 'plank-down', test: true });
       test.sub = 'bend';
@@ -1914,7 +1916,7 @@ function tickTest(world, tz, task, dt) {
       return;
     }
     if (test.sub === 'bend') {
-      bar.look = q.how === 'water' ? 'bar-hard' : 'bar-bent';
+      bar.look = q.how === 'water' ? 'bar-straight' : 'bar-bent';
       say(world, 'call', 'npc:smith', { key: q.how === 'water' ? 'smith.fair.bar.water' : 'smith.fair.bar.rack', params: {}, happened: true });
       test.sub = 'lay';
       test.stageT = BEND_EACH;

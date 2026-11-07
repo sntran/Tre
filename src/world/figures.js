@@ -721,8 +721,8 @@ export function thingLook(key) {
   // water or on the rack), the anvil alone, the steam of a warm trough, and the rack in the air.
   m = /^iron-(dark|cherry|orange|yellow)$/.exec(k);
   if (m) return { kind: 'iron', color: m[1] };
-  m = /^bar-(0|dark|cherry|bent|bend30|spring|hard)$/.exec(k);
-  if (m) return { kind: 'iron', bare: true, ...({ bent: { bent: 60 }, bend30: { bent: 30 }, spring: { bent: 12 }, hard: { blade: true }, 0: { glow: 0 } }[m[1]] ?? { color: m[1] }) };
+  m = /^bar-(0|dark|cherry|bent|bend30|spring|hard|straight)$/.exec(k);
+  if (m) return { kind: 'iron', bare: true, ...({ bent: { arm: 1.6 }, bend30: { arm: 0.8 }, spring: { arm: 0.3 }, straight: { arm: 0 }, hard: { blade: true }, 0: { glow: 0 } }[m[1]] ?? { color: m[1] }) };
   if (k === 'anvil') return { kind: 'iron', anvilOnly: true };
   m = /^trough-steam-(\d)$/.exec(k);
   if (m) return { kind: 'trough', full: true, steam: Number(m[1]) };
@@ -970,8 +970,17 @@ export function workThing(look) {
         if (glow) parts.push(P('glow', [1, 0.04, 2.4], glow, [0, 0.01, 0]), ...[[0.3, 0.7, -0.5], [-0.25, 0.9, 0.2], [0.15, 1.1, 0.7]].map(([x, y, z], i) => P(`spark${i}`, [0.12, 0.12, 0.12], glow, [x, y, z])));
         return still(parts, glow ? 1.2 : 0.4);
       }
-      // A bent bar (#153: "I could not really SEE the bar bend"): one arm flat on the anvil, and the
-      // other arm up at the angle of the bend (degrees), as a row of short steps; 60 is a clear V.
+      // A bar of the fair test on a plank of light wood (#159: "the bent bar was a small stack of
+      // steps on the dark anvil"): a flat arm, and an arm straight up of `arm` units at its end; the
+      // renderer draws boxes with no rotation, so the bend is an L, the clearest bend that boxes can
+      // draw. The bar is light grey with the ink outline, on the light plank.
+      if (look.arm !== undefined) {
+        const flat = 1.6;
+        const parts = [P('plank', [1, 0.12, 2.2], 'diep', [0, 0.06, 0]), P('barA', [0.4, 0.3, flat], 'ashLight', [0, 0.27, 0])];
+        if (look.arm > 0) parts.push(P('barB', [0.4, look.arm, 0.3], 'ashLight', [0, 0.42 + look.arm / 2, flat / 2 - 0.15]));
+        return still(parts, 0.42 + look.arm);
+      }
+      // A bent bar (#153): one arm flat on the anvil, and the other arm up at the angle of the bend.
       if (look.bent) {
         const deg = look.bent === true ? 60 : look.bent;
         const a = (deg * Math.PI) / 180;
