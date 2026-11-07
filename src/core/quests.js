@@ -72,9 +72,25 @@ export function restOf(step, flags, { raidOf = () => null, raids = {}, minutes =
 // thing: the look of the small picture of a target that is not a person (#154: "There are 3 star
 // arrows now ... I don't know which one has iron."): the ore for a place of iron, the enemy of a
 // raid. raids: data.raids ({ raids, enemies }); raidOf(encounter id): the id of its raid.
+// The line of a thing names it (#163: "Đi tới chỗ ngôi sao." at a face or a rock): an object to
+// find ("Đi tìm quặng sắt."), or the enemies of a raid ("Đi tới chỗ thuồng luồng."). target: the
+// target of the star, so that its line comes one time.
 export function starOf(tg, index = 0, trials = [], { raids = null, raidOf = () => null } = {}) {
   const who = tg.npc ?? (tg.trial ? trials.find((t) => t.id === tg.trial)?.npc ?? null : null);
-  return { who, thing: who ? null : thingOf(tg, raids, raidOf), key: who ? 'star.go.person' : 'star.go.place', main: index === 0 };
+  const target = tg.npc ?? tg.trial ?? tg.object ?? tg.encounter ?? null;
+  if (who) return { who, thing: null, key: 'star.go.person', main: index === 0, target };
+  const kind = thingKind(tg, raids, raidOf);
+  const name = kind ? `star.thing.${kind}` : null;
+  return { who, thing: thingOf(tg, raids, raidOf), key: !name ? 'star.go.place' : tg.object ? 'star.go.find' : 'star.go.to', name, main: index === 0, target };
+}
+// The kind of the thing of a target: the object (ore), or the first enemy of the raid.
+function thingKind(tg, raids, raidOf) {
+  if (tg.object) return String(tg.object).replace(/\d+$/, '');
+  if (!tg.encounter || !raids) return null;
+  const def = raids.raids?.[raidOf(tg.encounter)];
+  const waves = def?.waves ?? (def?.phases?.find((ph) => ph.boss) ?? def?.phases?.[0])?.waves ?? [];
+  const kind = waves[0]?.kind;
+  return kind === 'general' ? 'soldier' : kind ?? null;
 }
 
 // The look of the picture of a target that is a thing (an object of the map, the enemies of a raid),

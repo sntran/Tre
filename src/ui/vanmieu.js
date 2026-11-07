@@ -162,9 +162,9 @@ async function afterExam(ctx, kind, result, ex) {
     await ctx.save('exam');
     // The result says what the child does well and what comes next, in words of the task, and no
     // grade (#136: "now will everything be lớp 6 hard?").
-    const { good, count, what, next } = strengths(result, result.ladder ?? ladderFor(ctx, kind));
+    const { good, goods, count, what, next } = strengths(result, result.ladder ?? ladderFor(ctx, kind));
     const lines = [
-      ...(good && count === null ? [{ key: lineOf(ex, 'placement.good'), params: { skill: skillWords(good, what) } }] : []),
+      ...(good && count === null ? [{ key: lineOf(ex, 'placement.good'), params: { skill: goods.length > 1 ? goods.map((id) => skillWords(id)) : skillWords(good, what) } }] : []),
       ...(good && count !== null ? [{ key: lineOf(ex, 'placement.count'), params: { skill: skillWords(good, what), n: { key: `num.${count}` } } }] : []),
       ...(next ? [{ key: lineOf(ex, 'placement.next'), params: { skill: skillWords(next) } }] : []),
       { key: lineOf(ex, 'placement.done'), params: {} },

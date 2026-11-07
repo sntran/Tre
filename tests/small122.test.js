@@ -323,7 +323,7 @@ test('each name of a calling has a line of what it is, after the done line', () 
     assert.equal(vi[done.nodes.who.textKey], vi[c.whoKey]);
   }
   assert.equal(vi['calling.fisher.who'], 'Ngư dân là người đánh cá.');
-  assert.equal(vi['calling.woodcutter.who'], 'Tiều phu là người đốn củi.');
+  assert.equal(vi['calling.woodcutter.who'], 'Tiều phu là người chặt cây trong rừng.');
 });
 
 test('at grade 1 the words of the fisher come when they are used (#130): "khe" at the first stake while the stakes glow, "đăng" at the second, and the tide while it rises; at grade 3 no word line', async () => {

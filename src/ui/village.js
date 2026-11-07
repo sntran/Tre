@@ -2043,11 +2043,17 @@ export async function mountVillage(ctx, params = {}) {
   }
   // A tap on a star says where it goes, before the walk (#62): "Đi tìm bà lang." The hero says it,
   // in the voice of the hero, as a line of a bubble (#60).
+  // The targets whose star said its line: a star says it one time (#163: "every single tap, it's
+  // kind of annoying").
+  const starSaid = new Set();
   function sayStar(m) {
+    const once = `${m.key}|${m.target ?? m.who ?? m.by ?? ''}`;
+    if (starSaid.has(once)) return;
+    starSaid.add(once);
     const by = m.who ?? m.by ?? null;
     const name = by ? namesOf(data, mapData.region)[by] ?? { key: `npc.${by}.name` } : null;
     const who = name ? t(name.key, name.params) : '';
-    const params = { who: who.charAt(0).toLocaleLowerCase(lang()) + who.slice(1) };
+    const params = { who: who.charAt(0).toLocaleLowerCase(lang()) + who.slice(1), ...(m.name ? { thing: { key: m.name } } : {}) };
     // A person with the name of a role (the smith) gets an article in English (#67: "Go and find the
     // smith."); a person with a name of the region does not.
     const role = name?.key === `npc.${by}.name`;

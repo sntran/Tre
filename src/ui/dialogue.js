@@ -9,7 +9,7 @@ import { voiceOf, spokenOf } from '../core/voices.js';
 import { namesOf, talkGloss } from '../core/naming.js';
 import { newGlosses } from '../core/speech.js';
 import { capitalize } from '../core/i18n.js';
-import { freshWords } from '../core/words.js';
+import { freshWords, wordsOfLine } from '../core/words.js';
 
 // The data for the voice of a speaker.
 function voiceData(ctx) {
@@ -46,6 +46,11 @@ export function glossLine(ctx, textKey, { params = {}, speaker = null, region = 
 
 // The lines of the words of a text that the child hears the first time (#139): [text]. The words
 // are then heard (the flags word.<id>).
+// The word whose line is this key is heard (the flag word.<id>).
+export function markWordLine(ctx, key) {
+  const flags = (ctx.profile.flags ??= {});
+  for (const id of wordsOfLine(wordsNow(), key)) flags[`word.${id}`] = true;
+}
 export function wordGloss(ctx, text, key = null) {
   const flags = (ctx.profile.flags ??= {});
   const { say, seen } = freshWords(text, wordsNow(), flags, key);
@@ -189,6 +194,9 @@ export function createDialogueBox(ctx, { next, choose, voice: say = null }) {
     const mark = line.mark ? h('div', { class: `mark mark-${line.mark}`, text: t(`mark.${line.mark}`) }) : null;
     const face = portrait(ctx, line.speaker, line.mood);
     if (face) box.append(face);
+    // The word of the card is said with the line (spokenOf): it is heard, and the gloss does not
+    // say it again (#163: "Quặng sắt là đá có sắt bên trong." came two times in a row).
+    if (line.word?.textKey) markWordLine(ctx, line.word.textKey);
     const gloss = glossLine(ctx, line.textKey, { params: line.params, speaker: narrator ? null : line.speaker, region: !narrator });
     const head = narrator && !mark ? null : h('div', { class: 'dialogue-head' }, [
       narrator ? null : h('div', { class: 'speaker', text: speakerName(ctx, line.speaker) }),

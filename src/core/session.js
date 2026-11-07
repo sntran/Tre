@@ -684,6 +684,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const f = h.position.facing ?? 0;
     const d = Math.hypot(g.position.x - h.position.x, g.position.z - h.position.z);
     if (state.tick % 15 !== 0 && d <= RIDER.jump && !riderBlocks) return;
+    // He stops for a talk (#163).
+    if ((g.talkStop ?? 0) > state.tick) return;
     // At the share: his place behind his mat, on foot.
     const by = getEntity(state, 'zone:share-giong')?.zone.by ?? null;
     const afoot = Boolean(by);
@@ -1920,7 +1922,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (Object.keys(def.reward ?? {}).length) emit({ type: 'gift', from: getEntity(state, from) ? from : 'hero', give: def.reward, delay: 0.3 });
     // The iron of the smith flies to the counter after the last bar, with its line (#120), so that
     // a child does not take it for the count of the bars.
-    if (id === 'smith' && def.reward?.iron) emit({ type: 'open', screen: 'callout', id: from, textKey: 'smith.gift', params: { n: { key: `num.${def.reward.iron}` } } });
+    // The gift is what the counter counts, said plainly (#163: "we dipped thép (steel) but he gave
+    // me sắt (iron)?"): after the steel of the fair test, the line says that the steel is iron.
+    const steel = id === 'smith' && Boolean(profile.flags['word.thep']);
+    if (id === 'smith' && def.reward?.iron) emit({ type: 'open', screen: 'callout', id: from, textKey: steel ? 'smith.gift.steel' : 'smith.gift', params: { n: { key: `num.${def.reward.iron}` } } });
     emit({ type: 'hud' });
     // The iron horse comes out of the forge at full size (#137).
     if (id === 'horse') steedOut();
@@ -2786,9 +2791,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     worldCommand(state, { type: 'face', id: person.id, x: h.position.x, z: h.position.z });
     talk(c.id);
   }
+  // A person who walks or rides stops for a talk and turns to the hero (#163: "I pressed the talk
+  // button and nobody talked, I just walked a little.").
+  const TALK_STOP = 6; // seconds
+  function haltFor(id) {
+    const e = id ? getEntity(state, id) : null;
+    const h = hero();
+    if (!e?.position || !h || e.id === 'hero') return;
+    delete e.route;
+    if (e.schedule) e.schedule.scene = { x: e.position.x, z: e.position.z, until: state.tick + Math.round(TALK_STOP / STEP) };
+    e.talkStop = state.tick + Math.round(TALK_STOP / STEP);
+    e.position.facing = Math.atan2(h.position.x - e.position.x, h.position.z - e.position.z);
+  }
   function interact(who, at) {
     log('action', { kind: 'talk' });
     worldCommand(state, { type: 'face', id: 'hero', x: at.x * 2, z: at.y * 2 });
+    if (who.kind === 'npc' || who.kind === 'way') haltFor(at.entity ?? (who.kind === 'way' ? `way:${who.id}` : `npc:${who.id}`));
     if (who.kind === 'npc') {
       // The child starts a station while the greeting of the place goes on: the greeting ends at
       // once, with its marks, and only the person of the station talks (#38).
@@ -2854,6 +2872,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // One line, and then the raid starts on this map. The first raid of the slingshot has its
       // own line (firstKey): it has no gate, and so no torch (#67).
       say(def.firstKey && !profile.flags['raid.tool.sling'] ? def.firstKey : def.introKey);
+      // The creature of the raid first, at every grade (#163: "What is a thuồng luồng? I don't
+      // know that word. A fish? A snake?"): one line at its first intro, and it glows.
+      if (def.creature && !profile.flags[`word.${def.creature}`]) {
+        profile.flags[`word.${def.creature}`] = true;
+        const id = `encounter:${enc.id}`;
+        queue(() => {
+          openScreen({ screen: 'say' }, { speaker: 'narrator', textKey: `word.${def.creature}`, params: {} });
+          const e = getEntity(state, id);
+          if (e?.position) emit({ type: 'names', ids: [id], spots: [], bobs: [], seq: [], points: [{ ...e.position }] });
+        });
+      }
       // A word that a child of K to grade 2 hears for the first time: one short line, and the thing
       // glows (#122: "trinh sát"). The flag word.<id> keeps it.
       if (def.word && Number(profile.grade ?? 1) <= WORD_GRADE && !profile.flags[`word.${def.word}`]) {
@@ -4565,6 +4594,25 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       walkTo([{ x: to.x / 2, y: to.z / 2 }], () => worldCommand(state, { type: 'face', id: 'hero', x: (g.x0 + g.x1) / 2, z: mid }));
     }
   }
+  // The count of the farmer after a duck goes into the pen of the small event of the ducks.
+  function duckCount(ev) {
+    const z = zoneOf(ev.zone);
+    const it = getEntity(state, ev.item)?.item;
+    if (!z || z.zone.rule !== 'exact' || it?.kind !== 'duck' || it.stray) return;
+    const tz = getEntity(state, `zone:${z.zone.task}`)?.zone;
+    const need = tz?.need ?? null;
+    const n = z.zone.items.filter((id) => !getEntity(state, id)?.item.stray).length;
+    // The person of the small event (event:duck), or the farmer of the village.
+    const ev2 = getEntity(state, `event:${z.zone.id.replace(/^event-/, '').replace(/-place$/, '')}`);
+    const farmer = ev2 && !ev2.hidden ? ev2 : query(state, 'person').find((p) => p.person.ref === 'farmer' && !p.hidden);
+    if (!farmer || !need) return;
+    const left = Math.max(0, need - n);
+    // The view holds the pen and the hero, near, so that the pen is not a few pixels (#163).
+    const r = z.zone.rect;
+    const y = z.zone.y ?? hero().position.y;
+    if (r) emit({ type: 'workView', key: 'duck-pen', points: [{ x: r.x0, y, z: r.z0 }, { x: r.x1, y, z: r.z1 }, { ...hero().position }], sight: [{ x: (r.x0 + r.x1) / 2, y, z: (r.z0 + r.z1) / 2 }] });
+    emit({ type: 'open', screen: 'callout', id: farmer.id, textKey: left ? oneKey('event.duck.count', n) : 'event.duck.all', params: { n: { key: `num.${Math.min(150, n)}` }, m: { key: `num.${Math.min(150, left)}` } } });
+  }
   // The take is the act of the button: an extra bunch to take out, empty hands at the basket, and
   // no tap on a bed since (a tap on a bed takes from the bed).
   // After a put of the child since her count, the child tries again: the take waits for the next
@@ -5392,6 +5440,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   }
   // The act of a press that names the act id of the button (no id: the act of the button now), or
   // null (the button pulses). A press during a walk waits: { wait: true }.
+  const TALK_FAR = 16; // half blocks: a talk of the button reaches a person this far who moved away
+  function talkFar(a) {
+    const q = persons().find((p) => p.entity === a.target);
+    const e = q ? getEntity(state, q.entity) : null;
+    if (!q || !e?.position || e.hidden || distHb(hero().position, e.position) > TALK_FAR) return null;
+    return { ...a, run: () => interact({ kind: q.kind, id: q.ref }, q) };
+  }
   function pressed(id) {
     const now = button();
     const b = id === null || id === undefined ? now : btnAll.find((x) => x.id === id) ?? null;
@@ -5401,7 +5456,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // of the walk to a tapped thing: the act on that thing, at the end of the walk (the walk
       // ended just before the press, or goes on).
       if (b.deferred) return walking() && chosen ? { wait: true, key: b.key } : candidates().find((c) => matches(c, b.key)) ?? null;
-      return candidates().find((c) => c.act === b.a.act && c.target === b.a.target) ?? null;
+      const same = candidates().find((c) => c.act === b.a.act && c.target === b.a.target) ?? null;
+      // A talk with a person who walked or rode a little out of reach still talks (#163): the
+      // person stops and turns to the hero.
+      if (!same && b.a.act === 'talk') return talkFar(b.a);
+      return same;
     }
     if (!b.child && !b.first && (state.tick - b.t) * STEP < SETTLE) return null;
     if (b.deferred) return { wait: true, key: b.key };
@@ -6664,6 +6723,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       if (ev.type === 'put' && ev.zone) {
         const task = zoneOf(ev.zone)?.zone.task;
         if (task) childPut.add(task);
+        // A duck of the small event in the pen: the farmer says the count (#163: "Is it in the pen
+        // now? It doesn't say 1 duck or anything.").
+        duckCount(ev);
         // A put after her count of the extra: the child tries again, and the give is free (#160).
         if (ev.zone === 'basket' && trialZone('healer')?.zone.extraTold) trialZone('healer').zone.putSince = true;
         deskPut(ev);

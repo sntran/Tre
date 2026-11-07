@@ -110,7 +110,7 @@ test('grade 3: the line of the gift comes after the last bar', async () => {
   assert.ok(zone.done);
   assert.ok(k.includes('smith.gift'), k.join(', '));
   assert.ok(k.lastIndexOf('smith.good') < k.indexOf('smith.gift'), 'after the bars');
-  assert.equal(said.find((l) => l.key === 'smith.gift').text, 'Bác cho cháu hai thanh sắt.');
+  assert.equal(said.find((l) => l.key === 'smith.gift').text, 'Bác cho cháu hai thanh sắt để làm ngựa sắt.');
 });
 
 test('grade 5: the smith bends the two bars one after the other in view, says what each did, and then why; a wave after the line of the rest gives the step of the rest', async () => {

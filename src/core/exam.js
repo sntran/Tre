@@ -215,7 +215,10 @@ export function strengths(result, ladder) {
   const right = result.items.filter((a) => a.correct).sort((a, b) => b.rating - a.rating)[0] ?? null;
   const wrong = result.items.filter((a) => !a.correct && a.skill !== good?.skill).sort((a, b) => a.rating - b.rating)[0] ?? null;
   const above = right ? ladder.find((it) => it.rating > right.rating && it.skill !== right.skill && !result.items.some((a) => a.skill === it.skill)) : null;
-  return { good: good?.skill ?? null, count: most ? most.right : null, what: good ? [...good.what] : [], next: wrong?.skill ?? above?.skill ?? null };
+  // Each kind of question that went well (#163: "Only decimals? I did fractions and times too."):
+  // the skills with no wrong answer, the hardest first.
+  const goods = well ? list.filter((s) => s.wrong === 0 && s.right >= 1).sort((a, b) => b.rating - a.rating).map((s) => s.skill) : [];
+  return { good: good?.skill ?? null, goods, count: most ? most.right : null, what: good ? [...good.what] : [], next: wrong?.skill ?? above?.skill ?? null };
 }
 
 // The grade of a placement, for the parent page only (#136: the child hears no grade): the highest

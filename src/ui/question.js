@@ -1,7 +1,7 @@
 // One question on the screen: the prompt, a picture, and the answer input
 // (a number pad or choice buttons).
 import { h, img, button } from './dom.js';
-import { t, tg, lang, otherLang } from './i18n.js';
+import { t, tg, lang, otherLang, tOther } from './i18n.js';
 import { speak, speakText, stop } from './speak.js';
 import { otherOnce, otherLineOn } from './dialogue.js';
 import { renderVisual, shapeSvg } from './visuals.js';
@@ -27,6 +27,17 @@ export function answerText(problem) {
   return formatNumber(problem.answer, lang());
 }
 
+// The text of a choice in the other language (#163: the EN button turned the question, and the
+// answers stayed in Vietnamese).
+export function choiceOther(c) {
+  if (!c) return '';
+  if (c.value !== undefined) return formatNumber(c.value, otherLang());
+  if (c.fraction) return `${c.fraction[0]}/${c.fraction[1]}`;
+  if (c.shape) return tOther(`shape.${c.shape}`);
+  if (c.label?.key) return tOther(c.label.key, c.label.params);
+  return choiceText(c);
+}
+const OTHER_CHOICES_MS = 4000;
 export function choiceText(c) {
   if (!c) return '';
   if (c.value !== undefined) return formatNumber(c.value, lang());
@@ -48,7 +59,22 @@ export function renderQuestion(problem, { onAnswer, autoSpeak = true, ctx = null
   const promptText = textOf(problem.prompt);
   // A long prompt in a fixed place is a little smaller, so that it keeps to two lines (#143).
   const promptEl = h('p', { class: fixedVisual && promptText.length > LONG_PROMPT ? 'prompt long' : 'prompt', text: promptText });
-  const other = ctx && problem.prompt?.key && otherLineOn(ctx) ? button(otherLang().toUpperCase(), () => otherOnce(ctx, promptEl, problem.prompt.key, problem.prompt.params), { cls: 'icon-btn other-lang', aria: t('ui.otherLine') }) : null;
+  // The button of the other language turns the question and the answers, for a moment.
+  const otherAll = () => {
+    otherOnce(ctx, promptEl, problem.prompt.key, problem.prompt.params);
+    buttons.forEach((b, i) => {
+      const span = b.querySelector('span');
+      if (!span || b.dataset.other) return;
+      b.dataset.other = '1';
+      const original = span.textContent;
+      span.textContent = choiceOther(problem.choices?.[i]);
+      setTimeout(() => {
+        span.textContent = original;
+        delete b.dataset.other;
+      }, OTHER_CHOICES_MS);
+    });
+  };
+  const other = ctx && problem.prompt?.key && otherLineOn(ctx) ? button(otherLang().toUpperCase(), otherAll, { cls: 'icon-btn other-lang', aria: t('ui.otherLine') }) : null;
   const promptRow = h('div', { class: 'prompt-row' }, [
     promptEl,
     button(null, () => readAll(true), { cls: 'icon-btn', icon: 'ui/speak', aria: t('ui.listen') }),

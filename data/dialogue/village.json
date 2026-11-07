@@ -500,6 +500,16 @@
       }
     },
     {
+      "id": "mother.iron",
+      "start": "n1",
+      "nodes": {
+        "n1": {
+          "speaker": "mother",
+          "textKey": "dlg.mother.iron.n1"
+        }
+      }
+    },
+    {
       "id": "mother.idle",
       "start": "n1",
       "nodes": {

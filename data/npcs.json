@@ -356,6 +356,14 @@
           "dialogue": "mother.worry"
         },
         {
+          "when": {
+            "notFlags": [
+              "horse.forged"
+            ]
+          },
+          "dialogue": "mother.iron"
+        },
+        {
           "dialogue": "mother.idle"
         }
       ],

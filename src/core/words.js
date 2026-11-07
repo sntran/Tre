@@ -34,6 +34,8 @@ function wordAt(text, form) {
 // seen: the ids to keep as heard }. A text that is the line of a word, or that says what the word
 // is ("đe là …", "an anvil is …"), makes the word heard with no line after it. flags: the flags of
 // the profile; lineKey: the key of the text.
+// The ids of the words whose line is this key.
+export const wordsOfLine = (list, key) => list.filter((w) => w.line === key).map((w) => w.id);
 export function freshWords(text, list, flags = {}, lineKey = null) {
   const low = String(text ?? '').toLocaleLowerCase();
   const say = [];

@@ -95,7 +95,7 @@ test('the lines of the way: Gióng says the true place, the clue at night says t
   const vi = createI18n(load('i18n/vi.json'), 'vi');
   assert.match(vi.t('dlg.giong.grown.n3'), /chân núi Trâu, xa làng mình/);
   assert.equal(vi.t('clue.trau.sunrise.night'), 'Cứ theo con đường này, về phía mặt trời mọc. Núi Trâu ở đó.');
-  assert.equal(vi.t('giong.raid.ahead'), 'Gióng đi trước đánh tướng giặc. Cháu giữ ngã tư này nhé.');
+  assert.equal(vi.t('giong.raid.ahead'), 'Mình đi trước đánh tướng giặc. Bạn giữ ngã tư này nhé.');
   const raids = load('data/raids.json');
   for (const id of ['soldier1', 'soldier2']) assert.equal(raids.raids[id].leaveKey, 'giong.raid.ahead');
   assert.ok(vi.has('word.phiadong') && vi.has('word.phiadong.forms'));

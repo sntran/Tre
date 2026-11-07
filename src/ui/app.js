@@ -245,7 +245,8 @@ export async function startApp(root) {
       ctx.profile = profile;
       // The questions of this play session: quizzes and exams avoid repeats.
       ctx.seen = createSeen();
-      setGlobalParams({ name: profile.hero.name });
+      // A small child (baby Gióng) calls the hero "anh" or "chị", by the hero (#163).
+      setGlobalParams({ name: profile.hero.name, older: { key: `address.older.${profile.hero.gender === 'girl' ? 'girl' : 'boy'}` } });
       setChosenNames(chosenGlossNames(profile, data.friends.friends));
       useSeenGloss(profile.seenGloss);
       const code = startLanguage(profile, ctx.langChosen);
