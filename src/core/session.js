@@ -6805,6 +6805,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // A wrong basket: bà lang and the hero stand beside the rows and the leaves of her count, not
       // on them (#160: they stood on the leaves, and the child did not see the doses).
       if (ev.type === 'nope' && trialZone('healer')?.zone.lay) countSide();
+      // The mark passes a ring while the button is down: the woodcutter counts it (#168: the voice
+      // counts the rings, so that the child lets go at the count of the sample).
+      if (ev.type === 'ring' && ev.id === 'zone:trial-staffs' && holdAct) {
+        const wc = getEntity(state, 'npc:woodcutter');
+        emit({ type: 'open', screen: 'callout', id: wc && !wc.hidden ? wc.id : 'hero', textKey: `num.${Math.min(30, ev.at)}`, params: {} });
+      }
       // A quick tap at a culm (#161): the woodcutter (or Nghé, when he is not there) says to hold.
       if (ev.type === 'quick' && ev.id === 'zone:trial-staffs') {
         const wc = getEntity(state, 'npc:woodcutter');

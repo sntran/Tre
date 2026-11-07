@@ -1551,6 +1551,8 @@ function act(world, e, want, env) {
     // A second press (a double tap) starts the mark again at the first ring.
     removeEntity(world, 'aim:staffs');
     addEntity(world, { id: 'aim:staffs', position: { ...culm.position, y: culm.position.y + 1 }, look: 'chalk' });
+    // The first ring has its count too (#168: the voice counts the rings while the button is down).
+    say(world, 'ring', tz.id, { culm: want.culm, at: 1, sound: 'tap' });
   } else if (want.act === 'slash') {
     // A slash at the height of the hand on a standing culm: the top falls away, and the piece from
     // the ground to the cut stands in its place (the staff). The pieces stand side by side in the
@@ -1563,18 +1565,19 @@ function act(world, e, want, env) {
     delete tz.zone.aim;
     removeEntity(world, 'aim:staffs');
     if (want.at == null && aim?.culm !== i) return;
-    // The height by the time of the touch when the view sends it (#81), else by the time of the world.
-    const byTouch = want.held != null && aim?.culm === i ? aimAt(want.held, task.reach) : null;
-    // A quick tap does not cut (#161: each tap of a girl of grade 1 cut at the first ring, and she
-    // never learned to hold the button): the mark shows at the first ring, and the person says to
-    // hold the button longer.
-    const heldFor = want.held ?? aim?.t ?? 0;
+    // The cut is at the mark that the screen showed at the release (#168: the cut followed the clock
+    // of the touch and the mark the clock of the world, and on a slow phone a boy of K got six
+    // rings, two, six, three, and never four; Shneiderman 1983): the height of the mark of the
+    // world, never the time of the touch. A quick tap does not cut (#161: each tap of a girl of
+    // grade 1 cut at the first ring, and she never learned to hold the button): the mark shows at
+    // the first ring, and the person says to hold the button longer.
+    const heldFor = aim?.t ?? want.held ?? 0;
     if (want.at == null && aim?.culm === i && heldFor < AIM_RISE && culm && !tz.zone.cut) {
       addEntity(world, { id: 'aim:staffs', position: { ...culm.position, y: culm.position.y + 1 }, look: 'chalk' });
       tz.zone.quick = QUICK_SHOW;
       return say(world, 'quick', tz.id, { culm: i, sound: 'tap' });
     }
-    const at = Math.round(want.at ?? byTouch ?? aim.at);
+    const at = Math.round(want.at ?? aim.at);
     if (!c || !culm || tz.zone.cut || at < 1 || at >= task.height) return;
     if (at > task.reach) return say(world, 'high', tz.id, { culm: i, sound: 'tap' });
     removeEntity(world, culm.id);

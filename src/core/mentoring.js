@@ -1356,15 +1356,16 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     return t + 2.2;
   }
   // The show of the staffs (#161: a girl of grade 1 never learned to hold the button): the
-  // woodcutter cuts a culm of his own beside the row, at a height that is not the answer. He holds,
-  // the mark goes up ring by ring while he counts, he lets go, and the top falls. His culm goes at
-  // the end of the show; the culms of the child stand as they are.
+  // woodcutter cuts a culm of his own beside the row, as long as the sample (#168: he cut at three
+  // rings while the sample had four, and young children copy what an adult shows, Lyons, Young,
+  // and Keil 2007). He holds, the mark goes up ring by ring while he counts, he lets go at the
+  // rings of the sample, and the top falls. His culm goes at the end of the show; the culms of the
+  // child stand as they are.
   function staffShowSteps(task, s, t, first) {
     const z = task.tz.zone;
     const c = z.clump;
     const sample = getEntity(world(), 'sample:staffs');
-    const length = sample?.item.size ?? 4;
-    const at = length === 3 ? 2 : 3;
+    const at = sample?.item.size ?? 4;
     const look = getEntity(world(), 'culm:staffs:0')?.look ?? 'culm-12';
     const p = { x: c.x, z: c.z + STAFF_SHOW_OUT };
     s.say(t, 'mentor.staffs.first');
@@ -1420,7 +1421,11 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     s.point(t, p, 1.6);
     s.mark(t, p, 2.5);
     s.say(t + 0.1, n === 1 ? 'staffs.piece.one' : 'staffs.piece', { n: { key: `num.${Math.min(150, n)}` } });
-    return sampleSteps(task, s, t + 2.4);
+    // Then where to let go (#168: a break said the rings, and not what to do next).
+    const sample = getEntity(world(), 'sample:staffs');
+    const end = sampleSteps(task, s, t + 2.4);
+    if (sample) s.say(end, 'staffs.letgo', { n: { key: `num.${sample.item.size}` } });
+    return sample ? end + 3 : end;
   }
   // The help of a level of the healer with a structure (#108): the moves that put bunches into the
   // basket of the child (half of the shortfall, a smaller task) show the step of the level in their
