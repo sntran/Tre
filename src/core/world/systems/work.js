@@ -61,8 +61,9 @@ export const AIM_RISE = 0.45; // seconds: the mark of a slash goes up one half b
 export const aimAt = (t, reach) => Math.min(reach, 1 + Math.floor(Math.max(0, t - AIM_RISE) / AIM_RISE));
 const QUICK_SHOW = 1.5; // seconds: the mark of a quick tap stays at the first ring
 const MAT_MAX = 14; // the most rods on the mat of the teacher
-const SHARE_GAP = 4.6; // half blocks from a mat of the share to the next one
-const SHARE_BACK = 2.8; // half blocks from the middle of a mat of the share to its friend
+const SHARE_GAP = 5.2; // half blocks from a mat of the share to the next one
+const SHARE_BACK = 3.2; // half blocks from the middle of a mat of the share to its friend
+const SHARE_MAT = 1.7; // half blocks from the middle of a mat of the share to its edge
 const DEMO_WAIT = 0.8; // seconds: the smith quenches his demo piece this long after it turns hot
 const DEMO_NEXT = 1.6; // seconds: then the iron of the child comes on the anvil
 
@@ -403,19 +404,47 @@ export function setupTrial(world, def, level, env, opts = {}) {
     const back = { x: -def.dir.x, z: -def.dir.z };
     const side = { x: -def.dir.z, z: def.dir.x };
     const pt = (b, s) => { const x = def.at.x + back.x * b + side.x * s; const z = def.at.z + back.z * b + side.z * s; return { x, y: gy(x, z), z }; };
-    const pile = heap('loot', pt(3, 0), 'sack', { cols: 4, step: 0.9 });
+    const pile = heap('loot', pt(3, 0), 'sack', { cols: 4, step: 1.1 });
     things(pile, 'sack', def.loot);
-    // The mats lie 4.6 half blocks apart, and each friend stands behind the mat, 2.8 from its middle:
-    // no figure stands on a mat (#138: "Gióng is so big, he blocks the trays.").
+    // The row of the mats lies on open, level ground (#167: at Trâu Sơn two mats lay in the paddies
+    // and only the mat of Nghé showed): the place nearest to the pile, across the road or along it,
+    // where each mat and the place of its friend are dry ground and level with the pile. A row has
+    // the axis of the mats (u) and the side of the friends (v), half blocks from a middle (c).
+    const open = (q) => {
+      const g = env.groundAt?.(q.x, q.z);
+      const y = gy(q.x, q.z);
+      return g !== 'field' && g !== 'water' && g !== 'shallow' && !env.isBlocked?.(Math.floor(q.x / 2), Math.floor(q.z / 2)) && Math.abs(y - pile.zone.y) < 0.6;
+    };
+    const at = (c, u, v, a, b) => ({ x: c.x + u.x * a + v.x * b, z: c.z + u.z * a + v.z * b });
+    const corners = [[0, 0], [SHARE_MAT, SHARE_MAT], [-SHARE_MAT, SHARE_MAT], [SHARE_MAT, -SHARE_MAT], [-SHARE_MAT, -SHARE_MAT]];
+    const clear = (q) => Math.hypot(q.x - pile.zone.x, q.z - pile.zone.z) > SHARE_MAT + 3.5;
+    const fits = (c, u, v) => def.who.every((_, i) => corners.every(([a, b]) => open(at(c, u, v, (i - 1) * SHARE_GAP + a, b))) && open(at(c, u, v, (i - 1) * SHARE_GAP, SHARE_BACK)) && clear(at(c, u, v, (i - 1) * SHARE_GAP, 0)));
+    const rows = [];
+    for (let b = -12; b <= 30; b += 1) {
+      for (let o = -30; o <= 30; o += 1) {
+        const c = pt(b, o);
+        const d = Math.hypot(b - 7, o);
+        rows.push({ c, u: side, v: back, d }, { c, u: back, v: side, d: d + 0.5 }, { c, u: back, v: { x: -side.x, z: -side.z }, d: d + 0.5 });
+      }
+    }
+    rows.sort((p, q) => p.d - q.d);
+    const row = rows.find((r) => fits(r.c, r.u, r.v)) ?? { c: pt(7, 0), u: side, v: back };
+    // The mats lie SHARE_GAP half blocks apart, and each friend stands behind the mat: no figure
+    // stands on a mat (#138: "Gióng is so big, he blocks the trays."). Gióng stands at the outer
+    // side of his mat, out of the way between the pile and the mats (#167: he covered the view and
+    // stood on the road).
+    const place = (q) => ({ x: q.x, y: gy(q.x, q.z), z: q.z });
     def.who.forEach((who, i) => {
-      const m = pt(7, (i - 1) * SHARE_GAP);
-      addEntity(world, { id: `zone:share-${who}`, keep: true, zone: { id: `share-${who}`, task: owner, rule: 'share', accepts: 'sack', who, items: [], x: m.x, y: m.y, z: m.z, rect: { x0: m.x - 1.4, x1: m.x + 1.4, z0: m.z - 1.4, z1: m.z + 1.4 } }, position: { x: m.x - back.x * 2, y: m.y, z: m.z - back.z * 2, facing: 0 } });
+      const m = place(at(row.c, row.u, row.v, (i - 1) * SHARE_GAP, 0));
+      const edge = SHARE_MAT;
+      addEntity(world, { id: `zone:share-${who}`, keep: true, zone: { id: `share-${who}`, task: owner, rule: 'share', accepts: 'sack', who, items: [], x: m.x, y: m.y, z: m.z, rect: { x0: m.x - edge, x1: m.x + edge, z0: m.z - edge, z1: m.z + edge } }, position: { x: m.x - row.v.x * 2, y: m.y, z: m.z - row.v.z * 2, facing: 0 } });
       addEntity(world, { id: `mat:share-${who}`, keep: true, position: { x: m.x, y: m.y, z: m.z, facing: 0 }, look: 'share-mat' });
       // A friend stands behind the mat; where the ground there is not level with the mat (a paddy),
       // in front of it.
-      const behind = pt(7 + SHARE_BACK, (i - 1) * SHARE_GAP);
-      const by = Math.abs(behind.y - m.y) < 0.6 ? behind : pt(7 - SHARE_BACK, (i - 1) * SHARE_GAP);
-      const face = Math.atan2(-back.x, -back.z) + (by === behind ? 0 : Math.PI);
+      const outer = who === 'giong' ? (i - 1 || 1) * (SHARE_GAP / 2 + 1.5) : 0;
+      const behind = place(at(row.c, row.u, row.v, (i - 1) * SHARE_GAP + outer, SHARE_BACK));
+      const by = open(behind) ? behind : place(at(row.c, row.u, row.v, (i - 1) * SHARE_GAP + outer, -SHARE_BACK));
+      const face = Math.atan2(m.x - (by.x - row.u.x * outer), m.z - (by.z - row.u.z * outer));
       if (who === 'hero') addEntity(world, { id: 'by:share-hero', keep: true, position: { ...by, facing: face }, look: 'basket-low' });
       // The Gióng who rides with the hero goes to his mat (#146: "there are two big guys with red
       // headbands now"): the zone keeps the place, and the work adds no second figure.
@@ -424,7 +453,7 @@ export function setupTrial(world, def, level, env, opts = {}) {
       const friend = friendOf(world);
       if (who === 'nghe' && friend) friend.follow.goal = { x: by.x, z: by.z, face };
     });
-    Object.assign(tz.zone, { loot: def.loot, who: def.who, settled: null, leave: null, face: Math.atan2(-back.x, -back.z) });
+    Object.assign(tz.zone, { loot: def.loot, who: def.who, settled: null, leave: null, face: Math.atan2(-row.v.x, -row.v.z) });
   } else if (def.task === 'exact') {
     // A small event of the day: the things of sizes on a pile (or a lost duck alone at each of its
     // places), and the place where they go. The things that are there from the start (the ducks
@@ -817,7 +846,7 @@ export function takeOut(world, thing) {
 function packShare(world, zone) {
   zone.items.forEach((id, i) => {
     const e = getEntity(world, id);
-    if (e) e.position = { x: zone.x + (i % 3) * 0.8 - 0.8, y: zone.y + 0.1 + Math.floor(i / 6) * 0.9, z: zone.z + (Math.floor(i / 3) % 2) * 0.8 - 0.4, facing: 0 };
+    if (e) e.position = { x: zone.x + (i % 3) * 1.05 - 1.05, y: zone.y + 0.1 + Math.floor(i / 6) * 1.1, z: zone.z + (Math.floor(i / 3) % 2) * 1.05 - 0.52, facing: 0 };
   });
 }
 

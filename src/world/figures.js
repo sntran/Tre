@@ -1227,7 +1227,9 @@ export function workThing(look) {
       return still(parts, look.n + 1.9);
     }
     // A small sack of rice tied at the top (the loot of a raid; Era 1 has no coins, #26).
-    case 'sack': return still([P('sack', [0.7, 0.6, 0.6], 'yellowPale', [0, 0.3, 0]), P('neck', [0.35, 0.2, 0.3], 'yellowPale', [0, 0.68, 0]), P('tie', [0.4, 0.08, 0.35], 'ochre', [0, 0.62, 0])], 0.8);
+    // A sack of rice of the share is big enough to count from the view of a phone (#167: "small
+    // sacks").
+    case 'sack': return still([P('sack', [0.95, 0.8, 0.8], 'yellowPale', [0, 0.4, 0]), P('neck', [0.45, 0.25, 0.4], 'yellowPale', [0, 0.9, 0]), P('tie', [0.5, 0.1, 0.45], 'ochre', [0, 0.82, 0])], 1.05);
     // The rest of the loot on a red cloth, when the child puts it down on the way.
     case 'gift': {
       const parts = [P('cloth', [1.4, 0.08, 1.1], 'vermilion', [0, 0.04, 0]), P('knot', [0.3, 0.2, 0.3], 'vermilionPale', [0.6, 0.1, -0.45])];
@@ -1237,7 +1239,7 @@ export function workThing(look) {
     // A small reed mat for a share of the loot.
     case 'share-mat': {
       const [mat, edge] = MAT_COLORS[look.color] ?? MAT_COLORS.yellow;
-      return still([P('mat', [2.2, 0.08, 2.2], mat, [0, 0.04, 0]), P('edgeN', [2.2, 0.1, 0.2], edge, [0, 0.05, -1.05]), P('edgeS', [2.2, 0.1, 0.2], edge, [0, 0.05, 1.05])], 0.1);
+      return still([P('mat', [3.4, 0.08, 3.4], mat, [0, 0.04, 0]), P('edgeN', [3.4, 0.1, 0.2], edge, [0, 0.05, -1.65]), P('edgeS', [3.4, 0.1, 0.2], edge, [0, 0.05, 1.65])], 0.1);
     }
     // The things of the small events of the day: each shows its units, so that its size is seen
     // and never written. Stones in a net (one, two, or five), pails of water on a carrying pole,

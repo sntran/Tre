@@ -3559,6 +3559,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const mats = def.who.map((w) => getEntity(state, `mat:share-${w}`)).filter(Boolean);
       const by = ['by:share-hero', 'friend:nghe', 'by:share-giong', personOf('giong-hero')?.id].map((id) => id && getEntity(state, id)).filter((e) => e && !e.hidden);
       emit({ type: 'open', screen: 'callout', id: shareVoice(), textKey: 'share.mats', params: {} });
+      // A loot with a rest: the first line says where the rest goes (#167: "nobody tells me what to
+      // do with the extra one").
+      if (p.loot % def.who.length) emit({ type: 'open', screen: 'callout', id: shareVoice(), textKey: 'share.rest.rule', params: {}, happened: true });
       emit({ type: 'glowSeq', ids: mats.map((m) => m.id) });
       if (mats.length) emit({ type: 'workView', key: 'share', points: [...mats, ...by].map((e) => ({ ...e.position })), sight: mats.map((m) => ({ ...m.position })) });
     });
@@ -3576,15 +3579,21 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     emit({ type: 'open', screen: 'callout', id: shareVoice(), textKey: n ? 'share.count' : 'share.count.none', params: { who: { key: SHARE_WHO[who] }, n: { key: `num.${n}` } } });
     emit({ type: 'glowSeq', ids: [`mat:share-${who}`] });
   }
-  // A share that is not equal: which mat has more (#138), while that mat glows.
+  // A share that is not equal: which mat has more (#138), and what to do next (#167: a boy of
+  // grade 2 heard "Chiếu của Nghé nhiều hơn." again and again, and carried sacks for about 100
+  // commands; feedback helps when it says where to go next, Hattie and Timperley 2007): a mat with
+  // two more than another gives one sack to that mat; a mat with one more gives one back to the
+  // pile. The mat, and then the place where the sack goes, glow.
   function shareMore(counts) {
     const def = trialDef('share');
     if (!def || !counts?.length) return;
     const most = Math.max(...counts);
-    const i = counts.indexOf(most);
-    const who = def.who[i];
-    emit({ type: 'open', screen: 'callout', id: shareVoice(), textKey: 'share.more', params: { who: { key: SHARE_WHO[who] } } });
-    emit({ type: 'glowSeq', ids: [`mat:share-${who}`] });
+    const least = Math.min(...counts);
+    const who = def.who[counts.indexOf(most)];
+    const to = def.who[counts.indexOf(least)];
+    const move = most - least >= 2;
+    emit({ type: 'open', screen: 'callout', id: shareVoice(), textKey: move ? 'share.more.move' : 'share.more.back', params: { who: { key: SHARE_WHO[who] }, to: { key: SHARE_WHO[to] } } });
+    emit({ type: 'glowSeq', ids: [`mat:share-${who}`, move ? `mat:share-${to}` : 'zone:loot'] });
   }
   let shareAfter = [];
   // The share is fair: the sacks of the hero go to the basket as bowls of rice, the rest stays

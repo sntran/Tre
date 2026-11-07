@@ -944,6 +944,10 @@ button.count { font: inherit; font-weight: 700; color: var(--ink); cursor: point
 /* The small face of the person of a star, in the disc of the star (#62). */
 .star-face { position: absolute; left: 50%; top: 54%; width: 18px; height: 18px; margin: -9px 0 0 -9px; overflow: hidden; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--paper); pointer-events: none; }
 .star-face canvas { display: block; width: 20px !important; height: 20px !important; margin: -1px 0 0 -1px; }
+/* The face of the owner at the edge of a mat of the share (issue 167). */
+.mat-owner { width: 30px; height: 30px; pointer-events: none; filter: drop-shadow(0 1px 0 var(--ink)); }
+.mat-owner .star-face { top: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-width: 2px; }
+.mat-owner .star-face canvas { width: 30px !important; height: 30px !important; }
 /* The bubbles of the lines over the stars, and the stick over both (#53). */
 .world-marks > .world-bubble { z-index: 2; }
 .world-marks > .stick { z-index: 3; }

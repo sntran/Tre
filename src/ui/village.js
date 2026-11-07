@@ -2030,6 +2030,10 @@ export async function mountVillage(ctx, params = {}) {
   const face = () => h('span', { class: 'star-face' });
   const starAt = pooled(starPool, () => tappable(h('div', { class: 'world-star' }, [img('ui/star', 'star-pic'), face()])));
   const arrowAt = pooled(arrowPool, () => tappable(h('div', { class: 'edge-arrow' }, [h('div', { class: 'edge-star' }, [img('ui/star', 'star-pic'), face()])])));
+  // The face of the owner of a mat of the share (#167).
+  const ownerPool = [];
+  const OWNER = 30;
+  const ownerAt = pooled(ownerPool, () => h('div', { class: 'mat-owner', 'aria-hidden': 'true' }, [face()]));
   // The face of a person in the disc of a star, or the picture of a thing (#154: the ore, a soldier,
   // the pots of bà lang), so that the child sees what is there.
   function setFace(el, who, thing = null) {
@@ -2306,6 +2310,20 @@ export async function mountVillage(ctx, params = {}) {
       el.firstChild.style.transform = `rotate(${-edge.angle}rad)`;
     }
     for (let i = stars; i < starPool.length; i++) starPool[i].hidden = true;
+    // Whose each mat of the share is (#167: "mats with no owner"): the face of the owner at the
+    // edge of each mat, while the share goes on.
+    let owners = 0;
+    for (const e of state.entities) {
+      const who = /^mat:share-(\w+)$/.exec(String(e.id))?.[1];
+      if (!who || e.hidden) continue;
+      const f = figures.placeOf(e.id);
+      if (!f) continue;
+      const q = view.project(f.x, f.y + 0.3, f.z + 0.9);
+      const el = ownerAt(owners++);
+      setFace(el, who);
+      el.style.transform = `translate(${q.x - OWNER / 2}px, ${q.y - OWNER / 2}px)`;
+    }
+    for (let i = owners; i < ownerPool.length; i++) ownerPool[i].hidden = true;
     drawMini(busy ? [] : markers());
     pumpPrints();
     // A small red pointer over each thing that a line of a talk names (#62): the glow alone does
