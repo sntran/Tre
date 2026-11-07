@@ -312,10 +312,11 @@ export function stepRaid(raid, dt, ctx = {}) {
   }
   if (away) return out;
   raid.t += dt;
-  // While the raid waits for the child, no new wave comes.
-  if (!raid.hold) raid.phaseT += dt;
+  // While the raid waits for the child, no new wave comes; and none while the coach shows a throw
+  // (#156: the raid of the river was lost during the throw of the fisher).
+  if (!raid.hold && !raid.demo) raid.phaseT += dt;
   raid.reload = Math.max(0, raid.reload - dt);
-  spawn(raid, out);
+  if (!raid.demo) spawn(raid, out);
   tickGate(raid, dt, out);
   tickHelpers(raid, dt, out);
   tickCharge(raid, dt, ctx, out);
@@ -323,7 +324,7 @@ export function stepRaid(raid, dt, ctx = {}) {
   tickStones(raid, dt, out);
   for (const m of raid.marks) m.t -= dt;
   raid.marks = raid.marks.filter((m) => m.t > 0);
-  tickTorches(raid, dt, out);
+  if (!raid.demo) tickTorches(raid, dt, out);
   for (const f of raid.fires) f.t -= dt;
   raid.fires = raid.fires.filter((f) => f.t > 0);
   for (const w of raid.wet) w.t -= dt;
@@ -394,6 +395,13 @@ function walkTo(e, p, speed, dt) {
 
 function tickEnemy(raid, e, dt, ctx, out) {
   const kind = raid.kinds[e.kind];
+  // While the coach throws (#156, raid.still from his count to the end of the throw), every enemy
+  // stands where it is: on its post or on the road. Its timers wait too, so no enemy takes at the
+  // gate. An enemy that a stone hit still goes away.
+  if (raid.still && e.state !== 'retreat') {
+    if (e.state !== 'gone' && e.state !== 'stunned') e.facing = faceTo(e, raid.wall);
+    return;
+  }
   e.t = Math.max(0, e.t - dt);
   e.cool = Math.max(0, e.cool - dt);
   e.shield = Math.max(0, e.shield - dt);

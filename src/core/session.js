@@ -3070,17 +3070,31 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // stands at a post, says that post, counts the posts up to it while they glow, and the stone hits
   // that enemy. The enemies stand, and no scout lifts a torch, while he throws. Then the next enemy
   // is for the child.
+  // While he shows, the raid holds (#156: a boy of grade 3 lost the raid of the river during the
+  // throw of the fisher): from his first line, an enemy that comes to a post stands there, and no
+  // new enemy and no torch comes; from his count to the end of the throw, every enemy stands where
+  // it is (raid.still). An enemy that is past the last post when the child asks first gets one stone
+  // of the coach, so that the example never costs the raid (Wood, Bruner, and Ross 1976).
   function raidDemo(raid, coach) {
     slingPull = null;
     raidTeach.demo = { t: 0, k: null, posts: 0, coach: coach.id, target: null };
     raid.demo = true;
+    raid.aim = { all: true };
+    const first = Math.min(...raid.posts.map((q) => q.d));
+    const near = raid.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone' && along(raid, e) < first - 0.5).sort((a, b) => along(raid, a) - along(raid, b))[0];
+    if (near) {
+      raidTeach.demo.pre = near.id;
+      order({ act: 'shoot', count: Math.max(1, Math.round(along(raid, near))), unit: 1, demo: true });
+    }
     // The coach says it as the person that it is (#99: the fisher said "Xem ông này.").
     emit({ type: 'open', screen: 'callout', id: coach.id, textKey: data.raids?.raids[raid.id]?.lookKey ?? 'raid.demo.look', params: {} });
   }
-  // The enemy that stands at a post now (the nearest to the wall), with the number of its post.
+  // The enemy that stands at a post now for the throw of the coach, with the number of its post: the
+  // farthest from the wall (#156: the enemy at post 1 is the next one at the gate, so the coach
+  // shows on an enemy that has time).
   function standing(raid) {
     const live = raid.enemies.filter((e) => e.state !== 'retreat' && e.state !== 'gone' && e.state !== 'stunned' && !e.aside);
-    const at = live.map((e) => ({ e, q: postAt(raid, along(raid, e)) })).filter((x) => x.q && x.q.d <= raid.sling.max).sort((a, b) => a.q.d - b.q.d)[0];
+    const at = live.map((e) => ({ e, q: postAt(raid, along(raid, e)) })).filter((x) => x.q && x.q.d <= raid.sling.max).sort((a, b) => b.q.d - a.q.d)[0];
     return at ? { e: at.e, k: raid.posts.indexOf(at.q) + 1 } : null;
   }
   function stepRaidDemo() {
@@ -3104,6 +3118,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       d.target = at.e.id;
       d.t = 0;
       raid.aim = { id: at.e.id, all: true };
+      raid.still = true;
       emit({ type: 'open', screen: 'callout', id: d.coach, textKey: 'raid.demo.at', params: { ...raidWords(), post: { key: `ord.${d.k}` } } });
       return;
     }
@@ -3126,6 +3141,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       teach.shown = true;
       teach.singles = 0;
       raid.demo = false;
+      raid.still = false;
       raid.aim = null;
     }
   }
@@ -3226,6 +3242,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       const burnt = r.raid.losses - raidTakes;
       if (raidTakes) say('raid.lost.why', { ...words, n: { key: `num.${raidTakes}` } });
       if (burnt > 0) say('raid.lost.torch', { ...words, n: { key: `num.${burnt}` } });
+      // A loss says what to try (#156): the count of the slingshot, before the line of the dawn.
+      if (r.raid.tools.includes('sling')) say('raid.lost.count', words);
       say(def.lostKey ?? 'raid.lost');
     }
     emit({ type: 'hud' });

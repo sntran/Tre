@@ -1168,6 +1168,7 @@
   "raid.rule": "Đếm cột từ chỗ cháu đứng: cột này là một.",
   "raid.lost.why": "{n} {who} tới {wall}.",
   "raid.lost.torch": "Đuốc rơi vào trong {wall} {n} lần.",
+  "raid.lost.count": "Lần sau, {who} đứng ở cột nào, cháu bấm nút lớn bấy nhiêu lần nhé.",
   "raid.trap.wrong": "Bẫy này ở cột {at}. Bẫy đặt ở cột {post} nhé.",
   "raid.gate.stopped": "Chặn được rồi!",
   "raid.gate.burn": "Đuốc bay qua cổng rồi. Khi {who} giơ đuốc, cháu chạm vào cổng nhé.",
