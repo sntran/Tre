@@ -52,14 +52,15 @@ export function liveTargets(step, flags, { raidOf = () => null, raids = {}, minu
 // a raid), the next step is a rest until the morning, and the star goes to a place of rest. At night
 // a raid does not start, so a step whose live targets are all raids rests too. Return null when a
 // target has a star, else { rest: true, raid: the id of the raid that waits (or null), night }.
-export function restOf(step, flags, { raidOf = () => null, raids = {}, minutes = 0, night = false } = {}) {
+export function restOf(step, flags, { raidOf = () => null, raids = {}, minutes = 0, night = false, dayOnly = () => false } = {}) {
   const list = step?.targets ?? (step?.target ? [{ npc: step.target }] : []);
   if (!list.length) return null;
   const live = liveTargets(step, flags, { raidOf, raids, minutes });
   const waiting = list.map((tg) => (tg.encounter ? raidOf(tg.encounter) : null))
     .find((raid) => raid && flags[`raid.${raid}.back`] !== undefined && flags[`raid.${raid}.back`] > minutes) ?? null;
   if (!live.length) return waiting || night ? { rest: true, raid: waiting, night } : null;
-  if (night && live.every((tg) => tg.encounter)) return { rest: true, raid: null, night: true };
+  // At night a raid and a task of the day (the staffs, #161) wait for the dawn.
+  if (night && live.every((tg) => tg.encounter || dayOnly(tg))) return { rest: true, raid: null, night: true };
   return null;
 }
 

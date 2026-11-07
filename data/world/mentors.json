@@ -442,6 +442,13 @@
         "next": "mentor.healer.next"
       }
     },
+    "trial-staffs": {
+      "family": "plain",
+      "person": "npc:woodcutter",
+      "demo": null,
+      "waitPerson": true,
+      "lines": { "first": "mentor.staffs.first", "show": "mentor.staffs.show", "mark": "mentor.staffs.mark" }
+    },
     "trial-woodcutter": {
       "gesture": "cut",
       "family": "plain",

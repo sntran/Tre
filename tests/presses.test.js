@@ -159,11 +159,18 @@ test('the teacher: presses carry rods to the mat; after ten, one tap on the teac
   assert.ok(tied.some((e) => e.solved), JSON.stringify(tied));
 });
 
-test('the staffs: presses walk to the clump and slash; quick taps cut short staffs, which break', async () => {
+test('the staffs: presses walk to the clump; quick taps do not cut, and the woodcutter says to hold (#161); holds of one step cut short staffs, which break', async () => {
   const session = await afterTalk('staffs-bamboo');
   const slashes = [];
-  session.listen((ev) => { if (ev.type === 'slash' || ev.type === 'skill') slashes.push(ev); });
-  assert.deepEqual(playPresses(session, { presses: 20, hold: 0, until: () => slashes.some((e) => e.type === 'skill') }), []);
+  const said = [];
+  session.listen((ev) => {
+    if (ev.type === 'slash' || ev.type === 'skill') slashes.push(ev);
+    if (ev.type === 'open' && ev.textKey) said.push(ev.textKey);
+  });
+  assert.deepEqual(playPresses(session, { presses: 8, hold: 0 }), []);
+  assert.ok(!slashes.some((e) => e.type === 'slash'), 'a quick tap does not cut');
+  assert.ok(said.includes('woodcutter.staffs.hold'), said.join(', '));
+  assert.deepEqual(playPresses(session, { presses: 20, hold: 0.5, until: () => slashes.some((e) => e.type === 'skill') }), []);
   const skill = slashes.find((e) => e.type === 'skill');
   assert.ok(skill, 'the presses cut each culm');
   assert.equal(skill.solved, false, `staffs at the lowest ring are too short: ${JSON.stringify(skill.parts)}`);

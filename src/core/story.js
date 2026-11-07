@@ -55,6 +55,7 @@ import { saveWorld, loadWorld, setHeroPlace } from './world/save.js';
 import { createI18n } from './i18n.js';
 import { STEP } from './world/step.js';
 import { along } from './world/raids.js';
+import { AIM_RISE } from './world/systems/work.js';
 import { heroLook } from '../world/figures.js';
 import { tapTarget as screenTap, sessionCamera, sessionScreen } from '../world/hit.js';
 import { pickTopOf, columnTop } from '../world/terrain.js';
@@ -722,7 +723,8 @@ async function press(io, spec) {
   if (spec.culm !== undefined && spec.at !== undefined) {
     await io.send({ type: 'hold', on: true }, null);
     const aim = () => getEntity(io.session().state, 'zone:trial-staffs')?.zone.aim;
-    const ok = await io.advance(15, () => (aim()?.at ?? 0) >= spec.at);
+    // At least one step of the mark: a shorter press is a quick tap, which does not cut (#161).
+    const ok = await io.advance(15, () => (aim()?.at ?? 0) >= spec.at && (aim()?.t ?? 0) >= AIM_RISE);
     await io.send({ type: 'hold', on: false }, null);
     return ok ? null : `the mark of the slash did not come to ${spec.at}`;
   }

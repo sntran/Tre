@@ -656,6 +656,22 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // long: nearer, it stood over the back of the hero).
   const RIDER = { radii: [5, 7, 9, 12, 15, 19], hold: 9, jump: 24, body: 3.2, back: 7 };
   const RIDER_VIEW = viewSize(390, 844);
+  const STAFFS_NEAR = 30; // half blocks: the hero at the clump of the staffs
+  const STAFFS_SIDE = 9; // half blocks from the row of the culms to the place of Gióng
+  function staffsWait() {
+    const tz = trialZone('staffs');
+    const c = tz && !tz.zone.done ? tz.zone.clump : null;
+    const h = hero()?.position;
+    if (!c || !h || Math.hypot(h.x - c.x, h.z - c.z) > STAFFS_NEAR) return null;
+    const mid = c.z - ((tz.zone.pieces?.length ?? 1) - 1) * 1.25;
+    // The side of the row away from the camera, else the other side.
+    const away = -Math.sign(Math.sin(viewAz)) || 1;
+    for (const s of [away, -away]) {
+      const q = { x: c.x + s * STAFFS_SIDE, z: mid };
+      if (tileMap.walkable(Math.floor(q.x / 2), Math.floor(q.z / 2))) return q;
+    }
+    return null;
+  }
   function stepRider() {
     const g = personOf('giong-hero');
     const h = hero();
@@ -679,7 +695,10 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // On the way to a place to find, Gióng leads (#142: "But where did big Gióng go?"): he rides in
     // front of the hero toward the next person of the way, in the view, and waits when the hero
     // stops. Else he rides behind the hero.
-    const lead = by ? null : leadPoint();
+    // At the staffs, he waits beside the clump, on the side away from the camera (#161: on his
+    // horse he stood behind the hero as a big pale shape).
+    const clump = by ? null : staffsWait();
+    const lead = by || clump ? null : leadPoint();
     const ahead = lead ? Math.hypot(lead.x * 2 - h.position.x, lead.y * 2 - h.position.z) : 0;
     // Ahead of the hero by the walk of half a second more (the spot changes each half second).
     const hs = h.motion?.speed ?? 0;
@@ -691,7 +710,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const cz = Math.cos(viewAz);
     const up = hs > 1 && -(Math.sin(f) * cx + Math.cos(f) * cz) > 0.5;
     const side = Math.sign((g.position.x - h.position.x) * cz - (g.position.z - h.position.z) * cx) || 1;
-    const want = by ?? (lead
+    const want = by ?? clump ?? (lead
       ? { x: h.position.x + (lead.x * 2 - h.position.x) * k, z: h.position.z + (lead.y * 2 - h.position.z) * k }
       : up
         ? { x: h.position.x + cz * side * RIDER.back, z: h.position.z - cx * side * RIDER.back }
@@ -714,7 +733,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const clear = (q) => clearOf({ ...q, y: gy(q) }, size, pts, viewAz, VIEW.elevation);
     // He stays where he is while the hero stands and his place is near and clear (no small steps
     // after each step of the hero).
-    if (!lead && !by && hs < 1 && d <= RIDER.hold && open(g.position) && clear(g.position) && !riderBlocks) return;
+    if (!lead && !by && !clump && hs < 1 && d <= RIDER.hold && open(g.position) && clear(g.position) && !riderBlocks) return;
+    if (clump && Math.hypot(g.position.x - clump.x, g.position.z - clump.z) < 2 && !riderBlocks) return;
     // While he leads, the spots are ahead of the hero on the way (a spot at the side stood in the
     // walk of the hero).
     const onWay = (q) => !lead || ((q.x - h.position.x) * (lead.x * 2 - h.position.x) + (q.z - h.position.z) * (lead.y * 2 - h.position.z)) / ((Math.hypot(q.x - h.position.x, q.z - h.position.z) * ahead) || 1) > 0.8;
@@ -1018,6 +1038,17 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // plan of the day waits until the child leaves the place of the task (schedule.hold).
   function stepHold() {
     if (state.tick % 15 !== 0) return;
+    // At the staffs, the woodcutter works at the clump (#161: he stayed at his place, far from the
+    // clump, and no person showed the cut): he walks to the head of the row and stays there while
+    // the staffs are open.
+    const staffs = trialZone('staffs');
+    const wc = getEntity(state, 'npc:woodcutter');
+    if (staffs && !staffs.zone.done && staffs.zone.clump && wc?.schedule && !wc.hidden) {
+      const c = staffs.zone.clump;
+      const spot = [{ x: c.x + 3, z: c.z + 7 }, { x: c.x - 3, z: c.z + 7 }, { x: c.x + 3, z: c.z + 3 }, { x: c.x - 3, z: c.z + 3 }]
+        .find((q) => tileMap.walkable(Math.floor(q.x / 2), Math.floor(q.z / 2)));
+      if (spot) wc.schedule.scene = { ...spot, until: state.tick + 60 };
+    }
     const h = getEntity(state, 'hero')?.position;
     for (const p of query(state, 'person', 'schedule')) {
       if (p.raidCoach || p.potsWell || comeTalk?.npc === p.id) continue;
@@ -2884,7 +2915,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   function restNow() {
     if (raidOn() || practice) return null;
     const goal = currentGoal(data.quests.quests, cond());
-    return goal ? restOf(goal.step, profile.flags, { raidOf: encRaid, raids: data.raids?.raids ?? {}, minutes: state.clock.minutes, night: darkNow() }) : null;
+    return goal ? restOf(goal.step, profile.flags, { raidOf: encRaid, raids: data.raids?.raids ?? {}, minutes: state.clock.minutes, night: darkNow(), dayOnly: (tg) => Boolean(tg.trial && trialDef(tg.trial)?.daylight) }) : null;
   }
   // The place of rest in map cells: the door of the house of the hero (the spawn of Phù Đổng), or
   // beside Nghé, or the hero.
@@ -6208,8 +6239,16 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const met = (profile.learning?.skills?.[ev.skill]?.n ?? 0) > 0;
     const rec = learnerRecord(ev);
     if (rec) l?.record({ skill: ev.skill, level: rec.level }, rec.correct, { world: true });
-    // The first skill event of a skill of the era: a new print in the notebook (#8).
-    if (!met && (profile.learning?.skills?.[ev.skill]?.n ?? 0) > 0 && data.notebook) {
+    // The first skill event of a skill of the era: a new print in the notebook (#8). At the staffs,
+    // the print waits for the first right staffs (#161: "Tranh mới: Gậy tre." came at a break, and
+    // the child thought that she had done it).
+    profile.notebook ??= { seen: {} };
+    const owed = (profile.notebook.owed ??= {});
+    const waits = ev.task === 'trial-staffs' && !ev.solved;
+    if (!met && waits) owed[ev.skill] = true;
+    const due = (!met && !waits) || (owed[ev.skill] && ev.solved);
+    if (due) delete owed[ev.skill];
+    if (due && (profile.learning?.skills?.[ev.skill]?.n ?? 0) > 0 && data.notebook) {
       const skill = data.skills?.skills?.find((s) => s.id === ev.skill);
       // The card has the name that a child knows and the picture of the task (#77), never the
       // name of the curriculum.
@@ -6592,6 +6631,13 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // A wrong basket: bà lang and the hero stand beside the rows and the leaves of her count, not
       // on them (#160: they stood on the leaves, and the child did not see the doses).
       if (ev.type === 'nope' && trialZone('healer')?.zone.lay) countSide();
+      // A quick tap at a culm (#161): the woodcutter (or Nghé, when he is not there) says to hold.
+      if (ev.type === 'quick' && ev.id === 'zone:trial-staffs') {
+        const wc = getEntity(state, 'npc:woodcutter');
+        const nghe = getEntity(state, 'friend:nghe');
+        const who = wc && !wc.hidden ? wc : nghe && !nghe.hidden ? nghe : null;
+        if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: 'woodcutter.staffs.hold', params: {} });
+      }
       if (ev.id === 'sky') {
         // At dawn the enemies of a lost raid come again, and the game saves the start of the day
         // (a restore point for the parent).

@@ -6,7 +6,7 @@
 import { newMentor, newMemory, onCommit, onIdle, onWave, onCheck, onChange, demoTarget, demoParts, shareParts } from './mentor.js';
 import { getEntity, query, addEntity } from './world/state.js';
 import { endScript } from './world/systems/mentor.js';
-import { basketRowAt, matSlot, spareStake, inHands, DESK_COLORS } from './world/systems/work.js';
+import { basketRowAt, matSlot, spareStake, inHands, DESK_COLORS, AIM_RISE } from './world/systems/work.js';
 import { atWork } from './world/systems/schedule.js';
 import { STEP } from './world/step.js';
 import { allowedSlots, takeBackSlot, stakeResult } from './world/trials.js';
@@ -21,6 +21,7 @@ const COUNT_PACE = 0.9; // seconds between two counted parts (counting pace)
 const FIRST_DELAY = 0.5; // seconds after the start of a task: the person shows the first step
 const WORK_NEAR = 24; // half blocks: a person this near the place of a task stands at the work
 const AWAY = 40; // half blocks: a person farther than this from the place of a task is not there (#51)
+const PERSON_WAIT = 60; // seconds: the first show of a task waits this long for its person to come
 const AFTER_WAVE = 20; // seconds after a wave: no idle move (the offer never answers a wave, #64)
 const PUT_PACE = 1.1; // seconds between two parts that a person puts for the child, counted aloud (#69)
 const COUNT_GAP = 0.6; // seconds between the count of the child's work and the move of the mentor
@@ -45,6 +46,8 @@ const GIVE_NEAR = 8; // half blocks: a hero this near the healer hears no "come 
 const BALL_UP = 0.1; // half blocks over the ground: the rice ball on its leaf
 const BALL_OUT = 1.6; // half blocks from the hero toward the camera
 const NGHE_SIDE = 2.2; // half blocks from the rice ball to Nghé, to the side of the view
+const STAFF_SHOW_OUT = 5; // half blocks from the head of the row of the staffs to the culm of the show
+const RING_PACE = 0.7; // seconds between two rings that the woodcutter counts
 
 // A number of hundredths in words, as a text parameter (#101): "một phẩy hai mươi lăm" (1,25),
 // "một phẩy không năm" (1,05), "hai" (2,00).
@@ -566,6 +569,18 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
     }
     const counting = (key) => getEntity(world(), `script:${key}`)?.script.move === 'count';
     for (const d of delayed) if (d.at <= t && counting(d.key)) d.at = t + STEP;
+    // The first show of a task that waits for its person (def.waitPerson, the staffs, #161): the
+    // person walks to the work, and the show starts there (else Nghé showed it from far away); at
+    // most PERSON_WAIT seconds.
+    for (const d of delayed) {
+      if (d.at > t || d.move !== 'first' || !defOf(d.key)?.waitPerson) continue;
+      d.made ??= t;
+      const task = taskOf(d.key);
+      const p = task?.person?.position;
+      const h = getEntity(world(), 'hero')?.position;
+      const far = (q) => !q || Math.hypot(q.x - task.at.x, q.z - task.at.z) > WORK_NEAR;
+      if (task && (far(p) || far(h)) && t - d.made < PERSON_WAIT) d.at = t + STEP;
+    }
     const due = delayed.filter((d) => d.at <= t);
     delayed = delayed.filter((d) => d.at > t);
     for (const d of due) doMove(d.key, d.move, d.info);
@@ -724,6 +739,14 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       t = countSteps(task, famOf(key), info, { say, point, mark, steps }, t);
     } else if (move === 'first') {
       t = firstSteps(task, def, { say, point, mark, steps }, t);
+    } else if ((move === 'show' || move === 'mark') && task.tz?.zone.clump) {
+      // The staffs (#161): the show is the cut with a hold again; the mark is the count of the
+      // rings of the sample.
+      if (move === 'show') t = staffShowSteps(task, { say, point, mark, steps }, t, false);
+      else {
+        say(t, lineOf(key, 'mark'));
+        t = sampleSteps(task, { say, point, mark, steps }, t + 1.8);
+      }
     } else if ((move === 'show' || move === 'mark') && carrying(key, task)) {
       // The thing of the task is in the hands (the sticks after the right cut): the line is the
       // next step with it, toward its place (#57), not the first step. A stake in the hands with a
@@ -998,6 +1021,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // parts on the place counted aloud with the mark of what went wrong (the mark), or, at a task with
   // no parts to count, the mark of what went wrong only: the widest gap of the row of the fisher.
   function countSteps(task, fam, info, s, t) {
+    if (task.tz?.zone.clump) return staffCountSteps(task, s, t);
     if (task.tz?.zone.cutPlan) return laySteps(task, s, t);
     if (task.tz?.zone.cutPieces) return pieceSteps(task, s, t, info);
     // The teacher at grades 4 and 5 (#101): the desks and the box, or the table.
@@ -1200,6 +1224,7 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
   // of exact rounds (def.first 'point'): the person only points, so that each round stays the child's.
   // A new form of a level (def.forms.<form>) shows its new part after it, one time (#105).
   function firstSteps(task, def, s, t) {
+    if (task.tz?.zone.clump) return staffShowSteps(task, s, t, true);
     const w = world();
     const form = formNew(task.key);
     // A form that is a new gesture (the boat of the fisher: only) shows its own part in place of
@@ -1329,6 +1354,73 @@ export function createMentoring({ data, profile, learner = () => null, log = () 
       s.steps.push({ at: t + PACKET_LOOK, view: { key: 'trial-healer', points: workPoints('trial-healer') } });
     }
     return t + 2.2;
+  }
+  // The show of the staffs (#161: a girl of grade 1 never learned to hold the button): the
+  // woodcutter cuts a culm of his own beside the row, at a height that is not the answer. He holds,
+  // the mark goes up ring by ring while he counts, he lets go, and the top falls. His culm goes at
+  // the end of the show; the culms of the child stand as they are.
+  function staffShowSteps(task, s, t, first) {
+    const z = task.tz.zone;
+    const c = z.clump;
+    const sample = getEntity(world(), 'sample:staffs');
+    const length = sample?.item.size ?? 4;
+    const at = length === 3 ? 2 : 3;
+    const look = getEntity(world(), 'culm:staffs:0')?.look ?? 'culm-12';
+    const p = { x: c.x, z: c.z + STAFF_SHOW_OUT };
+    s.say(t, 'mentor.staffs.first');
+    s.point(t, p, 1.6);
+    s.steps.push({ at: t, spawn: { look, x: p.x, z: p.z, facing: 0 } });
+    let k = 1;
+    t += 1.6;
+    for (let r = 1; r <= at; r++) {
+      s.steps.push({ at: t, spawn: { look: 'chalk', x: p.x, z: p.z, dy: r, facing: 0 } });
+      if (r > 1) s.steps.push({ at: t, gone: { k } });
+      if (r > 1) k += 1;
+      s.say(t + 0.05, `num.${r}`);
+      s.point(t, p, RING_PACE);
+      t += Math.max(RING_PACE, AIM_RISE);
+    }
+    // He lets go: the top falls, and his piece stands as long as the cut.
+    s.steps.push({ at: t, gone: { k } });
+    s.steps.push({ at: t, look: { k: 0, look: `stump-${at}` } });
+    s.steps.push({ at: t, sound: { id: 'zone:trial-staffs', sound: 'plank-up' } });
+    t += 0.8;
+    s.say(t, 'mentor.staffs.show');
+    t += 3.6;
+    if (first) {
+      s.say(t, 'mentor.first.you');
+      t += 1.5;
+    }
+    return t;
+  }
+  // The rings of the sample staff, one by one: a chalk ring on each, counted aloud, and then the
+  // count of the sample (#161).
+  function sampleSteps(task, s, t) {
+    const sample = getEntity(world(), 'sample:staffs');
+    if (!sample) return t;
+    const n = sample.item.size;
+    s.point(t, sample.position, 1.2 + n * RING_PACE);
+    for (let r = 1; r <= n; r++) {
+      s.steps.push({ at: t, spawn: { look: 'chalk', x: sample.position.x, z: sample.position.z, dy: r, facing: 0 } });
+      s.say(t + 0.05, `num.${r}`);
+      t += RING_PACE;
+    }
+    s.say(t + 0.2, 'staffs.sample', { n: { key: `num.${n}` } });
+    return t + 2.6;
+  }
+  // A break of the staffs (#161: "Nobody said good or try again."): the woodcutter points at the
+  // place of a piece that broke and says its rings, and then counts the rings of the sample.
+  function staffCountSteps(task, s, t) {
+    const sn = task.tz.zone.snapped;
+    const i = sn?.broken?.[0];
+    if (i == null) return t + 1;
+    const n = sn.pieces[i];
+    const c = task.tz.zone.clump;
+    const p = { x: c.x, z: c.z - i * 2.5 };
+    s.point(t, p, 1.6);
+    s.mark(t, p, 2.5);
+    s.say(t + 0.1, n === 1 ? 'staffs.piece.one' : 'staffs.piece', { n: { key: `num.${Math.min(150, n)}` } });
+    return sampleSteps(task, s, t + 2.4);
   }
   // The help of a level of the healer with a structure (#108): the moves that put bunches into the
   // basket of the child (half of the shortfall, a smaller task) show the step of the level in their

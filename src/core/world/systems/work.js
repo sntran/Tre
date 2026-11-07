@@ -54,7 +54,12 @@ const HELP_WAIT = 1.5; // seconds after the end of the demonstration, before the
 const BUNDLE_STEP = 1.3;
 const PIECE_ROW = 2;
 const CULM_STEP = 2.5; // half blocks between two culms of the bamboo clump (a row along -z)
-const AIM_RISE = 0.45; // seconds: the mark of a slash goes up one half block of the culm in this time
+export const AIM_RISE = 0.45; // seconds: the mark of a slash goes up one half block of the culm in this time
+// The ring of the mark of a slash after a hold of t seconds (#161): the mark shows at the first ring
+// at once and stays there for two steps, so that a hold of one step cuts at the first ring; a
+// release before one step is a quick tap, which does not cut.
+export const aimAt = (t, reach) => Math.min(reach, 1 + Math.floor(Math.max(0, t - AIM_RISE) / AIM_RISE));
+const QUICK_SHOW = 1.5; // seconds: the mark of a quick tap stays at the first ring
 const MAT_MAX = 14; // the most rods on the mat of the teacher
 const SHARE_GAP = 4.6; // half blocks from a mat of the share to the next one
 const SHARE_BACK = 2.8; // half blocks from the middle of a mat of the share to its friend
@@ -1513,6 +1518,7 @@ function act(world, e, want, env) {
     const culm = getEntity(world, `culm:staffs:${want.culm}`);
     if (!culm || tz.zone.cut) return;
     tz.zone.aim = { culm: want.culm, at: 1, t: 0 };
+    delete tz.zone.quick;
     // A second press (a double tap) starts the mark again at the first ring.
     removeEntity(world, 'aim:staffs');
     addEntity(world, { id: 'aim:staffs', position: { ...culm.position, y: culm.position.y + 1 }, look: 'chalk' });
@@ -1529,7 +1535,16 @@ function act(world, e, want, env) {
     removeEntity(world, 'aim:staffs');
     if (want.at == null && aim?.culm !== i) return;
     // The height by the time of the touch when the view sends it (#81), else by the time of the world.
-    const byTouch = want.held != null && aim?.culm === i ? Math.min(task.reach, 1 + Math.floor(want.held / AIM_RISE)) : null;
+    const byTouch = want.held != null && aim?.culm === i ? aimAt(want.held, task.reach) : null;
+    // A quick tap does not cut (#161: each tap of a girl of grade 1 cut at the first ring, and she
+    // never learned to hold the button): the mark shows at the first ring, and the person says to
+    // hold the button longer.
+    const heldFor = want.held ?? aim?.t ?? 0;
+    if (want.at == null && aim?.culm === i && heldFor < AIM_RISE && culm && !tz.zone.cut) {
+      addEntity(world, { id: 'aim:staffs', position: { ...culm.position, y: culm.position.y + 1 }, look: 'chalk' });
+      tz.zone.quick = QUICK_SHOW;
+      return say(world, 'quick', tz.id, { culm: i, sound: 'tap' });
+    }
     const at = Math.round(want.at ?? byTouch ?? aim.at);
     if (!c || !culm || tz.zone.cut || at < 1 || at >= task.height) return;
     if (at > task.reach) return say(world, 'high', tz.id, { culm: i, sound: 'tap' });
@@ -1555,6 +1570,8 @@ function act(world, e, want, env) {
         tz.zone.pieces[j] = null;
       }
       tz.zone.cut = NEW_STEM;
+      // The pieces of the break, for the count of the person (#161).
+      tz.zone.snapped = { pieces, broken: [...result.broken] };
       say(world, 'snap', tz.id, { pieces, broken: result.broken, sound: 'plank-down' });
     }
   } else if (want.act === 'cut') {
@@ -2569,10 +2586,16 @@ function tickSlash(world, tz, dt, env) {
   if (aim) {
     const task = taskFor(env, tz.zone);
     aim.t += dt;
-    aim.at = Math.min(task.reach, 1 + Math.floor(aim.t / AIM_RISE));
+    const was = aim.at;
+    aim.at = aimAt(aim.t, task.reach);
     const culm = getEntity(world, `culm:staffs:${aim.culm}`);
     const mark = getEntity(world, 'aim:staffs');
     if (culm && mark) mark.position = { ...culm.position, y: culm.position.y + aim.at };
+    // The mark passes a ring: a tick, so that the child hears each ring (#161).
+    if (aim.at > was) say(world, 'ring', tz.id, { culm: aim.culm, at: aim.at, sound: 'tap' });
+  } else if (tz.zone.quick && (tz.zone.quick -= dt) <= 0) {
+    delete tz.zone.quick;
+    removeEntity(world, 'aim:staffs');
   }
   if (!tz.zone.cut) return;
   tz.zone.cut -= dt;
