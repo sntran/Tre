@@ -1,0 +1,60 @@
+{
+ "about": "#158: the first words of Gióng: the people of the scene stand side by side for the camera, and no person is pale.",
+ "start": "?story=giong-speaks",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "giong-boy"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 3
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify([...tre.activeVillage.session.seeThrough()])"
+  },
+  {
+   "shot": "1-side-by-side"
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "shot": "2-after-the-talk"
+  }
+ ]
+}

@@ -1,0 +1,75 @@
+{
+ "about": "#157: K, the raid of the soldiers: one tool (the traps); the hand says the line of the trap; a press with the trap far from the road puts it on the road.",
+ "start": "?story=traps-k",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 30
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-one-tool-the-traps"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.item?.kind === 'trap' && !e.item.held && e.item.zone !== 'raid-road')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "button": ".wave-btn",
+   "after": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-hand-says-the-trap"
+  },
+  {
+   "press": true,
+   "after": 8
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.filter((e) => e.item?.kind === 'trap' && e.item.zone === 'raid-road').length)"
+  },
+  {
+   "shot": "3-the-press-puts-the-trap-on-the-road"
+  }
+ ]
+}

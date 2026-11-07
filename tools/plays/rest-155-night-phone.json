@@ -1,0 +1,86 @@
+{
+ "about": "#155: at night a press at the river says that the raid waits for the morning; the star goes to the place of rest, and a press there sleeps until the dawn.",
+ "start": "?story=raid-river-night",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "encounter:river"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 30
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-no-raid-in-the-dark"
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify([...document.querySelectorAll('.world-star:not([hidden]) .star-face')].map((x) => x.dataset.who))"
+  },
+  {
+   "walk": {
+    "cell": [
+     11.5,
+     27.5
+    ]
+   },
+   "taps": 14
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "print": "document.querySelector('.act-btn')?.dataset.act"
+  },
+  {
+   "shot": "2-at-home-the-button-is-the-mat"
+  },
+  {
+   "press": true,
+   "after": 3
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-the-morning"
+  }
+ ]
+}

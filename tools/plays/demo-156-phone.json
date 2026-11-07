@@ -1,0 +1,79 @@
+{
+ "about": "#156: grade 3, the raid of the river: a tap on the hand; the coach shows the throw on the enemy at the farthest post, and no enemy moves while he counts.",
+ "start": "?story=river-grade3",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "encounter:river"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 30
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "(() => { const r = tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid; if (!r) return null; const at = r.enemies.filter((e) => (e.state === 'walk' || e.state === 'wait') && !e.aside).map((e) => (e.x - r.wall.x) * r.dir.x + (e.z - r.wall.z) * r.dir.z).filter((d) => r.posts.some((q) => Math.abs(q.d - d) <= 1)).sort((a, b) => a - b)[0]; return at === undefined ? null : r.posts.reduce((a, q) => (Math.abs(q.d - at) < Math.abs(a.d - at) ? q : a)).d; })() !== null",
+   "timeout": 90
+  },
+  {
+   "button": ".wave-btn",
+   "after": 0.2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.still)",
+   "timeout": 20
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.enemies.map((e) => [e.state, Math.round(e.x), Math.round(e.z)]))"
+  },
+  {
+   "shot": "1-the-coach-counts-and-all-stand"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'raid')?.raid?.still",
+   "timeout": 60
+  },
+  {
+   "wait": 0.3
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-after-the-throw"
+  }
+ ]
+}

@@ -1,0 +1,80 @@
+{
+ "about": "#163: baby Gióng calls the hero 'anh'; the mother of Gióng says what is still to do before the iron horse.",
+ "start": "?story=giong-speaks",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "giong-boy"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 2
+  },
+  {
+   "wait": 2
+  },
+  {
+   "read": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-baby-giong-says-anh"
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 3
+  },
+  {
+   "tap": {
+    "person": "mother"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-mother-says-what-is-to-do"
+  }
+ ]
+}

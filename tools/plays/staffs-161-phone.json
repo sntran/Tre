@@ -1,0 +1,145 @@
+{
+ "about": "#161: grade 1, the bamboo staffs: the woodcutter cuts a culm of his own with a hold; a quick tap does not cut; holds to the fourth ring cut two staffs as long as the sample.",
+ "start": "?story=staffs-grade1",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "woodcutter"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 90
+  },
+  {
+   "read": 10
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "thing": "culm:staffs:0"
+   },
+   "taps": 14,
+   "near": 90
+  },
+  {
+   "tap": {
+    "thing": "culm:staffs:0"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^mentor\\.staffs\\.(first|show)/.test(x.key ?? ''))",
+   "timeout": 90
+  },
+  {
+   "wait": 2.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-the-woodcutter-shows-the-hold"
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.some((e) => e.script)",
+   "timeout": 60
+  },
+  {
+   "wait": 1
+  },
+  {
+   "press": true,
+   "after": 1.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-a-quick-tap-does-not-cut"
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "thing": "culm:staffs:0"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "hold": {
+    "until": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-staffs')?.zone.aim?.at ?? 0) >= 4",
+    "timeout": 20
+   }
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "tap": {
+    "thing": "culm:staffs:1"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "hold": {
+    "until": "(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-staffs')?.zone.aim?.at ?? 0) >= 4",
+    "timeout": 20
+   }
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "wait": 2
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-4).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "3-two-staffs-as-long-as-the-sample"
+  }
+ ]
+}

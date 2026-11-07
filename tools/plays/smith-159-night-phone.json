@@ -1,0 +1,110 @@
+{
+ "about": "#159: grade 5, the bend of the smith: the bar from the rack bends to an L on a light plank, in the wide view of the task with the whole smith; the hero stands beside him.",
+ "start": "?story=smith-grade5&clock=1140",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "tap": {
+    "person": "smith"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 14
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone?.test) && tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone.test.check == null",
+   "timeout": 90
+  },
+  {
+   "wait": 1.2
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "tap": {
+    "thing": "rack:smith"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "wait": 4
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:trial-smith')?.zone?.test?.tries?.find((q) => q.how === 'water')?.id ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 0.5
+  },
+  {
+   "until": "tre.activeVillage.state().entities.some((e) => e.look === 'bar-bent')",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-the-bend-is-an-L"
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /^smith\\.(guess\\.(right|wrong)|fair\\.why)/.test(x.key ?? ''))",
+   "timeout": 60
+  },
+  {
+   "wait": 0.5
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-3).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "2-the-compare-with-the-pebble"
+  }
+ ]
+}

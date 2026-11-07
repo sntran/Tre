@@ -1,0 +1,216 @@
+{
+ "about": "#162: grade 1, bà lang: the card of the new print draws, and the prints of the notebook show the whole thing.",
+ "start": "?story=trial-healer",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "walk": {
+    "person": "healer"
+   },
+   "taps": 10
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 2
+  },
+  {
+   "until": "Boolean(document.querySelector('.dialogue-layer'))",
+   "timeout": 60
+  },
+  {
+   "read": 12
+  },
+  {
+   "wait": 2
+  },
+  {
+   "until": "tre.activeVillage.heard().some((x) => /first\\.you/.test(x.key ?? ''))",
+   "timeout": 120
+  },
+  {
+   "wait": 1
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bed-ngai')?.zone.items.find((id) => !tre.activeVillage.state().entities.find((x) => x.id === id)?.item.held) ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bed-ngai')?.zone.items.find((id) => !tre.activeVillage.state().entities.find((x) => x.id === id)?.item.held) ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bed-tiato')?.zone.items.find((id) => !tre.activeVillage.state().entities.find((x) => x.id === id)?.item.held) ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bed-tiato')?.zone.items.find((id) => !tre.activeVillage.state().entities.find((x) => x.id === id)?.item.held) ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bed-rauma')?.zone.items.find((id) => !tre.activeVillage.state().entities.find((x) => x.id === id)?.item.held) ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "tap": {
+    "thingExpr": "tre.activeVillage.state().entities.find((e) => e.id === 'zone:bed-rauma')?.zone.items.find((id) => !tre.activeVillage.state().entities.find((x) => x.id === id)?.item.held) ?? null"
+   },
+   "after": 0.5
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1.2
+  },
+  {
+   "press": true,
+   "after": 1.2,
+   "if": "Boolean(tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.hands?.holds)"
+  },
+  {
+   "tap": {
+    "person": "healer"
+   },
+   "after": 0.3
+  },
+  {
+   "until": "!tre.activeVillage.state().entities.find((e) => e.id === 'hero')?.route",
+   "timeout": 240
+  },
+  {
+   "press": true,
+   "after": 1
+  },
+  {
+   "until": "Boolean(document.querySelector('.print-card'))",
+   "timeout": 120
+  },
+  {
+   "wait": 1.5
+  },
+  {
+   "shot": "1-the-card-of-a-print"
+  },
+  {
+   "wait": 8
+  },
+  {
+   "read": 6
+  },
+  {
+   "wait": 2
+  },
+  {
+   "button": ".hud .icon-btn[aria-label='Trình đơn']",
+   "after": 1
+  },
+  {
+   "click": "Sổ tay",
+   "after": 3
+  },
+  {
+   "wait": 4
+  },
+  {
+   "shot": "2-the-notebook"
+  }
+ ]
+}

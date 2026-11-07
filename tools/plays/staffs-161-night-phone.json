@@ -1,0 +1,39 @@
+{
+ "about": "#161: at night the step of the staffs is a rest: the star goes to the place of rest.",
+ "start": "?story=staffs-grade1&clock=1260",
+ "lang": "vi",
+ "allow": [
+  "is under the bottom of the screen",
+  "and the press did nothing"
+ ],
+ "steps": [
+  {
+   "until": "Boolean(tre.activeVillage) && !document.querySelector('.loading-svg') && tre.activeVillage.state().tick > 10",
+   "timeout": 600
+  },
+  {
+   "wait": 2
+  },
+  {
+   "wait": 3
+  },
+  {
+   "print": "JSON.stringify([...document.querySelectorAll('.world-star:not([hidden]) .star-face')].map((x) => x.dataset.who))"
+  },
+  {
+   "tap": {
+    "star": "thing:mat"
+   },
+   "after": 0.5
+  },
+  {
+   "wait": 1
+  },
+  {
+   "print": "JSON.stringify(tre.activeVillage.heard().slice(-2).map((x) => [x.key, x.text]))"
+  },
+  {
+   "shot": "1-the-staffs-wait-for-the-day"
+  }
+ ]
+}
