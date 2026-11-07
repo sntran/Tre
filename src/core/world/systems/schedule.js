@@ -138,6 +138,11 @@ export function schedule(world, dt, rng, env) {
         }
       }
     }
+    // The place of a person in a talk (scene, #158: side by side for the camera) wins for its time.
+    if (sc.scene && (sc.scene.until ?? 0) > (world.tick ?? 0) && at !== 'gone' && !e.hidden) {
+      goTo(e, sc.scene, env);
+      continue;
+    }
     // The person of a task steps to the side while the child works (aside, #87).
     if (at === 'spot') target = (sc.hold && sc.aside) || sc.spot;
     else if (at === 'bed' && e.steer.medium === 'water') target = (sc.bank ??= env.bankNear(e.position.x, e.position.z));

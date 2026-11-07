@@ -129,8 +129,14 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // Every event goes to the queue of the view and to the listeners (the runner of a story).
   // The last work in view (the event workView): the camera of a story tap leads toward it.
   let lastWork = null;
+  // The person who talks now (#158): the speaker of the last line, for a few seconds.
+  let talker = null;
   const emit = (ev) => {
     if (ev.type === 'workView') lastWork = ev;
+    if (ev.type === 'open' && (ev.speaker || ev.id)) {
+      const id = ev.id && /^(npc|way|event|pz|friend|encounter):/.test(ev.id) ? ev.id : ev.speaker && !['narrator', 'hero'].includes(ev.speaker) ? `npc:${ev.speaker}` : null;
+      if (id) talker = { id, tick: state?.tick ?? 0 };
+    }
     out.push(ev);
     if (starting) opening.push(ev);
     for (const fn of listeners) fn(ev);
@@ -661,7 +667,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     g.chunk = chunkOf(Math.floor(hc.x), Math.floor(hc.y));
     const f = h.position.facing ?? 0;
     const d = Math.hypot(g.position.x - h.position.x, g.position.z - h.position.z);
-    if (state.tick % 15 !== 0 && d <= RIDER.jump) return;
+    if (state.tick % 15 !== 0 && d <= RIDER.jump && !riderBlocks) return;
     // At the share: his place behind his mat, on foot.
     const by = getEntity(state, 'zone:share-giong')?.zone.by ?? null;
     const afoot = Boolean(by);
@@ -693,6 +699,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     // On his horse he keeps the pace of the hero. Behind the hero he rides faster until he is near
     // (#146: "Gióng is not with me, where did he go?").
     if (g.steer) g.steer.speed = lead ? Math.max(LEGEND.pace, hs * 1.3) : Math.max(LEGEND.pace, hs * 1.3, hs + Math.max(0, d - LEGEND.behind) * 2);
+    // A Gióng who hides the work, the hero, or the speaker rides out of the way fast (#158).
+    if (g.steer && riderBlocks && !lead) g.steer.speed = Math.max(g.steer.speed, RIDER_CLEAR_SPEED);
     const size = afoot ? FIGURES.person : FIGURES.rider;
     const rects = workRects(state);
     const body = afoot ? 1 : RIDER.body;
@@ -706,7 +714,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const clear = (q) => clearOf({ ...q, y: gy(q) }, size, pts, viewAz, VIEW.elevation);
     // He stays where he is while the hero stands and his place is near and clear (no small steps
     // after each step of the hero).
-    if (!lead && !by && hs < 1 && d <= RIDER.hold && open(g.position) && clear(g.position)) return;
+    if (!lead && !by && hs < 1 && d <= RIDER.hold && open(g.position) && clear(g.position) && !riderBlocks) return;
     // While he leads, the spots are ahead of the hero on the way (a spot at the side stood in the
     // walk of the hero).
     const onWay = (q) => !lead || ((q.x - h.position.x) * (lead.x * 2 - h.position.x) + (q.z - h.position.z) * (lead.y * 2 - h.position.z)) / ((Math.hypot(q.x - h.position.x, q.z - h.position.z) * ahead) || 1) > 0.8;
@@ -777,11 +785,56 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     }
     const figs = state.entities.filter((e) => e.position && Math.hypot(e.position.x - h.x, e.position.z - h.z) <= SIGHT_NEAR)
       .map((e) => ({ id: e.id, position: e.position, size: sizeOf(e), rides: Boolean(e.riding) && e.id !== 'hero' })).filter((f) => f.size);
-    seeIds = pts.length ? seeThrough(figs, pts, viewAz, VIEW.elevation) : new Set();
-    if (still) {
-      const riders = figs.filter((f) => f.size === FIGURES.rider || f.rides).map((f) => (f.rides ? { ...f, size: FIGURES.rider } : f));
-      for (const id of seeThrough(riders, [{ ...h, heights: HERO_HEIGHTS }], viewAz, VIEW.elevation, (f) => f.size.r)) seeIds.add(id);
+    // People step aside; only things go pale (#158: "there are see-through ghost people in a pile.
+    // Which one is me?"; a see-through layer weakens the cues of depth, Elmqvist and Tsigas 2008).
+    // The hero, the person who talks, the person of the open task, and Gióng are never pale and do
+    // not move for this; each other person, animal, or Nghé in front of the work, the hero, or the
+    // speaker steps to a free spot beside it.
+    seeIds = new Set();
+    const speaking = talker && (state.tick - talker.tick) * STEP < TALK_HOLD ? getEntity(state, talker.id) : null;
+    // Gióng has his own rule of spots (stepRider): he takes a new spot when he hides the work, the
+    // hero, or the speaker.
+    const RIDER_IDS = new Set(['npc:giong-hero', 'mount:giong-hero']);
+    const people = [{ ...h, heights: HERO_HEIGHTS }, ...(speaking?.position ? [{ ...speaking.position, heights: HERO_HEIGHTS }] : [])];
+    const guard = [...pts, ...(still ? people : people.slice(1))];
+    if (!guard.length) return;
+    const riders = figs.filter((f) => RIDER_IDS.has(f.id)).map((f) => ({ ...f, size: FIGURES.rider }));
+    // Not while the hero walks, and not while Gióng leads on the way: there he leads in the view
+    // (#142), and a block of a moment sent him far out of the view.
+    riderBlocks = !walking() && !leadPoint() && seeThrough(riders, guard, viewAz, VIEW.elevation, (f) => f.size.r).size > 0;
+    // The speaker never steps aside from the hero (the one who does not talk steps aside). The hero
+    // has the rules of the stand at the work (besideWork, anvilStand).
+    // The person of the open task has her own step to the side (stepFromBehind, #87).
+    const taskPerson = key ? mentoring.personOf(key) : null;
+    // Nghé has her own rule (she keeps out of the work, #147) and her own acts (she shows a gap).
+    // The person that the child tapped, and a person right next to the hero (a talk), stay.
+    const nextTo = (f) => Math.hypot(f.position.x - h.x, f.position.z - h.z) <= ASIDE_NEXT;
+    // An animal of the land near the hero walks on its own way: a jump of it in front of the hero
+    // stood in the way of the next walk of the hero (#81: no person closes every way).
+    const animalNear = (f) => String(f.id).startsWith('life:') && Math.hypot(f.position.x - h.x, f.position.z - h.z) <= ANIMAL_STAY;
+    const inScene = (f) => (getEntity(state, f.id)?.schedule?.scene?.until ?? 0) > state.tick;
+    const others = figs.filter((f) => !RIDER_IDS.has(f.id) && f.id !== 'npc:giong-boy' && f.id !== 'hero' && f.id !== taskPerson && f.id !== chosen?.id && !nextTo(f) && !animalNear(f) && !inScene(f) && !getEntity(state, f.id)?.follow);
+    for (const id of seeThrough(others, guard, viewAz, VIEW.elevation, (f) => f.size.r)) {
+      const e = getEntity(state, id);
+      const pointsFor = id === speaking?.id ? pts : guard;
+      if (pointsFor.length && seeThrough([figs.find((f) => f.id === id)], pointsFor, viewAz, VIEW.elevation, (f) => f.size.r).size) stepAside(e, pointsFor);
     }
+  }
+  let riderBlocks = false;
+  const ASIDE_NEXT = 3.5; // half blocks: a person this near to the hero does not step aside
+  const ANIMAL_STAY = 10; // half blocks: an animal this near to the hero does not jump aside
+  const RIDER_CLEAR_SPEED = 12; // half blocks per second: Gióng rides out of the way
+  const TALK_HOLD = 4; // seconds: the speaker of a line is the person who talks now
+  // A figure steps to a free spot beside, out of the line from the camera to the points (#158).
+  function stepAside(e, points, radii = [2.5, 4, 5.5]) {
+    if (!e?.position || e.hidden || e.route) return;
+    const size = sizeOf(e);
+    if (!size) return;
+    const free = (q) => tileMap.walkable(Math.floor(q.x / 2), Math.floor(q.z / 2));
+    const spot = clearSpot(ringSpots(e.position, radii), size, points, viewAz, VIEW.elevation, free, e.position);
+    if (!spot) return;
+    if (e.schedule) e.schedule.aside = { x: spot.x, z: spot.z };
+    Object.assign(e.position, { x: spot.x, z: spot.z });
   }
   // A person with a mount rides it whenever the person is out of the house (and the mount stands
   // under the person); in a raid the raid has its own companion, so the person waits out of sight.
@@ -1347,8 +1400,76 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       emit({ type: 'busy', on: true });
     }
     screen = s;
+    if (s.screen === 'dialogue' && ev.speaker) {
+      // The figure of the speaker (the speaker "giong" is the boy or the hero).
+      const id = [`npc:${ev.speaker}`, `npc:${ev.speaker}-boy`, `npc:${ev.speaker}-hero`].find((x) => getEntity(state, x) && !getEntity(state, x).hidden);
+      // Only a scene of the legend (a talk of a task keeps the places of the work: Nghé stood in
+      // front of the stream of the traps after the first talk of a practice).
+      if (id && ev.mark === 'legend') lineUp(id);
+    }
     emit({ type: 'open', screen: s.screen, ...ev });
   }
+  // A talk has places (#158: three see-through people stood in one pile while baby Gióng spoke):
+  // the speaker stays in the middle, and the hero and the people and animals near the speaker stand
+  // side by side for the camera, the hero next to the speaker, each on a free spot.
+  const LINE_NEAR = 14; // half blocks from the speaker
+  const LINE_GAP = 0.8; // half blocks between two figures, as the camera sees them
+  const LINE_KEEP = 30; // seconds that a person keeps the place of the talk
+  function lineUp(speakerId) {
+    const sp = getEntity(state, speakerId);
+    const h = hero();
+    if (!sp?.position || sp.hidden || !h || raidOn() || mentoring.activeKey()) return;
+    if (distHb(sp.position, h.position) > LINE_NEAR) return;
+    const right = { x: Math.cos(viewAz), z: -Math.sin(viewAz) };
+    // The width of a figure on the screen: its body seen at the angle of the camera (a box seen
+    // across its corner is about 1.45 times as wide).
+    const width = (e) => (sizeOf(e)?.r ?? 0.55) * 4 * 1.45;
+    const offOf = (e) => (e.position.x - sp.position.x) * right.x + (e.position.z - sp.position.z) * right.z;
+    // The hero stays where the hero is (a talk can walk the hero to its work); the others stand on
+    // the other side of the speaker, or beyond the hero.
+    const heroSide = offOf(h) >= 0 ? 1 : -1;
+    const reach = { [heroSide]: Math.max(width(sp) / 2, Math.abs(offOf(h)) + width(h) / 2), [-heroSide]: width(sp) / 2 };
+    // A free spot, never on a place of a task (a tap there chooses the place, not Nghé).
+    const rects = workRects(state);
+    const free = (q) => tileMap.walkable(Math.floor(q.x / 2), Math.floor(q.z / 2)) && !rects.some((r) => q.x > r.x0 - 1 && q.x < r.x1 + 1 && q.z > r.z0 - 1 && q.z < r.z1 + 1);
+    // Nghé stands right beside the hero, on the side away from the speaker (she follows the hero).
+    const nghe = query(state, 'follow').find((f) => f.follow.target === 'hero' && f.position && !f.hidden);
+    if (nghe) {
+      const off = width(h) / 2 + LINE_GAP + width(nghe) / 2;
+      for (const s of [heroSide, -heroSide]) {
+        const q = { x: h.position.x + right.x * off * s, z: h.position.z + right.z * off * s };
+        if (!free(q)) continue;
+        Object.assign(nghe.position, { x: q.x, z: q.z });
+        if (s === heroSide) reach[heroSide] = Math.max(reach[heroSide], Math.abs(offOf(nghe)) + width(nghe) / 2);
+        break;
+      }
+    }
+    const near = state.entities.filter((e) => e !== sp && e !== h && e.person && e.position && !e.hidden && sizeOf(e) && !e.riding && e.id !== 'mount:giong-hero' && distHb(e.position, sp.position) <= LINE_NEAR)
+      .sort((a, b) => distHb(a.position, sp.position) - distHb(b.position, sp.position));
+    let side = -heroSide;
+    for (const e of near) {
+      let placed = false;
+      // Nghé stands next to the hero (she follows the hero, #146).
+      const sides = e.follow ? [heroSide, -heroSide] : [side, -side];
+      for (const s of sides) {
+        const toCam = { x: Math.sin(viewAz), z: Math.cos(viewAz) };
+        for (let k = 0; k < 15 && !placed; k += 1) {
+          const more = Math.floor(k / 3);
+          const depth = [0, -1.5, 1.5][k % 3];
+          const off = reach[s] + LINE_GAP + more + width(e) / 2;
+          const q = { x: sp.position.x + right.x * off * s + toCam.x * depth, z: sp.position.z + right.z * off * s + toCam.z * depth };
+          if (!free(q)) continue;
+          reach[s] = off + width(e) / 2;
+          if (e.schedule) e.schedule.scene = { x: q.x, z: q.z, until: state.tick + Math.round(LINE_KEEP / STEP) };
+          Object.assign(e.position, { x: q.x, z: q.z });
+          placed = true;
+        }
+        if (placed) break;
+      }
+      if (!e.follow) side = -side;
+    }
+  }
+
   function closeScreen() {
     if (!screen) return;
     const s = screen;
@@ -2672,6 +2793,9 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // At the place of the soldiers, Gióng says that they are here (#150: the line of "far away"
       // came at the place); "far away" is for the village and the road.
       if (id === 'giong.ready') id = giongLine();
+      // The people of a scene of the legend stand side by side for the camera, the person of the
+      // talk in the middle (#158).
+      if (data.dialogues.get(id)?.mark === 'legend') lineUp(at.entity ?? `npc:${who.id}`);
       if (!comeFirst(id, who.id)) talk(id);
     }
     else if (who.kind === 'event') tapEvent(who.id);

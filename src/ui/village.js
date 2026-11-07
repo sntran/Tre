@@ -350,7 +350,7 @@ export async function mountVillage(ctx, params = {}) {
   const turnRight = h('button', { class: 'turn-btn', type: 'button', 'aria-label': t('ui.turn.right'), title: t('ui.turn.right'), text: '⟳' });
   // A turn of the child: the view that the child chose stays (#75, src/world/turns.js).
   const handTurnTo = (n) => {
-    viewTurns.hand(performance.now());
+    viewTurns.hand(gameMs());
     view.turn(n);
   };
   turnLeft.addEventListener('click', () => handTurnTo(-1));
@@ -751,6 +751,9 @@ export async function mountVillage(ctx, params = {}) {
       return;
     }
     if (ev.screen === 'callout') {
+      // The person of a bubble is the person of the talk for a moment (#158: "Somebody said 'Chào
+      // cháu!' but I can't see who - the roof is covering everything.").
+      if (/^(npc|way|event|pz|encounter):/.test(String(ev.id ?? ''))) bubbleTalker = { id: ev.id, t: performance.now() };
       // The first time of a word of a region (#39), or the first line of a person to the child (the
       // gloss of the name of the speaker, #41, #42), the gloss shows in the bubble too.
       const gloss = glossLine(ctx, ev.textKey, { params: ev.params, speaker: String(ev.id ?? '').startsWith('npc:') ? ev.id.slice(4) : null });
@@ -1266,19 +1269,32 @@ export async function mountVillage(ctx, params = {}) {
     talkWin = heroWindow(talkWin, Boolean(who) && heroCovered(objects, who, view.angle, VIEW.elevation), winTick);
     winTick = 0;
   }
-  // The person of the talk in the box now (as it is drawn), or null.
+  // The person of the talk in the box now (as it is drawn), or the person of the last bubble for a
+  // moment, or null. The speaker "giong" is the boy or the hero.
+  let bubbleTalker = null;
+  const BUBBLE_TALK = 4000; // milliseconds
   function talkPerson() {
-    const id = box && boxLine?.speaker ? `npc:${boxLine.speaker}` : null;
-    return id ? figures.placeOf(id) : null;
+    if (box && boxLine?.speaker) {
+      for (const id of [`npc:${boxLine.speaker}`, `npc:${boxLine.speaker}-boy`, `npc:${boxLine.speaker}-hero`]) {
+        const f = figures.placeOf(id);
+        if (f) return f;
+      }
+    }
+    if (bubbleTalker && performance.now() - bubbleTalker.t < BUBBLE_TALK) return figures.placeOf(bubbleTalker.id);
+    return null;
   }
+  // The points of a whole body for the window (#158: the window opened around the hero, and only a
+  // sleeve of bà lang showed): the feet, the middle, and the head.
+  const bodyPoints = (p, tall = 2) => [0, tall / 2, tall].map((dy) => ({ ...p, y: (p.y ?? 0) + dy, work: true }));
   function seenPoints(heroAt) {
     const r = getEntity(state, 'raid')?.raid;
     const person = personSeen(heroAt);
     // A hero under a roof for more than a moment is a point of the work: the roof opens a window;
     // the person of a talk too.
-    if (heroWin.open) heroAt = { ...heroAt, work: true };
+    const heroBody = heroWin.open || talkWin.open ? bodyPoints(heroAt).slice(1) : [];
+    if (heroWin.open || talkWin.open) heroAt = { ...heroAt, work: true };
     const talker = talkWin.open ? talkPerson() : null;
-    const told = talker ? [{ ...talker, work: true }] : [];
+    const told = talker ? [...bodyPoints(talker), ...heroBody] : heroBody;
     if (!r || r.result) {
       // At a task, the points of the work and its person: what is in front of them fades fully
       // (#87: the roof of the small house covered the mat of the teacher as dots).
@@ -1305,6 +1321,7 @@ export async function mountVillage(ctx, params = {}) {
   // enemies all show. The frame is never closer than FRAME_CLOSE of the near view, and never farther
   // than the far view. A far view that the child chose with a pinch stays until the child walks.
   const FRAME_CLOSE = 0.8;
+  const PUZZLE_NEAR = 10; // blocks: the things of a puzzle that the frame holds with the hero
   const wu = (p) => ({ x: p.x / 2, y: (p.y ?? 0) / 2, z: p.z / 2 });
   function workFrame(heroAt) {
     if (view.state.level !== 0 || hero().riding) return null;
@@ -1325,7 +1342,7 @@ export async function mountVillage(ctx, params = {}) {
       // The work of the open task (also after a walk away and back), or the last work of the view
       // (a walk to a face, an example, the bridge); the things that a talk names come first.
       const live = session.work();
-      const w = work?.talk ? work : live ? { points: live.points.map(wu), person: live.person, close: live.close } : work;
+      const w = work?.talk ? work : live ? { points: live.points.map(wu), person: live.person, close: live.close, key: live.key } : work;
       if (w?.points.length) {
         const mid = w.points.reduce((a, p) => ({ x: a.x + p.x / w.points.length, z: a.z + p.z / w.points.length }), { x: 0, z: 0 });
         if (Math.hypot(heroAt.x - mid.x, heroAt.z - mid.z) > WORK_AWAY) {
@@ -1335,6 +1352,12 @@ export async function mountVillage(ctx, params = {}) {
           }
         } else {
           pts = [...w.points];
+          // A puzzle frames the things near the hero first, so that the hero stays in the middle half
+          // of the screen (#158: "I still can't find ME. I don't see my boy anywhere." at the ferry).
+          if (w.key === 'puzzle') {
+            const near = pts.filter((q) => Math.hypot(q.x - heroAt.x, q.z - heroAt.z) <= PUZZLE_NEAR);
+            if (near.length) pts = near;
+          }
           const p = w.person ? figures.placeOf(w.person) : null;
           if (p && Math.hypot(p.x - mid.x, p.z - mid.z) < WORK_AWAY) pts.push(p);
           if (w.talk) safe = TALK_SAFE;
@@ -1365,6 +1388,9 @@ export async function mountVillage(ctx, params = {}) {
   // one time, at its start (key), and a line of a talk that names things never turns it (turn:
   // false, #111: the view turned at each line, and a child lost the way; src/world/turns.js).
   const viewTurns = createTurns();
+  // The times of the turns are in game time (#158: on the test phones real time ran between the
+  // commands, and TURN_GAP passed more often than in a play).
+  const gameMs = () => state.tick * STEP * 1000;
   function turnToWork(points, sight = [], person = null, key = null, { turn = true } = {}) {
     const wu = (p) => ({ x: p.x / 2, y: p.y / 2, z: p.z / 2 });
     const pts = (points ?? []).map(wu);
@@ -1376,14 +1402,14 @@ export async function mountVillage(ctx, params = {}) {
     const inSight = (az) => sight.map(wu).every((p) => inView({ x0: p.x - 0.5, x1: p.x + 0.5, y0: p.y, y1: p.y + 1, z0: p.z - 0.5, z1: p.z + 0.5 }, focus, { az, size: scr }));
     // One turn for a task (#133: the view turned at the teacher and again after the first bunch of
     // the healer): the key of the task when one is open, else the key of the work.
-    if (!turn || !viewTurns.work(session.mentorTask ?? key, performance.now())) return;
+    if (!turn || !viewTurns.work(session.mentorTask ?? key, gameMs())) return;
     // The person of the task is a point of the work too (#87): no roof covers the person.
     const who = person ? figures.placeOf(person) : null;
     const all = who ? [...pts, { x: who.x, y: who.y, z: who.z }] : pts;
     const steps = workTurn(workBoxes(terrain, all), all, view.angle, VIEW.elevation, inSight);
     if (steps) {
       view.turn(steps);
-      viewTurns.did(performance.now());
+      viewTurns.did(gameMs());
     }
   }
 
@@ -1396,7 +1422,7 @@ export async function mountVillage(ctx, params = {}) {
   // tap, or two seconds with no touch on the stick; never while a finger is on the stick.
   const stillWatch = createStill();
   function heroInSight(heroAt, personId = null) {
-    if (!viewTurns.still(performance.now(), Boolean(session.mentorTask))) return;
+    if (!viewTurns.still(gameMs(), Boolean(session.mentorTask))) return;
     const r = getEntity(state, 'raid')?.raid;
     if (r && !r.result) return;
     const objects = terrain.objects
@@ -1406,7 +1432,7 @@ export async function mountVillage(ctx, params = {}) {
     const steps = stillTurn(objects, heroAt, person, view.angle, VIEW.elevation);
     if (steps) {
       view.turn(steps);
-      viewTurns.did(performance.now());
+      viewTurns.did(gameMs());
     }
   }
   // The state of the sight of the hero, for the plays and the debug panel.
@@ -1416,7 +1442,7 @@ export async function mountVillage(ctx, params = {}) {
     const objects = terrain.objects
       .filter((o) => !o.gone && BUILDINGS.has(o.kind) && Math.abs(o.x + o.w / 2 - at.x) < STILL_NEAR && Math.abs(o.y + o.h / 2 - at.z) < STILL_NEAR)
       .map((o) => ({ b: terrain.boxOf(o), building: true, hits: (x, y, z) => terrain.hits(o.who, x, y, z) }));
-    return { az: view.angle, hero: at, buildings: objects.length, steps: stillTurn(objects, at, null, view.angle, VIEW.elevation), still: viewTurns.still(performance.now()), stillFor: stillWatch.still, stillDone: stillWatch.done };
+    return { az: view.angle, hero: at, buildings: objects.length, steps: stillTurn(objects, at, null, view.angle, VIEW.elevation), still: viewTurns.still(gameMs()), stillFor: stillWatch.still, stillDone: stillWatch.done };
   }
   // Still by the place of the hero, not by its motion: a hero who stands gets small pushes (Nghé,
   // a person beside), and the time of a stop went back to zero again and again (#111, a play).
@@ -1425,7 +1451,11 @@ export async function mountVillage(ctx, params = {}) {
   function watchStill(dt, heroAt) {
     const moved = stillAt ? Math.hypot(heroAt.x - stillAt.x, heroAt.z - stillAt.z) : 0;
     stillAt = { x: heroAt.x, z: heroAt.z };
-    if (stillWatch.step(dt, { moving: moved > STILL_MOVE * dt, route: Boolean(hero().route), stick: stick.active || keys.size > 0 })) heroInSight(heroAt);
+    // A stop on a trip to a star is not a talk: the view does not turn by itself (#158: "The whole
+    // picture keeps turning when I walk, so 'down-right' keeps changing."), and a roof over the hero
+    // goes see-through instead (the window, src/world/fade.js). The view turns for the hero only at a
+    // talk (the open of a talk below) or a task.
+    stillWatch.step(dt, { moving: moved > STILL_MOVE * dt, route: Boolean(hero().route), stick: stick.active || keys.size > 0 });
   }
 
 

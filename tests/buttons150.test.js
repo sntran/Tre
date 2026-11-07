@@ -199,7 +199,7 @@ test('in the stories, each act of the button that the child can press next to pe
   assert.ok(checked >= 6, `${checked} acts`);
 });
 
-test('at a talk with a person of the way, Gióng on his horse in front of the hero draws pale', async () => {
+test('at a talk with a person of the way, Gióng on his horse in front of the hero rides out of the way and is never pale (#158)', async () => {
   const s = load('tests/stories/way-trau-son.json');
   const h = await start(s, s.steps.slice(0, 1));
   const hero = getEntity(h.session.state, 'hero');
@@ -210,19 +210,17 @@ test('at a talk with a person of the way, Gióng on his horse in front of the he
   const d = toCamera(Math.PI / 4, VIEW.elevation);
   const n = Math.hypot(d.x, d.z);
   h.session.command({ type: 'view', az: Math.PI / 4 });
-  for (let i = 0; i < 10; i++) {
-    Object.assign(g.position, { x: hero.position.x + (d.x / n) * 3, z: hero.position.z + (d.z / n) * 3 });
-    if (g.route) delete g.route;
+  Object.assign(g.position, { x: hero.position.x + (d.x / n) * 3, z: hero.position.z + (d.z / n) * 3 });
+  if (g.route) delete g.route;
+  let pale = false;
+  for (let i = 0; i < 3 / STEP; i++) {
     h.session.step();
     h.session.events();
+    if (h.session.seeThrough().has(g.id)) pale = true;
   }
-  const see = h.session.seeThrough();
-  assert.ok(see.has(g.id) || (g.riding && see.has(g.riding)), [...see].join(', '));
-  // Behind the hero, away from the camera: Gióng stays solid.
-  for (let i = 0; i < 10; i++) {
-    Object.assign(g.position, { x: hero.position.x - (d.x / n) * 6, z: hero.position.z - (d.z / n) * 6 });
-    h.session.step();
-    h.session.events();
-  }
-  assert.ok(!h.session.seeThrough().has(g.id), 'Gióng behind the hero is not pale');
+  assert.ok(!pale, 'Gióng is never pale');
+  // He is no longer between the camera and the hero.
+  const along = (g.position.x - hero.position.x) * (d.x / n) + (g.position.z - hero.position.z) * (d.z / n);
+  const side = Math.abs((g.position.x - hero.position.x) * (d.z / n) - (g.position.z - hero.position.z) * (d.x / n));
+  assert.ok(along < 1 || side > 3.2, `Gióng at ${along.toFixed(1)} toward the camera, ${side.toFixed(1)} to the side`);
 });

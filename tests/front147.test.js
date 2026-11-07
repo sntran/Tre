@@ -30,7 +30,10 @@ async function at(s, steps) {
   return { session, run };
 }
 
-// The figures that hide one of the things (ids) from the camera, and are not in the fade.
+// The figures that hide one of the things (ids) from the camera, and are not in the fade. Since
+// #158 people step aside and only things fade, and the hero is never pale: the hero has the rules of
+// the stand at the work (besideWork, anvilStand, tests/smith127.test.js), so the hero is
+// not one of the figures here.
 function covering(session, ids) {
   const d = toCamera(AZ, VIEW.elevation);
   const faded = session.seeThrough();
@@ -40,6 +43,7 @@ function covering(session, ids) {
     if (!t) continue;
     for (const e of session.state.entities) {
       const size = sizeOf(e);
+      if (e.id === 'hero') continue;
       if (!size || e.id === id || Math.hypot(e.position.x - t.x, e.position.z - t.z) <= size.r * 2 + 0.6) continue;
       const box = figureBox(e.position, size);
       if (THING_HEIGHTS.some((h) => rayHits(box, { x: t.x / 2, y: t.y / 2 + h, z: t.z / 2 }, d)) && !faded.has(e.id)) out.push(`${e.id} over ${id}`);
