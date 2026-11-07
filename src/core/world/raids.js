@@ -102,12 +102,24 @@ export function raidTally(raid) {
 // raid. A raid with usedOnly (the boss) brings no new tool at grades up to it. A tool with no line
 // (the bamboo of the boss) is a part of the story, not a tool. Return { tools, teach (the new
 // tool, or none), unused (the new tools that stay out) }.
+// Up to ONE_TOOL_GRADE a raid has one tool (#157: a boy of K had the trap, the straw flags, and the
+// slingshot in one raid; a child of five holds about two new things in mind, Cowan 2016): the tool
+// that the raid teaches (the traps of a raid that asks for a trap, else the new tool), and the
+// slingshot that the hits need. In a raid of the traps the slingshot comes after the first trap is
+// down (lesson: the tool that comes first; slingAfter: the tool that the slingshot waits for).
+export const ONE_TOOL_GRADE = 1;
 export function raidTools(raids, id, flags = {}, grade = 1) {
-  const all = raids.raids[id]?.tools ?? ['sling'];
+  const def = raids.raids[id];
+  const all = def?.tools ?? ['sling'];
   const fresh = all.filter((tool) => !flags[`raid.tool.${tool}`] && raids.toolLines?.[tool]);
-  const teach = Number(grade ?? 1) <= (raids.raids[id]?.usedOnly ?? -Infinity) ? [] : fresh.slice(0, 1);
+  const teach = Number(grade ?? 1) <= (def?.usedOnly ?? -Infinity) ? [] : fresh.slice(0, 1);
+  if (Number(grade ?? 1) <= ONE_TOOL_GRADE) {
+    const lesson = def?.trapPost != null && all.includes('traps') ? 'traps' : teach[0] ?? 'sling';
+    const keep = all.filter((tool) => tool === lesson || tool === 'sling');
+    return { tools: keep, teach: teach.filter((t) => keep.includes(t)), unused: all.filter((tool) => !keep.includes(tool)), lesson, slingAfter: lesson === 'traps' && keep.includes('sling') ? 'traps' : null };
+  }
   const unused = fresh.filter((tool) => !teach.includes(tool));
-  return { tools: all.filter((tool) => !unused.includes(tool)), teach, unused };
+  return { tools: all.filter((tool) => !unused.includes(tool)), teach, unused, lesson: teach[0] ?? null, slingAfter: null };
 }
 
 export function raidLevel(raids, grade) {
