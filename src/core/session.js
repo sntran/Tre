@@ -806,7 +806,7 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       return;
     }
     const figs = state.entities.filter((e) => e.position && Math.hypot(e.position.x - h.x, e.position.z - h.z) <= SIGHT_NEAR)
-      .map((e) => ({ id: e.id, position: e.position, size: sizeOf(e), rides: Boolean(e.riding) && e.id !== 'hero' })).filter((f) => f.size);
+      .map((e) => ({ id: e.id, position: e.position, size: sizeOf(e) ?? (e.raider ? FIGURES.person : null), rides: Boolean(e.riding) && e.id !== 'hero' })).filter((f) => f.size);
     // People step aside; only things go pale (#158: "there are see-through ghost people in a pile.
     // Which one is me?"; a see-through layer weakens the cues of depth, Elmqvist and Tsigas 2008).
     // The hero, the person who talks, the person of the open task, and Gióng are never pale and do
@@ -838,6 +838,12 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const others = figs.filter((f) => !RIDER_IDS.has(f.id) && f.id !== 'npc:giong-boy' && f.id !== 'hero' && f.id !== taskPerson && f.id !== chosen?.id && !nextTo(f) && !animalNear(f) && !inScene(f) && !getEntity(state, f.id)?.follow);
     for (const id of seeThrough(others, guard, viewAz, VIEW.elevation, (f) => f.size.r)) {
       const e = getEntity(state, id);
+      // An enemy of a raid keeps its place on the road (the count is its place): in front of a post
+      // it draws pale, so that the post shows (#166: the soldier covered post 2).
+      if (String(id).startsWith('raider:')) {
+        seeIds.add(id);
+        continue;
+      }
       const pointsFor = id === speaking?.id ? pts : guard;
       if (pointsFor.length && seeThrough([figs.find((f) => f.id === id)], pointsFor, viewAz, VIEW.elevation, (f) => f.size.r).size) stepAside(e, pointsFor);
     }
@@ -3248,7 +3254,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // raid: a stone at the gate, a rice ball at the river.
       const hitter = raidSpeaker();
       const rice = data.raids?.raids[raid.id]?.words?.ball === 'raid.ball.rice';
-      if (hitter) emit({ type: 'open', screen: 'callout', id: hitter.id, textKey: rice ? 'raid.hit.rice' : 'raid.hit', params: raidWords() });
+      // An enemy that takes more hits: the line says how many more (#166: "Nó ăn rồi!", and no
+      // circle filled, because the circle of an enemy fills only when it goes back).
+      const more = ev.left > 0 && raid.enemies.some((e) => e.id === ev.target && e.state !== 'retreat' && e.state !== 'gone');
+      const key = `${rice ? 'raid.hit.rice' : 'raid.hit'}${more ? '.more' : ''}`;
+      if (hitter) emit({ type: 'open', screen: 'callout', id: hitter.id, textKey: key, params: { ...raidWords(), n: { key: `num.${Math.min(10, ev.left)}` } } });
       return;
     }
     // Two stones in a row that were short and came from one press each: the elder shows the
@@ -3267,10 +3277,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     const short = ev.count < along(raid, front);
     teach.singles = short && ev.count <= POST_STEP ? teach.singles + 1 : 0;
     if (teach.sling && !teach.shown && !teach.demo && teach.singles >= 2 && near) {
-      raidDemo(raid, coach);
+      // Never in the middle of a count of the child (#166: four presses of a girl of grade 4 went
+      // into the example of the fisher): the example waits until the child stops pressing.
+      if (slingPull) teach.demoDue = true;
+      else raidDemo(raid, coach);
       return;
     }
-    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: short ? 'raid.miss.short' : 'raid.miss.long', params: raidWords() });
+    // A count of presses says the count and the post where the stone fell, and that post glows
+    // (#166: "Hòn đá rơi trước lính rồi." did not say what to do next; feedback helps when it says
+    // where to go next, Hattie and Timperley 2007). A drag that is not at a post: the side only.
+    const n = ev.unit > 1 ? Math.round(ev.count / ev.unit) : 0;
+    const fell = n > 0 ? raid.posts.findIndex((q) => Math.abs(q.d - ev.count) <= AT_POST) + 1 : 0;
+    const side = short ? 'raid.miss.short' : 'raid.miss.long';
+    if (who) emit({ type: 'open', screen: 'callout', id: who.id, textKey: fell === n && n > 0 ? `${side}.at` : side, params: { ...raidWords(), n: { key: `num.${n}` } } });
+    if (fell === n && n > 0) emit({ type: 'glowSeq', ids: [`post:${n}`] });
     raidMisses += 1;
     if (raidMisses < 2 || !near) return;
     raidMisses = 0;
@@ -3335,6 +3355,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (teach.help !== null && state.tick >= teach.help) {
       teach.help = Infinity;
       order({ act: 'drive' });
+    }
+    if (teach.demoDue && !slingPull && !teach.demo && !raid.result) {
+      teach.demoDue = false;
+      const coach = getEntity(state, coachId());
+      if (coach?.raidCoach && !coach.hidden && !teach.shown) raidDemo(raid, coach);
     }
     const d = teach.demo;
     if (!d) return;
@@ -3850,6 +3875,8 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     return { act: 'sling', icon: 'sling', target: 'hero', run: () => {
       const most = Math.floor(r.sling.max / POST_STEP);
       slingPull = { posts: Math.min(most, (slingPull?.posts ?? 0) + 1), t: 0 };
+      // Each press says its count (#166): the last word is the number of the post.
+      emit({ type: 'open', screen: 'callout', id: 'hero', textKey: `num.${slingPull.posts}`, params: {} });
       // The ring and the post of the pull pulse at each press (#93).
       later.push(() => {
         emit({ type: 'pulse', id: 'ring:pull' });
@@ -6518,6 +6545,11 @@ export function createSession({ data, profile, learner = () => null, log = () =>
     if (ev.type === 'carry') log('carry', { task: ev.task, size: ev.size, seconds: Math.round(ev.ticks * STEP * 10) / 10 });
     // The prediction before the first commit on a gap, and the result.
     if (ev.type === 'land' && String(ev.id).startsWith('stone:')) raidLand(ev);
+    // An enemy stands at a post: that post glows (#166: the soldier covered post 2).
+    if (ev.type === 'pause' && Number.isFinite(ev.post) && raidOn()) {
+      const k = raidEnt().raid.posts.findIndex((q) => q.d === ev.post) + 1;
+      if (k > 0) emit({ type: 'glowSeq', ids: [`post:${k}`], stand: true });
+    }
     if (ev.type === 'away' && ev.id === 'raid') raidAway();
     if (ev.type === 'prediction') {
       log('prediction', { task: ev.task, gap: ev.gap, guess: ev.guess, used: ev.used, solved: ev.solved });

@@ -63,7 +63,7 @@ test('near the road of a raid, from the wall to past the farthest post, no plant
 test('the scouts: a hit says "Trúng rồi!", the gate glows at its line and at a torch, the last one is said, and the end says it', async () => {
   const { session, said, sounds, failures } = await play('raid-scouts');
   assert.deepEqual(failures, []);
-  assert.ok(said.includes('raid.hit'), said.join(', '));
+  assert.ok(said.includes('raid.hit') || said.includes('raid.hit.more'), said.join(', '));
   assert.ok(said.includes('raid.last'), said.join(', '));
   assert.ok(said.includes('raid.won'), said.join(', '));
   assert.ok(!sounds.some((s) => s.raid && s.sound === 'snore'), 'no snore while the raid goes on');
@@ -82,8 +82,8 @@ test('the gate glows with its line until the child taps it', async () => {
 
 test('the river: a hit says "Nó ăn rồi!"', async () => {
   const { said } = await play('raid-river');
-  assert.ok(said.includes('raid.hit.rice') || !said.some((k) => k.startsWith('raid.hit')), said.join(', '));
-  assert.ok(!said.includes('raid.hit'), 'no stone words at the river');
+  assert.ok(said.includes('raid.hit.rice') || said.includes('raid.hit.rice.more') || !said.some((k) => k.startsWith('raid.hit')), said.join(', '));
+  assert.ok(!said.includes('raid.hit') && !said.includes('raid.hit.more'), 'no stone words at the river');
 });
 
 test('the tally of a raid counts all its waves and the ones that are done', () => {

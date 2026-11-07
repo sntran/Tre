@@ -679,7 +679,7 @@ function tickStones(raid, dt, out) {
     const aimed = raid.enemies.filter((e) => alive(e) && e.state !== 'stunned' || e === target)
       .map((e) => ({ e, off: Math.abs(along(raid, e) - s.count) })).filter((q) => q.off <= AIM).sort((a, b) => a.off - b.off)[0]?.e ?? null;
     const goal = aimed ? Math.round(along(raid, aimed)) : null;
-    out.push({ type: 'land', id: s.id, at, count: s.count, hit: solved, off: goal === null ? null : s.count - goal, sound: solved ? null : 'thud' });
+    out.push({ type: 'land', id: s.id, at, count: s.count, unit: s.unit ?? 1, hit: solved, target: target?.id ?? null, left: target ? Math.max(0, target.max - target.hits) : null, off: goal === null ? null : s.count - goal, sound: solved ? null : 'thud' });
     if (!solved) raid.marks.push({ id: `mark:${s.id}`, ...at, t: MARK, look: s.ball ?? 'stone' });
     // The prediction of the first shot goes to the log with the result.
     if (s.first) {

@@ -37,9 +37,11 @@ test('after a stone that falls short or flies past, the elder at the wall says w
     },
   });
   assert.deepEqual(failures, []);
-  assert.ok(lines.includes('raid.miss.short'), `the line of a short stone: ${lines.join(', ')}`);
-  assert.ok(lines.includes('raid.miss.long'), `the line of a long stone: ${lines.join(', ')}`);
-  assert.ok(lines.indexOf('raid.miss.short') < lines.indexOf('raid.miss.long'));
+  const short = lines.findIndex((k) => k.startsWith('raid.miss.short'));
+  const long = lines.findIndex((k) => k.startsWith('raid.miss.long'));
+  assert.ok(short >= 0, `the line of a short stone: ${lines.join(', ')}`);
+  assert.ok(long >= 0, `the line of a long stone: ${lines.join(', ')}`);
+  assert.ok(short < long);
   assert.ok(!lines.some((k) => k.startsWith('world.greet')), 'no greeting in a raid');
   const raid = getEntity(s.state, 'raid').raid;
   assert.ok(elderAt && Math.hypot(elderAt.x - raid.wall.x, elderAt.z - raid.wall.z) <= 16, `the elder stands next to the wall: ${elderAt && Math.round(Math.hypot(elderAt.x - raid.wall.x, elderAt.z - raid.wall.z))}`);

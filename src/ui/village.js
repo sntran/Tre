@@ -1837,6 +1837,8 @@ export async function mountVillage(ctx, params = {}) {
         showGlow();
         return;
       case 'glowSeq':
+        // The post of an enemy that stands does not cut the glow of a line (#166).
+        if (ev.stand && seq) return;
         startSeq(ev.ids);
         return;
       // The head of the hamlet points at a station: its star (or its arrow at the edge) pulses.
