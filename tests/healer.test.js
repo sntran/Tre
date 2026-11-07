@@ -167,7 +167,7 @@ test('the first lines show the tap on a bed, with the beds glowing', () => {
   assert.deepEqual(tap.names, ['zone:bed-ngai', 'zone:bed-tiato', 'zone:bed-rauma']);
 });
 
-test('after the child takes the extra bunch out and the basket is right, the healer says the next step, and the big button glows with the give (#89, #160)', async () => {
+test('after the child takes the extra bunch out and the basket is right, the healer says the next step, the big button glows, and a tap on her makes the give the act (#89, #160, #169)', async () => {
   const session = await afterTalk(2);
   putFrom(session, 'ngai', 5);
   putFrom(session, 'tiato', 4);
@@ -186,6 +186,10 @@ test('after the child takes the extra bunch out and the basket is right, the hea
   const keys = lines.map((l) => l.key);
   assert.ok(keys.indexOf('mentor.healer.next') > keys.indexOf('healer.take.out'), keys.join(' '));
   assert.ok(glows > 0, 'the button glows');
-  assert.equal(load('i18n/vi.json')['mentor.healer.next'], 'Cháu đưa giỏ cho bà nhé.');
+  assert.equal(load('i18n/vi.json')['mentor.healer.next'], 'Giỏ đủ rồi. Cháu chạm vào bà để đưa giỏ nhé.');
+  // The give comes after a tap on her (#169).
+  assert.notEqual(session.action()?.act, 'give');
+  send(session, { type: 'tap', target: { person: 'npc:healer' } });
+  run(session, 1);
   assert.equal(session.action()?.act, 'give');
 });

@@ -4930,18 +4930,20 @@ export function createSession({ data, profile, learner = () => null, log = () =>
       // With no tap, the finish comes only after a put of the child in the task: the first step
       // that the mentor shows is not a try of the child (#54).
       const task = mentoring.taskOfPerson(q.entity);
-      // The work is right now (#74): the finish comes first, before the one move of the heap.
-      if (fin && readyFinish.has(task)) {
+      // The work is right now (#74): the finish comes first, before the one move of the heap. The
+      // basket of bà lang goes only after a tap on her (#169): in a work of many presses the big
+      // button stays the work, because a child who presses fast does not see a change of the
+      // picture (a mode error, Norman 1981); a boy of grade 4 gave her basket two times by mistake.
+      if (fin && readyFinish.has(task) && (task !== 'trial-healer' || tapped)) {
         add({ ...base, ...fin, rank: -20, work: true }, REACH + 3);
         continue;
       }
       // The check of the share of grade 4 needs a tap on the teacher while rods lie on the mat
       // (#116: the press near the teacher became the check when the child wanted a rod).
       const matLeft = task === 'trial-scholar' && (zoneOf('mat')?.zone.items ?? []).some((id) => shareMat(getEntity(state, id)));
-      // Next to bà lang with the basket, the press gives it, also with a bed in reach (#144: "Sometimes
-      // the big button is a basket and sometimes it's a talk bubble"); a tap on a bed takes from it.
-      const byHealer = task === 'trial-healer' && distHb(hp, getEntity(state, q.entity).position) <= HEALER_NEAR && !(chosen && /^(herb-|zone:bed-)/.test(chosen.id));
-      if (fin && (tapped || byHealer || (!TAP_FINISH.has(task) && !heapNear(null) && !matLeft && childPut.has(task)))) add({ ...base, ...fin, rank: byHealer ? -5 : 0, work: true }, REACH + 3);
+      // The basket of bà lang goes after a tap on her (#169), never because the hero stands next to
+      // her: the button there stays the put and the pick of the work.
+      if (fin && (tapped || (!TAP_FINISH.has(task) && !heapNear(null) && !matLeft && childPut.has(task)))) add({ ...base, ...fin, rank: tapped && task === 'trial-healer' ? -5 : 0, work: true }, REACH + 3);
       // With a heap in reach, the finish waits: it comes only when the press has no other work
       // (#54: the basket of the healer has enough of each kind, and the healer stands at it).
       else if (fin && !tapped) {
@@ -6063,7 +6065,6 @@ export function createSession({ data, profile, learner = () => null, log = () =>
   // leg). True when the hero walks or stands at the goal.
   const LEG = 2500; // the most cells of the search of one leg
   const STAR_PERSON = 2.5; // cells: a star this near a person is the star of the person
-  const HEALER_NEAR = 6; // half blocks: next to bà lang, the press gives the basket (#144)
   const STAR_MEET = 10; // cells: this near the person of a star, the walk to the person takes over
   const RAID_NEAR = 24; // half blocks: in a raid, a tap on a person farther from the wall does nothing
   // The tick of the last tap on a star: the children of a folk game do not ask during the walk to it.

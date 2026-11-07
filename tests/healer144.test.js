@@ -1,5 +1,5 @@
 // The healer at grade 4 after the play test of #135–#139 (#144): "thang" has its word line, the
-// packet is never "lá", each put has its line, next to bà lang the button gives the basket, no
+// packet is never "lá", each put has its line, next to bà lang a tap on her and the button give the basket (#169), no
 // "come to me" next to her, no break while the child puts, and the model is big enough to count.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -108,8 +108,12 @@ test('each put has its put line, also while a help plays; no break while the chi
   Object.assign(h.hero().position, { x: hp.x + 2, z: hp.z + 1 });
   delete h.hero().route;
   h.run(0.5);
+  // Next to her with no tap, the button stays the work (#169); after a tap on her, the give.
+  assert.notEqual(h.session.action()?.act, 'give', 'no give with no tap');
+  h.session.command({ type: 'tap', target: { person: h.healer().id } });
+  h.run(0.5);
   const a = h.session.action();
-  assert.equal(a?.act, 'give', `the act next to her: ${a?.act} ${a?.target} holds ${h.hero().hands?.holds}`);
+  assert.equal(a?.act, 'give', `the act next to her after a tap: ${a?.act} ${a?.target} holds ${h.hero().hands?.holds}`);
   h.session.command({ type: 'wave' });
   h.run(8);
   assert.notEqual(h.session.action()?.act, 'talk');

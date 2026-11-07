@@ -87,7 +87,7 @@ function putFrom(session, kind, n) {
   assert.equal(basket(), before + n, `${n} bunches of ${kind}`);
 }
 
-test('the healer: after a give of 3, 2, and 2 she names each row and counts it, says the extra bunch and to take it out, the child takes it out, no help comes, and the next press gives the basket', async () => {
+test('the healer: after a give of 3, 2, and 2 she names each row and counts it, says the extra bunch and to take it out, the child takes it out, no help comes, and a tap on her and a press give the basket', async () => {
   const session = await afterTalk('trial-healer');
   putFrom(session, 'ngai', 3);
   putFrom(session, 'tiato', 2);
@@ -126,6 +126,9 @@ test('the healer: after a give of 3, 2, and 2 she names each row and counts it, 
   run(session, 3);
   const skills = [];
   session.listen((ev) => { if (ev.type === 'skill') skills.push(ev); });
+  // The give comes after a tap on her (#169).
+  send(session, { type: 'tap', target: { person: 'npc:healer' } });
+  run(session, 1);
   assert.equal(session.action()?.act, 'give', `the button shows the give: ${session.action()?.act}`);
   press(session, 1);
   run(session, 3);
