@@ -10,6 +10,7 @@ We write it for parents and for anyone who wants to know why the game is the way
 
 | Date | Entry |
 | --- | --- |
+| 8 Nov 2026 | [A robot plays first](2026-11-08-a-robot-plays-first.md) |
 | 7 Nov 2026 | [Heard but not seen](2026-11-07-heard-but-not-seen.md) |
 | 1 Nov 2026 | [Ghosts and dead ends](2026-11-01-ghosts-and-dead-ends.md) |
 | 31 Oct 2026 | [In the way](2026-10-31-in-the-way.md) |
